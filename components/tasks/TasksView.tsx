@@ -1,0 +1,299 @@
+
+import React, { useState, useCallback, useMemo } from 'react';
+import { Project, JiraTask, BddScenario, TestCaseDetailLevel, BugSeverity, TeamRole } from '../../types';
+import { generateTestCasesForTask, generateBddScenarios } from '../../services/geminiService';
+import { Card } from '../common/Card';
+import { Modal } from '../common/Modal';
+import { TaskForm } from './TaskForm';
+import { JiraTaskItem, TaskWithChildren } from './JiraTaskItem';
+
+export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: Project) => void }> = ({ project, onUpdateProject }) => {
+    const [generatingTestsTaskId, setGeneratingTestsTaskId] = useState<string | null>(null);
+    const [generatingBddTaskId, setGeneratingBddTaskId] = useState<string | null>(null);
+    const [isTaskFormOpen, setIsTaskFormOpen] = useState(false);
+    const [editingTask, setEditingTask] = useState<JiraTask | undefined>(undefined);
+    const [defaultParentId, setDefaultParentId] = useState<string | undefined>(undefined);
+    const [failModalState, setFailModalState] = useState<{
+        isOpen: boolean;
+        taskId: string | null;
+        testCaseId: string | null;
+        observedResult: string;
+        createBug: boolean;
+    }>({
+        isOpen: false,
+        taskId: null,
+        testCaseId: null,
+        observedResult: '',
+        createBug: true,
+    });
+
+    const handleTaskStatusChange = useCallback((taskId: string, status: 'To Do' | 'In Progress' | 'Done') => {
+        onUpdateProject({
+            ...project,
+            tasks: project.tasks.map(t => t.id === taskId ? { 
+                ...t, 
+                status,
+                completedAt: status === 'Done' ? new Date().toISOString() : t.completedAt 
+            } : t)
+        });
+    }, [project, onUpdateProject]);
+    
+    const handleGenerateBddScenarios = useCallback(async (taskId: string) => {
+        setGeneratingBddTaskId(taskId);
+        try {
+            const task = project.tasks.find(t => t.id === taskId);
+            if (!task) throw new Error("Task not found");
+            const scenarios = await generateBddScenarios(task.title, task.description);
+            const updatedTask = { ...task, bddScenarios: [...(task.bddScenarios || []), ...scenarios] };
+            const newTasks = project.tasks.map(t => t.id === taskId ? updatedTask : t);
+            onUpdateProject({ ...project, tasks: newTasks });
+        } catch (error) {
+            console.error("Failed to generate BDD scenarios", error);
+            alert("Falha ao gerar cenários BDD.");
+        } finally {
+            setGeneratingBddTaskId(null);
+        }
+    }, [project, onUpdateProject]);
+
+    const handleSaveBddScenario = useCallback((taskId: string, scenarioData: Omit<BddScenario, 'id'>, scenarioId?: string) => {
+        const task = project.tasks.find(t => t.id === taskId);
+        if (!task) return;
+
+        let updatedScenarios: BddScenario[];
+        if (scenarioId) {
+            updatedScenarios = (task.bddScenarios || []).map(sc => sc.id === scenarioId ? { ...sc, ...scenarioData } : sc);
+        } else {
+            const newScenario: BddScenario = { ...scenarioData, id: `bdd-${Date.now()}` };
+            updatedScenarios = [...(task.bddScenarios || []), newScenario];
+        }
+
+        const updatedTask = { ...task, bddScenarios: updatedScenarios };
+        const newTasks = project.tasks.map(t => t.id === taskId ? updatedTask : t);
+        onUpdateProject({ ...project, tasks: newTasks });
+
+    }, [project, onUpdateProject]);
+
+    const handleDeleteBddScenario = useCallback((taskId: string, scenarioId: string) => {
+        const task = project.tasks.find(t => t.id === taskId);
+        if (!task) return;
+
+        const updatedScenarios = (task.bddScenarios || []).filter(sc => sc.id !== scenarioId);
+        const updatedTask = { ...task, bddScenarios: updatedScenarios };
+        const newTasks = project.tasks.map(t => t.id === taskId ? updatedTask : t);
+        onUpdateProject({ ...project, tasks: newTasks });
+    }, [project, onUpdateProject]);
+
+    const handleGenerateTests = useCallback(async (taskId: string, detailLevel: TestCaseDetailLevel) => {
+        setGeneratingTestsTaskId(taskId);
+        try {
+            const task = project.tasks.find(t => t.id === taskId);
+            if (!task) throw new Error("Task not found");
+            const { strategy, testCases } = await generateTestCasesForTask(task.title, task.description, task.bddScenarios, detailLevel);
+            const updatedTask = { ...task, testStrategy: strategy, testCases };
+            const newTasks = project.tasks.map(t => t.id === updatedTask.id ? updatedTask : t);
+            onUpdateProject({ ...project, tasks: newTasks });
+        } catch (error) {
+            console.error(error);
+            alert("Falha ao gerar casos de teste.");
+        } finally {
+            setGeneratingTestsTaskId(null);
+        }
+    }, [project, onUpdateProject]);
+
+    const handleConfirmFail = () => {
+        const { taskId, testCaseId, observedResult, createBug } = failModalState;
+        if (!taskId || !testCaseId) return;
+    
+        const task = project.tasks.find(t => t.id === taskId);
+        if (!task) return;
+    
+        const updatedTestCases = task.testCases.map(tc => tc.id === testCaseId ? { ...tc, status: 'Failed' as const, observedResult } : tc);
+        const updatedTask = { ...task, testCases: updatedTestCases };
+        
+        let newTasks = project.tasks.map(t => t.id === taskId ? updatedTask : t);
+    
+        if (createBug) {
+            const failedCase = updatedTestCases.find(tc => tc.id === testCaseId);
+            const newBug: JiraTask = {
+                id: `BUG-${task.id}-${Date.now().toString().slice(-4)}`,
+                title: `BUG: Falha no teste para "${task.title}"`,
+                description: `Este bug foi gerado automaticamente devido à falha do caso de teste:\n\n**Tarefa Original:** ${task.id} - ${task.title}\n**Caso de Teste:** ${failedCase?.description}\n\n**Resultado Observado:**\n${observedResult || 'Nenhum resultado observado foi fornecido.'}\n\n**Passos para Reproduzir:**\n${failedCase?.steps.map(s => `- ${s}`).join('\n')}\n\n**Resultado Esperado:**\n${failedCase?.expectedResult}`,
+                type: 'Bug',
+                status: 'To Do',
+                testCases: [],
+                bddScenarios: [],
+                parentId: task.parentId,
+                severity: 'Médio',
+                createdAt: new Date().toISOString(),
+                owner: 'QA',
+                assignee: 'Dev'
+            };
+            newTasks.push(newBug);
+        }
+        
+        onUpdateProject({ ...project, tasks: newTasks });
+        
+        setFailModalState({ isOpen: false, taskId: null, testCaseId: null, observedResult: '', createBug: true });
+    };
+
+    const handleTestCaseStatusChange = useCallback((taskId: string, testCaseId: string, status: 'Passed' | 'Failed') => {
+        const task = project.tasks.find(t => t.id === taskId);
+        if (!task) return;
+
+        if (status === 'Passed') {
+            const updatedTestCases = task.testCases.map(tc => tc.id === testCaseId ? { ...tc, status } : tc);
+            const updatedTask = { ...task, testCases: updatedTestCases };
+            const newTasks = project.tasks.map(t => t.id === taskId ? updatedTask : t);
+            onUpdateProject({ ...project, tasks: newTasks });
+        } else { // status === 'Failed'
+            setFailModalState({
+                isOpen: true,
+                taskId,
+                testCaseId,
+                observedResult: '',
+                createBug: true,
+            });
+        }
+    }, [project, onUpdateProject]);
+    
+    const handleSaveTask = (taskData: Omit<JiraTask, 'testCases' | 'status' | 'testStrategy' | 'bddScenarios' | 'createdAt' | 'completedAt'>) => {
+        let newTasks: JiraTask[];
+        if (editingTask) {
+            newTasks = project.tasks.map(t => t.id === editingTask.id ? { ...t, ...taskData } : t);
+        } else {
+            const newTask: JiraTask = { ...taskData, status: 'To Do', testCases: [], bddScenarios: [], createdAt: new Date().toISOString() };
+            newTasks = [...project.tasks, newTask];
+        }
+        onUpdateProject({ ...project, tasks: newTasks });
+        setIsTaskFormOpen(false);
+        setEditingTask(undefined);
+    };
+
+    const handleDeleteTask = (taskId: string) => {
+        if (!window.confirm("Tem certeza que deseja excluir esta tarefa e todas as suas subtarefas?")) return;
+
+        const taskToDelete = project.tasks.find(t => t.id === taskId);
+        let tasksToKeep = project.tasks;
+        
+        if (taskToDelete?.type === 'Epic') {
+            tasksToKeep = tasksToKeep.map(t => t.parentId === taskId ? { ...t, parentId: undefined } : t);
+        }
+        
+        tasksToKeep = tasksToKeep.filter(t => t.id !== taskId);
+
+        onUpdateProject({ ...project, tasks: tasksToKeep });
+    };
+    
+    const openTaskFormForEdit = (task: JiraTask) => {
+        setEditingTask(task);
+        setIsTaskFormOpen(true);
+    };
+    
+    const openTaskFormForNew = (parentId?: string) => {
+        setEditingTask(undefined);
+        setDefaultParentId(parentId);
+        setIsTaskFormOpen(true);
+    };
+
+    const epics = useMemo(() => project.tasks.filter(t => t.type === 'Epic'), [project.tasks]);
+
+    const taskTree = useMemo(() => {
+        const tasks = [...project.tasks];
+        const taskMap = new Map(tasks.map(t => [t.id, { ...t, children: [] as TaskWithChildren[] }]));
+        const tree: TaskWithChildren[] = [];
+
+        for (const task of taskMap.values()) {
+            if (task.parentId && taskMap.has(task.parentId)) {
+                taskMap.get(task.parentId)!.children.push(task);
+            } else {
+                tree.push(task);
+            }
+        }
+        return tree;
+    }, [project.tasks]);
+
+    const renderTaskTree = (tasks: TaskWithChildren[], level: number): React.ReactElement[] => {
+        return tasks.map(task => (
+            <JiraTaskItem
+                key={task.id}
+                task={task}
+                onTestCaseStatusChange={(testCaseId, status) => handleTestCaseStatusChange(task.id, testCaseId, status)}
+                onDelete={handleDeleteTask}
+                onGenerateTests={handleGenerateTests}
+                isGenerating={generatingTestsTaskId === task.id}
+                onAddSubtask={openTaskFormForNew}
+                onEdit={openTaskFormForEdit}
+                onGenerateBddScenarios={handleGenerateBddScenarios}
+                isGeneratingBdd={generatingBddTaskId === task.id}
+                onSaveBddScenario={handleSaveBddScenario}
+                onDeleteBddScenario={handleDeleteBddScenario}
+                onTaskStatusChange={(status) => handleTaskStatusChange(task.id, status)}
+                level={level}
+            >
+                {task.children.length > 0 && renderTaskTree(task.children, level + 1)}
+            </JiraTaskItem>
+        ));
+    };
+
+    return (
+        <>
+        <Card>
+            <div className="flex justify-between items-center mb-4">
+                <h3 className="text-2xl font-bold text-white">Tarefas & Casos de Teste</h3>
+                <button onClick={() => openTaskFormForNew()} className="px-4 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-500">Adicionar Tarefa</button>
+            </div>
+            {isTaskFormOpen && (
+                <div className="mb-4 p-4 bg-gray-700/50 rounded-lg">
+                    <TaskForm 
+                        onSave={handleSaveTask} 
+                        onCancel={() => { setIsTaskFormOpen(false); setEditingTask(undefined); }} 
+                        existingTask={editingTask}
+                        epics={epics}
+                        parentId={defaultParentId}
+                    />
+                </div>
+            )}
+            {taskTree.length > 0 ? (
+                <div>{renderTaskTree(taskTree, 0)}</div>
+            ) : (
+                <div className="text-center py-8">
+                    <p className="text-gray-500">Nenhuma tarefa criada ainda.</p>
+                </div>
+            )}
+        </Card>
+
+        <Modal 
+            isOpen={failModalState.isOpen} 
+            onClose={() => setFailModalState({ ...failModalState, isOpen: false })} 
+            title="Registrar Falha no Teste"
+        >
+            <div className="space-y-4">
+                <div>
+                    <label htmlFor="observed-result" className="block text-sm font-medium text-gray-400">Resultado Observado (O que aconteceu de errado?)</label>
+                    <textarea 
+                        id="observed-result" 
+                        value={failModalState.observedResult} 
+                        onChange={e => setFailModalState({ ...failModalState, observedResult: e.target.value })} 
+                        rows={4} 
+                        className="mt-1 block w-full bg-gray-700 border border-gray-600 rounded-md shadow-sm py-2 px-3 text-white focus:outline-none focus:ring-teal-500 focus:border-teal-500"
+                    ></textarea>
+                </div>
+                <div className="flex items-center">
+                    <input 
+                        id="create-bug-task" 
+                        type="checkbox" 
+                        checked={failModalState.createBug} 
+                        onChange={e => setFailModalState({ ...failModalState, createBug: e.target.checked })}
+                        className="h-4 w-4 text-teal-600 bg-gray-700 border-gray-600 rounded focus:ring-teal-500"
+                    />
+                    <label htmlFor="create-bug-task" className="ml-2 block text-sm text-gray-300">Criar tarefa de Bug automaticamente</label>
+                </div>
+                <div className="flex justify-end gap-3 pt-4">
+                    <button onClick={() => setFailModalState({ ...failModalState, isOpen: false })} className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-500">Cancelar</button>
+                    <button onClick={handleConfirmFail} className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-500">Confirmar Reprovação</button>
+                </div>
+            </div>
+        </Modal>
+        </>
+    );
+};

@@ -1,0 +1,60 @@
+
+import React, { useState, useCallback } from 'react';
+import { Project } from '../../types';
+import { generateProjectLifecyclePlan, generateShiftLeftAnalysis, generateTestPyramidAnalysis } from '../../services/geminiService';
+import { Spinner } from '../common/Spinner';
+import { ProjectLifecycleCard } from './ProjectLifecycleCard';
+import { ShiftLeftCard } from './ShiftLeftCard';
+import { TestPyramidCard } from './TestPyramidCard';
+import { PhaseLogicGuideCard } from './PhaseLogicGuideCard';
+
+export const AnalysisView: React.FC<{ project: Project; onUpdateProject: (project: Project) => void; }> = ({ project, onUpdateProject }) => {
+    const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+    const handleAnalyzeAndUpdateDashboard = useCallback(async () => {
+        setIsAnalyzing(true);
+        try {
+            const [lifecyclePlan, shiftLeft, testPyramid] = await Promise.all([
+                generateProjectLifecyclePlan(project.name, project.description, project.tasks),
+                generateShiftLeftAnalysis(project.name, project.description, project.tasks),
+                generateTestPyramidAnalysis(project.name, project.description, project.tasks)
+            ]);
+    
+            const updatedPhases = project.phases.map(phase => ({
+                ...phase, 
+                summary: lifecyclePlan[phase.name]?.summary || phase.summary,
+                testTypes: lifecyclePlan[phase.name]?.testTypes || phase.testTypes
+            }));
+    
+            const updatedProject: Project = {
+                ...project,
+                phases: updatedPhases,
+                shiftLeftAnalysis: shiftLeft,
+                testPyramidAnalysis: testPyramid,
+            };
+    
+            onUpdateProject(updatedProject);
+    
+        } catch (error) {
+            console.error("Failed to analyze dashboard", error);
+            alert("Falha ao analisar o dashboard.");
+        } finally {
+            setIsAnalyzing(false);
+        }
+    }, [project, onUpdateProject]);
+
+    return (
+        <div>
+            <div className="bg-gray-800 rounded-lg p-4 border border-gray-700 mb-8 flex justify-between items-center">
+                <p className="text-gray-300">Gere e atualize todas as análises estratégicas para o seu projeto com um único clique.</p>
+                 <button onClick={handleAnalyzeAndUpdateDashboard} disabled={isAnalyzing} className="px-4 py-2 bg-teal-600 text-white rounded-md hover:bg-teal-500 disabled:bg-gray-600 flex items-center justify-center gap-2 min-w-[240px]">
+                    {isAnalyzing ? <Spinner small /> : 'Analisar Projeto com IA'}
+                </button>
+            </div>
+            {project.phases && <ProjectLifecycleCard project={project} />}
+            <ShiftLeftCard project={project} />
+            <TestPyramidCard project={project} />
+            <PhaseLogicGuideCard />
+        </div>
+    );
+};

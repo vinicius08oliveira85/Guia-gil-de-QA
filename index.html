@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-agpl" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>QA Agile Guide</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+            },
+            colors: {
+              'gray-900': '#111827',
+              'gray-800': '#1F2937',
+              'gray-700': '#374151',
+              'gray-600': '#4B5563',
+              'gray-500': '#6B7280',
+              'gray-400': '#9CA3AF',
+              'gray-300': '#D1D5DB',
+              'teal-500': '#14B8A6',
+              'teal-600': '#0D9488',
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      .tooltip-container {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        cursor: help;
+      }
+
+      .tooltip-text {
+        visibility: hidden;
+        width: 250px;
+        background-color: #1F2937; /* gray-800 */
+        color: #D1D5DB; /* gray-300 */
+        text-align: left;
+        border-radius: 6px;
+        padding: 8px;
+        position: absolute;
+        z-index: 10;
+        bottom: 125%;
+        left: 50%;
+        margin-left: -125px; /* Half of width */
+        opacity: 0;
+        transition: opacity 0.3s;
+        border: 1px solid #374151; /* gray-700 */
+        font-size: 0.875rem; /* text-sm */
+        line-height: 1.25rem;
+        pointer-events: none;
+      }
+      
+      .tooltip-container:hover .tooltip-text {
+        visibility: visible;
+        opacity: 1;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.29.1",
+    "marked": "https://aistudiocdn.com/marked@^17.0.0"
+  }
+}
+</script>
+</head>
+  <body class="bg-gray-900 text-gray-300">
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
