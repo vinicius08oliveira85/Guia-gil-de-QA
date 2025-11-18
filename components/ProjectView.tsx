@@ -11,6 +11,7 @@ import { TimelineView } from './timeline/TimelineView';
 import { PrintableReport } from './PrintableReport';
 import { ExportMenu } from './common/ExportMenu';
 import { Modal } from './common/Modal';
+import { LearningPathView } from './learning/LearningPathView';
 import { DependencyGraph } from './common/DependencyGraph';
 import { BurndownChart } from './common/BurndownChart';
 import { ProjectComparison } from './common/ProjectComparison';
@@ -72,6 +73,7 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
         { id: 'timeline', label: 'Timeline' },
         { id: 'analysis', label: 'Análise IA' },
         { id: 'documents', label: 'Documentos' },
+        { id: 'learning', label: '🎓 Aprender QA' },
         { id: 'roadmap', label: 'Roadmap' },
         { id: 'glossary', label: 'Glossário' },
     ];
@@ -270,6 +272,7 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                     )}
                     {activeTab === 'tasks' && <TasksView project={project} onUpdateProject={onUpdateProject} />}
                     {activeTab === 'documents' && <DocumentsView project={project} onUpdateProject={onUpdateProject} />}
+                    {activeTab === 'learning' && <LearningPathView />}
                     {activeTab === 'roadmap' && <RoadmapView />}
                     {activeTab === 'glossary' && <GlossaryView />}
                 </div>

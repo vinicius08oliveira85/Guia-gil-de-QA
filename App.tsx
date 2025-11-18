@@ -16,6 +16,7 @@ import { KeyboardShortcutsHelp } from './components/common/KeyboardShortcutsHelp
 import { AdvancedSearch } from './components/common/AdvancedSearch';
 import { ProjectComparison } from './components/common/ProjectComparison';
 import { JiraIntegration } from './components/jira/JiraIntegration';
+import { LearningPathView } from './components/learning/LearningPathView';
 import { PHASE_NAMES } from './utils/constants';
 import { createProjectFromTemplate } from './utils/projectTemplates';
 import { addAuditLog } from './utils/auditLog';
@@ -258,6 +259,9 @@ const App: React.FC = () => {
                                 onAdvancedSearchClick={() => setShowAdvancedSearch(true)}
                                 onComparisonClick={() => setShowProjectComparison(true)}
                             />
+                            <div className="mt-8">
+                                <LearningPathView />
+                            </div>
                         </div>
                     )}
                 </main>
