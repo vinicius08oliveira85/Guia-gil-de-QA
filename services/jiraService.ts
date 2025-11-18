@@ -36,14 +36,8 @@ export interface JiraIssue {
             key: string;
         };
         subtasks?: Array<{ key: string }>;
-        attachment?: Array<{
-            id: string;
-            filename: string;
-            size: number;
-            content: string;
-            mimeType: string;
-            created: string;
-        }>;
+    };
+    renderedFields?: {
         comment?: {
             comments: Array<{
                 id: string;
@@ -134,7 +128,7 @@ export const getJiraIssues = async (
     const jql = `project = ${projectKey} ORDER BY created DESC`;
     const response = await jiraApiCall<{ issues: JiraIssue[] }>(
         config,
-        `search?jql=${encodeURIComponent(jql)}&maxResults=${maxResults}&expand=renderedFields`
+        `search?jql=${encodeURIComponent(jql)}&maxResults=${maxResults}&expand=renderedFields&fields=summary,description,issuetype,status,priority,assignee,reporter,created,updated,resolutiondate,labels,parent,subtasks`
     );
     return response.issues || [];
 };
