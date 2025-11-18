@@ -92,7 +92,8 @@ export const SearchBar: React.FC<SearchBarProps> = ({
               onSearchChange('');
               setIsOpen(false);
             }}
-            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-text-secondary hover:text-text-primary"
+            className="absolute right-3 top-1/2 transform -translate-y-1/2 min-h-[44px] min-w-[44px] flex items-center justify-center text-text-secondary hover:text-text-primary active:scale-95 active:opacity-80"
+            aria-label="Limpar busca"
           >
             ✕
           </button>

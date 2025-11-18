@@ -7,7 +7,7 @@ export const Header = React.memo(() => {
     const { theme, toggleTheme } = useTheme();
     
     return (
-        <header className="mica p-3 sm:p-4 sticky top-0 z-20 shadow-lg">
+        <header className="mica p-3 sm:p-4 sticky top-0 z-20 shadow-lg" style={{ paddingTop: 'max(0.75rem, env(safe-area-inset-top))' }}>
             <div className="container mx-auto flex items-center justify-between">
                 <div className="flex items-center gap-3">
                     <div className="bg-accent p-2 rounded-lg shadow-md">
@@ -19,8 +19,9 @@ export const Header = React.memo(() => {
                     <NotificationBell />
                     <button
                         onClick={toggleTheme}
-                        className="p-2 text-text-secondary hover:text-text-primary transition-colors rounded-md hover:bg-surface-hover"
+                        className="min-h-[44px] min-w-[44px] p-2 text-text-secondary hover:text-text-primary transition-colors rounded-md hover:bg-surface-hover active:scale-95 active:opacity-80"
                         title={`Tema: ${theme === 'dark' ? 'Escuro' : theme === 'light' ? 'Claro' : 'Automático'}`}
+                        aria-label="Alternar tema"
                     >
                         {theme === 'dark' ? '🌙' : theme === 'light' ? '☀️' : '💻'}
                     </button>

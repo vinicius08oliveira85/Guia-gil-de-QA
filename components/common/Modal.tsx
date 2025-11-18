@@ -34,16 +34,20 @@ export const Modal: React.FC<ModalProps> = ({
             onClick={onClose}
         >
             <div 
-                className={`mica rounded-xl shadow-2xl w-full ${sizeClasses[size]} flex flex-col overflow-hidden animate-fade-in max-h-[${maxHeight}]`}
+                className={`mica rounded-xl shadow-2xl w-full ${sizeClasses[size]} flex flex-col overflow-hidden animate-fade-in`}
                 onClick={(e) => e.stopPropagation()}
-                style={{ maxHeight }}
+                style={{ 
+                    maxHeight: `min(${maxHeight}, calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 2rem))`,
+                    marginTop: 'max(1rem, env(safe-area-inset-top))',
+                    marginBottom: 'max(1rem, env(safe-area-inset-bottom))'
+                }}
             >
                 {/* Title Bar - Fixed */}
                 <div className="flex justify-between items-center p-4 bg-white/5 border-b border-surface-border flex-shrink-0">
                     <h2 className="text-lg font-semibold text-text-primary pr-4 truncate">{title}</h2>
                     <button 
                         onClick={onClose} 
-                        className="w-8 h-8 flex justify-center items-center rounded-md text-text-secondary hover:bg-red-500 hover:text-white transition-colors flex-shrink-0"
+                        className="min-h-[44px] min-w-[44px] flex justify-center items-center rounded-md text-text-secondary hover:bg-red-500 hover:text-white transition-colors flex-shrink-0 active:scale-95 active:opacity-80"
                         aria-label="Fechar"
                     >
                         &times;

@@ -60,7 +60,7 @@ export const NotificationBell: React.FC<{ onClick?: () => void }> = ({ onClick }
           setIsOpen(!isOpen);
           onClick?.();
         }}
-        className="relative p-2 text-text-secondary hover:text-text-primary transition-colors"
+        className="relative min-h-[44px] min-w-[44px] p-2 text-text-secondary hover:text-text-primary transition-colors active:scale-95 active:opacity-80"
         aria-label="Notificações"
       >
         <span className="text-2xl">🔔</span>

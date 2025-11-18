@@ -160,10 +160,10 @@ export const ProjectsDashboard: React.FC<{
                     {projects.map(p => (
                         <div key={p.id} onClick={() => onSelectProject(p.id)} className="group mica rounded-lg p-6 cursor-pointer transition-all duration-300 hover:border-accent/70 hover:shadow-accent/20 hover:shadow-2xl relative">
                             <h3 className="text-xl font-bold text-text-primary pr-8">{p.name}</h3>
-                            <p className="text-text-secondary mt-2 h-20 overflow-hidden text-ellipsis">{p.description}</p>
+                            <p className="text-text-secondary mt-2 min-h-[5rem] line-clamp-3 overflow-hidden text-ellipsis">{p.description}</p>
                              <button 
                                 onClick={(e) => openDeleteModal(p, e)} 
-                                className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-surface-hover/50 text-text-secondary opacity-0 group-hover:opacity-100 hover:bg-red-500 hover:text-white transition-all"
+                                className="absolute top-4 right-4 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full bg-surface-hover/50 text-text-secondary opacity-0 group-hover:opacity-100 hover:bg-red-500 hover:text-white transition-all active:scale-95 active:opacity-80"
                                 aria-label={`Excluir projeto ${p.name}`}
                             >
                                 <TrashIcon />

@@ -126,7 +126,7 @@ export const JiraTaskItem: React.FC<{
     
     const indentationStyle = { paddingLeft: `${level * 1.5}rem` };
 
-    const iconButtonClass = "w-8 h-8 flex items-center justify-center rounded-full hover:bg-surface-hover hover:text-text-primary transition-colors";
+    const iconButtonClass = "min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full hover:bg-surface-hover hover:text-text-primary transition-colors active:scale-95 active:opacity-80";
 
     return (
         <div className="bg-black/10">

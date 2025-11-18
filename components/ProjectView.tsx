@@ -149,6 +149,10 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                                     <div 
                                         className="absolute top-full right-0 mt-2 w-48 mica rounded-lg shadow-lg z-10"
                                         onMouseLeave={() => setIsMoreMenuOpen(false)}
+                                        onTouchStart={(e) => {
+                                            // Prevenir fechamento imediato em touch devices
+                                            e.stopPropagation();
+                                        }}
                                     >
                                         {moreTabs.map(tab => (
                                             <button
