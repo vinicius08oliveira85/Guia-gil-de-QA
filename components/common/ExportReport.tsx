@@ -107,7 +107,35 @@ export const ExportReport: React.FC<ExportReportProps> = ({ project, onClose }) 
         );
       }
 
-      await exportProject(data, format, `${project.name}_report_${formatDate(new Date()).replace(/\//g, '-')}`);
+      const fileName = `${project.name}_report_${formatDate(new Date()).replace(/\//g, '-')}`;
+      
+      if (format === 'json') {
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${fileName}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+      } else if (format === 'csv') {
+        const csv = convertToCSV(data);
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${fileName}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+      } else {
+        const markdown = convertToMarkdown(data, project);
+        const blob = new Blob([markdown], { type: 'text/markdown' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${fileName}.md`;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
       handleSuccess('Relatório exportado com sucesso!');
       onClose();
     } catch (error) {
