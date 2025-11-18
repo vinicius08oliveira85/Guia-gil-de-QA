@@ -17,50 +17,48 @@ export default async function handler(
     return;
   }
 
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 segundos
+
   try {
     // Criar credenciais Basic Auth
     const credentials = Buffer.from(`${email}:${apiToken}`).toString('base64');
     const jiraUrl = `${url.replace(/\/$/, '')}/rest/api/3/${endpoint}`;
 
     // Fazer requisição ao Jira com timeout de 60 segundos
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 segundos
+    const response = await fetch(jiraUrl, {
+      method,
+      headers: {
+        'Authorization': `Basic ${credentials}`,
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: body ? JSON.stringify(body) : undefined,
+      signal: controller.signal,
+    });
 
-    try {
-      const response = await fetch(jiraUrl, {
-        method,
-        headers: {
-          'Authorization': `Basic ${credentials}`,
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        },
-        body: body ? JSON.stringify(body) : undefined,
-        signal: controller.signal,
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      res.status(response.status).json({ 
+        error: `Jira API Error (${response.status}): ${errorText}` 
       });
-
-      clearTimeout(timeoutId);
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        res.status(response.status).json({ 
-          error: `Jira API Error (${response.status}): ${errorText}` 
-        });
-        return;
-      }
-
-      const data = await response.json();
-      res.status(200).json(data);
-    } catch (fetchError) {
-      clearTimeout(timeoutId);
-      if (fetchError instanceof Error && fetchError.name === 'AbortError') {
-        res.status(504).json({ 
-          error: 'Timeout: A requisição ao Jira demorou mais de 60 segundos' 
-        });
-        return;
-      }
-      throw fetchError;
+      return;
     }
+
+    const data = await response.json();
+    res.status(200).json(data);
   } catch (error) {
+    clearTimeout(timeoutId);
+    
+    if (error instanceof Error && error.name === 'AbortError') {
+      res.status(504).json({ 
+        error: 'Timeout: A requisição ao Jira demorou mais de 60 segundos' 
+      });
+      return;
+    }
+    
     console.error('Jira proxy error:', error);
     res.status(500).json({ 
       error: error instanceof Error ? error.message : 'Internal server error' 
