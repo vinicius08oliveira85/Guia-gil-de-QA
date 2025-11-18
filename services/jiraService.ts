@@ -214,7 +214,8 @@ export const getJiraIssues = async (
             maxResults: number;
         }>(
             config,
-            `search/jql?jql=${encodeURIComponent(jql)}&startAt=${startAt}&maxResults=${pageSize}&expand=renderedFields&fields=summary,description,issuetype,status,priority,assignee,reporter,created,updated,resolutiondate,labels,parent,subtasks`
+            `search/jql?jql=${encodeURIComponent(jql)}&startAt=${startAt}&maxResults=${pageSize}&expand=renderedFields&fields=summary,description,issuetype,status,priority,assignee,reporter,created,updated,resolutiondate,labels,parent,subtasks`,
+            { timeout: 60000 } // 60 segundos para cada página
         );
         
         const totalAvailable = response.total || 0;
