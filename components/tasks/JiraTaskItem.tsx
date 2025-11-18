@@ -285,6 +285,62 @@ export const JiraTaskItem: React.FC<{
                                 </div>
                             )}
 
+                            {/* Estimativas */}
+                            {project && onUpdateProject && (
+                                <div className="mt-6 pt-6 border-t border-surface-border">
+                                    <div className="flex items-center justify-between mb-3">
+                                        <h3 className="text-lg font-semibold text-text-primary">Estimativas</h3>
+                                        <button
+                                            onClick={() => setShowEstimation(!showEstimation)}
+                                            className="text-sm text-accent hover:text-accent-light"
+                                        >
+                                            {showEstimation ? 'Ocultar' : task.estimatedHours ? 'Editar' : 'Adicionar'}
+                                        </button>
+                                    </div>
+                                    {showEstimation && (
+                                        <EstimationInput
+                                            task={task}
+                                            onSave={(estimatedHours, actualHours) => {
+                                                const updatedTasks = project.tasks.map(t =>
+                                                    t.id === task.id
+                                                        ? { ...t, estimatedHours, actualHours }
+                                                        : t
+                                                );
+                                                onUpdateProject({ ...project, tasks: updatedTasks });
+                                                setShowEstimation(false);
+                                            }}
+                                            onCancel={() => setShowEstimation(false)}
+                                        />
+                                    )}
+                                    {!showEstimation && task.estimatedHours && (
+                                        <div className="p-3 bg-surface border border-surface-border rounded-lg">
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-text-secondary">Estimado:</span>
+                                                <span className="font-semibold text-text-primary">{task.estimatedHours}h</span>
+                                            </div>
+                                            {task.actualHours && (
+                                                <>
+                                                    <div className="flex items-center justify-between mt-2">
+                                                        <span className="text-text-secondary">Real:</span>
+                                                        <span className={`font-semibold ${
+                                                            task.actualHours <= task.estimatedHours ? 'text-green-400' : 'text-orange-400'
+                                                        }`}>
+                                                            {task.actualHours}h
+                                                        </span>
+                                                    </div>
+                                                    <div className="mt-2 text-xs text-text-secondary">
+                                                        {task.actualHours <= task.estimatedHours
+                                                            ? `✅ Dentro do estimado (${task.estimatedHours - task.actualHours}h restantes)`
+                                                            : `⚠️ Acima do estimado (+${task.actualHours - task.estimatedHours}h)`
+                                                        }
+                                                    </div>
+                                                </>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
                             {/* Checklist */}
                             {task.checklist && task.checklist.length > 0 && project && onUpdateProject && (
                                 <div className="mt-6 pt-6 border-t border-surface-border">
