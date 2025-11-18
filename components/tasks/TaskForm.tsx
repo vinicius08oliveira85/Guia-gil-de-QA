@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { JiraTask, JiraTaskType, BugSeverity, TeamRole, TaskPriority } from '../../types';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import { TagInput } from '../common/TagInput';
+import { RichTextEditor } from '../common/RichTextEditor';
 
 export const TaskForm: React.FC<{
     onSave: (task: Omit<JiraTask, 'testCases' | 'status' | 'testStrategy' | 'bddScenarios' | 'createdAt' | 'completedAt'>) => void;
@@ -112,8 +113,12 @@ export const TaskForm: React.FC<{
                 </div>
             </div>
             <div>
-                <label htmlFor="description" className="block text-sm font-medium text-text-secondary mb-1">Descrição</label>
-                <textarea id="description" value={taskData.description} onChange={(e) => setTaskData({ ...taskData, description: e.target.value })} rows={4}></textarea>
+                <RichTextEditor
+                    value={taskData.description}
+                    onChange={(value) => setTaskData({ ...taskData, description: value })}
+                    placeholder="Digite a descrição da tarefa..."
+                    taskId={taskData.id || undefined}
+                />
             </div>
             <div>
                 <label className="block text-sm font-medium text-text-secondary mb-1">Tags</label>

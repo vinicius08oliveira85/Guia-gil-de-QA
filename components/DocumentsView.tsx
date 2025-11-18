@@ -12,6 +12,7 @@ import { Badge } from './common/Badge';
 import { EmptyState } from './common/EmptyState';
 import { Tooltip } from './common/Tooltip';
 import { CopyButton } from './common/CopyButton';
+import { createDocumentFromFile, convertDocumentFileToProjectDocument, formatFileSize, getFileIcon, canPreview } from '../utils/documentService';
 
 interface DocumentWithMetadata extends ProjectDocument {
     uploadedAt?: string;
@@ -129,43 +130,33 @@ export const DocumentsView: React.FC<{ project: Project; onUpdateProject: (proje
         return [...new Set(tags)];
     }
 
-    const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (!file) return;
 
-        // Validar tipo de arquivo
-        if (!ALLOWED_FILE_TYPES.includes(file.type) && !file.name.endsWith('.txt') && !file.name.endsWith('.md')) {
-            handleWarning('Por favor, carregue um arquivo .txt ou .md');
+        // Validar tamanho (aumentado para 50MB)
+        const maxSize = 50 * 1024 * 1024; // 50MB
+        if (file.size > maxSize) {
+            handleWarning(`Arquivo muito grande. Tamanho máximo: ${maxSize / 1024 / 1024}MB`);
             event.target.value = '';
             return;
         }
 
-        // Validar tamanho
-        if (file.size > MAX_FILE_SIZE) {
-            handleWarning(`Arquivo muito grande. Tamanho máximo: ${MAX_FILE_SIZE / 1024 / 1024}MB`);
-            event.target.value = '';
-            return;
-        }
-
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const content = e.target?.result as string;
-            const newDocument: ProjectDocument = { 
-                name: file.name, 
-                content,
-                analysis: undefined
-            };
-                onUpdateProject({
-                    ...project,
-                    documents: [...project.documents, newDocument]
-                });
+        try {
+            // Criar documento do arquivo
+            const docFile = await createDocumentFromFile(file);
+            const newDocument = convertDocumentFileToProjectDocument(docFile);
+            
+            onUpdateProject({
+                ...project,
+                documents: [...project.documents, newDocument]
+            });
             handleSuccess(`Documento "${file.name}" carregado com sucesso!`);
-        };
-        reader.onerror = () => {
-            handleError(new Error('Erro ao ler o arquivo'), 'Upload de documento');
-            };
-            reader.readAsText(file);
-        event.target.value = '';
+        } catch (error) {
+            handleError(error instanceof Error ? error : new Error('Erro ao processar arquivo'), 'Upload de documento');
+        } finally {
+            event.target.value = '';
+        }
     };
 
     const handleAnalyze = async (doc: ProjectDocument) => {
@@ -263,10 +254,15 @@ export const DocumentsView: React.FC<{ project: Project; onUpdateProject: (proje
                         >
                             {viewMode === 'grid' ? '📋 Lista' : '🔲 Grade'}
                         </button>
-                <label className="btn btn-primary cursor-pointer">
+                        <label className="btn btn-primary cursor-pointer">
                             📤 Carregar Documento
-                    <input type="file" accept=".txt,.md" onChange={handleFileUpload} className="hidden" />
-                </label>
+                            <input 
+                                type="file" 
+                                accept=".txt,.md,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar,.json,.csv,.xml,.jpg,.jpeg,.png,.gif,.webp,.svg" 
+                                onChange={handleFileUpload} 
+                                className="hidden" 
+                            />
+                        </label>
             </div>
                 </div>
 
@@ -359,7 +355,15 @@ export const DocumentsView: React.FC<{ project: Project; onUpdateProject: (proje
 
                                         <div className="text-xs text-text-secondary mb-3 space-y-1">
                                             <div>📏 {formatFileSize(doc.size || 0)}</div>
-                                            <div>📄 {doc.content.split('\n').length} linhas</div>
+                                            {doc.content && !doc.content.startsWith('data:') && (
+                                                <div>📄 {doc.content.split('\n').length} linhas</div>
+                                            )}
+                                            {doc.content && doc.content.startsWith('data:image/') && (
+                                                <div>🖼️ Imagem</div>
+                                            )}
+                                            {doc.content && doc.content.startsWith('data:application/') && (
+                                                <div>📎 Arquivo binário</div>
+                                            )}
                                             {doc.tags && doc.tags.length > 0 && (
                                                 <div className="flex flex-wrap gap-1 mt-2">
                                                     {doc.tags.slice(0, 3).map((tag, idx) => (
@@ -555,9 +559,36 @@ export const DocumentsView: React.FC<{ project: Project; onUpdateProject: (proje
                             )}
                         </div>
                         <div className="bg-surface-hover p-4 rounded-lg max-h-96 overflow-y-auto">
-                            <pre className="text-sm text-text-primary whitespace-pre-wrap font-mono">
-                                {selectedDoc.content}
-                            </pre>
+                            {selectedDoc.content.startsWith('data:image/') ? (
+                                <div className="space-y-4">
+                                    <img 
+                                        src={selectedDoc.content} 
+                                        alt={selectedDoc.name}
+                                        className="max-w-full h-auto rounded-lg border border-surface-border"
+                                    />
+                                    <div className="text-sm text-text-secondary">
+                                        <p><strong>Nome:</strong> {selectedDoc.name}</p>
+                                        <p><strong>Tamanho:</strong> {formatFileSize(selectedDoc.size || 0)}</p>
+                                        <p><strong>Tipo:</strong> {selectedDoc.category || 'Não categorizado'}</p>
+                                    </div>
+                                </div>
+                            ) : selectedDoc.content.startsWith('data:application/pdf') ? (
+                                <div className="space-y-4">
+                                    <iframe 
+                                        src={selectedDoc.content} 
+                                        className="w-full h-96 rounded-lg border border-surface-border"
+                                        title={selectedDoc.name}
+                                    />
+                                    <div className="text-sm text-text-secondary">
+                                        <p><strong>Nome:</strong> {selectedDoc.name}</p>
+                                        <p><strong>Tamanho:</strong> {formatFileSize(selectedDoc.size || 0)}</p>
+                                    </div>
+                                </div>
+                            ) : (
+                                <pre className="text-sm text-text-primary whitespace-pre-wrap font-mono">
+                                    {selectedDoc.content}
+                                </pre>
+                            )}
                         </div>
                         {selectedDoc.analysis && (
                             <div>
