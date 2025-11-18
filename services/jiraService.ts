@@ -429,7 +429,15 @@ export const syncJiraProject = async (
         const isBug = taskType === 'Bug';
 
         // Converter descrição do formato ADF para texto
-        const description = parseJiraDescription(issue.fields?.description);
+        // Tentar também renderedFields.description se disponível (formato HTML renderizado)
+        let description = '';
+        if (issue.renderedFields?.description) {
+            // Se temos descrição renderizada (HTML), usar ela
+            description = parseJiraDescription(issue.renderedFields.description);
+        } else if (issue.fields?.description) {
+            // Caso contrário, usar a descrição raw (ADF)
+            description = parseJiraDescription(issue.fields.description);
+        }
         
         const task: JiraTask = {
             id: issue.key || `jira-${Date.now()}-${Math.random()}`,
