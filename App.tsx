@@ -15,6 +15,7 @@ import { useKeyboardShortcuts, SHORTCUTS } from './hooks/useKeyboardShortcuts';
 import { KeyboardShortcutsHelp } from './components/common/KeyboardShortcutsHelp';
 import { AdvancedSearch } from './components/common/AdvancedSearch';
 import { ProjectComparison } from './components/common/ProjectComparison';
+import { JiraIntegration } from './components/jira/JiraIntegration';
 import { PHASE_NAMES } from './utils/constants';
 import { createProjectFromTemplate } from './utils/projectTemplates';
 import { addAuditLog } from './utils/auditLog';
