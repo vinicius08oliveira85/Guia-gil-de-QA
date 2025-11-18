@@ -225,6 +225,74 @@ export const JiraTaskItem: React.FC<{
                                 </div>
                             )}
 
+                            {/* Dependências */}
+                            {project && onUpdateProject && (
+                                <div className="mt-6 pt-6 border-t border-surface-border">
+                                    <div className="flex items-center justify-between mb-3">
+                                        <h3 className="text-lg font-semibold text-text-primary">Dependências</h3>
+                                        <button
+                                            onClick={() => setShowDependencies(!showDependencies)}
+                                            className="text-sm text-accent hover:text-accent-light"
+                                        >
+                                            {showDependencies ? 'Ocultar' : 'Gerenciar'}
+                                        </button>
+                                    </div>
+                                    {showDependencies && (
+                                        <DependencyManager
+                                            task={task}
+                                            project={project}
+                                            onUpdateProject={onUpdateProject}
+                                            onClose={() => setShowDependencies(false)}
+                                        />
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Anexos */}
+                            {project && onUpdateProject && (
+                                <div className="mt-6 pt-6 border-t border-surface-border">
+                                    <div className="flex items-center justify-between mb-3">
+                                        <h3 className="text-lg font-semibold text-text-primary">Anexos</h3>
+                                        <button
+                                            onClick={() => setShowAttachments(!showAttachments)}
+                                            className="text-sm text-accent hover:text-accent-light"
+                                        >
+                                            {showAttachments ? 'Ocultar' : 'Gerenciar'}
+                                        </button>
+                                    </div>
+                                    {showAttachments && (
+                                        <AttachmentManager
+                                            task={task}
+                                            project={project}
+                                            onUpdateProject={onUpdateProject}
+                                            onClose={() => setShowAttachments(false)}
+                                        />
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Checklist */}
+                            {task.checklist && task.checklist.length > 0 && project && onUpdateProject && (
+                                <div className="mt-6 pt-6 border-t border-surface-border">
+                                    <h3 className="text-lg font-semibold text-text-primary mb-3">Checklist</h3>
+                                    <ChecklistView
+                                        checklist={task.checklist}
+                                        onToggleItem={(itemId) => {
+                                            const updatedChecklist = updateChecklistItem(
+                                                task.checklist!,
+                                                itemId,
+                                                { checked: !task.checklist!.find(i => i.id === itemId)?.checked }
+                                            );
+                                            const updatedTasks = project.tasks.map(t =>
+                                                t.id === task.id ? { ...t, checklist: updatedChecklist } : t
+                                            );
+                                            onUpdateProject({ ...project, tasks: updatedTasks });
+                                        }}
+                                    />
+                                </div>
+                            )}
+
+                            {/* Comentários */}
                             {onAddComment && (
                                 <div className="mt-6 pt-6 border-t border-surface-border">
                                     <CommentSection
