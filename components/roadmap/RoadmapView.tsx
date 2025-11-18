@@ -355,7 +355,7 @@ export const RoadmapView: React.FC = () => {
             <div className="mt-8 p-4 bg-surface border border-surface-border rounded-lg">
                 <h3 className="text-lg font-semibold text-text-primary mb-4">📊 Estatísticas por Categoria</h3>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {Object.entries(stats.byCategory).map(([category, count]) => (
+                    {stats?.byCategory && Object.entries(stats.byCategory).map(([category, count]) => (
                         <div key={category} className="text-center">
                             <div className="text-2xl font-bold text-accent">{count}</div>
                             <div className="text-sm text-text-secondary">{getCategoryLabel(category as RoadmapItem['category'])}</div>

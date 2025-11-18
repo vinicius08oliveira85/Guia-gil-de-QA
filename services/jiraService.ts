@@ -128,8 +128,8 @@ export const testJiraConnection = async (config: JiraConfig): Promise<boolean> =
 };
 
 export const getJiraProjects = async (config: JiraConfig): Promise<JiraProject[]> => {
-    const response = await jiraApiCall<{ values: JiraProject[] }>(config, 'project?maxResults=100');
-    return response.values || [];
+    const response = await jiraApiCall<{ values?: JiraProject[] }>(config, 'project?maxResults=100');
+    return Array.isArray(response.values) ? response.values : [];
 };
 
 export const getJiraIssues = async (

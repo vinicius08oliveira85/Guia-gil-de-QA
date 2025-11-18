@@ -87,7 +87,7 @@ export const TaskTimeline: React.FC<TaskTimelineProps> = ({ project, taskId }) =
                     
                     {event.changes && Object.keys(event.changes).length > 0 && (
                       <div className="text-xs text-text-secondary space-y-1">
-                        {Object.entries(event.changes).slice(0, 3).map(([field, change]: [string, any]) => (
+                        {event.changes && Object.entries(event.changes).slice(0, 3).map(([field, change]: [string, any]) => (
                           <div key={field}>
                             <span className="font-semibold">{field}:</span>
                             <span className="text-red-400 line-through ml-1">{change.old}</span>

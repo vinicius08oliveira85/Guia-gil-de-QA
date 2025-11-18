@@ -91,7 +91,7 @@ export const ChangeHistory: React.FC<ChangeHistoryProps> = ({
                 <div className="mt-3 pt-3 border-t border-surface-border">
                   <div className="text-sm text-text-secondary mb-2">Mudanças:</div>
                   <div className="space-y-1">
-                    {Object.entries(log.changes).map(([field, change]: [string, any]) => (
+                    {log.changes && Object.entries(log.changes).map(([field, change]: [string, any]) => (
                       <div key={field} className="text-sm">
                         <span className="text-text-primary font-semibold">{field}:</span>
                         <span className="text-red-400 line-through ml-2">{change.old}</span>

@@ -240,9 +240,13 @@ export const ShiftLeftAnalysis: React.FC<{ project: Project }> = ({ project }) =
 
     const phaseStats = useMemo(() => {
         const stats: Record<string, number> = {};
-        shiftLeftActivities.forEach(activity => {
-            stats[activity.phase] = (stats[activity.phase] || 0) + 1;
-        });
+        if (Array.isArray(shiftLeftActivities)) {
+            shiftLeftActivities.forEach(activity => {
+                if (activity?.phase) {
+                    stats[activity.phase] = (stats[activity.phase] || 0) + 1;
+                }
+            });
+        }
         return stats;
     }, []);
 
@@ -276,14 +280,16 @@ export const ShiftLeftAnalysis: React.FC<{ project: Project }> = ({ project }) =
                 </p>
 
                 {/* Estatísticas */}
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
-                    {Object.entries(phaseStats).map(([phase, count]) => (
-                        <div key={phase} className="p-4 bg-surface border border-surface-border rounded-lg text-center">
-                            <div className="text-2xl font-bold text-accent">{count}</div>
-                            <div className="text-sm text-text-secondary">{getPhaseLabel(phase)}</div>
-                        </div>
-                    ))}
-                </div>
+                {phaseStats && Object.keys(phaseStats).length > 0 && (
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+                        {Object.entries(phaseStats).map(([phase, count]) => (
+                            <div key={phase} className="p-4 bg-surface border border-surface-border rounded-lg text-center">
+                                <div className="text-2xl font-bold text-accent">{count}</div>
+                                <div className="text-sm text-text-secondary">{getPhaseLabel(phase)}</div>
+                            </div>
+                        ))}
+                    </div>
+                )}
 
                 {/* Filtros */}
                 <div className="flex flex-wrap gap-2 mb-6">
