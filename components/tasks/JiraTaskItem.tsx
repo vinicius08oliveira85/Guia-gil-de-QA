@@ -1,11 +1,16 @@
 import React, { useState } from 'react';
-import { JiraTask, BddScenario, TestCaseDetailLevel, TeamRole } from '../../types';
+import { JiraTask, BddScenario, TestCaseDetailLevel, TeamRole, Project } from '../../types';
 import { Spinner } from '../common/Spinner';
 import { TaskTypeIcon, TaskStatusIcon, PlusIcon, EditIcon, TrashIcon, ChevronDownIcon, RefreshIcon } from '../common/Icons';
 import { BddScenarioForm, BddScenarioItem } from './BddScenario';
 import { TestCaseItem } from './TestCaseItem';
 import { TestStrategyCard } from './TestStrategyCard';
+import { CommentSection } from '../common/CommentSection';
+import { DependencyManager } from '../common/DependencyManager';
+import { AttachmentManager } from '../common/AttachmentManager';
+import { ChecklistView } from '../common/ChecklistView';
 import { getTagColor } from '../../utils/tagService';
+import { updateChecklistItem } from '../../utils/checklistService';
 
 export type TaskWithChildren = JiraTask & { children: TaskWithChildren[] };
 
