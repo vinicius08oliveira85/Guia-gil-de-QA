@@ -1,123 +1,211 @@
-
-import React from 'react';
-import { Card } from '../common/Card';
-
-const glossaryData = {
-    'Glossário de Termos de QA': [
-        { term: 'BDD (Behavior-Driven Development)', definition: 'Técnica de desenvolvimento ágil que incentiva a colaboração entre desenvolvedores, QAs e pessoas não-técnicas. Cenários são escritos em linguagem natural (Gherkin) antes do código.' },
-        { term: 'Bug Leakage', definition: 'Métrica que mede a quantidade de bugs que "escaparam" do processo de QA e foram encontrados em produção pelos usuários finais.' },
-        { term: 'CI/CD (Continuous Integration/Continuous Delivery)', definition: 'Prática de automatizar as fases de build, teste e deploy do software, permitindo entregas mais rápidas e seguras.' },
-        { term: 'Flaky Test', definition: 'Um teste automatizado que falha de forma intermitente sem uma mudança real no código, geralmente devido a problemas de concorrência, ambiente ou dependências externas.' },
-        { term: 'QA (Quality Assurance)', definition: 'Garantia da Qualidade. Processo focado em prevenir defeitos e garantir que o produto atenda aos padrões de qualidade e requisitos.' },
-        { term: 'QC (Quality Control)', definition: 'Controle de Qualidade. Processo focado em identificar e corrigir defeitos no produto final, através da execução de testes.' },
-        { term: 'Regression Testing', definition: 'Teste de Regressão. Tipo de teste que visa garantir que novas alterações no código não introduziram novos bugs em funcionalidades que já existiam.' },
-        { term: 'Shift Left Testing', definition: 'Abordagem que move as atividades de teste para o início do ciclo de vida de desenvolvimento (SDLC), em vez de esperar pelo final.' },
-        { term: 'Smoke Test', definition: 'Teste rápido e superficial para verificar se as funcionalidades mais críticas de uma nova versão do software estão funcionando, antes de prosseguir com testes mais aprofundados.' },
-        { term: 'UAT (User Acceptance Testing)', definition: 'Teste de Aceitação do Usuário. Fase final de teste onde os stakeholders ou clientes validam se o sistema atende às suas necessidades de negócio.' },
-    ],
-    'Lista de Boas Práticas': [
-        'Comece a testar o mais cedo possível ("Shift Left"). Envolva-se nas discussões de requisitos.',
-        'Casos de teste devem ser claros, concisos e independentes.',
-        'Automatize os testes de regressão para garantir a estabilidade do produto a longo prazo.',
-        'Use dados de teste realistas e variados, cobrindo cenários positivos e negativos.',
-        'Comunicação é fundamental: colabore de forma construtiva com desenvolvedores e POs.',
-        'Priorize os testes com base no risco e no impacto para o negócio.',
-        'Documente os bugs de forma clara e detalhada, com passos para reprodução inequívocos.',
-    ],
-    'O Que Nunca Deve Ser Feito por um QA': [
-        'Garantir que um software está "100% livre de bugs". O objetivo é mitigar riscos, não alcançar a perfeição.',
-        'Aprovar uma funcionalidade que não foi devidamente testada.',
-        'Reportar bugs de forma vaga ("Não funciona") ou acusatória.',
-        'Testar apenas o "caminho feliz" e ignorar casos de borda e cenários de erro.',
-        'Manter-se isolado. QA é um papel colaborativo, não um portão de pedágio no final do processo.',
-        'Ter medo de fazer perguntas. Questionar é uma das principais ferramentas do QA.',
-    ],
-    'Principais Erros de Iniciantes': [
-        'Focar apenas em encontrar bugs, em vez de focar em prevenir defeitos desde o início.',
-        'Não entender o negócio e o valor que a funcionalidade entrega ao usuário final.',
-        'Escrever casos de teste muito longos, complexos e difíceis de manter.',
-        'Não gerenciar seu tempo de forma eficaz, gastando muito tempo em testes de baixo impacto.',
-        'Falhar em comunicar os riscos de qualidade de forma clara para a equipe e stakeholders.',
-    ],
-    'Riscos Comuns em Projetos': [
-        'Requisitos ambíguos ou em constante mudança.',
-        'Prazos irreais que comprimem o tempo disponível para testes.',
-        'Comunicação deficiente entre as equipes (Dev, QA, Produto).',
-        'Ambiente de teste instável ou muito diferente do ambiente de produção.',
-        'Falta de uma estratégia de automação de testes clara.',
-        'Débito técnico acumulado que torna o sistema frágil e difícil de testar.',
-    ]
-};
-
-const Section: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
-    <Card className="mb-8">
-        <h3 className="text-2xl font-bold text-white mb-4">{title}</h3>
-        {children}
-    </Card>
-);
+import React, { useState, useMemo } from 'react';
+import { glossaryTerms, searchGlossaryTerms, getTermsByCategory, GlossaryTerm } from '../../utils/glossaryTerms';
 
 export const GlossaryView: React.FC = () => {
-    return (
-        <div>
-            <Section title="Glossário de Termos de QA">
-                <div className="space-y-4">
-                    {glossaryData['Glossário de Termos de QA'].map(item => (
-                        <div key={item.term}>
-                            <h4 className="font-bold text-teal-400">{item.term}</h4>
-                            <p className="text-gray-300 ml-2">{item.definition}</p>
-                        </div>
-                    ))}
-                </div>
-            </Section>
+    const [searchQuery, setSearchQuery] = useState('');
+    const [selectedCategory, setSelectedCategory] = useState<GlossaryTerm['category'] | 'Todos'>('Todos');
+    const [selectedTerm, setSelectedTerm] = useState<GlossaryTerm | null>(null);
 
-            <Section title="Listas Complementares">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    <div>
-                        <h4 className="text-lg font-bold text-teal-400 mb-3">Boas Práticas</h4>
-                        <ul className="space-y-2">
-                            {glossaryData['Lista de Boas Práticas'].map(item => (
-                                <li key={item} className="flex items-start text-gray-300">
-                                    <svg className="w-5 h-5 mr-2 mt-0.5 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                    <span>{item}</span>
-                                </li>
-                            ))}
-                        </ul>
+    const categories: GlossaryTerm['category'][] = ['Geral', 'Testes', 'Metodologias', 'Ferramentas', 'Métricas', 'Processos', 'Técnicas', 'Padrões'];
+
+    const filteredTerms = useMemo(() => {
+        let terms = glossaryTerms;
+
+        // Filtrar por categoria
+        if (selectedCategory !== 'Todos') {
+            terms = getTermsByCategory(selectedCategory);
+        }
+
+        // Filtrar por busca
+        if (searchQuery.trim()) {
+            terms = searchGlossaryTerms(searchQuery).filter(term =>
+                selectedCategory === 'Todos' || term.category === selectedCategory
+            );
+        }
+
+        return terms.sort((a, b) => a.term.localeCompare(b.term));
+    }, [searchQuery, selectedCategory]);
+
+    const getCategoryColor = (category: GlossaryTerm['category']): string => {
+        const colors: Record<GlossaryTerm['category'], string> = {
+            'Geral': 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+            'Testes': 'bg-green-500/20 text-green-400 border-green-500/30',
+            'Metodologias': 'bg-purple-500/20 text-purple-400 border-purple-500/30',
+            'Ferramentas': 'bg-orange-500/20 text-orange-400 border-orange-500/30',
+            'Métricas': 'bg-teal-500/20 text-teal-400 border-teal-500/30',
+            'Processos': 'bg-pink-500/20 text-pink-400 border-pink-500/30',
+            'Técnicas': 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
+            'Padrões': 'bg-red-500/20 text-red-400 border-red-500/30'
+        };
+        return colors[category] || 'bg-gray-500/20 text-gray-400 border-gray-500/30';
+    };
+
+    return (
+        <div className="container mx-auto p-4 sm:p-6 md:p-8">
+            <div className="mb-8">
+                <h1 className="text-3xl sm:text-4xl font-bold text-text-primary mb-4">📚 Glossário de Termos de QA</h1>
+                <p className="text-text-secondary mb-6">
+                    Explore mais de <strong className="text-accent">{glossaryTerms.length} termos</strong> relacionados a Quality Assurance, Testes de Software, Metodologias Ágeis e muito mais.
+                </p>
+
+                {/* Busca */}
+                <div className="mb-6">
+                    <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="🔍 Buscar termos..."
+                        className="w-full px-4 py-3 bg-surface border border-surface-border rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-accent"
+                    />
+                </div>
+
+                {/* Filtros por categoria */}
+                <div className="flex flex-wrap gap-2 mb-6">
+                    <button
+                        onClick={() => setSelectedCategory('Todos')}
+                        className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                            selectedCategory === 'Todos'
+                                ? 'bg-accent text-white'
+                                : 'bg-surface border border-surface-border text-text-secondary hover:bg-surface-hover'
+                        }`}
+                    >
+                        Todos ({glossaryTerms.length})
+                    </button>
+                    {categories.map(category => {
+                        const count = getTermsByCategory(category).length;
+                        return (
+                            <button
+                                key={category}
+                                onClick={() => setSelectedCategory(category)}
+                                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                                    selectedCategory === category
+                                        ? 'bg-accent text-white'
+                                        : 'bg-surface border border-surface-border text-text-secondary hover:bg-surface-hover'
+                                }`}
+                            >
+                                {category} ({count})
+                            </button>
+                        );
+                    })}
+                </div>
+            </div>
+
+            {/* Lista de termos */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {filteredTerms.length > 0 ? (
+                    filteredTerms.map((term, index) => (
+                        <div
+                            key={index}
+                            onClick={() => setSelectedTerm(term)}
+                            className="p-4 bg-surface border border-surface-border rounded-lg hover:border-accent cursor-pointer transition-all hover:shadow-lg"
+                        >
+                            <div className="flex items-start justify-between mb-2">
+                                <h3 className="text-lg font-semibold text-text-primary flex-1">{term.term}</h3>
+                                <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getCategoryColor(term.category)}`}>
+                                    {term.category}
+                                </span>
+                            </div>
+                            <p className="text-text-secondary text-sm line-clamp-2">{term.definition}</p>
+                            {term.relatedTerms && term.relatedTerms.length > 0 && (
+                                <div className="mt-2 flex flex-wrap gap-1">
+                                    {term.relatedTerms.slice(0, 3).map((related, idx) => (
+                                        <span key={idx} className="text-xs text-accent">#{related}</span>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    ))
+                ) : (
+                    <div className="col-span-2 text-center py-12">
+                        <div className="text-6xl mb-4">🔍</div>
+                        <h3 className="text-xl font-semibold text-text-primary mb-2">Nenhum termo encontrado</h3>
+                        <p className="text-text-secondary">Tente buscar com outras palavras ou selecione uma categoria diferente.</p>
                     </div>
-                     <div>
-                        <h4 className="text-lg font-bold text-teal-400 mb-3">O Que Nunca Deve Ser Feito</h4>
-                        <ul className="space-y-2">
-                            {glossaryData['O Que Nunca Deve Ser Feito por um QA'].map(item => (
-                                <li key={item} className="flex items-start text-gray-300">
-                                     <svg className="w-5 h-5 mr-2 mt-0.5 text-red-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                    <span>{item}</span>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-                     <div>
-                        <h4 className="text-lg font-bold text-teal-400 mb-3">Principais Erros de Iniciantes</h4>
-                        <ul className="space-y-2">
-                            {glossaryData['Principais Erros de Iniciantes'].map(item => (
-                                <li key={item} className="flex items-start text-gray-300">
-                                    <svg className="w-5 h-5 mr-2 mt-0.5 text-yellow-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                                    <span>{item}</span>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-                     <div>
-                        <h4 className="text-lg font-bold text-teal-400 mb-3">Riscos Comuns em Projetos</h4>
-                         <ul className="space-y-2">
-                            {glossaryData['Riscos Comuns em Projetos'].map(item => (
-                                <li key={item} className="flex items-start text-gray-300">
-                                    <svg className="w-5 h-5 mr-2 mt-0.5 text-orange-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                    <span>{item}</span>
-                                </li>
-                            ))}
-                        </ul>
+                )}
+            </div>
+
+            {/* Modal de detalhes */}
+            {selectedTerm && (
+                <div
+                    className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+                    onClick={() => setSelectedTerm(null)}
+                >
+                    <div
+                        className="bg-surface border border-surface-border rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-y-auto"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="p-6">
+                            <div className="flex items-start justify-between mb-4">
+                                <div className="flex-1">
+                                    <h2 className="text-2xl font-bold text-text-primary mb-2">{selectedTerm.term}</h2>
+                                    <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium border ${getCategoryColor(selectedTerm.category)}`}>
+                                        {selectedTerm.category}
+                                    </span>
+                                </div>
+                                <button
+                                    onClick={() => setSelectedTerm(null)}
+                                    className="text-text-secondary hover:text-text-primary text-2xl"
+                                >
+                                    ×
+                                </button>
+                            </div>
+
+                            <div className="mb-4">
+                                <h3 className="text-sm font-semibold text-text-secondary mb-2">Definição</h3>
+                                <p className="text-text-primary leading-relaxed">{selectedTerm.definition}</p>
+                            </div>
+
+                            {selectedTerm.relatedTerms && selectedTerm.relatedTerms.length > 0 && (
+                                <div>
+                                    <h3 className="text-sm font-semibold text-text-secondary mb-2">Termos Relacionados</h3>
+                                    <div className="flex flex-wrap gap-2">
+                                        {selectedTerm.relatedTerms.map((related, idx) => (
+                                            <span
+                                                key={idx}
+                                                className="px-3 py-1 bg-surface-hover border border-surface-border rounded-md text-sm text-accent hover:bg-accent/20 cursor-pointer transition-colors"
+                                                onClick={() => {
+                                                    const relatedTerm = glossaryTerms.find(t => 
+                                                        t.term.toLowerCase().includes(related.toLowerCase()) ||
+                                                        related.toLowerCase().includes(t.term.toLowerCase())
+                                                    );
+                                                    if (relatedTerm) setSelectedTerm(relatedTerm);
+                                                }}
+                                            >
+                                                {related}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            <div className="mt-6 pt-4 border-t border-surface-border">
+                                <button
+                                    onClick={() => setSelectedTerm(null)}
+                                    className="w-full btn btn-primary"
+                                >
+                                    Fechar
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </Section>
+            )}
+
+            {/* Estatísticas */}
+            <div className="mt-8 p-4 bg-surface border border-surface-border rounded-lg">
+                <h3 className="text-lg font-semibold text-text-primary mb-4">📊 Estatísticas do Glossário</h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {categories.map(category => {
+                        const count = getTermsByCategory(category).length;
+                        return (
+                            <div key={category} className="text-center">
+                                <div className="text-2xl font-bold text-accent">{count}</div>
+                                <div className="text-sm text-text-secondary">{category}</div>
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
         </div>
     );
 };
