@@ -48,17 +48,41 @@ function adfNodeToText(node: ADFNode): string {
 
 /**
  * Converte descrição do Jira para texto legível
- * Suporta string simples, objeto ADF, ou array de objetos ADF
+ * Suporta string simples, HTML renderizado, objeto ADF, ou array de objetos ADF
  */
 export function parseJiraDescription(description: any): string {
     if (!description) {
         return '';
     }
     
-    // Se já é uma string, retorna como está
+    // Se já é uma string
     if (typeof description === 'string') {
-        // Remove tags HTML se houver
-        return description.replace(/<[^>]*>/g, '').trim();
+        // Se contém HTML, remove tags mas preserva quebras de linha
+        if (description.includes('<')) {
+            // Converter quebras de linha HTML para quebras reais
+            let text = description
+                .replace(/<br\s*\/?>/gi, '\n')
+                .replace(/<\/p>/gi, '\n\n')
+                .replace(/<\/div>/gi, '\n')
+                .replace(/<li>/gi, '• ')
+                .replace(/<\/li>/gi, '\n')
+                .replace(/<[^>]*>/g, '') // Remove todas as outras tags
+                .replace(/&nbsp;/g, ' ')
+                .replace(/&amp;/g, '&')
+                .replace(/&lt;/g, '<')
+                .replace(/&gt;/g, '>')
+                .replace(/&quot;/g, '"')
+                .replace(/&#39;/g, "'")
+                .trim();
+            
+            // Limpar múltiplas quebras de linha consecutivas
+            text = text.replace(/\n{3,}/g, '\n\n');
+            
+            return text;
+        }
+        
+        // String simples, retorna como está
+        return description.trim();
     }
     
     // Se é um objeto ADF
@@ -82,11 +106,24 @@ export function parseJiraDescription(description: any): string {
         if (description.content) {
             return parseJiraDescription(description.content);
         }
+        
+        // Se tem propriedade 'html' ou 'text', usar ela
+        if (description.html) {
+            return parseJiraDescription(description.html);
+        }
+        if (description.text) {
+            return description.text;
+        }
     }
     
-    // Fallback: converte para string
+    // Fallback: converte para string (mas não mostra JSON completo)
     try {
-        return JSON.stringify(description);
+        const str = JSON.stringify(description);
+        // Se o JSON é muito grande ou parece ser um objeto complexo, retornar vazio
+        if (str.length > 1000 || (str.startsWith('{') && !str.includes('"text"'))) {
+            return '';
+        }
+        return str;
     } catch {
         return '';
     }

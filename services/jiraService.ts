@@ -202,6 +202,7 @@ export const getJiraIssues = async (
     
     // Implementar paginação para buscar todas as issues
     while (true) {
+        // Usar endpoint /search padrão ao invés de /search/jql para melhor compatibilidade
         const response = await jiraApiCall<{ 
             issues: JiraIssue[];
             total: number;
@@ -209,11 +210,19 @@ export const getJiraIssues = async (
             maxResults: number;
         }>(
             config,
-            `search/jql?jql=${encodeURIComponent(jql)}&startAt=${startAt}&maxResults=${pageSize}&expand=renderedFields&fields=summary,description,issuetype,status,priority,assignee,reporter,created,updated,resolutiondate,labels,parent,subtasks`
+            `search?jql=${encodeURIComponent(jql)}&startAt=${startAt}&maxResults=${pageSize}&expand=renderedFields&fields=summary,description,issuetype,status,priority,assignee,reporter,created,updated,resolutiondate,labels,parent,subtasks`
         );
         
+        console.log(`📦 Página ${Math.floor(startAt / pageSize) + 1}: Recebidas ${response.issues?.length || 0} issues de ${response.total || 0} total`);
+        
         const issues = response.issues || [];
+        if (issues.length === 0) {
+            console.log('⚠️ Nenhuma issue retornada nesta página. Parando paginação.');
+            break;
+        }
+        
         allIssues.push(...issues);
+        console.log(`✅ Total acumulado: ${allIssues.length} issues`);
         
         // Se não há mais issues ou já pegamos o máximo solicitado, para
         if (issues.length === 0 || allIssues.length >= maxResults || (response.startAt + issues.length) >= (response.total || 0)) {
