@@ -5,6 +5,47 @@ import { exportProject } from '../../utils/exportService';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import { formatDate } from '../../utils/dateUtils';
 
+const convertToCSV = (data: any): string => {
+  // Implementação básica de CSV
+  if (data.tasks && Array.isArray(data.tasks)) {
+    const headers = ['ID', 'Título', 'Tipo', 'Status', 'Prioridade'];
+    const rows = data.tasks.map((task: any) => [
+      task.id,
+      task.title,
+      task.type,
+      task.status,
+      task.priority
+    ]);
+    return [headers, ...rows].map(row => row.join(',')).join('\n');
+  }
+  return '';
+};
+
+const convertToMarkdown = (data: any, project: Project): string => {
+  let md = `# Relatório: ${project.name}\n\n`;
+  md += `**Data:** ${formatDate(new Date())}\n\n`;
+  
+  if (data.metrics) {
+    md += `## Métricas\n\n`;
+    md += `- Fase Atual: ${data.metrics.currentPhase}\n`;
+    md += `- Total de Tarefas: ${data.metrics.totalTasks}\n`;
+    md += `- Casos de Teste: ${data.metrics.totalTestCases}\n`;
+    md += `- Cobertura: ${data.metrics.testCoverage}%\n\n`;
+  }
+  
+  if (data.tasks) {
+    md += `## Tarefas\n\n`;
+    data.tasks.forEach((task: any) => {
+      md += `### ${task.id}: ${task.title}\n`;
+      md += `- Tipo: ${task.type}\n`;
+      md += `- Status: ${task.status}\n`;
+      md += `- Prioridade: ${task.priority}\n\n`;
+    });
+  }
+  
+  return md;
+};
+
 interface ExportReportProps {
   project: Project;
   onClose: () => void;
