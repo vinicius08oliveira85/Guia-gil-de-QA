@@ -361,25 +361,25 @@ export const syncJiraProject = async (
 
     jiraIssues.forEach(issue => {
         const existingIndex = updatedTasks.findIndex(t => t.id === issue.key);
-        const taskType = mapJiraTypeToTaskType(issue.fields.issuetype.name);
+        const taskType = mapJiraTypeToTaskType(issue.fields?.issuetype?.name);
         const isBug = taskType === 'Bug';
 
         const task: JiraTask = {
-            id: issue.key,
-            title: issue.fields.summary,
-            description: issue.fields.description || '',
-            status: mapJiraStatusToTaskStatus(issue.fields.status.name),
+            id: issue.key || `jira-${Date.now()}-${Math.random()}`,
+            title: issue.fields?.summary || 'Sem título',
+            description: issue.fields?.description || '',
+            status: mapJiraStatusToTaskStatus(issue.fields?.status?.name),
             type: taskType,
-            priority: mapJiraPriorityToTaskPriority(issue.fields.priority?.name),
-            createdAt: issue.fields.created,
-            completedAt: issue.fields.resolutiondate,
-            tags: issue.fields.labels || [],
+            priority: mapJiraPriorityToTaskPriority(issue.fields?.priority?.name),
+            createdAt: issue.fields?.created || new Date().toISOString(),
+            completedAt: issue.fields?.resolutiondate,
+            tags: issue.fields?.labels || [],
             testCases: existingIndex >= 0 ? updatedTasks[existingIndex].testCases : [],
             bddScenarios: existingIndex >= 0 ? updatedTasks[existingIndex].bddScenarios : [],
-            comments: issue.renderedFields?.comment?.comments.map(comment => ({
+            comments: issue.renderedFields?.comment?.comments?.map(comment => ({
                 id: comment.id,
-                author: comment.author.displayName,
-                content: comment.body,
+                author: comment.author?.displayName || 'Desconhecido',
+                content: comment.body || '',
                 createdAt: comment.created,
                 updatedAt: comment.updated,
             })) || [],
