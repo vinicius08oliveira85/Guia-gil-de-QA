@@ -357,7 +357,7 @@ export const RoadmapView: React.FC = () => {
                                     {selectedItem.tags.map((tag, idx) => (
                                         <span key={idx} className="px-2 py-1 bg-accent/20 text-accent rounded text-sm">
                                             #{tag}
-                                        </span>
+                        </span>
                                     ))}
                                 </div>
                             </div>
@@ -374,9 +374,9 @@ export const RoadmapView: React.FC = () => {
                         <div key={category} className="text-center">
                             <div className="text-2xl font-bold text-accent">{count}</div>
                             <div className="text-sm text-text-secondary">{getCategoryLabel(category as RoadmapItem['category'])}</div>
-                        </div>
-                    ))}
-                </div>
+                    </div>
+                ))}
+            </div>
             </div>
         </div>
     );

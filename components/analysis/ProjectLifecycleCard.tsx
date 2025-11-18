@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Project, PhaseName, PhaseStatus } from '../../types';
 import { Card } from '../common/Card';
 import { InfoIcon } from '../common/Icons';
+import { AnalysisModal } from './AnalysisModal';
 
 const phaseNamesInOrder: PhaseName[] = ['Request', 'Analysis', 'Design', 'Analysis and Code', 'Build', 'Test', 'Release', 'Deploy', 'Operate', 'Monitor'];
 
 export const ProjectLifecycleCard: React.FC<{ project: Project; }> = ({ project }) => {
+    const [selectedPhase, setSelectedPhase] = useState<PhaseName | null>(null);
     const phaseExplanations: Record<PhaseName, string> = {
         'Request': 'Solicitação da demanda pelo time de atendimento ou produto.',
         'Analysis': 'Análise do time de produto e levantamento dos requisitos.',
