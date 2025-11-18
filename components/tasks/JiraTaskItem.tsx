@@ -17,6 +17,11 @@ import { updateChecklistItem } from '../../utils/checklistService';
 
 // Componente para renderizar descrição com suporte a imagens
 const DescriptionRenderer: React.FC<{ description: string }> = ({ description }) => {
+    // Garantir que description é uma string válida
+    if (!description || typeof description !== 'string') {
+        return <p className="text-text-secondary italic">Sem descrição</p>;
+    }
+    
     // Detectar imagens no formato markdown ![alt](data:image/...)
     const imageRegex = /!\[([^\]]*)\]\((data:image\/[^)]+)\)/g;
     const parts: React.ReactNode[] = [];
