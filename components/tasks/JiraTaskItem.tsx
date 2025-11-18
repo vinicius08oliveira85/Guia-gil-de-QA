@@ -153,6 +153,17 @@ export const JiraTaskItem: React.FC<{
                 </div>
                 {isDetailsOpen && (
                     <div className="p-4 border-t border-surface-border bg-black/10">
+                        {/* Quick Actions */}
+                        {project && onUpdateProject && (
+                            <div className="mb-4">
+                                <QuickActions
+                                    task={task}
+                                    project={project}
+                                    onUpdateProject={onUpdateProject}
+                                />
+                            </div>
+                        )}
+
                         <p className="text-text-secondary mb-4 whitespace-pre-wrap">{task.description}</p>
                         
                         <div className="space-y-4">
