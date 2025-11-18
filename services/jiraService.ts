@@ -104,7 +104,13 @@ const jiraApiCall = async <T>(
     });
 
     if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: await response.text() }));
+        let errorData: { error?: string };
+        try {
+            errorData = await response.json();
+        } catch {
+            const errorText = await response.text();
+            errorData = { error: errorText };
+        }
         throw new Error(errorData.error || `Jira API Error (${response.status})`);
     }
 
