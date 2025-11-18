@@ -258,11 +258,25 @@ export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: 
         }
     }, [project, onUpdateProject, handleSuccess, handleError]);
 
+    const toggleTaskSelection = (taskId: string) => {
+        setSelectedTasks(prev => {
+            const newSet = new Set(prev);
+            if (newSet.has(taskId)) {
+                newSet.delete(taskId);
+            } else {
+                newSet.add(taskId);
+            }
+            return newSet;
+        });
+    };
+
     const renderTaskTree = (tasks: TaskWithChildren[], level: number): React.ReactElement[] => {
         return tasks.map(task => (
             <JiraTaskItem
                 key={task.id}
                 task={task}
+                isSelected={selectedTasks.has(task.id)}
+                onToggleSelect={() => toggleTaskSelection(task.id)}
                 onTestCaseStatusChange={(testCaseId, status) => handleTestCaseStatusChange(task.id, testCaseId, status)}
                 onToggleTestCaseAutomated={(testCaseId, isAutomated) => handleToggleTestCaseAutomated(task.id, testCaseId, isAutomated)}
                 onDelete={handleDeleteTask}

@@ -154,7 +154,60 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                 </div>
                 
                 <div className="mt-8">
-                    {activeTab === 'dashboard' && <ProjectQADashboard project={project} />}
+                    {activeTab === 'dashboard' && (
+                        <div className="space-y-6">
+                            <ProjectQADashboard project={project} />
+                            
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                <div className="p-4 bg-surface border border-surface-border rounded-lg">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h3 className="text-lg font-semibold text-text-primary">Gráfico de Dependências</h3>
+                                        <button
+                                            onClick={() => setShowDependencyGraph(!showDependencyGraph)}
+                                            className="text-sm text-accent hover:text-accent-light"
+                                        >
+                                            {showDependencyGraph ? 'Ocultar' : 'Mostrar'}
+                                        </button>
+                                    </div>
+                                    {showDependencyGraph && (
+                                        <DependencyGraph
+                                            project={project}
+                                            onTaskSelect={(taskId) => {
+                                                const element = document.querySelector(`[data-task-id="${taskId}"]`);
+                                                element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                            }}
+                                        />
+                                    )}
+                                </div>
+                                
+                                <div className="p-4 bg-surface border border-surface-border rounded-lg">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h3 className="text-lg font-semibold text-text-primary">Burndown Chart</h3>
+                                        <button
+                                            onClick={() => setShowBurndown(!showBurndown)}
+                                            className="text-sm text-accent hover:text-accent-light"
+                                        >
+                                            {showBurndown ? 'Ocultar' : 'Mostrar'}
+                                        </button>
+                                    </div>
+                                    {showBurndown && <BurndownChart project={project} />}
+                                </div>
+                            </div>
+                            
+                            <div className="p-4 bg-surface border border-surface-border rounded-lg">
+                                <div className="flex items-center justify-between mb-4">
+                                    <h3 className="text-lg font-semibold text-text-primary">Histórico de Mudanças</h3>
+                                    <button
+                                        onClick={() => setShowChangeHistory(!showChangeHistory)}
+                                        className="text-sm text-accent hover:text-accent-light"
+                                    >
+                                        {showChangeHistory ? 'Ocultar' : 'Mostrar'}
+                                    </button>
+                                </div>
+                                {showChangeHistory && <ChangeHistory project={project} />}
+                            </div>
+                        </div>
+                    )}
                     {activeTab === 'timeline' && <TimelineView project={project} currentPhaseName={currentPhaseName} />}
                     {activeTab === 'analysis' && <AnalysisView project={project} onUpdateProject={onUpdateProject} />}
                     {activeTab === 'tasks' && <TasksView project={project} onUpdateProject={onUpdateProject} />}

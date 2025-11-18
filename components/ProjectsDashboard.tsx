@@ -71,21 +71,6 @@ export const ProjectsDashboard: React.FC<{
                     </button>
                 </div>
             </div>
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
-                <h2 className="text-3xl sm:text-4xl font-bold text-text-primary">Dashboard de Projetos</h2>
-                <div className="flex gap-3">
-                    <button 
-                        onClick={onSearchClick}
-                        className="btn btn-secondary flex items-center gap-2"
-                        title="Buscar (Ctrl+K)"
-                    >
-                        🔍 Buscar
-                    </button>
-                    <button onClick={() => setIsCreating(true)} className="btn btn-primary shadow-lg shadow-accent/20">
-                        ➕ Novo Projeto
-                    </button>
-                </div>
-            </div>
 
             <Modal isOpen={isCreating} onClose={() => {
                 setIsCreating(false);
