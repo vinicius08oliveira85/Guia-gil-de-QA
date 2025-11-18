@@ -6,13 +6,15 @@ export default async function handler(
 ): Promise<void> {
   // Permitir apenas requisições POST
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    res.status(405).json({ error: 'Method not allowed' });
+    return;
   }
 
   const { url, email, apiToken, endpoint, method = 'GET', body } = req.body;
 
   if (!url || !email || !apiToken || !endpoint) {
-    return res.status(400).json({ error: 'Missing required parameters' });
+    res.status(400).json({ error: 'Missing required parameters' });
+    return;
   }
 
   try {
@@ -33,16 +35,17 @@ export default async function handler(
 
     if (!response.ok) {
       const errorText = await response.text();
-      return res.status(response.status).json({ 
+      res.status(response.status).json({ 
         error: `Jira API Error (${response.status}): ${errorText}` 
       });
+      return;
     }
 
     const data = await response.json();
-    return res.status(200).json(data);
+    res.status(200).json(data);
   } catch (error) {
     console.error('Jira proxy error:', error);
-    return res.status(500).json({ 
+    res.status(500).json({ 
       error: error instanceof Error ? error.message : 'Internal server error' 
     });
   }
