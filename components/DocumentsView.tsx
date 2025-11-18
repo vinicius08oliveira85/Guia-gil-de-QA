@@ -147,10 +147,10 @@ export const DocumentsView: React.FC<{ project: Project; onUpdateProject: (proje
             const docFile = await createDocumentFromFile(file);
             const newDocument = convertDocumentFileToProjectDocument(docFile);
             
-            onUpdateProject({
-                ...project,
-                documents: [...project.documents, newDocument]
-            });
+                onUpdateProject({
+                    ...project,
+                    documents: [...project.documents, newDocument]
+                });
             handleSuccess(`Documento "${file.name}" carregado com sucesso!`);
         } catch (error) {
             handleError(error instanceof Error ? error : new Error('Erro ao processar arquivo'), 'Upload de documento');
@@ -254,7 +254,7 @@ export const DocumentsView: React.FC<{ project: Project; onUpdateProject: (proje
                         >
                             {viewMode === 'grid' ? '📋 Lista' : '🔲 Grade'}
                         </button>
-                        <label className="btn btn-primary cursor-pointer">
+                <label className="btn btn-primary cursor-pointer">
                             📤 Carregar Documento
                             <input 
                                 type="file" 
@@ -262,7 +262,7 @@ export const DocumentsView: React.FC<{ project: Project; onUpdateProject: (proje
                                 onChange={handleFileUpload} 
                                 className="hidden" 
                             />
-                        </label>
+                </label>
             </div>
                 </div>
 
@@ -433,7 +433,7 @@ export const DocumentsView: React.FC<{ project: Project; onUpdateProject: (proje
                             })}
                         </div>
                     ) : (
-                        <ul className="space-y-3">
+                <ul className="space-y-3">
                             {filteredDocuments.map(doc => {
                                 const category = DOCUMENT_CATEGORIES.find(c => c.id === doc.category);
                                 const hasAnalysis = !!doc.analysis;
@@ -509,7 +509,7 @@ export const DocumentsView: React.FC<{ project: Project; onUpdateProject: (proje
                                                     className="btn btn-secondary text-sm !py-1.5 !px-3"
                                                 >
                                                     ✏️
-                                                </button>
+                                </button>
                                             </Tooltip>
                                             <Tooltip content="Excluir">
                                                 <button
@@ -531,8 +531,8 @@ export const DocumentsView: React.FC<{ project: Project; onUpdateProject: (proje
                         description={searchQuery || selectedCategory !== 'all' ? 'Tente ajustar os filtros de busca' : 'Comece carregando seu primeiro documento'}
                         icon="📄"
                     />
-                )}
-            </Card>
+            )}
+        </Card>
 
             {/* Modal de Preview */}
             {showPreview && selectedDoc && (
