@@ -39,9 +39,14 @@ export const JiraIntegration: React.FC<JiraIntegrationProps> = ({ onProjectImpor
     const loadJiraProjects = async (jiraConfig: JiraConfig) => {
         try {
             const projects = await getJiraProjects(jiraConfig);
-            setJiraProjects(projects);
+            if (Array.isArray(projects)) {
+                setJiraProjects(projects);
+            } else {
+                setJiraProjects([]);
+            }
         } catch (error) {
             console.error('Erro ao carregar projetos do Jira:', error);
+            setJiraProjects([]);
         }
     };
 
@@ -175,7 +180,7 @@ export const JiraIntegration: React.FC<JiraIntegrationProps> = ({ onProjectImpor
                                 className="w-full px-4 py-2 bg-surface border border-surface-border rounded-lg text-text-primary focus:outline-none focus:border-accent"
                             >
                                 <option value="">Selecione um projeto...</option>
-                                {jiraProjects.map(project => (
+                                {Array.isArray(jiraProjects) && jiraProjects.map(project => (
                                     <option key={project.key} value={project.key}>
                                         {project.key} - {project.name}
                                     </option>

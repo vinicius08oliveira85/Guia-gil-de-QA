@@ -11,7 +11,22 @@ export const RoadmapView: React.FC = () => {
     const [selectedItem, setSelectedItem] = useState<RoadmapItem | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
 
-    const stats = getRoadmapStats();
+    const stats = useMemo(() => {
+        try {
+            return getRoadmapStats();
+        } catch (error) {
+            console.error('Erro ao calcular estatísticas do roadmap:', error);
+            return {
+                total: 0,
+                completed: 0,
+                inProgress: 0,
+                planned: 0,
+                future: 0,
+                byCategory: {},
+                byPriority: {}
+            };
+        }
+    }, []);
 
     const filteredItems = useMemo(() => {
         let items = roadmapItems;
