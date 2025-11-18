@@ -85,21 +85,27 @@ const jiraApiCall = async <T>(
     endpoint: string,
     options: RequestInit = {}
 ): Promise<T> => {
-    const url = `${config.url.replace(/\/$/, '')}/rest/api/3/${endpoint}`;
+    // Usar proxy do Vercel para evitar CORS
+    const proxyUrl = '/api/jira-proxy';
     
-    const response = await fetch(url, {
-        ...options,
+    const response = await fetch(proxyUrl, {
+        method: 'POST',
         headers: {
-            'Authorization': getAuthHeader(config),
-            'Accept': 'application/json',
             'Content-Type': 'application/json',
-            ...options.headers,
         },
+        body: JSON.stringify({
+            url: config.url,
+            email: config.email,
+            apiToken: config.apiToken,
+            endpoint,
+            method: options.method || 'GET',
+            body: options.body ? (typeof options.body === 'string' ? JSON.parse(options.body) : options.body) : undefined,
+        }),
     });
 
     if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Jira API Error (${response.status}): ${errorText}`);
+        const errorData = await response.json().catch(() => ({ error: await response.text() }));
+        throw new Error(errorData.error || `Jira API Error (${response.status})`);
     }
 
     return response.json();
