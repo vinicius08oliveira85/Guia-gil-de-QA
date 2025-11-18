@@ -66,7 +66,11 @@ export const ProjectsDashboard: React.FC<{
                     <button onClick={onSearchClick} className="btn btn-secondary">
                         🔍 Buscar
                     </button>
-                    <button onClick={() => setIsCreating(true)} className="btn btn-primary">
+                    <button 
+                        onClick={() => setIsCreating(true)} 
+                        className="btn btn-primary"
+                        data-onboarding="create-project"
+                    >
                         ➕ Novo Projeto
                     </button>
                 </div>

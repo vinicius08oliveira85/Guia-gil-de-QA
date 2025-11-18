@@ -67,13 +67,13 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
     
     const currentPhaseName = metrics.newPhases.find(p => p.status === 'Em Andamento')?.name || 'N/A';
     
-    const tabs = [
+    const tabs: Array<{ id: string; label: string; 'data-onboarding'?: string }> = [
         { id: 'dashboard', label: 'Dashboard' },
         { id: 'tasks', label: 'Tarefas & Testes', 'data-onboarding': 'tasks-tab' },
         { id: 'timeline', label: 'Timeline' },
         { id: 'analysis', label: 'Análise IA' },
         { id: 'documents', label: 'Documentos' },
-        { id: 'learning', label: '🎓 Aprender QA' },
+        { id: 'learning', label: '🎓 Aprender QA', 'data-onboarding': 'learning-tab' },
         { id: 'roadmap', label: 'Roadmap' },
         { id: 'glossary', label: 'Glossário' },
     ];
