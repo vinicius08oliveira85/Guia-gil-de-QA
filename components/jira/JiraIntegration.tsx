@@ -274,7 +274,15 @@ export const JiraIntegration: React.FC<JiraIntegrationProps> = ({ onProjectImpor
                                 {isImporting ? (
                                     <>
                                         <Spinner small />
-                                        Importando...
+                                        {importProgress ? (
+                                            importProgress.total ? (
+                                                <>Importando... {importProgress.current} de {importProgress.total}</>
+                                            ) : (
+                                                <>Importando... {importProgress.current} tarefas</>
+                                            )
+                                        ) : (
+                                            <>Importando... Isso pode levar alguns minutos para projetos grandes</>
+                                        )}
                                     </>
                                 ) : (
                                     <>
@@ -282,6 +290,26 @@ export const JiraIntegration: React.FC<JiraIntegrationProps> = ({ onProjectImpor
                                     </>
                                 )}
                             </button>
+                            {isImporting && (
+                                <div className="mt-2 p-3 bg-surface border border-surface-border rounded-lg">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <span className="text-xs text-text-secondary">Importando tarefas do Jira...</span>
+                                    </div>
+                                    <div className="w-full bg-surface-hover rounded-full h-2">
+                                        <div 
+                                            className="bg-accent h-2 rounded-full transition-all duration-300"
+                                            style={{ 
+                                                width: importProgress?.total 
+                                                    ? `${Math.min((importProgress.current / importProgress.total) * 100, 100)}%` 
+                                                    : '0%'
+                                            }}
+                                        />
+                                    </div>
+                                    <p className="text-xs text-text-secondary mt-2">
+                                        ⏳ Aguarde enquanto buscamos todas as tarefas. Projetos grandes podem levar alguns minutos.
+                                    </p>
+                                </div>
+                            )}
                         </div>
                     ) : (
                         <div className="text-center py-4">

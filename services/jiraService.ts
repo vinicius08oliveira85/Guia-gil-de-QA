@@ -220,7 +220,12 @@ export const getJiraIssues = async (
         const totalAvailable = response.total || 0;
         const issues = response.issues || [];
         
-        console.log(`📦 Página ${Math.floor(startAt / pageSize) + 1}: Recebidas ${issues.length} issues de ${totalAvailable} total`);
+        const currentPage = Math.floor(startAt / pageSize) + 1;
+        if (totalAvailable > 0) {
+            console.log(`📦 Página ${currentPage}: Recebidas ${issues.length} issues (${allIssues.length + issues.length} de ${totalAvailable} total)`);
+        } else {
+            console.log(`📦 Página ${currentPage}: Recebidas ${issues.length} issues (Total acumulado: ${allIssues.length + issues.length})`);
+        }
         
         if (issues.length === 0) {
             console.log('⚠️ Nenhuma issue retornada nesta página. Parando paginação.');
