@@ -3,17 +3,21 @@ import React, { useState } from 'react';
 import { Project } from '../types';
 import { Modal } from './common/Modal';
 import { ConfirmDialog } from './common/ConfirmDialog';
+import { ProjectTemplateSelector } from './ProjectTemplateSelector';
 import { TrashIcon } from './common/Icons';
 
 export const ProjectsDashboard: React.FC<{
     projects: Project[];
     onSelectProject: (id: string) => void;
-    onCreateProject: (name: string, description: string) => Promise<void>;
+    onCreateProject: (name: string, description: string, templateId?: string) => Promise<void>;
     onDeleteProject: (id: string) => Promise<void>;
-}> = ({ projects, onSelectProject, onCreateProject, onDeleteProject }) => {
+    onSearchClick: () => void;
+}> = ({ projects, onSelectProject, onCreateProject, onDeleteProject, onSearchClick }) => {
     const [isCreating, setIsCreating] = useState(false);
+    const [showTemplates, setShowTemplates] = useState(false);
     const [newName, setNewName] = useState('');
     const [newDesc, setNewDesc] = useState('');
+    const [selectedTemplate, setSelectedTemplate] = useState<string | undefined>();
     
     const [deleteModalState, setDeleteModalState] = useState<{ isOpen: boolean; project: Project | null }>({
         isOpen: false,
@@ -22,10 +26,11 @@ export const ProjectsDashboard: React.FC<{
 
     const handleCreate = async () => {
         if (newName.trim()) {
-            await onCreateProject(newName.trim(), newDesc.trim());
+            await onCreateProject(newName.trim(), newDesc.trim(), selectedTemplate);
             setIsCreating(false);
             setNewName('');
             setNewDesc('');
+            setSelectedTemplate(undefined);
         }
     };
 
@@ -45,23 +50,85 @@ export const ProjectsDashboard: React.FC<{
         <div className="container mx-auto p-4 sm:p-6 md:p-8">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
                 <h2 className="text-3xl sm:text-4xl font-bold text-text-primary">Dashboard de Projetos</h2>
-                <button onClick={() => setIsCreating(true)} className="btn btn-primary shadow-lg shadow-accent/20">Novo Projeto</button>
+                <div className="flex gap-3">
+                    <button 
+                        onClick={onSearchClick}
+                        className="btn btn-secondary flex items-center gap-2"
+                        title="Buscar (Ctrl+K)"
+                    >
+                        🔍 Buscar
+                    </button>
+                    <button onClick={() => setIsCreating(true)} className="btn btn-primary shadow-lg shadow-accent/20">
+                        ➕ Novo Projeto
+                    </button>
+                </div>
             </div>
 
-            <Modal isOpen={isCreating} onClose={() => setIsCreating(false)} title="Criar Novo Projeto">
+            <Modal isOpen={isCreating} onClose={() => {
+                setIsCreating(false);
+                setSelectedTemplate(undefined);
+            }} title="Criar Novo Projeto">
                  <div className="space-y-4">
-                    <div>
-                        <label htmlFor="proj-name" className="block text-sm font-medium text-text-secondary mb-1">Nome do Projeto</label>
-                        <input id="proj-name" type="text" value={newName} onChange={e => setNewName(e.target.value)} />
-                    </div>
-                     <div>
-                        <label htmlFor="proj-desc" className="block text-sm font-medium text-text-secondary mb-1">Descrição</label>
-                        <textarea id="proj-desc" value={newDesc} onChange={e => setNewDesc(e.target.value)} rows={3}></textarea>
-                    </div>
-                    <div className="flex justify-end gap-3 pt-4">
-                        <button onClick={() => setIsCreating(false)} className="btn btn-secondary">Cancelar</button>
-                        <button onClick={handleCreate} className="btn btn-primary">Criar</button>
-                    </div>
+                    {!showTemplates ? (
+                        <>
+                            <div className="mb-4">
+                                <button
+                                    onClick={() => setShowTemplates(true)}
+                                    className="w-full p-4 border-2 border-dashed border-surface-border rounded-lg hover:border-accent transition-colors text-text-secondary hover:text-text-primary"
+                                >
+                                    📋 Usar Template (Recomendado)
+                                </button>
+                            </div>
+                            <div>
+                                <label htmlFor="proj-name" className="block text-sm font-medium text-text-secondary mb-1">Nome do Projeto</label>
+                                <input id="proj-name" type="text" value={newName} onChange={e => setNewName(e.target.value)} />
+                            </div>
+                            <div>
+                                <label htmlFor="proj-desc" className="block text-sm font-medium text-text-secondary mb-1">Descrição</label>
+                                <textarea id="proj-desc" value={newDesc} onChange={e => setNewDesc(e.target.value)} rows={3}></textarea>
+                            </div>
+                            <div className="flex justify-end gap-3 pt-4">
+                                <button onClick={() => setIsCreating(false)} className="btn btn-secondary">Cancelar</button>
+                                <button onClick={handleCreate} className="btn btn-primary">Criar</button>
+                            </div>
+                        </>
+                    ) : (
+                        <div>
+                            <button
+                                onClick={() => setShowTemplates(false)}
+                                className="mb-4 text-text-secondary hover:text-text-primary flex items-center gap-2"
+                            >
+                                ← Voltar
+                            </button>
+                            <ProjectTemplateSelector
+                                onSelectTemplate={(templateId) => {
+                                    setSelectedTemplate(templateId);
+                                    setShowTemplates(false);
+                                }}
+                                onClose={() => setShowTemplates(false)}
+                            />
+                            {selectedTemplate && (
+                                <div className="mt-4 p-3 bg-accent/10 border border-accent/30 rounded-lg">
+                                    <p className="text-sm text-text-primary">Template selecionado! Preencha os dados abaixo.</p>
+                                </div>
+                            )}
+                            <div className="mt-4">
+                                <label htmlFor="proj-name-template" className="block text-sm font-medium text-text-secondary mb-1">Nome do Projeto</label>
+                                <input id="proj-name-template" type="text" value={newName} onChange={e => setNewName(e.target.value)} />
+                            </div>
+                            <div className="mt-4">
+                                <label htmlFor="proj-desc-template" className="block text-sm font-medium text-text-secondary mb-1">Descrição</label>
+                                <textarea id="proj-desc-template" value={newDesc} onChange={e => setNewDesc(e.target.value)} rows={3}></textarea>
+                            </div>
+                            <div className="flex justify-end gap-3 pt-4">
+                                <button onClick={() => {
+                                    setIsCreating(false);
+                                    setSelectedTemplate(undefined);
+                                }} className="btn btn-secondary">Cancelar</button>
+                                <button onClick={handleCreate} className="btn btn-primary">Criar com Template</button>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </Modal>
             

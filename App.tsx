@@ -7,15 +7,22 @@ import { ProjectView } from './components/ProjectView';
 import { ProjectsDashboard } from './components/ProjectsDashboard';
 import { Spinner } from './components/common/Spinner';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
+import { SearchBar } from './components/common/SearchBar';
 import { getAllProjects, addProject, updateProject, deleteProject } from './services/dbService';
 import { useErrorHandler } from './hooks/useErrorHandler';
+import { useSearch, SearchResult } from './hooks/useSearch';
+import { useKeyboardShortcuts, SHORTCUTS } from './hooks/useKeyboardShortcuts';
 import { PHASE_NAMES } from './utils/constants';
+import { createProjectFromTemplate } from './utils/projectTemplates';
+import { addAuditLog } from './utils/auditLog';
 
 const App: React.FC = () => {
     const [projects, setProjects] = useState<Project[]>([]);
     const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [showSearch, setShowSearch] = useState(false);
     const { handleError, handleSuccess } = useErrorHandler();
+    const { searchQuery, setSearchQuery, searchResults } = useSearch(projects);
 
     useEffect(() => {
         const loadProjects = async () => {
@@ -31,18 +38,31 @@ const App: React.FC = () => {
         loadProjects();
     }, [handleError]);
 
-    const handleCreateProject = useCallback(async (name: string, description: string) => {
-        const newProject: Project = {
-            id: `proj-${Date.now()}`,
-            name,
-            description,
-            documents: [],
-            tasks: [],
-            phases: PHASE_NAMES.map(name => ({ name, status: 'Não Iniciado' })),
-        };
+    const handleCreateProject = useCallback(async (name: string, description: string, templateId?: string) => {
+        let newProject: Project;
+        
+        if (templateId) {
+            newProject = createProjectFromTemplate(templateId, name, description);
+        } else {
+            newProject = {
+                id: `proj-${Date.now()}`,
+                name,
+                description,
+                documents: [],
+                tasks: [],
+                phases: PHASE_NAMES.map(name => ({ name, status: 'Não Iniciado' })),
+            };
+        }
+        
         try {
             await addProject(newProject);
             setProjects(prev => [...prev, newProject]);
+            addAuditLog({
+                action: 'CREATE',
+                entityType: 'project',
+                entityId: newProject.id,
+                entityName: newProject.name
+            });
             handleSuccess('Projeto criado com sucesso!');
         } catch (error) {
             handleError(error, 'Criar projeto');
@@ -51,23 +71,71 @@ const App: React.FC = () => {
 
     const handleUpdateProject = useCallback(async (updatedProject: Project) => {
         try {
+            const oldProject = projects.find(p => p.id === updatedProject.id);
             await updateProject(updatedProject);
             setProjects(prev => prev.map(p => p.id === updatedProject.id ? updatedProject : p));
+            
+            if (oldProject) {
+                addAuditLog({
+                    action: 'UPDATE',
+                    entityType: 'project',
+                    entityId: updatedProject.id,
+                    entityName: updatedProject.name,
+                    changes: {
+                        name: { old: oldProject.name, new: updatedProject.name },
+                        description: { old: oldProject.description, new: updatedProject.description }
+                    }
+                });
+            }
+            
             handleSuccess('Projeto atualizado com sucesso!');
         } catch (error) {
             handleError(error, 'Atualizar projeto');
         }
-    }, [handleError, handleSuccess]);
+    }, [handleError, handleSuccess, projects]);
     
     const handleDeleteProject = useCallback(async (projectId: string) => {
         try {
+            const project = projects.find(p => p.id === projectId);
             await deleteProject(projectId);
             setProjects(prev => prev.filter(p => p.id !== projectId));
+            
+            if (project) {
+                addAuditLog({
+                    action: 'DELETE',
+                    entityType: 'project',
+                    entityId: projectId,
+                    entityName: project.name
+                });
+            }
+            
             handleSuccess('Projeto deletado com sucesso!');
         } catch (error) {
             handleError(error, 'Deletar projeto');
         }
-    }, [handleError, handleSuccess]);
+    }, [handleError, handleSuccess, projects]);
+
+    const handleSearchSelect = useCallback((result: SearchResult) => {
+        if (result.type === 'project' || result.projectId) {
+            setSelectedProjectId(result.projectId || result.id);
+            setShowSearch(false);
+            setSearchQuery('');
+        }
+    }, []);
+
+    useKeyboardShortcuts([
+        {
+            ...SHORTCUTS.SEARCH,
+            action: () => setShowSearch(true)
+        },
+        {
+            ...SHORTCUTS.ESCAPE,
+            action: () => {
+                setShowSearch(false);
+                setSearchQuery('');
+            }
+        }
+    ]);
 
     const selectedProject = useMemo(() => projects.find(p => p.id === selectedProjectId), [projects, selectedProjectId]);
 
@@ -106,6 +174,18 @@ const App: React.FC = () => {
                     }}
                 />
                 <Header />
+                {showSearch && (
+                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-start justify-center pt-20 p-4">
+                        <div className="w-full max-w-2xl">
+                            <SearchBar
+                                searchQuery={searchQuery}
+                                onSearchChange={setSearchQuery}
+                                searchResults={searchResults}
+                                onSelectResult={handleSearchSelect}
+                            />
+                        </div>
+                    </div>
+                )}
                 <main>
                     {selectedProject ? (
                         <ProjectView 
@@ -119,6 +199,7 @@ const App: React.FC = () => {
                             onSelectProject={setSelectedProjectId} 
                             onCreateProject={handleCreateProject}
                             onDeleteProject={handleDeleteProject}
+                            onSearchClick={() => setShowSearch(true)}
                         />
                     )}
                 </main>
