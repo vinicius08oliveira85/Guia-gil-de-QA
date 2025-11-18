@@ -46,14 +46,24 @@ export const JiraIntegration: React.FC<JiraIntegrationProps> = ({ onProjectImpor
                 try {
                     const { projects, timestamp } = JSON.parse(cached);
                     const cacheAge = Date.now() - timestamp;
-                    if (cacheAge < 5 * 60 * 1000) { // 5 minutos
+                    
+                    // Não usar cache se estiver vazio ou muito antigo
+                    if (Array.isArray(projects) && projects.length > 0 && cacheAge < 5 * 60 * 1000) {
                         console.log('Usando projetos do cache:', projects.length);
                         setJiraProjects(projects);
                         return;
+                    } else if (Array.isArray(projects) && projects.length === 0) {
+                        // Cache vazio - limpar e fazer nova requisição
+                        console.log('Cache vazio detectado, limpando e fazendo nova requisição');
+                        localStorage.removeItem(cacheKey);
+                    } else if (cacheAge >= 5 * 60 * 1000) {
+                        console.log('Cache expirado, fazendo nova requisição');
+                        localStorage.removeItem(cacheKey);
                     }
                 } catch (e) {
                     console.warn('Cache inválido, continuando com requisição');
-                    // Cache inválido, continuar com requisição
+                    // Cache inválido, limpar e continuar com requisição
+                    localStorage.removeItem(cacheKey);
                 }
             }
         }
@@ -67,20 +77,26 @@ export const JiraIntegration: React.FC<JiraIntegrationProps> = ({ onProjectImpor
             
             if (Array.isArray(projects) && projects.length > 0) {
                 setJiraProjects(projects);
-                // Salvar no cache
+                // Salvar no cache apenas se houver projetos
                 const cacheKey = `jira_projects_${jiraConfig.url}`;
                 localStorage.setItem(cacheKey, JSON.stringify({
                     projects,
                     timestamp: Date.now()
                 }));
-                console.log('Projetos salvos no cache');
+                console.log(`✅ ${projects.length} projetos salvos no cache`);
             } else if (Array.isArray(projects) && projects.length === 0) {
-                console.warn('Nenhum projeto encontrado no Jira');
+                console.warn('⚠️ Nenhum projeto encontrado no Jira');
                 setJiraProjects([]);
+                // Não salvar cache vazio - isso impede novas tentativas
+                const cacheKey = `jira_projects_${jiraConfig.url}`;
+                localStorage.removeItem(cacheKey);
                 handleError(new Error('Nenhum projeto encontrado no Jira. Verifique se você tem acesso a projetos.'), 'Carregar Projetos');
             } else {
-                console.error('Resposta inválida do Jira:', projects);
+                console.error('❌ Resposta inválida do Jira:', projects);
                 setJiraProjects([]);
+                // Limpar cache em caso de erro
+                const cacheKey = `jira_projects_${jiraConfig.url}`;
+                localStorage.removeItem(cacheKey);
                 handleError(new Error('Resposta inválida do servidor Jira'), 'Carregar Projetos');
             }
         } catch (error) {
