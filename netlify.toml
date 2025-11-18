@@ -5,13 +5,18 @@
 [build.environment]
   NODE_VERSION = "18"
 
+# Redirect para Netlify Functions (compatibilidade com código existente)
+[[redirects]]
+  from = "/api/jira-proxy"
+  to = "/.netlify/functions/jira-proxy"
+  status = 200
+
 # Redirects para SPA
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
 
-# Netlify Functions para API routes (se necessário)
+# Netlify Functions para API routes
 [functions]
   directory = "netlify/functions"
-
