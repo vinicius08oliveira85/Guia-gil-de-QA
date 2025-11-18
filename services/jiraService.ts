@@ -225,8 +225,12 @@ export const getJiraIssues = async (
         allIssues.push(...issues);
         console.log(`✅ Total acumulado: ${allIssues.length} issues`);
         
-        // Se não há mais issues ou já pegamos o máximo solicitado, para
-        if (issues.length === 0 || allIssues.length >= maxResults || (response.startAt + issues.length) >= (response.total || 0)) {
+        // Verificar se já pegamos todas as issues disponíveis ou atingimos o máximo solicitado
+        const totalAvailable = response.total || 0;
+        const currentPageEnd = response.startAt + issues.length;
+        
+        if (allIssues.length >= maxResults || currentPageEnd >= totalAvailable) {
+            console.log(`✅ Paginação completa: ${allIssues.length} issues importadas de ${totalAvailable} disponíveis`);
             break;
         }
         
