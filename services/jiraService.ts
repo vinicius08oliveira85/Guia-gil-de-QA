@@ -302,7 +302,7 @@ export const syncJiraProject = async (
             tags: issue.fields.labels || [],
             testCases: existingIndex >= 0 ? updatedTasks[existingIndex].testCases : [],
             bddScenarios: existingIndex >= 0 ? updatedTasks[existingIndex].bddScenarios : [],
-            comments: issue.fields.comment?.comments.map(comment => ({
+            comments: issue.renderedFields?.comment?.comments.map(comment => ({
                 id: comment.id,
                 author: comment.author.displayName,
                 content: comment.body,
