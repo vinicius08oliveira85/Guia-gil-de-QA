@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Project } from '../types';
 import { Modal } from './common/Modal';
+import { ConfirmDialog } from './common/ConfirmDialog';
 import { TrashIcon } from './common/Icons';
 
 export const ProjectsDashboard: React.FC<{
@@ -64,17 +65,16 @@ export const ProjectsDashboard: React.FC<{
                 </div>
             </Modal>
             
-             <Modal 
-                isOpen={deleteModalState.isOpen} 
-                onClose={() => setDeleteModalState({ isOpen: false, project: null })} 
+             <ConfirmDialog
+                isOpen={deleteModalState.isOpen}
+                onClose={() => setDeleteModalState({ isOpen: false, project: null })}
+                onConfirm={handleDelete}
                 title={`Excluir "${deleteModalState.project?.name}"`}
-            >
-                <p className="text-text-secondary">Você tem certeza que deseja excluir este projeto? Todos os dados associados (tarefas, documentos, análises) serão perdidos permanentemente. Esta ação não pode ser desfeita.</p>
-                <div className="flex justify-end gap-3 pt-4 mt-4">
-                    <button onClick={() => setDeleteModalState({ isOpen: false, project: null })} className="btn btn-secondary">Cancelar</button>
-                    <button onClick={handleDelete} className="btn bg-red-600 text-white hover:bg-red-500">Sim, Excluir</button>
-                </div>
-            </Modal>
+                message="Você tem certeza que deseja excluir este projeto? Todos os dados associados (tarefas, documentos, análises) serão perdidos permanentemente. Esta ação não pode ser desfeita."
+                confirmText="Sim, Excluir"
+                cancelText="Cancelar"
+                variant="danger"
+            />
 
             {projects.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

@@ -2,6 +2,7 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { TestCase, TestStrategy, PhaseName, ShiftLeftAnalysis, BddScenario, JiraTask, TestPyramidAnalysis, TestCaseDetailLevel } from '../types';
 import { marked } from 'marked';
+import { sanitizeHTML } from '../utils/sanitize';
 
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.GEMINI_API_KEY;
 
@@ -191,7 +192,8 @@ export const analyzeDocumentContent = async (content: string): Promise<string> =
         });
 
         const markdownText = response.text;
-        return marked(markdownText) as string;
+        const html = marked(markdownText) as string;
+        return sanitizeHTML(html);
     } catch (error) {
         console.error("Error analyzing document:", error);
         throw new Error("Failed to communicate with the Gemini API for document analysis.");

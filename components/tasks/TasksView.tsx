@@ -5,10 +5,12 @@ import { Card } from '../common/Card';
 import { Modal } from '../common/Modal';
 import { TaskForm } from './TaskForm';
 import { JiraTaskItem, TaskWithChildren } from './JiraTaskItem';
+import { useErrorHandler } from '../../hooks/useErrorHandler';
 
 export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: Project) => void }> = ({ project, onUpdateProject }) => {
     const [generatingTestsTaskId, setGeneratingTestsTaskId] = useState<string | null>(null);
     const [generatingBddTaskId, setGeneratingBddTaskId] = useState<string | null>(null);
+    const { handleError, handleSuccess } = useErrorHandler();
     const [isTaskFormOpen, setIsTaskFormOpen] = useState(false);
     const [editingTask, setEditingTask] = useState<JiraTask | undefined>(undefined);
     const [defaultParentId, setDefaultParentId] = useState<string | undefined>(undefined);
@@ -46,13 +48,13 @@ export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: 
             const updatedTask = { ...task, bddScenarios: [...(task.bddScenarios || []), ...scenarios] };
             const newTasks = project.tasks.map(t => t.id === taskId ? updatedTask : t);
             onUpdateProject({ ...project, tasks: newTasks });
+            handleSuccess('Cenários BDD gerados com sucesso!');
         } catch (error) {
-            console.error("Failed to generate BDD scenarios", error);
-            alert("Falha ao gerar cenários BDD.");
+            handleError(error, 'Gerar cenários BDD');
         } finally {
             setGeneratingBddTaskId(null);
         }
-    }, [project, onUpdateProject]);
+    }, [project, onUpdateProject, handleError, handleSuccess]);
 
     const handleSaveBddScenario = useCallback((taskId: string, scenarioData: Omit<BddScenario, 'id'>, scenarioId?: string) => {
         const task = project.tasks.find(t => t.id === taskId);
@@ -91,13 +93,13 @@ export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: 
             const updatedTask = { ...task, testStrategy: strategy, testCases };
             const newTasks = project.tasks.map(t => t.id === updatedTask.id ? updatedTask : t);
             onUpdateProject({ ...project, tasks: newTasks });
+            handleSuccess('Casos de teste gerados com sucesso!');
         } catch (error) {
-            console.error(error);
-            alert("Falha ao gerar casos de teste.");
+            handleError(error, 'Gerar casos de teste');
         } finally {
             setGeneratingTestsTaskId(null);
         }
-    }, [project, onUpdateProject]);
+    }, [project, onUpdateProject, handleError, handleSuccess]);
 
     const handleConfirmFail = () => {
         const { taskId, testCaseId, observedResult, createBug } = failModalState;

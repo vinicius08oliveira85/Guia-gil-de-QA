@@ -2,19 +2,21 @@
 import React, { useState } from 'react';
 import { BddScenario } from '../../types';
 import { EditIcon, TrashIcon } from '../common/Icons';
+import { useErrorHandler } from '../../hooks/useErrorHandler';
 
 export const BddScenarioForm: React.FC<{
     onSave: (scenario: Omit<BddScenario, 'id'>) => void;
     onCancel: () => void;
     existingScenario?: BddScenario;
 }> = ({ onSave, onCancel, existingScenario }) => {
+    const { handleWarning } = useErrorHandler();
     const [title, setTitle] = useState(existingScenario?.title || '');
     const [gherkin, setGherkin] = useState(existingScenario?.gherkin || '');
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (!title.trim() || !gherkin.trim()) {
-            alert("Título e Cenário Gherkin são obrigatórios.");
+            handleWarning("Título e Cenário Gherkin são obrigatórios.");
             return;
         }
         onSave({ title, gherkin });

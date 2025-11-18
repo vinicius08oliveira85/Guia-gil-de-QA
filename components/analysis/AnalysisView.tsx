@@ -6,9 +6,11 @@ import { ProjectLifecycleCard } from './ProjectLifecycleCard';
 import { ShiftLeftCard } from './ShiftLeftCard';
 import { TestPyramidCard } from './TestPyramidCard';
 import { PhaseLogicGuideCard } from './PhaseLogicGuideCard';
+import { useErrorHandler } from '../../hooks/useErrorHandler';
 
 export const AnalysisView: React.FC<{ project: Project; onUpdateProject: (project: Project) => void; }> = ({ project, onUpdateProject }) => {
     const [isAnalyzing, setIsAnalyzing] = useState(false);
+    const { handleError, handleSuccess } = useErrorHandler();
 
     const handleAnalyzeAndUpdateDashboard = useCallback(async () => {
         setIsAnalyzing(true);
@@ -33,14 +35,14 @@ export const AnalysisView: React.FC<{ project: Project; onUpdateProject: (projec
             };
     
             onUpdateProject(updatedProject);
+            handleSuccess('Análise do projeto concluída com sucesso!');
     
         } catch (error) {
-            console.error("Failed to analyze dashboard", error);
-            alert("Falha ao analisar o dashboard.");
+            handleError(error, 'Analisar dashboard');
         } finally {
             setIsAnalyzing(false);
         }
-    }, [project, onUpdateProject]);
+    }, [project, onUpdateProject, handleError, handleSuccess]);
 
     return (
         <div>

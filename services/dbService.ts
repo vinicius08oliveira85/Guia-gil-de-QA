@@ -1,9 +1,6 @@
 
 import { Project } from '../types';
-
-const DB_NAME = 'QAProjectsDB';
-const DB_VERSION = 1;
-const STORE_NAME = 'projects';
+import { DB_NAME, DB_VERSION, STORE_NAME } from '../utils/constants';
 
 let db: IDBDatabase;
 

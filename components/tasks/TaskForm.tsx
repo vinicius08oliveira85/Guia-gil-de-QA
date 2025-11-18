@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { JiraTask, JiraTaskType, BugSeverity, TeamRole, TaskPriority } from '../../types';
+import { useErrorHandler } from '../../hooks/useErrorHandler';
 
 export const TaskForm: React.FC<{
     onSave: (task: Omit<JiraTask, 'testCases' | 'status' | 'testStrategy' | 'bddScenarios' | 'createdAt' | 'completedAt'>) => void;
@@ -9,6 +10,7 @@ export const TaskForm: React.FC<{
     epics: JiraTask[];
     parentId?: string;
 }> = ({ onSave, onCancel, existingTask, epics, parentId }) => {
+    const { handleWarning } = useErrorHandler();
     const [taskData, setTaskData] = useState({
         id: existingTask?.id || '',
         title: existingTask?.title || '',
@@ -24,7 +26,7 @@ export const TaskForm: React.FC<{
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (!taskData.id || !taskData.title) {
-            alert("ID da Tarefa e Título são obrigatórios.");
+            handleWarning("ID da Tarefa e Título são obrigatórios.");
             return;
         }
         const { severity, ...restOfTaskData } = taskData;

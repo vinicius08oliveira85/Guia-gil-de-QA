@@ -5,27 +5,47 @@ import { Card } from './common/Card';
 import { Modal } from './common/Modal';
 import { Spinner } from './common/Spinner';
 import { TrashIcon } from './common/Icons';
+import { useErrorHandler } from '../hooks/useErrorHandler';
+import { sanitizeHTML } from '../utils/sanitize';
+import { MAX_FILE_SIZE, ALLOWED_FILE_TYPES } from '../utils/constants';
 
 export const DocumentsView: React.FC<{ project: Project; onUpdateProject: (project: Project) => void; }> = ({ project, onUpdateProject }) => {
     const [analysisResult, setAnalysisResult] = useState<{ name: string; content: string } | null>(null);
     const [loadingStates, setLoadingStates] = useState<{ [docName: string]: 'analyze' | 'generate' | null }>({});
+    const { handleError, handleSuccess, handleWarning } = useErrorHandler();
 
     const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
-        if (file && (file.type === "text/plain" || file.type === "text/markdown")) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const content = e.target?.result as string;
-                const newDocument: ProjectDocument = { name: file.name, content };
-                onUpdateProject({
-                    ...project,
-                    documents: [...project.documents, newDocument]
-                });
-            };
-            reader.readAsText(file);
-        } else {
-            alert("Por favor, carregue um arquivo .txt ou .md");
+        if (!file) return;
+
+        // Validar tipo de arquivo
+        if (!ALLOWED_FILE_TYPES.includes(file.type) && !file.name.endsWith('.txt') && !file.name.endsWith('.md')) {
+            handleWarning('Por favor, carregue um arquivo .txt ou .md');
+            event.target.value = '';
+            return;
         }
+
+        // Validar tamanho
+        if (file.size > MAX_FILE_SIZE) {
+            handleWarning(`Arquivo muito grande. Tamanho máximo: ${MAX_FILE_SIZE / 1024 / 1024}MB`);
+            event.target.value = '';
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const content = e.target?.result as string;
+            const newDocument: ProjectDocument = { name: file.name, content };
+            onUpdateProject({
+                ...project,
+                documents: [...project.documents, newDocument]
+            });
+            handleSuccess(`Documento "${file.name}" carregado com sucesso!`);
+        };
+        reader.onerror = () => {
+            handleError(new Error('Erro ao ler o arquivo'), 'Upload de documento');
+        };
+        reader.readAsText(file);
         event.target.value = ''; // Reset input
     };
 
@@ -33,9 +53,11 @@ export const DocumentsView: React.FC<{ project: Project; onUpdateProject: (proje
         setLoadingStates(prev => ({ ...prev, [doc.name]: 'analyze' }));
         try {
             const analysis = await analyzeDocumentContent(doc.content);
-            setAnalysisResult({ name: doc.name, content: analysis });
+            const sanitizedAnalysis = sanitizeHTML(analysis);
+            setAnalysisResult({ name: doc.name, content: sanitizedAnalysis });
+            handleSuccess('Documento analisado com sucesso!');
         } catch (error) {
-            alert("Falha ao analisar o documento.");
+            handleError(error, 'Analisar documento');
         } finally {
             setLoadingStates(prev => ({ ...prev, [doc.name]: null }));
         }
@@ -54,9 +76,9 @@ export const DocumentsView: React.FC<{ project: Project; onUpdateProject: (proje
                 bddScenarios: [],
             };
             onUpdateProject({ ...project, tasks: [...project.tasks, newTask] });
-            alert(`Tarefa "${newTask.id}" criada com sucesso a partir do documento!`);
+            handleSuccess(`Tarefa "${newTask.id}" criada com sucesso a partir do documento!`);
         } catch (error) {
-            alert("Falha ao gerar tarefa a partir do documento.");
+            handleError(error, 'Gerar tarefa do documento');
         } finally {
             setLoadingStates(prev => ({ ...prev, [doc.name]: null }));
         }

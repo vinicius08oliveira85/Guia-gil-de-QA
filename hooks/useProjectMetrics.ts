@@ -1,7 +1,8 @@
 import { useMemo } from 'react';
 import { Project, JiraTask, Phase, PhaseName, BugSeverity, PhaseStatus, TestCase } from '../types';
+import { PHASE_NAMES } from '../utils/constants';
 
-const phaseNamesInOrder: PhaseName[] = ['Request', 'Analysis', 'Design', 'Analysis and Code', 'Build', 'Test', 'Release', 'Deploy', 'Operate', 'Monitor'];
+const phaseNamesInOrder: PhaseName[] = [...PHASE_NAMES];
 
 export const useProjectMetrics = (project: Project) => {
     return useMemo(() => {
