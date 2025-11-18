@@ -30,7 +30,7 @@ VITE_SUPABASE_ANON_KEY=sua-chave-anon-aqui
 
 ### 3. Criar Tabelas no Supabase
 
-Execute o seguinte SQL no SQL Editor do Supabase:
+Execute o script SQL em `docs/SUPABASE_SQL.sql` no SQL Editor do Supabase, ou use o seguinte:
 
 ```sql
 -- Tabela de projetos
