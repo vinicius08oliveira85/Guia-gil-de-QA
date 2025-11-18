@@ -1,5 +1,6 @@
 -- Script de Migração SEGURO (sem operações destrutivas)
--- Execute este script no SQL Editor do Supabase
+-- Execute este script COMPLETO no SQL Editor do Supabase
+-- IMPORTANTE: Execute o script inteiro de uma vez, não apenas partes dele
 -- Este script é seguro e não remove dados existentes
 
 -- Adicionar colunas que faltam (se não existirem)
