@@ -21,6 +21,7 @@ export const JiraIntegration: React.FC<JiraIntegrationProps> = ({ onProjectImpor
     const [isTesting, setIsTesting] = useState(false);
     const [isConnected, setIsConnected] = useState(false);
     const [jiraProjects, setJiraProjects] = useState<JiraProject[]>([]);
+    const [isLoadingProjects, setIsLoadingProjects] = useState(false);
     const [selectedProjectKey, setSelectedProjectKey] = useState<string>('');
     const [isImporting, setIsImporting] = useState(false);
     const [showConfigModal, setShowConfigModal] = useState(false);
@@ -36,17 +37,45 @@ export const JiraIntegration: React.FC<JiraIntegrationProps> = ({ onProjectImpor
         }
     }, []);
 
-    const loadJiraProjects = async (jiraConfig: JiraConfig) => {
+    const loadJiraProjects = async (jiraConfig: JiraConfig, useCache: boolean = true) => {
+        // Verificar cache primeiro (válido por 5 minutos)
+        if (useCache) {
+            const cacheKey = `jira_projects_${jiraConfig.url}`;
+            const cached = localStorage.getItem(cacheKey);
+            if (cached) {
+                try {
+                    const { projects, timestamp } = JSON.parse(cached);
+                    const cacheAge = Date.now() - timestamp;
+                    if (cacheAge < 5 * 60 * 1000) { // 5 minutos
+                        setJiraProjects(projects);
+                        return;
+                    }
+                } catch (e) {
+                    // Cache inválido, continuar com requisição
+                }
+            }
+        }
+
+        setIsLoadingProjects(true);
         try {
             const projects = await getJiraProjects(jiraConfig);
             if (Array.isArray(projects)) {
                 setJiraProjects(projects);
+                // Salvar no cache
+                const cacheKey = `jira_projects_${jiraConfig.url}`;
+                localStorage.setItem(cacheKey, JSON.stringify({
+                    projects,
+                    timestamp: Date.now()
+                }));
             } else {
                 setJiraProjects([]);
             }
         } catch (error) {
             console.error('Erro ao carregar projetos do Jira:', error);
+            handleError(error instanceof Error ? error : new Error('Erro ao carregar projetos do Jira'), 'Carregar Projetos');
             setJiraProjects([]);
+        } finally {
+            setIsLoadingProjects(false);
         }
     };
 
@@ -63,7 +92,7 @@ export const JiraIntegration: React.FC<JiraIntegrationProps> = ({ onProjectImpor
                 saveJiraConfig(config);
                 setIsConnected(true);
                 setShowConfigModal(false);
-                await loadJiraProjects(config);
+                await loadJiraProjects(config, false); // Não usar cache ao conectar
                 handleSuccess('Conexão com Jira configurada com sucesso!');
             } else {
                 handleError(new Error('Não foi possível conectar ao Jira. Verifique suas credenciais.'), 'Teste de Conexão');
@@ -81,6 +110,10 @@ export const JiraIntegration: React.FC<JiraIntegrationProps> = ({ onProjectImpor
         setIsConnected(false);
         setJiraProjects([]);
         setSelectedProjectKey('');
+        setIsLoadingProjects(false);
+        // Limpar cache
+        const cacheKey = `jira_projects_${config.url}`;
+        localStorage.removeItem(cacheKey);
         handleSuccess('Conexão com Jira desconectada');
     };
 
@@ -169,11 +202,27 @@ export const JiraIntegration: React.FC<JiraIntegrationProps> = ({ onProjectImpor
                         </div>
                     </div>
 
-                    {jiraProjects.length > 0 ? (
+                    {isLoadingProjects ? (
+                        <div className="flex items-center justify-center py-8">
+                            <div className="flex flex-col items-center gap-3">
+                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div>
+                                <p className="text-text-secondary text-sm">Carregando projetos do Jira...</p>
+                            </div>
+                        </div>
+                    ) : jiraProjects.length > 0 ? (
                         <div className="space-y-3">
-                            <label className="block text-sm font-medium text-text-secondary">
-                                Selecione o projeto para importar:
-                            </label>
+                            <div className="flex items-center justify-between">
+                                <label className="block text-sm font-medium text-text-secondary">
+                                    Selecione o projeto para importar:
+                                </label>
+                                <button
+                                    onClick={() => loadJiraProjects(config, false)}
+                                    className="text-xs text-accent hover:underline"
+                                    title="Atualizar lista de projetos"
+                                >
+                                    🔄 Atualizar
+                                </button>
+                            </div>
                             <select
                                 value={selectedProjectKey}
                                 onChange={(e) => setSelectedProjectKey(e.target.value)}

@@ -103,18 +103,25 @@ const jiraApiCall = async <T>(
         }),
     });
 
-    if (!response.ok) {
-        let errorData: { error?: string };
-        try {
-            errorData = await response.json();
-        } catch {
-            const errorText = await response.text();
-            errorData = { error: errorText };
+        if (!response.ok) {
+            let errorData: { error?: string };
+            try {
+                errorData = await response.json();
+            } catch {
+                const errorText = await response.text();
+                errorData = { error: errorText };
+            }
+            throw new Error(errorData.error || `Jira API Error (${response.status})`);
         }
-        throw new Error(errorData.error || `Jira API Error (${response.status})`);
-    }
 
-    return response.json();
+        return response.json();
+    } catch (error) {
+        clearTimeout(timeoutId);
+        if (error instanceof Error && error.name === 'AbortError') {
+            throw new Error(`Timeout: A requisição demorou mais de ${timeout / 1000} segundos. Verifique sua conexão ou tente novamente.`);
+        }
+        throw error;
+    }
 };
 
 export const testJiraConnection = async (config: JiraConfig): Promise<boolean> => {
@@ -128,7 +135,11 @@ export const testJiraConnection = async (config: JiraConfig): Promise<boolean> =
 };
 
 export const getJiraProjects = async (config: JiraConfig): Promise<JiraProject[]> => {
-    const response = await jiraApiCall<{ values?: JiraProject[] }>(config, 'project?maxResults=100');
+    const response = await jiraApiCall<{ values?: JiraProject[] }>(
+        config, 
+        'project?maxResults=100',
+        { timeout: 15000 } // 15 segundos para listar projetos
+    );
     return Array.isArray(response.values) ? response.values : [];
 };
 
