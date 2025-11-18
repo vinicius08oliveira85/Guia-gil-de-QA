@@ -1,4 +1,5 @@
 import { Project, JiraTask, PhaseName } from '../types';
+import { parseJiraDescription } from '../utils/jiraDescriptionParser';
 
 export interface JiraConfig {
     url: string;

@@ -219,7 +219,11 @@ export const JiraTaskItem: React.FC<{
                         )}
 
                         <div className="text-text-secondary mb-4">
-                            <DescriptionRenderer description={task.description} />
+                            {task.description ? (
+                                <DescriptionRenderer description={task.description} />
+                            ) : (
+                                <p className="text-text-secondary italic">Sem descrição</p>
+                            )}
                         </div>
                         
                         <div className="space-y-4">
