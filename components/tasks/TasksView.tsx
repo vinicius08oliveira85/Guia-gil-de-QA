@@ -13,6 +13,7 @@ import { getAllTagsFromProject } from '../../utils/tagService';
 import { createBugFromFailedTest } from '../../utils/bugAutoCreation';
 import { notifyTestFailed, notifyBugCreated } from '../../utils/notificationService';
 import { createTestCaseFromTemplate } from '../../utils/testCaseTemplates';
+import { Comment } from '../../types';
 
 export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: Project) => void }> = ({ project, onUpdateProject }) => {
     const [generatingTestsTaskId, setGeneratingTestsTaskId] = useState<string | null>(null);
@@ -277,6 +278,9 @@ export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: 
                     setSelectedTaskForTemplate(task.id);
                     handleAddTestCaseFromTemplate(task.id, templateId);
                 }}
+                onAddComment={(content) => handleAddComment(task.id, content)}
+                onEditComment={(commentId, content) => handleEditComment(task.id, commentId, content)}
+                onDeleteComment={(commentId) => handleDeleteComment(task.id, commentId)}
             >
                 {task.children.length > 0 && renderTaskTree(task.children, level + 1)}
             </JiraTaskItem>
