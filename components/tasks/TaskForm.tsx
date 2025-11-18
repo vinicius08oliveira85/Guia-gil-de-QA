@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { JiraTask, JiraTaskType, BugSeverity, TeamRole, TaskPriority } from '../../types';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
+import { TagInput } from '../common/TagInput';
 
 export const TaskForm: React.FC<{
     onSave: (task: Omit<JiraTask, 'testCases' | 'status' | 'testStrategy' | 'bddScenarios' | 'createdAt' | 'completedAt'>) => void;
@@ -20,7 +21,8 @@ export const TaskForm: React.FC<{
         severity: existingTask?.severity || 'Médio',
         priority: existingTask?.priority || 'Média',
         owner: existingTask?.owner || (parentId ? 'QA' : 'Product'),
-        assignee: existingTask?.assignee || (parentId ? 'Dev' : 'QA')
+        assignee: existingTask?.assignee || (parentId ? 'Dev' : 'QA'),
+        tags: existingTask?.tags || []
     });
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -112,6 +114,14 @@ export const TaskForm: React.FC<{
             <div>
                 <label htmlFor="description" className="block text-sm font-medium text-text-secondary mb-1">Descrição</label>
                 <textarea id="description" value={taskData.description} onChange={(e) => setTaskData({ ...taskData, description: e.target.value })} rows={4}></textarea>
+            </div>
+            <div>
+                <label className="block text-sm font-medium text-text-secondary mb-1">Tags</label>
+                <TagInput
+                    tags={taskData.tags || []}
+                    onChange={(tags) => setTaskData({ ...taskData, tags })}
+                    allowNewTags={true}
+                />
             </div>
             <div className="flex justify-end gap-3 mt-4">
                 <button type="button" onClick={onCancel} className="btn btn-secondary">Cancelar</button>

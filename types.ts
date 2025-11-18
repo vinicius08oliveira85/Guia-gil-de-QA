@@ -49,6 +49,13 @@ export interface JiraTask {
   completedAt?: string; // ISO string
   owner?: TeamRole;
   assignee?: TeamRole;
+  tags?: string[];
+  dependencies?: string[]; // IDs de tarefas que bloqueiam esta
+  comments?: Comment[];
+  attachments?: Attachment[];
+  estimatedHours?: number;
+  actualHours?: number;
+  checklist?: ChecklistItem[];
 }
 
 export interface ProjectDocument {
@@ -106,4 +113,47 @@ export interface Project {
   phases: Phase[];
   shiftLeftAnalysis?: ShiftLeftAnalysis;
   testPyramidAnalysis?: TestPyramidAnalysis;
+  tags?: string[];
+  settings?: ProjectSettings;
+}
+
+export interface Comment {
+  id: string;
+  author: string;
+  content: string;
+  createdAt: string;
+  updatedAt?: string;
+  mentions?: string[];
+}
+
+export interface Attachment {
+  id: string;
+  name: string;
+  type: string;
+  size: number;
+  url: string;
+  uploadedAt: string;
+}
+
+export interface ChecklistItem {
+  id: string;
+  text: string;
+  checked: boolean;
+  required: boolean;
+}
+
+export interface ProjectSettings {
+  theme?: 'light' | 'dark' | 'auto';
+  notifications?: NotificationSettings;
+  defaultTags?: string[];
+}
+
+export interface NotificationSettings {
+  email?: boolean;
+  browser?: boolean;
+  onBugCreated?: boolean;
+  onTestFailed?: boolean;
+  onDeadlineApproaching?: boolean;
+  onTaskAssigned?: boolean;
+  onCommentAdded?: boolean;
 }

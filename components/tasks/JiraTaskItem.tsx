@@ -5,6 +5,7 @@ import { TaskTypeIcon, TaskStatusIcon, PlusIcon, EditIcon, TrashIcon, ChevronDow
 import { BddScenarioForm, BddScenarioItem } from './BddScenario';
 import { TestCaseItem } from './TestCaseItem';
 import { TestStrategyCard } from './TestStrategyCard';
+import { getTagColor } from '../../utils/tagService';
 
 export type TaskWithChildren = JiraTask & { children: TaskWithChildren[] };
 
@@ -37,9 +38,10 @@ export const JiraTaskItem: React.FC<{
     onSaveBddScenario: (taskId: string, scenario: Omit<BddScenario, 'id'>, scenarioId?: string) => void;
     onDeleteBddScenario: (taskId: string, scenarioId: string) => void;
     onTaskStatusChange: (status: 'To Do' | 'In Progress' | 'Done') => void;
+    onAddTestCaseFromTemplate?: (templateId: string) => void;
     children?: React.ReactNode;
     level: number;
-}> = React.memo(({ task, onTestCaseStatusChange, onToggleTestCaseAutomated, onDelete, onGenerateTests, isGenerating, onAddSubtask, onEdit, onGenerateBddScenarios, isGeneratingBdd, onSaveBddScenario, onDeleteBddScenario, onTaskStatusChange, children, level }) => {
+}> = React.memo(({ task, onTestCaseStatusChange, onToggleTestCaseAutomated, onDelete, onGenerateTests, isGenerating, onAddSubtask, onEdit, onGenerateBddScenarios, isGeneratingBdd, onSaveBddScenario, onDeleteBddScenario, onTaskStatusChange, onAddTestCaseFromTemplate, children, level }) => {
     const [isDetailsOpen, setIsDetailsOpen] = useState(false);
     const [isChildrenOpen, setIsChildrenOpen] = useState(false);
     const [editingBddScenario, setEditingBddScenario] = useState<BddScenario | null>(null);
@@ -77,11 +79,29 @@ export const JiraTaskItem: React.FC<{
                         )}
                         <div className="flex items-center gap-3 cursor-pointer" onClick={() => setIsDetailsOpen(!isDetailsOpen)}>
                             <TaskTypeIcon type={task.type} />
-                             <div className="flex items-center gap-2 min-w-0">
+                             <div className="flex items-center gap-2 min-w-0 flex-1">
                                 <TaskStatusIcon status={task.status} />
-                                <div className="truncate">
+                                <div className="truncate flex-1">
                                     <span className="font-semibold text-text-secondary text-sm truncate">{task.id}</span>
                                     <p className="text-text-primary truncate">{task.title}</p>
+                                    {task.tags && task.tags.length > 0 && (
+                                        <div className="flex flex-wrap gap-1 mt-1">
+                                            {task.tags.slice(0, 3).map(tag => (
+                                                <span
+                                                    key={tag}
+                                                    className="text-xs px-1.5 py-0.5 rounded text-white"
+                                                    style={{ backgroundColor: getTagColor(tag) }}
+                                                >
+                                                    {tag}
+                                                </span>
+                                            ))}
+                                            {task.tags.length > 3 && (
+                                                <span className="text-xs px-1.5 py-0.5 rounded bg-surface text-text-secondary">
+                                                    +{task.tags.length - 3}
+                                                </span>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>

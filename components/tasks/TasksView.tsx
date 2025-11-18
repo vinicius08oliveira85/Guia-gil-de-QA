@@ -3,14 +3,25 @@ import { Project, JiraTask, BddScenario, TestCaseDetailLevel, BugSeverity, TeamR
 import { generateTestCasesForTask, generateBddScenarios } from '../../services/geminiService';
 import { Card } from '../common/Card';
 import { Modal } from '../common/Modal';
+import { FilterPanel } from '../common/FilterPanel';
+import { TestCaseTemplateSelector } from './TestCaseTemplateSelector';
 import { TaskForm } from './TaskForm';
 import { JiraTaskItem, TaskWithChildren } from './JiraTaskItem';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
+import { useFilters } from '../../hooks/useFilters';
+import { getAllTagsFromProject } from '../../utils/tagService';
+import { createBugFromFailedTest } from '../../utils/bugAutoCreation';
+import { notifyTestFailed, notifyBugCreated } from '../../utils/notificationService';
+import { createTestCaseFromTemplate } from '../../utils/testCaseTemplates';
 
 export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: Project) => void }> = ({ project, onUpdateProject }) => {
     const [generatingTestsTaskId, setGeneratingTestsTaskId] = useState<string | null>(null);
     const [generatingBddTaskId, setGeneratingBddTaskId] = useState<string | null>(null);
+    const [showTemplateSelector, setShowTemplateSelector] = useState(false);
+    const [selectedTaskForTemplate, setSelectedTaskForTemplate] = useState<string | null>(null);
     const { handleError, handleSuccess } = useErrorHandler();
+    const { filters, filteredTasks, updateFilter, clearFilters, activeFiltersCount } = useFilters(project);
+    const availableTags = getAllTagsFromProject(project);
     const [isTaskFormOpen, setIsTaskFormOpen] = useState(false);
     const [editingTask, setEditingTask] = useState<JiraTask | undefined>(undefined);
     const [defaultParentId, setDefaultParentId] = useState<string | undefined>(undefined);
@@ -101,12 +112,15 @@ export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: 
         }
     }, [project, onUpdateProject, handleError, handleSuccess]);
 
-    const handleConfirmFail = () => {
+    const handleConfirmFail = useCallback(() => {
         const { taskId, testCaseId, observedResult, createBug } = failModalState;
         if (!taskId || !testCaseId) return;
     
         const task = project.tasks.find(t => t.id === taskId);
         if (!task) return;
+    
+        const testCase = task.testCases.find(tc => tc.id === testCaseId);
+        if (!testCase) return;
     
         const updatedTestCases = task.testCases.map(tc => tc.id === testCaseId ? { ...tc, status: 'Failed' as const, observedResult } : tc);
         const updatedTask = { ...task, testCases: updatedTestCases };
@@ -114,28 +128,22 @@ export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: 
         let newTasks = project.tasks.map(t => t.id === taskId ? updatedTask : t);
     
         if (createBug) {
-            const failedCase = updatedTestCases.find(tc => tc.id === testCaseId);
-            const newBug: JiraTask = {
-                id: `BUG-${task.id}-${Date.now().toString().slice(-4)}`,
-                title: `BUG: Falha no teste para "${task.title}"`,
-                description: `Este bug foi gerado automaticamente devido à falha do caso de teste:\n\n**Tarefa Original:** ${task.id} - ${task.title}\n**Caso de Teste:** ${failedCase?.description}\n\n**Resultado Observado:**\n${observedResult || 'Nenhum resultado observado foi fornecido.'}\n\n**Passos para Reproduzir:**\n${failedCase?.steps.map(s => `- ${s}`).join('\n')}\n\n**Resultado Esperado:**\n${failedCase?.expectedResult}`,
-                type: 'Bug',
-                status: 'To Do',
-                testCases: [],
-                bddScenarios: [],
-                parentId: task.parentId,
-                severity: 'Médio',
-                createdAt: new Date().toISOString(),
-                owner: 'QA',
-                assignee: 'Dev'
-            };
+            const newBug = createBugFromFailedTest(testCase, task, observedResult);
             newTasks.push(newBug);
+            
+            // Notificações
+            notifyTestFailed(testCase, task, project);
+            notifyBugCreated(newBug, project);
+            
+            handleSuccess(`Bug ${newBug.id} criado automaticamente com severidade ${newBug.severity}`);
+        } else {
+            notifyTestFailed(testCase, task, project);
         }
         
         onUpdateProject({ ...project, tasks: newTasks });
         
         setFailModalState({ isOpen: false, taskId: null, testCaseId: null, observedResult: '', createBug: true });
-    };
+    }, [failModalState, project, onUpdateProject, handleSuccess]);
 
     const handleTestCaseStatusChange = useCallback((taskId: string, testCaseId: string, status: 'Passed' | 'Failed') => {
         const task = project.tasks.find(t => t.id === taskId);
@@ -215,7 +223,7 @@ export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: 
     const epics = useMemo(() => project.tasks.filter(t => t.type === 'Epic'), [project.tasks]);
 
     const taskTree = useMemo(() => {
-        const tasks = [...project.tasks];
+        const tasks = [...filteredTasks];
         const taskMap = new Map(tasks.map(t => [t.id, { ...t, children: [] as TaskWithChildren[] }]));
         const tree: TaskWithChildren[] = [];
 
@@ -227,7 +235,25 @@ export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: 
             }
         }
         return tree;
-    }, [project.tasks]);
+    }, [filteredTasks]);
+
+    const handleAddTestCaseFromTemplate = useCallback((taskId: string, templateId: string) => {
+        const task = project.tasks.find(t => t.id === taskId);
+        if (!task) return;
+
+        try {
+            const newTestCase = createTestCaseFromTemplate(templateId);
+            const updatedTask = {
+                ...task,
+                testCases: [...(task.testCases || []), newTestCase]
+            };
+            const newTasks = project.tasks.map(t => t.id === taskId ? updatedTask : t);
+            onUpdateProject({ ...project, tasks: newTasks });
+            handleSuccess('Caso de teste adicionado do template');
+        } catch (error) {
+            handleError(error instanceof Error ? error : new Error('Erro ao adicionar template'));
+        }
+    }, [project, onUpdateProject, handleSuccess, handleError]);
 
     const renderTaskTree = (tasks: TaskWithChildren[], level: number): React.ReactElement[] => {
         return tasks.map(task => (
@@ -247,6 +273,10 @@ export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: 
                 onDeleteBddScenario={handleDeleteBddScenario}
                 onTaskStatusChange={(status) => handleTaskStatusChange(task.id, status)}
                 level={level}
+                onAddTestCaseFromTemplate={(templateId) => {
+                    setSelectedTaskForTemplate(task.id);
+                    handleAddTestCaseFromTemplate(task.id, templateId);
+                }}
             >
                 {task.children.length > 0 && renderTaskTree(task.children, level + 1)}
             </JiraTaskItem>
@@ -258,8 +288,25 @@ export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: 
         <Card>
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                 <h3 className="text-2xl font-bold text-text-primary">Tarefas & Casos de Teste</h3>
-                <button onClick={() => openTaskFormForNew()} className="btn btn-primary w-full sm:w-auto">Adicionar Tarefa</button>
+                <div className="flex gap-2 w-full sm:w-auto">
+                    <button onClick={() => setShowTemplateSelector(true)} className="btn btn-secondary w-full sm:w-auto">📋 Templates</button>
+                    <button onClick={() => openTaskFormForNew()} className="btn btn-primary w-full sm:w-auto">Adicionar Tarefa</button>
+                </div>
             </div>
+            
+            <FilterPanel
+                filters={filters}
+                onFilterChange={updateFilter}
+                onClearFilters={clearFilters}
+                availableTags={availableTags}
+                activeFiltersCount={activeFiltersCount}
+            />
+            
+            {activeFiltersCount > 0 && (
+                <div className="mb-4 text-sm text-text-secondary">
+                    Mostrando {filteredTasks.length} de {project.tasks.length} tarefas
+                </div>
+            )}
             {isTaskFormOpen && (
                 <div className="mb-6 p-4 bg-black/20 rounded-lg">
                     <TaskForm 
@@ -310,6 +357,39 @@ export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: 
                     <button onClick={handleConfirmFail} className="btn bg-red-600 text-white hover:bg-red-500">Confirmar Reprovação</button>
                 </div>
             </div>
+        </Modal>
+
+        <Modal
+            isOpen={showTemplateSelector}
+            onClose={() => setShowTemplateSelector(false)}
+            title="Selecionar Template de Caso de Teste"
+        >
+            {selectedTaskForTemplate ? (
+                <div>
+                    <p className="mb-4 text-text-secondary">
+                        Selecione um template para adicionar à tarefa selecionada.
+                    </p>
+                    <TestCaseTemplateSelector
+                        onSelectTemplate={(templateId) => {
+                            handleAddTestCaseFromTemplate(selectedTaskForTemplate, templateId);
+                            setShowTemplateSelector(false);
+                            setSelectedTaskForTemplate(null);
+                        }}
+                        onClose={() => {
+                            setShowTemplateSelector(false);
+                            setSelectedTaskForTemplate(null);
+                        }}
+                    />
+                </div>
+            ) : (
+                <TestCaseTemplateSelector
+                    onSelectTemplate={(templateId) => {
+                        // Se não houver tarefa selecionada, apenas fechar
+                        setShowTemplateSelector(false);
+                    }}
+                    onClose={() => setShowTemplateSelector(false)}
+                />
+            )}
         </Modal>
         </>
     );
