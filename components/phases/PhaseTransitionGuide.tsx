@@ -380,6 +380,8 @@ export const PhaseTransitionGuide: React.FC<{ project: Project; currentPhase: Ph
           isOpen={!!selectedRule}
           onClose={() => setSelectedRule(null)}
           title={`Transição: ${selectedRule.from} → ${selectedRule.to}`}
+          size="lg"
+          maxHeight="90vh"
         >
           <div className="space-y-6">
             <div className="flex items-center gap-3">

@@ -348,6 +348,8 @@ export const ShiftLeftAnalysis: React.FC<{ project: Project }> = ({ project }) =
                     isOpen={!!selectedActivity}
                     onClose={() => setSelectedActivity(null)}
                     title={selectedActivity.name}
+                    size="lg"
+                    maxHeight="90vh"
                 >
                     <div className="space-y-6">
                         <div>
