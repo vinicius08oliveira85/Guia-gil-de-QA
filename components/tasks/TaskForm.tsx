@@ -82,7 +82,7 @@ export const TaskForm: React.FC<{
         setValidationErrors({});
     };
 
-    const handleUseExample = () => {
+    const handleLoadExample = () => {
         const example = getTaskExample(taskData.type);
         if (example) {
             setTaskData({
@@ -91,10 +91,15 @@ export const TaskForm: React.FC<{
                 title: example.title,
                 description: example.description,
                 priority: example.priority,
-                tags: example.tags
+                owner: example.owner,
+                assignee: example.assignee,
+                severity: example.severity || taskData.severity,
+                tags: example.tags || []
             });
         }
     };
+
+    const hasExample = taskExamples[taskData.type] && taskExamples[taskData.type].length > 0;
 
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -104,14 +109,16 @@ export const TaskForm: React.FC<{
                         <p className="text-sm text-text-primary">
                             💡 <strong>Modo Iniciante Ativado:</strong> Passe o mouse sobre os ícones de ajuda (ℹ️) para ver explicações detalhadas de cada campo.
                         </p>
-                        <button
-                            type="button"
-                            onClick={handleLoadExample}
-                            className="btn btn-secondary text-xs whitespace-nowrap flex-shrink-0"
-                            title="Preencher formulário com um exemplo"
-                        >
-                            📝 Usar Exemplo
-                        </button>
+                        {hasExample && !existingTask && (
+                            <button
+                                type="button"
+                                onClick={handleLoadExample}
+                                className="btn btn-secondary text-xs whitespace-nowrap flex-shrink-0"
+                                title="Preencher formulário com um exemplo"
+                            >
+                                📝 Usar Exemplo
+                            </button>
+                        )}
                     </div>
                 </div>
             )}
