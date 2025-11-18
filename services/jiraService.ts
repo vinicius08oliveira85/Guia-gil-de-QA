@@ -87,7 +87,7 @@ const jiraApiCall = async <T>(
     endpoint: string,
     options: { method?: string; body?: any; timeout?: number } = {}
 ): Promise<T> => {
-    const timeout = options.timeout || 30000; // 30 segundos por padrão
+    const timeout = options.timeout || 60000; // 60 segundos por padrão (aumentado para projetos grandes)
     
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeout);

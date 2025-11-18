@@ -296,23 +296,32 @@ export const JiraIntegration: React.FC<JiraIntegrationProps> = ({ onProjectImpor
                                 )}
                             </button>
                             {isImporting && (
-                                <div className="mt-2 p-3 bg-surface border border-surface-border rounded-lg">
-                                    <div className="flex items-center justify-between mb-2">
-                                        <span className="text-xs text-text-secondary">Importando tarefas do Jira...</span>
+                                <div className="mt-2 p-4 bg-surface border border-surface-border rounded-lg">
+                                    <div className="flex items-center justify-between mb-3">
+                                        <span className="text-sm font-medium text-text-primary">Importando tarefas do Jira...</span>
+                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-accent"></div>
                                     </div>
-                                    <div className="w-full bg-surface-hover rounded-full h-2">
+                                    <div className="w-full bg-surface-hover rounded-full h-2.5 mb-2">
                                         <div 
-                                            className="bg-accent h-2 rounded-full transition-all duration-300"
+                                            className="bg-accent h-2.5 rounded-full transition-all duration-300"
                                             style={{ 
                                                 width: importProgress?.total 
                                                     ? `${Math.min((importProgress.current / importProgress.total) * 100, 100)}%` 
-                                                    : '0%'
+                                                    : '50%'
                                             }}
                                         />
                                     </div>
-                                    <p className="text-xs text-text-secondary mt-2">
-                                        ⏳ Aguarde enquanto buscamos todas as tarefas. Projetos grandes podem levar alguns minutos.
-                                    </p>
+                                    <div className="space-y-1 text-xs text-text-secondary">
+                                        <p>
+                                            ⏳ <strong>Aguarde...</strong> Projetos grandes podem levar vários minutos.
+                                        </p>
+                                        <p>
+                                            📊 Verifique o console do navegador (F12) para ver o progresso detalhado.
+                                        </p>
+                                        <p className="text-accent">
+                                            💡 Não feche esta página durante a importação!
+                                        </p>
+                                    </div>
                                 </div>
                             )}
                         </div>

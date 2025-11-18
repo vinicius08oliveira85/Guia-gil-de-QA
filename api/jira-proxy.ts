@@ -22,16 +22,23 @@ export default async function handler(
     const credentials = Buffer.from(`${email}:${apiToken}`).toString('base64');
     const jiraUrl = `${url.replace(/\/$/, '')}/rest/api/3/${endpoint}`;
 
-    // Fazer requisição ao Jira
-    const response = await fetch(jiraUrl, {
-      method,
-      headers: {
-        'Authorization': `Basic ${credentials}`,
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: body ? JSON.stringify(body) : undefined,
-    });
+    // Fazer requisição ao Jira com timeout de 60 segundos
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 segundos
+
+    try {
+      const response = await fetch(jiraUrl, {
+        method,
+        headers: {
+          'Authorization': `Basic ${credentials}`,
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: body ? JSON.stringify(body) : undefined,
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
 
     if (!response.ok) {
       const errorText = await response.text();
