@@ -12,19 +12,17 @@ export interface KeyboardShortcut {
 export const useKeyboardShortcuts = (shortcuts: KeyboardShortcut[]) => {
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      const shortcut = shortcuts.find(s => {
-        const keyMatch = s.key.toLowerCase() === event.key.toLowerCase();
-        const ctrlMatch = s.ctrl ? event.ctrlKey || event.metaKey : !event.ctrlKey && !event.metaKey;
-        const shiftMatch = s.shift ? event.shiftKey : !event.shiftKey;
-        const altMatch = s.alt ? event.altKey : !event.altKey;
-        
-        return keyMatch && ctrlMatch && shiftMatch && altMatch;
-      });
+      shortcuts.forEach(shortcut => {
+        const ctrlMatch = shortcut.ctrl ? event.ctrlKey || event.metaKey : !event.ctrlKey && !event.metaKey;
+        const shiftMatch = shortcut.shift ? event.shiftKey : !event.shiftKey;
+        const altMatch = shortcut.alt ? event.altKey : !event.altKey;
+        const keyMatch = event.key.toLowerCase() === shortcut.key.toLowerCase();
 
-      if (shortcut) {
-        event.preventDefault();
-        shortcut.action();
-      }
+        if (ctrlMatch && shiftMatch && altMatch && keyMatch) {
+          event.preventDefault();
+          shortcut.action();
+        }
+      });
     };
 
     window.addEventListener('keydown', handleKeyDown);
@@ -32,11 +30,17 @@ export const useKeyboardShortcuts = (shortcuts: KeyboardShortcut[]) => {
   }, [shortcuts]);
 };
 
-export const SHORTCUTS = {
-  CREATE_PROJECT: { key: 'n', ctrl: true, description: 'Criar novo projeto' },
-  SAVE: { key: 's', ctrl: true, description: 'Salvar' },
-  SEARCH: { key: 'k', ctrl: true, description: 'Buscar' },
-  ESCAPE: { key: 'Escape', description: 'Fechar modal' },
-  DELETE: { key: 'Delete', description: 'Deletar item selecionado' },
-} as const;
+// Shortcuts padrão
+export const DEFAULT_SHORTCUTS: Omit<KeyboardShortcut, 'action'>[] = [
+  { key: 'k', ctrl: true, description: 'Abrir busca global' },
+  { key: 'n', ctrl: true, description: 'Criar novo projeto' },
+  { key: 's', ctrl: true, description: 'Salvar' },
+  { key: 'f', ctrl: true, description: 'Focar busca' },
+  { key: 'Escape', description: 'Fechar modais' },
+];
 
+// Shortcuts exportados para uso no App
+export const SHORTCUTS = {
+  SEARCH: { key: 'k', ctrl: true, description: 'Abrir busca global' },
+  ESCAPE: { key: 'Escape', description: 'Fechar modais' },
+};

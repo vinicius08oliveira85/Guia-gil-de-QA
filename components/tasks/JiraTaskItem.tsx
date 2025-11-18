@@ -9,6 +9,8 @@ import { CommentSection } from '../common/CommentSection';
 import { DependencyManager } from '../common/DependencyManager';
 import { AttachmentManager } from '../common/AttachmentManager';
 import { ChecklistView } from '../common/ChecklistView';
+import { EstimationInput } from '../common/EstimationInput';
+import { QuickActions } from '../common/QuickActions';
 import { getTagColor } from '../../utils/tagService';
 import { updateChecklistItem } from '../../utils/checklistService';
 
@@ -59,6 +61,7 @@ export const JiraTaskItem: React.FC<{
     const [detailLevel, setDetailLevel] = useState<TestCaseDetailLevel>('Padrão');
     const [showDependencies, setShowDependencies] = useState(false);
     const [showAttachments, setShowAttachments] = useState(false);
+    const [showEstimation, setShowEstimation] = useState(false);
     const hasTests = task.testCases && task.testCases.length > 0;
     const hasChildren = task.children && task.children.length > 0;
 

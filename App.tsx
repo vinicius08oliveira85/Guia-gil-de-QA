@@ -12,6 +12,7 @@ import { getAllProjects, addProject, updateProject, deleteProject } from './serv
 import { useErrorHandler } from './hooks/useErrorHandler';
 import { useSearch, SearchResult } from './hooks/useSearch';
 import { useKeyboardShortcuts, SHORTCUTS } from './hooks/useKeyboardShortcuts';
+import { KeyboardShortcutsHelp } from './components/common/KeyboardShortcutsHelp';
 import { PHASE_NAMES } from './utils/constants';
 import { createProjectFromTemplate } from './utils/projectTemplates';
 import { addAuditLog } from './utils/auditLog';
@@ -203,6 +204,7 @@ const App: React.FC = () => {
                         />
                     )}
                 </main>
+                <KeyboardShortcutsHelp />
             </div>
         </ErrorBoundary>
     );
