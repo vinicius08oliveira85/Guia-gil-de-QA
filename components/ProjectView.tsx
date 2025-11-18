@@ -69,7 +69,7 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
     
     const tabs = [
         { id: 'dashboard', label: 'Dashboard' },
-        { id: 'tasks', label: 'Tarefas & Testes' },
+        { id: 'tasks', label: 'Tarefas & Testes', 'data-onboarding': 'tasks-tab' },
         { id: 'timeline', label: 'Timeline' },
         { id: 'analysis', label: 'Análise IA' },
         { id: 'documents', label: 'Documentos' },

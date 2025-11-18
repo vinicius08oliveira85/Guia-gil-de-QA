@@ -17,6 +17,7 @@ import { AdvancedSearch } from './components/common/AdvancedSearch';
 import { ProjectComparison } from './components/common/ProjectComparison';
 import { JiraIntegration } from './components/jira/JiraIntegration';
 import { LearningPathView } from './components/learning/LearningPathView';
+import { OnboardingGuide } from './components/onboarding/OnboardingGuide';
 import { PHASE_NAMES } from './utils/constants';
 import { createProjectFromTemplate } from './utils/projectTemplates';
 import { addAuditLog } from './utils/auditLog';
@@ -266,6 +267,7 @@ const App: React.FC = () => {
                     )}
                 </main>
                 <KeyboardShortcutsHelp />
+                <OnboardingGuide />
             </div>
         </ErrorBoundary>
     );
