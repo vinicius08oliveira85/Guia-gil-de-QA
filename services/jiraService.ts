@@ -389,8 +389,22 @@ export const syncJiraProject = async (
             task.severity = mapJiraSeverity(issue.fields.labels);
         }
 
-        if (issue.fields.parent) {
+        if (issue.fields?.parent?.key) {
             task.parentId = issue.fields.parent.key;
+        }
+
+        // Mapear assignee
+        if (issue.fields?.assignee?.emailAddress) {
+            const email = issue.fields.assignee.emailAddress.toLowerCase();
+            if (email.includes('qa') || email.includes('test')) {
+                task.assignee = 'QA';
+            } else if (email.includes('dev') || email.includes('developer')) {
+                task.assignee = 'Dev';
+            } else {
+                task.assignee = 'Product';
+            }
+        } else {
+            task.assignee = existingIndex >= 0 ? updatedTasks[existingIndex].assignee : 'Product';
         }
 
         if (existingIndex >= 0) {
