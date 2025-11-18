@@ -18,14 +18,14 @@ Aplicativo completo para gestão de projetos de QA seguindo metodologias ágeis 
 - React 19
 - TypeScript
 - Vite
-- Google Gemini AI
+- **IA Flexível**: Suporte para OpenAI (GPT-4) ou Google Gemini AI
 - IndexedDB (armazenamento local)
 - Tailwind CSS
 
 ## Pré-requisitos
 
 - Node.js (versão 18 ou superior)
-- Chave de API do Google Gemini
+- Chave de API de IA (OpenAI ou Google Gemini)
 
 ## Instalação e Execução Local
 
@@ -40,16 +40,30 @@ Aplicativo completo para gestão de projetos de QA seguindo metodologias ágeis 
    npm install
    ```
 
-3. Configure a variável de ambiente:
+3. Configure a variável de ambiente para IA:
+   
+   **Opção 1: OpenAI (Recomendado)**
    
    Crie um arquivo `.env.local` na raiz do projeto e adicione:
    ```
-   VITE_GEMINI_API_KEY=sua_chave_api_aqui
+   VITE_OPENAI_API_KEY=sua_chave_openai_aqui
    ```
+   
+   **Opção 2: Google Gemini**
+   
+   ```
+   VITE_GEMINI_API_KEY=sua_chave_gemini_aqui
+   ```
+   
+   **Nota**: Se ambas as chaves estiverem configuradas, o aplicativo usará OpenAI por padrão.
    
    Ou configure diretamente no sistema:
    ```bash
-   export VITE_GEMINI_API_KEY=sua_chave_api_aqui
+   # Para OpenAI
+   export VITE_OPENAI_API_KEY=sua_chave_openai_aqui
+   
+   # Para Gemini
+   export VITE_GEMINI_API_KEY=sua_chave_gemini_aqui
    ```
 
 4. Execute o aplicativo:
@@ -84,7 +98,18 @@ Aplicativo completo para gestão de projetos de QA seguindo metodologias ágeis 
 
 ## Armazenamento
 
-O aplicativo utiliza IndexedDB para armazenamento local no navegador. Todos os dados são salvos localmente e não são enviados para servidores externos (exceto chamadas à API do Gemini para funcionalidades de IA).
+O aplicativo utiliza IndexedDB para armazenamento local no navegador. Todos os dados são salvos localmente e não são enviados para servidores externos (exceto chamadas às APIs de IA - OpenAI ou Gemini - para funcionalidades de geração de conteúdo).
+
+## Escolhendo o Provedor de IA
+
+O aplicativo suporta múltiplos provedores de IA e escolhe automaticamente baseado nas variáveis de ambiente configuradas:
+
+1. **OpenAI** (prioridade): Se `VITE_OPENAI_API_KEY` estiver configurada
+2. **Google Gemini**: Se apenas `VITE_GEMINI_API_KEY` estiver configurada
+
+Você pode obter chaves de API em:
+- **OpenAI**: https://platform.openai.com/api-keys
+- **Google Gemini**: https://makersuite.google.com/app/apikey
 
 ## Licença
 
