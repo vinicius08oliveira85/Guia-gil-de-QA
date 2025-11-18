@@ -40,16 +40,26 @@ export default async function handler(
 
       clearTimeout(timeoutId);
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      res.status(response.status).json({ 
-        error: `Jira API Error (${response.status}): ${errorText}` 
-      });
-      return;
-    }
+      if (!response.ok) {
+        const errorText = await response.text();
+        res.status(response.status).json({ 
+          error: `Jira API Error (${response.status}): ${errorText}` 
+        });
+        return;
+      }
 
-    const data = await response.json();
-    res.status(200).json(data);
+      const data = await response.json();
+      res.status(200).json(data);
+    } catch (fetchError) {
+      clearTimeout(timeoutId);
+      if (fetchError instanceof Error && fetchError.name === 'AbortError') {
+        res.status(504).json({ 
+          error: 'Timeout: A requisição ao Jira demorou mais de 60 segundos' 
+        });
+        return;
+      }
+      throw fetchError;
+    }
   } catch (error) {
     console.error('Jira proxy error:', error);
     res.status(500).json({ 
@@ -57,4 +67,3 @@ export default async function handler(
     });
   }
 }
-
