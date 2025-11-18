@@ -91,41 +91,53 @@ const jiraApiCall = async <T>(
     const timeoutId = setTimeout(() => controller.abort(), timeout);
 
     try {
+        const requestBody = {
+            url: config.url,
+            email: config.email,
+            apiToken: config.apiToken,
+            endpoint,
+            method: options.method || 'GET',
+            body: options.body ? (typeof options.body === 'string' ? JSON.parse(options.body) : options.body) : undefined,
+        };
+        
+        console.log('Fazendo requisição ao proxy Jira:', { endpoint, method: requestBody.method });
+        
         const response = await fetch('/api/jira-proxy', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({
-                url: config.url,
-                email: config.email,
-                apiToken: config.apiToken,
-                endpoint,
-                method: options.method || 'GET',
-                body: options.body ? (typeof options.body === 'string' ? JSON.parse(options.body) : options.body) : undefined,
-            }),
+            body: JSON.stringify(requestBody),
             signal: controller.signal,
         });
 
         clearTimeout(timeoutId);
 
+        console.log('Resposta do proxy:', { status: response.status, ok: response.ok });
+
         if (!response.ok) {
             let errorData: { error?: string };
             try {
                 errorData = await response.json();
+                console.error('Erro do proxy:', errorData);
             } catch {
                 const errorText = await response.text();
+                console.error('Erro do proxy (texto):', errorText);
                 errorData = { error: errorText };
             }
             throw new Error(errorData.error || `Jira API Error (${response.status})`);
         }
 
-        return response.json();
+        const data = await response.json();
+        console.log('Dados recebidos do proxy:', data);
+        return data;
     } catch (error) {
         clearTimeout(timeoutId);
         if (error instanceof Error && error.name === 'AbortError') {
+            console.error('Timeout na requisição');
             throw new Error(`Timeout: A requisição demorou mais de ${timeout / 1000} segundos. Verifique sua conexão ou tente novamente.`);
         }
+        console.error('Erro na requisição:', error);
         throw error;
     }
 };
@@ -141,12 +153,39 @@ export const testJiraConnection = async (config: JiraConfig): Promise<boolean> =
 };
 
 export const getJiraProjects = async (config: JiraConfig): Promise<JiraProject[]> => {
-    const response = await jiraApiCall<{ values?: JiraProject[] }>(
-        config, 
-        'project?maxResults=100',
-        { timeout: 15000 } // 15 segundos para listar projetos
-    );
-    return Array.isArray(response.values) ? response.values : [];
+    console.log('Buscando projetos do Jira...', { url: config.url, endpoint: 'project?maxResults=100' });
+    
+    try {
+        const response = await jiraApiCall<{ values?: JiraProject[] }>(
+            config, 
+            'project?maxResults=100',
+            { timeout: 20000 } // 20 segundos para listar projetos
+        );
+        
+        console.log('Resposta do Jira:', response);
+        
+        if (!response) {
+            console.error('Resposta vazia do Jira');
+            throw new Error('Resposta vazia do servidor Jira');
+        }
+        
+        if (Array.isArray(response.values)) {
+            console.log(`Encontrados ${response.values.length} projetos`);
+            return response.values;
+        }
+        
+        // Tentar outras estruturas de resposta possíveis
+        if (Array.isArray(response)) {
+            console.log(`Encontrados ${response.length} projetos (formato alternativo)`);
+            return response;
+        }
+        
+        console.warn('Formato de resposta inesperado:', response);
+        return [];
+    } catch (error) {
+        console.error('Erro em getJiraProjects:', error);
+        throw error;
+    }
 };
 
 export const getJiraIssues = async (

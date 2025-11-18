@@ -47,19 +47,25 @@ export const JiraIntegration: React.FC<JiraIntegrationProps> = ({ onProjectImpor
                     const { projects, timestamp } = JSON.parse(cached);
                     const cacheAge = Date.now() - timestamp;
                     if (cacheAge < 5 * 60 * 1000) { // 5 minutos
+                        console.log('Usando projetos do cache:', projects.length);
                         setJiraProjects(projects);
                         return;
                     }
                 } catch (e) {
+                    console.warn('Cache inválido, continuando com requisição');
                     // Cache inválido, continuar com requisição
                 }
             }
         }
 
         setIsLoadingProjects(true);
+        console.log('Carregando projetos do Jira...', { url: jiraConfig.url, email: jiraConfig.email });
+        
         try {
             const projects = await getJiraProjects(jiraConfig);
-            if (Array.isArray(projects)) {
+            console.log('Projetos recebidos do Jira:', projects.length, projects);
+            
+            if (Array.isArray(projects) && projects.length > 0) {
                 setJiraProjects(projects);
                 // Salvar no cache
                 const cacheKey = `jira_projects_${jiraConfig.url}`;
@@ -67,12 +73,20 @@ export const JiraIntegration: React.FC<JiraIntegrationProps> = ({ onProjectImpor
                     projects,
                     timestamp: Date.now()
                 }));
-            } else {
+                console.log('Projetos salvos no cache');
+            } else if (Array.isArray(projects) && projects.length === 0) {
+                console.warn('Nenhum projeto encontrado no Jira');
                 setJiraProjects([]);
+                handleError(new Error('Nenhum projeto encontrado no Jira. Verifique se você tem acesso a projetos.'), 'Carregar Projetos');
+            } else {
+                console.error('Resposta inválida do Jira:', projects);
+                setJiraProjects([]);
+                handleError(new Error('Resposta inválida do servidor Jira'), 'Carregar Projetos');
             }
         } catch (error) {
             console.error('Erro ao carregar projetos do Jira:', error);
-            handleError(error instanceof Error ? error : new Error('Erro ao carregar projetos do Jira'), 'Carregar Projetos');
+            const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido ao carregar projetos do Jira';
+            handleError(new Error(errorMessage), 'Carregar Projetos');
             setJiraProjects([]);
         } finally {
             setIsLoadingProjects(false);
@@ -207,6 +221,7 @@ export const JiraIntegration: React.FC<JiraIntegrationProps> = ({ onProjectImpor
                             <div className="flex flex-col items-center gap-3">
                                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div>
                                 <p className="text-text-secondary text-sm">Carregando projetos do Jira...</p>
+                                <p className="text-text-secondary text-xs">Isso pode levar alguns segundos</p>
                             </div>
                         </div>
                     ) : jiraProjects.length > 0 ? (
