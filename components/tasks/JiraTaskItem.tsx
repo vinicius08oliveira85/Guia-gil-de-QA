@@ -215,6 +215,17 @@ export const JiraTaskItem: React.FC<{
                                     </div>
                                 </div>
                             )}
+
+                            {onAddComment && (
+                                <div className="mt-6 pt-6 border-t border-surface-border">
+                                    <CommentSection
+                                        comments={task.comments || []}
+                                        onAddComment={(content) => onAddComment(content)}
+                                        onEditComment={(commentId, content) => onEditComment?.(commentId, content)}
+                                        onDeleteComment={(commentId) => onDeleteComment?.(commentId)}
+                                    />
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}
