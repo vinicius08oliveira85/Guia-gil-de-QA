@@ -211,7 +211,7 @@ export const getJiraIssues = async (
             maxResults: number;
         }>(
             config,
-            `search?jql=${encodeURIComponent(jql)}&startAt=${startAt}&maxResults=${pageSize}&expand=renderedFields&fields=summary,description,issuetype,status,priority,assignee,reporter,created,updated,resolutiondate,labels,parent,subtasks`
+            `search/jql?jql=${encodeURIComponent(jql)}&startAt=${startAt}&maxResults=${pageSize}&expand=renderedFields&fields=summary,description,issuetype,status,priority,assignee,reporter,created,updated,resolutiondate,labels,parent,subtasks`
         );
         
         console.log(`📦 Página ${Math.floor(startAt / pageSize) + 1}: Recebidas ${response.issues?.length || 0} issues de ${response.total || 0} total`);
