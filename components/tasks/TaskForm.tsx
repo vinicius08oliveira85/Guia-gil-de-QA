@@ -4,6 +4,9 @@ import { JiraTask, JiraTaskType, BugSeverity, TeamRole, TaskPriority } from '../
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import { TagInput } from '../common/TagInput';
 import { RichTextEditor } from '../common/RichTextEditor';
+import { HelpTooltip } from '../common/HelpTooltip';
+import { helpContent } from '../../utils/helpContent';
+import { useBeginnerMode } from '../../hooks/useBeginnerMode';
 
 export const TaskForm: React.FC<{
     onSave: (task: Omit<JiraTask, 'testCases' | 'status' | 'testStrategy' | 'bddScenarios' | 'createdAt' | 'completedAt'>) => void;
@@ -13,6 +16,7 @@ export const TaskForm: React.FC<{
     parentId?: string;
 }> = ({ onSave, onCancel, existingTask, epics, parentId }) => {
     const { handleWarning } = useErrorHandler();
+    const { isBeginnerMode } = useBeginnerMode();
     const [taskData, setTaskData] = useState({
         id: existingTask?.id || '',
         title: existingTask?.title || '',
@@ -26,12 +30,42 @@ export const TaskForm: React.FC<{
         tags: existingTask?.tags || []
     });
 
+    const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+
+    const validateForm = (): boolean => {
+        const errors: Record<string, string> = {};
+
+        // Validar ID
+        if (!taskData.id || taskData.id.trim() === '') {
+            errors.id = 'ID da tarefa é obrigatório. Exemplo: PROJ-001';
+        } else if (taskData.id.length < 3) {
+            errors.id = 'ID muito curto. Use pelo menos 3 caracteres. Exemplo: PROJ-001';
+        }
+
+        // Validar Título
+        if (!taskData.title || taskData.title.trim() === '') {
+            errors.title = 'Título é obrigatório. Descreva o que precisa ser feito.';
+        } else if (taskData.title.length < 5) {
+            errors.title = 'Título muito curto. Seja mais descritivo. Exemplo: "Implementar login com email"';
+        }
+
+        // Validar Descrição (opcional, mas recomendada)
+        if (isBeginnerMode && (!taskData.description || taskData.description.trim() === '')) {
+            errors.description = '💡 Dica: Adicione uma descrição detalhada para ajudar a entender o que precisa ser feito.';
+        }
+
+        setValidationErrors(errors);
+        return Object.keys(errors).length === 0;
+    };
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!taskData.id || !taskData.title) {
-            handleWarning("ID da Tarefa e Título são obrigatórios.");
+        
+        if (!validateForm()) {
+            handleWarning("Por favor, corrija os erros no formulário antes de salvar.");
             return;
         }
+
         const { severity, ...restOfTaskData } = taskData;
         
         const taskToSave: any = {
@@ -44,21 +78,79 @@ export const TaskForm: React.FC<{
             taskToSave.severity = severity as BugSeverity;
         }
         onSave(taskToSave);
+        setValidationErrors({});
     };
 
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
+            {isBeginnerMode && (
+                <div className="mb-4 p-4 bg-accent/10 border border-accent/30 rounded-lg">
+                    <p className="text-sm text-text-primary">
+                        💡 <strong>Modo Iniciante Ativado:</strong> Passe o mouse sobre os ícones de ajuda (ℹ️) para ver explicações detalhadas de cada campo.
+                    </p>
+                </div>
+            )}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label htmlFor="id" className="block text-sm font-medium text-text-secondary mb-1">ID da Tarefa (ex: PROJ-123)</label>
-                    <input type="text" id="id" value={taskData.id} onChange={(e) => setTaskData({ ...taskData, id: e.target.value })} required />
+                    <label htmlFor="id" className="flex items-center gap-2 text-sm font-medium text-text-secondary mb-1">
+                        ID da Tarefa (ex: PROJ-123)
+                        <HelpTooltip 
+                            title={helpContent.task.fields.id.title}
+                            content={helpContent.task.fields.id.content}
+                        />
+                    </label>
+                    <input 
+                        type="text" 
+                        id="id" 
+                        value={taskData.id} 
+                        onChange={(e) => {
+                            setTaskData({ ...taskData, id: e.target.value });
+                            if (validationErrors.id) {
+                                setValidationErrors({ ...validationErrors, id: '' });
+                            }
+                        }}
+                        placeholder={isBeginnerMode ? "Ex: PROJ-001, LOGIN-001" : ""}
+                        className={validationErrors.id ? 'border-red-500' : ''}
+                        required 
+                    />
+                    {validationErrors.id && (
+                        <p className="text-xs text-red-400 mt-1">{validationErrors.id}</p>
+                    )}
                 </div>
                 <div>
-                    <label htmlFor="title" className="block text-sm font-medium text-text-secondary mb-1">Título</label>
-                    <input type="text" id="title" value={taskData.title} onChange={(e) => setTaskData({ ...taskData, title: e.target.value })} required />
+                    <label htmlFor="title" className="flex items-center gap-2 text-sm font-medium text-text-secondary mb-1">
+                        Título
+                        <HelpTooltip 
+                            title={helpContent.task.fields.title.title}
+                            content={helpContent.task.fields.title.content}
+                        />
+                    </label>
+                    <input 
+                        type="text" 
+                        id="title" 
+                        value={taskData.title} 
+                        onChange={(e) => {
+                            setTaskData({ ...taskData, title: e.target.value });
+                            if (validationErrors.title) {
+                                setValidationErrors({ ...validationErrors, title: '' });
+                            }
+                        }}
+                        placeholder={isBeginnerMode ? "Ex: Implementar login com email" : ""}
+                        className={validationErrors.title ? 'border-red-500' : ''}
+                        required 
+                    />
+                    {validationErrors.title && (
+                        <p className="text-xs text-red-400 mt-1">{validationErrors.title}</p>
+                    )}
                 </div>
                 <div>
-                    <label htmlFor="type" className="block text-sm font-medium text-text-secondary mb-1">Tipo</label>
+                    <label htmlFor="type" className="flex items-center gap-2 text-sm font-medium text-text-secondary mb-1">
+                        Tipo
+                        <HelpTooltip 
+                            title={helpContent.task.fields.type.title}
+                            content={helpContent.task.fields.type.content}
+                        />
+                    </label>
                     <select id="type" value={taskData.type} onChange={e => setTaskData({ ...taskData, type: e.target.value as JiraTaskType, parentId: e.target.value === 'Epic' ? '' : taskData.parentId })}>
                         <option value="Epic">Epic</option>
                         <option value="História">História</option>
@@ -67,7 +159,13 @@ export const TaskForm: React.FC<{
                     </select>
                 </div>
                 <div>
-                    <label htmlFor="priority" className="block text-sm font-medium text-text-secondary mb-1">Prioridade</label>
+                    <label htmlFor="priority" className="flex items-center gap-2 text-sm font-medium text-text-secondary mb-1">
+                        Prioridade
+                        <HelpTooltip 
+                            title={helpContent.task.fields.priority.title}
+                            content={helpContent.task.fields.priority.content}
+                        />
+                    </label>
                     <select id="priority" value={taskData.priority} onChange={e => setTaskData({ ...taskData, priority: e.target.value as TaskPriority })}>
                         <option value="Baixa">Baixa</option>
                         <option value="Média">Média</option>
@@ -77,7 +175,13 @@ export const TaskForm: React.FC<{
                 </div>
                 {taskData.type === 'Bug' && (
                      <div>
-                        <label htmlFor="severity" className="block text-sm font-medium text-text-secondary mb-1">Severidade</label>
+                        <label htmlFor="severity" className="flex items-center gap-2 text-sm font-medium text-text-secondary mb-1">
+                            Severidade
+                            <HelpTooltip 
+                                title={helpContent.task.fields.severity.title}
+                                content={helpContent.task.fields.severity.content}
+                            />
+                        </label>
                         <select id="severity" value={taskData.severity} onChange={e => setTaskData({ ...taskData, severity: e.target.value as BugSeverity })}>
                             <option value="Crítico">Crítico</option>
                             <option value="Alto">Alto</option>
@@ -88,7 +192,13 @@ export const TaskForm: React.FC<{
                 )}
                 {taskData.type !== 'Epic' && (
                     <div>
-                        <label htmlFor="parentId" className="block text-sm font-medium text-text-secondary mb-1">Vincular ao Epic (Opcional)</label>
+                        <label htmlFor="parentId" className="flex items-center gap-2 text-sm font-medium text-text-secondary mb-1">
+                            Vincular ao Epic (Opcional)
+                            <HelpTooltip 
+                                title={helpContent.task.fields.parentId.title}
+                                content={helpContent.task.fields.parentId.content}
+                            />
+                        </label>
                         <select id="parentId" value={taskData.parentId} onChange={e => setTaskData({ ...taskData, parentId: e.target.value })}>
                             <option value="">Nenhum</option>
                             {epics.map(epic => <option key={epic.id} value={epic.id}>{epic.id}: {epic.title}</option>)}
@@ -96,7 +206,13 @@ export const TaskForm: React.FC<{
                     </div>
                 )}
                  <div>
-                    <label htmlFor="owner" className="block text-sm font-medium text-text-secondary mb-1">Dono (Owner)</label>
+                    <label htmlFor="owner" className="flex items-center gap-2 text-sm font-medium text-text-secondary mb-1">
+                        Dono (Owner)
+                        <HelpTooltip 
+                            title={helpContent.task.fields.owner.title}
+                            content={helpContent.task.fields.owner.content}
+                        />
+                    </label>
                     <select id="owner" value={taskData.owner} onChange={e => setTaskData({ ...taskData, owner: e.target.value as TeamRole })}>
                         <option value="Product">Produto</option>
                         <option value="QA">QA</option>
@@ -104,7 +220,13 @@ export const TaskForm: React.FC<{
                     </select>
                 </div>
                 <div>
-                    <label htmlFor="assignee" className="block text-sm font-medium text-text-secondary mb-1">Responsável (Assignee)</label>
+                    <label htmlFor="assignee" className="flex items-center gap-2 text-sm font-medium text-text-secondary mb-1">
+                        Responsável (Assignee)
+                        <HelpTooltip 
+                            title={helpContent.task.fields.assignee.title}
+                            content={helpContent.task.fields.assignee.content}
+                        />
+                    </label>
                     <select id="assignee" value={taskData.assignee} onChange={e => setTaskData({ ...taskData, assignee: e.target.value as TeamRole })}>
                         <option value="Product">Produto</option>
                         <option value="QA">QA</option>
@@ -113,15 +235,46 @@ export const TaskForm: React.FC<{
                 </div>
             </div>
             <div>
+                <label className="flex items-center gap-2 text-sm font-medium text-text-secondary mb-1">
+                    Descrição
+                    <HelpTooltip 
+                        title={helpContent.task.fields.description.title}
+                        content={helpContent.task.fields.description.content}
+                    />
+                </label>
+                {isBeginnerMode && (
+                    <p className="text-xs text-text-secondary mb-2">
+                        💡 Inclua: contexto, requisitos, critérios de aceite e exemplos.
+                    </p>
+                )}
                 <RichTextEditor
                     value={taskData.description}
-                    onChange={(value) => setTaskData({ ...taskData, description: value })}
-                    placeholder="Digite a descrição da tarefa..."
+                    onChange={(value) => {
+                        setTaskData({ ...taskData, description: value });
+                        if (validationErrors.description) {
+                            setValidationErrors({ ...validationErrors, description: '' });
+                        }
+                    }}
+                    placeholder={isBeginnerMode ? "Ex: Implementar login...\n\nContexto: Usuários precisam acessar o sistema...\n\nRequisitos:\n- Campo de email\n- Campo de senha\n..." : "Digite a descrição da tarefa..."}
                     taskId={taskData.id || undefined}
                 />
+                {validationErrors.description && (
+                    <p className="text-xs text-yellow-400 mt-1">{validationErrors.description}</p>
+                )}
             </div>
             <div>
-                <label className="block text-sm font-medium text-text-secondary mb-1">Tags</label>
+                <label className="flex items-center gap-2 text-sm font-medium text-text-secondary mb-1">
+                    Tags
+                    <HelpTooltip 
+                        title={helpContent.task.fields.tags.title}
+                        content={helpContent.task.fields.tags.content}
+                    />
+                </label>
+                {isBeginnerMode && (
+                    <p className="text-xs text-text-secondary mb-2">
+                        💡 Exemplos: "login", "pagamento", "mobile", "api"
+                    </p>
+                )}
                 <TagInput
                     tags={taskData.tags || []}
                     onChange={(tags) => setTaskData({ ...taskData, tags })}

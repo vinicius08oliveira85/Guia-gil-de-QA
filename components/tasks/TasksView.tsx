@@ -15,6 +15,9 @@ import { notifyTestFailed, notifyBugCreated } from '../../utils/notificationServ
 import { createTestCaseFromTemplate } from '../../utils/testCaseTemplates';
 import { Comment } from '../../types';
 import { BulkActions } from '../common/BulkActions';
+import { TaskCreationWizard } from './TaskCreationWizard';
+import { useBeginnerMode } from '../../hooks/useBeginnerMode';
+import { useLocalStorage } from '../../hooks/useLocalStorage';
 
 export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: Project) => void }> = ({ project, onUpdateProject }) => {
     const [generatingTestsTaskId, setGeneratingTestsTaskId] = useState<string | null>(null);
@@ -28,6 +31,9 @@ export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: 
     const [isTaskFormOpen, setIsTaskFormOpen] = useState(false);
     const [editingTask, setEditingTask] = useState<JiraTask | undefined>(undefined);
     const [defaultParentId, setDefaultParentId] = useState<string | undefined>(undefined);
+    const [showWizard, setShowWizard] = useState(false);
+    const { isBeginnerMode } = useBeginnerMode();
+    const [hasSeenWizard, setHasSeenWizard] = useLocalStorage<boolean>('task_creation_wizard_seen', false);
     const [failModalState, setFailModalState] = useState<{
         isOpen: boolean;
         taskId: string | null;
@@ -218,8 +224,20 @@ export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: 
     };
     
     const openTaskFormForNew = (parentId?: string) => {
+        // Se é modo iniciante, não viu o wizard ainda, e não tem tarefas, mostrar wizard
+        if (isBeginnerMode && !hasSeenWizard && project.tasks.length === 0) {
+            setShowWizard(true);
+            return;
+        }
         setEditingTask(undefined);
         setDefaultParentId(parentId);
+        setIsTaskFormOpen(true);
+    };
+
+    const handleWizardStart = () => {
+        setHasSeenWizard(true);
+        setDefaultParentId(undefined);
+        setEditingTask(undefined);
         setIsTaskFormOpen(true);
     };
 
@@ -346,7 +364,14 @@ export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: 
                 <div>{renderTaskTree(taskTree, 0)}</div>
             ) : (
                 <div className="text-center py-8">
-                    <p className="text-text-secondary">Nenhuma tarefa criada ainda.</p>
+                    <p className="text-text-secondary mb-4">Nenhuma tarefa criada ainda.</p>
+                    {isBeginnerMode && (
+                        <div className="mt-4 p-4 bg-accent/10 border border-accent/30 rounded-lg max-w-2xl mx-auto">
+                            <p className="text-sm text-text-primary mb-2">
+                                💡 <strong>Dica:</strong> Clique em "Adicionar Tarefa" para ver um guia passo a passo de como criar sua primeira tarefa!
+                            </p>
+                        </div>
+                    )}
                 </div>
             )}
         </Card>
@@ -415,6 +440,12 @@ export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: 
                 />
             )}
         </Modal>
+
+        <TaskCreationWizard
+            isOpen={showWizard}
+            onClose={() => setShowWizard(false)}
+            onStart={handleWizardStart}
+        />
         </>
     );
 };

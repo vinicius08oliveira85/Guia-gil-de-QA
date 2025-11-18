@@ -22,24 +22,91 @@ const onboardingSteps: OnboardingStep[] = [
 • Como criar e executar testes
 • Métricas e análise de qualidade
 • BDD e outras metodologias
+• Automação do seu trabalho de QA
+
+**Modo Iniciante Ativado:**
+O modo iniciante (🎓) está ativado por padrão. Você verá:
+• Explicações detalhadas em cada campo
+• Dicas contextuais
+• Guias passo a passo
+• Marcos de processo visuais
 
 Vamos começar? Clique em "Próximo" para continuar.`
     },
     {
         id: 'projects',
-        title: 'Projetos',
-        content: helpContent.project.create.content,
+        title: 'Passo 1: Criar seu Primeiro Projeto',
+        content: `Um projeto é o container principal para organizar suas atividades de QA.
+
+**O que incluir:**
+• Nome claro e descritivo (ex: "Sistema de Login")
+• Descrição dos objetivos
+• Template (opcional) para começar rapidamente
+
+**Dica:** Use templates para projetos comuns como "Aplicação Web" ou "API REST" para ter uma estrutura inicial pronta.
+
+**Próximo passo:** Depois de criar o projeto, você poderá adicionar tarefas e começar a trabalhar!`,
         target: '[data-onboarding="create-project"]'
     },
     {
         id: 'tasks',
-        title: 'Tarefas e Casos de Teste',
-        content: helpContent.task.testCases.content,
+        title: 'Passo 2: Criar Tarefas',
+        content: `Tarefas representam funcionalidades ou bugs que precisam ser testados.
+
+**Tipos de Tarefa:**
+• **História**: Nova funcionalidade (ex: "Usuário pode fazer login")
+• **Bug**: Defeito encontrado (ex: "Botão não funciona")
+• **Tarefa**: Trabalho técnico (ex: "Configurar ambiente")
+• **Epic**: Grupo de histórias relacionadas (ex: "Sistema de Autenticação")
+
+**Dica:** Quando criar sua primeira tarefa, um guia passo a passo vai te ajudar!
+
+**Marcos de Processo:**
+Cada tarefa mostra em qual fase do projeto está (Request, Analysis, Design, Test, etc.)`,
         target: '[data-onboarding="tasks-tab"]'
     },
     {
+        id: 'testcases',
+        title: 'Passo 3: Criar Casos de Teste',
+        content: `Casos de teste são passos específicos para validar uma funcionalidade.
+
+**Estrutura:**
+• **Descrição**: O que está sendo testado
+• **Passos**: Como executar o teste
+• **Resultado Esperado**: O que deveria acontecer
+
+**Status:**
+• **Não Executado**: Ainda não foi testado
+• **Passou**: Teste executado com sucesso ✅
+• **Falhou**: Teste encontrou um problema ❌
+
+**Dica:** Use a IA para gerar casos de teste automaticamente, mas sempre revise e ajuste conforme necessário.
+
+**Templates:** Use templates pré-definidos para acelerar a criação!`
+    },
+    {
+        id: 'timeline',
+        title: 'Passo 4: Acompanhar o Progresso',
+        content: `O aplicativo mostra automaticamente em qual fase do projeto você está.
+
+**Fases do Projeto:**
+1. **Request**: Início - criar tarefas e documentos
+2. **Analysis**: Criar cenários BDD
+3. **Design**: Criar casos de teste
+4. **Test**: Executar testes
+5. **Release**: Preparar para produção
+6. E mais...
+
+**Marcos Visuais:**
+• Cada tarefa mostra um badge com a fase atual
+• A Timeline mostra o progresso completo
+• Próximos passos são sugeridos automaticamente
+
+**Dica:** Siga os "Próximos passos" sugeridos em cada tarefa para avançar no projeto!`
+    },
+    {
         id: 'learning',
-        title: 'Trilha de Aprendizado',
+        title: 'Passo 5: Aprender QA Progressivamente',
         content: `A aba "🎓 Aprender QA" contém módulos progressivos que vão te ensinar QA passo a passo.
 
 **Como funciona:**
@@ -48,7 +115,46 @@ Vamos começar? Clique em "Próximo" para continuar.`
 • Tarefas práticas criam projetos reais
 • Seu progresso é salvo automaticamente
 
-Comece pelo módulo "Fundamentos de QA" para aprender o básico!`
+**Módulos Disponíveis:**
+1. Fundamentos de QA
+2. Tipos de Teste
+3. Casos de Teste
+4. BDD (Behavior Driven Development)
+5. E mais...
+
+**Dica:** Comece pelo módulo "Fundamentos de QA" para aprender o básico!
+
+**Modo Iniciante:**
+Mantenha o modo iniciante (🎓) ativado para ver explicações extras durante o aprendizado!`
+    },
+    {
+        id: 'complete',
+        title: 'Pronto para Começar! 🚀',
+        content: `Agora você está pronto para usar o aplicativo!
+
+**Resumo do que você aprendeu:**
+✅ Como criar projetos
+✅ Como criar tarefas com explicações detalhadas
+✅ Como criar casos de teste
+✅ Como acompanhar o progresso com marcos visuais
+✅ Como aprender QA progressivamente
+
+**Recursos Disponíveis:**
+• 🎓 Modo Iniciante: Ativado (veja o ícone no header)
+• ℹ️ Tooltips: Passe o mouse sobre os ícones de ajuda
+• 📋 Templates: Use para acelerar a criação
+• 🧠 IA: Gere casos de teste e análises automaticamente
+• 📊 Dashboard: Acompanhe métricas e progresso
+
+**Próximos Passos:**
+1. Crie seu primeiro projeto
+2. Adicione uma tarefa (o wizard vai te guiar!)
+3. Explore a trilha de aprendizado
+4. Use os tooltips sempre que tiver dúvidas
+
+**Lembre-se:** O modo iniciante está ativado. Você verá dicas e explicações em todo lugar!
+
+Boa sorte! 🎉`
     }
 ];
 

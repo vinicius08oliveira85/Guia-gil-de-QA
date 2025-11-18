@@ -14,6 +14,9 @@ import { QuickActions } from '../common/QuickActions';
 import { TimeTracker } from '../common/TimeTracker';
 import { getTagColor } from '../../utils/tagService';
 import { updateChecklistItem } from '../../utils/checklistService';
+import { getTaskPhase, getPhaseBadgeStyle, getNextStepForTask } from '../../utils/taskPhaseHelper';
+import { useProjectMetrics } from '../../hooks/useProjectMetrics';
+import { useBeginnerMode } from '../../hooks/useBeginnerMode';
 
 // Componente para renderizar descrição com suporte a imagens
 const DescriptionRenderer: React.FC<{ description: string }> = ({ description }) => {
@@ -112,6 +115,11 @@ export const JiraTaskItem: React.FC<{
     const [showEstimation, setShowEstimation] = useState(false);
     const hasTests = task.testCases && task.testCases.length > 0;
     const hasChildren = task.children && task.children.length > 0;
+    const metrics = project ? useProjectMetrics(project) : { newPhases: [] };
+    const { isBeginnerMode } = useBeginnerMode();
+    const taskPhase = project ? getTaskPhase(task, metrics.newPhases) : null;
+    const phaseStyle = getPhaseBadgeStyle(taskPhase);
+    const nextStep = getNextStepForTask(task);
 
     const handleSaveScenario = (scenario: Omit<BddScenario, 'id'>) => {
         onSaveBddScenario(task.id, scenario, editingBddScenario?.id);
@@ -156,8 +164,19 @@ export const JiraTaskItem: React.FC<{
                              <div className="flex items-center gap-2 min-w-0 flex-1">
                                 <TaskStatusIcon status={task.status} />
                                 <div className="truncate flex-1">
-                                    <span className="font-semibold text-text-secondary text-sm truncate">{task.id}</span>
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                        <span className="font-semibold text-text-secondary text-sm truncate">{task.id}</span>
+                                        {taskPhase && (
+                                            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${phaseStyle.bg} ${phaseStyle.color} flex items-center gap-1`}>
+                                                <span>{phaseStyle.icon}</span>
+                                                <span>{taskPhase}</span>
+                                            </span>
+                                        )}
+                                    </div>
                                     <p className="text-text-primary truncate">{task.title}</p>
+                                    {isBeginnerMode && nextStep && (
+                                        <p className="text-xs text-accent mt-1">💡 Próximo: {nextStep}</p>
+                                    )}
                                     {task.tags && task.tags.length > 0 && (
                                         <div className="flex flex-wrap gap-1 mt-1">
                                             {task.tags.slice(0, 3).map(tag => (
