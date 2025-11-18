@@ -1,10 +1,8 @@
 
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import React, { useState, useCallback, useMemo, useEffect, Suspense } from 'react';
 import { Toaster } from 'react-hot-toast';
 import { Project, PhaseName } from './types';
 import { Header } from './components/common/Header';
-import { ProjectView } from './components/ProjectView';
-import { ProjectsDashboard } from './components/ProjectsDashboard';
 import { Spinner } from './components/common/Spinner';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { SearchBar } from './components/common/SearchBar';
@@ -13,11 +11,16 @@ import { useErrorHandler } from './hooks/useErrorHandler';
 import { useSearch, SearchResult } from './hooks/useSearch';
 import { useKeyboardShortcuts, SHORTCUTS } from './hooks/useKeyboardShortcuts';
 import { KeyboardShortcutsHelp } from './components/common/KeyboardShortcutsHelp';
-import { AdvancedSearch } from './components/common/AdvancedSearch';
-import { ProjectComparison } from './components/common/ProjectComparison';
-import { JiraIntegration } from './components/jira/JiraIntegration';
-import { LearningPathView } from './components/learning/LearningPathView';
-import { OnboardingGuide } from './components/onboarding/OnboardingGuide';
+import { LoadingSkeleton } from './components/common/LoadingSkeleton';
+
+// Code splitting - Lazy loading de componentes pesados
+const ProjectView = React.lazy(() => import('./components/ProjectView').then(m => ({ default: m.ProjectView })));
+const ProjectsDashboard = React.lazy(() => import('./components/ProjectsDashboard').then(m => ({ default: m.ProjectsDashboard })));
+const AdvancedSearch = React.lazy(() => import('./components/common/AdvancedSearch').then(m => ({ default: m.AdvancedSearch })));
+const ProjectComparisonModal = React.lazy(() => import('./components/common/ProjectComparisonModal').then(m => ({ default: m.ProjectComparisonModal })));
+const JiraIntegration = React.lazy(() => import('./components/jira/JiraIntegration').then(m => ({ default: m.JiraIntegration })));
+const LearningPathView = React.lazy(() => import('./components/learning/LearningPathView').then(m => ({ default: m.LearningPathView })));
+const OnboardingGuide = React.lazy(() => import('./components/onboarding/OnboardingGuide').then(m => ({ default: m.OnboardingGuide })));
 import { PHASE_NAMES } from './utils/constants';
 import { createProjectFromTemplate } from './utils/projectTemplates';
 import { addAuditLog } from './utils/auditLog';
@@ -45,6 +48,18 @@ const App: React.FC = () => {
         };
         loadProjects();
     }, [handleError]);
+
+    // Detectar se é mobile para ajustar posição dos toasts
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        const checkMobile = () => {
+            setIsMobile(window.innerWidth < 768);
+        };
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
 
     const handleCreateProject = useCallback(async (name: string, description: string, templateId?: string) => {
         let newProject: Project;
@@ -225,61 +240,71 @@ const App: React.FC = () => {
                 )}
 
                 {showAdvancedSearch && (
-                    <AdvancedSearch
-                        projects={projects}
-                        onResultSelect={(result) => {
-                            if (result.type === 'project' || result.projectId) {
-                                setSelectedProjectId(result.projectId || result.id);
-                            }
-                            setShowAdvancedSearch(false);
-                        }}
-                        onClose={() => setShowAdvancedSearch(false)}
-                    />
+                    <Suspense fallback={<div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center"><Spinner /></div>}>
+                        <AdvancedSearch
+                            projects={projects}
+                            onResultSelect={(result) => {
+                                if (result.type === 'project' || result.projectId) {
+                                    setSelectedProjectId(result.projectId || result.id);
+                                }
+                                setShowAdvancedSearch(false);
+                            }}
+                            onClose={() => setShowAdvancedSearch(false)}
+                        />
+                    </Suspense>
                 )}
 
                 {showProjectComparison && (
-                    <Modal
-                        isOpen={showProjectComparison}
-                        onClose={() => setShowProjectComparison(false)}
-                        title="Comparar Projetos"
-                    >
-                        <ProjectComparison
+                    <Suspense fallback={<div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center"><Spinner /></div>}>
+                        <ProjectComparisonModal
+                            isOpen={showProjectComparison}
+                            onClose={() => setShowProjectComparison(false)}
                             projects={projects}
                             onProjectSelect={(projectId) => {
                                 setSelectedProjectId(projectId);
                                 setShowProjectComparison(false);
                             }}
                         />
-                    </Modal>
+                    </Suspense>
                 )}
 
                 <main>
                     {selectedProject ? (
-                        <ProjectView 
-                            project={selectedProject} 
-                            onUpdateProject={handleUpdateProject}
-                            onBack={() => setSelectedProjectId(null)}
-                        />
+                        <Suspense fallback={<div className="container mx-auto p-8"><LoadingSkeleton variant="card" count={3} /></div>}>
+                            <ProjectView 
+                                project={selectedProject} 
+                                onUpdateProject={handleUpdateProject}
+                                onBack={() => setSelectedProjectId(null)}
+                            />
+                        </Suspense>
                     ) : (
                         <div className="space-y-6">
-                            <JiraIntegration onProjectImported={handleImportJiraProject} />
-                            <ProjectsDashboard 
-                                projects={projects} 
-                                onSelectProject={setSelectedProjectId} 
-                                onCreateProject={handleCreateProject}
-                                onDeleteProject={handleDeleteProject}
-                                onSearchClick={() => setShowSearch(true)}
-                                onAdvancedSearchClick={() => setShowAdvancedSearch(true)}
-                                onComparisonClick={() => setShowProjectComparison(true)}
-                            />
+                            <Suspense fallback={<div className="container mx-auto p-8"><LoadingSkeleton variant="card" count={1} /></div>}>
+                                <JiraIntegration onProjectImported={handleImportJiraProject} />
+                            </Suspense>
+                            <Suspense fallback={<div className="container mx-auto p-8"><LoadingSkeleton variant="card" count={3} /></div>}>
+                                <ProjectsDashboard 
+                                    projects={projects} 
+                                    onSelectProject={setSelectedProjectId} 
+                                    onCreateProject={handleCreateProject}
+                                    onDeleteProject={handleDeleteProject}
+                                    onSearchClick={() => setShowSearch(true)}
+                                    onAdvancedSearchClick={() => setShowAdvancedSearch(true)}
+                                    onComparisonClick={() => setShowProjectComparison(true)}
+                                />
+                            </Suspense>
                             <div className="mt-8">
-                                <LearningPathView />
+                                <Suspense fallback={<div className="container mx-auto p-8"><LoadingSkeleton variant="card" count={2} /></div>}>
+                                    <LearningPathView />
+                                </Suspense>
                             </div>
                         </div>
                     )}
                 </main>
                 <KeyboardShortcutsHelp />
-                <OnboardingGuide />
+                <Suspense fallback={null}>
+                    <OnboardingGuide />
+                </Suspense>
             </div>
         </ErrorBoundary>
     );

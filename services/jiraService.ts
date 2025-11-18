@@ -155,7 +155,17 @@ export const testJiraConnection = async (config: JiraConfig): Promise<boolean> =
     }
 };
 
-export const getJiraProjects = async (config: JiraConfig): Promise<JiraProject[]> => {
+export const getJiraProjects = async (config: JiraConfig, useCache: boolean = true): Promise<JiraProject[]> => {
+    const cacheKey = `jira_projects_${config.url}`;
+    
+    // Tentar cache primeiro
+    if (useCache) {
+        const cached = getCache<JiraProject[]>(cacheKey);
+        if (cached) {
+            console.log('✅ Usando projetos do cache');
+            return cached;
+        }
+    }
     console.log('Buscando projetos do Jira...', { url: config.url, endpoint: 'project?maxResults=100' });
     
     try {
@@ -172,21 +182,29 @@ export const getJiraProjects = async (config: JiraConfig): Promise<JiraProject[]
             throw new Error('Resposta vazia do servidor Jira');
         }
         
+        let projects: JiraProject[] = [];
+        
         if (Array.isArray(response.values)) {
             console.log(`Encontrados ${response.values.length} projetos`);
-            return response.values;
-        }
-        
-        // Tentar outras estruturas de resposta possíveis
-        if (Array.isArray(response)) {
+            projects = response.values;
+        } else if (Array.isArray(response)) {
             console.log(`Encontrados ${response.length} projetos (formato alternativo)`);
-            return response;
+            projects = response;
+        } else {
+            console.warn('Formato de resposta inesperado:', response);
+            projects = [];
         }
         
-        console.warn('Formato de resposta inesperado:', response);
-        return [];
+        // Salvar no cache (5 minutos)
+        if (projects && projects.length > 0) {
+            setCache(cacheKey, projects, 5 * 60 * 1000);
+        }
+        
+        return projects;
     } catch (error) {
         console.error('Erro em getJiraProjects:', error);
+        // Limpar cache em caso de erro
+        clearCache(cacheKey);
         throw error;
     }
 };

@@ -173,17 +173,26 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                 <div className="mt-8">
                     {activeTab === 'dashboard' && (
                         <div className="space-y-6">
+                            {/* Painel de Sugestões */}
+                            <SuggestionsPanel project={project} />
+                            
                             {/* Score de Saúde e Estatísticas Rápidas */}
                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                                 <div className="lg:col-span-1">
-                                    <ProjectHealthScore project={project} />
+                                    <Suspense fallback={<LoadingSkeleton variant="card" count={1} />}>
+                                        <ProjectHealthScore project={project} />
+                                    </Suspense>
                                 </div>
                                 <div className="lg:col-span-2">
-                                    <QuickStats project={project} />
+                                    <Suspense fallback={<LoadingSkeleton variant="card" count={1} />}>
+                                        <QuickStats project={project} />
+                                    </Suspense>
                                 </div>
                             </div>
 
-                            <ProjectQADashboard project={project} />
+                            <Suspense fallback={<LoadingSkeleton variant="card" count={2} />}>
+                                <ProjectQADashboard project={project} />
+                            </Suspense>
                             
                             {/* Gerenciador Supabase */}
                             <SupabaseManager 
@@ -206,13 +215,15 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                                         </button>
                                     </div>
                                     {showDependencyGraph && (
-                                        <DependencyGraph
-                                            project={project}
-                                            onTaskSelect={(taskId) => {
-                                                const element = document.querySelector(`[data-task-id="${taskId}"]`);
-                                                element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                                            }}
-                                        />
+                                        <Suspense fallback={<LoadingSkeleton variant="card" count={1} />}>
+                                            <DependencyGraph
+                                                project={project}
+                                                onTaskSelect={(taskId) => {
+                                                    const element = document.querySelector(`[data-task-id="${taskId}"]`);
+                                                    element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                                }}
+                                            />
+                                        </Suspense>
                                     )}
                                 </div>
                                 
@@ -226,7 +237,11 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                                             {showBurndown ? 'Ocultar' : 'Mostrar'}
                                         </button>
                                     </div>
-                                    {showBurndown && <BurndownChart project={project} />}
+                                    {showBurndown && (
+                                        <Suspense fallback={<LoadingSkeleton variant="card" count={1} />}>
+                                            <BurndownChart project={project} />
+                                        </Suspense>
+                                    )}
                                 </div>
                             </div>
 
@@ -241,7 +256,11 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                                             {showActivityFeed ? 'Ocultar' : 'Mostrar'}
                                         </button>
                                     </div>
-                                    {showActivityFeed && <ActivityFeed project={project} />}
+                                    {showActivityFeed && (
+                                        <Suspense fallback={<LoadingSkeleton variant="card" count={1} />}>
+                                            <ActivityFeed project={project} />
+                                        </Suspense>
+                                    )}
                                 </div>
                                 
                                 <div className="p-4 bg-surface border border-surface-border rounded-lg">
@@ -254,7 +273,11 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                                             {showChangeHistory ? 'Ocultar' : 'Mostrar'}
                                         </button>
                                     </div>
-                                    {showChangeHistory && <ChangeHistory project={project} />}
+                                    {showChangeHistory && (
+                                        <Suspense fallback={<LoadingSkeleton variant="card" count={1} />}>
+                                            <ChangeHistory project={project} />
+                                        </Suspense>
+                                    )}
                                 </div>
                             </div>
 
@@ -268,28 +291,62 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                                         {showTimeline ? 'Ocultar' : 'Mostrar'}
                                     </button>
                                 </div>
-                                {showTimeline && <TaskTimeline project={project} />}
+                                {showTimeline && (
+                                    <Suspense fallback={<LoadingSkeleton variant="card" count={1} />}>
+                                        <TaskTimeline project={project} />
+                                    </Suspense>
+                                )}
                             </div>
                         </div>
                     )}
                     {activeTab === 'timeline' && (
                         <div className="space-y-6">
-                            <TimelineView project={project} currentPhaseName={currentPhaseName} />
-                            <PhaseTransitionGuide project={project} currentPhase={currentPhaseName} />
+                            <Suspense fallback={<LoadingSkeleton variant="card" count={2} />}>
+                                <TimelineView project={project} currentPhaseName={currentPhaseName} />
+                            </Suspense>
+                            <Suspense fallback={<LoadingSkeleton variant="card" count={1} />}>
+                                <PhaseTransitionGuide project={project} currentPhase={currentPhaseName} />
+                            </Suspense>
                         </div>
                     )}
                     {activeTab === 'analysis' && (
                         <div className="space-y-6">
-                            <AnalysisView project={project} onUpdateProject={onUpdateProject} />
-                            <SDLCView project={project} />
-                            <ShiftLeftAnalysis project={project} />
+                            <Suspense fallback={<LoadingSkeleton variant="card" count={2} />}>
+                                <AnalysisView project={project} onUpdateProject={onUpdateProject} />
+                            </Suspense>
+                            <Suspense fallback={<LoadingSkeleton variant="card" count={1} />}>
+                                <SDLCView project={project} />
+                            </Suspense>
+                            <Suspense fallback={<LoadingSkeleton variant="card" count={1} />}>
+                                <ShiftLeftAnalysis project={project} />
+                            </Suspense>
                         </div>
                     )}
-                    {activeTab === 'tasks' && <TasksView project={project} onUpdateProject={onUpdateProject} />}
-                    {activeTab === 'documents' && <DocumentsView project={project} onUpdateProject={onUpdateProject} />}
-                    {activeTab === 'learning' && <LearningPathView />}
-                    {activeTab === 'roadmap' && <RoadmapView />}
-                    {activeTab === 'glossary' && <GlossaryView />}
+                    {activeTab === 'tasks' && (
+                        <Suspense fallback={<LoadingSkeleton variant="task" count={5} />}>
+                            <TasksView project={project} onUpdateProject={onUpdateProject} />
+                        </Suspense>
+                    )}
+                    {activeTab === 'documents' && (
+                        <Suspense fallback={<LoadingSkeleton variant="card" count={3} />}>
+                            <DocumentsView project={project} onUpdateProject={onUpdateProject} />
+                        </Suspense>
+                    )}
+                    {activeTab === 'learning' && (
+                        <Suspense fallback={<LoadingSkeleton variant="card" count={2} />}>
+                            <LearningPathView />
+                        </Suspense>
+                    )}
+                    {activeTab === 'roadmap' && (
+                        <Suspense fallback={<LoadingSkeleton variant="card" count={2} />}>
+                            <RoadmapView />
+                        </Suspense>
+                    )}
+                    {activeTab === 'glossary' && (
+                        <Suspense fallback={<LoadingSkeleton variant="card" count={2} />}>
+                            <GlossaryView />
+                        </Suspense>
+                    )}
                 </div>
             </div>
             {isPrinting && <PrintableReport project={project} metrics={metrics} />}

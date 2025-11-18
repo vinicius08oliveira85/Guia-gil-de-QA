@@ -17,6 +17,9 @@ import { updateChecklistItem } from '../../utils/checklistService';
 import { getTaskPhase, getPhaseBadgeStyle, getNextStepForTask } from '../../utils/taskPhaseHelper';
 import { useProjectMetrics } from '../../hooks/useProjectMetrics';
 import { useBeginnerMode } from '../../hooks/useBeginnerMode';
+import { ConfirmDialog } from '../common/ConfirmDialog';
+import { EmptyState } from '../common/EmptyState';
+import { LoadingSkeleton } from '../common/LoadingSkeleton';
 
 // Componente para renderizar descrição com suporte a imagens
 const DescriptionRenderer: React.FC<{ description: string }> = ({ description }) => {
@@ -113,6 +116,7 @@ export const JiraTaskItem: React.FC<{
     const [showDependencies, setShowDependencies] = useState(false);
     const [showAttachments, setShowAttachments] = useState(false);
     const [showEstimation, setShowEstimation] = useState(false);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const hasTests = task.testCases && task.testCases.length > 0;
     const hasChildren = task.children && task.children.length > 0;
     const metrics = project ? useProjectMetrics(project) : { newPhases: [] };
@@ -223,7 +227,7 @@ export const JiraTaskItem: React.FC<{
                             <button onClick={() => onAddSubtask(task.id)} className={iconButtonClass} aria-label="Adicionar subtarefa"><PlusIcon /></button>
                          )}
                         <button onClick={() => onEdit(task)} className={iconButtonClass} aria-label="Editar tarefa"><EditIcon /></button>
-                        <button onClick={() => onDelete(task.id)} className={`${iconButtonClass} hover:!bg-red-500 hover:!text-white`} aria-label="Excluir tarefa"><TrashIcon /></button>
+                        <button onClick={() => setShowDeleteConfirm(true)} className={`${iconButtonClass} hover:!bg-red-500 hover:!text-white`} aria-label="Excluir tarefa"><TrashIcon /></button>
                         <button className={iconButtonClass} onClick={() => setIsDetailsOpen(!isDetailsOpen)}>
                           <ChevronDownIcon className={`transition-transform ${isDetailsOpen ? 'rotate-180' : ''}`} />
                         </button>
@@ -283,11 +287,31 @@ export const JiraTaskItem: React.FC<{
                                     {task.testStrategy.map((strategy, i) => <TestStrategyCard key={i} strategy={strategy} />)}
                                 </div>
                             ) : (
-                                !isGenerating && <p className="text-text-secondary">Nenhuma estratégia de teste gerada ainda.</p>
+                                !isGenerating && (
+                                    <EmptyState
+                                        icon="📊"
+                                        title="Nenhuma estratégia de teste gerada ainda"
+                                        description="Gere uma estratégia de teste com IA para esta tarefa."
+                                        action={{
+                                            label: "Gerar Estratégia com IA",
+                                            onClick: () => onGenerateTests(task.id, detailLevel)
+                                        }}
+                                        tip="A estratégia de teste ajuda a definir quais tipos de teste são necessários para validar esta funcionalidade."
+                                    />
+                                )
                             )}
                             
                             <h3 className="text-lg font-semibold text-text-primary mt-6">Casos de Teste</h3>
-                             {(task.testCases || []).length > 0 ? (
+                            {isGenerating ? (
+                                <div className="space-y-3">
+                                    <LoadingSkeleton variant="task" count={3} />
+                                    <div className="flex flex-col items-center justify-center py-4">
+                                        <Spinner small />
+                                        <p className="text-sm text-text-secondary mt-2">Gerando casos de teste com IA...</p>
+                                        <p className="text-xs text-text-secondary mt-1">⏱️ Isso pode levar 10-30 segundos</p>
+                                    </div>
+                                </div>
+                            ) : (task.testCases || []).length > 0 ? (
                                 <div className="space-y-3">
                                     {task.testCases.map(tc => (
                                         <TestCaseItem 
@@ -299,7 +323,24 @@ export const JiraTaskItem: React.FC<{
                                     ))}
                                 </div>
                             ) : (
-                               !isGenerating && <p className="text-text-secondary">Nenhum caso de teste ainda.</p>
+                                <EmptyState
+                                    icon="🧪"
+                                    title="Nenhum caso de teste ainda"
+                                    description="Comece gerando casos de teste com IA ou adicione manualmente."
+                                    tips={isBeginnerMode ? [
+                                        "Use a IA para gerar casos de teste automaticamente",
+                                        "Ou adicione manualmente usando templates",
+                                        "Cada caso de teste deve ter passos claros e resultado esperado"
+                                    ] : undefined}
+                                    action={{
+                                        label: "Gerar com IA",
+                                        onClick: () => onGenerateTests(task.id, detailLevel)
+                                    }}
+                                    secondaryAction={onAddTestCaseFromTemplate ? {
+                                        label: "Usar Template",
+                                        onClick: () => onAddTestCaseFromTemplate('')
+                                    } : undefined}
+                                />
                             )}
                             
                             {!isGenerating && (
@@ -462,6 +503,20 @@ export const JiraTaskItem: React.FC<{
                 )}
             </div>
             {hasChildren && isChildrenOpen && children}
+            
+            <ConfirmDialog
+                isOpen={showDeleteConfirm}
+                onClose={() => setShowDeleteConfirm(false)}
+                onConfirm={() => {
+                    onDelete(task.id);
+                    setShowDeleteConfirm(false);
+                }}
+                title="Confirmar exclusão"
+                message={`Tem certeza que deseja excluir a tarefa "${task.title}"?${hasChildren ? ` Esta tarefa tem ${task.children.length} subtarefa(s) que também serão excluídas.` : ''}${hasTests ? ` Esta tarefa tem ${task.testCases?.length || 0} caso(s) de teste associado(s).` : ''}`}
+                variant="danger"
+                confirmText="Excluir"
+                cancelText="Cancelar"
+            />
         </div>
     );
 });

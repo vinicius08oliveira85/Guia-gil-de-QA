@@ -7,6 +7,7 @@ import { RichTextEditor } from '../common/RichTextEditor';
 import { HelpTooltip } from '../common/HelpTooltip';
 import { helpContent } from '../../utils/helpContent';
 import { useBeginnerMode } from '../../hooks/useBeginnerMode';
+import { getTaskExample, taskExamples } from '../../utils/taskExamples';
 
 export const TaskForm: React.FC<{
     onSave: (task: Omit<JiraTask, 'testCases' | 'status' | 'testStrategy' | 'bddScenarios' | 'createdAt' | 'completedAt'>) => void;
@@ -81,13 +82,37 @@ export const TaskForm: React.FC<{
         setValidationErrors({});
     };
 
+    const handleUseExample = () => {
+        const example = getTaskExample(taskData.type);
+        if (example) {
+            setTaskData({
+                ...taskData,
+                id: example.id,
+                title: example.title,
+                description: example.description,
+                priority: example.priority,
+                tags: example.tags
+            });
+        }
+    };
+
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
             {isBeginnerMode && (
                 <div className="mb-4 p-4 bg-accent/10 border border-accent/30 rounded-lg">
-                    <p className="text-sm text-text-primary">
-                        💡 <strong>Modo Iniciante Ativado:</strong> Passe o mouse sobre os ícones de ajuda (ℹ️) para ver explicações detalhadas de cada campo.
-                    </p>
+                    <div className="flex items-start justify-between gap-4">
+                        <p className="text-sm text-text-primary">
+                            💡 <strong>Modo Iniciante Ativado:</strong> Passe o mouse sobre os ícones de ajuda (ℹ️) para ver explicações detalhadas de cada campo.
+                        </p>
+                        <button
+                            type="button"
+                            onClick={handleLoadExample}
+                            className="btn btn-secondary text-xs whitespace-nowrap flex-shrink-0"
+                            title="Preencher formulário com um exemplo"
+                        >
+                            📝 Usar Exemplo
+                        </button>
+                    </div>
                 </div>
             )}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

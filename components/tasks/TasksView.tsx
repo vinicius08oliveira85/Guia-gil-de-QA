@@ -18,6 +18,9 @@ import { BulkActions } from '../common/BulkActions';
 import { TaskCreationWizard } from './TaskCreationWizard';
 import { useBeginnerMode } from '../../hooks/useBeginnerMode';
 import { useLocalStorage } from '../../hooks/useLocalStorage';
+import { useSuggestions } from '../../hooks/useSuggestions';
+import { SuggestionBanner } from '../common/SuggestionBanner';
+import { EmptyState } from '../common/EmptyState';
 
 export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: Project) => void }> = ({ project, onUpdateProject }) => {
     const [generatingTestsTaskId, setGeneratingTestsTaskId] = useState<string | null>(null);
@@ -34,6 +37,9 @@ export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: 
     const [showWizard, setShowWizard] = useState(false);
     const { isBeginnerMode } = useBeginnerMode();
     const [hasSeenWizard, setHasSeenWizard] = useLocalStorage<boolean>('task_creation_wizard_seen', false);
+    const suggestions = useSuggestions(project);
+    const [dismissedSuggestions, setDismissedSuggestions] = useState<Set<string>>(new Set());
+    const currentSuggestion = suggestions.find(s => !dismissedSuggestions.has(s.id)) || null;
     const [failModalState, setFailModalState] = useState<{
         isOpen: boolean;
         taskId: string | null;
@@ -203,9 +209,7 @@ export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: 
         setEditingTask(undefined);
     };
 
-    const handleDeleteTask = (taskId: string) => {
-        if (!window.confirm("Tem certeza que deseja excluir esta tarefa e todas as suas subtarefas?")) return;
-
+    const handleDeleteTask = useCallback((taskId: string) => {
         const taskToDelete = project.tasks.find(t => t.id === taskId);
         let tasksToKeep = project.tasks;
         
@@ -216,7 +220,8 @@ export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: 
         tasksToKeep = tasksToKeep.filter(t => t.id !== taskId);
 
         onUpdateProject({ ...project, tasks: tasksToKeep });
-    };
+        handleSuccess('Tarefa excluída com sucesso!');
+    }, [project, onUpdateProject, handleSuccess]);
     
     const openTaskFormForEdit = (task: JiraTask) => {
         setEditingTask(task);
@@ -288,7 +293,7 @@ export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: 
         });
     };
 
-    const renderTaskTree = (tasks: TaskWithChildren[], level: number): React.ReactElement[] => {
+    const renderTaskTree = useCallback((tasks: TaskWithChildren[], level: number): React.ReactElement[] => {
         return tasks.map(task => (
             <JiraTaskItem
                 key={task.id}
@@ -321,7 +326,7 @@ export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: 
                 {task.children.length > 0 && renderTaskTree(task.children, level + 1)}
             </JiraTaskItem>
         ));
-    };
+    }, [selectedTasks, generatingTestsTaskId, generatingBddTaskId, handleTestCaseStatusChange, handleToggleTestCaseAutomated, handleDeleteTask, handleGenerateTests, openTaskFormForNew, openTaskFormForEdit, handleGenerateBddScenarios, handleSaveBddScenario, handleDeleteBddScenario, handleTaskStatusChange, handleAddTestCaseFromTemplate, handleAddComment, handleEditComment, handleDeleteComment, project, onUpdateProject, toggleTaskSelection]);
 
     return (
         <>
@@ -363,16 +368,21 @@ export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: 
             {taskTree.length > 0 ? (
                 <div>{renderTaskTree(taskTree, 0)}</div>
             ) : (
-                <div className="text-center py-8">
-                    <p className="text-text-secondary mb-4">Nenhuma tarefa criada ainda.</p>
-                    {isBeginnerMode && (
-                        <div className="mt-4 p-4 bg-accent/10 border border-accent/30 rounded-lg max-w-2xl mx-auto">
-                            <p className="text-sm text-text-primary mb-2">
-                                💡 <strong>Dica:</strong> Clique em "Adicionar Tarefa" para ver um guia passo a passo de como criar sua primeira tarefa!
-                            </p>
-                        </div>
-                    )}
-                </div>
+                <EmptyState
+                    icon="📋"
+                    title="Nenhuma tarefa criada ainda"
+                    description="Comece criando sua primeira tarefa para organizar seu trabalho de QA."
+                    action={{
+                        label: "Adicionar Tarefa",
+                        onClick: () => openTaskFormForNew(),
+                        variant: 'primary'
+                    }}
+                    tip={isBeginnerMode ? "Clique em 'Adicionar Tarefa' para ver um guia passo a passo!" : undefined}
+                    helpContent={isBeginnerMode ? {
+                        title: 'Criar sua primeira tarefa',
+                        content: 'Tarefas representam funcionalidades ou bugs que precisam ser testados. Use o wizard para aprender passo a passo como criar tarefas corretamente.'
+                    } : undefined}
+                />
             )}
         </Card>
 
