@@ -324,11 +324,13 @@ export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: 
                 activeFiltersCount={activeFiltersCount}
             />
             
-            {activeFiltersCount > 0 && (
-                <div className="mb-4 text-sm text-text-secondary">
-                    Mostrando {filteredTasks.length} de {project.tasks.length} tarefas
-                </div>
-            )}
+            <div className="mb-4 text-sm text-text-secondary">
+                {activeFiltersCount > 0 ? (
+                    <>Mostrando {filteredTasks.length} de {project.tasks.length} tarefas</>
+                ) : (
+                    <>Total: <strong>{project.tasks.length}</strong> tarefas</>
+                )}
+            </div>
             {isTaskFormOpen && (
                 <div className="mb-6 p-4 bg-black/20 rounded-lg">
                     <TaskForm 
