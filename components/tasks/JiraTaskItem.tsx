@@ -218,7 +218,9 @@ export const JiraTaskItem: React.FC<{
                             </div>
                         )}
 
-                        <p className="text-text-secondary mb-4 whitespace-pre-wrap">{task.description}</p>
+                        <div className="text-text-secondary mb-4">
+                            <DescriptionRenderer description={task.description} />
+                        </div>
                         
                         <div className="space-y-4">
                             <h3 className="text-lg font-semibold text-text-primary">Cenários BDD (Gherkin)</h3>
