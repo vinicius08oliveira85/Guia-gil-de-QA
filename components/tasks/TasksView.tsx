@@ -281,6 +281,8 @@ export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: 
                 onAddComment={(content) => handleAddComment(task.id, content)}
                 onEditComment={(commentId, content) => handleEditComment(task.id, commentId, content)}
                 onDeleteComment={(commentId) => handleDeleteComment(task.id, commentId)}
+                project={project}
+                onUpdateProject={onUpdateProject}
             >
                 {task.children.length > 0 && renderTaskTree(task.children, level + 1)}
             </JiraTaskItem>

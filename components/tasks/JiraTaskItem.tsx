@@ -42,14 +42,18 @@ export const JiraTaskItem: React.FC<{
     onAddComment?: (content: string) => void;
     onEditComment?: (commentId: string, content: string) => void;
     onDeleteComment?: (commentId: string) => void;
+    project?: Project;
+    onUpdateProject?: (project: Project) => void;
     children?: React.ReactNode;
     level: number;
-}> = React.memo(({ task, onTestCaseStatusChange, onToggleTestCaseAutomated, onDelete, onGenerateTests, isGenerating, onAddSubtask, onEdit, onGenerateBddScenarios, isGeneratingBdd, onSaveBddScenario, onDeleteBddScenario, onTaskStatusChange, onAddTestCaseFromTemplate, onAddComment, onEditComment, onDeleteComment, children, level }) => {
+}> = React.memo(({ task, onTestCaseStatusChange, onToggleTestCaseAutomated, onDelete, onGenerateTests, isGenerating, onAddSubtask, onEdit, onGenerateBddScenarios, isGeneratingBdd, onSaveBddScenario, onDeleteBddScenario, onTaskStatusChange, onAddTestCaseFromTemplate, onAddComment, onEditComment, onDeleteComment, project, onUpdateProject, children, level }) => {
     const [isDetailsOpen, setIsDetailsOpen] = useState(false);
     const [isChildrenOpen, setIsChildrenOpen] = useState(false);
     const [editingBddScenario, setEditingBddScenario] = useState<BddScenario | null>(null);
     const [isCreatingBdd, setIsCreatingBdd] = useState(false);
     const [detailLevel, setDetailLevel] = useState<TestCaseDetailLevel>('Padrão');
+    const [showDependencies, setShowDependencies] = useState(false);
+    const [showAttachments, setShowAttachments] = useState(false);
     const hasTests = task.testCases && task.testCases.length > 0;
     const hasChildren = task.children && task.children.length > 0;
 
