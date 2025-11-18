@@ -121,6 +121,23 @@ const App: React.FC = () => {
         }
     }, [handleError, handleSuccess, projects]);
 
+    const handleImportJiraProject = useCallback(async (project: Project) => {
+        try {
+            await addProject(project);
+            setProjects(prev => [...prev, project]);
+            setSelectedProjectId(project.id);
+            addAuditLog({
+                action: 'CREATE',
+                entityType: 'project',
+                entityId: project.id,
+                entityName: project.name
+            });
+            handleSuccess(`Projeto "${project.name}" importado do Jira com sucesso!`);
+        } catch (error) {
+            handleError(error, 'Importar projeto do Jira');
+        }
+    }, [handleError, handleSuccess]);
+
     const handleSearchSelect = useCallback((result: SearchResult) => {
         if (result.type === 'project' || result.projectId) {
             setSelectedProjectId(result.projectId || result.id);
@@ -230,15 +247,18 @@ const App: React.FC = () => {
                             onBack={() => setSelectedProjectId(null)}
                         />
                     ) : (
-                        <ProjectsDashboard 
-                            projects={projects} 
-                            onSelectProject={setSelectedProjectId} 
-                            onCreateProject={handleCreateProject}
-                            onDeleteProject={handleDeleteProject}
-                            onSearchClick={() => setShowSearch(true)}
-                            onAdvancedSearchClick={() => setShowAdvancedSearch(true)}
-                            onComparisonClick={() => setShowProjectComparison(true)}
-                        />
+                        <div className="space-y-6">
+                            <JiraIntegration onProjectImported={handleImportJiraProject} />
+                            <ProjectsDashboard 
+                                projects={projects} 
+                                onSelectProject={setSelectedProjectId} 
+                                onCreateProject={handleCreateProject}
+                                onDeleteProject={handleDeleteProject}
+                                onSearchClick={() => setShowSearch(true)}
+                                onAdvancedSearchClick={() => setShowAdvancedSearch(true)}
+                                onComparisonClick={() => setShowProjectComparison(true)}
+                            />
+                        </div>
                     )}
                 </main>
                 <KeyboardShortcutsHelp />
