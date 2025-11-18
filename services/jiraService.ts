@@ -83,25 +83,31 @@ const getAuthHeader = (config: JiraConfig): string => {
 const jiraApiCall = async <T>(
     config: JiraConfig,
     endpoint: string,
-    options: RequestInit = {}
+    options: { method?: string; body?: any; timeout?: number } = {}
 ): Promise<T> => {
-    // Usar proxy do Vercel para evitar CORS
-    const proxyUrl = '/api/jira-proxy';
+    const timeout = options.timeout || 30000; // 30 segundos por padrão
     
-    const response = await fetch(proxyUrl, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            url: config.url,
-            email: config.email,
-            apiToken: config.apiToken,
-            endpoint,
-            method: options.method || 'GET',
-            body: options.body ? (typeof options.body === 'string' ? JSON.parse(options.body) : options.body) : undefined,
-        }),
-    });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+    try {
+        const response = await fetch('/api/jira-proxy', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                url: config.url,
+                email: config.email,
+                apiToken: config.apiToken,
+                endpoint,
+                method: options.method || 'GET',
+                body: options.body ? (typeof options.body === 'string' ? JSON.parse(options.body) : options.body) : undefined,
+            }),
+            signal: controller.signal,
+        });
+
+        clearTimeout(timeoutId);
 
         if (!response.ok) {
             let errorData: { error?: string };
