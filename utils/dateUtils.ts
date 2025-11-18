@@ -1,14 +1,13 @@
 import { format, formatDistance, formatRelative, isToday, isYesterday, isTomorrow, differenceInDays, differenceInHours, differenceInMinutes } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 
 export const formatDate = (date: Date | string): string => {
   const dateObj = typeof date === 'string' ? new Date(date) : date;
-  return format(dateObj, "dd/MM/yyyy", { locale: ptBR });
+  return format(dateObj, "dd/MM/yyyy");
 };
 
 export const formatDateTime = (date: Date | string): string => {
   const dateObj = typeof date === 'string' ? new Date(date) : date;
-  return format(dateObj, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR });
+  return format(dateObj, "dd/MM/yyyy 'às' HH:mm");
 };
 
 export const formatRelativeTime = (date: Date | string): string => {
@@ -29,10 +28,10 @@ export const formatRelativeTime = (date: Date | string): string => {
   const daysDiff = differenceInDays(new Date(), dateObj);
   
   if (daysDiff < 7) {
-    return formatRelative(dateObj, new Date(), { locale: ptBR });
+    return formatRelative(dateObj, new Date());
   }
   
-  return formatDistance(dateObj, new Date(), { addSuffix: true, locale: ptBR });
+  return formatDistance(dateObj, new Date(), { addSuffix: true });
 };
 
 export const formatDuration = (minutes: number): string => {
