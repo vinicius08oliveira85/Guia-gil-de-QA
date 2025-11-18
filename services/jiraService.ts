@@ -39,6 +39,7 @@ export interface JiraIssue {
         subtasks?: Array<{ key: string }>;
     };
     renderedFields?: {
+        description?: string; // Descrição renderizada em HTML
         comment?: {
             comments: Array<{
                 id: string;
