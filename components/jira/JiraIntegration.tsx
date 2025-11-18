@@ -24,6 +24,7 @@ export const JiraIntegration: React.FC<JiraIntegrationProps> = ({ onProjectImpor
     const [isLoadingProjects, setIsLoadingProjects] = useState(false);
     const [selectedProjectKey, setSelectedProjectKey] = useState<string>('');
     const [isImporting, setIsImporting] = useState(false);
+    const [importProgress, setImportProgress] = useState<{ current: number; total?: number } | null>(null);
     const [showConfigModal, setShowConfigModal] = useState(false);
     const { handleError, handleSuccess } = useErrorHandler();
 
