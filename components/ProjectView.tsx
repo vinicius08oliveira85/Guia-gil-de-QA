@@ -255,8 +255,19 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                             </div>
                         </div>
                     )}
-                    {activeTab === 'timeline' && <TimelineView project={project} currentPhaseName={currentPhaseName} />}
-                    {activeTab === 'analysis' && <AnalysisView project={project} onUpdateProject={onUpdateProject} />}
+                    {activeTab === 'timeline' && (
+                        <div className="space-y-6">
+                            <TimelineView project={project} currentPhaseName={currentPhaseName} />
+                            <PhaseTransitionGuide project={project} currentPhase={currentPhaseName} />
+                        </div>
+                    )}
+                    {activeTab === 'analysis' && (
+                        <div className="space-y-6">
+                            <AnalysisView project={project} onUpdateProject={onUpdateProject} />
+                            <SDLCView project={project} />
+                            <ShiftLeftAnalysis project={project} />
+                        </div>
+                    )}
                     {activeTab === 'tasks' && <TasksView project={project} onUpdateProject={onUpdateProject} />}
                     {activeTab === 'documents' && <DocumentsView project={project} onUpdateProject={onUpdateProject} />}
                     {activeTab === 'roadmap' && <RoadmapView />}
