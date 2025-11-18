@@ -23,6 +23,7 @@ import { TaskTimeline } from './common/TaskTimeline';
 import { SDLCView } from './sdlc/SDLCView';
 import { ShiftLeftAnalysis } from './shiftleft/ShiftLeftAnalysis';
 import { PhaseTransitionGuide } from './phases/PhaseTransitionGuide';
+import { SupabaseManager } from './common/SupabaseManager';
 
 export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project: Project) => void; onBack: () => void; }> = ({ project, onUpdateProject, onBack }) => {
     const [activeTab, setActiveTab] = useState('dashboard');
@@ -179,6 +180,15 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                             </div>
 
                             <ProjectQADashboard project={project} />
+                            
+                            {/* Gerenciador Supabase */}
+                            <SupabaseManager 
+                                project={project} 
+                                onProjectUpdated={() => {
+                                    // Recarregar projetos se necessário
+                                    window.location.reload();
+                                }}
+                            />
                             
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                 <div className="p-4 bg-surface border border-surface-border rounded-lg">

@@ -365,8 +365,8 @@ export const importJiraProject = async (
         throw new Error(`Projeto ${jiraProjectKey} não encontrado no Jira`);
     }
 
-    // Buscar issues do projeto (até 2000 issues)
-    const jiraIssues = await getJiraIssues(config, jiraProjectKey, 2000);
+    // Buscar TODAS as issues do projeto (sem limite)
+    const jiraIssues = await getJiraIssues(config, jiraProjectKey);
 
     // Mapear issues para tarefas
     const tasks: JiraTask[] = jiraIssues.map((issue, index) => {
