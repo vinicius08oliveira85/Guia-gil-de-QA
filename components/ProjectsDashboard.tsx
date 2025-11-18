@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Project } from '../types';
 import { Modal } from './common/Modal';
 import { ConfirmDialog } from './common/ConfirmDialog';
-import { ProjectTemplateSelector } from './ProjectTemplateSelector';
+import { ProjectTemplateSelector } from './common/ProjectTemplateSelector';
 import { TrashIcon } from './common/Icons';
 
 export const ProjectsDashboard: React.FC<{
