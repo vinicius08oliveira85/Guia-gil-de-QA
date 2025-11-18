@@ -57,52 +57,107 @@ export const ProjectLifecycleCard: React.FC<{ project: Project; }> = ({ project 
         }
     };
 
-    return (
-        <Card className="mb-8">
-            <h3 className="text-2xl font-bold text-text-primary mb-4">Ciclo de Vida do Projeto (SDLC & DevOps)</h3>
-            <div className="space-y-4">
-                 {phaseNamesInOrder.map(phaseName => {
-                    const phase = project.phases.find(p => p.name === phaseName);
-                    if (!phase) return null;
-                    
-                    const { bar, text, border, bg } = getStatusStyles(phase.status);
+    const selectedPhaseData = selectedPhase ? project.phases.find(p => p.name === selectedPhase) : null;
 
-                    return (
-                        <div key={phase.name} className={`bg-black/20 p-4 rounded-lg border flex gap-4 ${border}`}>
-                            <div className="flex flex-col items-center pt-1">
-                               <div className={`w-1.5 h-full rounded-full ${bar}`}></div>
-                            </div>
-                            <div className="flex-1">
-                                <div className="flex flex-wrap justify-between items-center gap-x-4 gap-y-2 mb-2">
-                                    <div className="flex items-center gap-2">
-                                        <h4 className={`font-bold text-lg text-text-primary`}>{phase.name}</h4>
-                                        <div className="tooltip-container">
-                                            <InfoIcon />
-                                            <span className="tooltip-text">{phaseExplanations[phase.name]}</span>
-                                        </div>
-                                    </div>
-                                    <span className={`text-xs font-semibold py-1 px-3 rounded-full ${bg} ${text}`}>
-                                        {phase.status}
-                                    </span>
+    return (
+        <>
+            <Card className="mb-8">
+                <h3 className="text-xl font-bold text-text-primary mb-4">Ciclo de Vida do Projeto (SDLC & DevOps)</h3>
+                <div className="space-y-2">
+                     {phaseNamesInOrder.map(phaseName => {
+                        const phase = project.phases.find(p => p.name === phaseName);
+                        if (!phase) return null;
+                        
+                        const { bar, text, border, bg } = getStatusStyles(phase.status);
+                        const hasDetails = phase.summary || (phase.testTypes && phase.testTypes.length > 0);
+
+                        return (
+                            <div 
+                                key={phase.name} 
+                                className={`bg-black/20 p-3 rounded-lg border flex gap-3 ${border} ${hasDetails ? 'cursor-pointer hover:bg-black/30 transition-colors' : ''}`}
+                                onClick={() => hasDetails && setSelectedPhase(phaseName)}
+                            >
+                                <div className="flex flex-col items-center pt-1">
+                                   <div className={`w-1.5 h-full rounded-full ${bar}`}></div>
                                 </div>
-                                {phase.summary ? <p className="text-sm text-text-secondary">{phase.summary}</p> : <p className="text-sm text-slate-500 italic">Análise da IA pendente...</p>}
-                                {phase.testTypes && phase.testTypes.length > 0 && (
-                                    <div className="mt-3 pt-3 border-t border-surface-border/50">
-                                        <h5 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Testes Recomendados</h5>
-                                        <div className="flex flex-wrap gap-2 mt-2">
-                                            {phase.testTypes.map(type => (
-                                                <span key={type} className={`px-2 py-1 text-xs font-medium rounded-full ${testTypeColorMap[type] || defaultTestTypeColor}`}>
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex flex-wrap justify-between items-center gap-x-4 gap-y-1">
+                                        <div className="flex items-center gap-2 min-w-0">
+                                            <h4 className={`font-bold text-base text-text-primary truncate`}>{phase.name}</h4>
+                                            <div className="tooltip-container flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+                                                <InfoIcon />
+                                                <span className="tooltip-text">{phaseExplanations[phase.name]}</span>
+                                            </div>
+                                        </div>
+                                        <span className={`text-xs font-semibold py-1 px-2 rounded-full ${bg} ${text} flex-shrink-0`}>
+                                            {phase.status}
+                                        </span>
+                                    </div>
+                                    {phase.summary && (
+                                        <p className="text-xs text-text-secondary mt-1 line-clamp-2">{phase.summary}</p>
+                                    )}
+                                    {phase.testTypes && phase.testTypes.length > 0 && (
+                                        <div className="mt-2 flex flex-wrap gap-1">
+                                            {phase.testTypes.slice(0, 3).map(type => (
+                                                <span key={type} className={`px-1.5 py-0.5 text-xs font-medium rounded-full ${testTypeColorMap[type] || defaultTestTypeColor}`}>
                                                     {type}
                                                 </span>
                                             ))}
+                                            {phase.testTypes.length > 3 && (
+                                                <span className="px-1.5 py-0.5 text-xs text-text-secondary">
+                                                    +{phase.testTypes.length - 3}
+                                                </span>
+                                            )}
                                         </div>
-                                    </div>
-                                )}
+                                    )}
+                                    {hasDetails && (
+                                        <p className="text-xs text-accent mt-1">Clique para ver detalhes completos</p>
+                                    )}
+                                </div>
                             </div>
+                        );
+                    })}
+                </div>
+            </Card>
+
+            <AnalysisModal
+                isOpen={selectedPhase !== null}
+                onClose={() => setSelectedPhase(null)}
+                title={selectedPhaseData ? `${selectedPhaseData.name} - Detalhes Completos` : ''}
+            >
+                {selectedPhaseData && (
+                    <div className="space-y-4">
+                        <div>
+                            <h4 className="font-bold text-lg text-text-primary mb-2">Status</h4>
+                            <span className={`text-sm font-semibold py-1 px-3 rounded-full ${getStatusStyles(selectedPhaseData.status).bg} ${getStatusStyles(selectedPhaseData.status).text}`}>
+                                {selectedPhaseData.status}
+                            </span>
                         </div>
-                    );
-                })}
-            </div>
-        </Card>
+                        <div>
+                            <h4 className="font-bold text-lg text-text-primary mb-2">Descrição</h4>
+                            <p className="text-sm text-text-secondary">{phaseExplanations[selectedPhaseData.name]}</p>
+                        </div>
+                        {selectedPhaseData.summary && (
+                            <div>
+                                <h4 className="font-bold text-lg text-text-primary mb-2">Resumo da Análise IA</h4>
+                                <p className="text-sm text-text-secondary whitespace-pre-wrap">{selectedPhaseData.summary}</p>
+                            </div>
+                        )}
+                        {selectedPhaseData.testTypes && selectedPhaseData.testTypes.length > 0 && (
+                            <div>
+                                <h4 className="font-bold text-lg text-text-primary mb-2">Testes Recomendados</h4>
+                                <div className="flex flex-wrap gap-2">
+                                    {selectedPhaseData.testTypes.map(type => (
+                                        <span key={type} className={`px-3 py-1.5 text-sm font-medium rounded-full ${testTypeColorMap[type] || defaultTestTypeColor}`}>
+                                            {type}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )}
+            </AnalysisModal>
+        </>
     );
 };
