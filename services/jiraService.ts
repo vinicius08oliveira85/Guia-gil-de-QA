@@ -144,6 +144,7 @@ const jiraApiCall = async <T>(
 
 export const testJiraConnection = async (config: JiraConfig): Promise<boolean> => {
     try {
+        // Usar endpoint /myself que ainda está disponível
         await jiraApiCall(config, 'myself');
         return true;
     } catch (error) {
@@ -194,9 +195,10 @@ export const getJiraIssues = async (
     maxResults: number = 100
 ): Promise<JiraIssue[]> => {
     const jql = `project = ${projectKey} ORDER BY created DESC`;
+    // Usar a nova API /rest/api/3/search/jql conforme recomendado pelo Jira
     const response = await jiraApiCall<{ issues: JiraIssue[] }>(
         config,
-        `search?jql=${encodeURIComponent(jql)}&maxResults=${maxResults}&expand=renderedFields&fields=summary,description,issuetype,status,priority,assignee,reporter,created,updated,resolutiondate,labels,parent,subtasks`
+        `search/jql?jql=${encodeURIComponent(jql)}&maxResults=${maxResults}&expand=renderedFields&fields=summary,description,issuetype,status,priority,assignee,reporter,created,updated,resolutiondate,labels,parent,subtasks`
     );
     return response.issues || [];
 };
