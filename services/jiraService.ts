@@ -195,12 +195,41 @@ export const getJiraIssues = async (
     maxResults: number = 100
 ): Promise<JiraIssue[]> => {
     const jql = `project = ${projectKey} ORDER BY created DESC`;
-    // Usar a nova API /rest/api/3/search/jql conforme recomendado pelo Jira
-    const response = await jiraApiCall<{ issues: JiraIssue[] }>(
-        config,
-        `search/jql?jql=${encodeURIComponent(jql)}&maxResults=${maxResults}&expand=renderedFields&fields=summary,description,issuetype,status,priority,assignee,reporter,created,updated,resolutiondate,labels,parent,subtasks`
-    );
-    return response.issues || [];
+    const allIssues: JiraIssue[] = [];
+    let startAt = 0;
+    const pageSize = Math.min(maxResults, 100); // Jira limita a 100 por página
+    
+    // Implementar paginação para buscar todas as issues
+    while (true) {
+        const response = await jiraApiCall<{ 
+            issues: JiraIssue[];
+            total: number;
+            startAt: number;
+            maxResults: number;
+        }>(
+            config,
+            `search/jql?jql=${encodeURIComponent(jql)}&startAt=${startAt}&maxResults=${pageSize}&expand=renderedFields&fields=summary,description,issuetype,status,priority,assignee,reporter,created,updated,resolutiondate,labels,parent,subtasks`
+        );
+        
+        const issues = response.issues || [];
+        allIssues.push(...issues);
+        
+        // Se não há mais issues ou já pegamos o máximo solicitado, para
+        if (issues.length === 0 || allIssues.length >= maxResults || (response.startAt + issues.length) >= (response.total || 0)) {
+            break;
+        }
+        
+        startAt += pageSize;
+        
+        // Limite de segurança: não buscar mais de 1000 issues de uma vez
+        if (allIssues.length >= 1000) {
+            console.warn(`⚠️ Limite de 1000 issues atingido para o projeto ${projectKey}. Algumas issues podem não ter sido importadas.`);
+            break;
+        }
+    }
+    
+    console.log(`✅ Total de issues buscadas: ${allIssues.length} para o projeto ${projectKey}`);
+    return allIssues;
 };
 
 const mapJiraStatusToTaskStatus = (jiraStatus: string | undefined | null): 'To Do' | 'In Progress' | 'Done' => {
@@ -275,10 +304,13 @@ export const importJiraProject = async (
         const taskType = mapJiraTypeToTaskType(issue.fields?.issuetype?.name);
         const isBug = taskType === 'Bug';
         
+        // Converter descrição do formato ADF para texto
+        const description = parseJiraDescription(issue.fields?.description);
+        
         const task: JiraTask = {
             id: issue.key || `jira-${Date.now()}-${Math.random()}`,
             title: issue.fields?.summary || 'Sem título',
-            description: issue.fields?.description || '',
+            description: description || '',
             status: mapJiraStatusToTaskStatus(issue.fields?.status?.name),
             type: taskType,
             priority: mapJiraPriorityToTaskPriority(issue.fields?.priority?.name),
@@ -290,7 +322,7 @@ export const importJiraProject = async (
             comments: issue.renderedFields?.comment?.comments?.map(comment => ({
                 id: comment.id,
                 author: comment.author?.displayName || 'Desconhecido',
-                content: comment.body || '',
+                content: parseJiraDescription(comment.body) || '',
                 createdAt: comment.created,
                 updatedAt: comment.updated,
             })) || [],
@@ -366,10 +398,13 @@ export const syncJiraProject = async (
         const taskType = mapJiraTypeToTaskType(issue.fields?.issuetype?.name);
         const isBug = taskType === 'Bug';
 
+        // Converter descrição do formato ADF para texto
+        const description = parseJiraDescription(issue.fields?.description);
+        
         const task: JiraTask = {
             id: issue.key || `jira-${Date.now()}-${Math.random()}`,
             title: issue.fields?.summary || 'Sem título',
-            description: issue.fields?.description || '',
+            description: description || '',
             status: mapJiraStatusToTaskStatus(issue.fields?.status?.name),
             type: taskType,
             priority: mapJiraPriorityToTaskPriority(issue.fields?.priority?.name),
@@ -381,7 +416,7 @@ export const syncJiraProject = async (
             comments: issue.renderedFields?.comment?.comments?.map(comment => ({
                 id: comment.id,
                 author: comment.author?.displayName || 'Desconhecido',
-                content: comment.body || '',
+                content: parseJiraDescription(comment.body) || '',
                 createdAt: comment.created,
                 updatedAt: comment.updated,
             })) || [],
