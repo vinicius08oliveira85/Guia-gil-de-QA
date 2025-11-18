@@ -364,57 +364,61 @@ export const SDLCView: React.FC<{ project: Project }> = ({ project }) => {
           isOpen={!!selectedPhase}
           onClose={() => setSelectedPhase(null)}
           title={selectedPhase.name}
+          size="lg"
+          maxHeight="90vh"
         >
-          <div className="space-y-6">
+          <div className="space-y-4">
             <div>
-              <h4 className="text-sm font-semibold text-text-secondary mb-2">Descrição</h4>
-              <p className="text-text-primary">{selectedPhase.description}</p>
-            </div>
-
-            <div>
-              <h4 className="text-sm font-semibold text-text-secondary mb-3">📋 Atividades Principais</h4>
-              <ul className="space-y-2">
-                {selectedPhase.activities.map((activity, idx) => (
-                  <li key={idx} className="flex items-start text-text-primary">
-                    <span className="mr-2 text-accent">•</span>
-                    <span>{activity}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="text-sm font-semibold text-text-secondary mb-3">📦 Entregas</h4>
-              <ul className="space-y-2">
-                {selectedPhase.deliverables.map((deliverable, idx) => (
-                  <li key={idx} className="flex items-start text-text-primary">
-                    <span className="mr-2 text-green-400">✓</span>
-                    <span>{deliverable}</span>
-                  </li>
-                ))}
-              </ul>
+              <h4 className="text-xs font-semibold text-text-secondary mb-1.5 uppercase tracking-wide">Descrição</h4>
+              <p className="text-sm text-text-primary leading-relaxed">{selectedPhase.description}</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <h4 className="text-sm font-semibold text-text-secondary mb-3">🧪 Atividades de QA</h4>
-                <ul className="space-y-2">
-                  {selectedPhase.qaActivities.map((activity, idx) => (
+                <h4 className="text-xs font-semibold text-text-secondary mb-2 uppercase tracking-wide">📋 Atividades Principais</h4>
+                <ul className="space-y-1.5">
+                  {selectedPhase.activities.map((activity, idx) => (
                     <li key={idx} className="flex items-start text-text-primary text-sm">
-                      <span className="mr-2 text-blue-400">•</span>
-                      <span>{activity}</span>
+                      <span className="mr-2 text-accent flex-shrink-0 mt-0.5">•</span>
+                      <span className="leading-relaxed">{activity}</span>
                     </li>
                   ))}
                 </ul>
               </div>
 
               <div>
-                <h4 className="text-sm font-semibold text-text-secondary mb-3">🚀 Atividades de DevOps</h4>
-                <ul className="space-y-2">
+                <h4 className="text-xs font-semibold text-text-secondary mb-2 uppercase tracking-wide">📦 Entregas</h4>
+                <ul className="space-y-1.5">
+                  {selectedPhase.deliverables.map((deliverable, idx) => (
+                    <li key={idx} className="flex items-start text-text-primary text-sm">
+                      <span className="mr-2 text-green-400 flex-shrink-0 mt-0.5">✓</span>
+                      <span className="leading-relaxed">{deliverable}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <h4 className="text-xs font-semibold text-text-secondary mb-2 uppercase tracking-wide">🧪 Atividades de QA</h4>
+                <ul className="space-y-1.5">
+                  {selectedPhase.qaActivities.map((activity, idx) => (
+                    <li key={idx} className="flex items-start text-text-primary text-sm">
+                      <span className="mr-2 text-blue-400 flex-shrink-0 mt-0.5">•</span>
+                      <span className="leading-relaxed">{activity}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div>
+                <h4 className="text-xs font-semibold text-text-secondary mb-2 uppercase tracking-wide">🚀 Atividades de DevOps</h4>
+                <ul className="space-y-1.5">
                   {selectedPhase.devopsActivities.map((activity, idx) => (
                     <li key={idx} className="flex items-start text-text-primary text-sm">
-                      <span className="mr-2 text-purple-400">•</span>
-                      <span>{activity}</span>
+                      <span className="mr-2 text-purple-400 flex-shrink-0 mt-0.5">•</span>
+                      <span className="leading-relaxed">{activity}</span>
                     </li>
                   ))}
                 </ul>
@@ -423,12 +427,12 @@ export const SDLCView: React.FC<{ project: Project }> = ({ project }) => {
 
             {selectedPhase.dependencies.length > 0 && (
               <div>
-                <h4 className="text-sm font-semibold text-text-secondary mb-2">Dependências</h4>
+                <h4 className="text-xs font-semibold text-text-secondary mb-2 uppercase tracking-wide">Dependências</h4>
                 <div className="flex flex-wrap gap-2">
                   {selectedPhase.dependencies.map(depId => {
                     const dep = sdlcPhases.find(p => p.id === depId);
                     return dep ? (
-                      <Badge key={depId} variant="info">{dep.name}</Badge>
+                      <Badge key={depId} variant="info" size="sm">{dep.name}</Badge>
                     ) : null;
                   })}
                 </div>
