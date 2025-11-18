@@ -15,6 +15,10 @@ import { DependencyGraph } from './common/DependencyGraph';
 import { BurndownChart } from './common/BurndownChart';
 import { ProjectComparison } from './common/ProjectComparison';
 import { ChangeHistory } from './common/ChangeHistory';
+import { ActivityFeed } from './common/ActivityFeed';
+import { QuickStats } from './common/QuickStats';
+import { ProjectHealthScore } from './common/ProjectHealthScore';
+import { TaskTimeline } from './common/TaskTimeline';
 
 export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project: Project) => void; onBack: () => void; }> = ({ project, onUpdateProject, onBack }) => {
     const [activeTab, setActiveTab] = useState('dashboard');
@@ -24,6 +28,8 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
     const [showDependencyGraph, setShowDependencyGraph] = useState(false);
     const [showBurndown, setShowBurndown] = useState(false);
     const [showChangeHistory, setShowChangeHistory] = useState(false);
+    const [showActivityFeed, setShowActivityFeed] = useState(false);
+    const [showTimeline, setShowTimeline] = useState(false);
     const metrics = useProjectMetrics(project);
 
     useEffect(() => {
@@ -156,6 +162,16 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                 <div className="mt-8">
                     {activeTab === 'dashboard' && (
                         <div className="space-y-6">
+                            {/* Score de Saúde e Estatísticas Rápidas */}
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                <div className="lg:col-span-1">
+                                    <ProjectHealthScore project={project} />
+                                </div>
+                                <div className="lg:col-span-2">
+                                    <QuickStats project={project} />
+                                </div>
+                            </div>
+
                             <ProjectQADashboard project={project} />
                             
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -193,18 +209,46 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                                     {showBurndown && <BurndownChart project={project} />}
                                 </div>
                             </div>
-                            
+
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                <div className="p-4 bg-surface border border-surface-border rounded-lg">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h3 className="text-lg font-semibold text-text-primary">Feed de Atividades</h3>
+                                        <button
+                                            onClick={() => setShowActivityFeed(!showActivityFeed)}
+                                            className="text-sm text-accent hover:text-accent-light"
+                                        >
+                                            {showActivityFeed ? 'Ocultar' : 'Mostrar'}
+                                        </button>
+                                    </div>
+                                    {showActivityFeed && <ActivityFeed project={project} />}
+                                </div>
+                                
+                                <div className="p-4 bg-surface border border-surface-border rounded-lg">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h3 className="text-lg font-semibold text-text-primary">Histórico de Mudanças</h3>
+                                        <button
+                                            onClick={() => setShowChangeHistory(!showChangeHistory)}
+                                            className="text-sm text-accent hover:text-accent-light"
+                                        >
+                                            {showChangeHistory ? 'Ocultar' : 'Mostrar'}
+                                        </button>
+                                    </div>
+                                    {showChangeHistory && <ChangeHistory project={project} />}
+                                </div>
+                            </div>
+
                             <div className="p-4 bg-surface border border-surface-border rounded-lg">
                                 <div className="flex items-center justify-between mb-4">
-                                    <h3 className="text-lg font-semibold text-text-primary">Histórico de Mudanças</h3>
+                                    <h3 className="text-lg font-semibold text-text-primary">Linha do Tempo</h3>
                                     <button
-                                        onClick={() => setShowChangeHistory(!showChangeHistory)}
+                                        onClick={() => setShowTimeline(!showTimeline)}
                                         className="text-sm text-accent hover:text-accent-light"
                                     >
-                                        {showChangeHistory ? 'Ocultar' : 'Mostrar'}
+                                        {showTimeline ? 'Ocultar' : 'Mostrar'}
                                     </button>
                                 </div>
-                                {showChangeHistory && <ChangeHistory project={project} />}
+                                {showTimeline && <TaskTimeline project={project} />}
                             </div>
                         </div>
                     )}

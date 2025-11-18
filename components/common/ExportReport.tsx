@@ -1,0 +1,144 @@
+import React, { useState } from 'react';
+import { Project } from '../../types';
+import { useProjectMetrics } from '../../hooks/useProjectMetrics';
+import { exportProject } from '../../utils/exportService';
+import { useErrorHandler } from '../../hooks/useErrorHandler';
+import { formatDate } from '../../utils/dateUtils';
+
+interface ExportReportProps {
+  project: Project;
+  onClose: () => void;
+}
+
+export const ExportReport: React.FC<ExportReportProps> = ({ project, onClose }) => {
+  const [format, setFormat] = useState<'json' | 'csv' | 'markdown'>('markdown');
+  const [includeMetrics, setIncludeMetrics] = useState(true);
+  const [includeTasks, setIncludeTasks] = useState(true);
+  const [includeTestCases, setIncludeTestCases] = useState(true);
+  const metrics = useProjectMetrics(project);
+  const { handleSuccess, handleError } = useErrorHandler();
+
+  const handleExport = async () => {
+    try {
+      let data: any = {
+        project: {
+          name: project.name,
+          description: project.description,
+          createdAt: project.createdAt,
+          updatedAt: project.updatedAt
+        }
+      };
+
+      if (includeMetrics) {
+        data.metrics = {
+          currentPhase: metrics.currentPhase,
+          totalTasks: metrics.totalTasks,
+          totalTestCases: metrics.totalTestCases,
+          testCoverage: metrics.testCoverage,
+          testPassRate: metrics.testPassRate,
+          automationRatio: metrics.automationRatio,
+          bugsBySeverity: metrics.bugsBySeverity,
+          openVsClosedBugs: metrics.openVsClosedBugs
+        };
+      }
+
+      if (includeTasks) {
+        data.tasks = project.tasks.map(task => ({
+          id: task.id,
+          title: task.title,
+          type: task.type,
+          status: task.status,
+          assignee: task.assignee,
+          priority: task.priority,
+          tags: task.tags,
+          estimatedHours: task.estimatedHours,
+          actualHours: task.actualHours
+        }));
+      }
+
+      if (includeTestCases) {
+        data.testCases = project.tasks.flatMap(task =>
+          task.testCases.map(tc => ({
+            taskId: task.id,
+            taskTitle: task.title,
+            ...tc
+          }))
+        );
+      }
+
+      await exportProject(data, format, `${project.name}_report_${formatDate(new Date()).replace(/\//g, '-')}`);
+      handleSuccess('Relatório exportado com sucesso!');
+      onClose();
+    } catch (error) {
+      handleError(error instanceof Error ? error : new Error('Erro ao exportar relatório'));
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <label className="block text-sm font-medium text-text-secondary mb-2">
+          Formato
+        </label>
+        <div className="flex gap-2">
+          {(['json', 'csv', 'markdown'] as const).map(fmt => (
+            <button
+              key={fmt}
+              onClick={() => setFormat(fmt)}
+              className={`px-4 py-2 rounded-md transition-colors ${
+                format === fmt
+                  ? 'bg-accent text-white'
+                  : 'bg-surface border border-surface-border text-text-secondary hover:bg-surface-hover'
+              }`}
+            >
+              {fmt.toUpperCase()}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <label className="block text-sm font-medium text-text-secondary mb-2">
+          Incluir
+        </label>
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={includeMetrics}
+            onChange={(e) => setIncludeMetrics(e.target.checked)}
+            className="w-4 h-4 rounded border-surface-border text-accent"
+          />
+          <span className="text-text-primary">Métricas</span>
+        </label>
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={includeTasks}
+            onChange={(e) => setIncludeTasks(e.target.checked)}
+            className="w-4 h-4 rounded border-surface-border text-accent"
+          />
+          <span className="text-text-primary">Tarefas</span>
+        </label>
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={includeTestCases}
+            onChange={(e) => setIncludeTestCases(e.target.checked)}
+            className="w-4 h-4 rounded border-surface-border text-accent"
+          />
+          <span className="text-text-primary">Casos de Teste</span>
+        </label>
+      </div>
+
+      <div className="flex gap-2 pt-4 border-t border-surface-border">
+        <button onClick={onClose} className="flex-1 btn btn-secondary">
+          Cancelar
+        </button>
+        <button onClick={handleExport} className="flex-1 btn btn-primary">
+          Exportar Relatório
+        </button>
+      </div>
+    </div>
+  );
+};
+

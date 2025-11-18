@@ -11,6 +11,7 @@ import { AttachmentManager } from '../common/AttachmentManager';
 import { ChecklistView } from '../common/ChecklistView';
 import { EstimationInput } from '../common/EstimationInput';
 import { QuickActions } from '../common/QuickActions';
+import { TimeTracker } from '../common/TimeTracker';
 import { getTagColor } from '../../utils/tagService';
 import { updateChecklistItem } from '../../utils/checklistService';
 
