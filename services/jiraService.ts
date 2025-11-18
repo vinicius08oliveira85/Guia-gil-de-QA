@@ -300,12 +300,12 @@ export const importJiraProject = async (
             task.severity = mapJiraSeverity(issue.fields.labels);
         }
 
-        if (issue.fields.parent) {
+        if (issue.fields?.parent?.key) {
             task.parentId = issue.fields.parent.key;
         }
 
         // Mapear assignee
-        if (issue.fields.assignee) {
+        if (issue.fields?.assignee?.emailAddress) {
             const email = issue.fields.assignee.emailAddress.toLowerCase();
             if (email.includes('qa') || email.includes('test')) {
                 task.assignee = 'QA';
@@ -314,6 +314,8 @@ export const importJiraProject = async (
             } else {
                 task.assignee = 'Product';
             }
+        } else {
+            task.assignee = 'Product';
         }
 
         // Mapear attachments (se disponíveis na API)
