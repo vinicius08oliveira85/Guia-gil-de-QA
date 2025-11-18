@@ -51,9 +51,11 @@ export const JiraTaskItem: React.FC<{
     onDeleteComment?: (commentId: string) => void;
     project?: Project;
     onUpdateProject?: (project: Project) => void;
+    isSelected?: boolean;
+    onToggleSelect?: () => void;
     children?: React.ReactNode;
     level: number;
-}> = React.memo(({ task, onTestCaseStatusChange, onToggleTestCaseAutomated, onDelete, onGenerateTests, isGenerating, onAddSubtask, onEdit, onGenerateBddScenarios, isGeneratingBdd, onSaveBddScenario, onDeleteBddScenario, onTaskStatusChange, onAddTestCaseFromTemplate, onAddComment, onEditComment, onDeleteComment, project, onUpdateProject, children, level }) => {
+}> = React.memo(({ task, onTestCaseStatusChange, onToggleTestCaseAutomated, onDelete, onGenerateTests, isGenerating, onAddSubtask, onEdit, onGenerateBddScenarios, isGeneratingBdd, onSaveBddScenario, onDeleteBddScenario, onTaskStatusChange, onAddTestCaseFromTemplate, onAddComment, onEditComment, onDeleteComment, project, onUpdateProject, isSelected, onToggleSelect, children, level }) => {
     const [isDetailsOpen, setIsDetailsOpen] = useState(false);
     const [isChildrenOpen, setIsChildrenOpen] = useState(false);
     const [editingBddScenario, setEditingBddScenario] = useState<BddScenario | null>(null);
@@ -85,6 +87,17 @@ export const JiraTaskItem: React.FC<{
             <div style={indentationStyle} className={`border-b border-surface-border`}>
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 gap-3">
                     <div className="flex items-center gap-3 flex-grow min-w-0">
+                        {onToggleSelect && (
+                            <input
+                                type="checkbox"
+                                checked={isSelected || false}
+                                onChange={(e) => {
+                                    e.stopPropagation();
+                                    onToggleSelect();
+                                }}
+                                className="w-4 h-4 rounded border-surface-border text-accent focus:ring-accent"
+                            />
+                        )}
                         {hasChildren ? (
                             <button onClick={() => setIsChildrenOpen(!isChildrenOpen)} className={iconButtonClass}>
                                 <ChevronDownIcon className={`transition-transform ${isChildrenOpen ? 'rotate-180' : ''}`} />
@@ -92,7 +105,7 @@ export const JiraTaskItem: React.FC<{
                         ) : (
                             <div className="w-8 h-8 flex-shrink-0"></div>
                         )}
-                        <div className="flex items-center gap-3 cursor-pointer" onClick={() => setIsDetailsOpen(!isDetailsOpen)}>
+                        <div className={`flex items-center gap-3 cursor-pointer flex-1 ${isSelected ? 'ring-2 ring-accent rounded' : ''}`} onClick={() => setIsDetailsOpen(!isDetailsOpen)}>
                             <TaskTypeIcon type={task.type} />
                              <div className="flex items-center gap-2 min-w-0 flex-1">
                                 <TaskStatusIcon status={task.status} />

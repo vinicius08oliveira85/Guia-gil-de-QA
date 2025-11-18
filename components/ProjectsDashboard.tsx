@@ -12,7 +12,9 @@ export const ProjectsDashboard: React.FC<{
     onCreateProject: (name: string, description: string, templateId?: string) => Promise<void>;
     onDeleteProject: (id: string) => Promise<void>;
     onSearchClick: () => void;
-}> = ({ projects, onSelectProject, onCreateProject, onDeleteProject, onSearchClick }) => {
+    onAdvancedSearchClick?: () => void;
+    onComparisonClick?: () => void;
+}> = ({ projects, onSelectProject, onCreateProject, onDeleteProject, onSearchClick, onAdvancedSearchClick, onComparisonClick }) => {
     const [isCreating, setIsCreating] = useState(false);
     const [showTemplates, setShowTemplates] = useState(false);
     const [newName, setNewName] = useState('');
@@ -48,6 +50,27 @@ export const ProjectsDashboard: React.FC<{
 
     return (
         <div className="container mx-auto p-4 sm:p-6 md:p-8">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                <h1 className="text-3xl font-bold text-text-primary">Meus Projetos</h1>
+                <div className="flex flex-wrap gap-2">
+                    {onComparisonClick && projects.length > 1 && (
+                        <button onClick={onComparisonClick} className="btn btn-secondary">
+                            📊 Comparar Projetos
+                        </button>
+                    )}
+                    {onAdvancedSearchClick && (
+                        <button onClick={onAdvancedSearchClick} className="btn btn-secondary">
+                            🔍 Busca Avançada
+                        </button>
+                    )}
+                    <button onClick={onSearchClick} className="btn btn-secondary">
+                        🔍 Buscar
+                    </button>
+                    <button onClick={() => setIsCreating(true)} className="btn btn-primary">
+                        ➕ Novo Projeto
+                    </button>
+                </div>
+            </div>
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
                 <h2 className="text-3xl sm:text-4xl font-bold text-text-primary">Dashboard de Projetos</h2>
                 <div className="flex gap-3">

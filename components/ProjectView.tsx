@@ -11,12 +11,19 @@ import { TimelineView } from './timeline/TimelineView';
 import { PrintableReport } from './PrintableReport';
 import { ExportMenu } from './common/ExportMenu';
 import { Modal } from './common/Modal';
+import { DependencyGraph } from './common/DependencyGraph';
+import { BurndownChart } from './common/BurndownChart';
+import { ProjectComparison } from './common/ProjectComparison';
+import { ChangeHistory } from './common/ChangeHistory';
 
 export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project: Project) => void; onBack: () => void; }> = ({ project, onUpdateProject, onBack }) => {
     const [activeTab, setActiveTab] = useState('dashboard');
     const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
     const [isPrinting, setIsPrinting] = useState(false);
     const [showExportMenu, setShowExportMenu] = useState(false);
+    const [showDependencyGraph, setShowDependencyGraph] = useState(false);
+    const [showBurndown, setShowBurndown] = useState(false);
+    const [showChangeHistory, setShowChangeHistory] = useState(false);
     const metrics = useProjectMetrics(project);
 
     useEffect(() => {

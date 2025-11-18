@@ -14,12 +14,14 @@ import { createBugFromFailedTest } from '../../utils/bugAutoCreation';
 import { notifyTestFailed, notifyBugCreated } from '../../utils/notificationService';
 import { createTestCaseFromTemplate } from '../../utils/testCaseTemplates';
 import { Comment } from '../../types';
+import { BulkActions } from '../common/BulkActions';
 
 export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: Project) => void }> = ({ project, onUpdateProject }) => {
     const [generatingTestsTaskId, setGeneratingTestsTaskId] = useState<string | null>(null);
     const [generatingBddTaskId, setGeneratingBddTaskId] = useState<string | null>(null);
     const [showTemplateSelector, setShowTemplateSelector] = useState(false);
     const [selectedTaskForTemplate, setSelectedTaskForTemplate] = useState<string | null>(null);
+    const [selectedTasks, setSelectedTasks] = useState<Set<string>>(new Set());
     const { handleError, handleSuccess } = useErrorHandler();
     const { filters, filteredTasks, updateFilter, clearFilters, activeFiltersCount } = useFilters(project);
     const availableTags = getAllTagsFromProject(project);
