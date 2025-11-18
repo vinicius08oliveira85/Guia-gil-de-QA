@@ -131,7 +131,7 @@ export const JiraTaskItem: React.FC<{
     return (
         <div className="bg-black/10">
             <div style={indentationStyle} className={`border-b border-surface-border`}>
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 gap-3">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-2 gap-2">
                     <div className="flex items-center gap-3 flex-grow min-w-0">
                         {onToggleSelect && (
                             <input
@@ -151,27 +151,29 @@ export const JiraTaskItem: React.FC<{
                         ) : (
                             <div className="w-8 h-8 flex-shrink-0"></div>
                         )}
-                        <div className={`flex items-center gap-3 cursor-pointer flex-1 ${isSelected ? 'ring-2 ring-accent rounded' : ''}`} onClick={() => setIsDetailsOpen(!isDetailsOpen)}>
+                            <div className={`flex items-center gap-2 cursor-pointer flex-1 ${isSelected ? 'ring-2 ring-accent rounded' : ''}`} onClick={() => setIsDetailsOpen(!isDetailsOpen)}>
                             <TaskTypeIcon type={task.type} />
                              <div className="flex items-center gap-2 min-w-0 flex-1">
                                 <TaskStatusIcon status={task.status} />
                                 <div className="truncate flex-1">
-                                    <span className="font-semibold text-text-secondary text-sm truncate">{task.id}</span>
-                                    <p className="text-text-primary truncate">{task.title}</p>
+                                    <div className="flex items-center gap-2">
+                                        <span className="font-semibold text-text-secondary text-xs truncate">{task.id}</span>
+                                        <p className="text-text-primary text-sm truncate flex-1">{task.title}</p>
+                                    </div>
                                     {task.tags && task.tags.length > 0 && (
-                                        <div className="flex flex-wrap gap-1 mt-1">
-                                            {task.tags.slice(0, 3).map(tag => (
+                                        <div className="flex flex-wrap gap-1 mt-0.5">
+                                            {task.tags.slice(0, 2).map(tag => (
                                                 <span
                                                     key={tag}
-                                                    className="text-xs px-1.5 py-0.5 rounded text-white"
+                                                    className="text-xs px-1 py-0.5 rounded text-white"
                                                     style={{ backgroundColor: getTagColor(tag) }}
                                                 >
                                                     {tag}
                                                 </span>
                                             ))}
-                                            {task.tags.length > 3 && (
-                                                <span className="text-xs px-1.5 py-0.5 rounded bg-surface text-text-secondary">
-                                                    +{task.tags.length - 3}
+                                            {task.tags.length > 2 && (
+                                                <span className="text-xs px-1 py-0.5 rounded bg-surface text-text-secondary">
+                                                    +{task.tags.length - 2}
                                                 </span>
                                             )}
                                         </div>

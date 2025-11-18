@@ -7,9 +7,13 @@ import { ShiftLeftCard } from './ShiftLeftCard';
 import { TestPyramidCard } from './TestPyramidCard';
 import { PhaseLogicGuideCard } from './PhaseLogicGuideCard';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
+import { Modal } from '../common/Modal';
 
 export const AnalysisView: React.FC<{ project: Project; onUpdateProject: (project: Project) => void; }> = ({ project, onUpdateProject }) => {
     const [isAnalyzing, setIsAnalyzing] = useState(false);
+    const [showLifecycleModal, setShowLifecycleModal] = useState(false);
+    const [showShiftLeftModal, setShowShiftLeftModal] = useState(false);
+    const [showPyramidModal, setShowPyramidModal] = useState(false);
     const { handleError, handleSuccess } = useErrorHandler();
 
     const handleAnalyzeAndUpdateDashboard = useCallback(async () => {
@@ -52,10 +56,64 @@ export const AnalysisView: React.FC<{ project: Project; onUpdateProject: (projec
                     {isAnalyzing ? <Spinner small /> : 'Analisar Projeto com IA'}
                 </button>
             </div>
-            {project.phases && <ProjectLifecycleCard project={project} />}
-            <ShiftLeftCard project={project} />
-            <TestPyramidCard project={project} />
+            
+            {/* Cards Compactos com Botões para Abrir Modais */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                {project.phases && (
+                    <div className="mica rounded-lg p-4 border border-surface-border hover:border-accent/50 transition-colors cursor-pointer" onClick={() => setShowLifecycleModal(true)}>
+                        <h3 className="text-lg font-bold text-text-primary mb-2">📊 Ciclo de Vida</h3>
+                        <p className="text-sm text-text-secondary mb-3">Visualize o ciclo de vida do projeto e testes recomendados</p>
+                        <button className="btn btn-secondary w-full text-sm">Ver Detalhes</button>
+                    </div>
+                )}
+                
+                <div className="mica rounded-lg p-4 border border-surface-border hover:border-accent/50 transition-colors cursor-pointer" onClick={() => setShowShiftLeftModal(true)}>
+                    <h3 className="text-lg font-bold text-text-primary mb-2">⬅️ Shift Left</h3>
+                    <p className="text-sm text-text-secondary mb-3">Análise de Shift Left Testing e recomendações</p>
+                    <button className="btn btn-secondary w-full text-sm">Ver Detalhes</button>
+                </div>
+                
+                <div className="mica rounded-lg p-4 border border-surface-border hover:border-accent/50 transition-colors cursor-pointer" onClick={() => setShowPyramidModal(true)}>
+                    <h3 className="text-lg font-bold text-text-primary mb-2">🔺 Pirâmide de Testes</h3>
+                    <p className="text-sm text-text-secondary mb-3">Análise da pirâmide de testes e distribuição</p>
+                    <button className="btn btn-secondary w-full text-sm">Ver Detalhes</button>
+                </div>
+            </div>
+            
             <PhaseLogicGuideCard />
+            
+            {/* Modais para Análises Detalhadas */}
+            {project.phases && (
+                <Modal 
+                    isOpen={showLifecycleModal} 
+                    onClose={() => setShowLifecycleModal(false)} 
+                    title="Ciclo de Vida do Projeto (SDLC & DevOps)"
+                    size="lg"
+                    maxHeight="90vh"
+                >
+                    <ProjectLifecycleCard project={project} />
+                </Modal>
+            )}
+            
+            <Modal 
+                isOpen={showShiftLeftModal} 
+                onClose={() => setShowShiftLeftModal(false)} 
+                title="Análise de Shift Left Testing"
+                size="lg"
+                maxHeight="90vh"
+            >
+                <ShiftLeftCard project={project} />
+            </Modal>
+            
+            <Modal 
+                isOpen={showPyramidModal} 
+                onClose={() => setShowPyramidModal(false)} 
+                title="Análise da Pirâmide de Testes"
+                size="lg"
+                maxHeight="90vh"
+            >
+                <TestPyramidCard project={project} />
+            </Modal>
         </div>
     );
 };
