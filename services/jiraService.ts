@@ -203,7 +203,8 @@ export const getJiraIssues = async (
     return response.issues || [];
 };
 
-const mapJiraStatusToTaskStatus = (jiraStatus: string): 'To Do' | 'In Progress' | 'Done' => {
+const mapJiraStatusToTaskStatus = (jiraStatus: string | undefined | null): 'To Do' | 'In Progress' | 'Done' => {
+    if (!jiraStatus) return 'To Do';
     const status = jiraStatus.toLowerCase();
     if (status.includes('done') || status.includes('resolved') || status.includes('closed')) {
         return 'Done';
@@ -214,7 +215,8 @@ const mapJiraStatusToTaskStatus = (jiraStatus: string): 'To Do' | 'In Progress' 
     return 'To Do';
 };
 
-const mapJiraTypeToTaskType = (jiraType: string): 'Epic' | 'História' | 'Tarefa' | 'Bug' => {
+const mapJiraTypeToTaskType = (jiraType: string | undefined | null): 'Epic' | 'História' | 'Tarefa' | 'Bug' => {
+    if (!jiraType) return 'Tarefa';
     const type = jiraType.toLowerCase();
     if (type.includes('epic')) return 'Epic';
     if (type.includes('story') || type.includes('história')) return 'História';
@@ -232,19 +234,21 @@ const mapJiraPriorityToTaskPriority = (jiraPriority?: string): 'Baixa' | 'Média
 };
 
 const mapJiraSeverity = (labels?: string[]): 'Crítico' | 'Alto' | 'Médio' | 'Baixo' => {
-    if (!labels) return 'Médio';
+    if (!labels || !Array.isArray(labels)) return 'Médio';
     const severityLabels = labels.filter(l => 
-        l.toLowerCase().includes('severity') || 
-        l.toLowerCase().includes('severidade') ||
-        l.toLowerCase().includes('critical') ||
-        l.toLowerCase().includes('high') ||
-        l.toLowerCase().includes('medium') ||
-        l.toLowerCase().includes('low')
+        l && typeof l === 'string' && (
+            l.toLowerCase().includes('severity') || 
+            l.toLowerCase().includes('severidade') ||
+            l.toLowerCase().includes('critical') ||
+            l.toLowerCase().includes('high') ||
+            l.toLowerCase().includes('medium') ||
+            l.toLowerCase().includes('low')
+        )
     );
     
     if (severityLabels.length === 0) return 'Médio';
     
-    const severity = severityLabels[0].toLowerCase();
+    const severity = severityLabels[0]?.toLowerCase() || '';
     if (severity.includes('critical') || severity.includes('crítico')) return 'Crítico';
     if (severity.includes('high') || severity.includes('alto')) return 'Alto';
     if (severity.includes('low') || severity.includes('baixo')) return 'Baixo';
@@ -268,25 +272,25 @@ export const importJiraProject = async (
 
     // Mapear issues para tarefas
     const tasks: JiraTask[] = jiraIssues.map(issue => {
-        const taskType = mapJiraTypeToTaskType(issue.fields.issuetype.name);
+        const taskType = mapJiraTypeToTaskType(issue.fields?.issuetype?.name);
         const isBug = taskType === 'Bug';
         
         const task: JiraTask = {
-            id: issue.key,
-            title: issue.fields.summary,
-            description: issue.fields.description || '',
-            status: mapJiraStatusToTaskStatus(issue.fields.status.name),
+            id: issue.key || `jira-${Date.now()}-${Math.random()}`,
+            title: issue.fields?.summary || 'Sem título',
+            description: issue.fields?.description || '',
+            status: mapJiraStatusToTaskStatus(issue.fields?.status?.name),
             type: taskType,
-            priority: mapJiraPriorityToTaskPriority(issue.fields.priority?.name),
-            createdAt: issue.fields.created,
-            completedAt: issue.fields.resolutiondate,
-            tags: issue.fields.labels || [],
+            priority: mapJiraPriorityToTaskPriority(issue.fields?.priority?.name),
+            createdAt: issue.fields?.created || new Date().toISOString(),
+            completedAt: issue.fields?.resolutiondate,
+            tags: issue.fields?.labels || [],
             testCases: [],
             bddScenarios: [],
-            comments: issue.renderedFields?.comment?.comments.map(comment => ({
+            comments: issue.renderedFields?.comment?.comments?.map(comment => ({
                 id: comment.id,
-                author: comment.author.displayName,
-                content: comment.body,
+                author: comment.author?.displayName || 'Desconhecido',
+                content: comment.body || '',
                 createdAt: comment.created,
                 updatedAt: comment.updated,
             })) || [],
