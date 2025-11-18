@@ -233,16 +233,27 @@ export const getJiraIssues = async (
         // Verificar se já pegamos todas as issues disponíveis
         const currentPageEnd = response.startAt + issues.length;
         
+        // Se não há mais issues retornadas, parar
+        if (issues.length < pageSize) {
+            console.log(`✅ Última página completa: ${allIssues.length} issues importadas`);
+            break;
+        }
+        
         // Se não há limite especificado, buscar TODAS as issues
         if (maxResults === undefined) {
-            // Buscar todas até o total disponível
-            if (currentPageEnd >= totalAvailable) {
+            // Se totalAvailable é válido e já pegamos tudo, parar
+            if (totalAvailable > 0 && currentPageEnd >= totalAvailable) {
                 console.log(`✅ Paginação completa: ${allIssues.length} issues importadas de ${totalAvailable} disponíveis`);
                 break;
             }
+            // Se totalAvailable é 0 ou inválido, continuar até não receber mais issues
         } else {
             // Se há limite, respeitar ele
-            if (allIssues.length >= maxResults || currentPageEnd >= totalAvailable) {
+            if (allIssues.length >= maxResults) {
+                console.log(`✅ Limite atingido: ${allIssues.length} issues importadas`);
+                break;
+            }
+            if (totalAvailable > 0 && currentPageEnd >= totalAvailable) {
                 console.log(`✅ Paginação completa: ${allIssues.length} issues importadas de ${totalAvailable} disponíveis`);
                 break;
             }
@@ -251,19 +262,38 @@ export const getJiraIssues = async (
         startAt += pageSize;
         
         // Limite de segurança apenas se não especificado maxResults (evitar loops infinitos)
-        // Mas aumentado para 10000 para projetos grandes
-        if (maxResults === undefined && allIssues.length >= 10000) {
-            console.warn(`⚠️ Limite de segurança de 10000 issues atingido para o projeto ${projectKey}.`);
+        // Mas aumentado para 50000 para projetos muito grandes
+        if (maxResults === undefined && allIssues.length >= 50000) {
+            console.warn(`⚠️ Limite de segurança de 50000 issues atingido para o projeto ${projectKey}.`);
             console.warn(`⚠️ Se houver mais issues, considere usar Supabase para armazenamento.`);
             break;
         }
     }
     
-    // Contar por tipo
-    const epics = allIssues.filter(i => i.fields?.issuetype?.name?.toLowerCase().includes('epic')).length;
-    const stories = allIssues.filter(i => i.fields?.issuetype?.name?.toLowerCase().includes('story') || i.fields?.issuetype?.name?.toLowerCase().includes('história')).length;
-    const tasks = allIssues.filter(i => i.fields?.issuetype?.name?.toLowerCase().includes('task') || i.fields?.issuetype?.name?.toLowerCase().includes('tarefa')).length;
-    const bugs = allIssues.filter(i => i.fields?.issuetype?.name?.toLowerCase().includes('bug')).length;
+    // Contar por tipo (verificar o nome exato do tipo no Jira)
+    const epics = allIssues.filter(i => {
+        const typeName = i.fields?.issuetype?.name?.toLowerCase() || '';
+        return typeName.includes('epic') || typeName === 'épico' || typeName === 'epico';
+    }).length;
+    
+    const stories = allIssues.filter(i => {
+        const typeName = i.fields?.issuetype?.name?.toLowerCase() || '';
+        return typeName.includes('story') || typeName.includes('história') || typeName.includes('historia') || typeName === 'user story';
+    }).length;
+    
+    const tasks = allIssues.filter(i => {
+        const typeName = i.fields?.issuetype?.name?.toLowerCase() || '';
+        return typeName.includes('task') || typeName.includes('tarefa') || (typeName !== 'epic' && typeName !== 'bug' && typeName !== 'story' && typeName !== 'história');
+    }).length;
+    
+    const bugs = allIssues.filter(i => {
+        const typeName = i.fields?.issuetype?.name?.toLowerCase() || '';
+        return typeName.includes('bug') || typeName === 'erro' || typeName === 'defeito';
+    }).length;
+    
+    // Log detalhado dos tipos encontrados (primeiros 10 para debug)
+    const uniqueTypes = [...new Set(allIssues.map(i => i.fields?.issuetype?.name).filter(Boolean))];
+    console.log(`   📋 Tipos encontrados no Jira:`, uniqueTypes.slice(0, 10));
     
     console.log(`✅ Total de issues buscadas: ${allIssues.length} para o projeto ${projectKey}`);
     console.log(`   📊 Breakdown: ${epics} Epics, ${stories} Histórias, ${tasks} Tarefas, ${bugs} Bugs`);
