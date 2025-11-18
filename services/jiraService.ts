@@ -248,17 +248,9 @@ export const importJiraProject = async (
             }
         }
 
-        // Mapear attachments
-        if (issue.fields.attachment && issue.fields.attachment.length > 0) {
-            task.attachments = issue.fields.attachment.map(att => ({
-                id: att.id,
-                name: att.filename,
-                type: att.mimeType,
-                size: att.size,
-                url: att.content,
-                uploadedAt: att.created,
-            }));
-        }
+        // Mapear attachments (se disponíveis na API)
+        // Nota: Attachments precisam ser buscados separadamente ou estar no expand
+        // Por enquanto, deixamos vazio pois requer configuração adicional da API
 
         return task;
     });
