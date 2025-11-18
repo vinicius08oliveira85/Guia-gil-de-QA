@@ -30,14 +30,17 @@ VITE_SUPABASE_ANON_KEY=sua-chave-anon-aqui
 
 ### 3. Criar Tabelas no Supabase
 
-**Recomendado (versão mais simples):**
-- Execute o script **`docs/SUPABASE_SIMPLE.sql`** - versão simplificada sem blocos DO
+**Recomendado (versão mais segura - SEM operações destrutivas):**
+- Execute o script **`docs/SUPABASE_FINAL.sql`** - versão final sem DROP, não mostra avisos
 
 **Alternativas:**
+- **`docs/SUPABASE_SIMPLE.sql`** - versão simplificada (pode mostrar aviso de operação destrutiva)
 - **`docs/SUPABASE_MIGRATION_SAFE.sql`** - versão segura com verificações (execute o script COMPLETO)
 - **`docs/SUPABASE_SQL.sql`** - para criar do zero
 
 **IMPORTANTE:** Execute o script COMPLETO de uma vez, não apenas partes dele!
+
+**Nota:** Se você já executou algum script e a tabela tem todas as colunas (id, user_id, name, description, created_at, updated_at, data), você pode pular esta etapa!
 
 Ou use o seguinte SQL básico:
 
