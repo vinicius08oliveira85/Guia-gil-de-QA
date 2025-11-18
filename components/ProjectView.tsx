@@ -118,6 +118,7 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                                     key={tab.id}
                                     onClick={() => handleTabClick(tab.id)} 
                                     className={`${tabStyle} ${activeTab === tab.id ? activeTabStyle : inactiveTabStyle}`}
+                                    data-onboarding={tab['data-onboarding']}
                                 >
                                     {tab.label}
                                 </button>
