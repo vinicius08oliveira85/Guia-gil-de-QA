@@ -19,6 +19,9 @@ import { ActivityFeed } from './common/ActivityFeed';
 import { QuickStats } from './common/QuickStats';
 import { ProjectHealthScore } from './common/ProjectHealthScore';
 import { TaskTimeline } from './common/TaskTimeline';
+import { SDLCView } from './sdlc/SDLCView';
+import { ShiftLeftAnalysis } from './shiftleft/ShiftLeftAnalysis';
+import { PhaseTransitionGuide } from './phases/PhaseTransitionGuide';
 
 export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project: Project) => void; onBack: () => void; }> = ({ project, onUpdateProject, onBack }) => {
     const [activeTab, setActiveTab] = useState('dashboard');
