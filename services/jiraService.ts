@@ -222,9 +222,9 @@ export const getJiraIssues = async (
         
         startAt += pageSize;
         
-        // Limite de segurança: não buscar mais de 1000 issues de uma vez
-        if (allIssues.length >= 1000) {
-            console.warn(`⚠️ Limite de 1000 issues atingido para o projeto ${projectKey}. Algumas issues podem não ter sido importadas.`);
+        // Limite de segurança: não buscar mais de 2000 issues de uma vez
+        if (allIssues.length >= 2000) {
+            console.warn(`⚠️ Limite de 2000 issues atingido para o projeto ${projectKey}. Algumas issues podem não ter sido importadas.`);
             break;
         }
     }
