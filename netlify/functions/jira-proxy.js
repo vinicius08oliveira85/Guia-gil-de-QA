@@ -1,9 +1,7 @@
 // Adaptação do jira-proxy para Netlify Functions
-// Netlify Functions usa um formato diferente do Vercel
+// Versão JavaScript para compatibilidade
 
-import type { Handler, HandlerEvent, HandlerContext } from '@netlify/functions';
-
-export const handler: Handler = async (event: HandlerEvent, context: HandlerContext) => {
+exports.handler = async (event, context) => {
   // Permitir apenas requisições POST
   if (event.httpMethod !== 'POST') {
     return {
