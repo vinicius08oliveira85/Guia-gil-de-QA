@@ -191,6 +191,36 @@ const App: React.FC = () => {
                         </div>
                     </div>
                 )}
+
+                {showAdvancedSearch && (
+                    <AdvancedSearch
+                        projects={projects}
+                        onResultSelect={(result) => {
+                            if (result.type === 'project' || result.projectId) {
+                                setSelectedProjectId(result.projectId || result.id);
+                            }
+                            setShowAdvancedSearch(false);
+                        }}
+                        onClose={() => setShowAdvancedSearch(false)}
+                    />
+                )}
+
+                {showProjectComparison && (
+                    <Modal
+                        isOpen={showProjectComparison}
+                        onClose={() => setShowProjectComparison(false)}
+                        title="Comparar Projetos"
+                    >
+                        <ProjectComparison
+                            projects={projects}
+                            onProjectSelect={(projectId) => {
+                                setSelectedProjectId(projectId);
+                                setShowProjectComparison(false);
+                            }}
+                        />
+                    </Modal>
+                )}
+
                 <main>
                     {selectedProject ? (
                         <ProjectView 
