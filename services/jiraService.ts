@@ -310,12 +310,31 @@ export const importJiraProject = async (
     const jiraIssues = await getJiraIssues(config, jiraProjectKey, 2000);
 
     // Mapear issues para tarefas
-    const tasks: JiraTask[] = jiraIssues.map(issue => {
+    const tasks: JiraTask[] = jiraIssues.map((issue, index) => {
         const taskType = mapJiraTypeToTaskType(issue.fields?.issuetype?.name);
         const isBug = taskType === 'Bug';
         
         // Converter descrição do formato ADF para texto
-        const description = parseJiraDescription(issue.fields?.description);
+        // Tentar também renderedFields.description se disponível (formato HTML renderizado)
+        let description = '';
+        if (issue.renderedFields?.description) {
+            // Se temos descrição renderizada (HTML), usar ela
+            description = parseJiraDescription(issue.renderedFields.description);
+        } else if (issue.fields?.description) {
+            // Caso contrário, usar a descrição raw (ADF)
+            description = parseJiraDescription(issue.fields.description);
+        }
+        
+        // Log para debug das primeiras tarefas
+        if (index < 3) {
+            console.log(`📝 Tarefa ${issue.key}:`, {
+                title: issue.fields?.summary,
+                type: taskType,
+                hasDescription: !!description,
+                descriptionLength: description.length,
+                descriptionPreview: description.substring(0, 100)
+            });
+        }
         
         const task: JiraTask = {
             id: issue.key || `jira-${Date.now()}-${Math.random()}`,
