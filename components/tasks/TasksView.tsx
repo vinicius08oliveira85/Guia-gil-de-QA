@@ -195,6 +195,58 @@ export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: 
             })
         });
     }, [project, onUpdateProject]);
+
+    const handleAddComment = useCallback((taskId: string, content: string) => {
+        if (!content.trim()) return;
+        const task = project.tasks.find(t => t.id === taskId);
+        if (!task) return;
+
+        const newComment: Comment = {
+            id: `comment-${Date.now()}`,
+            author: 'Você',
+            content,
+            createdAt: new Date().toISOString(),
+        };
+
+        const updatedTask = {
+            ...task,
+            comments: [...(task.comments || []), newComment]
+        };
+
+        onUpdateProject({
+            ...project,
+            tasks: project.tasks.map(t => t.id === taskId ? updatedTask : t)
+        });
+    }, [project, onUpdateProject]);
+
+    const handleEditComment = useCallback((taskId: string, commentId: string, content: string) => {
+        const task = project.tasks.find(t => t.id === taskId);
+        if (!task || !task.comments) return;
+
+        const updatedComments = task.comments.map(comment =>
+            comment.id === commentId ? { ...comment, content, updatedAt: new Date().toISOString() } : comment
+        );
+
+        const updatedTask = { ...task, comments: updatedComments };
+
+        onUpdateProject({
+            ...project,
+            tasks: project.tasks.map(t => t.id === taskId ? updatedTask : t)
+        });
+    }, [project, onUpdateProject]);
+
+    const handleDeleteComment = useCallback((taskId: string, commentId: string) => {
+        const task = project.tasks.find(t => t.id === taskId);
+        if (!task || !task.comments) return;
+
+        const updatedComments = task.comments.filter(comment => comment.id !== commentId);
+        const updatedTask = { ...task, comments: updatedComments };
+
+        onUpdateProject({
+            ...project,
+            tasks: project.tasks.map(t => t.id === taskId ? updatedTask : t)
+        });
+    }, [project, onUpdateProject]);
     
     const handleSaveTask = (taskData: Omit<JiraTask, 'testCases' | 'status' | 'testStrategy' | 'bddScenarios' | 'createdAt' | 'completedAt'>) => {
         let newTasks: JiraTask[];
