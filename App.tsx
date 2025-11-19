@@ -12,6 +12,7 @@ import { useSearch, SearchResult } from './hooks/useSearch';
 import { useKeyboardShortcuts, SHORTCUTS } from './hooks/useKeyboardShortcuts';
 import { KeyboardShortcutsHelp } from './components/common/KeyboardShortcutsHelp';
 import { LoadingSkeleton } from './components/common/LoadingSkeleton';
+import { loadProjectsFromSupabase, isSupabaseAvailable } from './services/supabaseService';
 
 // Code splitting - Lazy loading de componentes pesados
 const ProjectView = lazyWithRetry(() => import('./components/ProjectView').then(m => ({ default: m.ProjectView })));
@@ -19,7 +20,6 @@ const ProjectsDashboard = lazyWithRetry(() => import('./components/ProjectsDashb
 const AdvancedSearch = lazyWithRetry(() => import('./components/common/AdvancedSearch').then(m => ({ default: m.AdvancedSearch })));
 const ProjectComparisonModal = lazyWithRetry(() => import('./components/common/ProjectComparisonModal').then(m => ({ default: m.ProjectComparisonModal })));
 const JiraIntegration = lazyWithRetry(() => import('./components/jira/JiraIntegration').then(m => ({ default: m.JiraIntegration })));
-const LearningPathView = lazyWithRetry(() => import('./components/learning/LearningPathView').then(m => ({ default: m.LearningPathView })));
 const OnboardingGuide = lazyWithRetry(() => import('./components/onboarding/OnboardingGuide').then(m => ({ default: m.OnboardingGuide })));
 import { PHASE_NAMES } from './utils/constants';
 import { createProjectFromTemplate } from './utils/projectTemplates';
@@ -35,6 +35,7 @@ const App: React.FC = () => {
     const [showProjectComparison, setShowProjectComparison] = useState(false);
     const { handleError, handleSuccess } = useErrorHandler();
     const { searchQuery, setSearchQuery, searchResults } = useSearch(projects);
+    const supabaseEnabled = isSupabaseAvailable();
 
     useEffect(() => {
         const loadProjects = async () => {
@@ -138,6 +139,22 @@ const App: React.FC = () => {
             handleError(error, 'Deletar projeto');
         }
     }, [handleError, handleSuccess, projects]);
+
+    const handleSyncSupabase = useCallback(async () => {
+        if (!supabaseEnabled) {
+            handleError(new Error('Supabase não está configurado'), 'Sincronizar projetos');
+            return;
+        }
+        try {
+            const remoteProjects = await loadProjectsFromSupabase();
+            setProjects(remoteProjects);
+            handleSuccess(remoteProjects.length
+                ? `${remoteProjects.length} projeto(s) carregado(s) do Supabase`
+                : 'Nenhum projeto encontrado no Supabase');
+        } catch (error) {
+            handleError(error, 'Sincronizar projetos do Supabase');
+        }
+    }, [supabaseEnabled, handleError, handleSuccess]);
 
     const handleImportJiraProject = useCallback(async (project: Project) => {
         try {
@@ -280,13 +297,9 @@ const App: React.FC = () => {
                                     onSearchClick={() => setShowSearch(true)}
                                     onAdvancedSearchClick={() => setShowAdvancedSearch(true)}
                                     onComparisonClick={() => setShowProjectComparison(true)}
+                                onSyncSupabase={supabaseEnabled ? handleSyncSupabase : undefined}
                                 />
                             </Suspense>
-                            <div className="mt-8">
-                                <Suspense fallback={<div className="container mx-auto p-8"><LoadingSkeleton variant="card" count={2} /></div>}>
-                                    <LearningPathView />
-                                </Suspense>
-                            </div>
                         </div>
                     )}
                 </main>

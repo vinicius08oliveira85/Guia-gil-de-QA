@@ -14,12 +14,14 @@ export const ProjectsDashboard: React.FC<{
     onSearchClick: () => void;
     onAdvancedSearchClick?: () => void;
     onComparisonClick?: () => void;
-}> = ({ projects, onSelectProject, onCreateProject, onDeleteProject, onSearchClick, onAdvancedSearchClick, onComparisonClick }) => {
+    onSyncSupabase?: () => Promise<void>;
+}> = ({ projects, onSelectProject, onCreateProject, onDeleteProject, onSearchClick, onAdvancedSearchClick, onComparisonClick, onSyncSupabase }) => {
     const [isCreating, setIsCreating] = useState(false);
     const [showTemplates, setShowTemplates] = useState(false);
     const [newName, setNewName] = useState('');
     const [newDesc, setNewDesc] = useState('');
     const [selectedTemplate, setSelectedTemplate] = useState<string | undefined>();
+    const [isSyncingSupabase, setIsSyncingSupabase] = useState(false);
     
     const [deleteModalState, setDeleteModalState] = useState<{ isOpen: boolean; project: Project | null }>({
         isOpen: false,
@@ -48,6 +50,16 @@ export const ProjectsDashboard: React.FC<{
         setDeleteModalState({ isOpen: true, project });
     };
 
+    const handleSyncSupabase = async () => {
+        if (!onSyncSupabase) return;
+        setIsSyncingSupabase(true);
+        try {
+            await onSyncSupabase();
+        } finally {
+            setIsSyncingSupabase(false);
+        }
+    };
+
     return (
         <div className="container mx-auto p-4 sm:p-6 md:p-8">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
@@ -61,6 +73,15 @@ export const ProjectsDashboard: React.FC<{
                     {onAdvancedSearchClick && (
                         <button onClick={onAdvancedSearchClick} className="btn btn-secondary">
                             🔍 Busca Avançada
+                        </button>
+                    )}
+                    {onSyncSupabase && (
+                        <button
+                            onClick={handleSyncSupabase}
+                            className="btn btn-secondary"
+                            disabled={isSyncingSupabase}
+                        >
+                            {isSyncingSupabase ? 'Sincronizando...' : '☁️ Carregar Supabase'}
                         </button>
                     )}
                     <button onClick={onSearchClick} className="btn btn-secondary">
