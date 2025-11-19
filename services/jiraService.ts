@@ -244,41 +244,82 @@ export const getJiraIssues = async (
         onProgress?.(allIssues.length, totalGoal);
     };
 
-    const fetchPage = async (startAt: number) => {
-        return jiraApiCall<{
-            issues: JiraIssue[];
-            total: number;
-            startAt: number;
-            maxResults: number;
-            isLast?: boolean;
-        }>(
+    type JiraSearchResponse = {
+        issues?: JiraIssue[];
+        total?: number;
+        startAt?: number;
+        maxResults?: number;
+        nextPageToken?: string;
+        isLast?: boolean;
+    };
+
+    const buildSearchEndpoint = (params: Record<string, string | number | undefined>) => {
+        const search = new URLSearchParams();
+        search.set('jql', jql);
+        search.set('maxResults', String(pageSize));
+        search.set('expand', 'renderedFields');
+        search.set(
+            'fields',
+            'summary,description,issuetype,status,priority,assignee,reporter,created,updated,resolutiondate,labels,parent,subtasks'
+        );
+        if (typeof params.startAt === 'number') {
+            search.set('startAt', String(params.startAt));
+        }
+        if (typeof params.nextPageToken === 'string') {
+            search.set('nextPageToken', params.nextPageToken);
+        }
+        return `search/jql?${search.toString()}`;
+    };
+
+    const fetchPage = async (params: { startAt?: number; nextPageToken?: string }, label?: string) => {
+        const endpoint = buildSearchEndpoint(params);
+        const response = await jiraApiCall<JiraSearchResponse>(
             config,
-            `search/jql?jql=${encodeURIComponent(jql)}&startAt=${startAt}&maxResults=${pageSize}&expand=renderedFields&fields=summary,description,issuetype,status,priority,assignee,reporter,created,updated,resolutiondate,labels,parent,subtasks`,
+            endpoint,
             { timeout: 60000 }
         );
+        if (label) {
+            console.log(`📦 ${label}: Recebidas ${(response.issues || []).length} issues`);
+        }
+        return response;
     };
 
     console.log(`🔍 Buscando TODAS as issues do projeto ${projectKey}...`);
-    const firstResponse = await fetchPage(0);
+    const firstResponse = await fetchPage({ startAt: 0 }, 'Página 1');
     pushIssues(firstResponse.issues || [], firstResponse.total);
 
     if (maxResults !== undefined && allIssues.length >= maxResults) {
         return allIssues;
     }
 
-    const totalAvailable = firstResponse.total || 0;
-    const hasReliableTotal = totalAvailable > (firstResponse.issues?.length || 0);
+    const supportsRandomAccess = typeof firstResponse.startAt === 'number' && typeof firstResponse.total === 'number';
+    const hasTokens = typeof firstResponse.nextPageToken === 'string';
 
     const shouldContinue = () =>
         maxResults === undefined || allIssues.length < maxResults;
 
-    if (hasReliableTotal) {
+    if (hasTokens) {
+        let nextToken = firstResponse.nextPageToken;
+        let pageIndex = 2;
+        while (nextToken && shouldContinue()) {
+            const response = await fetchPage({ nextPageToken: nextToken }, `Página ${pageIndex}`);
+            const issues = response.issues || [];
+            if (issues.length === 0) {
+                console.log('⚠️ Nenhuma issue retornada nesta página. Parando paginação.');
+                break;
+            }
+            pushIssues(issues, response.total);
+            nextToken = response.nextPageToken;
+            pageIndex += 1;
+        }
+    } else if (supportsRandomAccess) {
+        const totalAvailable = firstResponse.total || 0;
         const totalToFetch = maxResults !== undefined
             ? Math.min(maxResults, totalAvailable)
             : totalAvailable;
         const startIndices: number[] = [];
         for (
-            let start = firstResponse.startAt + (firstResponse.issues?.length || 0);
+            let start = (firstResponse.startAt || 0) + (firstResponse.issues?.length || 0);
             start < totalToFetch;
             start += pageSize
         ) {
@@ -288,12 +329,11 @@ export const getJiraIssues = async (
         outer:
         for (let i = 0; i < startIndices.length; i += CONCURRENT_REQUESTS) {
             const chunkStarts = startIndices.slice(i, i + CONCURRENT_REQUESTS);
-            const responses = await Promise.all(chunkStarts.map(start => fetchPage(start)));
+            const responses = await Promise.all(
+                chunkStarts.map((start) => fetchPage({ startAt: start }, `Página ${(start / pageSize) + 1}`))
+            );
             for (const response of responses) {
                 const issues = response.issues || [];
-                console.log(
-                    `📦 Página ${(response.startAt / pageSize) + 1}: Recebidas ${issues.length} issues (Total acumulado: ${allIssues.length + issues.length} de ${response.total || 'desconhecido'})`
-                );
                 pushIssues(issues, response.total);
                 if (!shouldContinue()) {
                     break outer;
@@ -301,19 +341,18 @@ export const getJiraIssues = async (
             }
         }
     } else {
-        let nextStartAt = firstResponse.startAt + (firstResponse.issues?.length || 0);
+        let nextStartAt = (firstResponse.startAt || 0) + (firstResponse.issues?.length || 0);
+        let pageIndex = 2;
         while (shouldContinue()) {
-            const response = await fetchPage(nextStartAt);
+            const response = await fetchPage({ startAt: nextStartAt }, `Página ${pageIndex}`);
             const issues = response.issues || [];
             if (issues.length === 0) {
                 console.log('⚠️ Nenhuma issue retornada nesta página. Parando paginação.');
                 break;
             }
-            console.log(
-                `📦 Página ${(response.startAt / pageSize) + 1}: Recebidas ${issues.length} issues (Total acumulado: ${allIssues.length + issues.length})`
-            );
             pushIssues(issues, response.total);
             nextStartAt += issues.length;
+            pageIndex += 1;
 
             if (issues.length < pageSize) {
                 break;

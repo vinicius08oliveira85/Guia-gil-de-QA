@@ -14,16 +14,17 @@ import { KeyboardShortcutsHelp } from './components/common/KeyboardShortcutsHelp
 import { LoadingSkeleton } from './components/common/LoadingSkeleton';
 
 // Code splitting - Lazy loading de componentes pesados
-const ProjectView = React.lazy(() => import('./components/ProjectView').then(m => ({ default: m.ProjectView })));
-const ProjectsDashboard = React.lazy(() => import('./components/ProjectsDashboard').then(m => ({ default: m.ProjectsDashboard })));
-const AdvancedSearch = React.lazy(() => import('./components/common/AdvancedSearch').then(m => ({ default: m.AdvancedSearch })));
-const ProjectComparisonModal = React.lazy(() => import('./components/common/ProjectComparisonModal').then(m => ({ default: m.ProjectComparisonModal })));
-const JiraIntegration = React.lazy(() => import('./components/jira/JiraIntegration').then(m => ({ default: m.JiraIntegration })));
-const LearningPathView = React.lazy(() => import('./components/learning/LearningPathView').then(m => ({ default: m.LearningPathView })));
-const OnboardingGuide = React.lazy(() => import('./components/onboarding/OnboardingGuide').then(m => ({ default: m.OnboardingGuide })));
+const ProjectView = lazyWithRetry(() => import('./components/ProjectView').then(m => ({ default: m.ProjectView })));
+const ProjectsDashboard = lazyWithRetry(() => import('./components/ProjectsDashboard').then(m => ({ default: m.ProjectsDashboard })));
+const AdvancedSearch = lazyWithRetry(() => import('./components/common/AdvancedSearch').then(m => ({ default: m.AdvancedSearch })));
+const ProjectComparisonModal = lazyWithRetry(() => import('./components/common/ProjectComparisonModal').then(m => ({ default: m.ProjectComparisonModal })));
+const JiraIntegration = lazyWithRetry(() => import('./components/jira/JiraIntegration').then(m => ({ default: m.JiraIntegration })));
+const LearningPathView = lazyWithRetry(() => import('./components/learning/LearningPathView').then(m => ({ default: m.LearningPathView })));
+const OnboardingGuide = lazyWithRetry(() => import('./components/onboarding/OnboardingGuide').then(m => ({ default: m.OnboardingGuide })));
 import { PHASE_NAMES } from './utils/constants';
 import { createProjectFromTemplate } from './utils/projectTemplates';
 import { addAuditLog } from './utils/auditLog';
+import { lazyWithRetry } from './utils/lazyWithRetry';
 
 const App: React.FC = () => {
     const [projects, setProjects] = useState<Project[]>([]);
