@@ -648,3 +648,93 @@ export const syncJiraProject = async (
     };
 };
 
+export const addNewJiraTasks = async (
+    config: JiraConfig,
+    project: Project,
+    jiraProjectKey: string,
+    onProgress?: (current: number, total?: number) => void
+): Promise<{ project: Project; newTasksCount: number }> => {
+    // Buscar TODAS as issues do Jira
+    const jiraIssues = await getJiraIssues(config, jiraProjectKey, undefined, onProgress);
+    
+    // Criar um Set com as chaves das tarefas existentes para busca rápida
+    const existingTaskKeys = new Set(project.tasks.map(t => t.id));
+    
+    // Filtrar apenas tarefas novas (que não existem no projeto)
+    const newIssues = jiraIssues.filter(issue => !existingTaskKeys.has(issue.key));
+    
+    if (newIssues.length === 0) {
+        return { project, newTasksCount: 0 };
+    }
+    
+    // Mapear apenas as novas issues para tarefas
+    const newTasks: JiraTask[] = newIssues.map((issue) => {
+        const taskType = mapJiraTypeToTaskType(issue.fields?.issuetype?.name);
+        const isBug = taskType === 'Bug';
+        
+        // Converter descrição do formato ADF para texto
+        let description = '';
+        if (issue.renderedFields?.description) {
+            description = parseJiraDescription(issue.renderedFields.description);
+        } else if (issue.fields?.description) {
+            description = parseJiraDescription(issue.fields.description);
+        }
+        
+        const task: JiraTask = {
+            id: issue.key || `jira-${Date.now()}-${Math.random()}`,
+            title: issue.fields?.summary || 'Sem título',
+            description: description || '',
+            status: mapJiraStatusToTaskStatus(issue.fields?.status?.name),
+            type: taskType,
+            priority: mapJiraPriorityToTaskPriority(issue.fields?.priority?.name),
+            createdAt: issue.fields?.created || new Date().toISOString(),
+            completedAt: issue.fields?.resolutiondate,
+            tags: issue.fields?.labels || [],
+            testCases: [], // Novas tarefas começam sem casos de teste
+            bddScenarios: [], // Novas tarefas começam sem cenários BDD
+            comments: issue.renderedFields?.comment?.comments?.map(comment => ({
+                id: comment.id,
+                author: comment.author?.displayName || 'Desconhecido',
+                content: parseJiraDescription(comment.body) || '',
+                createdAt: comment.created,
+                updatedAt: comment.updated,
+            })) || [],
+        };
+
+        if (isBug) {
+            task.severity = mapJiraSeverity(issue.fields.labels);
+        }
+
+        if (issue.fields?.parent?.key) {
+            task.parentId = issue.fields.parent.key;
+        }
+
+        // Mapear assignee
+        if (issue.fields?.assignee?.emailAddress) {
+            const email = issue.fields.assignee.emailAddress.toLowerCase();
+            if (email.includes('qa') || email.includes('test')) {
+                task.assignee = 'QA';
+            } else if (email.includes('dev') || email.includes('developer')) {
+                task.assignee = 'Dev';
+            } else {
+                task.assignee = 'Product';
+            }
+        } else {
+            task.assignee = 'Product';
+        }
+
+        return task;
+    });
+
+    // Adicionar novas tarefas ao projeto, preservando todas as tarefas existentes e suas alterações
+    const updatedTasks = [...project.tasks, ...newTasks];
+
+    return {
+        project: {
+            ...project,
+            tasks: updatedTasks,
+        },
+        newTasksCount: newTasks.length,
+    };
+};
+

@@ -107,8 +107,7 @@ export const JiraTaskItem: React.FC<{
     onToggleSelect?: () => void;
     children?: React.ReactNode;
     level: number;
-    isAlternate?: boolean;
-}> = React.memo(({ task, onTestCaseStatusChange, onToggleTestCaseAutomated, onDelete, onGenerateTests, isGenerating, onAddSubtask, onEdit, onGenerateBddScenarios, isGeneratingBdd, onSaveBddScenario, onDeleteBddScenario, onTaskStatusChange, onAddTestCaseFromTemplate, onAddComment, onEditComment, onDeleteComment, project, onUpdateProject, isSelected, onToggleSelect, children, level, isAlternate = false }) => {
+}> = React.memo(({ task, onTestCaseStatusChange, onToggleTestCaseAutomated, onDelete, onGenerateTests, isGenerating, onAddSubtask, onEdit, onGenerateBddScenarios, isGeneratingBdd, onSaveBddScenario, onDeleteBddScenario, onTaskStatusChange, onAddTestCaseFromTemplate, onAddComment, onEditComment, onDeleteComment, project, onUpdateProject, isSelected, onToggleSelect, children, level }) => {
     const [isDetailsOpen, setIsDetailsOpen] = useState(false); // Colapsado por padrão para compactar
     const [isChildrenOpen, setIsChildrenOpen] = useState(false);
     const [editingBddScenario, setEditingBddScenario] = useState<BddScenario | null>(null);
@@ -139,13 +138,13 @@ export const JiraTaskItem: React.FC<{
     
     const indentationStyle = { paddingLeft: `${level * 1.5}rem` };
 
-    const iconButtonClass = "min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full hover:bg-surface-hover hover:text-text-primary transition-colors active:scale-95 active:opacity-80";
+    const iconButtonClass = "h-8 w-8 flex items-center justify-center rounded-full hover:bg-surface-hover hover:text-text-primary transition-colors active:scale-95 active:opacity-80";
 
     return (
-        <div className={isAlternate ? 'bg-surface-hover' : 'bg-surface'}>
+        <div className="bg-surface">
             <div style={indentationStyle} className={`border-b border-surface-border`}>
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 gap-3">
-                    <div className="flex items-center gap-3 flex-grow min-w-0">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-3 py-2 gap-2">
+                    <div className="flex items-center gap-2 flex-grow min-w-0">
                         {onToggleSelect && (
                             <input
                                 type="checkbox"
@@ -159,18 +158,18 @@ export const JiraTaskItem: React.FC<{
                         )}
                         {hasChildren ? (
                             <button onClick={() => setIsChildrenOpen(!isChildrenOpen)} className={iconButtonClass}>
-                                <ChevronDownIcon className={`transition-transform ${isChildrenOpen ? 'rotate-180' : ''}`} />
+                                <ChevronDownIcon className={`w-4 h-4 transition-transform ${isChildrenOpen ? 'rotate-180' : ''}`} />
                             </button>
                         ) : (
-                            <div className="w-8 h-8 flex-shrink-0"></div>
+                            <div className="w-6 h-6 flex-shrink-0"></div>
                         )}
-                        <div className={`flex items-center gap-3 cursor-pointer flex-1 ${isSelected ? 'ring-2 ring-accent rounded' : ''}`} onClick={() => setIsDetailsOpen(!isDetailsOpen)}>
+                        <div className={`flex items-center gap-2 cursor-pointer flex-1 ${isSelected ? 'ring-2 ring-accent rounded' : ''}`} onClick={() => setIsDetailsOpen(!isDetailsOpen)}>
                             <TaskTypeIcon type={task.type} />
                              <div className="flex items-center gap-2 min-w-0 flex-1">
                                 <TaskStatusIcon status={task.status} />
                                 <div className="truncate flex-1">
                                     <div className="flex items-center gap-2 flex-wrap">
-                                        <span className="font-semibold text-text-secondary text-sm truncate">{task.id}</span>
+                                        <span className="font-semibold text-text-secondary text-xs truncate">{task.id}</span>
                                         {taskPhase && (
                                             <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${phaseStyle.bg} ${phaseStyle.color} flex items-center gap-1`}>
                                                 <span>{phaseStyle.icon}</span>
@@ -205,9 +204,9 @@ export const JiraTaskItem: React.FC<{
                         </div>
                     </div>
                     
-                    <div className="flex items-center gap-2 text-text-secondary self-end sm:self-center" onClick={e => e.stopPropagation()}>
+                    <div className="flex items-center gap-1.5 text-text-secondary self-end sm:self-center" onClick={e => e.stopPropagation()}>
                         {task.owner && task.assignee && (
-                            <div className="hidden sm:flex items-center gap-2">
+                            <div className="hidden sm:flex items-center gap-1.5">
                                 <TeamRoleBadge role={task.owner} />
                                 <span className="text-slate-500 font-bold text-xs">&rarr;</span>
                                 <TeamRoleBadge role={task.assignee} />
@@ -218,7 +217,7 @@ export const JiraTaskItem: React.FC<{
                             onChange={(e) => {
                                 onTaskStatusChange(e.target.value as 'To Do' | 'In Progress' | 'Done');
                             }}
-                            className="!py-1 !px-2 text-xs"
+                            className="!py-1 !px-2 text-xs h-8"
                         >
                             <option value="To Do">A Fazer</option>
                             <option value="In Progress">Em Andamento</option>
@@ -235,7 +234,7 @@ export const JiraTaskItem: React.FC<{
                     </div>
                 </div>
                 {isDetailsOpen && (
-                    <div className="p-4 border-t border-surface-border bg-surface-hover">
+                    <div className="p-3 border-t border-surface-border bg-surface-hover">
                         {/* Quick Actions */}
                         {project && onUpdateProject && (
                             <div className="mb-4">

@@ -21,6 +21,7 @@ import { useLocalStorage } from '../../hooks/useLocalStorage';
 import { useSuggestions } from '../../hooks/useSuggestions';
 import { SuggestionBanner } from '../common/SuggestionBanner';
 import { EmptyState } from '../common/EmptyState';
+import { addNewJiraTasks, getJiraConfig, getJiraProjects, JiraConfig } from '../../services/jiraService';
 
 export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: Project) => void }> = ({ project, onUpdateProject }) => {
     const [generatingTestsTaskId, setGeneratingTestsTaskId] = useState<string | null>(null);
@@ -42,6 +43,10 @@ export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: 
     const currentSuggestion = suggestions.find(s => !dismissedSuggestions.has(s.id)) || null;
     const [showFilters, setShowFilters] = useState(false);
     const [showSuggestions, setShowSuggestions] = useState(true);
+    const [isSyncingJira, setIsSyncingJira] = useState(false);
+    const [showJiraProjectSelector, setShowJiraProjectSelector] = useState(false);
+    const [availableJiraProjects, setAvailableJiraProjects] = useState<Array<{ key: string; name: string }>>([]);
+    const [selectedJiraProjectKey, setSelectedJiraProjectKey] = useState<string>('');
     const [failModalState, setFailModalState] = useState<{
         isOpen: boolean;
         taskId: string | null;
@@ -396,6 +401,92 @@ export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: 
         });
     };
 
+    // Extrair chave do projeto Jira a partir dos IDs das tarefas (ex: "GDPI-10" -> "GDPI")
+    const extractJiraProjectKey = useCallback((): string | null => {
+        if (project.tasks.length === 0) return null;
+        
+        // Tentar extrair a chave do primeiro ID de tarefa que parece ser do Jira (formato: KEY-123)
+        const firstTaskId = project.tasks[0].id;
+        const match = firstTaskId.match(/^([A-Z]+)-\d+/);
+        if (match && match[1]) {
+            return match[1];
+        }
+        return null;
+    }, [project.tasks]);
+
+    const handleSyncJira = useCallback(async () => {
+        const config = getJiraConfig();
+        if (!config) {
+            handleError(new Error('Jira não configurado. Configure a conexão com Jira nas Configurações primeiro.'), 'Sincronizar com Jira');
+            return;
+        }
+
+        // Tentar extrair a chave do projeto dos IDs das tarefas
+        let jiraProjectKey = extractJiraProjectKey();
+        
+        // Se não conseguir extrair, mostrar seletor de projetos
+        if (!jiraProjectKey) {
+            try {
+                setIsSyncingJira(true);
+                const projects = await getJiraProjects(config);
+                setAvailableJiraProjects(projects.map(p => ({ key: p.key, name: p.name })));
+                setShowJiraProjectSelector(true);
+            } catch (error) {
+                handleError(error instanceof Error ? error : new Error('Erro ao buscar projetos do Jira'), 'Sincronizar com Jira');
+            } finally {
+                setIsSyncingJira(false);
+            }
+            return;
+        }
+
+        // Sincronizar com a chave extraída
+        await performSync(config, jiraProjectKey);
+    }, [extractJiraProjectKey, handleError]);
+
+    const performSync = useCallback(async (config: JiraConfig, jiraProjectKey: string) => {
+        setIsSyncingJira(true);
+        try {
+            const result = await addNewJiraTasks(
+                config,
+                project,
+                jiraProjectKey,
+                (current, total) => {
+                    // Progress callback pode ser usado para mostrar progresso
+                    console.log(`Sincronizando: ${current}${total ? ` de ${total}` : ''}`);
+                }
+            );
+            
+            onUpdateProject(result.project);
+            
+            if (result.newTasksCount > 0) {
+                handleSuccess(`${result.newTasksCount} nova(s) tarefa(s) adicionada(s) do Jira!`);
+            } else {
+                handleSuccess('Nenhuma nova tarefa encontrada no Jira.');
+            }
+        } catch (error) {
+            handleError(error instanceof Error ? error : new Error('Erro ao sincronizar com Jira'), 'Sincronizar com Jira');
+        } finally {
+            setIsSyncingJira(false);
+        }
+    }, [project, onUpdateProject, handleSuccess, handleError]);
+
+    const handleConfirmJiraProject = useCallback(async () => {
+        if (!selectedJiraProjectKey) {
+            handleError(new Error('Selecione um projeto do Jira'), 'Sincronizar com Jira');
+            return;
+        }
+
+        const config = getJiraConfig();
+        if (!config) {
+            handleError(new Error('Jira não configurado'), 'Sincronizar com Jira');
+            return;
+        }
+
+        setShowJiraProjectSelector(false);
+        await performSync(config, selectedJiraProjectKey);
+        setSelectedJiraProjectKey('');
+    }, [selectedJiraProjectKey, performSync, handleError]);
+
     const renderTaskTree = useCallback((tasks: TaskWithChildren[], level: number, startIndex: number = 0): React.ReactElement[] => {
         return tasks.map((task, index) => {
             const globalIndex = startIndex + index;
@@ -427,7 +518,6 @@ export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: 
                     onDeleteComment={(commentId) => handleDeleteComment(task.id, commentId)}
                     project={project}
                     onUpdateProject={onUpdateProject}
-                    isAlternate={globalIndex % 2 === 1}
                 >
                     {task.children.length > 0 && renderTaskTree(task.children, level + 1, globalIndex + 1)}
                 </JiraTaskItem>
@@ -449,6 +539,13 @@ export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: 
                             {showFilters ? 'Ocultar Filtros' : `Filtros (${activeFiltersCount})`}
                         </button>
                         <button onClick={() => setShowTemplateSelector(true)} className="btn btn-secondary">📋 Templates</button>
+                        <button 
+                            onClick={handleSyncJira} 
+                            className="btn btn-secondary"
+                            disabled={isSyncingJira}
+                        >
+                            {isSyncingJira ? '🔄 Sincronizando...' : '🔄 Atualizar do Jira'}
+                        </button>
                         <button onClick={() => openTaskFormForNew()} className="btn btn-primary">Adicionar Tarefa</button>
                     </div>
                 </div>
@@ -575,6 +672,56 @@ export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: 
                     />
                 </div>
             )}
+
+            <Modal 
+                isOpen={showJiraProjectSelector} 
+                onClose={() => {
+                    setShowJiraProjectSelector(false);
+                    setSelectedJiraProjectKey('');
+                }}
+                title="Selecionar Projeto do Jira"
+            >
+                <div className="space-y-4">
+                    <p className="text-text-secondary text-sm">
+                        Selecione o projeto do Jira para sincronizar apenas as novas tarefas:
+                    </p>
+                    <div>
+                        <label className="block text-sm font-medium text-text-primary mb-2">
+                            Projeto
+                        </label>
+                        <select
+                            value={selectedJiraProjectKey}
+                            onChange={(e) => setSelectedJiraProjectKey(e.target.value)}
+                            className="w-full"
+                        >
+                            <option value="">Selecione um projeto...</option>
+                            {availableJiraProjects.map(proj => (
+                                <option key={proj.key} value={proj.key}>
+                                    {proj.name} ({proj.key})
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                    <div className="flex justify-end gap-2">
+                        <button
+                            onClick={() => {
+                                setShowJiraProjectSelector(false);
+                                setSelectedJiraProjectKey('');
+                            }}
+                            className="btn btn-secondary"
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            onClick={handleConfirmJiraProject}
+                            disabled={!selectedJiraProjectKey || isSyncingJira}
+                            className="btn btn-primary"
+                        >
+                            {isSyncingJira ? 'Sincronizando...' : 'Sincronizar'}
+                        </button>
+                    </div>
+                </div>
+            </Modal>
             {taskTree.length > 0 ? (
                 <div>{renderTaskTree(taskTree, 0)}</div>
             ) : (
