@@ -4,18 +4,16 @@ import { LoadingSkeleton } from '../common/LoadingSkeleton';
 
 // Lazy load preference components
 const NotificationPreferences = lazy(() => import('./NotificationPreferences').then(m => ({ default: m.NotificationPreferences })));
-const ThemeCustomization = lazy(() => import('./ThemeCustomization').then(m => ({ default: m.ThemeCustomization })));
 const KeyboardShortcutsEditor = lazy(() => import('./KeyboardShortcutsEditor').then(m => ({ default: m.KeyboardShortcutsEditor })));
 const ExportPreferences = lazy(() => import('./ExportPreferences').then(m => ({ default: m.ExportPreferences })));
 
-type PreferenceSection = 'notifications' | 'theme' | 'shortcuts' | 'export';
+type PreferenceSection = 'notifications' | 'shortcuts' | 'export';
 
 export const PreferencesTab: React.FC = () => {
     const [activeSection, setActiveSection] = useState<PreferenceSection>('notifications');
 
     const sections: { id: PreferenceSection; label: string; icon: string }[] = [
         { id: 'notifications', label: 'Notificações', icon: '🔔' },
-        { id: 'theme', label: 'Tema', icon: '🎨' },
         { id: 'shortcuts', label: 'Atalhos', icon: '⌨️' },
         { id: 'export', label: 'Exportação', icon: '📤' },
     ];
@@ -48,7 +46,6 @@ export const PreferencesTab: React.FC = () => {
 
             <Suspense fallback={<LoadingSkeleton variant="card" count={2} />}>
                 {activeSection === 'notifications' && <NotificationPreferences />}
-                {activeSection === 'theme' && <ThemeCustomization />}
                 {activeSection === 'shortcuts' && <KeyboardShortcutsEditor />}
                 {activeSection === 'export' && <ExportPreferences />}
             </Suspense>

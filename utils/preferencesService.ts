@@ -1,4 +1,4 @@
-import { UserPreferences, NotificationPreferences, ThemePreferences, KeyboardShortcutPreferences, ExportPreferences } from '../types';
+import { UserPreferences, NotificationPreferences, KeyboardShortcutPreferences, ExportPreferences } from '../types';
 
 const STORAGE_KEY = 'qa_user_preferences';
 
@@ -10,14 +10,6 @@ const defaultNotificationPreferences: NotificationPreferences = {
   taskAssigned: true,
   commentAdded: true,
   taskCompleted: true,
-};
-
-const defaultThemePreferences: ThemePreferences = {
-  contrast: 100,
-  fontSize: 1,
-  spacing: 1,
-  borderRadius: 6,
-  opacity: 100,
 };
 
 const defaultKeyboardShortcuts: KeyboardShortcutPreferences = {
@@ -38,7 +30,6 @@ const defaultExportPreferences: ExportPreferences = {
 
 const defaultPreferences: UserPreferences = {
   notifications: defaultNotificationPreferences,
-  theme: defaultThemePreferences,
   keyboardShortcuts: defaultKeyboardShortcuts,
   export: defaultExportPreferences,
 };
@@ -53,7 +44,6 @@ export const getPreferences = (): UserPreferences => {
     // Merge with defaults to ensure all properties exist
     return {
       notifications: { ...defaultNotificationPreferences, ...parsed.notifications },
-      theme: { ...defaultThemePreferences, ...parsed.theme },
       keyboardShortcuts: { ...defaultKeyboardShortcuts, ...parsed.keyboardShortcuts },
       export: { ...defaultExportPreferences, ...parsed.export },
     };
@@ -70,7 +60,6 @@ export const savePreferences = (preferences: Partial<UserPreferences>): void => 
       ...current,
       ...preferences,
       notifications: { ...current.notifications, ...preferences.notifications },
-      theme: { ...current.theme, ...preferences.theme },
       keyboardShortcuts: { ...current.keyboardShortcuts, ...preferences.keyboardShortcuts },
       export: { ...current.export, ...preferences.export },
     };
@@ -95,10 +84,6 @@ export const getNotificationPreferences = (): NotificationPreferences => {
   return getPreferences().notifications;
 };
 
-export const getThemePreferences = (): ThemePreferences => {
-  return getPreferences().theme;
-};
-
 export const getKeyboardShortcutPreferences = (): KeyboardShortcutPreferences => {
   return getPreferences().keyboardShortcuts;
 };
@@ -109,10 +94,6 @@ export const getExportPreferences = (): ExportPreferences => {
 
 export const updateNotificationPreferences = (prefs: Partial<NotificationPreferences>): void => {
   savePreferences({ notifications: prefs });
-};
-
-export const updateThemePreferences = (prefs: Partial<ThemePreferences>): void => {
-  savePreferences({ theme: prefs });
 };
 
 export const updateKeyboardShortcutPreferences = (prefs: Partial<KeyboardShortcutPreferences>): void => {

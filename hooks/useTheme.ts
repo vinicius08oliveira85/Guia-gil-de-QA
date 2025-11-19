@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { getThemePreferences, applyTheme } from '../utils/themeEngine';
 
 export type Theme = 'light' | 'dark' | 'auto';
 
@@ -22,26 +21,7 @@ export const useTheme = () => {
     root.classList.add(effectiveTheme);
 
     localStorage.setItem('theme', theme);
-
-    // Apply custom theme preferences only if they exist
-    // This should not interfere with the base dark/light theme
-    const themePrefs = getThemePreferences();
-    if (themePrefs.customColors || themePrefs.contrast !== 100 || themePrefs.fontSize !== 1 || themePrefs.spacing !== 1 || themePrefs.borderRadius !== 6 || themePrefs.opacity !== 100) {
-      applyTheme(themePrefs);
-    }
   }, [theme]);
-
-  useEffect(() => {
-    // Listen for theme preference updates
-    const handlePreferencesUpdate = () => {
-      const themePrefs = getThemePreferences();
-      if (themePrefs.customColors || themePrefs.contrast !== 100 || themePrefs.fontSize !== 1) {
-        applyTheme(themePrefs);
-      }
-    };
-    window.addEventListener('preferences-updated', handlePreferencesUpdate);
-    return () => window.removeEventListener('preferences-updated', handlePreferencesUpdate);
-  }, []);
 
   const toggleTheme = () => {
     setTheme(prev => {

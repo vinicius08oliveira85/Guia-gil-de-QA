@@ -168,23 +168,6 @@ export interface NotificationPreferences {
   taskCompleted: boolean;
 }
 
-export interface ThemePreferences {
-  customColors?: {
-    accent: string;
-    primary: string;
-    background: string;
-    surface: string;
-    textPrimary: string;
-    textSecondary: string;
-  };
-  contrast: number; // 0-100
-  fontSize: number; // base size multiplier
-  spacing: number; // base spacing multiplier
-  borderRadius: number; // 0-20
-  opacity: number; // 0-100
-  customThemeName?: string;
-}
-
 export interface KeyboardShortcutConfig {
   key: string;
   ctrl?: boolean;
@@ -232,7 +215,6 @@ export interface ExportPreferences {
 
 export interface UserPreferences {
   notifications: NotificationPreferences;
-  theme: ThemePreferences;
   keyboardShortcuts: KeyboardShortcutPreferences;
   export: ExportPreferences;
 }
