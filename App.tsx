@@ -3,7 +3,6 @@ import React, { useState, useCallback, useMemo, useEffect, Suspense } from 'reac
 import { Toaster } from 'react-hot-toast';
 import { Project, PhaseName } from './types';
 import { Header } from './components/common/Header';
-import { Project } from './types';
 import { Spinner } from './components/common/Spinner';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { SearchBar } from './components/common/SearchBar';
