@@ -396,39 +396,43 @@ export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: 
         });
     };
 
-    const renderTaskTree = useCallback((tasks: TaskWithChildren[], level: number): React.ReactElement[] => {
-        return tasks.map(task => (
-            <JiraTaskItem
-                key={task.id}
-                task={task}
-                isSelected={selectedTasks.has(task.id)}
-                onToggleSelect={() => toggleTaskSelection(task.id)}
-                onTestCaseStatusChange={(testCaseId, status) => handleTestCaseStatusChange(task.id, testCaseId, status)}
-                onToggleTestCaseAutomated={(testCaseId, isAutomated) => handleToggleTestCaseAutomated(task.id, testCaseId, isAutomated)}
-                onDelete={handleDeleteTask}
-                onGenerateTests={handleGenerateTests}
-                isGenerating={generatingTestsTaskId === task.id}
-                onAddSubtask={openTaskFormForNew}
-                onEdit={openTaskFormForEdit}
-                onGenerateBddScenarios={handleGenerateBddScenarios}
-                isGeneratingBdd={generatingBddTaskId === task.id}
-                onSaveBddScenario={handleSaveBddScenario}
-                onDeleteBddScenario={handleDeleteBddScenario}
-                onTaskStatusChange={(status) => handleTaskStatusChange(task.id, status)}
-                level={level}
-                onAddTestCaseFromTemplate={(templateId) => {
-                    setSelectedTaskForTemplate(task.id);
-                    handleAddTestCaseFromTemplate(task.id, templateId);
-                }}
-                onAddComment={(content) => handleAddComment(task.id, content)}
-                onEditComment={(commentId, content) => handleEditComment(task.id, commentId, content)}
-                onDeleteComment={(commentId) => handleDeleteComment(task.id, commentId)}
-                project={project}
-                onUpdateProject={onUpdateProject}
-            >
-                {task.children.length > 0 && renderTaskTree(task.children, level + 1)}
-            </JiraTaskItem>
-        ));
+    const renderTaskTree = useCallback((tasks: TaskWithChildren[], level: number, startIndex: number = 0): React.ReactElement[] => {
+        return tasks.map((task, index) => {
+            const globalIndex = startIndex + index;
+            return (
+                <JiraTaskItem
+                    key={task.id}
+                    task={task}
+                    isSelected={selectedTasks.has(task.id)}
+                    onToggleSelect={() => toggleTaskSelection(task.id)}
+                    onTestCaseStatusChange={(testCaseId, status) => handleTestCaseStatusChange(task.id, testCaseId, status)}
+                    onToggleTestCaseAutomated={(testCaseId, isAutomated) => handleToggleTestCaseAutomated(task.id, testCaseId, isAutomated)}
+                    onDelete={handleDeleteTask}
+                    onGenerateTests={handleGenerateTests}
+                    isGenerating={generatingTestsTaskId === task.id}
+                    onAddSubtask={openTaskFormForNew}
+                    onEdit={openTaskFormForEdit}
+                    onGenerateBddScenarios={handleGenerateBddScenarios}
+                    isGeneratingBdd={generatingBddTaskId === task.id}
+                    onSaveBddScenario={handleSaveBddScenario}
+                    onDeleteBddScenario={handleDeleteBddScenario}
+                    onTaskStatusChange={(status) => handleTaskStatusChange(task.id, status)}
+                    level={level}
+                    onAddTestCaseFromTemplate={(templateId) => {
+                        setSelectedTaskForTemplate(task.id);
+                        handleAddTestCaseFromTemplate(task.id, templateId);
+                    }}
+                    onAddComment={(content) => handleAddComment(task.id, content)}
+                    onEditComment={(commentId, content) => handleEditComment(task.id, commentId, content)}
+                    onDeleteComment={(commentId) => handleDeleteComment(task.id, commentId)}
+                    project={project}
+                    onUpdateProject={onUpdateProject}
+                    isAlternate={globalIndex % 2 === 1}
+                >
+                    {task.children.length > 0 && renderTaskTree(task.children, level + 1, globalIndex + 1)}
+                </JiraTaskItem>
+            );
+        });
     }, [selectedTasks, generatingTestsTaskId, generatingBddTaskId, handleTestCaseStatusChange, handleToggleTestCaseAutomated, handleDeleteTask, handleGenerateTests, openTaskFormForNew, openTaskFormForEdit, handleGenerateBddScenarios, handleSaveBddScenario, handleDeleteBddScenario, handleTaskStatusChange, handleAddTestCaseFromTemplate, handleAddComment, handleEditComment, handleDeleteComment, project, onUpdateProject, toggleTaskSelection]);
 
     return (
@@ -486,7 +490,7 @@ export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: 
                     {filterChips.map(chip => (
                         <span
                             key={`${chip.key}-${chip.label}`}
-                            className="flex items-center gap-2 px-3 py-1 rounded-full bg-black/20 text-xs text-text-primary border border-surface-border"
+                            className="flex items-center gap-2 px-3 py-1 rounded-full bg-surface-hover text-xs text-text-primary border border-surface-border"
                         >
                             {chip.label}
                             <button
@@ -505,7 +509,7 @@ export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: 
             )}
 
             {showFilters && (
-                <div className="mb-6 p-4 bg-black/10 rounded-lg border border-surface-border">
+                <div className="mb-6 p-4 bg-surface rounded-lg border border-surface-border">
                     <div className="flex justify-between items-center mb-3">
                         <p className="font-semibold text-text-primary">Filtros avançados</p>
                         <button onClick={clearFilters} className="text-sm text-accent hover:underline">Limpar filtros</button>
@@ -523,7 +527,7 @@ export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: 
             <div className="flex flex-col gap-4 mb-6">
                 {currentSuggestion && showSuggestions && (
                     <div className="border border-surface-border rounded-lg overflow-hidden">
-                        <div className="flex items-center justify-between bg-black/20 px-4 py-2">
+                        <div className="flex items-center justify-between bg-surface-hover px-4 py-2">
                             <span className="text-sm font-semibold text-text-primary">Sugestões inteligentes</span>
                             <button
                                 onClick={() => setShowSuggestions(false)}
@@ -561,7 +565,7 @@ export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: 
             </div>
 
             {isTaskFormOpen && (
-                <div className="mb-6 p-4 bg-black/20 rounded-lg">
+                <div className="mb-6 p-4 bg-surface rounded-lg border border-surface-border">
                     <TaskForm 
                         onSave={handleSaveTask} 
                         onCancel={() => { setIsTaskFormOpen(false); setEditingTask(undefined); }} 

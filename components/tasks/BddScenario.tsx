@@ -54,7 +54,7 @@ export const BddScenarioItem: React.FC<{
                     <button onClick={onDelete} className="text-gray-400 hover:text-red-400"><TrashIcon /></button>
                 </div>
             </div>
-            <pre className="mt-2 text-gray-300 whitespace-pre-wrap font-mono text-sm bg-black/20 p-3 rounded-md">
+            <pre className="mt-2 text-gray-300 whitespace-pre-wrap font-mono text-sm bg-surface p-3 rounded-md border border-surface-border">
                 {scenario.gherkin}
             </pre>
         </div>

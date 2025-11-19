@@ -107,7 +107,8 @@ export const JiraTaskItem: React.FC<{
     onToggleSelect?: () => void;
     children?: React.ReactNode;
     level: number;
-}> = React.memo(({ task, onTestCaseStatusChange, onToggleTestCaseAutomated, onDelete, onGenerateTests, isGenerating, onAddSubtask, onEdit, onGenerateBddScenarios, isGeneratingBdd, onSaveBddScenario, onDeleteBddScenario, onTaskStatusChange, onAddTestCaseFromTemplate, onAddComment, onEditComment, onDeleteComment, project, onUpdateProject, isSelected, onToggleSelect, children, level }) => {
+    isAlternate?: boolean;
+}> = React.memo(({ task, onTestCaseStatusChange, onToggleTestCaseAutomated, onDelete, onGenerateTests, isGenerating, onAddSubtask, onEdit, onGenerateBddScenarios, isGeneratingBdd, onSaveBddScenario, onDeleteBddScenario, onTaskStatusChange, onAddTestCaseFromTemplate, onAddComment, onEditComment, onDeleteComment, project, onUpdateProject, isSelected, onToggleSelect, children, level, isAlternate = false }) => {
     const [isDetailsOpen, setIsDetailsOpen] = useState(false); // Colapsado por padrão para compactar
     const [isChildrenOpen, setIsChildrenOpen] = useState(false);
     const [editingBddScenario, setEditingBddScenario] = useState<BddScenario | null>(null);
@@ -141,7 +142,7 @@ export const JiraTaskItem: React.FC<{
     const iconButtonClass = "min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full hover:bg-surface-hover hover:text-text-primary transition-colors active:scale-95 active:opacity-80";
 
     return (
-        <div className="bg-black/10">
+        <div className={isAlternate ? 'bg-surface-hover' : 'bg-surface'}>
             <div style={indentationStyle} className={`border-b border-surface-border`}>
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 gap-3">
                     <div className="flex items-center gap-3 flex-grow min-w-0">
@@ -234,7 +235,7 @@ export const JiraTaskItem: React.FC<{
                     </div>
                 </div>
                 {isDetailsOpen && (
-                    <div className="p-4 border-t border-surface-border bg-black/10">
+                    <div className="p-4 border-t border-surface-border bg-surface-hover">
                         {/* Quick Actions */}
                         {project && onUpdateProject && (
                             <div className="mb-4">

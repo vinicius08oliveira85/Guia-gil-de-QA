@@ -24,7 +24,7 @@ export const TestCaseItem: React.FC<{
         'Failed': 'bg-red-600',
     };
     return (
-        <div className="bg-black/20 p-4 rounded-md border border-surface-border">
+        <div className="bg-surface p-4 rounded-md border border-surface-border">
             <div className="flex flex-wrap gap-4 mb-3 items-center">
                 <div className="flex flex-wrap gap-2 items-center">
                     {testCase.strategies && testCase.strategies.map(strategy => (

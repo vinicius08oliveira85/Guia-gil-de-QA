@@ -72,7 +72,7 @@ export const TestCaseTemplateSelector: React.FC<TestCaseTemplateSelectorProps> =
               {template.tags.map(tag => (
                 <span
                   key={tag}
-                  className="text-xs px-2 py-1 bg-black/20 rounded text-text-secondary"
+                  className="text-xs px-2 py-1 bg-surface-hover rounded text-text-secondary"
                 >
                   {tag}
                 </span>
