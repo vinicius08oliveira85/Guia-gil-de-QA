@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { Project } from '../types';
 import { useProjectMetrics } from '../hooks/useProjectMetrics';
 import { ProjectQADashboard } from './dashboard/ProjectQADashboard';
