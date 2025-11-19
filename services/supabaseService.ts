@@ -39,13 +39,14 @@ if (supabaseUrl && supabaseAnonKey) {
 
 /**
  * Obtém o ID do usuário atual
- * Se não autenticado, usa um ID anônimo persistente baseado no navegador
+ * Prioriza autenticação anônima do Supabase (compartilhada entre dispositivos)
+ * Se falhar, usa ID compartilhado fixo para sincronização entre dispositivos
  * Nunca lança erro - sempre retorna um ID válido
  */
 export const getUserId = async (): Promise<string> => {
-    // Se Supabase não está configurado, usar ID anônimo local
+    // Se Supabase não está configurado, usar ID compartilhado
     if (!supabase || !supabaseAuthPromise) {
-        return getLocalAnonymousId();
+        return getSharedAnonymousId();
     }
     
     try {
@@ -57,45 +58,43 @@ export const getUserId = async (): Promise<string> => {
                     new Promise<void>((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000))
                 ]);
             } catch (timeoutError) {
-                // Se timeout ou erro, continuar e tentar obter sessão mesmo assim
-                console.warn('⚠️ Timeout na autenticação anônima, tentando continuar...');
+                // Se timeout ou erro, usar ID compartilhado
+                console.warn('⚠️ Timeout na autenticação anônima, usando ID compartilhado...');
+                return getSharedAnonymousId();
             }
         }
 
-        // Tentar obter usuário da sessão
+        // Tentar obter usuário da sessão do Supabase (compartilhado entre dispositivos)
         const { data: { user }, error: userError } = await supabase.auth.getUser();
         if (!userError && user?.id) {
+            console.log('✅ Usando user_id do Supabase (compartilhado):', user.id);
             return user.id;
         }
 
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         if (!sessionError && session?.user?.id) {
+            console.log('✅ Usando user_id da sessão Supabase (compartilhado):', session.user.id);
             return session.user.id;
         }
 
-        // Se falhou, usar ID anônimo local persistente
-        return getLocalAnonymousId();
+        // Se falhou, usar ID compartilhado fixo (todos os dispositivos usam o mesmo)
+        console.warn('⚠️ Não foi possível obter user_id do Supabase, usando ID compartilhado');
+        return getSharedAnonymousId();
     } catch (error) {
-        console.warn('⚠️ Erro ao obter user_id do Supabase, usando ID local:', error);
-        return getLocalAnonymousId();
+        console.warn('⚠️ Erro ao obter user_id do Supabase, usando ID compartilhado:', error);
+        return getSharedAnonymousId();
     }
 };
 
 /**
- * Obtém ou cria um ID anônimo persistente no localStorage
- * Este ID é compartilhado entre todos os dispositivos do mesmo navegador
+ * Obtém um ID anônimo compartilhado entre todos os dispositivos
+ * Todos os usuários anônimos usam o mesmo ID para sincronização
+ * Isso permite que projetos salvos em um dispositivo apareçam em outros
  */
-const getLocalAnonymousId = (): string => {
-    const STORAGE_KEY = 'qa_app_anonymous_id';
-    let anonymousId = localStorage.getItem(STORAGE_KEY);
-    
-    if (!anonymousId) {
-        // Criar ID único e persistente
-        anonymousId = `anon-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-        localStorage.setItem(STORAGE_KEY, anonymousId);
-    }
-    
-    return anonymousId;
+const getSharedAnonymousId = (): string => {
+    // ID fixo compartilhado para todos os usuários anônimos
+    // Isso permite que projetos salvos no desktop apareçam no celular
+    return 'anonymous-shared';
 };
 
 /**
