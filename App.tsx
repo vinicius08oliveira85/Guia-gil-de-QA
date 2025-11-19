@@ -187,18 +187,6 @@ const App: React.FC = () => {
         );
     }
 
-    // Detectar se é mobile para ajustar posição dos toasts
-    const [isMobile, setIsMobile] = useState(false);
-    
-    useEffect(() => {
-        const checkMobile = () => {
-            setIsMobile(window.innerWidth < 768);
-        };
-        checkMobile();
-        window.addEventListener('resize', checkMobile);
-        return () => window.removeEventListener('resize', checkMobile);
-    }, []);
-
     return (
         <ErrorBoundary>
             <div className="min-h-screen font-sans text-text-primary">
