@@ -23,7 +23,7 @@ export const Confetti: React.FC<ConfettiProps> = ({ show, duration = 3000 }) => 
     left: Math.random() * 100,
     delay: Math.random() * duration,
     duration: Math.random() * 2000 + 1000,
-    color: ['#14B8A6', '#3B82F6', '#8B5CF6', '#EC4899', '#F59E0B'][Math.floor(Math.random() * 5)]
+    color: ['#00A859', '#00C96F', '#0066CC', '#0080FF', '#F59E0B'][Math.floor(Math.random() * 5)] // Cores saúde (verde e azul)
   }));
 
   return (

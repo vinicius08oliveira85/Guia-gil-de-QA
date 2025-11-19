@@ -5,10 +5,13 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>QA Agile Guide</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
       html {
-        font-family: 'Segoe UI Variable', 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+        font-family: 'Inter', 'Segoe UI Variable', 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
       }
     </style>
     <script>
@@ -16,13 +19,18 @@
         theme: {
           extend: {
             fontFamily: {
-              sans: ['Segoe UI Variable', 'Segoe UI', 'sans-serif'],
+              sans: ['Inter', 'Segoe UI Variable', 'Segoe UI', 'sans-serif'],
             },
             colors: {
               'accent': {
-                'light': '#2DD4BF',
-                'DEFAULT': '#14B8A6',
-                'dark': '#0D9488',
+                'light': '#00C96F', // Verde claro saúde
+                'DEFAULT': '#00A859', // Verde principal saúde
+                'dark': '#008045', // Verde escuro saúde
+              },
+              'primary': {
+                'light': '#0080FF', // Azul claro confiança
+                'DEFAULT': '#0066CC', // Azul principal confiança
+                'dark': '#0052A3', // Azul escuro
               },
               'surface': {
                 'DEFAULT': 'rgba(30, 41, 59, 0.7)', // slate-800 com transparência
@@ -44,8 +52,8 @@
       
       body {
         background-color: #0f172a; /* background */
-        background-image: radial-gradient(circle at 100% 0%, rgba(20, 184, 166, 0.1), transparent 30%),
-                          radial-gradient(circle at 0% 100%, rgba(20, 184, 166, 0.05), transparent 40%);
+        background-image: radial-gradient(circle at 100% 0%, rgba(0, 168, 89, 0.12), transparent 30%),
+                          radial-gradient(circle at 0% 100%, rgba(0, 102, 204, 0.08), transparent 40%);
         background-attachment: fixed;
         padding-bottom: env(safe-area-inset-bottom);
       }
@@ -67,8 +75,8 @@
       /* Scrollbar Styles */
       ::-webkit-scrollbar { width: 8px; }
       ::-webkit-scrollbar-track { background: transparent; }
-      ::-webkit-scrollbar-thumb { background-color: rgba(148, 163, 184, 0.3); border-radius: 4px; }
-      ::-webkit-scrollbar-thumb:hover { background-color: rgba(148, 163, 184, 0.5); }
+      ::-webkit-scrollbar-thumb { background-color: rgba(0, 168, 89, 0.3); border-radius: 4px; } /* Verde saúde suave */
+      ::-webkit-scrollbar-thumb:hover { background-color: rgba(0, 168, 89, 0.5); } /* Verde saúde mais intenso */
 
       /* Form Element Styles */
       input[type="text"], input[type="file"], textarea, select {
@@ -83,8 +91,8 @@
       }
       input:focus, textarea:focus, select:focus {
         outline: none;
-        border-color: #14B8A6; /* accent */
-        box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.3);
+        border-color: #00A859; /* accent - verde saúde */
+        box-shadow: 0 0 0 2px rgba(0, 168, 89, 0.3);
       }
       
       /* Fluent UI Button Styles */
@@ -105,13 +113,17 @@
         opacity: 0.8;
       }
       .btn-primary {
-        background-color: #14B8A6; /* accent */
+        background-color: #00A859; /* accent - verde saúde */
         color: #ffffff;
-        border-color: #14B8A6;
+        border-color: #00A859;
       }
       .btn-primary:hover {
-        background-color: #0D9488; /* accent-dark */
-        border-color: #0D9488;
+        background-color: #00C96F; /* accent-light - verde claro */
+        border-color: #00C96F;
+      }
+      .btn-primary:active {
+        background-color: #008045; /* accent-dark - verde escuro */
+        border-color: #008045;
       }
       .btn-secondary {
         background-color: #334155; /* slate-700 */
@@ -119,7 +131,9 @@
         border-color: #475569; /* slate-600 */
       }
       .btn-secondary:hover {
-        background-color: #475569; /* slate-600 */
+        background-color: #0066CC; /* primary - azul confiança */
+        border-color: #0066CC;
+        color: #ffffff;
       }
       .btn-danger {
         background-color: #dc2626; /* red-600 */
@@ -180,7 +194,10 @@
         color: #f1f5f9;
       }
       .prose a {
-        color: #2DD4BF;
+        color: #00C96F; /* accent-light - verde claro */
+      }
+      .prose a:hover {
+        color: #00A859; /* accent - verde principal */
       }
       .prose blockquote {
         border-left-color: #475569;
