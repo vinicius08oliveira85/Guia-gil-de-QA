@@ -1,5 +1,6 @@
 import { Project, JiraTask, PhaseName } from '../types';
 import { parseJiraDescription } from '../utils/jiraDescriptionParser';
+import { getCache, setCache, clearCache } from '../utils/apiCache';
 
 export interface JiraConfig {
     url: string;
