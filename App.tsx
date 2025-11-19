@@ -3,6 +3,7 @@ import React, { useState, useCallback, useMemo, useEffect, Suspense } from 'reac
 import { Toaster } from 'react-hot-toast';
 import { Project, PhaseName } from './types';
 import { Header } from './components/common/Header';
+import { Project } from './types';
 import { Spinner } from './components/common/Spinner';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { SearchBar } from './components/common/SearchBar';
@@ -19,7 +20,6 @@ const ProjectView = lazyWithRetry(() => import('./components/ProjectView').then(
 const ProjectsDashboard = lazyWithRetry(() => import('./components/ProjectsDashboard').then(m => ({ default: m.ProjectsDashboard })));
 const AdvancedSearch = lazyWithRetry(() => import('./components/common/AdvancedSearch').then(m => ({ default: m.AdvancedSearch })));
 const ProjectComparisonModal = lazyWithRetry(() => import('./components/common/ProjectComparisonModal').then(m => ({ default: m.ProjectComparisonModal })));
-const JiraIntegration = lazyWithRetry(() => import('./components/jira/JiraIntegration').then(m => ({ default: m.JiraIntegration })));
 const OnboardingGuide = lazyWithRetry(() => import('./components/onboarding/OnboardingGuide').then(m => ({ default: m.OnboardingGuide })));
 import { PHASE_NAMES } from './utils/constants';
 import { createProjectFromTemplate } from './utils/projectTemplates';
@@ -242,7 +242,7 @@ const App: React.FC = () => {
                         },
                     }}
                 />
-                <Header />
+                <Header onProjectImported={handleImportJiraProject} />
                 {showSearch && (
                     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-start justify-center pt-20 p-4">
                         <div className="w-full max-w-2xl">
@@ -295,23 +295,18 @@ const App: React.FC = () => {
                             />
                         </Suspense>
                     ) : (
-                        <div className="space-y-6">
-                            <Suspense fallback={<div className="container mx-auto p-8"><LoadingSkeleton variant="card" count={1} /></div>}>
-                                <JiraIntegration onProjectImported={handleImportJiraProject} />
-                            </Suspense>
-                            <Suspense fallback={<div className="container mx-auto p-8"><LoadingSkeleton variant="card" count={3} /></div>}>
-                                <ProjectsDashboard 
-                                    projects={projects} 
-                                    onSelectProject={setSelectedProjectId} 
-                                    onCreateProject={handleCreateProject}
-                                    onDeleteProject={handleDeleteProject}
-                                    onSearchClick={() => setShowSearch(true)}
-                                    onAdvancedSearchClick={() => setShowAdvancedSearch(true)}
-                                    onComparisonClick={() => setShowProjectComparison(true)}
+                        <Suspense fallback={<div className="container mx-auto p-8"><LoadingSkeleton variant="card" count={3} /></div>}>
+                            <ProjectsDashboard 
+                                projects={projects} 
+                                onSelectProject={setSelectedProjectId} 
+                                onCreateProject={handleCreateProject}
+                                onDeleteProject={handleDeleteProject}
+                                onSearchClick={() => setShowSearch(true)}
+                                onAdvancedSearchClick={() => setShowAdvancedSearch(true)}
+                                onComparisonClick={() => setShowProjectComparison(true)}
                                 onSyncSupabase={supabaseEnabled ? handleSyncSupabase : undefined}
-                                />
-                            </Suspense>
-                        </div>
+                            />
+                        </Suspense>
                     )}
                 </main>
                 <KeyboardShortcutsHelp />
