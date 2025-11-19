@@ -1,8 +1,15 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { Project } from '../types';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabaseUrl =
+    import.meta.env.VITE_SUPABASE_URL ||
+    import.meta.env.VITE_PUBLIC_SUPABASE_URL ||
+    import.meta.env.SUPABASE_URL;
+
+const supabaseAnonKey =
+    import.meta.env.VITE_SUPABASE_ANON_KEY ||
+    import.meta.env.VITE_PUBLIC_SUPABASE_ANON_KEY ||
+    import.meta.env.SUPABASE_ANON_KEY;
 
 let supabase: SupabaseClient | null = null;
 
@@ -11,7 +18,7 @@ if (supabaseUrl && supabaseAnonKey) {
     console.log('✅ Supabase configurado e conectado');
 } else {
     console.warn('⚠️ Supabase não configurado. Usando IndexedDB local.');
-    console.warn('⚠️ Configure VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY no Vercel para usar Supabase.');
+    console.warn('⚠️ Configure VITE_SUPABASE_URL / VITE_PUBLIC_SUPABASE_URL e VITE_SUPABASE_ANON_KEY / VITE_PUBLIC_SUPABASE_ANON_KEY no Vercel para usar Supabase.');
 }
 
 /**
