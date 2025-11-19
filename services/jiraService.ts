@@ -19,6 +19,10 @@ export interface JiraIssue {
         };
         status: {
             name: string;
+            statusCategory?: {
+                key: string;
+                colorName: string;
+            };
         };
         priority?: {
             name: string;
@@ -210,11 +214,36 @@ export const getJiraProjects = async (config: JiraConfig, useCache: boolean = tr
     }
 };
 
-export const getJiraStatuses = async (config: JiraConfig, projectKey: string): Promise<string[]> => {
+// Função auxiliar para mapear cores padrão do Jira
+const getJiraStatusColor = (statusName: string, statusCategory?: { key: string; colorName: string }): string => {
+    // Se tiver statusCategory, usar a cor do Jira
+    if (statusCategory?.colorName) {
+        const colorMap: Record<string, string> = {
+            'blue-gray': '#42526e', // To Do
+            'yellow': '#ffd700',    // In Progress (amarelo padrão, mas Jira usa azul)
+            'green': '#00875a',     // Done
+            'medium-gray': '#42526e',
+            'blue': '#0052cc',      // In Progress
+        };
+        return colorMap[statusCategory.colorName.toLowerCase()] || colorMap[statusCategory.key] || '#42526e';
+    }
+    
+    // Fallback: mapear por nome do status
+    const status = statusName.toLowerCase();
+    if (status.includes('done') || status.includes('resolved') || status.includes('closed') || status.includes('concluído')) {
+        return '#00875a'; // Verde
+    }
+    if (status.includes('progress') || status.includes('in progress') || status.includes('andamento')) {
+        return '#0052cc'; // Azul
+    }
+    return '#42526e'; // Cinza (To Do)
+};
+
+export const getJiraStatuses = async (config: JiraConfig, projectKey: string): Promise<Array<{ name: string; color: string }>> => {
     const cacheKey = `jira_statuses_${config.url}_${projectKey}`;
     
     // Tentar cache primeiro
-    const cached = getCache<string[]>(cacheKey);
+    const cached = getCache<Array<{ name: string; color: string }>>(cacheKey);
     if (cached) {
         console.log('✅ Usando status do Jira do cache');
         return cached;
@@ -225,28 +254,36 @@ export const getJiraStatuses = async (config: JiraConfig, projectKey: string): P
         const response = await jiraApiCall<Array<{
             id: string;
             name: string;
-            statuses: Array<{ id: string; name: string }>;
+            statuses: Array<{ 
+                id: string; 
+                name: string;
+                statusCategory?: {
+                    key: string;
+                    colorName: string;
+                };
+            }>;
         }>>(
             config,
             `project/${projectKey}/statuses`,
             { timeout: 20000 }
         );
 
-        // Extrair todos os status únicos de todos os tipos de issue
-        const allStatuses = new Set<string>();
+        // Extrair todos os status únicos com suas cores
+        const statusMap = new Map<string, string>();
         if (Array.isArray(response)) {
             response.forEach(statusCategory => {
                 if (statusCategory.statuses && Array.isArray(statusCategory.statuses)) {
                     statusCategory.statuses.forEach(status => {
                         if (status.name) {
-                            allStatuses.add(status.name);
+                            const color = getJiraStatusColor(status.name, status.statusCategory);
+                            statusMap.set(status.name, color);
                         }
                     });
                 }
             });
         }
 
-        const statuses = Array.from(allStatuses);
+        const statuses = Array.from(statusMap.entries()).map(([name, color]) => ({ name, color }));
         
         // Se não conseguir via API de status, extrair dos issues
         if (statuses.length === 0) {
@@ -254,10 +291,14 @@ export const getJiraStatuses = async (config: JiraConfig, projectKey: string): P
             const issues = await getJiraIssues(config, projectKey, 100); // Buscar apenas 100 para extrair status
             issues.forEach(issue => {
                 if (issue.fields?.status?.name) {
-                    allStatuses.add(issue.fields.status.name);
+                    const statusName = issue.fields.status.name;
+                    if (!statusMap.has(statusName)) {
+                        const color = getJiraStatusColor(statusName, issue.fields.status.statusCategory);
+                        statusMap.set(statusName, color);
+                    }
                 }
             });
-            return Array.from(allStatuses);
+            return Array.from(statusMap.entries()).map(([name, color]) => ({ name, color }));
         }
 
         // Salvar no cache (10 minutos)
@@ -271,13 +312,17 @@ export const getJiraStatuses = async (config: JiraConfig, projectKey: string): P
         // Fallback: extrair dos issues
         try {
             const issues = await getJiraIssues(config, projectKey, 100);
-            const statuses = new Set<string>();
+            const statusMap = new Map<string, string>();
             issues.forEach(issue => {
                 if (issue.fields?.status?.name) {
-                    statuses.add(issue.fields.status.name);
+                    const statusName = issue.fields.status.name;
+                    if (!statusMap.has(statusName)) {
+                        const color = getJiraStatusColor(statusName, issue.fields.status.statusCategory);
+                        statusMap.set(statusName, color);
+                    }
                 }
             });
-            return Array.from(statuses);
+            return Array.from(statusMap.entries()).map(([name, color]) => ({ name, color }));
         } catch (fallbackError) {
             console.error('Erro no fallback de status:', fallbackError);
             return [];
@@ -335,7 +380,7 @@ export const getJiraIssues = async (
         search.set('expand', 'renderedFields');
         search.set(
             'fields',
-            'summary,description,issuetype,status,priority,assignee,reporter,created,updated,resolutiondate,labels,parent,subtasks'
+            'summary,description,issuetype,status,statusCategory,priority,assignee,reporter,created,updated,resolutiondate,labels,parent,subtasks'
         );
         if (typeof params.startAt === 'number') {
             search.set('startAt', String(params.startAt));

@@ -230,7 +230,12 @@ export const JiraTaskItem: React.FC<{
                                     return 'To Do';
                                 };
                                 
-                                if (jiraStatuses.includes(selectedValue)) {
+                                // Verificar se é um status do Jira (pode ser string ou objeto)
+                                const isJiraStatus = jiraStatuses.some(s => 
+                                    typeof s === 'string' ? s === selectedValue : s.name === selectedValue
+                                );
+                                
+                                if (isJiraStatus) {
                                     // É um status do Jira, mapear para status do app
                                     const mappedStatus = mapStatus(selectedValue);
                                     onTaskStatusChange(mappedStatus);
@@ -258,12 +263,45 @@ export const JiraTaskItem: React.FC<{
                                 }
                             }}
                             className="!py-1 !px-2 text-xs h-8"
+                            style={{
+                                backgroundColor: (() => {
+                                    const jiraStatuses = project?.settings?.jiraStatuses || [];
+                                    const currentStatus = task.jiraStatus || task.status;
+                                    const statusInfo = jiraStatuses.find(s => 
+                                        typeof s === 'string' ? s === currentStatus : s.name === currentStatus
+                                    );
+                                    if (statusInfo && typeof statusInfo === 'object' && statusInfo.color) {
+                                        return statusInfo.color;
+                                    }
+                                    return undefined;
+                                })(),
+                                color: (() => {
+                                    const jiraStatuses = project?.settings?.jiraStatuses || [];
+                                    const currentStatus = task.jiraStatus || task.status;
+                                    const statusInfo = jiraStatuses.find(s => 
+                                        typeof s === 'string' ? s === currentStatus : s.name === currentStatus
+                                    );
+                                    if (statusInfo && typeof statusInfo === 'object' && statusInfo.color) {
+                                        // Usar texto branco para cores escuras, preto para claras
+                                        const color = statusInfo.color;
+                                        const r = parseInt(color.slice(1, 3), 16);
+                                        const g = parseInt(color.slice(3, 5), 16);
+                                        const b = parseInt(color.slice(5, 7), 16);
+                                        const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+                                        return brightness > 128 ? '#000000' : '#ffffff';
+                                    }
+                                    return undefined;
+                                })(),
+                            }}
                         >
                             {project?.settings?.jiraStatuses && project.settings.jiraStatuses.length > 0 ? (
                                 // Mostrar status do Jira se disponível
-                                project.settings.jiraStatuses.map(status => (
-                                    <option key={status} value={status}>{status}</option>
-                                ))
+                                project.settings.jiraStatuses.map(status => {
+                                    const statusName = typeof status === 'string' ? status : status.name;
+                                    return (
+                                        <option key={statusName} value={statusName}>{statusName}</option>
+                                    );
+                                })
                             ) : (
                                 // Fallback para status padrão
                                 <>
