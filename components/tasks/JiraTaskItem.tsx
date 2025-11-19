@@ -213,15 +213,65 @@ export const JiraTaskItem: React.FC<{
                             </div>
                         )}
                         <select
-                            value={task.status}
+                            value={task.jiraStatus || task.status}
                             onChange={(e) => {
-                                onTaskStatusChange(e.target.value as 'To Do' | 'In Progress' | 'Done');
+                                const selectedValue = e.target.value;
+                                const jiraStatuses = project?.settings?.jiraStatuses || [];
+                                
+                                // Função auxiliar para mapear status do Jira para status do app
+                                const mapStatus = (jiraStatus: string): 'To Do' | 'In Progress' | 'Done' => {
+                                    const status = jiraStatus.toLowerCase();
+                                    if (status.includes('done') || status.includes('resolved') || status.includes('closed') || status.includes('concluído')) {
+                                        return 'Done';
+                                    }
+                                    if (status.includes('progress') || status.includes('in progress') || status.includes('andamento')) {
+                                        return 'In Progress';
+                                    }
+                                    return 'To Do';
+                                };
+                                
+                                if (jiraStatuses.includes(selectedValue)) {
+                                    // É um status do Jira, mapear para status do app
+                                    const mappedStatus = mapStatus(selectedValue);
+                                    onTaskStatusChange(mappedStatus);
+                                    // Atualizar também o jiraStatus se o projeto tiver essa informação
+                                    if (project && onUpdateProject) {
+                                        const updatedTasks = project.tasks.map(t =>
+                                            t.id === task.id
+                                                ? { ...t, status: mappedStatus, jiraStatus: selectedValue }
+                                                : t
+                                        );
+                                        onUpdateProject({ ...project, tasks: updatedTasks });
+                                    }
+                                } else {
+                                    // É um status padrão do app
+                                    onTaskStatusChange(selectedValue as 'To Do' | 'In Progress' | 'Done');
+                                    // Limpar jiraStatus se mudou para status padrão
+                                    if (project && onUpdateProject && task.jiraStatus) {
+                                        const updatedTasks = project.tasks.map(t =>
+                                            t.id === task.id
+                                                ? { ...t, jiraStatus: undefined }
+                                                : t
+                                        );
+                                        onUpdateProject({ ...project, tasks: updatedTasks });
+                                    }
+                                }
                             }}
                             className="!py-1 !px-2 text-xs h-8"
                         >
-                            <option value="To Do">A Fazer</option>
-                            <option value="In Progress">Em Andamento</option>
-                            <option value="Done">Concluído</option>
+                            {project?.settings?.jiraStatuses && project.settings.jiraStatuses.length > 0 ? (
+                                // Mostrar status do Jira se disponível
+                                project.settings.jiraStatuses.map(status => (
+                                    <option key={status} value={status}>{status}</option>
+                                ))
+                            ) : (
+                                // Fallback para status padrão
+                                <>
+                                    <option value="To Do">A Fazer</option>
+                                    <option value="In Progress">Em Andamento</option>
+                                    <option value="Done">Concluído</option>
+                                </>
+                            )}
                         </select>
                          {task.type === 'Epic' && (
                             <button onClick={() => onAddSubtask(task.id)} className={iconButtonClass} aria-label="Adicionar subtarefa"><PlusIcon /></button>

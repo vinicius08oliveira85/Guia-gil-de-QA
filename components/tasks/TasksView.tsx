@@ -458,10 +458,19 @@ export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: 
             
             onUpdateProject(result.project);
             
+            // Montar mensagem de sucesso com informações detalhadas
+            const messages: string[] = [];
             if (result.newTasksCount > 0) {
-                handleSuccess(`${result.newTasksCount} nova(s) tarefa(s) adicionada(s) do Jira!`);
+                messages.push(`${result.newTasksCount} nova(s) tarefa(s) adicionada(s)`);
+            }
+            if (result.updatedStatusCount > 0) {
+                messages.push(`${result.updatedStatusCount} status atualizado(s)`);
+            }
+            
+            if (messages.length > 0) {
+                handleSuccess(`Sincronização concluída: ${messages.join(' e ')} do Jira!`);
             } else {
-                handleSuccess('Nenhuma nova tarefa encontrada no Jira.');
+                handleSuccess('Sincronização concluída. Nenhuma alteração encontrada no Jira.');
             }
         } catch (error) {
             handleError(error instanceof Error ? error : new Error('Erro ao sincronizar com Jira'), 'Sincronizar com Jira');

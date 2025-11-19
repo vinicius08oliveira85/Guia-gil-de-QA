@@ -210,6 +210,81 @@ export const getJiraProjects = async (config: JiraConfig, useCache: boolean = tr
     }
 };
 
+export const getJiraStatuses = async (config: JiraConfig, projectKey: string): Promise<string[]> => {
+    const cacheKey = `jira_statuses_${config.url}_${projectKey}`;
+    
+    // Tentar cache primeiro
+    const cached = getCache<string[]>(cacheKey);
+    if (cached) {
+        console.log('✅ Usando status do Jira do cache');
+        return cached;
+    }
+
+    try {
+        // Buscar status do projeto via API
+        const response = await jiraApiCall<Array<{
+            id: string;
+            name: string;
+            statuses: Array<{ id: string; name: string }>;
+        }>>(
+            config,
+            `project/${projectKey}/statuses`,
+            { timeout: 20000 }
+        );
+
+        // Extrair todos os status únicos de todos os tipos de issue
+        const allStatuses = new Set<string>();
+        if (Array.isArray(response)) {
+            response.forEach(statusCategory => {
+                if (statusCategory.statuses && Array.isArray(statusCategory.statuses)) {
+                    statusCategory.statuses.forEach(status => {
+                        if (status.name) {
+                            allStatuses.add(status.name);
+                        }
+                    });
+                }
+            });
+        }
+
+        const statuses = Array.from(allStatuses);
+        
+        // Se não conseguir via API de status, extrair dos issues
+        if (statuses.length === 0) {
+            console.log('⚠️ Não foi possível buscar status via API, extraindo das issues...');
+            const issues = await getJiraIssues(config, projectKey, 100); // Buscar apenas 100 para extrair status
+            issues.forEach(issue => {
+                if (issue.fields?.status?.name) {
+                    allStatuses.add(issue.fields.status.name);
+                }
+            });
+            return Array.from(allStatuses);
+        }
+
+        // Salvar no cache (10 minutos)
+        if (statuses.length > 0) {
+            setCache(cacheKey, statuses, 10 * 60 * 1000);
+        }
+
+        return statuses;
+    } catch (error) {
+        console.error('Erro ao buscar status do Jira:', error);
+        // Fallback: extrair dos issues
+        try {
+            const issues = await getJiraIssues(config, projectKey, 100);
+            const statuses = new Set<string>();
+            issues.forEach(issue => {
+                if (issue.fields?.status?.name) {
+                    statuses.add(issue.fields.status.name);
+                }
+            });
+            return Array.from(statuses);
+        } catch (fallbackError) {
+            console.error('Erro no fallback de status:', fallbackError);
+            return [];
+        }
+    }
+};
+
 export const getJiraIssues = async (
     config: JiraConfig,
     projectKey: string,
@@ -460,6 +535,9 @@ export const importJiraProject = async (
         throw new Error(`Projeto ${jiraProjectKey} não encontrado no Jira`);
     }
 
+    // Buscar status do Jira
+    const jiraStatuses = await getJiraStatuses(config, jiraProjectKey);
+
     // Buscar TODAS as issues do projeto (sem limite)
     const jiraIssues = await getJiraIssues(config, jiraProjectKey, undefined, onProgress);
 
@@ -490,11 +568,13 @@ export const importJiraProject = async (
             });
         }
         
+        const jiraStatusName = issue.fields?.status?.name || '';
         const task: JiraTask = {
             id: issue.key || `jira-${Date.now()}-${Math.random()}`,
             title: issue.fields?.summary || 'Sem título',
             description: description || '',
-            status: mapJiraStatusToTaskStatus(issue.fields?.status?.name),
+            status: mapJiraStatusToTaskStatus(jiraStatusName),
+            jiraStatus: jiraStatusName, // Armazenar status original do Jira
             type: taskType,
             priority: mapJiraPriorityToTaskPriority(issue.fields?.priority?.name),
             createdAt: issue.fields?.created || new Date().toISOString(),
@@ -559,6 +639,10 @@ export const importJiraProject = async (
         tasks: tasks,
         phases: [],
         tags: [],
+        settings: {
+            jiraStatuses: jiraStatuses,
+            jiraProjectKey: jiraProjectKey,
+        },
     };
 
     return project;
@@ -653,18 +737,45 @@ export const addNewJiraTasks = async (
     project: Project,
     jiraProjectKey: string,
     onProgress?: (current: number, total?: number) => void
-): Promise<{ project: Project; newTasksCount: number }> => {
+): Promise<{ project: Project; newTasksCount: number; updatedStatusCount: number }> => {
+    // Buscar status do Jira se não estiverem no projeto
+    let jiraStatuses = project.settings?.jiraStatuses;
+    if (!jiraStatuses || jiraStatuses.length === 0) {
+        jiraStatuses = await getJiraStatuses(config, jiraProjectKey);
+    }
+
     // Buscar TODAS as issues do Jira
     const jiraIssues = await getJiraIssues(config, jiraProjectKey, undefined, onProgress);
     
-    // Criar um Set com as chaves das tarefas existentes para busca rápida
-    const existingTaskKeys = new Set(project.tasks.map(t => t.id));
+    // Criar um Map com as tarefas existentes para busca rápida
+    const existingTasksMap = new Map(project.tasks.map(t => [t.id, t]));
     
     // Filtrar apenas tarefas novas (que não existem no projeto)
-    const newIssues = jiraIssues.filter(issue => !existingTaskKeys.has(issue.key));
+    const newIssues = jiraIssues.filter(issue => !existingTasksMap.has(issue.key));
     
-    if (newIssues.length === 0) {
-        return { project, newTasksCount: 0 };
+    // Atualizar status das tarefas existentes
+    let updatedStatusCount = 0;
+    const updatedTasks = project.tasks.map(task => {
+        const jiraIssue = jiraIssues.find(issue => issue.key === task.id);
+        if (jiraIssue) {
+            const jiraStatusName = jiraIssue.fields?.status?.name || '';
+            const newMappedStatus = mapJiraStatusToTaskStatus(jiraStatusName);
+            
+            // Atualizar se o status mudou
+            if (task.jiraStatus !== jiraStatusName || task.status !== newMappedStatus) {
+                updatedStatusCount++;
+                return {
+                    ...task,
+                    status: newMappedStatus,
+                    jiraStatus: jiraStatusName,
+                };
+            }
+        }
+        return task;
+    });
+    
+    if (newIssues.length === 0 && updatedStatusCount === 0) {
+        return { project, newTasksCount: 0, updatedStatusCount: 0 };
     }
     
     // Mapear apenas as novas issues para tarefas
@@ -680,11 +791,13 @@ export const addNewJiraTasks = async (
             description = parseJiraDescription(issue.fields.description);
         }
         
+        const jiraStatusName = issue.fields?.status?.name || '';
         const task: JiraTask = {
             id: issue.key || `jira-${Date.now()}-${Math.random()}`,
             title: issue.fields?.summary || 'Sem título',
             description: description || '',
-            status: mapJiraStatusToTaskStatus(issue.fields?.status?.name),
+            status: mapJiraStatusToTaskStatus(jiraStatusName),
+            jiraStatus: jiraStatusName, // Armazenar status original do Jira
             type: taskType,
             priority: mapJiraPriorityToTaskPriority(issue.fields?.priority?.name),
             createdAt: issue.fields?.created || new Date().toISOString(),
@@ -727,14 +840,20 @@ export const addNewJiraTasks = async (
     });
 
     // Adicionar novas tarefas ao projeto, preservando todas as tarefas existentes e suas alterações
-    const updatedTasks = [...project.tasks, ...newTasks];
+    const allTasks = [...updatedTasks, ...newTasks];
 
     return {
         project: {
             ...project,
-            tasks: updatedTasks,
+            tasks: allTasks,
+            settings: {
+                ...project.settings,
+                jiraStatuses: jiraStatuses,
+                jiraProjectKey: jiraProjectKey,
+            },
         },
         newTasksCount: newTasks.length,
+        updatedStatusCount: updatedStatusCount,
     };
 };
 

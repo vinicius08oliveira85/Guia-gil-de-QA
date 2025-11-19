@@ -38,6 +38,7 @@ export interface JiraTask {
   title: string;
   description: string;
   status: 'To Do' | 'In Progress' | 'Done';
+  jiraStatus?: string; // Status original do Jira (ex: "Em Andamento", "Concluído", etc.)
   testCases: TestCase[];
   testStrategy?: TestStrategy[];
   type: JiraTaskType;
@@ -146,6 +147,8 @@ export interface ProjectSettings {
   theme?: 'light' | 'dark' | 'auto';
   notifications?: NotificationSettings;
   defaultTags?: string[];
+  jiraStatuses?: string[]; // Lista de status disponíveis no Jira
+  jiraProjectKey?: string; // Chave do projeto Jira associado
 }
 
 export interface NotificationSettings {
