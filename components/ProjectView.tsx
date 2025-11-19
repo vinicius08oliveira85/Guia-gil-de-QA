@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, Suspense, useRef } from 'react';
 import { Project } from '../types';
 import { useProjectMetrics } from '../hooks/useProjectMetrics';
 import { ProjectQADashboard } from './dashboard/ProjectQADashboard';
@@ -38,13 +38,42 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
     const [showActivityFeed, setShowActivityFeed] = useState(false);
     const [showTimeline, setShowTimeline] = useState(false);
     const metrics = useProjectMetrics(project);
+    const previousPhasesRef = useRef<string>('');
+    const isMountedRef = useRef(true);
+    const projectRef = useRef(project);
+    const onUpdateProjectRef = useRef(onUpdateProject);
+
+    // Keep refs updated
+    useEffect(() => {
+        projectRef.current = project;
+        onUpdateProjectRef.current = onUpdateProject;
+    }, [project, onUpdateProject]);
+
+    useEffect(() => {
+        isMountedRef.current = true;
+        return () => {
+            isMountedRef.current = false;
+        };
+    }, []);
 
     useEffect(() => {
         // Update project state only if the calculated phases have changed
-        if (metrics.newPhases && JSON.stringify(metrics.newPhases) !== JSON.stringify(project.phases)) {
-            onUpdateProject({ ...project, phases: metrics.newPhases });
+        if (!metrics.newPhases || !isMountedRef.current) return;
+        
+        const newPhasesString = JSON.stringify(metrics.newPhases);
+        const currentPhasesString = JSON.stringify(projectRef.current.phases);
+        
+        // Only update if phases actually changed and component is still mounted
+        if (newPhasesString !== previousPhasesRef.current && newPhasesString !== currentPhasesString) {
+            previousPhasesRef.current = newPhasesString;
+            // Use setTimeout to ensure update happens after render, preventing React error #130
+            setTimeout(() => {
+                if (isMountedRef.current) {
+                    onUpdateProjectRef.current({ ...projectRef.current, phases: metrics.newPhases });
+                }
+            }, 0);
         }
-    }, [metrics.newPhases, project, onUpdateProject]);
+    }, [metrics.newPhases]);
 
     useEffect(() => {
         if (isPrinting) {

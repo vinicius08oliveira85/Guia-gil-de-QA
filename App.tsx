@@ -38,18 +38,29 @@ const App: React.FC = () => {
     const supabaseEnabled = isSupabaseAvailable();
 
     useEffect(() => {
+        let isMounted = true;
+        
         const loadProjects = async () => {
             try {
                 const storedProjects = await getAllProjects();
-                setProjects(storedProjects);
+                if (isMounted) {
+                    setProjects(storedProjects);
+                    setIsLoading(false);
+                }
             } catch (error) {
-                handleError(error, 'Carregar projetos');
-            } finally {
-                setIsLoading(false);
+                if (isMounted) {
+                    handleError(error, 'Carregar projetos');
+                    setIsLoading(false);
+                }
             }
         };
+        
         loadProjects();
-    }, [handleError]);
+        
+        return () => {
+            isMounted = false;
+        };
+    }, []); // Removed handleError from dependencies as it's stable
 
     // Detectar se é mobile para ajustar posição dos toasts
     const [isMobile, setIsMobile] = useState(false);
