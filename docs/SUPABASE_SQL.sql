@@ -37,29 +37,53 @@ CREATE TRIGGER update_projects_updated_at
 ALTER TABLE projects ENABLE ROW LEVEL SECURITY;
 
 -- Política: Usuários podem ver apenas seus próprios projetos
+-- Inclui suporte para ID compartilhado 'anonymous-shared' para sincronização entre dispositivos
 DROP POLICY IF EXISTS "Users can view their own projects" ON projects;
 CREATE POLICY "Users can view their own projects"
   ON projects FOR SELECT
-  USING (auth.uid()::text = user_id OR user_id LIKE 'anon-%');
+  USING (
+    auth.uid()::text = user_id 
+    OR user_id LIKE 'anon-%' 
+    OR user_id = 'anonymous-shared'
+  );
 
 -- Política: Usuários podem inserir seus próprios projetos
+-- Inclui suporte para ID compartilhado 'anonymous-shared' para sincronização entre dispositivos
 DROP POLICY IF EXISTS "Users can insert their own projects" ON projects;
 CREATE POLICY "Users can insert their own projects"
   ON projects FOR INSERT
-  WITH CHECK (auth.uid()::text = user_id OR user_id LIKE 'anon-%');
+  WITH CHECK (
+    auth.uid()::text = user_id 
+    OR user_id LIKE 'anon-%' 
+    OR user_id = 'anonymous-shared'
+  );
 
 -- Política: Usuários podem atualizar seus próprios projetos
+-- Inclui suporte para ID compartilhado 'anonymous-shared' para sincronização entre dispositivos
 DROP POLICY IF EXISTS "Users can update their own projects" ON projects;
 CREATE POLICY "Users can update their own projects"
   ON projects FOR UPDATE
-  USING (auth.uid()::text = user_id OR user_id LIKE 'anon-%')
-  WITH CHECK (auth.uid()::text = user_id OR user_id LIKE 'anon-%');
+  USING (
+    auth.uid()::text = user_id 
+    OR user_id LIKE 'anon-%' 
+    OR user_id = 'anonymous-shared'
+  )
+  WITH CHECK (
+    auth.uid()::text = user_id 
+    OR user_id LIKE 'anon-%' 
+    OR user_id = 'anonymous-shared'
+  );
 
 -- Política: Usuários podem deletar seus próprios projetos
+-- Inclui suporte para ID compartilhado 'anonymous-shared' para sincronização entre dispositivos
 DROP POLICY IF EXISTS "Users can delete their own projects" ON projects;
 CREATE POLICY "Users can delete their own projects"
   ON projects FOR DELETE
-  USING (auth.uid()::text = user_id OR user_id LIKE 'anon-%');
+  USING (
+    auth.uid()::text = user_id 
+    OR user_id LIKE 'anon-%' 
+    OR user_id = 'anonymous-shared'
+  );
 
 -- Verificar se a tabela foi criada corretamente
 SELECT 
