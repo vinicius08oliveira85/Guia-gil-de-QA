@@ -1,7 +1,8 @@
 import React, { useMemo } from 'react';
-import { Project, JiraTask } from '../../types';
+import { Project } from '../../types';
 import { formatDate, formatRelativeTime } from '../../utils/dateUtils';
 import { Badge } from './Badge';
+import { getAuditLogs } from '../../utils/auditLog';
 
 interface TaskTimelineProps {
   project: Project;
@@ -10,7 +11,7 @@ interface TaskTimelineProps {
 
 export const TaskTimeline: React.FC<TaskTimelineProps> = ({ project, taskId }) => {
   const timeline = useMemo(() => {
-    const logs = require('../../utils/auditLog').getAuditLogs();
+    const logs = getAuditLogs();
     const relevantLogs = logs
       .filter((log: any) => {
         if (taskId) {
