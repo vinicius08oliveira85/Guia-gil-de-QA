@@ -164,7 +164,11 @@ export const JiraIntegration: React.FC<JiraIntegrationProps> = ({ onProjectImpor
         setImportProgress({ current: 0 });
         
         try {
-            const project = await importJiraProject(savedConfig, selectedProjectKey);
+            const project = await importJiraProject(
+                savedConfig,
+                selectedProjectKey,
+                (current, total) => setImportProgress({ current, total })
+            );
             setImportProgress(null);
             onProjectImported(project);
             handleSuccess(`Projeto "${project.name}" importado do Jira com sucesso! ${project.tasks.length} tarefas importadas.`);

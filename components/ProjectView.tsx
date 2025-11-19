@@ -24,6 +24,7 @@ import { SDLCView } from './sdlc/SDLCView';
 import { ShiftLeftAnalysis } from './shiftleft/ShiftLeftAnalysis';
 import { PhaseTransitionGuide } from './phases/PhaseTransitionGuide';
 import { SupabaseManager } from './common/SupabaseManager';
+import { SuggestionsPanel } from './common/SuggestionsPanel';
 
 export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project: Project) => void; onBack: () => void; }> = ({ project, onUpdateProject, onBack }) => {
     const [activeTab, setActiveTab] = useState('dashboard');

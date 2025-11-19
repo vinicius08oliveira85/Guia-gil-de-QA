@@ -213,88 +213,119 @@ export const getJiraProjects = async (config: JiraConfig, useCache: boolean = tr
 export const getJiraIssues = async (
     config: JiraConfig,
     projectKey: string,
-    maxResults?: number // Opcional: se não especificado, busca TODAS as issues
+    maxResults?: number, // Opcional: se não especificado, busca TODAS as issues
+    onProgress?: (current: number, total?: number) => void
 ): Promise<JiraIssue[]> => {
-    // Buscar TODAS as issues do projeto, incluindo Epics, Histórias, Tarefas e Bugs
-    // Sem filtro de responsável - busca tudo
     const jql = `project = ${projectKey} ORDER BY created DESC`;
-    const allIssues: JiraIssue[] = [];
-    let startAt = 0;
     const pageSize = 100; // Jira limita a 100 por página
-    
-    console.log(`🔍 Buscando TODAS as issues do projeto ${projectKey}...`);
-    
-    // Implementar paginação para buscar todas as issues
-    while (true) {
-        const response = await jiraApiCall<{ 
+    const CONCURRENT_REQUESTS = 4;
+    const allIssues: JiraIssue[] = [];
+    let totalGoal = maxResults;
+
+    const pushIssues = (issues: JiraIssue[], totalHint?: number) => {
+        if (!issues.length) {
+            return;
+        }
+
+        if (!totalGoal && (totalHint || maxResults)) {
+            totalGoal = maxResults ?? totalHint;
+        }
+
+        let itemsToAdd = issues;
+        if (maxResults !== undefined) {
+            const remainingSlots = maxResults - allIssues.length;
+            if (remainingSlots <= 0) {
+                return;
+            }
+            itemsToAdd = issues.slice(0, remainingSlots);
+        }
+
+        allIssues.push(...itemsToAdd);
+        onProgress?.(allIssues.length, totalGoal);
+    };
+
+    const fetchPage = async (startAt: number) => {
+        return jiraApiCall<{
             issues: JiraIssue[];
             total: number;
             startAt: number;
             maxResults: number;
+            isLast?: boolean;
         }>(
             config,
             `search/jql?jql=${encodeURIComponent(jql)}&startAt=${startAt}&maxResults=${pageSize}&expand=renderedFields&fields=summary,description,issuetype,status,priority,assignee,reporter,created,updated,resolutiondate,labels,parent,subtasks`,
-            { timeout: 60000 } // 60 segundos para cada página
+            { timeout: 60000 }
         );
-        
-        const totalAvailable = response.total || 0;
-        const issues = response.issues || [];
-        
-        const currentPage = Math.floor(startAt / pageSize) + 1;
-        if (totalAvailable > 0) {
-            console.log(`📦 Página ${currentPage}: Recebidas ${issues.length} issues (${allIssues.length + issues.length} de ${totalAvailable} total)`);
-        } else {
-            console.log(`📦 Página ${currentPage}: Recebidas ${issues.length} issues (Total acumulado: ${allIssues.length + issues.length})`);
+    };
+
+    console.log(`🔍 Buscando TODAS as issues do projeto ${projectKey}...`);
+    const firstResponse = await fetchPage(0);
+    pushIssues(firstResponse.issues || [], firstResponse.total);
+
+    if (maxResults !== undefined && allIssues.length >= maxResults) {
+        return allIssues;
+    }
+
+    const totalAvailable = firstResponse.total || 0;
+    const hasReliableTotal = totalAvailable > (firstResponse.issues?.length || 0);
+
+    const shouldContinue = () =>
+        maxResults === undefined || allIssues.length < maxResults;
+
+    if (hasReliableTotal) {
+        const totalToFetch = maxResults !== undefined
+            ? Math.min(maxResults, totalAvailable)
+            : totalAvailable;
+        const startIndices: number[] = [];
+        for (
+            let start = firstResponse.startAt + (firstResponse.issues?.length || 0);
+            start < totalToFetch;
+            start += pageSize
+        ) {
+            startIndices.push(start);
         }
-        
-        if (issues.length === 0) {
-            console.log('⚠️ Nenhuma issue retornada nesta página. Parando paginação.');
-            break;
-        }
-        
-        allIssues.push(...issues);
-        console.log(`✅ Total acumulado: ${allIssues.length} issues`);
-        
-        // Verificar se já pegamos todas as issues disponíveis
-        const currentPageEnd = response.startAt + issues.length;
-        
-        // Se não há mais issues retornadas, parar
-        if (issues.length < pageSize) {
-            console.log(`✅ Última página completa: ${allIssues.length} issues importadas`);
-            break;
-        }
-        
-        // Se não há limite especificado, buscar TODAS as issues
-        if (maxResults === undefined) {
-            // Se totalAvailable é válido e já pegamos tudo, parar
-            if (totalAvailable > 0 && currentPageEnd >= totalAvailable) {
-                console.log(`✅ Paginação completa: ${allIssues.length} issues importadas de ${totalAvailable} disponíveis`);
-                break;
-            }
-            // Se totalAvailable é 0 ou inválido, continuar até não receber mais issues
-        } else {
-            // Se há limite, respeitar ele
-            if (allIssues.length >= maxResults) {
-                console.log(`✅ Limite atingido: ${allIssues.length} issues importadas`);
-                break;
-            }
-            if (totalAvailable > 0 && currentPageEnd >= totalAvailable) {
-                console.log(`✅ Paginação completa: ${allIssues.length} issues importadas de ${totalAvailable} disponíveis`);
-                break;
+
+        outer:
+        for (let i = 0; i < startIndices.length; i += CONCURRENT_REQUESTS) {
+            const chunkStarts = startIndices.slice(i, i + CONCURRENT_REQUESTS);
+            const responses = await Promise.all(chunkStarts.map(start => fetchPage(start)));
+            for (const response of responses) {
+                const issues = response.issues || [];
+                console.log(
+                    `📦 Página ${(response.startAt / pageSize) + 1}: Recebidas ${issues.length} issues (Total acumulado: ${allIssues.length + issues.length} de ${response.total || 'desconhecido'})`
+                );
+                pushIssues(issues, response.total);
+                if (!shouldContinue()) {
+                    break outer;
+                }
             }
         }
-        
-        startAt += pageSize;
-        
-        // Limite de segurança apenas se não especificado maxResults (evitar loops infinitos)
-        // Mas aumentado para 50000 para projetos muito grandes
-        if (maxResults === undefined && allIssues.length >= 50000) {
-            console.warn(`⚠️ Limite de segurança de 50000 issues atingido para o projeto ${projectKey}.`);
-            console.warn(`⚠️ Se houver mais issues, considere usar Supabase para armazenamento.`);
-            break;
+    } else {
+        let nextStartAt = firstResponse.startAt + (firstResponse.issues?.length || 0);
+        while (shouldContinue()) {
+            const response = await fetchPage(nextStartAt);
+            const issues = response.issues || [];
+            if (issues.length === 0) {
+                console.log('⚠️ Nenhuma issue retornada nesta página. Parando paginação.');
+                break;
+            }
+            console.log(
+                `📦 Página ${(response.startAt / pageSize) + 1}: Recebidas ${issues.length} issues (Total acumulado: ${allIssues.length + issues.length})`
+            );
+            pushIssues(issues, response.total);
+            nextStartAt += issues.length;
+
+            if (issues.length < pageSize) {
+                break;
+            }
+
+            if (maxResults === undefined && allIssues.length >= 50000) {
+                console.warn(`⚠️ Limite de segurança de 50000 issues atingido para o projeto ${projectKey}.`);
+                break;
+            }
         }
     }
-    
+
     // Contar por tipo (verificar o nome exato do tipo no Jira)
     const epics = allIssues.filter(i => {
         const typeName = i.fields?.issuetype?.name?.toLowerCase() || '';
@@ -316,7 +347,6 @@ export const getJiraIssues = async (
         return typeName.includes('bug') || typeName === 'erro' || typeName === 'defeito';
     }).length;
     
-    // Log detalhado dos tipos encontrados (primeiros 10 para debug)
     const uniqueTypes = [...new Set(allIssues.map(i => i.fields?.issuetype?.name).filter(Boolean))];
     console.log(`   📋 Tipos encontrados no Jira:`, uniqueTypes.slice(0, 10));
     
@@ -380,7 +410,8 @@ const mapJiraSeverity = (labels?: string[]): 'Crítico' | 'Alto' | 'Médio' | 'B
 
 export const importJiraProject = async (
     config: JiraConfig,
-    jiraProjectKey: string
+    jiraProjectKey: string,
+    onProgress?: (current: number, total?: number) => void
 ): Promise<Project> => {
     // Buscar projeto do Jira
     const jiraProjects = await getJiraProjects(config);
@@ -391,7 +422,7 @@ export const importJiraProject = async (
     }
 
     // Buscar TODAS as issues do projeto (sem limite)
-    const jiraIssues = await getJiraIssues(config, jiraProjectKey);
+    const jiraIssues = await getJiraIssues(config, jiraProjectKey, undefined, onProgress);
 
     // Mapear issues para tarefas
     const tasks: JiraTask[] = jiraIssues.map((issue, index) => {
