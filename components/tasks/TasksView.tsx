@@ -21,6 +21,8 @@ import { useLocalStorage } from '../../hooks/useLocalStorage';
 import { useSuggestions } from '../../hooks/useSuggestions';
 import { SuggestionBanner } from '../common/SuggestionBanner';
 import { EmptyState } from '../common/EmptyState';
+import { Collapse } from '../common/Collapse';
+import { useMemoizedStatistics } from '../../hooks/useTaskStatistics';
 
 export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: Project) => void }> = ({ project, onUpdateProject }) => {
     const [generatingTestsTaskId, setGeneratingTestsTaskId] = useState<string | null>(null);
@@ -40,6 +42,8 @@ export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: 
     const suggestions = useSuggestions(project);
     const [dismissedSuggestions, setDismissedSuggestions] = useState<Set<string>>(new Set());
     const currentSuggestion = suggestions.find(s => !dismissedSuggestions.has(s.id)) || null;
+    const [showFilters, setShowFilters] = useState(false);
+    const [showSuggestions, setShowSuggestions] = useState(true);
     const [failModalState, setFailModalState] = useState<{
         isOpen: boolean;
         taskId: string | null;
@@ -300,6 +304,16 @@ export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: 
 
     const epics = useMemo(() => project.tasks.filter(t => t.type === 'Epic'), [project.tasks]);
 
+    const stats = useMemo(() => {
+        const total = project.tasks.length;
+        const inProgress = project.tasks.filter(t => t.status === 'In Progress').length;
+        const done = project.tasks.filter(t => t.status === 'Done').length;
+        const bugsOpen = project.tasks.filter(t => t.type === 'Bug' && t.status !== 'Done').length;
+        const totalTests = project.tasks.reduce((acc, t) => acc + (t.testCases?.length || 0), 0);
+        const executedTests = project.tasks.reduce((acc, t) => acc + (t.testCases?.filter(tc => tc.status !== 'Not Run').length || 0), 0);
+        return { total, inProgress, done, bugsOpen, totalTests, executedTests };
+    }, [project.tasks]);
+
     const taskTree = useMemo(() => {
         const tasks = [...filteredTasks];
         const taskMap = new Map(tasks.map(t => [t.id, { ...t, children: [] as TaskWithChildren[] }]));
@@ -383,29 +397,84 @@ export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: 
     return (
         <>
         <Card>
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                <h3 className="text-2xl font-bold text-text-primary">Tarefas & Casos de Teste</h3>
-                <div className="flex gap-2 w-full sm:w-auto">
-                    <button onClick={() => setShowTemplateSelector(true)} className="btn btn-secondary w-full sm:w-auto">📋 Templates</button>
-                    <button onClick={() => openTaskFormForNew()} className="btn btn-primary w-full sm:w-auto">Adicionar Tarefa</button>
+            <div className="flex flex-col gap-4 mb-6">
+                <div className="flex flex-col sm:flex-row justify-between gap-4">
+                    <div>
+                        <h3 className="text-2xl font-bold text-text-primary">Tarefas & Casos de Teste</h3>
+                        <p className="text-sm text-text-secondary">Acompanhe o progresso das atividades e resultados de QA.</p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                        <button onClick={() => setShowTemplateSelector(true)} className="btn btn-secondary">📋 Templates</button>
+                        <button onClick={() => setShowFilters(prev => !prev)} className="btn btn-secondary">
+                            {showFilters ? 'Ocultar Filtros' : `Filtros (${activeFiltersCount})`}
+                        </button>
+                        <button onClick={() => openTaskFormForNew()} className="btn btn-primary">Adicionar Tarefa</button>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div className="p-3 bg-surface border border-surface-border rounded-lg">
+                        <p className="text-xs text-text-secondary uppercase tracking-wide">Total de Tarefas</p>
+                        <p className="text-2xl font-bold text-text-primary">{stats.total}</p>
+                    </div>
+                    <div className="p-3 bg-surface border border-surface-border rounded-lg">
+                        <p className="text-xs text-text-secondary uppercase tracking-wide">Em Andamento</p>
+                        <p className="text-2xl font-bold text-accent">{stats.inProgress}</p>
+                    </div>
+                    <div className="p-3 bg-surface border border-surface-border rounded-lg">
+                        <p className="text-xs text-text-secondary uppercase tracking-wide">Concluídas</p>
+                        <p className="text-2xl font-bold text-green-400">{stats.done}</p>
+                    </div>
+                    <div className="p-3 bg-surface border border-surface-border rounded-lg">
+                        <p className="text-xs text-text-secondary uppercase tracking-wide">Bugs Abertos</p>
+                        <p className="text-2xl font-bold text-red-400">{stats.bugsOpen}</p>
+                    </div>
                 </div>
             </div>
-            
-            <FilterPanel
-                filters={filters}
-                onFilterChange={updateFilter}
-                onClearFilters={clearFilters}
-                availableTags={availableTags}
-                activeFiltersCount={activeFiltersCount}
-            />
-            
-            <div className="mb-4 text-sm text-text-secondary">
-                {activeFiltersCount > 0 ? (
-                    <>Mostrando {filteredTasks.length} de {project.tasks.length} tarefas</>
-                ) : (
-                    <>Total: <strong>{project.tasks.length}</strong> tarefas</>
+
+            {showFilters && (
+                <div className="mb-6 p-4 bg-black/10 rounded-lg border border-surface-border">
+                    <div className="flex justify-between items-center mb-3">
+                        <p className="font-semibold text-text-primary">Filtros avançados</p>
+                        <button onClick={clearFilters} className="text-sm text-accent hover:underline">Limpar filtros</button>
+                    </div>
+                    <FilterPanel
+                        filters={filters}
+                        onFilterChange={updateFilter}
+                        onClearFilters={clearFilters}
+                        availableTags={availableTags}
+                        activeFiltersCount={activeFiltersCount}
+                    />
+                </div>
+            )}
+
+            <div className="flex flex-col gap-4 mb-6">
+                {currentSuggestion && showSuggestions && (
+                    <SuggestionBanner
+                        suggestion={currentSuggestion}
+                        onDismiss={() => setDismissedSuggestions(new Set([...dismissedSuggestions, currentSuggestion.id]))}
+                        onClose={() => setShowSuggestions(false)}
+                    />
+                )}
+                {selectedTasks.size > 0 && (
+                    <BulkActions
+                        selectedTasks={selectedTasks}
+                        onClearSelection={() => setSelectedTasks(new Set())}
+                        onDeleteSelected={() => {
+                            selectedTasks.forEach(taskId => handleDeleteTask(taskId));
+                            setSelectedTasks(new Set());
+                        }}
+                    />
+                )}
+                {(generatingTestsTaskId || generatingBddTaskId) && (
+                    <div className="p-3 bg-accent/10 border border-accent/40 rounded-lg text-sm text-text-primary flex items-center gap-2">
+                        <span className="animate-spin rounded-full h-4 w-4 border-2 border-accent border-t-transparent"></span>
+                        {generatingTestsTaskId && <span>Gerando casos de teste para {generatingTestsTaskId}...</span>}
+                        {generatingBddTaskId && <span>Gerando cenários BDD para {generatingBddTaskId}...</span>}
+                    </div>
                 )}
             </div>
+
             {isTaskFormOpen && (
                 <div className="mb-6 p-4 bg-black/20 rounded-lg">
                     <TaskForm 
