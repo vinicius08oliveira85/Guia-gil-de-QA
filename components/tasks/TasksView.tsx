@@ -8,7 +8,7 @@ import { TestCaseTemplateSelector } from './TestCaseTemplateSelector';
 import { TaskForm } from './TaskForm';
 import { JiraTaskItem, TaskWithChildren } from './JiraTaskItem';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
-import { useFilters } from '../../hooks/useFilters';
+import { useFilters, FilterOptions } from '../../hooks/useFilters';
 import { getAllTagsFromProject } from '../../utils/tagService';
 import { createBugFromFailedTest } from '../../utils/bugAutoCreation';
 import { notifyTestFailed, notifyBugCreated } from '../../utils/notificationService';
@@ -21,8 +21,6 @@ import { useLocalStorage } from '../../hooks/useLocalStorage';
 import { useSuggestions } from '../../hooks/useSuggestions';
 import { SuggestionBanner } from '../common/SuggestionBanner';
 import { EmptyState } from '../common/EmptyState';
-import { Collapse } from '../common/Collapse';
-import { useMemoizedStatistics } from '../../hooks/useTaskStatistics';
 
 export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: Project) => void }> = ({ project, onUpdateProject }) => {
     const [generatingTestsTaskId, setGeneratingTestsTaskId] = useState<string | null>(null);
@@ -31,7 +29,7 @@ export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: 
     const [selectedTaskForTemplate, setSelectedTaskForTemplate] = useState<string | null>(null);
     const [selectedTasks, setSelectedTasks] = useState<Set<string>>(new Set());
     const { handleError, handleSuccess } = useErrorHandler();
-    const { filters, filteredTasks, updateFilter, clearFilters, activeFiltersCount } = useFilters(project);
+    const { filters, filteredTasks, updateFilter, clearFilters, removeFilter, activeFiltersCount } = useFilters(project);
     const availableTags = getAllTagsFromProject(project);
     const [isTaskFormOpen, setIsTaskFormOpen] = useState(false);
     const [editingTask, setEditingTask] = useState<JiraTask | undefined>(undefined);
@@ -311,8 +309,47 @@ export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: 
         const bugsOpen = project.tasks.filter(t => t.type === 'Bug' && t.status !== 'Done').length;
         const totalTests = project.tasks.reduce((acc, t) => acc + (t.testCases?.length || 0), 0);
         const executedTests = project.tasks.reduce((acc, t) => acc + (t.testCases?.filter(tc => tc.status !== 'Not Run').length || 0), 0);
-        return { total, inProgress, done, bugsOpen, totalTests, executedTests };
+        const automatedTests = project.tasks.reduce((acc, t) => acc + (t.testCases?.filter(tc => tc.isAutomated).length || 0), 0);
+        return { total, inProgress, done, bugsOpen, totalTests, executedTests, automatedTests };
     }, [project.tasks]);
+
+    const testExecutionRate = stats.totalTests > 0 ? Math.round((stats.executedTests / stats.totalTests) * 100) : 0;
+    const automationRate = stats.totalTests > 0 ? Math.round((stats.automatedTests / stats.totalTests) * 100) : 0;
+
+    const filterChips = useMemo(() => {
+        const chips: { key: keyof FilterOptions; label: string }[] = [];
+        const pushArray = (key: keyof FilterOptions, values?: (string | number)[], prefix?: string) => {
+            if (values && values.length > 0) {
+                chips.push({ key, label: `${prefix || ''}${values.join(', ')}`.trim() });
+            }
+        };
+        pushArray('status', filters.status, 'Status: ');
+        pushArray('type', filters.type, 'Tipo: ');
+        pushArray('tags', filters.tags, 'Tags: ');
+        pushArray('priority', filters.priority, 'Prioridade: ');
+        pushArray('severity', filters.severity, 'Severidade: ');
+        pushArray('owner', filters.owner, 'Owner: ');
+        pushArray('assignee', filters.assignee, 'Responsável: ');
+
+        if (filters.dateRange?.start || filters.dateRange?.end) {
+            const start = filters.dateRange.start ? filters.dateRange.start.toLocaleDateString() : 'Início';
+            const end = filters.dateRange.end ? filters.dateRange.end.toLocaleDateString() : 'Hoje';
+            chips.push({ key: 'dateRange', label: `Criadas entre ${start} e ${end}` });
+        }
+        if (filters.searchQuery) {
+            chips.push({ key: 'searchQuery', label: `Busca: "${filters.searchQuery}"` });
+        }
+        if (filters.hasTestCases !== undefined) {
+            chips.push({ key: 'hasTestCases', label: filters.hasTestCases ? 'Com casos de teste' : 'Sem casos de teste' });
+        }
+        if (filters.hasBddScenarios !== undefined) {
+            chips.push({ key: 'hasBddScenarios', label: filters.hasBddScenarios ? 'Com BDD' : 'Sem BDD' });
+        }
+        if (filters.isAutomated !== undefined) {
+            chips.push({ key: 'isAutomated', label: filters.isAutomated ? 'Com automação' : 'Sem automação' });
+        }
+        return chips;
+    }, [filters]);
 
     const taskTree = useMemo(() => {
         const tasks = [...filteredTasks];
@@ -398,21 +435,21 @@ export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: 
         <>
         <Card>
             <div className="flex flex-col gap-4 mb-6">
-                <div className="flex flex-col sm:flex-row justify-between gap-4">
+                <div className="flex flex-col lg:flex-row justify-between gap-4">
                     <div>
                         <h3 className="text-2xl font-bold text-text-primary">Tarefas & Casos de Teste</h3>
                         <p className="text-sm text-text-secondary">Acompanhe o progresso das atividades e resultados de QA.</p>
                     </div>
                     <div className="flex flex-wrap gap-2">
-                        <button onClick={() => setShowTemplateSelector(true)} className="btn btn-secondary">📋 Templates</button>
                         <button onClick={() => setShowFilters(prev => !prev)} className="btn btn-secondary">
                             {showFilters ? 'Ocultar Filtros' : `Filtros (${activeFiltersCount})`}
                         </button>
+                        <button onClick={() => setShowTemplateSelector(true)} className="btn btn-secondary">📋 Templates</button>
                         <button onClick={() => openTaskFormForNew()} className="btn btn-primary">Adicionar Tarefa</button>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                     <div className="p-3 bg-surface border border-surface-border rounded-lg">
                         <p className="text-xs text-text-secondary uppercase tracking-wide">Total de Tarefas</p>
                         <p className="text-2xl font-bold text-text-primary">{stats.total}</p>
@@ -429,8 +466,43 @@ export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: 
                         <p className="text-xs text-text-secondary uppercase tracking-wide">Bugs Abertos</p>
                         <p className="text-2xl font-bold text-red-400">{stats.bugsOpen}</p>
                     </div>
+                    <div className="p-3 bg-surface border border-surface-border rounded-lg col-span-1 md:col-span-2">
+                        <div className="flex items-center justify-between mb-2">
+                            <p className="text-xs text-text-secondary uppercase tracking-wide">Execução de Testes</p>
+                            <span className="text-sm font-semibold text-text-primary">{testExecutionRate}%</span>
+                        </div>
+                        <div className="w-full bg-surface-hover rounded-full h-2 mb-2">
+                            <div className="bg-accent h-2 rounded-full transition-all" style={{ width: `${testExecutionRate}%` }}></div>
+                        </div>
+                        <p className="text-xs text-text-secondary">
+                            {stats.executedTests}/{stats.totalTests} casos executados • Automação {automationRate}%
+                        </p>
+                    </div>
                 </div>
             </div>
+
+            {filterChips.length > 0 && (
+                <div className="flex flex-wrap items-center gap-2 mb-4">
+                    {filterChips.map(chip => (
+                        <span
+                            key={`${chip.key}-${chip.label}`}
+                            className="flex items-center gap-2 px-3 py-1 rounded-full bg-black/20 text-xs text-text-primary border border-surface-border"
+                        >
+                            {chip.label}
+                            <button
+                                onClick={() => removeFilter(chip.key)}
+                                className="text-text-secondary hover:text-red-400"
+                                aria-label={`Remover filtro ${chip.label}`}
+                            >
+                                ×
+                            </button>
+                        </span>
+                    ))}
+                    <button onClick={clearFilters} className="text-sm text-accent hover:underline">
+                        Limpar todos
+                    </button>
+                </div>
+            )}
 
             {showFilters && (
                 <div className="mb-6 p-4 bg-black/10 rounded-lg border border-surface-border">
@@ -450,11 +522,24 @@ export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: 
 
             <div className="flex flex-col gap-4 mb-6">
                 {currentSuggestion && showSuggestions && (
-                    <SuggestionBanner
-                        suggestion={currentSuggestion}
-                        onDismiss={() => setDismissedSuggestions(new Set([...dismissedSuggestions, currentSuggestion.id]))}
-                        onClose={() => setShowSuggestions(false)}
-                    />
+                    <div className="border border-surface-border rounded-lg overflow-hidden">
+                        <div className="flex items-center justify-between bg-black/20 px-4 py-2">
+                            <span className="text-sm font-semibold text-text-primary">Sugestões inteligentes</span>
+                            <button
+                                onClick={() => setShowSuggestions(false)}
+                                className="text-xs text-text-secondary hover:text-text-primary"
+                            >
+                                Ocultar
+                            </button>
+                        </div>
+                        <div className="p-4">
+                            <SuggestionBanner
+                                suggestion={currentSuggestion}
+                                onDismiss={() => setDismissedSuggestions(new Set([...dismissedSuggestions, currentSuggestion.id]))}
+                                onClose={() => setShowSuggestions(false)}
+                            />
+                        </div>
+                    </div>
                 )}
                 {selectedTasks.size > 0 && (
                     <BulkActions

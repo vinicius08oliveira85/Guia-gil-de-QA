@@ -124,6 +124,15 @@ export const useFilters = (project: Project) => {
     setFilters(prev => ({ ...prev, [key]: value }));
   };
 
+  const removeFilter = (key: keyof FilterOptions) => {
+    setFilters(prev => {
+      if (!(key in prev)) return prev;
+      const updated = { ...prev };
+      delete updated[key];
+      return updated;
+    });
+  };
+
   const activeFiltersCount = Object.keys(filters).filter(
     key => {
       const value = filters[key as keyof FilterOptions];
@@ -140,6 +149,7 @@ export const useFilters = (project: Project) => {
     filteredTasks,
     updateFilter,
     clearFilters,
+    removeFilter,
     activeFiltersCount
   };
 };
