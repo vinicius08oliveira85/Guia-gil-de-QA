@@ -214,7 +214,7 @@ export const getJiraProjects = async (config: JiraConfig, useCache: boolean = tr
     }
 };
 
-// Função auxiliar para mapear cores padrão do Jira
+// Função auxiliar para mapear colorName do Jira para cores hexadecimais
 const getJiraStatusColor = (statusName: string, statusCategory?: { key: string; colorName: string }): string => {
     // Se tiver statusCategory, usar a cor do Jira
     if (statusCategory?.colorName) {

@@ -282,7 +282,7 @@ export const JiraTaskItem: React.FC<{
                                         typeof s === 'string' ? s === currentStatus : s.name === currentStatus
                                     );
                                     if (statusInfo && typeof statusInfo === 'object' && statusInfo.color) {
-                                        // Usar texto branco para cores escuras, preto para claras
+                                        // Calcular brilho da cor para determinar cor do texto
                                         const color = statusInfo.color;
                                         const r = parseInt(color.slice(1, 3), 16);
                                         const g = parseInt(color.slice(3, 5), 16);
