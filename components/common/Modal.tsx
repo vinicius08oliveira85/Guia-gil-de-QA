@@ -30,6 +30,15 @@ export const Modal: React.FC<ModalProps> = ({
         return () => document.removeEventListener('keydown', handleEscape);
     }, [isOpen, onClose]);
 
+    // Foco no modal quando abrir
+    useEffect(() => {
+        if (!isOpen) return;
+        const modalElement = document.getElementById('modal-content');
+        if (modalElement) {
+            modalElement.focus();
+        }
+    }, [isOpen]);
+
     if (!isOpen) return null;
 
     const sizeClasses = {
@@ -39,16 +48,6 @@ export const Modal: React.FC<ModalProps> = ({
         xl: 'max-w-4xl',
         full: 'max-w-[95vw]'
     };
-
-    // Foco no modal quando abrir
-    useEffect(() => {
-        if (isOpen) {
-            const modalElement = document.getElementById('modal-content');
-            if (modalElement) {
-                modalElement.focus();
-            }
-        }
-    }, [isOpen]);
 
     return (
         <div 
