@@ -63,8 +63,8 @@ export const DependencyGraph: React.FC<DependencyGraphProps> = ({
             width="180"
             height="60"
             rx="8"
-            fill={isSelected ? '#00A859' : isBlocked ? '#f59e0b20' : '#1e293b'} // Verde saúde
-            stroke={isSelected ? '#00A859' : isBlocked ? '#f59e0b' : '#334155'} // Verde saúde
+            fill={isSelected ? '#14B8A6' : isBlocked ? '#f59e0b20' : '#1e293b'}
+            stroke={isSelected ? '#14B8A6' : isBlocked ? '#f59e0b' : '#334155'}
             strokeWidth={isSelected ? '3' : '2'}
             className="transition-all"
           />

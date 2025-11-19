@@ -249,7 +249,7 @@ const App: React.FC = () => {
                         },
                         success: {
                             iconTheme: {
-                                primary: '#00A859', // Verde saúde
+                                primary: '#14B8A6',
                                 secondary: '#fff',
                             },
                         },

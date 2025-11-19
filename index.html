@@ -5,13 +5,10 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>QA Agile Guide</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
       html {
-        font-family: 'Inter', 'Segoe UI Variable', 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+        font-family: 'Segoe UI Variable', 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
       }
     </style>
     <script>
@@ -20,18 +17,13 @@
         theme: {
           extend: {
             fontFamily: {
-              sans: ['Inter', 'Segoe UI Variable', 'Segoe UI', 'sans-serif'],
+              sans: ['Segoe UI Variable', 'Segoe UI', 'sans-serif'],
             },
             colors: {
               'accent': {
-                'light': '#00C96F', // Verde claro saúde
-                'DEFAULT': '#00A859', // Verde principal saúde
-                'dark': '#008045', // Verde escuro saúde
-              },
-              'primary': {
-                'light': '#0080FF', // Azul claro confiança
-                'DEFAULT': '#0066CC', // Azul principal confiança
-                'dark': '#0052A3', // Azul escuro
+                'light': '#2DD4BF',
+                'DEFAULT': '#14B8A6',
+                'dark': '#0D9488',
               },
               'surface': {
                 'DEFAULT': 'var(--surface-color)',
@@ -64,7 +56,7 @@
       }
 
       .light {
-        /* Light theme colors - neutros, sem tons azulados */
+        /* Light theme colors */
         --bg-color: #ffffff;
         --surface-color: rgba(255, 255, 255, 0.95);
         --surface-border: rgba(0, 0, 0, 0.08);
@@ -85,8 +77,8 @@
       
       body {
         background-color: var(--bg-color);
-        background-image: radial-gradient(circle at 100% 0%, rgba(0, 168, 89, 0.12), transparent 30%),
-                          radial-gradient(circle at 0% 100%, rgba(0, 102, 204, 0.08), transparent 40%);
+        background-image: radial-gradient(circle at 100% 0%, rgba(20, 184, 166, 0.1), transparent 30%),
+                          radial-gradient(circle at 0% 100%, rgba(20, 184, 166, 0.05), transparent 40%);
         background-attachment: fixed;
         padding-bottom: env(safe-area-inset-bottom);
         color: var(--text-primary);
@@ -94,8 +86,7 @@
       }
 
       .light body {
-        /* Gradientes muito sutis apenas com verde (accent), sem azul */
-        background-image: radial-gradient(circle at 100% 0%, rgba(0, 168, 89, 0.03), transparent 30%);
+        background-image: radial-gradient(circle at 100% 0%, rgba(20, 184, 166, 0.03), transparent 30%);
       }
 
       .mica {
@@ -116,8 +107,8 @@
       /* Scrollbar Styles */
       ::-webkit-scrollbar { width: 8px; }
       ::-webkit-scrollbar-track { background: transparent; }
-      ::-webkit-scrollbar-thumb { background-color: rgba(0, 168, 89, 0.3); border-radius: 4px; } /* Verde saúde suave */
-      ::-webkit-scrollbar-thumb:hover { background-color: rgba(0, 168, 89, 0.5); } /* Verde saúde mais intenso */
+      ::-webkit-scrollbar-thumb { background-color: rgba(148, 163, 184, 0.3); border-radius: 4px; }
+      ::-webkit-scrollbar-thumb:hover { background-color: rgba(148, 163, 184, 0.5); }
 
       /* Form Element Styles */
       input[type="text"], input[type="file"], textarea, select {
@@ -132,8 +123,8 @@
       }
       input:focus, textarea:focus, select:focus {
         outline: none;
-        border-color: #00A859; /* accent - verde saúde */
-        box-shadow: 0 0 0 2px rgba(0, 168, 89, 0.3);
+        border-color: #14B8A6; /* accent */
+        box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.3);
       }
       
       /* Fluent UI Button Styles */
@@ -154,27 +145,21 @@
         opacity: 0.8;
       }
       .btn-primary {
-        background-color: #00A859; /* accent - verde saúde */
+        background-color: #14B8A6; /* accent */
         color: #ffffff;
-        border-color: #00A859;
+        border-color: #14B8A6;
       }
       .btn-primary:hover {
-        background-color: #00C96F; /* accent-light - verde claro */
-        border-color: #00C96F;
-      }
-      .btn-primary:active {
-        background-color: #008045; /* accent-dark - verde escuro */
-        border-color: #008045;
+        background-color: #0D9488; /* accent-dark */
+        border-color: #0D9488;
       }
       .btn-secondary {
-        background-color: var(--surface-hover);
-        color: var(--text-primary);
-        border-color: var(--surface-border);
+        background-color: #334155; /* slate-700 */
+        color: #e2e8f0; /* text-primary */
+        border-color: #475569; /* slate-600 */
       }
       .btn-secondary:hover {
-        background-color: #0066CC; /* primary - azul confiança */
-        border-color: #0066CC;
-        color: #ffffff;
+        background-color: #475569; /* slate-600 */
       }
       .btn-danger {
         background-color: #dc2626; /* red-600 */
@@ -237,10 +222,7 @@
         transition: color 0.3s ease;
       }
       .prose a {
-        color: #00C96F; /* accent-light - verde claro */
-      }
-      .prose a:hover {
-        color: #00A859; /* accent - verde principal */
+        color: #2DD4BF;
       }
       .prose blockquote {
         border-left-color: var(--surface-border);
