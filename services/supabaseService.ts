@@ -136,6 +136,7 @@ export const saveProjectToSupabase = async (project: Project): Promise<void> => 
 
 /**
  * Carrega todos os projetos do Supabase
+ * Tenta primeiro com o user_id atual, depois busca todos os projetos anônimos como fallback
  * Nunca lança erro - retorna array vazio se falhar
  */
 export const loadProjectsFromSupabase = async (): Promise<Project[]> => {
@@ -145,7 +146,9 @@ export const loadProjectsFromSupabase = async (): Promise<Project[]> => {
     
     try {
         const userId = await getUserId();
+        console.log('🔍 Buscando projetos com user_id:', userId);
         
+        // Primeira tentativa: buscar com o user_id específico
         const { data, error } = await supabase
             .from('projects')
             .select('data')
@@ -153,17 +156,44 @@ export const loadProjectsFromSupabase = async (): Promise<Project[]> => {
             .order('updated_at', { ascending: false });
         
         if (error) {
-            console.warn('⚠️ Erro ao carregar projetos do Supabase (usando cache local):', error.message);
+            console.warn('⚠️ Erro ao carregar projetos do Supabase:', error.message);
             return [];
         }
         
-        if (!data || data.length === 0) {
-            console.log('📭 Nenhum projeto encontrado no Supabase');
+        if (data && data.length > 0) {
+            const projects = data.map(row => row.data as Project);
+            console.log(`✅ ${projects.length} projetos carregados do Supabase com user_id: ${userId}`);
+            return projects;
+        }
+        
+        // Se não encontrou, tentar buscar TODOS os projetos anônimos como fallback
+        // Isso permite encontrar projetos salvos antes da correção do user_id compartilhado
+        console.log('📭 Nenhum projeto encontrado com user_id específico, buscando todos os projetos anônimos...');
+        const { data: allData, error: allError } = await supabase
+            .from('projects')
+            .select('data, user_id')
+            .or('user_id.eq.anonymous-shared,user_id.like.anon-%')
+            .order('updated_at', { ascending: false });
+        
+        if (allError) {
+            console.warn('⚠️ Erro ao buscar projetos anônimos:', allError.message);
             return [];
         }
         
-        const projects = data.map(row => row.data as Project);
-        console.log(`✅ ${projects.length} projetos carregados do Supabase`);
+        if (!allData || allData.length === 0) {
+            console.log('📭 Nenhum projeto anônimo encontrado no Supabase');
+            return [];
+        }
+        
+        const projects = allData.map(row => row.data as Project);
+        const uniqueUserIds = [...new Set(allData.map(r => r.user_id))];
+        console.log(`✅ ${projects.length} projetos carregados do Supabase (fallback - user_ids: ${uniqueUserIds.join(', ')})`);
+        
+        // Se encontrou projetos mas com user_id diferente, logar aviso
+        if (!uniqueUserIds.includes(userId)) {
+            console.warn(`⚠️ Projetos encontrados com user_id diferente (${uniqueUserIds.join(', ')}). Salve novamente os projetos para sincronizar.`);
+        }
+        
         return projects;
     } catch (error) {
         console.warn('⚠️ Erro ao carregar do Supabase (usando cache local):', error);
