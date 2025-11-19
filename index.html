@@ -16,6 +16,7 @@
     </style>
     <script>
       tailwind.config = {
+        darkMode: 'class',
         theme: {
           extend: {
             fontFamily: {
@@ -33,35 +34,75 @@
                 'dark': '#0052A3', // Azul escuro
               },
               'surface': {
-                'DEFAULT': 'rgba(30, 41, 59, 0.7)', // slate-800 com transparência
-                'border': 'rgba(255, 255, 255, 0.1)',
-                'hover': 'rgba(51, 65, 85, 0.8)', // slate-700
+                'DEFAULT': 'var(--surface-color)',
+                'border': 'var(--surface-border)',
+                'hover': 'var(--surface-hover)',
               },
-              'background': '#0f172a', // slate-900
-              'text-primary': '#e2e8f0', // slate-200
-              'text-secondary': '#94a3b8', // slate-400
+              'background': 'var(--bg-color)',
+              'text-primary': 'var(--text-primary)',
+              'text-secondary': 'var(--text-secondary)',
             }
           }
         }
       }
     </script>
     <style>
+      :root {
+        /* Dark theme colors (default) */
+        --bg-color: #0f172a;
+        --surface-color: rgba(30, 41, 59, 0.7);
+        --surface-border: rgba(255, 255, 255, 0.1);
+        --surface-hover: rgba(51, 65, 85, 0.8);
+        --text-primary: #e2e8f0;
+        --text-secondary: #94a3b8;
+        --input-bg: #1e293b;
+        --input-border: #334155;
+        --input-text: #e2e8f0;
+        --tooltip-bg: #1e293b;
+        --tooltip-text: #cbd5e1;
+        --tooltip-border: #334155;
+      }
+
+      .light {
+        /* Light theme colors */
+        --bg-color: #f8fafc;
+        --surface-color: rgba(255, 255, 255, 0.9);
+        --surface-border: rgba(0, 0, 0, 0.1);
+        --surface-hover: rgba(241, 245, 249, 0.8);
+        --text-primary: #1e293b;
+        --text-secondary: #64748b;
+        --input-bg: #ffffff;
+        --input-border: #cbd5e1;
+        --input-text: #1e293b;
+        --tooltip-bg: #ffffff;
+        --tooltip-text: #1e293b;
+        --tooltip-border: #cbd5e1;
+      }
+
       html {
         scroll-behavior: smooth;
       }
       
       body {
-        background-color: #0f172a; /* background */
+        background-color: var(--bg-color);
         background-image: radial-gradient(circle at 100% 0%, rgba(0, 168, 89, 0.12), transparent 30%),
                           radial-gradient(circle at 0% 100%, rgba(0, 102, 204, 0.08), transparent 40%);
         background-attachment: fixed;
         padding-bottom: env(safe-area-inset-bottom);
+        color: var(--text-primary);
+        transition: background-color 0.3s ease, color 0.3s ease;
+      }
+
+      .light body {
+        background-image: radial-gradient(circle at 100% 0%, rgba(0, 168, 89, 0.08), transparent 30%),
+                          radial-gradient(circle at 0% 100%, rgba(0, 102, 204, 0.05), transparent 40%);
       }
 
       .mica {
-        background-color: rgba(30, 41, 59, 0.7);
+        background-color: var(--surface-color);
         backdrop-filter: blur(24px) saturate(150%);
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        border: 1px solid var(--surface-border);
+        transition: background-color 0.3s ease, border-color 0.3s ease;
       }
 
       /* Line clamp utility */
@@ -80,9 +121,9 @@
 
       /* Form Element Styles */
       input[type="text"], input[type="file"], textarea, select {
-        background-color: #1e293b; /* slate-800 */
-        border: 1px solid #334155; /* slate-700 */
-        color: #e2e8f0; /* slate-200 */
+        background-color: var(--input-bg);
+        border: 1px solid var(--input-border);
+        color: var(--input-text);
         border-radius: 6px;
         padding: 8px 12px;
         transition: all 0.2s ease-in-out;
@@ -126,9 +167,9 @@
         border-color: #008045;
       }
       .btn-secondary {
-        background-color: #334155; /* slate-700 */
-        color: #e2e8f0; /* text-primary */
-        border-color: #475569; /* slate-600 */
+        background-color: var(--surface-hover);
+        color: var(--text-primary);
+        border-color: var(--surface-border);
       }
       .btn-secondary:hover {
         background-color: #0066CC; /* primary - azul confiança */
@@ -162,8 +203,8 @@
         visibility: hidden;
         width: max-content;
         max-width: 250px;
-        background-color: #1e293b; /* slate-800 */
-        color: #cbd5e1; /* slate-300 */
+        background-color: var(--tooltip-bg);
+        color: var(--tooltip-text);
         text-align: left;
         border-radius: 6px;
         padding: 8px 12px;
@@ -173,8 +214,8 @@
         left: 50%;
         transform: translateX(-50%);
         opacity: 0;
-        transition: opacity 0.3s;
-        border: 1px solid #334155; /* slate-700 */
+        transition: opacity 0.3s, background-color 0.3s ease, color 0.3s ease;
+        border: 1px solid var(--tooltip-border);
         font-size: 0.875rem; /* text-sm */
         line-height: 1.25rem;
         pointer-events: none;
@@ -188,10 +229,12 @@
 
       /* Prose styles for rendered markdown */
       .prose {
-        color: #cbd5e1;
+        color: var(--text-secondary);
+        transition: color 0.3s ease;
       }
       .prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
-        color: #f1f5f9;
+        color: var(--text-primary);
+        transition: color 0.3s ease;
       }
       .prose a {
         color: #00C96F; /* accent-light - verde claro */
@@ -200,20 +243,24 @@
         color: #00A859; /* accent - verde principal */
       }
       .prose blockquote {
-        border-left-color: #475569;
-        color: #94a3b8;
+        border-left-color: var(--surface-border);
+        color: var(--text-secondary);
+        transition: border-color 0.3s ease, color 0.3s ease;
       }
       .prose code {
-        color: #f1f5f9;
-        background-color: #334155;
+        color: var(--text-primary);
+        background-color: var(--surface-hover);
         padding: 0.2em 0.4em;
         border-radius: 3px;
+        transition: color 0.3s ease, background-color 0.3s ease;
       }
       .prose strong {
-        color: #f1f5f9;
+        color: var(--text-primary);
+        transition: color 0.3s ease;
       }
       .prose ul > li::before {
-        background-color: #64748b;
+        background-color: var(--text-secondary);
+        transition: background-color 0.3s ease;
       }
 
       @media print {
@@ -257,5 +304,15 @@
   <body class="text-text-secondary">
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
+    <script>
+      // Apply initial theme class before React loads
+      (function() {
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        const effectiveTheme = savedTheme === 'auto' 
+          ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+          : savedTheme;
+        document.documentElement.classList.add(effectiveTheme);
+      })();
+    </script>
   </body>
 </html>

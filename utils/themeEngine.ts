@@ -12,8 +12,9 @@ export const applyThemePreview = (preferences: ThemePreferences): void => {
         document.head.appendChild(previewStyleElement);
     }
 
-    let css = ':root {';
+    let css = ':root, .dark, .light {';
 
+    // Only apply custom colors if they are set (don't override base theme variables)
     if (preferences.customColors) {
         if (preferences.customColors.accent) {
             css += `--accent-color: ${preferences.customColors.accent};`;
@@ -23,28 +24,19 @@ export const applyThemePreview = (preferences: ThemePreferences): void => {
         if (preferences.customColors.primary) {
             css += `--primary-color: ${preferences.customColors.primary};`;
         }
+        // Only override base theme colors if custom colors are explicitly set
         if (preferences.customColors.background) {
-            css += `--background-color: ${preferences.customColors.background};`;
+            css += `--bg-color: ${preferences.customColors.background};`;
         }
         if (preferences.customColors.surface) {
             css += `--surface-color: ${preferences.customColors.surface};`;
         }
         if (preferences.customColors.textPrimary) {
-            css += `--text-primary-color: ${preferences.customColors.textPrimary};`;
+            css += `--text-primary: ${preferences.customColors.textPrimary};`;
         }
         if (preferences.customColors.textSecondary) {
-            css += `--text-secondary-color: ${preferences.customColors.textSecondary};`;
+            css += `--text-secondary: ${preferences.customColors.textSecondary};`;
         }
-    }
-
-    // Apply contrast
-    if (preferences.contrast !== 100) {
-        css += `filter: contrast(${preferences.contrast}%);`;
-    }
-
-    // Apply font size
-    if (preferences.fontSize !== 1) {
-        css += `font-size: ${preferences.fontSize}rem;`;
     }
 
     // Apply spacing (using CSS variables)
@@ -57,12 +49,22 @@ export const applyThemePreview = (preferences: ThemePreferences): void => {
         css += `--border-radius: ${preferences.borderRadius}px;`;
     }
 
-    // Apply opacity
-    if (preferences.opacity !== 100) {
-        css += `opacity: ${preferences.opacity / 100};`;
-    }
-
     css += '}';
+
+    // Apply contrast and font size to body/html (not to root variables)
+    if (preferences.contrast !== 100 || preferences.fontSize !== 1 || preferences.opacity !== 100) {
+        css += 'html {';
+        if (preferences.contrast !== 100) {
+            css += `filter: contrast(${preferences.contrast}%);`;
+        }
+        if (preferences.fontSize !== 1) {
+            css += `font-size: ${preferences.fontSize}rem;`;
+        }
+        if (preferences.opacity !== 100) {
+            css += `opacity: ${preferences.opacity / 100};`;
+        }
+        css += '}';
+    }
 
     // Apply spacing multiplier to common spacing classes
     css += `

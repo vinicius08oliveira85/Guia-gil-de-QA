@@ -15,19 +15,18 @@ export const useTheme = () => {
       ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
       : theme;
 
-    if (effectiveTheme === 'dark') {
-      root.classList.add('dark');
-      root.classList.remove('light');
-    } else {
-      root.classList.add('light');
-      root.classList.remove('dark');
-    }
+    // Remove both classes first to avoid conflicts
+    root.classList.remove('light', 'dark');
+    
+    // Apply base theme class
+    root.classList.add(effectiveTheme);
 
     localStorage.setItem('theme', theme);
 
-    // Apply custom theme preferences
+    // Apply custom theme preferences only if they exist
+    // This should not interfere with the base dark/light theme
     const themePrefs = getThemePreferences();
-    if (themePrefs.customColors || themePrefs.contrast !== 100 || themePrefs.fontSize !== 1) {
+    if (themePrefs.customColors || themePrefs.contrast !== 100 || themePrefs.fontSize !== 1 || themePrefs.spacing !== 1 || themePrefs.borderRadius !== 6 || themePrefs.opacity !== 100) {
       applyTheme(themePrefs);
     }
   }, [theme]);
