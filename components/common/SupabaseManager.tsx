@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Project } from '../../types';
-import { isSupabaseAvailable, saveProjectToSupabase, deleteProjectFromSupabase } from '../../services/supabaseService';
+import { isSupabaseAvailable } from '../../services/supabaseService';
+import { updateProject, deleteProject } from '../../services/dbService';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import { Card } from './Card';
 import { Badge } from './Badge';
@@ -24,8 +25,9 @@ export const SupabaseManager: React.FC<SupabaseManagerProps> = ({ project, onPro
 
         setIsSaving(true);
         try {
-            await saveProjectToSupabase(project);
-            handleSuccess(`Projeto "${project.name}" salvo no Supabase com sucesso!`);
+            // Usar updateProject que salva tanto no Supabase quanto no IndexedDB
+            await updateProject(project);
+            handleSuccess(`Projeto "${project.name}" salvo no Supabase e no cache local com sucesso!`);
             onProjectUpdated?.();
         } catch (error) {
             handleError(error, 'Salvar no Supabase');
@@ -46,8 +48,9 @@ export const SupabaseManager: React.FC<SupabaseManagerProps> = ({ project, onPro
 
         setIsDeleting(true);
         try {
-            await deleteProjectFromSupabase(project.id);
-            handleSuccess(`Projeto "${project.name}" excluído do Supabase com sucesso!`);
+            // Usar deleteProject que deleta tanto do Supabase quanto do IndexedDB
+            await deleteProject(project.id);
+            handleSuccess(`Projeto "${project.name}" excluído do Supabase e do cache local com sucesso!`);
             onProjectUpdated?.();
         } catch (error) {
             handleError(error, 'Excluir do Supabase');

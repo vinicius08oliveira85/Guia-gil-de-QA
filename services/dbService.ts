@@ -38,26 +38,53 @@ const openDB = (): Promise<IDBDatabase> => {
 };
 
 export const getAllProjects = async (): Promise<Project[]> => {
-  // Tentar Supabase primeiro se disponível
-  if (isSupabaseAvailable()) {
-    try {
-      return await loadProjectsFromSupabase();
-    } catch (error) {
-      console.warn('⚠️ Erro ao carregar do Supabase, usando IndexedDB:', error);
-      // Continuar para fallback IndexedDB
-    }
-  }
-  
-  // Fallback para IndexedDB
+  // Sempre carregar do IndexedDB como base
   const db = await openDB();
-  return new Promise((resolve, reject) => {
+  const indexedDBProjects = await new Promise<Project[]>((resolve, reject) => {
     const transaction = db.transaction(STORE_NAME, 'readonly');
     const store = transaction.objectStore(STORE_NAME);
     const request = store.getAll();
 
     request.onerror = () => reject(request.error);
-    request.onsuccess = () => resolve(request.result);
+    request.onsuccess = () => resolve(request.result || []);
   });
+
+  // Se Supabase está disponível, fazer merge com IndexedDB
+  if (isSupabaseAvailable()) {
+    try {
+      const supabaseProjects = await loadProjectsFromSupabase();
+      
+      // Fazer merge: criar um Map com ID como chave, priorizando Supabase
+      const projectsMap = new Map<string, Project>();
+      
+      // Primeiro adicionar projetos do IndexedDB
+      indexedDBProjects.forEach(project => {
+        projectsMap.set(project.id, project);
+      });
+      
+      // Depois sobrescrever/atualizar com projetos do Supabase (prioridade)
+      supabaseProjects.forEach(project => {
+        projectsMap.set(project.id, project);
+      });
+      
+      const mergedProjects = Array.from(projectsMap.values());
+      
+      if (supabaseProjects.length === 0 && indexedDBProjects.length > 0) {
+        console.log(`📦 Usando projetos do cache local: ${indexedDBProjects.length}`);
+      } else if (supabaseProjects.length > 0) {
+        console.log(`✅ ${mergedProjects.length} projetos carregados (${supabaseProjects.length} do Supabase + ${indexedDBProjects.length} do cache local)`);
+      }
+      
+      return mergedProjects;
+    } catch (error) {
+      console.warn('⚠️ Erro ao carregar do Supabase, usando apenas IndexedDB:', error);
+      // Retornar projetos do IndexedDB em caso de erro
+      return indexedDBProjects;
+    }
+  }
+  
+  // Se Supabase não está disponível, retornar apenas IndexedDB
+  return indexedDBProjects;
 };
 
 export const addProject = async (project: Project): Promise<void> => {
