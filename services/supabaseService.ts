@@ -12,10 +12,22 @@ const supabaseAnonKey =
     import.meta.env.SUPABASE_ANON_KEY;
 
 let supabase: SupabaseClient | null = null;
+let supabaseAuthPromise: Promise<void> | null = null;
+let isAuthReady = false;
 
 if (supabaseUrl && supabaseAnonKey) {
     supabase = createClient(supabaseUrl, supabaseAnonKey);
-    console.log('✅ Supabase configurado e conectado');
+    supabaseAuthPromise = supabase.auth.signInAnonymously().then(result => {
+        if (result.error) {
+            console.error('Erro ao autenticar anonimamente no Supabase:', result.error);
+            throw result.error;
+        }
+        isAuthReady = true;
+        console.log('✅ Supabase configurado e conectado (sessão anônima)');
+    }).catch(error => {
+        supabase = null;
+        console.error('Erro ao configurar Supabase:', error);
+    });
 } else {
     console.warn('⚠️ Supabase não configurado. Usando IndexedDB local.');
     console.warn('⚠️ Configure VITE_SUPABASE_URL / VITE_PUBLIC_SUPABASE_URL e VITE_SUPABASE_ANON_KEY / VITE_PUBLIC_SUPABASE_ANON_KEY no Vercel para usar Supabase.');
@@ -26,33 +38,23 @@ if (supabaseUrl && supabaseAnonKey) {
  * Se não autenticado, usa um ID anônimo baseado no navegador
  */
 export const getUserId = async (): Promise<string> => {
-    if (!supabase) return 'anonymous';
+    if (!supabase || !supabaseAuthPromise) return 'anonymous';
     
-    try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) return user.id;
-        
-        // Se não autenticado, criar sessão anônima ou usar localStorage
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.user) return session.user.id;
-        
-        // Usar ID anônimo persistente do localStorage
-        let anonymousId = localStorage.getItem('supabase_anonymous_id');
-        if (!anonymousId) {
-            anonymousId = `anon-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-            localStorage.setItem('supabase_anonymous_id', anonymousId);
-        }
-        return anonymousId;
-    } catch (error) {
-        console.warn('Erro ao obter usuário do Supabase:', error);
-        // Fallback para ID anônimo
-        let anonymousId = localStorage.getItem('supabase_anonymous_id');
-        if (!anonymousId) {
-            anonymousId = `anon-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-            localStorage.setItem('supabase_anonymous_id', anonymousId);
-        }
-        return anonymousId;
+    if (!isAuthReady) {
+        await supabaseAuthPromise;
     }
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user?.id) {
+        return user.id;
+    }
+
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user?.id) {
+        return session.user.id;
+    }
+
+    throw new Error('Não foi possível criar sessão anônima no Supabase.');
 };
 
 /**
