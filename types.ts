@@ -157,3 +157,82 @@ export interface NotificationSettings {
   onTaskAssigned?: boolean;
   onCommentAdded?: boolean;
 }
+
+// User Preferences Types
+export interface NotificationPreferences {
+  bugCreated: boolean;
+  testFailed: boolean;
+  deadlineApproaching: boolean;
+  taskAssigned: boolean;
+  commentAdded: boolean;
+  taskCompleted: boolean;
+}
+
+export interface ThemePreferences {
+  customColors?: {
+    accent: string;
+    primary: string;
+    background: string;
+    surface: string;
+    textPrimary: string;
+    textSecondary: string;
+  };
+  contrast: number; // 0-100
+  fontSize: number; // base size multiplier
+  spacing: number; // base spacing multiplier
+  borderRadius: number; // 0-20
+  opacity: number; // 0-100
+  customThemeName?: string;
+}
+
+export interface KeyboardShortcutConfig {
+  key: string;
+  ctrl?: boolean;
+  shift?: boolean;
+  alt?: boolean;
+}
+
+export interface KeyboardShortcutPreferences {
+  search: KeyboardShortcutConfig;
+  newProject: KeyboardShortcutConfig;
+  save: KeyboardShortcutConfig;
+  focusSearch: KeyboardShortcutConfig;
+  closeModal: KeyboardShortcutConfig;
+}
+
+export interface ExportTemplate {
+  id: string;
+  name: string;
+  format: 'json' | 'csv' | 'markdown';
+  includeMetrics: boolean;
+  includeTasks: boolean;
+  includeTestCases: boolean;
+}
+
+export interface ExportSchedule {
+  enabled: boolean;
+  frequency: 'daily' | 'weekly' | 'monthly';
+  time: string; // HH:mm format
+  format: 'json' | 'csv' | 'markdown';
+  includeMetrics: boolean;
+  includeTasks: boolean;
+  includeTestCases: boolean;
+  destination: 'download' | 'supabase';
+  notifyOnComplete: boolean;
+}
+
+export interface ExportPreferences {
+  defaultFormat: 'json' | 'csv' | 'markdown';
+  defaultIncludeMetrics: boolean;
+  defaultIncludeTasks: boolean;
+  defaultIncludeTestCases: boolean;
+  templates: ExportTemplate[];
+  schedule?: ExportSchedule;
+}
+
+export interface UserPreferences {
+  notifications: NotificationPreferences;
+  theme: ThemePreferences;
+  keyboardShortcuts: KeyboardShortcutPreferences;
+  export: ExportPreferences;
+}

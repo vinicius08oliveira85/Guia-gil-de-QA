@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Project } from '../../types';
 import { useProjectMetrics } from '../../hooks/useProjectMetrics';
-import { exportProject } from '../../utils/exportService';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import { formatDate } from '../../utils/dateUtils';
+import { getExportPreferences } from '../../utils/preferencesService';
 
 const convertToCSV = (data: any): string => {
   // Implementação básica de CSV
@@ -52,12 +52,25 @@ interface ExportReportProps {
 }
 
 export const ExportReport: React.FC<ExportReportProps> = ({ project, onClose }) => {
-  const [format, setFormat] = useState<'json' | 'csv' | 'markdown'>('markdown');
-  const [includeMetrics, setIncludeMetrics] = useState(true);
-  const [includeTasks, setIncludeTasks] = useState(true);
-  const [includeTestCases, setIncludeTestCases] = useState(true);
-  const metrics = useProjectMetrics(project);
-  const { handleSuccess, handleError } = useErrorHandler();
+    const exportPrefs = getExportPreferences();
+    const [format, setFormat] = useState<'json' | 'csv' | 'markdown'>(exportPrefs.defaultFormat);
+    const [includeMetrics, setIncludeMetrics] = useState(exportPrefs.defaultIncludeMetrics);
+    const [includeTasks, setIncludeTasks] = useState(exportPrefs.defaultIncludeTasks);
+    const [includeTestCases, setIncludeTestCases] = useState(exportPrefs.defaultIncludeTestCases);
+    const metrics = useProjectMetrics(project);
+    const { handleSuccess, handleError } = useErrorHandler();
+
+    useEffect(() => {
+        const handlePreferencesUpdate = () => {
+            const updatedPrefs = getExportPreferences();
+            setFormat(updatedPrefs.defaultFormat);
+            setIncludeMetrics(updatedPrefs.defaultIncludeMetrics);
+            setIncludeTasks(updatedPrefs.defaultIncludeTasks);
+            setIncludeTestCases(updatedPrefs.defaultIncludeTestCases);
+        };
+        window.addEventListener('preferences-updated', handlePreferencesUpdate);
+        return () => window.removeEventListener('preferences-updated', handlePreferencesUpdate);
+    }, []);
 
   const handleExport = async () => {
     try {

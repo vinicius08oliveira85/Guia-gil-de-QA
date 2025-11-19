@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { getKeyboardShortcutPreferences } from '../utils/preferencesService';
 
 export interface KeyboardShortcut {
   key: string;
@@ -30,7 +31,7 @@ export const useKeyboardShortcuts = (shortcuts: KeyboardShortcut[]) => {
   }, [shortcuts]);
 };
 
-// Shortcuts padrão
+// Shortcuts padrão (fallback)
 export const DEFAULT_SHORTCUTS: Omit<KeyboardShortcut, 'action'>[] = [
   { key: 'k', ctrl: true, description: 'Abrir busca global' },
   { key: 'n', ctrl: true, description: 'Criar novo projeto' },
@@ -39,8 +40,27 @@ export const DEFAULT_SHORTCUTS: Omit<KeyboardShortcut, 'action'>[] = [
   { key: 'Escape', description: 'Fechar modais' },
 ];
 
-// Shortcuts exportados para uso no App
-export const SHORTCUTS = {
-  SEARCH: { key: 'k', ctrl: true, description: 'Abrir busca global' },
-  ESCAPE: { key: 'Escape', description: 'Fechar modais' },
+// Get shortcuts from preferences or fallback to defaults
+const getShortcuts = () => {
+  try {
+    const prefs = getKeyboardShortcutPreferences();
+    return {
+      SEARCH: { key: prefs.search.key, ctrl: prefs.search.ctrl, shift: prefs.search.shift, alt: prefs.search.alt, description: 'Abrir busca global' },
+      ESCAPE: { key: prefs.closeModal.key, ctrl: prefs.closeModal.ctrl, shift: prefs.closeModal.shift, alt: prefs.closeModal.alt, description: 'Fechar modais' },
+    };
+  } catch {
+    return {
+      SEARCH: { key: 'k', ctrl: true, description: 'Abrir busca global' },
+      ESCAPE: { key: 'Escape', description: 'Fechar modais' },
+    };
+  }
 };
+
+// Shortcuts exportados para uso no App (usando preferências)
+// This is a getter function that always returns current preferences
+export const SHORTCUTS = new Proxy({} as ReturnType<typeof getShortcuts>, {
+  get(target, prop) {
+    const shortcuts = getShortcuts();
+    return shortcuts[prop as keyof typeof shortcuts];
+  }
+});

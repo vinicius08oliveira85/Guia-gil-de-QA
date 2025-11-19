@@ -1,9 +1,27 @@
-import React from 'react';
+import React, { useState, Suspense, lazy } from 'react';
 import { Card } from '../common/Card';
+import { LoadingSkeleton } from '../common/LoadingSkeleton';
+
+// Lazy load preference components
+const NotificationPreferences = lazy(() => import('./NotificationPreferences').then(m => ({ default: m.NotificationPreferences })));
+const ThemeCustomization = lazy(() => import('./ThemeCustomization').then(m => ({ default: m.ThemeCustomization })));
+const KeyboardShortcutsEditor = lazy(() => import('./KeyboardShortcutsEditor').then(m => ({ default: m.KeyboardShortcutsEditor })));
+const ExportPreferences = lazy(() => import('./ExportPreferences').then(m => ({ default: m.ExportPreferences })));
+
+type PreferenceSection = 'notifications' | 'theme' | 'shortcuts' | 'export';
 
 export const PreferencesTab: React.FC = () => {
+    const [activeSection, setActiveSection] = useState<PreferenceSection>('notifications');
+
+    const sections: { id: PreferenceSection; label: string; icon: string }[] = [
+        { id: 'notifications', label: 'Notificações', icon: '🔔' },
+        { id: 'theme', label: 'Tema', icon: '🎨' },
+        { id: 'shortcuts', label: 'Atalhos', icon: '⌨️' },
+        { id: 'export', label: 'Exportação', icon: '📤' },
+    ];
+
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 p-4">
             <div>
                 <h3 className="text-xl font-bold text-text-primary mb-2">Preferências</h3>
                 <p className="text-text-secondary text-sm">
@@ -11,22 +29,29 @@ export const PreferencesTab: React.FC = () => {
                 </p>
             </div>
 
-            <Card>
-                <div className="space-y-4">
-                    <p className="text-text-secondary text-sm">
-                        As configurações de preferências estarão disponíveis em breve.
-                    </p>
-                    <div className="space-y-2 text-sm text-text-secondary">
-                        <p>Funcionalidades planejadas:</p>
-                        <ul className="list-disc list-inside ml-4 space-y-1">
-                            <li>Preferências de notificações</li>
-                            <li>Configurações de tema personalizado</li>
-                            <li>Atalhos de teclado personalizados</li>
-                            <li>Preferências de exportação</li>
-                        </ul>
-                    </div>
-                </div>
-            </Card>
+            <div className="flex flex-wrap gap-2 mb-6 border-b border-surface-border pb-4">
+                {sections.map((section) => (
+                    <button
+                        key={section.id}
+                        onClick={() => setActiveSection(section.id)}
+                        className={`px-4 py-2 text-sm font-semibold rounded-md transition-colors whitespace-nowrap ${
+                            activeSection === section.id
+                                ? 'bg-accent/20 text-accent-light'
+                                : 'text-text-secondary hover:text-text-primary'
+                        }`}
+                    >
+                        <span className="mr-2">{section.icon}</span>
+                        {section.label}
+                    </button>
+                ))}
+            </div>
+
+            <Suspense fallback={<LoadingSkeleton variant="card" count={2} />}>
+                {activeSection === 'notifications' && <NotificationPreferences />}
+                {activeSection === 'theme' && <ThemeCustomization />}
+                {activeSection === 'shortcuts' && <KeyboardShortcutsEditor />}
+                {activeSection === 'export' && <ExportPreferences />}
+            </Suspense>
         </div>
     );
 };

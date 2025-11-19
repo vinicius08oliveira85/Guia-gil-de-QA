@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { getThemePreferences, applyTheme } from '../utils/themeEngine';
 
 export type Theme = 'light' | 'dark' | 'auto';
 
@@ -23,7 +24,25 @@ export const useTheme = () => {
     }
 
     localStorage.setItem('theme', theme);
+
+    // Apply custom theme preferences
+    const themePrefs = getThemePreferences();
+    if (themePrefs.customColors || themePrefs.contrast !== 100 || themePrefs.fontSize !== 1) {
+      applyTheme(themePrefs);
+    }
   }, [theme]);
+
+  useEffect(() => {
+    // Listen for theme preference updates
+    const handlePreferencesUpdate = () => {
+      const themePrefs = getThemePreferences();
+      if (themePrefs.customColors || themePrefs.contrast !== 100 || themePrefs.fontSize !== 1) {
+        applyTheme(themePrefs);
+      }
+    };
+    window.addEventListener('preferences-updated', handlePreferencesUpdate);
+    return () => window.removeEventListener('preferences-updated', handlePreferencesUpdate);
+  }, []);
 
   const toggleTheme = () => {
     setTheme(prev => {

@@ -13,6 +13,8 @@ import { useKeyboardShortcuts, SHORTCUTS } from './hooks/useKeyboardShortcuts';
 import { KeyboardShortcutsHelp } from './components/common/KeyboardShortcutsHelp';
 import { LoadingSkeleton } from './components/common/LoadingSkeleton';
 import { loadProjectsFromSupabase, isSupabaseAvailable } from './services/supabaseService';
+import { getExportPreferences } from './utils/preferencesService';
+import { startExportScheduler } from './utils/exportScheduler';
 
 // Code splitting - Lazy loading de componentes pesados
 const ProjectView = lazyWithRetry(() => import('./components/ProjectView').then(m => ({ default: m.ProjectView })));
@@ -71,6 +73,24 @@ const App: React.FC = () => {
         checkMobile();
         window.addEventListener('resize', checkMobile);
         return () => window.removeEventListener('resize', checkMobile);
+    }, []);
+
+    // Initialize export scheduler on app load
+    useEffect(() => {
+        const exportPrefs = getExportPreferences();
+        if (exportPrefs.schedule?.enabled) {
+            startExportScheduler(exportPrefs.schedule);
+        }
+        
+        // Listen for preference updates
+        const handlePreferencesUpdate = () => {
+            const updatedPrefs = getExportPreferences();
+            if (updatedPrefs.schedule?.enabled) {
+                startExportScheduler(updatedPrefs.schedule);
+            }
+        };
+        window.addEventListener('preferences-updated', handlePreferencesUpdate);
+        return () => window.removeEventListener('preferences-updated', handlePreferencesUpdate);
     }, []);
 
     const handleCreateProject = useCallback(async (name: string, description: string, templateId?: string) => {

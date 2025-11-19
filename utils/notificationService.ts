@@ -1,4 +1,5 @@
 import { Project, JiraTask, TestCase } from '../types';
+import { getNotificationPreferences } from './preferencesService';
 
 export interface Notification {
   id: string;
@@ -16,7 +17,32 @@ export interface Notification {
 
 const STORAGE_KEY = 'qa_notifications';
 
-export const createNotification = (notification: Omit<Notification, 'id' | 'read' | 'createdAt'>): Notification => {
+const shouldCreateNotification = (type: Notification['type']): boolean => {
+  const prefs = getNotificationPreferences();
+  switch (type) {
+    case 'bug_created':
+      return prefs.bugCreated;
+    case 'test_failed':
+      return prefs.testFailed;
+    case 'deadline':
+      return prefs.deadlineApproaching;
+    case 'task_assigned':
+      return prefs.taskAssigned;
+    case 'comment_added':
+      return prefs.commentAdded;
+    case 'task_completed':
+      return prefs.taskCompleted;
+    default:
+      return true;
+  }
+};
+
+export const createNotification = (notification: Omit<Notification, 'id' | 'read' | 'createdAt'>): Notification | null => {
+  // Check preferences before creating notification
+  if (!shouldCreateNotification(notification.type)) {
+    return null;
+  }
+
   const newNotification: Notification = {
     ...notification,
     id: `notif-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
