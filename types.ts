@@ -147,7 +147,7 @@ export interface ProjectSettings {
   theme?: 'light' | 'dark' | 'auto';
   notifications?: NotificationSettings;
   defaultTags?: string[];
-  jiraStatuses?: Array<{ name: string; color: string }>; // Lista de status disponíveis no Jira com suas cores
+  jiraStatuses?: Array<{ name: string; color: string } | string>; // Lista de status disponíveis no Jira com suas cores
   jiraProjectKey?: string; // Chave do projeto Jira associado
 }
 

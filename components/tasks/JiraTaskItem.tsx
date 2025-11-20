@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { JiraTask, BddScenario, TestCaseDetailLevel, TeamRole, Project } from '../../types';
 import { Spinner } from '../common/Spinner';
 import { TaskTypeIcon, TaskStatusIcon, PlusIcon, EditIcon, TrashIcon, ChevronDownIcon, RefreshIcon } from '../common/Icons';
@@ -20,6 +20,7 @@ import { useBeginnerMode } from '../../hooks/useBeginnerMode';
 import { ConfirmDialog } from '../common/ConfirmDialog';
 import { EmptyState } from '../common/EmptyState';
 import { LoadingSkeleton } from '../common/LoadingSkeleton';
+import { ensureJiraHexColor, getJiraStatusColor, getJiraStatusTextColor } from '../../utils/jiraStatusColors';
 
 // Componente para renderizar descrição com suporte a imagens
 const DescriptionRenderer: React.FC<{ description: string }> = ({ description }) => {
@@ -67,6 +68,13 @@ const DescriptionRenderer: React.FC<{ description: string }> = ({ description })
 };
 
 export type TaskWithChildren = JiraTask & { children: TaskWithChildren[] };
+
+const normalizeStatusName = (value: string) =>
+    value
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .trim()
+        .toLowerCase();
 
 const TeamRoleBadge: React.FC<{ role: TeamRole }> = ({ role }) => {
     const roleStyles: Record<TeamRole, { bg: string, text: string }> = {
@@ -124,6 +132,28 @@ export const JiraTaskItem: React.FC<{
     const taskPhase = project ? getTaskPhase(task, metrics.newPhases) : null;
     const phaseStyle = getPhaseBadgeStyle(taskPhase);
     const nextStep = getNextStepForTask(task);
+    const jiraStatusPalette = project?.settings?.jiraStatuses;
+    const currentStatusColor = useMemo(() => {
+        const statusName = task.jiraStatus || task.status;
+        if (!statusName) {
+            return undefined;
+        }
+        if (jiraStatusPalette && jiraStatusPalette.length > 0) {
+            const normalizedTarget = normalizeStatusName(statusName);
+            const matched = jiraStatusPalette.find(statusEntry => {
+                const entryName = typeof statusEntry === 'string' ? statusEntry : statusEntry.name;
+                return normalizeStatusName(entryName) === normalizedTarget;
+            });
+            if (matched) {
+                if (typeof matched === 'string') {
+                    return ensureJiraHexColor(undefined, matched);
+                }
+                return ensureJiraHexColor(matched.color, matched.name);
+            }
+        }
+        return getJiraStatusColor(statusName);
+    }, [jiraStatusPalette, task.jiraStatus, task.status]);
+    const statusTextColor = currentStatusColor ? getJiraStatusTextColor(currentStatusColor) : undefined;
 
     const handleSaveScenario = (scenario: Omit<BddScenario, 'id'>) => {
         onSaveBddScenario(task.id, scenario, editingBddScenario?.id);
@@ -212,105 +242,92 @@ export const JiraTaskItem: React.FC<{
                                 <TeamRoleBadge role={task.assignee} />
                             </div>
                         )}
-                        <select
-                            value={task.jiraStatus || task.status}
-                            onChange={(e) => {
-                                const selectedValue = e.target.value;
-                                const jiraStatuses = project?.settings?.jiraStatuses || [];
-                                
-                                // Função auxiliar para mapear status do Jira para status do app
-                                const mapStatus = (jiraStatus: string): 'To Do' | 'In Progress' | 'Done' => {
-                                    const status = jiraStatus.toLowerCase();
-                                    if (status.includes('done') || status.includes('resolved') || status.includes('closed') || status.includes('concluído')) {
-                                        return 'Done';
-                                    }
-                                    if (status.includes('progress') || status.includes('in progress') || status.includes('andamento')) {
-                                        return 'In Progress';
-                                    }
-                                    return 'To Do';
-                                };
-                                
-                                // Verificar se é um status do Jira (pode ser string ou objeto)
-                                const isJiraStatus = jiraStatuses.some(s => 
-                                    typeof s === 'string' ? s === selectedValue : s.name === selectedValue
-                                );
-                                
-                                if (isJiraStatus) {
-                                    // É um status do Jira, mapear para status do app
-                                    const mappedStatus = mapStatus(selectedValue);
-                                    onTaskStatusChange(mappedStatus);
-                                    // Atualizar também o jiraStatus se o projeto tiver essa informação
-                                    if (project && onUpdateProject) {
-                                        const updatedTasks = project.tasks.map(t =>
-                                            t.id === task.id
-                                                ? { ...t, status: mappedStatus, jiraStatus: selectedValue }
-                                                : t
-                                        );
-                                        onUpdateProject({ ...project, tasks: updatedTasks });
-                                    }
-                                } else {
-                                    // É um status padrão do app
-                                    onTaskStatusChange(selectedValue as 'To Do' | 'In Progress' | 'Done');
-                                    // Limpar jiraStatus se mudou para status padrão
-                                    if (project && onUpdateProject && task.jiraStatus) {
-                                        const updatedTasks = project.tasks.map(t =>
-                                            t.id === task.id
-                                                ? { ...t, jiraStatus: undefined }
-                                                : t
-                                        );
-                                        onUpdateProject({ ...project, tasks: updatedTasks });
-                                    }
-                                }
-                            }}
-                            className="!py-1 !px-2 text-xs h-8"
-                            style={{
-                                backgroundColor: (() => {
-                                    const jiraStatuses = project?.settings?.jiraStatuses || [];
-                                    const currentStatus = task.jiraStatus || task.status;
-                                    const statusInfo = jiraStatuses.find(s => 
-                                        typeof s === 'string' ? s === currentStatus : s.name === currentStatus
-                                    );
-                                    if (statusInfo && typeof statusInfo === 'object' && statusInfo.color) {
-                                        return statusInfo.color;
-                                    }
-                                    return undefined;
-                                })(),
-                                color: (() => {
-                                    const jiraStatuses = project?.settings?.jiraStatuses || [];
-                                    const currentStatus = task.jiraStatus || task.status;
-                                    const statusInfo = jiraStatuses.find(s => 
-                                        typeof s === 'string' ? s === currentStatus : s.name === currentStatus
-                                    );
-                                    if (statusInfo && typeof statusInfo === 'object' && statusInfo.color) {
-                                        // Calcular brilho da cor para determinar cor do texto
-                                        const color = statusInfo.color;
-                                        const r = parseInt(color.slice(1, 3), 16);
-                                        const g = parseInt(color.slice(3, 5), 16);
-                                        const b = parseInt(color.slice(5, 7), 16);
-                                        const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-                                        return brightness > 128 ? '#000000' : '#ffffff';
-                                    }
-                                    return undefined;
-                                })(),
-                            }}
-                        >
-                            {project?.settings?.jiraStatuses && project.settings.jiraStatuses.length > 0 ? (
-                                // Mostrar status do Jira se disponível
-                                project.settings.jiraStatuses.map(status => {
-                                    const statusName = typeof status === 'string' ? status : status.name;
-                                    return (
-                                        <option key={statusName} value={statusName}>{statusName}</option>
-                                    );
-                                })
-                            ) : (
-                                // Fallback para status padrão
-                                <>
-                                    <option value="To Do">A Fazer</option>
-                                    <option value="In Progress">Em Andamento</option>
-                                    <option value="Done">Concluído</option>
-                                </>
+                        <div className="flex items-center gap-1.5">
+                            {currentStatusColor && (
+                                <span
+                                    className="w-3 h-3 rounded-full border border-white/30 shadow-sm flex-shrink-0"
+                                    style={{ backgroundColor: currentStatusColor }}
+                                    aria-hidden="true"
+                                    title={task.jiraStatus || task.status}
+                                ></span>
                             )}
-                        </select>
+                            <select
+                                value={task.jiraStatus || task.status}
+                                title={task.jiraStatus || task.status}
+                                onChange={(e) => {
+                                    const selectedValue = e.target.value;
+                                    const jiraStatuses = project?.settings?.jiraStatuses || [];
+                                    
+                                    // Função auxiliar para mapear status do Jira para status do app
+                                    const mapStatus = (jiraStatus: string): 'To Do' | 'In Progress' | 'Done' => {
+                                        const status = jiraStatus.toLowerCase();
+                                        if (status.includes('done') || status.includes('resolved') || status.includes('closed') || status.includes('concluído')) {
+                                            return 'Done';
+                                        }
+                                        if (status.includes('progress') || status.includes('in progress') || status.includes('andamento')) {
+                                            return 'In Progress';
+                                        }
+                                        return 'To Do';
+                                    };
+                                    
+                                    // Verificar se é um status do Jira (pode ser string ou objeto)
+                                    const isJiraStatus = jiraStatuses.some(s => 
+                                        typeof s === 'string' ? s === selectedValue : s.name === selectedValue
+                                    );
+                                    
+                                    if (isJiraStatus) {
+                                        // É um status do Jira, mapear para status do app
+                                        const mappedStatus = mapStatus(selectedValue);
+                                        onTaskStatusChange(mappedStatus);
+                                        // Atualizar também o jiraStatus se o projeto tiver essa informação
+                                        if (project && onUpdateProject) {
+                                            const updatedTasks = project.tasks.map(t =>
+                                                t.id === task.id
+                                                    ? { ...t, status: mappedStatus, jiraStatus: selectedValue }
+                                                    : t
+                                            );
+                                            onUpdateProject({ ...project, tasks: updatedTasks });
+                                        }
+                                    } else {
+                                        // É um status padrão do app
+                                        onTaskStatusChange(selectedValue as 'To Do' | 'In Progress' | 'Done');
+                                        // Limpar jiraStatus se mudou para status padrão
+                                        if (project && onUpdateProject && task.jiraStatus) {
+                                            const updatedTasks = project.tasks.map(t =>
+                                                t.id === task.id
+                                                    ? { ...t, jiraStatus: undefined }
+                                                    : t
+                                            );
+                                            onUpdateProject({ ...project, tasks: updatedTasks });
+                                        }
+                                    }
+                                }}
+                                className="!py-1 !px-2 text-xs h-8 rounded-md border border-surface-border bg-transparent"
+                                style={{
+                                    backgroundColor: currentStatusColor,
+                                    color: statusTextColor,
+                                    borderColor: currentStatusColor ? `${currentStatusColor}66` : undefined,
+                                    boxShadow: currentStatusColor ? `0 0 0 1px ${currentStatusColor}33` : undefined
+                                }}
+                            >
+                                {project?.settings?.jiraStatuses && project.settings.jiraStatuses.length > 0 ? (
+                                    // Mostrar status do Jira se disponível
+                                    project.settings.jiraStatuses.map(status => {
+                                        const statusName = typeof status === 'string' ? status : status.name;
+                                        return (
+                                            <option key={statusName} value={statusName}>{statusName}</option>
+                                        );
+                                    })
+                                ) : (
+                                    // Fallback para status padrão
+                                    <>
+                                        <option value="To Do">A Fazer</option>
+                                        <option value="In Progress">Em Andamento</option>
+                                        <option value="Done">Concluído</option>
+                                    </>
+                                )}
+                            </select>
+                        </div>
                          {task.type === 'Epic' && (
                             <button onClick={() => onAddSubtask(task.id)} className={iconButtonClass} aria-label="Adicionar subtarefa"><PlusIcon /></button>
                          )}
