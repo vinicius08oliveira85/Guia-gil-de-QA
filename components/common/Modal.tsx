@@ -51,7 +51,7 @@ export const Modal: React.FC<ModalProps> = ({
 
     return (
         <div 
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex justify-center items-center p-4 sm:p-6 overflow-y-auto"
+            className="glass-overlay fixed inset-0 z-50 flex justify-center items-center p-4 sm:p-6 overflow-y-auto transition-opacity duration-300"
             onClick={onClose}
             role="dialog"
             aria-modal="true"
@@ -59,7 +59,7 @@ export const Modal: React.FC<ModalProps> = ({
         >
             <div 
                 id="modal-content"
-                className={`mica rounded-xl shadow-2xl w-full ${sizeClasses[size]} flex flex-col overflow-hidden animate-fade-in`}
+                className={`mica w-full ${sizeClasses[size]} flex flex-col overflow-hidden animate-fade-in shadow-[0_35px_120px_rgba(3,7,23,0.65)]`}
                 onClick={(e) => e.stopPropagation()}
                 tabIndex={-1}
                 style={{ 
@@ -69,11 +69,11 @@ export const Modal: React.FC<ModalProps> = ({
                 }}
             >
                 {/* Title Bar - Fixed */}
-                <div className="flex justify-between items-center px-4 py-3 bg-white/5 border-b border-surface-border flex-shrink-0">
+                <div className="flex justify-between items-center px-5 py-4 bg-white/5 border-b border-white/10 backdrop-blur-sm flex-shrink-0">
                     <h2 id="modal-title" className="text-lg font-semibold text-text-primary pr-4 truncate text-balance">{title}</h2>
                     <button 
                         onClick={onClose} 
-                        className="min-h-[44px] min-w-[44px] flex justify-center items-center rounded-md text-text-secondary hover:bg-red-500 hover:text-white transition-colors flex-shrink-0 active:scale-95 active:opacity-80"
+                        className="win-icon-button text-text-secondary hover:text-white flex-shrink-0"
                         aria-label="Fechar modal"
                         aria-describedby="modal-title"
                     >
@@ -81,7 +81,7 @@ export const Modal: React.FC<ModalProps> = ({
                     </button>
                 </div>
                 {/* Content - Scrollable */}
-                <div className="p-4 sm:p-6 overflow-y-auto flex-1" style={{ maxHeight: `calc(${maxHeight} - 80px)` }}>
+                <div className="p-5 sm:p-6 overflow-y-auto flex-1" style={{ maxHeight: `calc(${maxHeight} - 80px)` }}>
                   {children}
                 </div>
             </div>

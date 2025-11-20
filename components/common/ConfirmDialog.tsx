@@ -28,11 +28,11 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
     onConfirm();
   };
 
-  const variantStyles = {
-    danger: 'bg-red-500 hover:bg-red-600',
-    warning: 'bg-yellow-500 hover:bg-yellow-600',
-    info: 'bg-blue-500 hover:bg-blue-600',
-  };
+    const variantStyles = {
+      danger: 'btn-danger',
+      warning: 'btn-warning',
+      info: 'btn-info',
+    };
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={title}>
@@ -49,7 +49,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
           <button
             onClick={handleConfirm}
             disabled={isLoading}
-            className={`btn ${variantStyles[variant]} text-white`}
+              className={`btn ${variantStyles[variant]}`}
           >
             {isLoading ? 'Processando...' : confirmText}
           </button>
