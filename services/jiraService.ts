@@ -798,29 +798,12 @@ export const addNewJiraTasks = async (
     // Filtrar apenas tarefas novas (que não existem no projeto)
     const newIssues = jiraIssues.filter(issue => !existingTasksMap.has(issue.key));
     
-    // Atualizar status das tarefas existentes
-    let updatedStatusCount = 0;
-    const updatedTasks = project.tasks.map(task => {
-        const jiraIssue = jiraIssues.find(issue => issue.key === task.id);
-        if (jiraIssue) {
-            const jiraStatusName = jiraIssue.fields?.status?.name || '';
-            const newMappedStatus = mapJiraStatusToTaskStatus(jiraStatusName);
-            
-            // Atualizar se o status mudou
-            if (task.jiraStatus !== jiraStatusName || task.status !== newMappedStatus) {
-                updatedStatusCount++;
-                return {
-                    ...task,
-                    status: newMappedStatus,
-                    jiraStatus: jiraStatusName,
-                };
-            }
-        }
-        return task;
-    });
+    // Política: sincronização do Jira não altera status ou análises locais.
+    // Apenas novas issues são adicionadas ao projeto.
+    const updatedStatusCount = 0;
     
-    if (newIssues.length === 0 && updatedStatusCount === 0) {
-        return { project, newTasksCount: 0, updatedStatusCount: 0 };
+    if (newIssues.length === 0) {
+        return { project, newTasksCount: 0, updatedStatusCount };
     }
     
     // Mapear apenas as novas issues para tarefas
@@ -885,7 +868,7 @@ export const addNewJiraTasks = async (
     });
 
     // Adicionar novas tarefas ao projeto, preservando todas as tarefas existentes e suas alterações
-    const allTasks = [...updatedTasks, ...newTasks];
+    const allTasks = [...project.tasks, ...newTasks];
 
     return {
         project: {
@@ -898,7 +881,7 @@ export const addNewJiraTasks = async (
             },
         },
         newTasksCount: newTasks.length,
-        updatedStatusCount: updatedStatusCount,
+        updatedStatusCount,
     };
 };
 
