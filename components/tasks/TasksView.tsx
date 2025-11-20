@@ -537,54 +537,54 @@ export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: 
     return (
         <>
         <Card>
-            <div className="flex flex-col gap-4 mb-6">
-                <div className="flex flex-col lg:flex-row justify-between gap-4">
-                    <div>
-                        <h3 className="text-2xl font-bold text-text-primary">Tarefas & Casos de Teste</h3>
-                        <p className="text-sm text-text-secondary">Acompanhe o progresso das atividades e resultados de QA.</p>
+            <div className="flex flex-col gap-4 mb-6 mobile-tight-stack">
+                <div className="flex flex-col lg:flex-row justify-between gap-4 w-full items-start">
+                    <div className="space-y-1 w-full">
+                        <h3 className="text-xl sm:text-2xl font-bold text-text-primary break-words">Tarefas & Casos de Teste</h3>
+                        <p className="text-xs sm:text-sm text-text-secondary mobile-muted">Acompanhe o progresso das atividades e resultados de QA.</p>
                     </div>
-                    <div className="flex flex-wrap gap-2">
-                        <button onClick={() => setShowFilters(prev => !prev)} className="btn btn-secondary">
+                    <div className="flex flex-wrap gap-2 w-full lg:w-auto">
+                        <button onClick={() => setShowFilters(prev => !prev)} className="btn btn-secondary flex-1 sm:flex-none min-w-[140px]">
                             {showFilters ? 'Ocultar Filtros' : `Filtros (${activeFiltersCount})`}
                         </button>
-                        <button onClick={() => setShowTemplateSelector(true)} className="btn btn-secondary">📋 Templates</button>
+                        <button onClick={() => setShowTemplateSelector(true)} className="btn btn-secondary flex-1 sm:flex-none min-w-[140px]">📋 Templates</button>
                         <button 
                             onClick={handleSyncJira} 
-                            className="btn btn-secondary"
+                            className="btn btn-secondary flex-1 sm:flex-none min-w-[140px]"
                             disabled={isSyncingJira}
                         >
                             {isSyncingJira ? '🔄 Sincronizando...' : '🔄 Atualizar do Jira'}
                         </button>
-                        <button onClick={() => openTaskFormForNew()} className="btn btn-primary">Adicionar Tarefa</button>
+                        <button onClick={() => openTaskFormForNew()} className="btn btn-primary flex-1 sm:flex-none min-w-[140px]">Adicionar Tarefa</button>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-                    <div className="p-3 bg-surface border border-surface-border rounded-lg">
-                        <p className="text-xs text-text-secondary uppercase tracking-wide">Total de Tarefas</p>
-                        <p className="text-2xl font-bold text-text-primary">{stats.total}</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
+                    <div className="p-3 sm:p-4 bg-surface border border-surface-border rounded-lg">
+                        <p className="text-[0.65rem] sm:text-xs text-text-secondary uppercase tracking-wide">Total de Tarefas</p>
+                        <p className="text-xl sm:text-2xl font-bold text-text-primary">{stats.total}</p>
                     </div>
-                    <div className="p-3 bg-surface border border-surface-border rounded-lg">
-                        <p className="text-xs text-text-secondary uppercase tracking-wide">Em Andamento</p>
-                        <p className="text-2xl font-bold text-accent">{stats.inProgress}</p>
+                    <div className="p-3 sm:p-4 bg-surface border border-surface-border rounded-lg">
+                        <p className="text-[0.65rem] sm:text-xs text-text-secondary uppercase tracking-wide">Em Andamento</p>
+                        <p className="text-xl sm:text-2xl font-bold text-accent">{stats.inProgress}</p>
                     </div>
-                    <div className="p-3 bg-surface border border-surface-border rounded-lg">
-                        <p className="text-xs text-text-secondary uppercase tracking-wide">Concluídas</p>
-                        <p className="text-2xl font-bold text-green-400">{stats.done}</p>
+                    <div className="p-3 sm:p-4 bg-surface border border-surface-border rounded-lg">
+                        <p className="text-[0.65rem] sm:text-xs text-text-secondary uppercase tracking-wide">Concluídas</p>
+                        <p className="text-xl sm:text-2xl font-bold text-green-400">{stats.done}</p>
                     </div>
-                    <div className="p-3 bg-surface border border-surface-border rounded-lg">
-                        <p className="text-xs text-text-secondary uppercase tracking-wide">Bugs Abertos</p>
-                        <p className="text-2xl font-bold text-red-400">{stats.bugsOpen}</p>
+                    <div className="p-3 sm:p-4 bg-surface border border-surface-border rounded-lg">
+                        <p className="text-[0.65rem] sm:text-xs text-text-secondary uppercase tracking-wide">Bugs Abertos</p>
+                        <p className="text-xl sm:text-2xl font-bold text-red-400">{stats.bugsOpen}</p>
                     </div>
-                    <div className="p-3 bg-surface border border-surface-border rounded-lg col-span-1 md:col-span-2">
+                    <div className="p-3 sm:p-4 bg-surface border border-surface-border rounded-lg col-span-1 md:col-span-2">
                         <div className="flex items-center justify-between mb-2">
-                            <p className="text-xs text-text-secondary uppercase tracking-wide">Execução de Testes</p>
-                            <span className="text-sm font-semibold text-text-primary">{testExecutionRate}%</span>
+                            <p className="text-[0.65rem] sm:text-xs text-text-secondary uppercase tracking-wide">Execução de Testes</p>
+                            <span className="text-xs sm:text-sm font-semibold text-text-primary">{testExecutionRate}%</span>
                         </div>
-                        <div className="w-full bg-surface-hover rounded-full h-2 mb-2">
+                        <div className="w-full bg-surface-hover rounded-full h-2 mb-2 overflow-hidden">
                             <div className="bg-accent h-2 rounded-full transition-all" style={{ width: `${testExecutionRate}%` }}></div>
                         </div>
-                        <p className="text-xs text-text-secondary">
+                        <p className="text-[0.65rem] sm:text-xs text-text-secondary">
                             {stats.executedTests}/{stats.totalTests} casos executados • Automação {automationRate}%
                         </p>
                     </div>

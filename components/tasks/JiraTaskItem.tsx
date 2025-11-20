@@ -168,13 +168,13 @@ export const JiraTaskItem: React.FC<{
     
     const indentationStyle = { paddingLeft: `${level * 1.5}rem` };
 
-    const iconButtonClass = "h-8 w-8 flex items-center justify-center rounded-full hover:bg-surface-hover hover:text-text-primary transition-colors active:scale-95 active:opacity-80";
+    const iconButtonClass = "h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center rounded-full hover:bg-surface-hover hover:text-text-primary transition-colors active:scale-95 active:opacity-80";
 
     return (
         <div className="bg-surface">
-            <div style={indentationStyle} className={`border-b border-surface-border`}>
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-3 py-2 gap-2">
-                    <div className="flex items-center gap-2 flex-grow min-w-0">
+            <div style={indentationStyle} className="border-b border-surface-border">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-2 sm:px-4 py-2 gap-2 w-full">
+                    <div className="flex items-center gap-2 sm:gap-3 flex-grow min-w-0 w-full">
                         {onToggleSelect && (
                             <input
                                 type="checkbox"
@@ -187,19 +187,23 @@ export const JiraTaskItem: React.FC<{
                             />
                         )}
                         {hasChildren ? (
-                            <button onClick={() => setIsChildrenOpen(!isChildrenOpen)} className={iconButtonClass}>
+                            <button onClick={() => setIsChildrenOpen(!isChildrenOpen)} className={`${iconButtonClass} flex-shrink-0`}>
                                 <ChevronDownIcon className={`w-4 h-4 transition-transform ${isChildrenOpen ? 'rotate-180' : ''}`} />
                             </button>
                         ) : (
                             <div className="w-6 h-6 flex-shrink-0"></div>
                         )}
-                        <div className={`flex items-center gap-2 cursor-pointer flex-1 ${isSelected ? 'ring-2 ring-accent rounded' : ''}`} onClick={() => setIsDetailsOpen(!isDetailsOpen)}>
-                            <TaskTypeIcon type={task.type} />
-                             <div className="flex items-center gap-2 min-w-0 flex-1">
-                                <TaskStatusIcon status={task.status} />
-                                <div className="truncate flex-1">
-                                    <div className="flex items-center gap-2 flex-wrap">
-                                        <span className="font-semibold text-text-secondary text-xs truncate">{task.id}</span>
+                        <div className={`flex items-center gap-2 cursor-pointer flex-1 min-w-0 ${isSelected ? 'ring-2 ring-accent rounded' : ''}`} onClick={() => setIsDetailsOpen(!isDetailsOpen)}>
+                            <div className="flex-shrink-0">
+                                <TaskTypeIcon type={task.type} />
+                            </div>
+                            <div className="flex items-center gap-2 min-w-0 flex-1">
+                                <div className="flex-shrink-0">
+                                    <TaskStatusIcon status={task.status} />
+                                </div>
+                                <div className="flex-1 min-w-0 space-y-0.5">
+                                    <div className="flex items-center gap-2 flex-wrap text-xs text-text-secondary">
+                                        <span className="font-semibold truncate">{task.id}</span>
                                         {taskPhase && (
                                             <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${phaseStyle.bg} ${phaseStyle.color} flex items-center gap-1`}>
                                                 <span>{phaseStyle.icon}</span>
@@ -207,9 +211,11 @@ export const JiraTaskItem: React.FC<{
                                             </span>
                                         )}
                                     </div>
-                                    <p className="text-text-primary truncate">{task.title}</p>
+                                    <p className="text-sm sm:text-base text-text-primary font-semibold line-clamp-2 break-words">{task.title}</p>
                                     {isBeginnerMode && nextStep && (
-                                        <p className="text-xs text-accent mt-1">💡 Próximo: {nextStep}</p>
+                                        <p className="text-[11px] text-accent/80 mt-1 leading-snug break-words max-w-full">
+                                            💡 Próximo: {nextStep}
+                                        </p>
                                     )}
                                     {task.tags && task.tags.length > 0 && (
                                         <div className="flex flex-wrap gap-1 mt-1">
@@ -234,7 +240,7 @@ export const JiraTaskItem: React.FC<{
                         </div>
                     </div>
                     
-                    <div className="flex items-center gap-1.5 text-text-secondary self-end sm:self-center" onClick={e => e.stopPropagation()}>
+                    <div className="flex items-center gap-1 text-text-secondary self-stretch sm:self-center flex-shrink-0 flex-nowrap justify-end sm:justify-start w-full sm:w-auto" onClick={e => e.stopPropagation()}>
                         {task.owner && task.assignee && (
                             <div className="hidden sm:flex items-center gap-1.5">
                                 <TeamRoleBadge role={task.owner} />
@@ -242,7 +248,7 @@ export const JiraTaskItem: React.FC<{
                                 <TeamRoleBadge role={task.assignee} />
                             </div>
                         )}
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-1">
                             {currentStatusColor && (
                                 <span
                                     className="w-3 h-3 rounded-full border border-white/30 shadow-sm flex-shrink-0"
@@ -302,7 +308,7 @@ export const JiraTaskItem: React.FC<{
                                         }
                                     }
                                 }}
-                                className="!py-1 !px-2 text-xs h-8 rounded-md border border-surface-border bg-transparent"
+                                className="!py-1 !px-2 text-[11px] leading-tight h-8 rounded-md border border-surface-border bg-transparent max-w-[150px]"
                                 style={{
                                     backgroundColor: currentStatusColor,
                                     color: statusTextColor,

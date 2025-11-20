@@ -115,7 +115,7 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
 
     return (
         <>
-            <div className="container mx-auto p-4 sm:p-6 md:p-8 non-printable">
+            <div className="container mx-auto max-w-6xl p-4 sm:p-6 md:p-8 non-printable w-full">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                     <button 
                         onClick={onBack} 
@@ -144,10 +144,10 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                 <Modal isOpen={showExportMenu} onClose={() => setShowExportMenu(false)} title="Exportar Projeto">
                     <ExportMenu project={project} onClose={() => setShowExportMenu(false)} />
                 </Modal>
-                <h2 className="text-3xl sm:text-4xl font-bold text-text-primary mb-2">{project.name}</h2>
-                <p className="text-text-secondary mb-8 max-w-3xl">{project.description}</p>
+                <h2 className="text-2xl sm:text-4xl font-bold text-text-primary mb-2 break-words mobile-no-overflow">{project.name}</h2>
+                <p className="text-text-secondary mb-8 max-w-3xl break-words mobile-no-overflow">{project.description}</p>
                 
-                <div className="border-b border-surface-border mb-6 sticky top-[76px] md:static bg-background/90 backdrop-blur-lg z-10 -mx-4 px-4 md:mx-0 md:px-0">
+                <div className="border-b border-surface-border mb-6 sticky top-[76px] md:static bg-background/90 backdrop-blur-lg z-10 -mx-3 px-3 sm:mx-0 sm:px-0">
                     <nav className="hidden md:flex flex-wrap gap-2 py-2" aria-label="Navegação de abas desktop">
                         {tabs.map(tab => (
                             <button 

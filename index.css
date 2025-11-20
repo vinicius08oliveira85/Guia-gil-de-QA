@@ -15,3 +15,41 @@
     box-shadow: 0 -6px 24px rgba(15, 23, 42, 0.45);
   }
 }
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.mica {
+  overflow: hidden;
+}
+
+@media (max-width: 768px) {
+  body {
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+
+  .mobile-no-overflow {
+    max-width: 100%;
+    white-space: normal;
+    word-break: break-word;
+  }
+
+  .mobile-muted {
+    opacity: 0.85;
+    font-size: 0.85rem;
+  }
+
+  .mobile-tight-stack > * + * {
+    margin-top: 0.5rem;
+  }
+}
