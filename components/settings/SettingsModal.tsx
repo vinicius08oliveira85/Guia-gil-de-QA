@@ -35,7 +35,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
         >
             <div className="flex flex-col h-full">
                 {/* Tab Navigation */}
-                <div className="flex border-b border-surface-border mb-4 -mx-6 px-6">
+                <div className="flex border-b border-surface-border mb-4 gap-4 overflow-x-auto no-scrollbar px-4 sm:px-6">
                     {tabs.map((tab) => (
                         <button
                             key={tab.id}
