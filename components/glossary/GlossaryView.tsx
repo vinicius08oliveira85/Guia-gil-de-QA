@@ -127,11 +127,11 @@ export const GlossaryView: React.FC = () => {
             {/* Modal de detalhes */}
             {selectedTerm && (
                 <div
-                    className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+                    className="glass-overlay fixed inset-0 z-50 flex items-center justify-center p-4"
                     onClick={() => setSelectedTerm(null)}
                 >
                     <div
-                        className="bg-surface border border-surface-border rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-y-auto"
+                        className="mica rounded-2xl shadow-[0_35px_90px_rgba(3,7,23,0.55)] max-w-2xl w-full max-h-[80vh] overflow-y-auto"
                         onClick={(e) => e.stopPropagation()}
                     >
                         <div className="p-6">
@@ -144,7 +144,7 @@ export const GlossaryView: React.FC = () => {
                                 </div>
                                 <button
                                     onClick={() => setSelectedTerm(null)}
-                                    className="text-text-secondary hover:text-text-primary text-2xl"
+                                        className="win-icon-button text-2xl"
                                 >
                                     ×
                                 </button>

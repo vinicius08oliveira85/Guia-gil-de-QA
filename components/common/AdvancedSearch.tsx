@@ -60,15 +60,15 @@ export const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
     );
   }, [searchQuery, searchResults]);
 
-  return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-start justify-center pt-20 p-4">
-      <div className="w-full max-w-3xl bg-surface border border-surface-border rounded-lg shadow-xl">
+    return (
+      <div className="glass-overlay fixed inset-0 z-50 flex items-start justify-center pt-20 p-4">
+        <div className="w-full max-w-3xl mica rounded-2xl shadow-[0_35px_90px_rgba(3,7,23,0.55)]">
         <div className="p-4 border-b border-surface-border">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-text-primary">Busca Avançada</h2>
             <button
               onClick={onClose}
-              className="text-text-secondary hover:text-text-primary"
+                className="win-icon-button text-lg"
             >
               ✕
             </button>
@@ -80,16 +80,16 @@ export const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Buscar... (use: status:, type:, tag:, project:)"
-              className="w-full px-4 py-2 bg-black/20 border border-surface-border rounded-md text-text-primary placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-accent"
+                className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-text-primary placeholder:text-text-secondary focus:outline-none focus:ring-2 focus:ring-accent/40"
               autoFocus
             />
             
             <div className="text-xs text-text-secondary space-y-1">
               <div><strong>Operadores disponíveis:</strong></div>
-              <div>• <code className="bg-black/20 px-1 rounded">status:done</code> - Filtrar por status</div>
-              <div>• <code className="bg-black/20 px-1 rounded">type:bug</code> - Filtrar por tipo</div>
-              <div>• <code className="bg-black/20 px-1 rounded">tag:crítico</code> - Filtrar por tag</div>
-              <div>• <code className="bg-black/20 px-1 rounded">project:nome</code> - Filtrar por projeto</div>
+                <div>• <code className="bg-white/10 px-1.5 py-0.5 rounded-md text-text-primary">status:done</code> - Filtrar por status</div>
+                <div>• <code className="bg-white/10 px-1.5 py-0.5 rounded-md text-text-primary">type:bug</code> - Filtrar por tipo</div>
+                <div>• <code className="bg-white/10 px-1.5 py-0.5 rounded-md text-text-primary">tag:crítico</code> - Filtrar por tag</div>
+                <div>• <code className="bg-white/10 px-1.5 py-0.5 rounded-md text-text-primary">project:nome</code> - Filtrar por projeto</div>
             </div>
           </div>
         </div>
@@ -104,7 +104,7 @@ export const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
                     onResultSelect(result);
                     onClose();
                   }}
-                  className="w-full text-left p-3 bg-surface-hover border border-surface-border rounded-lg hover:border-accent transition-colors"
+                    className="w-full text-left p-3 rounded-xl border border-white/10 bg-white/5 hover:border-accent/50 hover:bg-white/10 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
                 >
                   <div className="flex items-center justify-between">
                     <div>

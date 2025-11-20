@@ -54,36 +54,36 @@ export const NotificationBell: React.FC<{ onClick?: () => void }> = ({ onClick }
   };
 
   return (
-    <div className="relative">
+      <div className="relative">
       <button
         onClick={() => {
           setIsOpen(!isOpen);
           onClick?.();
         }}
-        className="relative min-h-[44px] min-w-[44px] p-2 text-text-secondary hover:text-text-primary transition-colors active:scale-95 active:opacity-80"
+          className="relative win-icon-button"
         aria-label="Notificações"
         >
           <span className="text-xl">🔔</span>
         {unreadCount > 0 && (
-          <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+            <span className="absolute top-0 right-0 bg-danger/90 text-white text-[0.65rem] rounded-full w-5 h-5 flex items-center justify-center shadow-[0_6px_18px_rgba(255,92,112,0.45)]">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
       </button>
 
       {isOpen && (
-        <>
-          <div
+          <>
+            <div
             className="fixed inset-0 z-40"
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute right-0 mt-2 w-80 bg-surface border border-surface-border rounded-lg shadow-xl z-50 max-h-96 overflow-hidden flex flex-col">
-            <div className="p-4 border-b border-surface-border flex items-center justify-between">
+            <div className="absolute right-0 mt-3 w-80 mica border border-white/10 rounded-2xl shadow-[0_35px_80px_rgba(3,7,23,0.55)] z-50 max-h-96 overflow-hidden flex flex-col">
+              <div className="p-4 border-b border-white/10 flex items-center justify-between">
               <h3 className="font-semibold text-text-primary">Notificações</h3>
               {unreadCount > 0 && (
                 <button
                   onClick={handleMarkAllAsRead}
-                  className="text-sm text-accent hover:text-accent-light"
+                    className="text-sm text-accent hover:text-accent-light transition-colors"
                 >
                   Marcar todas como lidas
                 </button>

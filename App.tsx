@@ -234,19 +234,21 @@ const App: React.FC = () => {
                     toastOptions={{
                         duration: 4000,
                         style: {
-                            background: 'rgba(30, 41, 59, 0.95)',
-                            color: '#e2e8f0',
-                            border: '1px solid rgba(255, 255, 255, 0.1)',
+                            background: 'var(--layer-1)',
+                            color: 'var(--text-primary)',
+                            border: '1px solid var(--surface-border)',
+                            boxShadow: '0 25px 60px rgba(3, 7, 23, 0.55)',
+                            backdropFilter: 'blur(24px) saturate(140%)',
                         },
                         success: {
                             iconTheme: {
-                                primary: '#14B8A6',
+                                primary: '#0E6DFD',
                                 secondary: '#fff',
                             },
                         },
                         error: {
                             iconTheme: {
-                                primary: '#ef4444',
+                                primary: '#FF5C70',
                                 secondary: '#fff',
                             },
                         },
@@ -254,7 +256,7 @@ const App: React.FC = () => {
                 />
                 <Header onProjectImported={handleImportJiraProject} />
                 {showSearch && (
-                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-start justify-center pt-20 p-4">
+                    <div className="glass-overlay fixed inset-0 z-50 flex items-start justify-center pt-20 p-4">
                         <div className="w-full max-w-2xl">
                             <SearchBar
                                 searchQuery={searchQuery}
@@ -267,7 +269,7 @@ const App: React.FC = () => {
                 )}
 
                 {showAdvancedSearch && (
-                    <Suspense fallback={<div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center"><Spinner /></div>}>
+                    <Suspense fallback={<div className="glass-overlay fixed inset-0 z-50 flex items-center justify-center"><Spinner /></div>}>
                         <AdvancedSearch
                             projects={projects}
                             onResultSelect={(result) => {
@@ -282,7 +284,7 @@ const App: React.FC = () => {
                 )}
 
                 {showProjectComparison && (
-                    <Suspense fallback={<div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center"><Spinner /></div>}>
+                    <Suspense fallback={<div className="glass-overlay fixed inset-0 z-50 flex items-center justify-center"><Spinner /></div>}>
                         <ProjectComparisonModal
                             isOpen={showProjectComparison}
                             onClose={() => setShowProjectComparison(false)}
