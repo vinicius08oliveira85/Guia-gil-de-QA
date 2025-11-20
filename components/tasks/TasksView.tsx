@@ -203,6 +203,23 @@ export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: 
             })
         });
     }, [project, onUpdateProject]);
+    
+    const handleTestCaseExecutedStrategyChange = useCallback((taskId: string, testCaseId: string, strategy: string | null) => {
+        onUpdateProject({
+            ...project,
+            tasks: project.tasks.map(task => {
+                if (task.id !== taskId) {
+                    return task;
+                }
+                const updatedTestCases = (task.testCases || []).map(tc =>
+                    tc.id === testCaseId
+                        ? { ...tc, executedStrategy: strategy && strategy.trim() !== '' ? strategy : undefined }
+                        : tc
+                );
+                return { ...task, testCases: updatedTestCases };
+            })
+        });
+    }, [project, onUpdateProject]);
 
     const handleAddComment = useCallback((taskId: string, content: string) => {
         if (!content.trim()) return;
@@ -508,6 +525,7 @@ export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: 
                     onToggleSelect={() => toggleTaskSelection(task.id)}
                     onTestCaseStatusChange={(testCaseId, status) => handleTestCaseStatusChange(task.id, testCaseId, status)}
                     onToggleTestCaseAutomated={(testCaseId, isAutomated) => handleToggleTestCaseAutomated(task.id, testCaseId, isAutomated)}
+                    onExecutedStrategyChange={(testCaseId, strategy) => handleTestCaseExecutedStrategyChange(task.id, testCaseId, strategy)}
                     onDelete={handleDeleteTask}
                     onGenerateTests={handleGenerateTests}
                     isGenerating={generatingTestsTaskId === task.id}
@@ -535,7 +553,7 @@ export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: 
                 </JiraTaskItem>
             );
         });
-    }, [selectedTasks, generatingTestsTaskId, generatingBddTaskId, handleTestCaseStatusChange, handleToggleTestCaseAutomated, handleDeleteTask, handleGenerateTests, openTaskFormForNew, openTaskFormForEdit, handleGenerateBddScenarios, handleSaveBddScenario, handleDeleteBddScenario, handleTaskStatusChange, handleAddTestCaseFromTemplate, handleAddComment, handleEditComment, handleDeleteComment, project, onUpdateProject, toggleTaskSelection, activeTaskId]);
+    }, [selectedTasks, generatingTestsTaskId, generatingBddTaskId, handleTestCaseStatusChange, handleToggleTestCaseAutomated, handleTestCaseExecutedStrategyChange, handleDeleteTask, handleGenerateTests, openTaskFormForNew, openTaskFormForEdit, handleGenerateBddScenarios, handleSaveBddScenario, handleDeleteBddScenario, handleTaskStatusChange, handleAddTestCaseFromTemplate, handleAddComment, handleEditComment, handleDeleteComment, project, onUpdateProject, toggleTaskSelection, activeTaskId]);
 
     return (
         <>
