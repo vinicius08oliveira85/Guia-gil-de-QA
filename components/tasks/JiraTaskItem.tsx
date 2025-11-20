@@ -96,6 +96,7 @@ export const JiraTaskItem: React.FC<{
     task: TaskWithChildren;
     onTestCaseStatusChange: (testCaseId: string, status: 'Passed' | 'Failed') => void;
     onToggleTestCaseAutomated: (testCaseId: string, isAutomated: boolean) => void;
+    onExecutedStrategyChange: (testCaseId: string, strategy: string | null) => void;
     onDelete: (taskId: string) => void;
     onGenerateTests: (taskId: string, detailLevel: TestCaseDetailLevel) => Promise<void>;
     isGenerating: boolean;
@@ -118,7 +119,7 @@ export const JiraTaskItem: React.FC<{
     level: number;
     activeTaskId?: string | null;
     onFocusTask?: (taskId: string | null) => void;
-}> = React.memo(({ task, onTestCaseStatusChange, onToggleTestCaseAutomated, onDelete, onGenerateTests, isGenerating, onAddSubtask, onEdit, onGenerateBddScenarios, isGeneratingBdd, onSaveBddScenario, onDeleteBddScenario, onTaskStatusChange, onAddTestCaseFromTemplate, onAddComment, onEditComment, onDeleteComment, project, onUpdateProject, isSelected, onToggleSelect, children, level, activeTaskId, onFocusTask }) => {
+}> = React.memo(({ task, onTestCaseStatusChange, onToggleTestCaseAutomated, onExecutedStrategyChange, onDelete, onGenerateTests, isGenerating, onAddSubtask, onEdit, onGenerateBddScenarios, isGeneratingBdd, onSaveBddScenario, onDeleteBddScenario, onTaskStatusChange, onAddTestCaseFromTemplate, onAddComment, onEditComment, onDeleteComment, project, onUpdateProject, isSelected, onToggleSelect, children, level, activeTaskId, onFocusTask }) => {
     const [isDetailsOpen, setIsDetailsOpen] = useState(false); // Colapsado por padrão para compactar
     const [isChildrenOpen, setIsChildrenOpen] = useState(false);
     const [editingBddScenario, setEditingBddScenario] = useState<BddScenario | null>(null);
@@ -379,6 +380,7 @@ export const JiraTaskItem: React.FC<{
                                 testCase={tc} 
                                 onStatusChange={(status) => onTestCaseStatusChange(tc.id, status)}
                                 onToggleAutomated={(isAutomated) => onToggleTestCaseAutomated(tc.id, isAutomated)}
+                                onExecutedStrategyChange={(strategy) => onExecutedStrategyChange(tc.id, strategy)}
                             />
                         ))}
                     </div>

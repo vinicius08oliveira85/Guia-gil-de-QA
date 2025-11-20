@@ -6,6 +6,7 @@ export interface TestCase {
   expectedResult: string;
   status: 'Not Run' | 'Passed' | 'Failed';
   strategies?: string[];
+  executedStrategy?: string;
   isAutomated?: boolean;
   observedResult?: string;
 }

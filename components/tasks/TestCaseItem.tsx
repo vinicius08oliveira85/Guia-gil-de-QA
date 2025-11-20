@@ -17,12 +17,27 @@ export const TestCaseItem: React.FC<{
     testCase: TestCase; 
     onStatusChange: (status: 'Passed' | 'Failed') => void;
     onToggleAutomated: (isAutomated: boolean) => void;
-}> = ({ testCase, onStatusChange, onToggleAutomated }) => {
+    onExecutedStrategyChange: (strategy: string | null) => void;
+}> = ({ testCase, onStatusChange, onToggleAutomated, onExecutedStrategyChange }) => {
     const statusColor = {
         'Not Run': 'bg-slate-600',
         'Passed': 'bg-green-600',
         'Failed': 'bg-red-600',
     };
+    const recommendedStrategies = testCase.strategies || [];
+    const selectedStrategy = testCase.executedStrategy || '';
+    const hasSelectedRecommended = Boolean(selectedStrategy && recommendedStrategies.includes(selectedStrategy));
+    const customStrategyValue = hasSelectedRecommended ? '' : selectedStrategy;
+    const showExecutedStrategySummary = Boolean(testCase.executedStrategy && testCase.executedStrategy.trim() !== '');
+
+    const handleCustomStrategyBlur = (value: string) => {
+        if (value.trim() === '') {
+            onExecutedStrategyChange(null);
+            return;
+        }
+        onExecutedStrategyChange(value);
+    };
+
     return (
         <div className="bg-surface p-4 rounded-md border border-surface-border">
             <div className="flex flex-wrap gap-4 mb-3 items-center">
@@ -45,7 +60,55 @@ export const TestCaseItem: React.FC<{
                     <span className="ml-3 text-sm font-medium text-text-primary">Automatizado</span>
                 </label>
             </div>
-            <p className="font-semibold text-text-primary">{testCase.description}</p>
+            {recommendedStrategies.length > 0 && (
+                <div className="mt-2">
+                    <p className="text-[0.65rem] uppercase tracking-wide text-text-secondary">
+                        Selecione o teste executado
+                    </p>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                        {recommendedStrategies.map(strategy => {
+                            const isSelected = testCase.executedStrategy === strategy;
+                            return (
+                                <button
+                                    key={strategy}
+                                    type="button"
+                                    onClick={() => onExecutedStrategyChange(isSelected ? null : strategy)}
+                                    className={`px-3 py-1 rounded-full text-xs font-semibold border transition-colors flex items-center gap-1 ${
+                                        isSelected
+                                            ? 'bg-accent text-white border-accent'
+                                            : 'bg-surface-hover text-text-primary border-surface-border hover:border-accent'
+                                    }`}
+                                >
+                                    {isSelected && <CheckIcon className="w-3 h-3" />}
+                                    {strategy}
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
+            <div className="mt-3">
+                <label className="block text-xs font-semibold text-text-secondary mb-1">
+                    Ou descreva o teste executado
+                </label>
+                <input
+                    type="text"
+                    value={customStrategyValue}
+                    onChange={(e) => onExecutedStrategyChange(e.target.value)}
+                    onBlur={(e) => handleCustomStrategyBlur(e.target.value)}
+                    placeholder="Ex: Teste Exploratório do fluxo de pagamento"
+                    className="w-full bg-surface-hover border border-surface-border rounded-md px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/50"
+                />
+                <p className="text-[0.65rem] text-text-secondary mt-1">
+                    Use esta opção se executou um teste diferente das recomendações acima.
+                </p>
+                {showExecutedStrategySummary && (
+                    <p className="text-xs text-accent mt-2">
+                        Teste registrado: <span className="text-text-primary font-semibold">{testCase.executedStrategy}</span>
+                    </p>
+                )}
+            </div>
+            <p className="font-semibold text-text-primary mt-4">{testCase.description}</p>
             <div className="mt-2 pl-4 border-l-2 border-slate-700">
                 <p className="font-medium text-text-secondary">Passos:</p>
                 <ul className="list-disc list-inside text-text-primary space-y-1 mt-1">
