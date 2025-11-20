@@ -47,6 +47,7 @@ export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: 
     const [showJiraProjectSelector, setShowJiraProjectSelector] = useState(false);
     const [availableJiraProjects, setAvailableJiraProjects] = useState<Array<{ key: string; name: string }>>([]);
     const [selectedJiraProjectKey, setSelectedJiraProjectKey] = useState<string>('');
+    const [activeTaskId, setActiveTaskId] = useState<string | null>(null);
     const [failModalState, setFailModalState] = useState<{
         isOpen: boolean;
         taskId: string | null;
@@ -527,12 +528,14 @@ export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: 
                     onDeleteComment={(commentId) => handleDeleteComment(task.id, commentId)}
                     project={project}
                     onUpdateProject={onUpdateProject}
+                    activeTaskId={activeTaskId}
+                    onFocusTask={setActiveTaskId}
                 >
                     {task.children.length > 0 && renderTaskTree(task.children, level + 1, globalIndex + 1)}
                 </JiraTaskItem>
             );
         });
-    }, [selectedTasks, generatingTestsTaskId, generatingBddTaskId, handleTestCaseStatusChange, handleToggleTestCaseAutomated, handleDeleteTask, handleGenerateTests, openTaskFormForNew, openTaskFormForEdit, handleGenerateBddScenarios, handleSaveBddScenario, handleDeleteBddScenario, handleTaskStatusChange, handleAddTestCaseFromTemplate, handleAddComment, handleEditComment, handleDeleteComment, project, onUpdateProject, toggleTaskSelection]);
+    }, [selectedTasks, generatingTestsTaskId, generatingBddTaskId, handleTestCaseStatusChange, handleToggleTestCaseAutomated, handleDeleteTask, handleGenerateTests, openTaskFormForNew, openTaskFormForEdit, handleGenerateBddScenarios, handleSaveBddScenario, handleDeleteBddScenario, handleTaskStatusChange, handleAddTestCaseFromTemplate, handleAddComment, handleEditComment, handleDeleteComment, project, onUpdateProject, toggleTaskSelection, activeTaskId]);
 
     return (
         <>
