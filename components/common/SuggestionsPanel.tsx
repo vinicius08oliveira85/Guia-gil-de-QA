@@ -10,10 +10,10 @@ interface SuggestionsPanelProps {
 }
 
 const suggestionTypeStyles = {
-    info: 'bg-blue-500/20 border-blue-500/30 text-blue-300',
-    warning: 'bg-yellow-500/20 border-yellow-500/30 text-yellow-300',
-    success: 'bg-green-500/20 border-green-500/30 text-green-300',
-    tip: 'bg-accent/20 border-accent/30 text-accent'
+    info: 'border-blue-500/30 bg-blue-500/5 text-blue-200',
+    warning: 'border-yellow-500/30 bg-yellow-500/5 text-yellow-200',
+    success: 'border-green-500/30 bg-green-500/5 text-green-200',
+    tip: 'border-accent/30 bg-accent/5 text-accent-light'
 };
 
 const suggestionIcons = {
@@ -35,29 +35,30 @@ export const SuggestionsPanel: React.FC<SuggestionsPanelProps> = ({
     }
 
     return (
-        <Card className="mb-6">
-            <h3 className="text-lg font-semibold text-text-primary mb-4">💡 Sugestões para seu Projeto</h3>
-            <div className="space-y-3">
+        <Card className="mb-6 gap-3">
+            <div className="flex items-center justify-between gap-2">
+                <h3 className="text-base font-semibold text-text-primary">💡 Sugestões rápidas</h3>
+                <span className="text-[0.72rem] text-text-secondary">{suggestions.length} itens</span>
+            </div>
+            <div className="space-y-2">
                 {suggestions.map(suggestion => (
                     <div
                         key={suggestion.id}
-                        className={`p-3 rounded-lg border ${suggestionTypeStyles[suggestion.type]}`}
+                        className={`rounded-2xl border px-3 py-2.5 flex items-center gap-2 ${suggestionTypeStyles[suggestion.type]}`}
                     >
-                        <div className="flex items-start gap-2">
-                            <span className="text-lg flex-shrink-0">{suggestionIcons[suggestion.type]}</span>
-                            <div className="flex-1 min-w-0">
-                                <h4 className="font-semibold text-sm mb-1">{suggestion.title}</h4>
-                                <p className="text-xs opacity-90">{suggestion.message}</p>
-                                {suggestion.action && (
-                                    <button
-                                        onClick={() => onSuggestionAction?.(suggestion)}
-                                        className="mt-2 text-xs font-medium underline hover:no-underline"
-                                    >
-                                        {suggestion.action.label}
-                                    </button>
-                                )}
-                            </div>
+                        <span className="text-base flex-shrink-0">{suggestionIcons[suggestion.type]}</span>
+                        <div className="flex-1 min-w-0">
+                            <p className="text-[0.85rem] font-semibold text-text-primary line-clamp-2">{suggestion.title}</p>
+                            <p className="text-[0.72rem] text-text-secondary line-clamp-2">{suggestion.message}</p>
                         </div>
+                        {suggestion.action && (
+                            <button
+                                onClick={() => onSuggestionAction?.(suggestion)}
+                                className="text-[0.72rem] text-accent-light hover:text-accent whitespace-nowrap"
+                            >
+                                Ver mais →
+                            </button>
+                        )}
                     </div>
                 ))}
             </div>
