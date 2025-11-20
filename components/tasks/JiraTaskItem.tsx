@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { JiraTask, BddScenario, TestCaseDetailLevel, TeamRole, Project } from '../../types';
 import { Spinner } from '../common/Spinner';
 import { TaskTypeIcon, TaskStatusIcon, PlusIcon, EditIcon, TrashIcon, ChevronDownIcon, RefreshIcon } from '../common/Icons';
@@ -69,6 +69,8 @@ const DescriptionRenderer: React.FC<{ description: string }> = ({ description })
 
 export type TaskWithChildren = JiraTask & { children: TaskWithChildren[] };
 
+type DetailSection = 'overview' | 'bdd' | 'tests' | 'planning' | 'collaboration';
+
 const normalizeStatusName = (value: string) =>
     value
         .normalize('NFD')
@@ -115,7 +117,9 @@ export const JiraTaskItem: React.FC<{
     onToggleSelect?: () => void;
     children?: React.ReactNode;
     level: number;
-}> = React.memo(({ task, onTestCaseStatusChange, onToggleTestCaseAutomated, onDelete, onGenerateTests, isGenerating, onAddSubtask, onEdit, onGenerateBddScenarios, isGeneratingBdd, onSaveBddScenario, onDeleteBddScenario, onTaskStatusChange, onAddTestCaseFromTemplate, onAddComment, onEditComment, onDeleteComment, project, onUpdateProject, isSelected, onToggleSelect, children, level }) => {
+    activeTaskId?: string | null;
+    onFocusTask?: (taskId: string | null) => void;
+}> = React.memo(({ task, onTestCaseStatusChange, onToggleTestCaseAutomated, onDelete, onGenerateTests, isGenerating, onAddSubtask, onEdit, onGenerateBddScenarios, isGeneratingBdd, onSaveBddScenario, onDeleteBddScenario, onTaskStatusChange, onAddTestCaseFromTemplate, onAddComment, onEditComment, onDeleteComment, project, onUpdateProject, isSelected, onToggleSelect, children, level, activeTaskId, onFocusTask }) => {
     const [isDetailsOpen, setIsDetailsOpen] = useState(false); // Colapsado por padrão para compactar
     const [isChildrenOpen, setIsChildrenOpen] = useState(false);
     const [editingBddScenario, setEditingBddScenario] = useState<BddScenario | null>(null);
@@ -125,6 +129,7 @@ export const JiraTaskItem: React.FC<{
     const [showAttachments, setShowAttachments] = useState(false);
     const [showEstimation, setShowEstimation] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [activeSection, setActiveSection] = useState<DetailSection>('overview');
     const hasTests = task.testCases && task.testCases.length > 0;
     const hasChildren = task.children && task.children.length > 0;
     const metrics = project ? useProjectMetrics(project) : { newPhases: [] };
@@ -155,6 +160,64 @@ export const JiraTaskItem: React.FC<{
     }, [jiraStatusPalette, task.jiraStatus, task.status]);
     const statusTextColor = currentStatusColor ? getJiraStatusTextColor(currentStatusColor) : undefined;
 
+    const sectionTabs = useMemo(() => {
+        const tabs: { id: DetailSection; label: string; badge?: number }[] = [
+            { id: 'overview', label: 'Resumo' },
+            { id: 'bdd', label: 'Cenários BDD', badge: task.bddScenarios?.length || 0 },
+            { id: 'tests', label: 'Testes', badge: task.testCases?.length || 0 }
+        ];
+
+        if (project && onUpdateProject) {
+            const planningBadge = (task.dependencies?.length || 0) + (task.attachments?.length || 0) + (task.checklist?.length || 0) + (task.estimatedHours ? 1 : 0);
+            tabs.push({ id: 'planning', label: 'Planejamento', badge: planningBadge });
+        }
+
+        if (onAddComment) {
+            tabs.push({ id: 'collaboration', label: 'Colaboração', badge: task.comments?.length || 0 });
+        }
+
+        return tabs;
+    }, [
+        task.bddScenarios,
+        task.testCases,
+        task.dependencies,
+        task.attachments,
+        task.checklist,
+        task.estimatedHours,
+        task.comments,
+        project,
+        onUpdateProject,
+        onAddComment
+    ]);
+
+    useEffect(() => {
+        if (activeTaskId === undefined) {
+            return;
+        }
+        if (activeTaskId === task.id && !isDetailsOpen) {
+            setIsDetailsOpen(true);
+        } else if (activeTaskId !== task.id && isDetailsOpen) {
+            setIsDetailsOpen(false);
+        }
+    }, [activeTaskId, task.id, isDetailsOpen]);
+
+    useEffect(() => {
+        if (isDetailsOpen && !sectionTabs.find(tab => tab.id === activeSection)) {
+            setActiveSection(sectionTabs[0]?.id ?? 'overview');
+        }
+    }, [isDetailsOpen, sectionTabs, activeSection]);
+
+    const handleToggleDetails = () => {
+        if (isDetailsOpen) {
+            setIsDetailsOpen(false);
+            onFocusTask?.(null);
+        } else {
+            onFocusTask?.(task.id);
+            setActiveSection(sectionTabs[0]?.id ?? 'overview');
+            setIsDetailsOpen(true);
+        }
+    };
+
     const handleSaveScenario = (scenario: Omit<BddScenario, 'id'>) => {
         onSaveBddScenario(task.id, scenario, editingBddScenario?.id);
         setEditingBddScenario(null);
@@ -169,6 +232,364 @@ export const JiraTaskItem: React.FC<{
     const indentationStyle = { paddingLeft: `${level * 1.5}rem` };
 
     const iconButtonClass = "h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center rounded-full hover:bg-surface-hover hover:text-text-primary transition-colors active:scale-95 active:opacity-80";
+
+    const renderOverviewSection = () => (
+        <div className="space-y-4">
+            {project && onUpdateProject && (
+                <div>
+                    <QuickActions
+                        task={task}
+                        project={project}
+                        onUpdateProject={onUpdateProject}
+                    />
+                </div>
+            )}
+            <div className="text-text-secondary">
+                {task.description ? (
+                    <DescriptionRenderer description={task.description} />
+                ) : (
+                    <p className="text-text-secondary italic">Sem descrição</p>
+                )}
+            </div>
+            {(task.priority || task.severity || task.owner || task.assignee || nextStep) && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {task.owner && (
+                        <div className="p-3 bg-surface border border-surface-border rounded-lg">
+                            <p className="text-[11px] uppercase text-text-secondary tracking-wide">Owner</p>
+                            <p className="text-sm font-semibold text-text-primary">{task.owner}</p>
+                        </div>
+                    )}
+                    {task.assignee && (
+                        <div className="p-3 bg-surface border border-surface-border rounded-lg">
+                            <p className="text-[11px] uppercase text-text-secondary tracking-wide">Responsável</p>
+                            <p className="text-sm font-semibold text-text-primary">{task.assignee}</p>
+                        </div>
+                    )}
+                    {task.priority && (
+                        <div className="p-3 bg-surface border border-surface-border rounded-lg">
+                            <p className="text-[11px] uppercase text-text-secondary tracking-wide">Prioridade</p>
+                            <p className="text-sm font-semibold text-text-primary">{task.priority}</p>
+                        </div>
+                    )}
+                    {task.severity && (
+                        <div className="p-3 bg-surface border border-surface-border rounded-lg">
+                            <p className="text-[11px] uppercase text-text-secondary tracking-wide">Severidade</p>
+                            <p className="text-sm font-semibold text-text-primary">{task.severity}</p>
+                        </div>
+                    )}
+                    {nextStep && (
+                        <div className="p-3 bg-accent/10 border border-accent/40 rounded-lg">
+                            <p className="text-[11px] uppercase text-accent tracking-wide">Próximo passo sugerido</p>
+                            <p className="text-sm font-semibold text-text-primary">{nextStep}</p>
+                        </div>
+                    )}
+                </div>
+            )}
+            {task.tags && task.tags.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                    {task.tags.map(tag => (
+                        <span
+                            key={tag}
+                            className="text-xs px-2 py-0.5 rounded-full text-white"
+                            style={{ backgroundColor: getTagColor(tag) }}
+                        >
+                            {tag}
+                        </span>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+
+    const renderBddSection = () => (
+        <div className="space-y-4">
+            <div className="flex items-center justify-between gap-2">
+                <h3 className="text-lg font-semibold text-text-primary">Cenários BDD (Gherkin)</h3>
+                <span className="text-xs text-text-secondary">{task.bddScenarios?.length || 0} cenário(s)</span>
+            </div>
+            <div className="space-y-3">
+                {(task.bddScenarios || []).map(sc => (
+                    editingBddScenario?.id === sc.id ? (
+                        <BddScenarioForm key={sc.id} existingScenario={sc} onSave={handleSaveScenario} onCancel={handleCancelBddForm} />
+                    ) : (
+                        <BddScenarioItem key={sc.id} scenario={sc} onEdit={() => setEditingBddScenario(sc)} onDelete={() => onDeleteBddScenario(task.id, sc.id)} />
+                    )
+                ))}
+            </div>
+            {isCreatingBdd && !editingBddScenario && (
+                <BddScenarioForm onSave={handleSaveScenario} onCancel={handleCancelBddForm} />
+            )}
+            {isGeneratingBdd && <div className="flex justify-center py-2"><Spinner small /></div>}
+            <div className="flex flex-wrap items-center gap-2">
+                <button onClick={() => onGenerateBddScenarios(task.id)} disabled={isGeneratingBdd || isCreatingBdd || !!editingBddScenario} className="btn btn-secondary !text-sm bg-blue-500/20 border-blue-500/30 hover:bg-blue-500/40 disabled:opacity-50 disabled:cursor-not-allowed">
+                    Gerar Cenários com IA
+                </button>
+                <button onClick={() => setIsCreatingBdd(true)} disabled={isGeneratingBdd || isCreatingBdd || !!editingBddScenario} className="btn btn-secondary !text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                    Adicionar Cenário Manualmente
+                </button>
+            </div>
+        </div>
+    );
+
+    const renderTestsSection = () => (
+        <div className="space-y-6">
+            <div>
+                <div className="flex items-center justify-between gap-2">
+                    <h3 className="text-lg font-semibold text-text-primary">Estratégia de Teste</h3>
+                    <span className="text-xs text-text-secondary">{task.testStrategy?.length || 0} item(ns)</span>
+                </div>
+                {isGenerating && <div className="flex justify-center py-2"><Spinner small /></div>}
+                {task.testStrategy && task.testStrategy.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                        {task.testStrategy.map((strategy, i) => <TestStrategyCard key={i} strategy={strategy} />)}
+                    </div>
+                ) : (
+                    !isGenerating && (
+                        <EmptyState
+                            icon="📊"
+                            title="Nenhuma estratégia de teste gerada ainda"
+                            description="Gere uma estratégia de teste com IA para esta tarefa."
+                            action={{
+                                label: "Gerar Estratégia com IA",
+                                onClick: () => onGenerateTests(task.id, detailLevel)
+                            }}
+                            tip="A estratégia de teste ajuda a definir quais tipos de teste são necessários para validar esta funcionalidade."
+                        />
+                    )
+                )}
+            </div>
+
+            <div>
+                <div className="flex items-center justify-between gap-2">
+                    <h3 className="text-lg font-semibold text-text-primary">Casos de Teste</h3>
+                    <span className="text-xs text-text-secondary">{task.testCases?.length || 0} caso(s)</span>
+                </div>
+                {isGenerating ? (
+                    <div className="space-y-3 mt-4">
+                        <LoadingSkeleton variant="task" count={3} />
+                        <div className="flex flex-col items-center justify-center py-4">
+                            <Spinner small />
+                            <p className="text-sm text-text-secondary mt-2">Gerando casos de teste com IA...</p>
+                            <p className="text-xs text-text-secondary mt-1">⏱️ Isso pode levar 10-30 segundos</p>
+                        </div>
+                    </div>
+                ) : (task.testCases || []).length > 0 ? (
+                    <div className="space-y-3 mt-4">
+                        {task.testCases.map(tc => (
+                            <TestCaseItem 
+                                key={tc.id} 
+                                testCase={tc} 
+                                onStatusChange={(status) => onTestCaseStatusChange(tc.id, status)}
+                                onToggleAutomated={(isAutomated) => onToggleTestCaseAutomated(tc.id, isAutomated)}
+                            />
+                        ))}
+                    </div>
+                ) : (
+                    <div className="mt-4">
+                        <EmptyState
+                            icon="🧪"
+                            title="Nenhum caso de teste ainda"
+                            description="Comece gerando casos de teste com IA ou adicione manualmente."
+                            tips={isBeginnerMode ? [
+                                "Use a IA para gerar casos de teste automaticamente",
+                                "Ou adicione manualmente usando templates",
+                                "Cada caso de teste deve ter passos claros e resultado esperado"
+                            ] : undefined}
+                            action={{
+                                label: "Gerar com IA",
+                                onClick: () => onGenerateTests(task.id, detailLevel)
+                            }}
+                            secondaryAction={onAddTestCaseFromTemplate ? {
+                                label: "Usar Template",
+                                onClick: () => onAddTestCaseFromTemplate('')
+                            } : undefined}
+                        />
+                    </div>
+                )}
+            </div>
+
+            {!isGenerating && (
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-3">
+                    <button onClick={() => onGenerateTests(task.id, detailLevel)} className="btn btn-primary">
+                        {hasTests ? <RefreshIcon /> : <PlusIcon />}
+                        <span>{hasTests ? 'Regerar com IA' : 'Gerar com IA'}</span>
+                    </button>
+                    <div className="flex-1">
+                        <label htmlFor={`detail-level-${task.id}`} className="block text-sm text-text-secondary mb-1">Nível de Detalhe</label>
+                        <select
+                            id={`detail-level-${task.id}`}
+                            value={detailLevel}
+                            onChange={(e) => setDetailLevel(e.target.value as TestCaseDetailLevel)}
+                        >
+                            <option value="Padrão">Padrão</option>
+                            <option value="Resumido">Resumido</option>
+                            <option value="Detalhado">Detalhado</option>
+                        </select>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+
+    const renderPlanningSection = () => {
+        if (!project || !onUpdateProject) {
+            return (
+                <p className="text-sm text-text-secondary">Conecte um projeto para gerenciar dependências e planejamento.</p>
+            );
+        }
+
+        return (
+            <div className="space-y-6">
+                <div>
+                    <div className="flex items-center justify-between mb-3">
+                        <h3 className="text-lg font-semibold text-text-primary">Dependências</h3>
+                        <button
+                            onClick={() => setShowDependencies(!showDependencies)}
+                            className="text-sm text-accent hover:text-accent-light"
+                        >
+                            {showDependencies ? 'Ocultar' : 'Gerenciar'}
+                        </button>
+                    </div>
+                    {showDependencies && (
+                        <DependencyManager
+                            task={task}
+                            project={project}
+                            onUpdateProject={onUpdateProject}
+                            onClose={() => setShowDependencies(false)}
+                        />
+                    )}
+                </div>
+
+                <div>
+                    <div className="flex items-center justify-between mb-3">
+                        <h3 className="text-lg font-semibold text-text-primary">Anexos</h3>
+                        <button
+                            onClick={() => setShowAttachments(!showAttachments)}
+                            className="text-sm text-accent hover:text-accent-light"
+                        >
+                            {showAttachments ? 'Ocultar' : 'Gerenciar'}
+                        </button>
+                    </div>
+                    {showAttachments && (
+                        <AttachmentManager
+                            task={task}
+                            project={project}
+                            onUpdateProject={onUpdateProject}
+                            onClose={() => setShowAttachments(false)}
+                        />
+                    )}
+                </div>
+
+                <div>
+                    <div className="flex items-center justify-between mb-3">
+                        <h3 className="text-lg font-semibold text-text-primary">Estimativas</h3>
+                        <button
+                            onClick={() => setShowEstimation(!showEstimation)}
+                            className="text-sm text-accent hover:text-accent-light"
+                        >
+                            {showEstimation ? 'Ocultar' : task.estimatedHours ? 'Editar' : 'Adicionar'}
+                        </button>
+                    </div>
+                    {showEstimation && (
+                        <EstimationInput
+                            task={task}
+                            onSave={(estimatedHours, actualHours) => {
+                                const updatedTasks = project.tasks.map(t =>
+                                    t.id === task.id
+                                        ? { ...t, estimatedHours, actualHours }
+                                        : t
+                                );
+                                onUpdateProject({ ...project, tasks: updatedTasks });
+                                setShowEstimation(false);
+                            }}
+                            onCancel={() => setShowEstimation(false)}
+                        />
+                    )}
+                    {!showEstimation && task.estimatedHours && (
+                        <div className="p-3 bg-surface border border-surface-border rounded-lg">
+                            <div className="flex items-center justify-between">
+                                <span className="text-text-secondary">Estimado:</span>
+                                <span className="font-semibold text-text-primary">{task.estimatedHours}h</span>
+                            </div>
+                            {task.actualHours && (
+                                <>
+                                    <div className="flex items-center justify-between mt-2">
+                                        <span className="text-text-secondary">Real:</span>
+                                        <span className={`font-semibold ${
+                                            task.actualHours <= task.estimatedHours ? 'text-green-400' : 'text-orange-400'
+                                        }`}>
+                                            {task.actualHours}h
+                                        </span>
+                                    </div>
+                                    <div className="mt-2 text-xs text-text-secondary">
+                                        {task.actualHours <= task.estimatedHours
+                                            ? `✅ Dentro do estimado (${task.estimatedHours - task.actualHours}h restantes)`
+                                            : `⚠️ Acima do estimado (+${task.actualHours - task.estimatedHours}h)`
+                                        }
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    )}
+                </div>
+
+                {task.checklist && task.checklist.length > 0 && (
+                    <div>
+                        <h3 className="text-lg font-semibold text-text-primary mb-3">Checklist</h3>
+                        <ChecklistView
+                            checklist={task.checklist}
+                            onToggleItem={(itemId) => {
+                                const updatedChecklist = updateChecklistItem(
+                                    task.checklist!,
+                                    itemId,
+                                    { checked: !task.checklist!.find(i => i.id === itemId)?.checked }
+                                );
+                                const updatedTasks = project.tasks.map(t =>
+                                    t.id === task.id ? { ...t, checklist: updatedChecklist } : t
+                                );
+                                onUpdateProject({ ...project, tasks: updatedTasks });
+                            }}
+                        />
+                    </div>
+                )}
+            </div>
+        );
+    };
+
+    const renderCollaborationSection = () => {
+        if (!onAddComment) {
+            return <p className="text-sm text-text-secondary">Comentários indisponíveis para esta tarefa.</p>;
+        }
+
+        return (
+            <div>
+                <h3 className="text-lg font-semibold text-text-primary mb-3">Comentários</h3>
+                <CommentSection
+                    comments={task.comments || []}
+                    onAddComment={(content) => onAddComment(content)}
+                    onEditComment={(commentId, content) => onEditComment?.(commentId, content)}
+                    onDeleteComment={(commentId) => onDeleteComment?.(commentId)}
+                />
+            </div>
+        );
+    };
+
+    const renderSectionContent = () => {
+        switch (activeSection) {
+            case 'overview':
+                return renderOverviewSection();
+            case 'bdd':
+                return renderBddSection();
+            case 'tests':
+                return renderTestsSection();
+            case 'planning':
+                return renderPlanningSection();
+            case 'collaboration':
+                return renderCollaborationSection();
+            default:
+                return null;
+        }
+    };
 
     return (
         <div className="bg-surface">
@@ -193,7 +614,7 @@ export const JiraTaskItem: React.FC<{
                         ) : (
                             <div className="w-6 h-6 flex-shrink-0"></div>
                         )}
-                        <div className={`flex items-center gap-2 cursor-pointer flex-1 min-w-0 ${isSelected ? 'ring-2 ring-accent rounded' : ''}`} onClick={() => setIsDetailsOpen(!isDetailsOpen)}>
+                          <div className={`flex items-center gap-2 cursor-pointer flex-1 min-w-0 ${isSelected ? 'ring-2 ring-accent rounded' : ''}`} onClick={handleToggleDetails}>
                             <div className="flex-shrink-0">
                                 <TaskTypeIcon type={task.type} />
                             </div>
@@ -339,276 +760,36 @@ export const JiraTaskItem: React.FC<{
                          )}
                         <button onClick={() => onEdit(task)} className={iconButtonClass} aria-label="Editar tarefa"><EditIcon /></button>
                         <button onClick={() => setShowDeleteConfirm(true)} className={`${iconButtonClass} hover:!bg-red-500 hover:!text-white`} aria-label="Excluir tarefa"><TrashIcon /></button>
-                        <button className={iconButtonClass} onClick={() => setIsDetailsOpen(!isDetailsOpen)}>
+                          <button className={iconButtonClass} onClick={handleToggleDetails}>
                           <ChevronDownIcon className={`transition-transform ${isDetailsOpen ? 'rotate-180' : ''}`} />
                         </button>
                     </div>
                 </div>
                 {isDetailsOpen && (
                     <div className="p-3 border-t border-surface-border bg-surface-hover">
-                        {/* Quick Actions */}
-                        {project && onUpdateProject && (
-                            <div className="mb-4">
-                                <QuickActions
-                                    task={task}
-                                    project={project}
-                                    onUpdateProject={onUpdateProject}
-                                />
-                            </div>
-                        )}
-
-                        <div className="text-text-secondary mb-4">
-                            {task.description ? (
-                                <DescriptionRenderer description={task.description} />
-                            ) : (
-                                <p className="text-text-secondary italic">Sem descrição</p>
-                            )}
-                        </div>
-                        
-                        <div className="space-y-4">
-                            <h3 className="text-lg font-semibold text-text-primary">Cenários BDD (Gherkin)</h3>
-                            <div className="space-y-3 mt-2">
-                                 {(task.bddScenarios || []).map(sc => (
-                                    editingBddScenario?.id === sc.id ? (
-                                        <BddScenarioForm key={sc.id} existingScenario={sc} onSave={handleSaveScenario} onCancel={handleCancelBddForm} />
-                                    ) : (
-                                        <BddScenarioItem key={sc.id} scenario={sc} onEdit={() => setEditingBddScenario(sc)} onDelete={() => onDeleteBddScenario(task.id, sc.id)} />
-                                    )
-                                ))}
-                            </div>
-                             {isCreatingBdd && !editingBddScenario && (
-                                <BddScenarioForm onSave={handleSaveScenario} onCancel={handleCancelBddForm} />
-                            )}
-                            {isGeneratingBdd && <div className="flex justify-center py-2"><Spinner small /></div>}
-
-                            <div className="flex flex-wrap items-center gap-2 mt-4">
-                                <button onClick={() => onGenerateBddScenarios(task.id)} disabled={isGeneratingBdd || isCreatingBdd || !!editingBddScenario} className="btn btn-secondary !text-sm bg-blue-500/20 border-blue-500/30 hover:bg-blue-500/40 disabled:opacity-50 disabled:cursor-not-allowed">
-                                    Gerar Cenários com IA
-                                </button>
-                                 <button onClick={() => setIsCreatingBdd(true)} disabled={isGeneratingBdd || isCreatingBdd || !!editingBddScenario} className="btn btn-secondary !text-sm disabled:opacity-50 disabled:cursor-not-allowed">
-                                    Adicionar Cenário Manualmente
-                                </button>
-                            </div>
-                            
-
-                            <h3 className="text-lg font-semibold text-text-primary pt-4 mt-6 border-t border-surface-border">Estratégia de Teste</h3>
-                            {isGenerating && <div className="flex justify-center py-2"><Spinner small /></div>}
-                            {task.testStrategy && task.testStrategy.length > 0 ? (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {task.testStrategy.map((strategy, i) => <TestStrategyCard key={i} strategy={strategy} />)}
-                                </div>
-                            ) : (
-                                !isGenerating && (
-                                    <EmptyState
-                                        icon="📊"
-                                        title="Nenhuma estratégia de teste gerada ainda"
-                                        description="Gere uma estratégia de teste com IA para esta tarefa."
-                                        action={{
-                                            label: "Gerar Estratégia com IA",
-                                            onClick: () => onGenerateTests(task.id, detailLevel)
-                                        }}
-                                        tip="A estratégia de teste ajuda a definir quais tipos de teste são necessários para validar esta funcionalidade."
-                                    />
-                                )
-                            )}
-                            
-                            <h3 className="text-lg font-semibold text-text-primary mt-6">Casos de Teste</h3>
-                            {isGenerating ? (
-                                <div className="space-y-3">
-                                    <LoadingSkeleton variant="task" count={3} />
-                                    <div className="flex flex-col items-center justify-center py-4">
-                                        <Spinner small />
-                                        <p className="text-sm text-text-secondary mt-2">Gerando casos de teste com IA...</p>
-                                        <p className="text-xs text-text-secondary mt-1">⏱️ Isso pode levar 10-30 segundos</p>
-                                    </div>
-                                </div>
-                            ) : (task.testCases || []).length > 0 ? (
-                                <div className="space-y-3">
-                                    {task.testCases.map(tc => (
-                                        <TestCaseItem 
-                                            key={tc.id} 
-                                            testCase={tc} 
-                                            onStatusChange={(status) => onTestCaseStatusChange(tc.id, status)}
-                                            onToggleAutomated={(isAutomated) => onToggleTestCaseAutomated(tc.id, isAutomated)}
-                                        />
-                                    ))}
-                                </div>
-                            ) : (
-                                <EmptyState
-                                    icon="🧪"
-                                    title="Nenhum caso de teste ainda"
-                                    description="Comece gerando casos de teste com IA ou adicione manualmente."
-                                    tips={isBeginnerMode ? [
-                                        "Use a IA para gerar casos de teste automaticamente",
-                                        "Ou adicione manualmente usando templates",
-                                        "Cada caso de teste deve ter passos claros e resultado esperado"
-                                    ] : undefined}
-                                    action={{
-                                        label: "Gerar com IA",
-                                        onClick: () => onGenerateTests(task.id, detailLevel)
-                                    }}
-                                    secondaryAction={onAddTestCaseFromTemplate ? {
-                                        label: "Usar Template",
-                                        onClick: () => onAddTestCaseFromTemplate('')
-                                    } : undefined}
-                                />
-                            )}
-                            
-                            {!isGenerating && (
-                                <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-3 mt-4">
-                                    <button onClick={() => onGenerateTests(task.id, detailLevel)} className="btn btn-primary">
-                                        {hasTests ? <RefreshIcon /> : <PlusIcon />}
-                                        <span>{hasTests ? 'Regerar com IA' : 'Gerar com IA'}</span>
+                        <div className="flex flex-wrap gap-2 mb-4">
+                            {sectionTabs.map(tab => {
+                                const isActive = tab.id === activeSection;
+                                return (
+                                    <button
+                                        key={tab.id}
+                                        className={`px-3 py-1.5 rounded-full text-sm font-medium border flex items-center gap-2 transition-colors ${
+                                            isActive ? 'bg-accent/20 border-accent text-text-primary' : 'bg-surface border-surface-border text-text-secondary hover:text-text-primary'
+                                        }`}
+                                        onClick={() => setActiveSection(tab.id)}
+                                    >
+                                        <span>{tab.label}</span>
+                                        {typeof tab.badge === 'number' && tab.badge > 0 && (
+                                            <span className={`text-xs px-2 py-0.5 rounded-full ${isActive ? 'bg-accent text-white' : 'bg-surface-hover text-text-secondary'}`}>
+                                                {tab.badge}
+                                            </span>
+                                        )}
                                     </button>
-                                    <div className="relative flex-1">
-                                        <label htmlFor={`detail-level-${task.id}`} className="block text-sm text-text-secondary mb-1">Nível de Detalhe</label>
-                                        <select
-                                            id={`detail-level-${task.id}`}
-                                            value={detailLevel}
-                                            onChange={(e) => setDetailLevel(e.target.value as TestCaseDetailLevel)}
-                                        >
-                                            <option value="Padrão">Padrão</option>
-                                            <option value="Resumido">Resumido</option>
-                                            <option value="Detalhado">Detalhado</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Dependências */}
-                            {project && onUpdateProject && (
-                                <div className="mt-6 pt-6 border-t border-surface-border">
-                                    <div className="flex items-center justify-between mb-3">
-                                        <h3 className="text-lg font-semibold text-text-primary">Dependências</h3>
-                                        <button
-                                            onClick={() => setShowDependencies(!showDependencies)}
-                                            className="text-sm text-accent hover:text-accent-light"
-                                        >
-                                            {showDependencies ? 'Ocultar' : 'Gerenciar'}
-                                        </button>
-                                    </div>
-                                    {showDependencies && (
-                                        <DependencyManager
-                                            task={task}
-                                            project={project}
-                                            onUpdateProject={onUpdateProject}
-                                            onClose={() => setShowDependencies(false)}
-                                        />
-                                    )}
-                                </div>
-                            )}
-
-                            {/* Anexos */}
-                            {project && onUpdateProject && (
-                                <div className="mt-6 pt-6 border-t border-surface-border">
-                                    <div className="flex items-center justify-between mb-3">
-                                        <h3 className="text-lg font-semibold text-text-primary">Anexos</h3>
-                                        <button
-                                            onClick={() => setShowAttachments(!showAttachments)}
-                                            className="text-sm text-accent hover:text-accent-light"
-                                        >
-                                            {showAttachments ? 'Ocultar' : 'Gerenciar'}
-                                        </button>
-                                    </div>
-                                    {showAttachments && (
-                                        <AttachmentManager
-                                            task={task}
-                                            project={project}
-                                            onUpdateProject={onUpdateProject}
-                                            onClose={() => setShowAttachments(false)}
-                                        />
-                                    )}
-                                </div>
-                            )}
-
-                            {/* Estimativas */}
-                            {project && onUpdateProject && (
-                                <div className="mt-6 pt-6 border-t border-surface-border">
-                                    <div className="flex items-center justify-between mb-3">
-                                        <h3 className="text-lg font-semibold text-text-primary">Estimativas</h3>
-                                        <button
-                                            onClick={() => setShowEstimation(!showEstimation)}
-                                            className="text-sm text-accent hover:text-accent-light"
-                                        >
-                                            {showEstimation ? 'Ocultar' : task.estimatedHours ? 'Editar' : 'Adicionar'}
-                                        </button>
-                                    </div>
-                                    {showEstimation && (
-                                        <EstimationInput
-                                            task={task}
-                                            onSave={(estimatedHours, actualHours) => {
-                                                const updatedTasks = project.tasks.map(t =>
-                                                    t.id === task.id
-                                                        ? { ...t, estimatedHours, actualHours }
-                                                        : t
-                                                );
-                                                onUpdateProject({ ...project, tasks: updatedTasks });
-                                                setShowEstimation(false);
-                                            }}
-                                            onCancel={() => setShowEstimation(false)}
-                                        />
-                                    )}
-                                    {!showEstimation && task.estimatedHours && (
-                                        <div className="p-3 bg-surface border border-surface-border rounded-lg">
-                                            <div className="flex items-center justify-between">
-                                                <span className="text-text-secondary">Estimado:</span>
-                                                <span className="font-semibold text-text-primary">{task.estimatedHours}h</span>
-                                            </div>
-                                            {task.actualHours && (
-                                                <>
-                                                    <div className="flex items-center justify-between mt-2">
-                                                        <span className="text-text-secondary">Real:</span>
-                                                        <span className={`font-semibold ${
-                                                            task.actualHours <= task.estimatedHours ? 'text-green-400' : 'text-orange-400'
-                                                        }`}>
-                                                            {task.actualHours}h
-                                                        </span>
-                                                    </div>
-                                                    <div className="mt-2 text-xs text-text-secondary">
-                                                        {task.actualHours <= task.estimatedHours
-                                                            ? `✅ Dentro do estimado (${task.estimatedHours - task.actualHours}h restantes)`
-                                                            : `⚠️ Acima do estimado (+${task.actualHours - task.estimatedHours}h)`
-                                                        }
-                                                    </div>
-                                                </>
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-
-                            {/* Checklist */}
-                            {task.checklist && task.checklist.length > 0 && project && onUpdateProject && (
-                                <div className="mt-6 pt-6 border-t border-surface-border">
-                                    <h3 className="text-lg font-semibold text-text-primary mb-3">Checklist</h3>
-                                    <ChecklistView
-                                        checklist={task.checklist}
-                                        onToggleItem={(itemId) => {
-                                            const updatedChecklist = updateChecklistItem(
-                                                task.checklist!,
-                                                itemId,
-                                                { checked: !task.checklist!.find(i => i.id === itemId)?.checked }
-                                            );
-                                            const updatedTasks = project.tasks.map(t =>
-                                                t.id === task.id ? { ...t, checklist: updatedChecklist } : t
-                                            );
-                                            onUpdateProject({ ...project, tasks: updatedTasks });
-                                        }}
-                                    />
-                                </div>
-                            )}
-
-                            {/* Comentários */}
-                            {onAddComment && (
-                                <div className="mt-6 pt-6 border-t border-surface-border">
-                                    <CommentSection
-                                        comments={task.comments || []}
-                                        onAddComment={(content) => onAddComment(content)}
-                                        onEditComment={(commentId, content) => onEditComment?.(commentId, content)}
-                                        onDeleteComment={(commentId) => onDeleteComment?.(commentId)}
-                                    />
-                                </div>
-                            )}
+                                );
+                            })}
+                        </div>
+                        <div className="mt-4">
+                            {renderSectionContent()}
                         </div>
                     </div>
                 )}
