@@ -62,8 +62,8 @@ export const NotificationBell: React.FC<{ onClick?: () => void }> = ({ onClick }
         }}
         className="relative min-h-[44px] min-w-[44px] p-2 text-text-secondary hover:text-text-primary transition-colors active:scale-95 active:opacity-80"
         aria-label="Notificações"
-      >
-        <span className="text-2xl">🔔</span>
+        >
+          <span className="text-xl">🔔</span>
         {unreadCount > 0 && (
           <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
             {unreadCount > 9 ? '9+' : unreadCount}

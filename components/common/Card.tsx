@@ -1,8 +1,16 @@
 
 import React from 'react';
 
-export const Card: React.FC<{ children: React.ReactNode, className?: string }> = ({ children, className = '' }) => (
-    <div className={`mica rounded-2xl p-3 sm:p-5 lg:p-6 shadow-lg shadow-black/30 border border-surface-border/60 w-full max-w-full ${className}`}>
+type CardProps = React.HTMLAttributes<HTMLElement> & {
+    children: React.ReactNode;
+    className?: string;
+};
+
+export const Card: React.FC<CardProps> = ({ children, className = '', ...rest }) => (
+    <section
+        className={`card-surface mica rounded-2xl px-4 py-3 sm:px-6 sm:py-5 shadow-lg shadow-black/20 border border-surface-border/60 w-full max-w-full ${className}`}
+        {...rest}
+    >
         {children}
-    </div>
+    </section>
 );

@@ -2,6 +2,7 @@
 import React, { useMemo, useState } from 'react';
 import { Project } from '../types';
 import { Modal } from './common/Modal';
+import { Card } from './common/Card';
 import { ConfirmDialog } from './common/ConfirmDialog';
 import { ProjectTemplateSelector } from './common/ProjectTemplateSelector';
 import { TrashIcon } from './common/Icons';
@@ -108,30 +109,37 @@ export const ProjectsDashboard: React.FC<{
     };
 
     return (
-        <div className="container mx-auto max-w-6xl p-4 sm:p-6 md:p-8 w-full">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                <h1 className="text-2xl sm:text-3xl font-bold text-text-primary mobile-no-overflow">Meus Projetos</h1>
+        <div className="container mx-auto max-w-6xl px-4 py-4 sm:px-6 sm:py-6 md:px-8 w-full">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 w-full">
+                <h1 className="text-2xl sm:text-3xl font-bold text-text-primary line-clamp-2 text-balance w-full">
+                    Meus Projetos
+                </h1>
                 {isMobile ? (
-                    <div className="flex flex-col w-full sm:w-auto gap-2">
-                        <button 
-                            onClick={() => setIsCreating(true)} 
-                            className="btn btn-primary w-full"
-                            data-onboarding="create-project"
-                        >
-                            ➕ Novo Projeto
-                        </button>
-                        {quickActions.length > 0 && (
+                    <div className="w-full space-y-2">
+                        <div className="mobile-actions-inline" role="group" aria-label="Ações principais">
                             <button 
-                                onClick={() => setShowMobileActions(true)} 
-                                className="btn btn-secondary w-full"
-                                aria-label="Abrir menu de ações rápidas"
+                                onClick={() => setIsCreating(true)} 
+                                className="btn btn-primary flex-shrink-0"
+                                data-onboarding="create-project"
                             >
-                                📱 Ações Rápidas
+                                ➕ Novo
                             </button>
-                        )}
+                            <button onClick={onSearchClick} className="btn btn-secondary flex-shrink-0">
+                                🔍 Buscar
+                            </button>
+                            {quickActions.length > 1 && (
+                                <button 
+                                    onClick={() => setShowMobileActions(true)} 
+                                    className="btn btn-secondary flex-shrink-0"
+                                    aria-label="Abrir menu de ações rápidas"
+                                >
+                                    ⋯
+                                </button>
+                            )}
+                        </div>
                     </div>
                 ) : (
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-2 justify-end w-full sm:w-auto">
                         {onComparisonClick && projects.length > 1 && (
                             <button onClick={onComparisonClick} className="btn btn-secondary">
                                 📊 Comparar Projetos
@@ -139,7 +147,7 @@ export const ProjectsDashboard: React.FC<{
                         )}
                         {onAdvancedSearchClick && (
                             <button onClick={onAdvancedSearchClick} className="btn btn-secondary">
-                                🔍 Busca Avançada
+                                🧭 Busca Avançada
                             </button>
                         )}
                         {onSyncSupabase && (
@@ -273,25 +281,35 @@ export const ProjectsDashboard: React.FC<{
             {projects.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                     {projects.map(p => (
-                        <div
+                        <Card
                             key={p.id}
                             onClick={() => onSelectProject(p.id)}
-                            className="group mica rounded-2xl p-4 sm:p-6 cursor-pointer transition-all duration-300 hover:border-accent/70 hover:shadow-accent/20 hover:shadow-2xl relative border border-surface-border/70 w-full max-w-full"
+                            role="button"
+                            tabIndex={0}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    onSelectProject(p.id);
+                                }
+                            }}
+                            className="group cursor-pointer transition-all duration-300 hover:border-accent/70 hover:shadow-accent/20 hover:shadow-2xl relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 !px-4 !py-4"
                         >
-                            <div className="pr-10 space-y-2">
-                                <h3 className="text-lg sm:text-xl font-bold text-text-primary break-words leading-tight">{p.name}</h3>
-                                <p className="text-sm sm:text-base text-text-secondary line-clamp-3 break-words">
+                            <div className="pr-10 space-y-2 min-h-[104px]">
+                                <h3 className="text-lg sm:text-xl font-bold text-text-primary leading-snug line-clamp-2 text-balance">
+                                    {p.name}
+                                </h3>
+                                <p className="text-sm sm:text-base text-text-secondary line-clamp-3">
                                     {p.description || 'Sem descrição adicionada.'}
                                 </p>
                             </div>
                             <button 
                                 onClick={(e) => openDeleteModal(p, e)} 
-                                className="absolute top-3 right-3 h-9 w-9 sm:h-10 sm:w-10 flex items-center justify-center rounded-full bg-surface-hover/60 text-text-secondary opacity-0 group-hover:opacity-100 hover:bg-red-500 hover:text-white transition-all active:scale-95 active:opacity-80"
+                                className="absolute top-3 right-3 h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center rounded-full bg-surface-hover/60 text-text-secondary opacity-100 sm:opacity-0 group-hover:opacity-100 hover:bg-red-500 hover:text-white transition-all active:scale-95 active:opacity-80"
                                 aria-label={`Excluir projeto ${p.name}`}
                             >
                                 <TrashIcon />
                             </button>
-                        </div>
+                        </Card>
                     ))}
                 </div>
             ) : (
