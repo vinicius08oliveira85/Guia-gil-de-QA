@@ -108,9 +108,9 @@ export const ProjectsDashboard: React.FC<{
     };
 
     return (
-        <div className="container mx-auto p-4 sm:p-6 md:p-8">
+        <div className="container mx-auto max-w-6xl p-4 sm:p-6 md:p-8 w-full">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                <h1 className="text-3xl font-bold text-text-primary">Meus Projetos</h1>
+                <h1 className="text-2xl sm:text-3xl font-bold text-text-primary mobile-no-overflow">Meus Projetos</h1>
                 {isMobile ? (
                     <div className="flex flex-col w-full sm:w-auto gap-2">
                         <button 
@@ -271,14 +271,22 @@ export const ProjectsDashboard: React.FC<{
             />
 
             {projects.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                     {projects.map(p => (
-                        <div key={p.id} onClick={() => onSelectProject(p.id)} className="group mica rounded-lg p-6 cursor-pointer transition-all duration-300 hover:border-accent/70 hover:shadow-accent/20 hover:shadow-2xl relative">
-                            <h3 className="text-xl font-bold text-text-primary pr-8">{p.name}</h3>
-                            <p className="text-text-secondary mt-2 min-h-[5rem] line-clamp-3 overflow-hidden text-ellipsis">{p.description}</p>
-                             <button 
+                        <div
+                            key={p.id}
+                            onClick={() => onSelectProject(p.id)}
+                            className="group mica rounded-2xl p-4 sm:p-6 cursor-pointer transition-all duration-300 hover:border-accent/70 hover:shadow-accent/20 hover:shadow-2xl relative border border-surface-border/70 w-full max-w-full"
+                        >
+                            <div className="pr-10 space-y-2">
+                                <h3 className="text-lg sm:text-xl font-bold text-text-primary break-words leading-tight">{p.name}</h3>
+                                <p className="text-sm sm:text-base text-text-secondary line-clamp-3 break-words">
+                                    {p.description || 'Sem descrição adicionada.'}
+                                </p>
+                            </div>
+                            <button 
                                 onClick={(e) => openDeleteModal(p, e)} 
-                                className="absolute top-4 right-4 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full bg-surface-hover/50 text-text-secondary opacity-0 group-hover:opacity-100 hover:bg-red-500 hover:text-white transition-all active:scale-95 active:opacity-80"
+                                className="absolute top-3 right-3 h-9 w-9 sm:h-10 sm:w-10 flex items-center justify-center rounded-full bg-surface-hover/60 text-text-secondary opacity-0 group-hover:opacity-100 hover:bg-red-500 hover:text-white transition-all active:scale-95 active:opacity-80"
                                 aria-label={`Excluir projeto ${p.name}`}
                             >
                                 <TrashIcon />
