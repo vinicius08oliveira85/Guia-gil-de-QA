@@ -15,6 +15,7 @@ import { LoadingSkeleton } from './components/common/LoadingSkeleton';
 import { loadProjectsFromSupabase, isSupabaseAvailable } from './services/supabaseService';
 import { getExportPreferences } from './utils/preferencesService';
 import { startExportScheduler } from './utils/exportScheduler';
+import { useIsMobile } from './hooks/useIsMobile';
 
 // Code splitting - Lazy loading de componentes pesados
 const ProjectView = lazyWithRetry(() => import('./components/ProjectView').then(m => ({ default: m.ProjectView })));
@@ -63,17 +64,7 @@ const App: React.FC = () => {
         };
     }, []); // Removed handleError from dependencies as it's stable
 
-    // Detectar se é mobile para ajustar posição dos toasts
-    const [isMobile, setIsMobile] = useState(false);
-
-    useEffect(() => {
-        const checkMobile = () => {
-            setIsMobile(window.innerWidth < 768);
-        };
-        checkMobile();
-        window.addEventListener('resize', checkMobile);
-        return () => window.removeEventListener('resize', checkMobile);
-    }, []);
+    const isMobile = useIsMobile();
 
     // Initialize export scheduler on app load
     useEffect(() => {

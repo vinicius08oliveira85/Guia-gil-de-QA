@@ -1,10 +1,11 @@
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Project } from '../types';
 import { Modal } from './common/Modal';
 import { ConfirmDialog } from './common/ConfirmDialog';
 import { ProjectTemplateSelector } from './common/ProjectTemplateSelector';
 import { TrashIcon } from './common/Icons';
+import { useIsMobile } from '../hooks/useIsMobile';
 
 export const ProjectsDashboard: React.FC<{
     projects: Project[];
@@ -22,7 +23,8 @@ export const ProjectsDashboard: React.FC<{
     const [newDesc, setNewDesc] = useState('');
     const [selectedTemplate, setSelectedTemplate] = useState<string | undefined>();
     const [isSyncingSupabase, setIsSyncingSupabase] = useState(false);
-    
+    const [showMobileActions, setShowMobileActions] = useState(false);
+    const isMobile = useIsMobile();
     const [deleteModalState, setDeleteModalState] = useState<{ isOpen: boolean; project: Project | null }>({
         isOpen: false,
         project: null,
@@ -60,42 +62,134 @@ export const ProjectsDashboard: React.FC<{
         }
     };
 
+    const quickActions = useMemo(() => {
+        const actions: Array<{ id: string; label: string; icon: string; onClick: () => void | Promise<void> }> = [
+            {
+                id: 'search',
+                label: 'Buscar Projetos',
+                icon: '🔍',
+                onClick: onSearchClick
+            }
+        ];
+
+        if (onAdvancedSearchClick) {
+            actions.push({
+                id: 'advanced-search',
+                label: 'Busca Avançada',
+                icon: '🧭',
+                onClick: onAdvancedSearchClick
+            });
+        }
+
+        if (onComparisonClick && projects.length > 1) {
+            actions.push({
+                id: 'compare',
+                label: 'Comparar Projetos',
+                icon: '📊',
+                onClick: onComparisonClick
+            });
+        }
+
+        if (onSyncSupabase) {
+            actions.push({
+                id: 'supabase',
+                label: 'Carregar do Supabase',
+                icon: '☁️',
+                onClick: handleSyncSupabase
+            });
+        }
+
+        return actions;
+    }, [handleSyncSupabase, onAdvancedSearchClick, onComparisonClick, onSearchClick, onSyncSupabase, projects.length]);
+
+    const handleMobileAction = (action: () => void | Promise<void>) => {
+        setShowMobileActions(false);
+        setTimeout(() => action(), 150);
+    };
+
     return (
         <div className="container mx-auto p-4 sm:p-6 md:p-8">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                 <h1 className="text-3xl font-bold text-text-primary">Meus Projetos</h1>
-                <div className="flex flex-wrap gap-2">
-                    {onComparisonClick && projects.length > 1 && (
-                        <button onClick={onComparisonClick} className="btn btn-secondary">
-                            📊 Comparar Projetos
-                        </button>
-                    )}
-                    {onAdvancedSearchClick && (
-                        <button onClick={onAdvancedSearchClick} className="btn btn-secondary">
-                            🔍 Busca Avançada
-                        </button>
-                    )}
-                    {onSyncSupabase && (
-                        <button
-                            onClick={handleSyncSupabase}
-                            className="btn btn-secondary"
-                            disabled={isSyncingSupabase}
+                {isMobile ? (
+                    <div className="flex flex-col w-full sm:w-auto gap-2">
+                        <button 
+                            onClick={() => setIsCreating(true)} 
+                            className="btn btn-primary w-full"
+                            data-onboarding="create-project"
                         >
-                            {isSyncingSupabase ? 'Sincronizando...' : '☁️ Carregar Supabase'}
+                            ➕ Novo Projeto
                         </button>
-                    )}
-                    <button onClick={onSearchClick} className="btn btn-secondary">
-                        🔍 Buscar
-                    </button>
-                    <button 
-                        onClick={() => setIsCreating(true)} 
-                        className="btn btn-primary"
-                        data-onboarding="create-project"
+                        {quickActions.length > 0 && (
+                            <button 
+                                onClick={() => setShowMobileActions(true)} 
+                                className="btn btn-secondary w-full"
+                                aria-label="Abrir menu de ações rápidas"
+                            >
+                                📱 Ações Rápidas
+                            </button>
+                        )}
+                    </div>
+                ) : (
+                    <div className="flex flex-wrap gap-2">
+                        {onComparisonClick && projects.length > 1 && (
+                            <button onClick={onComparisonClick} className="btn btn-secondary">
+                                📊 Comparar Projetos
+                            </button>
+                        )}
+                        {onAdvancedSearchClick && (
+                            <button onClick={onAdvancedSearchClick} className="btn btn-secondary">
+                                🔍 Busca Avançada
+                            </button>
+                        )}
+                        {onSyncSupabase && (
+                            <button
+                                onClick={handleSyncSupabase}
+                                className="btn btn-secondary"
+                                disabled={isSyncingSupabase}
+                            >
+                                {isSyncingSupabase ? 'Sincronizando...' : '☁️ Carregar Supabase'}
+                            </button>
+                        )}
+                        <button onClick={onSearchClick} className="btn btn-secondary">
+                            🔍 Buscar
+                        </button>
+                        <button 
+                            onClick={() => setIsCreating(true)} 
+                            className="btn btn-primary"
+                            data-onboarding="create-project"
+                        >
+                            ➕ Novo Projeto
+                        </button>
+                    </div>
+                )}
+            </div>
+
+            <Modal
+                isOpen={showMobileActions}
+                onClose={() => setShowMobileActions(false)}
+                title="Ações rápidas"
+                size="sm"
+            >
+                <div className="space-y-3 mobile-action-shadow">
+                    {quickActions.map(action => (
+                        <button
+                            key={action.id}
+                            onClick={() => handleMobileAction(action.onClick)}
+                            className="w-full flex items-center gap-3 p-3 rounded-lg border border-surface-border text-left hover:border-accent hover:text-accent transition-colors active:scale-95"
+                        >
+                            <span className="text-xl">{action.icon}</span>
+                            <span className="font-semibold">{action.label}</span>
+                        </button>
+                    ))}
+                    <button
+                        onClick={() => handleMobileAction(() => setIsCreating(true))}
+                        className="w-full flex items-center gap-3 p-3 rounded-lg bg-accent/20 text-accent font-semibold justify-center"
                     >
-                        ➕ Novo Projeto
+                        ➕ Criar Projeto
                     </button>
                 </div>
-            </div>
+            </Modal>
 
             <Modal isOpen={isCreating} onClose={() => {
                 setIsCreating(false);

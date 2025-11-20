@@ -1,3 +1,17 @@
 /* Estilos adicionais podem ser adicionados aqui */
 /* Os estilos principais estão no index.html */
 
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@media (max-width: 640px) {
+  .mobile-action-shadow {
+    box-shadow: 0 -6px 24px rgba(15, 23, 42, 0.45);
+  }
+}
