@@ -29,7 +29,6 @@ import { LoadingSkeleton } from './common/LoadingSkeleton';
 
 export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project: Project) => void; onBack: () => void; }> = ({ project, onUpdateProject, onBack }) => {
     const [activeTab, setActiveTab] = useState('dashboard');
-    const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
     const [isPrinting, setIsPrinting] = useState(false);
     const [showExportMenu, setShowExportMenu] = useState(false);
     const [showDependencyGraph, setShowDependencyGraph] = useState(false);
@@ -109,31 +108,37 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
         { id: 'roadmap', label: 'Roadmap' },
         { id: 'glossary', label: 'Glossário' },
     ];
-    
-    const mainTabs = tabs.slice(0, 2);
-    const moreTabs = tabs.slice(2);
-    const isMoreTabActive = moreTabs.some(tab => tab.id === activeTab);
 
     const handleTabClick = (tabId: string) => {
         setActiveTab(tabId);
-        setIsMoreMenuOpen(false);
     };
 
     return (
         <>
             <div className="container mx-auto p-4 sm:p-6 md:p-8 non-printable">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-                    <button onClick={onBack} className="text-accent hover:text-accent-light transition-colors font-semibold">&larr; Voltar para Projetos</button>
-                    <div className="flex gap-2">
-                        <button onClick={() => setShowExportMenu(true)} className="btn btn-secondary flex items-center gap-2">
+                    <button 
+                        onClick={onBack} 
+                        className="text-accent hover:text-accent-light transition-colors font-semibold w-full sm:w-auto text-left"
+                    >
+                        &larr; Voltar para Projetos
+                    </button>
+                    <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                        <button 
+                            onClick={() => setShowExportMenu(true)} 
+                            className="btn btn-secondary flex items-center justify-center gap-2 w-full sm:w-auto"
+                        >
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                             <span>Exportar</span>
                         </button>
-                    <button onClick={handlePrint} className="btn btn-secondary">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                        <button 
+                            onClick={handlePrint} 
+                            className="btn btn-secondary flex items-center justify-center gap-2 w-full sm:w-auto"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
                             <span>PDF</span>
-                    </button>
-                </div>
+                        </button>
+                    </div>
                 </div>
                 
                 <Modal isOpen={showExportMenu} onClose={() => setShowExportMenu(false)} title="Exportar Projeto">
@@ -142,63 +147,37 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                 <h2 className="text-3xl sm:text-4xl font-bold text-text-primary mb-2">{project.name}</h2>
                 <p className="text-text-secondary mb-8 max-w-3xl">{project.description}</p>
                 
-                <div className="border-b border-surface-border mb-6">
-                    <nav className="flex" aria-label="Tabs">
-                         <div className="hidden md:flex space-x-2">
+                <div className="border-b border-surface-border mb-6 sticky top-[76px] md:static bg-background/90 backdrop-blur-lg z-10 -mx-4 px-4 md:mx-0 md:px-0">
+                    <nav className="hidden md:flex flex-wrap gap-2 py-2" aria-label="Navegação de abas desktop">
+                        {tabs.map(tab => (
+                            <button 
+                                key={tab.id}
+                                onClick={() => handleTabClick(tab.id)} 
+                                className={`${tabStyle} ${activeTab === tab.id ? activeTabStyle : inactiveTabStyle}`}
+                                data-onboarding={tab['data-onboarding']}
+                            >
+                                {tab.label}
+                            </button>
+                        ))}
+                    </nav>
+                    <div className="md:hidden -mx-2 px-2 pb-3">
+                        <div 
+                            className="flex gap-2 overflow-x-auto no-scrollbar snap-x snap-mandatory"
+                            role="tablist"
+                            aria-label="Navegação de abas mobile"
+                        >
                             {tabs.map(tab => (
                                 <button 
                                     key={tab.id}
                                     onClick={() => handleTabClick(tab.id)} 
-                                    className={`${tabStyle} ${activeTab === tab.id ? activeTabStyle : inactiveTabStyle}`}
+                                    className={`${tabStyle} ${activeTab === tab.id ? activeTabStyle : inactiveTabStyle} flex-shrink-0 snap-center`}
                                     data-onboarding={tab['data-onboarding']}
                                 >
                                     {tab.label}
                                 </button>
                             ))}
                         </div>
-
-                        {/* Mobile tabs with dropdown */}
-                        <div className="flex md:hidden w-full">
-                            {mainTabs.map(tab => (
-                                <button 
-                                    key={tab.id}
-                                    onClick={() => handleTabClick(tab.id)} 
-                                    className={`${tabStyle} ${activeTab === tab.id ? activeTabStyle : inactiveTabStyle} flex-grow`}
-                                >
-                                    {tab.label}
-                                </button>
-                            ))}
-                            <div className="relative flex-grow">
-                                <button
-                                    onClick={() => setIsMoreMenuOpen(!isMoreMenuOpen)}
-                                    className={`${tabStyle} w-full flex items-center justify-center ${isMoreTabActive ? activeTabStyle : inactiveTabStyle}`}
-                                >
-                                    Mais
-                                    <svg className={`w-5 h-5 ml-1 transition-transform ${isMoreMenuOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-                                </button>
-                                {isMoreMenuOpen && (
-                                    <div 
-                                        className="absolute top-full right-0 mt-2 w-48 mica rounded-lg shadow-lg z-10"
-                                        onMouseLeave={() => setIsMoreMenuOpen(false)}
-                                        onTouchStart={(e) => {
-                                            // Prevenir fechamento imediato em touch devices
-                                            e.stopPropagation();
-                                        }}
-                                    >
-                                        {moreTabs.map(tab => (
-                                            <button
-                                                key={tab.id}
-                                                onClick={() => handleTabClick(tab.id)}
-                                                className={`block w-full text-left px-4 py-2 text-sm ${activeTab === tab.id ? 'bg-accent text-white' : 'text-text-primary hover:bg-surface-hover'}`}
-                                            >
-                                                {tab.label}
-                                            </button>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </nav>
+                    </div>
                 </div>
                 
                 <div className="mt-8">
