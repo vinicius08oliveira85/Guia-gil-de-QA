@@ -18,11 +18,11 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, size = 'md' })
 
   const config = statusConfig[status] || { variant: 'default' };
 
-  return (
-    <Badge variant={config.variant} size={size}>
-      {config.icon && <span className="mr-1">{config.icon}</span>}
-      {status}
-    </Badge>
-  );
+    return (
+    <Badge variant={config.variant} size={size} className="gap-1 chip-compact leading-none">
+        {config.icon && <span className="text-[0.68rem] leading-none">{config.icon}</span>}
+        <span className="text-[0.72rem] font-semibold truncate">{status}</span>
+      </Badge>
+    );
 };
 

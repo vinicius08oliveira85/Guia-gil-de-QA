@@ -275,12 +275,12 @@ export const JiraTaskItem: React.FC<{
                             <p className="text-sm font-semibold text-text-primary">{task.severity}</p>
                         </div>
                     )}
-                    {nextStep && (
-                        <div className="p-3 bg-accent/10 border border-accent/40 rounded-lg">
-                            <p className="text-[11px] uppercase text-accent tracking-wide">Próximo passo sugerido</p>
-                            <p className="text-sm font-semibold text-text-primary">{nextStep}</p>
-                        </div>
-                    )}
+                      {nextStep && (
+                          <div className="p-3 bg-accent/10 border border-accent/40 rounded-lg">
+                              <p className="text-[0.65rem] uppercase text-accent tracking-wide">Próximo passo</p>
+                              <p className="text-[0.82rem] font-semibold text-text-primary line-clamp-2">{nextStep}</p>
+                          </div>
+                      )}
                 </div>
             )}
             {task.tags && task.tags.length > 0 && (
@@ -592,82 +592,52 @@ export const JiraTaskItem: React.FC<{
     return (
         <div className="bg-surface">
             <div style={indentationStyle} className="border-b border-surface-border">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-2 sm:px-4 py-2 gap-2 w-full">
-                    <div className="flex items-center gap-2 sm:gap-3 flex-grow min-w-0 w-full">
-                        {onToggleSelect && (
-                            <input
-                                type="checkbox"
-                                checked={isSelected || false}
-                                onChange={(e) => {
-                                    e.stopPropagation();
-                                    onToggleSelect();
-                                }}
-                                className="w-4 h-4 rounded border-surface-border text-accent focus:ring-accent"
-                            />
-                        )}
-                        {hasChildren ? (
-                            <button onClick={() => setIsChildrenOpen(!isChildrenOpen)} className={`${iconButtonClass} flex-shrink-0`}>
-                                <ChevronDownIcon className={`w-4 h-4 transition-transform ${isChildrenOpen ? 'rotate-180' : ''}`} />
-                            </button>
-                        ) : (
-                            <div className="w-6 h-6 flex-shrink-0"></div>
-                        )}
-                          <div className={`flex items-center gap-2 cursor-pointer flex-1 min-w-0 ${isSelected ? 'ring-2 ring-accent rounded' : ''}`} onClick={handleToggleDetails}>
-                            <div className="flex-shrink-0">
+                <div className="px-2 sm:px-3 py-2 flex flex-col gap-2 w-full">
+                    <div className="flex flex-wrap items-center justify-between gap-2 w-full">
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                            {onToggleSelect && (
+                                <input
+                                    type="checkbox"
+                                    checked={isSelected || false}
+                                    onChange={(e) => {
+                                        e.stopPropagation();
+                                        onToggleSelect();
+                                    }}
+                                    className="w-4 h-4 rounded border-surface-border text-accent focus:ring-accent"
+                                />
+                            )}
+                            {hasChildren ? (
+                                <button onClick={() => setIsChildrenOpen(!isChildrenOpen)} className={`${iconButtonClass} flex-shrink-0`}>
+                                    <ChevronDownIcon className={`w-4 h-4 transition-transform ${isChildrenOpen ? 'rotate-180' : ''}`} />
+                                </button>
+                            ) : (
+                                <div className="w-6 h-6 flex-shrink-0"></div>
+                            )}
+                            <div className="flex items-center gap-2 min-w-0">
                                 <TaskTypeIcon type={task.type} />
-                            </div>
-                            <div className="flex items-center gap-2 min-w-0 flex-1">
-                                <div className="flex-shrink-0">
-                                    <TaskStatusIcon status={task.status} />
-                                </div>
-                                <div className="flex-1 min-w-0 space-y-0.5">
-                                    <div className="flex items-center gap-2 flex-wrap text-xs text-text-secondary">
-                                        <span className="font-semibold truncate">{task.id}</span>
-                                        {taskPhase && (
-                                            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${phaseStyle.bg} ${phaseStyle.color} flex items-center gap-1`}>
-                                                <span>{phaseStyle.icon}</span>
-                                                <span>{taskPhase}</span>
-                                            </span>
-                                        )}
-                                    </div>
-                                    <p className="text-sm sm:text-base text-text-primary font-semibold line-clamp-2 break-words">{task.title}</p>
-                                    {isBeginnerMode && nextStep && (
-                                        <p className="text-[11px] text-accent/80 mt-1 leading-snug break-words max-w-full">
-                                            💡 Próximo: {nextStep}
-                                        </p>
-                                    )}
-                                    {task.tags && task.tags.length > 0 && (
-                                        <div className="flex flex-wrap gap-1 mt-1">
-                                            {task.tags.slice(0, 3).map(tag => (
-                                                <span
-                                                    key={tag}
-                                                    className="text-xs px-1.5 py-0.5 rounded text-white"
-                                                    style={{ backgroundColor: getTagColor(tag) }}
-                                                >
-                                                    {tag}
-                                                </span>
-                                            ))}
-                                            {task.tags.length > 3 && (
-                                                <span className="text-xs px-1.5 py-0.5 rounded bg-surface text-text-secondary">
-                                                    +{task.tags.length - 3}
-                                                </span>
-                                            )}
-                                        </div>
+                                <TaskStatusIcon status={task.status} />
+                                <div className="flex items-center gap-1 text-[0.72rem] uppercase tracking-wide text-text-secondary min-w-0">
+                                    <span className="font-semibold text-text-primary truncate max-w-[140px] sm:max-w-[200px]">{task.id}</span>
+                                    {taskPhase && (
+                                        <span className={`px-2 py-0.5 rounded-full font-medium ${phaseStyle.bg} ${phaseStyle.color} flex items-center gap-1`}>
+                                            <span>{phaseStyle.icon}</span>
+                                            <span className="text-[0.68rem] uppercase tracking-wide">{taskPhase}</span>
+                                        </span>
                                     )}
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-1 text-text-secondary self-stretch sm:self-center flex-shrink-0 flex-nowrap justify-end sm:justify-start w-full sm:w-auto" onClick={e => e.stopPropagation()}>
-                        {task.owner && task.assignee && (
-                            <div className="hidden sm:flex items-center gap-1.5">
-                                <TeamRoleBadge role={task.owner} />
-                                <span className="text-slate-500 font-bold text-xs">&rarr;</span>
-                                <TeamRoleBadge role={task.assignee} />
-                            </div>
-                        )}
-                        <div className="flex items-center gap-1">
+                        <div
+                            className="flex items-center gap-1 text-text-secondary flex-shrink-0 flex-wrap justify-end sm:justify-start w-full sm:w-auto"
+                            onClick={e => e.stopPropagation()}
+                        >
+                            {task.owner && task.assignee && (
+                                <div className="hidden sm:flex items-center gap-1.5 pr-2">
+                                    <TeamRoleBadge role={task.owner} />
+                                    <span className="text-slate-500 font-bold text-xs">&rarr;</span>
+                                    <TeamRoleBadge role={task.assignee} />
+                                </div>
+                            )}
                             {currentStatusColor && (
                                 <span
                                     className="w-3 h-3 rounded-full border border-white/30 shadow-sm flex-shrink-0"
@@ -727,7 +697,7 @@ export const JiraTaskItem: React.FC<{
                                         }
                                     }
                                 }}
-                                className="!py-1 !px-2 text-[11px] leading-tight h-8 rounded-md border border-surface-border bg-transparent max-w-[150px]"
+                                className="!py-1 !px-2 text-[0.7rem] leading-tight h-8 rounded-md border border-surface-border bg-transparent max-w-[140px]"
                                 style={{
                                     backgroundColor: currentStatusColor,
                                     color: statusTextColor,
@@ -748,19 +718,64 @@ export const JiraTaskItem: React.FC<{
                                     <>
                                         <option value="To Do">A Fazer</option>
                                         <option value="In Progress">Em Andamento</option>
-                                        <option value="Done">Concluído</option>
+                                          <option value="Done">Concluído</option>
                                     </>
                                 )}
                             </select>
+                            {task.type === 'Epic' && (
+                                <button onClick={() => onAddSubtask(task.id)} className={iconButtonClass} aria-label="Adicionar subtarefa">
+                                    <PlusIcon />
+                                </button>
+                            )}
+                            <button onClick={() => onEdit(task)} className={iconButtonClass} aria-label="Editar tarefa">
+                                <EditIcon />
+                            </button>
+                            <button onClick={() => setShowDeleteConfirm(true)} className={`${iconButtonClass} hover:!bg-red-500 hover:!text-white`} aria-label="Excluir tarefa">
+                                <TrashIcon />
+                            </button>
+                            <button className={iconButtonClass} onClick={handleToggleDetails} aria-label="Expandir detalhes">
+                                <ChevronDownIcon className={`transition-transform ${isDetailsOpen ? 'rotate-180' : ''}`} />
+                            </button>
                         </div>
-                         {task.type === 'Epic' && (
-                            <button onClick={() => onAddSubtask(task.id)} className={iconButtonClass} aria-label="Adicionar subtarefa"><PlusIcon /></button>
-                         )}
-                        <button onClick={() => onEdit(task)} className={iconButtonClass} aria-label="Editar tarefa"><EditIcon /></button>
-                        <button onClick={() => setShowDeleteConfirm(true)} className={`${iconButtonClass} hover:!bg-red-500 hover:!text-white`} aria-label="Excluir tarefa"><TrashIcon /></button>
-                          <button className={iconButtonClass} onClick={handleToggleDetails}>
-                          <ChevronDownIcon className={`transition-transform ${isDetailsOpen ? 'rotate-180' : ''}`} />
-                        </button>
+                    </div>
+                    <div
+                        className={`flex flex-col gap-1 rounded-lg border border-transparent hover:border-surface-border transition-colors p-2 cursor-pointer ${isSelected ? 'ring-1 ring-accent/50' : ''}`}
+                        onClick={handleToggleDetails}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(event) => {
+                            if (event.key === 'Enter' || event.key === ' ') {
+                                event.preventDefault();
+                                handleToggleDetails();
+                            }
+                        }}
+                    >
+                        <p className="text-sm sm:text-base text-text-primary font-semibold line-clamp-2 break-words">
+                            {task.title}
+                        </p>
+                        {isBeginnerMode && nextStep && (
+                            <p className="text-[0.68rem] uppercase tracking-wide text-accent/80 leading-snug break-words">
+                                Próximo: <span className="normal-case text-text-secondary">{nextStep}</span>
+                            </p>
+                        )}
+                        {task.tags && task.tags.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-0.5">
+                                {task.tags.slice(0, 3).map(tag => (
+                                    <span
+                                        key={tag}
+                                        className="text-[0.68rem] px-1.5 py-0.5 rounded-full text-white"
+                                        style={{ backgroundColor: getTagColor(tag) }}
+                                    >
+                                        {tag}
+                                    </span>
+                                ))}
+                                {task.tags.length > 3 && (
+                                    <span className="text-[0.68rem] px-1.5 py-0.5 rounded-full bg-surface text-text-secondary">
+                                        +{task.tags.length - 3}
+                                    </span>
+                                )}
+                            </div>
+                        )}
                     </div>
                 </div>
                 {isDetailsOpen && (

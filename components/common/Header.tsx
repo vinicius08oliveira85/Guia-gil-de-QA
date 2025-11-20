@@ -21,24 +21,24 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported }) => {
     return (
         <>
             <header
-                className="win-toolbar sticky top-0 z-30 shadow-[0_25px_80px_rgba(3,7,23,0.45)]"
-                style={{ paddingTop: 'max(0.75rem, env(safe-area-inset-top))' }}
+                className="win-toolbar sticky top-0 z-30 shadow-[0_18px_60px_rgba(3,7,23,0.45)]"
+                style={{ paddingTop: 'max(0.5rem, env(safe-area-inset-top))' }}
             >
-                <div className="container mx-auto flex flex-wrap items-center justify-between gap-3 min-w-0 py-2 sm:py-3">
-                    <div className="flex items-center gap-4 min-w-0">
-                        <div className="h-12 w-12 rounded-[18px] bg-gradient-to-br from-accent to-accent-light flex items-center justify-center shadow-[0_15px_40px_rgba(14,109,253,0.45)] border border-white/20 flex-shrink-0">
-                            <CompassIcon className="w-6 h-6 text-white" />
+                <div className="container mx-auto flex flex-wrap items-center justify-between gap-3 min-w-0 py-2 sm:py-3 px-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                        <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-[16px] bg-gradient-to-br from-accent to-accent-light flex items-center justify-center shadow-[0_12px_30px_rgba(14,109,253,0.35)] border border-white/20 flex-shrink-0">
+                            <CompassIcon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                         </div>
                         <div className="min-w-0">
-                            <p className="text-[0.75rem] uppercase tracking-[0.35em] text-text-tertiary mb-1">
+                            <p className="text-[0.6rem] uppercase tracking-[0.3em] text-text-tertiary mb-0.5">
                                 Windows 12 Edition
                             </p>
-                            <h1 className="text-lg sm:text-2xl font-semibold text-text-primary line-clamp-2 text-balance">
+                            <h1 className="text-base sm:text-xl font-semibold text-text-primary line-clamp-2 text-balance">
                                 QA Agile Guide
                             </h1>
                         </div>
                     </div>
-                    <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-3 w-full sm:w-auto">
+                    <div className="flex flex-wrap items-center justify-end gap-1.5 sm:gap-3 w-full sm:w-auto">
                         <button
                             onClick={() => setShowSettings(true)}
                             className="win-icon-button"
