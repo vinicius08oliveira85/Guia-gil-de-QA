@@ -1,6 +1,7 @@
 import { Project, JiraTask, PhaseName } from '../types';
 import { parseJiraDescription } from '../utils/jiraDescriptionParser';
 import { getCache, setCache, clearCache } from '../utils/apiCache';
+import { getJiraStatusColor } from '../utils/jiraStatusColors';
 
 export interface JiraConfig {
     url: string;
@@ -212,31 +213,6 @@ export const getJiraProjects = async (config: JiraConfig, useCache: boolean = tr
         clearCache(cacheKey);
         throw error;
     }
-};
-
-// Função auxiliar para mapear colorName do Jira para cores hexadecimais
-const getJiraStatusColor = (statusName: string, statusCategory?: { key: string; colorName: string }): string => {
-    // Se tiver statusCategory, usar a cor do Jira
-    if (statusCategory?.colorName) {
-        const colorMap: Record<string, string> = {
-            'blue-gray': '#42526e', // To Do
-            'yellow': '#ffd700',    // In Progress (amarelo padrão, mas Jira usa azul)
-            'green': '#00875a',     // Done
-            'medium-gray': '#42526e',
-            'blue': '#0052cc',      // In Progress
-        };
-        return colorMap[statusCategory.colorName.toLowerCase()] || colorMap[statusCategory.key] || '#42526e';
-    }
-    
-    // Fallback: mapear por nome do status
-    const status = statusName.toLowerCase();
-    if (status.includes('done') || status.includes('resolved') || status.includes('closed') || status.includes('concluído')) {
-        return '#00875a'; // Verde
-    }
-    if (status.includes('progress') || status.includes('in progress') || status.includes('andamento')) {
-        return '#0052cc'; // Azul
-    }
-    return '#42526e'; // Cinza (To Do)
 };
 
 export const getJiraStatuses = async (config: JiraConfig, projectKey: string): Promise<Array<{ name: string; color: string }>> => {
