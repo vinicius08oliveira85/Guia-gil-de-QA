@@ -15,7 +15,6 @@ import { TimeTracker } from '../common/TimeTracker';
 import { getTagColor } from '../../utils/tagService';
 import { updateChecklistItem } from '../../utils/checklistService';
 import { getTaskPhase, getPhaseBadgeStyle, getNextStepForTask } from '../../utils/taskPhaseHelper';
-import { useProjectMetrics } from '../../hooks/useProjectMetrics';
 import { useBeginnerMode } from '../../hooks/useBeginnerMode';
 import { ConfirmDialog } from '../common/ConfirmDialog';
 import { EmptyState } from '../common/EmptyState';
@@ -132,9 +131,8 @@ export const JiraTaskItem: React.FC<{
     const [activeSection, setActiveSection] = useState<DetailSection>('overview');
     const hasTests = task.testCases && task.testCases.length > 0;
     const hasChildren = task.children && task.children.length > 0;
-    const metrics = project ? useProjectMetrics(project) : { newPhases: [] };
     const { isBeginnerMode } = useBeginnerMode();
-    const taskPhase = project ? getTaskPhase(task, metrics.newPhases) : null;
+    const taskPhase = getTaskPhase(task);
     const phaseStyle = getPhaseBadgeStyle(taskPhase);
     const nextStep = getNextStepForTask(task);
     const jiraStatusPalette = project?.settings?.jiraStatuses;
