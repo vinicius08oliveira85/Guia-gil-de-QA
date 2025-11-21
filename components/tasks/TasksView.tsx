@@ -11,7 +11,8 @@ import { useErrorHandler } from '../../hooks/useErrorHandler';
 import { useFilters, FilterOptions } from '../../hooks/useFilters';
 import { getAllTagsFromProject } from '../../utils/tagService';
 import { createBugFromFailedTest } from '../../utils/bugAutoCreation';
-import { notifyTestFailed, notifyBugCreated } from '../../utils/notificationService';
+import { getTaskDependents, getReadyTasks } from '../../utils/dependencyService';
+import { notifyTestFailed, notifyBugCreated, notifyCommentAdded, notifyDependencyResolved } from '../../utils/notificationService';
 import { createTestCaseFromTemplate } from '../../utils/testCaseTemplates';
 import { Comment } from '../../types';
 import { BulkActions } from '../common/BulkActions';
@@ -69,6 +70,9 @@ export const TasksView: React.FC<{
     const [isRunningGeneralAnalysis, setIsRunningGeneralAnalysis] = useState(false);
 
     const handleTaskStatusChange = useCallback((taskId: string, status: 'To Do' | 'In Progress' | 'Done') => {
+        const task = project.tasks.find(t => t.id === taskId);
+        const previousStatus = task?.status;
+        
         onUpdateProject({
             ...project,
             tasks: project.tasks.map(t => t.id === taskId ? { 
@@ -77,6 +81,28 @@ export const TasksView: React.FC<{
                 completedAt: status === 'Done' ? new Date().toISOString() : t.completedAt 
             } : t)
         });
+
+        // Se a tarefa foi concluída, verificar se alguma tarefa dependente ficou pronta
+        if (status === 'Done' && previousStatus !== 'Done' && task) {
+            const updatedProject = {
+                ...project,
+                tasks: project.tasks.map(t => t.id === taskId ? { 
+                    ...t, 
+                    status,
+                    completedAt: status === 'Done' ? new Date().toISOString() : t.completedAt 
+                } : t)
+            };
+            
+            const dependents = getTaskDependents(taskId, updatedProject);
+            const readyTasks = getReadyTasks(updatedProject);
+            
+            // Notificar tarefas que ficaram prontas
+            dependents.forEach(dependent => {
+                if (readyTasks.some(rt => rt.id === dependent.id)) {
+                    notifyDependencyResolved(task, updatedProject, dependent);
+                }
+            });
+        }
     }, [project, onUpdateProject]);
     
     const handleGenerateBddScenarios = useCallback(async (taskId: string) => {
@@ -331,6 +357,9 @@ export const TasksView: React.FC<{
             ...project,
             tasks: project.tasks.map(t => t.id === taskId ? updatedTask : t)
         });
+
+        // Notificar sobre o novo comentário
+        notifyCommentAdded(updatedTask, project, 'Você');
     }, [project, onUpdateProject]);
 
     const handleEditComment = useCallback((taskId: string, commentId: string, content: string) => {

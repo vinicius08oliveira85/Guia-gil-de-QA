@@ -1,6 +1,7 @@
 import React from 'react';
 import { ChecklistItem } from '../../types';
 import { getChecklistProgress, canMoveToNextPhase } from '../../utils/checklistService';
+import { windows12Styles, cn } from '../../utils/windows12Styles';
 
 interface ChecklistViewProps {
   checklist: ChecklistItem[];
@@ -25,7 +26,7 @@ export const ChecklistView: React.FC<ChecklistViewProps> = ({
   return (
     <div className="space-y-4">
       {showProgress && (
-        <div className="p-3 bg-surface border border-surface-border rounded-lg">
+        <div className={cn("p-3", windows12Styles.card)}>
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-semibold text-text-primary">Progresso</span>
             <span className="text-sm text-text-secondary">
@@ -47,7 +48,7 @@ export const ChecklistView: React.FC<ChecklistViewProps> = ({
       )}
 
       {showValidation && !validation.canMove && (
-        <div className="p-3 bg-orange-500/20 border border-orange-500/50 rounded-lg">
+        <div className={cn("p-3 bg-orange-500/20 border border-orange-500/50 rounded-xl", windows12Styles.transition.all)}>
           <div className="flex items-start gap-2">
             <span className="text-lg">⚠️</span>
             <div className="flex-1">
@@ -68,7 +69,7 @@ export const ChecklistView: React.FC<ChecklistViewProps> = ({
       )}
 
       {showValidation && validation.canMove && (
-        <div className="p-3 bg-green-500/20 border border-green-500/50 rounded-lg">
+        <div className={cn("p-3 bg-green-500/20 border border-green-500/50 rounded-xl", windows12Styles.transition.all, windows12Styles.glow('green'))}>
           <div className="flex items-center gap-2">
             <span className="text-lg">✅</span>
             <span className="text-sm font-semibold text-green-400">
@@ -82,11 +83,13 @@ export const ChecklistView: React.FC<ChecklistViewProps> = ({
         {checklist.map(item => (
           <div
             key={item.id}
-            className={`flex items-start gap-3 p-3 rounded-lg border ${
+            className={cn(
+              "flex items-start gap-3 p-3 rounded-xl border",
+              windows12Styles.transition.all,
               item.checked
-                ? 'bg-green-500/10 border-green-500/30'
-                : 'bg-surface border-surface-border'
-            }`}
+                ? 'bg-green-500/10 border-green-500/30 shadow-md shadow-green-500/10'
+                : windows12Styles.card
+            )}
           >
             <input
               type="checkbox"

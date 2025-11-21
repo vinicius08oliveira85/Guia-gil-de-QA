@@ -3,7 +3,7 @@ import { getNotificationPreferences } from './preferencesService';
 
 export interface Notification {
   id: string;
-  type: 'bug_created' | 'test_failed' | 'deadline' | 'task_assigned' | 'comment_added' | 'task_completed';
+  type: 'bug_created' | 'test_failed' | 'deadline' | 'task_assigned' | 'comment_added' | 'task_completed' | 'dependency_resolved';
   title: string;
   message: string;
   projectId: string;
@@ -144,6 +144,18 @@ export const notifyCommentAdded = (task: JiraTask, project: Project, author: str
     projectId: project.id,
     projectName: project.name,
     entityId: task.id,
+    entityType: 'task'
+  });
+};
+
+export const notifyDependencyResolved = (task: JiraTask, project: Project, dependentTask: JiraTask) => {
+  return createNotification({
+    type: 'dependency_resolved',
+    title: 'Dependência Resolvida',
+    message: `A tarefa ${dependentTask.id} está pronta para ser iniciada. A dependência ${task.id} foi concluída.`,
+    projectId: project.id,
+    projectName: project.name,
+    entityId: dependentTask.id,
     entityType: 'task'
   });
 };

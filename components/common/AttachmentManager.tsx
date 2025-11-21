@@ -9,6 +9,7 @@ import {
   getAttachmentUrl
 } from '../../utils/attachmentService';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
+import { windows12Styles, cn } from '../../utils/windows12Styles';
 
 interface AttachmentManagerProps {
   task: JiraTask;
@@ -81,7 +82,11 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = ({
       </div>
 
       {/* Upload */}
-      <div className="border-2 border-dashed border-surface-border rounded-lg p-4">
+      <div className={cn(
+        "border-2 border-dashed border-surface-border rounded-xl p-4",
+        windows12Styles.transition.all,
+        "hover:border-accent/50 hover:bg-accent/5"
+      )}>
         <input
           ref={fileInputRef}
           type="file"
@@ -112,7 +117,11 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = ({
           {attachments.map(attachment => (
             <div
               key={attachment.id}
-              className="flex items-center justify-between p-3 bg-surface border border-surface-border rounded-lg"
+              className={cn(
+                "flex items-center justify-between p-3",
+                windows12Styles.card,
+                windows12Styles.cardHover
+              )}
             >
               <div className="flex items-center gap-3 flex-1 min-w-0">
                 <span className="text-2xl">{getFileIcon(attachment.type)}</span>

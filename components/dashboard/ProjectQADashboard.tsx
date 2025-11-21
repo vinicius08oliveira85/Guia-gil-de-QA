@@ -227,12 +227,22 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
                                 percentage={metrics.testCoverage}
                                 color="text-emerald-400"
                                 note={`${metrics.tasksWithTestCases} tarefas com QA de ${metrics.totalTasks}`}
+                                interactive={true}
+                                onClick={() => {
+                                    // Navegar para a aba de tarefas com filtro de tarefas sem testes
+                                    console.log('Clicou em cobertura - pode navegar para tarefas sem testes');
+                                }}
                             />
                             <DonutChart
                                 title="Automação x Manual"
                                 percentage={metrics.automationRatio}
                                 color="text-blue-400"
                                 note={`${metrics.automatedTestCases} automatizados (${metrics.totalTestCases} totais)`}
+                                interactive={true}
+                                onClick={() => {
+                                    // Navegar para a aba de tarefas com filtro de automação
+                                    console.log('Clicou em automação - pode navegar para tarefas automatizadas');
+                                }}
                             />
                         </div>
 
@@ -274,11 +284,21 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
                                 title="Testes criados / executados / aprovados"
                                 data={normalizedTestExecutionData}
                                 rawData={testExecutionData}
+                                interactive={true}
+                                onBarClick={(label, value) => {
+                                    console.log(`Clicou em ${label} com valor ${value}`);
+                                    // Pode navegar para filtros específicos
+                                }}
                             />
                             <BarChartWidget
                                 title="Bugs abertos por severidade"
                                 data={normalizedBugSeverityData}
                                 rawData={bugSeverityData}
+                                interactive={true}
+                                onBarClick={(label, value) => {
+                                    console.log(`Clicou em ${label} com valor ${value}`);
+                                    // Pode navegar para bugs filtrados por severidade
+                                }}
                             />
                         </div>
 
@@ -294,6 +314,10 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
                                 percentage={metrics.testPassRate}
                                 color="text-emerald-400"
                                 note={`${metrics.passedTestCases} de ${metrics.executedTestCases} casos passaram`}
+                                interactive={true}
+                                onClick={() => {
+                                    console.log('Clicou em taxa de aprovação');
+                                }}
                             />
                         </div>
 

@@ -10,6 +10,7 @@ import {
   getReadyTasks
 } from '../../utils/dependencyService';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
+import { windows12Styles, cn } from '../../utils/windows12Styles';
 
 interface DependencyManagerProps {
   task: JiraTask;
@@ -75,14 +76,23 @@ export const DependencyManager: React.FC<DependencyManagerProps> = ({
   const isReady = readyTasks.some(t => t.id === task.id);
 
   return (
-    <div className="space-y-4">
+    <div className={cn("space-y-4", windows12Styles.spacing.md)}>
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-text-primary">Dependências da Tarefa</h3>
-        <button onClick={onClose} className="text-text-secondary hover:text-text-primary">✕</button>
+        <button 
+          onClick={onClose} 
+          className={cn(
+            "text-text-secondary hover:text-text-primary",
+            windows12Styles.transition.all,
+            "p-1 rounded-lg hover:bg-surface-hover"
+          )}
+        >
+          ✕
+        </button>
       </div>
 
       {/* Status da tarefa */}
-      <div className="p-3 rounded-lg border border-surface-border">
+      <div className={cn("p-3", windows12Styles.card)}>
         {isBlocked && (
           <div className="flex items-center gap-2 text-orange-400">
             <span>⚠️</span>
@@ -116,11 +126,13 @@ export const DependencyManager: React.FC<DependencyManagerProps> = ({
               return (
                 <div
                   key={dep.id}
-                  className={`p-3 rounded-lg border ${
+                  className={cn(
+                    "p-3 rounded-xl border flex items-center justify-between",
+                    windows12Styles.transition.all,
                     isCompleted 
-                      ? 'border-green-500/50 bg-green-500/10' 
-                      : 'border-orange-500/50 bg-orange-500/10'
-                  } flex items-center justify-between`}
+                      ? 'border-green-500/50 bg-green-500/10 shadow-md shadow-green-500/10' 
+                      : 'border-orange-500/50 bg-orange-500/10 shadow-md shadow-orange-500/10'
+                  )}
                 >
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
@@ -155,7 +167,7 @@ export const DependencyManager: React.FC<DependencyManagerProps> = ({
           <select
             value={selectedTaskId}
             onChange={(e) => setSelectedTaskId(e.target.value)}
-            className="flex-1 px-3 py-2 bg-surface border border-surface-border rounded-md text-text-primary"
+            className={cn("flex-1 px-3 py-2", windows12Styles.input)}
           >
             <option value="">Selecione uma tarefa...</option>
             {availableTasks.map(t => (
@@ -167,7 +179,10 @@ export const DependencyManager: React.FC<DependencyManagerProps> = ({
           <button
             onClick={handleAddDependency}
             disabled={!selectedTaskId}
-            className="btn btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+            className={cn(
+              windows12Styles.buttonPrimary,
+              "disabled:opacity-50 disabled:cursor-not-allowed"
+            )}
           >
             Adicionar
           </button>
