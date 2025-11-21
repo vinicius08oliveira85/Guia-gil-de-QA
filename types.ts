@@ -110,6 +110,8 @@ export interface JiraTask {
   checklist?: ChecklistItem[];
   iaAnalysis?: TaskIAAnalysis;
   toolsUsed?: string[]; // Ferramentas utilizadas nesta task
+  executedStrategies?: number[]; // Índices das estratégias que foram executadas
+  strategyTools?: { [strategyIndex: number]: string[] }; // Ferramentas utilizadas por estratégia (índice -> ferramentas)
 }
 
 // Ferramentas sugeridas para testes

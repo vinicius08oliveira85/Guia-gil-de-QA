@@ -250,6 +250,66 @@ export const TasksView: React.FC<{
         });
     }, [project, onUpdateProject]);
 
+    const handleStrategyExecutedChange = useCallback((taskId: string, strategyIndex: number, executed: boolean) => {
+        onUpdateProject({
+            ...project,
+            tasks: project.tasks.map(task => {
+                if (task.id === taskId) {
+                    const currentExecuted = task.executedStrategies || [];
+                    let newExecuted: number[];
+                    
+                    if (executed) {
+                        // Adiciona o índice se não estiver presente
+                        newExecuted = currentExecuted.includes(strategyIndex) 
+                            ? currentExecuted 
+                            : [...currentExecuted, strategyIndex];
+                    } else {
+                        // Remove o índice
+                        newExecuted = currentExecuted.filter(idx => idx !== strategyIndex);
+                        // Remove também as ferramentas dessa estratégia
+                        const strategyTools = { ...(task.strategyTools || {}) };
+                        delete strategyTools[strategyIndex];
+                        return { 
+                            ...task, 
+                            executedStrategies: newExecuted,
+                            strategyTools: Object.keys(strategyTools).length > 0 ? strategyTools : undefined
+                        };
+                    }
+                    
+                    return { ...task, executedStrategies: newExecuted };
+                }
+                return task;
+            })
+        });
+    }, [project, onUpdateProject]);
+
+    const handleStrategyToolsChange = useCallback((taskId: string, strategyIndex: number, tools: string[]) => {
+        onUpdateProject({
+            ...project,
+            tasks: project.tasks.map(task => {
+                if (task.id === taskId) {
+                    const currentStrategyTools = task.strategyTools || {};
+                    const newStrategyTools = {
+                        ...currentStrategyTools,
+                        [strategyIndex]: tools.length > 0 ? tools : undefined
+                    };
+                    // Remove entradas vazias
+                    Object.keys(newStrategyTools).forEach(key => {
+                        if (!newStrategyTools[Number(key)] || newStrategyTools[Number(key)].length === 0) {
+                            delete newStrategyTools[Number(key)];
+                        }
+                    });
+                    
+                    return { 
+                        ...task, 
+                        strategyTools: Object.keys(newStrategyTools).length > 0 ? newStrategyTools : undefined
+                    };
+                }
+                return task;
+            })
+        });
+    }, [project, onUpdateProject]);
+
     const handleAddComment = useCallback((taskId: string, content: string) => {
         if (!content.trim()) return;
         const task = project.tasks.find(t => t.id === taskId);
@@ -600,6 +660,8 @@ export const TasksView: React.FC<{
                     onExecutedStrategyChange={(testCaseId, strategies) => handleExecutedStrategyChange(task.id, testCaseId, strategies)}
                     onTaskToolsChange={(tools) => handleTaskToolsChange(task.id, tools)}
                     onTestCaseToolsChange={(testCaseId, tools) => handleTestCaseToolsChange(task.id, testCaseId, tools)}
+                    onStrategyExecutedChange={(strategyIndex, executed) => handleStrategyExecutedChange(task.id, strategyIndex, executed)}
+                    onStrategyToolsChange={(strategyIndex, tools) => handleStrategyToolsChange(task.id, strategyIndex, tools)}
                     onDelete={handleDeleteTask}
                     onGenerateTests={handleGenerateTests}
                     isGenerating={generatingTestsTaskId === task.id}
@@ -625,7 +687,7 @@ export const TasksView: React.FC<{
                 </JiraTaskItem>
             );
         });
-    }, [selectedTasks, generatingTestsTaskId, generatingBddTaskId, handleTestCaseStatusChange, handleToggleTestCaseAutomated, handleExecutedStrategyChange, handleTaskToolsChange, handleTestCaseToolsChange, handleDeleteTask, handleGenerateTests, openTaskFormForNew, openTaskFormForEdit, handleGenerateBddScenarios, handleSaveBddScenario, handleDeleteBddScenario, handleTaskStatusChange, handleAddTestCaseFromTemplate, handleAddComment, handleEditComment, handleDeleteComment, project, onUpdateProject, toggleTaskSelection]);
+    }, [selectedTasks, generatingTestsTaskId, generatingBddTaskId, handleTestCaseStatusChange, handleToggleTestCaseAutomated, handleExecutedStrategyChange, handleTaskToolsChange, handleTestCaseToolsChange, handleStrategyExecutedChange, handleStrategyToolsChange, handleDeleteTask, handleGenerateTests, openTaskFormForNew, openTaskFormForEdit, handleGenerateBddScenarios, handleSaveBddScenario, handleDeleteBddScenario, handleTaskStatusChange, handleAddTestCaseFromTemplate, handleAddComment, handleEditComment, handleDeleteComment, project, onUpdateProject, toggleTaskSelection]);
 
     return (
         <>

@@ -13,13 +13,20 @@ export function generateTestReport(task: JiraTask): string {
   lines.push(`Título: ${task.title}`);
   lines.push('');
   
-  // Estratégias Realizadas
-  if (task.testStrategy && task.testStrategy.length > 0) {
+  // Estratégias Realizadas (apenas as marcadas como executadas)
+  const executedStrategies = task.executedStrategies || [];
+  if (task.testStrategy && task.testStrategy.length > 0 && executedStrategies.length > 0) {
     lines.push('ESTRATÉGIAS REALIZADAS:');
-    task.testStrategy.forEach((strategy, index) => {
-      lines.push(`${index + 1}. ${strategy.testType}: ${strategy.description}`);
-      if (strategy.tools) {
-        lines.push(`   Ferramentas sugeridas: ${strategy.tools}`);
+    executedStrategies.forEach((strategyIndex) => {
+      const strategy = task.testStrategy![strategyIndex];
+      if (strategy) {
+        lines.push(`${executedStrategies.indexOf(strategyIndex) + 1}. ${strategy.testType}: ${strategy.description}`);
+        
+        // Ferramentas Utilizadas nesta estratégia
+        const tools = task.strategyTools?.[strategyIndex] || [];
+        if (tools.length > 0) {
+          lines.push(`   Ferramentas Utilizadas: ${tools.join(', ')}`);
+        }
       }
     });
     lines.push('');
@@ -28,23 +35,25 @@ export function generateTestReport(task: JiraTask): string {
   // Casos de Teste
   if (task.testCases && task.testCases.length > 0) {
     lines.push('CASOS DE TESTE:');
+    lines.push('');
     task.testCases.forEach((testCase, index) => {
       const statusText = 
         testCase.status === 'Passed' ? 'Aprovado' :
         testCase.status === 'Failed' ? 'Reprovado' :
         'Não Executado';
       
-      lines.push(`${index + 1}. ${testCase.description} - Status: ${statusText}`);
+      // Status destacado
+      const statusEmoji = 
+        testCase.status === 'Passed' ? '✅' :
+        testCase.status === 'Failed' ? '❌' :
+        '⏸️';
+      
+      lines.push(`${index + 1}. ${testCase.description} - Status: ${statusEmoji} ${statusText}`);
       
       // Testes Executados
-      const executedStrategies = normalizeExecutedStrategy(testCase.executedStrategy);
-      if (executedStrategies.length > 0) {
-        lines.push(`   Testes Executados: ${executedStrategies.join(', ')}`);
-      }
-      
-      // Ferramentas do caso de teste
-      if (testCase.toolsUsed && testCase.toolsUsed.length > 0) {
-        lines.push(`   Ferramentas: ${testCase.toolsUsed.join(', ')}`);
+      const executedTestStrategies = normalizeExecutedStrategy(testCase.executedStrategy);
+      if (executedTestStrategies.length > 0) {
+        lines.push(`   Testes Executados: ${executedTestStrategies.join(', ')}`);
       }
       
       // Resultado observado (se falhou)
@@ -56,17 +65,9 @@ export function generateTestReport(task: JiraTask): string {
       if (testCase.isAutomated) {
         lines.push(`   Automatizado: Sim`);
       }
+      
+      lines.push(''); // Linha em branco entre casos de teste
     });
-    lines.push('');
-  }
-  
-  // Ferramentas Utilizadas (Geral da Task)
-  if (task.toolsUsed && task.toolsUsed.length > 0) {
-    lines.push('FERRAMENTAS UTILIZADAS (Geral):');
-    task.toolsUsed.forEach(tool => {
-      lines.push(`- ${tool}`);
-    });
-    lines.push('');
   }
   
   // Resumo

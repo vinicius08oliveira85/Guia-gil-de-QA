@@ -102,6 +102,8 @@ export const JiraTaskItem: React.FC<{
     onExecutedStrategyChange: (testCaseId: string, strategies: string[]) => void;
     onTaskToolsChange?: (tools: string[]) => void;
     onTestCaseToolsChange?: (testCaseId: string, tools: string[]) => void;
+    onStrategyExecutedChange?: (strategyIndex: number, executed: boolean) => void;
+    onStrategyToolsChange?: (strategyIndex: number, tools: string[]) => void;
     onDelete: (taskId: string) => void;
     onGenerateTests: (taskId: string, detailLevel: TestCaseDetailLevel) => Promise<void>;
     isGenerating: boolean;
@@ -124,7 +126,7 @@ export const JiraTaskItem: React.FC<{
     level: number;
     activeTaskId?: string | null;
     onFocusTask?: (taskId: string | null) => void;
-}> = React.memo(({ task, onTestCaseStatusChange, onToggleTestCaseAutomated, onExecutedStrategyChange, onTaskToolsChange, onTestCaseToolsChange, onDelete, onGenerateTests, isGenerating, onAddSubtask, onEdit, onGenerateBddScenarios, isGeneratingBdd, onSaveBddScenario, onDeleteBddScenario, onTaskStatusChange, onAddTestCaseFromTemplate, onAddComment, onEditComment, onDeleteComment, project, onUpdateProject, isSelected, onToggleSelect, children, level, activeTaskId, onFocusTask }) => {
+}> = React.memo(({ task, onTestCaseStatusChange, onToggleTestCaseAutomated, onExecutedStrategyChange, onTaskToolsChange, onTestCaseToolsChange, onStrategyExecutedChange, onStrategyToolsChange, onDelete, onGenerateTests, isGenerating, onAddSubtask, onEdit, onGenerateBddScenarios, isGeneratingBdd, onSaveBddScenario, onDeleteBddScenario, onTaskStatusChange, onAddTestCaseFromTemplate, onAddComment, onEditComment, onDeleteComment, project, onUpdateProject, isSelected, onToggleSelect, children, level, activeTaskId, onFocusTask }) => {
     const [isDetailsOpen, setIsDetailsOpen] = useState(false); // Colapsado por padrão para compactar
     const [isChildrenOpen, setIsChildrenOpen] = useState(false);
     const [editingBddScenario, setEditingBddScenario] = useState<BddScenario | null>(null);
@@ -364,7 +366,17 @@ export const JiraTaskItem: React.FC<{
                 {isGenerating && <div className="flex justify-center py-2"><Spinner small /></div>}
                 {task.testStrategy && task.testStrategy.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                        {task.testStrategy.map((strategy, i) => <TestStrategyCard key={i} strategy={strategy} />)}
+                        {task.testStrategy.map((strategy, i) => (
+                            <TestStrategyCard 
+                                key={i} 
+                                strategy={strategy}
+                                strategyIndex={i}
+                                isExecuted={task.executedStrategies?.includes(i) || false}
+                                onToggleExecuted={onStrategyExecutedChange}
+                                toolsUsed={task.strategyTools?.[i] || []}
+                                onToolsChange={onStrategyToolsChange}
+                            />
+                        ))}
                     </div>
                 ) : (
                     !isGenerating && (
