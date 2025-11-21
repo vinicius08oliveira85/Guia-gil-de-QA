@@ -422,6 +422,7 @@ export const TasksView: React.FC<{
                         executedStrategies: existingTask?.executedStrategies || t.executedStrategies,
                         strategyTools: existingTask?.strategyTools || t.strategyTools,
                         toolsUsed: existingTask?.toolsUsed || t.toolsUsed,
+                        comments: existingTask?.comments || t.comments,
                         status: t.status,
                         createdAt: t.createdAt,
                         completedAt: t.completedAt

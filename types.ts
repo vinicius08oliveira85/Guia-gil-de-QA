@@ -191,6 +191,7 @@ export interface Comment {
   createdAt: string;
   updatedAt?: string;
   mentions?: string[];
+  fromJira?: boolean; // Indica se o comentário veio do Jira
 }
 
 export interface Attachment {

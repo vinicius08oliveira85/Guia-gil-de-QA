@@ -588,6 +588,7 @@ const getJiraIssueComments = async (
             content: parseJiraDescription(comment.body) || '',
             createdAt: comment.created,
             updatedAt: comment.updated,
+            fromJira: true,
         }));
     } catch (error) {
         console.warn(`Erro ao buscar comentários da issue ${issueKey}:`, error);
@@ -644,6 +645,7 @@ const extractJiraComments = async (
             content: parseJiraDescription(comment.body) || '',
             createdAt: comment.created,
             updatedAt: comment.updated,
+            fromJira: true,
         }));
     } else if (issue.fields?.comment?.comments && issue.fields.comment.comments.length > 0) {
         // Tentar pelos fields diretos
@@ -653,6 +655,7 @@ const extractJiraComments = async (
             content: parseJiraDescription(comment.body) || '',
             createdAt: comment.created,
             updatedAt: comment.updated,
+            fromJira: true,
         }));
     } else {
         // Fallback: buscar comentários separadamente

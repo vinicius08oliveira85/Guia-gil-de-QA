@@ -101,13 +101,18 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
             ) : (
               <>
                 <div className="flex items-start justify-between mb-2">
-                  <div>
+                  <div className="flex items-center gap-2">
                     <span className="font-semibold text-text-primary">{comment.author}</span>
-                    <span className="text-sm text-text-secondary ml-2">
+                    {comment.fromJira && (
+                      <span className="text-xs px-2 py-0.5 bg-blue-500/20 text-blue-300 rounded-full border border-blue-500/30">
+                        Jira
+                      </span>
+                    )}
+                    <span className="text-sm text-text-secondary">
                       {format(new Date(comment.createdAt), "dd/MM/yyyy 'às' HH:mm")}
                     </span>
                   </div>
-                  {comment.author === currentUser && (
+                  {comment.author === currentUser && !comment.fromJira && (
                     <div className="flex gap-2">
                       <button
                         onClick={() => handleStartEdit(comment)}
@@ -122,6 +127,11 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
                         Excluir
                       </button>
                     </div>
+                  )}
+                  {comment.fromJira && (
+                    <span className="text-xs text-text-secondary italic">
+                      Sincronizado do Jira
+                    </span>
                   )}
                 </div>
                 <p className="text-text-primary whitespace-pre-wrap">{comment.content}</p>
