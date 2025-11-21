@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { Project, PhaseName } from '../../types';
 import { Card } from '../common/Card';
 import { useProjectMetrics } from '../../hooks/useProjectMetrics';
@@ -13,7 +13,7 @@ interface TimelinePhase {
     dependencies: string;
     exitCriteria: string;
     milestone: string;
-    checklist: { label: string; check: (metrics: any) => boolean; description?: string; };
+    checklist: { label: string; check: (metrics: any) => boolean; description?: string; }[];
     qaActivities?: string[];
     deliverables?: string[];
     risks?: string[];
@@ -387,11 +387,180 @@ const timelineData: TimelinePhase[] = [
 
 const Checkbox: React.FC<{ checked: boolean; description?: string }> = ({ checked, description }) => (
     <Tooltip content={description || ''}>
-        <div className={`w-5 h-5 rounded border-2 ${checked ? 'bg-green-500 border-green-500' : 'border-surface-border'} flex items-center justify-center flex-shrink-0 cursor-help transition-all`}>
-        {checked && <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 14 11"><path d="M1 5.25L5.028 9L13 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-    </div>
+        <div
+            className={`w-4 h-4 rounded-md border ${checked ? 'bg-emerald-500 border-emerald-400 shadow-[0_0_12px_rgba(16,185,129,0.35)]' : 'border-surface-border bg-transparent'} flex items-center justify-center flex-shrink-0 cursor-help transition-all`}
+        >
+            {checked && (
+                <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 14 11">
+                    <path d="M1 5.25L5.028 9L13 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+            )}
+        </div>
     </Tooltip>
 );
+
+const PhaseMetaField: React.FC<{ label: string; value: string }> = ({ label, value }) => (
+    <div className="rounded-xl border border-white/5 bg-white/5 p-3 backdrop-blur-sm">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-text-secondary">{label}</p>
+        <p className="text-sm text-text-primary mt-1 leading-snug">{value}</p>
+    </div>
+);
+
+const ChecklistItem: React.FC<{ item: TimelinePhase['checklist'][number]; checked: boolean }> = ({ item, checked }) => (
+    <div
+        className={`flex items-center gap-2 rounded-2xl border px-3 py-1.5 text-sm transition-colors ${
+            checked ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-200' : 'border-white/5 bg-white/5 text-text-primary'
+        }`}
+    >
+        <Checkbox checked={checked} description={item.description} />
+        <span className={`flex-1 leading-snug ${checked ? 'line-through opacity-80' : 'opacity-90'}`}>{item.label}</span>
+    </div>
+);
+
+interface PhaseCardProps {
+    phase: TimelinePhase;
+    index: number;
+    status: 'completed' | 'current' | 'upcoming';
+    isExpanded: boolean;
+    isCurrent: boolean;
+    onToggle: () => void;
+    onSelect: () => void;
+    checklistProgress: { value: number; total: number };
+    metricsWithProject: any;
+}
+
+const detailSectionsConfig = [
+    { key: 'qaActivities', title: 'Atividades de QA', icon: '🧪', bullet: 'text-blue-300' },
+    { key: 'deliverables', title: 'Entregas', icon: '📦', bullet: 'text-emerald-300' },
+    { key: 'risks', title: 'Riscos', icon: '⚠️', bullet: 'text-amber-300' },
+] as const;
+
+const statusCircleStyles: Record<'completed' | 'current' | 'upcoming', string> = {
+    completed: 'bg-emerald-500/20 text-emerald-200 border-emerald-400/50',
+    current: 'bg-accent/30 text-accent border-accent/60',
+    upcoming: 'bg-white/10 text-text-secondary border-white/20',
+};
+
+const PhaseCard: React.FC<PhaseCardProps> = ({
+    phase,
+    index,
+    status,
+    isExpanded,
+    isCurrent,
+    onToggle,
+    onSelect,
+    checklistProgress,
+    metricsWithProject,
+}) => {
+    const percent = checklistProgress.total ? Math.round((checklistProgress.value / checklistProgress.total) * 100) : 0;
+    const statusBadges = {
+        completed: { label: '✅ Concluída', variant: 'success' as const },
+        current: { label: '🔄 Atual', variant: 'info' as const },
+        upcoming: { label: '⏳ Próxima', variant: 'default' as const },
+    };
+
+    const detailSections = detailSectionsConfig
+        .map((section) => {
+            const data = (phase as any)[section.key] as string[] | undefined;
+            if (!data || data.length === 0) return null;
+            return { ...section, items: data };
+        })
+        .filter(Boolean) as Array<{ title: string; icon: string; bullet: string; items: string[] }>;
+
+    return (
+        <div className="relative flex gap-4 sm:gap-6">
+            <div className="relative z-10 flex-shrink-0">
+                <div
+                    className={`w-9 h-9 sm:w-11 sm:h-11 rounded-full border backdrop-blur-md flex items-center justify-center text-xs font-semibold shadow-lg ${statusCircleStyles[status]}`}
+                >
+                    {index + 1}
+                </div>
+            </div>
+
+            <div
+                className={`flex-1 rounded-2xl border ${isCurrent ? 'border-accent/70 shadow-[0_18px_40px_-20px_rgba(14,165,233,0.7)]' : 'border-white/5 shadow-[0_18px_40px_-25px_rgba(0,0,0,0.8)]'} bg-surface bg-opacity-80 backdrop-blur-xl p-4 sm:p-5 transition-all`}
+            >
+                <div className="flex flex-wrap items-center gap-2">
+                    <h4 className="text-[clamp(1rem,2.4vw,1.2rem)] font-semibold text-text-primary">{phase.phase}</h4>
+                    <Badge variant={statusBadges[status].variant}>{statusBadges[status].label}</Badge>
+                    <span className="text-xs font-medium text-text-secondary">⏱ {phase.duration}</span>
+                </div>
+
+                <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-text-secondary">
+                    <span className="font-medium text-text-primary">{phase.milestone}</span>
+                    <span className="hidden sm:inline opacity-40">•</span>
+                    <span className="text-text-secondary opacity-80">Progresso {percent}%</span>
+                </div>
+
+                <div className="mt-3 h-1.5 w-full rounded-full bg-white/10">
+                    <div
+                        className="h-full rounded-full bg-gradient-to-r from-accent via-accent to-emerald-400 transition-all"
+                        style={{ width: `${percent}%` }}
+                    />
+                </div>
+
+                <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <PhaseMetaField label="Dependências" value={phase.dependencies} />
+                    <PhaseMetaField label="Critério de Saída" value={phase.exitCriteria} />
+                </div>
+
+                <div className="mt-4">
+                    <div className="flex items-center justify-between">
+                        <h5 className="text-sm font-semibold text-text-secondary">Checklist</h5>
+                        <span className="text-xs text-text-secondary">
+                            {checklistProgress.value}/{checklistProgress.total}
+                        </span>
+                    </div>
+                    <div className="mt-2 flex flex-col gap-1.5 max-h-56 overflow-auto pr-1">
+                        {phase.checklist.map((item, idx) => {
+                            const checked = item.check(metricsWithProject);
+                            return <ChecklistItem key={idx} item={item} checked={checked} />;
+                        })}
+                    </div>
+                </div>
+
+                {isExpanded && detailSections.length > 0 && (
+                    <div className="mt-4 border-t border-white/5 pt-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {detailSections.map((section) => (
+                                <div key={section.title}>
+                                    <h5 className="flex items-center gap-2 text-sm font-semibold text-text-secondary">
+                                        <span>{section.icon}</span>
+                                        {section.title}
+                                    </h5>
+                                    <ul className="mt-2 space-y-1.5">
+                                        {section.items.map((item, idx) => (
+                                            <li key={idx} className="flex items-start text-sm text-text-primary">
+                                                <span className={`mr-2 ${section.bullet}`}>•</span>
+                                                <span className="leading-snug">{item}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                <div className="mt-4 flex flex-wrap items-center gap-4">
+                    <button
+                        onClick={onToggle}
+                        className="text-xs font-semibold uppercase tracking-[0.08em] text-text-secondary hover:text-accent transition-colors"
+                    >
+                        {isExpanded ? 'Recolher detalhes' : 'Expandir detalhes'}
+                    </button>
+                    <button
+                        onClick={onSelect}
+                        className="inline-flex items-center gap-1 text-sm font-semibold text-accent hover:text-accent-light transition-colors"
+                    >
+                        Ver detalhes completos
+                        <span aria-hidden>→</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
 
 export const TimelineView: React.FC<{ project: Project, currentPhaseName: PhaseName | 'N/A' }> = ({ project, currentPhaseName }) => {
     const metrics = useProjectMetrics(project);
@@ -430,285 +599,174 @@ export const TimelineView: React.FC<{ project: Project, currentPhaseName: PhaseN
 
     return (
         <div className="space-y-6">
-        <Card>
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                    <div>
-                        <h3 className="text-2xl font-bold text-text-primary mb-2">Timeline Completa do Projeto</h3>
-                        <p className="text-text-secondary">Cronograma detalhado do fluxo de trabalho de QA com dependências, marcos e entregáveis.</p>
+            <Card>
+                <div className="flex flex-col gap-6">
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                        <div>
+                            <h3 className="text-[clamp(1.4rem,2.5vw,1.75rem)] font-semibold text-text-primary">
+                                Timeline Completa do Projeto
+                            </h3>
+                            <p className="text-sm text-text-secondary">
+                                Acompanhe fases, dependências e checklists com layout fluido inspirado no Windows 12.
+                            </p>
+                        </div>
+                        <div className="inline-flex items-center rounded-full border border-white/5 bg-white/5 p-1">
+                            <button
+                                onClick={() => setViewMode('timeline')}
+                                className={`px-4 py-1.5 text-sm font-medium rounded-full transition-colors ${
+                                    viewMode === 'timeline'
+                                        ? 'bg-accent text-white shadow-[0_8px_20px_rgba(14,165,233,0.35)]'
+                                        : 'text-text-secondary'
+                                }`}
+                            >
+                                Timeline
+                            </button>
+                            <button
+                                onClick={() => setViewMode('table')}
+                                className={`px-4 py-1.5 text-sm font-medium rounded-full transition-colors ${
+                                    viewMode === 'table'
+                                        ? 'bg-accent text-white shadow-[0_8px_20px_rgba(14,165,233,0.35)]'
+                                        : 'text-text-secondary'
+                                }`}
+                            >
+                                Tabela
+                            </button>
+                        </div>
                     </div>
-                    <div className="flex gap-2">
-                        <button
-                            onClick={() => setViewMode('timeline')}
-                            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                                viewMode === 'timeline'
-                                    ? 'bg-accent text-white'
-                                    : 'bg-surface border border-surface-border text-text-secondary hover:bg-surface-hover'
-                            }`}
-                        >
-                            Timeline
-                        </button>
-                        <button
-                            onClick={() => setViewMode('table')}
-                            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                                viewMode === 'table'
-                                    ? 'bg-accent text-white'
-                                    : 'bg-surface border border-surface-border text-text-secondary hover:bg-surface-hover'
-                            }`}
-                        >
-                            Tabela
-                        </button>
+
+                    <div className="rounded-2xl border border-white/5 bg-white/5 p-4 sm:p-5 backdrop-blur-xl shadow-[0_25px_60px_-35px_rgba(0,0,0,0.9)]">
+                        <div className="flex flex-col gap-2">
+                            <span className="text-xs font-semibold uppercase tracking-[0.08em] text-text-secondary">
+                                Progresso Geral do Projeto
+                            </span>
+                            <div className="flex flex-wrap items-center gap-2 text-sm text-text-secondary">
+                                <span className="font-semibold text-text-primary">
+                                    {completedPhases} de {totalPhases} fases
+                                </span>
+                                <span className="opacity-60">•</span>
+                                <span className="font-semibold text-text-primary">{Math.round(overallProgress)}%</span>
+                                <span className="opacity-60">•</span>
+                                <span>
+                                    Fase atual:{' '}
+                                    <span className="font-semibold text-text-primary">{currentPhaseName}</span>
+                                </span>
+                            </div>
+                            <div className="mt-2 h-2 w-full rounded-full bg-white/10 overflow-hidden">
+                                <div
+                                    className="h-full rounded-full bg-gradient-to-r from-accent via-accent to-emerald-400 transition-all"
+                                    style={{ width: `${overallProgress}%` }}
+                                />
+                            </div>
+                        </div>
                     </div>
-                </div>
 
-                {/* Progresso Geral */}
-                <div className="p-4 bg-surface border border-surface-border rounded-lg mb-6">
-                    <div className="flex items-center justify-between mb-2">
-                        <span className="text-text-secondary font-semibold">Progresso Geral do Projeto</span>
-                        <span className="text-text-primary font-bold">{Math.round(overallProgress)}%</span>
-                    </div>
-                    <ProgressIndicator
-                        value={completedPhases}
-                        max={totalPhases}
-                        color="green"
-                        size="lg"
-                    />
-                    <div className="flex items-center justify-between mt-2 text-sm text-text-secondary">
-                        <span>{completedPhases} de {totalPhases} fases concluídas</span>
-                        <span>Fase atual: {currentPhaseName}</span>
-                    </div>
-                </div>
+                    {viewMode === 'timeline' ? (
+                        <div className="relative pl-9 sm:pl-16">
+                            <div className="absolute inset-y-4 left-4 sm:left-6 w-px bg-gradient-to-b from-white/30 via-surface-border to-transparent"></div>
+                            <div className="flex flex-col gap-5 sm:gap-7">
+                                {timelineData.map((phase, index) => {
+                                    const status = getPhaseStatus(phase.phase);
+                                    const isExpanded = expandedPhases.has(phase.phase);
+                                    const isCurrent = phase.phase === currentPhaseName;
+                                    const checkedCount = phase.checklist.filter(item => item.check(metricsWithProject)).length;
 
-                {viewMode === 'timeline' ? (
-                    /* Visualização Timeline */
-                    <div className="relative">
-                        <div className="absolute left-8 top-0 bottom-0 w-1 bg-surface-border"></div>
-                        
-                        <div className="space-y-8">
-                            {timelineData.map((phase, index) => {
-                                const status = getPhaseStatus(phase.phase);
-                                const progress = getPhaseProgress(phase);
-                                const isExpanded = expandedPhases.has(phase.phase);
-                                const isCurrent = phase.phase === currentPhaseName;
-                                
-                                const statusColors = {
-                                    completed: 'bg-green-500',
-                                    current: 'bg-blue-500 animate-pulse',
-                                    upcoming: 'bg-gray-500'
-                                };
+                                    return (
+                                        <PhaseCard
+                                            key={phase.phase}
+                                            phase={phase}
+                                            index={index}
+                                            status={status}
+                                            isExpanded={isExpanded}
+                                            isCurrent={isCurrent}
+                                            onToggle={() => togglePhase(phase.phase)}
+                                            onSelect={() => setSelectedPhase(phase)}
+                                            checklistProgress={{ value: checkedCount, total: phase.checklist.length }}
+                                            metricsWithProject={metricsWithProject}
+                                        />
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="overflow-x-auto scrollbar-hide rounded-2xl border border-white/5 bg-white/5 p-4">
+                            <table className="w-full min-w-[1000px] text-left text-sm">
+                                <thead className="border-b border-white/10 text-text-secondary opacity-80">
+                                    <tr>
+                                        <th className="p-3 w-1/12">Fase</th>
+                                        <th className="p-3 w-1/12">Status</th>
+                                        <th className="p-3 w-1/12">Duração</th>
+                                        <th className="p-3 w-2/12">Dependências</th>
+                                        <th className="p-3 w-2/12">Critérios de Transição</th>
+                                        <th className="p-3 w-2/12">Marco</th>
+                                        <th className="p-3 w-3/12">Checklist</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-white/5">
+                                    {timelineData.map(phase => {
+                                        const isCurrent = phase.phase === currentPhaseName;
+                                        const isDone = getPhaseStatus(phase.phase) === 'completed';
+                                        const progress = getPhaseProgress(phase);
 
-                                return (
-                                    <div key={phase.phase} className="relative flex items-start gap-6">
-                                        {/* Indicador de fase */}
-                                        <div className={`relative z-10 w-16 h-16 rounded-full ${statusColors[status]} flex items-center justify-center text-white font-bold text-sm shadow-lg`}>
-                                            {index + 1}
-                                        </div>
-
-                                        {/* Conteúdo da fase */}
-                                        <div className="flex-1 pb-8">
-                                            <div className={`p-6 bg-surface border ${isCurrent ? 'border-accent' : 'border-surface-border'} rounded-lg hover:shadow-lg transition-all`}>
-                                                <div className="flex items-start justify-between mb-4">
-                                                    <div className="flex-1">
-                                                        <div className="flex items-center gap-3 mb-2">
-                                                            <h4 className="text-xl font-bold text-text-primary">{phase.phase}</h4>
-                                                            <Badge variant={status === 'completed' ? 'success' : status === 'current' ? 'info' : 'default'}>
-                                                                {status === 'completed' ? '✅ Concluída' : status === 'current' ? '🔄 Atual' : '⏳ Próxima'}
-                                                            </Badge>
-                                                            <span className="text-sm text-text-secondary">⏱️ {phase.duration}</span>
-                                                        </div>
-                                                        <p className="text-text-secondary mb-3">{phase.milestone}</p>
-                                                        
-                                                        {/* Progresso da fase */}
-                                                        <div className="mb-4">
-                                                            <div className="flex items-center justify-between mb-1">
-                                                                <span className="text-xs text-text-secondary">Progresso da fase</span>
-                                                                <span className="text-xs font-semibold text-text-primary">{Math.round(progress)}%</span>
-                                                            </div>
+                                        return (
+                                            <tr
+                                                key={phase.phase}
+                                                className={`${isCurrent ? 'bg-accent/10' : ''} ${isDone ? 'opacity-70' : ''} transition-colors hover:bg-white/5 cursor-pointer`}
+                                                onClick={() => setSelectedPhase(phase)}
+                                            >
+                                                <td className={`p-3 font-semibold align-top ${isDone ? 'text-text-secondary' : 'text-accent'}`}>
+                                                    {phase.phase}
+                                                </td>
+                                                <td className="p-3 align-top">
+                                                    <Badge variant={isDone ? 'success' : isCurrent ? 'info' : 'default'} size="sm">
+                                                        {isDone ? '✅' : isCurrent ? '🔄' : '⏳'}
+                                                    </Badge>
+                                                </td>
+                                                <td className={`p-3 align-top ${isDone ? 'text-text-secondary' : 'text-text-primary'}`}>
+                                                    {phase.duration}
+                                                </td>
+                                                <td className={`p-3 align-top ${isDone ? 'text-text-secondary' : 'text-text-primary'}`}>
+                                                    {phase.dependencies}
+                                                </td>
+                                                <td className={`p-3 align-top ${isDone ? 'text-text-secondary' : 'text-text-primary'}`}>
+                                                    {phase.exitCriteria}
+                                                </td>
+                                                <td className={`p-3 align-top ${isDone ? 'text-text-secondary' : 'text-text-primary'}`}>
+                                                    {phase.milestone}
+                                                </td>
+                                                <td className="p-3 align-top">
+                                                    <div className="space-y-2">
+                                                        {phase.checklist.map((item, idx) => {
+                                                            const checked = item.check(metricsWithProject);
+                                                            return (
+                                                                <div key={idx} className="flex items-center gap-2">
+                                                                    <Checkbox checked={checked} description={item.description} />
+                                                                    <span className={`text-xs ${checked ? 'text-green-400 line-through' : 'text-text-primary'}`}>
+                                                                        {item.label}
+                                                                    </span>
+                                                                </div>
+                                                            );
+                                                        })}
+                                                        <div className="mt-2">
                                                             <ProgressIndicator
                                                                 value={phase.checklist.filter(item => item.check(metricsWithProject)).length}
                                                                 max={phase.checklist.length}
                                                                 color="blue"
                                                                 size="sm"
                                                             />
+                                                            <p className="text-[11px] text-text-secondary mt-1">{Math.round(progress)}%</p>
                                                         </div>
                                                     </div>
-                                                    <button
-                                                        onClick={() => togglePhase(phase.phase)}
-                                                        className="text-accent hover:text-accent-light text-sm font-semibold ml-4"
-                                                    >
-                                                        {isExpanded ? 'Ocultar' : 'Expandir'} ↓
-                                                    </button>
-                                                </div>
-
-                                                {/* Informações básicas */}
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                                                    <div>
-                                                        <h5 className="text-xs font-semibold text-text-secondary mb-1">Dependências</h5>
-                                                        <p className="text-sm text-text-primary">{phase.dependencies}</p>
-                                                    </div>
-                                                    <div>
-                                                        <h5 className="text-xs font-semibold text-text-secondary mb-1">Critério de Saída</h5>
-                                                        <p className="text-sm text-text-primary">{phase.exitCriteria}</p>
-                                                    </div>
-                                                </div>
-
-                                                {/* Checklist */}
-                                                <div className="mb-4">
-                                                    <h5 className="text-sm font-semibold text-text-secondary mb-2">✅ Checklist</h5>
-                                                    <div className="space-y-2">
-                                                        {phase.checklist.map((item, idx) => {
-                                                            const checked = item.check(metricsWithProject);
-                                                            return (
-                                                                <div key={idx} className={`flex items-start gap-2 p-2 rounded ${checked ? 'bg-green-500/20' : 'bg-surface-hover'}`}>
-                                                                    <Checkbox checked={checked} description={item.description} />
-                                                                    <span className={`text-sm flex-1 ${checked ? 'text-green-400 line-through' : 'text-text-primary'}`}>
-                                                                        {item.label}
-                                                                    </span>
-                                                                </div>
-                                                            );
-                                                        })}
-                                                    </div>
-                                                </div>
-
-                                                {/* Informações expandidas */}
-                                                {isExpanded && (
-                                                    <div className="mt-4 pt-4 border-t border-surface-border space-y-4">
-                                                        {phase.qaActivities && (
-                                                            <div>
-                                                                <h5 className="text-sm font-semibold text-text-secondary mb-2">🧪 Atividades de QA</h5>
-                                                                <ul className="space-y-1">
-                                                                    {phase.qaActivities.map((activity, idx) => (
-                                                                        <li key={idx} className="flex items-start text-sm text-text-primary">
-                                                                            <span className="mr-2 text-blue-400">•</span>
-                                                                            <span>{activity}</span>
-                                                                        </li>
-                                                                    ))}
-                                                                </ul>
-                                                            </div>
-                                                        )}
-
-                                                        {phase.deliverables && (
-                                                            <div>
-                                                                <h5 className="text-sm font-semibold text-text-secondary mb-2">📦 Entregas</h5>
-                                                                <ul className="space-y-1">
-                                                                    {phase.deliverables.map((deliverable, idx) => (
-                                                                        <li key={idx} className="flex items-start text-sm text-text-primary">
-                                                                            <span className="mr-2 text-green-400">✓</span>
-                                                                            <span>{deliverable}</span>
-                                                                        </li>
-                                                                    ))}
-                                                                </ul>
-                                                            </div>
-                                                        )}
-
-                                                        {phase.risks && (
-                                                            <div>
-                                                                <h5 className="text-sm font-semibold text-text-secondary mb-2">⚠️ Riscos</h5>
-                                                                <ul className="space-y-1">
-                                                                    {phase.risks.map((risk, idx) => (
-                                                                        <li key={idx} className="flex items-start text-sm text-text-primary">
-                                                                            <span className="mr-2 text-orange-400">⚠</span>
-                                                                            <span>{risk}</span>
-                                                                        </li>
-                                                                    ))}
-                                                                </ul>
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                )}
-
-                                                <button
-                                                    onClick={() => setSelectedPhase(phase)}
-                                                    className="mt-4 text-accent hover:text-accent-light text-sm font-semibold"
-                                                >
-                                                    Ver Detalhes Completos →
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                );
-                            })}
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
                         </div>
-                    </div>
-                ) : (
-                    /* Visualização Tabela */
-            <div className="overflow-x-auto scrollbar-hide">
-                <table className="w-full min-w-[1000px] text-left text-sm">
-                            <thead className="border-b-2 border-surface-border text-text-secondary">
-                        <tr>
-                            <th className="p-3 w-1/12">Fase</th>
-                                    <th className="p-3 w-1/12">Status</th>
-                            <th className="p-3 w-1/12">Duração</th>
-                            <th className="p-3 w-2/12">Dependências</th>
-                            <th className="p-3 w-2/12">Critérios de Transição</th>
-                            <th className="p-3 w-2/12">Marco</th>
-                                    <th className="p-3 w-3/12">Checklist</th>
-                        </tr>
-                    </thead>
-                            <tbody className="divide-y divide-surface-border">
-                                {timelineData.map(phase => {
-                                    const isCurrent = phase.phase === currentPhaseName;
-                                    const isDone = getPhaseStatus(phase.phase) === 'completed';
-                                    const progress = getPhaseProgress(phase);
-                            
-                            return (
-                                        <tr 
-                                            key={phase.phase} 
-                                            className={`${isCurrent ? 'bg-accent/10' : ''} ${isDone ? 'opacity-60' : ''} transition-colors hover:bg-surface-hover cursor-pointer`}
-                                            onClick={() => setSelectedPhase(phase)}
-                                        >
-                                            <td className={`p-3 font-semibold align-top ${isDone ? 'text-text-secondary' : 'text-accent'}`}>
-                                                {phase.phase}
-                                            </td>
-                                            <td className="p-3 align-top">
-                                                <Badge variant={isDone ? 'success' : isCurrent ? 'info' : 'default'} size="sm">
-                                                    {isDone ? '✅' : isCurrent ? '🔄' : '⏳'}
-                                                </Badge>
-                                            </td>
-                                            <td className={`p-3 align-top ${isDone ? 'text-text-secondary' : 'text-text-primary'}`}>
-                                                {phase.duration}
-                                            </td>
-                                            <td className={`p-3 align-top ${isDone ? 'text-text-secondary' : 'text-text-primary'}`}>
-                                                {phase.dependencies}
-                                            </td>
-                                            <td className={`p-3 align-top ${isDone ? 'text-text-secondary' : 'text-text-primary'}`}>
-                                                {phase.exitCriteria}
-                                            </td>
-                                            <td className={`p-3 align-top ${isDone ? 'text-text-secondary' : 'text-text-primary'}`}>
-                                                {phase.milestone}
-                                            </td>
-                                            <td className="p-3 align-top">
-                                                <div className="space-y-2">
-                                                    {phase.checklist.map((item, idx) => {
-                                                        const checked = item.check(metricsWithProject);
-                                                        return (
-                                                            <div key={idx} className="flex items-center gap-2">
-                                                                <Checkbox checked={checked} description={item.description} />
-                                                                <span className={`text-xs ${checked ? 'text-green-400 line-through' : 'text-text-primary'}`}>
-                                                                    {item.label}
-                                                                </span>
-                                                            </div>
-                                                        );
-                                                    })}
-                                                    <div className="mt-2">
-                                                        <ProgressIndicator
-                                                            value={phase.checklist.filter(item => item.check(metricsWithProject)).length}
-                                                            max={phase.checklist.length}
-                                                            color="blue"
-                                                            size="sm"
-                                                        />
-                                                    </div>
-                                                </div>
-                                    </td>
-                                </tr>
-                                    );
-                        })}
-                    </tbody>
-                </table>
-            </div>
-                )}
-        </Card>
+                    )}
+                </div>
+            </Card>
 
-            {/* Modal de Detalhes */}
             {selectedPhase && (
                 <Modal
                     isOpen={!!selectedPhase}
