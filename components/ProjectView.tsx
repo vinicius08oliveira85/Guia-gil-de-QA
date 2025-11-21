@@ -115,25 +115,25 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
 
     return (
         <>
-            <div className="container mx-auto max-w-6xl px-4 py-4 sm:px-6 sm:py-6 md:px-8 non-printable w-full">
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+            <div className="container mx-auto max-w-screen-2xl px-4 py-4 sm:px-6 sm:py-6 lg:px-8 xl:px-10 2xl:px-16 non-printable w-full">
+                <div className="grid gap-3 mb-6 w-full lg:grid-cols-[auto,1fr] lg:items-center">
                     <button 
                         onClick={onBack} 
                         className="text-accent hover:text-accent-light transition-colors font-semibold w-full sm:w-auto text-left"
                     >
                         &larr; Voltar para Projetos
                     </button>
-                    <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                    <div className="flex flex-wrap gap-2 w-full justify-end">
                         <button 
                             onClick={() => setShowExportMenu(true)} 
-                            className="btn btn-secondary flex items-center justify-center gap-2 w-full sm:w-auto"
+                            className="btn btn-secondary flex items-center justify-center gap-2 w-full sm:w-auto lg:min-w-[180px]"
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                             <span>Exportar</span>
                         </button>
                         <button 
                             onClick={handlePrint} 
-                            className="btn btn-secondary flex items-center justify-center gap-2 w-full sm:w-auto"
+                            className="btn btn-secondary flex items-center justify-center gap-2 w-full sm:w-auto lg:min-w-[150px]"
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
                             <span>PDF</span>
