@@ -9,6 +9,7 @@ export interface TestCase {
   executedStrategy?: string | string[]; // Suporta string (legado) ou array (novo formato)
   isAutomated?: boolean;
   observedResult?: string;
+  toolsUsed?: string[]; // Ferramentas utilizadas neste caso de teste
 }
 
 export type TestCaseDetailLevel = 'Resumido' | 'Padrão' | 'Detalhado';
@@ -108,7 +109,18 @@ export interface JiraTask {
   actualHours?: number;
   checklist?: ChecklistItem[];
   iaAnalysis?: TaskIAAnalysis;
+  toolsUsed?: string[]; // Ferramentas utilizadas nesta task
 }
+
+// Ferramentas sugeridas para testes
+export const SUGGESTED_TOOLS = [
+  'Postman',
+  'Insomnia',
+  'DBeaver',
+  'Kibana'
+] as const;
+
+export type SuggestedTool = typeof SUGGESTED_TOOLS[number];
 
 export interface ProjectDocument {
   name: string;

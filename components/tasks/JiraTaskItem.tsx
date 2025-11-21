@@ -5,6 +5,7 @@ import { TaskTypeIcon, TaskStatusIcon, PlusIcon, EditIcon, TrashIcon, ChevronDow
 import { BddScenarioForm, BddScenarioItem } from './BddScenario';
 import { TestCaseItem } from './TestCaseItem';
 import { TestStrategyCard } from './TestStrategyCard';
+import { ToolsSelector } from './ToolsSelector';
 import { CommentSection } from '../common/CommentSection';
 import { DependencyManager } from '../common/DependencyManager';
 import { AttachmentManager } from '../common/AttachmentManager';
@@ -20,6 +21,7 @@ import { ConfirmDialog } from '../common/ConfirmDialog';
 import { EmptyState } from '../common/EmptyState';
 import { LoadingSkeleton } from '../common/LoadingSkeleton';
 import { ensureJiraHexColor, getJiraStatusColor, getJiraStatusTextColor } from '../../utils/jiraStatusColors';
+import { windows12Styles } from '../../utils/windows12Styles';
 
 // Componente para renderizar descrição com suporte a imagens
 const DescriptionRenderer: React.FC<{ description: string }> = ({ description }) => {
@@ -97,6 +99,8 @@ export const JiraTaskItem: React.FC<{
     onTestCaseStatusChange: (testCaseId: string, status: 'Passed' | 'Failed') => void;
     onToggleTestCaseAutomated: (testCaseId: string, isAutomated: boolean) => void;
     onExecutedStrategyChange: (testCaseId: string, strategies: string[]) => void;
+    onTaskToolsChange?: (tools: string[]) => void;
+    onTestCaseToolsChange?: (testCaseId: string, tools: string[]) => void;
     onDelete: (taskId: string) => void;
     onGenerateTests: (taskId: string, detailLevel: TestCaseDetailLevel) => Promise<void>;
     isGenerating: boolean;
@@ -119,7 +123,7 @@ export const JiraTaskItem: React.FC<{
     level: number;
     activeTaskId?: string | null;
     onFocusTask?: (taskId: string | null) => void;
-}> = React.memo(({ task, onTestCaseStatusChange, onToggleTestCaseAutomated, onExecutedStrategyChange, onDelete, onGenerateTests, isGenerating, onAddSubtask, onEdit, onGenerateBddScenarios, isGeneratingBdd, onSaveBddScenario, onDeleteBddScenario, onTaskStatusChange, onAddTestCaseFromTemplate, onAddComment, onEditComment, onDeleteComment, project, onUpdateProject, isSelected, onToggleSelect, children, level, activeTaskId, onFocusTask }) => {
+}> = React.memo(({ task, onTestCaseStatusChange, onToggleTestCaseAutomated, onExecutedStrategyChange, onTaskToolsChange, onTestCaseToolsChange, onDelete, onGenerateTests, isGenerating, onAddSubtask, onEdit, onGenerateBddScenarios, isGeneratingBdd, onSaveBddScenario, onDeleteBddScenario, onTaskStatusChange, onAddTestCaseFromTemplate, onAddComment, onEditComment, onDeleteComment, project, onUpdateProject, isSelected, onToggleSelect, children, level, activeTaskId, onFocusTask }) => {
     const [isDetailsOpen, setIsDetailsOpen] = useState(false); // Colapsado por padrão para compactar
     const [isChildrenOpen, setIsChildrenOpen] = useState(false);
     const [editingBddScenario, setEditingBddScenario] = useState<BddScenario | null>(null);
@@ -129,6 +133,7 @@ export const JiraTaskItem: React.FC<{
     const [showAttachments, setShowAttachments] = useState(false);
     const [showEstimation, setShowEstimation] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [showTestReport, setShowTestReport] = useState(false);
     const [activeSection, setActiveSection] = useState<DetailSection>('overview');
     const hasTests = task.testCases && task.testCases.length > 0;
     const hasChildren = task.children && task.children.length > 0;
@@ -241,6 +246,24 @@ export const JiraTaskItem: React.FC<{
                         project={project}
                         onUpdateProject={onUpdateProject}
                     />
+                </div>
+            )}
+            
+            {/* Botão para Gerar Registro de Testes */}
+            {(task.testCases?.length > 0 || task.testStrategy?.length > 0) && (
+                <div className="flex justify-end">
+                    <button
+                        onClick={() => setShowTestReport(true)}
+                        className={`
+                            ${windows12Styles.buttonPrimary}
+                            flex items-center gap-2
+                        `}
+                    >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <span>Gerar Registro de Testes</span>
+                    </button>
                 </div>
             )}
             <div className="text-text-secondary">
@@ -381,6 +404,7 @@ export const JiraTaskItem: React.FC<{
                                 onStatusChange={(status) => onTestCaseStatusChange(tc.id, status)}
                                 onToggleAutomated={(isAutomated) => onToggleTestCaseAutomated(tc.id, isAutomated)}
                                 onExecutedStrategyChange={(strategies) => onExecutedStrategyChange(tc.id, strategies)}
+                                onToolsChange={onTestCaseToolsChange ? (tools) => onTestCaseToolsChange(tc.id, tools) : undefined}
                             />
                         ))}
                     </div>
@@ -407,6 +431,18 @@ export const JiraTaskItem: React.FC<{
                     </div>
                 )}
             </div>
+
+            {/* Ferramentas Utilizadas na Task */}
+            {onTaskToolsChange && (
+                <div className="mt-6 p-4 bg-surface-hover rounded-lg border border-surface-border">
+                    <ToolsSelector
+                        selectedTools={task.toolsUsed || []}
+                        onToolsChange={onTaskToolsChange}
+                        label="Ferramentas Utilizadas (Geral)"
+                        compact={false}
+                    />
+                </div>
+            )}
 
             {!isGenerating && (
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-3">
@@ -824,6 +860,12 @@ export const JiraTaskItem: React.FC<{
                 variant="danger"
                 confirmText="Excluir"
                 cancelText="Cancelar"
+            />
+
+            <TestReportModal
+                isOpen={showTestReport}
+                onClose={() => setShowTestReport(false)}
+                task={task}
             />
         </div>
     );

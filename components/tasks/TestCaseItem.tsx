@@ -2,6 +2,7 @@ import React from 'react';
 import { TestCase } from '../../types';
 import { CheckIcon } from '../common/Icons';
 import { normalizeExecutedStrategy } from '../../utils/testCaseMigration';
+import { ToolsSelector } from './ToolsSelector';
 
 const strategyColorMap: { [key: string]: string } = {
     'Teste Funcional': 'bg-blue-500/30 text-blue-300',
@@ -19,7 +20,8 @@ export const TestCaseItem: React.FC<{
     onStatusChange: (status: 'Passed' | 'Failed') => void;
     onToggleAutomated: (isAutomated: boolean) => void;
     onExecutedStrategyChange: (strategies: string[]) => void;
-}> = ({ testCase, onStatusChange, onToggleAutomated, onExecutedStrategyChange }) => {
+    onToolsChange?: (tools: string[]) => void;
+}> = ({ testCase, onStatusChange, onToggleAutomated, onExecutedStrategyChange, onToolsChange }) => {
     const statusColor = {
         'Not Run': 'bg-slate-600',
         'Passed': 'bg-green-600',
