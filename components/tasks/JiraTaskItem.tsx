@@ -371,9 +371,9 @@ export const JiraTaskItem: React.FC<{
                                 key={i} 
                                 strategy={strategy}
                                 strategyIndex={i}
-                                isExecuted={task.executedStrategies?.includes(i) || false}
+                                isExecuted={(task.executedStrategies && task.executedStrategies.includes(i)) || false}
                                 onToggleExecuted={onStrategyExecutedChange}
-                                toolsUsed={task.strategyTools?.[i] || []}
+                                toolsUsed={(task.strategyTools && task.strategyTools[i]) || []}
                                 onToolsChange={onStrategyToolsChange}
                             />
                         ))}

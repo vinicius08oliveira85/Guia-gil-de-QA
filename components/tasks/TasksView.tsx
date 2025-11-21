@@ -408,7 +408,27 @@ export const TasksView: React.FC<{
     const handleSaveTask = (taskData: Omit<JiraTask, 'testCases' | 'status' | 'testStrategy' | 'bddScenarios' | 'createdAt' | 'completedAt'>) => {
         let newTasks: JiraTask[];
         if (editingTask) {
-            newTasks = project.tasks.map(t => t.id === editingTask.id ? { ...t, ...taskData } : t);
+            // Preservar campos que não vêm do formulário
+            const existingTask = project.tasks.find(t => t.id === editingTask.id);
+            newTasks = project.tasks.map(t => {
+                if (t.id === editingTask.id) {
+                    return { 
+                        ...t, 
+                        ...taskData,
+                        // Preservar campos que não são editados no formulário
+                        testCases: existingTask?.testCases || t.testCases,
+                        testStrategy: existingTask?.testStrategy || t.testStrategy,
+                        bddScenarios: existingTask?.bddScenarios || t.bddScenarios,
+                        executedStrategies: existingTask?.executedStrategies || t.executedStrategies,
+                        strategyTools: existingTask?.strategyTools || t.strategyTools,
+                        toolsUsed: existingTask?.toolsUsed || t.toolsUsed,
+                        status: t.status,
+                        createdAt: t.createdAt,
+                        completedAt: t.completedAt
+                    };
+                }
+                return t;
+            });
         } else {
             const newTask: JiraTask = { ...taskData, status: 'To Do', testCases: [], bddScenarios: [], createdAt: new Date().toISOString() };
             newTasks = [...project.tasks, newTask];
