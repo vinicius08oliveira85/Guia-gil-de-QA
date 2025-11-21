@@ -755,7 +755,7 @@ export const importJiraProject = async (
         // Por enquanto, deixamos vazio pois requer configuração adicional da API
 
         return task;
-    });
+    }));
 
     // Organizar hierarquia (Epics e subtarefas)
     const epics = tasks.filter(t => t.type === 'Epic');
@@ -955,7 +955,7 @@ export const addNewJiraTasks = async (
         }
 
         return task;
-    });
+    }));
 
     // Adicionar novas tarefas ao projeto, preservando todas as tarefas existentes e suas alterações
     const allTasks = [...project.tasks, ...newTasks];
