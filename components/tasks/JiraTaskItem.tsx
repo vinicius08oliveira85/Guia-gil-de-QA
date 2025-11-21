@@ -96,7 +96,7 @@ export const JiraTaskItem: React.FC<{
     task: TaskWithChildren;
     onTestCaseStatusChange: (testCaseId: string, status: 'Passed' | 'Failed') => void;
     onToggleTestCaseAutomated: (testCaseId: string, isAutomated: boolean) => void;
-    onExecutedStrategyChange: (testCaseId: string, strategy: string | null) => void;
+    onExecutedStrategyChange: (testCaseId: string, strategies: string[]) => void;
     onDelete: (taskId: string) => void;
     onGenerateTests: (taskId: string, detailLevel: TestCaseDetailLevel) => Promise<void>;
     isGenerating: boolean;
@@ -380,7 +380,7 @@ export const JiraTaskItem: React.FC<{
                                 testCase={tc} 
                                 onStatusChange={(status) => onTestCaseStatusChange(tc.id, status)}
                                 onToggleAutomated={(isAutomated) => onToggleTestCaseAutomated(tc.id, isAutomated)}
-                                onExecutedStrategyChange={(strategy) => onExecutedStrategyChange(tc.id, strategy)}
+                                onExecutedStrategyChange={(strategies) => onExecutedStrategyChange(tc.id, strategies)}
                             />
                         ))}
                     </div>

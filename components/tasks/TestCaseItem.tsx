@@ -1,6 +1,7 @@
 import React from 'react';
 import { TestCase } from '../../types';
 import { CheckIcon } from '../common/Icons';
+import { normalizeExecutedStrategy } from '../../utils/testCaseMigration';
 
 const strategyColorMap: { [key: string]: string } = {
     'Teste Funcional': 'bg-blue-500/30 text-blue-300',
@@ -17,7 +18,7 @@ export const TestCaseItem: React.FC<{
     testCase: TestCase; 
     onStatusChange: (status: 'Passed' | 'Failed') => void;
     onToggleAutomated: (isAutomated: boolean) => void;
-    onExecutedStrategyChange: (strategy: string | null) => void;
+    onExecutedStrategyChange: (strategies: string[]) => void;
 }> = ({ testCase, onStatusChange, onToggleAutomated, onExecutedStrategyChange }) => {
     const statusColor = {
         'Not Run': 'bg-slate-600',
@@ -25,17 +26,39 @@ export const TestCaseItem: React.FC<{
         'Failed': 'bg-red-600',
     };
     const recommendedStrategies = testCase.strategies || [];
-    const selectedStrategy = testCase.executedStrategy || '';
-    const hasSelectedRecommended = Boolean(selectedStrategy && recommendedStrategies.includes(selectedStrategy));
-    const customStrategyValue = hasSelectedRecommended ? '' : selectedStrategy;
-    const showExecutedStrategySummary = Boolean(testCase.executedStrategy && testCase.executedStrategy.trim() !== '');
+    const selectedStrategies = normalizeExecutedStrategy(testCase.executedStrategy);
+    const customStrategies = selectedStrategies.filter(s => !recommendedStrategies.includes(s));
+    const customStrategyValue = customStrategies.join(', ');
+    const showExecutedStrategySummary = selectedStrategies.length > 0;
+
+    const handleStrategyToggle = (strategy: string) => {
+        const currentStrategies = normalizeExecutedStrategy(testCase.executedStrategy);
+        const isSelected = currentStrategies.includes(strategy);
+        
+        if (isSelected) {
+            // Remove da seleção
+            const newStrategies = currentStrategies.filter(s => s !== strategy);
+            onExecutedStrategyChange(newStrategies);
+        } else {
+            // Adiciona à seleção
+            const newStrategies = [...currentStrategies, strategy];
+            onExecutedStrategyChange(newStrategies);
+        }
+    };
 
     const handleCustomStrategyBlur = (value: string) => {
         if (value.trim() === '') {
-            onExecutedStrategyChange(null);
+            // Se campo vazio, mantém apenas as estratégias recomendadas selecionadas
+            const recommendedSelected = selectedStrategies.filter(s => recommendedStrategies.includes(s));
+            onExecutedStrategyChange(recommendedSelected);
             return;
         }
-        onExecutedStrategyChange(value);
+        
+        // Separa por vírgula e adiciona estratégias customizadas
+        const customStrategiesList = value.split(',').map(s => s.trim()).filter(s => s !== '');
+        const recommendedSelected = selectedStrategies.filter(s => recommendedStrategies.includes(s));
+        const allStrategies = [...recommendedSelected, ...customStrategiesList];
+        onExecutedStrategyChange(allStrategies);
     };
 
     return (
@@ -63,16 +86,16 @@ export const TestCaseItem: React.FC<{
             {recommendedStrategies.length > 0 && (
                 <div className="mt-2">
                     <p className="text-[0.65rem] uppercase tracking-wide text-text-secondary">
-                        Selecione o teste executado
+                        Selecione os testes executados
                     </p>
                     <div className="flex flex-wrap gap-2 mt-2">
                         {recommendedStrategies.map(strategy => {
-                            const isSelected = testCase.executedStrategy === strategy;
+                            const isSelected = selectedStrategies.includes(strategy);
                             return (
                                 <button
                                     key={strategy}
                                     type="button"
-                                    onClick={() => onExecutedStrategyChange(isSelected ? null : strategy)}
+                                    onClick={() => handleStrategyToggle(strategy)}
                                     className={`px-3 py-1 rounded-full text-xs font-semibold border transition-colors flex items-center gap-1 ${
                                         isSelected
                                             ? 'bg-accent text-white border-accent'
@@ -94,18 +117,32 @@ export const TestCaseItem: React.FC<{
                 <input
                     type="text"
                     value={customStrategyValue}
-                    onChange={(e) => onExecutedStrategyChange(e.target.value)}
+                    onChange={(e) => {
+                        // Permite edição livre, mas só salva no blur
+                    }}
                     onBlur={(e) => handleCustomStrategyBlur(e.target.value)}
-                    placeholder="Ex: Teste Exploratório do fluxo de pagamento"
+                    placeholder="Ex: Teste Exploratório, Teste de Acessibilidade (separados por vírgula)"
                     className="w-full bg-surface-hover border border-surface-border rounded-md px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/50"
                 />
                 <p className="text-[0.65rem] text-text-secondary mt-1">
-                    Use esta opção se executou um teste diferente das recomendações acima.
+                    Use esta opção se executou testes diferentes das recomendações acima. Separe múltiplos testes por vírgula.
                 </p>
                 {showExecutedStrategySummary && (
-                    <p className="text-xs text-accent mt-2">
-                        Teste registrado: <span className="text-text-primary font-semibold">{testCase.executedStrategy}</span>
-                    </p>
+                    <div className="mt-2">
+                        <p className="text-xs text-accent mb-1">
+                            Testes registrados ({selectedStrategies.length}):
+                        </p>
+                        <div className="flex flex-wrap gap-1">
+                            {selectedStrategies.map((strategy, idx) => (
+                                <span
+                                    key={idx}
+                                    className="px-2 py-0.5 text-xs font-semibold rounded-full bg-accent/20 text-accent-light border border-accent/30"
+                                >
+                                    {strategy}
+                                </span>
+                            ))}
+                        </div>
+                    </div>
                 )}
             </div>
             <p className="font-semibold text-text-primary mt-4">{testCase.description}</p>

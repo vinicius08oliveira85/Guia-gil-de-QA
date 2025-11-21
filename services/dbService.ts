@@ -7,6 +7,7 @@ import {
     loadProjectsFromSupabase, 
     deleteProjectFromSupabase 
 } from './supabaseService';
+import { migrateTestCases } from '../utils/testCaseMigration';
 
 let db: IDBDatabase;
 
@@ -37,6 +38,8 @@ const openDB = (): Promise<IDBDatabase> => {
   });
 };
 
+import { migrateTestCases } from '../utils/testCaseMigration';
+
 export const getAllProjects = async (): Promise<Project[]> => {
   // Sempre carregar do IndexedDB como base
   const db = await openDB();
@@ -49,21 +52,39 @@ export const getAllProjects = async (): Promise<Project[]> => {
     request.onsuccess = () => resolve(request.result || []);
   });
 
+  // Migrar TestCases dos projetos do IndexedDB
+  const migratedIndexedDBProjects = indexedDBProjects.map(project => ({
+    ...project,
+    tasks: project.tasks.map(task => ({
+      ...task,
+      testCases: migrateTestCases(task.testCases || [])
+    }))
+  }));
+
   // Se Supabase está disponível, fazer merge com IndexedDB
   if (isSupabaseAvailable()) {
     try {
       const supabaseProjects = await loadProjectsFromSupabase();
       
+      // Migrar TestCases dos projetos do Supabase
+      const migratedSupabaseProjects = supabaseProjects.map(project => ({
+        ...project,
+        tasks: project.tasks.map(task => ({
+          ...task,
+          testCases: migrateTestCases(task.testCases || [])
+        }))
+      }));
+      
       // Fazer merge: criar um Map com ID como chave, priorizando Supabase
       const projectsMap = new Map<string, Project>();
       
-      // Primeiro adicionar projetos do IndexedDB
-      indexedDBProjects.forEach(project => {
+      // Primeiro adicionar projetos do IndexedDB (já migrados)
+      migratedIndexedDBProjects.forEach(project => {
         projectsMap.set(project.id, project);
       });
       
-      // Depois sobrescrever/atualizar com projetos do Supabase (prioridade)
-      supabaseProjects.forEach(project => {
+      // Depois sobrescrever/atualizar com projetos do Supabase (prioridade, já migrados)
+      migratedSupabaseProjects.forEach(project => {
         projectsMap.set(project.id, project);
       });
       
@@ -78,13 +99,13 @@ export const getAllProjects = async (): Promise<Project[]> => {
       return mergedProjects;
     } catch (error) {
       console.warn('⚠️ Erro ao carregar do Supabase, usando apenas IndexedDB:', error);
-      // Retornar projetos do IndexedDB em caso de erro
-      return indexedDBProjects;
+      // Retornar projetos do IndexedDB em caso de erro (já migrados)
+      return migratedIndexedDBProjects;
     }
   }
   
-  // Se Supabase não está disponível, retornar apenas IndexedDB
-  return indexedDBProjects;
+  // Se Supabase não está disponível, retornar apenas IndexedDB (já migrados)
+  return migratedIndexedDBProjects;
 };
 
 export const addProject = async (project: Project): Promise<void> => {
