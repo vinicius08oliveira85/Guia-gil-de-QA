@@ -114,7 +114,7 @@ export const JiraTaskItem: React.FC<{
     onSaveBddScenario: (taskId: string, scenario: Omit<BddScenario, 'id'>, scenarioId?: string) => void;
     onDeleteBddScenario: (taskId: string, scenarioId: string) => void;
     onTaskStatusChange: (status: 'To Do' | 'In Progress' | 'Done') => void;
-    onAddTestCaseFromTemplate?: (templateId: string) => void;
+    onAddTestCaseFromTemplate?: (taskId: string) => void;
     onAddComment?: (content: string) => void;
     onEditComment?: (commentId: string, content: string) => void;
     onDeleteComment?: (commentId: string) => void;
@@ -441,7 +441,10 @@ export const JiraTaskItem: React.FC<{
                             }}
                             secondaryAction={onAddTestCaseFromTemplate ? {
                                 label: "Usar Template",
-                                onClick: () => onAddTestCaseFromTemplate('')
+                                onClick: () => {
+                                    // Abrir modal de templates com esta tarefa pré-selecionada
+                                    onAddTestCaseFromTemplate(task.id);
+                                }
                             } : undefined}
                         />
                     </div>

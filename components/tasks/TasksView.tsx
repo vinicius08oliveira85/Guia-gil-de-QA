@@ -1091,35 +1091,46 @@ export const TasksView: React.FC<{
 
         <Modal
             isOpen={showTemplateSelector}
-            onClose={() => setShowTemplateSelector(false)}
+            onClose={() => {
+                setShowTemplateSelector(false);
+                setSelectedTaskForTemplate(null);
+            }}
             title="Selecionar Template de Caso de Teste"
         >
-            {selectedTaskForTemplate ? (
-                <div>
-                    <p className="mb-4 text-text-secondary">
-                        Selecione um template para adicionar à tarefa selecionada.
+            <div>
+                {selectedTaskForTemplate ? (
+                    <p className="mb-4 text-sm text-text-secondary">
+                        Selecione um template para adicionar à tarefa <span className="font-semibold text-accent">{selectedTaskForTemplate}</span>.
                     </p>
-                    <TestCaseTemplateSelector
-                        onSelectTemplate={(templateId) => {
-                            handleAddTestCaseFromTemplate(selectedTaskForTemplate, templateId);
-                            setShowTemplateSelector(false);
-                            setSelectedTaskForTemplate(null);
-                        }}
-                        onClose={() => {
-                            setShowTemplateSelector(false);
-                            setSelectedTaskForTemplate(null);
-                        }}
-                    />
-                </div>
-            ) : (
+                ) : (
+                    <p className="mb-4 text-sm text-text-secondary">
+                        Selecione uma tarefa e depois escolha um template de caso de teste para adicionar.
+                    </p>
+                )}
                 <TestCaseTemplateSelector
-                    onSelectTemplate={(templateId) => {
-                        // Se não houver tarefa selecionada, apenas fechar
-                        setShowTemplateSelector(false);
+                    onSelectTemplate={(templateId, taskId) => {
+                        const targetTaskId = taskId || selectedTaskForTemplate;
+                        if (targetTaskId) {
+                            handleAddTestCaseFromTemplate(targetTaskId, templateId);
+                            setShowTemplateSelector(false);
+                            setSelectedTaskForTemplate(null);
+                        }
                     }}
-                    onClose={() => setShowTemplateSelector(false)}
+                    onClose={() => {
+                        setShowTemplateSelector(false);
+                        setSelectedTaskForTemplate(null);
+                    }}
+                    selectedTaskId={selectedTaskForTemplate}
+                    availableTasks={project.tasks}
+                    onSelectTask={(taskId) => {
+                        if (taskId) {
+                            setSelectedTaskForTemplate(taskId);
+                        } else {
+                            setSelectedTaskForTemplate(null);
+                        }
+                    }}
                 />
-            )}
+            </div>
         </Modal>
 
         <TaskCreationWizard
