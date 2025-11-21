@@ -6,6 +6,7 @@ import { BddScenarioForm, BddScenarioItem } from './BddScenario';
 import { TestCaseItem } from './TestCaseItem';
 import { TestStrategyCard } from './TestStrategyCard';
 import { ToolsSelector } from './ToolsSelector';
+import { TestReportModal } from './TestReportModal';
 import { CommentSection } from '../common/CommentSection';
 import { DependencyManager } from '../common/DependencyManager';
 import { AttachmentManager } from '../common/AttachmentManager';
