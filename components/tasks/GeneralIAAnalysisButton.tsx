@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Spinner } from '../common/Spinner';
+import { windows12Styles } from '../../utils/windows12Styles';
 
 interface GeneralIAAnalysisButtonProps {
   onAnalyze: () => Promise<void>;
@@ -11,26 +12,45 @@ export const GeneralIAAnalysisButton: React.FC<GeneralIAAnalysisButtonProps> = (
   isAnalyzing = false 
 }) => {
   const [progress, setProgress] = useState(0);
+  const [pulsePhase, setPulsePhase] = useState(0);
+
+  // Animação de pulso contínua durante análise
+  useEffect(() => {
+    if (!isAnalyzing) {
+      setPulsePhase(0);
+      return;
+    }
+
+    const interval = setInterval(() => {
+      setPulsePhase(prev => (prev + 1) % 4);
+    }, 600);
+
+    return () => clearInterval(interval);
+  }, [isAnalyzing]);
 
   const handleClick = async () => {
     if (isAnalyzing) return;
     
-    // Simular progresso durante a análise
+    // Simular progresso durante a análise com feedback mais suave
     const progressInterval = setInterval(() => {
       setProgress(prev => {
-        if (prev >= 90) {
+        if (prev >= 95) {
           clearInterval(progressInterval);
           return prev;
         }
-        return prev + Math.random() * 10;
+        // Progresso mais suave e realista
+        const increment = Math.random() * 8 + 2;
+        return Math.min(prev + increment, 95);
       });
-    }, 500);
+    }, 400);
 
     try {
       await onAnalyze();
+      // Completar progresso ao finalizar
+      setProgress(100);
+      setTimeout(() => setProgress(0), 300);
     } finally {
       clearInterval(progressInterval);
-      setProgress(0);
     }
   };
 
@@ -40,29 +60,53 @@ export const GeneralIAAnalysisButton: React.FC<GeneralIAAnalysisButtonProps> = (
       disabled={isAnalyzing}
       className={`
         relative overflow-hidden
-        mica rounded-xl px-4 py-3
-        border border-surface-border
-        transition-all duration-300
-        disabled:opacity-50 disabled:cursor-not-allowed
+        ${windows12Styles.card}
+        ${windows12Styles.transition.normal}
+        px-4 py-3
         ${isAnalyzing 
-          ? 'cursor-wait' 
-          : 'hover:bg-surface-hover hover:border-accent/50 hover:shadow-lg hover:shadow-accent/20 active:scale-95'
+          ? 'cursor-wait shadow-lg shadow-accent/30 border-accent/40' 
+          : `${windows12Styles.cardHover} group`
         }
-        group
+        disabled:opacity-50 disabled:cursor-not-allowed
       `}
     >
-      <div className="flex items-center gap-3">
-        {/* Ícone de cérebro/chip com animação */}
+      {/* Efeito de fundo glow durante análise */}
+      {isAnalyzing && (
+        <div className={`
+          absolute inset-0 rounded-xl
+          bg-gradient-to-br from-accent/10 via-accent/5 to-transparent
+          animate-pulse
+          ${windows12Styles.glow('accent')}
+        `} />
+      )}
+
+      <div className="relative flex items-center gap-3 z-10">
+        {/* Ícone de cérebro/chip com animação aprimorada */}
         <div className={`
           relative w-6 h-6 flex items-center justify-center
-          transition-transform duration-300
-          ${isAnalyzing ? 'animate-spin' : 'group-hover:scale-110'}
+          ${windows12Styles.transition.normal}
+          ${isAnalyzing 
+            ? 'animate-spin' 
+            : 'group-hover:scale-110 group-hover:rotate-12'
+          }
         `}>
           {isAnalyzing ? (
-            <Spinner small />
+            <>
+              <Spinner small />
+              {/* Glow pulsante ao redor do spinner */}
+              <div className={`
+                absolute inset-0 rounded-full
+                bg-accent/40 animate-pulse blur-sm
+                ${pulsePhase === 0 ? 'scale-100' : ''}
+                ${pulsePhase === 1 ? 'scale-110' : ''}
+                ${pulsePhase === 2 ? 'scale-120' : ''}
+                ${pulsePhase === 3 ? 'scale-110' : ''}
+                ${windows12Styles.transition.slow}
+              `} />
+            </>
           ) : (
             <svg 
-              className="w-6 h-6 text-accent-light" 
+              className="w-6 h-6 text-accent-light group-hover:text-accent transition-colors" 
               fill="none" 
               viewBox="0 0 24 24" 
               stroke="currentColor"
@@ -75,38 +119,61 @@ export const GeneralIAAnalysisButton: React.FC<GeneralIAAnalysisButtonProps> = (
               />
             </svg>
           )}
-          
-          {/* Efeito glow durante análise */}
-          {isAnalyzing && (
-            <div className="absolute inset-0 rounded-full bg-accent/30 animate-pulse blur-md" />
-          )}
         </div>
 
         <div className="flex flex-col items-start">
-          <span className="text-sm font-semibold text-text-primary">
+          <span className={`
+            text-sm font-semibold
+            ${isAnalyzing ? 'text-accent-light' : 'text-text-primary'}
+            ${windows12Styles.transition.fast}
+          `}>
             {isAnalyzing ? 'Analisando...' : 'Análise Geral IA'}
           </span>
           {isAnalyzing && (
-            <span className="text-xs text-text-secondary mt-0.5">
+            <span className="text-xs text-text-secondary mt-0.5 animate-pulse">
               Processando tarefas e testes...
             </span>
           )}
         </div>
       </div>
 
-      {/* Barra de progresso */}
+      {/* Barra de progresso melhorada com gradiente animado */}
       {isAnalyzing && (
-        <div className="absolute bottom-0 left-0 right-0 h-1 bg-surface-hover">
+        <div className="absolute bottom-0 left-0 right-0 h-1 bg-surface-hover/50 rounded-b-xl overflow-hidden">
           <div 
-            className="h-full bg-gradient-to-r from-accent to-accent-light transition-all duration-500 ease-out"
+            className={`
+              h-full 
+              bg-gradient-to-r from-accent via-accent-light to-accent
+              ${windows12Styles.transition.slow}
+              relative
+            `}
             style={{ width: `${progress}%` }}
-          />
+          >
+            {/* Efeito shimmer na barra de progresso */}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-pulse" />
+          </div>
         </div>
       )}
 
-      {/* Efeito shimmer durante hover (não durante análise) */}
+      {/* Efeito shimmer aprimorado durante hover (não durante análise) */}
       {!isAnalyzing && (
-        <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+        <div className={`
+          absolute inset-0 
+          -translate-x-full group-hover:translate-x-full 
+          ${windows12Styles.transition.slow}
+          bg-gradient-to-r from-transparent via-white/10 to-transparent
+          pointer-events-none
+        `} />
+      )}
+
+      {/* Borda brilhante durante análise */}
+      {isAnalyzing && (
+        <div className={`
+          absolute inset-0 rounded-xl
+          border-2 border-accent/30
+          animate-pulse
+          pointer-events-none
+        `} />
       )}
     </button>
   );

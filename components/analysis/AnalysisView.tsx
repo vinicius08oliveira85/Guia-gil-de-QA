@@ -14,6 +14,7 @@ import { AnalysisSection } from './AnalysisSection';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import { useAnalysisSync } from '../../hooks/useAnalysisSync';
 import { EmptyState } from '../common/EmptyState';
+import { windows12Styles } from '../../utils/windows12Styles';
 
 type ViewMode = 'list' | 'grid' | 'detailed';
 
@@ -145,31 +146,63 @@ export const AnalysisView: React.FC<{
         );
     }, [project.tasks]);
 
+    // Obter tarefas sem análise
+    const tasksWithoutAnalysis = useMemo(() => {
+        return project.tasks.filter(task => !task.iaAnalysis || task.iaAnalysis.isOutdated);
+    }, [project.tasks]);
+
+    // Obter testes sem análise
+    const testsWithoutAnalysis = useMemo(() => {
+        if (!project.generalIAAnalysis) return [];
+        const analyzedTestIds = new Set(project.generalIAAnalysis.testAnalyses.map(ta => ta.testId));
+        return project.tasks.flatMap(task =>
+            (task.testCases || [])
+                .filter(tc => !analyzedTestIds.has(tc.id))
+                .map(tc => ({ testCase: tc, task }))
+        );
+    }, [project.tasks, project.generalIAAnalysis]);
+
     return (
-        <div className="space-y-6">
-            {/* Header com ações */}
-            <div className="mica rounded-xl p-6 border border-surface-border flex flex-col sm:flex-row justify-between items-center gap-4">
-                <div>
-                    <h2 className="text-2xl font-bold text-text-primary mb-2">Análise IA do Projeto</h2>
-                    <p className="text-text-secondary">
+        <div className="space-y-6 pb-6">
+            {/* Header com ações - Estilo Windows 12 */}
+            <div className={`
+                ${windows12Styles.card}
+                ${windows12Styles.spacing.lg}
+                flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4
+            `}>
+                <div className="flex-1">
+                    <h2 className="text-2xl sm:text-3xl font-bold text-text-primary mb-2">
+                        Análise IA do Projeto
+                    </h2>
+                    <p className="text-sm sm:text-base text-text-secondary">
                         Análises estratégicas e consolidadas geradas por IA para seu projeto
                     </p>
                 </div>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-2 w-full sm:w-auto">
                     <button 
                         onClick={handleAnalyzeAndUpdateDashboard} 
                         disabled={isAnalyzing} 
-                        className="btn btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
+                        className={`
+                            ${windows12Styles.buttonSecondary}
+                            disabled:opacity-50 disabled:cursor-not-allowed
+                            flex items-center gap-2
+                        `}
                     >
-                        {isAnalyzing ? <Spinner small /> : '🔄 Analisar Projeto'}
+                        {isAnalyzing ? <Spinner small /> : '🔄'}
+                        <span className="hidden sm:inline">Analisar Projeto</span>
                     </button>
-                    {!project.generalIAAnalysis && (
+                    {(!project.generalIAAnalysis || needsGeneralReanalysis()) && (
                         <button
                             onClick={handleRefreshGeneralAnalysis}
                             disabled={isAnalyzingGeneral}
-                            className="btn btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                            className={`
+                                ${windows12Styles.buttonPrimary}
+                                disabled:opacity-50 disabled:cursor-not-allowed
+                                flex items-center gap-2
+                            `}
                         >
-                            {isAnalyzingGeneral ? <Spinner small /> : '🧠 Análise Geral IA'}
+                            {isAnalyzingGeneral ? <Spinner small /> : '🧠'}
+                            <span className="hidden sm:inline">Análise Geral IA</span>
                         </button>
                     )}
                 </div>
@@ -183,11 +216,16 @@ export const AnalysisView: React.FC<{
                 />
             )}
 
-            {/* Aviso se análise geral está desatualizada ou não existe */}
+            {/* Aviso se análise geral está desatualizada ou não existe - Estilo Windows 12 */}
             {(!project.generalIAAnalysis || needsGeneralReanalysis()) && (
-                <div className="mica rounded-xl p-4 border border-yellow-400/30 bg-yellow-400/10">
+                <div className={`
+                    ${windows12Styles.card}
+                    ${windows12Styles.spacing.md}
+                    border-yellow-400/30 bg-yellow-400/10
+                    ${windows12Styles.glow('yellow')}
+                `}>
                     <div className="flex items-start gap-3">
-                        <span className="text-2xl">⚠️</span>
+                        <span className="text-2xl animate-pulse">⚠️</span>
                         <div className="flex-1">
                             <h4 className="font-semibold text-text-primary mb-1">
                                 {!project.generalIAAnalysis 
@@ -204,41 +242,161 @@ export const AnalysisView: React.FC<{
                             <button
                                 onClick={handleRefreshGeneralAnalysis}
                                 disabled={isAnalyzingGeneral}
-                                className="btn btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                                className={`
+                                    ${windows12Styles.buttonPrimary}
+                                    disabled:opacity-50 disabled:cursor-not-allowed
+                                    flex items-center gap-2
+                                `}
                             >
-                                {isAnalyzingGeneral ? <Spinner small /> : '🧠 Executar Análise Geral'}
+                                {isAnalyzingGeneral ? <Spinner small /> : '🧠'}
+                                <span>Executar Análise Geral</span>
                             </button>
                         </div>
                     </div>
                 </div>
             )}
 
+            {/* Análises Pendentes - NOVA SEÇÃO */}
+            {(tasksWithoutAnalysis.length > 0 || testsWithoutAnalysis.length > 0) && (
+                <AnalysisSection
+                    title="Análises Pendentes"
+                    icon="⏳"
+                    count={tasksWithoutAnalysis.length + testsWithoutAnalysis.length}
+                    defaultExpanded={true}
+                    emptyState={{
+                        icon: '✅',
+                        title: 'Todas as análises estão atualizadas',
+                        description: 'Não há tarefas ou testes pendentes de análise.'
+                    }}
+                >
+                    {tasksWithoutAnalysis.length > 0 && (
+                        <div className="mb-4">
+                            <h4 className="text-sm font-semibold text-text-secondary mb-2 uppercase tracking-wide">
+                                Tarefas sem análise ({tasksWithoutAnalysis.length})
+                            </h4>
+                            <div className="space-y-2">
+                                {tasksWithoutAnalysis.slice(0, 5).map(task => (
+                                    <div
+                                        key={task.id}
+                                        className={`
+                                            ${windows12Styles.card}
+                                            ${windows12Styles.spacing.sm}
+                                            border-yellow-400/30 bg-yellow-400/5
+                                            hover:border-yellow-400/50 ${windows12Styles.transition.normal}
+                                        `}
+                                    >
+                                        <div className="flex items-start justify-between">
+                                            <div className="flex-1">
+                                                <h5 className="font-semibold text-text-primary mb-1">
+                                                    {task.title}
+                                                </h5>
+                                                <p className="text-xs text-text-secondary">
+                                                    ID: {task.id} • Status: {task.status}
+                                                </p>
+                                                {task.iaAnalysis?.isOutdated && (
+                                                    <span className="inline-block mt-2 px-2 py-1 text-xs rounded bg-yellow-400/20 text-yellow-400 border border-yellow-400/30">
+                                                        ⚠️ Análise desatualizada
+                                                    </span>
+                                                )}
+                                            </div>
+                                            {onNavigateToTask && (
+                                                <button
+                                                    onClick={() => onNavigateToTask(task.id)}
+                                                    className={`
+                                                        ${windows12Styles.buttonSecondary}
+                                                        ml-2 text-xs
+                                                    `}
+                                                >
+                                                    Ver →
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                    {testsWithoutAnalysis.length > 0 && (
+                        <div>
+                            <h4 className="text-sm font-semibold text-text-secondary mb-2 uppercase tracking-wide">
+                                Testes sem análise ({testsWithoutAnalysis.length})
+                            </h4>
+                            <div className="space-y-2">
+                                {testsWithoutAnalysis.slice(0, 5).map(({ testCase, task }) => (
+                                    <div
+                                        key={testCase.id}
+                                        className={`
+                                            ${windows12Styles.card}
+                                            ${windows12Styles.spacing.sm}
+                                            border-blue-400/30 bg-blue-400/5
+                                            hover:border-blue-400/50 ${windows12Styles.transition.normal}
+                                        `}
+                                    >
+                                        <div className="flex items-start justify-between">
+                                            <div className="flex-1">
+                                                <h5 className="font-semibold text-text-primary mb-1 line-clamp-1">
+                                                    {testCase.description}
+                                                </h5>
+                                                <p className="text-xs text-text-secondary">
+                                                    Tarefa: {task.title} • Status: {testCase.status}
+                                                </p>
+                                            </div>
+                                            {onNavigateToTask && (
+                                                <button
+                                                    onClick={() => onNavigateToTask(task.id)}
+                                                    className={`
+                                                        ${windows12Styles.buttonSecondary}
+                                                        ml-2 text-xs
+                                                    `}
+                                                >
+                                                    Ver →
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </AnalysisSection>
+            )}
+
+            {/* Análise Geral */}
+            {project.generalIAAnalysis && (
+                <GeneralAnalysisCard 
+                    analysis={project.generalIAAnalysis}
+                    onRefresh={handleRefreshGeneralAnalysis}
+                />
+            )}
+
             {/* Análises Recentes */}
-            <AnalysisSection
-                title="Análises Recentes"
-                icon="🕐"
-                count={tasksWithAnalyses.length}
-                defaultExpanded={true}
-                viewMode={taskViewMode}
-                onViewModeChange={setTaskViewMode}
-                emptyState={{
-                    icon: '📊',
-                    title: 'Nenhuma análise recente',
-                    description: 'Execute uma análise geral para ver análises recentes de tarefas e testes.'
-                }}
-            >
-                {tasksWithAnalyses.slice(0, 5).map(task => (
-                    task.iaAnalysis && (
-                        <TaskAnalysisCard
-                            key={task.id}
-                            analysis={task.iaAnalysis}
-                            task={task}
-                            onTaskClick={onNavigateToTask}
-                            compact={taskViewMode === 'grid'}
-                        />
-                    )
-                ))}
-            </AnalysisSection>
+            {tasksWithAnalyses.length > 0 && (
+                <AnalysisSection
+                    title="Análises Recentes"
+                    icon="🕐"
+                    count={tasksWithAnalyses.length}
+                    defaultExpanded={true}
+                    viewMode={taskViewMode}
+                    onViewModeChange={setTaskViewMode}
+                    emptyState={{
+                        icon: '📊',
+                        title: 'Nenhuma análise recente',
+                        description: 'Execute uma análise geral para ver análises recentes de tarefas e testes.'
+                    }}
+                >
+                    {tasksWithAnalyses.slice(0, 5).map(task => (
+                        task.iaAnalysis && (
+                            <TaskAnalysisCard
+                                key={task.id}
+                                analysis={task.iaAnalysis}
+                                task={task}
+                                onTaskClick={onNavigateToTask}
+                                compact={taskViewMode === 'grid'}
+                            />
+                        )
+                    ))}
+                </AnalysisSection>
+            )}
 
             {/* Análises por Tarefa */}
             {project.generalIAAnalysis && (
@@ -376,7 +534,11 @@ export const AnalysisView: React.FC<{
                             return (
                                 <div
                                     key={idx}
-                                    className="mica rounded-lg p-4 border border-surface-border"
+                                    className={`
+                                        ${windows12Styles.card}
+                                        ${windows12Styles.spacing.md}
+                                        ${windows12Styles.cardHover}
+                                    `}
                                 >
                                     <div className="flex items-start justify-between mb-3">
                                         <div>
@@ -386,7 +548,10 @@ export const AnalysisView: React.FC<{
                                             {task && onNavigateToTask && (
                                                 <button
                                                     onClick={() => onNavigateToTask(task.id)}
-                                                    className="text-xs text-accent hover:text-accent-light mt-1"
+                                                    className={`
+                                                        text-xs text-accent hover:text-accent-light mt-1
+                                                        ${windows12Styles.transition.fast}
+                                                    `}
                                                 >
                                                     Ver tarefa →
                                                 </button>
@@ -397,7 +562,13 @@ export const AnalysisView: React.FC<{
                                         {suggestion.scenarios.map((scenario, sIdx) => (
                                             <div
                                                 key={sIdx}
-                                                className="p-3 bg-surface-hover rounded border border-surface-border text-sm text-text-secondary font-mono"
+                                                className={`
+                                                    p-3 bg-surface-hover rounded-lg
+                                                    border border-surface-border
+                                                    text-sm text-text-secondary font-mono
+                                                    ${windows12Styles.transition.normal}
+                                                    hover:border-accent/30
+                                                `}
                                             >
                                                 {scenario}
                                             </div>

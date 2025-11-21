@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { GeneralIAAnalysis } from '../../types';
 import { format } from 'date-fns';
+import { windows12Styles, getRiskStyle } from '../../utils/windows12Styles';
 
 interface GeneralAnalysisCardProps {
   analysis: GeneralIAAnalysis;
@@ -43,7 +44,11 @@ export const GeneralAnalysisCard: React.FC<GeneralAnalysisCardProps> = ({
   }> = ({ title, icon, count, sectionKey }) => (
     <button
       onClick={() => toggleSection(sectionKey)}
-      className="w-full flex items-center justify-between p-3 hover:bg-surface-hover rounded-lg transition-colors"
+      className={`
+        w-full flex items-center justify-between p-3
+        hover:bg-surface-hover rounded-lg
+        ${windows12Styles.transition.fast}
+      `}
     >
       <div className="flex items-center gap-2">
         <span className="text-xl">{icon}</span>
@@ -55,9 +60,11 @@ export const GeneralAnalysisCard: React.FC<GeneralAnalysisCardProps> = ({
         )}
       </div>
       <svg
-        className={`w-5 h-5 text-text-secondary transition-transform ${
-          expandedSections.has(sectionKey) ? 'rotate-180' : ''
-        }`}
+        className={`
+          w-5 h-5 text-text-secondary
+          ${windows12Styles.transition.normal}
+          ${expandedSections.has(sectionKey) ? 'rotate-180' : ''}
+        `}
         fill="none"
         viewBox="0 0 24 24"
         stroke="currentColor"
@@ -68,7 +75,12 @@ export const GeneralAnalysisCard: React.FC<GeneralAnalysisCardProps> = ({
   );
 
   return (
-    <div className="mica rounded-xl p-6 border border-surface-border shadow-lg">
+    <div className={`
+      ${windows12Styles.card}
+      ${windows12Styles.spacing.lg}
+      ${windows12Styles.glow('accent')}
+      shadow-xl
+    `}>
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
@@ -80,7 +92,10 @@ export const GeneralAnalysisCard: React.FC<GeneralAnalysisCardProps> = ({
         {onRefresh && (
           <button
             onClick={onRefresh}
-            className="p-2 rounded-lg hover:bg-surface-hover transition-colors"
+            className={`
+              p-2 rounded-lg hover:bg-surface-hover
+              ${windows12Styles.transition.fast}
+            `}
             title="Atualizar análise"
           >
             <svg className="w-5 h-5 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -91,7 +106,12 @@ export const GeneralAnalysisCard: React.FC<GeneralAnalysisCardProps> = ({
       </div>
 
       {/* Risk Badge */}
-      <div className={`mb-6 p-4 rounded-xl border ${getRiskColor(analysis.riskCalculation.overallRisk)}`}>
+      <div className={`
+        mb-6 p-4 rounded-xl border
+        ${getRiskStyle(analysis.riskCalculation.overallRisk as any)}
+        ${windows12Styles.glow(analysis.riskCalculation.overallRisk === 'Crítico' ? 'red' : analysis.riskCalculation.overallRisk === 'Alto' ? 'yellow' : 'accent')}
+        ${windows12Styles.transition.normal}
+      `}>
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm font-medium mb-1">Risco Geral do Projeto</p>
@@ -113,7 +133,11 @@ export const GeneralAnalysisCard: React.FC<GeneralAnalysisCardProps> = ({
       <div className="mb-4">
         <SectionHeader title="Resumo Geral" icon="📊" sectionKey="summary" />
         {expandedSections.has('summary') && (
-          <div className="mt-2 p-4 bg-surface-hover rounded-lg border border-surface-border">
+          <div className={`
+            mt-2 p-4 bg-surface-hover rounded-lg border border-surface-border
+            ${windows12Styles.transition.normal}
+            hover:border-accent/30
+          `}>
             <p className="text-text-primary whitespace-pre-wrap leading-relaxed">
               {analysis.summary}
             </p>
@@ -134,7 +158,11 @@ export const GeneralAnalysisCard: React.FC<GeneralAnalysisCardProps> = ({
             {analysis.detectedProblems.map((problem, idx) => (
               <div
                 key={idx}
-                className="p-3 bg-red-400/10 border border-red-400/20 rounded-lg"
+                className={`
+                  p-3 bg-red-400/10 border border-red-400/20 rounded-lg
+                  ${windows12Styles.transition.fast}
+                  hover:bg-red-400/15 hover:border-red-400/30
+                `}
               >
                 <p className="text-text-primary text-sm">{problem}</p>
               </div>
@@ -156,11 +184,14 @@ export const GeneralAnalysisCard: React.FC<GeneralAnalysisCardProps> = ({
             {analysis.riskCalculation.riskFactors.map((factor, idx) => (
               <div
                 key={idx}
-                className={`p-3 rounded-lg border ${
-                  factor.impact === 'Alto' ? 'bg-red-400/10 border-red-400/20' :
+                className={`
+                  p-3 rounded-lg border
+                  ${factor.impact === 'Alto' ? 'bg-red-400/10 border-red-400/20' :
                   factor.impact === 'Médio' ? 'bg-orange-400/10 border-orange-400/20' :
-                  'bg-yellow-400/10 border-yellow-400/20'
-                }`}
+                  'bg-yellow-400/10 border-yellow-400/20'}
+                  ${windows12Styles.transition.fast}
+                  hover:opacity-90
+                `}
               >
                 <div className="flex items-start justify-between mb-1">
                   <p className="font-semibold text-text-primary">{factor.factor}</p>
@@ -192,7 +223,12 @@ export const GeneralAnalysisCard: React.FC<GeneralAnalysisCardProps> = ({
             {analysis.missingItems.map((item, idx) => (
               <div
                 key={idx}
-                className="p-3 bg-surface-hover border border-surface-border rounded-lg flex items-start gap-2"
+                className={`
+                  p-3 bg-surface-hover border border-surface-border rounded-lg
+                  flex items-start gap-2
+                  ${windows12Styles.transition.fast}
+                  hover:border-yellow-400/30 hover:bg-yellow-400/5
+                `}
               >
                 <span className="text-yellow-400 mt-0.5">⚠️</span>
                 <p className="text-text-primary text-sm flex-1">{item}</p>
@@ -247,7 +283,12 @@ export const GeneralAnalysisCard: React.FC<GeneralAnalysisCardProps> = ({
             {analysis.qaImprovements.map((improvement, idx) => (
               <div
                 key={idx}
-                className="p-3 bg-accent/10 border border-accent/20 rounded-lg flex items-start gap-2"
+                className={`
+                  p-3 bg-accent/10 border border-accent/20 rounded-lg
+                  flex items-start gap-2
+                  ${windows12Styles.transition.fast}
+                  hover:bg-accent/15 hover:border-accent/30
+                `}
               >
                 <span className="text-accent-light mt-0.5">💡</span>
                 <p className="text-text-primary text-sm flex-1">{improvement}</p>
@@ -259,7 +300,12 @@ export const GeneralAnalysisCard: React.FC<GeneralAnalysisCardProps> = ({
 
       {/* Outdated indicator */}
       {analysis.isOutdated && (
-        <div className="mt-4 p-3 bg-yellow-400/10 border border-yellow-400/20 rounded-lg">
+        <div className={`
+          mt-4 p-3 bg-yellow-400/10 border border-yellow-400/20 rounded-lg
+          ${windows12Styles.transition.normal}
+          ${windows12Styles.glow('yellow')}
+          animate-pulse
+        `}>
           <p className="text-sm text-yellow-400 flex items-center gap-2">
             <span>⚠️</span>
             Esta análise pode estar desatualizada. Execute uma nova análise para obter resultados atualizados.

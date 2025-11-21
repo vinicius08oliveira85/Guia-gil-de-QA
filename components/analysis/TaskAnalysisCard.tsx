@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { TaskIAAnalysis, JiraTask } from '../../types';
 import { format } from 'date-fns';
+import { windows12Styles, getRiskStyle } from '../../utils/windows12Styles';
 
 interface TaskAnalysisCardProps {
   analysis: TaskIAAnalysis;
@@ -27,10 +28,26 @@ export const TaskAnalysisCard: React.FC<TaskAnalysisCardProps> = ({
     }
   };
 
+  const getRiskGlow = (risk: string) => {
+    switch (risk) {
+      case 'Crítico': return windows12Styles.glow('red');
+      case 'Alto': return windows12Styles.glow('yellow');
+      case 'Médio': return '';
+      case 'Baixo': return '';
+      default: return '';
+    }
+  };
+
   return (
-    <div className={`mica rounded-xl border border-surface-border p-4 transition-all ${
-      expanded ? 'shadow-lg' : 'shadow'
-    }`}>
+    <div className={`
+      ${windows12Styles.card}
+      ${windows12Styles.spacing.md}
+      ${expanded ? `${windows12Styles.glow('accent')} shadow-xl` : 'shadow'}
+      ${analysis.riskLevel === 'Crítico' || analysis.riskLevel === 'Alto' ? getRiskGlow(analysis.riskLevel) : ''}
+      ${windows12Styles.transition.normal}
+      hover:shadow-xl hover:border-accent/30 hover:scale-[1.01]
+      ${analysis.isOutdated ? 'border-yellow-400/30 bg-yellow-400/5' : ''}
+    `}>
       {/* Header */}
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1">
@@ -53,7 +70,10 @@ export const TaskAnalysisCard: React.FC<TaskAnalysisCardProps> = ({
         </div>
         
         {/* Risk Badge */}
-        <div className={`px-3 py-1 rounded-lg border text-xs font-semibold ${getRiskColor(analysis.riskLevel)}`}>
+        <div className={`
+          ${getRiskStyle(analysis.riskLevel as any)}
+          ${windows12Styles.transition.fast}
+        `}>
           {analysis.riskLevel}
         </div>
       </div>
@@ -69,11 +89,16 @@ export const TaskAnalysisCard: React.FC<TaskAnalysisCardProps> = ({
       {compact && (
         <button
           onClick={() => setExpanded(!expanded)}
-          className="w-full flex items-center justify-center gap-2 py-2 text-sm text-text-secondary hover:text-text-primary transition-colors"
+          className={`
+            w-full flex items-center justify-center gap-2 py-2 text-sm
+            text-text-secondary hover:text-text-primary
+            ${windows12Styles.transition.fast}
+            rounded-lg hover:bg-surface-hover
+          `}
         >
           <span>{expanded ? 'Ocultar detalhes' : 'Ver detalhes'}</span>
           <svg
-            className={`w-4 h-4 transition-transform ${expanded ? 'rotate-180' : ''}`}
+            className={`w-4 h-4 ${windows12Styles.transition.normal} ${expanded ? 'rotate-180' : ''}`}
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -85,7 +110,10 @@ export const TaskAnalysisCard: React.FC<TaskAnalysisCardProps> = ({
 
       {/* Expanded Details */}
       {expanded && (
-        <div className="space-y-3 mt-3 pt-3 border-t border-surface-border">
+        <div className={`
+          space-y-3 mt-3 pt-3 border-t border-surface-border
+          ${windows12Styles.transition.normal}
+        `}>
           {/* Problems */}
           {analysis.detectedProblems.length > 0 && (
             <div>
@@ -96,7 +124,12 @@ export const TaskAnalysisCard: React.FC<TaskAnalysisCardProps> = ({
                 {analysis.detectedProblems.slice(0, 3).map((problem, idx) => (
                   <div
                     key={idx}
-                    className="p-2 bg-red-400/10 border border-red-400/20 rounded text-xs text-text-primary"
+                    className={`
+                      p-2 bg-red-400/10 border border-red-400/20 rounded-lg
+                      text-xs text-text-primary
+                      ${windows12Styles.transition.fast}
+                      hover:bg-red-400/15 hover:border-red-400/30
+                    `}
                   >
                     {problem}
                   </div>
@@ -120,7 +153,12 @@ export const TaskAnalysisCard: React.FC<TaskAnalysisCardProps> = ({
                 {analysis.missingItems.slice(0, 2).map((item, idx) => (
                   <div
                     key={idx}
-                    className="p-2 bg-yellow-400/10 border border-yellow-400/20 rounded text-xs text-text-primary flex items-start gap-2"
+                    className={`
+                      p-2 bg-yellow-400/10 border border-yellow-400/20 rounded-lg
+                      text-xs text-text-primary flex items-start gap-2
+                      ${windows12Styles.transition.fast}
+                      hover:bg-yellow-400/15 hover:border-yellow-400/30
+                    `}
                   >
                     <span>⚠️</span>
                     <span>{item}</span>
@@ -145,7 +183,12 @@ export const TaskAnalysisCard: React.FC<TaskAnalysisCardProps> = ({
                 {analysis.bddSuggestions.slice(0, 2).map((suggestion, idx) => (
                   <div
                     key={idx}
-                    className="p-2 bg-accent/10 border border-accent/20 rounded text-xs text-text-secondary font-mono"
+                    className={`
+                      p-2 bg-accent/10 border border-accent/20 rounded-lg
+                      text-xs text-text-secondary font-mono
+                      ${windows12Styles.transition.fast}
+                      hover:bg-accent/15 hover:border-accent/30
+                    `}
                   >
                     {suggestion}
                   </div>
@@ -169,7 +212,12 @@ export const TaskAnalysisCard: React.FC<TaskAnalysisCardProps> = ({
                 {analysis.qaImprovements.slice(0, 2).map((improvement, idx) => (
                   <div
                     key={idx}
-                    className="p-2 bg-green-400/10 border border-green-400/20 rounded text-xs text-text-primary flex items-start gap-2"
+                    className={`
+                      p-2 bg-green-400/10 border border-green-400/20 rounded-lg
+                      text-xs text-text-primary flex items-start gap-2
+                      ${windows12Styles.transition.fast}
+                      hover:bg-green-400/15 hover:border-green-400/30
+                    `}
                   >
                     <span>💡</span>
                     <span>{improvement}</span>
@@ -186,10 +234,17 @@ export const TaskAnalysisCard: React.FC<TaskAnalysisCardProps> = ({
 
           {/* Metadata */}
           <div className="pt-2 border-t border-surface-border">
-            <p className="text-xs text-text-secondary">
-              Gerada em {format(new Date(analysis.generatedAt), "dd/MM/yyyy 'às' HH:mm")}
+            <p className="text-xs text-text-secondary flex items-center gap-2">
+              <span>Gerada em {format(new Date(analysis.generatedAt), "dd/MM/yyyy 'às' HH:mm")}</span>
               {analysis.isOutdated && (
-                <span className="ml-2 text-yellow-400">⚠️ Desatualizada</span>
+                <span className={`
+                  inline-flex items-center gap-1 px-2 py-0.5 rounded
+                  bg-yellow-400/20 text-yellow-400 border border-yellow-400/30
+                  ${windows12Styles.transition.fast}
+                  animate-pulse
+                `}>
+                  ⚠️ Desatualizada
+                </span>
               )}
             </p>
           </div>

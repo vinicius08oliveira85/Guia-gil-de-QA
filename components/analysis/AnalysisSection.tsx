@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { windows12Styles } from '../../utils/windows12Styles';
 
 interface AnalysisSectionProps {
   title: string;
@@ -35,12 +36,20 @@ export const AnalysisSection: React.FC<AnalysisSectionProps> = ({
   const hasContent = React.Children.count(children) > 0;
 
   return (
-    <div className="mica rounded-xl border border-surface-border p-6">
+    <div className={`
+      ${windows12Styles.card}
+      ${windows12Styles.spacing.lg}
+      ${windows12Styles.transition.normal}
+    `}>
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <button
           onClick={() => setExpanded(!expanded)}
-          className="flex items-center gap-3 flex-1 text-left hover:opacity-80 transition-opacity"
+          className={`
+            flex items-center gap-3 flex-1 text-left
+            hover:opacity-80
+            ${windows12Styles.transition.fast}
+          `}
         >
           {icon && <span className="text-2xl">{icon}</span>}
           <div>
@@ -56,14 +65,20 @@ export const AnalysisSection: React.FC<AnalysisSectionProps> = ({
         <div className="flex items-center gap-2">
           {/* View Mode Toggle */}
           {onViewModeChange && hasContent && (
-            <div className="flex items-center gap-1 p-1 bg-surface-hover rounded-lg border border-surface-border">
+            <div className={`
+              flex items-center gap-1 p-1 bg-surface-hover rounded-lg border border-surface-border
+              ${windows12Styles.transition.normal}
+            `}>
               <button
                 onClick={() => onViewModeChange('list')}
-                className={`p-1.5 rounded transition-colors ${
-                  viewMode === 'list'
+                className={`
+                  p-1.5 rounded
+                  ${windows12Styles.transition.fast}
+                  ${viewMode === 'list'
                     ? 'bg-accent/20 text-accent-light'
-                    : 'text-text-secondary hover:text-text-primary'
-                }`}
+                    : 'text-text-secondary hover:text-text-primary hover:bg-surface-hover'
+                  }
+                `}
                 title="Visualização em lista"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -72,11 +87,14 @@ export const AnalysisSection: React.FC<AnalysisSectionProps> = ({
               </button>
               <button
                 onClick={() => onViewModeChange('grid')}
-                className={`p-1.5 rounded transition-colors ${
-                  viewMode === 'grid'
+                className={`
+                  p-1.5 rounded
+                  ${windows12Styles.transition.fast}
+                  ${viewMode === 'grid'
                     ? 'bg-accent/20 text-accent-light'
-                    : 'text-text-secondary hover:text-text-primary'
-                }`}
+                    : 'text-text-secondary hover:text-text-primary hover:bg-surface-hover'
+                  }
+                `}
                 title="Visualização em grade"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -85,11 +103,14 @@ export const AnalysisSection: React.FC<AnalysisSectionProps> = ({
               </button>
               <button
                 onClick={() => onViewModeChange('detailed')}
-                className={`p-1.5 rounded transition-colors ${
-                  viewMode === 'detailed'
+                className={`
+                  p-1.5 rounded
+                  ${windows12Styles.transition.fast}
+                  ${viewMode === 'detailed'
                     ? 'bg-accent/20 text-accent-light'
-                    : 'text-text-secondary hover:text-text-primary'
-                }`}
+                    : 'text-text-secondary hover:text-text-primary hover:bg-surface-hover'
+                  }
+                `}
                 title="Visualização detalhada"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -103,7 +124,10 @@ export const AnalysisSection: React.FC<AnalysisSectionProps> = ({
           {filters && (
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="p-2 rounded-lg hover:bg-surface-hover transition-colors"
+              className={`
+                p-2 rounded-lg hover:bg-surface-hover
+                ${windows12Styles.transition.fast}
+              `}
               title="Filtros"
             >
               <svg className="w-5 h-5 text-text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -118,12 +142,17 @@ export const AnalysisSection: React.FC<AnalysisSectionProps> = ({
           {/* Expand/Collapse */}
           <button
             onClick={() => setExpanded(!expanded)}
-            className="p-2 rounded-lg hover:bg-surface-hover transition-colors"
+            className={`
+              p-2 rounded-lg hover:bg-surface-hover
+              ${windows12Styles.transition.fast}
+            `}
           >
             <svg
-              className={`w-5 h-5 text-text-secondary transition-transform ${
-                expanded ? 'rotate-180' : ''
-              }`}
+              className={`
+                w-5 h-5 text-text-secondary
+                ${windows12Styles.transition.normal}
+                ${expanded ? 'rotate-180' : ''}
+              `}
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -136,7 +165,11 @@ export const AnalysisSection: React.FC<AnalysisSectionProps> = ({
 
       {/* Filters */}
       {showFilters && filters && (
-        <div className="mb-4 p-4 bg-surface-hover rounded-lg border border-surface-border">
+        <div className={`
+          mb-4 p-4 bg-surface-hover rounded-lg border border-surface-border
+          ${windows12Styles.transition.normal}
+          ${windows12Styles.spacing.md}
+        `}>
           {filters}
         </div>
       )}
@@ -146,13 +179,16 @@ export const AnalysisSection: React.FC<AnalysisSectionProps> = ({
         <>
           {hasContent ? (
             <div
-              className={`${
-                viewMode === 'grid'
-                  ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'
-                  : viewMode === 'list'
-                  ? 'space-y-3'
-                  : 'space-y-4'
-              }`}
+              className={`
+                ${windows12Styles.transition.normal}
+                ${
+                  viewMode === 'grid'
+                    ? windows12Styles.grid.responsive
+                    : viewMode === 'list'
+                    ? windows12Styles.grid.list
+                    : 'space-y-4'
+                }
+              `}
             >
               {children}
             </div>
