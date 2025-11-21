@@ -343,7 +343,15 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                     {activeTab === 'analysis' && (
                         <div className="space-y-6">
                             <Suspense fallback={<LoadingSkeleton variant="card" count={2} />}>
-                                <AnalysisView project={project} onUpdateProject={onUpdateProject} />
+                                <AnalysisView 
+                                    project={project} 
+                                    onUpdateProject={onUpdateProject}
+                                    onNavigateToTask={(taskId) => {
+                                        // Navegar para aba de tarefas e destacar a tarefa
+                                        handleTabClick('tasks');
+                                        // TODO: Implementar scroll para tarefa específica se necessário
+                                    }}
+                                />
                             </Suspense>
                             <Suspense fallback={<LoadingSkeleton variant="card" count={1} />}>
                                 <SDLCView project={project} />
@@ -355,7 +363,11 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                     )}
                     {activeTab === 'tasks' && (
                         <Suspense fallback={<LoadingSkeleton variant="task" count={5} />}>
-                            <TasksView project={project} onUpdateProject={onUpdateProject} />
+                            <TasksView 
+                                project={project} 
+                                onUpdateProject={onUpdateProject}
+                                onNavigateToTab={(tabId) => handleTabClick(tabId)}
+                            />
                         </Suspense>
                     )}
                     {activeTab === 'documents' && (

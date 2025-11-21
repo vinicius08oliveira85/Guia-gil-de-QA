@@ -22,8 +22,14 @@ import { useSuggestions } from '../../hooks/useSuggestions';
 import { SuggestionBanner } from '../common/SuggestionBanner';
 import { EmptyState } from '../common/EmptyState';
 import { addNewJiraTasks, getJiraConfig, getJiraProjects, JiraConfig } from '../../services/jiraService';
+import { GeneralIAAnalysisButton } from './GeneralIAAnalysisButton';
+import { generateGeneralIAAnalysis } from '../../services/ai/generalAnalysisService';
 
-export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: Project) => void }> = ({ project, onUpdateProject }) => {
+export const TasksView: React.FC<{ 
+    project: Project, 
+    onUpdateProject: (project: Project) => void,
+    onNavigateToTab?: (tabId: string) => void
+}> = ({ project, onUpdateProject, onNavigateToTab }) => {
     const [generatingTestsTaskId, setGeneratingTestsTaskId] = useState<string | null>(null);
     const [generatingBddTaskId, setGeneratingBddTaskId] = useState<string | null>(null);
     const [showTemplateSelector, setShowTemplateSelector] = useState(false);
@@ -60,6 +66,7 @@ export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: 
         observedResult: '',
         createBug: true,
     });
+    const [isRunningGeneralAnalysis, setIsRunningGeneralAnalysis] = useState(false);
 
     const handleTaskStatusChange = useCallback((taskId: string, status: 'To Do' | 'In Progress' | 'Done') => {
         onUpdateProject({
@@ -254,6 +261,49 @@ export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: 
             tasks: project.tasks.map(t => t.id === taskId ? updatedTask : t)
         });
     }, [project, onUpdateProject]);
+
+    const handleGeneralIAAnalysis = useCallback(async () => {
+        setIsRunningGeneralAnalysis(true);
+        try {
+            const analysis = await generateGeneralIAAnalysis(project);
+            
+            // Atualizar análises individuais nas tarefas
+            const updatedTasks = project.tasks.map(task => {
+                const taskAnalysis = analysis.taskAnalyses.find(ta => ta.taskId === task.id);
+                if (taskAnalysis) {
+                    return {
+                        ...task,
+                        iaAnalysis: {
+                            ...taskAnalysis,
+                            generatedAt: new Date().toISOString(),
+                            isOutdated: false
+                        }
+                    };
+                }
+                return task;
+            });
+
+            const updatedProject = {
+                ...project,
+                tasks: updatedTasks,
+                generalIAAnalysis: analysis
+            };
+
+            onUpdateProject(updatedProject);
+            handleSuccess('Análise geral concluída com sucesso!');
+            
+            // Navegar para a aba de Análise IA
+            if (onNavigateToTab) {
+                setTimeout(() => {
+                    onNavigateToTab('analysis');
+                }, 500);
+            }
+        } catch (error) {
+            handleError(error, 'Executar análise geral com IA');
+        } finally {
+            setIsRunningGeneralAnalysis(false);
+        }
+    }, [project, onUpdateProject, handleError, handleSuccess, onNavigateToTab]);
     
     const handleSaveTask = (taskData: Omit<JiraTask, 'testCases' | 'status' | 'testStrategy' | 'bddScenarios' | 'createdAt' | 'completedAt'>) => {
         let newTasks: JiraTask[];
@@ -555,6 +605,10 @@ export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: 
                         >
                             {isSyncingJira ? '🔄 Sincronizando...' : '🔄 Atualizar do Jira'}
                         </button>
+                        <GeneralIAAnalysisButton 
+                            onAnalyze={handleGeneralIAAnalysis}
+                            isAnalyzing={isRunningGeneralAnalysis}
+                        />
                         <button onClick={() => openTaskFormForNew()} className="btn btn-primary">Adicionar Tarefa</button>
                     </div>
                 </div>
