@@ -228,9 +228,9 @@ export const JiraTaskItem: React.FC<{
         setIsCreatingBdd(false);
     };
     
-    const indentationStyle = { paddingLeft: `${level * 1.5}rem` };
+    const indentationStyle = { paddingLeft: `${level * 1.2}rem` };
 
-    const iconButtonClass = "h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center rounded-full hover:bg-surface-hover hover:text-text-primary transition-colors active:scale-95 active:opacity-80";
+    const iconButtonClass = 'task-card-compact_icon-btn';
 
     const renderOverviewSection = () => (
         <div className="space-y-4">
@@ -592,11 +592,15 @@ export const JiraTaskItem: React.FC<{
     };
 
     return (
-        <div className="bg-surface">
-            <div style={indentationStyle} className="border-b border-surface-border">
-                <div className="px-2 sm:px-3 py-2 flex flex-col gap-2 w-full">
-                    <div className="flex flex-wrap items-center justify-between gap-2 w-full">
-                        <div className="flex items-center gap-2 flex-1 min-w-0">
+        <div className="relative" data-task-id={task.id}>
+            <div style={indentationStyle} className="py-1">
+                <div
+                    className={`task-card-compact ${isSelected ? 'is-selected' : ''} ${
+                        activeTaskId === task.id ? 'ring-1 ring-accent/40' : ''
+                    }`}
+                >
+                    <div className="task-card-compact_line">
+                        <div className="flex min-w-0 flex-1 items-center gap-2">
                             {onToggleSelect && (
                                 <input
                                     type="checkbox"
@@ -605,125 +609,106 @@ export const JiraTaskItem: React.FC<{
                                         e.stopPropagation();
                                         onToggleSelect();
                                     }}
-                                    className="w-4 h-4 rounded border-surface-border text-accent focus:ring-accent"
+                                    className="h-4 w-4 rounded border-surface-border text-accent focus:ring-accent"
                                 />
                             )}
                             {hasChildren ? (
-                                <button onClick={() => setIsChildrenOpen(!isChildrenOpen)} className={`${iconButtonClass} flex-shrink-0`}>
-                                    <ChevronDownIcon className={`w-4 h-4 transition-transform ${isChildrenOpen ? 'rotate-180' : ''}`} />
+                                <button
+                                    onClick={() => setIsChildrenOpen(!isChildrenOpen)}
+                                    className={`${iconButtonClass} !w-6 !h-6`}
+                                    aria-label="Alternar subtarefas"
+                                >
+                                    <ChevronDownIcon className={`h-3.5 w-3.5 transition-transform ${isChildrenOpen ? 'rotate-180' : ''}`} />
                                 </button>
                             ) : (
-                                <div className="w-6 h-6 flex-shrink-0"></div>
+                                <span className="w-6" />
                             )}
-                            <div className="flex items-center gap-2 min-w-0">
-                                <TaskTypeIcon type={task.type} />
-                                <TaskStatusIcon status={task.status} />
-                                <div className="flex items-center gap-1 text-[0.72rem] uppercase tracking-wide text-text-secondary min-w-0">
-                                    <span className="font-semibold text-text-primary truncate max-w-[140px] sm:max-w-[200px]">{task.id}</span>
-                                    {taskPhase && (
-                                        <span className={`px-2 py-0.5 rounded-full font-medium ${phaseStyle.bg} ${phaseStyle.color} flex items-center gap-1`}>
-                                            <span>{phaseStyle.icon}</span>
-                                            <span className="text-[0.68rem] uppercase tracking-wide">{taskPhase}</span>
-                                        </span>
-                                    )}
-                                </div>
-                            </div>
+                            <TaskStatusIcon status={task.status} />
+                            <TaskTypeIcon type={task.type} />
+                            <span className="task-card-compact_code">{task.id}</span>
+                            <span className="task-card-compact_badge">{task.type}</span>
+                            {task.severity && <span className="task-card-compact_badge">{task.severity}</span>}
+                            {task.priority && <span className="task-card-compact_badge">{task.priority}</span>}
+                            {taskPhase && (
+                                <span className={`task-card-compact_badge ${phaseStyle.bg} ${phaseStyle.color} flex items-center gap-1`}>
+                                    <span>{phaseStyle.icon}</span>
+                                    {taskPhase}
+                                </span>
+                            )}
                         </div>
-                        <div
-                            className="flex items-center gap-1 text-text-secondary flex-shrink-0 flex-wrap justify-end sm:justify-start w-full sm:w-auto"
-                            onClick={e => e.stopPropagation()}
-                        >
-                            {task.owner && task.assignee && (
-                                <div className="hidden sm:flex items-center gap-1.5 pr-2">
-                                    <TeamRoleBadge role={task.owner} />
-                                    <span className="text-slate-500 font-bold text-xs">&rarr;</span>
-                                    <TeamRoleBadge role={task.assignee} />
-                                </div>
-                            )}
-                            {currentStatusColor && (
-                                <span
-                                    className="w-3 h-3 rounded-full border border-white/30 shadow-sm flex-shrink-0"
-                                    style={{ backgroundColor: currentStatusColor }}
-                                    aria-hidden="true"
+                        <div className="task-card-compact_actions" onClick={(e) => e.stopPropagation()}>
+                            <div className="task-card-compact_status min-w-[120px]">
+                                <select
+                                    value={task.jiraStatus || task.status}
                                     title={task.jiraStatus || task.status}
-                                ></span>
-                            )}
-                            <select
-                                value={task.jiraStatus || task.status}
-                                title={task.jiraStatus || task.status}
-                                onChange={(e) => {
-                                    const selectedValue = e.target.value;
-                                    const jiraStatuses = project?.settings?.jiraStatuses || [];
-                                    
-                                    // Função auxiliar para mapear status do Jira para status do app
-                                    const mapStatus = (jiraStatus: string): 'To Do' | 'In Progress' | 'Done' => {
-                                        const status = jiraStatus.toLowerCase();
-                                        if (status.includes('done') || status.includes('resolved') || status.includes('closed') || status.includes('concluído')) {
-                                            return 'Done';
-                                        }
-                                        if (status.includes('progress') || status.includes('in progress') || status.includes('andamento')) {
-                                            return 'In Progress';
-                                        }
-                                        return 'To Do';
-                                    };
-                                    
-                                    // Verificar se é um status do Jira (pode ser string ou objeto)
-                                    const isJiraStatus = jiraStatuses.some(s => 
-                                        typeof s === 'string' ? s === selectedValue : s.name === selectedValue
-                                    );
-                                    
-                                    if (isJiraStatus) {
-                                        // É um status do Jira, mapear para status do app
-                                        const mappedStatus = mapStatus(selectedValue);
-                                        onTaskStatusChange(mappedStatus);
-                                        // Atualizar também o jiraStatus se o projeto tiver essa informação
-                                        if (project && onUpdateProject) {
-                                            const updatedTasks = project.tasks.map(t =>
-                                                t.id === task.id
-                                                    ? { ...t, status: mappedStatus, jiraStatus: selectedValue }
-                                                    : t
-                                            );
-                                            onUpdateProject({ ...project, tasks: updatedTasks });
-                                        }
-                                    } else {
-                                        // É um status padrão do app
-                                        onTaskStatusChange(selectedValue as 'To Do' | 'In Progress' | 'Done');
-                                        // Limpar jiraStatus se mudou para status padrão
-                                        if (project && onUpdateProject && task.jiraStatus) {
-                                            const updatedTasks = project.tasks.map(t =>
-                                                t.id === task.id
-                                                    ? { ...t, jiraStatus: undefined }
-                                                    : t
-                                            );
-                                            onUpdateProject({ ...project, tasks: updatedTasks });
-                                        }
-                                    }
-                                }}
-                                className="!py-1 !px-2 text-[0.7rem] leading-tight h-8 rounded-md border border-surface-border bg-transparent max-w-[140px]"
-                                style={{
-                                    backgroundColor: currentStatusColor,
-                                    color: statusTextColor,
-                                    borderColor: currentStatusColor ? `${currentStatusColor}66` : undefined,
-                                    boxShadow: currentStatusColor ? `0 0 0 1px ${currentStatusColor}33` : undefined
-                                }}
-                            >
-                                {project?.settings?.jiraStatuses && project.settings.jiraStatuses.length > 0 ? (
-                                    // Mostrar status do Jira se disponível
-                                    project.settings.jiraStatuses.map(status => {
-                                        const statusName = typeof status === 'string' ? status : status.name;
-                                        return (
-                                            <option key={statusName} value={statusName}>{statusName}</option>
+                                    onChange={(e) => {
+                                        const selectedValue = e.target.value;
+                                        const jiraStatuses = project?.settings?.jiraStatuses || [];
+
+                                        const mapStatus = (jiraStatus: string): 'To Do' | 'In Progress' | 'Done' => {
+                                            const status = jiraStatus.toLowerCase();
+                                            if (
+                                                status.includes('done') ||
+                                                status.includes('resolved') ||
+                                                status.includes('closed') ||
+                                                status.includes('concluído')
+                                            ) {
+                                                return 'Done';
+                                            }
+                                            if (status.includes('progress') || status.includes('andamento')) {
+                                                return 'In Progress';
+                                            }
+                                            return 'To Do';
+                                        };
+
+                                        const isJiraStatus = jiraStatuses.some((status) =>
+                                            typeof status === 'string' ? status === selectedValue : status.name === selectedValue
                                         );
-                                    })
-                                ) : (
-                                    // Fallback para status padrão
-                                    <>
-                                        <option value="To Do">A Fazer</option>
-                                        <option value="In Progress">Em Andamento</option>
-                                          <option value="Done">Concluído</option>
-                                    </>
-                                )}
-                            </select>
+
+                                        if (isJiraStatus) {
+                                            const mappedStatus = mapStatus(selectedValue);
+                                            onTaskStatusChange(mappedStatus);
+                                            if (project && onUpdateProject) {
+                                                const updatedTasks = project.tasks.map((t) =>
+                                                    t.id === task.id ? { ...t, status: mappedStatus, jiraStatus: selectedValue } : t
+                                                );
+                                                onUpdateProject({ ...project, tasks: updatedTasks });
+                                            }
+                                        } else {
+                                            onTaskStatusChange(selectedValue as 'To Do' | 'In Progress' | 'Done');
+                                            if (project && onUpdateProject && task.jiraStatus) {
+                                                const updatedTasks = project.tasks.map((t) =>
+                                                    t.id === task.id ? { ...t, jiraStatus: undefined } : t
+                                                );
+                                                onUpdateProject({ ...project, tasks: updatedTasks });
+                                            }
+                                        }
+                                    }}
+                                    style={{
+                                        backgroundColor: currentStatusColor,
+                                        color: statusTextColor,
+                                        borderColor: currentStatusColor ? `${currentStatusColor}66` : undefined,
+                                        boxShadow: currentStatusColor ? `0 0 0 1px ${currentStatusColor}33` : undefined,
+                                    }}
+                                >
+                                    {project?.settings?.jiraStatuses && project.settings.jiraStatuses.length > 0 ? (
+                                        project.settings.jiraStatuses.map((status) => {
+                                            const statusName = typeof status === 'string' ? status : status.name;
+                                            return (
+                                                <option key={statusName} value={statusName}>
+                                                    {statusName}
+                                                </option>
+                                            );
+                                        })
+                                    ) : (
+                                        <>
+                                            <option value="To Do">A Fazer</option>
+                                            <option value="In Progress">Em Andamento</option>
+                                            <option value="Done">Concluído</option>
+                                        </>
+                                    )}
+                                </select>
+                            </div>
                             {task.type === 'Epic' && (
                                 <button onClick={() => onAddSubtask(task.id)} className={iconButtonClass} aria-label="Adicionar subtarefa">
                                     <PlusIcon />
@@ -732,7 +717,11 @@ export const JiraTaskItem: React.FC<{
                             <button onClick={() => onEdit(task)} className={iconButtonClass} aria-label="Editar tarefa">
                                 <EditIcon />
                             </button>
-                            <button onClick={() => setShowDeleteConfirm(true)} className={`${iconButtonClass} hover:!bg-red-500 hover:!text-white`} aria-label="Excluir tarefa">
+                            <button
+                                onClick={() => setShowDeleteConfirm(true)}
+                                className={`${iconButtonClass} hover:!bg-red-500 hover:!text-white`}
+                                aria-label="Excluir tarefa"
+                            >
                                 <TrashIcon />
                             </button>
                             <button className={iconButtonClass} onClick={handleToggleDetails} aria-label="Expandir detalhes">
@@ -741,7 +730,7 @@ export const JiraTaskItem: React.FC<{
                         </div>
                     </div>
                     <div
-                        className={`flex flex-col gap-1 rounded-lg border border-transparent hover:border-surface-border transition-colors p-2 cursor-pointer ${isSelected ? 'ring-1 ring-accent/50' : ''}`}
+                        className="task-card-compact_line cursor-pointer focus-visible:ring-1 focus-visible:ring-accent"
                         onClick={handleToggleDetails}
                         role="button"
                         tabIndex={0}
@@ -752,65 +741,77 @@ export const JiraTaskItem: React.FC<{
                             }
                         }}
                     >
-                        <p className="text-sm sm:text-base text-text-primary font-semibold line-clamp-2 break-words">
-                            {task.title}
-                        </p>
-                        {isBeginnerMode && nextStep && (
-                            <p className="text-[0.68rem] uppercase tracking-wide text-accent/80 leading-snug break-words">
-                                Próximo: <span className="normal-case text-text-secondary">{nextStep}</span>
-                            </p>
+                        <p className="task-card-compact_title line-clamp-2 break-words">{task.title}</p>
+                    </div>
+                    <div className="task-card-compact_line task-card-compact_line--tight text-xs text-text-secondary">
+                        {nextStep && (
+                            <span className="task-card-compact_next">
+                                Próximo: <span>{nextStep}</span>
+                            </span>
                         )}
-                        {task.tags && task.tags.length > 0 && (
-                            <div className="flex flex-wrap gap-1 mt-0.5">
-                                {task.tags.slice(0, 3).map(tag => (
-                                    <span
-                                        key={tag}
-                                        className="text-[0.68rem] px-1.5 py-0.5 rounded-full text-white"
-                                        style={{ backgroundColor: getTagColor(tag) }}
-                                    >
-                                        {tag}
-                                    </span>
-                                ))}
-                                {task.tags.length > 3 && (
-                                    <span className="text-[0.68rem] px-1.5 py-0.5 rounded-full bg-surface text-text-secondary">
-                                        +{task.tags.length - 3}
-                                    </span>
-                                )}
+                        <span className="task-card-compact_meta">{task.testCases?.length || 0} casos</span>
+                        {task.parentId && <span className="task-card-compact_meta">Depende de {task.parentId}</span>}
+                        {task.owner && (
+                            <span className="inline-flex items-center gap-1">
+                                <span className="task-card-compact_meta">Owner</span>
+                                <TeamRoleBadge role={task.owner} />
+                            </span>
+                        )}
+                        {task.assignee && (
+                            <span className="inline-flex items-center gap-1">
+                                <span className="task-card-compact_meta">QA</span>
+                                <TeamRoleBadge role={task.assignee} />
+                            </span>
+                        )}
+                    </div>
+                    {task.tags && task.tags.length > 0 && (
+                        <div className="flex flex-wrap gap-1">
+                            {task.tags.slice(0, 4).map((tag) => (
+                                <span key={tag} className="task-card-compact_tag" style={{ borderColor: getTagColor(tag) }}>
+                                    {tag}
+                                </span>
+                            ))}
+                            {task.tags.length > 4 && (
+                                <span className="task-card-compact_tag bg-white/5 text-text-secondary">+{task.tags.length - 4}</span>
+                            )}
+                        </div>
+                    )}
+                    {isDetailsOpen && (
+                        <div className="mt-3 rounded-2xl border border-white/10 bg-white/5 p-3">
+                            <div className="flex flex-wrap gap-2">
+                                {sectionTabs.map((tab) => {
+                                    const isActive = tab.id === activeSection;
+                                    return (
+                                        <button
+                                            key={tab.id}
+                                            className={`rounded-full border px-3 py-1.5 text-sm font-semibold transition-colors ${
+                                                isActive
+                                                    ? 'border-accent bg-accent/20 text-text-primary'
+                                                    : 'border-white/10 bg-white/5 text-text-secondary hover:text-text-primary'
+                                            }`}
+                                            onClick={() => setActiveSection(tab.id)}
+                                        >
+                                            <span>{tab.label}</span>
+                                            {typeof tab.badge === 'number' && tab.badge > 0 && (
+                                                <span
+                                                    className={`ml-2 inline-flex h-5 min-w-[1.75rem] items-center justify-center rounded-full text-xs ${
+                                                        isActive ? 'bg-accent text-white' : 'bg-white/10 text-text-secondary'
+                                                    }`}
+                                                >
+                                                    {tab.badge}
+                                                </span>
+                                            )}
+                                        </button>
+                                    );
+                                })}
                             </div>
-                        )}
-                    </div>
+                            <div className="mt-4">{renderSectionContent()}</div>
+                        </div>
+                    )}
                 </div>
-                {isDetailsOpen && (
-                    <div className="p-3 border-t border-surface-border bg-surface-hover">
-                        <div className="flex flex-wrap gap-2 mb-4">
-                            {sectionTabs.map(tab => {
-                                const isActive = tab.id === activeSection;
-                                return (
-                                    <button
-                                        key={tab.id}
-                                        className={`px-3 py-1.5 rounded-full text-sm font-medium border flex items-center gap-2 transition-colors ${
-                                            isActive ? 'bg-accent/20 border-accent text-text-primary' : 'bg-surface border-surface-border text-text-secondary hover:text-text-primary'
-                                        }`}
-                                        onClick={() => setActiveSection(tab.id)}
-                                    >
-                                        <span>{tab.label}</span>
-                                        {typeof tab.badge === 'number' && tab.badge > 0 && (
-                                            <span className={`text-xs px-2 py-0.5 rounded-full ${isActive ? 'bg-accent text-white' : 'bg-surface-hover text-text-secondary'}`}>
-                                                {tab.badge}
-                                            </span>
-                                        )}
-                                    </button>
-                                );
-                            })}
-                        </div>
-                        <div className="mt-4">
-                            {renderSectionContent()}
-                        </div>
-                    </div>
-                )}
             </div>
-            {hasChildren && isChildrenOpen && children}
-            
+            {hasChildren && isChildrenOpen && <div className="ml-6 border-l border-surface-border/40 pl-3">{children}</div>}
+
             <ConfirmDialog
                 isOpen={showDeleteConfirm}
                 onClose={() => setShowDeleteConfirm(false)}
