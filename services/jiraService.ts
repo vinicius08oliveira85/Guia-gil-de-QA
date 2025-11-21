@@ -1,4 +1,4 @@
-import { Project, JiraTask, PhaseName } from '../types';
+import { Project, JiraTask, PhaseName, Comment } from '../types';
 import { parseJiraDescription } from '../utils/jiraDescriptionParser';
 import { getCache, setCache, clearCache } from '../utils/apiCache';
 import { getJiraStatusColor } from '../utils/jiraStatusColors';
@@ -43,6 +43,18 @@ export interface JiraIssue {
             key: string;
         };
         subtasks?: Array<{ key: string }>;
+        comment?: {
+            comments: Array<{
+                id: string;
+                author: {
+                    displayName: string;
+                    emailAddress?: string;
+                };
+                body: string;
+                created: string;
+                updated?: string;
+            }>;
+        };
     };
     renderedFields?: {
         description?: string; // Descrição renderizada em HTML
@@ -51,7 +63,7 @@ export interface JiraIssue {
                 id: string;
                 author: {
                     displayName: string;
-                    emailAddress: string;
+                    emailAddress?: string;
                 };
                 body: string;
                 created: string;
@@ -353,10 +365,10 @@ export const getJiraIssues = async (
         const search = new URLSearchParams();
         search.set('jql', jql);
         search.set('maxResults', String(pageSize));
-        search.set('expand', 'renderedFields');
+        search.set('expand', 'renderedFields,comment');
         search.set(
             'fields',
-            'summary,description,issuetype,status,statusCategory,priority,assignee,reporter,created,updated,resolutiondate,labels,parent,subtasks'
+            'summary,description,issuetype,status,statusCategory,priority,assignee,reporter,created,updated,resolutiondate,labels,parent,subtasks,comment'
         );
         if (typeof params.startAt === 'number') {
             search.set('startAt', String(params.startAt));
@@ -543,6 +555,113 @@ const mapJiraSeverity = (labels?: string[]): 'Crítico' | 'Alto' | 'Médio' | 'B
     return 'Médio';
 };
 
+/**
+ * Busca comentários de uma issue específica do Jira
+ * Fallback caso os comentários não venham no expand
+ */
+const getJiraIssueComments = async (
+    config: JiraConfig,
+    issueKey: string
+): Promise<Comment[]> => {
+    try {
+        const endpoint = `issue/${issueKey}/comment`;
+        const response = await jiraApiCall<{
+            comments?: Array<{
+                id: string;
+                author: {
+                    displayName: string;
+                    emailAddress?: string;
+                };
+                body: string;
+                created: string;
+                updated?: string;
+            }>;
+        }>(config, endpoint, { timeout: 30000 });
+        
+        if (!response.comments || response.comments.length === 0) {
+            return [];
+        }
+        
+        return response.comments.map(comment => ({
+            id: comment.id,
+            author: comment.author?.displayName || 'Desconhecido',
+            content: parseJiraDescription(comment.body) || '',
+            createdAt: comment.created,
+            updatedAt: comment.updated,
+        }));
+    } catch (error) {
+        console.warn(`Erro ao buscar comentários da issue ${issueKey}:`, error);
+        return [];
+    }
+};
+
+/**
+ * Faz merge de comentários do Jira com comentários existentes
+ * Evita duplicatas e atualiza comentários existentes
+ */
+const mergeComments = (existingComments: Comment[], jiraComments: Comment[]): Comment[] => {
+    const commentsMap = new Map<string, Comment>();
+    
+    // Adicionar comentários existentes primeiro
+    existingComments.forEach(comment => {
+        commentsMap.set(comment.id, comment);
+    });
+    
+    // Atualizar ou adicionar comentários do Jira
+    jiraComments.forEach(jiraComment => {
+        const existing = commentsMap.get(jiraComment.id);
+        if (existing) {
+            // Se o comentário foi atualizado no Jira (updatedAt diferente), atualizar
+            if (jiraComment.updatedAt && (!existing.updatedAt || jiraComment.updatedAt > existing.updatedAt)) {
+                commentsMap.set(jiraComment.id, jiraComment);
+            }
+        } else {
+            // Novo comentário do Jira
+            commentsMap.set(jiraComment.id, jiraComment);
+        }
+    });
+    
+    // Ordenar por data de criação (mais antigos primeiro)
+    return Array.from(commentsMap.values()).sort((a, b) => 
+        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+    );
+};
+
+/**
+ * Extrai comentários de uma issue do Jira, tentando múltiplas fontes
+ */
+const extractJiraComments = async (
+    config: JiraConfig,
+    issue: JiraIssue
+): Promise<Comment[]> => {
+    let jiraComments: Comment[] = [];
+    
+    // Tentar primeiro pelos renderedFields (mais eficiente)
+    if (issue.renderedFields?.comment?.comments && issue.renderedFields.comment.comments.length > 0) {
+        jiraComments = issue.renderedFields.comment.comments.map(comment => ({
+            id: comment.id,
+            author: comment.author?.displayName || 'Desconhecido',
+            content: parseJiraDescription(comment.body) || '',
+            createdAt: comment.created,
+            updatedAt: comment.updated,
+        }));
+    } else if (issue.fields?.comment?.comments && issue.fields.comment.comments.length > 0) {
+        // Tentar pelos fields diretos
+        jiraComments = issue.fields.comment.comments.map((comment: any) => ({
+            id: comment.id,
+            author: comment.author?.displayName || 'Desconhecido',
+            content: parseJiraDescription(comment.body) || '',
+            createdAt: comment.created,
+            updatedAt: comment.updated,
+        }));
+    } else {
+        // Fallback: buscar comentários separadamente
+        jiraComments = await getJiraIssueComments(config, issue.key);
+    }
+    
+    return jiraComments;
+};
+
 export const importJiraProject = async (
     config: JiraConfig,
     jiraProjectKey: string,
@@ -563,7 +682,7 @@ export const importJiraProject = async (
     const jiraIssues = await getJiraIssues(config, jiraProjectKey, undefined, onProgress);
 
     // Mapear issues para tarefas
-    const tasks: JiraTask[] = jiraIssues.map((issue, index) => {
+    const tasks: JiraTask[] = await Promise.all(jiraIssues.map(async (issue, index) => {
         const taskType = mapJiraTypeToTaskType(issue.fields?.issuetype?.name);
         const isBug = taskType === 'Bug';
         
@@ -589,6 +708,9 @@ export const importJiraProject = async (
             });
         }
         
+        // Buscar comentários do Jira
+        const jiraComments = await extractJiraComments(config, issue);
+        
         const jiraStatusName = issue.fields?.status?.name || '';
         const task: JiraTask = {
             id: issue.key || `jira-${Date.now()}-${Math.random()}`,
@@ -603,13 +725,7 @@ export const importJiraProject = async (
             tags: issue.fields?.labels || [],
             testCases: [],
             bddScenarios: [],
-            comments: issue.renderedFields?.comment?.comments?.map(comment => ({
-                id: comment.id,
-                author: comment.author?.displayName || 'Desconhecido',
-                content: parseJiraDescription(comment.body) || '',
-                createdAt: comment.created,
-                updatedAt: comment.updated,
-            })) || [],
+            comments: jiraComments,
         };
 
         if (isBug) {
@@ -681,7 +797,7 @@ export const syncJiraProject = async (
     const existingTaskKeys = new Set(project.tasks.map(t => t.id));
     const updatedTasks = [...project.tasks];
 
-    jiraIssues.forEach(issue => {
+    for (const issue of jiraIssues) {
         const existingIndex = updatedTasks.findIndex(t => t.id === issue.key);
         const taskType = mapJiraTypeToTaskType(issue.fields?.issuetype?.name);
         const isBug = taskType === 'Bug';
@@ -697,6 +813,13 @@ export const syncJiraProject = async (
             description = parseJiraDescription(issue.fields.description);
         }
         
+        // Buscar comentários do Jira
+        const jiraComments = await extractJiraComments(config, issue);
+        
+        // Fazer merge com comentários existentes
+        const existingComments = existingIndex >= 0 ? (updatedTasks[existingIndex].comments || []) : [];
+        const mergedComments = mergeComments(existingComments, jiraComments);
+        
         const task: JiraTask = {
             id: issue.key || `jira-${Date.now()}-${Math.random()}`,
             title: issue.fields?.summary || 'Sem título',
@@ -709,13 +832,7 @@ export const syncJiraProject = async (
             tags: issue.fields?.labels || [],
             testCases: existingIndex >= 0 ? updatedTasks[existingIndex].testCases : [],
             bddScenarios: existingIndex >= 0 ? updatedTasks[existingIndex].bddScenarios : [],
-            comments: issue.renderedFields?.comment?.comments?.map(comment => ({
-                id: comment.id,
-                author: comment.author?.displayName || 'Desconhecido',
-                content: parseJiraDescription(comment.body) || '',
-                createdAt: comment.created,
-                updatedAt: comment.updated,
-            })) || [],
+            comments: mergedComments,
         };
 
         if (isBug) {
@@ -745,7 +862,7 @@ export const syncJiraProject = async (
         } else {
             updatedTasks.push(task);
         }
-    });
+    }
 
     return {
         ...project,
@@ -783,7 +900,7 @@ export const addNewJiraTasks = async (
     }
     
     // Mapear apenas as novas issues para tarefas
-    const newTasks: JiraTask[] = newIssues.map((issue) => {
+    const newTasks: JiraTask[] = await Promise.all(newIssues.map(async (issue) => {
         const taskType = mapJiraTypeToTaskType(issue.fields?.issuetype?.name);
         const isBug = taskType === 'Bug';
         
@@ -794,6 +911,9 @@ export const addNewJiraTasks = async (
         } else if (issue.fields?.description) {
             description = parseJiraDescription(issue.fields.description);
         }
+        
+        // Buscar comentários do Jira
+        const jiraComments = await extractJiraComments(config, issue);
         
         const jiraStatusName = issue.fields?.status?.name || '';
         const task: JiraTask = {
@@ -809,13 +929,7 @@ export const addNewJiraTasks = async (
             tags: issue.fields?.labels || [],
             testCases: [], // Novas tarefas começam sem casos de teste
             bddScenarios: [], // Novas tarefas começam sem cenários BDD
-            comments: issue.renderedFields?.comment?.comments?.map(comment => ({
-                id: comment.id,
-                author: comment.author?.displayName || 'Desconhecido',
-                content: parseJiraDescription(comment.body) || '',
-                createdAt: comment.created,
-                updatedAt: comment.updated,
-            })) || [],
+            comments: jiraComments,
         };
 
         if (isBug) {
