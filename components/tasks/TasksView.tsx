@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import { Project, JiraTask, BddScenario, TestCaseDetailLevel, BugSeverity, TeamRole, TaskPriority } from '../../types';
+import { Project, JiraTask, BddScenario, TestCaseDetailLevel, BugSeverity, TeamRole } from '../../types';
 import { generateTestCasesForTask, generateBddScenarios } from '../../services/geminiService';
 import { Card } from '../common/Card';
 import { Modal } from '../common/Modal';
@@ -22,9 +22,14 @@ import { useSuggestions } from '../../hooks/useSuggestions';
 import { SuggestionBanner } from '../common/SuggestionBanner';
 import { EmptyState } from '../common/EmptyState';
 import { addNewJiraTasks, getJiraConfig, getJiraProjects, JiraConfig } from '../../services/jiraService';
-import { useProjectMetrics } from '../../hooks/useProjectMetrics';
+import { GeneralIAAnalysisButton } from './GeneralIAAnalysisButton';
+import { generateGeneralIAAnalysis } from '../../services/ai/generalAnalysisService';
 
-export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: Project) => void }> = ({ project, onUpdateProject }) => {
+export const TasksView: React.FC<{ 
+    project: Project, 
+    onUpdateProject: (project: Project) => void,
+    onNavigateToTab?: (tabId: string) => void
+}> = ({ project, onUpdateProject, onNavigateToTab }) => {
     const [generatingTestsTaskId, setGeneratingTestsTaskId] = useState<string | null>(null);
     const [generatingBddTaskId, setGeneratingBddTaskId] = useState<string | null>(null);
     const [showTemplateSelector, setShowTemplateSelector] = useState(false);
@@ -48,7 +53,6 @@ export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: 
     const [showJiraProjectSelector, setShowJiraProjectSelector] = useState(false);
     const [availableJiraProjects, setAvailableJiraProjects] = useState<Array<{ key: string; name: string }>>([]);
     const [selectedJiraProjectKey, setSelectedJiraProjectKey] = useState<string>('');
-    const [activeTaskId, setActiveTaskId] = useState<string | null>(null);
     const [failModalState, setFailModalState] = useState<{
         isOpen: boolean;
         taskId: string | null;
@@ -62,9 +66,7 @@ export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: 
         observedResult: '',
         createBug: true,
     });
-    const metrics = useProjectMetrics(project);
-    const statusOrder = ['To Do', 'In Progress', 'Done'] as const;
-    const priorityRanking: Record<TaskPriority, number> = { Urgente: 0, Alta: 1, Média: 2, Baixa: 3 };
+    const [isRunningGeneralAnalysis, setIsRunningGeneralAnalysis] = useState(false);
 
     const handleTaskStatusChange = useCallback((taskId: string, status: 'To Do' | 'In Progress' | 'Done') => {
         onUpdateProject({
@@ -207,23 +209,6 @@ export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: 
             })
         });
     }, [project, onUpdateProject]);
-    
-    const handleTestCaseExecutedStrategyChange = useCallback((taskId: string, testCaseId: string, strategy: string | null) => {
-        onUpdateProject({
-            ...project,
-            tasks: project.tasks.map(task => {
-                if (task.id !== taskId) {
-                    return task;
-                }
-                const updatedTestCases = (task.testCases || []).map(tc =>
-                    tc.id === testCaseId
-                        ? { ...tc, executedStrategy: strategy && strategy.trim() !== '' ? strategy : undefined }
-                        : tc
-                );
-                return { ...task, testCases: updatedTestCases };
-            })
-        });
-    }, [project, onUpdateProject]);
 
     const handleAddComment = useCallback((taskId: string, content: string) => {
         if (!content.trim()) return;
@@ -276,6 +261,49 @@ export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: 
             tasks: project.tasks.map(t => t.id === taskId ? updatedTask : t)
         });
     }, [project, onUpdateProject]);
+
+    const handleGeneralIAAnalysis = useCallback(async () => {
+        setIsRunningGeneralAnalysis(true);
+        try {
+            const analysis = await generateGeneralIAAnalysis(project);
+            
+            // Atualizar análises individuais nas tarefas
+            const updatedTasks = project.tasks.map(task => {
+                const taskAnalysis = analysis.taskAnalyses.find(ta => ta.taskId === task.id);
+                if (taskAnalysis) {
+                    return {
+                        ...task,
+                        iaAnalysis: {
+                            ...taskAnalysis,
+                            generatedAt: new Date().toISOString(),
+                            isOutdated: false
+                        }
+                    };
+                }
+                return task;
+            });
+
+            const updatedProject = {
+                ...project,
+                tasks: updatedTasks,
+                generalIAAnalysis: analysis
+            };
+
+            onUpdateProject(updatedProject);
+            handleSuccess('Análise geral concluída com sucesso!');
+            
+            // Navegar para a aba de Análise IA
+            if (onNavigateToTab) {
+                setTimeout(() => {
+                    onNavigateToTab('analysis');
+                }, 500);
+            }
+        } catch (error) {
+            handleError(error, 'Executar análise geral com IA');
+        } finally {
+            setIsRunningGeneralAnalysis(false);
+        }
+    }, [project, onUpdateProject, handleError, handleSuccess, onNavigateToTab]);
     
     const handleSaveTask = (taskData: Omit<JiraTask, 'testCases' | 'status' | 'testStrategy' | 'bddScenarios' | 'createdAt' | 'completedAt'>) => {
         let newTasks: JiraTask[];
@@ -379,19 +407,8 @@ export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: 
     }, [filters]);
 
     const taskTree = useMemo(() => {
-        const statusWeight: Record<'To Do' | 'In Progress' | 'Done', number> = { 'To Do': 0, 'In Progress': 1, Done: 2 };
-        const priorityWeight: Record<TaskPriority, number> = { Urgente: 0, Alta: 1, Média: 2, Baixa: 3 };
-        const comparator = (a: TaskWithChildren, b: TaskWithChildren) => {
-            const statusDiff = statusWeight[a.status] - statusWeight[b.status];
-            if (statusDiff !== 0) return statusDiff;
-            const aPriority = priorityWeight[a.priority || 'Média'] ?? 2;
-            const bPriority = priorityWeight[b.priority || 'Média'] ?? 2;
-            if (aPriority !== bPriority) return aPriority - bPriority;
-            return (a.createdAt ? new Date(a.createdAt).getTime() : 0) - (b.createdAt ? new Date(b.createdAt).getTime() : 0);
-        };
-
-        const orderedTasks = [...filteredTasks].sort(comparator);
-        const taskMap = new Map(orderedTasks.map(t => [t.id, { ...t, children: [] as TaskWithChildren[] }]));
+        const tasks = [...filteredTasks];
+        const taskMap = new Map(tasks.map(t => [t.id, { ...t, children: [] as TaskWithChildren[] }]));
         const tree: TaskWithChildren[] = [];
 
         for (const task of taskMap.values()) {
@@ -401,62 +418,8 @@ export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: 
                 tree.push(task);
             }
         }
-
-        const sortBranch = (nodes: TaskWithChildren[]) => {
-            nodes.sort(comparator);
-            nodes.forEach(node => sortBranch(node.children));
-        };
-
-        sortBranch(tree);
         return tree;
     }, [filteredTasks]);
-
-    const statusSnapshot = useMemo(() => {
-        const total = project.tasks.filter(task => task.type !== 'Bug').length || 1;
-        return statusOrder.map(status => {
-            const count = project.tasks.filter(task => task.type !== 'Bug' && task.status === status).length;
-            return { status, count, percentage: Math.round((count / total) * 100) };
-        });
-    }, [project.tasks, statusOrder]);
-
-    const groupedTasksByStatus = useMemo(() => {
-        return statusOrder.map(status => ({
-            status,
-            tasks: filteredTasks.filter(task => task.status === status).slice(0, 3),
-        }));
-    }, [filteredTasks, statusOrder]);
-
-    const quickFilters = [
-        {
-            id: 'noTests',
-            label: 'Sem casos de teste',
-            isActive: filters.hasTestCases === false,
-            onToggle: () => (filters.hasTestCases === false ? removeFilter('hasTestCases') : updateFilter('hasTestCases', false)),
-        },
-        {
-            id: 'noBdd',
-            label: 'Sem BDD',
-            isActive: filters.hasBddScenarios === false,
-            onToggle: () =>
-                filters.hasBddScenarios === false ? removeFilter('hasBddScenarios') : updateFilter('hasBddScenarios', false),
-        },
-        {
-            id: 'automation',
-            label: 'Sem automação',
-            isActive: filters.isAutomated === false,
-            onToggle: () =>
-                filters.isAutomated === false ? removeFilter('isAutomated') : updateFilter('isAutomated', false),
-        },
-        {
-            id: 'critical',
-            label: 'Bugs críticos',
-            isActive: filters.severity?.includes('Crítico'),
-            onToggle: () =>
-                filters.severity?.includes('Crítico')
-                    ? removeFilter('severity')
-                    : updateFilter('severity', ['Crítico']),
-        },
-    ];
 
     const handleAddTestCaseFromTemplate = useCallback((taskId: string, templateId: string) => {
         const task = project.tasks.find(t => t.id === taskId);
@@ -487,16 +450,6 @@ export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: 
             return newSet;
         });
     };
-
-    const focusTask = useCallback((taskId: string | null) => {
-        setActiveTaskId(taskId);
-        if (taskId) {
-            requestAnimationFrame(() => {
-                const element = document.querySelector<HTMLElement>(`[data-task-id="${taskId}"]`);
-                element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            });
-        }
-    }, []);
 
     // Extrair chave do projeto Jira a partir dos IDs das tarefas (ex: "GDPI-10" -> "GDPI")
     const extractJiraProjectKey = useCallback((): string | null => {
@@ -604,7 +557,6 @@ export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: 
                     onToggleSelect={() => toggleTaskSelection(task.id)}
                     onTestCaseStatusChange={(testCaseId, status) => handleTestCaseStatusChange(task.id, testCaseId, status)}
                     onToggleTestCaseAutomated={(testCaseId, isAutomated) => handleToggleTestCaseAutomated(task.id, testCaseId, isAutomated)}
-                    onExecutedStrategyChange={(testCaseId, strategy) => handleTestCaseExecutedStrategyChange(task.id, testCaseId, strategy)}
                     onDelete={handleDeleteTask}
                     onGenerateTests={handleGenerateTests}
                     isGenerating={generatingTestsTaskId === task.id}
@@ -625,66 +577,68 @@ export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: 
                     onDeleteComment={(commentId) => handleDeleteComment(task.id, commentId)}
                     project={project}
                     onUpdateProject={onUpdateProject}
-                    activeTaskId={activeTaskId}
-                    onFocusTask={focusTask}
                 >
                     {task.children.length > 0 && renderTaskTree(task.children, level + 1, globalIndex + 1)}
                 </JiraTaskItem>
             );
         });
-    }, [selectedTasks, generatingTestsTaskId, generatingBddTaskId, handleTestCaseStatusChange, handleToggleTestCaseAutomated, handleTestCaseExecutedStrategyChange, handleDeleteTask, handleGenerateTests, openTaskFormForNew, openTaskFormForEdit, handleGenerateBddScenarios, handleSaveBddScenario, handleDeleteBddScenario, handleTaskStatusChange, handleAddTestCaseFromTemplate, handleAddComment, handleEditComment, handleDeleteComment, project, onUpdateProject, toggleTaskSelection, focusTask]);
+    }, [selectedTasks, generatingTestsTaskId, generatingBddTaskId, handleTestCaseStatusChange, handleToggleTestCaseAutomated, handleDeleteTask, handleGenerateTests, openTaskFormForNew, openTaskFormForEdit, handleGenerateBddScenarios, handleSaveBddScenario, handleDeleteBddScenario, handleTaskStatusChange, handleAddTestCaseFromTemplate, handleAddComment, handleEditComment, handleDeleteComment, project, onUpdateProject, toggleTaskSelection]);
 
     return (
         <>
         <Card>
-            <div className="flex flex-col gap-4 mb-6 mobile-tight-stack">
-                <div className="flex flex-col lg:flex-row justify-between gap-4 w-full items-start">
-                    <div className="space-y-1 w-full">
-                        <h3 className="text-xl sm:text-2xl font-bold text-text-primary break-words">Tarefas & Casos de Teste</h3>
-                        <p className="text-xs sm:text-sm text-text-secondary mobile-muted">Acompanhe o progresso das atividades e resultados de QA.</p>
+            <div className="flex flex-col gap-4 mb-6">
+                <div className="flex flex-col lg:flex-row justify-between gap-4">
+                    <div>
+                        <h3 className="text-2xl font-bold text-text-primary">Tarefas & Casos de Teste</h3>
+                        <p className="text-sm text-text-secondary">Acompanhe o progresso das atividades e resultados de QA.</p>
                     </div>
-                    <div className="flex flex-wrap gap-2 w-full lg:w-auto">
-                        <button onClick={() => setShowFilters(prev => !prev)} className="btn btn-secondary flex-1 sm:flex-none min-w-[140px]">
+                    <div className="flex flex-wrap gap-2">
+                        <button onClick={() => setShowFilters(prev => !prev)} className="btn btn-secondary">
                             {showFilters ? 'Ocultar Filtros' : `Filtros (${activeFiltersCount})`}
                         </button>
-                        <button onClick={() => setShowTemplateSelector(true)} className="btn btn-secondary flex-1 sm:flex-none min-w-[140px]">📋 Templates</button>
+                        <button onClick={() => setShowTemplateSelector(true)} className="btn btn-secondary">📋 Templates</button>
                         <button 
                             onClick={handleSyncJira} 
-                            className="btn btn-secondary flex-1 sm:flex-none min-w-[140px]"
+                            className="btn btn-secondary"
                             disabled={isSyncingJira}
                         >
                             {isSyncingJira ? '🔄 Sincronizando...' : '🔄 Atualizar do Jira'}
                         </button>
-                        <button onClick={() => openTaskFormForNew()} className="btn btn-primary flex-1 sm:flex-none min-w-[140px]">Adicionar Tarefa</button>
+                        <GeneralIAAnalysisButton 
+                            onAnalyze={handleGeneralIAAnalysis}
+                            isAnalyzing={isRunningGeneralAnalysis}
+                        />
+                        <button onClick={() => openTaskFormForNew()} className="btn btn-primary">Adicionar Tarefa</button>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
-                    <div className="p-3 sm:p-4 bg-surface border border-surface-border rounded-lg">
-                        <p className="text-[0.65rem] sm:text-xs text-text-secondary uppercase tracking-wide">Total de Tarefas</p>
-                        <p className="text-xl sm:text-2xl font-bold text-text-primary">{stats.total}</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                    <div className="p-3 bg-surface border border-surface-border rounded-lg">
+                        <p className="text-xs text-text-secondary uppercase tracking-wide">Total de Tarefas</p>
+                        <p className="text-2xl font-bold text-text-primary">{stats.total}</p>
                     </div>
-                    <div className="p-3 sm:p-4 bg-surface border border-surface-border rounded-lg">
-                        <p className="text-[0.65rem] sm:text-xs text-text-secondary uppercase tracking-wide">Em Andamento</p>
-                        <p className="text-xl sm:text-2xl font-bold text-accent">{stats.inProgress}</p>
+                    <div className="p-3 bg-surface border border-surface-border rounded-lg">
+                        <p className="text-xs text-text-secondary uppercase tracking-wide">Em Andamento</p>
+                        <p className="text-2xl font-bold text-accent">{stats.inProgress}</p>
                     </div>
-                    <div className="p-3 sm:p-4 bg-surface border border-surface-border rounded-lg">
-                        <p className="text-[0.65rem] sm:text-xs text-text-secondary uppercase tracking-wide">Concluídas</p>
-                        <p className="text-xl sm:text-2xl font-bold text-green-400">{stats.done}</p>
+                    <div className="p-3 bg-surface border border-surface-border rounded-lg">
+                        <p className="text-xs text-text-secondary uppercase tracking-wide">Concluídas</p>
+                        <p className="text-2xl font-bold text-green-400">{stats.done}</p>
                     </div>
-                    <div className="p-3 sm:p-4 bg-surface border border-surface-border rounded-lg">
-                        <p className="text-[0.65rem] sm:text-xs text-text-secondary uppercase tracking-wide">Bugs Abertos</p>
-                        <p className="text-xl sm:text-2xl font-bold text-red-400">{stats.bugsOpen}</p>
+                    <div className="p-3 bg-surface border border-surface-border rounded-lg">
+                        <p className="text-xs text-text-secondary uppercase tracking-wide">Bugs Abertos</p>
+                        <p className="text-2xl font-bold text-red-400">{stats.bugsOpen}</p>
                     </div>
-                    <div className="p-3 sm:p-4 bg-surface border border-surface-border rounded-lg col-span-1 md:col-span-2">
+                    <div className="p-3 bg-surface border border-surface-border rounded-lg col-span-1 md:col-span-2">
                         <div className="flex items-center justify-between mb-2">
-                            <p className="text-[0.65rem] sm:text-xs text-text-secondary uppercase tracking-wide">Execução de Testes</p>
-                            <span className="text-xs sm:text-sm font-semibold text-text-primary">{testExecutionRate}%</span>
+                            <p className="text-xs text-text-secondary uppercase tracking-wide">Execução de Testes</p>
+                            <span className="text-sm font-semibold text-text-primary">{testExecutionRate}%</span>
                         </div>
-                        <div className="w-full bg-surface-hover rounded-full h-2 mb-2 overflow-hidden">
+                        <div className="w-full bg-surface-hover rounded-full h-2 mb-2">
                             <div className="bg-accent h-2 rounded-full transition-all" style={{ width: `${testExecutionRate}%` }}></div>
                         </div>
-                        <p className="text-[0.65rem] sm:text-xs text-text-secondary">
+                        <p className="text-xs text-text-secondary">
                             {stats.executedTests}/{stats.totalTests} casos executados • Automação {automationRate}%
                         </p>
                     </div>

@@ -34,6 +34,55 @@ export interface BddScenario {
   gherkin: string;
 }
 
+export interface TaskIAAnalysis {
+  taskId: string;
+  summary: string;
+  detectedProblems: string[];
+  riskLevel: 'Baixo' | 'Médio' | 'Alto' | 'Crítico';
+  riskScore: number; // 0-100
+  missingItems: string[];
+  bddSuggestions: string[];
+  qaImprovements: string[];
+  generatedAt: string;
+  isOutdated?: boolean;
+}
+
+export interface TestIAAnalysis {
+  testId: string;
+  taskId: string;
+  summary: string;
+  coverage: string;
+  detectedProblems: string[];
+  suggestions: string[];
+  generatedAt: string;
+  isOutdated?: boolean;
+}
+
+export interface GeneralIAAnalysis {
+  summary: string;
+  detectedProblems: string[];
+  riskCalculation: {
+    overallRisk: 'Baixo' | 'Médio' | 'Alto' | 'Crítico';
+    riskScore: number; // 0-100
+    riskFactors: Array<{
+      factor: string;
+      impact: 'Baixo' | 'Médio' | 'Alto';
+      description: string;
+    }>;
+  };
+  missingItems: string[];
+  bddSuggestions: Array<{
+    taskId: string;
+    taskTitle: string;
+    scenarios: string[];
+  }>;
+  qaImprovements: string[];
+  taskAnalyses: TaskIAAnalysis[];
+  testAnalyses: TestIAAnalysis[];
+  generatedAt: string;
+  isOutdated?: boolean;
+}
+
 export interface JiraTask {
   id: string;
   title: string;
@@ -58,6 +107,7 @@ export interface JiraTask {
   estimatedHours?: number;
   actualHours?: number;
   checklist?: ChecklistItem[];
+  iaAnalysis?: TaskIAAnalysis;
 }
 
 export interface ProjectDocument {
@@ -115,6 +165,7 @@ export interface Project {
   phases: Phase[];
   shiftLeftAnalysis?: ShiftLeftAnalysis;
   testPyramidAnalysis?: TestPyramidAnalysis;
+  generalIAAnalysis?: GeneralIAAnalysis;
   tags?: string[];
   settings?: ProjectSettings;
 }
