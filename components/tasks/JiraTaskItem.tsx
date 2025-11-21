@@ -366,17 +366,20 @@ export const JiraTaskItem: React.FC<{
                 {isGenerating && <div className="flex justify-center py-2"><Spinner small /></div>}
                 {task.testStrategy && task.testStrategy.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                        {task.testStrategy.map((strategy, i) => (
-                            <TestStrategyCard 
-                                key={i} 
-                                strategy={strategy}
-                                strategyIndex={i}
-                                isExecuted={(task.executedStrategies && task.executedStrategies.includes(i)) || false}
-                                onToggleExecuted={onStrategyExecutedChange}
-                                toolsUsed={(task.strategyTools && task.strategyTools[i]) || []}
-                                onToolsChange={onStrategyToolsChange}
-                            />
-                        ))}
+                        {task.testStrategy.map((strategy, i) => {
+                            if (!strategy) return null;
+                            return (
+                                <TestStrategyCard 
+                                    key={i} 
+                                    strategy={strategy}
+                                    strategyIndex={i}
+                                    isExecuted={(task.executedStrategies && task.executedStrategies.includes(i)) || false}
+                                    onToggleExecuted={onStrategyExecutedChange}
+                                    toolsUsed={(task.strategyTools && task.strategyTools[i]) || []}
+                                    onToolsChange={onStrategyToolsChange}
+                                />
+                            );
+                        })}
                     </div>
                 ) : (
                     !isGenerating && (

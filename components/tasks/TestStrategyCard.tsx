@@ -3,7 +3,6 @@ import React from 'react';
 import { TestStrategy } from '../../types';
 import { ToolsSelector } from './ToolsSelector';
 import { windows12Styles } from '../../utils/windows12Styles';
-import { CheckIcon } from '../common/Icons';
 
 interface TestStrategyCardProps {
     strategy: TestStrategy;
@@ -22,6 +21,11 @@ export const TestStrategyCard: React.FC<TestStrategyCardProps> = ({
     toolsUsed = [],
     onToolsChange
 }) => {
+    // Validação de segurança
+    if (!strategy || !strategy.testType) {
+        return null;
+    }
+
     const handleToggleExecuted = () => {
         if (onToggleExecuted) {
             onToggleExecuted(strategyIndex, !isExecuted);
@@ -72,22 +76,26 @@ export const TestStrategyCard: React.FC<TestStrategyCardProps> = ({
                 )}
             </div>
 
-            <div className="mt-3">
-                <h5 className="font-semibold text-text-secondary">Como Executar:</h5>
-                <ul className="space-y-2 mt-2">
-                    {strategy.howToExecute.map((step, i) => (
-                        <li key={i} className="flex items-start text-sm text-text-primary">
-                            <svg className="w-4 h-4 mr-2.5 mt-0.5 text-accent flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7"></path></svg>
-                            <span>{step}</span>
-                        </li>
-                    ))}
-                </ul>
-            </div>
+            {strategy.howToExecute && strategy.howToExecute.length > 0 && (
+                <div className="mt-3">
+                    <h5 className="font-semibold text-text-secondary">Como Executar:</h5>
+                    <ul className="space-y-2 mt-2">
+                        {strategy.howToExecute.map((step, i) => (
+                            <li key={i} className="flex items-start text-sm text-text-primary">
+                                <svg className="w-4 h-4 mr-2.5 mt-0.5 text-accent flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7"></path></svg>
+                                <span>{step}</span>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
 
-            <div className="mt-3">
-                <h5 className="font-semibold text-text-secondary">Ferramentas Sugeridas:</h5>
-                <p className="text-sm text-text-primary mt-1">{strategy.tools}</p>
-            </div>
+            {strategy.tools && (
+                <div className="mt-3">
+                    <h5 className="font-semibold text-text-secondary">Ferramentas Sugeridas:</h5>
+                    <p className="text-sm text-text-primary mt-1">{strategy.tools}</p>
+                </div>
+            )}
 
             {/* Ferramentas Utilizadas (apenas se estratégia foi executada) */}
             {isExecuted && onToolsChange && (
