@@ -714,92 +714,208 @@ export const TasksView: React.FC<{
         <>
         <Card>
             <div className="flex flex-col gap-4 mb-6">
-                <div className="flex flex-col lg:flex-row justify-between gap-4">
-                    <div>
-                        <h3 className="text-2xl font-bold text-text-primary">Tarefas & Casos de Teste</h3>
+                <div className="flex flex-col lg:flex-row justify-between gap-4 mb-6">
+                    <div className="flex-shrink-0">
+                        <h3 className="text-2xl font-bold text-text-primary mb-1">Tarefas & Casos de Teste</h3>
                         <p className="text-sm text-text-secondary">Acompanhe o progresso das atividades e resultados de QA.</p>
                     </div>
-                    <div className="flex flex-wrap gap-2">
-                        <button onClick={() => setShowFilters(prev => !prev)} className="btn btn-secondary">
-                            {showFilters ? 'Ocultar Filtros' : `Filtros (${activeFiltersCount})`}
-                        </button>
-                        <button onClick={() => setShowTemplateSelector(true)} className="btn btn-secondary">📋 Templates</button>
-                        <button 
-                            onClick={handleSyncJira} 
-                            className="btn btn-secondary"
-                            disabled={isSyncingJira}
-                        >
-                            {isSyncingJira ? '🔄 Sincronizando...' : '🔄 Atualizar do Jira'}
-                        </button>
-                        <GeneralIAAnalysisButton 
-                            onAnalyze={handleGeneralIAAnalysis}
-                            isAnalyzing={isRunningGeneralAnalysis}
-                        />
-                        <button onClick={() => openTaskFormForNew()} className="btn btn-primary">Adicionar Tarefa</button>
+                    <div className="flex flex-col sm:flex-row gap-2 flex-wrap">
+                        {/* Grupo: Ações Principais */}
+                        <div className="flex gap-2 flex-wrap">
+                            <button 
+                                onClick={() => openTaskFormForNew()} 
+                                className="btn btn-primary flex items-center gap-2 px-4 py-2.5 font-semibold shadow-md hover:shadow-lg transition-all"
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                </svg>
+                                Adicionar Tarefa
+                            </button>
+                            <GeneralIAAnalysisButton 
+                                onAnalyze={handleGeneralIAAnalysis}
+                                isAnalyzing={isRunningGeneralAnalysis}
+                            />
+                        </div>
+                        
+                        {/* Grupo: Filtros e Templates */}
+                        <div className="flex gap-2 flex-wrap">
+                            <button 
+                                onClick={() => setShowFilters(prev => !prev)} 
+                                className="btn btn-secondary flex items-center gap-2 px-3 py-2.5"
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                                </svg>
+                                {showFilters ? 'Ocultar Filtros' : `Filtros${activeFiltersCount > 0 ? ` (${activeFiltersCount})` : ''}`}
+                            </button>
+                            <button 
+                                onClick={() => setShowTemplateSelector(true)} 
+                                className="btn btn-secondary flex items-center gap-2 px-3 py-2.5"
+                            >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                Templates
+                            </button>
+                        </div>
+                        
+                        {/* Grupo: Sincronização */}
+                        <div className="flex gap-2 flex-wrap">
+                            <button 
+                                onClick={handleSyncJira} 
+                                className="btn btn-secondary flex items-center gap-2 px-3 py-2.5"
+                                disabled={isSyncingJira}
+                            >
+                                {isSyncingJira ? (
+                                    <>
+                                        <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                        </svg>
+                                        Sincronizando...
+                                    </>
+                                ) : (
+                                    <>
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                        </svg>
+                                        Atualizar do Jira
+                                    </>
+                                )}
+                            </button>
+                        </div>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-                    <div className="p-3 bg-surface border border-surface-border rounded-lg">
-                        <p className="text-xs text-text-secondary uppercase tracking-wide">Total de Tarefas</p>
-                        <p className="text-2xl font-bold text-text-primary">{stats.total}</p>
-                    </div>
-                    <div className="p-3 bg-surface border border-surface-border rounded-lg">
-                        <p className="text-xs text-text-secondary uppercase tracking-wide">Em Andamento</p>
-                        <p className="text-2xl font-bold text-accent">{stats.inProgress}</p>
-                    </div>
-                    <div className="p-3 bg-surface border border-surface-border rounded-lg">
-                        <p className="text-xs text-text-secondary uppercase tracking-wide">Concluídas</p>
-                        <p className="text-2xl font-bold text-green-400">{stats.done}</p>
-                    </div>
-                    <div className="p-3 bg-surface border border-surface-border rounded-lg">
-                        <p className="text-xs text-text-secondary uppercase tracking-wide">Bugs Abertos</p>
-                        <p className="text-2xl font-bold text-red-400">{stats.bugsOpen}</p>
-                    </div>
-                    <div className="p-3 bg-surface border border-surface-border rounded-lg col-span-1 md:col-span-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    <div className="mica rounded-xl p-4 border border-surface-border hover:border-accent/30 transition-all duration-200 hover:shadow-lg group">
                         <div className="flex items-center justify-between mb-2">
-                            <p className="text-xs text-text-secondary uppercase tracking-wide">Execução de Testes</p>
-                            <span className="text-sm font-semibold text-text-primary">{testExecutionRate}%</span>
+                            <div className="p-2 bg-blue-500/10 rounded-lg group-hover:bg-blue-500/20 transition-colors">
+                                <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                </svg>
+                            </div>
                         </div>
-                        <div className="w-full bg-surface-hover rounded-full h-2 mb-2">
-                            <div className="bg-accent h-2 rounded-full transition-all" style={{ width: `${testExecutionRate}%` }}></div>
+                        <p className="text-xs text-text-secondary uppercase tracking-wide mb-1">Total de Tarefas</p>
+                        <p className="text-3xl font-bold text-text-primary">{stats.total}</p>
+                    </div>
+                    
+                    <div className="mica rounded-xl p-4 border border-surface-border hover:border-accent/30 transition-all duration-200 hover:shadow-lg group">
+                        <div className="flex items-center justify-between mb-2">
+                            <div className="p-2 bg-accent/10 rounded-lg group-hover:bg-accent/20 transition-colors">
+                                <svg className="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                </svg>
+                            </div>
                         </div>
-                        <p className="text-xs text-text-secondary">
-                            {stats.executedTests}/{stats.totalTests} casos executados • Automação {automationRate}%
-                        </p>
+                        <p className="text-xs text-text-secondary uppercase tracking-wide mb-1">Em Andamento</p>
+                        <p className="text-3xl font-bold text-accent">{stats.inProgress}</p>
+                    </div>
+                    
+                    <div className="mica rounded-xl p-4 border border-surface-border hover:border-green-400/30 transition-all duration-200 hover:shadow-lg group">
+                        <div className="flex items-center justify-between mb-2">
+                            <div className="p-2 bg-green-500/10 rounded-lg group-hover:bg-green-500/20 transition-colors">
+                                <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                        </div>
+                        <p className="text-xs text-text-secondary uppercase tracking-wide mb-1">Concluídas</p>
+                        <p className="text-3xl font-bold text-green-400">{stats.done}</p>
+                    </div>
+                    
+                    <div className="mica rounded-xl p-4 border border-surface-border hover:border-red-400/30 transition-all duration-200 hover:shadow-lg group">
+                        <div className="flex items-center justify-between mb-2">
+                            <div className="p-2 bg-red-500/10 rounded-lg group-hover:bg-red-500/20 transition-colors">
+                                <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                            </div>
+                        </div>
+                        <p className="text-xs text-text-secondary uppercase tracking-wide mb-1">Bugs Abertos</p>
+                        <p className="text-3xl font-bold text-red-400">{stats.bugsOpen}</p>
+                    </div>
+                    
+                    <div className="mica rounded-xl p-4 border border-surface-border hover:border-accent/30 transition-all duration-200 hover:shadow-lg col-span-1 md:col-span-2 lg:col-span-4">
+                        <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-2">
+                                <div className="p-2 bg-accent/10 rounded-lg">
+                                    <svg className="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                                    </svg>
+                                </div>
+                                <p className="text-sm font-semibold text-text-primary">Execução de Testes</p>
+                            </div>
+                            <span className="text-lg font-bold text-accent">{testExecutionRate}%</span>
+                        </div>
+                        <div className="w-full bg-surface-hover/50 rounded-full h-3 mb-2 overflow-hidden">
+                            <div 
+                                className="h-full bg-gradient-to-r from-accent via-accent-light to-accent rounded-full transition-all duration-500 relative overflow-hidden"
+                                style={{ width: `${testExecutionRate}%` }}
+                            >
+                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-pulse" />
+                            </div>
+                        </div>
+                        <div className="flex items-center justify-between text-xs">
+                            <p className="text-text-secondary">
+                                {stats.executedTests}/{stats.totalTests} casos executados
+                            </p>
+                            <p className="text-text-secondary">
+                                Automação <span className="font-semibold text-accent">{automationRate}%</span>
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
 
             {filterChips.length > 0 && (
-                <div className="flex flex-wrap items-center gap-2 mb-4">
-                    {filterChips.map(chip => (
-                        <span
-                            key={`${chip.key}-${chip.label}`}
-                            className="flex items-center gap-2 px-3 py-1 rounded-full bg-surface-hover text-xs text-text-primary border border-surface-border"
+                <div className="mb-6 p-4 mica rounded-xl border border-surface-border">
+                    <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                            <svg className="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                            </svg>
+                            <span className="text-sm font-semibold text-text-primary">Filtros Ativos</span>
+                            <span className="text-xs bg-accent/20 text-accent px-2 py-0.5 rounded-full font-medium">
+                                {filterChips.length}
+                            </span>
+                        </div>
+                        <button 
+                            onClick={clearFilters} 
+                            className="text-sm text-accent hover:text-accent-light transition-colors flex items-center gap-1"
                         >
-                            {chip.label}
-                            <button
-                                onClick={() => removeFilter(chip.key)}
-                                className="text-text-secondary hover:text-red-400"
-                                aria-label={`Remover filtro ${chip.label}`}
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                            Limpar todos
+                        </button>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                        {filterChips.map(chip => (
+                            <span
+                                key={`${chip.key}-${chip.label}`}
+                                className="group flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-hover text-xs font-medium text-text-primary border border-surface-border hover:border-accent/30 hover:bg-surface transition-all duration-200"
                             >
-                                ×
-                            </button>
-                        </span>
-                    ))}
-                    <button onClick={clearFilters} className="text-sm text-accent hover:underline">
-                        Limpar todos
-                    </button>
+                                <svg className="w-3 h-3 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                                </svg>
+                                {chip.label}
+                                <button
+                                    onClick={() => removeFilter(chip.key)}
+                                    className="ml-1 text-text-secondary hover:text-red-400 transition-colors rounded-full hover:bg-red-400/10 p-0.5"
+                                    aria-label={`Remover filtro ${chip.label}`}
+                                >
+                                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </span>
+                        ))}
+                    </div>
                 </div>
             )}
 
             {showFilters && (
-                <div className="mb-6 p-4 bg-surface rounded-lg border border-surface-border">
-                    <div className="flex justify-between items-center mb-3">
-                        <p className="font-semibold text-text-primary">Filtros avançados</p>
-                        <button onClick={clearFilters} className="text-sm text-accent hover:underline">Limpar filtros</button>
-                    </div>
+                <div className="mb-6">
                     <FilterPanel
                         filters={filters}
                         onFilterChange={updateFilter}
@@ -812,17 +928,26 @@ export const TasksView: React.FC<{
 
             <div className="flex flex-col gap-4 mb-6">
                 {currentSuggestion && showSuggestions && (
-                    <div className="border border-surface-border rounded-lg overflow-hidden">
-                        <div className="flex items-center justify-between bg-surface-hover px-4 py-2">
-                            <span className="text-sm font-semibold text-text-primary">Sugestões inteligentes</span>
+                    <div className="mica rounded-xl border border-surface-border overflow-hidden shadow-lg">
+                        <div className="flex items-center justify-between bg-surface-hover/50 px-4 py-3 border-b border-surface-border">
+                            <div className="flex items-center gap-2">
+                                <div className="p-1.5 bg-accent/10 rounded-lg">
+                                    <svg className="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                                    </svg>
+                                </div>
+                                <span className="text-sm font-semibold text-text-primary">Sugestões inteligentes</span>
+                            </div>
                             <button
                                 onClick={() => setShowSuggestions(false)}
-                                className="text-xs text-text-secondary hover:text-text-primary"
+                                className="text-xs text-text-secondary hover:text-text-primary transition-colors p-1 rounded hover:bg-surface-hover"
                             >
-                                Ocultar
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
                             </button>
                         </div>
-                        <div className="p-4">
+                        <div className="p-4 bg-surface/30">
                             <SuggestionBanner
                                 suggestion={currentSuggestion}
                                 onDismiss={() => setDismissedSuggestions(new Set([...dismissedSuggestions, currentSuggestion.id]))}
