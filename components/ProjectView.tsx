@@ -1,41 +1,21 @@
 import React, { useState, useEffect, Suspense, useRef } from 'react';
 import { Project } from '../types';
 import { useProjectMetrics } from '../hooks/useProjectMetrics';
-import { ProjectQADashboard } from './dashboard/ProjectQADashboard';
-import { AnalysisView } from './analysis/AnalysisView';
+import { ProjectTrail } from './trail/ProjectTrail';
 import { TasksView } from './tasks/TasksView';
 import { DocumentsView } from './DocumentsView';
 import { RoadmapView } from './roadmap/RoadmapView';
 import { GlossaryView } from './glossary/GlossaryView';
-import { TimelineView } from './timeline/TimelineView';
 import { PrintableReport } from './PrintableReport';
 import { ExportMenu } from './common/ExportMenu';
 import { Modal } from './common/Modal';
 import { LearningPathView } from './learning/LearningPathView';
-import { DependencyGraph } from './common/DependencyGraph';
-import { BurndownChart } from './common/BurndownChart';
-import { ProjectComparison } from './common/ProjectComparison';
-import { ChangeHistory } from './common/ChangeHistory';
-import { ActivityFeed } from './common/ActivityFeed';
-import { QuickStats } from './common/QuickStats';
-import { ProjectHealthScore } from './common/ProjectHealthScore';
-import { TaskTimeline } from './common/TaskTimeline';
-import { SDLCView } from './sdlc/SDLCView';
-import { ShiftLeftAnalysis } from './shiftleft/ShiftLeftAnalysis';
-import { PhaseTransitionGuide } from './phases/PhaseTransitionGuide';
-import { SupabaseManager } from './common/SupabaseManager';
-import { SuggestionsPanel } from './common/SuggestionsPanel';
 import { LoadingSkeleton } from './common/LoadingSkeleton';
 
 export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project: Project) => void; onBack: () => void; }> = ({ project, onUpdateProject, onBack }) => {
-    const [activeTab, setActiveTab] = useState('dashboard');
+    const [activeTab, setActiveTab] = useState('trail');
     const [isPrinting, setIsPrinting] = useState(false);
     const [showExportMenu, setShowExportMenu] = useState(false);
-    const [showDependencyGraph, setShowDependencyGraph] = useState(false);
-    const [showBurndown, setShowBurndown] = useState(false);
-    const [showChangeHistory, setShowChangeHistory] = useState(false);
-    const [showActivityFeed, setShowActivityFeed] = useState(false);
-    const [showTimeline, setShowTimeline] = useState(false);
     const metrics = useProjectMetrics(project);
     const previousPhasesRef = useRef<string>('');
     const isMountedRef = useRef(true);
@@ -96,13 +76,9 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
     const activeTabStyle = "bg-accent/20 text-accent-light";
     const inactiveTabStyle = "text-text-secondary hover:text-text-primary";
     
-    const currentPhaseName = metrics.newPhases.find(p => p.status === 'Em Andamento')?.name || 'N/A';
-    
     const tabs: Array<{ id: string; label: string; 'data-onboarding'?: string }> = [
-        { id: 'dashboard', label: 'Dashboard' },
+        { id: 'trail', label: 'Trilha do Projeto' },
         { id: 'tasks', label: 'Tarefas & Testes', 'data-onboarding': 'tasks-tab' },
-        { id: 'timeline', label: 'Timeline' },
-        { id: 'analysis', label: 'Análise IA' },
         { id: 'documents', label: 'Documentos' },
         { id: 'learning', label: '🎓 Aprender QA', 'data-onboarding': 'learning-tab' },
         { id: 'roadmap', label: 'Roadmap' },
@@ -181,164 +157,13 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                 </div>
                 
                 <div className="mt-8">
-                    {activeTab === 'dashboard' && (
-                        <div className="space-y-6">
-                            {/* Painel de Sugestões */}
-                            <SuggestionsPanel project={project} />
-                            
-                            {/* Score de Saúde e Estatísticas Rápidas */}
-                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                                <div className="lg:col-span-1">
-                                    <Suspense fallback={<LoadingSkeleton variant="card" count={1} />}>
-                                        <ProjectHealthScore project={project} />
-                                    </Suspense>
-                                </div>
-                                <div className="lg:col-span-2">
-                                    <Suspense fallback={<LoadingSkeleton variant="card" count={1} />}>
-                                        <QuickStats project={project} />
-                                    </Suspense>
-                                </div>
-                            </div>
-
-                            <Suspense fallback={<LoadingSkeleton variant="card" count={2} />}>
-                                <ProjectQADashboard project={project} />
-                            </Suspense>
-                            
-                            {/* Gerenciador Supabase */}
-                            <SupabaseManager 
-                                project={project} 
-                                onProjectUpdated={() => {
-                                    // Recarregar projetos se necessário
-                                    window.location.reload();
-                                }}
-                            />
-                            
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                <div className="p-4 bg-surface border border-surface-border rounded-lg">
-                                    <div className="flex items-center justify-between mb-4">
-                                        <h3 className="text-lg font-semibold text-text-primary">Gráfico de Dependências</h3>
-                                        <button
-                                            onClick={() => setShowDependencyGraph(!showDependencyGraph)}
-                                            className="text-sm text-accent hover:text-accent-light"
-                                        >
-                                            {showDependencyGraph ? 'Ocultar' : 'Mostrar'}
-                                        </button>
-                                    </div>
-                                    {showDependencyGraph && (
-                                        <Suspense fallback={<LoadingSkeleton variant="card" count={1} />}>
-                                            <DependencyGraph
-                                                project={project}
-                                                onTaskSelect={(taskId) => {
-                                                    const element = document.querySelector(`[data-task-id="${taskId}"]`);
-                                                    element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                                                }}
-                                            />
-                                        </Suspense>
-                                    )}
-                                </div>
-                                
-                                <div className="p-4 bg-surface border border-surface-border rounded-lg">
-                                    <div className="flex items-center justify-between mb-4">
-                                        <h3 className="text-lg font-semibold text-text-primary">Burndown Chart</h3>
-                                        <button
-                                            onClick={() => setShowBurndown(!showBurndown)}
-                                            className="text-sm text-accent hover:text-accent-light"
-                                        >
-                                            {showBurndown ? 'Ocultar' : 'Mostrar'}
-                                        </button>
-                                    </div>
-                                    {showBurndown && (
-                                        <Suspense fallback={<LoadingSkeleton variant="card" count={1} />}>
-                                            <BurndownChart project={project} />
-                                        </Suspense>
-                                    )}
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                <div className="p-4 bg-surface border border-surface-border rounded-lg">
-                                    <div className="flex items-center justify-between mb-4">
-                                        <h3 className="text-lg font-semibold text-text-primary">Feed de Atividades</h3>
-                                        <button
-                                            onClick={() => setShowActivityFeed(!showActivityFeed)}
-                                            className="text-sm text-accent hover:text-accent-light"
-                                        >
-                                            {showActivityFeed ? 'Ocultar' : 'Mostrar'}
-                                        </button>
-                                    </div>
-                                    {showActivityFeed && (
-                                        <Suspense fallback={<LoadingSkeleton variant="card" count={1} />}>
-                                            <ActivityFeed project={project} />
-                                        </Suspense>
-                                    )}
-                                </div>
-                                
-                                <div className="p-4 bg-surface border border-surface-border rounded-lg">
-                                    <div className="flex items-center justify-between mb-4">
-                                        <h3 className="text-lg font-semibold text-text-primary">Histórico de Mudanças</h3>
-                                        <button
-                                            onClick={() => setShowChangeHistory(!showChangeHistory)}
-                                            className="text-sm text-accent hover:text-accent-light"
-                                        >
-                                            {showChangeHistory ? 'Ocultar' : 'Mostrar'}
-                                        </button>
-                                    </div>
-                                    {showChangeHistory && (
-                                        <Suspense fallback={<LoadingSkeleton variant="card" count={1} />}>
-                                            <ChangeHistory project={project} />
-                                        </Suspense>
-                                    )}
-                                </div>
-                            </div>
-
-                            <div className="p-4 bg-surface border border-surface-border rounded-lg">
-                                <div className="flex items-center justify-between mb-4">
-                                    <h3 className="text-lg font-semibold text-text-primary">Linha do Tempo</h3>
-                                    <button
-                                        onClick={() => setShowTimeline(!showTimeline)}
-                                        className="text-sm text-accent hover:text-accent-light"
-                                    >
-                                        {showTimeline ? 'Ocultar' : 'Mostrar'}
-                                    </button>
-                                </div>
-                                {showTimeline && (
-                                    <Suspense fallback={<LoadingSkeleton variant="card" count={1} />}>
-                                        <TaskTimeline project={project} />
-                                    </Suspense>
-                                )}
-                            </div>
-                        </div>
-                    )}
-                    {activeTab === 'timeline' && (
-                        <div className="space-y-6">
-                            <Suspense fallback={<LoadingSkeleton variant="card" count={2} />}>
-                                <TimelineView project={project} currentPhaseName={currentPhaseName} />
-                            </Suspense>
-                            <Suspense fallback={<LoadingSkeleton variant="card" count={1} />}>
-                                <PhaseTransitionGuide project={project} currentPhase={currentPhaseName} />
-                            </Suspense>
-                        </div>
-                    )}
-                    {activeTab === 'analysis' && (
-                        <div className="space-y-6">
-                            <Suspense fallback={<LoadingSkeleton variant="card" count={2} />}>
-                                <AnalysisView 
-                                    project={project} 
-                                    onUpdateProject={onUpdateProject}
-                                    onNavigateToTask={(taskId) => {
-                                        // Navegar para aba de tarefas e destacar a tarefa
-                                        handleTabClick('tasks');
-                                        // TODO: Implementar scroll para tarefa específica se necessário
-                                    }}
-                                />
-                            </Suspense>
-                            <Suspense fallback={<LoadingSkeleton variant="card" count={1} />}>
-                                <SDLCView project={project} />
-                            </Suspense>
-                            <Suspense fallback={<LoadingSkeleton variant="card" count={1} />}>
-                                <ShiftLeftAnalysis project={project} />
-                            </Suspense>
-                        </div>
+                    {activeTab === 'trail' && (
+                        <ProjectTrail
+                            project={project}
+                            onUpdateProject={onUpdateProject}
+                            onNavigateToTask={() => handleTabClick('tasks')}
+                            onNavigateToTab={handleTabClick}
+                        />
                     )}
                     {activeTab === 'tasks' && (
                         <Suspense fallback={<LoadingSkeleton variant="task" count={5} />}>

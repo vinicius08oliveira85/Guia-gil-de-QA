@@ -19,7 +19,7 @@ interface TimelinePhase {
     risks?: string[];
 }
 
-const timelineData: TimelinePhase[] = [
+export const timelineData: TimelinePhase[] = [
     {
         phase: 'Request',
         duration: 'Contínuo',
