@@ -109,7 +109,7 @@ export const ProjectsDashboard: React.FC<{
     };
 
     return (
-        <div className="container mx-auto max-w-6xl px-4 py-4 sm:px-6 sm:py-6 md:px-8 w-full">
+        <div className="container mx-auto max-w-screen-2xl px-4 py-4 sm:px-6 sm:py-6 lg:px-8 xl:px-10 2xl:px-16 w-full">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 w-full">
                 <h1 className="text-2xl sm:text-3xl font-bold text-text-primary line-clamp-2 text-balance w-full">
                     Meus Projetos
@@ -279,7 +279,7 @@ export const ProjectsDashboard: React.FC<{
             />
 
             {projects.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-6">
                     {projects.map(p => (
                         <Card
                             key={p.id}
