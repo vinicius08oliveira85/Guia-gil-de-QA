@@ -111,7 +111,12 @@
       ::-webkit-scrollbar-thumb:hover { background-color: rgba(148, 163, 184, 0.5); }
 
       /* Form Element Styles */
-      input[type="text"], input[type="file"], textarea, select {
+      input[type="text"], 
+      input[type="file"], 
+      input[type="number"],
+      input[type="email"],
+      textarea, 
+      select {
         background-color: var(--input-bg);
         border: 1px solid var(--input-border);
         color: var(--input-text);
@@ -121,10 +126,46 @@
         width: 100%;
         font-size: 16px; /* Previne zoom automático no iOS */
       }
-      input:focus, textarea:focus, select:focus {
+      
+      input::placeholder,
+      textarea::placeholder {
+        color: var(--text-secondary);
+        opacity: 0.7;
+      }
+      
+      input:focus, 
+      textarea:focus, 
+      select:focus {
         outline: none;
         border-color: #14B8A6; /* accent */
         box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.3);
+        background-color: var(--input-bg);
+      }
+      
+      input:disabled,
+      textarea:disabled,
+      select:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        background-color: var(--surface-contrast);
+      }
+      
+      /* Select options styling */
+      select option {
+        background-color: var(--input-bg);
+        color: var(--input-text);
+        padding: 8px 12px;
+      }
+      
+      .light select option {
+        background-color: #ffffff;
+        color: #0F172A;
+      }
+      
+      .light select option:hover,
+      .light select option:checked {
+        background-color: rgba(14, 109, 253, 0.1);
+        color: #0F172A;
       }
       
       /* Fluent UI Button Styles */
@@ -154,12 +195,26 @@
         border-color: #0D9488;
       }
       .btn-secondary {
-        background-color: #334155; /* slate-700 */
-        color: #e2e8f0; /* text-primary */
-        border-color: #475569; /* slate-600 */
+        background-color: var(--surface-hover);
+        color: var(--text-primary);
+        border-color: var(--surface-border);
       }
       .btn-secondary:hover {
-        background-color: #475569; /* slate-600 */
+        background-color: var(--surface);
+        border-color: var(--accent-color);
+        color: var(--text-primary);
+      }
+      
+      .light .btn-secondary {
+        background-color: rgba(14, 109, 253, 0.08);
+        color: #0F172A;
+        border-color: rgba(9, 24, 48, 0.14);
+      }
+      
+      .light .btn-secondary:hover {
+        background-color: rgba(14, 109, 253, 0.15);
+        border-color: rgba(14, 109, 253, 0.3);
+        color: #0F172A;
       }
       .btn-danger {
         background-color: #dc2626; /* red-600 */

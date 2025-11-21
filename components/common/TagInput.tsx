@@ -99,13 +99,13 @@ export const TagInput: React.FC<TagInputProps> = ({
             <button
               key={tag}
               onClick={() => handleAddTag(tag)}
-              className="w-full text-left px-3 py-2 hover:bg-surface-hover transition-colors flex items-center gap-2"
+              className="w-full text-left px-3 py-2 hover:bg-surface-hover hover:text-text-primary transition-colors flex items-center gap-2 text-text-primary"
             >
               <span
                 className="w-3 h-3 rounded-full"
                 style={{ backgroundColor: getTagColor(tag) }}
               />
-              <span className="text-text-primary">{tag}</span>
+              <span>{tag}</span>
             </button>
           ))}
         </div>
