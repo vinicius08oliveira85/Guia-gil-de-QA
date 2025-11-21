@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import { Project, JiraTask, BddScenario, TestCaseDetailLevel, BugSeverity, TeamRole } from '../../types';
+import { Project, JiraTask, BddScenario, TestCaseDetailLevel, BugSeverity, TeamRole, TaskPriority } from '../../types';
 import { generateTestCasesForTask, generateBddScenarios } from '../../services/geminiService';
 import { Card } from '../common/Card';
 import { Modal } from '../common/Modal';
@@ -22,6 +22,7 @@ import { useSuggestions } from '../../hooks/useSuggestions';
 import { SuggestionBanner } from '../common/SuggestionBanner';
 import { EmptyState } from '../common/EmptyState';
 import { addNewJiraTasks, getJiraConfig, getJiraProjects, JiraConfig } from '../../services/jiraService';
+import { useProjectMetrics } from '../../hooks/useProjectMetrics';
 
 export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: Project) => void }> = ({ project, onUpdateProject }) => {
     const [generatingTestsTaskId, setGeneratingTestsTaskId] = useState<string | null>(null);
@@ -61,6 +62,9 @@ export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: 
         observedResult: '',
         createBug: true,
     });
+    const metrics = useProjectMetrics(project);
+    const statusOrder = ['To Do', 'In Progress', 'Done'] as const;
+    const priorityRanking: Record<TaskPriority, number> = { Urgente: 0, Alta: 1, Média: 2, Baixa: 3 };
 
     const handleTaskStatusChange = useCallback((taskId: string, status: 'To Do' | 'In Progress' | 'Done') => {
         onUpdateProject({
@@ -375,8 +379,19 @@ export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: 
     }, [filters]);
 
     const taskTree = useMemo(() => {
-        const tasks = [...filteredTasks];
-        const taskMap = new Map(tasks.map(t => [t.id, { ...t, children: [] as TaskWithChildren[] }]));
+        const statusWeight: Record<'To Do' | 'In Progress' | 'Done', number> = { 'To Do': 0, 'In Progress': 1, Done: 2 };
+        const priorityWeight: Record<TaskPriority, number> = { Urgente: 0, Alta: 1, Média: 2, Baixa: 3 };
+        const comparator = (a: TaskWithChildren, b: TaskWithChildren) => {
+            const statusDiff = statusWeight[a.status] - statusWeight[b.status];
+            if (statusDiff !== 0) return statusDiff;
+            const aPriority = priorityWeight[a.priority || 'Média'] ?? 2;
+            const bPriority = priorityWeight[b.priority || 'Média'] ?? 2;
+            if (aPriority !== bPriority) return aPriority - bPriority;
+            return (a.createdAt ? new Date(a.createdAt).getTime() : 0) - (b.createdAt ? new Date(b.createdAt).getTime() : 0);
+        };
+
+        const orderedTasks = [...filteredTasks].sort(comparator);
+        const taskMap = new Map(orderedTasks.map(t => [t.id, { ...t, children: [] as TaskWithChildren[] }]));
         const tree: TaskWithChildren[] = [];
 
         for (const task of taskMap.values()) {
@@ -386,8 +401,62 @@ export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: 
                 tree.push(task);
             }
         }
+
+        const sortBranch = (nodes: TaskWithChildren[]) => {
+            nodes.sort(comparator);
+            nodes.forEach(node => sortBranch(node.children));
+        };
+
+        sortBranch(tree);
         return tree;
     }, [filteredTasks]);
+
+    const statusSnapshot = useMemo(() => {
+        const total = project.tasks.filter(task => task.type !== 'Bug').length || 1;
+        return statusOrder.map(status => {
+            const count = project.tasks.filter(task => task.type !== 'Bug' && task.status === status).length;
+            return { status, count, percentage: Math.round((count / total) * 100) };
+        });
+    }, [project.tasks, statusOrder]);
+
+    const groupedTasksByStatus = useMemo(() => {
+        return statusOrder.map(status => ({
+            status,
+            tasks: filteredTasks.filter(task => task.status === status).slice(0, 3),
+        }));
+    }, [filteredTasks, statusOrder]);
+
+    const quickFilters = [
+        {
+            id: 'noTests',
+            label: 'Sem casos de teste',
+            isActive: filters.hasTestCases === false,
+            onToggle: () => (filters.hasTestCases === false ? removeFilter('hasTestCases') : updateFilter('hasTestCases', false)),
+        },
+        {
+            id: 'noBdd',
+            label: 'Sem BDD',
+            isActive: filters.hasBddScenarios === false,
+            onToggle: () =>
+                filters.hasBddScenarios === false ? removeFilter('hasBddScenarios') : updateFilter('hasBddScenarios', false),
+        },
+        {
+            id: 'automation',
+            label: 'Sem automação',
+            isActive: filters.isAutomated === false,
+            onToggle: () =>
+                filters.isAutomated === false ? removeFilter('isAutomated') : updateFilter('isAutomated', false),
+        },
+        {
+            id: 'critical',
+            label: 'Bugs críticos',
+            isActive: filters.severity?.includes('Crítico'),
+            onToggle: () =>
+                filters.severity?.includes('Crítico')
+                    ? removeFilter('severity')
+                    : updateFilter('severity', ['Crítico']),
+        },
+    ];
 
     const handleAddTestCaseFromTemplate = useCallback((taskId: string, templateId: string) => {
         const task = project.tasks.find(t => t.id === taskId);
@@ -418,6 +487,16 @@ export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: 
             return newSet;
         });
     };
+
+    const focusTask = useCallback((taskId: string | null) => {
+        setActiveTaskId(taskId);
+        if (taskId) {
+            requestAnimationFrame(() => {
+                const element = document.querySelector<HTMLElement>(`[data-task-id="${taskId}"]`);
+                element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            });
+        }
+    }, []);
 
     // Extrair chave do projeto Jira a partir dos IDs das tarefas (ex: "GDPI-10" -> "GDPI")
     const extractJiraProjectKey = useCallback((): string | null => {
@@ -547,13 +626,13 @@ export const TasksView: React.FC<{ project: Project, onUpdateProject: (project: 
                     project={project}
                     onUpdateProject={onUpdateProject}
                     activeTaskId={activeTaskId}
-                    onFocusTask={setActiveTaskId}
+                    onFocusTask={focusTask}
                 >
                     {task.children.length > 0 && renderTaskTree(task.children, level + 1, globalIndex + 1)}
                 </JiraTaskItem>
             );
         });
-    }, [selectedTasks, generatingTestsTaskId, generatingBddTaskId, handleTestCaseStatusChange, handleToggleTestCaseAutomated, handleTestCaseExecutedStrategyChange, handleDeleteTask, handleGenerateTests, openTaskFormForNew, openTaskFormForEdit, handleGenerateBddScenarios, handleSaveBddScenario, handleDeleteBddScenario, handleTaskStatusChange, handleAddTestCaseFromTemplate, handleAddComment, handleEditComment, handleDeleteComment, project, onUpdateProject, toggleTaskSelection, activeTaskId]);
+    }, [selectedTasks, generatingTestsTaskId, generatingBddTaskId, handleTestCaseStatusChange, handleToggleTestCaseAutomated, handleTestCaseExecutedStrategyChange, handleDeleteTask, handleGenerateTests, openTaskFormForNew, openTaskFormForEdit, handleGenerateBddScenarios, handleSaveBddScenario, handleDeleteBddScenario, handleTaskStatusChange, handleAddTestCaseFromTemplate, handleAddComment, handleEditComment, handleDeleteComment, project, onUpdateProject, toggleTaskSelection, focusTask]);
 
     return (
         <>
