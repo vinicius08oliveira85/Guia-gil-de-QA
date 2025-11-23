@@ -107,17 +107,17 @@ export const AnalysisView: React.FC<{
 
     // Filtrar análises de tarefas por risco
     const filteredTaskAnalyses = useMemo(() => {
-        if (!project.generalIAAnalysis) return [];
+        if (!project.generalIAAnalysis?.taskAnalyses) return [];
         
         let analyses = project.generalIAAnalysis.taskAnalyses;
         
         if (riskFilter !== 'all') {
-            analyses = analyses.filter(a => a.riskLevel === riskFilter);
+            analyses = analyses.filter(a => a && a.riskLevel === riskFilter);
         }
         
         // Ordenar por risco (Crítico > Alto > Médio > Baixo)
-        const riskOrder = { 'Crítico': 4, 'Alto': 3, 'Médio': 2, 'Baixo': 1 };
-        return analyses.sort((a, b) => (riskOrder[b.riskLevel] || 0) - (riskOrder[a.riskLevel] || 0));
+        const riskOrder: Record<string, number> = { 'Crítico': 4, 'Alto': 3, 'Médio': 2, 'Baixo': 1 };
+        return analyses.filter(a => a).sort((a, b) => (riskOrder[b.riskLevel] || 0) - (riskOrder[a.riskLevel] || 0));
     }, [project.generalIAAnalysis, riskFilter]);
 
     // Obter análises de testes
@@ -127,37 +127,37 @@ export const AnalysisView: React.FC<{
 
     // Obter tarefas com análises
     const tasksWithAnalyses = useMemo(() => {
-        return project.tasks.filter(t => t.iaAnalysis);
+        return (project.tasks || []).filter(t => t && t.iaAnalysis);
     }, [project.tasks]);
 
     // Obter riscos automáticos (tarefas com risco alto ou crítico)
     const highRiskTasks = useMemo(() => {
         return filteredTaskAnalyses.filter(a => 
-            a.riskLevel === 'Crítico' || a.riskLevel === 'Alto'
+            a && (a.riskLevel === 'Crítico' || a.riskLevel === 'Alto')
         );
     }, [filteredTaskAnalyses]);
 
     // Obter testes incompletos
     const incompleteTests = useMemo(() => {
-        return project.tasks.flatMap(task => 
-            task.testCases
-                .filter(tc => tc.status === 'Not Run' || tc.status === 'Failed')
+        return (project.tasks || []).flatMap(task => 
+            (task?.testCases || [])
+                .filter(tc => tc && (tc.status === 'Not Run' || tc.status === 'Failed'))
                 .map(tc => ({ testCase: tc, task }))
         );
     }, [project.tasks]);
 
     // Obter tarefas sem análise
     const tasksWithoutAnalysis = useMemo(() => {
-        return project.tasks.filter(task => !task.iaAnalysis || task.iaAnalysis.isOutdated);
+        return (project.tasks || []).filter(task => task && (!task.iaAnalysis || task.iaAnalysis.isOutdated));
     }, [project.tasks]);
 
     // Obter testes sem análise
     const testsWithoutAnalysis = useMemo(() => {
-        if (!project.generalIAAnalysis) return [];
-        const analyzedTestIds = new Set(project.generalIAAnalysis.testAnalyses.map(ta => ta.testId));
-        return project.tasks.flatMap(task =>
-            (task.testCases || [])
-                .filter(tc => !analyzedTestIds.has(tc.id))
+        if (!project.generalIAAnalysis?.testAnalyses) return [];
+        const analyzedTestIds = new Set(project.generalIAAnalysis.testAnalyses.filter(ta => ta).map(ta => ta.testId));
+        return (project.tasks || []).flatMap(task =>
+            (task?.testCases || [])
+                .filter(tc => tc && !analyzedTestIds.has(tc.id))
                 .map(tc => ({ testCase: tc, task }))
         );
     }, [project.tasks, project.generalIAAnalysis]);
@@ -472,7 +472,7 @@ export const AnalysisView: React.FC<{
                 >
                     {testAnalyses.map(analysis => {
                         const task = project.tasks.find(t => t.id === analysis.taskId);
-                        const testCase = task?.testCases.find(tc => tc.id === analysis.testId);
+                        const testCase = task?.testCases?.find(tc => tc.id === analysis.testId);
                         return (
                             <TestAnalysisCard
                                 key={analysis.testId}
@@ -516,7 +516,7 @@ export const AnalysisView: React.FC<{
             )}
 
             {/* Sugestões de Cenários BDD */}
-            {project.generalIAAnalysis && project.generalIAAnalysis.bddSuggestions.length > 0 && (
+            {project.generalIAAnalysis?.bddSuggestions && project.generalIAAnalysis.bddSuggestions.length > 0 && (
                 <AnalysisSection
                     title="Sugestões de Cenários BDD"
                     icon="🧪"
