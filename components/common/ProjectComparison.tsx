@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Project } from '../../types';
-import { useProjectMetrics } from '../../hooks/useProjectMetrics';
+import { calculateProjectMetrics } from '../../hooks/useProjectMetrics';
 import { Badge } from './Badge';
 import { ProgressIndicator } from './ProgressIndicator';
 
@@ -23,7 +23,16 @@ export const ProjectComparison: React.FC<ProjectComparisonProps> = ({
     );
   };
 
-  const projectsToCompare = projects.filter(p => selectedProjects.includes(p.id));
+  const projectsToCompare = useMemo(() => 
+    projects.filter(p => selectedProjects.includes(p.id)),
+  [projects, selectedProjects]);
+
+  const projectsWithMetrics = useMemo(() => {
+    return projectsToCompare.map(project => ({
+      project,
+      metrics: calculateProjectMetrics(project)
+    }));
+  }, [projectsToCompare]);
 
   return (
     <div className="space-y-4">
@@ -55,13 +64,13 @@ export const ProjectComparison: React.FC<ProjectComparisonProps> = ({
       </div>
 
       {/* Tabela de comparação */}
-      {projectsToCompare.length > 0 && (
+      {projectsWithMetrics.length > 0 && (
         <div className="overflow-x-auto">
           <table className="w-full border-collapse">
             <thead>
               <tr className="border-b border-surface-border">
                 <th className="text-left p-3 text-text-primary font-semibold">Métrica</th>
-                {projectsToCompare.map(project => (
+                {projectsWithMetrics.map(({ project }) => (
                   <th
                     key={project.id}
                     className="text-left p-3 text-text-primary font-semibold cursor-pointer hover:text-accent"
@@ -73,109 +82,80 @@ export const ProjectComparison: React.FC<ProjectComparisonProps> = ({
               </tr>
             </thead>
             <tbody>
-              {projectsToCompare.map((project, index) => {
-                const metrics = useProjectMetrics(project);
-                
-                return index === 0 ? (
-                  <>
-                    <tr className="border-b border-surface-border">
-                      <td className="p-3 text-text-secondary">Fase Atual</td>
-                      {projectsToCompare.map(p => {
-                        const m = useProjectMetrics(p);
-                        return (
-                          <td key={p.id} className="p-3">
-                            <Badge variant="info">{m.currentPhase}</Badge>
-                          </td>
-                        );
-                      })}
-                    </tr>
-                    <tr className="border-b border-surface-border">
-                      <td className="p-3 text-text-secondary">Total de Tarefas</td>
-                      {projectsToCompare.map(p => {
-                        const m = useProjectMetrics(p);
-                        return (
-                          <td key={p.id} className="p-3 text-text-primary font-semibold">
-                            {m.totalTasks}
-                          </td>
-                        );
-                      })}
-                    </tr>
-                    <tr className="border-b border-surface-border">
-                      <td className="p-3 text-text-secondary">Casos de Teste</td>
-                      {projectsToCompare.map(p => {
-                        const m = useProjectMetrics(p);
-                        return (
-                          <td key={p.id} className="p-3 text-text-primary font-semibold">
-                            {m.totalTestCases}
-                          </td>
-                        );
-                      })}
-                    </tr>
-                    <tr className="border-b border-surface-border">
-                      <td className="p-3 text-text-secondary">Cobertura de Testes</td>
-                      {projectsToCompare.map(p => {
-                        const m = useProjectMetrics(p);
-                        return (
-                          <td key={p.id} className="p-3">
-                            <ProgressIndicator
-                              value={m.tasksWithTestCases}
-                              max={m.totalTasks}
-                              showPercentage={true}
-                              color="blue"
-                              size="sm"
-                            />
-                          </td>
-                        );
-                      })}
-                    </tr>
-                    <tr className="border-b border-surface-border">
-                      <td className="p-3 text-text-secondary">Taxa de Aprovação</td>
-                      {projectsToCompare.map(p => {
-                        const m = useProjectMetrics(p);
-                        return (
-                          <td key={p.id} className="p-3">
-                            <Badge
-                              variant={m.testPassRate >= 80 ? 'success' : m.testPassRate >= 60 ? 'warning' : 'error'}
-                            >
-                              {Math.round(m.testPassRate)}%
-                            </Badge>
-                          </td>
-                        );
-                      })}
-                    </tr>
-                    <tr className="border-b border-surface-border">
-                      <td className="p-3 text-text-secondary">Bugs Críticos</td>
-                      {projectsToCompare.map(p => {
-                        const m = useProjectMetrics(p);
-                        return (
-                          <td key={p.id} className="p-3">
-                            <Badge variant={m.bugsBySeverity['Crítico'] > 0 ? 'error' : 'success'}>
-                              {m.bugsBySeverity['Crítico']}
-                            </Badge>
-                          </td>
-                        );
-                      })}
-                    </tr>
-                    <tr className="border-b border-surface-border">
-                      <td className="p-3 text-text-secondary">Automação</td>
-                      {projectsToCompare.map(p => {
-                        const m = useProjectMetrics(p);
-                        return (
-                          <td key={p.id} className="p-3">
-                            <ProgressIndicator
-                              value={m.automatedTestCases}
-                              max={m.totalTestCases}
-                              showPercentage={true}
-                              color="purple"
-                              size="sm"
-                            />
-                          </td>
-                        );
-                      })}
-                    </tr>
-                  </>
-                ) : null;
-              })}
+              <tr className="border-b border-surface-border">
+                <td className="p-3 text-text-secondary">Fase Atual</td>
+                {projectsWithMetrics.map(({ project, metrics }) => (
+                  <td key={project.id} className="p-3">
+                    <Badge variant="info">{metrics.currentPhase}</Badge>
+                  </td>
+                ))}
+              </tr>
+              <tr className="border-b border-surface-border">
+                <td className="p-3 text-text-secondary">Total de Tarefas</td>
+                {projectsWithMetrics.map(({ project, metrics }) => (
+                  <td key={project.id} className="p-3 text-text-primary font-semibold">
+                    {metrics.totalTasks}
+                  </td>
+                ))}
+              </tr>
+              <tr className="border-b border-surface-border">
+                <td className="p-3 text-text-secondary">Casos de Teste</td>
+                {projectsWithMetrics.map(({ project, metrics }) => (
+                  <td key={project.id} className="p-3 text-text-primary font-semibold">
+                    {metrics.totalTestCases}
+                  </td>
+                ))}
+              </tr>
+              <tr className="border-b border-surface-border">
+                <td className="p-3 text-text-secondary">Cobertura de Testes</td>
+                {projectsWithMetrics.map(({ project, metrics }) => (
+                  <td key={project.id} className="p-3">
+                    <ProgressIndicator
+                      value={metrics.tasksWithTestCases}
+                      max={metrics.totalTasks}
+                      showPercentage={true}
+                      color="blue"
+                      size="sm"
+                    />
+                  </td>
+                ))}
+              </tr>
+              <tr className="border-b border-surface-border">
+                <td className="p-3 text-text-secondary">Taxa de Aprovação</td>
+                {projectsWithMetrics.map(({ project, metrics }) => (
+                  <td key={project.id} className="p-3">
+                    <Badge
+                      variant={metrics.testPassRate >= 80 ? 'success' : metrics.testPassRate >= 60 ? 'warning' : 'error'}
+                    >
+                      {Math.round(metrics.testPassRate)}%
+                    </Badge>
+                  </td>
+                ))}
+              </tr>
+              <tr className="border-b border-surface-border">
+                <td className="p-3 text-text-secondary">Bugs Críticos</td>
+                {projectsWithMetrics.map(({ project, metrics }) => (
+                  <td key={project.id} className="p-3">
+                    <Badge variant={metrics.bugsBySeverity['Crítico'] > 0 ? 'error' : 'success'}>
+                      {metrics.bugsBySeverity['Crítico']}
+                    </Badge>
+                  </td>
+                ))}
+              </tr>
+              <tr className="border-b border-surface-border">
+                <td className="p-3 text-text-secondary">Automação</td>
+                {projectsWithMetrics.map(({ project, metrics }) => (
+                  <td key={project.id} className="p-3">
+                    <ProgressIndicator
+                      value={metrics.automatedTestCases}
+                      max={metrics.totalTestCases}
+                      showPercentage={true}
+                      color="purple"
+                      size="sm"
+                    />
+                  </td>
+                ))}
+              </tr>
             </tbody>
           </table>
         </div>
@@ -189,4 +169,3 @@ export const ProjectComparison: React.FC<ProjectComparisonProps> = ({
     </div>
   );
 };
-
