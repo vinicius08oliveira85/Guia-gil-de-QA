@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { FilterOptions } from '../../hooks/useFilters';
 import { DEFAULT_TAGS, TAG_COLORS } from '../../utils/tagService';
 
@@ -29,7 +29,8 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
     }
   };
 
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['status', 'type', 'priority']));
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['status', 'type', 'priority', 'search']));
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const toggleSection = (section: string) => {
     setExpandedSections(prev => {
@@ -41,6 +42,20 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
       }
       return newSet;
     });
+  };
+
+  const handleSearchInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
+    const shouldRestoreFocus = document.activeElement === searchInputRef.current;
+    onFilterChange('searchQuery', value);
+    if (shouldRestoreFocus) {
+      requestAnimationFrame(() => {
+        if (!searchInputRef.current) return;
+        searchInputRef.current.focus();
+        const caret = value.length;
+        searchInputRef.current.setSelectionRange(caret, caret);
+      });
+    }
   };
 
   const FilterSection: React.FC<{ 
@@ -261,9 +276,13 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
           }
         >
           <input
+            ref={searchInputRef}
             type="text"
             value={filters.searchQuery || ''}
-            onChange={(e) => onFilterChange('searchQuery', e.target.value)}
+            onChange={handleSearchInputChange}
+            autoComplete="off"
+            inputMode="search"
+            aria-label="Buscar tarefas e casos de teste"
             placeholder="ID, título, descrição..."
             className="w-full px-3 py-2 bg-surface border border-surface-border rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition-all"
           />
