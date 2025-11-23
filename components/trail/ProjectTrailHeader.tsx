@@ -98,7 +98,7 @@ export const ProjectTrailHeader: React.FC<ProjectTrailHeaderProps> = ({
                         `}
                     >
                         {isAiLoading ? <Spinner small /> : '🧠'}
-                        O que posso fazer agora?
+                        {analysisOutdated ? 'Atualizar Recomendações' : 'O que posso fazer agora?'}
                     </button>
                 </div>
             </div>

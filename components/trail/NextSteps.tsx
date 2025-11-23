@@ -172,7 +172,7 @@ export const NextSteps: React.FC<NextStepsProps> = ({
                                 flex items-center justify-center gap-2 text-sm
                             `}
                         >
-                            Iniciar
+                            {task.status === 'In Progress' ? 'Continuar' : 'Iniciar'}
                             <span aria-hidden>→</span>
                         </button>
                     </article>

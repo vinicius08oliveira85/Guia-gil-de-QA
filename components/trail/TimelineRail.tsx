@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { JiraTask, Phase, Project } from '../../types';
 import { windows12Styles } from '../../utils/windows12Styles';
-import { timelineData } from '../timeline/TimelineView';
+import { timelineData } from '../../utils/projectPhases';
 
 type PhaseDisplayStatus = 'completed' | 'current' | 'upcoming';
 
