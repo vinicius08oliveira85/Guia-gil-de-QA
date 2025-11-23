@@ -1,6 +1,56 @@
 import React, { useState } from 'react';
 import { FilterOptions } from '../../hooks/useFilters';
-import { DEFAULT_TAGS, TAG_COLORS } from '../../utils/tagService';
+import { TAG_COLORS } from '../../utils/tagService';
+
+interface FilterSectionProps {
+  id: string;
+  title: string;
+  icon: React.ReactNode;
+  children: React.ReactNode;
+  isExpanded: boolean;
+  onToggle: (id: string) => void;
+}
+
+const FilterSection: React.FC<FilterSectionProps> = ({
+  id,
+  title,
+  icon,
+  children,
+  isExpanded,
+  onToggle
+}) => {
+  const contentId = `filter-section-${id}`;
+
+  return (
+    <div className="border border-surface-border rounded-lg overflow-hidden">
+      <button
+        type="button"
+        onClick={() => onToggle(id)}
+        className="w-full flex items-center justify-between p-3 bg-surface-hover/50 hover:bg-surface-hover transition-colors"
+        aria-expanded={isExpanded}
+        aria-controls={contentId}
+      >
+        <div className="flex items-center gap-2">
+          {icon}
+          <span className="text-sm font-semibold text-text-primary">{title}</span>
+        </div>
+        <svg 
+          className={`w-4 h-4 text-text-secondary transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+          fill="none" 
+          stroke="currentColor" 
+          viewBox="0 0 24 24"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      {isExpanded && (
+        <div id={contentId} className="p-3 bg-surface/50">
+          {children}
+        </div>
+      )}
+    </div>
+  );
+};
 
 interface FilterPanelProps {
   filters: FilterOptions;
@@ -29,7 +79,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
     }
   };
 
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['status', 'type', 'priority']));
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['status', 'type', 'priority', 'search']));
 
   const toggleSection = (section: string) => {
     setExpandedSections(prev => {
@@ -41,41 +91,6 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
       }
       return newSet;
     });
-  };
-
-  const FilterSection: React.FC<{ 
-    id: string; 
-    title: string; 
-    icon: React.ReactNode;
-    children: React.ReactNode;
-  }> = ({ id, title, icon, children }) => {
-    const isExpanded = expandedSections.has(id);
-    return (
-      <div className="border border-surface-border rounded-lg overflow-hidden">
-        <button
-          onClick={() => toggleSection(id)}
-          className="w-full flex items-center justify-between p-3 bg-surface-hover/50 hover:bg-surface-hover transition-colors"
-        >
-          <div className="flex items-center gap-2">
-            {icon}
-            <span className="text-sm font-semibold text-text-primary">{title}</span>
-          </div>
-          <svg 
-            className={`w-4 h-4 text-text-secondary transition-transform ${isExpanded ? 'rotate-180' : ''}`}
-            fill="none" 
-            stroke="currentColor" 
-            viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
-        </button>
-        {isExpanded && (
-          <div className="p-3 bg-surface/50">
-            {children}
-          </div>
-        )}
-      </div>
-    );
   };
 
   return (
@@ -105,7 +120,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {/* Filtro por Status */}
         <FilterSection
           id="status"
@@ -115,7 +130,9 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
             </svg>
           }
-        >
+            isExpanded={expandedSections.has('status')}
+            onToggle={toggleSection}
+          >
           <div className="flex flex-wrap gap-2">
             {['To Do', 'In Progress', 'Done'].map(status => (
               <button
@@ -142,7 +159,9 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
             </svg>
           }
-        >
+            isExpanded={expandedSections.has('type')}
+            onToggle={toggleSection}
+          >
           <div className="flex flex-wrap gap-2">
             {['Epic', 'História', 'Tarefa', 'Bug'].map(type => (
               <button
@@ -170,7 +189,9 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
               </svg>
             }
-          >
+              isExpanded={expandedSections.has('tags')}
+              onToggle={toggleSection}
+            >
             <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto">
               {availableTags.map(tag => (
                 <button
@@ -205,7 +226,9 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
           }
-        >
+            isExpanded={expandedSections.has('priority')}
+            onToggle={toggleSection}
+          >
           <div className="flex flex-wrap gap-2">
             {['Baixa', 'Média', 'Alta', 'Urgente'].map(priority => (
               <button
@@ -232,7 +255,9 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
           }
-        >
+            isExpanded={expandedSections.has('severity')}
+            onToggle={toggleSection}
+          >
           <div className="flex flex-wrap gap-2">
             {['Crítico', 'Alto', 'Médio', 'Baixo'].map(severity => (
               <button
@@ -259,7 +284,9 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           }
-        >
+            isExpanded={expandedSections.has('search')}
+            onToggle={toggleSection}
+          >
           <input
             type="text"
             value={filters.searchQuery || ''}
@@ -278,7 +305,9 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
             </svg>
           }
-        >
+            isExpanded={expandedSections.has('special')}
+            onToggle={toggleSection}
+          >
           <div className="space-y-2.5">
             <label className="flex items-center gap-2.5 text-text-primary cursor-pointer hover:text-accent transition-colors p-2 rounded-lg hover:bg-surface-hover">
               <input
