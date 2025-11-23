@@ -815,6 +815,44 @@ export const TasksView: React.FC<{
                     </div>
                 </div>
 
+                <div className="mb-6">
+                    <label 
+                        htmlFor="quick-task-search" 
+                        className="text-sm font-semibold text-text-primary mb-2 flex items-center gap-2"
+                    >
+                        <svg className="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                        Busca rápida por tarefa ou teste
+                    </label>
+                    <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary">🔍</span>
+                        <input
+                            id="quick-task-search"
+                            type="search"
+                            inputMode="search"
+                            autoComplete="off"
+                            value={filters.searchQuery || ''}
+                            onChange={(e) => updateFilter('searchQuery', e.target.value)}
+                            placeholder="Digite ID, título ou palavra-chave..."
+                            className="w-full pl-10 pr-12 py-2.5 bg-surface border border-surface-border rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition-all"
+                        />
+                        {filters.searchQuery && (
+                            <button
+                                type="button"
+                                onClick={() => updateFilter('searchQuery', '')}
+                                className="absolute right-2 top-1/2 -translate-y-1/2 text-text-secondary hover:text-text-primary p-2 rounded-full hover:bg-surface-hover focus:outline-none focus:ring-2 focus:ring-accent/40"
+                                aria-label="Limpar busca rápida"
+                            >
+                                ✕
+                            </button>
+                        )}
+                    </div>
+                    <p className="text-xs text-text-secondary mt-2">
+                        Filtre tarefas e casos instantaneamente sem precisar abrir o painel completo de filtros.
+                    </p>
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                     <div className="mica rounded-xl p-4 border border-surface-border hover:border-accent/30 transition-all duration-200 hover:shadow-lg group">
                         <div className="flex items-center justify-between mb-2">
