@@ -84,7 +84,8 @@ export const useFilters = (project: Project) => {
       tasks = tasks.filter(t =>
         t.id.toLowerCase().includes(query) ||
         t.title.toLowerCase().includes(query) ||
-        t.description.toLowerCase().includes(query)
+        t.description.toLowerCase().includes(query) ||
+        (t.testCases && t.testCases.some(tc => tc.title.toLowerCase().includes(query)))
       );
     }
 
