@@ -119,17 +119,21 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                 <Modal isOpen={showExportMenu} onClose={() => setShowExportMenu(false)} title="Exportar Projeto">
                     <ExportMenu project={project} onClose={() => setShowExportMenu(false)} />
                 </Modal>
-                <h2 className="text-3xl sm:text-5xl font-bold text-text-primary mb-4 break-words text-balance leading-tight">{project.name}</h2>
-                <p className="text-text-secondary mb-10 max-w-3xl break-words text-lg leading-relaxed">{project.description}</p>
+                <h2 className="heading-page text-text-primary mb-4 break-words">{project.name}</h2>
+                <p className="text-lead mb-10 max-w-3xl break-words">{project.description}</p>
                 
                 <div className="border-b border-surface-border mb-8 sticky top-[72px] md:static bg-background/90 backdrop-blur-lg z-10 px-2 sm:px-0 shadow-sm">
-                    <nav className="hidden md:flex flex-wrap gap-2 py-2" aria-label="Navegação de abas desktop">
+                    <nav className="hidden md:flex flex-wrap gap-2 py-2" aria-label="Navegação de abas desktop" role="tablist">
                         {tabs.map(tab => (
                             <button 
                                 key={tab.id}
                                 onClick={() => handleTabClick(tab.id)} 
                                 className={`${tabBaseClass} ${activeTab === tab.id ? activeTabStyle : ''}`}
                                 data-onboarding={tab['data-onboarding']}
+                                id={`tab-${tab.id}`}
+                                role="tab"
+                                aria-selected={activeTab === tab.id}
+                                aria-controls={`tab-panel-${tab.id}`}
                             >
                                 {tab.label}
                             </button>
@@ -147,6 +151,10 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                                     onClick={() => handleTabClick(tab.id)} 
                                     className={`${tabBaseClass} ${activeTab === tab.id ? activeTabStyle : ''} flex-shrink-0 snap-center`}
                                     data-onboarding={tab['data-onboarding']}
+                                    id={`tab-${tab.id}-mobile`}
+                                    role="tab"
+                                    aria-selected={activeTab === tab.id}
+                                    aria-controls={`tab-panel-${tab.id}`}
                                 >
                                     {tab.label}
                                 </button>
@@ -157,14 +165,17 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                 
                 <div className="mt-8">
                     {activeTab === 'trail' && (
+                        <section id="tab-panel-trail" role="tabpanel" aria-labelledby="tab-trail tab-trail-mobile">
                         <ProjectTrail
                             project={project}
                             onUpdateProject={onUpdateProject}
                             onNavigateToTask={() => handleTabClick('tasks')}
                             onNavigateToTab={handleTabClick}
                         />
+                        </section>
                     )}
                     {activeTab === 'tasks' && (
+                        <section id="tab-panel-tasks" role="tabpanel" aria-labelledby="tab-tasks tab-tasks-mobile">
                         <Suspense fallback={<LoadingSkeleton variant="task" count={5} />}>
                             <TasksView 
                                 project={project} 
@@ -172,26 +183,35 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                                 onNavigateToTab={(tabId) => handleTabClick(tabId)}
                             />
                         </Suspense>
+                        </section>
                     )}
                     {activeTab === 'documents' && (
+                        <section id="tab-panel-documents" role="tabpanel" aria-labelledby="tab-documents tab-documents-mobile">
                         <Suspense fallback={<LoadingSkeleton variant="card" count={3} />}>
                             <DocumentsView project={project} onUpdateProject={onUpdateProject} />
                         </Suspense>
+                        </section>
                     )}
                     {activeTab === 'learning' && (
+                        <section id="tab-panel-learning" role="tabpanel" aria-labelledby="tab-learning tab-learning-mobile">
                         <Suspense fallback={<LoadingSkeleton variant="card" count={2} />}>
                             <LearningPathView />
                         </Suspense>
+                        </section>
                     )}
                     {activeTab === 'roadmap' && (
+                        <section id="tab-panel-roadmap" role="tabpanel" aria-labelledby="tab-roadmap tab-roadmap-mobile">
                         <Suspense fallback={<LoadingSkeleton variant="card" count={2} />}>
                             <RoadmapView />
                         </Suspense>
+                        </section>
                     )}
                     {activeTab === 'glossary' && (
+                        <section id="tab-panel-glossary" role="tabpanel" aria-labelledby="tab-glossary tab-glossary-mobile">
                         <Suspense fallback={<LoadingSkeleton variant="card" count={2} />}>
                             <GlossaryView />
                         </Suspense>
+                        </section>
                     )}
                 </div>
             </div>

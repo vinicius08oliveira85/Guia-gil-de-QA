@@ -162,11 +162,11 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
         <div className="space-y-6">
             <div className="win-toolbar flex flex-col gap-4 rounded-[26px] border border-surface-border/60 bg-gradient-to-br from-white/8 via-white/2 to-transparent px-4 py-4 sm:px-6 sm:py-6 md:flex-row md:items-center md:justify-between">
                 <div className="space-y-2">
-                    <p className="text-xs uppercase tracking-[0.3em] text-text-secondary">Dashboard sincronizado</p>
-                    <h2 className="text-[clamp(1.3rem,3vw,2rem)] font-semibold text-text-primary">
+                    <p className="eyebrow text-text-secondary/80">Dashboard sincronizado</p>
+                    <h2 className="heading-section text-text-primary">
                         Qualidade de QA • {project.name}
                     </h2>
-                    <p className="text-sm text-text-secondary">
+                    <p className="text-lead text-sm sm:text-base">
                         Visual unificado com tarefas, sugestões inteligentes e indicadores do fluxo de QA.
                     </p>
                 </div>
@@ -180,6 +180,8 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
                                     ? 'border-accent/40 bg-accent/20 text-text-primary shadow-[0_10px_40px_rgba(14,109,253,0.2)]'
                                     : 'border-white/10 bg-white/5 text-text-secondary hover:text-text-primary'
                             }`}
+                            aria-pressed={selectedPeriod === period}
+                            aria-label={`Selecionar período ${periodLabels[period]}`}
                         >
                             {periodLabels[period]}
                         </button>
@@ -248,7 +250,7 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
 
                         <div className="win-panel space-y-5">
                             <div className="flex items-center justify-between gap-3">
-                                <h3 className="text-lg font-semibold text-text-primary">Progresso geral</h3>
+                                <h3 className="heading-card text-text-primary">Progresso geral</h3>
                                 <Badge
                                     variant={
                                         metrics.testPassRate >= 80 ? 'success' : metrics.testPassRate >= 60 ? 'warning' : 'error'
@@ -336,7 +338,7 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
                     <aside className="space-y-4">
                         <div className="win-panel space-y-4">
                             <div className="flex items-center justify-between">
-                                <h3 className="text-lg font-semibold text-text-primary">Fluxo das tarefas de QA</h3>
+                                <h3 className="heading-card text-text-primary">Fluxo das tarefas de QA</h3>
                                 <Badge variant="info" size="sm">
                                     {periodLabels[selectedPeriod]}
                                 </Badge>
@@ -366,14 +368,15 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
 
                         <div className="win-panel space-y-4">
                             <div className="flex items-center justify-between">
-                                <h3 className="text-lg font-semibold text-text-primary">Alertas imediatos</h3>
+                                <h3 className="heading-card text-text-primary">Alertas imediatos</h3>
                                 <CheckCircleIcon className="h-5 w-5 text-emerald-400" />
                             </div>
-                            <div className="space-y-3">
+                            <div className="space-y-3" role="list" aria-label="Alertas de qualidade">
                                 {qaAlerts.map((alert) => (
                                     <div
                                         key={alert.label}
                                         className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/4 px-3 py-2"
+                                        role="listitem"
                                     >
                                         <div>
                                             <p className="text-sm font-semibold text-text-primary">{alert.label}</p>
@@ -389,7 +392,7 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
 
                         <div className="win-panel space-y-4">
                             <div className="flex items-center justify-between">
-                                <h3 className="text-lg font-semibold text-text-primary">Próximas ações de QA</h3>
+                                <h3 className="heading-card text-text-primary">Próximas ações de QA</h3>
                                 <Badge variant="default" size="sm">
                                     {highlightTasks.length} itens
                                 </Badge>
@@ -397,11 +400,12 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
                             {highlightTasks.length === 0 ? (
                                 <p className="text-sm text-text-secondary">Sem pendências críticas neste período.</p>
                             ) : (
-                                <div className="space-y-3">
+                                <div className="space-y-3" role="list" aria-live="polite">
                                     {highlightTasks.map((task) => (
                                         <div
                                             key={task.id}
                                             className="rounded-2xl border border-white/10 bg-gradient-to-r from-white/6 to-transparent px-3 py-2"
+                                            role="listitem"
                                         >
                                             <div className="flex items-center justify-between text-xs uppercase tracking-[0.2em] text-text-secondary">
                                                 <span className="truncate">{task.id}</span>

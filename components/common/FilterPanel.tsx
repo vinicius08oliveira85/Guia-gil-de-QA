@@ -124,7 +124,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
         )}
       </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="grid-responsive">
         {/* Filtro por Status */}
         <FilterSection
           id="status"

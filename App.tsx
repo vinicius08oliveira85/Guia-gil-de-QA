@@ -229,6 +229,9 @@ const App: React.FC = () => {
     return (
         <ErrorBoundary>
             <div className="min-h-screen font-sans text-text-primary">
+                <a href="#main-content" className="skip-link">
+                    Pular para o conteúdo principal
+                </a>
                 <Toaster
                     position={isMobile ? "top-center" : "top-right"}
                     toastOptions={{
@@ -297,7 +300,7 @@ const App: React.FC = () => {
                     </Suspense>
                 )}
 
-                <main>
+                <main id="main-content">
                     {selectedProject ? (
                         <Suspense fallback={<div className="container mx-auto p-8"><LoadingSkeleton variant="card" count={3} /></div>}>
                             <ProjectView 

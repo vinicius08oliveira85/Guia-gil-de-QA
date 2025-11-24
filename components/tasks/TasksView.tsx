@@ -1068,8 +1068,8 @@ export const TasksView: React.FC<{
             <div className="flex flex-col gap-4 mb-6">
                 <div className="flex flex-col lg:flex-row justify-between gap-4 mb-6">
                     <div className="flex-shrink-0">
-                        <h3 className="text-2xl font-bold text-text-primary mb-1">Tarefas & Casos de Teste</h3>
-                        <p className="text-sm text-text-secondary">Acompanhe o progresso das atividades e resultados de QA.</p>
+                        <h3 className="heading-section text-text-primary mb-1">Tarefas & Casos de Teste</h3>
+                        <p className="text-muted text-sm">Acompanhe o progresso das atividades e resultados de QA.</p>
                     </div>
                     <div className="flex flex-col sm:flex-row gap-2 flex-wrap">
                         {/* Grupo: Ações Principais */}
@@ -1178,67 +1178,86 @@ export const TasksView: React.FC<{
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                    <div className="mica rounded-xl p-4 border border-surface-border hover:border-accent/30 transition-all duration-200 hover:shadow-lg group">
+                    <div 
+                        className="mica rounded-xl p-4 border border-surface-border hover:border-accent/30 transition-all duration-200 hover:shadow-lg group cursor-help" 
+                        aria-live="polite"
+                        title={`Total de ${stats.total} tarefas no projeto. Inclui todas as tarefas independente do status.`}
+                    >
                         <div className="flex items-center justify-between mb-2">
                             <div className="p-2 bg-blue-500/10 rounded-lg group-hover:bg-blue-500/20 transition-colors">
-                                <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                                 </svg>
                             </div>
                         </div>
-                        <p className="text-xs text-text-secondary uppercase tracking-wide mb-1">Total de Tarefas</p>
-                        <p className="text-3xl font-bold text-text-primary">{stats.total}</p>
+                        <p className="data-label mb-1">Total de Tarefas</p>
+                        <p className="data-value" aria-label={`${stats.total} tarefas totais`}>{stats.total}</p>
                     </div>
                     
-                    <div className="mica rounded-xl p-4 border border-surface-border hover:border-accent/30 transition-all duration-200 hover:shadow-lg group">
+                    <div 
+                        className="mica rounded-xl p-4 border border-surface-border hover:border-accent/30 transition-all duration-200 hover:shadow-lg group cursor-help" 
+                        aria-live="polite"
+                        title={`${stats.inProgress} tarefas em andamento. Tarefas que estão sendo trabalhadas atualmente.`}
+                    >
                         <div className="flex items-center justify-between mb-2">
                             <div className="p-2 bg-accent/10 rounded-lg group-hover:bg-accent/20 transition-colors">
-                                <svg className="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                                 </svg>
                             </div>
                         </div>
-                        <p className="text-xs text-text-secondary uppercase tracking-wide mb-1">Em Andamento</p>
-                        <p className="text-3xl font-bold text-accent">{stats.inProgress}</p>
+                        <p className="data-label mb-1">Em Andamento</p>
+                        <p className="data-value text-accent" aria-label={`${stats.inProgress} tarefas em andamento`}>{stats.inProgress}</p>
                     </div>
                     
-                    <div className="mica rounded-xl p-4 border border-surface-border hover:border-green-400/30 transition-all duration-200 hover:shadow-lg group">
+                    <div 
+                        className="mica rounded-xl p-4 border border-surface-border hover:border-green-400/30 transition-all duration-200 hover:shadow-lg group cursor-help" 
+                        aria-live="polite"
+                        title={`${stats.done} tarefas concluídas. Tarefas finalizadas e validadas.`}
+                    >
                         <div className="flex items-center justify-between mb-2">
                             <div className="p-2 bg-green-500/10 rounded-lg group-hover:bg-green-500/20 transition-colors">
-                                <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                             </div>
                         </div>
-                        <p className="text-xs text-text-secondary uppercase tracking-wide mb-1">Concluídas</p>
-                        <p className="text-3xl font-bold text-green-400">{stats.done}</p>
+                        <p className="data-label mb-1">Concluídas</p>
+                        <p className="data-value text-green-400" aria-label={`${stats.done} tarefas concluídas`}>{stats.done}</p>
                     </div>
                     
-                    <div className="mica rounded-xl p-4 border border-surface-border hover:border-red-400/30 transition-all duration-200 hover:shadow-lg group">
+                    <div 
+                        className="mica rounded-xl p-4 border border-surface-border hover:border-red-400/30 transition-all duration-200 hover:shadow-lg group cursor-help" 
+                        aria-live="polite"
+                        title={`${stats.bugsOpen} bugs abertos. Problemas identificados que ainda precisam ser resolvidos.`}
+                    >
                         <div className="flex items-center justify-between mb-2">
                             <div className="p-2 bg-red-500/10 rounded-lg group-hover:bg-red-500/20 transition-colors">
-                                <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                                 </svg>
                             </div>
                         </div>
-                        <p className="text-xs text-text-secondary uppercase tracking-wide mb-1">Bugs Abertos</p>
-                        <p className="text-3xl font-bold text-red-400">{stats.bugsOpen}</p>
+                        <p className="data-label mb-1">Bugs Abertos</p>
+                        <p className="data-value text-red-400" aria-label={`${stats.bugsOpen} bugs abertos`}>{stats.bugsOpen}</p>
                     </div>
                     
-                    <div className="mica rounded-xl p-4 border border-surface-border hover:border-accent/30 transition-all duration-200 hover:shadow-lg col-span-1 md:col-span-2 lg:col-span-4">
+                    <div 
+                        className="mica rounded-xl p-4 border border-surface-border hover:border-accent/30 transition-all duration-200 hover:shadow-lg col-span-1 md:col-span-2 lg:col-span-4 cursor-help"
+                        title={`Taxa de execução de testes: ${testExecutionRate}%. ${stats.executedTests} de ${stats.totalTests} casos foram executados. Taxa de automação: ${automationRate}%.`}
+                    >
                         <div className="flex items-center justify-between mb-3">
                             <div className="flex items-center gap-2">
                                 <div className="p-2 bg-accent/10 rounded-lg">
-                                    <svg className="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg className="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                                     </svg>
                                 </div>
                                 <p className="text-sm font-semibold text-text-primary">Execução de Testes</p>
                             </div>
-                            <span className="text-lg font-bold text-accent">{testExecutionRate}%</span>
+                            <span className="text-lg font-bold text-accent" aria-label={`${testExecutionRate}% de execução`}>{testExecutionRate}%</span>
                         </div>
-                        <div className="w-full bg-surface-hover/50 rounded-full h-3 mb-2 overflow-hidden">
+                        <div className="w-full bg-surface-hover/50 rounded-full h-3 mb-2 overflow-hidden" role="progressbar" aria-valuenow={testExecutionRate} aria-valuemin={0} aria-valuemax={100} aria-label={`Progresso de execução: ${testExecutionRate}%`}>
                             <div 
                                 className="h-full bg-gradient-to-r from-accent via-accent-light to-accent rounded-full transition-all duration-500 relative overflow-hidden"
                                 style={{ width: `${testExecutionRate}%` }}
@@ -1246,12 +1265,12 @@ export const TasksView: React.FC<{
                                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-pulse" />
                             </div>
                         </div>
-                        <div className="flex items-center justify-between text-xs">
-                            <p className="text-text-secondary">
+                        <div className="flex items-center justify-between text-xs text-muted">
+                            <p aria-label={`${stats.executedTests} de ${stats.totalTests} casos executados`}>
                                 {stats.executedTests}/{stats.totalTests} casos executados
                             </p>
-                            <p className="text-text-secondary">
-                                Automação <span className="font-semibold text-accent">{automationRate}%</span>
+                            <p>
+                                Automação <span className="font-semibold text-accent" aria-label={`${automationRate}% de automação`}>{automationRate}%</span>
                             </p>
                         </div>
                     </div>

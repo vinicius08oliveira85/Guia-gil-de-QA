@@ -58,6 +58,7 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported }) => {
                             className={`win-icon-button ${isBeginnerMode ? 'bg-accent/20 text-white shadow-[0_10px_25px_rgba(14,109,253,0.35)]' : ''}`}
                             title={isBeginnerMode ? 'Modo Iniciante: Ativado (clique para desativar)' : 'Modo Iniciante: Desativado (clique para ativar)'}
                             aria-label="Alternar modo iniciante"
+                            aria-pressed={isBeginnerMode}
                         >
                             <span className="text-xl">{isBeginnerMode ? '🎓' : '📚'}</span>
                         </button>
@@ -69,6 +70,7 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported }) => {
                             className="win-icon-button"
                             title={`Tema: ${theme === 'dark' ? 'Escuro' : theme === 'light' ? 'Claro' : 'Automático'}`}
                             aria-label="Alternar tema"
+                            aria-pressed={theme === 'dark'}
                         >
                             <span className="text-xl">{theme === 'dark' ? '🌙' : theme === 'light' ? '☀️' : '💻'}</span>
                         </button>

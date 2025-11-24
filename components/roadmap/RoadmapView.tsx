@@ -125,8 +125,8 @@ export const RoadmapView: React.FC = () => {
     return (
         <div className="container mx-auto p-4 sm:p-6 md:p-8">
             <div className="mb-8">
-                <h1 className="text-3xl sm:text-4xl font-bold text-text-primary mb-4">🗺️ Trilha de Evolução do Aplicativo</h1>
-                <p className="text-text-secondary mb-6">
+                <h1 className="heading-page text-text-primary mb-4">🗺️ Trilha de Evolução do Aplicativo</h1>
+                <p className="text-lead mb-6">
                     Acompanhe o desenvolvimento e evolução do QA Agile Guide através das funcionalidades implementadas, em desenvolvimento e planejadas.
                 </p>
 

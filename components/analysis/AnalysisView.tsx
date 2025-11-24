@@ -171,10 +171,10 @@ export const AnalysisView: React.FC<{
                 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6
             `}>
                 <div className="flex-1">
-                    <h2 className="text-3xl sm:text-4xl font-bold text-text-primary mb-3">
+                    <h2 className="heading-page text-text-primary mb-3">
                         Análise IA do Projeto
                     </h2>
-                    <p className="text-base sm:text-lg text-text-secondary leading-relaxed">
+                    <p className="text-lead">
                         Análises estratégicas e consolidadas geradas por IA para seu projeto
                     </p>
                 </div>

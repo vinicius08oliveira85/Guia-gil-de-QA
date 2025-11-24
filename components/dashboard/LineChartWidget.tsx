@@ -22,7 +22,7 @@ export const LineChartWidget: React.FC<LineChartWidgetProps> = ({ title, data, s
     if (data.length < 2) {
         return (
             <Card className={`!p-4 sm:!p-6 ${className}`}>
-                <h4 className="text-[clamp(0.9rem,2vw,1.1rem)] font-semibold text-text-primary mb-2">{title}</h4>
+                <h4 className="heading-card text-text-primary mb-2">{title}</h4>
                 <div className="flex h-48 items-center justify-center rounded-2xl border border-dashed border-surface-border text-text-secondary/70">
                     Dados insuficientes para exibir o gráfico.
                 </div>
@@ -51,8 +51,8 @@ export const LineChartWidget: React.FC<LineChartWidgetProps> = ({ title, data, s
     return (
         <Card className={`!p-4 sm:!p-6 ${className}`}>
             <div className="flex items-center justify-between gap-4">
-                <h4 className="text-[clamp(0.9rem,2vw,1.1rem)] font-semibold text-text-primary">{title}</h4>
-                <span className="text-xs uppercase tracking-[0.2em] text-text-secondary">
+                <h4 className="heading-card text-text-primary">{title}</h4>
+                <span className="eyebrow text-text-secondary/80">
                     {formatDate(minDate)} — {formatDate(maxDate)}
                 </span>
             </div>

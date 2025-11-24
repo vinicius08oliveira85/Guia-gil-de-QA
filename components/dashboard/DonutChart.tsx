@@ -44,9 +44,9 @@ export const DonutChart: React.FC<DonutChartProps> = ({
         >
             <div className="flex items-center justify-between gap-4">
                 <div>
-                    <p className="text-[clamp(0.65rem,1.5vw,0.8rem)] uppercase tracking-[0.15em] text-text-secondary">{title}</p>
+                    <p className="data-label text-text-secondary/90">{title}</p>
                     {note ? (
-                        <p className="text-[clamp(0.8rem,1.6vw,0.95rem)] text-text-secondary/80">{note}</p>
+                        <p className="text-muted text-[clamp(0.8rem,1.6vw,0.95rem)]">{note}</p>
                     ) : null}
                 </div>
                 <div

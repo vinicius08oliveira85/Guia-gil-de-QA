@@ -38,20 +38,20 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   const { isBeginnerMode } = useBeginnerMode();
 
   return (
-    <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
-      <div className="text-6xl mb-4">{icon}</div>
-      <div className="flex items-center gap-2 mb-2">
-        <h3 className="text-xl font-semibold text-text-primary">{title}</h3>
+    <div className="flex flex-col items-center justify-center py-16 px-4 text-center" role="status" aria-live="polite">
+      <div className="text-6xl mb-6" aria-hidden="true">{icon}</div>
+      <div className="flex items-center gap-2 mb-3">
+        <h3 className="heading-section text-text-primary">{title}</h3>
         {helpContent && (
           <HelpTooltip title={helpContent.title} content={helpContent.content} />
         )}
       </div>
       {description && (
-        <p className="text-text-secondary max-w-md mb-4">{description}</p>
+        <p className="text-lead text-text-secondary max-w-md mb-6">{description}</p>
       )}
       {tip && (
-        <div className="bg-accent/10 border border-accent/30 rounded-lg p-3 mb-6 max-w-md">
-          <p className="text-sm text-text-primary">
+        <div className="bg-accent/10 border border-accent/30 rounded-lg p-4 mb-6 max-w-md">
+          <p className="text-sm text-text-primary leading-relaxed">
             💡 <strong>Dica:</strong> {tip}
           </p>
         </div>

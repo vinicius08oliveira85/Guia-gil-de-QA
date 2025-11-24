@@ -29,7 +29,8 @@ export const Badge: React.FC<BadgeProps> = ({
 
   return (
     <span
-      className={`badge-chip whitespace-nowrap truncate font-semibold ${variantClasses[variant]} ${sizeClasses[size]} ${className}`}
+      className={`badge-chip whitespace-nowrap truncate font-semibold transition-transform duration-200 hover:scale-105 ${variantClasses[variant]} ${sizeClasses[size]} ${className}`}
+      aria-label={typeof children === 'string' ? children : undefined}
     >
       {children}
     </span>

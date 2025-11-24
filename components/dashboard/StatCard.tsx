@@ -39,17 +39,17 @@ export const StatCard: React.FC<StatCardProps> = ({
     const helperText = description ?? subValue;
 
     return (
-        <Card className={`!p-4 sm:!p-5 !gap-3 relative overflow-hidden ${className}`}>
+        <Card className={`!p-4 sm:!p-5 !gap-3 relative overflow-hidden ${className}`} aria-live="polite">
             <div
                 className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${accentBackground[accent]} to-transparent opacity-70`}
             />
             <div className="relative flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                    <p className="text-[clamp(0.65rem,1.5vw,0.8rem)] uppercase tracking-[0.2em] text-text-secondary">
+                    <p className="data-label text-[0.7rem] text-text-secondary/80">
                         {title}
                     </p>
                     <p
-                        className={`mt-1 text-[clamp(1.45rem,3.6vw,2.25rem)] font-semibold leading-snug text-text-primary ${statusColor || ''}`}
+                        className={`data-value mt-1 text-[clamp(1.45rem,3.6vw,2.25rem)] leading-snug text-text-primary ${statusColor || ''}`}
                     >
                         {value}
                     </p>
@@ -61,7 +61,7 @@ export const StatCard: React.FC<StatCardProps> = ({
                 ) : null}
             </div>
             {helperText ? (
-                <p className="relative text-[clamp(0.78rem,1.6vw,0.92rem)] text-text-secondary">{helperText}</p>
+                <p className="relative text-[clamp(0.78rem,1.6vw,0.92rem)] text-muted">{helperText}</p>
             ) : null}
             {typeof trend === 'number' && trendLabel ? (
                 <div className="relative flex items-center gap-2 text-sm font-semibold">

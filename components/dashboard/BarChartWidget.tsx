@@ -24,8 +24,8 @@ export const BarChartWidget: React.FC<BarChartWidgetProps> = ({
     return (
         <Card className={cn('!p-4 sm:!p-6', className)}>
             <div className="flex items-center justify-between gap-4">
-                <h4 className="text-[clamp(0.9rem,2vw,1.1rem)] font-semibold text-text-primary">{title}</h4>
-                <span className="text-xs uppercase tracking-[0.2em] text-text-secondary">Atualizado</span>
+                <h4 className="heading-card text-text-primary text-[clamp(1rem,2vw,1.3rem)]">{title}</h4>
+                <span className="eyebrow text-text-secondary/80">Atualizado</span>
             </div>
             <div className="mt-4 space-y-4">
                 {data.map((item, index) => (

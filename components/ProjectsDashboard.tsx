@@ -170,10 +170,10 @@ export const ProjectsDashboard: React.FC<{
         <div className="container mx-auto max-w-screen-2xl px-6 py-6 sm:px-8 sm:py-8 lg:px-12 xl:px-16 2xl:px-20 w-full">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-8 w-full">
                 <div className="flex flex-col gap-2">
-                     <h1 className="text-3xl sm:text-4xl font-bold text-text-primary line-clamp-2 text-balance w-full leading-tight">
+                     <h1 className="heading-page text-text-primary line-clamp-2 w-full">
                         Meus Projetos
                     </h1>
-                    <p className="text-text-secondary text-base hidden sm:block leading-relaxed">
+                    <p className="text-lead hidden sm:block">
                         Gerencie e acompanhe o progresso dos seus projetos de QA
                     </p>
                 </div>
@@ -236,6 +236,7 @@ export const ProjectsDashboard: React.FC<{
                                     onClick={() => setShowMobileActions(true)} 
                                     className="btn btn-secondary flex-shrink-0"
                                     aria-label="Abrir menu de ações rápidas"
+                                    aria-expanded={showMobileActions}
                                 >
                                     ⋯
                                 </button>
@@ -251,6 +252,7 @@ export const ProjectsDashboard: React.FC<{
                                     onClick={() => setViewMode('grid')}
                                     className={`p-1.5 rounded ${viewMode === 'grid' ? 'bg-surface-hover text-accent shadow-sm' : 'text-text-tertiary hover:text-text-secondary'}`}
                                     title="Visualização em Grade"
+                                    aria-pressed={viewMode === 'grid'}
                                 >
                                     <GridIcon />
                                 </button>
@@ -258,6 +260,7 @@ export const ProjectsDashboard: React.FC<{
                                     onClick={() => setViewMode('list')}
                                     className={`p-1.5 rounded ${viewMode === 'list' ? 'bg-surface-hover text-accent shadow-sm' : 'text-text-tertiary hover:text-text-secondary'}`}
                                     title="Visualização em Lista"
+                                    aria-pressed={viewMode === 'list'}
                                 >
                                     <ListIcon />
                                 </button>
@@ -492,12 +495,12 @@ export const ProjectsDashboard: React.FC<{
                                     >
                                         <div className="flex-1 space-y-3">
                                             <div className="flex justify-between items-start">
-                                                <h3 className="text-lg font-bold text-text-primary leading-snug line-clamp-2 text-balance pr-6">
+                                                <h3 className="heading-card text-text-primary leading-snug line-clamp-2 text-balance pr-6">
                                                     {p.name}
                                                 </h3>
                                             </div>
                                             
-                                            <p className="text-sm text-text-secondary line-clamp-2 min-h-[2.5em]">
+                                            <p className="text-muted text-sm line-clamp-2 min-h-[2.5em]">
                                                 {p.description || 'Sem descrição.'}
                                             </p>
 
@@ -562,14 +565,14 @@ export const ProjectsDashboard: React.FC<{
                                     >
                                         <div className="flex-1 min-w-0 pr-4 mb-3 sm:mb-0">
                                             <div className="flex items-center gap-3 mb-1">
-                                                <h3 className="text-lg font-semibold text-text-primary truncate">
+                                                <h3 className="heading-card text-text-primary truncate text-[1.1rem]">
                                                     {p.name}
                                                 </h3>
                                                 {p.settings?.jiraProjectKey && (
                                                     <span className="bg-blue-900/30 text-blue-400 px-1.5 py-0.5 rounded text-[10px] font-mono">{p.settings.jiraProjectKey}</span>
                                                 )}
                                             </div>
-                                            <p className="text-sm text-text-secondary truncate">
+                                            <p className="text-muted text-sm truncate">
                                                 {p.description || 'Sem descrição.'}
                                             </p>
                                             {tags.length > 0 && (

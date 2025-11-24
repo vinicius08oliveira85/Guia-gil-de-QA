@@ -52,13 +52,13 @@ export const ProjectTrailHeader: React.FC<ProjectTrailHeaderProps> = ({
         >
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div>
-                    <p className="text-xs uppercase tracking-[0.4em] text-text-secondary/70">
+                    <p className="eyebrow text-text-secondary/80">
                         Trilha do Projeto
                     </p>
-                    <h2 className="text-[clamp(1.6rem,3vw,2.4rem)] font-semibold text-text-primary mt-1">
+                    <h2 className="heading-section text-text-primary mt-1">
                         {projectName}
                     </h2>
-                    <p className="text-sm text-text-secondary mt-2">
+                    <p className="text-lead mt-2 text-sm sm:text-base">
                         Você está em <span className="text-text-primary font-semibold">{currentPhase}</span>
                         {nextPhase && (
                             <>
@@ -101,15 +101,15 @@ export const ProjectTrailHeader: React.FC<ProjectTrailHeaderProps> = ({
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                 <div className="rounded-2xl glass-surface p-4">
-                    <p className="text-xs uppercase tracking-[0.2em] text-text-secondary">Fase atual</p>
-                    <p className="mt-2 text-lg font-semibold text-text-primary">{currentPhase}</p>
-                    <p className="text-xs text-text-secondary mt-1">
+                    <p className="data-label">Fase atual</p>
+                    <p className="data-value mt-1 text-lg">{currentPhase}</p>
+                    <p className="text-muted text-sm mt-1">
                         {nextPhase ? `Próxima: ${nextPhase}` : 'Todas as fases mapeadas'}
                     </p>
                 </div>
 
                 <div className="rounded-2xl glass-surface p-4">
-                    <div className="flex items-center justify-between text-xs uppercase tracking-[0.2em] text-text-secondary">
+                    <div className="flex items-center justify-between data-label text-[0.7rem] text-text-secondary">
                         <span>Progresso geral</span>
                         <span>{overallProgress}%</span>
                     </div>
@@ -119,13 +119,13 @@ export const ProjectTrailHeader: React.FC<ProjectTrailHeaderProps> = ({
                             style={{ width: `${overallProgress}%` }}
                         />
                     </div>
-                    <p className="text-xs text-text-secondary mt-2">
+                    <p className="text-muted text-sm mt-2">
                         {remainingPhases} fase(s) restante(s)
                     </p>
                 </div>
 
                 <div className={`rounded-2xl glass-surface p-4 space-y-2 ${analysisOutdated ? 'glass-surface--warning' : ''}`}>
-                    <div className="flex items-center justify-between text-xs uppercase tracking-[0.2em] text-text-secondary">
+                    <div className="flex items-center justify-between data-label text-[0.7rem] text-text-secondary">
                         <span>Status da IA</span>
                         <span className={analysisOutdated ? 'text-amber-300' : 'text-emerald-300'}>
                             {analysisOutdated ? 'Revisar' : 'Atualizado'}
