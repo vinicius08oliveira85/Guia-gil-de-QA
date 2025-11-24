@@ -45,16 +45,16 @@ export const GeneralAnalysisCard: React.FC<GeneralAnalysisCardProps> = ({
     <button
       onClick={() => toggleSection(sectionKey)}
       className={`
-        w-full flex items-center justify-between p-3
+        w-full flex items-center justify-between p-4
         hover:bg-surface-hover rounded-lg
         ${windows12Styles.transition.fast}
       `}
     >
-      <div className="flex items-center gap-2">
-        <span className="text-xl">{icon}</span>
-        <span className="font-semibold text-text-primary">{title}</span>
+      <div className="flex items-center gap-3">
+        <span className="text-2xl">{icon}</span>
+        <span className="font-semibold text-text-primary text-lg">{title}</span>
         {count !== undefined && (
-          <span className="px-2 py-0.5 text-xs rounded-full bg-accent/20 text-accent-light">
+          <span className="px-3 py-1 text-sm rounded-full bg-accent/20 text-accent-light">
             {count}
           </span>
         )}
@@ -82,10 +82,10 @@ export const GeneralAnalysisCard: React.FC<GeneralAnalysisCardProps> = ({
       shadow-xl
     `}>
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-8">
         <div>
-          <h3 className="text-2xl font-bold text-text-primary mb-1">Análise Geral IA</h3>
-          <p className="text-sm text-text-secondary">
+          <h3 className="text-3xl font-bold text-text-primary mb-2">Análise Geral IA</h3>
+          <p className="text-base text-text-secondary">
             Gerada em {format(new Date(analysis.generatedAt), "dd/MM/yyyy 'às' HH:mm")}
           </p>
         </div>
@@ -107,20 +107,20 @@ export const GeneralAnalysisCard: React.FC<GeneralAnalysisCardProps> = ({
 
       {/* Risk Badge */}
       <div className={`
-        mb-6 p-4 rounded-xl border
+        mb-8 p-6 rounded-xl border
         ${getRiskStyle(analysis.riskCalculation.overallRisk as any)}
         ${windows12Styles.glow(analysis.riskCalculation.overallRisk === 'Crítico' ? 'red' : analysis.riskCalculation.overallRisk === 'Alto' ? 'yellow' : 'accent')}
         ${windows12Styles.transition.normal}
       `}>
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium mb-1">Risco Geral do Projeto</p>
-            <p className="text-2xl font-bold">{analysis.riskCalculation.overallRisk}</p>
-            <p className="text-sm opacity-80 mt-1">
+            <p className="text-base font-medium mb-2">Risco Geral do Projeto</p>
+            <p className="text-3xl font-bold mb-2">{analysis.riskCalculation.overallRisk}</p>
+            <p className="text-base opacity-80">
               Score: {analysis.riskCalculation.riskScore}/100
             </p>
           </div>
-          <div className="text-4xl">
+          <div className="text-5xl">
             {analysis.riskCalculation.overallRisk === 'Crítico' && '🚨'}
             {analysis.riskCalculation.overallRisk === 'Alto' && '⚠️'}
             {analysis.riskCalculation.overallRisk === 'Médio' && '⚡'}
@@ -130,15 +130,15 @@ export const GeneralAnalysisCard: React.FC<GeneralAnalysisCardProps> = ({
       </div>
 
       {/* Summary */}
-      <div className="mb-4">
+      <div className="mb-6">
         <SectionHeader title="Resumo Geral" icon="📊" sectionKey="summary" />
         {expandedSections.has('summary') && (
           <div className={`
-            mt-2 p-4 bg-surface-hover rounded-lg border border-surface-border
+            mt-4 p-6 bg-surface-hover rounded-lg border border-surface-border
             ${windows12Styles.transition.normal}
             hover:border-accent/30
           `}>
-            <p className="text-text-primary whitespace-pre-wrap leading-relaxed">
+            <p className="text-text-primary whitespace-pre-wrap leading-relaxed text-base">
               {analysis.summary}
             </p>
           </div>
@@ -146,7 +146,7 @@ export const GeneralAnalysisCard: React.FC<GeneralAnalysisCardProps> = ({
       </div>
 
       {/* Detected Problems */}
-      <div className="mb-4">
+      <div className="mb-6">
         <SectionHeader 
           title="Problemas Detectados" 
           icon="🔍" 
@@ -154,17 +154,17 @@ export const GeneralAnalysisCard: React.FC<GeneralAnalysisCardProps> = ({
           sectionKey="problems"
         />
         {expandedSections.has('problems') && (
-          <div className="mt-2 space-y-2">
+          <div className="mt-4 space-y-3">
             {analysis.detectedProblems.map((problem, idx) => (
               <div
                 key={idx}
                 className={`
-                  p-3 bg-red-400/10 border border-red-400/20 rounded-lg
+                  p-4 bg-red-400/10 border border-red-400/20 rounded-lg
                   ${windows12Styles.transition.fast}
                   hover:bg-red-400/15 hover:border-red-400/30
                 `}
               >
-                <p className="text-text-primary text-sm">{problem}</p>
+                <p className="text-text-primary text-base leading-relaxed">{problem}</p>
               </div>
             ))}
           </div>
@@ -172,7 +172,7 @@ export const GeneralAnalysisCard: React.FC<GeneralAnalysisCardProps> = ({
       </div>
 
       {/* Risk Factors */}
-      <div className="mb-4">
+      <div className="mb-6">
         <SectionHeader 
           title="Fatores de Risco" 
           icon="⚡" 
@@ -180,12 +180,12 @@ export const GeneralAnalysisCard: React.FC<GeneralAnalysisCardProps> = ({
           sectionKey="riskFactors"
         />
         {expandedSections.has('riskFactors') && (
-          <div className="mt-2 space-y-2">
+          <div className="mt-4 space-y-3">
             {analysis.riskCalculation.riskFactors.map((factor, idx) => (
               <div
                 key={idx}
                 className={`
-                  p-3 rounded-lg border
+                  p-4 rounded-lg border
                   ${factor.impact === 'Alto' ? 'bg-red-400/10 border-red-400/20' :
                   factor.impact === 'Médio' ? 'bg-orange-400/10 border-orange-400/20' :
                   'bg-yellow-400/10 border-yellow-400/20'}
@@ -193,9 +193,9 @@ export const GeneralAnalysisCard: React.FC<GeneralAnalysisCardProps> = ({
                   hover:opacity-90
                 `}
               >
-                <div className="flex items-start justify-between mb-1">
-                  <p className="font-semibold text-text-primary">{factor.factor}</p>
-                  <span className={`px-2 py-0.5 text-xs rounded-full ${
+                <div className="flex items-start justify-between mb-2">
+                  <p className="font-semibold text-text-primary text-base">{factor.factor}</p>
+                  <span className={`px-3 py-1 text-sm rounded-full ${
                     factor.impact === 'Alto' ? 'bg-red-400/20 text-red-400' :
                     factor.impact === 'Médio' ? 'bg-orange-400/20 text-orange-400' :
                     'bg-yellow-400/20 text-yellow-400'
@@ -203,7 +203,7 @@ export const GeneralAnalysisCard: React.FC<GeneralAnalysisCardProps> = ({
                     {factor.impact}
                   </span>
                 </div>
-                <p className="text-sm text-text-secondary">{factor.description}</p>
+                <p className="text-base text-text-secondary leading-relaxed">{factor.description}</p>
               </div>
             ))}
           </div>
@@ -211,7 +211,7 @@ export const GeneralAnalysisCard: React.FC<GeneralAnalysisCardProps> = ({
       </div>
 
       {/* Missing Items */}
-      <div className="mb-4">
+      <div className="mb-6">
         <SectionHeader 
           title="Itens Faltantes" 
           icon="📋" 
@@ -219,19 +219,19 @@ export const GeneralAnalysisCard: React.FC<GeneralAnalysisCardProps> = ({
           sectionKey="missingItems"
         />
         {expandedSections.has('missingItems') && (
-          <div className="mt-2 space-y-2">
+          <div className="mt-4 space-y-3">
             {analysis.missingItems.map((item, idx) => (
               <div
                 key={idx}
                 className={`
-                  p-3 bg-surface-hover border border-surface-border rounded-lg
-                  flex items-start gap-2
+                  p-4 bg-surface-hover border border-surface-border rounded-lg
+                  flex items-start gap-3
                   ${windows12Styles.transition.fast}
                   hover:border-yellow-400/30 hover:bg-yellow-400/5
                 `}
               >
-                <span className="text-yellow-400 mt-0.5">⚠️</span>
-                <p className="text-text-primary text-sm flex-1">{item}</p>
+                <span className="text-yellow-400 mt-0.5 text-xl">⚠️</span>
+                <p className="text-text-primary text-base flex-1 leading-relaxed">{item}</p>
               </div>
             ))}
           </div>
@@ -239,7 +239,7 @@ export const GeneralAnalysisCard: React.FC<GeneralAnalysisCardProps> = ({
       </div>
 
       {/* BDD Suggestions */}
-      <div className="mb-4">
+      <div className="mb-6">
         <SectionHeader 
           title="Sugestões de Cenários BDD" 
           icon="🧪" 
@@ -247,18 +247,18 @@ export const GeneralAnalysisCard: React.FC<GeneralAnalysisCardProps> = ({
           sectionKey="bddSuggestions"
         />
         {expandedSections.has('bddSuggestions') && (
-          <div className="mt-2 space-y-3">
+          <div className="mt-4 space-y-4">
             {analysis.bddSuggestions.map((suggestion, idx) => (
               <div
                 key={idx}
-                className="p-4 bg-surface-hover border border-surface-border rounded-lg"
+                className="p-5 bg-surface-hover border border-surface-border rounded-lg"
               >
-                <p className="font-semibold text-text-primary mb-2">{suggestion.taskTitle}</p>
-                <div className="space-y-1">
+                <p className="font-semibold text-text-primary mb-3 text-lg">{suggestion.taskTitle}</p>
+                <div className="space-y-2">
                   {suggestion.scenarios.map((scenario, sIdx) => (
                     <div
                       key={sIdx}
-                      className="p-2 bg-surface rounded border border-surface-border text-sm text-text-secondary font-mono"
+                      className="p-3 bg-surface rounded border border-surface-border text-base text-text-secondary font-mono leading-relaxed"
                     >
                       {scenario}
                     </div>
@@ -271,7 +271,7 @@ export const GeneralAnalysisCard: React.FC<GeneralAnalysisCardProps> = ({
       </div>
 
       {/* QA Improvements */}
-      <div className="mb-4">
+      <div className="mb-6">
         <SectionHeader 
           title="Melhorias de QA" 
           icon="✨" 
@@ -279,19 +279,19 @@ export const GeneralAnalysisCard: React.FC<GeneralAnalysisCardProps> = ({
           sectionKey="qaImprovements"
         />
         {expandedSections.has('qaImprovements') && (
-          <div className="mt-2 space-y-2">
+          <div className="mt-4 space-y-3">
             {analysis.qaImprovements.map((improvement, idx) => (
               <div
                 key={idx}
                 className={`
-                  p-3 bg-accent/10 border border-accent/20 rounded-lg
-                  flex items-start gap-2
+                  p-4 bg-accent/10 border border-accent/20 rounded-lg
+                  flex items-start gap-3
                   ${windows12Styles.transition.fast}
                   hover:bg-accent/15 hover:border-accent/30
                 `}
               >
-                <span className="text-accent-light mt-0.5">💡</span>
-                <p className="text-text-primary text-sm flex-1">{improvement}</p>
+                <span className="text-accent-light mt-0.5 text-xl">💡</span>
+                <p className="text-text-primary text-base flex-1 leading-relaxed">{improvement}</p>
               </div>
             ))}
           </div>

@@ -167,13 +167,13 @@ export const ProjectsDashboard: React.FC<{
     };
 
     return (
-        <div className="container mx-auto max-w-screen-2xl px-4 py-4 sm:px-6 sm:py-6 lg:px-8 xl:px-10 2xl:px-16 w-full">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 w-full">
-                <div className="flex flex-col gap-1">
-                     <h1 className="text-2xl sm:text-3xl font-bold text-text-primary line-clamp-2 text-balance w-full">
+        <div className="container mx-auto max-w-screen-2xl px-6 py-6 sm:px-8 sm:py-8 lg:px-12 xl:px-16 2xl:px-20 w-full">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-8 w-full">
+                <div className="flex flex-col gap-2">
+                     <h1 className="text-3xl sm:text-4xl font-bold text-text-primary line-clamp-2 text-balance w-full leading-tight">
                         Meus Projetos
                     </h1>
-                    <p className="text-text-secondary text-sm hidden sm:block">
+                    <p className="text-text-secondary text-base hidden sm:block leading-relaxed">
                         Gerencie e acompanhe o progresso dos seus projetos de QA
                     </p>
                 </div>

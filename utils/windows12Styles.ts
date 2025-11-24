@@ -103,20 +103,20 @@ export const windows12Styles = {
    * Classe para grid responsivo
    */
   grid: {
-    responsive: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4',
-    compact: 'grid grid-cols-1 sm:grid-cols-2 gap-3',
-    list: 'space-y-3'
+    responsive: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6',
+    compact: 'grid grid-cols-1 sm:grid-cols-2 gap-4',
+    list: 'space-y-4'
   },
   
   /**
    * Espaçamentos padronizados
    */
   spacing: {
-    xs: 'p-2',
-    sm: 'p-3',
-    md: 'p-4',
-    lg: 'p-6',
-    xl: 'p-8'
+    xs: 'p-3',
+    sm: 'p-4',
+    md: 'p-5',
+    lg: 'p-7',
+    xl: 'p-10'
   },
   
   /**

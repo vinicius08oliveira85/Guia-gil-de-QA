@@ -90,8 +90,8 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
 
     return (
         <>
-            <div className="container mx-auto max-w-screen-2xl px-4 py-4 sm:px-6 sm:py-6 lg:px-8 xl:px-10 2xl:px-16 non-printable w-full">
-                <div className="grid gap-3 mb-6 w-full lg:grid-cols-[auto,1fr] lg:items-center">
+            <div className="container mx-auto max-w-screen-2xl px-6 py-6 sm:px-8 sm:py-8 lg:px-12 xl:px-16 2xl:px-20 non-printable w-full">
+                <div className="grid gap-4 mb-8 w-full lg:grid-cols-[auto,1fr] lg:items-center">
                     <button 
                         onClick={onBack} 
                         className="text-accent hover:text-accent-light transition-colors font-semibold w-full sm:w-auto text-left"
@@ -119,10 +119,10 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                 <Modal isOpen={showExportMenu} onClose={() => setShowExportMenu(false)} title="Exportar Projeto">
                     <ExportMenu project={project} onClose={() => setShowExportMenu(false)} />
                 </Modal>
-                <h2 className="text-2xl sm:text-4xl font-bold text-text-primary mb-2 break-words text-balance">{project.name}</h2>
-                <p className="text-text-secondary mb-8 max-w-3xl break-words">{project.description}</p>
+                <h2 className="text-3xl sm:text-5xl font-bold text-text-primary mb-4 break-words text-balance leading-tight">{project.name}</h2>
+                <p className="text-text-secondary mb-10 max-w-3xl break-words text-lg leading-relaxed">{project.description}</p>
                 
-                <div className="border-b border-surface-border mb-6 sticky top-[72px] md:static bg-background/90 backdrop-blur-lg z-10 px-2 sm:px-0 shadow-sm">
+                <div className="border-b border-surface-border mb-8 sticky top-[72px] md:static bg-background/90 backdrop-blur-lg z-10 px-2 sm:px-0 shadow-sm">
                     <nav className="hidden md:flex flex-wrap gap-2 py-2" aria-label="Navegação de abas desktop">
                         {tabs.map(tab => (
                             <button 

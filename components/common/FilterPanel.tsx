@@ -158,7 +158,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
         {availableTestTypes.length > 0 && (
           <FilterSection
             id="test-types"
-            title="Tipos de Teste"
+            title="Estratégia de Teste"
             icon={
               <svg className="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 3l4 4-4 4m4-4h8m-8 6l4 4-4 4m4-4h8" />

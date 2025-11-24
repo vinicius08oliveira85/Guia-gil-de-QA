@@ -42,20 +42,20 @@ export const AnalysisSection: React.FC<AnalysisSectionProps> = ({
       ${windows12Styles.transition.normal}
     `}>
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-6">
         <button
           onClick={() => setExpanded(!expanded)}
           className={`
-            flex items-center gap-3 flex-1 text-left
+            flex items-center gap-4 flex-1 text-left
             hover:opacity-80
             ${windows12Styles.transition.fast}
           `}
         >
-          {icon && <span className="text-2xl">{icon}</span>}
+          {icon && <span className="text-3xl">{icon}</span>}
           <div>
-            <h3 className="text-xl font-bold text-text-primary">{title}</h3>
+            <h3 className="text-2xl font-bold text-text-primary mb-1">{title}</h3>
             {count !== undefined && (
-              <p className="text-sm text-text-secondary">
+              <p className="text-base text-text-secondary">
                 {count} {count === 1 ? 'item' : 'itens'}
               </p>
             )}
@@ -166,7 +166,7 @@ export const AnalysisSection: React.FC<AnalysisSectionProps> = ({
       {/* Filters */}
       {showFilters && filters && (
         <div className={`
-          mb-4 p-4 bg-surface-hover rounded-lg border border-surface-border
+          mb-6 p-5 bg-surface-hover rounded-lg border border-surface-border
           ${windows12Styles.transition.normal}
           ${windows12Styles.spacing.md}
         `}>
@@ -186,7 +186,7 @@ export const AnalysisSection: React.FC<AnalysisSectionProps> = ({
                     ? windows12Styles.grid.responsive
                     : viewMode === 'list'
                     ? windows12Styles.grid.list
-                    : 'space-y-4'
+                    : 'space-y-6'
                 }
               `}
             >
@@ -194,12 +194,12 @@ export const AnalysisSection: React.FC<AnalysisSectionProps> = ({
             </div>
           ) : (
             emptyState && (
-              <div className="flex flex-col items-center justify-center py-12 text-center">
-                <span className="text-6xl mb-4">{emptyState.icon}</span>
-                <h4 className="text-lg font-semibold text-text-primary mb-2">
+              <div className="flex flex-col items-center justify-center py-16 text-center">
+                <span className="text-7xl mb-6">{emptyState.icon}</span>
+                <h4 className="text-xl font-semibold text-text-primary mb-3">
                   {emptyState.title}
                 </h4>
-                <p className="text-sm text-text-secondary max-w-md">
+                <p className="text-base text-text-secondary max-w-md leading-relaxed">
                   {emptyState.description}
                 </p>
               </div>

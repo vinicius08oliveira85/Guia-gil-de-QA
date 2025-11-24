@@ -163,18 +163,18 @@ export const AnalysisView: React.FC<{
     }, [project.tasks, project.generalIAAnalysis]);
 
     return (
-        <div className="space-y-6 pb-6">
+        <div className="space-y-8 pb-8">
             {/* Header com ações - Estilo Windows 12 */}
             <div className={`
                 ${windows12Styles.card}
                 ${windows12Styles.spacing.lg}
-                flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4
+                flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6
             `}>
                 <div className="flex-1">
-                    <h2 className="text-2xl sm:text-3xl font-bold text-text-primary mb-2">
+                    <h2 className="text-3xl sm:text-4xl font-bold text-text-primary mb-3">
                         Análise IA do Projeto
                     </h2>
-                    <p className="text-sm sm:text-base text-text-secondary">
+                    <p className="text-base sm:text-lg text-text-secondary leading-relaxed">
                         Análises estratégicas e consolidadas geradas por IA para seu projeto
                     </p>
                 </div>

@@ -133,12 +133,12 @@
   --tooltip-text: #F8FAFF;
   --tooltip-border: rgba(255, 255, 255, 0.18);
   --focus-color: rgba(14, 109, 253, 0.45);
-  --title-size: 1.35rem;
-  --subtitle-size: 1.05rem;
-  --body-size: 0.95rem;
-  --label-size: 0.85rem;
-  --badge-size: 0.8rem;
-  --icon-size: 1.1rem;
+  --title-size: 1.5rem;
+  --subtitle-size: 1.15rem;
+  --body-size: 1rem;
+  --label-size: 0.9rem;
+  --badge-size: 0.85rem;
+  --icon-size: 1.2rem;
   --mobile-title-size: 0.95rem;
   --mobile-subtitle-size: 0.82rem;
     --mobile-label-size: 0.72rem;
@@ -221,6 +221,7 @@ body {
   background-attachment: fixed;
   color: var(--text-primary);
   font-family: var(--font-sans);
+  line-height: 1.6;
   transition: background-color var(--transition-base), color var(--transition-base), background-image var(--transition-base);
   padding-bottom: env(safe-area-inset-bottom);
   position: relative;
@@ -328,10 +329,11 @@ select {
   border: 1px solid var(--input-border);
   color: var(--input-text);
   border-radius: var(--radius-md);
-  padding: 0.7rem 0.95rem;
+  padding: 0.85rem 1.15rem;
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast), background-color var(--transition-fast);
   width: 100%;
   font-size: 1rem;
+  line-height: 1.5;
 }
 
 .input-select {
@@ -517,7 +519,7 @@ select option:focus {
 }
 
 .win-card {
-  padding: clamp(1rem, 2vw, 1.6rem);
+  padding: clamp(1.25rem, 2.5vw, 2rem);
   border-radius: var(--radius-xxl);
   background: linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0));
   width: 100%;
@@ -528,7 +530,7 @@ select option:focus {
   border-radius: var(--radius-lg);
   border: 1px solid var(--surface-border);
   background: var(--layer-2);
-  padding: clamp(1rem, 1.5vw, 1.35rem);
+  padding: clamp(1.25rem, 2vw, 1.75rem);
   box-shadow: var(--shadow-soft);
   width: 100%;
   max-width: var(--mobile-max-content-width);

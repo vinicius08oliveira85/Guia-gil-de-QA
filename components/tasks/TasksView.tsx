@@ -846,7 +846,7 @@ export const TasksView: React.FC<{
         pushArray('owner', filters.owner, 'Owner: ');
         pushArray('assignee', filters.assignee, 'Responsável: ');
         pushArray('testResultStatus', filters.testResultStatus, 'Testes: ');
-        pushArray('requiredTestTypes', filters.requiredTestTypes, 'Tipos de teste: ');
+        pushArray('requiredTestTypes', filters.requiredTestTypes, 'Estratégia de teste: ');
 
         if (filters.dateRange?.start || filters.dateRange?.end) {
             const start = filters.dateRange.start ? filters.dateRange.start.toLocaleDateString() : 'Início';
