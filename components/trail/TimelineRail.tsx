@@ -19,7 +19,7 @@ interface TimelineRailProps {
 const statusStyles: Record<PhaseDisplayStatus, string> = {
     completed: 'border-emerald-400/40 bg-emerald-400/10 text-emerald-100',
     current: 'border-accent/50 bg-accent/10 text-accent-light',
-    upcoming: 'border-white/10 bg-white/5 text-text-secondary'
+    upcoming: 'glass-surface glass-surface--tint text-text-secondary border-surface-border'
 };
 
 export const TimelineRail: React.FC<TimelineRailProps> = ({
@@ -106,7 +106,7 @@ export const TimelineRail: React.FC<TimelineRailProps> = ({
                 </button>
             </header>
 
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur space-y-4">
+            <div className="rounded-2xl glass-surface p-4 space-y-4">
                 <div className="flex flex-wrap items-center gap-4 text-sm text-text-secondary">
                     <span className="font-semibold text-text-primary">
                         {selectedVersion === 'Todos' ? 'Visão geral do projeto' : `Versão ${selectedVersion}`}
@@ -148,7 +148,7 @@ export const TimelineRail: React.FC<TimelineRailProps> = ({
                 </div>
 
                 {expandedPhase && (
-                    <div className="rounded-2xl border border-white/10 bg-white/10 p-4 backdrop-blur">
+                    <div className="rounded-2xl glass-surface glass-surface--tint p-4">
                         {(() => {
                             const details = getPhaseDetails(expandedPhase);
                             const status = phaseStatusMap[expandedPhase];
@@ -169,13 +169,13 @@ export const TimelineRail: React.FC<TimelineRailProps> = ({
                                     </div>
 
                                     <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                                        <div className="rounded-xl border border-white/10 bg-white/5 p-3">
+                                        <div className="rounded-xl glass-surface glass-surface--tint p-3">
                                             <p className="text-xs uppercase tracking-[0.3em] text-text-secondary">
                                                 Dependências
                                             </p>
                                             <p className="text-sm text-text-primary mt-1">{details.dependencies}</p>
                                         </div>
-                                        <div className="rounded-xl border border-white/10 bg-white/5 p-3">
+                                        <div className="rounded-xl glass-surface glass-surface--tint p-3">
                                             <p className="text-xs uppercase tracking-[0.3em] text-text-secondary">
                                                 Marco
                                             </p>
@@ -183,7 +183,7 @@ export const TimelineRail: React.FC<TimelineRailProps> = ({
                                         </div>
                                     </div>
 
-                                    <div className="rounded-xl border border-white/10 bg-white/5 p-3">
+                                    <div className="rounded-xl glass-surface glass-surface--tint p-3">
                                         <p className="text-xs uppercase tracking-[0.3em] text-text-secondary mb-2">
                                             Checklist chave
                                         </p>

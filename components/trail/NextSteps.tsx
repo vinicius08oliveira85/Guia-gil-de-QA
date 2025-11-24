@@ -105,9 +105,9 @@ export const NextSteps: React.FC<NextStepsProps> = ({
                     <article
                         key={task.id}
                         className={`
-                            rounded-2xl border border-white/10 bg-white/5
+                            rounded-2xl glass-surface
                             p-4 flex flex-col gap-4
-                            backdrop-blur hover:border-accent/40 transition-all
+                            hover:border-accent/40 transition-all
                         `}
                     >
                         <div>
@@ -152,7 +152,7 @@ export const NextSteps: React.FC<NextStepsProps> = ({
                                                 h-4 w-4 rounded-md border flex items-center justify-center
                                                 ${item.checked
                                                     ? 'border-emerald-400 bg-emerald-500/20 text-emerald-200'
-                                                    : 'border-white/10 text-text-secondary'}
+                                                    : 'border-surface-border text-text-secondary'}
                                             `}
                                         >
                                             {item.checked ? '✓' : ''}

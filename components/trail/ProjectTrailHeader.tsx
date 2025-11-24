@@ -75,7 +75,6 @@ export const ProjectTrailHeader: React.FC<ProjectTrailHeaderProps> = ({
                             className={`
                                 ${windows12Styles.input}
                                 mt-2 w-full sm:w-auto
-                                bg-white/10 backdrop-blur
                             `}
                             value={selectedVersion}
                             onChange={(event) => onVersionChange(event.target.value)}
@@ -104,7 +103,7 @@ export const ProjectTrailHeader: React.FC<ProjectTrailHeaderProps> = ({
             </div>
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                <div className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur">
+                <div className="rounded-2xl glass-surface p-4">
                     <p className="text-xs uppercase tracking-[0.2em] text-text-secondary">Fase atual</p>
                     <p className="mt-2 text-lg font-semibold text-text-primary">{currentPhase}</p>
                     <p className="text-xs text-text-secondary mt-1">
@@ -112,12 +111,12 @@ export const ProjectTrailHeader: React.FC<ProjectTrailHeaderProps> = ({
                     </p>
                 </div>
 
-                <div className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur">
+                <div className="rounded-2xl glass-surface p-4">
                     <div className="flex items-center justify-between text-xs uppercase tracking-[0.2em] text-text-secondary">
                         <span>Progresso geral</span>
                         <span>{overallProgress}%</span>
                     </div>
-                    <div className="mt-3 h-2 w-full rounded-full bg-white/10 overflow-hidden">
+                    <div className="mt-3 h-2 w-full rounded-full glass-track overflow-hidden">
                         <div
                             className="h-full rounded-full bg-gradient-to-r from-accent via-accent to-emerald-400 transition-all duration-300"
                             style={{ width: `${overallProgress}%` }}
@@ -128,7 +127,7 @@ export const ProjectTrailHeader: React.FC<ProjectTrailHeaderProps> = ({
                     </p>
                 </div>
 
-                <div className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur space-y-2">
+                <div className={`rounded-2xl glass-surface p-4 space-y-2 ${analysisOutdated ? 'glass-surface--warning' : ''}`}>
                     <div className="flex items-center justify-between text-xs uppercase tracking-[0.2em] text-text-secondary">
                         <span>Status da IA</span>
                         <span className={analysisOutdated ? 'text-amber-300' : 'text-emerald-300'}>

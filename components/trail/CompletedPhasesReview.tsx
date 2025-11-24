@@ -106,7 +106,7 @@ export const CompletedPhasesReview: React.FC<CompletedPhasesReviewProps> = ({
             </header>
 
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.2fr,1fr]">
-                <div className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur">
+                <div className="rounded-2xl glass-surface p-4">
                     <p className="text-xs uppercase tracking-[0.3em] text-text-secondary mb-3">
                         Fases concluídas
                     </p>
@@ -134,8 +134,8 @@ export const CompletedPhasesReview: React.FC<CompletedPhasesReviewProps> = ({
 
                 <div
                     className={`
-                        rounded-2xl border p-4 backdrop-blur
-                        ${analysisOutdated ? 'border-amber-400/40 bg-amber-400/10' : 'border-white/10 bg-white/5'}
+                        rounded-2xl glass-surface p-4
+                        ${analysisOutdated ? 'glass-surface--warning' : ''}
                     `}
                 >
                     <div className="flex items-center justify-between">
@@ -158,7 +158,7 @@ export const CompletedPhasesReview: React.FC<CompletedPhasesReviewProps> = ({
             </div>
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                <div className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur">
+                <div className="rounded-2xl glass-surface p-4">
                     <p className="text-xs uppercase tracking-[0.3em] text-text-secondary mb-3">
                         Pontos fortes
                     </p>
@@ -171,7 +171,7 @@ export const CompletedPhasesReview: React.FC<CompletedPhasesReviewProps> = ({
                         ))}
                     </ul>
                 </div>
-                <div className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur">
+                <div className="rounded-2xl glass-surface p-4">
                     <p className="text-xs uppercase tracking-[0.3em] text-text-secondary mb-3">
                         Pontos de melhoria
                     </p>
@@ -184,7 +184,7 @@ export const CompletedPhasesReview: React.FC<CompletedPhasesReviewProps> = ({
                         ))}
                     </ul>
                 </div>
-                <div className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur">
+                <div className="rounded-2xl glass-surface p-4">
                     <p className="text-xs uppercase tracking-[0.3em] text-text-secondary mb-3">
                         Recomendações rápidas
                     </p>
