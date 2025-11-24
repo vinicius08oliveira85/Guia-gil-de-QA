@@ -1,9 +1,7 @@
 import React, { useState, Suspense } from 'react';
-import { CompassIcon } from './Icons';
 import { NotificationBell } from './NotificationBell';
 import { useTheme } from '../../hooks/useTheme';
 import { useBeginnerMode } from '../../hooks/useBeginnerMode';
-import { LoadingSkeleton } from './LoadingSkeleton';
 import { Project } from '../../types';
 
 // Lazy load do SettingsModal
@@ -26,15 +24,23 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported }) => {
             >
                 <div className="container mx-auto flex flex-wrap items-center justify-between gap-3 min-w-0 py-2 sm:py-3 px-3">
                     <div className="flex items-center gap-3 min-w-0">
-                        <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-[16px] bg-gradient-to-br from-accent to-accent-light flex items-center justify-center shadow-[0_12px_30px_rgba(14,109,253,0.35)] border border-white/20 flex-shrink-0">
-                            <CompassIcon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                        <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-[18px] bg-white/10 border border-white/30 shadow-[0_18px_45px_rgba(6,9,34,0.45)] overflow-hidden flex items-center justify-center flex-shrink-0 backdrop-blur-md">
+                            <img
+                                src="/qa-testing-logo.svg"
+                                alt="Logo Futibou Quality Lab"
+                                className="h-full w-full object-cover"
+                                loading="lazy"
+                                decoding="async"
+                                draggable={false}
+                            />
+                            <span className="sr-only">Futibou Quality Lab</span>
                         </div>
                         <div className="min-w-0">
                             <p className="text-[0.6rem] uppercase tracking-[0.3em] text-text-tertiary mb-0.5">
-                                Windows 12 Edition
+                                Futibou Analytics • QA Testing
                             </p>
                             <h1 className="text-base sm:text-xl font-semibold text-text-primary line-clamp-2 text-balance">
-                                QA Agile Guide
+                                Futibou Quality Lab
                             </h1>
                         </div>
                     </div>
