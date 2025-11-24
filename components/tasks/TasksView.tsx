@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { Project, JiraTask, BddScenario, TestCaseDetailLevel, BugSeverity, TeamRole } from '../../types';
-import { generateTestCasesForTask, generateBddScenarios } from '../../services/geminiService';
+import { getAIService } from '../../services/ai/aiServiceFactory';
 import { Card } from '../common/Card';
 import { Modal } from '../common/Modal';
 import { FilterPanel } from '../common/FilterPanel';
@@ -110,7 +110,8 @@ export const TasksView: React.FC<{
         try {
             const task = project.tasks.find(t => t.id === taskId);
             if (!task) throw new Error("Task not found");
-            const scenarios = await generateBddScenarios(task.title, task.description);
+            const aiService = getAIService();
+            const scenarios = await aiService.generateBddScenarios(task.title, task.description);
             const updatedTask = { ...task, bddScenarios: [...(task.bddScenarios || []), ...scenarios] };
             const newTasks = project.tasks.map(t => t.id === taskId ? updatedTask : t);
             onUpdateProject({ ...project, tasks: newTasks });
@@ -155,7 +156,8 @@ export const TasksView: React.FC<{
         try {
             const task = project.tasks.find(t => t.id === taskId);
             if (!task) throw new Error("Task not found");
-            const { strategy, testCases } = await generateTestCasesForTask(task.title, task.description, task.bddScenarios, detailLevel);
+            const aiService = getAIService();
+            const { strategy, testCases } = await aiService.generateTestCasesForTask(task.title, task.description, task.bddScenarios, detailLevel);
             const updatedTask = { ...task, testStrategy: strategy, testCases };
             const newTasks = project.tasks.map(t => t.id === updatedTask.id ? updatedTask : t);
             onUpdateProject({ ...project, tasks: newTasks });
@@ -395,9 +397,10 @@ export const TasksView: React.FC<{
         setIsRunningGeneralAnalysis(true);
         try {
             const analysis = await generateGeneralIAAnalysis(project);
+            const aiService = getAIService();
             
             // Atualizar análises individuais nas tarefas
-            const updatedTasks = project.tasks.map(task => {
+            let updatedTasks = project.tasks.map(task => {
                 const taskAnalysis = analysis.taskAnalyses.find(ta => ta.taskId === task.id);
                 if (taskAnalysis) {
                     return {
@@ -412,6 +415,86 @@ export const TasksView: React.FC<{
                 return task;
             });
 
+            // Identificar tarefas que precisam de BDDs e casos de teste
+            const tasksNeedingBDD = updatedTasks.filter(task => {
+                // Ignorar tarefas do tipo Bug
+                if (task.type === 'Bug') return false;
+                // Verificar se não tem BDDs
+                const hasBDD = (task.bddScenarios?.length || 0) > 0;
+                // Só gerar se realmente não tiver BDDs
+                return !hasBDD;
+            });
+
+            const tasksNeedingTestCases = updatedTasks.filter(task => {
+                // Ignorar tarefas do tipo Bug
+                if (task.type === 'Bug') return false;
+                // Verificar se não tem casos de teste
+                const hasTestCases = (task.testCases?.length || 0) > 0;
+                // Só gerar se realmente não tiver casos de teste
+                return !hasTestCases;
+            });
+
+            // Gerar BDDs automaticamente para tarefas que precisam
+            const bddGenerationResults: Array<{ taskId: string; success: boolean; error?: string }> = [];
+            for (const task of tasksNeedingBDD) {
+                try {
+                    const scenarios = await aiService.generateBddScenarios(task.title, task.description || '');
+                    const taskIndex = updatedTasks.findIndex(t => t.id === task.id);
+                    if (taskIndex !== -1) {
+                        updatedTasks[taskIndex] = {
+                            ...updatedTasks[taskIndex],
+                            bddScenarios: [...(updatedTasks[taskIndex].bddScenarios || []), ...scenarios]
+                        };
+                    }
+                    bddGenerationResults.push({ taskId: task.id, success: true });
+                } catch (error) {
+                    console.error(`Erro ao gerar BDDs para tarefa ${task.id}:`, error);
+                    bddGenerationResults.push({ 
+                        taskId: task.id, 
+                        success: false, 
+                        error: error instanceof Error ? error.message : 'Erro desconhecido' 
+                    });
+                }
+            }
+
+            // Gerar casos de teste automaticamente para tarefas que precisam
+            const testCaseGenerationResults: Array<{ taskId: string; success: boolean; error?: string }> = [];
+            for (const task of tasksNeedingTestCases) {
+                try {
+                    const taskIndex = updatedTasks.findIndex(t => t.id === task.id);
+                    const currentTask = taskIndex !== -1 ? updatedTasks[taskIndex] : task;
+                    
+                    const { strategy, testCases } = await aiService.generateTestCasesForTask(
+                        currentTask.title, 
+                        currentTask.description || '', 
+                        currentTask.bddScenarios, 
+                        'Padrão'
+                    );
+                    
+                    if (taskIndex !== -1) {
+                        // Se já tem casos de teste, adiciona aos existentes; caso contrário, substitui
+                        const existingTestCases = updatedTasks[taskIndex].testCases || [];
+                        updatedTasks[taskIndex] = {
+                            ...updatedTasks[taskIndex],
+                            testStrategy: existingTestCases.length > 0 
+                                ? [...(updatedTasks[taskIndex].testStrategy || []), ...strategy]
+                                : strategy,
+                            testCases: existingTestCases.length > 0 
+                                ? [...existingTestCases, ...testCases]
+                                : testCases
+                        };
+                    }
+                    testCaseGenerationResults.push({ taskId: task.id, success: true });
+                } catch (error) {
+                    console.error(`Erro ao gerar casos de teste para tarefa ${task.id}:`, error);
+                    testCaseGenerationResults.push({ 
+                        taskId: task.id, 
+                        success: false, 
+                        error: error instanceof Error ? error.message : 'Erro desconhecido' 
+                    });
+                }
+            }
+
             const updatedProject = {
                 ...project,
                 tasks: updatedTasks,
@@ -419,7 +502,24 @@ export const TasksView: React.FC<{
             };
 
             onUpdateProject(updatedProject);
-            handleSuccess('Análise geral concluída com sucesso!');
+            
+            // Mensagem de sucesso com resumo
+            const bddSuccessCount = bddGenerationResults.filter(r => r.success).length;
+            const testSuccessCount = testCaseGenerationResults.filter(r => r.success).length;
+            const messages: string[] = [];
+            
+            if (bddSuccessCount > 0) {
+                messages.push(`${bddSuccessCount} cenário(s) BDD gerado(s)`);
+            }
+            if (testSuccessCount > 0) {
+                messages.push(`${testSuccessCount} caso(s) de teste gerado(s)`);
+            }
+            
+            const successMessage = messages.length > 0 
+                ? `Análise concluída! ${messages.join(' e ')}.`
+                : 'Análise geral concluída com sucesso!';
+            
+            handleSuccess(successMessage);
             
             // Navegar para a aba de Análise IA
             if (onNavigateToTab) {
