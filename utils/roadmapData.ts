@@ -1,3 +1,18 @@
+export interface RoadmapMilestone {
+  id: string;
+  title: string;
+  date?: string;
+  completed: boolean;
+  description?: string;
+}
+
+export interface RoadmapRisk {
+  id: string;
+  description: string;
+  severity: 'high' | 'medium' | 'low';
+  mitigation?: string;
+}
+
 export interface RoadmapItem {
   id: string;
   title: string;
@@ -10,6 +25,16 @@ export interface RoadmapItem {
   impact: 'high' | 'medium' | 'low';
   effort: 'high' | 'medium' | 'low';
   tags?: string[];
+  // Novos campos opcionais
+  progress?: number; // 0-100
+  assignedTo?: string;
+  startDate?: string;
+  completedDate?: string;
+  notes?: string;
+  relatedIssues?: string[];
+  acceptanceCriteria?: string[];
+  milestones?: RoadmapMilestone[];
+  risks?: RoadmapRisk[];
 }
 
 export const roadmapItems: RoadmapItem[] = [
@@ -123,7 +148,28 @@ export const roadmapItems: RoadmapItem[] = [
     impact: 'high',
     effort: 'high',
     tags: ['integração', 'jira'],
-    dependencies: ['10']
+    dependencies: ['10'],
+    progress: 45,
+    startDate: '2024-01-15',
+    assignedTo: 'Equipe de Integração',
+    milestones: [
+      { id: 'm9-1', title: 'Autenticação OAuth', completed: true, date: '2024-02-01' },
+      { id: 'm9-2', title: 'Sincronização de Tarefas', completed: true, date: '2024-02-15' },
+      { id: 'm9-3', title: 'Sincronização de Testes', completed: false },
+      { id: 'm9-4', title: 'Testes E2E', completed: false }
+    ],
+    acceptanceCriteria: [
+      'Autenticação OAuth funcional',
+      'Sincronização bidirecional de tarefas',
+      'Sincronização de casos de teste',
+      'Tratamento de conflitos',
+      'Documentação completa'
+    ],
+    risks: [
+      { id: 'r9-1', description: 'Limitações da API do Jira', severity: 'medium', mitigation: 'Implementar retry e cache' },
+      { id: 'r9-2', description: 'Complexidade de sincronização bidirecional', severity: 'high', mitigation: 'Usar timestamps e versionamento' }
+    ],
+    notes: 'Prioridade alta devido à demanda dos usuários. Depende da API REST completa.'
   },
   {
     id: '10',
@@ -135,7 +181,27 @@ export const roadmapItems: RoadmapItem[] = [
     estimatedRelease: 'v2.0',
     impact: 'high',
     effort: 'high',
-    tags: ['api', 'integração']
+    tags: ['api', 'integração'],
+    progress: 60,
+    startDate: '2024-01-01',
+    assignedTo: 'Equipe Backend',
+    milestones: [
+      { id: 'm10-1', title: 'Estrutura Base da API', completed: true, date: '2024-01-15' },
+      { id: 'm10-2', title: 'Autenticação e Autorização', completed: true, date: '2024-01-30' },
+      { id: 'm10-3', title: 'Endpoints de Projetos', completed: true, date: '2024-02-10' },
+      { id: 'm10-4', title: 'Endpoints de Tarefas', completed: false },
+      { id: 'm10-5', title: 'Documentação Swagger', completed: false }
+    ],
+    acceptanceCriteria: [
+      'API RESTful completa',
+      'Autenticação JWT',
+      'Documentação Swagger/OpenAPI',
+      'Rate limiting',
+      'Versionamento de API'
+    ],
+    risks: [
+      { id: 'r10-1', description: 'Performance com muitos projetos', severity: 'medium', mitigation: 'Implementar paginação e cache' }
+    ]
   },
   {
     id: '11',
@@ -147,7 +213,21 @@ export const roadmapItems: RoadmapItem[] = [
     estimatedRelease: 'v1.8',
     impact: 'high',
     effort: 'medium',
-    tags: ['testes', 'qualidade']
+    tags: ['testes', 'qualidade'],
+    progress: 75,
+    startDate: '2024-01-20',
+    assignedTo: 'Equipe QA',
+    milestones: [
+      { id: 'm11-1', title: 'Setup Playwright', completed: true, date: '2024-01-25' },
+      { id: 'm11-2', title: 'Testes de Fluxo Principal', completed: true, date: '2024-02-05' },
+      { id: 'm11-3', title: 'CI/CD Integration', completed: false }
+    ],
+    acceptanceCriteria: [
+      'Cobertura de fluxos principais',
+      'Integração com CI/CD',
+      'Relatórios de cobertura',
+      'Testes em múltiplos browsers'
+    ]
   },
 
   // PLANEJADAS
@@ -162,7 +242,25 @@ export const roadmapItems: RoadmapItem[] = [
     impact: 'high',
     effort: 'high',
     tags: ['colaboração', 'tempo-real'],
-    dependencies: ['10']
+    dependencies: ['10'],
+    startDate: '2024-03-01',
+    milestones: [
+      { id: 'm12-1', title: 'Setup WebSocket Server', completed: false },
+      { id: 'm12-2', title: 'Sincronização de Tarefas', completed: false },
+      { id: 'm12-3', title: 'Presença de Usuários', completed: false },
+      { id: 'm12-4', title: 'Resolução de Conflitos', completed: false }
+    ],
+    acceptanceCriteria: [
+      'Sincronização em tempo real funcional',
+      'Indicadores de presença',
+      'Resolução automática de conflitos',
+      'Performance adequada com 50+ usuários simultâneos'
+    ],
+    risks: [
+      { id: 'r12-1', description: 'Complexidade de sincronização', severity: 'high', mitigation: 'Usar CRDT ou operational transforms' },
+      { id: 'r12-2', description: 'Escalabilidade do WebSocket', severity: 'medium', mitigation: 'Implementar clustering' }
+    ],
+    notes: 'Depende criticamente da API REST. Será uma funcionalidade diferencial.'
   },
   {
     id: '13',
