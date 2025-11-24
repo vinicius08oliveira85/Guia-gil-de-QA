@@ -831,32 +831,24 @@ export const JiraTaskItem: React.FC<{
                                 </span>
                             ))}
                             {task.tags.length > 4 && (
-                                <span className="task-card-compact_tag bg-white/5 text-text-secondary">+{task.tags.length - 4}</span>
+                                <span className="task-card-compact_tag tag-chip-muted">+{task.tags.length - 4}</span>
                             )}
                         </div>
                     )}
                     {isDetailsOpen && (
-                        <div className="mt-3 rounded-2xl border border-white/10 bg-white/5 p-3">
+                        <div className="mt-3 rounded-2xl glass-surface p-3">
                             <div className="flex flex-wrap gap-2">
                                 {sectionTabs.map((tab) => {
                                     const isActive = tab.id === activeSection;
                                     return (
                                         <button
                                             key={tab.id}
-                                            className={`rounded-full border px-3 py-1.5 text-sm font-semibold transition-colors ${
-                                                isActive
-                                                    ? 'border-accent bg-accent/20 text-text-primary'
-                                                    : 'border-white/10 bg-white/5 text-text-secondary hover:text-text-primary'
-                                            }`}
+                                            className={`mini-tab ${isActive ? 'mini-tab--active' : ''}`}
                                             onClick={() => setActiveSection(tab.id)}
                                         >
                                             <span>{tab.label}</span>
                                             {typeof tab.badge === 'number' && tab.badge > 0 && (
-                                                <span
-                                                    className={`ml-2 inline-flex h-5 min-w-[1.75rem] items-center justify-center rounded-full text-xs ${
-                                                        isActive ? 'bg-accent text-white' : 'bg-white/10 text-text-secondary'
-                                                    }`}
-                                                >
+                                                <span className="mini-tab__badge">
                                                     {tab.badge}
                                                 </span>
                                             )}

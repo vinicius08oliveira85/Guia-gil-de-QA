@@ -72,9 +72,8 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
         setIsPrinting(true);
     };
     
-    const tabStyle = "px-4 py-2 text-sm font-semibold rounded-md transition-colors whitespace-nowrap";
-    const activeTabStyle = "bg-accent/20 text-accent-light";
-    const inactiveTabStyle = "text-text-secondary hover:text-text-primary";
+    const tabBaseClass = "tab-pill whitespace-nowrap";
+    const activeTabStyle = "tab-pill--active";
     
     const tabs: Array<{ id: string; label: string; 'data-onboarding'?: string }> = [
         { id: 'trail', label: 'Trilha do Projeto' },
@@ -129,7 +128,7 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                             <button 
                                 key={tab.id}
                                 onClick={() => handleTabClick(tab.id)} 
-                                className={`${tabStyle} ${activeTab === tab.id ? activeTabStyle : inactiveTabStyle}`}
+                                className={`${tabBaseClass} ${activeTab === tab.id ? activeTabStyle : ''}`}
                                 data-onboarding={tab['data-onboarding']}
                             >
                                 {tab.label}
@@ -146,7 +145,7 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                                 <button 
                                     key={tab.id}
                                     onClick={() => handleTabClick(tab.id)} 
-                                    className={`${tabStyle} ${activeTab === tab.id ? activeTabStyle : inactiveTabStyle} flex-shrink-0 snap-center`}
+                                    className={`${tabBaseClass} ${activeTab === tab.id ? activeTabStyle : ''} flex-shrink-0 snap-center`}
                                     data-onboarding={tab['data-onboarding']}
                                 >
                                     {tab.label}

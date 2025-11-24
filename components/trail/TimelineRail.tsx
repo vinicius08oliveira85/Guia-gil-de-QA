@@ -16,10 +16,16 @@ interface TimelineRailProps {
     analysisOutdated: boolean;
 }
 
-const statusStyles: Record<PhaseDisplayStatus, string> = {
-    completed: 'border-emerald-400/40 bg-emerald-400/10 text-emerald-100',
-    current: 'border-accent/50 bg-accent/10 text-accent-light',
-    upcoming: 'glass-surface glass-surface--tint text-text-secondary border-surface-border'
+const phaseButtonStyles: Record<PhaseDisplayStatus, string> = {
+    completed: 'phase-pill phase-pill--success',
+    current: 'phase-pill phase-pill--current',
+    upcoming: 'phase-pill phase-pill--neutral'
+};
+
+const statusBadgeStyles: Record<PhaseDisplayStatus, string> = {
+    completed: 'px-3 py-1 text-xs font-semibold rounded-full border border-emerald-300 text-emerald-700 bg-emerald-100',
+    current: 'px-3 py-1 text-xs font-semibold rounded-full border border-accent/40 text-accent bg-accent/10',
+    upcoming: 'px-3 py-1 text-xs font-semibold rounded-full border border-surface-border text-text-secondary bg-surface-contrast'
 };
 
 export const TimelineRail: React.FC<TimelineRailProps> = ({
@@ -130,8 +136,7 @@ export const TimelineRail: React.FC<TimelineRailProps> = ({
                             <button
                                 key={phase.name}
                                 className={`
-                                    min-w-[180px] rounded-2xl border px-4 py-3 text-left transition-all
-                                    ${statusStyles[status]}
+                                    text-left ${phaseButtonStyles[status]}
                                 `}
                                 onClick={() => setExpandedPhase(prev => prev === phase.name ? null : phase.name)}
                             >
@@ -163,7 +168,7 @@ export const TimelineRail: React.FC<TimelineRailProps> = ({
                                                 {details.phase}
                                             </h4>
                                         </div>
-                                        <span className={`${statusStyles[status]} inline-flex items-center justify-center rounded-full border px-3 py-1 text-xs`}>
+                                        <span className={statusBadgeStyles[status]}>
                                             {status === 'completed' ? '✅ Concluído' : status === 'current' ? '🔄 Em execução' : '⏳ Planejado'}
                                         </span>
                                     </div>
