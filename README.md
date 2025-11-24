@@ -22,6 +22,12 @@ Aplicativo completo para gestão de projetos de QA seguindo metodologias ágeis 
 - IndexedDB (armazenamento local)
 - Tailwind CSS
 
+## Identidade Visual
+
+- O arquivo vetorial oficial `public/qa-testing-logo.svg` representa o Futibou Quality Lab, com escudo de QA, gráfico pulsante e check de aprovação.
+- Use diretamente no front-end com `<img src="/qa-testing-logo.svg" alt="Logo Futibou Quality Lab" />` ou importando via componentes React; o `Header` já referencia esse ativo.
+- O SVG é responsivo e pode ser aberto em qualquer editor vetorial para ajustes de cores, mantendo o gradiente principal `#1B2250 → #2E3C8C` e os realces de métricas em verde/azul.
+
 ## Pré-requisitos
 
 - Node.js (versão 18 ou superior)
