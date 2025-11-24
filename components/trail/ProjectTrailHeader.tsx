@@ -68,37 +68,34 @@ export const ProjectTrailHeader: React.FC<ProjectTrailHeaderProps> = ({
                     </p>
                 </div>
 
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
-                    <label className="text-xs font-semibold uppercase tracking-[0.2em] text-text-secondary">
-                        Versão do projeto
-                        <select
-                            className={`
-                                ${windows12Styles.input}
-                                mt-2 w-full sm:w-auto
-                            `}
-                            value={selectedVersion}
-                            onChange={(event) => onVersionChange(event.target.value)}
-                        >
-                            {versionOptions.map(option => (
-                                <option key={option} value={option}>
-                                    {option}
-                                </option>
-                            ))}
-                        </select>
-                    </label>
-
-                    <button
-                        onClick={onAskAI}
-                        disabled={isAiLoading}
-                        className={`
-                            ${windows12Styles.buttonPrimary}
-                            flex items-center justify-center gap-2
-                            whitespace-nowrap
-                        `}
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <label className="flex flex-col text-xs font-semibold uppercase tracking-[0.2em] text-text-secondary w-full sm:w-auto">
+                    Versão do projeto
+                    <select
+                        className="input-select version-select mt-2 w-full sm:w-auto"
+                        value={selectedVersion}
+                        onChange={(event) => onVersionChange(event.target.value)}
                     >
-                        {isAiLoading ? <Spinner small /> : '🧠'}
-                        {analysisOutdated ? 'Atualizar Recomendações' : 'O que posso fazer agora?'}
-                    </button>
+                        {versionOptions.map(option => (
+                            <option key={option} value={option}>
+                                {option}
+                            </option>
+                        ))}
+                    </select>
+                </label>
+
+                <button
+                    onClick={onAskAI}
+                    disabled={isAiLoading}
+                    className={`
+                        ${windows12Styles.buttonPrimary}
+                        flex items-center justify-center gap-2
+                        whitespace-nowrap h-12 px-6
+                    `}
+                >
+                    {isAiLoading ? <Spinner small /> : '🧠'}
+                    {analysisOutdated ? 'Atualizar Recomendações' : 'O que posso fazer agora?'}
+                </button>
                 </div>
             </div>
 

@@ -248,6 +248,29 @@ select {
   font-size: 1rem;
 }
 
+.input-select {
+  border-radius: var(--radius-lg);
+  padding: 0.55rem 1.1rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  min-width: 150px;
+  background: var(--surface-color);
+  border: 1px solid var(--surface-border);
+  color: var(--text-primary);
+  box-shadow: 0 8px 24px rgba(5, 11, 30, 0.25);
+}
+
+.light .input-select {
+  background: rgba(255, 255, 255, 0.98);
+  border-color: rgba(15, 23, 42, 0.15);
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.15);
+}
+
+.input-select:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px rgba(14, 109, 253, 0.25);
+}
+
 input::placeholder,
 textarea::placeholder {
   color: var(--text-tertiary);
