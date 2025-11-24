@@ -5,7 +5,7 @@ import { normalizeExecutedStrategy } from './testCaseMigration';
  * Gera um registro resumido dos testes realizados para uma Task
  * Formato texto simples, fácil de copiar e colar em outras plataformas
  */
-export function generateTestReport(task: JiraTask): string {
+export function generateTestReport(task: JiraTask, generatedAt: Date = new Date()): string {
   const lines: string[] = [];
   
   // Cabeçalho
@@ -82,10 +82,8 @@ export function generateTestReport(task: JiraTask): string {
   lines.push(`Reprovados: ${failedTests}`);
   lines.push(`Não Executados: ${notRunTests}`);
   
-  if (task.completedAt) {
-    const completedDate = new Date(task.completedAt);
-    lines.push(`Concluído em: ${completedDate.toLocaleDateString('pt-BR')} às ${completedDate.toLocaleTimeString('pt-BR')}`);
-  }
+  const completedDate = generatedAt;
+  lines.push(`Concluído em: ${completedDate.toLocaleDateString('pt-BR')} às ${completedDate.toLocaleTimeString('pt-BR')}`);
   
   return lines.join('\n');
 }

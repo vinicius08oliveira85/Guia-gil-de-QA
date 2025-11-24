@@ -20,7 +20,8 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({
 
   useEffect(() => {
     if (isOpen && task) {
-      const report = generateTestReport(task);
+      const generationDate = new Date();
+      const report = generateTestReport(task, generationDate);
       setReportText(report);
       setCopied(false);
     }

@@ -7,6 +7,40 @@ import { FilterPanel } from '../common/FilterPanel';
 import { TestCaseTemplateSelector } from './TestCaseTemplateSelector';
 import { TaskForm } from './TaskForm';
 import { TestCaseEditorModal } from './TestCaseEditorModal';
+
+const TASK_ID_REGEX = /^([A-Z]+)-(\d+)/i;
+
+const parseTaskId = (taskId: string) => {
+    if (!taskId) {
+        return { prefix: '', number: Number.MAX_SAFE_INTEGER };
+    }
+    const match = taskId.match(TASK_ID_REGEX);
+    if (match) {
+        return {
+            prefix: match[1].toUpperCase(),
+            number: parseInt(match[2], 10)
+        };
+    }
+    return {
+        prefix: taskId.toUpperCase(),
+        number: Number.MAX_SAFE_INTEGER
+    };
+};
+
+const compareTasksById = (a: JiraTask, b: JiraTask) => {
+    const parsedA = parseTaskId(a.id);
+    const parsedB = parseTaskId(b.id);
+
+    if (parsedA.prefix !== parsedB.prefix) {
+        return parsedA.prefix.localeCompare(parsedB.prefix);
+    }
+
+    if (parsedA.number !== parsedB.number) {
+        return parsedA.number - parsedB.number;
+    }
+
+    return a.title.localeCompare(b.title);
+};
 import { JiraTaskItem, TaskWithChildren } from './JiraTaskItem';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import { useFilters, FilterOptions } from '../../hooks/useFilters';
@@ -815,7 +849,7 @@ export const TasksView: React.FC<{
     }, [filters]);
 
     const taskTree = useMemo(() => {
-        const tasks = [...filteredTasks];
+        const tasks = [...filteredTasks].sort(compareTasksById);
         const taskMap = new Map(tasks.map(t => [t.id, { ...t, children: [] as TaskWithChildren[] }]));
         const tree: TaskWithChildren[] = [];
 
@@ -826,6 +860,15 @@ export const TasksView: React.FC<{
                 tree.push(task);
             }
         }
+        const sortChildrenRecursive = (nodes: TaskWithChildren[]) => {
+            nodes.sort(compareTasksById);
+            nodes.forEach(node => {
+                if (node.children.length > 0) {
+                    sortChildrenRecursive(node.children);
+                }
+            });
+        };
+        sortChildrenRecursive(tree);
         return tree;
     }, [filteredTasks]);
 
