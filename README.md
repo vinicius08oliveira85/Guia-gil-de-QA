@@ -24,9 +24,9 @@ Aplicativo completo para gestão de projetos de QA seguindo metodologias ágeis 
 
 ## Identidade Visual
 
-- O arquivo vetorial oficial `public/qa-testing-logo.svg` representa o Futibou Quality Lab, com escudo de QA, gráfico pulsante e check de aprovação.
-- Use diretamente no front-end com `<img src="/qa-testing-logo.svg" alt="Logo Futibou Quality Lab" />` ou importando via componentes React; o `Header` já referencia esse ativo.
-- O SVG é responsivo e pode ser aberto em qualquer editor vetorial para ajustes de cores, mantendo o gradiente principal `#1B2250 → #2E3C8C` e os realces de métricas em verde/azul.
+- O arquivo vetorial oficial `public/qa-testing-logo.svg` representa o QA Agile Guide com um painel de observabilidade, circuitos de validação e selo de aprovação focado em QA de software.
+- Use diretamente no front-end com `<img src="/qa-testing-logo.svg" alt="Logo QA Agile Guide" />` ou importe via componentes React; o `Header` já referencia esse ativo atualizado.
+- O SVG é responsivo e permite ajustes mantendo o gradiente principal `#111834 → #2C3FAF` e os realces neon `#50E3C2` e `#58C8FF` que simbolizam automação e métricas.
 
 ## Pré-requisitos
 

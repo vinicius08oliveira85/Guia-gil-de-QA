@@ -27,20 +27,20 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported }) => {
                         <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-[18px] bg-white/10 border border-white/30 shadow-[0_18px_45px_rgba(6,9,34,0.45)] overflow-hidden flex items-center justify-center flex-shrink-0 backdrop-blur-md">
                             <img
                                 src="/qa-testing-logo.svg"
-                                alt="Logo Futibou Quality Lab"
+                                alt="Logo QA Agile Guide"
                                 className="h-full w-full object-cover"
                                 loading="lazy"
                                 decoding="async"
                                 draggable={false}
                             />
-                            <span className="sr-only">Futibou Quality Lab</span>
+                            <span className="sr-only">QA Agile Guide</span>
                         </div>
                         <div className="min-w-0">
                             <p className="text-[0.6rem] uppercase tracking-[0.3em] text-text-tertiary mb-0.5">
-                                Futibou Analytics • QA Testing
+                                Laboratório de QA em Software
                             </p>
                             <h1 className="text-base sm:text-xl font-semibold text-text-primary line-clamp-2 text-balance">
-                                Futibou Quality Lab
+                                QA Agile Guide
                             </h1>
                         </div>
                     </div>
