@@ -826,7 +826,7 @@ export const JiraTaskItem: React.FC<{
                     {task.tags && task.tags.length > 0 && (
                         <div className="flex flex-wrap gap-1">
                             {task.tags.slice(0, 4).map((tag) => (
-                                <span key={tag} className="task-card-compact_tag" style={{ borderColor: getTagColor(tag) }}>
+                                <span key={tag} className={`task-card-compact_tag chip--accent`} style={{ borderColor: getTagColor(tag) }}>
                                     {tag}
                                 </span>
                             ))}

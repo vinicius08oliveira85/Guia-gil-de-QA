@@ -197,8 +197,8 @@ export const TestCaseItem: React.FC<{
             <div className="mt-4 flex items-center justify-between">
                 <span className={`px-3 py-1 text-xs font-semibold text-white rounded-full ${statusColor[testCase.status]}`}>{testCase.status === 'Not Run' ? 'Não Executado' : testCase.status === 'Passed' ? 'Aprovado' : 'Reprovado'}</span>
                 <div className="flex gap-2">
-                    <button onClick={() => onStatusChange('Passed')} className="btn !text-sm !py-1 bg-green-500/20 text-green-300 hover:bg-green-500/40">Aprovar</button>
-                    <button onClick={() => onStatusChange('Failed')} className="btn !text-sm !py-1 bg-red-500/20 text-red-300 hover:bg-red-500/40">Reprovar</button>
+                    <button onClick={() => onStatusChange('Passed')} className="btn btn-approve text-sm">Aprovar</button>
+                    <button onClick={() => onStatusChange('Failed')} className="btn btn-reject text-sm">Reprovar</button>
                 </div>
             </div>
         </div>

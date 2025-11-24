@@ -17,25 +17,23 @@ export const windows12Styles = {
    * Classe para botões primários Windows 12
    */
   buttonPrimary: `
-    mica rounded-lg px-4 py-2
-    bg-accent text-white
-    border border-accent/50
-    shadow-md shadow-accent/20
-    hover:bg-accent-dark hover:shadow-lg hover:shadow-accent/30
-    active:scale-95
-    transition-all duration-200
-    disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none
+    btn-pill btn-icon
+    bg-gradient-to-r from-accent to-emerald-500 text-white
+    border border-accent/40
+    shadow-lg shadow-accent/30
+    hover:shadow-xl hover:-translate-y-0.5
+    active:translate-y-0
+    disabled:opacity-60 disabled:cursor-not-allowed
   `,
   
   /**
    * Classe para botões secundários Windows 12
    */
   buttonSecondary: `
-    mica rounded-lg px-4 py-2
+    btn-pill btn-icon
     bg-surface-hover text-text-primary
     border border-surface-border
-    hover:bg-surface hover:border-accent/30
-    active:scale-95
+    hover:bg-surface hover:shadow-lg hover:-translate-y-0.5
     transition-all duration-200
   `,
   

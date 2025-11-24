@@ -1,3 +1,89 @@
+.btn,
+.btn-pill {
+  border-radius: 999px;
+  padding: 0.5rem 1.25rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  transition: all var(--transition-fast);
+  border: 1px solid transparent;
+}
+
+.btn {
+  border-radius: var(--radius-md);
+}
+
+.btn-approve {
+  background: linear-gradient(135deg, #34d399, #10b981);
+  color: #062c22;
+  border-color: rgba(16, 185, 129, 0.4);
+  box-shadow: 0 10px 30px rgba(16, 185, 129, 0.35);
+}
+
+.btn-approve:hover {
+  box-shadow: 0 14px 36px rgba(16, 185, 129, 0.45);
+  transform: translateY(-1px);
+}
+
+.btn-reject {
+  background: linear-gradient(135deg, #f87171, #ef4444);
+  color: #fff5f5;
+  border-color: rgba(239, 68, 68, 0.45);
+  box-shadow: 0 10px 30px rgba(239, 68, 68, 0.3);
+}
+
+.btn-reject:hover {
+  box-shadow: 0 14px 36px rgba(239, 68, 68, 0.45);
+  transform: translateY(-1px);
+}
+
+.btn-flat {
+  background: transparent;
+  border-color: transparent;
+  color: var(--text-primary);
+}
+
+.btn-flat:hover {
+  color: var(--accent-color);
+}
+
+.btn-icon {
+  padding-left: 1.2rem;
+  padding-right: 1.4rem;
+}
+
+.btn-icon svg,
+.btn-icon span {
+  display: inline-flex;
+  align-items: center;
+}
+.chip--accent {
+  background: linear-gradient(120deg, #0E6DFD, #2DD4BF);
+  border-color: rgba(14, 109, 253, 0.4);
+  color: #f8fbff;
+  box-shadow: 0 12px 28px rgba(14, 109, 253, 0.25);
+}
+
+.light .chip--accent {
+  background: linear-gradient(120deg, #0E6DFD, #2DD4BF);
+  border-color: rgba(14, 109, 253, 0.35);
+  color: #ffffff;
+}
+
+.chip--neutral {
+  background: rgba(15, 23, 42, 0.15);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+}
+
+.light .chip--neutral {
+  background: rgba(15, 23, 42, 0.08);
+  border-color: rgba(15, 23, 42, 0.15);
+  color: #0f172a;
+}
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -619,20 +705,22 @@ select option:focus {
   font-weight: 600;
   border-radius: 999px;
   border: 1px solid var(--surface-border);
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(14, 109, 253, 0.18);
+  color: #f8fbff;
   text-transform: none;
   letter-spacing: 0.01em;
   gap: 0.3rem;
   line-height: 1;
+  box-shadow: 0 8px 20px rgba(14, 109, 253, 0.18);
 }
 
 .light .chip,
 .light .status-chip,
 .light .badge-chip {
-  border-color: rgba(15, 23, 42, 0.12);
-  background: rgba(14, 109, 253, 0.12);
-  color: var(--text-primary);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  border-color: rgba(15, 23, 42, 0.1);
+  background: rgba(15, 23, 42, 0.08);
+  color: #0f172a;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12);
 }
 
 .chip--muted {
