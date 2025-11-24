@@ -5,13 +5,19 @@ import { windows12Styles } from '../../utils/windows12Styles';
 interface GeneralIAAnalysisButtonProps {
   onAnalyze: () => Promise<void>;
   isAnalyzing?: boolean;
+  progress?: {
+    current: number;
+    total: number;
+    message: string;
+  } | null;
 }
 
 export const GeneralIAAnalysisButton: React.FC<GeneralIAAnalysisButtonProps> = ({ 
   onAnalyze, 
-  isAnalyzing = false 
+  isAnalyzing = false,
+  progress = null
 }) => {
-  const [progress, setProgress] = useState(0);
+  const [simulatedProgress, setSimulatedProgress] = useState(0);
   const [pulsePhase, setPulsePhase] = useState(0);
 
   // Animação de pulso contínua durante análise
@@ -31,24 +37,28 @@ export const GeneralIAAnalysisButton: React.FC<GeneralIAAnalysisButtonProps> = (
   const handleClick = async () => {
     if (isAnalyzing) return;
     
-    // Simular progresso durante a análise com feedback mais suave
+    // Simular progresso durante a análise com feedback mais suave (só se não houver progresso real)
     const progressInterval = setInterval(() => {
-      setProgress(prev => {
-        if (prev >= 95) {
-          clearInterval(progressInterval);
-          return prev;
-        }
-        // Progresso mais suave e realista
-        const increment = Math.random() * 8 + 2;
-        return Math.min(prev + increment, 95);
-      });
+      if (!progress) {
+        setSimulatedProgress(prev => {
+          if (prev >= 95) {
+            clearInterval(progressInterval);
+            return prev;
+          }
+          // Progresso mais suave e realista
+          const increment = Math.random() * 8 + 2;
+          return Math.min(prev + increment, 95);
+        });
+      }
     }, 400);
 
     try {
       await onAnalyze();
-      // Completar progresso ao finalizar
-      setProgress(100);
-      setTimeout(() => setProgress(0), 300);
+      // Completar progresso ao finalizar (só se não houver progresso real)
+      if (!progress) {
+        setSimulatedProgress(100);
+        setTimeout(() => setSimulatedProgress(0), 300);
+      }
     } finally {
       clearInterval(progressInterval);
     }
@@ -131,7 +141,7 @@ export const GeneralIAAnalysisButton: React.FC<GeneralIAAnalysisButtonProps> = (
           </span>
           {isAnalyzing && (
             <span className="text-xs text-text-secondary mt-0.5 animate-pulse">
-              Processando tarefas e testes...
+              {progress?.message || 'Processando tarefas e testes...'}
             </span>
           )}
         </div>
@@ -147,7 +157,11 @@ export const GeneralIAAnalysisButton: React.FC<GeneralIAAnalysisButtonProps> = (
               ${windows12Styles.transition.slow}
               relative
             `}
-            style={{ width: `${progress}%` }}
+            style={{ 
+              width: progress && progress.total > 0 
+                ? `${(progress.current / progress.total) * 100}%` 
+                : `${simulatedProgress}%` 
+            }}
           >
             {/* Efeito shimmer na barra de progresso */}
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-pulse" />

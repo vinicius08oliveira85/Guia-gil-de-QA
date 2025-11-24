@@ -68,6 +68,24 @@ export const TasksView: React.FC<{
         createBug: true,
     });
     const [isRunningGeneralAnalysis, setIsRunningGeneralAnalysis] = useState(false);
+    const [analysisProgress, setAnalysisProgress] = useState<{
+        current: number;
+        total: number;
+        message: string;
+    } | null>(null);
+
+    // Função helper para adicionar timeout às chamadas de IA
+    const withTimeout = <T,>(promise: Promise<T>, timeoutMs: number = 60000): Promise<T> => {
+        return Promise.race([
+            promise,
+            new Promise<T>((_, reject) => 
+                setTimeout(() => reject(new Error(`Timeout: operação excedeu ${timeoutMs / 1000} segundos`)), timeoutMs)
+            )
+        ]);
+    };
+
+    // Função helper para delay
+    const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
     const handleTaskStatusChange = useCallback((taskId: string, status: 'To Do' | 'In Progress' | 'Done') => {
         const task = project.tasks.find(t => t.id === taskId);
@@ -395,8 +413,12 @@ export const TasksView: React.FC<{
 
     const handleGeneralIAAnalysis = useCallback(async () => {
         setIsRunningGeneralAnalysis(true);
+        setAnalysisProgress({ current: 0, total: 0, message: 'Iniciando análise...' });
+        
         try {
-            const analysis = await generateGeneralIAAnalysis(project);
+            // Passo 1: Gerar análise geral
+            setAnalysisProgress({ current: 1, total: 3, message: 'Gerando análise geral do projeto...' });
+            const analysis = await withTimeout(generateGeneralIAAnalysis(project), 60000);
             const aiService = getAIService();
             
             // Atualizar análises individuais nas tarefas
@@ -417,81 +439,135 @@ export const TasksView: React.FC<{
 
             // Identificar tarefas que precisam de BDDs e casos de teste
             const tasksNeedingBDD = updatedTasks.filter(task => {
-                // Ignorar tarefas do tipo Bug
                 if (task.type === 'Bug') return false;
-                // Verificar se não tem BDDs
                 const hasBDD = (task.bddScenarios?.length || 0) > 0;
-                // Só gerar se realmente não tiver BDDs
                 return !hasBDD;
             });
 
             const tasksNeedingTestCases = updatedTasks.filter(task => {
-                // Ignorar tarefas do tipo Bug
                 if (task.type === 'Bug') return false;
-                // Verificar se não tem casos de teste
                 const hasTestCases = (task.testCases?.length || 0) > 0;
-                // Só gerar se realmente não tiver casos de teste
                 return !hasTestCases;
             });
 
-            // Gerar BDDs automaticamente para tarefas que precisam
+            // Limitar processamento (máximo 10 tarefas por tipo)
+            const MAX_TASKS_TO_PROCESS = 10;
+            const limitedBDDTasks = tasksNeedingBDD.slice(0, MAX_TASKS_TO_PROCESS);
+            const limitedTestTasks = tasksNeedingTestCases.slice(0, MAX_TASKS_TO_PROCESS);
+            
+            const totalTasksToProcess = limitedBDDTasks.length + limitedTestTasks.length;
+            let processedCount = 0;
+
+            // Passo 2: Gerar BDDs automaticamente
             const bddGenerationResults: Array<{ taskId: string; success: boolean; error?: string }> = [];
-            for (const task of tasksNeedingBDD) {
-                try {
-                    const scenarios = await aiService.generateBddScenarios(task.title, task.description || '');
-                    const taskIndex = updatedTasks.findIndex(t => t.id === task.id);
-                    if (taskIndex !== -1) {
-                        updatedTasks[taskIndex] = {
-                            ...updatedTasks[taskIndex],
-                            bddScenarios: [...(updatedTasks[taskIndex].bddScenarios || []), ...scenarios]
-                        };
-                    }
-                    bddGenerationResults.push({ taskId: task.id, success: true });
-                } catch (error) {
-                    console.error(`Erro ao gerar BDDs para tarefa ${task.id}:`, error);
-                    bddGenerationResults.push({ 
-                        taskId: task.id, 
-                        success: false, 
-                        error: error instanceof Error ? error.message : 'Erro desconhecido' 
+            if (limitedBDDTasks.length > 0) {
+                setAnalysisProgress({ 
+                    current: 2, 
+                    total: 3, 
+                    message: `Gerando BDDs (0/${limitedBDDTasks.length})...` 
+                });
+
+                for (let i = 0; i < limitedBDDTasks.length; i++) {
+                    const task = limitedBDDTasks[i];
+                    processedCount++;
+                    
+                    setAnalysisProgress({ 
+                        current: 2, 
+                        total: 3, 
+                        message: `Gerando BDDs para "${task.title.substring(0, 30)}..." (${i + 1}/${limitedBDDTasks.length})` 
                     });
+
+                    try {
+                        const scenarios = await withTimeout(
+                            aiService.generateBddScenarios(task.title, task.description || ''),
+                            60000
+                        );
+                        
+                        const taskIndex = updatedTasks.findIndex(t => t.id === task.id);
+                        if (taskIndex !== -1) {
+                            updatedTasks[taskIndex] = {
+                                ...updatedTasks[taskIndex],
+                                bddScenarios: [...(updatedTasks[taskIndex].bddScenarios || []), ...scenarios]
+                            };
+                        }
+                        bddGenerationResults.push({ taskId: task.id, success: true });
+                    } catch (error) {
+                        const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+                        console.error(`Erro ao gerar BDDs para tarefa ${task.id}:`, error);
+                        bddGenerationResults.push({ 
+                            taskId: task.id, 
+                            success: false, 
+                            error: errorMessage.includes('Timeout') ? 'Timeout: operação demorou mais de 60 segundos' : errorMessage
+                        });
+                    }
+                    
+                    // Delay entre processamentos para evitar sobrecarga
+                    if (i < limitedBDDTasks.length - 1) {
+                        await delay(300);
+                    }
                 }
             }
 
-            // Gerar casos de teste automaticamente para tarefas que precisam
+            // Passo 3: Gerar casos de teste automaticamente
             const testCaseGenerationResults: Array<{ taskId: string; success: boolean; error?: string }> = [];
-            for (const task of tasksNeedingTestCases) {
-                try {
-                    const taskIndex = updatedTasks.findIndex(t => t.id === task.id);
-                    const currentTask = taskIndex !== -1 ? updatedTasks[taskIndex] : task;
+            if (limitedTestTasks.length > 0) {
+                setAnalysisProgress({ 
+                    current: 3, 
+                    total: 3, 
+                    message: `Gerando casos de teste (0/${limitedTestTasks.length})...` 
+                });
+
+                for (let i = 0; i < limitedTestTasks.length; i++) {
+                    const task = limitedTestTasks[i];
+                    processedCount++;
                     
-                    const { strategy, testCases } = await aiService.generateTestCasesForTask(
-                        currentTask.title, 
-                        currentTask.description || '', 
-                        currentTask.bddScenarios, 
-                        'Padrão'
-                    );
-                    
-                    if (taskIndex !== -1) {
-                        // Se já tem casos de teste, adiciona aos existentes; caso contrário, substitui
-                        const existingTestCases = updatedTasks[taskIndex].testCases || [];
-                        updatedTasks[taskIndex] = {
-                            ...updatedTasks[taskIndex],
-                            testStrategy: existingTestCases.length > 0 
-                                ? [...(updatedTasks[taskIndex].testStrategy || []), ...strategy]
-                                : strategy,
-                            testCases: existingTestCases.length > 0 
-                                ? [...existingTestCases, ...testCases]
-                                : testCases
-                        };
-                    }
-                    testCaseGenerationResults.push({ taskId: task.id, success: true });
-                } catch (error) {
-                    console.error(`Erro ao gerar casos de teste para tarefa ${task.id}:`, error);
-                    testCaseGenerationResults.push({ 
-                        taskId: task.id, 
-                        success: false, 
-                        error: error instanceof Error ? error.message : 'Erro desconhecido' 
+                    setAnalysisProgress({ 
+                        current: 3, 
+                        total: 3, 
+                        message: `Gerando testes para "${task.title.substring(0, 30)}..." (${i + 1}/${limitedTestTasks.length})` 
                     });
+
+                    try {
+                        const taskIndex = updatedTasks.findIndex(t => t.id === task.id);
+                        const currentTask = taskIndex !== -1 ? updatedTasks[taskIndex] : task;
+                        
+                        const { strategy, testCases } = await withTimeout(
+                            aiService.generateTestCasesForTask(
+                                currentTask.title, 
+                                currentTask.description || '', 
+                                currentTask.bddScenarios, 
+                                'Padrão'
+                            ),
+                            60000
+                        );
+                        
+                        if (taskIndex !== -1) {
+                            const existingTestCases = updatedTasks[taskIndex].testCases || [];
+                            updatedTasks[taskIndex] = {
+                                ...updatedTasks[taskIndex],
+                                testStrategy: existingTestCases.length > 0 
+                                    ? [...(updatedTasks[taskIndex].testStrategy || []), ...strategy]
+                                    : strategy,
+                                testCases: existingTestCases.length > 0 
+                                    ? [...existingTestCases, ...testCases]
+                                    : testCases
+                            };
+                        }
+                        testCaseGenerationResults.push({ taskId: task.id, success: true });
+                    } catch (error) {
+                        const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+                        console.error(`Erro ao gerar casos de teste para tarefa ${task.id}:`, error);
+                        testCaseGenerationResults.push({ 
+                            taskId: task.id, 
+                            success: false, 
+                            error: errorMessage.includes('Timeout') ? 'Timeout: operação demorou mais de 60 segundos' : errorMessage
+                        });
+                    }
+                    
+                    // Delay entre processamentos
+                    if (i < limitedTestTasks.length - 1) {
+                        await delay(300);
+                    }
                 }
             }
 
@@ -502,22 +578,44 @@ export const TasksView: React.FC<{
             };
 
             onUpdateProject(updatedProject);
+            setAnalysisProgress(null);
             
-            // Mensagem de sucesso com resumo
+            // Mensagem de sucesso com resumo detalhado
             const bddSuccessCount = bddGenerationResults.filter(r => r.success).length;
+            const bddFailCount = bddGenerationResults.filter(r => !r.success).length;
             const testSuccessCount = testCaseGenerationResults.filter(r => r.success).length;
+            const testFailCount = testCaseGenerationResults.filter(r => !r.success).length;
+            
             const messages: string[] = [];
+            const warnings: string[] = [];
             
             if (bddSuccessCount > 0) {
                 messages.push(`${bddSuccessCount} cenário(s) BDD gerado(s)`);
             }
+            if (bddFailCount > 0) {
+                warnings.push(`${bddFailCount} falha(s) ao gerar BDDs`);
+            }
             if (testSuccessCount > 0) {
                 messages.push(`${testSuccessCount} caso(s) de teste gerado(s)`);
             }
+            if (testFailCount > 0) {
+                warnings.push(`${testFailCount} falha(s) ao gerar testes`);
+            }
             
-            const successMessage = messages.length > 0 
+            if (tasksNeedingBDD.length > MAX_TASKS_TO_PROCESS) {
+                warnings.push(`${tasksNeedingBDD.length - MAX_TASKS_TO_PROCESS} tarefa(s) com BDD pendente (limite de ${MAX_TASKS_TO_PROCESS} por execução)`);
+            }
+            if (tasksNeedingTestCases.length > MAX_TASKS_TO_PROCESS) {
+                warnings.push(`${tasksNeedingTestCases.length - MAX_TASKS_TO_PROCESS} tarefa(s) com teste pendente (limite de ${MAX_TASKS_TO_PROCESS} por execução)`);
+            }
+            
+            let successMessage = messages.length > 0 
                 ? `Análise concluída! ${messages.join(' e ')}.`
                 : 'Análise geral concluída com sucesso!';
+            
+            if (warnings.length > 0) {
+                successMessage += ` Avisos: ${warnings.join(', ')}.`;
+            }
             
             handleSuccess(successMessage);
             
@@ -528,9 +626,16 @@ export const TasksView: React.FC<{
                 }, 500);
             }
         } catch (error) {
-            handleError(error, 'Executar análise geral com IA');
+            setAnalysisProgress(null);
+            const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+            if (errorMessage.includes('Timeout')) {
+                handleError(new Error('A análise demorou muito tempo. Tente novamente com menos tarefas.'), 'Executar análise geral com IA');
+            } else {
+                handleError(error, 'Executar análise geral com IA');
+            }
         } finally {
             setIsRunningGeneralAnalysis(false);
+            setAnalysisProgress(null);
         }
     }, [project, onUpdateProject, handleError, handleSuccess, onNavigateToTab]);
     
@@ -863,6 +968,7 @@ export const TasksView: React.FC<{
                             <GeneralIAAnalysisButton 
                                 onAnalyze={handleGeneralIAAnalysis}
                                 isAnalyzing={isRunningGeneralAnalysis}
+                                progress={analysisProgress}
                             />
                         </div>
                         
