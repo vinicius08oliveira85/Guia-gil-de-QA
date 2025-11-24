@@ -11,6 +11,7 @@ import { ExportMenu } from './common/ExportMenu';
 import { Modal } from './common/Modal';
 import { LearningPathView } from './learning/LearningPathView';
 import { LoadingSkeleton } from './common/LoadingSkeleton';
+import { QualityDashboard } from './dashboard/QualityDashboard';
 
 export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project: Project) => void; onBack: () => void; }> = ({ project, onUpdateProject, onBack }) => {
     const [activeTab, setActiveTab] = useState('trail');
@@ -78,6 +79,7 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
     const tabs: Array<{ id: string; label: string; 'data-onboarding'?: string }> = [
         { id: 'trail', label: 'Trilha do Projeto' },
         { id: 'tasks', label: 'Tarefas & Testes', 'data-onboarding': 'tasks-tab' },
+        { id: 'quality', label: '📊 Qualidade' },
         { id: 'documents', label: 'Documentos' },
         { id: 'learning', label: '🎓 Aprender QA', 'data-onboarding': 'learning-tab' },
         { id: 'roadmap', label: 'Roadmap' },
@@ -182,6 +184,13 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                                 onUpdateProject={onUpdateProject}
                                 onNavigateToTab={(tabId) => handleTabClick(tabId)}
                             />
+                        </Suspense>
+                        </section>
+                    )}
+                    {activeTab === 'quality' && (
+                        <section id="tab-panel-quality" role="tabpanel" aria-labelledby="tab-quality tab-quality-mobile">
+                        <Suspense fallback={<LoadingSkeleton variant="card" count={3} />}>
+                            <QualityDashboard project={project} />
                         </Suspense>
                         </section>
                     )}

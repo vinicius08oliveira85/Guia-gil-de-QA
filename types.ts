@@ -112,6 +112,7 @@ export interface JiraTask {
   toolsUsed?: string[]; // Ferramentas utilizadas nesta task
   executedStrategies?: number[]; // Índices das estratégias que foram executadas
   strategyTools?: { [strategyIndex: number]: string[] }; // Ferramentas utilizadas por estratégia (índice -> ferramentas)
+  isEscapedDefect?: boolean; // Indica se o bug foi vazado para produção
 }
 
 // Ferramentas sugeridas para testes
