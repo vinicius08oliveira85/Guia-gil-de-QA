@@ -163,18 +163,18 @@ export const AnalysisView: React.FC<{
     }, [project.tasks, project.generalIAAnalysis]);
 
     return (
-        <div className="space-y-8 pb-8">
+        <div className="space-y-6 pb-6">
             {/* Header com ações - Estilo Windows 12 */}
             <div className={`
                 ${windows12Styles.card}
-                ${windows12Styles.spacing.lg}
-                flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6
+                ${windows12Styles.spacing.md}
+                flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4
             `}>
                 <div className="flex-1">
-                    <h2 className="heading-page text-text-primary mb-3">
+                    <h2 className="heading-section text-text-primary mb-2">
                         Análise IA do Projeto
                     </h2>
-                    <p className="text-lead">
+                    <p className="text-sm text-text-secondary leading-relaxed">
                         Análises estratégicas e consolidadas geradas por IA para seu projeto
                     </p>
                 </div>
@@ -185,11 +185,12 @@ export const AnalysisView: React.FC<{
                         className={`
                             ${windows12Styles.buttonSecondary}
                             disabled:opacity-50 disabled:cursor-not-allowed
-                            flex items-center gap-2
+                            flex items-center gap-2 text-sm
                         `}
+                        aria-label="Analisar projeto completo"
                     >
                         {isAnalyzing ? <Spinner small /> : '🔄'}
-                        <span className="hidden sm:inline">Analisar Projeto</span>
+                        <span>Analisar Projeto</span>
                     </button>
                     {(!project.generalIAAnalysis || needsGeneralReanalysis()) && (
                         <button
@@ -198,11 +199,12 @@ export const AnalysisView: React.FC<{
                             className={`
                                 ${windows12Styles.buttonPrimary}
                                 disabled:opacity-50 disabled:cursor-not-allowed
-                                flex items-center gap-2
+                                flex items-center gap-2 text-sm
                             `}
+                            aria-label="Executar análise geral IA"
                         >
                             {isAnalyzingGeneral ? <Spinner small /> : '🧠'}
-                            <span className="hidden sm:inline">Análise Geral IA</span>
+                            <span>Análise Geral IA</span>
                         </button>
                     )}
                 </div>

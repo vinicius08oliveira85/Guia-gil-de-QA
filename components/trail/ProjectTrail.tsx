@@ -179,8 +179,10 @@ export const ProjectTrail: React.FC<ProjectTrailProps> = ({
                 isOpen={showAnalysisModal}
                 onClose={() => setShowAnalysisModal(false)}
                 title="Análise IA detalhada"
+                size="xl"
+                maxHeight="95vh"
             >
-                <div className="max-h-[80vh] overflow-y-auto pr-2">
+                <div className="max-h-[calc(95vh-120px)] overflow-y-auto pr-2 -mr-2">
                     <AnalysisView
                         project={project}
                         onUpdateProject={onUpdateProject}

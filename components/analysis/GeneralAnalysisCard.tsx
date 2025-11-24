@@ -82,10 +82,10 @@ export const GeneralAnalysisCard: React.FC<GeneralAnalysisCardProps> = ({
       shadow-xl
     `}>
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="text-3xl font-bold text-text-primary mb-2">Análise Geral IA</h3>
-          <p className="text-base text-text-secondary">
+          <h3 className="heading-section text-text-primary mb-2">Análise Geral IA</h3>
+          <p className="text-sm text-text-secondary">
             Gerada em {format(new Date(analysis.generatedAt), "dd/MM/yyyy 'às' HH:mm")}
           </p>
         </div>
@@ -97,8 +97,9 @@ export const GeneralAnalysisCard: React.FC<GeneralAnalysisCardProps> = ({
               ${windows12Styles.transition.fast}
             `}
             title="Atualizar análise"
+            aria-label="Atualizar análise geral"
           >
-            <svg className="w-5 h-5 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-5 h-5 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
             </svg>
           </button>
@@ -107,20 +108,20 @@ export const GeneralAnalysisCard: React.FC<GeneralAnalysisCardProps> = ({
 
       {/* Risk Badge */}
       <div className={`
-        mb-8 p-6 rounded-xl border
+        mb-6 p-5 rounded-xl border-2
         ${getRiskStyle(analysis.riskCalculation.overallRisk as any)}
         ${windows12Styles.glow(analysis.riskCalculation.overallRisk === 'Crítico' ? 'red' : analysis.riskCalculation.overallRisk === 'Alto' ? 'yellow' : 'accent')}
         ${windows12Styles.transition.normal}
-      `}>
+      `} role="alert" aria-live="polite">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-base font-medium mb-2">Risco Geral do Projeto</p>
-            <p className="text-3xl font-bold mb-2">{analysis.riskCalculation.overallRisk}</p>
-            <p className="text-base opacity-80">
+            <p className="text-sm font-semibold mb-2 uppercase tracking-wide">Risco Geral do Projeto</p>
+            <p className="text-2xl font-bold mb-1">{analysis.riskCalculation.overallRisk}</p>
+            <p className="text-sm opacity-80">
               Score: {analysis.riskCalculation.riskScore}/100
             </p>
           </div>
-          <div className="text-5xl">
+          <div className="text-4xl" aria-hidden="true">
             {analysis.riskCalculation.overallRisk === 'Crítico' && '🚨'}
             {analysis.riskCalculation.overallRisk === 'Alto' && '⚠️'}
             {analysis.riskCalculation.overallRisk === 'Médio' && '⚡'}
