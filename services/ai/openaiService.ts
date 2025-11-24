@@ -6,6 +6,13 @@ import { AIService } from './aiServiceInterface';
 
 const API_KEY = import.meta.env.VITE_OPENAI_API_KEY || import.meta.env.OPENAI_API_KEY;
 
+// Verificar se há alguma chave de IA disponível (OpenAI ou Gemini)
+const hasAnyAIKey = () => {
+  const openaiKey = import.meta.env.VITE_OPENAI_API_KEY || import.meta.env.OPENAI_API_KEY;
+  const geminiKey = import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.GEMINI_API_KEY;
+  return !!(openaiKey || geminiKey);
+};
+
 let openai: OpenAI | null = null;
 
 if (API_KEY) {
@@ -14,7 +21,10 @@ if (API_KEY) {
     dangerouslyAllowBrowser: true // Necessário para uso no browser
   });
 } else {
-  console.warn("OPENAI_API_KEY environment variable not set. Some features may not work.");
+  // Só mostrar aviso se não houver nenhuma chave de IA configurada
+  if (!hasAnyAIKey()) {
+    console.warn("OPENAI_API_KEY environment variable not set. Some features may not work.");
+  }
 }
 
 const getOpenAI = () => {

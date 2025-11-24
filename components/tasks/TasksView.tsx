@@ -417,8 +417,11 @@ export const TasksView: React.FC<{
         
         try {
             // Passo 1: Gerar análise geral
+            // Calcular timeout adaptativo baseado no número de tarefas
+            const taskCount = project.tasks.length;
+            const adaptiveTimeout = Math.min(120000 + (taskCount * 5000), 180000); // Base 120s + 5s por tarefa, máximo 180s
             setAnalysisProgress({ current: 1, total: 3, message: 'Gerando análise geral do projeto...' });
-            const analysis = await withTimeout(generateGeneralIAAnalysis(project), 60000);
+            const analysis = await withTimeout(generateGeneralIAAnalysis(project), adaptiveTimeout);
             const aiService = getAIService();
             
             // Atualizar análises individuais nas tarefas
