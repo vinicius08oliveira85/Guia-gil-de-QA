@@ -74,6 +74,24 @@ export const TasksView: React.FC<{
     const { handleError, handleSuccess } = useErrorHandler();
     const { filters, filteredTasks, updateFilter, clearFilters, removeFilter, activeFiltersCount } = useFilters(project);
     const availableTags = getAllTagsFromProject(project);
+    const availableTestTypes = useMemo(() => {
+        const types = new Set<string>();
+        project.tasks.forEach(task => {
+            task.testStrategy?.forEach(strategy => {
+                if (strategy?.testType) {
+                    types.add(strategy.testType);
+                }
+            });
+            task.testCases?.forEach(testCase => {
+                testCase.strategies?.forEach(strategyName => {
+                    if (strategyName) {
+                        types.add(strategyName);
+                    }
+                });
+            });
+        });
+        return Array.from(types).sort((a, b) => a.localeCompare(b));
+    }, [project.tasks]);
     const [isTaskFormOpen, setIsTaskFormOpen] = useState(false);
     const [editingTask, setEditingTask] = useState<JiraTask | undefined>(undefined);
     const [testCaseEditorRef, setTestCaseEditorRef] = useState<{ taskId: string; testCase: TestCase } | null>(null);
@@ -827,6 +845,8 @@ export const TasksView: React.FC<{
         pushArray('severity', filters.severity, 'Severidade: ');
         pushArray('owner', filters.owner, 'Owner: ');
         pushArray('assignee', filters.assignee, 'Responsável: ');
+        pushArray('testResultStatus', filters.testResultStatus, 'Testes: ');
+        pushArray('requiredTestTypes', filters.requiredTestTypes, 'Tipos de teste: ');
 
         if (filters.dateRange?.start || filters.dateRange?.end) {
             const start = filters.dateRange.start ? filters.dateRange.start.toLocaleDateString() : 'Início';
@@ -1292,6 +1312,7 @@ export const TasksView: React.FC<{
                         onFilterChange={updateFilter}
                         onClearFilters={clearFilters}
                         availableTags={availableTags}
+                        availableTestTypes={availableTestTypes}
                         activeFiltersCount={activeFiltersCount}
                     />
                 </div>

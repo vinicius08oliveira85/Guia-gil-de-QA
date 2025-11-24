@@ -169,6 +169,83 @@ export const JiraTaskItem: React.FC<{
     }, [jiraStatusPalette, task.jiraStatus, task.status]);
     const statusTextColor = currentStatusColor ? getJiraStatusTextColor(currentStatusColor) : undefined;
 
+    const testExecutionSummary = useMemo(() => {
+        const total = task.testCases?.length || 0;
+        const passed = (task.testCases?.filter(tc => tc.status === 'Passed') ?? []).length;
+        const failed = (task.testCases?.filter(tc => tc.status === 'Failed') ?? []).length;
+        const executed = passed + failed;
+        return {
+            total,
+            passed,
+            failed,
+            executed,
+            pending: Math.max(total - executed, 0)
+        };
+    }, [task.testCases]);
+
+    const testTypeBadges = useMemo(() => {
+        const typeMap = new Map<string, { total: number; executed: number; failed: number; hasStrategy: boolean; strategyExecuted: boolean }>();
+        const ensureType = (type: string) => {
+            if (!typeMap.has(type)) {
+                typeMap.set(type, { total: 0, executed: 0, failed: 0, hasStrategy: false, strategyExecuted: false });
+            }
+            return typeMap.get(type)!;
+        };
+
+        (task.testStrategy || []).forEach((strategy, index) => {
+            if (!strategy?.testType) return;
+            const entry = ensureType(strategy.testType);
+            entry.hasStrategy = true;
+            if (task.executedStrategies?.includes(index)) {
+                entry.strategyExecuted = true;
+            }
+        });
+
+        (task.testCases || []).forEach(testCase => {
+            const fallbackType = task.testStrategy && task.testStrategy.length > 0
+                ? task.testStrategy[0]?.testType || 'Testes Gerais'
+                : 'Testes Gerais';
+            const associatedTypes = testCase.strategies && testCase.strategies.length > 0
+                ? testCase.strategies
+                : [fallbackType];
+            associatedTypes.forEach(type => {
+                if (!type) return;
+                const entry = ensureType(type);
+                entry.total += 1;
+                if (testCase.status !== 'Not Run') {
+                    entry.executed += 1;
+                }
+                if (testCase.status === 'Failed') {
+                    entry.failed += 1;
+                }
+            });
+        });
+
+        return Array.from(typeMap.entries()).map(([type, data]) => {
+            const pendingCases = Math.max(data.total - data.executed, 0);
+            let status: 'pending' | 'partial' | 'done' | 'failed' = 'pending';
+            if (data.failed > 0) {
+                status = 'failed';
+            } else if (pendingCases === 0 && (data.executed > 0 || data.strategyExecuted)) {
+                status = 'done';
+            } else if (data.executed > 0 || data.strategyExecuted) {
+                status = 'partial';
+            } else if (data.hasStrategy) {
+                status = 'pending';
+            }
+
+            const label = data.total > 0
+                ? `${data.executed}/${data.total}`
+                : data.strategyExecuted
+                    ? 'Executado'
+                    : data.hasStrategy
+                        ? 'Planejado'
+                        : '—';
+
+            return { type, status, label };
+        }).sort((a, b) => a.type.localeCompare(b.type));
+    }, [task.testCases, task.testStrategy, task.executedStrategies]);
+
     const sectionTabs = useMemo(() => {
         const tabs: { id: DetailSection; label: string; badge?: number }[] = [
             { id: 'overview', label: 'Resumo' },
@@ -823,6 +900,43 @@ export const JiraTaskItem: React.FC<{
                             </span>
                         )}
                     </div>
+                    {testExecutionSummary.total > 0 && (
+                        <div className="task-card-compact_line task-card-compact_line--tight text-[11px] text-text-secondary flex flex-wrap gap-3">
+                            <span className="inline-flex items-center gap-1 text-green-400 font-semibold">
+                                <span className="w-2 h-2 rounded-full bg-green-400" />
+                                {testExecutionSummary.passed} aprov.
+                            </span>
+                            <span className="inline-flex items-center gap-1 text-red-300 font-semibold">
+                                <span className="w-2 h-2 rounded-full bg-red-400" />
+                                {testExecutionSummary.failed} reprov.
+                            </span>
+                            {testExecutionSummary.pending > 0 && (
+                                <span className="inline-flex items-center gap-1 text-amber-300 font-semibold">
+                                    <span className="w-2 h-2 rounded-full bg-amber-300" />
+                                    {testExecutionSummary.pending} pend.
+                                </span>
+                            )}
+                        </div>
+                    )}
+                    {testTypeBadges.length > 0 && (
+                        <div className="task-card-compact_line task-card-compact_line--tight flex flex-wrap gap-1">
+                            {testTypeBadges.map(badge => {
+                                const baseClass = 'px-2 py-0.5 rounded-full text-[11px] font-semibold border';
+                                const colorClass = badge.status === 'failed'
+                                    ? 'bg-red-500/10 text-red-200 border-red-400/40'
+                                    : badge.status === 'done'
+                                        ? 'bg-green-500/10 text-green-200 border-green-400/40'
+                                        : badge.status === 'partial'
+                                            ? 'bg-amber-500/10 text-amber-200 border-amber-400/40'
+                                            : 'bg-surface border-surface-border text-text-secondary';
+                                return (
+                                    <span key={badge.type} className={`${baseClass} ${colorClass}`}>
+                                        {badge.type} • {badge.label}
+                                    </span>
+                                );
+                            })}
+                        </div>
+                    )}
                     {task.tags && task.tags.length > 0 && (
                         <div className="flex flex-wrap gap-1">
                             {task.tags.slice(0, 4).map((tag) => (

@@ -17,6 +17,8 @@ export interface FilterOptions {
   hasTestCases?: boolean;
   hasBddScenarios?: boolean;
   isAutomated?: boolean;
+  testResultStatus?: ('Aprovado' | 'Reprovado')[];
+  requiredTestTypes?: string[];
 }
 
 export const useFilters = (project: Project) => {
@@ -107,6 +109,34 @@ export const useFilters = (project: Project) => {
       tasks = tasks.filter(t => {
         const hasAutomated = t.testCases?.some(tc => tc.isAutomated);
         return filters.isAutomated ? hasAutomated : !hasAutomated;
+      });
+    }
+
+    // Filtro por status de testes (aprovado/reprovado)
+    if (filters.testResultStatus && filters.testResultStatus.length > 0) {
+      tasks = tasks.filter(t => {
+        const testCases = t.testCases || [];
+        return filters.testResultStatus!.some(status => {
+          if (status === 'Aprovado') {
+            return testCases.some(tc => tc.status === 'Passed');
+          }
+          if (status === 'Reprovado') {
+            return testCases.some(tc => tc.status === 'Failed');
+          }
+          return false;
+        });
+      });
+    }
+
+    // Filtro por tipos de teste exigidos
+    if (filters.requiredTestTypes && filters.requiredTestTypes.length > 0) {
+      tasks = tasks.filter(t => {
+        const strategyTypes = (t.testStrategy || [])
+          .map(strategy => strategy?.testType)
+          .filter((type): type is string => Boolean(type));
+        const testCaseTypes = (t.testCases || []).flatMap(tc => tc.strategies || []);
+        const combinedTypes = new Set([...strategyTypes, ...testCaseTypes]);
+        return filters.requiredTestTypes!.some(type => combinedTypes.has(type));
       });
     }
 

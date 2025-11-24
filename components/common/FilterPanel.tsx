@@ -57,6 +57,7 @@ interface FilterPanelProps {
   onFilterChange: <K extends keyof FilterOptions>(key: K, value: FilterOptions[K]) => void;
   onClearFilters: () => void;
   availableTags: string[];
+  availableTestTypes: string[];
   activeFiltersCount: number;
 }
 
@@ -65,6 +66,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
   onFilterChange,
   onClearFilters,
   availableTags,
+  availableTestTypes,
   activeFiltersCount
 }) => {
   const toggleArrayFilter = <K extends keyof FilterOptions>(
@@ -79,7 +81,9 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
     }
   };
 
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['status', 'type', 'priority', 'search']));
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(
+    new Set(['status', 'test-results', 'test-types', 'type', 'priority', 'search'])
+  );
 
   const toggleSection = (section: string) => {
     setExpandedSections(prev => {
@@ -145,6 +149,66 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
                 }`}
               >
                 {status}
+              </button>
+            ))}
+          </div>
+        </FilterSection>
+
+        {/* Filtro por Tipo de Teste */}
+        {availableTestTypes.length > 0 && (
+          <FilterSection
+            id="test-types"
+            title="Tipos de Teste"
+            icon={
+              <svg className="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 3l4 4-4 4m4-4h8m-8 6l4 4-4 4m4-4h8" />
+              </svg>
+            }
+              isExpanded={expandedSections.has('test-types')}
+              onToggle={toggleSection}
+            >
+            <div className="flex flex-wrap gap-2 max-h-36 overflow-y-auto">
+              {availableTestTypes.map(type => (
+                <button
+                  key={type}
+                  onClick={() => toggleArrayFilter('requiredTestTypes', type)}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    filters.requiredTestTypes?.includes(type)
+                      ? 'bg-accent text-white shadow-md shadow-accent/30 border border-accent/50'
+                      : 'bg-surface border border-surface-border text-text-secondary hover:bg-surface-hover hover:border-accent/30'
+                  }`}
+                >
+                  {type}
+                </button>
+              ))}
+            </div>
+          </FilterSection>
+        )}
+
+        {/* Filtro por Status de Teste */}
+        <FilterSection
+          id="test-results"
+          title="Status dos Testes"
+          icon={
+            <svg className="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          }
+            isExpanded={expandedSections.has('test-results')}
+            onToggle={toggleSection}
+          >
+          <div className="flex flex-wrap gap-2">
+            {['Aprovado', 'Reprovado'].map(result => (
+              <button
+                key={result}
+                onClick={() => toggleArrayFilter('testResultStatus', result as any)}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                  filters.testResultStatus?.includes(result as any)
+                    ? 'bg-accent text-white shadow-md shadow-accent/30 border border-accent/50'
+                    : 'bg-surface border border-surface-border text-text-secondary hover:bg-surface-hover hover:border-accent/30'
+                }`}
+              >
+                {result}
               </button>
             ))}
           </div>
