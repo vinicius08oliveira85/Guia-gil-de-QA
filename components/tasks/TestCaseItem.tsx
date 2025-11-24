@@ -1,6 +1,6 @@
 import React from 'react';
 import { TestCase } from '../../types';
-import { CheckIcon } from '../common/Icons';
+import { CheckIcon, EditIcon, TrashIcon } from '../common/Icons';
 import { normalizeExecutedStrategy } from '../../utils/testCaseMigration';
 import { ToolsSelector } from './ToolsSelector';
 
@@ -21,7 +21,9 @@ export const TestCaseItem: React.FC<{
     onToggleAutomated: (isAutomated: boolean) => void;
     onExecutedStrategyChange: (strategies: string[]) => void;
     onToolsChange?: (tools: string[]) => void;
-}> = ({ testCase, onStatusChange, onToggleAutomated, onExecutedStrategyChange, onToolsChange }) => {
+    onEdit?: () => void;
+    onDelete?: () => void;
+}> = ({ testCase, onStatusChange, onToggleAutomated, onExecutedStrategyChange, onToolsChange, onEdit, onDelete }) => {
     const statusColor = {
         'Not Run': 'bg-slate-600',
         'Passed': 'bg-green-600',
@@ -63,17 +65,47 @@ export const TestCaseItem: React.FC<{
         onExecutedStrategyChange(allStrategies);
     };
 
+    const iconButtonClass = `
+        p-2 rounded-full border border-surface-border text-text-secondary hover:text-white
+        hover:border-accent hover:bg-accent/20 transition-colors
+    `;
+
     return (
         <div className="bg-surface p-4 rounded-md border border-surface-border">
             <div className="flex flex-wrap gap-4 mb-3 items-center">
-                <div className="flex flex-wrap gap-2 items-center">
+                <div className="flex flex-wrap gap-2 items-center flex-1">
                     {testCase.strategies && testCase.strategies.map(strategy => (
                         <span key={strategy} className={`px-2 py-0.5 text-xs font-medium rounded-full ${strategyColorMap[strategy] || defaultStrategyColor}`}>
                             {strategy}
                         </span>
                     ))}
                 </div>
-                
+
+                {(onEdit || onDelete) && (
+                    <div className="flex items-center gap-2 ml-auto">
+                        {onEdit && (
+                            <button
+                                type="button"
+                                onClick={onEdit}
+                                className={iconButtonClass}
+                                aria-label="Editar caso de teste"
+                            >
+                                <EditIcon className="w-4 h-4" />
+                            </button>
+                        )}
+                        {onDelete && (
+                            <button
+                                type="button"
+                                onClick={onDelete}
+                                className={`${iconButtonClass} hover:text-red-300 hover:border-red-400`}
+                                aria-label="Excluir caso de teste"
+                            >
+                                <TrashIcon className="w-4 h-4" />
+                            </button>
+                        )}
+                    </div>
+                )}
+
                 <label className="relative inline-flex items-center cursor-pointer ml-auto">
                     <input 
                         type="checkbox" 

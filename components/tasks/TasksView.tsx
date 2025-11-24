@@ -1,11 +1,12 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import { Project, JiraTask, BddScenario, TestCaseDetailLevel, BugSeverity, TeamRole } from '../../types';
+import { Project, JiraTask, BddScenario, TestCaseDetailLevel, BugSeverity, TeamRole, TestCase } from '../../types';
 import { getAIService } from '../../services/ai/aiServiceFactory';
 import { Card } from '../common/Card';
 import { Modal } from '../common/Modal';
 import { FilterPanel } from '../common/FilterPanel';
 import { TestCaseTemplateSelector } from './TestCaseTemplateSelector';
 import { TaskForm } from './TaskForm';
+import { TestCaseEditorModal } from './TestCaseEditorModal';
 import { JiraTaskItem, TaskWithChildren } from './JiraTaskItem';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import { useFilters, FilterOptions } from '../../hooks/useFilters';
@@ -41,6 +42,7 @@ export const TasksView: React.FC<{
     const availableTags = getAllTagsFromProject(project);
     const [isTaskFormOpen, setIsTaskFormOpen] = useState(false);
     const [editingTask, setEditingTask] = useState<JiraTask | undefined>(undefined);
+    const [testCaseEditorRef, setTestCaseEditorRef] = useState<{ taskId: string; testCase: TestCase } | null>(null);
     const [defaultParentId, setDefaultParentId] = useState<string | undefined>(undefined);
     const [showWizard, setShowWizard] = useState(false);
     const { isBeginnerMode } = useBeginnerMode();
@@ -295,6 +297,54 @@ export const TasksView: React.FC<{
             })
         });
     }, [project, onUpdateProject]);
+
+    const handleOpenTestCaseEditor = useCallback((taskId: string, testCase: TestCase) => {
+        setTestCaseEditorRef({ taskId, testCase });
+    }, []);
+
+    const handleSaveTestCase = useCallback((taskId: string, updatedTestCase: TestCase) => {
+        const task = project.tasks.find(t => t.id === taskId);
+        if (!task) {
+            handleError(new Error('Tarefa não encontrada ao salvar o teste'), 'Salvar caso de teste');
+            return;
+        }
+
+        const updatedTasks = project.tasks.map(t => {
+            if (t.id !== taskId) return t;
+            const updatedCases = (t.testCases || []).map(tc => tc.id === updatedTestCase.id ? updatedTestCase : tc);
+            return { ...t, testCases: updatedCases };
+        });
+
+        onUpdateProject({ ...project, tasks: updatedTasks });
+        handleSuccess('Caso de teste atualizado com sucesso!');
+        setTestCaseEditorRef(null);
+    }, [project, onUpdateProject, handleSuccess, handleError]);
+
+    const handleDeleteTestCase = useCallback((taskId: string, testCaseId: string) => {
+        const task = project.tasks.find(t => t.id === taskId);
+        if (!task) {
+            handleError(new Error('Tarefa não encontrada ao excluir o teste'), 'Excluir caso de teste');
+            return;
+        }
+
+        const confirmed = window.confirm('Deseja realmente excluir este caso de teste? Esta ação não pode ser desfeita.');
+        if (!confirmed) return;
+
+        const updatedTasks = project.tasks.map(t => {
+            if (t.id !== taskId) return t;
+            const updatedCases = (t.testCases || []).filter(tc => tc.id !== testCaseId);
+            return { ...t, testCases: updatedCases };
+        });
+
+        onUpdateProject({ ...project, tasks: updatedTasks });
+        setTestCaseEditorRef(prev => {
+            if (prev && prev.taskId === taskId && prev.testCase.id === testCaseId) {
+                return null;
+            }
+            return prev;
+        });
+        handleSuccess('Caso de teste excluído.');
+    }, [project, onUpdateProject, handleSuccess, handleError]);
 
     const handleStrategyExecutedChange = useCallback((taskId: string, strategyIndex: number, executed: boolean) => {
         onUpdateProject({
@@ -938,6 +988,8 @@ export const TasksView: React.FC<{
                     onAddComment={(content) => handleAddComment(task.id, content)}
                     onEditComment={(commentId, content) => handleEditComment(task.id, commentId, content)}
                     onDeleteComment={(commentId) => handleDeleteComment(task.id, commentId)}
+                    onEditTestCase={handleOpenTestCaseEditor}
+                    onDeleteTestCase={handleDeleteTestCase}
                     project={project}
                     onUpdateProject={onUpdateProject}
                 >
@@ -1408,6 +1460,16 @@ export const TasksView: React.FC<{
                 />
             </div>
         </Modal>
+
+        {testCaseEditorRef && (
+            <TestCaseEditorModal
+                testCase={testCaseEditorRef.testCase}
+                isOpen={!!testCaseEditorRef}
+                onClose={() => setTestCaseEditorRef(null)}
+                onSave={(updated) => handleSaveTestCase(testCaseEditorRef.taskId, updated)}
+                onDelete={() => handleDeleteTestCase(testCaseEditorRef.taskId, testCaseEditorRef.testCase.id)}
+            />
+        )}
 
         <TaskCreationWizard
             isOpen={showWizard}

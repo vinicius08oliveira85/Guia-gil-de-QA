@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { JiraTask, BddScenario, TestCaseDetailLevel, TeamRole, Project } from '../../types';
+import { JiraTask, BddScenario, TestCaseDetailLevel, TeamRole, Project, TestCase } from '../../types';
 import { Spinner } from '../common/Spinner';
 import { TaskTypeIcon, TaskStatusIcon, PlusIcon, EditIcon, TrashIcon, ChevronDownIcon, RefreshIcon } from '../common/Icons';
 import { BddScenarioForm, BddScenarioItem } from './BddScenario';
@@ -118,6 +118,8 @@ export const JiraTaskItem: React.FC<{
     onAddComment?: (content: string) => void;
     onEditComment?: (commentId: string, content: string) => void;
     onDeleteComment?: (commentId: string) => void;
+    onEditTestCase?: (taskId: string, testCase: TestCase) => void;
+    onDeleteTestCase?: (taskId: string, testCaseId: string) => void;
     project?: Project;
     onUpdateProject?: (project: Project) => void;
     isSelected?: boolean;
@@ -126,7 +128,7 @@ export const JiraTaskItem: React.FC<{
     level: number;
     activeTaskId?: string | null;
     onFocusTask?: (taskId: string | null) => void;
-}> = React.memo(({ task, onTestCaseStatusChange, onToggleTestCaseAutomated, onExecutedStrategyChange, onTaskToolsChange, onTestCaseToolsChange, onStrategyExecutedChange, onStrategyToolsChange, onDelete, onGenerateTests, isGenerating, onAddSubtask, onEdit, onGenerateBddScenarios, isGeneratingBdd, onSaveBddScenario, onDeleteBddScenario, onTaskStatusChange, onAddTestCaseFromTemplate, onAddComment, onEditComment, onDeleteComment, project, onUpdateProject, isSelected, onToggleSelect, children, level, activeTaskId, onFocusTask }) => {
+}> = React.memo(({ task, onTestCaseStatusChange, onToggleTestCaseAutomated, onExecutedStrategyChange, onTaskToolsChange, onTestCaseToolsChange, onStrategyExecutedChange, onStrategyToolsChange, onDelete, onGenerateTests, isGenerating, onAddSubtask, onEdit, onGenerateBddScenarios, isGeneratingBdd, onSaveBddScenario, onDeleteBddScenario, onTaskStatusChange, onAddTestCaseFromTemplate, onAddComment, onEditComment, onDeleteComment, onEditTestCase, onDeleteTestCase, project, onUpdateProject, isSelected, onToggleSelect, children, level, activeTaskId, onFocusTask }) => {
     const [isDetailsOpen, setIsDetailsOpen] = useState(false); // Colapsado por padrão para compactar
     const [isChildrenOpen, setIsChildrenOpen] = useState(false);
     const [editingBddScenario, setEditingBddScenario] = useState<BddScenario | null>(null);
@@ -421,6 +423,8 @@ export const JiraTaskItem: React.FC<{
                                 onToggleAutomated={(isAutomated) => onToggleTestCaseAutomated(tc.id, isAutomated)}
                                 onExecutedStrategyChange={(strategies) => onExecutedStrategyChange(tc.id, strategies)}
                                 onToolsChange={onTestCaseToolsChange ? (tools) => onTestCaseToolsChange(tc.id, tools) : undefined}
+                                onEdit={onEditTestCase ? () => onEditTestCase(task.id, tc) : undefined}
+                                onDelete={onDeleteTestCase ? () => onDeleteTestCase(task.id, tc.id) : undefined}
                             />
                         ))}
                     </div>
