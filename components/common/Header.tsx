@@ -26,9 +26,9 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported }) => {
                     <div className="flex items-center gap-3 min-w-0">
                         <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-[18px] bg-white/10 border border-white/30 shadow-[0_18px_45px_rgba(6,9,34,0.45)] overflow-hidden flex items-center justify-center flex-shrink-0 backdrop-blur-md">
                             <img
-                                src="/qa-testing-logo.svg"
+                                src="/qa-agile-guide-logo.svg"
                                 alt="Logo QA Agile Guide"
-                                className="h-full w-full object-cover"
+                                className="h-full w-full object-contain p-1"
                                 loading="lazy"
                                 decoding="async"
                                 draggable={false}
