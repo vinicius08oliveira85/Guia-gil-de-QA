@@ -60,8 +60,8 @@ export const TestStrategyCard: React.FC<TestStrategyCardProps> = ({
                         <div className={`
                             w-11 h-6 rounded-full transition-colors
                             ${isExecuted 
-                                ? 'bg-accent peer-checked:bg-accent' 
-                                : 'bg-slate-600 peer-checked:bg-accent'
+                                ? 'bg-green-500 peer-checked:bg-green-500' 
+                                : 'bg-yellow-500 peer-checked:bg-yellow-500'
                             }
                             peer peer-focus:ring-2 peer-focus:ring-accent/50
                             peer-checked:after:translate-x-full
@@ -70,7 +70,7 @@ export const TestStrategyCard: React.FC<TestStrategyCardProps> = ({
                             after:h-5 after:w-5 after:transition-all
                         `}></div>
                         <span className="ml-3 text-sm font-medium text-text-primary">
-                            {isExecuted ? 'Realizada' : 'Marcar como Realizada'}
+                            {isExecuted ? 'Concluir Teste' : 'Iniciar Teste'}
                         </span>
                     </label>
                 )}
