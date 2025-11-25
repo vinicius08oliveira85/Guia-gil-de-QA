@@ -1537,8 +1537,8 @@ select option:focus {
   small,
   label,
   .text-xs,
-  .text-[10px],
-  .text-[11px] {
+  .text-\[10px\],
+  .text-\[11px\] {
     font-size: var(--compact-mobile-label-size) !important;
   }
 
