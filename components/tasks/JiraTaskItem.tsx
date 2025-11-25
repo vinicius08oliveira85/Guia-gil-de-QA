@@ -217,6 +217,7 @@ export const JiraTaskItem: React.FC<{
                 : [];
             
             // Verificar quais estratégias da task estão marcadas como "Realizada" no toggle
+            // (usado apenas como fallback se não houver executedStrategy no testCase)
             const taskExecutedStrategyTypes = new Set<string>();
             (task.testStrategy || []).forEach((strategy, index) => {
                 if (strategy?.testType && task.executedStrategies?.includes(index)) {
@@ -224,22 +225,40 @@ export const JiraTaskItem: React.FC<{
                 }
             });
             
+            // Se há estratégias selecionadas no seletor, usar apenas essas
+            // Se não há, usar o toggle da task como fallback
+            const hasExecutedStrategies = executedStrategies.length > 0;
+            
             associatedTypes.forEach(type => {
                 if (!type) return;
                 const entry = ensureType(type);
                 entry.total += 1;
                 
-                // Considera executado se:
-                // 1. Status não é 'Not Run' (teste foi aprovado/reprovado), OU
-                // 2. A estratégia está no executedStrategy do testCase (usuário marcou no seletor do testCase), OU
-                // 3. A estratégia está marcada como "Realizada" no toggle da task (task.executedStrategies)
-                const isExecutedByStatus = testCase.status !== 'Not Run';
-                const isExecutedByTestCaseStrategy = executedStrategies.some(es => 
-                    es.trim().toLowerCase() === type.trim().toLowerCase()
-                );
-                const isExecutedByTaskStrategy = taskExecutedStrategyTypes.has(type);
+                let isExecuted = false;
                 
-                if (isExecutedByStatus || isExecutedByTestCaseStrategy || isExecutedByTaskStrategy) {
+                if (hasExecutedStrategies) {
+                    // Se há estratégias selecionadas no seletor, contar APENAS para essas
+                    const isInExecutedStrategies = executedStrategies.some(es => 
+                        es.trim().toLowerCase() === type.trim().toLowerCase()
+                    );
+                    
+                    if (isInExecutedStrategies) {
+                        // Se a estratégia está selecionada, considerar executado
+                        // O status do testCase (Passed/Failed) só confirma, mas não é obrigatório
+                        isExecuted = true;
+                    }
+                } else {
+                    // Fallback: se não há estratégias selecionadas, usar o toggle da task
+                    // Mas só se o status não for 'Not Run' (para evitar contar testes não executados)
+                    const isInTaskStrategy = taskExecutedStrategyTypes.has(type);
+                    const hasStatus = testCase.status !== 'Not Run';
+                    
+                    if (isInTaskStrategy && hasStatus) {
+                        isExecuted = true;
+                    }
+                }
+                
+                if (isExecuted) {
                     entry.executed += 1;
                 }
                 
