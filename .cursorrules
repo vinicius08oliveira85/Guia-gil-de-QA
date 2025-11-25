@@ -1,0 +1,168 @@
+# Cursor Rules - QA Agile Guide
+
+## Contexto do Projeto
+
+Este é um aplicativo React/TypeScript para gestão de projetos de QA seguindo metodologias ágeis e práticas de DevOps.
+
+## Stack Tecnológica
+
+- **Frontend**: React 19, TypeScript, Vite
+- **Estilização**: Tailwind CSS
+- **Estado Global**: Zustand (store/projectsStore.ts)
+- **Testes**: Vitest + Testing Library
+- **Build**: Vite com otimizações
+- **Deploy**: Vercel (serverless functions)
+- **Banco de Dados**: IndexedDB (local) + Supabase (cloud opcional)
+- **IA**: OpenAI GPT-4 ou Google Gemini
+
+## Padrões de Código
+
+### TypeScript
+- Sempre usar TypeScript strict mode
+- Evitar `any` - usar tipos específicos
+- Interfaces para objetos, types para unions/intersections
+- JSDoc em funções públicas
+
+### React
+- Componentes funcionais com hooks
+- Usar `React.memo` em componentes pesados
+- Hooks customizados em `hooks/`
+- Lazy loading com `lazyWithRetry` para componentes grandes
+
+### Estado
+- **Store Global**: Usar `useProjectsStore` para projetos/tarefas
+- **Hook Auxiliar**: Usar `useProject(projectId)` para trabalhar com projeto específico
+- **Estado Local**: `useState` apenas para UI state que não precisa ser compartilhado
+
+### Serviços
+- Serviços de negócio em `services/`
+- APIs de IA em `services/ai/`
+- Validação com Zod em `utils/validation.ts`
+- Logger centralizado em `utils/logger.ts` (não usar console.log diretamente)
+
+### Testes
+- Testes em `tests/` com estrutura similar ao código
+- Usar Vitest e Testing Library
+- Mockar dependências externas (IndexedDB, APIs)
+- Meta de cobertura: 70%+
+
+### Acessibilidade
+- Sempre adicionar `aria-label` em elementos interativos
+- Usar `role` apropriado
+- Garantir navegação por teclado
+- Contraste WCAG AA
+
+## Estrutura de Arquivos
+
+```
+components/          # Componentes React organizados por feature
+hooks/              # React hooks customizados
+services/           # Serviços de negócio e APIs
+store/              # Estado global (Zustand)
+tests/              # Testes automatizados
+utils/              # Utilitários e helpers
+docs/               # Documentação técnica
+api/                # Serverless functions (Vercel)
+```
+
+## Convenções de Nomenclatura
+
+- **Componentes**: PascalCase (`ProjectView.tsx`)
+- **Hooks**: camelCase com prefixo `use` (`useProject.ts`)
+- **Serviços**: camelCase (`dbService.ts`)
+- **Utils**: camelCase (`validation.ts`)
+- **Types**: PascalCase interfaces (`Project`, `JiraTask`)
+
+## Regras Importantes
+
+1. **Sempre responder em Português** (conforme user_rules)
+2. **Usar Supabase como backend** quando necessário
+3. **Deploy em Vercel** serverless functions
+4. **ES Modules** - usar `import/export`
+5. **Foco em QA Agile** - gestão de projetos, casos de teste, estratégias de teste
+
+## Padrões de Commit
+
+- `feat:` - Nova funcionalidade
+- `fix:` - Correção de bug
+- `docs:` - Documentação
+- `test:` - Testes
+- `refactor:` - Refatoração
+- `perf:` - Performance
+- `chore:` - Manutenção
+
+## Quando Criar Novos Arquivos
+
+- **Componentes**: Se reutilizável → `components/common/`, se específico → feature folder
+- **Hooks**: Sempre em `hooks/`
+- **Serviços**: Sempre em `services/`
+- **Utils**: Sempre em `utils/`
+- **Testes**: Mesma estrutura, em `tests/`
+
+## Dependências Principais
+
+- `zustand` - Estado global
+- `react-hot-toast` - Notificações
+- `zod` - Validação
+- `react-hook-form` - Formulários
+- `vitest` - Testes
+- `@supabase/supabase-js` - Banco de dados cloud
+
+## Evitar
+
+- ❌ `console.log` - usar `logger` de `utils/logger.ts`
+- ❌ `any` em TypeScript
+- ❌ Estado local quando pode ser global
+- ❌ Prop drilling - usar store
+- ❌ Componentes muito grandes - dividir em menores
+- ❌ Lógica de negócio em componentes - mover para services/hooks
+
+## Preferir
+
+- ✅ Store global para estado compartilhado
+- ✅ Hooks customizados para lógica reutilizável
+- ✅ Validação com Zod
+- ✅ Testes para código crítico
+- ✅ Documentação JSDoc
+- ✅ Componentes pequenos e focados
+- ✅ TypeScript strict
+
+## Exemplos de Uso
+
+### Criar novo componente
+```tsx
+import React from 'react';
+import { Card } from '../common/Card';
+
+/**
+ * Descrição do componente
+ */
+export const MyComponent = React.memo<Props>(({ prop1, prop2 }) => {
+  // ...
+});
+
+MyComponent.displayName = 'MyComponent';
+```
+
+### Usar store
+```tsx
+import { useProjectsStore } from '../store/projectsStore';
+// ou
+import { useProject } from '../hooks/useProject';
+```
+
+### Tratar erros
+```tsx
+import { useErrorHandler } from '../hooks/useErrorHandler';
+const { handleError, handleSuccess } = useErrorHandler();
+```
+
+### Validar dados
+```tsx
+import { validateTask } from '../utils/validation';
+const result = validateTask(data);
+if (!result.success) {
+  // tratar erro
+}
+```
+

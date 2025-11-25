@@ -9,7 +9,6 @@ import { GlossaryView } from './glossary/GlossaryView';
 import { PrintableReport } from './PrintableReport';
 import { ExportMenu } from './common/ExportMenu';
 import { Modal } from './common/Modal';
-import { LearningPathView } from './learning/LearningPathView';
 import { LoadingSkeleton } from './common/LoadingSkeleton';
 import { QualityDashboard } from './dashboard/QualityDashboard';
 
@@ -81,7 +80,6 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
         { id: 'tasks', label: 'Tarefas & Testes', 'data-onboarding': 'tasks-tab' },
         { id: 'quality', label: '📊 Qualidade' },
         { id: 'documents', label: 'Documentos' },
-        { id: 'learning', label: '🎓 Aprender QA', 'data-onboarding': 'learning-tab' },
         { id: 'roadmap', label: 'Roadmap' },
         { id: 'glossary', label: 'Glossário' },
     ];
@@ -198,13 +196,6 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                         <section id="tab-panel-documents" role="tabpanel" aria-labelledby="tab-documents tab-documents-mobile">
                         <Suspense fallback={<LoadingSkeleton variant="card" count={3} />}>
                             <DocumentsView project={project} onUpdateProject={onUpdateProject} />
-                        </Suspense>
-                        </section>
-                    )}
-                    {activeTab === 'learning' && (
-                        <section id="tab-panel-learning" role="tabpanel" aria-labelledby="tab-learning tab-learning-mobile">
-                        <Suspense fallback={<LoadingSkeleton variant="card" count={2} />}>
-                            <LearningPathView />
                         </Suspense>
                         </section>
                     )}

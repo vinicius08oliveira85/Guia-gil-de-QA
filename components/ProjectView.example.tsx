@@ -18,7 +18,6 @@ import { GlossaryView } from './glossary/GlossaryView';
 import { PrintableReport } from './PrintableReport';
 import { ExportMenu } from './common/ExportMenu';
 import { Modal } from './common/Modal';
-import { LearningPathView } from './learning/LearningPathView';
 import { LoadingSkeleton } from './common/LoadingSkeleton';
 import { QualityDashboard } from './dashboard/QualityDashboard';
 
@@ -116,7 +115,6 @@ export const ProjectViewMigrated: React.FC<{ onBack: () => void }> = ({ onBack }
         { id: 'documents', label: 'Documentos' },
         { id: 'roadmap', label: 'Roadmap' },
         { id: 'glossary', label: 'Glossário' },
-        { id: 'learning', label: 'Aprendizado' },
         { id: 'quality', label: 'Qualidade' },
     ];
 
@@ -198,11 +196,6 @@ export const ProjectViewMigrated: React.FC<{ onBack: () => void }> = ({ onBack }
                 {activeTab === 'glossary' && (
                     <Suspense fallback={<LoadingSkeleton variant="card" count={2} />}>
                         <GlossaryView />
-                    </Suspense>
-                )}
-                {activeTab === 'learning' && (
-                    <Suspense fallback={<LoadingSkeleton variant="card" count={2} />}>
-                        <LearningPathView project={project} />
                     </Suspense>
                 )}
                 {activeTab === 'quality' && (

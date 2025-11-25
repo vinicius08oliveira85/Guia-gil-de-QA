@@ -105,29 +105,6 @@ Cada tarefa mostra em qual fase do projeto está (Request, Analysis, Design, Tes
 **Dica:** Siga os "Próximos passos" sugeridos em cada tarefa para avançar no projeto!`
     },
     {
-        id: 'learning',
-        title: 'Passo 5: Aprender QA Progressivamente',
-        content: `A aba "🎓 Aprender QA" contém módulos progressivos que vão te ensinar QA passo a passo.
-
-**Como funciona:**
-• Complete módulos em ordem
-• Cada módulo tem lições teóricas e práticas
-• Tarefas práticas criam projetos reais
-• Seu progresso é salvo automaticamente
-
-**Módulos Disponíveis:**
-1. Fundamentos de QA
-2. Tipos de Teste
-3. Casos de Teste
-4. BDD (Behavior Driven Development)
-5. E mais...
-
-**Dica:** Comece pelo módulo "Fundamentos de QA" para aprender o básico!
-
-**Modo Iniciante:**
-Mantenha o modo iniciante (🎓) ativado para ver explicações extras durante o aprendizado!`
-    },
-    {
         id: 'complete',
         title: 'Pronto para Começar! 🚀',
         content: `Agora você está pronto para usar o aplicativo!
@@ -137,7 +114,6 @@ Mantenha o modo iniciante (🎓) ativado para ver explicações extras durante o
 ✅ Como criar tarefas com explicações detalhadas
 ✅ Como criar casos de teste
 ✅ Como acompanhar o progresso com marcos visuais
-✅ Como aprender QA progressivamente
 
 **Recursos Disponíveis:**
 • 🎓 Modo Iniciante: Ativado (veja o ícone no header)
@@ -149,8 +125,7 @@ Mantenha o modo iniciante (🎓) ativado para ver explicações extras durante o
 **Próximos Passos:**
 1. Crie seu primeiro projeto
 2. Adicione uma tarefa (o wizard vai te guiar!)
-3. Explore a trilha de aprendizado
-4. Use os tooltips sempre que tiver dúvidas
+3. Use os tooltips sempre que tiver dúvidas
 
 **Lembre-se:** O modo iniciante está ativado. Você verá dicas e explicações em todo lugar!
 
