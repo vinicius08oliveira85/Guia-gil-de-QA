@@ -84,23 +84,58 @@ Aplicativo completo para gestão de projetos de QA seguindo metodologias ágeis 
 - `npm run dev` - Inicia o servidor de desenvolvimento
 - `npm run build` - Cria a build de produção
 - `npm run preview` - Preview da build de produção
+- `npm test` - Executa testes
+- `npm run test:watch` - Executa testes em modo watch
+- `npm run test:coverage` - Executa testes com relatório de cobertura
+- `npm run lint` - Verifica problemas de lint
+- `npm run lint:fix` - Corrige problemas de lint automaticamente
+- `npm run format` - Formata código com Prettier
+- `npm run type-check` - Verifica tipos TypeScript
 
 ## Estrutura do Projeto
 
 ```
-├── components/          # Componentes React
-│   ├── analysis/       # Componentes de análise
-│   ├── common/         # Componentes comuns
-│   ├── dashboard/      # Componentes de dashboard
-│   ├── glossary/       # Glossário de termos
-│   ├── roadmap/        # Roadmap
-│   ├── tasks/          # Gestão de tarefas
-│   └── timeline/       # Timeline
-├── hooks/              # React hooks customizados
-├── services/           # Serviços (DB, Gemini API)
-├── types.ts           # Definições TypeScript
-└── App.tsx            # Componente principal
+├── api/                # Serverless functions (Vercel)
+├── components/         # Componentes React
+│   ├── analysis/      # Componentes de análise
+│   ├── common/        # Componentes comuns
+│   ├── dashboard/     # Componentes de dashboard
+│   ├── glossary/      # Glossário de termos
+│   ├── roadmap/       # Roadmap
+│   ├── tasks/         # Gestão de tarefas
+│   └── timeline/      # Timeline
+├── hooks/             # React hooks customizados
+├── services/          # Serviços (DB, Gemini API)
+├── store/            # Estado global (Zustand)
+├── tests/            # Testes automatizados
+├── utils/            # Utilitários
+├── types.ts         # Definições TypeScript
+└── App.tsx          # Componente principal
 ```
+
+## Testes
+
+O projeto inclui testes automatizados usando Vitest e Testing Library.
+
+```bash
+# Executar todos os testes
+npm test
+
+# Executar em modo watch
+npm run test:watch
+
+# Ver cobertura de testes
+npm run test:coverage
+```
+
+Veja [tests/README.md](tests/README.md) para mais informações.
+
+## Documentação Adicional
+
+- [Arquitetura](docs/ARCHITECTURE.md) - Decisões arquiteturais e estrutura
+- [Guia de Contribuição](CONTRIBUTING.md) - Como contribuir com o projeto
+- [Migração para Store](docs/MIGRATION_TO_STORE.md) - Guia de migração para Zustand
+- [Uso do Store](docs/STORE_USAGE.md) - Como usar o store global de projetos
 
 ## Armazenamento
 

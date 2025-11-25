@@ -6,7 +6,7 @@ import { Header } from './components/common/Header';
 import { Spinner } from './components/common/Spinner';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { SearchBar } from './components/common/SearchBar';
-import { getAllProjects, addProject, updateProject, deleteProject } from './services/dbService';
+import { useProjectsStore } from './store/projectsStore';
 import { useErrorHandler } from './hooks/useErrorHandler';
 import { useSearch, SearchResult } from './hooks/useSearch';
 import { useKeyboardShortcuts, SHORTCUTS } from './hooks/useKeyboardShortcuts';
@@ -23,15 +23,24 @@ const ProjectsDashboard = lazyWithRetry(() => import('./components/ProjectsDashb
 const AdvancedSearch = lazyWithRetry(() => import('./components/common/AdvancedSearch').then(m => ({ default: m.AdvancedSearch })));
 const ProjectComparisonModal = lazyWithRetry(() => import('./components/common/ProjectComparisonModal').then(m => ({ default: m.ProjectComparisonModal })));
 const OnboardingGuide = lazyWithRetry(() => import('./components/onboarding/OnboardingGuide').then(m => ({ default: m.OnboardingGuide })));
-import { PHASE_NAMES } from './utils/constants';
-import { createProjectFromTemplate } from './utils/projectTemplates';
-import { addAuditLog } from './utils/auditLog';
 import { lazyWithRetry } from './utils/lazyWithRetry';
 
 const App: React.FC = () => {
-    const [projects, setProjects] = useState<Project[]>([]);
-    const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
+    // Estado global do store
+    const {
+        projects,
+        selectedProjectId,
+        isLoading,
+        error: storeError,
+        loadProjects,
+        createProject,
+        updateProject,
+        deleteProject,
+        selectProject,
+        getSelectedProject,
+    } = useProjectsStore();
+
+    // Estado local de UI
     const [showSearch, setShowSearch] = useState(false);
     const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
     const [showProjectComparison, setShowProjectComparison] = useState(false);
@@ -39,30 +48,19 @@ const App: React.FC = () => {
     const { searchQuery, setSearchQuery, searchResults } = useSearch(projects);
     const supabaseEnabled = isSupabaseAvailable();
 
+    // Carregar projetos ao montar
     useEffect(() => {
-        let isMounted = true;
-        
-        const loadProjects = async () => {
-            try {
-                const storedProjects = await getAllProjects();
-                if (isMounted) {
-                    setProjects(storedProjects);
-                    setIsLoading(false);
-                }
-            } catch (error) {
-                if (isMounted) {
-                    handleError(error, 'Carregar projetos');
-                    setIsLoading(false);
-                }
-            }
-        };
-        
-        loadProjects();
-        
-        return () => {
-            isMounted = false;
-        };
-    }, []); // Removed handleError from dependencies as it's stable
+        loadProjects().catch((error) => {
+            handleError(error, 'Carregar projetos');
+        });
+    }, [loadProjects, handleError]);
+
+    // Tratar erros do store
+    useEffect(() => {
+        if (storeError) {
+            handleError(storeError, 'Store');
+        }
+    }, [storeError, handleError]);
 
     const isMobile = useIsMobile();
 
@@ -85,81 +83,31 @@ const App: React.FC = () => {
     }, []);
 
     const handleCreateProject = useCallback(async (name: string, description: string, templateId?: string) => {
-        let newProject: Project;
-        
-        if (templateId) {
-            newProject = createProjectFromTemplate(templateId, name, description);
-        } else {
-            newProject = {
-                id: `proj-${Date.now()}`,
-                name,
-                description,
-                documents: [],
-                tasks: [],
-                phases: PHASE_NAMES.map(name => ({ name, status: 'Não Iniciado' })),
-            };
-        }
-        
         try {
-            await addProject(newProject);
-            setProjects(prev => [...prev, newProject]);
-            addAuditLog({
-                action: 'CREATE',
-                entityType: 'project',
-                entityId: newProject.id,
-                entityName: newProject.name
-            });
+            await createProject(name, description, templateId);
             handleSuccess('Projeto criado com sucesso!');
         } catch (error) {
             handleError(error, 'Criar projeto');
         }
-    }, [handleError, handleSuccess]);
+    }, [createProject, handleError, handleSuccess]);
 
     const handleUpdateProject = useCallback(async (updatedProject: Project) => {
         try {
-            const oldProject = projects.find(p => p.id === updatedProject.id);
             await updateProject(updatedProject);
-            setProjects(prev => prev.map(p => p.id === updatedProject.id ? updatedProject : p));
-            
-            if (oldProject) {
-                addAuditLog({
-                    action: 'UPDATE',
-                    entityType: 'project',
-                    entityId: updatedProject.id,
-                    entityName: updatedProject.name,
-                    changes: {
-                        name: { old: oldProject.name, new: updatedProject.name },
-                        description: { old: oldProject.description, new: updatedProject.description }
-                    }
-                });
-            }
-            
             handleSuccess('Projeto atualizado com sucesso!');
         } catch (error) {
             handleError(error, 'Atualizar projeto');
         }
-    }, [handleError, handleSuccess, projects]);
+    }, [updateProject, handleError, handleSuccess]);
     
     const handleDeleteProject = useCallback(async (projectId: string) => {
         try {
-            const project = projects.find(p => p.id === projectId);
             await deleteProject(projectId);
-            setProjects(prev => prev.filter(p => p.id !== projectId));
-            
-            if (project) {
-                addAuditLog({
-                    action: 'DELETE',
-                    entityType: 'project',
-                    entityId: projectId,
-                    entityName: project.name
-                });
-            }
-            
             handleSuccess('Projeto deletado com sucesso!');
         } catch (error) {
             handleError(error, 'Deletar projeto');
         }
-    }, [handleError, handleSuccess, projects]);
+    }, [deleteProject, handleError, handleSuccess]);
 
     const handleSyncSupabase = useCallback(async () => {
         if (!supabaseEnabled) {
@@ -168,39 +116,43 @@ const App: React.FC = () => {
         }
         try {
             const remoteProjects = await loadProjectsFromSupabase();
-            setProjects(remoteProjects);
+            // Atualizar store com projetos do Supabase
+            // Nota: Isso pode ser melhorado criando uma ação específica no store
+            for (const project of remoteProjects) {
+                try {
+                    await updateProject(project);
+                } catch {
+                    // Projeto não existe, criar
+                    await createProject(project.name, project.description);
+                }
+            }
+            await loadProjects(); // Recarregar do store
             handleSuccess(remoteProjects.length
-                ? `${remoteProjects.length} projeto(s) carregado(s) do Supabase`
+                ? `${remoteProjects.length} projeto(s) sincronizado(s) do Supabase`
                 : 'Nenhum projeto encontrado no Supabase');
         } catch (error) {
             handleError(error, 'Sincronizar projetos do Supabase');
         }
-    }, [supabaseEnabled, handleError, handleSuccess]);
+    }, [supabaseEnabled, handleError, handleSuccess, updateProject, createProject, loadProjects]);
 
     const handleImportJiraProject = useCallback(async (project: Project) => {
         try {
-            await addProject(project);
-            setProjects(prev => [...prev, project]);
-            setSelectedProjectId(project.id);
-            addAuditLog({
-                action: 'CREATE',
-                entityType: 'project',
-                entityId: project.id,
-                entityName: project.name
-            });
+            const { importProject } = useProjectsStore.getState();
+            await importProject(project);
+            selectProject(project.id);
             handleSuccess(`Projeto "${project.name}" importado do Jira com sucesso!`);
         } catch (error) {
             handleError(error, 'Importar projeto do Jira');
         }
-    }, [handleError, handleSuccess]);
+    }, [selectProject, handleError, handleSuccess]);
 
     const handleSearchSelect = useCallback((result: SearchResult) => {
         if (result.type === 'project' || result.projectId) {
-            setSelectedProjectId(result.projectId || result.id);
+            selectProject(result.projectId || result.id);
             setShowSearch(false);
             setSearchQuery('');
         }
-    }, []);
+    }, [selectProject]);
 
     useKeyboardShortcuts([
         {
@@ -216,7 +168,7 @@ const App: React.FC = () => {
         }
     ]);
 
-    const selectedProject = useMemo(() => projects.find(p => p.id === selectedProjectId), [projects, selectedProjectId]);
+    const selectedProject = useMemo(() => getSelectedProject(), [getSelectedProject]);
 
     if (isLoading) {
         return (
@@ -277,7 +229,7 @@ const App: React.FC = () => {
                             projects={projects}
                             onResultSelect={(result) => {
                                 if (result.type === 'project' || result.projectId) {
-                                    setSelectedProjectId(result.projectId || result.id);
+                                    selectProject(result.projectId || result.id);
                                 }
                                 setShowAdvancedSearch(false);
                             }}
@@ -293,7 +245,7 @@ const App: React.FC = () => {
                             onClose={() => setShowProjectComparison(false)}
                             projects={projects}
                             onProjectSelect={(projectId) => {
-                                setSelectedProjectId(projectId);
+                                selectProject(projectId);
                                 setShowProjectComparison(false);
                             }}
                         />
@@ -306,14 +258,14 @@ const App: React.FC = () => {
                             <ProjectView 
                                 project={selectedProject} 
                                 onUpdateProject={handleUpdateProject}
-                                onBack={() => setSelectedProjectId(null)}
+                                onBack={() => selectProject(null)}
                             />
                         </Suspense>
                     ) : (
                         <Suspense fallback={<div className="container mx-auto p-8"><LoadingSkeleton variant="card" count={3} /></div>}>
                             <ProjectsDashboard 
                                 projects={projects} 
-                                onSelectProject={setSelectedProjectId} 
+                                onSelectProject={selectProject} 
                                 onCreateProject={handleCreateProject}
                                 onDeleteProject={handleDeleteProject}
                                 onSearchClick={() => setShowSearch(true)}

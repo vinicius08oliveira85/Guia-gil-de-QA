@@ -1,13 +1,29 @@
 import React from 'react';
 
+/**
+ * Props do componente Badge
+ */
 interface BadgeProps {
+  /** Conteúdo do badge */
   children: React.ReactNode;
+  /** Variante visual do badge */
   variant?: 'default' | 'success' | 'warning' | 'error' | 'info';
+  /** Tamanho do badge */
   size?: 'sm' | 'md' | 'lg';
+  /** Classes CSS adicionais */
   className?: string;
 }
 
-export const Badge: React.FC<BadgeProps> = ({
+/**
+ * Componente Badge para exibir status, tags ou labels
+ * 
+ * @example
+ * ```tsx
+ * <Badge variant="success" size="sm">Aprovado</Badge>
+ * <Badge variant="error">Erro</Badge>
+ * ```
+ */
+export const Badge = React.memo<BadgeProps>(({
   children,
   variant = 'default',
   size = 'md',
@@ -27,13 +43,18 @@ export const Badge: React.FC<BadgeProps> = ({
     lg: 'h-8 px-3 text-[0.8rem]'
   };
 
+  const label = typeof children === 'string' ? children : undefined;
+
   return (
     <span
       className={`badge-chip whitespace-nowrap truncate font-semibold transition-transform duration-200 hover:scale-105 ${variantClasses[variant]} ${sizeClasses[size]} ${className}`}
-      aria-label={typeof children === 'string' ? children : undefined}
+      aria-label={label}
+      role="status"
     >
       {children}
     </span>
   );
-};
+});
+
+Badge.displayName = 'Badge';
 
