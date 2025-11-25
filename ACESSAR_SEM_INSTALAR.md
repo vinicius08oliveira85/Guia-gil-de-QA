@@ -76,8 +76,9 @@ Para funcionalidades de IA funcionarem, você precisa:
 2. Adicionar variáveis:
    - `VITE_OPENAI_API_KEY` (se usar OpenAI)
    - `VITE_GEMINI_API_KEY` (se usar Gemini)
-   - `VITE_SUPABASE_URL` (se usar Supabase)
-   - `VITE_SUPABASE_ANON_KEY` (se usar Supabase)
+   - `SUPABASE_URL` (URL do seu projeto Supabase)
+   - `SUPABASE_SERVICE_ROLE_KEY` (chave service role, usada apenas no backend)
+   - `VITE_SUPABASE_PROXY_URL` (ex.: `/api/supabaseProxy`)
 
 ---
 

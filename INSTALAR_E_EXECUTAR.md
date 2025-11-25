@@ -65,8 +65,12 @@ Se quiser testar funcionalidades de IA, crie um arquivo `.env.local` na raiz:
 ```env
 VITE_OPENAI_API_KEY=sua_chave_aqui
 VITE_GEMINI_API_KEY=sua_chave_aqui
+VITE_SUPABASE_PROXY_URL=http://localhost:3000/api/supabaseProxy
+SUPABASE_URL=https://xxxxx.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=sua_chave_service_role_aqui
+# (Opcional) fallback sem proxy
 VITE_SUPABASE_URL=https://xxxxx.supabase.co
-VITE_SUPABASE_ANON_KEY=sua_chave_aqui
+VITE_SUPABASE_ANON_KEY=sua_chave_anon_aqui
 ```
 
 ## 🛑 Parar o Servidor

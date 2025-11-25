@@ -1,6 +1,8 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { Project } from '../types';
 
+const supabaseProxyUrl = (import.meta.env.VITE_SUPABASE_PROXY_URL || '').trim();
+
 const supabaseUrl =
     import.meta.env.VITE_SUPABASE_URL ||
     import.meta.env.VITE_PUBLIC_SUPABASE_URL ||
@@ -15,26 +17,23 @@ let supabase: SupabaseClient | null = null;
 let supabaseAuthPromise: Promise<void> | null = null;
 let isAuthReady = false;
 
-if (supabaseUrl && supabaseAnonKey) {
+// Cliente direto só é usado como fallback (ex.: desenvolvimento local sem proxy)
+if (!supabaseProxyUrl && supabaseUrl && supabaseAnonKey) {
     supabase = createClient(supabaseUrl, supabaseAnonKey);
-    // Tentar autenticação anônima, mas não bloquear se falhar
     supabaseAuthPromise = supabase.auth.signInAnonymously().then(result => {
         if (result.error) {
-            console.warn('⚠️ Erro ao autenticar anonimamente no Supabase (usando modo local):', result.error.message);
-            // Não desabilitar Supabase completamente - pode funcionar para leitura
+            console.warn('⚠️ Erro ao autenticar anonimamente no Supabase (modo fallback):', result.error.message);
             isAuthReady = false;
             return;
         }
         isAuthReady = true;
-        console.log('✅ Supabase configurado e conectado (sessão anônima)');
+        console.log('✅ Supabase configurado via SDK (modo fallback)');
     }).catch(error => {
-        // Não desabilitar Supabase - pode funcionar parcialmente
-        console.warn('⚠️ Erro ao configurar autenticação Supabase (usando modo local):', error);
+        console.warn('⚠️ Erro ao configurar autenticação Supabase (modo fallback):', error);
         isAuthReady = false;
     });
-} else {
-    console.warn('⚠️ Supabase não configurado. Usando IndexedDB local.');
-    console.warn('⚠️ Configure VITE_SUPABASE_URL / VITE_PUBLIC_SUPABASE_URL e VITE_SUPABASE_ANON_KEY / VITE_PUBLIC_SUPABASE_ANON_KEY no Vercel para usar Supabase.');
+} else if (!supabaseProxyUrl) {
+    console.warn('⚠️ Supabase não configurado. Usando apenas armazenamento local (IndexedDB).');
 }
 
 /**
@@ -65,37 +64,96 @@ const getSharedAnonymousId = (): string => {
  * Salva um projeto no Supabase
  * Não lança erro - apenas loga aviso se falhar
  */
-export const saveProjectToSupabase = async (project: Project): Promise<void> => {
-    if (!supabase) {
-        console.warn('⚠️ Supabase não configurado, projeto salvo apenas localmente');
-        return;
+const callSupabaseProxy = async <T = any>(
+    method: 'GET' | 'POST' | 'DELETE',
+    options?: {
+        body?: unknown;
+        query?: Record<string, string>;
     }
-    
-    try {
-        const userId = await getUserId();
-        
-        const { error } = await supabase
-            .from('projects')
-            .upsert({
-                id: project.id,
-                user_id: userId,
-                name: project.name,
-                description: project.description,
-                data: project,
-                updated_at: new Date().toISOString(),
-            }, {
-                onConflict: 'id'
-            });
-        
-        if (error) {
-            console.warn('⚠️ Erro ao salvar projeto no Supabase (salvo apenas localmente):', error.message);
-            return;
+): Promise<T> => {
+    if (!supabaseProxyUrl) {
+        throw new Error('Supabase proxy não configurado');
+    }
+
+    let url = supabaseProxyUrl;
+    if (options?.query) {
+        const params = new URLSearchParams(options.query).toString();
+        if (params) {
+            url += (url.includes('?') ? '&' : '?') + params;
         }
-        
-        console.log(`✅ Projeto "${project.name}" salvo no Supabase`);
-    } catch (error) {
-        console.warn('⚠️ Erro ao salvar no Supabase (salvo apenas localmente):', error);
     }
+
+    const response = await fetch(url, {
+        method,
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: options?.body ? JSON.stringify(options.body) : undefined
+    });
+
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || data?.success === false) {
+        const message = data?.error || `Erro HTTP ${response.status}`;
+        throw new Error(message);
+    }
+
+    return data as T;
+};
+
+const saveThroughProxy = async (project: Project) => {
+    const userId = await getUserId();
+    await callSupabaseProxy('POST', {
+        body: { project, userId }
+    });
+    console.log(`✅ Projeto "${project.name}" salvo via proxy Supabase`);
+};
+
+const saveThroughSdk = async (project: Project) => {
+    if (!supabase) {
+        throw new Error('Cliente Supabase indisponível');
+    }
+
+    const userId = await getUserId();
+    const { error } = await supabase
+        .from('projects')
+        .upsert({
+            id: project.id,
+            user_id: userId,
+            name: project.name,
+            description: project.description,
+            data: project,
+            updated_at: new Date().toISOString(),
+        }, {
+            onConflict: 'id'
+        });
+    
+    if (error) {
+        throw new Error(error.message);
+    }
+
+    console.log(`✅ Projeto "${project.name}" salvo via SDK Supabase`);
+};
+
+export const saveProjectToSupabase = async (project: Project): Promise<void> => {
+    if (supabaseProxyUrl) {
+        try {
+            await saveThroughProxy(project);
+            return;
+        } catch (error) {
+            console.warn('⚠️ Erro ao salvar via proxy Supabase:', error);
+        }
+    }
+
+    if (supabase) {
+        try {
+            await saveThroughSdk(project);
+            return;
+        } catch (error) {
+            console.warn('⚠️ Erro ao salvar via SDK Supabase:', error);
+        }
+    }
+
+    console.warn('⚠️ Supabase não configurado. Projeto salvo apenas localmente.');
 };
 
 /**
@@ -105,14 +163,29 @@ export const saveProjectToSupabase = async (project: Project): Promise<void> => 
  * Nunca lança erro - retorna array vazio se falhar
  */
 export const loadProjectsFromSupabase = async (): Promise<Project[]> => {
+    if (supabaseProxyUrl) {
+        try {
+            const userId = await getUserId();
+            const response = await callSupabaseProxy<{ projects?: Project[] }>('GET', {
+                query: { userId }
+            });
+            const projects = response.projects ?? [];
+            if (projects.length === 0) {
+                console.log('📭 Nenhum projeto encontrado no Supabase (proxy)');
+            } else {
+                console.log(`✅ ${projects.length} projetos carregados do Supabase via proxy`);
+            }
+            return projects;
+        } catch (error) {
+            console.warn('⚠️ Erro ao carregar projetos via proxy Supabase:', error);
+        }
+    }
+
     if (!supabase) {
         return [];
     }
     
     try {
-        // Buscar TODOS os projetos anônimos (sem filtro por user_id)
-        // Isso unifica todos os projetos entre dispositivos
-        // Jira é apenas para importação - não há autenticação separada
         const { data, error } = await supabase
             .from('projects')
             .select('data')
@@ -130,7 +203,7 @@ export const loadProjectsFromSupabase = async (): Promise<Project[]> => {
         }
         
         const projects = data.map(row => row.data as Project);
-        console.log(`✅ ${projects.length} projetos carregados do Supabase (unificado - todos compartilhados)`);
+        console.log(`✅ ${projects.length} projetos carregados do Supabase (fallback SDK)`);
         return projects;
     } catch (error) {
         console.warn('⚠️ Erro ao carregar do Supabase (usando cache local):', error);
@@ -143,6 +216,19 @@ export const loadProjectsFromSupabase = async (): Promise<Project[]> => {
  * Não lança erro - apenas loga aviso se falhar
  */
 export const deleteProjectFromSupabase = async (projectId: string): Promise<void> => {
+    if (supabaseProxyUrl) {
+        try {
+            const userId = await getUserId();
+            await callSupabaseProxy('DELETE', {
+                body: { projectId, userId }
+            });
+            console.log(`✅ Projeto ${projectId} removido via proxy Supabase`);
+            return;
+        } catch (error) {
+            console.warn('⚠️ Erro ao deletar via proxy Supabase:', error);
+        }
+    }
+
     if (!supabase) {
         console.warn('⚠️ Supabase não configurado, projeto deletado apenas localmente');
         return;
@@ -162,7 +248,7 @@ export const deleteProjectFromSupabase = async (projectId: string): Promise<void
             return;
         }
         
-        console.log(`✅ Projeto ${projectId} deletado do Supabase`);
+        console.log(`✅ Projeto ${projectId} deletado do Supabase (fallback SDK)`);
     } catch (error) {
         console.warn('⚠️ Erro ao deletar do Supabase (deletado apenas localmente):', error);
     }
@@ -172,8 +258,6 @@ export const deleteProjectFromSupabase = async (projectId: string): Promise<void
  * Verifica se Supabase está configurado e disponível
  */
 export const isSupabaseAvailable = (): boolean => {
-    return supabase !== null;
+    return Boolean(supabaseProxyUrl) || supabase !== null;
 };
-
-export { supabase };
 

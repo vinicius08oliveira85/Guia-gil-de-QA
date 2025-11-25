@@ -24,9 +24,17 @@ Para projetos com **mais de 10.000 issues**, recomenda-se usar Supabase para:
 No Vercel, adicione as seguintes variáveis de ambiente:
 
 ```
-VITE_SUPABASE_URL=https://xxxxx.supabase.co
-VITE_SUPABASE_ANON_KEY=sua-chave-anon-aqui
+# Disponível apenas no backend (Functions)
+SUPABASE_URL=https://xxxxx.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=sua-chave-service-role-aqui
+
+# Disponível no frontend
+VITE_SUPABASE_PROXY_URL=/api/supabaseProxy
 ```
+
+> 💡 Recomendado definir `VITE_SUPABASE_PROXY_URL=/api/supabaseProxy`. Em desenvolvimento
+> local, utilize `VITE_SUPABASE_PROXY_URL=http://localhost:3000/api/supabaseProxy`
+> ao executar `vercel dev`.
 
 ### 3. Criar Tabelas no Supabase
 
@@ -82,138 +90,20 @@ CREATE POLICY "Users can delete their own projects"
 
 ## Implementação no Código
 
-### Instalar Dependências
+O repositório já está preparado com:
 
-```bash
-npm install @supabase/supabase-js
-```
+1. **Function `api/supabaseProxy.ts`**  
+   - Recebe requisições do frontend e fala com o Supabase usando a `SUPABASE_SERVICE_ROLE_KEY`.  
+   - Evita erros de CORS e mantém a chave sensível apenas no backend.
 
-### Criar Serviço Supabase
+2. **Serviço `services/supabaseService.ts`**  
+   - O frontend chama somente o proxy (`fetch('/api/supabaseProxy', ...)`).  
+   - Existe fallback automático para o SDK direto caso você esteja desenvolvendo localmente sem proxy.
 
-Crie o arquivo `services/supabaseService.ts`:
+3. **Integração com `dbService.ts`**  
+   - Salvar, carregar e excluir projetos já verificam se o Supabase está disponível e caem para IndexedDB quando necessário.
 
-```typescript
-import { createClient } from '@supabase/supabase-js';
-import { Project } from '../types';
-
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn('Supabase não configurado. Usando IndexedDB local.');
-}
-
-export const supabase = supabaseUrl && supabaseAnonKey 
-  ? createClient(supabaseUrl, supabaseAnonKey)
-  : null;
-
-export const getUserId = async (): Promise<string> => {
-  if (!supabase) return 'anonymous';
-  
-  const { data: { user } } = await supabase.auth.getUser();
-  if (user) return user.id;
-  
-  // Se não autenticado, criar sessão anônima
-  const { data: { session } } = await supabase.auth.getSession();
-  if (session) return session.user.id;
-  
-  // Criar usuário anônimo temporário
-  return `anon-${Date.now()}`;
-};
-
-export const saveProjectToSupabase = async (project: Project): Promise<void> => {
-  if (!supabase) throw new Error('Supabase não configurado');
-  
-  const userId = await getUserId();
-  
-  const { error } = await supabase
-    .from('projects')
-    .upsert({
-      id: project.id,
-      user_id: userId,
-      name: project.name,
-      description: project.description,
-      data: project,
-      updated_at: new Date().toISOString(),
-    }, {
-      onConflict: 'id'
-    });
-  
-  if (error) throw error;
-};
-
-export const loadProjectsFromSupabase = async (): Promise<Project[]> => {
-  if (!supabase) throw new Error('Supabase não configurado');
-  
-  const userId = await getUserId();
-  
-  const { data, error } = await supabase
-    .from('projects')
-    .select('data')
-    .eq('user_id', userId)
-    .order('updated_at', { ascending: false });
-  
-  if (error) throw error;
-  
-  return data.map(row => row.data as Project);
-};
-
-export const deleteProjectFromSupabase = async (projectId: string): Promise<void> => {
-  if (!supabase) throw new Error('Supabase não configurado');
-  
-  const userId = await getUserId();
-  
-  const { error } = await supabase
-    .from('projects')
-    .delete()
-    .eq('id', projectId)
-    .eq('user_id', userId);
-  
-  if (error) throw error;
-};
-```
-
-### Modificar dbService.ts
-
-Atualize `services/dbService.ts` para usar Supabase quando disponível:
-
-```typescript
-import { supabase, saveProjectToSupabase, loadProjectsFromSupabase, deleteProjectFromSupabase } from './supabaseService';
-
-// ... código existente ...
-
-export const saveProject = async (project: Project): Promise<void> => {
-  // Tentar Supabase primeiro
-  if (supabase) {
-    try {
-      await saveProjectToSupabase(project);
-      console.log('✅ Projeto salvo no Supabase');
-      return;
-    } catch (error) {
-      console.warn('⚠️ Erro ao salvar no Supabase, usando IndexedDB:', error);
-    }
-  }
-  
-  // Fallback para IndexedDB
-  // ... código IndexedDB existente ...
-};
-
-export const loadProjects = async (): Promise<Project[]> => {
-  // Tentar Supabase primeiro
-  if (supabase) {
-    try {
-      const projects = await loadProjectsFromSupabase();
-      console.log(`✅ ${projects.length} projetos carregados do Supabase`);
-      return projects;
-    } catch (error) {
-      console.warn('⚠️ Erro ao carregar do Supabase, usando IndexedDB:', error);
-    }
-  }
-  
-  // Fallback para IndexedDB
-  // ... código IndexedDB existente ...
-};
-```
+Portanto, basta configurar as variáveis de ambiente e executar `npm run build`. Se quiser adaptar para outro backend, use os arquivos acima como referência.
 
 ## Limites e Considerações
 

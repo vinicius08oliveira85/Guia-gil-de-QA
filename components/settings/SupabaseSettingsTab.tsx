@@ -44,15 +44,16 @@ export const SupabaseSettingsTab: React.FC = () => {
                     ) : (
                         <>
                             <p className="text-text-secondary text-sm">
-                                Supabase não está configurado. Configure as variáveis de ambiente no Vercel para habilitar o armazenamento na nuvem.
+                                Supabase não está configurado. Configure o proxy no Vercel para habilitar o armazenamento na nuvem.
                             </p>
                             <div className="space-y-2 text-sm text-text-secondary">
                                 <p>
                                     <strong>Variáveis necessárias:</strong>
                                 </p>
                                 <ul className="list-disc list-inside ml-4 space-y-1">
-                                    <li><code className="bg-black/30 px-1 rounded">VITE_SUPABASE_URL</code></li>
-                                    <li><code className="bg-black/30 px-1 rounded">VITE_SUPABASE_ANON_KEY</code></li>
+                                    <li><code className="bg-black/30 px-1 rounded">SUPABASE_URL</code></li>
+                                    <li><code className="bg-black/30 px-1 rounded">SUPABASE_SERVICE_ROLE_KEY</code></li>
+                                    <li><code className="bg-black/30 px-1 rounded">VITE_SUPABASE_PROXY_URL</code> (ex.: <code>/api/supabaseProxy</code>)</li>
                                 </ul>
                                 <p className="mt-4">
                                     Consulte a documentação em <code className="bg-black/30 px-1 rounded">docs/SUPABASE_SETUP.md</code> para mais informações.

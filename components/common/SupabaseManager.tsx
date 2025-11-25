@@ -19,7 +19,7 @@ export const SupabaseManager: React.FC<SupabaseManagerProps> = ({ project, onPro
 
     const handleSaveToSupabase = async () => {
         if (!supabaseAvailable) {
-            handleWarning('Supabase não está configurado. Configure as variáveis de ambiente VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY no Vercel.');
+            handleWarning('Supabase não está configurado. Configure o proxy (VITE_SUPABASE_PROXY_URL) e as variáveis do servidor no Vercel.');
             return;
         }
 
@@ -70,7 +70,7 @@ export const SupabaseManager: React.FC<SupabaseManagerProps> = ({ project, onPro
                         <Badge variant="warning">Não Configurado</Badge>
                     </div>
                     <p className="text-sm text-text-secondary mb-4">
-                        Configure as variáveis de ambiente <code className="bg-black/30 px-1 rounded">VITE_SUPABASE_URL</code> e <code className="bg-black/30 px-1 rounded">VITE_SUPABASE_ANON_KEY</code> no Vercel para habilitar o armazenamento na nuvem.
+                        Configure as variáveis de ambiente <code className="bg-black/30 px-1 rounded">SUPABASE_URL</code>, <code className="bg-black/30 px-1 rounded">SUPABASE_SERVICE_ROLE_KEY</code> e <code className="bg-black/30 px-1 rounded">VITE_SUPABASE_PROXY_URL</code> no Vercel para habilitar o armazenamento na nuvem.
                     </p>
                     <p className="text-xs text-text-secondary">
                         📊 Projeto atual: <strong>{project.tasks.length} tarefas</strong> - Armazenado localmente (IndexedDB)
