@@ -10,6 +10,9 @@ export interface TestCase {
   isAutomated?: boolean;
   observedResult?: string;
   toolsUsed?: string[]; // Ferramentas utilizadas neste caso de teste
+  preconditions?: string; // Précondições
+  testSuite?: string; // Suite de teste
+  testEnvironment?: string; // Ambiente de teste
 }
 
 export type TestCaseDetailLevel = 'Resumido' | 'Padrão' | 'Detalhado';

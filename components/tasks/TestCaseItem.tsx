@@ -181,7 +181,13 @@ export const TestCaseItem: React.FC<{
             </div>
             <p className="font-semibold text-text-primary mt-4">{testCase.description}</p>
             <div className="mt-2 pl-4 border-l-2 border-slate-700">
-                <p className="font-medium text-text-secondary">Passos:</p>
+                {testCase.preconditions && (
+                    <>
+                        <p className="font-medium text-text-secondary">Précondições:</p>
+                        <p className="text-text-primary mt-1">{testCase.preconditions}</p>
+                    </>
+                )}
+                <p className="font-medium text-text-secondary mt-2">Passos:</p>
                 <ul className="list-disc list-inside text-text-primary space-y-1 mt-1">
                     {testCase.steps.map((step, i) => <li key={i}>{step}</li>)}
                 </ul>
@@ -189,9 +195,25 @@ export const TestCaseItem: React.FC<{
                 <p className="text-text-primary mt-1">{testCase.expectedResult}</p>
                  {testCase.status === 'Failed' && testCase.observedResult && (
                     <>
-                        <p className="font-medium text-red-400 mt-2">Resultado Observado:</p>
+                        <p className="font-medium text-red-400 mt-2">Resultado Encontrado:</p>
                         <p className="text-red-300 mt-1">{testCase.observedResult}</p>
                     </>
+                )}
+                {(testCase.testSuite || testCase.testEnvironment) && (
+                    <div className="mt-2 flex flex-wrap gap-4">
+                        {testCase.testSuite && (
+                            <div>
+                                <p className="font-medium text-text-secondary text-xs">Suite de teste:</p>
+                                <p className="text-text-primary text-sm mt-1">{testCase.testSuite}</p>
+                            </div>
+                        )}
+                        {testCase.testEnvironment && (
+                            <div>
+                                <p className="font-medium text-text-secondary text-xs">Ambiente de teste:</p>
+                                <p className="text-text-primary text-sm mt-1">{testCase.testEnvironment}</p>
+                            </div>
+                        )}
+                    </div>
                 )}
             </div>
             <div className="mt-4 flex items-center justify-between">

@@ -22,23 +22,29 @@ export const TestCaseEditorModal: React.FC<TestCaseEditorModalProps> = ({
     onDelete
 }) => {
     const [description, setDescription] = useState(testCase.description);
+    const [preconditions, setPreconditions] = useState(testCase.preconditions || '');
     const [expectedResult, setExpectedResult] = useState(testCase.expectedResult);
     const [status, setStatus] = useState<TestCase['status']>(testCase.status);
     const [steps, setSteps] = useState<string[]>(ensureAtLeastOne(testCase.steps || ['']));
     const [strategies, setStrategies] = useState<string[]>(ensureAtLeastOne(testCase.strategies || []));
     const [executedStrategies, setExecutedStrategies] = useState<string[]>(ensureAtLeastOne(normalizeExecutedStrategy(testCase.executedStrategy)));
     const [observedResult, setObservedResult] = useState(testCase.observedResult || '');
+    const [testSuite, setTestSuite] = useState(testCase.testSuite || '');
+    const [testEnvironment, setTestEnvironment] = useState(testCase.testEnvironment || '');
     const [isAutomated, setIsAutomated] = useState<boolean>(!!testCase.isAutomated);
     const [toolsUsed, setToolsUsed] = useState<string[]>(testCase.toolsUsed || []);
 
     useEffect(() => {
         setDescription(testCase.description);
+        setPreconditions(testCase.preconditions || '');
         setExpectedResult(testCase.expectedResult);
         setStatus(testCase.status);
         setSteps(ensureAtLeastOne(testCase.steps || ['']));
         setStrategies(ensureAtLeastOne(testCase.strategies || []));
         setExecutedStrategies(ensureAtLeastOne(normalizeExecutedStrategy(testCase.executedStrategy)));
         setObservedResult(testCase.observedResult || '');
+        setTestSuite(testCase.testSuite || '');
+        setTestEnvironment(testCase.testEnvironment || '');
         setIsAutomated(!!testCase.isAutomated);
         setToolsUsed(testCase.toolsUsed || []);
     }, [testCase]);
@@ -92,12 +98,15 @@ export const TestCaseEditorModal: React.FC<TestCaseEditorModalProps> = ({
         onSave({
             ...testCase,
             description: description.trim(),
+            preconditions: preconditions.trim() || undefined,
             expectedResult: expectedResult.trim(),
             status,
             steps: sanitizedSteps.length > 0 ? sanitizedSteps : ['Passo 1'],
             strategies: sanitizedStrategies.length > 0 ? sanitizedStrategies : undefined,
             executedStrategy: sanitizedExecuted.length > 0 ? sanitizedExecuted : undefined,
             observedResult: observedResult.trim() || undefined,
+            testSuite: testSuite.trim() || undefined,
+            testEnvironment: testEnvironment.trim() || undefined,
             isAutomated,
             toolsUsed: sanitizedTools.length > 0 ? sanitizedTools : undefined,
         });
@@ -107,31 +116,27 @@ export const TestCaseEditorModal: React.FC<TestCaseEditorModalProps> = ({
     return (
         <Modal isOpen={isOpen} onClose={onClose} title={`Editar caso de teste: ${testCase.description}`} size="xl">
             <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label className="block text-xs font-semibold text-text-secondary mb-1">Descrição</label>
-                        <input
-                            value={description}
-                            onChange={e => setDescription(e.target.value)}
-                            className="w-full bg-surface-hover border border-surface-border rounded-md px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/50"
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-xs font-semibold text-text-secondary mb-1">Status</label>
-                        <select
-                            value={status}
-                            onChange={e => setStatus(e.target.value as TestCase['status'])}
-                            className="w-full bg-surface-hover border border-surface-border rounded-md px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/50"
-                        >
-                            <option value="Not Run">Não Executado</option>
-                            <option value="Passed">Aprovado</option>
-                            <option value="Failed">Reprovado</option>
-                        </select>
-                    </div>
+                <div>
+                    <label className="block text-xs font-semibold text-text-secondary mb-1">Descrição</label>
+                    <input
+                        value={description}
+                        onChange={e => setDescription(e.target.value)}
+                        className="w-full bg-surface-hover border border-surface-border rounded-md px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/50"
+                    />
                 </div>
 
                 <div>
-                    <label className="block text-xs font-semibold text-text-secondary mb-2">Passos</label>
+                    <label className="block text-xs font-semibold text-text-secondary mb-1">Précondições</label>
+                    <textarea
+                        value={preconditions}
+                        onChange={e => setPreconditions(e.target.value)}
+                        className="w-full bg-surface-hover border border-surface-border rounded-md px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/50 min-h-[80px]"
+                        placeholder="Descreva as précondições necessárias para executar este teste"
+                    />
+                </div>
+
+                <div>
+                    <label className="block text-xs font-semibold text-text-secondary mb-2">Passo-a-passo</label>
                     <div className="space-y-2">
                         {steps.map((step, index) => (
                             <div key={`step-${index}`} className="flex gap-2">
@@ -234,13 +239,47 @@ export const TestCaseEditorModal: React.FC<TestCaseEditorModalProps> = ({
                 </div>
 
                 <div>
-                    <label className="block text-xs font-semibold text-text-secondary mb-1">Resultado observado</label>
+                    <label className="block text-xs font-semibold text-text-secondary mb-1">Resultado encontrado</label>
                     <textarea
                         value={observedResult}
                         onChange={e => setObservedResult(e.target.value)}
                         className="w-full bg-surface-hover border border-surface-border rounded-md px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/50 min-h-[80px]"
                         placeholder="Preencha apenas se o teste falhou"
                     />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label className="block text-xs font-semibold text-text-secondary mb-1">Suite de teste</label>
+                        <input
+                            value={testSuite}
+                            onChange={e => setTestSuite(e.target.value)}
+                            className="w-full bg-surface-hover border border-surface-border rounded-md px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/50"
+                            placeholder="Ex: Login"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-xs font-semibold text-text-secondary mb-1">Ambiente de teste</label>
+                        <input
+                            value={testEnvironment}
+                            onChange={e => setTestEnvironment(e.target.value)}
+                            className="w-full bg-surface-hover border border-surface-border rounded-md px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/50"
+                            placeholder="Ex: Chrome / Firefox"
+                        />
+                    </div>
+                </div>
+
+                <div>
+                    <label className="block text-xs font-semibold text-text-secondary mb-1">Status</label>
+                    <select
+                        value={status}
+                        onChange={e => setStatus(e.target.value as TestCase['status'])}
+                        className="w-full bg-surface-hover border border-surface-border rounded-md px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/50"
+                    >
+                        <option value="Not Run">Não Executado</option>
+                        <option value="Passed">Aprovado</option>
+                        <option value="Failed">Reprovado</option>
+                    </select>
                 </div>
 
                 <div className="flex items-center justify-between bg-surface-hover rounded-lg border border-surface-border px-4 py-3">

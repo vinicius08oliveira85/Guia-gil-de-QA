@@ -1475,7 +1475,7 @@ export const TasksView: React.FC<{
         >
             <div className="space-y-4">
                 <div>
-                    <label htmlFor="observed-result" className="block text-sm font-medium text-text-secondary mb-1">Resultado Observado (O que aconteceu de errado?)</label>
+                    <label htmlFor="observed-result" className="block text-sm font-medium text-text-secondary mb-1">Resultado Encontrado (O que aconteceu de errado?)</label>
                     <textarea 
                         id="observed-result" 
                         value={failModalState.observedResult} 

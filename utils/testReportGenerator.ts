@@ -64,9 +64,9 @@ export function generateTestReport(task: JiraTask, generatedAt: Date = new Date(
         lines.push(`   Testes Executados: ${executedTestStrategies.join(', ')}`);
       }
       
-      // Resultado observado (se falhou)
+      // Resultado encontrado (se falhou)
       if (testCase.status === 'Failed' && testCase.observedResult) {
-        lines.push(`   Resultado Observado: ${testCase.observedResult}`);
+        lines.push(`   Resultado Encontrado: ${testCase.observedResult}`);
       }
       
       // Automação

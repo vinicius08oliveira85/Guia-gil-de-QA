@@ -112,7 +112,7 @@ Usuários estão reportando que ao preencher o formulário de cadastro e clicar 
 **Resultado esperado:**
 Dados devem ser salvos e usuário deve ser redirecionado.
 
-**Resultado observado:**
+**Resultado encontrado:**
 Nada acontece ao clicar no botão.
 
 **Severidade:**

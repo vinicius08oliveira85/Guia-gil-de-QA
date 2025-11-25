@@ -69,8 +69,8 @@ ${testCase.steps.map((step, idx) => `${idx + 1}. ${step}`).join('\n')}
 **Resultado Esperado:**
 ${testCase.expectedResult}
 
-**Resultado Observado:**
-${observedResult || 'Nenhum resultado observado foi fornecido.'}
+**Resultado Encontrado:**
+${observedResult || 'Nenhum resultado encontrado foi fornecido.'}
 
 **Estratégias de Teste:**
 ${testCase.strategies?.join(', ') || 'N/A'}
