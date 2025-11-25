@@ -95,6 +95,9 @@ export class OpenAIService implements AIService {
           *   **expectedResult**: O resultado esperado.
           *   **strategies**: Uma lista de strings contendo os 'testType's da seção de estratégia acima que se aplicam a este caso de teste.
           *   **isAutomated**: true se o teste for um bom candidato para automação (repetitivo, crítico, de regressão), false caso contrário (ex: exploratório, usabilidade).
+          *   **preconditions**: Précondições necessárias para executar este teste (ex: dados que devem existir no sistema, estados prévios, configurações). Deixe vazio ou omita se não houver précondições específicas.
+          *   **testSuite**: Nome da suite de teste à qual este caso pertence, baseado no contexto da tarefa e funcionalidade testada (ex: "Login", "Cadastro", "Pagamento", "Relatórios").
+          *   **testEnvironment**: Ambiente(s) de teste onde este caso deve ser executado (ex: "Chrome", "Firefox", "Safari", "Mobile", "API"). Pode incluir múltiplos ambientes separados por " / " (ex: "Chrome / Firefox").
 
       Título da Tarefa: ${title}
       Descrição da Tarefa: ${description}
@@ -119,6 +122,9 @@ export class OpenAIService implements AIService {
         status: 'Not Run' as const,
         strategies: item.strategies || [],
         isAutomated: item.isAutomated || false,
+        preconditions: item.preconditions || undefined,
+        testSuite: item.testSuite || undefined,
+        testEnvironment: item.testEnvironment || undefined,
       }));
       
       const strategy: TestStrategy[] = parsedResponse.strategy.map((item: any) => ({
