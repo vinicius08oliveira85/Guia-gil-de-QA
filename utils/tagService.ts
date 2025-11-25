@@ -71,3 +71,17 @@ export const removeTagFromTask = (task: JiraTask, tag: string): JiraTask => {
   };
 };
 
+/**
+ * Extrai tags de versão de uma tarefa (formato V1, V2, V3, etc.)
+ * @param task - Tarefa da qual extrair versões
+ * @returns Array de versões encontradas, ordenadas
+ */
+export const getTaskVersions = (task: JiraTask): string[] => {
+  if (!task.tags || task.tags.length === 0) return [];
+  
+  return task.tags
+    .filter(tag => /^V\d+/i.test(tag.trim()))
+    .map(tag => tag.trim().toUpperCase())
+    .sort();
+};
+

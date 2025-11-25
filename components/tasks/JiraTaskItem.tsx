@@ -14,7 +14,8 @@ import { ChecklistView } from '../common/ChecklistView';
 import { EstimationInput } from '../common/EstimationInput';
 import { QuickActions } from '../common/QuickActions';
 import { TimeTracker } from '../common/TimeTracker';
-import { getTagColor } from '../../utils/tagService';
+import { getTagColor, getTaskVersions } from '../../utils/tagService';
+import { VersionBadges } from './VersionBadge';
 import { updateChecklistItem } from '../../utils/checklistService';
 import { getTaskPhase, getPhaseBadgeStyle, getNextStepForTask } from '../../utils/taskPhaseHelper';
 import { useBeginnerMode } from '../../hooks/useBeginnerMode';
@@ -437,19 +438,39 @@ export const JiraTaskItem: React.FC<{
                       )}
                 </div>
             )}
-            {task.tags && task.tags.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                    {task.tags.map(tag => (
-                        <span
-                            key={tag}
-                            className="text-xs px-2 py-0.5 rounded-full text-white"
-                            style={{ backgroundColor: getTagColor(tag) }}
-                        >
-                            {tag}
-                        </span>
-                    ))}
-                </div>
-            )}
+            {(() => {
+                const versions = getTaskVersions(task);
+                const otherTags = task.tags?.filter(tag => !/^V\d+/i.test(tag.trim())) || [];
+                
+                return (versions.length > 0 || otherTags.length > 0) && (
+                    <div className="space-y-2">
+                        {versions.length > 0 && (
+                            <div>
+                                <p className="text-[11px] uppercase text-text-secondary tracking-wide mb-1.5">Versão do Projeto</p>
+                                <VersionBadges versions={versions} size="md" />
+                            </div>
+                        )}
+                        {otherTags.length > 0 && (
+                            <div>
+                                {versions.length > 0 && (
+                                    <p className="text-[11px] uppercase text-text-secondary tracking-wide mb-1.5">Tags</p>
+                                )}
+                                <div className="flex flex-wrap gap-2">
+                                    {otherTags.map(tag => (
+                                        <span
+                                            key={tag}
+                                            className="text-xs px-2 py-0.5 rounded-full text-white"
+                                            style={{ backgroundColor: getTagColor(tag) }}
+                                        >
+                                            {tag}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                );
+            })()}
         </div>
     );
 
@@ -810,6 +831,12 @@ export const JiraTaskItem: React.FC<{
                             <TaskStatusIcon status={task.status} />
                             <TaskTypeIcon type={task.type} />
                             <span className="task-card-compact_code">{task.id}</span>
+                            {(() => {
+                                const versions = getTaskVersions(task);
+                                return versions.length > 0 && (
+                                    <VersionBadges versions={versions} size="sm" />
+                                );
+                            })()}
                             <span className="task-card-compact_badge">{task.type}</span>
                             {task.severity && <span className="task-card-compact_badge">{task.severity}</span>}
                             {task.priority && <span className="task-card-compact_badge">{task.priority}</span>}
