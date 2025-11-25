@@ -1,15 +1,17 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Project } from '../../types';
-import { useProjectMetrics } from '../../hooks/useProjectMetrics';
+import { calculateProjectMetrics, useProjectMetrics } from '../../hooks/useProjectMetrics';
 import { ProjectTrailHeader } from './ProjectTrailHeader';
-import { NextSteps } from './NextSteps';
-import { CompletedPhasesReview } from './CompletedPhasesReview';
-import { TimelineRail } from './TimelineRail';
 import { generateGeneralIAAnalysis } from '../../services/ai/generalAnalysisService';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import { useAnalysisSync } from '../../hooks/useAnalysisSync';
 import { AnalysisView } from '../analysis/AnalysisView';
 import { Modal } from '../common/Modal';
+import { SDLCPhasesCard } from './SDLCPhasesCard';
+import { TestPyramidSummaryCard } from './TestPyramidSummaryCard';
+import { FunctionalTestsCard } from './FunctionalTestsCard';
+import { CoverageMetricsCard } from './CoverageMetricsCard';
+import { QualityMetricsCard } from './QualityMetricsCard';
 
 interface ProjectTrailProps {
     project: Project;
@@ -69,13 +71,27 @@ export const ProjectTrail: React.FC<ProjectTrailProps> = ({
         );
     }, [project.tasks, selectedVersion]);
 
-    const completedPhases = metrics.newPhases.filter(phase => phase.status === 'Concluído');
-    const remainingPhases = metrics.newPhases.filter(phase => phase.status !== 'Concluído').length;
-    const overallProgress = metrics.newPhases.length
-        ? Math.round((completedPhases.length / metrics.newPhases.length) * 100)
+    const scopedMetrics = useMemo(() => {
+        if (selectedVersion === 'Todos') {
+            return metrics;
+        }
+
+        return calculateProjectMetrics({
+            ...project,
+            tasks: versionTasks
+        });
+    }, [selectedVersion, metrics, project, versionTasks]);
+
+    const activeMetrics = scopedMetrics;
+
+    const completedPhases = activeMetrics.newPhases.filter(phase => phase.status === 'Concluído');
+    const remainingPhases = activeMetrics.newPhases.filter(phase => phase.status !== 'Concluído').length;
+    const overallProgress = activeMetrics.newPhases.length
+        ? Math.round((completedPhases.length / activeMetrics.newPhases.length) * 100)
         : 0;
-    const currentPhase = metrics.newPhases.find(phase => phase.status === 'Em Andamento')?.name ?? 'Planejamento';
-    const upcomingPhase = metrics.newPhases.find(phase => phase.status === 'Não Iniciado')?.name;
+    const currentPhase = activeMetrics.newPhases.find(phase => phase.status === 'Em Andamento')?.name ?? 'Planejamento';
+    const upcomingPhase = activeMetrics.newPhases.find(phase => phase.status === 'Não Iniciado')?.name;
+    const versionLabel = selectedVersion === 'Todos' ? 'Projeto completo' : `Versão ${selectedVersion}`;
 
     const handleAskAI = useCallback(async () => {
         setIsAnalyzing(true);
@@ -143,37 +159,48 @@ export const ProjectTrail: React.FC<ProjectTrailProps> = ({
                 lastAnalysisAt={project.generalIAAnalysis?.generatedAt}
             />
 
-            <NextSteps
-                project={project}
-                selectedVersion={selectedVersion}
-                versionTasks={versionTasks}
-                onStartStep={handleStartStep}
-            />
-
-            <CompletedPhasesReview
-                completedPhases={completedPhases}
-                metricsSummary={{
-                    coverage: metrics.testCoverage,
-                    passRate: metrics.testPassRate,
-                    automation: metrics.automationRatio
-                }}
-                generalAnalysis={project.generalIAAnalysis}
-                onRefreshAnalysis={handleAskAI}
-                isRefreshing={isAnalyzing}
-                analysisOutdated={analysisNeedsRefresh}
-                onOpenDetailedAnalysis={() => setShowAnalysisModal(true)}
-            />
-
-            <TimelineRail
-                project={project}
-                phases={metrics.newPhases}
-                selectedVersion={selectedVersion}
-                versionTasks={versionTasks}
+            <SDLCPhasesCard
+                phases={activeMetrics.newPhases}
+                versionLabel={versionLabel}
                 overallProgress={overallProgress}
                 onAskAI={handleAskAI}
                 isAiLoading={isAnalyzing}
                 analysisOutdated={analysisNeedsRefresh}
             />
+
+            <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+                <TestPyramidSummaryCard project={project} versionLabel={versionLabel} />
+                <FunctionalTestsCard
+                    versionLabel={versionLabel}
+                    tasks={versionTasks}
+                    totalTestCases={activeMetrics.totalTestCases}
+                    executedTestCases={activeMetrics.executedTestCases}
+                    passedTestCases={activeMetrics.passedTestCases}
+                />
+            </div>
+
+            <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+                <CoverageMetricsCard
+                    versionLabel={versionLabel}
+                    testCoverage={activeMetrics.testCoverage}
+                    automationRatio={activeMetrics.automationRatio}
+                    tasksWithTestCases={activeMetrics.tasksWithTestCases}
+                    totalTasks={activeMetrics.totalTasks}
+                    totalTestCases={activeMetrics.totalTestCases}
+                    automatedTestCases={activeMetrics.automatedTestCases}
+                />
+
+                <QualityMetricsCard
+                    versionLabel={versionLabel}
+                    passRate={activeMetrics.testPassRate}
+                    openVsClosedBugs={activeMetrics.openVsClosedBugs}
+                    bugsBySeverity={activeMetrics.bugsBySeverity}
+                    qualityByModule={activeMetrics.qualityByModule}
+                    generalAnalysis={project.generalIAAnalysis}
+                    analysisOutdated={analysisNeedsRefresh}
+                    onOpenDetailedAnalysis={() => setShowAnalysisModal(true)}
+                />
+            </div>
 
             <Modal
                 isOpen={showAnalysisModal}
