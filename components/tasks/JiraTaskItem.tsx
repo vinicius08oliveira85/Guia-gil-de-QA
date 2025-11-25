@@ -226,21 +226,22 @@ export const JiraTaskItem: React.FC<{
             let status: 'pending' | 'partial' | 'done' | 'failed' = 'pending';
             if (data.failed > 0) {
                 status = 'failed';
-            } else if (pendingCases === 0 && (data.executed > 0 || data.strategyExecuted)) {
+            } else if (pendingCases === 0 && data.executed > 0) {
+                // Só marca como 'done' se todos os testes foram executados E há pelo menos um executado
                 status = 'done';
-            } else if (data.executed > 0 || data.strategyExecuted) {
+            } else if (data.executed > 0) {
+                // Há testes executados mas ainda há pendentes
                 status = 'partial';
             } else if (data.hasStrategy) {
+                // Tem estratégia mas nenhum teste executado ainda
                 status = 'pending';
             }
 
             const label = data.total > 0
                 ? `${data.executed}/${data.total}`
-                : data.strategyExecuted
-                    ? 'Executado'
-                    : data.hasStrategy
-                        ? 'Planejado'
-                        : '—';
+                : data.hasStrategy
+                    ? 'Planejado'
+                    : '—';
 
             return { type, status, label };
         }).sort((a, b) => a.type.localeCompare(b.type));
