@@ -168,7 +168,10 @@ const App: React.FC = () => {
         }
     ]);
 
-    const selectedProject = useMemo(() => getSelectedProject(), [getSelectedProject]);
+    const selectedProject = useMemo(() => {
+        if (!selectedProjectId) return undefined;
+        return projects.find(p => p.id === selectedProjectId);
+    }, [projects, selectedProjectId]);
 
     if (isLoading) {
         return (

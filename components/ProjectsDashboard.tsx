@@ -482,7 +482,14 @@ export const ProjectsDashboard: React.FC<{
                                 return (
                                     <Card
                                         key={p.id}
-                                        onClick={() => onSelectProject(p.id)}
+                                        onClick={(e) => {
+                                            // Não fazer nada se o clique foi em um botão ou link
+                                            const target = e.target as HTMLElement;
+                                            if (target.closest('button, a')) {
+                                                return;
+                                            }
+                                            onSelectProject(p.id);
+                                        }}
                                         role="button"
                                         tabIndex={0}
                                         onKeyDown={(e) => {
@@ -539,8 +546,12 @@ export const ProjectsDashboard: React.FC<{
                                         </div>
 
                                         <button 
-                                            onClick={(e) => openDeleteModal(p, e)} 
-                                            className="absolute top-3 right-3 h-8 w-8 flex items-center justify-center rounded-full bg-surface-hover/60 text-text-secondary opacity-100 sm:opacity-0 group-hover:opacity-100 hover:bg-red-500 hover:text-white transition-all active:scale-95"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                e.preventDefault();
+                                                openDeleteModal(p, e);
+                                            }} 
+                                            className="absolute top-3 right-3 h-8 w-8 flex items-center justify-center rounded-full bg-surface-hover/60 text-text-secondary opacity-100 sm:opacity-0 group-hover:opacity-100 hover:bg-red-500 hover:text-white transition-all active:scale-95 z-10"
                                             aria-label={`Excluir projeto ${p.name}`}
                                         >
                                             <TrashIcon />
@@ -560,7 +571,14 @@ export const ProjectsDashboard: React.FC<{
                                 return (
                                     <div
                                         key={p.id}
-                                        onClick={() => onSelectProject(p.id)}
+                                        onClick={(e) => {
+                                            // Não fazer nada se o clique foi em um botão ou link
+                                            const target = e.target as HTMLElement;
+                                            if (target.closest('button, a')) {
+                                                return;
+                                            }
+                                            onSelectProject(p.id);
+                                        }}
                                         className="group flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-surface-card border border-surface-border rounded-lg hover:border-accent/50 transition-all cursor-pointer shadow-sm hover:shadow-md"
                                     >
                                         <div className="flex-1 min-w-0 pr-4 mb-3 sm:mb-0">
