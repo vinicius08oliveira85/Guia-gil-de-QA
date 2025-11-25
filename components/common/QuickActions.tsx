@@ -54,7 +54,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
           onClick={handleMarkAsReady}
           className="px-3 py-1 text-sm bg-green-500/20 text-green-400 border border-green-500/30 rounded hover:bg-green-500/30"
         >
-          ✅ Marcar como Pronta
+          ✅ Teste iniciado
         </button>
       )}
 
@@ -63,7 +63,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
           onClick={handleComplete}
           className="px-3 py-1 text-sm bg-accent/20 text-accent-light border border-accent/30 rounded hover:bg-accent/30"
         >
-          ✅ Concluir Tarefa
+          ✅ Teste Realizado
         </button>
       )}
 

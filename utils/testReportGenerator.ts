@@ -7,9 +7,15 @@ interface GenerateTestReportOptions {
   format?: TestReportFormat;
 }
 
+const sectionTitle = (format: TestReportFormat, title: string) =>
+  format === 'markdown' ? `## ${title}` : `${title.toUpperCase()}:`;
+
+const boldLabel = (format: TestReportFormat, label: string) =>
+  format === 'markdown' ? `**${label}**` : label.toUpperCase();
+
 /**
- * Gera um registro resumido dos testes realizados para uma Task
- * Formato texto simples, fácil de copiar e colar em outras plataformas
+ * Gera um registro enxuto contendo apenas os testes executados
+ * e as ferramentas utilizadas.
  */
 export function generateTestReport(
   task: JiraTask,
@@ -18,204 +24,79 @@ export function generateTestReport(
 ): string {
   const format: TestReportFormat = options.format ?? 'text';
   const lines: string[] = [];
-  const strategies = task.testStrategy ?? [];
-  const executedStrategies = task.executedStrategies ?? [];
-  const testCases = task.testCases ?? [];
-  const strategyTools = task.strategyTools ?? {};
-  const headerStatus = task.jiraStatus ?? task.status;
-  const generationDateLabel = `${generatedAt.toLocaleDateString('pt-BR')} às ${generatedAt.toLocaleTimeString('pt-BR')}`;
-  const createdAt = task.createdAt ? new Date(task.createdAt) : undefined;
-  const completedAt = task.completedAt ? new Date(task.completedAt) : undefined;
-  const toolsFromTask = task.toolsUsed ?? [];
-  const toolsFromStrategies = executedStrategies
-    .map((strategyIndex) => strategyTools[strategyIndex] ?? [])
-    .flat();
-  const toolsFromStrategyDefinitions = strategies
-    .map((strategy) => strategy.tools)
-    .filter((tool): tool is string => Boolean(tool));
-  const aggregatedTools = Array.from(
-    new Set([...toolsFromTask, ...toolsFromStrategies, ...toolsFromStrategyDefinitions])
-  ).filter(Boolean);
-  const formatTitle = (title: string) => (format === 'markdown' ? `## ${title}` : title.toUpperCase() + ':');
-  const listPrefix = format === 'markdown' ? '- ' : '• ';
-  const paragraphSeparator = format === 'markdown' ? '\n\n' : '\n';
-  
-  const formatDate = (date?: Date) =>
-    date ? `${date.toLocaleDateString('pt-BR')} às ${date.toLocaleTimeString('pt-BR')}` : 'N/A';
+  const executedTestCases = (task.testCases || []).filter(tc => tc.status !== 'Not Run');
+  const executedStrategyIndexes = new Set(task.executedStrategies || []);
+  const strategyTools = task.strategyTools || {};
 
-  const pushSection = (title: string, sectionLines: string[], skipIfEmpty = false) => {
-    if (skipIfEmpty && sectionLines.length === 0) {
-      return;
-    }
-    if (lines.length > 0) {
-      lines.push('');
-    }
-    lines.push(formatTitle(title));
-    if (format === 'markdown') {
-      lines.push('');
-    }
-    lines.push(...sectionLines.filter(Boolean));
+  const collectedTools = new Set<string>();
+  const registerTools = (tools?: string[] | string) => {
+    if (!tools) return;
+    const list = Array.isArray(tools) ? tools : tools.split(',').map(t => t.trim());
+    list.filter(Boolean).forEach(tool => collectedTools.add(tool));
   };
-  
-  // Cabeçalho contextual
-  const headerLines = [
-    `${format === 'markdown' ? '**Task:**' : 'TASK:'} ${task.id}`,
-    `${format === 'markdown' ? '**Título:**' : 'Título:'} ${task.title}`,
-    `${format === 'markdown' ? '**Status:**' : 'Status:'} ${headerStatus}`,
-    task.type ? `${format === 'markdown' ? '**Tipo:**' : 'Tipo:'} ${task.type}` : '',
-    task.priority ? `${format === 'markdown' ? '**Prioridade:**' : 'Prioridade:'} ${task.priority}` : '',
-    task.owner ? `${format === 'markdown' ? '**Owner:**' : 'Owner:'} ${task.owner}` : '',
-    task.assignee ? `${format === 'markdown' ? '**Responsável QA:**' : 'Responsável QA:'} ${task.assignee}` : '',
-    createdAt ? `${format === 'markdown' ? '**Criado em:**' : 'Criado em:'} ${formatDate(createdAt)}` : '',
-    completedAt ? `${format === 'markdown' ? '**Concluído em:**' : 'Concluído em:'} ${formatDate(completedAt)}` : '',
-    `${format === 'markdown' ? '**Relatório gerado:**' : 'Relatório gerado:'} ${generationDateLabel}`
-  ].filter(Boolean);
-  pushSection('Contexto da Task', headerLines);
-  
-  // Estratégias Realizadas (apenas as marcadas como executadas)
-  const strategiesSection: string[] = [];
-  if (strategies.length > 0 && executedStrategies.length > 0) {
-    executedStrategies.forEach((strategyIndex, execIndex) => {
-      const strategy = strategies[strategyIndex];
-      if (!strategy) {
-        return;
-      }
 
-      const prefix =
-        format === 'markdown' ? `${execIndex + 1}. **${strategy.testType}:** ${strategy.description}` : `${execIndex + 1}. ${strategy.testType}: ${strategy.description}`;
-
-      const extraLines: string[] = [];
-      const tools = strategyTools[strategyIndex] || [];
-      if (tools.length > 0) {
-        extraLines.push(`${listPrefix}Ferramentas: ${tools.join(', ')}`);
-      } else if (strategy.tools) {
-        extraLines.push(`${listPrefix}Ferramentas: ${strategy.tools}`);
-      }
-      if (strategy.howToExecute && strategy.howToExecute.length > 0) {
-        extraLines.push(`${listPrefix}Checkpoints: ${strategy.howToExecute.join('; ')}`);
-      }
-
-      strategiesSection.push(prefix);
-      strategiesSection.push(...extraLines.map((line) => (format === 'markdown' ? `   ${line}` : `   ${line}`)));
-      strategiesSection.push('');
-    });
-    if (strategiesSection[strategiesSection.length - 1] === '') {
-      strategiesSection.pop();
+  registerTools(task.toolsUsed);
+  executedStrategyIndexes.forEach(index => {
+    registerTools(strategyTools[index]);
+    const strategy = task.testStrategy?.[index];
+    if (strategy?.tools) {
+      registerTools(strategy.tools);
     }
-  }
+  });
+  executedTestCases.forEach(testCase => registerTools(testCase.toolsUsed));
 
-  // Casos de Teste
-  let passedTests = 0;
-  let failedTests = 0;
-  let notRunTests = 0;
-
-  const testCasesSection: string[] = [];
-  if (testCases.length > 0) {
-    testCases.forEach((testCase, index) => {
-      const status =
-        testCase.status === 'Passed' ? 'Aprovado' :
-        testCase.status === 'Failed' ? 'Reprovado' :
-        'Não Executado';
-      
-      const statusEmoji =
-        testCase.status === 'Passed' ? '✅' :
-        testCase.status === 'Failed' ? '❌' :
-        '⏸️';
-
-      const caseHeader =
-        format === 'markdown'
-          ? `${index + 1}. ${statusEmoji} **${testCase.description}** — ${status}`
-          : `${index + 1}. ${testCase.description} - Status: ${statusEmoji} ${status}`;
-      testCasesSection.push(caseHeader);
-      
-      const executedTestStrategies = normalizeExecutedStrategy(testCase.executedStrategy);
-      if (executedTestStrategies.length > 0) {
-        testCasesSection.push(`   ${listPrefix}Estratégias: ${executedTestStrategies.join(', ')}`);
-      }
-      
-      if (testCase.testEnvironment) {
-        testCasesSection.push(`   ${listPrefix}Ambiente: ${testCase.testEnvironment}`);
-      }
-
-      if (testCase.status === 'Failed' && testCase.observedResult) {
-        testCasesSection.push(`   ${listPrefix}Resultado Encontrado: ${testCase.observedResult}`);
-      } else if (testCase.observedResult) {
-        testCasesSection.push(`   ${listPrefix}Observações: ${testCase.observedResult}`);
-      }
-      
-      if (testCase.isAutomated) {
-        testCasesSection.push(`   ${listPrefix}Automatizado: Sim`);
-      }
-
-      if (testCase.steps && testCase.steps.length > 0 && format === 'markdown') {
-        testCasesSection.push('   - Passos principais:');
-        testCase.steps.slice(0, 3).forEach((step) => {
-          testCasesSection.push(`     - ${step}`);
-        });
-        if (testCase.steps.length > 3) {
-          testCasesSection.push('     - ...');
-        }
-      }
-
-      if (format === 'markdown') {
-        testCasesSection.push('');
-      } else {
-        testCasesSection.push('');
-      }
-
-      if (testCase.status === 'Passed') {
-        passedTests++;
-      } else if (testCase.status === 'Failed') {
-        failedTests++;
-      } else if (testCase.status === 'Not Run') {
-        notRunTests++;
-      }
-    });
-
-    if (testCasesSection.length > 0) {
-      while (testCasesSection[testCasesSection.length - 1] === '') {
-        testCasesSection.pop();
-      }
-    }
-  }
-
-  const totalTests = testCases.length;
-  const executedTests = totalTests - notRunTests;
-  const executionRate = totalTests > 0 ? Math.round((executedTests / totalTests) * 100) : 0;
-  const successRate = executedTests > 0 ? Math.round((passedTests / executedTests) * 100) : 0;
-
-  const summarySection = [
-    `${listPrefix}Total de casos: ${totalTests}`,
-    `${listPrefix}Executados: ${executedTests} (${executionRate}%)`,
-    `${listPrefix}Aprovados: ${passedTests} (${successRate}%)`,
-    `${listPrefix}Reprovados: ${failedTests}`,
-    `${listPrefix}Não executados: ${notRunTests}`,
-    aggregatedTools.length > 0 ? `${listPrefix}Ferramentas: ${aggregatedTools.join(', ')}` : ''
-  ].filter(Boolean);
-
-  const observationsSection =
-    task.description && task.description.trim().length > 0
-      ? [`${task.description.trim()}`]
-      : [];
-
-  pushSection('Resumo Executivo', summarySection);
-  pushSection('Estratégias Executadas', strategiesSection, true);
-  pushSection('Casos de Teste', testCasesSection, true);
-  pushSection('Observações Relevantes', observationsSection, true);
-
-  const footerLines = [
-    `${listPrefix}Responsável pelo registro: ${task.assignee ?? 'Não informado'}`,
-    `${listPrefix}Gerado automaticamente pelo QA Agile Guide`
+  const headingLines = [
+    `${boldLabel(format, 'Task')}: ${task.id}`,
+    `${boldLabel(format, 'Título')}: ${task.title}`,
+    `${boldLabel(format, 'Status')}: ${task.jiraStatus ?? task.status}`
   ];
-  pushSection('Metadados', footerLines);
 
-  const content = lines.join(format === 'markdown' ? '\n' : '\n');
+  lines.push(...headingLines, '');
+  lines.push(sectionTitle(format, 'Testes executados'));
+  lines.push('');
 
-  if (format === 'markdown') {
-    // Ajuda a separar seções no markdown
-    return content.replace(/\n{3,}/g, '\n\n').trim();
+  if (executedTestCases.length === 0) {
+    lines.push('Nenhum teste executado até o momento.');
+  } else {
+    executedTestCases.forEach((testCase, index) => {
+      const statusLabel = testCase.status === 'Passed' ? 'Aprovado' : 'Reprovado';
+      const prefix =
+        format === 'markdown'
+          ? `${index + 1}. **${testCase.description}** (${statusLabel})`
+          : `${index + 1}. ${testCase.description} - ${statusLabel}`;
+      lines.push(prefix);
+
+      const executedStrategies = normalizeExecutedStrategy(testCase.executedStrategy);
+      if (executedStrategies.length > 0) {
+        lines.push(format === 'markdown'
+          ? `   - O que foi testado: ${executedStrategies.join(', ')}`
+          : `   • O que foi testado: ${executedStrategies.join(', ')}`);
+      }
+
+      const tools =
+        testCase.toolsUsed && testCase.toolsUsed.length > 0
+          ? testCase.toolsUsed.join(', ')
+          : null;
+      lines.push(format === 'markdown'
+        ? `   - Ferramenta: ${tools ?? 'Não informado'}`
+        : `   • Ferramenta: ${tools ?? 'Não informado'}`);
+      lines.push('');
+    });
   }
 
-  return content.trim();
+  const toolSummary =
+    collectedTools.size > 0
+      ? Array.from(collectedTools).join(', ')
+      : 'Não informado';
+
+  lines.push(sectionTitle(format, 'Ferramentas utilizadas'));
+  lines.push('');
+  lines.push(toolSummary, '');
+
+  lines.push(`${boldLabel(format, 'Gerado em')}: ${generatedAt.toLocaleDateString('pt-BR')} às ${generatedAt.toLocaleTimeString('pt-BR')}`);
+  lines.push(`${boldLabel(format, 'Fonte')}: QA Agile Guide`);
+
+  const content = lines.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+  return content;
 }
 

@@ -44,7 +44,6 @@ const compareTasksById = (a: JiraTask, b: JiraTask) => {
 import { JiraTaskItem, TaskWithChildren } from './JiraTaskItem';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import { useFilters, FilterOptions } from '../../hooks/useFilters';
-import { getAllTagsFromProject } from '../../utils/tagService';
 import { createBugFromFailedTest } from '../../utils/bugAutoCreation';
 import { getTaskDependents, getReadyTasks } from '../../utils/dependencyService';
 import { notifyTestFailed, notifyBugCreated, notifyCommentAdded, notifyDependencyResolved } from '../../utils/notificationService';
@@ -73,7 +72,6 @@ export const TasksView: React.FC<{
     const [selectedTasks, setSelectedTasks] = useState<Set<string>>(new Set());
     const { handleError, handleSuccess } = useErrorHandler();
     const { filters, filteredTasks, updateFilter, clearFilters, removeFilter, activeFiltersCount } = useFilters(project);
-    const availableTags = getAllTagsFromProject(project);
     const availableTestTypes = useMemo(() => {
         const types = new Set<string>();
         project.tasks.forEach(task => {
@@ -838,32 +836,10 @@ export const TasksView: React.FC<{
                 chips.push({ key, label: `${prefix || ''}${values.join(', ')}`.trim() });
             }
         };
-        pushArray('status', filters.status, 'Status: ');
-        pushArray('type', filters.type, 'Tipo: ');
-        pushArray('tags', filters.tags, 'Tags: ');
-        pushArray('priority', filters.priority, 'Prioridade: ');
-        pushArray('severity', filters.severity, 'Severidade: ');
-        pushArray('owner', filters.owner, 'Owner: ');
-        pushArray('assignee', filters.assignee, 'Responsável: ');
         pushArray('testResultStatus', filters.testResultStatus, 'Testes: ');
         pushArray('requiredTestTypes', filters.requiredTestTypes, 'Estratégia de teste: ');
-
-        if (filters.dateRange?.start || filters.dateRange?.end) {
-            const start = filters.dateRange.start ? filters.dateRange.start.toLocaleDateString() : 'Início';
-            const end = filters.dateRange.end ? filters.dateRange.end.toLocaleDateString() : 'Hoje';
-            chips.push({ key: 'dateRange', label: `Criadas entre ${start} e ${end}` });
-        }
         if (filters.searchQuery) {
             chips.push({ key: 'searchQuery', label: `Busca: "${filters.searchQuery}"` });
-        }
-        if (filters.hasTestCases !== undefined) {
-            chips.push({ key: 'hasTestCases', label: filters.hasTestCases ? 'Com casos de teste' : 'Sem casos de teste' });
-        }
-        if (filters.hasBddScenarios !== undefined) {
-            chips.push({ key: 'hasBddScenarios', label: filters.hasBddScenarios ? 'Com BDD' : 'Sem BDD' });
-        }
-        if (filters.isAutomated !== undefined) {
-            chips.push({ key: 'isAutomated', label: filters.isAutomated ? 'Com automação' : 'Sem automação' });
         }
         return chips;
     }, [filters]);
@@ -1330,7 +1306,6 @@ export const TasksView: React.FC<{
                         filters={filters}
                         onFilterChange={updateFilter}
                         onClearFilters={clearFilters}
-                        availableTags={availableTags}
                         availableTestTypes={availableTestTypes}
                         activeFiltersCount={activeFiltersCount}
                     />
