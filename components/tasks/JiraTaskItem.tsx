@@ -216,6 +216,14 @@ export const JiraTaskItem: React.FC<{
                     : [testCase.executedStrategy].filter(s => s && s.trim() !== ''))
                 : [];
             
+            // Verificar quais estratégias da task estão marcadas como "Realizada" no toggle
+            const taskExecutedStrategyTypes = new Set<string>();
+            (task.testStrategy || []).forEach((strategy, index) => {
+                if (strategy?.testType && task.executedStrategies?.includes(index)) {
+                    taskExecutedStrategyTypes.add(strategy.testType);
+                }
+            });
+            
             associatedTypes.forEach(type => {
                 if (!type) return;
                 const entry = ensureType(type);
@@ -223,13 +231,15 @@ export const JiraTaskItem: React.FC<{
                 
                 // Considera executado se:
                 // 1. Status não é 'Not Run' (teste foi aprovado/reprovado), OU
-                // 2. A estratégia está no executedStrategy (usuário marcou como executado no seletor)
+                // 2. A estratégia está no executedStrategy do testCase (usuário marcou no seletor do testCase), OU
+                // 3. A estratégia está marcada como "Realizada" no toggle da task (task.executedStrategies)
                 const isExecutedByStatus = testCase.status !== 'Not Run';
-                const isExecutedByStrategy = executedStrategies.some(es => 
+                const isExecutedByTestCaseStrategy = executedStrategies.some(es => 
                     es.trim().toLowerCase() === type.trim().toLowerCase()
                 );
+                const isExecutedByTaskStrategy = taskExecutedStrategyTypes.has(type);
                 
-                if (isExecutedByStatus || isExecutedByStrategy) {
+                if (isExecutedByStatus || isExecutedByTestCaseStrategy || isExecutedByTaskStrategy) {
                     entry.executed += 1;
                 }
                 
