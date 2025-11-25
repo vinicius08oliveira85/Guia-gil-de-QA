@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Modal } from '../common/Modal';
 import { windows12Styles } from '../../utils/windows12Styles';
 import { JiraTask } from '../../types';
-import { generateTestReport } from '../../utils/testReportGenerator';
+import { generateTestReport, TestReportFormat } from '../../utils/testReportGenerator';
+import { downloadFile } from '../../utils/exportService';
 
 interface TestReportModalProps {
   isOpen: boolean;
@@ -17,15 +18,34 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({
 }) => {
   const [reportText, setReportText] = useState('');
   const [copied, setCopied] = useState(false);
+  const [format, setFormat] = useState<TestReportFormat>('text');
+  const [generationDate, setGenerationDate] = useState<Date | null>(null);
 
   useEffect(() => {
     if (isOpen && task) {
-      const generationDate = new Date();
-      const report = generateTestReport(task, generationDate);
+      const now = new Date();
+      setGenerationDate(now);
+      const report = generateTestReport(task, now, { format });
       setReportText(report);
       setCopied(false);
+    } else {
+      setFormat('text');
+      setGenerationDate(null);
     }
   }, [isOpen, task]);
+
+  useEffect(() => {
+    if (!isOpen || !task) {
+      return;
+    }
+    const baseDate = generationDate ?? new Date();
+    if (!generationDate) {
+      setGenerationDate(baseDate);
+    }
+    const report = generateTestReport(task, baseDate, { format });
+    setReportText(report);
+    setCopied(false);
+  }, [format, generationDate, isOpen, task]);
 
   const handleCopy = async () => {
     try {
@@ -52,6 +72,24 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({
     }
   };
 
+  const handleDownload = () => {
+    if (!task) {
+      return;
+    }
+    const extension = format === 'markdown' ? 'md' : 'txt';
+    const mimeType = format === 'markdown' ? 'text/markdown' : 'text/plain';
+    downloadFile(
+      reportText,
+      `${task.id}-registro-testes.${extension}`,
+      mimeType
+    );
+  };
+
+  const formatOptions: Array<{ label: string; value: TestReportFormat; description: string }> = [
+    { label: 'Texto estruturado', value: 'text', description: 'Formato ideal para colar em campos comuns.' },
+    { label: 'Markdown', value: 'markdown', description: 'Melhor para docs e wikis com formatação.' }
+  ];
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Registro de Testes Realizados">
       <div className="space-y-4">
@@ -59,30 +97,63 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({
           <p className="text-sm text-text-secondary">
             Copie o registro abaixo para colar em outras plataformas
           </p>
-          <button
-            onClick={handleCopy}
-            className={`
-              ${windows12Styles.buttonPrimary}
-              flex items-center gap-2
-              ${copied ? 'bg-green-500 hover:bg-green-600' : ''}
-            `}
-          >
-            {copied ? (
-              <>
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                <span>Copiado!</span>
-              </>
-            ) : (
-              <>
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                </svg>
-                <span>Copiar</span>
-              </>
-            )}
-          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={handleDownload}
+              className={`${windows12Styles.buttonSecondary} flex items-center gap-2`}
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v16h16M8 12h8m-8 4h5" />
+              </svg>
+              <span>Baixar .{format === 'markdown' ? 'md' : 'txt'}</span>
+            </button>
+            <button
+              onClick={handleCopy}
+              className={`
+                ${windows12Styles.buttonPrimary}
+                flex items-center gap-2
+                ${copied ? 'bg-green-500 hover:bg-green-600' : ''}
+              `}
+            >
+              {copied ? (
+                <>
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span>Copiado!</span>
+                </>
+              ) : (
+                <>
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
+                  <span>Copiar</span>
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <p className="text-xs uppercase tracking-wide text-text-secondary">Formato do relatório</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {formatOptions.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => setFormat(option.value)}
+                className={`
+                  border rounded-lg px-4 py-3 text-left transition
+                  ${format === option.value
+                    ? 'border-accent bg-accent/10 text-white shadow-md'
+                    : 'border-surface-border text-text-secondary hover:text-text-primary hover:border-accent/40'}
+                `}
+              >
+                <p className="font-medium">{option.label}</p>
+                <p className="text-sm text-text-secondary">{option.description}</p>
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className={`
