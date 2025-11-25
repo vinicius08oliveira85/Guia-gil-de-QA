@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Modal } from '../common/Modal';
 import { windows12Styles } from '../../utils/windows12Styles';
 import { JiraTask } from '../../types';
 import { generateTestReport, TestReportFormat } from '../../utils/testReportGenerator';
 import { downloadFile } from '../../utils/exportService';
+import { Badge } from '../common/Badge';
 
 interface TestReportModalProps {
   isOpen: boolean;
@@ -20,6 +21,10 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({
   const [copied, setCopied] = useState(false);
   const [format, setFormat] = useState<TestReportFormat>('text');
   const [generationDate, setGenerationDate] = useState<Date | null>(null);
+  const executedTestCases = useMemo(
+    () => (task?.testCases || []).filter(testCase => testCase.status !== 'Not Run'),
+    [task]
+  );
 
   useEffect(() => {
     if (isOpen && task) {
@@ -90,6 +95,14 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({
     { label: 'Markdown', value: 'markdown', description: 'Melhor para docs e wikis com formatação.' }
   ];
 
+  const getStatusBadge = (status: string) => {
+    const isApproved = status === 'Passed';
+    return {
+      label: isApproved ? 'Aprovado' : 'Reprovado',
+      variant: isApproved ? 'success' : 'error'
+    } as const;
+  };
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Registro de Testes Realizados">
       <div className="space-y-4">
@@ -100,7 +113,7 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({
           <div className="flex gap-3">
             <button
               onClick={handleDownload}
-              className={`${windows12Styles.buttonSecondary} flex items-center gap-2`}
+              className="btn btn-secondary flex items-center gap-2"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v16h16M8 12h8m-8 4h5" />
@@ -110,9 +123,9 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({
             <button
               onClick={handleCopy}
               className={`
-                ${windows12Styles.buttonPrimary}
+                btn btn-primary
                 flex items-center gap-2
-                ${copied ? 'bg-green-500 hover:bg-green-600' : ''}
+                ${copied ? '!bg-green-500 hover:!bg-green-600' : ''}
               `}
             >
               {copied ? (
@@ -154,6 +167,60 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({
               </button>
             ))}
           </div>
+        </div>
+
+        <div className="space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="text-xs uppercase tracking-wide text-text-secondary">Resumo visual</p>
+            <div className="flex gap-4 text-xs text-text-secondary">
+              <div className="flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-success"></span>
+                <span>Aprovado</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-danger"></span>
+                <span>Reprovado</span>
+              </div>
+            </div>
+          </div>
+          {executedTestCases.length > 0 ? (
+            <ul className="space-y-2">
+              {executedTestCases.map((testCase, index) => {
+                const statusData = getStatusBadge(testCase.status);
+                return (
+                  <li
+                    key={`${testCase.id}-${index}`}
+                    className="flex flex-col gap-1 rounded-lg border border-surface-border bg-surface px-4 py-3"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-medium text-text-primary">
+                          {testCase.description || `Teste ${index + 1}`}
+                        </p>
+                        {testCase.executedStrategy && (
+                          <p className="text-xs text-text-secondary">
+                            {Array.isArray(testCase.executedStrategy)
+                              ? testCase.executedStrategy.join(', ')
+                              : testCase.executedStrategy}
+                          </p>
+                        )}
+                      </div>
+                      <Badge variant={statusData.variant} size="sm">
+                        {statusData.label}
+                      </Badge>
+                    </div>
+                    {testCase.toolsUsed && testCase.toolsUsed.length > 0 && (
+                      <p className="text-xs text-text-secondary">
+                        Ferramentas: {testCase.toolsUsed.join(', ')}
+                      </p>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          ) : (
+            <p className="text-sm text-text-secondary">Nenhum teste executado até o momento.</p>
+          )}
         </div>
 
         <div className={`
