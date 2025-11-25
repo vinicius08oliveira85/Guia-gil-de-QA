@@ -208,13 +208,31 @@ export const JiraTaskItem: React.FC<{
             const associatedTypes = testCase.strategies && testCase.strategies.length > 0
                 ? testCase.strategies
                 : [fallbackType];
+            
+            // Normalizar executedStrategy para array
+            const executedStrategies = testCase.executedStrategy 
+                ? (Array.isArray(testCase.executedStrategy) 
+                    ? testCase.executedStrategy.filter(s => s && s.trim() !== '')
+                    : [testCase.executedStrategy].filter(s => s && s.trim() !== ''))
+                : [];
+            
             associatedTypes.forEach(type => {
                 if (!type) return;
                 const entry = ensureType(type);
                 entry.total += 1;
-                if (testCase.status !== 'Not Run') {
+                
+                // Considera executado se:
+                // 1. Status não é 'Not Run' (teste foi aprovado/reprovado), OU
+                // 2. A estratégia está no executedStrategy (usuário marcou como executado no seletor)
+                const isExecutedByStatus = testCase.status !== 'Not Run';
+                const isExecutedByStrategy = executedStrategies.some(es => 
+                    es.trim().toLowerCase() === type.trim().toLowerCase()
+                );
+                
+                if (isExecutedByStatus || isExecutedByStrategy) {
                     entry.executed += 1;
                 }
+                
                 if (testCase.status === 'Failed') {
                     entry.failed += 1;
                 }
