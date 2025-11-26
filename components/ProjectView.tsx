@@ -1,7 +1,7 @@
-import React, { useState, useEffect, Suspense, useRef } from 'react';
+import React, { useState, useEffect, Suspense, useRef, useCallback } from 'react';
 import { Project } from '../types';
 import { useProjectMetrics } from '../hooks/useProjectMetrics';
-import { ProjectTrail } from './trail/ProjectTrail';
+import { ProjectMetricsSummary } from './dashboard/ProjectMetricsSummary';
 import { TasksView } from './tasks/TasksView';
 import { DocumentsView } from './DocumentsView';
 import { RoadmapView } from './roadmap/RoadmapView';
@@ -10,13 +10,25 @@ import { PrintableReport } from './PrintableReport';
 import { ExportMenu } from './common/ExportMenu';
 import { Modal } from './common/Modal';
 import { LoadingSkeleton } from './common/LoadingSkeleton';
-import { QualityDashboard } from './dashboard/QualityDashboard';
+import { AnalysisView } from './analysis/AnalysisView';
+import { generateGeneralIAAnalysis } from '../services/ai/generalAnalysisService';
+import { useErrorHandler } from '../hooks/useErrorHandler';
+import { useAnalysisSync } from '../hooks/useAnalysisSync';
 
 export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project: Project) => void; onBack: () => void; }> = ({ project, onUpdateProject, onBack }) => {
-    const [activeTab, setActiveTab] = useState('trail');
+    const [activeTab, setActiveTab] = useState('overview');
     const [isPrinting, setIsPrinting] = useState(false);
     const [showExportMenu, setShowExportMenu] = useState(false);
+    const [showAnalysisModal, setShowAnalysisModal] = useState(false);
+    const [isAnalyzing, setIsAnalyzing] = useState(false);
+    const [selectedVersion, setSelectedVersion] = useState<string>('Todos');
     const metrics = useProjectMetrics(project);
+    const { handleError, handleSuccess } = useErrorHandler();
+    const { needsGeneralReanalysis } = useAnalysisSync({
+        project,
+        onUpdateProject,
+        autoMarkOutdated: true
+    });
     const previousPhasesRef = useRef<string>('');
     const isMountedRef = useRef(true);
     const projectRef = useRef(project);
@@ -76,13 +88,51 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
     const activeTabStyle = "tab-pill--active";
     
     const tabs: Array<{ id: string; label: string; 'data-onboarding'?: string }> = [
-        { id: 'trail', label: 'Trilha do Projeto' },
+        { id: 'overview', label: 'Visão Geral' },
         { id: 'tasks', label: 'Tarefas & Testes', 'data-onboarding': 'tasks-tab' },
-        { id: 'quality', label: '📊 Qualidade' },
         { id: 'documents', label: 'Documentos' },
         { id: 'roadmap', label: 'Roadmap' },
         { id: 'glossary', label: 'Glossário' },
     ];
+
+    const handleAskAI = useCallback(async () => {
+        setIsAnalyzing(true);
+        try {
+            const analysis = await generateGeneralIAAnalysis(project);
+
+            const updatedTasks = project.tasks.map(task => {
+                const taskAnalysis = analysis.taskAnalyses.find(ta => ta.taskId === task.id);
+                if (!taskAnalysis) return task;
+
+                return {
+                    ...task,
+                    iaAnalysis: {
+                        ...taskAnalysis,
+                        generatedAt: new Date().toISOString(),
+                        isOutdated: false
+                    }
+                };
+            });
+
+            const updatedProject: Project = {
+                ...project,
+                tasks: updatedTasks,
+                generalIAAnalysis: {
+                    ...analysis,
+                    isOutdated: false
+                }
+            };
+
+            onUpdateProject(updatedProject);
+            handleSuccess('Recomendações atualizadas pela IA!');
+        } catch (error) {
+            handleError(error, 'Gerar recomendações com IA');
+        } finally {
+            setIsAnalyzing(false);
+        }
+    }, [project, onUpdateProject, handleError, handleSuccess]);
+
+    const analysisNeedsRefresh = needsGeneralReanalysis();
 
     const handleTabClick = (tabId: string) => {
         setActiveTab(tabId);
@@ -164,14 +214,25 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                 </div>
                 
                 <div className="mt-8">
-                    {activeTab === 'trail' && (
-                        <section id="tab-panel-trail" role="tabpanel" aria-labelledby="tab-trail tab-trail-mobile">
-                        <ProjectTrail
-                            project={project}
-                            onUpdateProject={onUpdateProject}
-                            onNavigateToTask={() => handleTabClick('tasks')}
-                            onNavigateToTab={handleTabClick}
-                        />
+                    {activeTab === 'overview' && (
+                        <section id="tab-panel-overview" role="tabpanel" aria-labelledby="tab-overview tab-overview-mobile">
+                        <Suspense fallback={<LoadingSkeleton variant="card" count={3} />}>
+                            <ProjectMetricsSummary
+                                project={project}
+                                onUpdateProject={onUpdateProject}
+                                onNavigateToTask={(taskId) => {
+                                    handleTabClick('tasks');
+                                    // TODO: Scroll para tarefa específica se necessário
+                                }}
+                                onNavigateToTab={handleTabClick}
+                                onAskAI={handleAskAI}
+                                isAiLoading={isAnalyzing}
+                                analysisOutdated={analysisNeedsRefresh}
+                                selectedVersion={selectedVersion}
+                                onVersionChange={setSelectedVersion}
+                                onOpenDetailedAnalysis={() => setShowAnalysisModal(true)}
+                            />
+                        </Suspense>
                         </section>
                     )}
                     {activeTab === 'tasks' && (
@@ -182,13 +243,6 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                                 onUpdateProject={onUpdateProject}
                                 onNavigateToTab={(tabId) => handleTabClick(tabId)}
                             />
-                        </Suspense>
-                        </section>
-                    )}
-                    {activeTab === 'quality' && (
-                        <section id="tab-panel-quality" role="tabpanel" aria-labelledby="tab-quality tab-quality-mobile">
-                        <Suspense fallback={<LoadingSkeleton variant="card" count={3} />}>
-                            <QualityDashboard project={project} />
                         </Suspense>
                         </section>
                     )}
@@ -214,6 +268,25 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                         </section>
                     )}
                 </div>
+                
+                <Modal
+                    isOpen={showAnalysisModal}
+                    onClose={() => setShowAnalysisModal(false)}
+                    title="Análise IA detalhada"
+                    size="xl"
+                    maxHeight="95vh"
+                >
+                    <div className="max-h-[calc(95vh-120px)] overflow-y-auto pr-2 -mr-2">
+                        <AnalysisView
+                            project={project}
+                            onUpdateProject={onUpdateProject}
+                            onNavigateToTask={(taskId) => {
+                                setShowAnalysisModal(false);
+                                handleTabClick('tasks');
+                            }}
+                        />
+                    </div>
+                </Modal>
             </div>
             {isPrinting && <PrintableReport project={project} metrics={metrics} />}
         </>

@@ -1,0 +1,277 @@
+import React from 'react';
+import { FilterOptions } from '../../hooks/useFilters';
+
+interface QuickFiltersProps {
+    filters: FilterOptions;
+    activeFiltersCount: number;
+    onFilterChange: <K extends keyof FilterOptions>(key: K, value: FilterOptions[K]) => void;
+    onClearFilters: () => void;
+    onRemoveFilter: (key: keyof FilterOptions) => void;
+    availableTestTypes: string[];
+}
+
+/**
+ * Componente de filtros rápidos visíveis como chips na parte superior
+ * Mostra filtros ativos e permite adicionar/remover rapidamente
+ */
+export const QuickFilters: React.FC<QuickFiltersProps> = ({
+    filters,
+    activeFiltersCount,
+    onFilterChange,
+    onClearFilters,
+    onRemoveFilter,
+    availableTestTypes
+}) => {
+    const toggleArrayFilter = <K extends keyof FilterOptions>(
+        key: K,
+        value: any
+    ) => {
+        const current = (filters[key] as any[]) || [];
+        if (current.includes(value)) {
+            if (current.length === 1) {
+                onRemoveFilter(key);
+            } else {
+                onFilterChange(key, current.filter(v => v !== value) as any);
+            }
+        } else {
+            onFilterChange(key, [...current, value] as any);
+        }
+    };
+
+    const toggleBooleanFilter = (key: keyof FilterOptions, value: boolean) => {
+        if (filters[key] === value) {
+            onRemoveFilter(key);
+        } else {
+            onFilterChange(key, value as any);
+        }
+    };
+
+    const getFilterChips = () => {
+        const chips: Array<{ key: string; label: string; value: string; onRemove: () => void }> = [];
+
+        // Status
+        if (filters.status && filters.status.length > 0) {
+            filters.status.forEach(status => {
+                chips.push({
+                    key: `status-${status}`,
+                    label: `Status: ${status}`,
+                    value: status,
+                    onRemove: () => {
+                        const newStatus = filters.status!.filter(s => s !== status);
+                        if (newStatus.length === 0) {
+                            onRemoveFilter('status');
+                        } else {
+                            onFilterChange('status', newStatus);
+                        }
+                    }
+                });
+            });
+        }
+
+        // Tipo
+        if (filters.type && filters.type.length > 0) {
+            filters.type.forEach(type => {
+                chips.push({
+                    key: `type-${type}`,
+                    label: `Tipo: ${type}`,
+                    value: type,
+                    onRemove: () => {
+                        const newType = filters.type!.filter(t => t !== type);
+                        if (newType.length === 0) {
+                            onRemoveFilter('type');
+                        } else {
+                            onFilterChange('type', newType);
+                        }
+                    }
+                });
+            });
+        }
+
+        // Tags
+        if (filters.tags && filters.tags.length > 0) {
+            filters.tags.forEach(tag => {
+                chips.push({
+                    key: `tag-${tag}`,
+                    label: `Tag: ${tag}`,
+                    value: tag,
+                    onRemove: () => {
+                        const newTags = filters.tags!.filter(t => t !== tag);
+                        if (newTags.length === 0) {
+                            onRemoveFilter('tags');
+                        } else {
+                            onFilterChange('tags', newTags);
+                        }
+                    }
+                });
+            });
+        }
+
+        // Prioridade
+        if (filters.priority && filters.priority.length > 0) {
+            filters.priority.forEach(priority => {
+                chips.push({
+                    key: `priority-${priority}`,
+                    label: `Prioridade: ${priority}`,
+                    value: priority,
+                    onRemove: () => {
+                        const newPriority = filters.priority!.filter(p => p !== priority);
+                        if (newPriority.length === 0) {
+                            onRemoveFilter('priority');
+                        } else {
+                            onFilterChange('priority', newPriority);
+                        }
+                    }
+                });
+            });
+        }
+
+        // Severidade
+        if (filters.severity && filters.severity.length > 0) {
+            filters.severity.forEach(severity => {
+                chips.push({
+                    key: `severity-${severity}`,
+                    label: `Severidade: ${severity}`,
+                    value: severity,
+                    onRemove: () => {
+                        const newSeverity = filters.severity!.filter(s => s !== severity);
+                        if (newSeverity.length === 0) {
+                            onRemoveFilter('severity');
+                        } else {
+                            onFilterChange('severity', newSeverity);
+                        }
+                    }
+                });
+            });
+        }
+
+        // Test Result Status
+        if (filters.testResultStatus && filters.testResultStatus.length > 0) {
+            filters.testResultStatus.forEach(status => {
+                chips.push({
+                    key: `testResult-${status}`,
+                    label: `Teste: ${status}`,
+                    value: status,
+                    onRemove: () => {
+                        const newStatus = filters.testResultStatus!.filter(s => s !== status);
+                        if (newStatus.length === 0) {
+                            onRemoveFilter('testResultStatus');
+                        } else {
+                            onFilterChange('testResultStatus', newStatus);
+                        }
+                    }
+                });
+            });
+        }
+
+        // Required Test Types
+        if (filters.requiredTestTypes && filters.requiredTestTypes.length > 0) {
+            filters.requiredTestTypes.forEach(type => {
+                chips.push({
+                    key: `testType-${type}`,
+                    label: `Estratégia: ${type}`,
+                    value: type,
+                    onRemove: () => {
+                        const newTypes = filters.requiredTestTypes!.filter(t => t !== type);
+                        if (newTypes.length === 0) {
+                            onRemoveFilter('requiredTestTypes');
+                        } else {
+                            onFilterChange('requiredTestTypes', newTypes);
+                        }
+                    }
+                });
+            });
+        }
+
+        // Boolean filters
+        if (filters.hasTestCases !== undefined) {
+            chips.push({
+                key: 'hasTestCases',
+                label: filters.hasTestCases ? 'Com casos de teste' : 'Sem casos de teste',
+                value: 'hasTestCases',
+                onRemove: () => onRemoveFilter('hasTestCases')
+            });
+        }
+
+        if (filters.hasBddScenarios !== undefined) {
+            chips.push({
+                key: 'hasBddScenarios',
+                label: filters.hasBddScenarios ? 'Com BDD' : 'Sem BDD',
+                value: 'hasBddScenarios',
+                onRemove: () => onRemoveFilter('hasBddScenarios')
+            });
+        }
+
+        if (filters.isAutomated !== undefined) {
+            chips.push({
+                key: 'isAutomated',
+                label: filters.isAutomated ? 'Automatizado' : 'Não automatizado',
+                value: 'isAutomated',
+                onRemove: () => onRemoveFilter('isAutomated')
+            });
+        }
+
+        // Search query
+        if (filters.searchQuery) {
+            chips.push({
+                key: 'searchQuery',
+                label: `Busca: "${filters.searchQuery}"`,
+                value: filters.searchQuery,
+                onRemove: () => onRemoveFilter('searchQuery')
+            });
+        }
+
+        return chips;
+    };
+
+    const filterChips = getFilterChips();
+
+    if (activeFiltersCount === 0) {
+        return null;
+    }
+
+    return (
+        <div className="sticky top-[72px] z-20 bg-background/95 backdrop-blur-lg border-b border-surface-border shadow-sm">
+            <div className="container mx-auto max-w-screen-2xl px-6 py-3 sm:px-8 lg:px-12 xl:px-16 2xl:px-20">
+                <div className="flex items-center gap-3 flex-wrap">
+                    <div className="flex items-center gap-2 text-sm text-text-secondary">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                        </svg>
+                        <span className="font-medium">
+                            {activeFiltersCount} {activeFiltersCount === 1 ? 'filtro ativo' : 'filtros ativos'}
+                        </span>
+                    </div>
+                    
+                    <div className="flex items-center gap-2 flex-wrap">
+                        {filterChips.map(chip => (
+                            <button
+                                key={chip.key}
+                                onClick={chip.onRemove}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent/20 text-accent text-sm font-medium hover:bg-accent/30 transition-colors border border-accent/30"
+                                title={`Remover filtro: ${chip.label}`}
+                            >
+                                <span>{chip.label}</span>
+                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        ))}
+                    </div>
+
+                    {activeFiltersCount > 0 && (
+                        <button
+                            onClick={onClearFilters}
+                            className="ml-auto text-sm text-accent hover:text-accent-light transition-colors font-medium flex items-center gap-1"
+                        >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                            Limpar todos
+                        </button>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+};
+

@@ -1,5 +1,6 @@
 import React from 'react';
 import { windows12Styles } from '../../utils/windows12Styles';
+import { ContextualHelp } from '../common/ContextualHelp';
 
 interface CoverageMetricsCardProps {
     versionLabel: string;
@@ -26,11 +27,22 @@ export const CoverageMetricsCard: React.FC<CoverageMetricsCardProps> = ({
     return (
         <section className={`${windows12Styles.card} ${windows12Styles.spacing.lg} space-y-5`}>
             <header>
-                <p className="text-xs uppercase tracking-[0.35em] text-text-secondary">Bloco 4</p>
-                <h3 className="text-xl font-semibold text-text-primary">Métricas de Cobertura</h3>
-                <p className="text-sm text-text-secondary mt-1">
-                    Visão de documentação e automação para {versionLabel}.
-                </p>
+                <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1">
+                        <p className="text-xs uppercase tracking-[0.35em] text-text-secondary">Bloco 4</p>
+                        <div className="flex items-center gap-2">
+                            <h3 className="text-xl font-semibold text-text-primary">Métricas de Cobertura</h3>
+                            <ContextualHelp
+                                title="Métricas de Cobertura"
+                                content="A cobertura de testes indica quantas tarefas têm casos de teste documentados. Uma cobertura acima de 70% é recomendada para projetos em produção. A automação reduz o tempo de execução de testes de regressão."
+                                variant="tooltip"
+                            />
+                        </div>
+                        <p className="text-sm text-text-secondary mt-1">
+                            Visão de documentação e automação para {versionLabel}.
+                        </p>
+                    </div>
+                </div>
             </header>
 
             <div className="space-y-4">

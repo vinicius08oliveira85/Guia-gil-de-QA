@@ -4,6 +4,7 @@ import { getAIService } from '../../services/ai/aiServiceFactory';
 import { Card } from '../common/Card';
 import { Modal } from '../common/Modal';
 import { FilterPanel } from '../common/FilterPanel';
+import { QuickFilters } from '../common/QuickFilters';
 import { TestCaseTemplateSelector } from './TestCaseTemplateSelector';
 import { TaskForm } from './TaskForm';
 import { TestCaseEditorModal } from './TestCaseEditorModal';
@@ -1299,6 +1300,16 @@ export const TasksView: React.FC<{
                     </div>
                 </div>
             )}
+
+            {/* Barra de filtros rápidos visíveis */}
+            <QuickFilters
+                filters={filters}
+                activeFiltersCount={activeFiltersCount}
+                onFilterChange={updateFilter}
+                onClearFilters={clearFilters}
+                onRemoveFilter={removeFilter}
+                availableTestTypes={availableTestTypes}
+            />
 
             {showFilters && (
                 <div className="mb-6">
