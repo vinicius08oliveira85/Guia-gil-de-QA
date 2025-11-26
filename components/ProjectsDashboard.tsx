@@ -8,6 +8,7 @@ import { TrashIcon, GridIcon, ListIcon, FilterIcon, CheckIcon } from './common/I
 import { useIsMobile } from '../hooks/useIsMobile';
 import { Badge } from './common/Badge';
 import { ProgressIndicator } from './common/ProgressIndicator';
+import { SolusSchemaModal } from './solus/SolusSchemaModal';
 
 export const ProjectsDashboard: React.FC<{
     projects: Project[];
@@ -30,6 +31,7 @@ export const ProjectsDashboard: React.FC<{
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
     const [selectedTags, setSelectedTags] = useState<string[]>([]);
     const [showTagFilter, setShowTagFilter] = useState(false);
+    const [showSchemaModal, setShowSchemaModal] = useState(false);
     
     const isMobile = useIsMobile();
     const [deleteModalState, setDeleteModalState] = useState<{ isOpen: boolean; project: Project | null }>({
@@ -157,6 +159,13 @@ export const ProjectsDashboard: React.FC<{
                 onClick: handleSyncSupabase
             });
         }
+
+        actions.push({
+            id: 'schema',
+            label: 'Esquema Solus',
+            icon: '📚',
+            onClick: () => setShowSchemaModal(true)
+        });
 
         return actions;
     }, [handleSyncSupabase, onAdvancedSearchClick, onComparisonClick, onSearchClick, onSyncSupabase, projects.length]);
@@ -338,6 +347,13 @@ export const ProjectsDashboard: React.FC<{
                             >
                                 ➕ Novo Projeto
                             </button>
+                            <button
+                                onClick={() => setShowSchemaModal(true)}
+                                className="btn btn-secondary"
+                                title="Esquema da API Solus"
+                            >
+                                📚 Esquema API
+                            </button>
                         </div>
                          {/* Secondary Actions Row */}
                          <div className="flex gap-2 text-xs">
@@ -390,6 +406,11 @@ export const ProjectsDashboard: React.FC<{
                     </button>
                 </div>
             </Modal>
+
+            <SolusSchemaModal
+                isOpen={showSchemaModal}
+                onClose={() => setShowSchemaModal(false)}
+            />
 
             <Modal isOpen={isCreating} onClose={() => {
                 setIsCreating(false);
