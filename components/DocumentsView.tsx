@@ -13,6 +13,7 @@ import { EmptyState } from './common/EmptyState';
 import { Tooltip } from './common/Tooltip';
 import { CopyButton } from './common/CopyButton';
 import { createDocumentFromFile, convertDocumentFileToProjectDocument, formatFileSize, getFileIcon, canPreview } from '../utils/documentService';
+import { SolusSchemaModal } from './solus/SolusSchemaModal';
 
 interface DocumentWithMetadata extends ProjectDocument {
     uploadedAt?: string;
@@ -37,7 +38,17 @@ export const DocumentsView: React.FC<{ project: Project; onUpdateProject: (proje
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
     const [showPreview, setShowPreview] = useState(false);
     const [editingDoc, setEditingDoc] = useState<DocumentWithMetadata | null>(null);
+    const [isSolusSchemaOpen, setIsSolusSchemaOpen] = useState(false);
     const { handleError, handleSuccess, handleWarning } = useErrorHandler();
+    const normalizedProjectName = useMemo(
+        () =>
+            project.name
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .toLowerCase(),
+        [project.name]
+    );
+    const shouldShowSolusButton = normalizedProjectName.includes('gestao de pacientes internados');
 
     // Converter documentos para incluir metadados
     const documentsWithMetadata = useMemo<DocumentWithMetadata[]>(() => {
@@ -254,6 +265,15 @@ export const DocumentsView: React.FC<{ project: Project; onUpdateProject: (proje
                         >
                             {viewMode === 'grid' ? '📋 Lista' : '🔲 Grade'}
                         </button>
+                        {shouldShowSolusButton && (
+                            <button
+                                onClick={() => setIsSolusSchemaOpen(true)}
+                                className="btn btn-secondary whitespace-nowrap"
+                                aria-label="Abrir Esquema da API Solus"
+                            >
+                                📚 Esquema API Solus
+                            </button>
+                        )}
                 <label className="btn btn-primary cursor-pointer">
                             📤 Carregar Documento
                             <input 
@@ -657,6 +677,13 @@ export const DocumentsView: React.FC<{ project: Project; onUpdateProject: (proje
                         </div>
                     </div>
                 </Modal>
+            )}
+
+            {shouldShowSolusButton && (
+                <SolusSchemaModal
+                    isOpen={isSolusSchemaOpen}
+                    onClose={() => setIsSolusSchemaOpen(false)}
+                />
             )}
         </div>
     );
