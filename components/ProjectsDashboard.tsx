@@ -50,6 +50,40 @@ export const ProjectsDashboard: React.FC<{
         return Array.from(tags).sort();
     }, [projects]);
 
+    const dashboardStats = useMemo(() => {
+        const totals = projects.reduce(
+            (acc, project) => {
+                const taskCount = project.tasks?.length ?? 0;
+                const doneTasks = project.tasks?.filter(task => task.status === 'Done').length ?? 0;
+                return {
+                    totalTasks: acc.totalTasks + taskCount,
+                    completedTasks: acc.completedTasks + doneTasks,
+                    jiraIntegrated: acc.jiraIntegrated + (project.settings?.jiraProjectKey ? 1 : 0),
+                    analysesPending: acc.analysesPending + (project.generalIAAnalysis?.isOutdated ? 1 : 0),
+                };
+            },
+            {
+                totalTasks: 0,
+                completedTasks: 0,
+                jiraIntegrated: 0,
+                analysesPending: 0,
+            },
+        );
+
+        const completionRate = totals.totalTasks === 0
+            ? 0
+            : Math.round((totals.completedTasks / totals.totalTasks) * 100);
+
+        return {
+            totalProjects: projects.length,
+            totalTasks: totals.totalTasks,
+            completedTasks: totals.completedTasks,
+            completionRate,
+            jiraIntegrated: totals.jiraIntegrated,
+            analysesPending: totals.analysesPending,
+        };
+    }, [projects]);
+
     const toggleTag = (tag: string) => {
         setSelectedTags(prev => 
             prev.includes(tag) 
@@ -170,6 +204,47 @@ export const ProjectsDashboard: React.FC<{
         return actions;
     }, [handleSyncSupabase, onAdvancedSearchClick, onComparisonClick, onSearchClick, onSyncSupabase, projects.length]);
 
+    const secondaryActions = useMemo(
+        () => quickActions.filter(action => action.id !== 'search'),
+        [quickActions]
+    );
+
+    const heroStats = useMemo(
+        () => [
+            {
+                id: 'projects',
+                label: 'Projetos ativos',
+                value: dashboardStats.totalProjects.toString(),
+                helper: dashboardStats.totalProjects ? 'Em acompanhamento contínuo' : 'Crie seu primeiro projeto',
+            },
+            {
+                id: 'tasks',
+                label: 'Tarefas monitoradas',
+                value: dashboardStats.totalTasks.toString(),
+                helper: dashboardStats.totalTasks ? `${dashboardStats.completedTasks} concluídas` : 'Sem tarefas registradas',
+            },
+            {
+                id: 'completion',
+                label: 'Conclusão média',
+                value: `${dashboardStats.completionRate}%`,
+                helper: dashboardStats.totalTasks ? 'Baseado nas tarefas registradas' : 'Aguardando dados',
+            },
+            {
+                id: 'jira',
+                label: 'Integrações Jira',
+                value: dashboardStats.jiraIntegrated.toString(),
+                helper: dashboardStats.jiraIntegrated ? 'Conexões ativas' : 'Sem integrações vinculadas',
+            },
+            {
+                id: 'ai-alerts',
+                label: 'Alertas IA',
+                value: dashboardStats.analysesPending.toString(),
+                helper: dashboardStats.analysesPending ? 'Pendentes de revisão' : 'Tudo atualizado',
+            },
+        ],
+        [dashboardStats],
+    );
+
     const handleMobileAction = (action: () => void | Promise<void>) => {
         setShowMobileActions(false);
         setTimeout(() => action(), 150);
@@ -177,20 +252,68 @@ export const ProjectsDashboard: React.FC<{
 
     return (
         <div className="container mx-auto max-w-screen-2xl px-6 py-6 sm:px-8 sm:py-8 lg:px-12 xl:px-16 2xl:px-20 w-full">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-8 w-full">
-                <div className="flex flex-col gap-2">
-                     <h1 className="heading-page text-text-primary line-clamp-2 w-full">
-                        Meus Projetos
-                    </h1>
-                    <p className="text-lead hidden sm:block">
-                        Gerencie e acompanhe o progresso dos seus projetos de QA
-                    </p>
+            <section className="win-panorama mb-8" aria-label="Resumo visual dos projetos">
+                <div className="win-panorama__header">
+                    <div>
+                        <span className="win-panorama__chip">Layout Windows 12</span>
+                        <h1 className="heading-page text-text-primary line-clamp-2 w-full">
+                            Meus Projetos
+                        </h1>
+                        <p className="text-lead max-w-2xl">
+                            Interface inspirada no Windows 12, agora com mais contraste no tema claro para facilitar a leitura e a priorização das iniciativas de QA.
+                        </p>
+                    </div>
+                    <div className="win-panorama__cta">
+                        <button
+                            type="button"
+                            onClick={() => setIsCreating(true)}
+                            className="btn btn-primary"
+                            data-onboarding="create-project"
+                        >
+                            ➕ Novo Projeto
+                        </button>
+                        <button
+                            type="button"
+                            onClick={onSearchClick}
+                            className="btn btn-secondary"
+                        >
+                            🔍 Buscar
+                        </button>
+                    </div>
                 </div>
-               
+
+                {secondaryActions.length > 0 && (
+                    <div className="win-command-bar" role="toolbar" aria-label="Ações adicionais do workspace">
+                        {secondaryActions.map(action => (
+                            <button
+                                key={action.id}
+                                type="button"
+                                onClick={action.onClick}
+                                className="win-command-bar__action"
+                            >
+                                <span className="win-command-bar__icon" aria-hidden="true">{action.icon}</span>
+                                <span>{action.label}</span>
+                            </button>
+                        ))}
+                    </div>
+                )}
+
+                <div className="win-panorama__stats" role="list">
+                    {heroStats.map(stat => (
+                        <article key={stat.id} className="win-stat" role="listitem">
+                            <p className="win-stat__label">{stat.label}</p>
+                            <p className="win-stat__value">{stat.value}</p>
+                            <p className="win-stat__delta">{stat.helper}</p>
+                        </article>
+                    ))}
+                </div>
+            </section>
+
+            <div className="win-utility-panel mt-10" role="region" aria-label="Configurações de visualização">
                 {isMobile ? (
-                    <div className="w-full space-y-2">
-                         <div className="flex justify-between items-center mb-2 gap-2">
-                             <select 
+                    <div className="win-utility-panel__stack space-y-3">
+                        <div className="flex justify-between items-center gap-2">
+                            <select 
                                 value={sortBy} 
                                 onChange={(e) => setSortBy(e.target.value as any)}
                                 className="bg-surface-input border border-surface-border rounded-lg px-3 py-1 text-sm text-text-primary focus:ring-2 focus:ring-accent/50 outline-none flex-1"
@@ -200,17 +323,21 @@ export const ProjectsDashboard: React.FC<{
                                 <option value="progress">Maior Progresso</option>
                             </select>
                             <button
+                                type="button"
                                 onClick={() => setShowTagFilter(!showTagFilter)}
                                 className={`p-1.5 rounded border ${showTagFilter ? 'bg-accent text-white border-accent' : 'bg-surface-card border-surface-border text-text-secondary'}`}
+                                aria-pressed={showTagFilter}
                             >
                                 <FilterIcon />
                             </button>
                         </div>
-                         {showTagFilter && allTags.length > 0 && (
-                            <div className="flex flex-wrap gap-2 mb-2 p-2 bg-surface-card border border-surface-border rounded-lg">
+
+                        {showTagFilter && allTags.length > 0 && (
+                            <div className="flex flex-wrap gap-2 p-2 bg-surface-card border border-surface-border rounded-lg">
                                 {allTags.map(tag => (
                                     <button
                                         key={tag}
+                                        type="button"
                                         onClick={() => toggleTag(tag)}
                                         className={`px-2 py-1 rounded-full text-xs border ${
                                             selectedTags.includes(tag)
@@ -222,7 +349,7 @@ export const ProjectsDashboard: React.FC<{
                                     </button>
                                 ))}
                                 {selectedTags.length > 0 && (
-                                    <button onClick={() => setSelectedTags([])} className="text-xs text-text-tertiary underline ml-auto">
+                                    <button type="button" onClick={() => setSelectedTags([])} className="text-xs text-text-tertiary underline ml-auto">
                                         Limpar
                                     </button>
                                 )}
@@ -231,17 +358,19 @@ export const ProjectsDashboard: React.FC<{
 
                         <div className="mobile-actions-inline" role="group" aria-label="Ações principais">
                             <button 
+                                type="button"
                                 onClick={() => setIsCreating(true)} 
                                 className="btn btn-primary flex-shrink-0"
                                 data-onboarding="create-project"
                             >
                                 ➕ Novo
                             </button>
-                            <button onClick={onSearchClick} className="btn btn-secondary flex-shrink-0">
+                            <button type="button" onClick={onSearchClick} className="btn btn-secondary flex-shrink-0">
                                 🔍 Buscar
                             </button>
                             {quickActions.length > 1 && (
                                 <button 
+                                    type="button"
                                     onClick={() => setShowMobileActions(true)} 
                                     className="btn btn-secondary flex-shrink-0"
                                     aria-label="Abrir menu de ações rápidas"
@@ -253,11 +382,11 @@ export const ProjectsDashboard: React.FC<{
                         </div>
                     </div>
                 ) : (
-                    <div className="flex flex-col items-end gap-3 w-full sm:w-auto">
+                    <div className="win-utility-panel__controls">
                         <div className="flex flex-wrap gap-2 justify-end items-center">
-                            {/* View Toggle */}
                             <div className="flex items-center bg-surface-card border border-surface-border rounded-lg p-0.5 mr-2">
                                 <button
+                                    type="button"
                                     onClick={() => setViewMode('grid')}
                                     className={`p-1.5 rounded ${viewMode === 'grid' ? 'bg-surface-hover text-accent shadow-sm' : 'text-text-tertiary hover:text-text-secondary'}`}
                                     title="Visualização em Grade"
@@ -266,6 +395,7 @@ export const ProjectsDashboard: React.FC<{
                                     <GridIcon />
                                 </button>
                                 <button
+                                    type="button"
                                     onClick={() => setViewMode('list')}
                                     className={`p-1.5 rounded ${viewMode === 'list' ? 'bg-surface-hover text-accent shadow-sm' : 'text-text-tertiary hover:text-text-secondary'}`}
                                     title="Visualização em Lista"
@@ -275,9 +405,9 @@ export const ProjectsDashboard: React.FC<{
                                 </button>
                             </div>
 
-                            {/* Filter Button */}
                             <div className="relative">
                                 <button
+                                    type="button"
                                     onClick={() => setShowTagFilter(!showTagFilter)}
                                     className={`btn btn-secondary flex items-center gap-2 ${showTagFilter || selectedTags.length > 0 ? 'border-accent text-accent' : ''}`}
                                 >
@@ -295,7 +425,7 @@ export const ProjectsDashboard: React.FC<{
                                         <div className="flex justify-between items-center mb-2">
                                             <span className="text-sm font-semibold text-text-primary">Filtrar por Tags</span>
                                             {selectedTags.length > 0 && (
-                                                <button onClick={() => setSelectedTags([])} className="text-xs text-text-tertiary hover:text-accent transition-colors">
+                                                <button type="button" onClick={() => setSelectedTags([])} className="text-xs text-text-tertiary hover:text-accent transition-colors">
                                                     Limpar tudo
                                                 </button>
                                             )}
@@ -304,6 +434,7 @@ export const ProjectsDashboard: React.FC<{
                                             {allTags.length > 0 ? allTags.map(tag => (
                                                 <button
                                                     key={tag}
+                                                    type="button"
                                                     onClick={() => toggleTag(tag)}
                                                     className={`w-full text-left px-2 py-1.5 rounded text-sm flex items-center justify-between transition-colors ${
                                                         selectedTags.includes(tag)
@@ -322,7 +453,7 @@ export const ProjectsDashboard: React.FC<{
                                 )}
                             </div>
 
-                            <div className="h-6 w-px bg-surface-border mx-1"></div>
+                            <div className="h-6 w-px bg-surface-border mx-1" aria-hidden="true"></div>
 
                             <div className="mr-2">
                                  <select 
@@ -337,10 +468,11 @@ export const ProjectsDashboard: React.FC<{
                                 </select>
                             </div>
                             
-                            <button onClick={onSearchClick} className="btn btn-secondary" title="Buscar">
+                            <button type="button" onClick={onSearchClick} className="btn btn-secondary" title="Buscar">
                                 🔍
                             </button>
                             <button 
+                                type="button"
                                 onClick={() => setIsCreating(true)} 
                                 className="btn btn-primary"
                                 data-onboarding="create-project"
@@ -348,6 +480,7 @@ export const ProjectsDashboard: React.FC<{
                                 ➕ Novo Projeto
                             </button>
                             <button
+                                type="button"
                                 onClick={() => setShowSchemaModal(true)}
                                 className="btn btn-secondary"
                                 title="Esquema da API Solus"
@@ -355,20 +488,20 @@ export const ProjectsDashboard: React.FC<{
                                 📚 Esquema API
                             </button>
                         </div>
-                         {/* Secondary Actions Row */}
-                         <div className="flex gap-2 text-xs">
+                        <div className="flex gap-2 text-xs justify-end">
                             {onComparisonClick && projects.length > 1 && (
-                                <button onClick={onComparisonClick} className="text-text-secondary hover:text-accent transition-colors flex items-center gap-1">
+                                <button type="button" onClick={onComparisonClick} className="text-text-secondary hover:text-accent transition-colors flex items-center gap-1">
                                     📊 Comparar
                                 </button>
                             )}
                             {onAdvancedSearchClick && (
-                                <button onClick={onAdvancedSearchClick} className="text-text-secondary hover:text-accent transition-colors flex items-center gap-1">
+                                <button type="button" onClick={onAdvancedSearchClick} className="text-text-secondary hover:text-accent transition-colors flex items-center gap-1">
                                     🧭 Avançado
                                 </button>
                             )}
                             {onSyncSupabase && (
                                 <button
+                                    type="button"
                                     onClick={handleSyncSupabase}
                                     className="text-text-secondary hover:text-accent transition-colors flex items-center gap-1"
                                     disabled={isSyncingSupabase}
