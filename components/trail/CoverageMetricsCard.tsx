@@ -25,10 +25,10 @@ export const CoverageMetricsCard: React.FC<CoverageMetricsCardProps> = ({
     const automationInfo = totalTestCases > 0 ? `${automatedTestCases}/${totalTestCases}` : '0/0';
 
     return (
-        <section className={`${windows12Styles.card} ${windows12Styles.spacing.lg} space-y-5`}>
+        <section className={`${windows12Styles.card} ${windows12Styles.spacing.lg} space-y-5 min-w-0`}>
             <header>
                 <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1">
+                    <div className="flex-1 min-w-0">
                         <p className="text-xs uppercase tracking-[0.35em] text-text-secondary">Bloco 4</p>
                         <div className="flex items-center gap-2">
                             <h3 className="text-xl font-semibold text-text-primary">Métricas de Cobertura</h3>
@@ -38,7 +38,7 @@ export const CoverageMetricsCard: React.FC<CoverageMetricsCardProps> = ({
                                 variant="tooltip"
                             />
                         </div>
-                        <p className="text-sm text-text-secondary mt-1">
+                        <p className="text-sm text-text-secondary mt-1 break-words">
                             Visão de documentação e automação para {versionLabel}.
                         </p>
                     </div>
@@ -57,7 +57,7 @@ export const CoverageMetricsCard: React.FC<CoverageMetricsCardProps> = ({
                             style={{ width: `${documentedPercentage}%` }}
                         />
                     </div>
-                    <p className="mt-1 text-xs text-text-secondary">
+                    <p className="mt-1 text-xs text-text-secondary break-words">
                         {tasksWithTestCases}/{totalTasks || 0} histórias documentadas
                     </p>
                 </div>
@@ -73,7 +73,7 @@ export const CoverageMetricsCard: React.FC<CoverageMetricsCardProps> = ({
                             style={{ width: `${automationRatio}%` }}
                         />
                     </div>
-                    <p className="mt-1 text-xs text-text-secondary">
+                    <p className="mt-1 text-xs text-text-secondary break-words">
                         {automationInfo} casos automatizados
                     </p>
                 </div>
@@ -89,23 +89,23 @@ export const CoverageMetricsCard: React.FC<CoverageMetricsCardProps> = ({
                             style={{ width: `${testCoverage}%` }}
                         />
                     </div>
-                    <p className="mt-1 text-xs text-text-secondary">
+                    <p className="mt-1 text-xs text-text-secondary break-words">
                         Representa tarefas com casos de teste vinculados.
                     </p>
                 </div>
             </div>
 
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                <div className="rounded-2xl glass-surface glass-surface--tint p-4">
+                <div className="rounded-2xl glass-surface glass-surface--tint p-4 min-w-0">
                     <p className="text-xs uppercase tracking-[0.35em] text-text-secondary">Quando investigar</p>
-                    <ul className="mt-2 space-y-1 text-sm text-text-primary">
+                    <ul className="mt-2 space-y-1 text-sm text-text-primary leading-relaxed break-words">
                         <li>• Cobertura &lt; 70% indica riscos funcionais.</li>
                         <li>• Automação &lt; 30% aumenta tempo de regressão.</li>
                     </ul>
                 </div>
-                <div className="rounded-2xl glass-surface glass-surface--tint p-4">
+                <div className="rounded-2xl glass-surface glass-surface--tint p-4 min-w-0">
                     <p className="text-xs uppercase tracking-[0.35em] text-text-secondary">Próximas ações</p>
-                    <ul className="mt-2 space-y-1 text-sm text-text-primary">
+                    <ul className="mt-2 space-y-1 text-sm text-text-primary leading-relaxed break-words">
                         <li>• Priorizar histórias sem casos documentados.</li>
                         <li>• Mapear candidatos à automação no backlog.</li>
                     </ul>

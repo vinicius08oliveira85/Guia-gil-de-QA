@@ -6,7 +6,7 @@ export const windows12Styles = {
   /**
    * Classe base para cards com efeito glassmorphism
    */
-  card: 'mica rounded-xl border border-surface-border shadow-lg transition-all',
+  card: 'mica rounded-xl border border-surface-border shadow-lg transition-all w-full max-w-full min-w-0 mobile-no-overflow',
   
   /**
    * Classe para cards com hover effect

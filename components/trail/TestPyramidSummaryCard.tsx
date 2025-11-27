@@ -22,7 +22,7 @@ export const TestPyramidSummaryCard: React.FC<TestPyramidSummaryCardProps> = ({ 
             <header>
                 <p className="text-xs uppercase tracking-[0.35em] text-text-secondary">Bloco 2</p>
                 <h3 className="text-xl font-semibold text-text-primary">Pirâmide de Testes</h3>
-                <p className="text-sm text-text-secondary mt-1">
+                <p className="text-sm text-text-secondary mt-1 break-words">
                     Distribuição ideal de esforços de teste para {versionLabel}.
                 </p>
             </header>
@@ -59,7 +59,7 @@ export const TestPyramidSummaryCard: React.FC<TestPyramidSummaryCardProps> = ({ 
                     </div>
                 </div>
 
-                <div className="space-y-3">
+                <div className="space-y-3 min-w-0">
                     {analysisMap ? (
                         pyramidLevels.map(level => {
                             const data = analysisMap.get(level);
@@ -69,25 +69,25 @@ export const TestPyramidSummaryCard: React.FC<TestPyramidSummaryCardProps> = ({ 
                             return (
                                 <div
                                     key={level}
-                                    className="rounded-2xl glass-surface glass-surface--tint p-4"
+                                    className="rounded-2xl glass-surface glass-surface--tint p-4 min-w-0"
                                 >
                                     <div className="flex items-center justify-between">
-                                        <p className="text-sm font-semibold text-text-primary">
+                                        <p className="text-sm font-semibold text-text-primary break-words">
                                             {data.level} • foco {data.effort}
                                         </p>
                                         <span className="text-xs text-text-secondary">
                                             {data.examples.length} recomendações
                                         </span>
                                     </div>
-                                    <ul className="mt-2 space-y-1 text-sm text-text-secondary">
+                                    <ul className="mt-2 space-y-1 text-sm text-text-secondary leading-relaxed break-words">
                                         {data.examples.slice(0, 2).map((example, idx) => (
-                                            <li key={`${data.level}-${idx}`} className="flex items-start gap-2">
+                                            <li key={`${data.level}-${idx}`} className="flex items-start gap-2 break-words">
                                                 <span>•</span>
                                                 <span>{example}</span>
                                             </li>
                                         ))}
                                         {data.examples.length > 2 && (
-                                            <li className="text-xs text-accent">
+                                            <li className="text-xs text-accent break-words">
                                                 +{data.examples.length - 2} exemplos adicionais
                                             </li>
                                         )}
@@ -96,7 +96,7 @@ export const TestPyramidSummaryCard: React.FC<TestPyramidSummaryCardProps> = ({ 
                             );
                         })
                     ) : (
-                        <div className="rounded-2xl glass-surface p-6 text-center text-sm text-text-secondary">
+                        <div className="rounded-2xl glass-surface p-6 text-center text-sm text-text-secondary break-words">
                             <p>Sem análise disponível. Gere recomendações de IA para visualizar a pirâmide de testes.</p>
                         </div>
                     )}

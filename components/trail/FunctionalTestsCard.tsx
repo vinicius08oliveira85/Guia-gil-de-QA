@@ -38,16 +38,16 @@ export const FunctionalTestsCard: React.FC<FunctionalTestsCardProps> = ({
     }, [tasks]);
 
     return (
-        <section className={`${windows12Styles.card} ${windows12Styles.spacing.lg} space-y-5`}>
+        <section className={`${windows12Styles.card} ${windows12Styles.spacing.lg} space-y-5 min-w-0`}>
             <header>
                 <p className="text-xs uppercase tracking-[0.35em] text-text-secondary">Bloco 3</p>
                 <h3 className="text-xl font-semibold text-text-primary">Testes Funcionais</h3>
-                <p className="text-sm text-text-secondary mt-1">
+                <p className="text-sm text-text-secondary mt-1 break-words">
                     Execução e qualidade dos testes funcionais para {versionLabel}.
                 </p>
             </header>
 
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-4 min-w-0">
                 <div className="rounded-2xl glass-surface p-4 text-center">
                     <p className="data-label">Casos totais</p>
                     <p className="data-value mt-1 text-2xl">{totalTestCases}</p>
@@ -55,25 +55,25 @@ export const FunctionalTestsCard: React.FC<FunctionalTestsCardProps> = ({
                 <div className="rounded-2xl glass-surface p-4 text-center">
                     <p className="data-label">Executados</p>
                     <p className="data-value mt-1 text-2xl text-accent">{executedTestCases}</p>
-                    <p className="text-xs text-text-secondary mt-1">{formatPercent(executionRate)} executados</p>
+                    <p className="text-xs text-text-secondary mt-1 break-words">{formatPercent(executionRate)} executados</p>
                 </div>
                 <div className="rounded-2xl glass-surface p-4 text-center">
                     <p className="data-label">Falhas</p>
                     <p className="data-value mt-1 text-2xl text-amber-300">{failedTestCases}</p>
-                    <p className="text-xs text-text-secondary mt-1">
+                    <p className="text-xs text-text-secondary mt-1 break-words">
                         {failedTestCases > 0 ? `${Math.round((failedTestCases / Math.max(executedTestCases, 1)) * 100)}% dos executados` : 'Tudo passando'}
                     </p>
                 </div>
                 <div className="rounded-2xl glass-surface p-4 text-center">
                     <p className="data-label">Pendentes</p>
                     <p className="data-value mt-1 text-2xl text-text-primary">{notRunTestCases}</p>
-                    <p className="text-xs text-text-secondary mt-1">
+                    <p className="text-xs text-text-secondary mt-1 break-words">
                         {notRunTestCases > 0 ? 'Ainda não executados' : 'Execução completa'}
                     </p>
                 </div>
             </div>
 
-            <div className="rounded-2xl glass-surface glass-surface--tint p-4">
+            <div className="rounded-2xl glass-surface glass-surface--tint p-4 min-w-0">
                 <p className="text-xs uppercase tracking-[0.35em] text-text-secondary">Taxa de aprovação</p>
                 <div className="mt-3">
                     <div className="flex items-center justify-between text-sm text-text-secondary">
@@ -102,14 +102,14 @@ export const FunctionalTestsCard: React.FC<FunctionalTestsCardProps> = ({
             </div>
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div className="rounded-2xl glass-surface p-4">
+                <div className="rounded-2xl glass-surface p-4 min-w-0">
                     <p className="text-xs uppercase tracking-[0.35em] text-text-secondary mb-2">Cobertura pendente</p>
                     {tasksWithoutTests.length === 0 ? (
-                        <p className="text-sm text-text-secondary">Todas as histórias possuem casos de teste.</p>
+                        <p className="text-sm text-text-secondary break-words">Todas as histórias possuem casos de teste.</p>
                     ) : (
-                        <ul className="space-y-2 text-sm text-text-primary">
+                        <ul className="space-y-2 text-sm text-text-primary leading-relaxed break-words">
                             {tasksWithoutTests.map(task => (
-                                <li key={task.id} className="flex items-start gap-2">
+                                <li key={task.id} className="flex items-start gap-2 break-words">
                                     <span>•</span>
                                     <span>{task.title}</span>
                                 </li>
@@ -117,14 +117,14 @@ export const FunctionalTestsCard: React.FC<FunctionalTestsCardProps> = ({
                         </ul>
                     )}
                 </div>
-                <div className="rounded-2xl glass-surface p-4">
+                <div className="rounded-2xl glass-surface p-4 min-w-0">
                     <p className="text-xs uppercase tracking-[0.35em] text-text-secondary mb-2">Falhas em atenção</p>
                     {tasksWithFailures.length === 0 ? (
-                        <p className="text-sm text-text-secondary">Nenhuma falha registrada nos testes executados.</p>
+                        <p className="text-sm text-text-secondary break-words">Nenhuma falha registrada nos testes executados.</p>
                     ) : (
-                        <ul className="space-y-2 text-sm text-text-primary">
+                        <ul className="space-y-2 text-sm text-text-primary leading-relaxed break-words">
                             {tasksWithFailures.map(task => (
-                                <li key={task.id} className="flex items-start gap-2">
+                                <li key={task.id} className="flex items-start gap-2 break-words">
                                     <span>⚠️</span>
                                     <span>{task.title}</span>
                                 </li>

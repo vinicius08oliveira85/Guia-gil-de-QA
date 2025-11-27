@@ -30,9 +30,9 @@ export const QualityMetricsCard: React.FC<QualityMetricsCardProps> = ({
     const riskLevel = generalAnalysis?.riskCalculation?.overallRisk;
 
     return (
-        <section className={`${windows12Styles.card} ${windows12Styles.spacing.lg} space-y-5`}>
+        <section className={`${windows12Styles.card} ${windows12Styles.spacing.lg} space-y-5 min-w-0`}>
             <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                     <p className="text-xs uppercase tracking-[0.35em] text-text-secondary">Bloco 5</p>
                     <div className="flex items-center gap-2">
                         <h3 className="text-xl font-semibold text-text-primary">Métricas de Qualidade</h3>
@@ -42,7 +42,7 @@ export const QualityMetricsCard: React.FC<QualityMetricsCardProps> = ({
                             variant="tooltip"
                         />
                     </div>
-                    <p className="text-sm text-text-secondary mt-1">
+                    <p className="text-sm text-text-secondary mt-1 break-words">
                         Indicadores de estabilidade para {versionLabel}.
                     </p>
                 </div>
@@ -58,19 +58,19 @@ export const QualityMetricsCard: React.FC<QualityMetricsCardProps> = ({
             </header>
 
             <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-                <div className="rounded-2xl glass-surface p-4">
+                <div className="rounded-2xl glass-surface p-4 min-w-0">
                     <p className="data-label">Pass rate</p>
                     <p className="data-value mt-1 text-2xl text-emerald-300">{passRate}%</p>
-                    <p className="text-xs text-text-secondary mt-1">Casos aprovados / executados</p>
+                    <p className="text-xs text-text-secondary mt-1 break-words">Casos aprovados / executados</p>
                 </div>
-                <div className={`rounded-2xl glass-surface p-4 ${analysisOutdated ? 'glass-surface--warning' : ''}`}>
+                <div className={`rounded-2xl glass-surface p-4 min-w-0 ${analysisOutdated ? 'glass-surface--warning' : ''}`}>
                     <p className="data-label">Bugs Abertos</p>
                     <p className="data-value mt-1 text-2xl text-amber-300">{openVsClosedBugs.open}</p>
-                    <p className="text-xs text-text-secondary mt-1">
+                    <p className="text-xs text-text-secondary mt-1 break-words">
                         {openVsClosedBugs.open} abertos • {openVsClosedBugs.closed} fechados
                     </p>
                 </div>
-                <div className="rounded-2xl glass-surface p-4">
+                <div className="rounded-2xl glass-surface p-4 min-w-0">
                     <p className="data-label">Risco geral</p>
                     {riskLevel ? (
                         <span className={`${getRiskStyle(riskLevel)} inline-block mt-2`}>
@@ -79,18 +79,18 @@ export const QualityMetricsCard: React.FC<QualityMetricsCardProps> = ({
                     ) : (
                         <p className="data-value mt-1 text-2xl text-text-secondary">—</p>
                     )}
-                    <p className="text-xs text-text-secondary mt-1">
+                    <p className="text-xs text-text-secondary mt-1 break-words">
                         {analysisOutdated ? 'Execute a IA para atualizar o status.' : 'Dados alinhados com a última análise IA.'}
                     </p>
                 </div>
             </div>
 
-            <div className="rounded-2xl glass-surface glass-surface--tint p-4">
+            <div className="rounded-2xl glass-surface glass-surface--tint p-4 min-w-0">
                 <p className="text-xs uppercase tracking-[0.35em] text-text-secondary mb-2">Bugs por severidade</p>
                 {totalBugs === 0 ? (
-                    <p className="text-sm text-text-secondary">Nenhum bug registrado nesta versão.</p>
+                    <p className="text-sm text-text-secondary break-words">Nenhum bug registrado nesta versão.</p>
                 ) : (
-                    <ul className="space-y-2 text-sm text-text-primary">
+                    <ul className="space-y-2 text-sm text-text-primary leading-relaxed break-words">
                         {severityOrder.map(severity => {
                             const amount = bugsBySeverity[severity] || 0;
                             const percentage = totalBugs > 0 ? Math.round((amount / totalBugs) * 100) : 0;
@@ -113,9 +113,9 @@ export const QualityMetricsCard: React.FC<QualityMetricsCardProps> = ({
                 )}
             </div>
 
-            <div className="rounded-2xl glass-surface p-4">
+            <div className="rounded-2xl glass-surface p-4 min-w-0">
                 <p className="text-xs uppercase tracking-[0.35em] text-text-secondary mb-3">Qualidade por módulo</p>
-                <div className="space-y-3 text-sm text-text-primary">
+                <div className="space-y-3 text-sm text-text-primary leading-relaxed break-words">
                     {qualityByModule.slice(0, 4).map(module => (
                         <div key={module.module}>
                             <div className="flex items-center justify-between">
@@ -131,7 +131,7 @@ export const QualityMetricsCard: React.FC<QualityMetricsCardProps> = ({
                         </div>
                     ))}
                     {qualityByModule.length === 0 && (
-                        <p className="text-sm text-text-secondary">Adicione épicos para visualizar a qualidade por domínio.</p>
+                        <p className="text-sm text-text-secondary break-words">Adicione épicos para visualizar a qualidade por domínio.</p>
                     )}
                 </div>
             </div>
