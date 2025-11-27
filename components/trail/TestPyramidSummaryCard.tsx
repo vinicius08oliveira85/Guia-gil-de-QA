@@ -29,23 +29,37 @@ const insightsByLevel: Record<TestPyramidLevel['level'], string[]> = {
     ]
 };
 
-const levelStyles: Record<TestPyramidLevel['level'], { gradient: string; accent: string; chip: string; Icon: React.FC<React.SVGProps<SVGSVGElement>>; }> = {
+// Estilos Windows 12 Bold para cada nível da pirâmide
+const levelStyles: Record<TestPyramidLevel['level'], { 
+    gradient: string; 
+    gradientBg: string;
+    accent: string; 
+    chip: string; 
+    glow: string;
+    Icon: React.FC<React.SVGProps<SVGSVGElement>>; 
+}> = {
     Unitário: {
-        gradient: 'from-blue-500 via-blue-400 to-blue-300',
-        accent: 'text-blue-200',
-        chip: 'border-blue-400/40 bg-blue-500/10 text-blue-100',
+        gradient: 'from-cyan-400 via-blue-500 to-indigo-500',
+        gradientBg: 'from-cyan-950/30 via-blue-950/20 to-indigo-950/30',
+        accent: 'text-cyan-300',
+        chip: 'border-cyan-500/40 bg-cyan-500/15 text-cyan-300',
+        glow: 'shadow-cyan-500/20',
         Icon: UnitIcon
     },
     Integração: {
-        gradient: 'from-amber-400 via-amber-300 to-yellow-200',
-        accent: 'text-amber-900/70',
-        chip: 'border-amber-400/40 bg-amber-500/10 text-amber-900/70',
+        gradient: 'from-violet-400 via-purple-500 to-fuchsia-500',
+        gradientBg: 'from-violet-950/30 via-purple-950/20 to-fuchsia-950/30',
+        accent: 'text-violet-300',
+        chip: 'border-violet-500/40 bg-violet-500/15 text-violet-300',
+        glow: 'shadow-violet-500/20',
         Icon: IntegracaoIcon
     },
     E2E: {
-        gradient: 'from-rose-500 via-rose-400 to-rose-300',
-        accent: 'text-rose-50',
-        chip: 'border-rose-400/40 bg-rose-500/10 text-rose-50',
+        gradient: 'from-rose-400 via-pink-500 to-fuchsia-500',
+        gradientBg: 'from-rose-950/30 via-pink-950/20 to-fuchsia-950/30',
+        accent: 'text-rose-300',
+        chip: 'border-rose-500/40 bg-rose-500/15 text-rose-300',
+        glow: 'shadow-rose-500/20',
         Icon: E2EIcon
     }
 };
@@ -60,6 +74,10 @@ const extractPercentage = (value?: string): number | undefined => {
     return parsed;
 };
 
+/**
+ * Card de resumo da Pirâmide de Testes com design Windows 12
+ * Exibe distribuição visual e recomendações por nível
+ */
 export const TestPyramidSummaryCard: React.FC<TestPyramidSummaryCardProps> = ({ project, versionLabel }) => {
     const [expandedLevel, setExpandedLevel] = useState<TestPyramidLevel['level'] | null>('Unitário');
     const [showDetailedView, setShowDetailedView] = useState(false);
@@ -96,22 +114,25 @@ export const TestPyramidSummaryCard: React.FC<TestPyramidSummaryCardProps> = ({ 
     };
 
     return (
-        <section className={`${windows12Styles.card} ${windows12Styles.spacing.lg} space-y-6`}>
+        <section className={cn(windows12Styles.card, windows12Styles.spacing.lg, 'space-y-6')}>
+            {/* Header */}
             <header className="space-y-2">
-                <p className="text-xs uppercase tracking-[0.35em] text-text-secondary">Bloco 2</p>
+                <p className="text-xs uppercase tracking-[0.35em] text-violet-400/70 font-medium">Bloco 2</p>
                 <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
                     <div className="min-w-0">
-                        <h3 className="text-2xl font-semibold text-text-primary break-words">Pirâmide de Testes</h3>
-                        <p className="text-sm text-text-secondary break-words">
+                        <h3 className="text-2xl font-semibold bg-gradient-to-r from-slate-100 via-violet-200 to-slate-100 bg-clip-text text-transparent break-words">
+                            Pirâmide de Testes
+                        </h3>
+                        <p className="text-sm text-slate-400 break-words">
                             Distribuição ideal de esforços de teste para {versionLabel}.
                         </p>
                     </div>
                     {hasAnalysis && (
-                        <div className="flex flex-wrap gap-2 text-[11px] text-text-secondary">
-                            <span className="rounded-full border border-surface-border px-3 py-1">
+                        <div className="flex flex-wrap gap-2 text-[11px]">
+                            <span className="rounded-full border border-violet-500/30 bg-violet-500/10 text-violet-300 px-3 py-1 font-medium">
                                 {totalRecommendations} recomendações curadas pela IA
                             </span>
-                            <span className="rounded-full border border-surface-border px-3 py-1">
+                            <span className="rounded-full border border-slate-600/50 bg-slate-800/50 text-slate-400 px-3 py-1">
                                 Última medição baseada em tarefas ativas
                             </span>
                         </div>
@@ -120,21 +141,23 @@ export const TestPyramidSummaryCard: React.FC<TestPyramidSummaryCardProps> = ({ 
             </header>
 
             <div className="flex flex-col gap-6 lg:flex-row">
+                {/* Sidebar - Visualização da Pirâmide */}
                 <aside className="space-y-4 lg:w-1/3">
-                    <div className="rounded-2xl bg-white/5 p-5 shadow-inner">
+                    {/* Painel de Distribuição Visual */}
+                    <div className="rounded-2xl border border-violet-500/20 bg-gradient-to-br from-violet-950/20 via-slate-900/95 to-fuchsia-950/20 p-5 shadow-lg shadow-violet-500/5 backdrop-blur-xl">
                         <div className="mb-4 flex items-center justify-between">
                             <div>
-                                <p className="text-xs uppercase tracking-widest text-text-secondary">Painel rápido</p>
-                                <p className="text-base font-semibold text-text-primary">Distribuição visual</p>
+                                <p className="text-xs uppercase tracking-widest text-violet-400/70 font-medium">Painel rápido</p>
+                                <p className="text-base font-semibold text-slate-100">Distribuição visual</p>
                             </div>
                             <button
                                 type="button"
                                 onClick={() => setShowDetailedView(prev => !prev)}
                                 className={cn(
-                                    'rounded-full border px-3 py-1 text-xs font-medium transition-colors',
+                                    'rounded-full border px-3 py-1 text-xs font-medium transition-all duration-200',
                                     showDetailedView
-                                        ? 'border-accent/40 bg-accent/10 text-accent-light'
-                                        : 'border-surface-border text-text-secondary hover:text-text-primary'
+                                        ? 'border-cyan-500/50 bg-cyan-500/20 text-cyan-300 shadow-sm shadow-cyan-500/20'
+                                        : 'border-slate-600/50 text-slate-400 hover:text-slate-200 hover:border-slate-500/60'
                                 )}
                                 aria-pressed={showDetailedView}
                             >
@@ -142,26 +165,26 @@ export const TestPyramidSummaryCard: React.FC<TestPyramidSummaryCardProps> = ({ 
                             </button>
                         </div>
 
+                        {/* Pirâmide Visual */}
                         <div className="relative flex flex-col items-center gap-3 py-4">
                             {layers.slice().reverse().map(layer => {
-                                const { gradient, Icon } = levelStyles[layer.level];
+                                const { gradient, Icon, glow } = levelStyles[layer.level];
                                 return (
                                     <div key={layer.level} className="flex w-full justify-center">
                                         <div
                                             style={{ width: `${layer.pct}%` }}
                                             className={cn(
-                                                'rounded-xl px-3 py-2 text-center text-sm font-semibold text-text-primary shadow-lg shadow-black/10 transition-all',
-                                                'bg-gradient-to-r',
-                                                gradient
+                                                'rounded-xl px-3 py-2.5 text-center text-sm font-semibold shadow-lg transition-all duration-300 hover:scale-[1.02]',
+                                                'bg-gradient-to-r text-white',
+                                                gradient,
+                                                glow
                                             )}
                                         >
                                             <span className="inline-flex items-center justify-center gap-2">
-                                                <span
-                                                    className={`flex h-6 w-6 items-center justify-center rounded-lg bg-white/10 ${levelStyles[layer.level].accent}`}
-                                                >
+                                                <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-white/20 backdrop-blur-sm">
                                                     <Icon className="h-4 w-4" aria-hidden="true" />
                                                 </span>
-                                                {layer.level}
+                                                <span className="drop-shadow-sm">{layer.level}</span>
                                                 <span className="text-xs opacity-80">({layer.pct}%)</span>
                                             </span>
                                         </div>
@@ -170,7 +193,7 @@ export const TestPyramidSummaryCard: React.FC<TestPyramidSummaryCardProps> = ({ 
                             })}
                         </div>
 
-                        <div className="mt-4 grid grid-cols-2 text-[11px] text-text-secondary">
+                        <div className="mt-4 grid grid-cols-2 text-[11px] text-slate-500">
                             <div>
                                 Mais lento<br />Mais caro
                             </div>
@@ -180,8 +203,9 @@ export const TestPyramidSummaryCard: React.FC<TestPyramidSummaryCardProps> = ({ 
                         </div>
                     </div>
 
-                    <div className="rounded-2xl bg-white/3 p-4 shadow-inner text-sm text-text-secondary">
-                        <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-text-primary">
+                    {/* Legenda */}
+                    <div className="rounded-2xl border border-slate-700/50 bg-slate-800/40 p-4 shadow-inner text-sm backdrop-blur-sm">
+                        <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-slate-300">
                             Legenda e percentuais
                         </p>
                         <div className="space-y-2">
@@ -189,44 +213,53 @@ export const TestPyramidSummaryCard: React.FC<TestPyramidSummaryCardProps> = ({ 
                                 <div key={`legend-${layer.level}`} className="flex items-center gap-3">
                                     <span
                                         className={cn(
-                                            'h-3 w-3 rounded-sm bg-gradient-to-r',
-                                            levelStyles[layer.level].gradient
+                                            'h-3 w-3 rounded-sm bg-gradient-to-r shadow-sm',
+                                            levelStyles[layer.level].gradient,
+                                            levelStyles[layer.level].glow
                                         )}
                                     />
-                                    <div className="flex-1 font-medium text-text-primary">{layer.level}</div>
-                                    <span className="text-xs text-text-secondary">{layer.pct}%</span>
+                                    <div className={cn('flex-1 font-medium', levelStyles[layer.level].accent)}>
+                                        {layer.level}
+                                    </div>
+                                    <span className="text-xs text-slate-400">{layer.pct}%</span>
                                 </div>
                             ))}
                         </div>
                     </div>
                 </aside>
 
+                {/* Main Content - Cards por Nível */}
                 <main className="flex-1 space-y-4">
                     {hasAnalysis ? (
                         layers.map(layer => {
-                            const { Icon, gradient, chip } = levelStyles[layer.level];
+                            const { Icon, gradient, gradientBg, chip, accent, glow } = levelStyles[layer.level];
                             const isExpanded = showDetailedView || expandedLevel === layer.level;
                             return (
                                 <section
                                     key={`card-${layer.level}`}
-                                    className="rounded-2xl border border-surface-border/50 bg-white/5 p-5 shadow-lg shadow-black/5"
+                                    className={cn(
+                                        'rounded-2xl border bg-gradient-to-br p-5 shadow-lg backdrop-blur-sm transition-all duration-300',
+                                        gradientBg,
+                                        'border-slate-700/50 hover:border-slate-600/60'
+                                    )}
                                 >
                                     <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                                         <div className="flex flex-1 items-center gap-4">
                                             <span
                                                 className={cn(
-                                                    'inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br text-text-primary shadow-md shadow-black/10',
-                                                    gradient
+                                                    'inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br shadow-lg text-white',
+                                                    gradient,
+                                                    glow
                                                 )}
                                             >
-                                                <Icon className="h-6 w-6" aria-hidden="true" />
+                                                <Icon className="h-6 w-6 drop-shadow-sm" aria-hidden="true" />
                                             </span>
                                             <div>
-                                                <p className="text-lg font-semibold text-text-primary">
+                                                <p className={cn('text-lg font-semibold', accent)}>
                                                     {layer.level}{' '}
-                                                    <span className="text-xs text-text-secondary">• foco {layer.focus}</span>
+                                                    <span className="text-xs text-slate-400">• foco {layer.focus}</span>
                                                 </p>
-                                                <p className="text-xs text-text-secondary">
+                                                <p className="text-xs text-slate-400">
                                                     {layer.recommendations.length} recomendações priorizadas
                                                 </p>
                                             </div>
@@ -238,7 +271,7 @@ export const TestPyramidSummaryCard: React.FC<TestPyramidSummaryCardProps> = ({ 
                                             <button
                                                 type="button"
                                                 onClick={() => toggleLevel(layer.level)}
-                                                className="text-xs text-text-secondary underline-offset-2 hover:text-text-primary"
+                                                className="text-xs text-slate-400 underline-offset-2 hover:text-slate-200 transition-colors"
                                                 aria-expanded={isExpanded}
                                             >
                                                 {isExpanded ? 'Recolher' : 'Expandir'}
@@ -251,33 +284,33 @@ export const TestPyramidSummaryCard: React.FC<TestPyramidSummaryCardProps> = ({ 
                                             {layer.recommendations.map((example, idx) => (
                                                 <div
                                                     key={`${layer.level}-example-${idx}`}
-                                                    className="flex flex-col gap-2 rounded-xl bg-surface/40 px-4 py-3 text-sm text-text-primary sm:flex-row sm:items-start sm:justify-between"
+                                                    className="flex flex-col gap-2 rounded-xl border border-slate-700/40 bg-slate-800/50 px-4 py-3 text-sm sm:flex-row sm:items-start sm:justify-between"
                                                 >
-                                                    <p className="flex-1 leading-relaxed">• {example}</p>
-                                                    <div className="text-xs text-text-secondary">
+                                                    <p className="flex-1 leading-relaxed text-slate-300">• {example}</p>
+                                                    <div className="text-xs text-slate-500">
                                                         Prioridade baseada em impacto
                                                     </div>
                                                 </div>
                                             ))}
                                             {layer.recommendations.length === 0 && (
-                                                <p className="text-sm text-text-secondary">
+                                                <p className="text-sm text-slate-500">
                                                     Sem recomendações para este nível ainda. Gere uma nova análise para preencher.
                                                 </p>
                                             )}
                                         </div>
                                     ) : (
-                                        <p className="mt-3 text-sm text-text-secondary">
+                                        <p className="mt-3 text-sm text-slate-500">
                                             Clique em &quot;Expandir&quot; para visualizar recomendações específicas da IA.
                                         </p>
                                     )}
 
-                                    <div className="mt-4 flex flex-wrap gap-3 text-xs text-text-secondary">
+                                    <div className="mt-4 flex flex-wrap gap-3 text-xs">
                                         {insightsByLevel[layer.level].map(insight => (
                                             <span
                                                 key={`${layer.level}-${insight}`}
-                                                className="flex items-center gap-1 rounded-full border border-surface-border px-3 py-1"
+                                                className="flex items-center gap-1.5 rounded-full border border-slate-600/40 bg-slate-800/40 px-3 py-1 text-slate-400"
                                             >
-                                                <span className="h-1.5 w-1.5 rounded-full bg-accent" />
+                                                <span className={cn('h-1.5 w-1.5 rounded-full bg-gradient-to-r', gradient)} />
                                                 {insight}
                                             </span>
                                         ))}
@@ -286,9 +319,12 @@ export const TestPyramidSummaryCard: React.FC<TestPyramidSummaryCardProps> = ({ 
                             );
                         })
                     ) : (
-                        <div className="flex h-full flex-col items-center justify-center rounded-2xl border border-dashed border-surface-border/70 p-8 text-center text-sm text-text-secondary">
-                            <p className="text-base font-semibold text-text-primary">Sem dados de pirâmide ainda</p>
-                            <p className="mt-2 max-w-md">
+                        <div className="flex h-full flex-col items-center justify-center rounded-2xl border border-dashed border-violet-500/30 bg-violet-950/10 p-8 text-center text-sm backdrop-blur-sm">
+                            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500/20 to-fuchsia-500/20 border border-violet-500/30 flex items-center justify-center mb-4">
+                                <span className="text-3xl">📊</span>
+                            </div>
+                            <p className="text-base font-semibold text-slate-200">Sem dados de pirâmide ainda</p>
+                            <p className="mt-2 max-w-md text-slate-400">
                                 Gere uma análise com IA para destravar recomendações táticas por camada de teste e visualizar a distribuição ideal.
                             </p>
                         </div>
@@ -296,8 +332,9 @@ export const TestPyramidSummaryCard: React.FC<TestPyramidSummaryCardProps> = ({ 
                 </main>
             </div>
 
-            <footer className="rounded-2xl bg-surface-hover/70 p-4 text-xs text-text-secondary">
-                <strong className="text-text-primary">Guia rápido:</strong>
+            {/* Footer */}
+            <footer className="rounded-2xl border border-slate-700/50 bg-slate-800/40 p-4 text-xs text-slate-400 backdrop-blur-sm">
+                <strong className="text-slate-300">Guia rápido:</strong>
                 <ul className="mt-2 list-disc space-y-1 pl-4">
                     <li>Converta porcentagens em largura real para reforçar o formato de pirâmide.</li>
                     <li>Use dados da IA armazenados no projeto para calibrar foco e recomendações.</li>
@@ -335,4 +372,3 @@ function E2EIcon(props: React.SVGProps<SVGSVGElement>) {
         </svg>
     );
 }
-

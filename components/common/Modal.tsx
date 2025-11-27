@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 
 interface ModalProps {
@@ -10,6 +9,10 @@ interface ModalProps {
     maxHeight?: string;
 }
 
+/**
+ * Modal com design Windows 12
+ * Suporta diferentes tamanhos e fecha com ESC
+ */
 export const Modal: React.FC<ModalProps> = ({ 
     isOpen, 
     onClose, 
@@ -51,7 +54,7 @@ export const Modal: React.FC<ModalProps> = ({
 
     return (
         <div 
-            className="glass-overlay fixed inset-0 z-50 flex justify-center items-center p-4 sm:p-6 overflow-y-auto transition-opacity duration-300"
+            className="fixed inset-0 z-50 flex justify-center items-center p-4 sm:p-6 overflow-y-auto transition-opacity duration-300 bg-slate-950/80 backdrop-blur-xl"
             onClick={onClose}
             role="dialog"
             aria-modal="true"
@@ -59,7 +62,7 @@ export const Modal: React.FC<ModalProps> = ({
         >
             <div 
                 id="modal-content"
-                className={`mica w-full ${sizeClasses[size]} flex flex-col overflow-hidden animate-fade-in shadow-[0_35px_120px_rgba(3,7,23,0.65)]`}
+                className={`w-full ${sizeClasses[size]} flex flex-col overflow-hidden animate-fade-in rounded-2xl border border-cyan-500/20 bg-gradient-to-br from-slate-900/98 via-slate-900/95 to-slate-800/98 backdrop-blur-2xl shadow-[0_25px_80px_rgba(0,0,0,0.5),0_0_60px_rgba(34,211,238,0.1)]`}
                 onClick={(e) => e.stopPropagation()}
                 tabIndex={-1}
                 style={{ 
@@ -69,20 +72,29 @@ export const Modal: React.FC<ModalProps> = ({
                 }}
             >
                 {/* Title Bar - Fixed */}
-                <div className="flex justify-between items-center px-6 py-5 bg-white/5 border-b border-white/10 backdrop-blur-sm flex-shrink-0">
-                    <h2 id="modal-title" className="text-xl font-semibold text-text-primary pr-4 truncate text-balance">{title}</h2>
+                <div className="relative flex justify-between items-center px-6 py-5 bg-gradient-to-r from-cyan-500/5 via-violet-500/5 to-transparent border-b border-cyan-500/10 backdrop-blur-sm flex-shrink-0">
+                    <h2 
+                        id="modal-title" 
+                        className="text-xl font-semibold bg-gradient-to-r from-slate-100 via-cyan-200 to-slate-100 bg-clip-text text-transparent pr-4 truncate text-balance"
+                    >
+                        {title}
+                    </h2>
                     <button 
                         onClick={onClose} 
-                        className="win-icon-button text-text-secondary hover:text-text-primary flex-shrink-0"
+                        className="w-9 h-9 rounded-xl bg-slate-800/60 border border-slate-700/50 hover:border-rose-500/40 hover:bg-rose-500/10 text-slate-400 hover:text-rose-400 transition-all duration-200 flex items-center justify-center flex-shrink-0 text-xl"
                         aria-label="Fechar modal"
                         aria-describedby="modal-title"
                     >
-                        &times;
+                        ×
                     </button>
+                    
+                    {/* Linha de destaque */}
+                    <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-500/20 to-transparent" />
                 </div>
+                
                 {/* Content - Scrollable */}
                 <div className="p-6 sm:p-8 overflow-y-auto flex-1" style={{ maxHeight: `calc(${maxHeight} - 100px)` }}>
-                  {children}
+                    {children}
                 </div>
             </div>
         </div>
