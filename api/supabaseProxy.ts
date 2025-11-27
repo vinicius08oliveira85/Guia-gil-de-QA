@@ -30,13 +30,19 @@ const allowCors = (res: VercelResponse) => {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 };
 
+/**
+ * Formato de resposta da API do Supabase Proxy
+ * @property {boolean} success - Indica se a operação foi bem-sucedida
+ * @property {string} [error] - Mensagem de erro, se houver
+ * @property {unknown[]} [projects] - Lista de projetos retornados (apenas em GET)
+ */
 interface SupabaseProxyResponse {
   success: boolean;
   error?: string;
   projects?: unknown[];
 }
 
-export default async function handler(req: VercelRequest, res: VercelResponse<SupabaseProxyResponse>) {
+export default async function handler(req: VercelRequest, res: VercelResponse) {
   allowCors(res);
 
   if (req.method === 'OPTIONS') {
