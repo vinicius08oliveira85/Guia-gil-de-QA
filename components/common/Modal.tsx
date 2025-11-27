@@ -73,7 +73,7 @@ export const Modal: React.FC<ModalProps> = ({
                     <h2 id="modal-title" className="text-xl font-semibold text-text-primary pr-4 truncate text-balance">{title}</h2>
                     <button 
                         onClick={onClose} 
-                        className="win-icon-button text-text-secondary hover:text-white flex-shrink-0"
+                        className="win-icon-button text-text-secondary hover:text-text-primary flex-shrink-0"
                         aria-label="Fechar modal"
                         aria-describedby="modal-title"
                     >

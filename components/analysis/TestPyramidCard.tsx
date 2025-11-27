@@ -18,7 +18,7 @@ export const TestPyramidCard: React.FC<{ project: Project; }> = ({ project }) =>
         <>
         <Card className="mb-8">
                 <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-xl font-bold text-white">Análise da Pirâmide de Testes</h3>
+                    <h3 className="text-xl font-bold text-text-primary">Análise da Pirâmide de Testes</h3>
                     {hasAnalysis && (
                         <button 
                             onClick={() => setShowDetails(true)}
@@ -38,7 +38,7 @@ export const TestPyramidCard: React.FC<{ project: Project; }> = ({ project }) =>
                                     <div
                                         key={level}
                                         style={{ width: `${widthPercentage}%` }}
-                                        className="bg-gray-700 mx-auto text-center py-1.5 text-xs font-bold text-white mb-px rounded-t-sm"
+                                        className="bg-gray-700 mx-auto text-center py-1.5 text-xs font-bold text-text-primary mb-px rounded-t-sm"
                                     >
                                         {level} {analysisMap?.get(level)?.effort && `(${analysisMap.get(level)?.effort})`}
                                     </div>
@@ -66,7 +66,7 @@ export const TestPyramidCard: React.FC<{ project: Project; }> = ({ project }) =>
                                     if (!levelData) return null;
                                     return (
                                         <div key={levelData.level}>
-                                            <h5 className="font-semibold text-white text-xs">{levelData.level} ({levelData.effort})</h5>
+                                            <h5 className="font-semibold text-text-primary text-xs">{levelData.level} ({levelData.effort})</h5>
                                             <ul className="list-disc list-inside text-gray-400 text-xs mt-1">
                                                 <li>{levelData.examples[0]}</li>
                                                 {levelData.examples.length > 1 && (
@@ -104,7 +104,7 @@ export const TestPyramidCard: React.FC<{ project: Project; }> = ({ project }) =>
                                 <div
                                     key={level}
                                     style={{ width: `${widthPercentage}%` }}
-                                    className="bg-gray-700 mx-auto text-center py-2 sm:py-3 text-sm sm:text-base font-bold text-white mb-px rounded-t-sm"
+                                    className="bg-gray-700 mx-auto text-center py-2 sm:py-3 text-sm sm:text-base font-bold text-text-primary mb-px rounded-t-sm"
                                 >
                                     {level} {analysisMap?.get(level)?.effort && `(${analysisMap.get(level)?.effort})`}
                                 </div>
@@ -132,7 +132,7 @@ export const TestPyramidCard: React.FC<{ project: Project; }> = ({ project }) =>
                                 if (!levelData) return null;
                                 return (
                                     <div key={levelData.level}>
-                                        <h5 className="font-semibold text-white">{levelData.level} ({levelData.effort})</h5>
+                                        <h5 className="font-semibold text-text-primary">{levelData.level} ({levelData.effort})</h5>
                                         <ul className="list-disc list-inside text-gray-400 text-sm mt-1 space-y-1">
                                             {levelData.examples.map((ex, i) => <li key={i}>{ex}</li>)}
                                         </ul>

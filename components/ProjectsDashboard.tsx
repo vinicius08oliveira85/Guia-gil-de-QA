@@ -325,7 +325,7 @@ export const ProjectsDashboard: React.FC<{
                             <button
                                 type="button"
                                 onClick={() => setShowTagFilter(!showTagFilter)}
-                                className={`p-1.5 rounded border ${showTagFilter ? 'bg-accent text-white border-accent' : 'bg-surface-card border-surface-border text-text-secondary'}`}
+                                className={`p-1.5 rounded border ${showTagFilter ? 'bg-accent text-text-on-accent border-accent' : 'bg-surface-card border-surface-border text-text-secondary'}`}
                                 aria-pressed={showTagFilter}
                             >
                                 <FilterIcon />
@@ -414,7 +414,7 @@ export const ProjectsDashboard: React.FC<{
                                     <FilterIcon />
                                     <span className="hidden lg:inline">Filtros</span>
                                     {selectedTags.length > 0 && (
-                                        <span className="bg-accent text-white text-[10px] px-1.5 py-0.5 rounded-full ml-1">
+                                        <span className="bg-accent text-text-on-accent text-[10px] px-1.5 py-0.5 rounded-full ml-1">
                                             {selectedTags.length}
                                         </span>
                                     )}
@@ -775,7 +775,7 @@ export const ProjectsDashboard: React.FC<{
                                             <div className="flex items-center gap-2">
                                                 <button 
                                                     onClick={(e) => openDeleteModal(p, e)} 
-                                                    className="h-8 w-8 flex items-center justify-center rounded-full bg-surface-hover text-text-secondary hover:bg-red-500 hover:text-white transition-colors"
+                                                    className="h-8 w-8 flex items-center justify-center rounded-full bg-surface-hover text-text-secondary hover:bg-red-500 hover:text-text-on-accent transition-colors"
                                                     aria-label={`Excluir projeto ${p.name}`}
                                                     title="Excluir projeto"
                                                 >

@@ -55,7 +55,7 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported }) => {
                         </button>
                         <button
                             onClick={toggleBeginnerMode}
-                            className={`win-icon-button ${isBeginnerMode ? 'bg-accent/20 text-white shadow-[0_10px_25px_rgba(14,109,253,0.35)]' : ''}`}
+                            className={`win-icon-button ${isBeginnerMode ? 'bg-accent/20 text-text-on-accent shadow-[0_10px_25px_rgba(14,109,253,0.35)]' : ''}`}
                             title={isBeginnerMode ? 'Modo Iniciante: Ativado (clique para desativar)' : 'Modo Iniciante: Desativado (clique para ativar)'}
                             aria-label="Alternar modo iniciante"
                             aria-pressed={isBeginnerMode}

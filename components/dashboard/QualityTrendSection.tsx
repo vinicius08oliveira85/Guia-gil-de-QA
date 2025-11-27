@@ -138,34 +138,34 @@ export const QualityTrendSection: React.FC<QualityTrendSectionProps> = ({ projec
     
     return (
         <div className="space-y-6">
-            <Card className="relative overflow-hidden rounded-[28px] border border-white/10 bg-gradient-to-br from-slate-950/90 via-slate-900/70 to-slate-800/40 text-white shadow-[0_15px_45px_rgba(15,23,42,0.35)]">
+            <Card className="relative overflow-hidden rounded-[28px] border border-surface-border bg-gradient-to-br from-slate-950/90 via-slate-900/70 to-slate-800/40 text-text-primary shadow-[0_15px_45px_rgba(15,23,42,0.35)]">
                 <div className="absolute inset-x-0 -top-20 h-40 bg-[radial-gradient(circle,_rgba(248,113,113,0.25)_0%,_transparent_65%)] blur-3xl" aria-hidden />
                 <div className="relative grid gap-8 lg:grid-cols-[1.6fr_1fr]">
                     <div className="space-y-3">
-                        <p className="eyebrow text-white/60">Análise de Risco</p>
-                        <h2 className="heading-section text-3xl font-semibold tracking-tight text-white">
+                        <p className="eyebrow text-text-tertiary">Análise de Risco</p>
+                        <h2 className="heading-section text-3xl font-semibold tracking-tight text-text-primary">
                             Tendência de Qualidade
                         </h2>
-                        <p className="text-sm text-white/70">
+                        <p className="text-sm text-text-secondary">
                             Monitoramento contínuo de defeitos, densidade por módulo e equilíbrio entre entradas e saídas de bugs.
                         </p>
-                        <p className="text-xs uppercase tracking-[0.3em] text-white/50">{periodLabel}</p>
+                        <p className="text-xs uppercase tracking-[0.3em] text-text-tertiary">{periodLabel}</p>
 
                         <div className="mt-4 flex flex-wrap gap-2">
                             {(highRiskModules.length > 0 ? highRiskModules : metrics.topDefectiveModules.slice(0, 3)).map(
                                 (module) => (
                                     <span
                                         key={module.module}
-                                        className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-medium text-white/80"
+                                        className="inline-flex items-center gap-2 rounded-full border border-surface-border bg-surface-hover px-3 py-1 text-xs font-medium text-text-primary"
                                     >
                                         <span className="h-1.5 w-1.5 rounded-full bg-rose-300" />
                                         {module.module}
-                                        <span className="text-white/60">{module.defectDensity}%</span>
+                                        <span className="text-text-secondary">{module.defectDensity}%</span>
                                     </span>
                                 ),
                             )}
                             {metrics.topDefectiveModules.length === 0 && (
-                                <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-3 py-1 text-xs font-medium text-white/60">
+                                <span className="inline-flex items-center gap-2 rounded-full border border-surface-border bg-surface-contrast px-3 py-1 text-xs font-medium text-text-tertiary">
                                     <span className="h-1.5 w-1.5 rounded-full bg-emerald-300" />
                                     Nenhum módulo com alerta
                                 </span>
@@ -173,26 +173,26 @@ export const QualityTrendSection: React.FC<QualityTrendSectionProps> = ({ projec
                         </div>
                     </div>
 
-                    <div className="rounded-3xl border border-white/15 bg-white/5 p-5 backdrop-blur">
+                    <div className="rounded-3xl border border-surface-border bg-surface-contrast p-5 backdrop-blur">
                         <div className="flex items-start justify-between">
                             <div>
-                                <p className="text-xs uppercase tracking-[0.25em] text-white/60">Saúde Geral</p>
-                                <p className="mt-3 text-4xl font-semibold tracking-tight">{stabilityScore}%</p>
+                                <p className="text-xs uppercase tracking-[0.25em] text-text-tertiary">Saúde Geral</p>
+                                <p className="mt-3 text-4xl font-semibold tracking-tight text-text-primary">{stabilityScore}%</p>
                                 <p className={`text-sm font-semibold ${stabilityAccent}`}>{stabilityStatus}</p>
                             </div>
                             <div className="text-right">
-                                <p className="text-xs text-white/60">Bugs abertos</p>
-                                <p className="text-lg font-semibold text-white">{integerFormatter.format(totalOpenBugs)}</p>
+                                <p className="text-xs text-text-tertiary">Bugs abertos</p>
+                                <p className="text-lg font-semibold text-text-primary">{integerFormatter.format(totalOpenBugs)}</p>
                             </div>
                         </div>
-                        <div className="mt-5 h-2.5 w-full overflow-hidden rounded-full bg-white/10">
+                        <div className="mt-5 h-2.5 w-full overflow-hidden rounded-full bg-surface-hover">
                             <div
                                 className="h-full rounded-full bg-gradient-to-r from-emerald-300 via-amber-300 to-rose-400 transition-all"
                                 style={{ width: `${stabilityScore}%` }}
                                 aria-label={`Saúde geral em ${stabilityScore}%`}
                             />
                         </div>
-                        <p className="mt-4 text-xs text-white/70">
+                        <p className="mt-4 text-xs text-text-secondary">
                             {balanceStatus}. Últimos 7 dias tiveram {integerFormatter.format(weeklyCreated)} bugs criados e{' '}
                             {integerFormatter.format(weeklyClosed)} resolvidos.
                         </p>
@@ -203,11 +203,11 @@ export const QualityTrendSection: React.FC<QualityTrendSectionProps> = ({ projec
                     {highlightMetrics.map((metric) => (
                         <div
                             key={metric.id}
-                            className="rounded-2xl border border-white/10 bg-white/5 p-4 text-white/80 backdrop-blur transition hover:border-white/30"
+                            className="rounded-2xl border border-surface-border bg-surface-contrast p-4 text-text-primary backdrop-blur transition hover:border-surface-outline"
                         >
-                            <p className="text-xs uppercase tracking-[0.3em] text-white/60">{metric.title}</p>
-                            <p className="mt-2 text-2xl font-semibold text-white">{metric.primary}</p>
-                            <p className="text-xs text-white/70">{metric.caption}</p>
+                            <p className="text-xs uppercase tracking-[0.3em] text-text-tertiary">{metric.title}</p>
+                            <p className="mt-2 text-2xl font-semibold text-text-primary">{metric.primary}</p>
+                            <p className="text-xs text-text-secondary">{metric.caption}</p>
                             {metric.delta && (
                                 <p
                                     className={`mt-3 inline-flex items-center gap-2 text-xs font-semibold ${
@@ -216,7 +216,7 @@ export const QualityTrendSection: React.FC<QualityTrendSectionProps> = ({ projec
                                 >
                                     {metric.delta}
                                     {metric.deltaContext && (
-                                        <span className="text-white/60">{metric.deltaContext}</span>
+                                        <span className="text-text-tertiary">{metric.deltaContext}</span>
                                     )}
                                 </p>
                             )}

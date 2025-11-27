@@ -22,6 +22,10 @@ interface MetricCardConfig {
 
 const formatPercent = (value: number) => `${Math.round(value)}%`;
 
+/**
+ * Card de visão geral dos testes funcionais do projeto,
+ * exibindo métricas de execução, aprovação e cobertura.
+ */
 export const FunctionalTestsCard: React.FC<FunctionalTestsCardProps> = ({
     versionLabel,
     tasks,
@@ -107,21 +111,12 @@ export const FunctionalTestsCard: React.FC<FunctionalTestsCardProps> = ({
     ];
 
     return (
-<<<<<<< HEAD
         <section className={`${windows12Styles.card} ${windows12Styles.spacing.lg} space-y-6 min-w-0`}>
             <header className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div className="min-w-0">
                     <p className="text-xs uppercase tracking-[0.35em] text-text-secondary">Bloco 3</p>
                     <h3 className="text-xl font-semibold text-text-primary">Testes Funcionais</h3>
                     <p className="text-sm text-text-secondary mt-1 break-words">
-=======
-        <section className={`${windows12Styles.card} ${windows12Styles.spacing.lg} space-y-6`}>
-            <header className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                <div>
-                    <p className="text-xs uppercase tracking-[0.35em] text-text-secondary">Bloco 3</p>
-                    <h3 className="text-xl font-semibold text-text-primary">Testes Funcionais</h3>
-                    <p className="text-sm text-text-secondary mt-1">
->>>>>>> origin/main
                         Execução e qualidade dos testes funcionais para {versionLabel}.
                     </p>
                     <div className="mt-3 flex flex-wrap gap-2 text-xs">
@@ -145,17 +140,12 @@ export const FunctionalTestsCard: React.FC<FunctionalTestsCardProps> = ({
                 </div>
             </header>
 
-<<<<<<< HEAD
             <div className="grid grid-cols-2 gap-3 md:grid-cols-4 min-w-0">
-=======
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
->>>>>>> origin/main
                 {metricCards.map(card => (
                     <MetricCard key={card.label} {...card} />
                 ))}
             </div>
 
-<<<<<<< HEAD
             <div className="grid gap-4 xl:grid-cols-3 min-w-0">
                 <div className="rounded-3xl glass-surface glass-surface--tint p-5 xl:col-span-2 min-w-0">
                     <div className="flex items-center justify-between gap-4">
@@ -164,16 +154,6 @@ export const FunctionalTestsCard: React.FC<FunctionalTestsCardProps> = ({
                                 Painel de aprovação
                             </p>
                             <h4 className="text-lg font-semibold text-text-primary break-words">Fluxo de execução</h4>
-=======
-            <div className="grid gap-4 xl:grid-cols-3">
-                <div className="rounded-3xl glass-surface glass-surface--tint p-5 xl:col-span-2">
-                    <div className="flex items-center justify-between gap-4">
-                        <div>
-                            <p className="text-xs uppercase tracking-[0.35em] text-text-secondary">
-                                Painel de aprovação
-                            </p>
-                            <h4 className="text-lg font-semibold text-text-primary">Fluxo de execução</h4>
->>>>>>> origin/main
                         </div>
                         <StatusBadge tone={passRate >= 80 ? 'success' : 'warn'}>
                             {passRate >= 80 ? 'Confortável' : 'Ajustar cenários'}
@@ -191,11 +171,7 @@ export const FunctionalTestsCard: React.FC<FunctionalTestsCardProps> = ({
                     </div>
                 </div>
 
-<<<<<<< HEAD
                 <div className="rounded-3xl glass-surface p-5 min-w-0">
-=======
-                <div className="rounded-3xl glass-surface p-5">
->>>>>>> origin/main
                     <p className="text-xs uppercase tracking-[0.35em] text-text-secondary">Insights rápidos</p>
                     <div className="mt-4 space-y-3">
                         {insightCards.map(card => (
@@ -203,15 +179,9 @@ export const FunctionalTestsCard: React.FC<FunctionalTestsCardProps> = ({
                                 key={card.title}
                                 className="flex items-start justify-between gap-3 rounded-2xl border border-white/5 bg-white/5 p-3"
                             >
-<<<<<<< HEAD
                                 <div className="min-w-0">
                                     <p className="text-sm font-semibold text-text-primary break-words">{card.title}</p>
                                     <p className="text-xs text-text-secondary mt-1 break-words">{card.description}</p>
-=======
-                                <div>
-                                    <p className="text-sm font-semibold text-text-primary">{card.title}</p>
-                                    <p className="text-xs text-text-secondary mt-1">{card.description}</p>
->>>>>>> origin/main
                                 </div>
                                 <StatusBadge tone={card.tone}>{card.value}</StatusBadge>
                             </div>
@@ -221,24 +191,14 @@ export const FunctionalTestsCard: React.FC<FunctionalTestsCardProps> = ({
             </div>
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-<<<<<<< HEAD
                 <div className="rounded-2xl glass-surface p-4 min-w-0">
-=======
-                <div className="rounded-2xl glass-surface p-4">
->>>>>>> origin/main
                     <p className="text-xs uppercase tracking-[0.35em] text-text-secondary mb-3">Cobertura pendente</p>
                     {tasksWithoutTests.length === 0 ? (
                         <EmptyState message="Todas as histórias possuem casos de teste." />
                     ) : (
-<<<<<<< HEAD
                         <ul className="space-y-3 text-sm text-text-primary leading-relaxed break-words">
                             {tasksWithoutTests.map(task => (
                                 <li key={task.id} className="flex items-start gap-2 break-words">
-=======
-                        <ul className="space-y-3 text-sm text-text-primary">
-                            {tasksWithoutTests.map(task => (
-                                <li key={task.id} className="flex items-start gap-2">
->>>>>>> origin/main
                                     <span className="mt-1 inline-flex size-1.5 rounded-full bg-amber-300" />
                                     <span>{task.title}</span>
                                 </li>
@@ -246,24 +206,14 @@ export const FunctionalTestsCard: React.FC<FunctionalTestsCardProps> = ({
                         </ul>
                     )}
                 </div>
-<<<<<<< HEAD
                 <div className="rounded-2xl glass-surface p-4 min-w-0">
-=======
-                <div className="rounded-2xl glass-surface p-4">
->>>>>>> origin/main
                     <p className="text-xs uppercase tracking-[0.35em] text-text-secondary mb-3">Falhas em atenção</p>
                     {tasksWithFailures.length === 0 ? (
                         <EmptyState message="Nenhuma falha registrada nos testes executados." />
                     ) : (
-<<<<<<< HEAD
                         <ul className="space-y-3 text-sm text-text-primary leading-relaxed break-words">
                             {tasksWithFailures.map(task => (
                                 <li key={task.id} className="flex items-start gap-2 break-words">
-=======
-                        <ul className="space-y-3 text-sm text-text-primary">
-                            {tasksWithFailures.map(task => (
-                                <li key={task.id} className="flex items-start gap-2">
->>>>>>> origin/main
                                     <span role="img" aria-label="alerta" className="mt-0.5">
                                         ⚠️
                                     </span>

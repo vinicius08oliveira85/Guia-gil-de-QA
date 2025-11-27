@@ -66,7 +66,7 @@ export const TestCaseItem: React.FC<{
     };
 
     const iconButtonClass = `
-        p-2 rounded-full border border-surface-border text-text-secondary hover:text-white
+        p-2 rounded-full border border-surface-border text-text-secondary hover:text-text-primary
         hover:border-accent hover:bg-accent/20 transition-colors
     `;
 
@@ -132,7 +132,7 @@ export const TestCaseItem: React.FC<{
                                     onClick={() => handleStrategyToggle(strategy)}
                                     className={`px-3 py-1 rounded-full text-xs font-semibold border transition-colors flex items-center gap-1 ${
                                         isSelected
-                                            ? 'bg-accent text-white border-accent'
+                                            ? 'bg-accent text-text-on-accent border-accent'
                                             : 'bg-surface-hover text-text-primary border-surface-border hover:border-accent'
                                     }`}
                                 >
@@ -217,7 +217,7 @@ export const TestCaseItem: React.FC<{
                 )}
             </div>
             <div className="mt-4 flex items-center justify-between">
-                <span className={`px-3 py-1 text-xs font-semibold text-white rounded-full ${statusColor[testCase.status]}`}>{testCase.status === 'Not Run' ? 'Não Executado' : testCase.status === 'Passed' ? 'Aprovado' : 'Reprovado'}</span>
+                <span className={`px-3 py-1 text-xs font-semibold text-text-primary rounded-full ${statusColor[testCase.status]}`}>{testCase.status === 'Not Run' ? 'Não Executado' : testCase.status === 'Passed' ? 'Aprovado' : 'Reprovado'}</span>
                 <div className="flex gap-2">
                     <button onClick={() => onStatusChange('Passed')} className="btn btn-approve text-sm">Aprovar</button>
                     <button onClick={() => onStatusChange('Failed')} className="btn btn-reject text-sm">Reprovar</button>

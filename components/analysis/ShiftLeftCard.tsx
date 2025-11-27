@@ -37,7 +37,7 @@ export const ShiftLeftCard: React.FC<{ project: Project; }> = ({ project }) => {
             <Card className="mb-8">
                 <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
-                        <h3 className="text-xl font-bold text-white">Análise de Shift Left Testing</h3>
+                        <h3 className="text-xl font-bold text-text-primary">Análise de Shift Left Testing</h3>
                         <div className="tooltip-container">
                             <InfoIcon />
                             <span className="tooltip-text">
@@ -76,7 +76,7 @@ export const ShiftLeftCard: React.FC<{ project: Project; }> = ({ project }) => {
                             <div className="space-y-2">
                                 {Object.entries(recommendationsByPhase).slice(0, 2).map(([phase, recs]) => (
                                     <div key={phase}>
-                                        <h5 className="font-semibold text-white text-xs">{phase}</h5>
+                                        <h5 className="font-semibold text-text-primary text-xs">{phase}</h5>
                                         <ul className="list-disc list-inside text-gray-400 text-xs mt-1">
                                             <li>{recs[0]}</li>
                                             {recs.length > 1 && <li className="text-text-secondary">+{recs.length - 1} mais...</li>}
@@ -121,7 +121,7 @@ export const ShiftLeftCard: React.FC<{ project: Project; }> = ({ project }) => {
                             <div className="space-y-4">
                                 {Object.entries(recommendationsByPhase).map(([phase, recs]) => (
                                     <div key={phase}>
-                                        <h5 className="font-semibold text-white">{phase}</h5>
+                                        <h5 className="font-semibold text-text-primary">{phase}</h5>
                                         <ul className="list-disc list-inside text-gray-400 text-sm mt-1 space-y-1">
                                             {recs.map((rec, i) => <li key={i}>{rec}</li>)}
                                         </ul>

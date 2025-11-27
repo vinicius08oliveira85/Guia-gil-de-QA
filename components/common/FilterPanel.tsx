@@ -103,7 +103,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
           </svg>
           Filtros rápidos
           {activeFiltersCount > 0 && (
-            <span className="text-xs bg-accent text-white px-2 py-1 rounded-full font-semibold">
+            <span className="text-xs bg-accent text-text-on-accent px-2 py-1 rounded-full font-semibold">
               {activeFiltersCount}
             </span>
           )}
@@ -141,7 +141,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
                   onClick={() => toggleArrayFilter('requiredTestTypes', type)}
                   className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
                     filters.requiredTestTypes?.includes(type)
-                      ? 'bg-accent text-white shadow-md shadow-accent/30 border border-accent/50'
+                      ? 'bg-accent text-text-on-accent shadow-md shadow-accent/30 border border-accent/50'
                       : 'bg-surface border border-surface-border text-text-secondary hover:bg-surface-hover hover:border-accent/30'
                   }`}
                 >
