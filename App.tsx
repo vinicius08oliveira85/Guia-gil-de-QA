@@ -183,106 +183,111 @@ const App: React.FC = () => {
 
     return (
         <ErrorBoundary>
-            <div className="min-h-screen font-sans text-text-primary">
-                <a href="#main-content" className="skip-link">
-                    Pular para o conteúdo principal
-                </a>
-                <Toaster
-                    position={isMobile ? "top-center" : "top-right"}
-                    toastOptions={{
-                        duration: 4000,
-                        style: {
-                            background: 'var(--layer-1)',
-                            color: 'var(--text-primary)',
-                            border: '1px solid var(--surface-border)',
-                            boxShadow: '0 25px 60px rgba(3, 7, 23, 0.55)',
-                            backdropFilter: 'blur(24px) saturate(140%)',
-                        },
-                        success: {
-                            iconTheme: {
-                                primary: '#0E6DFD',
-                                secondary: '#fff',
+            <div className="win-shell font-sans text-text-primary">
+                <div className="win-shell__grid" aria-hidden="true" />
+                <div className="win-shell__orb win-shell__orb--primary" aria-hidden="true" />
+                <div className="win-shell__orb win-shell__orb--secondary" aria-hidden="true" />
+                <div className="win-shell__content">
+                    <a href="#main-content" className="skip-link">
+                        Pular para o conteúdo principal
+                    </a>
+                    <Toaster
+                        position={isMobile ? "top-center" : "top-right"}
+                        toastOptions={{
+                            duration: 4000,
+                            style: {
+                                background: 'var(--layer-1)',
+                                color: 'var(--text-primary)',
+                                border: '1px solid var(--surface-border)',
+                                boxShadow: '0 25px 60px rgba(3, 7, 23, 0.55)',
+                                backdropFilter: 'blur(24px) saturate(140%)',
                             },
-                        },
-                        error: {
-                            iconTheme: {
-                                primary: '#FF5C70',
-                                secondary: '#fff',
+                            success: {
+                                iconTheme: {
+                                    primary: '#0E6DFD',
+                                    secondary: '#fff',
+                                },
                             },
-                        },
-                    }}
-                />
-                <Header onProjectImported={handleImportJiraProject} />
-                {showSearch && (
-                    <div className="glass-overlay fixed inset-0 z-50 flex items-start justify-center pt-20 p-4">
-                        <div className="w-full max-w-2xl">
-                            <SearchBar
-                                searchQuery={searchQuery}
-                                onSearchChange={setSearchQuery}
-                                searchResults={searchResults}
-                                onSelectResult={handleSearchSelect}
-                            />
+                            error: {
+                                iconTheme: {
+                                    primary: '#FF5C70',
+                                    secondary: '#fff',
+                                },
+                            },
+                        }}
+                    />
+                    <Header onProjectImported={handleImportJiraProject} />
+                    {showSearch && (
+                        <div className="glass-overlay fixed inset-0 z-50 flex items-start justify-center pt-20 p-4">
+                            <div className="w-full max-w-2xl">
+                                <SearchBar
+                                    searchQuery={searchQuery}
+                                    onSearchChange={setSearchQuery}
+                                    searchResults={searchResults}
+                                    onSelectResult={handleSearchSelect}
+                                />
+                            </div>
                         </div>
-                    </div>
-                )}
+                    )}
 
-                {showAdvancedSearch && (
-                    <Suspense fallback={<div className="glass-overlay fixed inset-0 z-50 flex items-center justify-center"><Spinner /></div>}>
-                        <AdvancedSearch
-                            projects={projects}
-                            onResultSelect={(result) => {
-                                if (result.type === 'project' || result.projectId) {
-                                    selectProject(result.projectId || result.id);
-                                }
-                                setShowAdvancedSearch(false);
-                            }}
-                            onClose={() => setShowAdvancedSearch(false)}
-                        />
-                    </Suspense>
-                )}
-
-                {showProjectComparison && (
-                    <Suspense fallback={<div className="glass-overlay fixed inset-0 z-50 flex items-center justify-center"><Spinner /></div>}>
-                        <ProjectComparisonModal
-                            isOpen={showProjectComparison}
-                            onClose={() => setShowProjectComparison(false)}
-                            projects={projects}
-                            onProjectSelect={(projectId) => {
-                                selectProject(projectId);
-                                setShowProjectComparison(false);
-                            }}
-                        />
-                    </Suspense>
-                )}
-
-                <main id="main-content">
-                    {selectedProject ? (
-                        <Suspense fallback={<div className="container mx-auto p-8"><LoadingSkeleton variant="card" count={3} /></div>}>
-                            <ProjectView 
-                                project={selectedProject} 
-                                onUpdateProject={handleUpdateProject}
-                                onBack={() => selectProject(null)}
-                            />
-                        </Suspense>
-                    ) : (
-                        <Suspense fallback={<div className="container mx-auto p-8"><LoadingSkeleton variant="card" count={3} /></div>}>
-                            <ProjectsDashboard 
-                                projects={projects} 
-                                onSelectProject={selectProject} 
-                                onCreateProject={handleCreateProject}
-                                onDeleteProject={handleDeleteProject}
-                                onSearchClick={() => setShowSearch(true)}
-                                onAdvancedSearchClick={() => setShowAdvancedSearch(true)}
-                                onComparisonClick={() => setShowProjectComparison(true)}
-                                onSyncSupabase={supabaseEnabled ? handleSyncSupabase : undefined}
+                    {showAdvancedSearch && (
+                        <Suspense fallback={<div className="glass-overlay fixed inset-0 z-50 flex items-center justify-center"><Spinner /></div>}>
+                            <AdvancedSearch
+                                projects={projects}
+                                onResultSelect={(result) => {
+                                    if (result.type === 'project' || result.projectId) {
+                                        selectProject(result.projectId || result.id);
+                                    }
+                                    setShowAdvancedSearch(false);
+                                }}
+                                onClose={() => setShowAdvancedSearch(false)}
                             />
                         </Suspense>
                     )}
-                </main>
-                <KeyboardShortcutsHelp />
-                <Suspense fallback={null}>
-                    <OnboardingGuide />
-                </Suspense>
+
+                    {showProjectComparison && (
+                        <Suspense fallback={<div className="glass-overlay fixed inset-0 z-50 flex items-center justify-center"><Spinner /></div>}>
+                            <ProjectComparisonModal
+                                isOpen={showProjectComparison}
+                                onClose={() => setShowProjectComparison(false)}
+                                projects={projects}
+                                onProjectSelect={(projectId) => {
+                                    selectProject(projectId);
+                                    setShowProjectComparison(false);
+                                }}
+                            />
+                        </Suspense>
+                    )}
+
+                    <main id="main-content" className="win-shell__main">
+                        {selectedProject ? (
+                            <Suspense fallback={<div className="container mx-auto p-8"><LoadingSkeleton variant="card" count={3} /></div>}>
+                                <ProjectView 
+                                    project={selectedProject} 
+                                    onUpdateProject={handleUpdateProject}
+                                    onBack={() => selectProject(null)}
+                                />
+                            </Suspense>
+                        ) : (
+                            <Suspense fallback={<div className="container mx-auto p-8"><LoadingSkeleton variant="card" count={3} /></div>}>
+                                <ProjectsDashboard 
+                                    projects={projects} 
+                                    onSelectProject={selectProject} 
+                                    onCreateProject={handleCreateProject}
+                                    onDeleteProject={handleDeleteProject}
+                                    onSearchClick={() => setShowSearch(true)}
+                                    onAdvancedSearchClick={() => setShowAdvancedSearch(true)}
+                                    onComparisonClick={() => setShowProjectComparison(true)}
+                                    onSyncSupabase={supabaseEnabled ? handleSyncSupabase : undefined}
+                                />
+                            </Suspense>
+                        )}
+                    </main>
+                    <KeyboardShortcutsHelp />
+                    <Suspense fallback={null}>
+                        <OnboardingGuide />
+                    </Suspense>
+                </div>
             </div>
         </ErrorBoundary>
     );
