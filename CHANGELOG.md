@@ -1,5 +1,23 @@
 # Changelog - Melhorias Implementadas
 
+## [2025-11] - Paleta com Alto Contraste
+
+### ✅ Implementado
+- Atualização completa dos tokens de cor dark/light com foco em contraste AA (`index.css`, `index.html`)
+- Novas combinações para topo (win-toolbar), cards, painéis e listas usando `--card-*` e `--panel-*`
+- Estados de alerta e badges com variações dedicadas (`--alert-*`, `glass-surface--success|warning|danger|info`)
+- CTA principal revisado com gradiente `accent → #F97316` e sombras coerentes
+- Inputs, selects e botões icônicos agora reutilizam os novos tokens para manter legibilidade consistente
+
+### 🎯 Impacto
+- Legibilidade reforçada em telas densas e listas extensas
+- Redução de áreas com baixo contraste relatadas em auditorias anteriores
+- Base pronta para validar combinações via WebAIM Contrast Checker
+
+**Arquivos modificados:**
+- `index.css`
+- `index.html`
+
 ## [2025-01] - Melhorias Críticas Implementadas
 
 ### ✅ Implementado

@@ -7,35 +7,76 @@
     <title>QA Agile Guide</title>
     <style>
       :root {
-        /* Dark theme colors (default) */
-        --bg-color: #0f172a;
-        --surface-color: rgba(30, 41, 59, 0.7);
-        --surface-border: rgba(255, 255, 255, 0.1);
-        --surface-hover: rgba(51, 65, 85, 0.8);
-        --text-primary: #e2e8f0;
-        --text-secondary: #94a3b8;
-        --input-bg: #1e293b;
-        --input-border: #334155;
-        --input-text: #e2e8f0;
-        --tooltip-bg: #1e293b;
-        --tooltip-text: #cbd5e1;
-        --tooltip-border: #334155;
+        --accent-color: #38BDF8;
+        --accent-color-strong: #0EA5E9;
+        --accent-color-soft: rgba(56, 189, 248, 0.22);
+        --bg-color: #030712;
+        --surface-color: rgba(15, 23, 42, 0.92);
+        --surface-border: rgba(148, 163, 184, 0.22);
+        --surface-hover: rgba(148, 163, 184, 0.18);
+        --text-primary: #F8FAFC;
+        --text-secondary: #CBD5F5;
+        --input-bg: rgba(15, 23, 42, 0.85);
+        --input-border: rgba(148, 163, 184, 0.45);
+        --input-text: #F8FAFC;
+        --tooltip-bg: rgba(4, 9, 23, 0.98);
+        --tooltip-text: #F8FAFC;
+        --tooltip-border: rgba(148, 163, 184, 0.35);
+        --header-surface: rgba(8, 15, 32, 0.9);
+        --header-surface-strong: rgba(5, 11, 24, 0.95);
+        --header-border: rgba(148, 163, 184, 0.25);
+        --card-bg: rgba(15, 23, 42, 0.92);
+        --card-border: rgba(148, 163, 184, 0.18);
+        --panel-bg: rgba(7, 12, 26, 0.9);
+        --panel-border: rgba(148, 163, 184, 0.15);
+        --list-divider: rgba(148, 163, 184, 0.18);
+        --alert-success-bg: rgba(16, 185, 129, 0.25);
+        --alert-success-border: rgba(16, 185, 129, 0.5);
+        --alert-success-text: #D1FAE5;
+        --alert-warning-bg: rgba(250, 204, 21, 0.25);
+        --alert-warning-border: rgba(250, 204, 21, 0.55);
+        --alert-warning-text: #FEF3C7;
+        --alert-danger-bg: rgba(248, 113, 113, 0.22);
+        --alert-danger-border: rgba(248, 113, 113, 0.55);
+        --alert-danger-text: #FEE2E2;
+        --alert-info-bg: rgba(129, 140, 248, 0.22);
+        --alert-info-border: rgba(129, 140, 248, 0.5);
+        --alert-info-text: #E0E7FF;
       }
 
       .light {
-        /* Light theme colors */
-        --bg-color: #ffffff;
-        --surface-color: rgba(255, 255, 255, 0.95);
-        --surface-border: rgba(0, 0, 0, 0.08);
-        --surface-hover: #f5f5f5;
-        --text-primary: #1a1a1a;
-        --text-secondary: #525252;
-        --input-bg: #ffffff;
-        --input-border: #d4d4d4;
-        --input-text: #1a1a1a;
-        --tooltip-bg: #ffffff;
-        --tooltip-text: #1a1a1a;
-        --tooltip-border: #d4d4d4;
+        --bg-color: #F8FAFC;
+        --surface-color: #FFFFFF;
+        --surface-border: rgba(15, 23, 42, 0.12);
+        --surface-hover: rgba(15, 23, 42, 0.08);
+        --text-primary: #0F172A;
+        --text-secondary: #334155;
+        --input-bg: #FFFFFF;
+        --input-border: rgba(15, 23, 42, 0.15);
+        --input-text: #0F172A;
+        --tooltip-bg: rgba(255, 255, 255, 0.98);
+        --tooltip-text: #0F172A;
+        --tooltip-border: rgba(15, 23, 42, 0.12);
+        --header-surface: rgba(255, 255, 255, 0.95);
+        --header-surface-strong: rgba(248, 250, 252, 0.98);
+        --header-border: rgba(15, 23, 42, 0.08);
+        --card-bg: #FFFFFF;
+        --card-border: rgba(15, 23, 42, 0.08);
+        --panel-bg: #F8FAFF;
+        --panel-border: rgba(15, 23, 42, 0.06);
+        --list-divider: rgba(15, 23, 42, 0.08);
+        --alert-success-bg: #DCFCE7;
+        --alert-success-border: #4ADE80;
+        --alert-success-text: #14532D;
+        --alert-warning-bg: #FEF3C7;
+        --alert-warning-border: #F59E0B;
+        --alert-warning-text: #78350F;
+        --alert-danger-bg: #FEE2E2;
+        --alert-danger-border: #DC2626;
+        --alert-danger-text: #7F1D1D;
+        --alert-info-bg: #DBEAFE;
+        --alert-info-border: #2563EB;
+        --alert-info-text: #1E3A8A;
       }
 
       html {
@@ -44,8 +85,10 @@
       
       body {
         background-color: var(--bg-color);
-        background-image: radial-gradient(circle at 100% 0%, rgba(20, 184, 166, 0.1), transparent 30%),
-                          radial-gradient(circle at 0% 100%, rgba(20, 184, 166, 0.05), transparent 40%);
+        background-image:
+          radial-gradient(circle at 10% 20%, rgba(56, 189, 248, 0.2), transparent 40%),
+          radial-gradient(circle at 80% 0, rgba(124, 58, 237, 0.18), transparent 45%),
+          radial-gradient(circle at 20% 90%, rgba(249, 115, 22, 0.15), transparent 55%);
         background-attachment: fixed;
         padding-bottom: env(safe-area-inset-bottom);
         color: var(--text-primary);
@@ -53,7 +96,10 @@
       }
 
       .light body {
-        background-image: radial-gradient(circle at 100% 0%, rgba(20, 184, 166, 0.03), transparent 30%);
+        background-image:
+          radial-gradient(circle at 15% 25%, rgba(59, 130, 246, 0.12), transparent 45%),
+          radial-gradient(circle at 80% 0, rgba(147, 51, 234, 0.08), transparent 45%),
+          radial-gradient(circle at 20% 85%, rgba(251, 146, 60, 0.1), transparent 55%);
       }
 
       .mica {
