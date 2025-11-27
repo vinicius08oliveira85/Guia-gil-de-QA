@@ -112,16 +112,7 @@ export const FunctionalTestsCard: React.FC<FunctionalTestsCardProps> = ({
     ];
 
     return (
-        <section className={cn(windows12Styles.card, windows12Styles.spacing.lg, 'space-y-6 min-w-0')}>
-            {/* Header com gradiente */}
-            <header className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                <div className="min-w-0">
-                    <p className="text-xs uppercase tracking-[0.35em] text-cyan-400/70 font-medium">Bloco 3</p>
-                    <h3 className="text-xl font-semibold bg-gradient-to-r from-slate-100 via-cyan-200 to-slate-100 bg-clip-text text-transparent">
-                        Testes Funcionais
-                    </h3>
-                    <p className="text-sm text-slate-400 mt-1 break-words">
-                        Execução e qualidade dos testes funcionais para {versionLabel}.
+
                     </p>
                     <div className="mt-3 flex flex-wrap gap-2 text-xs">
                         <StatusBadge tone={healthDescriptor.tone}>{healthDescriptor.label}</StatusBadge>
@@ -159,23 +150,13 @@ export const FunctionalTestsCard: React.FC<FunctionalTestsCardProps> = ({
                 </div>
             </header>
 
-            {/* Metric Cards Grid */}
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-4 min-w-0">
+
                 {metricCards.map(card => (
                     <MetricCard key={card.label} {...card} />
                 ))}
             </div>
 
-            {/* Progress Panel & Insights */}
-            <div className="grid gap-4 xl:grid-cols-3 min-w-0">
-                {/* Progress Panel */}
-                <div className="rounded-2xl border border-cyan-500/20 bg-gradient-to-br from-cyan-950/20 via-slate-900/95 to-violet-950/20 p-5 xl:col-span-2 min-w-0 backdrop-blur-xl shadow-lg shadow-cyan-500/5">
-                    <div className="flex items-center justify-between gap-4">
-                        <div className="min-w-0">
-                            <p className="text-xs uppercase tracking-[0.35em] text-cyan-400/70">
-                                Painel de aprovação
-                            </p>
-                            <h4 className="text-lg font-semibold text-slate-100 break-words">Fluxo de execução</h4>
+
                         </div>
                         <StatusBadge tone={passRate >= 80 ? 'success' : 'warn'}>
                             {passRate >= 80 ? 'Confortável' : 'Ajustar cenários'}
@@ -193,18 +174,14 @@ export const FunctionalTestsCard: React.FC<FunctionalTestsCardProps> = ({
                     </div>
                 </div>
 
-                {/* Insights Panel */}
-                <div className="rounded-2xl border border-violet-500/20 bg-gradient-to-br from-violet-950/20 via-slate-900/95 to-fuchsia-950/20 p-5 min-w-0 backdrop-blur-xl shadow-lg shadow-violet-500/5">
-                    <p className="text-xs uppercase tracking-[0.35em] text-violet-400/70">Insights rápidos</p>
+
                     <div className="mt-4 space-y-3">
                         {insightCards.map(card => (
                             <div
                                 key={card.title}
                                 className="flex items-start justify-between gap-3 rounded-xl border border-slate-700/50 bg-slate-800/50 p-3 hover:border-slate-600/60 transition-colors"
                             >
-                                <div className="min-w-0">
-                                    <p className="text-sm font-semibold text-slate-200 break-words">{card.title}</p>
-                                    <p className="text-xs text-slate-400 mt-1 break-words">{card.description}</p>
+
                                 </div>
                                 <StatusBadge tone={card.tone}>{card.value}</StatusBadge>
                             </div>
@@ -215,30 +192,22 @@ export const FunctionalTestsCard: React.FC<FunctionalTestsCardProps> = ({
 
             {/* Coverage & Failures Lists */}
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div className="rounded-2xl border border-slate-700/50 bg-slate-800/40 p-4 min-w-0 backdrop-blur-sm">
-                    <p className="text-xs uppercase tracking-[0.35em] text-amber-400/70 mb-3 font-medium">Cobertura pendente</p>
+
                     {tasksWithoutTests.length === 0 ? (
                         <EmptyState message="Todas as histórias possuem casos de teste." tone="success" />
                     ) : (
-                        <ul className="space-y-3 text-sm text-slate-300 leading-relaxed break-words">
-                            {tasksWithoutTests.map(task => (
-                                <li key={task.id} className="flex items-start gap-2 break-words">
-                                    <span className="mt-1.5 inline-flex size-2 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 shadow-sm shadow-amber-500/50" />
+
                                     <span>{task.title}</span>
                                 </li>
                             ))}
                         </ul>
                     )}
                 </div>
-                <div className="rounded-2xl border border-slate-700/50 bg-slate-800/40 p-4 min-w-0 backdrop-blur-sm">
-                    <p className="text-xs uppercase tracking-[0.35em] text-rose-400/70 mb-3 font-medium">Falhas em atenção</p>
+
                     {tasksWithFailures.length === 0 ? (
                         <EmptyState message="Nenhuma falha registrada nos testes executados." tone="success" />
                     ) : (
-                        <ul className="space-y-3 text-sm text-slate-300 leading-relaxed break-words">
-                            {tasksWithFailures.map(task => (
-                                <li key={task.id} className="flex items-start gap-2 break-words">
-                                    <span className="mt-0.5 text-rose-400">⚠️</span>
+
                                     <span>{task.title}</span>
                                 </li>
                             ))}

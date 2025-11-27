@@ -119,11 +119,7 @@ export const TestPyramidSummaryCard: React.FC<TestPyramidSummaryCardProps> = ({ 
             <header className="space-y-2">
                 <p className="text-xs uppercase tracking-[0.35em] text-violet-400/70 font-medium">Bloco 2</p>
                 <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
-                    <div className="min-w-0">
-                        <h3 className="text-2xl font-semibold bg-gradient-to-r from-slate-100 via-violet-200 to-slate-100 bg-clip-text text-transparent break-words">
-                            Pirâmide de Testes
-                        </h3>
-                        <p className="text-sm text-slate-400 break-words">
+
                             Distribuição ideal de esforços de teste para {versionLabel}.
                         </p>
                     </div>

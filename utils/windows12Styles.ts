@@ -82,12 +82,7 @@ export const windows12Styles = {
   /**
    * Classe base para cards com efeito glassmorphism Windows 12
    */
-  card: 'mica rounded-2xl border border-white/10 shadow-xl backdrop-blur-xl transition-all w-full max-w-full min-w-0 mobile-no-overflow bg-gradient-to-br from-slate-900/95 via-slate-800/90 to-slate-900/95',
-  
-  /**
-   * Card com borda de destaque cyan/violet
-   */
-  cardAccent: 'mica rounded-2xl border border-cyan-500/30 shadow-xl shadow-cyan-500/10 backdrop-blur-xl transition-all w-full max-w-full min-w-0 mobile-no-overflow bg-gradient-to-br from-cyan-950/30 via-slate-900/95 to-violet-950/30',
+
   
   /**
    * Classe para cards com hover effect
