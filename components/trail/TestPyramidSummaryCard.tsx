@@ -150,7 +150,7 @@ export const TestPyramidSummaryCard: React.FC<TestPyramidSummaryCardProps> = ({ 
                                         <div
                                             style={{ width: `${layer.pct}%` }}
                                             className={cn(
-                                                'rounded-xl px-3 py-2 text-center text-sm font-semibold text-white shadow-lg shadow-black/10 transition-all',
+                                                'rounded-xl px-3 py-2 text-center text-sm font-semibold text-text-primary shadow-lg shadow-black/10 transition-all',
                                                 'bg-gradient-to-r',
                                                 gradient
                                             )}
@@ -215,7 +215,7 @@ export const TestPyramidSummaryCard: React.FC<TestPyramidSummaryCardProps> = ({ 
                                         <div className="flex flex-1 items-center gap-4">
                                             <span
                                                 className={cn(
-                                                    'inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br text-white shadow-md shadow-black/10',
+                                                    'inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br text-text-primary shadow-md shadow-black/10',
                                                     gradient
                                                 )}
                                             >
