@@ -164,10 +164,10 @@ export const STLCDashboard: React.FC<STLCDashboardProps> = ({ project, onUpdateP
     }, [projectSnapshot]);
 
     return (
-        <div className="space-y-8">
+        <div className="space-y-lg">
             {/* Header */}
-            <div className="win-toolbar flex flex-col gap-4 rounded-[26px] border border-surface-border/60 bg-gradient-to-br from-white/8 via-white/2 to-transparent px-4 py-4 sm:px-6 sm:py-6">
-                <div className="space-y-2">
+            <div className="win-toolbar flex flex-col gap-md rounded-[26px] border border-surface-border/60 bg-gradient-to-br from-white/8 via-white/2 to-transparent px-4 py-3 sm:px-5 sm:py-4">
+                <div className="space-y-sm">
                     <p className="eyebrow text-text-secondary/80">Dashboard STLC</p>
                     <h2 className="heading-section text-text-primary">
                         Matriz de Correlação das Fases de Teste
@@ -176,7 +176,7 @@ export const STLCDashboard: React.FC<STLCDashboardProps> = ({ project, onUpdateP
                         Visão completa do Software Testing Life Cycle (STLC) com atividades, tipos de teste e estratégias por fase.
                     </p>
                 </div>
-                <div className="flex gap-2 pt-2 border-t border-surface-border/30">
+                <div className="flex gap-sm pt-sm border-t border-surface-border/30">
                     <button
                         onClick={() => setActiveSection('overview')}
                         className={`px-4 py-2 rounded-xl transition-colors ${
@@ -206,9 +206,9 @@ export const STLCDashboard: React.FC<STLCDashboardProps> = ({ project, onUpdateP
                 <>
                     {/* Métricas do Projeto */}
                     <Card>
-                        <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center justify-between mb-md">
                             <h3 className="text-lg font-semibold text-text-primary">Métricas do Projeto</h3>
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-sm">
                                 {overviewAnalysis?.isOutdated && (
                                     <Badge variant="warning" size="sm">Análise Desatualizada</Badge>
                                 )}
@@ -229,7 +229,7 @@ export const STLCDashboard: React.FC<STLCDashboardProps> = ({ project, onUpdateP
                                 )}
                             </div>
                         </div>
-                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <div className="grid grid-cols-1 gap-md sm:grid-cols-2">
                             <div className="space-y-1">
                                 <p className="text-sm text-text-secondary">Fase Atual (SDLC)</p>
                                 <p className="text-base font-semibold text-accent">{metrics.currentPhase}</p>
@@ -247,7 +247,7 @@ export const STLCDashboard: React.FC<STLCDashboardProps> = ({ project, onUpdateP
                     )}
 
                     {/* Task Status and Test Execution */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-md">
                         {metrics.taskStatus && (
                             <TaskStatusCard 
                                 taskStatus={metrics.taskStatus} 
@@ -272,7 +272,7 @@ export const STLCDashboard: React.FC<STLCDashboardProps> = ({ project, onUpdateP
 
             {/* Matriz de Correlação */}
             <Card>
-                <div className="space-y-4">
+                <div className="space-y-md">
                     <h3 className="text-lg font-semibold text-text-primary">
                         Matriz de Correlação das Fases de Teste
                     </h3>
@@ -280,10 +280,10 @@ export const STLCDashboard: React.FC<STLCDashboardProps> = ({ project, onUpdateP
                         <table className="w-full min-w-[1000px] text-left text-sm">
                             <thead className="border-b-2 border-surface-border text-text-secondary">
                                 <tr>
-                                    <th className="p-3 w-1/6">Fase do STLC</th>
-                                    <th className="p-3 w-1/3">Atividades de Teste (Tarefas)</th>
-                                    <th className="p-3 w-1/4">Tipos de Teste Mais Relevantes</th>
-                                    <th className="p-3 w-1/3">Estratégias de Teste Comuns</th>
+                                    <th className="p-2 w-1/6">Fase do STLC</th>
+                                    <th className="p-2 w-1/3">Atividades de Teste (Tarefas)</th>
+                                    <th className="p-2 w-1/4">Tipos de Teste Mais Relevantes</th>
+                                    <th className="p-2 w-1/3">Estratégias de Teste Comuns</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-surface-border">
@@ -292,16 +292,16 @@ export const STLCDashboard: React.FC<STLCDashboardProps> = ({ project, onUpdateP
                                             key={phase.phase}
                                             className="transition-colors hover:bg-surface-hover"
                                         >
-                                            <td className="p-3 font-semibold align-top">
-                                                <div className="flex items-center gap-2">
+                                            <td className="p-2 font-semibold align-top">
+                                                <div className="flex items-center gap-sm">
                                                     <span className="text-lg">{phase.icon}</span>
                                                     <span className="text-text-primary">
                                                         {phase.phase}
                                                     </span>
                                                 </div>
                                             </td>
-                                            <td className="p-3 align-top text-text-primary">
-                                                <ul className="list-disc list-inside space-y-1">
+                                            <td className="p-2 align-top text-text-primary">
+                                                <ul className="list-disc list-inside space-y-xs">
                                                     {phase.activities.map((activity, idx) => (
                                                         <li key={idx} className="text-sm">
                                                             {activity}
@@ -309,8 +309,8 @@ export const STLCDashboard: React.FC<STLCDashboardProps> = ({ project, onUpdateP
                                                     ))}
                                                 </ul>
                                             </td>
-                                            <td className="p-3 align-top text-text-primary">
-                                                <ul className="list-disc list-inside space-y-1">
+                                            <td className="p-2 align-top text-text-primary">
+                                                <ul className="list-disc list-inside space-y-xs">
                                                     {phase.testTypes.map((testType, idx) => (
                                                         <li key={idx} className="text-sm">
                                                             {testType}
@@ -318,8 +318,8 @@ export const STLCDashboard: React.FC<STLCDashboardProps> = ({ project, onUpdateP
                                                     ))}
                                                 </ul>
                                             </td>
-                                            <td className="p-3 align-top text-text-primary">
-                                                <ul className="list-disc list-inside space-y-1">
+                                            <td className="p-2 align-top text-text-primary">
+                                                <ul className="list-disc list-inside space-y-xs">
                                                     {phase.strategies.map((strategy, idx) => (
                                                         <li key={idx} className="text-sm">
                                                             {strategy}
@@ -337,7 +337,7 @@ export const STLCDashboard: React.FC<STLCDashboardProps> = ({ project, onUpdateP
 
             {/* Seção Educacional: Tipos de Teste e Estratégias Chave por Fase */}
             <Card>
-                <div className="space-y-6">
+                <div className="space-y-md">
                     <div>
                         <h3 className="text-lg font-semibold text-text-primary mb-2">
                             Tipos de Teste e Estratégias Chave por Fase
@@ -349,14 +349,14 @@ export const STLCDashboard: React.FC<STLCDashboardProps> = ({ project, onUpdateP
 
                     <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                         {/* Fases Iniciais */}
-                        <div className="space-y-3 p-4 rounded-xl border border-surface-border bg-surface-hover/50">
-                            <h4 className="font-semibold text-text-primary flex items-center gap-2">
+                        <div className="space-y-sm p-3 rounded-xl border border-surface-border bg-surface-hover/50">
+                            <h4 className="font-semibold text-text-primary flex items-center gap-sm">
                                 <span>🔎</span> I. Fases Iniciais (Análise e Planejamento)
                             </h4>
                             <p className="text-sm text-text-secondary mb-2">
                                 <strong className="text-text-primary">O foco aqui é a Prevenção.</strong>
                             </p>
-                            <ul className="space-y-2 text-sm text-text-primary">
+                            <ul className="space-y-sm text-sm text-text-primary">
                                 <li>
                                     <strong className="text-accent">Estratégia Baseada em Risco:</strong> É a mais crucial no Planejamento. 
                                     O QA avalia a probabilidade de falha e o impacto do erro para priorizar onde o esforço de teste deve ser concentrado 
@@ -370,14 +370,14 @@ export const STLCDashboard: React.FC<STLCDashboardProps> = ({ project, onUpdateP
                         </div>
 
                         {/* Fase de Desenvolvimento */}
-                        <div className="space-y-3 p-4 rounded-xl border border-surface-border bg-surface-hover/50">
-                            <h4 className="font-semibold text-text-primary flex items-center gap-2">
+                        <div className="space-y-sm p-3 rounded-xl border border-surface-border bg-surface-hover/50">
+                            <h4 className="font-semibold text-text-primary flex items-center gap-sm">
                                 <span>✍️</span> II. Fase de Desenvolvimento de Casos (Design)
                             </h4>
                             <p className="text-sm text-text-secondary mb-2">
                                 <strong className="text-text-primary">O foco é a Cobertura.</strong>
                             </p>
-                            <ul className="space-y-2 text-sm text-text-primary">
+                            <ul className="space-y-sm text-sm text-text-primary">
                                 <li>
                                     <strong className="text-accent">Estratégias de Caixa Preta:</strong> O designer de testes usa técnicas como o 
                                     Particionamento de Equivalência e a Análise de Valor Limite para otimizar a criação de casos de teste, garantindo 
@@ -387,14 +387,14 @@ export const STLCDashboard: React.FC<STLCDashboardProps> = ({ project, onUpdateP
                         </div>
 
                         {/* Fase de Execução */}
-                        <div className="space-y-3 p-4 rounded-xl border border-surface-border bg-surface-hover/50">
-                            <h4 className="font-semibold text-text-primary flex items-center gap-2">
+                        <div className="space-y-sm p-3 rounded-xl border border-surface-border bg-surface-hover/50">
+                            <h4 className="font-semibold text-text-primary flex items-center gap-sm">
                                 <span>🚀</span> III. Fase de Execução de Testes
                             </h4>
                             <p className="text-sm text-text-secondary mb-2">
                                 <strong className="text-text-primary">O foco é a Detecção e Validação.</strong>
                             </p>
-                            <ul className="space-y-2 text-sm text-text-primary">
+                            <ul className="space-y-sm text-sm text-text-primary">
                                 <li>
                                     <strong className="text-accent">Tipos de Teste Dinâmico:</strong> É o momento dos testes em ação, como Teste de Sistema 
                                     (para validar o comportamento de ponta a ponta) e Testes Não Funcionais (para garantir Performance, Usabilidade, Segurança, etc.).
@@ -407,14 +407,14 @@ export const STLCDashboard: React.FC<STLCDashboardProps> = ({ project, onUpdateP
                         </div>
 
                         {/* Fase de Encerramento */}
-                        <div className="space-y-3 p-4 rounded-xl border border-surface-border bg-surface-hover/50">
-                            <h4 className="font-semibold text-text-primary flex items-center gap-2">
+                        <div className="space-y-sm p-3 rounded-xl border border-surface-border bg-surface-hover/50">
+                            <h4 className="font-semibold text-text-primary flex items-center gap-sm">
                                 <span>✅</span> IV. Fase de Encerramento
                             </h4>
                             <p className="text-sm text-text-secondary mb-2">
                                 <strong className="text-text-primary">O foco é a Melhoria Contínua.</strong>
                             </p>
-                            <ul className="space-y-2 text-sm text-text-primary">
+                            <ul className="space-y-sm text-sm text-text-primary">
                                 <li>
                                     <strong className="text-accent">Análise de Cobertura:</strong> A principal atividade de teste aqui é a análise de métricas 
                                     (ex: qual porcentagem dos requisitos foi coberta? Quantos defeitos foram encontrados por módulo?). Isso alimenta as Lições Aprendidas 

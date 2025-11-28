@@ -1055,8 +1055,8 @@ export const TasksView: React.FC<{
     return (
         <>
         <Card>
-            <div className="flex flex-col gap-4 mb-6">
-                <div className="flex flex-col lg:flex-row justify-between gap-4 mb-6">
+            <div className="flex flex-col gap-md mb-md">
+                <div className="flex flex-col lg:flex-row justify-between gap-md mb-md">
                     <div className="flex-shrink-0">
                         <h3 className="heading-section text-text-primary mb-1">Tarefas & Casos de Teste</h3>
                         <p className="text-muted text-sm">Acompanhe o progresso das atividades e resultados de QA.</p>
@@ -1129,7 +1129,7 @@ export const TasksView: React.FC<{
                     </div>
                 </div>
 
-                <div className="mb-6">
+                <div className="mb-md">
                     <label 
                         htmlFor="quick-task-search" 
                         className="text-sm font-semibold text-text-primary mb-2 flex items-center gap-2"
@@ -1167,7 +1167,7 @@ export const TasksView: React.FC<{
                     </p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-md mb-md">
                     <div 
                         className="mica rounded-xl p-4 border border-surface-border hover:border-accent/30 transition-all duration-200 hover:shadow-lg group cursor-help" 
                         aria-live="polite"
@@ -1268,7 +1268,7 @@ export const TasksView: React.FC<{
             </div>
 
             {filterChips.length > 0 && (
-                <div className="mb-6 p-4 mica rounded-xl border border-surface-border">
+                <div className="mb-md p-3 mica rounded-xl border border-surface-border">
                     <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-2">
                             <svg className="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1325,7 +1325,7 @@ export const TasksView: React.FC<{
             />
 
             {showFilters && (
-                <div className="mb-6">
+                <div className="mb-md">
                     <FilterPanel
                         filters={filters}
                         onFilterChange={updateFilter}
@@ -1336,7 +1336,7 @@ export const TasksView: React.FC<{
                 </div>
             )}
 
-            <div className="flex flex-col gap-4 mb-6">
+            <div className="flex flex-col gap-md mb-md">
                 {currentSuggestion && showSuggestions && (
                     <div className="mica rounded-xl border border-surface-border overflow-hidden shadow-lg">
                         <div className="flex items-center justify-between bg-surface-hover/50 px-4 py-3 border-b border-surface-border">
@@ -1386,7 +1386,7 @@ export const TasksView: React.FC<{
             </div>
 
             {isTaskFormOpen && (
-                <div className="mb-6 p-4 bg-surface rounded-lg border border-surface-border">
+                <div className="mb-md p-3 bg-surface rounded-lg border border-surface-border">
                     <TaskForm 
                         onSave={handleSaveTask} 
                         onCancel={() => { setIsTaskFormOpen(false); setEditingTask(undefined); }} 
@@ -1405,7 +1405,7 @@ export const TasksView: React.FC<{
                 }}
                 title="Selecionar Projeto do Jira"
             >
-                <div className="space-y-4">
+                <div className="space-y-md">
                     <p className="text-text-secondary text-sm">
                         Selecione o projeto do Jira para sincronizar apenas as novas tarefas:
                     </p>
@@ -1565,7 +1565,7 @@ export const TasksView: React.FC<{
                 onClose={() => setShowRequirementExtractionPrompt(null)}
                 title="Extrair Requisitos da Tarefa?"
             >
-                <div className="space-y-4">
+                <div className="space-y-md">
                     <p className="text-sm text-text-secondary">
                         Deseja extrair requisitos automaticamente desta tarefa usando IA?
                     </p>

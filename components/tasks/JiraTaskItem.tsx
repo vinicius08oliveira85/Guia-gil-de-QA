@@ -369,7 +369,7 @@ export const JiraTaskItem: React.FC<{
     const iconButtonClass = 'task-card-compact_icon-btn';
 
     const renderOverviewSection = () => (
-        <div className="space-y-4">
+        <div className="space-y-md">
             {project && onUpdateProject && (
                 <div>
                     <QuickActions
@@ -475,7 +475,7 @@ export const JiraTaskItem: React.FC<{
     );
 
     const renderBddSection = () => (
-        <div className="space-y-4">
+        <div className="space-y-md">
             <div className="flex items-center justify-between gap-2">
                 <h3 className="text-lg font-semibold text-text-primary">Cenários BDD (Gherkin)</h3>
                 <span className="text-xs text-text-secondary">{task.bddScenarios?.length || 0} cenário(s)</span>
@@ -505,7 +505,7 @@ export const JiraTaskItem: React.FC<{
     );
 
     const renderTestsSection = () => (
-        <div className="space-y-6">
+        <div className="space-y-md">
             <div>
                 <div className="flex items-center justify-between gap-2">
                     <h3 className="text-lg font-semibold text-text-primary">Estratégia de Teste</h3>
@@ -513,7 +513,7 @@ export const JiraTaskItem: React.FC<{
                 </div>
                 {isGenerating && <div className="flex justify-center py-2"><Spinner small /></div>}
                 {task.testStrategy && task.testStrategy.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-md mt-md">
                         {task.testStrategy.map((strategy, i) => {
                             if (!strategy) return null;
                             return (
@@ -603,7 +603,7 @@ export const JiraTaskItem: React.FC<{
 
             {/* Ferramentas Utilizadas na Task */}
             {onTaskToolsChange && (
-                <div className="mt-6 p-4 bg-surface-hover rounded-lg border border-surface-border">
+                <div className="mt-md p-3 bg-surface-hover rounded-lg border border-surface-border">
                     <ToolsSelector
                         selectedTools={task.toolsUsed || []}
                         onToolsChange={onTaskToolsChange}
@@ -644,7 +644,7 @@ export const JiraTaskItem: React.FC<{
         }
 
         return (
-            <div className="space-y-6">
+            <div className="space-y-md">
                 <div>
                     <div className="flex items-center justify-between mb-3">
                         <h3 className="text-lg font-semibold text-text-primary">Dependências</h3>

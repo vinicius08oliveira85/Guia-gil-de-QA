@@ -22,7 +22,7 @@ type CardProps = React.HTMLAttributes<HTMLElement> & {
 
 export const Card = React.memo<CardProps>(({ children, className = '', ...rest }) => (
     <section
-        className={`card-surface win-card dense-card gap-md p-card w-full max-w-full transition-all duration-300 focus-within:ring-2 focus-within:ring-accent/30 mobile-no-overflow ${className}`}
+        className={`card-surface win-card dense-card gap-sm p-card w-full max-w-full transition-all duration-300 focus-within:ring-2 focus-within:ring-accent/30 mobile-no-overflow ${className}`}
         role="region"
         aria-label="Card container"
         {...rest}

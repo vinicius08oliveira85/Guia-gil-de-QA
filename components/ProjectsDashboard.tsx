@@ -176,9 +176,9 @@ export const ProjectsDashboard: React.FC<{
     };
 
     return (
-        <div className="container-wide py-6 sm:py-8 w-full">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-8 w-full">
-                <div className="flex flex-col gap-2">
+        <div className="container-wide py-md sm:py-lg w-full">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-md mb-lg w-full">
+                <div className="flex flex-col gap-sm">
                      <h1 className="heading-page text-text-primary line-clamp-2 w-full">
                         Meus Projetos
                     </h1>
@@ -188,8 +188,8 @@ export const ProjectsDashboard: React.FC<{
                 </div>
                
                 {isMobile ? (
-                    <div className="w-full space-y-2">
-                         <div className="flex justify-between items-center mb-2 gap-2">
+                    <div className="w-full space-y-sm">
+                         <div className="flex justify-between items-center mb-sm gap-sm">
                              <select 
                                 value={sortBy} 
                                 onChange={(e) => setSortBy(e.target.value as any)}
@@ -207,7 +207,7 @@ export const ProjectsDashboard: React.FC<{
                             </button>
                         </div>
                          {showTagFilter && allTags.length > 0 && (
-                            <div className="flex flex-wrap gap-2 mb-2 p-2 bg-surface-card border border-surface-border rounded-lg">
+                            <div className="flex flex-wrap gap-sm mb-sm p-2 bg-surface-card border border-surface-border rounded-lg">
                                 {allTags.map(tag => (
                                     <button
                                         key={tag}
@@ -253,8 +253,8 @@ export const ProjectsDashboard: React.FC<{
                         </div>
                     </div>
                 ) : (
-                    <div className="flex flex-col items-end gap-3 w-full sm:w-auto">
-                        <div className="flex flex-wrap gap-2 justify-end items-center">
+                    <div className="flex flex-col items-end gap-md w-full sm:w-auto">
+                        <div className="flex flex-wrap gap-sm justify-end items-center">
                             {/* View Toggle */}
                             <div className="flex items-center bg-surface-card border border-surface-border rounded-lg p-0.5 mr-2">
                                 <button
@@ -416,10 +416,10 @@ export const ProjectsDashboard: React.FC<{
                 setIsCreating(false);
                 setSelectedTemplate(undefined);
             }} title="Criar Novo Projeto">
-                 <div className="space-y-4">
+                 <div className="space-y-md">
                     {!showTemplates ? (
                         <>
-                            <div className="mb-4">
+                            <div className="mb-md">
                                 <button
                                     onClick={() => setShowTemplates(true)}
                                     className="w-full p-4 border-2 border-dashed border-surface-border rounded-lg hover:border-accent transition-colors text-text-secondary hover:text-text-primary"
@@ -428,11 +428,11 @@ export const ProjectsDashboard: React.FC<{
                                 </button>
                             </div>
                             <div>
-                                <label htmlFor="proj-name" className="block text-sm font-medium text-text-secondary mb-1">Nome do Projeto</label>
+                                <label htmlFor="proj-name" className="block text-sm font-medium text-text-secondary mb-xs">Nome do Projeto</label>
                                 <input id="proj-name" type="text" value={newName} onChange={e => setNewName(e.target.value)} className="w-full px-3 py-2 bg-surface-input border border-surface-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent/50 text-text-primary" placeholder="Ex: E-commerce App" />
                             </div>
                             <div>
-                                <label htmlFor="proj-desc" className="block text-sm font-medium text-text-secondary mb-1">Descrição</label>
+                                <label htmlFor="proj-desc" className="block text-sm font-medium text-text-secondary mb-xs">Descrição</label>
                                 <textarea id="proj-desc" value={newDesc} onChange={e => setNewDesc(e.target.value)} rows={3} className="w-full px-3 py-2 bg-surface-input border border-surface-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent/50 text-text-primary" placeholder="Breve descrição do projeto..."></textarea>
                             </div>
                             <div className="flex justify-end gap-3 pt-4">
@@ -494,7 +494,7 @@ export const ProjectsDashboard: React.FC<{
             {filteredProjects.length > 0 ? (
                 <>
                     {viewMode === 'grid' ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-md">
                             {filteredProjects.map(p => {
                                 const completedTasks = calculateProgress(p.tasks || []);
                                 const totalTasks = p.tasks?.length || 0;

@@ -36,7 +36,7 @@ export const TestExecutionCard: React.FC<TestExecutionCardProps> = ({ testExecut
 
     return (
         <Card>
-            <div className="space-y-4">
+            <div className="space-y-md">
                 <div className="flex items-center justify-between">
                     <h3 className="text-lg font-semibold text-text-primary">Execução de Testes</h3>
                     <Badge variant="info" size="sm">
@@ -45,8 +45,8 @@ export const TestExecutionCard: React.FC<TestExecutionCardProps> = ({ testExecut
                 </div>
 
                 {/* Taxa de Sucesso */}
-                <div className={`p-4 rounded-xl ${getPassRateBgColor(testExecution.passRate)}`}>
-                    <div className="flex items-center justify-between mb-2">
+                <div className={`p-3 rounded-xl ${getPassRateBgColor(testExecution.passRate)}`}>
+                    <div className="flex items-center justify-between mb-sm">
                         <span className="text-sm font-semibold text-text-secondary">Taxa de Sucesso</span>
                         <span className={`text-2xl font-bold ${getPassRateColor(testExecution.passRate)}`}>
                             {testExecution.passRate}%
@@ -65,17 +65,17 @@ export const TestExecutionCard: React.FC<TestExecutionCardProps> = ({ testExecut
                 </div>
 
                 {/* Distribuição por Status */}
-                <div className="space-y-2">
+                <div className="space-y-sm">
                     {testExecution.distribution.map((item) => {
                         const config = testStatusConfig[item.status] || testStatusConfig['Not Run'];
                         return (
-                            <div key={item.status} className="space-y-1">
+                            <div key={item.status} className="space-y-xs">
                                 <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-sm">
                                         <span className="text-lg">{config.icon}</span>
                                         <span className="text-sm font-medium text-text-primary">{config.label}</span>
                                     </div>
-                                    <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-sm">
                                         <span className="text-sm font-semibold text-text-primary">{item.count}</span>
                                         <span className="text-xs text-text-tertiary">({item.percentage}%)</span>
                                     </div>
@@ -92,13 +92,13 @@ export const TestExecutionCard: React.FC<TestExecutionCardProps> = ({ testExecut
                 </div>
 
                 {/* Resumo Rápido */}
-                <div className="grid grid-cols-2 gap-2 pt-2 border-t border-surface-border">
+                <div className="grid grid-cols-2 gap-sm pt-sm border-t border-surface-border">
                     <div className="text-center p-2 rounded-xl bg-success/10">
-                        <p className="text-xs text-text-tertiary mb-1">Aprovados</p>
+                        <p className="text-xs text-text-tertiary mb-xs">Aprovados</p>
                         <p className="text-xl font-bold text-success">{testExecution.passed}</p>
                     </div>
                     <div className="text-center p-2 rounded-xl bg-danger/10">
-                        <p className="text-xs text-text-tertiary mb-1">Falharam</p>
+                        <p className="text-xs text-text-tertiary mb-xs">Falharam</p>
                         <p className="text-xl font-bold text-danger">{testExecution.failed}</p>
                     </div>
                 </div>

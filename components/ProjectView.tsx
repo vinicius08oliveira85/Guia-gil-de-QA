@@ -86,15 +86,15 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
 
     return (
         <>
-            <div className="container-wide py-6 sm:py-8 non-printable w-full">
-                <div className="grid gap-4 mb-8 w-full lg:grid-cols-[auto,1fr] lg:items-center">
+            <div className="container-wide py-md sm:py-lg non-printable w-full">
+                <div className="grid gap-md mb-lg w-full lg:grid-cols-[auto,1fr] lg:items-center">
                     <button 
                         onClick={onBack} 
                         className="text-accent hover:text-accent-light transition-colors font-semibold w-full sm:w-auto text-left"
                     >
                         &larr; Voltar para Projetos
                     </button>
-                    <div className="flex flex-wrap gap-2 w-full justify-end">
+                    <div className="flex flex-wrap gap-sm w-full justify-end">
                         <button 
                             onClick={() => setShowExportMenu(true)} 
                             className="btn btn-secondary flex items-center justify-center gap-2 w-full sm:w-auto lg:min-w-[180px]"
@@ -118,7 +118,7 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                 <h2 className="heading-page text-text-primary mb-4 break-words">{project.name}</h2>
                 <p className="text-lead mb-10 max-w-3xl break-words">{project.description}</p>
                 
-                <div className="border-b border-surface-border mb-8 sticky top-[72px] md:static bg-background/90 backdrop-blur-lg z-10 px-2 sm:px-0 shadow-sm">
+                <div className="border-b border-surface-border mb-lg sticky top-[72px] md:static bg-background/90 backdrop-blur-lg z-10 px-2 sm:px-0 shadow-sm">
                     <nav className="hidden md:flex flex-wrap gap-2 py-2" aria-label="Navegação de abas desktop" role="tablist">
                         {tabs.map(tab => (
                             <button 

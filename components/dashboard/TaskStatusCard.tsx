@@ -27,7 +27,7 @@ export const TaskStatusCard: React.FC<TaskStatusCardProps> = ({ taskStatus, tota
 
     return (
         <Card>
-            <div className="space-y-4">
+            <div className="space-y-md">
                 <div className="flex items-center justify-between">
                     <h3 className="text-lg font-semibold text-text-primary">Status das Tarefas</h3>
                     <Badge variant="info" size="sm">
@@ -37,7 +37,7 @@ export const TaskStatusCard: React.FC<TaskStatusCardProps> = ({ taskStatus, tota
 
                 {/* Progresso Geral */}
                 <div>
-                    <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center justify-between mb-sm">
                         <span className="text-sm font-semibold text-text-secondary">Progresso Geral</span>
                         <span className="text-sm font-semibold text-text-primary">{progressPercentage}%</span>
                     </div>
@@ -50,17 +50,17 @@ export const TaskStatusCard: React.FC<TaskStatusCardProps> = ({ taskStatus, tota
                 </div>
 
                 {/* Distribuição por Status */}
-                <div className="space-y-2">
+                <div className="space-y-sm">
                     {taskStatus.distribution.map((item) => {
                         const config = statusConfig[item.status] || statusConfig['To Do'];
                         return (
-                            <div key={item.status} className="space-y-1">
+                            <div key={item.status} className="space-y-xs">
                                 <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-sm">
                                         <span className="text-lg">{config.icon}</span>
                                         <span className="text-sm font-medium text-text-primary">{config.label}</span>
                                     </div>
-                                    <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-sm">
                                         <span className="text-sm font-semibold text-text-primary">{item.count}</span>
                                         <span className="text-xs text-text-tertiary">({item.percentage}%)</span>
                                     </div>
@@ -77,13 +77,13 @@ export const TaskStatusCard: React.FC<TaskStatusCardProps> = ({ taskStatus, tota
                 </div>
 
                 {/* Resumo Rápido */}
-                <div className="grid grid-cols-2 gap-2 pt-2 border-t border-surface-border">
+                <div className="grid grid-cols-2 gap-sm pt-sm border-t border-surface-border">
                     <div className="text-center p-2 rounded-xl bg-success/10">
-                        <p className="text-xs text-text-tertiary mb-1">Concluídas</p>
+                        <p className="text-xs text-text-tertiary mb-xs">Concluídas</p>
                         <p className="text-xl font-bold text-success">{taskStatus.done}</p>
                     </div>
                     <div className="text-center p-2 rounded-xl bg-warning/10">
-                        <p className="text-xs text-text-tertiary mb-1">Em Progresso</p>
+                        <p className="text-xs text-text-tertiary mb-xs">Em Progresso</p>
                         <p className="text-xl font-bold text-warning-dark">{taskStatus.inProgress}</p>
                     </div>
                 </div>

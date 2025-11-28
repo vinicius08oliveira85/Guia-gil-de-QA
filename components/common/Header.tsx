@@ -22,8 +22,8 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported }) => {
                 className="win-toolbar sticky top-0 z-30 shadow-[0_18px_60px_rgba(3,7,23,0.45)]"
                 style={{ paddingTop: 'max(0.5rem, env(safe-area-inset-top))' }}
             >
-                <div className="container mx-auto flex flex-wrap items-center justify-between gap-3 min-w-0 py-2 sm:py-3 px-3">
-                    <div className="flex items-center gap-3 min-w-0">
+                <div className="container mx-auto flex flex-wrap items-center justify-between gap-sm min-w-0 py-1.5 sm:py-2 px-3">
+                    <div className="flex items-center gap-sm min-w-0">
                         <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-[18px] bg-white/10 border border-white/30 shadow-[0_18px_45px_rgba(6,9,34,0.45)] overflow-hidden flex items-center justify-center flex-shrink-0 backdrop-blur-md">
                             <img
                                 src="/qa-agile-guide-logo.svg"
@@ -44,7 +44,7 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported }) => {
                             </h1>
                         </div>
                     </div>
-                    <div className="flex flex-wrap items-center justify-end gap-1.5 sm:gap-3 w-full sm:w-auto">
+                    <div className="flex flex-wrap items-center justify-end gap-xs sm:gap-sm w-full sm:w-auto">
                         <button
                             onClick={() => setShowSettings(true)}
                             className="win-icon-button"
