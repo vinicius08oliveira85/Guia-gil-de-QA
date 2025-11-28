@@ -51,7 +51,7 @@ export const Modal: React.FC<ModalProps> = ({
 
     return (
         <div 
-            className="glass-overlay fixed inset-0 z-50 flex justify-center items-center p-4 sm:p-6 overflow-y-auto transition-opacity duration-300"
+            className="glass-overlay fixed inset-0 z-50 flex justify-center items-start pt-4 sm:pt-6 px-4 sm:px-6 transition-opacity duration-300"
             onClick={onClose}
             role="dialog"
             aria-modal="true"
@@ -63,9 +63,7 @@ export const Modal: React.FC<ModalProps> = ({
                 onClick={(e) => e.stopPropagation()}
                 tabIndex={-1}
                 style={{ 
-                    maxHeight: `min(${maxHeight}, calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 2rem))`,
-                    marginTop: 'max(1rem, env(safe-area-inset-top))',
-                    marginBottom: 'max(1rem, env(safe-area-inset-bottom))'
+                    maxHeight: `calc(100vh - 2rem)`
                 }}
             >
                 {/* Title Bar - Fixed */}
@@ -80,8 +78,8 @@ export const Modal: React.FC<ModalProps> = ({
                         &times;
                     </button>
                 </div>
-                {/* Content - Scrollable */}
-                <div className="p-card overflow-y-auto flex-1" style={{ maxHeight: `calc(${maxHeight} - 100px)` }}>
+                {/* Content - No scroll */}
+                <div className="p-card flex-1 overflow-hidden flex flex-col min-h-0">
                   {children}
                 </div>
             </div>

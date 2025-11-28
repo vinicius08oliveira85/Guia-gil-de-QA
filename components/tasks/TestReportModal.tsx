@@ -105,16 +105,13 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Registro de Testes Realizados" size="xl">
-      <div className="space-y-lg">
-        {/* Texto descritivo - linha completa */}
-        <div>
+      <div className="h-full flex flex-col min-h-0 space-y-md">
+        {/* Texto descritivo e botões - linha compacta */}
+        <div className="flex-shrink-0 space-y-sm">
           <p className="text-sm text-text-secondary">
             Copie o registro abaixo para colar em outras plataformas
           </p>
-        </div>
-
-        {/* Botões de ação - linha separada, bem espaçados */}
-        <div className="flex flex-wrap items-center justify-end gap-md pb-4 border-b border-surface-border">
+          <div className="flex flex-wrap items-center justify-end gap-md pb-2 border-b border-surface-border">
           <button
             onClick={handleDownload}
             className="btn btn-secondary btn-md flex items-center gap-2"
@@ -149,9 +146,10 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({
             )}
           </button>
         </div>
+        </div>
 
         {/* Formato do relatório - grid 2 colunas */}
-        <div className="flex flex-col gap-md">
+        <div className="flex-shrink-0 flex flex-col gap-sm">
           <p className="text-xs uppercase tracking-wide text-text-secondary font-semibold">Formato do relatório</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-md">
             {formatOptions.map((option) => (
@@ -173,11 +171,11 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({
           </div>
         </div>
 
-        {/* Resumo visual */}
-        <div className="space-y-md">
-          <div className="flex flex-wrap items-center justify-between gap-md">
+        {/* Resumo visual - compacto */}
+        <div className="flex-shrink-0 space-y-sm">
+          <div className="flex flex-wrap items-center justify-between gap-sm">
             <p className="text-xs uppercase tracking-wide text-text-secondary font-semibold">Resumo visual</p>
-            <div className="flex gap-lg text-xs text-text-secondary">
+            <div className="flex gap-md text-xs text-text-secondary">
               <div className="flex items-center gap-xs">
                 <span className="w-2 h-2 rounded-full bg-success"></span>
                 <span>Aprovado</span>
@@ -189,7 +187,7 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({
             </div>
           </div>
           {executedTestCases.length > 0 ? (
-            <ul className="space-y-md">
+            <ul className="space-y-sm max-h-32 overflow-y-auto">
               {executedTestCases.map((testCase, index) => {
                 const statusData = getStatusBadge(testCase.status);
                 return (
@@ -229,12 +227,12 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({
         </div>
 
         {/* Textarea do relatório */}
-        <div className="relative">
+        <div className="relative flex-1 min-h-0 flex flex-col">
           <textarea
             value={reportText}
             readOnly
             className={`
-              w-full h-96
+              w-full flex-1 min-h-[200px]
               bg-surface border border-surface-border rounded-lg
               p-card text-sm text-text-primary
               font-mono
@@ -249,7 +247,7 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({
         </div>
 
         {/* Botão Fechar */}
-        <div className="flex justify-end gap-md pt-2 border-t border-surface-border">
+        <div className="flex-shrink-0 flex justify-end gap-md pt-2 border-t border-surface-border">
           <button
             onClick={onClose}
             className="btn btn-secondary btn-md"
