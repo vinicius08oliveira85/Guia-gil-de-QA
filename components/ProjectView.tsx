@@ -86,7 +86,7 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
 
     return (
         <>
-            <div className="container mx-auto max-w-screen-2xl px-6 py-6 sm:px-8 sm:py-8 lg:px-12 xl:px-16 2xl:px-20 non-printable w-full">
+            <div className="container-wide py-6 sm:py-8 non-printable w-full">
                 <div className="grid gap-4 mb-8 w-full lg:grid-cols-[auto,1fr] lg:items-center">
                     <button 
                         onClick={onBack} 

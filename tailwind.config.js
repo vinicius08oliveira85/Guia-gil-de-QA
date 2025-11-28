@@ -13,6 +13,13 @@ export default {
     "./app/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
+    screens: {
+      'sm': '640px',   // Tablet pequeno
+      'md': '768px',   // Tablet
+      'lg': '1024px',  // Desktop pequeno - PRIORIDADE WEB
+      'xl': '1280px',  // Desktop - PRIORIDADE WEB
+      '2xl': '1536px', // Desktop grande
+    },
     extend: {
       fontFamily: {
         sans: ['Segoe UI Variable', 'Segoe UI', 'sans-serif'],

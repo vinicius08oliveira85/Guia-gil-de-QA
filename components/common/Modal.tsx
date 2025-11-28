@@ -69,7 +69,7 @@ export const Modal: React.FC<ModalProps> = ({
                 }}
             >
                 {/* Title Bar - Fixed */}
-                <div className="flex justify-between items-center px-6 py-5 bg-white/5 border-b border-white/10 backdrop-blur-sm flex-shrink-0">
+                <div className="flex justify-between items-center p-card bg-white/5 border-b border-white/10 backdrop-blur-sm flex-shrink-0">
                     <h2 id="modal-title" className="text-xl font-semibold text-text-primary pr-4 truncate text-balance">{title}</h2>
                     <button 
                         onClick={onClose} 
@@ -81,7 +81,7 @@ export const Modal: React.FC<ModalProps> = ({
                     </button>
                 </div>
                 {/* Content - Scrollable */}
-                <div className="p-6 sm:p-8 overflow-y-auto flex-1" style={{ maxHeight: `calc(${maxHeight} - 100px)` }}>
+                <div className="p-card overflow-y-auto flex-1" style={{ maxHeight: `calc(${maxHeight} - 100px)` }}>
                   {children}
                 </div>
             </div>

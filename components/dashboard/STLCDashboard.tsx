@@ -229,7 +229,7 @@ export const STLCDashboard: React.FC<STLCDashboardProps> = ({ project, onUpdateP
                                 )}
                             </div>
                         </div>
-                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <div className="space-y-1">
                                 <p className="text-sm text-text-secondary">Fase Atual (SDLC)</p>
                                 <p className="text-base font-semibold text-accent">{metrics.currentPhase}</p>
@@ -237,16 +237,6 @@ export const STLCDashboard: React.FC<STLCDashboardProps> = ({ project, onUpdateP
                             <div className="space-y-1">
                                 <p className="text-sm text-text-secondary">Total de Tarefas</p>
                                 <p className="text-base font-semibold text-text-primary">{metrics.totalTasks}</p>
-                            </div>
-                            <div className="space-y-1">
-                                <p className="text-sm text-text-secondary">Casos de Teste</p>
-                                <p className="text-base font-semibold text-text-primary">{metrics.totalTestCases}</p>
-                            </div>
-                            <div className="space-y-1">
-                                <p className="text-sm text-text-secondary">Taxa de Aprovação</p>
-                                <p className="text-base font-semibold text-text-primary">
-                                    {metrics.testPassRate}%
-                                </p>
                             </div>
                         </div>
                     </Card>

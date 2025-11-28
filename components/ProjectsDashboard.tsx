@@ -176,7 +176,7 @@ export const ProjectsDashboard: React.FC<{
     };
 
     return (
-        <div className="container mx-auto max-w-screen-2xl px-6 py-6 sm:px-8 sm:py-8 lg:px-12 xl:px-16 2xl:px-20 w-full">
+        <div className="container-wide py-6 sm:py-8 w-full">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-8 w-full">
                 <div className="flex flex-col gap-2">
                      <h1 className="heading-page text-text-primary line-clamp-2 w-full">
@@ -232,18 +232,18 @@ export const ProjectsDashboard: React.FC<{
                         <div className="mobile-actions-inline" role="group" aria-label="Ações principais">
                             <button 
                                 onClick={() => setIsCreating(true)} 
-                                className="btn btn-primary flex-shrink-0"
+                                className="btn btn-primary btn-md flex-shrink-0"
                                 data-onboarding="create-project"
                             >
                                 ➕ Novo
                             </button>
-                            <button onClick={onSearchClick} className="btn btn-secondary flex-shrink-0">
+                            <button onClick={onSearchClick} className="btn btn-secondary btn-md flex-shrink-0">
                                 🔍 Buscar
                             </button>
                             {quickActions.length > 1 && (
                                 <button 
                                     onClick={() => setShowMobileActions(true)} 
-                                    className="btn btn-secondary flex-shrink-0"
+                                    className="btn btn-secondary btn-md flex-shrink-0"
                                     aria-label="Abrir menu de ações rápidas"
                                     aria-expanded={showMobileActions}
                                 >
@@ -337,12 +337,12 @@ export const ProjectsDashboard: React.FC<{
                                 </select>
                             </div>
                             
-                            <button onClick={onSearchClick} className="btn btn-secondary" title="Buscar">
+                            <button onClick={onSearchClick} className="btn btn-secondary btn-md" title="Buscar">
                                 🔍
                             </button>
                             <button 
                                 onClick={() => setIsCreating(true)} 
-                                className="btn btn-primary"
+                                className="btn btn-primary btn-md"
                                 data-onboarding="create-project"
                             >
                                 ➕ Novo Projeto
