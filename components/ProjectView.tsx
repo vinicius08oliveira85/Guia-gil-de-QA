@@ -165,7 +165,7 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                     {activeTab === 'dashboard' && (
                         <section id="tab-panel-dashboard" role="tabpanel" aria-labelledby="tab-dashboard tab-dashboard-mobile">
                         <Suspense fallback={<LoadingSkeleton variant="card" count={3} />}>
-                            <STLCDashboard project={project} />
+                            <STLCDashboard project={project} onUpdateProject={onUpdateProject} />
                         </Suspense>
                         </section>
                     )}

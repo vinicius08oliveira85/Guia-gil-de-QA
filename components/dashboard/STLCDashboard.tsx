@@ -1,10 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Project } from '../../types';
 import { useProjectMetrics } from '../../hooks/useProjectMetrics';
+import { useSTLCPhase } from '../../hooks/useSTLCPhase';
 import { Card } from '../common/Card';
+import { RequirementsManager } from '../requirements/RequirementsManager';
 
 interface STLCDashboardProps {
     project: Project;
+    onUpdateProject?: (project: Project) => void;
 }
 
 interface STLCPhase {
@@ -119,8 +122,10 @@ const stlcPhases: STLCPhase[] = [
     }
 ];
 
-export const STLCDashboard: React.FC<STLCDashboardProps> = ({ project }) => {
+export const STLCDashboard: React.FC<STLCDashboardProps> = ({ project, onUpdateProject }) => {
     const metrics = useProjectMetrics(project);
+    const { currentPhase } = useSTLCPhase(project);
+    const [activeSection, setActiveSection] = useState<'overview' | 'requirements'>('overview');
 
     return (
         <div className="space-y-8">
@@ -135,7 +140,34 @@ export const STLCDashboard: React.FC<STLCDashboardProps> = ({ project }) => {
                         Visão completa do Software Testing Life Cycle (STLC) com atividades, tipos de teste e estratégias por fase.
                     </p>
                 </div>
+                <div className="flex gap-2 pt-2 border-t border-surface-border/30">
+                    <button
+                        onClick={() => setActiveSection('overview')}
+                        className={`px-4 py-2 rounded-xl transition-colors ${
+                            activeSection === 'overview'
+                                ? 'bg-accent/20 text-accent font-semibold'
+                                : 'bg-surface-card text-text-secondary hover:text-text-primary'
+                        }`}
+                    >
+                        Visão Geral
+                    </button>
+                    <button
+                        onClick={() => setActiveSection('requirements')}
+                        className={`px-4 py-2 rounded-xl transition-colors ${
+                            activeSection === 'requirements'
+                                ? 'bg-accent/20 text-accent font-semibold'
+                                : 'bg-surface-card text-text-secondary hover:text-text-primary'
+                        }`}
+                    >
+                        Requisitos
+                    </button>
+                </div>
             </div>
+
+            {activeSection === 'requirements' && onUpdateProject ? (
+                <RequirementsManager project={project} onUpdateProject={onUpdateProject} />
+            ) : (
+                <>
 
             {/* Métricas do Projeto */}
             <Card>
@@ -319,6 +351,8 @@ export const STLCDashboard: React.FC<STLCDashboardProps> = ({ project }) => {
                     </div>
                 </div>
             </Card>
+                </>
+            )}
         </div>
     );
 };

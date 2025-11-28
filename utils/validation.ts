@@ -37,6 +37,34 @@ export const BddScenarioSchema = z.object({
   gherkin: z.string().min(1, 'Cenário Gherkin é obrigatório'),
 });
 
+export const RequirementSchema = z.object({
+  id: z.string().regex(/^R-\d{3}$/, 'ID deve estar no formato R-001'),
+  title: z.string().min(5, 'Título deve ter pelo menos 5 caracteres').max(200, 'Título muito longo'),
+  description: z.string().min(10, 'Descrição deve ter pelo menos 10 caracteres').max(5000, 'Descrição muito longa'),
+  type: z.enum(['Funcional', 'Não Funcional']),
+  priority: z.enum(['Baixa', 'Média', 'Alta', 'Urgente']),
+  stlcPhase: z.enum([
+    'Análise de Requisitos',
+    'Planejamento de Testes',
+    'Desenvolvimento de Casos de Teste',
+    'Execução de Testes',
+    'Encerramento do Teste'
+  ]),
+  acceptanceCriteria: z.array(z.string().min(1, 'Critério de aceitação não pode ser vazio')).min(1, 'Pelo menos um critério de aceitação é necessário'),
+  relatedTasks: z.array(z.string()).default([]),
+  testCases: z.array(z.string()).default([]),
+  status: z.enum(['Rascunho', 'Aprovado', 'Em Teste', 'Validado']),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
+});
+
+export const RTMEntrySchema = z.object({
+  requirementId: z.string().regex(/^R-\d{3}$/),
+  testCaseIds: z.array(z.string()).default([]),
+  coverage: z.number().min(0).max(100),
+  lastValidated: z.string().datetime(),
+});
+
 // Funções de validação
 export const validateProject = (data: unknown) => {
   return ProjectSchema.safeParse(data);
@@ -52,5 +80,13 @@ export const validateTestCase = (data: unknown) => {
 
 export const validateBddScenario = (data: unknown) => {
   return BddScenarioSchema.safeParse(data);
+};
+
+export const validateRequirement = (data: unknown) => {
+  return RequirementSchema.safeParse(data);
+};
+
+export const validateRTMEntry = (data: unknown) => {
+  return RTMEntrySchema.safeParse(data);
 };
 

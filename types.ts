@@ -25,6 +25,39 @@ export type TeamRole = 'Product' | 'QA' | 'Dev';
 
 export type TaskPriority = 'Baixa' | 'Média' | 'Alta' | 'Urgente';
 
+export type STLCPhaseName = 
+  | 'Análise de Requisitos'
+  | 'Planejamento de Testes'
+  | 'Desenvolvimento de Casos de Teste'
+  | 'Execução de Testes'
+  | 'Encerramento do Teste';
+
+export type RequirementType = 'Funcional' | 'Não Funcional';
+
+export type RequirementStatus = 'Rascunho' | 'Aprovado' | 'Em Teste' | 'Validado';
+
+export interface Requirement {
+  id: string; // ex: "R-001"
+  title: string;
+  description: string;
+  type: RequirementType;
+  priority: TaskPriority;
+  stlcPhase: STLCPhaseName; // Fase do STLC associada
+  acceptanceCriteria: string[];
+  relatedTasks: string[]; // IDs de tarefas relacionadas
+  testCases: string[]; // IDs de casos de teste que validam
+  status: RequirementStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface RTMEntry {
+  requirementId: string;
+  testCaseIds: string[];
+  coverage: number; // 0-100
+  lastValidated: string;
+}
+
 export interface TestStrategy {
   testType: string;
   description: string;
@@ -186,6 +219,8 @@ export interface Project {
   generalIAAnalysis?: GeneralIAAnalysis;
   tags?: string[];
   settings?: ProjectSettings;
+  requirements?: Requirement[];
+  rtm?: RTMEntry[];
 }
 
 export interface Comment {
