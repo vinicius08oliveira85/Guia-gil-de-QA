@@ -39,6 +39,7 @@ const openDB = (): Promise<IDBDatabase> => {
 };
 
 import { migrateTestCases } from '../utils/testCaseMigration';
+import { cleanupTestCasesForProjects } from '../utils/testCaseCleanup';
 
 export const getAllProjects = async (): Promise<Project[]> => {
   // Sempre carregar do IndexedDB como base
