@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Project } from '../../types';
 import { useProjectMetrics } from '../../hooks/useProjectMetrics';
 import { useSTLCPhase } from '../../hooks/useSTLCPhase';
@@ -7,6 +7,10 @@ import { Card } from '../common/Card';
 import { RequirementsManager } from '../requirements/RequirementsManager';
 import { DashboardAnalysisModal } from './DashboardAnalysisModal';
 import { Badge } from '../common/Badge';
+import { DocumentMetricsCard } from './DocumentMetricsCard';
+import { TaskStatusCard } from './TaskStatusCard';
+import { TestExecutionCard } from './TestExecutionCard';
+import { ProgressTrendsCard } from './ProgressTrendsCard';
 
 interface STLCDashboardProps {
     project: Project;
@@ -141,6 +145,24 @@ export const STLCDashboard: React.FC<STLCDashboardProps> = ({ project, onUpdateP
         generateRequirementsAnalysis,
     } = useDashboardAnalysis(project, onUpdateProject);
 
+    // Monitorar mudanças em tempo real
+    const projectSnapshot = useMemo(() => {
+        return JSON.stringify({
+            tasksCount: project.tasks.length,
+            documentsCount: project.documents.length,
+            requirementsCount: (project.requirements || []).length,
+            tasksHash: project.tasks.map(t => `${t.id}-${t.status}-${t.title}`).join(','),
+            documentsHash: project.documents.map(d => `${d.name}-${d.content.length}`).join(','),
+        });
+    }, [project.tasks, project.documents, project.requirements]);
+
+    // Atualização automática quando o projeto muda
+    useEffect(() => {
+        // As métricas são recalculadas automaticamente via useProjectMetrics
+        // que usa useMemo e depende do projeto
+        // As análises de IA são marcadas como desatualizadas via useDashboardAnalysis
+    }, [projectSnapshot]);
+
     return (
         <div className="space-y-8">
             {/* Header */}
@@ -182,33 +204,81 @@ export const STLCDashboard: React.FC<STLCDashboardProps> = ({ project, onUpdateP
                 <RequirementsManager project={project} onUpdateProject={onUpdateProject} />
             ) : (
                 <>
+                    {/* Métricas do Projeto */}
+                    <Card>
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-lg font-semibold text-text-primary">Métricas do Projeto</h3>
+                            <div className="flex items-center gap-2">
+                                {overviewAnalysis?.isOutdated && (
+                                    <Badge variant="warning" size="sm">Análise Desatualizada</Badge>
+                                )}
+                                <button
+                                    onClick={() => generateOverviewAnalysis()}
+                                    className="btn btn-secondary btn-sm"
+                                    disabled={isGeneratingOverview}
+                                >
+                                    {isGeneratingOverview ? 'Gerando...' : 'Gerar Análise IA'}
+                                </button>
+                                {overviewAnalysis && (
+                                    <button
+                                        onClick={() => setShowOverviewAnalysis(true)}
+                                        className="btn btn-tertiary btn-sm"
+                                    >
+                                        Ver Análise
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                            <div className="space-y-1">
+                                <p className="text-sm text-text-secondary">Fase Atual (SDLC)</p>
+                                <p className="text-base font-semibold text-accent">{metrics.currentPhase}</p>
+                            </div>
+                            <div className="space-y-1">
+                                <p className="text-sm text-text-secondary">Total de Tarefas</p>
+                                <p className="text-base font-semibold text-text-primary">{metrics.totalTasks}</p>
+                            </div>
+                            <div className="space-y-1">
+                                <p className="text-sm text-text-secondary">Casos de Teste</p>
+                                <p className="text-base font-semibold text-text-primary">{metrics.totalTestCases}</p>
+                            </div>
+                            <div className="space-y-1">
+                                <p className="text-sm text-text-secondary">Taxa de Aprovação</p>
+                                <p className="text-base font-semibold text-text-primary">
+                                    {metrics.testPassRate}%
+                                </p>
+                            </div>
+                        </div>
+                    </Card>
 
-            {/* Métricas do Projeto */}
-            <Card>
-                <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-text-primary">Métricas do Projeto</h3>
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                        <div className="space-y-1">
-                            <p className="text-sm text-text-secondary">Fase Atual (SDLC)</p>
-                            <p className="text-base font-semibold text-accent">{metrics.currentPhase}</p>
-                        </div>
-                        <div className="space-y-1">
-                            <p className="text-sm text-text-secondary">Total de Tarefas</p>
-                            <p className="text-base font-semibold text-text-primary">{metrics.totalTasks}</p>
-                        </div>
-                        <div className="space-y-1">
-                            <p className="text-sm text-text-secondary">Casos de Teste</p>
-                            <p className="text-base font-semibold text-text-primary">{metrics.totalTestCases}</p>
-                        </div>
-                        <div className="space-y-1">
-                            <p className="text-sm text-text-secondary">Taxa de Aprovação</p>
-                            <p className="text-base font-semibold text-text-primary">
-                                {metrics.testPassRate}%
-                            </p>
-                        </div>
+                    {/* Document Metrics */}
+                    {metrics.documentMetrics && (
+                        <DocumentMetricsCard documentMetrics={metrics.documentMetrics} />
+                    )}
+
+                    {/* Task Status and Test Execution */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        {metrics.taskStatus && (
+                            <TaskStatusCard 
+                                taskStatus={metrics.taskStatus} 
+                                totalTasks={metrics.totalTasks}
+                            />
+                        )}
+                        {metrics.testExecution && (
+                            <TestExecutionCard 
+                                testExecution={metrics.testExecution} 
+                                totalTestCases={metrics.totalTestCases}
+                            />
+                        )}
                     </div>
-                </div>
-            </Card>
+
+                    {/* Progress Trends */}
+                    {metrics.cumulativeProgress && (
+                        <ProgressTrendsCard 
+                            project={project}
+                            cumulativeProgress={metrics.cumulativeProgress}
+                        />
+                    )}
 
             {/* Matriz de Correlação */}
             <Card>

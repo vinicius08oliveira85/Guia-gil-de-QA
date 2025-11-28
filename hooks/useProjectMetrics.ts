@@ -134,6 +134,75 @@ export const calculateProjectMetrics = (project: Project) => {
         series: [values.created, values.completed]
     })).sort((a,b) => a.date - b.date);
 
+    // --- Document Metrics ---
+    const totalDocuments = documents.length;
+    const documentsWithAnalysis = documents.filter(doc => doc.analysis && doc.analysis.length > 0).length;
+    
+    // Categorizar documentos (baseado no nome e conteúdo)
+    const detectCategory = (name: string, content: string): string => {
+        const lowerName = name.toLowerCase();
+        const lowerContent = content.toLowerCase();
+        if (lowerName.includes('requisito') || lowerContent.includes('requisito') || lowerContent.includes('requirement')) {
+            return 'requisitos';
+        }
+        if (lowerName.includes('teste') || lowerName.includes('test') || lowerContent.includes('caso de teste') || lowerContent.includes('test case')) {
+            return 'testes';
+        }
+        if (lowerName.includes('arquitetura') || lowerName.includes('architecture') || lowerContent.includes('arquitetura')) {
+            return 'arquitetura';
+        }
+        return 'outros';
+    };
+
+    const documentsByCategory = documents.reduce((acc, doc) => {
+        const category = detectCategory(doc.name, doc.content);
+        acc[category] = (acc[category] || 0) + 1;
+        return acc;
+    }, {} as Record<string, number>);
+
+    // Documentos recentes (últimos 7 dias) - assumindo que documentos mais recentes estão no final do array
+    // Em produção, seria necessário ter um campo createdAt
+    const recentDocuments = documents.length; // Por enquanto, todos são considerados recentes
+
+    // Documentos vinculados a tarefas (verificar se o nome do documento aparece em descrições de tarefas)
+    const documentsLinkedToTasks = documents.filter(doc => {
+        return tasks.some(task => 
+            task.description?.toLowerCase().includes(doc.name.toLowerCase()) ||
+            task.title?.toLowerCase().includes(doc.name.toLowerCase())
+        );
+    }).length;
+
+    // --- Task Status Metrics ---
+    const taskStatus = {
+        toDo: tasks.filter(t => t.type !== 'Bug' && t.status === 'To Do').length,
+        inProgress: tasks.filter(t => t.type !== 'Bug' && t.status === 'In Progress').length,
+        done: tasks.filter(t => t.type !== 'Bug' && t.status === 'Done').length,
+        blocked: tasks.filter(t => t.type !== 'Bug' && t.status === 'Blocked').length,
+    };
+
+    const totalNonBugTasks = taskStatus.toDo + taskStatus.inProgress + taskStatus.done + taskStatus.blocked;
+    const taskStatusDistribution = [
+        { status: 'To Do', count: taskStatus.toDo, percentage: totalNonBugTasks > 0 ? Math.round((taskStatus.toDo / totalNonBugTasks) * 100) : 0 },
+        { status: 'In Progress', count: taskStatus.inProgress, percentage: totalNonBugTasks > 0 ? Math.round((taskStatus.inProgress / totalNonBugTasks) * 100) : 0 },
+        { status: 'Done', count: taskStatus.done, percentage: totalNonBugTasks > 0 ? Math.round((taskStatus.done / totalNonBugTasks) * 100) : 0 },
+        { status: 'Blocked', count: taskStatus.blocked, percentage: totalNonBugTasks > 0 ? Math.round((taskStatus.blocked / totalNonBugTasks) * 100) : 0 },
+    ];
+
+    // --- Test Execution Status Metrics ---
+    const testExecution = {
+        passed: allTestCases.filter(tc => tc.status === 'Passed').length,
+        failed: allTestCases.filter(tc => tc.status === 'Failed').length,
+        notRun: allTestCases.filter(tc => tc.status === 'Not Run').length,
+        blocked: allTestCases.filter(tc => tc.status === 'Blocked').length,
+        passRate: executedTestCases > 0 ? Math.round((passedTestCases / executedTestCases) * 100) : 0,
+    };
+
+    const testExecutionDistribution = [
+        { status: 'Passed', count: testExecution.passed, percentage: totalTestCases > 0 ? Math.round((testExecution.passed / totalTestCases) * 100) : 0 },
+        { status: 'Failed', count: testExecution.failed, percentage: totalTestCases > 0 ? Math.round((testExecution.failed / totalTestCases) * 100) : 0 },
+        { status: 'Not Run', count: testExecution.notRun, percentage: totalTestCases > 0 ? Math.round((testExecution.notRun / totalTestCases) * 100) : 0 },
+        { status: 'Blocked', count: testExecution.blocked, percentage: totalTestCases > 0 ? Math.round((testExecution.blocked / totalTestCases) * 100) : 0 },
+    ];
 
     return {
         newPhases,
@@ -150,7 +219,25 @@ export const calculateProjectMetrics = (project: Project) => {
         bugsBySeverity: finalBugsBySeverity,
         openVsClosedBugs,
         qualityByModule: qualityByModule.length > 0 ? qualityByModule : [{ module: 'Geral', quality: 100 }],
-        cumulativeProgress: cumulativeProgressData
+        cumulativeProgress: cumulativeProgressData,
+        // Document metrics
+        documentMetrics: {
+            total: totalDocuments,
+            byCategory: documentsByCategory,
+            withAnalysis: documentsWithAnalysis,
+            recent: recentDocuments,
+            linkedToTasks: documentsLinkedToTasks,
+        },
+        // Task status metrics
+        taskStatus: {
+            ...taskStatus,
+            distribution: taskStatusDistribution,
+        },
+        // Test execution metrics
+        testExecution: {
+            ...testExecution,
+            distribution: testExecutionDistribution,
+        },
     };
 };
 

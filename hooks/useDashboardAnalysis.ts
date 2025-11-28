@@ -30,9 +30,13 @@ export function useDashboardAnalysis(project: Project, onUpdateProject?: (projec
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [
         project.tasks.length,
+        project.tasks.map(t => `${t.id}-${t.status}-${t.title}`).join(','), // Detectar mudanças em tarefas
+        project.documents.length, // Detectar mudanças em documentos
+        project.documents.map(d => `${d.name}-${d.content.length}`).join(','), // Detectar mudanças em conteúdo de documentos
         project.requirements?.length,
         project.rtm?.length,
         project.phases.map(p => `${p.name}-${p.status}`).join(','),
+        project.description,
     ]);
 
     const generateOverviewAnalysis = useCallback(async () => {

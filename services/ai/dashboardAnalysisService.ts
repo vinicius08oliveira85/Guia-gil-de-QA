@@ -38,19 +38,58 @@ const createProjectSnapshot = (project: Project): string => {
   const metrics = calculateProjectMetrics(project);
   const currentPhase = detectCurrentSTLCPhase(project);
   
+  // Normalizar texto de documentos para snapshot
+  const normalizeText = (value?: string, maxLength: number = 200): string => {
+    if (!value) return '';
+    const sanitized = value.replace(/\s+/g, ' ').trim();
+    if (sanitized.length <= maxLength) return sanitized;
+    return `${sanitized.slice(0, maxLength)}…`;
+  };
+
+  // Informações de documentos
+  const documentsInfo = (project.documents || []).map(doc => ({
+    name: doc.name,
+    contentSnippet: normalizeText(doc.content, 150),
+    hasAnalysis: !!doc.analysis && doc.analysis.length > 0,
+  }));
+
+  // Status de tarefas
+  const taskStatusInfo = {
+    toDo: project.tasks.filter(t => t.type !== 'Bug' && t.status === 'To Do').length,
+    inProgress: project.tasks.filter(t => t.type !== 'Bug' && t.status === 'In Progress').length,
+    done: project.tasks.filter(t => t.type !== 'Bug' && t.status === 'Done').length,
+    blocked: project.tasks.filter(t => t.type !== 'Bug' && t.status === 'Blocked').length,
+  };
+
+  // Status de execução de testes
+  const allTestCases = project.tasks.flatMap(t => t.testCases || []);
+  const testExecutionInfo = {
+    passed: allTestCases.filter(tc => tc.status === 'Passed').length,
+    failed: allTestCases.filter(tc => tc.status === 'Failed').length,
+    notRun: allTestCases.filter(tc => tc.status === 'Not Run').length,
+    blocked: allTestCases.filter(tc => tc.status === 'Blocked').length,
+  };
+  
   const snapshot = {
     projectId: project.id,
     projectName: project.name,
     tasksCount: project.tasks.length,
     requirementsCount: (project.requirements || []).length,
-    testCasesCount: project.tasks.flatMap(t => t.testCases || []).length,
+    documentsCount: (project.documents || []).length,
+    testCasesCount: allTestCases.length,
     currentPhase,
     metrics: {
       totalTasks: metrics.totalTasks,
       totalTestCases: metrics.totalTestCases,
       testPassRate: metrics.testPassRate,
       testCoverage: metrics.testCoverage,
+      documentMetrics: metrics.documentMetrics,
+      taskStatus: taskStatusInfo,
+      testExecution: testExecutionInfo,
     },
+    documents: documentsInfo,
+    taskStatus: taskStatusInfo,
+    testExecution: testExecutionInfo,
     phases: project.phases.map(p => ({ name: p.name, status: p.status })),
   };
   
@@ -211,6 +250,7 @@ export async function generateDashboardOverviewAnalysis(project: Project): Promi
   
   const metrics = calculateProjectMetrics(project);
   const currentPhase = detectCurrentSTLCPhase(project);
+  const allTestCases = project.tasks.flatMap(t => t.testCases || []);
   
   const prompt = `
 Você é um especialista sênior em QA e STLC (Software Testing Life Cycle). 
@@ -227,6 +267,25 @@ ${JSON.stringify({
     taxaAprovacao: metrics.testPassRate,
     coberturaTeste: metrics.testCoverage,
     faseAtualSDLC: metrics.currentPhase,
+    metricasDocumentos: metrics.documentMetrics,
+    statusTarefas: metrics.taskStatus,
+    execucaoTestes: metrics.testExecution,
+  },
+  documentos: (project.documents || []).map(doc => ({
+    nome: doc.name,
+    temAnalise: !!doc.analysis && doc.analysis.length > 0,
+  })),
+  statusTarefas: {
+    toDo: project.tasks.filter(t => t.type !== 'Bug' && t.status === 'To Do').length,
+    inProgress: project.tasks.filter(t => t.type !== 'Bug' && t.status === 'In Progress').length,
+    done: project.tasks.filter(t => t.type !== 'Bug' && t.status === 'Done').length,
+    blocked: project.tasks.filter(t => t.type !== 'Bug' && t.status === 'Blocked').length,
+  },
+  execucaoTestes: {
+    passed: allTestCases.filter(tc => tc.status === 'Passed').length,
+    failed: allTestCases.filter(tc => tc.status === 'Failed').length,
+    notRun: allTestCases.filter(tc => tc.status === 'Not Run').length,
+    blocked: allTestCases.filter(tc => tc.status === 'Blocked').length,
   },
   fases: project.phases.map(p => ({ nome: p.name, status: p.status })),
   totalTarefas: project.tasks.length,
@@ -234,13 +293,29 @@ ${JSON.stringify({
 }, null, 2)}
 
 INSTRUÇÕES:
-1. Gere um resumo executivo conciso e acionável sobre o estado geral do projeto.
+1. Gere um resumo executivo conciso e acionável sobre o estado geral do projeto, considerando tarefas, testes e documentos.
 2. Analise detalhadamente a fase atual do STLC, explicando o que significa e o que deve ser focado.
-3. Analise as métricas fornecidas, identificando pontos fortes e fracos.
-4. Identifique riscos potenciais baseados nas métricas e fase atual.
-5. Forneça recomendações práticas e acionáveis para melhorar o projeto.
-6. Use português brasileiro.
-7. Seja específico e baseado nos dados fornecidos.
+3. Analise as métricas fornecidas, incluindo:
+   - Status das tarefas (distribuição entre To Do, In Progress, Done, Blocked)
+   - Execução de testes (taxa de sucesso, distribuição de status)
+   - Documentos (total, categorias, documentos com análise)
+4. Identifique pontos fortes e fracos considerando:
+   - Sincronização entre documentos, tarefas e testes
+   - Qualidade da documentação
+   - Progresso das tarefas
+   - Eficácia dos testes
+5. Identifique riscos potenciais baseados em:
+   - Desequilíbrio no status das tarefas
+   - Taxa de falha de testes
+   - Falta de documentação ou documentos sem análise
+   - Inconsistências entre documentos e tarefas
+6. Forneça recomendações práticas e acionáveis considerando:
+   - Necessidade de sincronização entre documentos, tarefas e testes
+   - Melhorias na documentação
+   - Otimização do fluxo de trabalho
+   - Aumento da taxa de sucesso dos testes
+7. Use português brasileiro.
+8. Seja específico e baseado nos dados fornecidos.
 
 Respeite o schema JSON fornecido.
   `;
