@@ -384,6 +384,93 @@ export const JiraTaskItem: React.FC<{
 
     const iconButtonClass = 'task-card-compact_icon-btn';
 
+    // Função para traduzir nomes de campos do Jira para português
+    const translateJiraFieldName = (key: string): string => {
+        const fieldTranslations: { [key: string]: string } = {
+            'statuscategorychangedate': 'Data de Mudança de Status',
+            'timespent': 'Tempo Gasto',
+            'aggregatetimespent': 'Tempo Total Gasto',
+            'project': 'Projeto',
+            'statusCategory': 'Categoria de Status',
+            'resolution': 'Resolução',
+            'security': 'Segurança',
+            'customfield_10030': 'Campo Customizado 10030',
+            'customfield_11461': 'Campo Customizado 11461',
+            'customfield_10033': 'Campo Customizado 10033',
+            'customfield_10099': 'Campo Customizado 10099',
+            'customfield_11462': 'Campo Customizado 11462',
+            'customfield_10015': 'Campo Customizado 10015',
+        };
+
+        return fieldTranslations[key] || key;
+    };
+
+    // Função para formatar valores dos campos do Jira
+    const formatJiraFieldValue = (key: string, value: any): string => {
+        if (value === null || value === undefined) {
+            return '—';
+        }
+
+        // Formatar datas ISO
+        if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(value)) {
+            try {
+                const date = new Date(value);
+                return date.toLocaleString('pt-BR', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            } catch {
+                return value;
+            }
+        }
+
+        // Formatar objetos project
+        if (key === 'project' && typeof value === 'object' && value !== null) {
+            if (value.name) {
+                return value.name;
+            }
+            if (value.key) {
+                return value.key;
+            }
+        }
+
+        // Formatar objetos statusCategory
+        if (key === 'statusCategory' && typeof value === 'object' && value !== null) {
+            if (value.name) {
+                return value.name;
+            }
+            if (value.key) {
+                return value.key;
+            }
+        }
+
+        // Formatar objetos aninhados
+        if (typeof value === 'object' && value !== null) {
+            // Se for um objeto com propriedades conhecidas, extrair informações relevantes
+            if (value.name) {
+                return value.name;
+            }
+            if (value.key) {
+                return value.key;
+            }
+            if (value.id) {
+                return `ID: ${value.id}`;
+            }
+            // Para outros objetos, formatar como JSON legível
+            try {
+                return JSON.stringify(value, null, 2);
+            } catch {
+                return String(value);
+            }
+        }
+
+        // Para strings, números e outros tipos primitivos
+        return String(value);
+    };
+
     const renderOverviewSection = () => (
         <div className="space-y-md">
             {project && onUpdateProject && (
@@ -651,15 +738,22 @@ export const JiraTaskItem: React.FC<{
                             <div className="space-y-3">
                                 <h4 className="text-sm font-semibold text-text-secondary">⚙️ Campos Customizados</h4>
                                 <div className="p-3 bg-surface border border-surface-border rounded-lg">
-                                    <div className="space-y-2">
-                                        {Object.entries(task.jiraCustomFields).map(([key, value]) => (
-                                            <div key={key} className="text-sm">
-                                                <span className="text-text-secondary font-semibold">{key}:</span>{' '}
-                                                <span className="text-text-primary">
-                                                    {typeof value === 'object' ? JSON.stringify(value) : String(value)}
-                                                </span>
-                                            </div>
-                                        ))}
+                                    <div className="space-y-3">
+                                        {Object.entries(task.jiraCustomFields).map(([key, value]) => {
+                                            const translatedName = translateJiraFieldName(key);
+                                            const formattedValue = formatJiraFieldValue(key, value);
+                                            
+                                            return (
+                                                <div key={key} className="flex flex-col gap-1">
+                                                    <span className="text-[11px] uppercase text-text-secondary tracking-wide font-semibold">
+                                                        {translatedName}
+                                                    </span>
+                                                    <span className="text-sm text-text-primary break-words">
+                                                        {formattedValue}
+                                                    </span>
+                                                </div>
+                                            );
+                                        })}
                                     </div>
                                 </div>
                             </div>

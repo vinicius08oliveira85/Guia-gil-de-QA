@@ -1276,9 +1276,40 @@ export const syncTaskToJira = async (
     }
 
     // Campos customizados
+    // Filtrar campos que são apenas informativos e não podem ser atualizados
+    const readOnlyFields = ['project', 'statusCategory', 'statuscategorychangedate', 'aggregatetimespent'];
+    
     if (task.jiraCustomFields) {
         Object.keys(task.jiraCustomFields).forEach((key) => {
-            fieldsToUpdate[key] = task.jiraCustomFields![key];
+            // Pular campos somente leitura
+            if (readOnlyFields.includes(key)) {
+                return;
+            }
+            
+            const value = task.jiraCustomFields![key];
+            
+            // Não enviar valores null ou undefined
+            if (value === null || value === undefined) {
+                return;
+            }
+            
+            // Para objetos complexos, tentar extrair apenas o ID se disponível
+            // (campos customizados do Jira geralmente precisam de IDs)
+            if (typeof value === 'object' && value !== null) {
+                // Se o objeto tem um ID, usar apenas o ID
+                if (value.id) {
+                    fieldsToUpdate[key] = { id: value.id };
+                } else if (value.key) {
+                    // Para alguns campos, usar key
+                    fieldsToUpdate[key] = { key: value.key };
+                } else {
+                    // Para outros objetos, tentar enviar como está (pode precisar de ajuste)
+                    fieldsToUpdate[key] = value;
+                }
+            } else {
+                // Para valores primitivos, enviar diretamente
+                fieldsToUpdate[key] = value;
+            }
         });
     }
 
