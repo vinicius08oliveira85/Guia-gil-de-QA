@@ -13,7 +13,6 @@ import { useProjectMetrics } from '../hooks/useProjectMetrics';
 import { ProjectTrail } from './trail/ProjectTrail';
 import { TasksView } from './tasks/TasksView';
 import { DocumentsView } from './DocumentsView';
-import { RoadmapView } from './roadmap/RoadmapView';
 import { GlossaryView } from './glossary/GlossaryView';
 import { PrintableReport } from './PrintableReport';
 import { ExportMenu } from './common/ExportMenu';
@@ -113,7 +112,6 @@ export const ProjectViewMigrated: React.FC<{ onBack: () => void }> = ({ onBack }
         { id: 'trail', label: 'Trilha do Projeto' },
         { id: 'tasks', label: 'Tarefas' },
         { id: 'documents', label: 'Documentos' },
-        { id: 'roadmap', label: 'Roadmap' },
         { id: 'glossary', label: 'Glossário' },
         { id: 'quality', label: 'Qualidade' },
     ];
@@ -186,11 +184,6 @@ export const ProjectViewMigrated: React.FC<{ onBack: () => void }> = ({ onBack }
                             project={project} 
                             onUpdateProject={updateProject}
                         />
-                    </Suspense>
-                )}
-                {activeTab === 'roadmap' && (
-                    <Suspense fallback={<LoadingSkeleton variant="card" count={2} />}>
-                        <RoadmapView project={project} />
                     </Suspense>
                 )}
                 {activeTab === 'glossary' && (

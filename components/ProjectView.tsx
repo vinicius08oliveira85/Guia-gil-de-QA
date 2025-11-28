@@ -3,7 +3,6 @@ import { Project } from '../types';
 import { useProjectMetrics } from '../hooks/useProjectMetrics';
 import { TasksView } from './tasks/TasksView';
 import { DocumentsView } from './DocumentsView';
-import { RoadmapView } from './roadmap/RoadmapView';
 import { GlossaryView } from './glossary/GlossaryView';
 import { PrintableReport } from './PrintableReport';
 import { ExportMenu } from './common/ExportMenu';
@@ -78,7 +77,6 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
         { id: 'dashboard', label: 'Dashboard' },
         { id: 'tasks', label: 'Tarefas & Testes', 'data-onboarding': 'tasks-tab' },
         { id: 'documents', label: 'Documentos' },
-        { id: 'roadmap', label: 'Roadmap' },
         { id: 'glossary', label: 'Glossário' },
     ];
 
@@ -184,13 +182,6 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                         <section id="tab-panel-documents" role="tabpanel" aria-labelledby="tab-documents tab-documents-mobile">
                         <Suspense fallback={<LoadingSkeleton variant="card" count={3} />}>
                             <DocumentsView project={project} onUpdateProject={onUpdateProject} />
-                        </Suspense>
-                        </section>
-                    )}
-                    {activeTab === 'roadmap' && (
-                        <section id="tab-panel-roadmap" role="tabpanel" aria-labelledby="tab-roadmap tab-roadmap-mobile">
-                        <Suspense fallback={<LoadingSkeleton variant="card" count={2} />}>
-                            <RoadmapView />
                         </Suspense>
                         </section>
                     )}
