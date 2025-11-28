@@ -92,7 +92,7 @@ export const TestExecutionCard: React.FC<TestExecutionCardProps> = ({ testExecut
                 </div>
 
                 {/* Resumo Rápido */}
-                <div className="grid grid-cols-2 gap-sm pt-sm border-t border-surface-border">
+                <div className="grid grid-cols-2 gap-sm pt-md border-t border-surface-border">
                     <div className="text-center p-2 rounded-xl bg-success/10">
                         <p className="text-xs text-text-tertiary mb-xs">Aprovados</p>
                         <p className="text-xl font-bold text-success">{testExecution.passed}</p>

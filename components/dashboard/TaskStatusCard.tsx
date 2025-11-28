@@ -77,7 +77,7 @@ export const TaskStatusCard: React.FC<TaskStatusCardProps> = ({ taskStatus, tota
                 </div>
 
                 {/* Resumo Rápido */}
-                <div className="grid grid-cols-2 gap-sm pt-sm border-t border-surface-border">
+                <div className="grid grid-cols-2 gap-sm pt-md border-t border-surface-border">
                     <div className="text-center p-2 rounded-xl bg-success/10">
                         <p className="text-xs text-text-tertiary mb-xs">Concluídas</p>
                         <p className="text-xl font-bold text-success">{taskStatus.done}</p>

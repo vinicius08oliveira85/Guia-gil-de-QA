@@ -138,7 +138,7 @@ export const ProgressTrendsCard: React.FC<ProgressTrendsCardProps> = ({ project,
                 </div>
 
                 {/* Resumo de Progresso */}
-                <div className="grid grid-cols-3 gap-2 pt-2 border-t border-surface-border">
+                <div className="grid grid-cols-3 gap-2 pt-md border-t border-surface-border">
                     <div className="text-center p-2 rounded-xl bg-surface-hover/50">
                         <p className="text-xs text-text-tertiary mb-1">Tarefas Criadas</p>
                         <p className="text-lg font-bold text-text-primary">
