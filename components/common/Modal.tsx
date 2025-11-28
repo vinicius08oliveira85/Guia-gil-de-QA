@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 
 interface ModalProps {
     isOpen: boolean;
@@ -18,6 +18,8 @@ export const Modal: React.FC<ModalProps> = ({
     size = 'md',
     maxHeight = '90vh'
 }) => {
+    const scrollPositionRef = useRef<number>(0);
+
     // Fechar com ESC
     useEffect(() => {
         if (!isOpen) return;
@@ -37,6 +39,37 @@ export const Modal: React.FC<ModalProps> = ({
         if (modalElement) {
             modalElement.focus();
         }
+    }, [isOpen]);
+
+    // Desabilitar scroll do body quando modal abrir
+    useEffect(() => {
+        if (isOpen) {
+            // Salvar posição atual do scroll
+            scrollPositionRef.current = window.scrollY;
+            // Desabilitar scroll
+            document.body.style.position = 'fixed';
+            document.body.style.top = `-${scrollPositionRef.current}px`;
+            document.body.style.width = '100%';
+        } else {
+            // Reabilitar scroll
+            const scrollY = scrollPositionRef.current;
+            document.body.style.position = '';
+            document.body.style.top = '';
+            document.body.style.width = '';
+            // Restaurar posição do scroll
+            window.scrollTo(0, scrollY);
+        }
+        
+        return () => {
+            // Cleanup: garantir que o scroll seja reabilitado ao desmontar
+            if (isOpen) {
+                const scrollY = scrollPositionRef.current;
+                document.body.style.position = '';
+                document.body.style.top = '';
+                document.body.style.width = '';
+                window.scrollTo(0, scrollY);
+            }
+        };
     }, [isOpen]);
 
     if (!isOpen) return null;

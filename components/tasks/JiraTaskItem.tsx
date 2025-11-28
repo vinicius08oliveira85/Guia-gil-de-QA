@@ -384,7 +384,10 @@ export const JiraTaskItem: React.FC<{
             {(task.testCases?.length > 0 || task.testStrategy?.length > 0) && (
                 <div className="flex justify-end">
                     <button
-                        onClick={() => setShowTestReport(true)}
+                        onClick={(e) => {
+                            e.preventDefault();
+                            setShowTestReport(true);
+                        }}
                         className={`
                             ${windows12Styles.buttonPrimary}
                             flex items-center gap-2
