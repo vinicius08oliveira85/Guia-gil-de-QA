@@ -104,62 +104,66 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Registro de Testes Realizados">
-      <div className="space-y-4">
-        <div className="flex items-center justify-between mb-2">
+    <Modal isOpen={isOpen} onClose={onClose} title="Registro de Testes Realizados" size="xl">
+      <div className="space-y-lg">
+        {/* Texto descritivo - linha completa */}
+        <div>
           <p className="text-sm text-text-secondary">
             Copie o registro abaixo para colar em outras plataformas
           </p>
-          <div className="flex gap-3">
-            <button
-              onClick={handleDownload}
-              className="btn btn-secondary flex items-center gap-2"
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v16h16M8 12h8m-8 4h5" />
-              </svg>
-              <span>Baixar .{format === 'markdown' ? 'md' : 'txt'}</span>
-            </button>
-            <button
-              onClick={handleCopy}
-              className={`
-                btn btn-primary
-                flex items-center gap-2
-                ${copied ? '!bg-green-500 hover:!bg-green-600' : ''}
-              `}
-            >
-              {copied ? (
-                <>
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span>Copiado!</span>
-                </>
-              ) : (
-                <>
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                  </svg>
-                  <span>Copiar</span>
-                </>
-              )}
-            </button>
-          </div>
         </div>
 
-        <div className="flex flex-col gap-2">
-          <p className="text-xs uppercase tracking-wide text-text-secondary">Formato do relatório</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        {/* Botões de ação - linha separada, bem espaçados */}
+        <div className="flex flex-wrap items-center justify-end gap-md pb-4 border-b border-surface-border">
+          <button
+            onClick={handleDownload}
+            className="btn btn-secondary btn-md flex items-center gap-2"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v16h16M8 12h8m-8 4h5" />
+            </svg>
+            <span>Baixar .{format === 'markdown' ? 'md' : 'txt'}</span>
+          </button>
+          <button
+            onClick={handleCopy}
+            className={`
+              btn btn-primary btn-md
+              flex items-center gap-2
+              ${copied ? '!bg-green-500 hover:!bg-green-600' : ''}
+            `}
+          >
+            {copied ? (
+              <>
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                <span>Copiado!</span>
+              </>
+            ) : (
+              <>
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+                <span>Copiar</span>
+              </>
+            )}
+          </button>
+        </div>
+
+        {/* Formato do relatório - grid 2 colunas */}
+        <div className="flex flex-col gap-md">
+          <p className="text-xs uppercase tracking-wide text-text-secondary font-semibold">Formato do relatório</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-md">
             {formatOptions.map((option) => (
               <button
                 key={option.value}
                 type="button"
                 onClick={() => setFormat(option.value)}
                 className={`
-                  border rounded-lg px-4 py-3 text-left transition
+                  border rounded-lg p-card text-left transition-all duration-200
                   ${format === option.value
-                    ? 'border-accent bg-accent/10 text-white shadow-md'
-                    : 'border-surface-border text-text-secondary hover:text-text-primary hover:border-accent/40'}
+                    ? 'border-accent bg-accent/10 text-white shadow-md ring-2 ring-accent/30'
+                    : 'border-surface-border text-text-secondary hover:text-text-primary hover:border-accent/40 hover:bg-surface-hover'}
                 `}
               >
                 <p className="font-medium">{option.label}</p>
@@ -169,30 +173,31 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({
           </div>
         </div>
 
-        <div className="space-y-3">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="text-xs uppercase tracking-wide text-text-secondary">Resumo visual</p>
-            <div className="flex gap-4 text-xs text-text-secondary">
-              <div className="flex items-center gap-1">
+        {/* Resumo visual */}
+        <div className="space-y-md">
+          <div className="flex flex-wrap items-center justify-between gap-md">
+            <p className="text-xs uppercase tracking-wide text-text-secondary font-semibold">Resumo visual</p>
+            <div className="flex gap-lg text-xs text-text-secondary">
+              <div className="flex items-center gap-xs">
                 <span className="w-2 h-2 rounded-full bg-success"></span>
                 <span>Aprovado</span>
               </div>
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-xs">
                 <span className="w-2 h-2 rounded-full bg-danger"></span>
                 <span>Reprovado</span>
               </div>
             </div>
           </div>
           {executedTestCases.length > 0 ? (
-            <ul className="space-y-2">
+            <ul className="space-y-md">
               {executedTestCases.map((testCase, index) => {
                 const statusData = getStatusBadge(testCase.status);
                 return (
                   <li
                     key={`${testCase.id}-${index}`}
-                    className="flex flex-col gap-1 rounded-lg border border-surface-border bg-surface px-4 py-3"
+                    className="flex flex-col gap-sm rounded-lg border border-surface-border bg-surface p-card"
                   >
-                    <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-start justify-between gap-md">
                       <div>
                         <p className="text-sm font-medium text-text-primary">
                           {testCase.description || `Teste ${index + 1}`}
@@ -223,22 +228,19 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({
           )}
         </div>
 
-        <div className={`
-          ${windows12Styles.card}
-          ${windows12Styles.spacing.md}
-          relative
-        `}>
+        {/* Textarea do relatório */}
+        <div className="relative">
           <textarea
             value={reportText}
             readOnly
             className={`
               w-full h-96
               bg-surface border border-surface-border rounded-lg
-              px-4 py-3 text-sm text-text-primary
+              p-card text-sm text-text-primary
               font-mono
               resize-none
               focus:outline-none focus:ring-2 focus:ring-accent/50
-              ${windows12Styles.transition.fast}
+              transition-all duration-200
             `}
             onClick={(e) => {
               (e.target as HTMLTextAreaElement).select();
@@ -246,10 +248,11 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({
           />
         </div>
 
-        <div className="flex justify-end gap-2">
+        {/* Botão Fechar */}
+        <div className="flex justify-end gap-md pt-2 border-t border-surface-border">
           <button
             onClick={onClose}
-            className={windows12Styles.buttonSecondary}
+            className="btn btn-secondary btn-md"
           >
             Fechar
           </button>
