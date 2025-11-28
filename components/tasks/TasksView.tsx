@@ -58,7 +58,7 @@ import { useSuggestions } from '../../hooks/useSuggestions';
 import { SuggestionBanner } from '../common/SuggestionBanner';
 import { EmptyState } from '../common/EmptyState';
 import { Spinner } from '../common/Spinner';
-import { addNewJiraTasks, getJiraConfig, getJiraProjects, JiraConfig } from '../../services/jiraService';
+import { addNewJiraTasks, getJiraConfig, getJiraProjects, JiraConfig, syncTaskToJira } from '../../services/jiraService';
 import { GeneralIAAnalysisButton } from './GeneralIAAnalysisButton';
 import { generateGeneralIAAnalysis } from '../../services/ai/generalAnalysisService';
 import { useRequirementAutomation } from '../../hooks/useRequirementAutomation';
@@ -71,6 +71,7 @@ export const TasksView: React.FC<{
     const [generatingTestsTaskId, setGeneratingTestsTaskId] = useState<string | null>(null);
     const [generatingBddTaskId, setGeneratingBddTaskId] = useState<string | null>(null);
     const [generatingAllTaskId, setGeneratingAllTaskId] = useState<string | null>(null);
+    const [syncingTaskId, setSyncingTaskId] = useState<string | null>(null);
     const [showTemplateSelector, setShowTemplateSelector] = useState(false);
     const [selectedTaskForTemplate, setSelectedTaskForTemplate] = useState<string | null>(null);
     const [selectedTasks, setSelectedTasks] = useState<Set<string>>(new Set());
@@ -1077,6 +1078,8 @@ export const TasksView: React.FC<{
                     isGeneratingBdd={generatingBddTaskId === task.id}
                     onGenerateAll={handleGenerateAll}
                     isGeneratingAll={generatingAllTaskId === task.id}
+                    onSyncToJira={handleSyncTaskToJira}
+                    isSyncing={syncingTaskId === task.id}
                     onSaveBddScenario={handleSaveBddScenario}
                     onDeleteBddScenario={handleDeleteBddScenario}
                     onTaskStatusChange={(status) => handleTaskStatusChange(task.id, status)}

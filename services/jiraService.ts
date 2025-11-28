@@ -34,6 +34,7 @@ export interface JiraIssue {
         };
         reporter?: {
             displayName: string;
+            emailAddress?: string;
         };
         created: string;
         updated: string;
@@ -55,6 +56,49 @@ export interface JiraIssue {
                 updated?: string;
             }>;
         };
+        // Campos adicionais padrão
+        duedate?: string;
+        timetracking?: {
+            originalEstimate?: string;
+            remainingEstimate?: string;
+            timeSpent?: string;
+        };
+        components?: Array<{
+            id: string;
+            name: string;
+        }>;
+        fixVersions?: Array<{
+            id: string;
+            name: string;
+        }>;
+        environment?: string;
+        watches?: {
+            watchCount: number;
+            isWatching: boolean;
+        };
+        issuelinks?: Array<{
+            id: string;
+            type: {
+                name: string;
+            };
+            outwardIssue?: {
+                key: string;
+            };
+            inwardIssue?: {
+                key: string;
+            };
+        }>;
+        attachment?: Array<{
+            id: string;
+            filename: string;
+            size: number;
+            created: string;
+            author: {
+                displayName: string;
+            };
+        }>;
+        // Suporte a campos customizados
+        [key: string]: any;
     };
     renderedFields?: {
         description?: string; // Descrição renderizada em HTML
@@ -365,11 +409,10 @@ export const getJiraIssues = async (
         const search = new URLSearchParams();
         search.set('jql', jql);
         search.set('maxResults', String(pageSize));
-        search.set('expand', 'renderedFields,comment');
-        search.set(
-            'fields',
-            'summary,description,issuetype,status,statusCategory,priority,assignee,reporter,created,updated,resolutiondate,labels,parent,subtasks,comment'
-        );
+        search.set('expand', 'renderedFields,comment,attachment');
+        // Buscar todos os campos usando *all ou removendo o parâmetro fields
+        // Usando *all para buscar todos os campos padrão e customizados
+        search.set('fields', '*all');
         if (typeof params.startAt === 'number') {
             search.set('startAt', String(params.startAt));
         }
@@ -753,6 +796,87 @@ export const importJiraProject = async (
             task.assignee = 'Product';
         }
 
+        // Mapear campos adicionais do Jira
+        if (issue.fields?.duedate) {
+            task.dueDate = issue.fields.duedate;
+        }
+
+        if (issue.fields?.timetracking) {
+            task.timeTracking = {
+                originalEstimate: issue.fields.timetracking.originalEstimate,
+                remainingEstimate: issue.fields.timetracking.remainingEstimate,
+                timeSpent: issue.fields.timetracking.timeSpent,
+            };
+        }
+
+        if (issue.fields?.components && issue.fields.components.length > 0) {
+            task.components = issue.fields.components.map((comp: any) => ({
+                id: comp.id,
+                name: comp.name,
+            }));
+        }
+
+        if (issue.fields?.fixVersions && issue.fields.fixVersions.length > 0) {
+            task.fixVersions = issue.fields.fixVersions.map((version: any) => ({
+                id: version.id,
+                name: version.name,
+            }));
+        }
+
+        if (issue.fields?.environment) {
+            task.environment = issue.fields.environment;
+        }
+
+        if (issue.fields?.reporter) {
+            task.reporter = {
+                displayName: issue.fields.reporter.displayName,
+                emailAddress: issue.fields.reporter.emailAddress,
+            };
+        }
+
+        if (issue.fields?.watches) {
+            task.watchers = {
+                watchCount: issue.fields.watches.watchCount || 0,
+                isWatching: issue.fields.watches.isWatching || false,
+            };
+        }
+
+        if (issue.fields?.issuelinks && issue.fields.issuelinks.length > 0) {
+            task.issueLinks = issue.fields.issuelinks.map((link: any) => ({
+                id: link.id,
+                type: link.type?.name || '',
+                relatedKey: link.outwardIssue?.key || link.inwardIssue?.key || '',
+                direction: link.outwardIssue ? 'outward' : 'inward',
+            }));
+        }
+
+        if (issue.fields?.attachment && issue.fields.attachment.length > 0) {
+            task.jiraAttachments = issue.fields.attachment.map((att: any) => ({
+                id: att.id,
+                filename: att.filename,
+                size: att.size,
+                created: att.created,
+                author: att.author?.displayName || 'Desconhecido',
+            }));
+        }
+
+        // Mapear campos customizados (todos os campos que não são padrão)
+        const standardFields = [
+            'summary', 'description', 'issuetype', 'status', 'priority', 'assignee', 'reporter',
+            'created', 'updated', 'resolutiondate', 'labels', 'parent', 'subtasks', 'comment',
+            'duedate', 'timetracking', 'components', 'fixVersions', 'environment', 'watches',
+            'issuelinks', 'attachment'
+        ];
+        const customFields: { [key: string]: any } = {};
+        Object.keys(issue.fields).forEach((key) => {
+            if (!standardFields.includes(key) && !key.startsWith('_')) {
+                customFields[key] = issue.fields[key];
+            }
+        });
+        if (Object.keys(customFields).length > 0) {
+            task.jiraCustomFields = customFields;
+        }
+
         // Mapear attachments (se disponíveis na API)
         // Nota: Attachments precisam ser buscados separadamente ou estar no expand
         // Por enquanto, deixamos vazio pois requer configuração adicional da API
@@ -858,6 +982,107 @@ export const syncJiraProject = async (
             }
         } else {
             task.assignee = existingIndex >= 0 ? updatedTasks[existingIndex].assignee : 'Product';
+        }
+
+        // Mapear campos adicionais do Jira (preservar existentes se já existirem)
+        if (issue.fields?.duedate) {
+            task.dueDate = issue.fields.duedate;
+        } else if (existingIndex >= 0 && updatedTasks[existingIndex].dueDate) {
+            task.dueDate = updatedTasks[existingIndex].dueDate;
+        }
+
+        if (issue.fields?.timetracking) {
+            task.timeTracking = {
+                originalEstimate: issue.fields.timetracking.originalEstimate,
+                remainingEstimate: issue.fields.timetracking.remainingEstimate,
+                timeSpent: issue.fields.timetracking.timeSpent,
+            };
+        } else if (existingIndex >= 0 && updatedTasks[existingIndex].timeTracking) {
+            task.timeTracking = updatedTasks[existingIndex].timeTracking;
+        }
+
+        if (issue.fields?.components && issue.fields.components.length > 0) {
+            task.components = issue.fields.components.map((comp: any) => ({
+                id: comp.id,
+                name: comp.name,
+            }));
+        } else if (existingIndex >= 0 && updatedTasks[existingIndex].components) {
+            task.components = updatedTasks[existingIndex].components;
+        }
+
+        if (issue.fields?.fixVersions && issue.fields.fixVersions.length > 0) {
+            task.fixVersions = issue.fields.fixVersions.map((version: any) => ({
+                id: version.id,
+                name: version.name,
+            }));
+        } else if (existingIndex >= 0 && updatedTasks[existingIndex].fixVersions) {
+            task.fixVersions = updatedTasks[existingIndex].fixVersions;
+        }
+
+        if (issue.fields?.environment) {
+            task.environment = issue.fields.environment;
+        } else if (existingIndex >= 0 && updatedTasks[existingIndex].environment) {
+            task.environment = updatedTasks[existingIndex].environment;
+        }
+
+        if (issue.fields?.reporter) {
+            task.reporter = {
+                displayName: issue.fields.reporter.displayName,
+                emailAddress: issue.fields.reporter.emailAddress,
+            };
+        } else if (existingIndex >= 0 && updatedTasks[existingIndex].reporter) {
+            task.reporter = updatedTasks[existingIndex].reporter;
+        }
+
+        if (issue.fields?.watches) {
+            task.watchers = {
+                watchCount: issue.fields.watches.watchCount || 0,
+                isWatching: issue.fields.watches.isWatching || false,
+            };
+        } else if (existingIndex >= 0 && updatedTasks[existingIndex].watchers) {
+            task.watchers = updatedTasks[existingIndex].watchers;
+        }
+
+        if (issue.fields?.issuelinks && issue.fields.issuelinks.length > 0) {
+            task.issueLinks = issue.fields.issuelinks.map((link: any) => ({
+                id: link.id,
+                type: link.type?.name || '',
+                relatedKey: link.outwardIssue?.key || link.inwardIssue?.key || '',
+                direction: link.outwardIssue ? 'outward' : 'inward',
+            }));
+        } else if (existingIndex >= 0 && updatedTasks[existingIndex].issueLinks) {
+            task.issueLinks = updatedTasks[existingIndex].issueLinks;
+        }
+
+        if (issue.fields?.attachment && issue.fields.attachment.length > 0) {
+            task.jiraAttachments = issue.fields.attachment.map((att: any) => ({
+                id: att.id,
+                filename: att.filename,
+                size: att.size,
+                created: att.created,
+                author: att.author?.displayName || 'Desconhecido',
+            }));
+        } else if (existingIndex >= 0 && updatedTasks[existingIndex].jiraAttachments) {
+            task.jiraAttachments = updatedTasks[existingIndex].jiraAttachments;
+        }
+
+        // Mapear campos customizados
+        const standardFields = [
+            'summary', 'description', 'issuetype', 'status', 'priority', 'assignee', 'reporter',
+            'created', 'updated', 'resolutiondate', 'labels', 'parent', 'subtasks', 'comment',
+            'duedate', 'timetracking', 'components', 'fixVersions', 'environment', 'watches',
+            'issuelinks', 'attachment'
+        ];
+        const customFields: { [key: string]: any } = {};
+        Object.keys(issue.fields).forEach((key) => {
+            if (!standardFields.includes(key) && !key.startsWith('_')) {
+                customFields[key] = issue.fields[key];
+            }
+        });
+        if (Object.keys(customFields).length > 0) {
+            task.jiraCustomFields = customFields;
+        } else if (existingIndex >= 0 && updatedTasks[existingIndex].jiraCustomFields) {
+            task.jiraCustomFields = updatedTasks[existingIndex].jiraCustomFields;
         }
 
         if (existingIndex >= 0) {
@@ -976,5 +1201,92 @@ export const addNewJiraTasks = async (
         newTasksCount: newTasks.length,
         updatedStatusCount,
     };
+};
+
+/**
+ * Atualiza uma issue do Jira com os campos fornecidos
+ */
+export const updateJiraIssue = async (
+    config: JiraConfig,
+    issueKey: string,
+    fieldsToUpdate: { [key: string]: any }
+): Promise<void> => {
+    const endpoint = `rest/api/3/issue/${issueKey}`;
+    
+    const body = {
+        fields: fieldsToUpdate,
+    };
+
+    await jiraApiCall<void>(
+        config,
+        endpoint,
+        {
+            method: 'PUT',
+            body: JSON.stringify(body),
+        }
+    );
+};
+
+/**
+ * Sincroniza uma tarefa local de volta para o Jira
+ */
+export const syncTaskToJira = async (
+    config: JiraConfig,
+    task: JiraTask
+): Promise<void> => {
+    // Verificar se a tarefa tem uma chave do Jira (formato PROJ-123)
+    const jiraKeyMatch = task.id.match(/^[A-Z]+-\d+$/);
+    if (!jiraKeyMatch) {
+        throw new Error(`Tarefa ${task.id} não é uma issue do Jira válida`);
+    }
+
+    const issueKey = task.id;
+    const fieldsToUpdate: { [key: string]: any } = {};
+
+    // Mapear campos de volta para o formato do Jira
+    if (task.dueDate) {
+        fieldsToUpdate.duedate = task.dueDate;
+    }
+
+    if (task.timeTracking) {
+        fieldsToUpdate.timetracking = {};
+        if (task.timeTracking.originalEstimate) {
+            fieldsToUpdate.timetracking.originalEstimate = task.timeTracking.originalEstimate;
+        }
+        if (task.timeTracking.remainingEstimate) {
+            fieldsToUpdate.timetracking.remainingEstimate = task.timeTracking.remainingEstimate;
+        }
+        if (task.timeTracking.timeSpent) {
+            fieldsToUpdate.timetracking.timeSpent = task.timeTracking.timeSpent;
+        }
+    }
+
+    if (task.environment !== undefined) {
+        fieldsToUpdate.environment = task.environment;
+    }
+
+    // Componentes e Fix Versions precisam ser atualizados com IDs
+    // Por enquanto, apenas atualizamos se já existirem IDs
+    if (task.components && task.components.length > 0) {
+        fieldsToUpdate.components = task.components.map(comp => ({ id: comp.id }));
+    }
+
+    if (task.fixVersions && task.fixVersions.length > 0) {
+        fieldsToUpdate.fixVersions = task.fixVersions.map(version => ({ id: version.id }));
+    }
+
+    // Campos customizados
+    if (task.jiraCustomFields) {
+        Object.keys(task.jiraCustomFields).forEach((key) => {
+            fieldsToUpdate[key] = task.jiraCustomFields![key];
+        });
+    }
+
+    // Só atualizar se houver campos para atualizar
+    if (Object.keys(fieldsToUpdate).length === 0) {
+        throw new Error('Nenhum campo para atualizar');
+    }
+
+    await updateJiraIssue(config, issueKey, fieldsToUpdate);
 };
 

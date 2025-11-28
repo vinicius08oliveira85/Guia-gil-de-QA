@@ -163,6 +163,21 @@ export interface JiraTask {
   executedStrategies?: number[]; // Índices das estratégias que foram executadas
   strategyTools?: { [strategyIndex: number]: string[] }; // Ferramentas utilizadas por estratégia (índice -> ferramentas)
   isEscapedDefect?: boolean; // Indica se o bug foi vazado para produção
+  // Campos adicionais do Jira
+  dueDate?: string; // ISO string
+  timeTracking?: {
+    originalEstimate?: string; // Ex: "2h 30m"
+    remainingEstimate?: string;
+    timeSpent?: string;
+  };
+  components?: Array<{ id: string; name: string }>;
+  fixVersions?: Array<{ id: string; name: string }>;
+  environment?: string;
+  reporter?: { displayName: string; emailAddress?: string };
+  watchers?: { watchCount: number; isWatching: boolean };
+  issueLinks?: Array<{ id: string; type: string; relatedKey: string; direction: 'inward' | 'outward' }>;
+  jiraAttachments?: Array<{ id: string; filename: string; size: number; created: string; author: string }>;
+  jiraCustomFields?: { [key: string]: any }; // Campos customizados do Jira
 }
 
 // Ferramentas sugeridas para testes

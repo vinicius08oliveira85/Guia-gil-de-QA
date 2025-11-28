@@ -114,6 +114,8 @@ export const JiraTaskItem: React.FC<{
     isGeneratingBdd: boolean;
     onGenerateAll?: (taskId: string, detailLevel?: TestCaseDetailLevel) => Promise<void>;
     isGeneratingAll?: boolean;
+    onSyncToJira?: (taskId: string) => Promise<void>;
+    isSyncing?: boolean;
     onSaveBddScenario: (taskId: string, scenario: Omit<BddScenario, 'id'>, scenarioId?: string) => void;
     onDeleteBddScenario: (taskId: string, scenarioId: string) => void;
     onTaskStatusChange: (status: 'To Do' | 'In Progress' | 'Done') => void;
@@ -131,7 +133,7 @@ export const JiraTaskItem: React.FC<{
     level: number;
     activeTaskId?: string | null;
     onFocusTask?: (taskId: string | null) => void;
-}> = React.memo(({ task, onTestCaseStatusChange, onToggleTestCaseAutomated, onExecutedStrategyChange, onTaskToolsChange, onTestCaseToolsChange, onStrategyExecutedChange, onStrategyToolsChange, onDelete, onGenerateTests, isGenerating, onAddSubtask, onEdit, onGenerateBddScenarios, isGeneratingBdd, onGenerateAll, isGeneratingAll, onSaveBddScenario, onDeleteBddScenario, onTaskStatusChange, onAddTestCaseFromTemplate, onAddComment, onEditComment, onDeleteComment, onEditTestCase, onDeleteTestCase, project, onUpdateProject, isSelected, onToggleSelect, children, level, activeTaskId, onFocusTask }) => {
+}> = React.memo(({ task, onTestCaseStatusChange, onToggleTestCaseAutomated, onExecutedStrategyChange, onTaskToolsChange, onTestCaseToolsChange, onStrategyExecutedChange, onStrategyToolsChange, onDelete, onGenerateTests, isGenerating, onAddSubtask, onEdit, onGenerateBddScenarios, isGeneratingBdd, onGenerateAll, isGeneratingAll, onSyncToJira, isSyncing, onSaveBddScenario, onDeleteBddScenario, onTaskStatusChange, onAddTestCaseFromTemplate, onAddComment, onEditComment, onDeleteComment, onEditTestCase, onDeleteTestCase, project, onUpdateProject, isSelected, onToggleSelect, children, level, activeTaskId, onFocusTask }) => {
     const [isDetailsOpen, setIsDetailsOpen] = useState(false); // Colapsado por padrão para compactar
     const [isChildrenOpen, setIsChildrenOpen] = useState(false);
     const [editingBddScenario, setEditingBddScenario] = useState<BddScenario | null>(null);
@@ -479,6 +481,186 @@ export const JiraTaskItem: React.FC<{
                                             {tag}
                                         </span>
                                     ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                );
+            })()}
+            
+            {/* Seção de Campos do Jira */}
+            {(() => {
+                const hasJiraFields = task.dueDate || task.timeTracking || task.components || task.fixVersions || 
+                    task.environment || task.reporter || task.watchers || task.issueLinks || 
+                    task.jiraAttachments || (task.jiraCustomFields && Object.keys(task.jiraCustomFields).length > 0);
+                
+                if (!hasJiraFields || !/^[A-Z]+-\d+$/.test(task.id)) {
+                    return null;
+                }
+
+                return (
+                    <div className="mt-6 space-y-4">
+                        <h3 className="text-lg font-semibold text-text-primary flex items-center gap-2">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
+                            Campos do Jira
+                        </h3>
+                        
+                        {/* Informações Básicas */}
+                        {(task.reporter || task.dueDate || task.environment) && (
+                            <div className="space-y-3">
+                                <h4 className="text-sm font-semibold text-text-secondary">📋 Informações Básicas</h4>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    {task.reporter && (
+                                        <div className="p-3 bg-surface border border-surface-border rounded-lg">
+                                            <p className="text-[11px] uppercase text-text-secondary tracking-wide mb-1">Reporter</p>
+                                            <p className="text-sm font-semibold text-text-primary">{task.reporter.displayName}</p>
+                                            {task.reporter.emailAddress && (
+                                                <p className="text-xs text-text-secondary mt-1">{task.reporter.emailAddress}</p>
+                                            )}
+                                        </div>
+                                    )}
+                                    {task.dueDate && (
+                                        <div className="p-3 bg-surface border border-surface-border rounded-lg">
+                                            <p className="text-[11px] uppercase text-text-secondary tracking-wide mb-1">Due Date</p>
+                                            <p className="text-sm font-semibold text-text-primary">
+                                                {new Date(task.dueDate).toLocaleDateString('pt-BR')}
+                                            </p>
+                                        </div>
+                                    )}
+                                    {task.environment && (
+                                        <div className="p-3 bg-surface border border-surface-border rounded-lg sm:col-span-2">
+                                            <p className="text-[11px] uppercase text-text-secondary tracking-wide mb-1">Environment</p>
+                                            <p className="text-sm text-text-primary">{task.environment}</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Time Tracking */}
+                        {task.timeTracking && (
+                            <div className="space-y-3">
+                                <h4 className="text-sm font-semibold text-text-secondary">⏱️ Time Tracking</h4>
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                    {task.timeTracking.originalEstimate && (
+                                        <div className="p-3 bg-surface border border-surface-border rounded-lg">
+                                            <p className="text-[11px] uppercase text-text-secondary tracking-wide mb-1">Original Estimate</p>
+                                            <p className="text-sm font-semibold text-text-primary">{task.timeTracking.originalEstimate}</p>
+                                        </div>
+                                    )}
+                                    {task.timeTracking.remainingEstimate && (
+                                        <div className="p-3 bg-surface border border-surface-border rounded-lg">
+                                            <p className="text-[11px] uppercase text-text-secondary tracking-wide mb-1">Remaining Estimate</p>
+                                            <p className="text-sm font-semibold text-text-primary">{task.timeTracking.remainingEstimate}</p>
+                                        </div>
+                                    )}
+                                    {task.timeTracking.timeSpent && (
+                                        <div className="p-3 bg-surface border border-surface-border rounded-lg">
+                                            <p className="text-[11px] uppercase text-text-secondary tracking-wide mb-1">Time Spent</p>
+                                            <p className="text-sm font-semibold text-text-primary">{task.timeTracking.timeSpent}</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Organização */}
+                        {(task.components || task.fixVersions) && (
+                            <div className="space-y-3">
+                                <h4 className="text-sm font-semibold text-text-secondary">🧩 Organização</h4>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    {task.components && task.components.length > 0 && (
+                                        <div className="p-3 bg-surface border border-surface-border rounded-lg">
+                                            <p className="text-[11px] uppercase text-text-secondary tracking-wide mb-2">Components</p>
+                                            <div className="flex flex-wrap gap-2">
+                                                {task.components.map((comp) => (
+                                                    <span key={comp.id} className="text-xs px-2 py-1 bg-blue-500/20 text-blue-400 rounded">
+                                                        {comp.name}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                    {task.fixVersions && task.fixVersions.length > 0 && (
+                                        <div className="p-3 bg-surface border border-surface-border rounded-lg">
+                                            <p className="text-[11px] uppercase text-text-secondary tracking-wide mb-2">Fix Versions</p>
+                                            <div className="flex flex-wrap gap-2">
+                                                {task.fixVersions.map((version) => (
+                                                    <span key={version.id} className="text-xs px-2 py-1 bg-green-500/20 text-green-400 rounded">
+                                                        {version.name}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Relacionamentos */}
+                        {(task.issueLinks || task.watchers) && (
+                            <div className="space-y-3">
+                                <h4 className="text-sm font-semibold text-text-secondary">🔗 Relacionamentos</h4>
+                                {task.issueLinks && task.issueLinks.length > 0 && (
+                                    <div className="p-3 bg-surface border border-surface-border rounded-lg">
+                                        <p className="text-[11px] uppercase text-text-secondary tracking-wide mb-2">Issue Links</p>
+                                        <div className="space-y-1">
+                                            {task.issueLinks.map((link) => (
+                                                <div key={link.id} className="text-sm text-text-primary">
+                                                    <span className="text-text-secondary">{link.type}</span> {link.relatedKey}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                                {task.watchers && (
+                                    <div className="p-3 bg-surface border border-surface-border rounded-lg">
+                                        <p className="text-[11px] uppercase text-text-secondary tracking-wide mb-1">Watchers</p>
+                                        <p className="text-sm font-semibold text-text-primary">
+                                            {task.watchers.watchCount} observador(es)
+                                            {task.watchers.isWatching && ' • Você está observando'}
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Anexos do Jira */}
+                        {task.jiraAttachments && task.jiraAttachments.length > 0 && (
+                            <div className="space-y-3">
+                                <h4 className="text-sm font-semibold text-text-secondary">📎 Anexos do Jira</h4>
+                                <div className="p-3 bg-surface border border-surface-border rounded-lg">
+                                    <div className="space-y-2">
+                                        {task.jiraAttachments.map((att) => (
+                                            <div key={att.id} className="flex items-center justify-between text-sm">
+                                                <span className="text-text-primary">{att.filename}</span>
+                                                <span className="text-text-secondary text-xs">
+                                                    {(att.size / 1024).toFixed(2)} KB
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Campos Customizados */}
+                        {task.jiraCustomFields && Object.keys(task.jiraCustomFields).length > 0 && (
+                            <div className="space-y-3">
+                                <h4 className="text-sm font-semibold text-text-secondary">⚙️ Campos Customizados</h4>
+                                <div className="p-3 bg-surface border border-surface-border rounded-lg">
+                                    <div className="space-y-2">
+                                        {Object.entries(task.jiraCustomFields).map(([key, value]) => (
+                                            <div key={key} className="text-sm">
+                                                <span className="text-text-secondary font-semibold">{key}:</span>{' '}
+                                                <span className="text-text-primary">
+                                                    {typeof value === 'object' ? JSON.stringify(value) : String(value)}
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
                         )}
@@ -948,6 +1130,21 @@ export const JiraTaskItem: React.FC<{
                             {task.type === 'Epic' && (
                                 <button onClick={() => onAddSubtask(task.id)} className={iconButtonClass} aria-label="Adicionar subtarefa">
                                     <PlusIcon />
+                                </button>
+                            )}
+                            {onSyncToJira && /^[A-Z]+-\d+$/.test(task.id) && (
+                                <button
+                                    onClick={() => onSyncToJira(task.id)}
+                                    disabled={isSyncing}
+                                    className={`${iconButtonClass} ${isSyncing ? 'opacity-50 cursor-not-allowed' : 'hover:!bg-blue-500 hover:!text-white'}`}
+                                    aria-label="Sincronizar com Jira"
+                                    title="Sincronizar com Jira"
+                                >
+                                    {isSyncing ? (
+                                        <Spinner small />
+                                    ) : (
+                                        <RefreshIcon />
+                                    )}
                                 </button>
                             )}
                             <button onClick={() => onEdit(task)} className={iconButtonClass} aria-label="Editar tarefa">
