@@ -96,6 +96,9 @@ export class OpenAIService implements AIService {
     `;
 
     const shouldGenerateTestCases = taskType === 'Tarefa' || !taskType;
+    const attentionMessage = !shouldGenerateTestCases 
+      ? `⚠️ ATENÇÃO: Esta tarefa é do tipo "${taskType}". Para este tipo, gere APENAS estratégias de teste. NÃO gere casos de teste (testCases deve ser um array vazio []).`
+      : '';
 
     return `
       Você é um QA Sênior com mais de 10 anos de experiência em garantia de qualidade de software, 
@@ -222,10 +225,7 @@ export class OpenAIService implements AIService {
         "testCases": ${shouldGenerateTestCases ? '[...]' : '[]'}
       }
       
-      ${shouldGenerateTestCases ? '' : `
-      ⚠️ ATENÇÃO: Esta tarefa é do tipo "${taskType}". Para este tipo, gere APENAS estratégias de teste. 
-      NÃO gere casos de teste (testCases deve ser um array vazio []).
-      `}
+      ${attentionMessage}
       
       IMPORTANTE: 
       - Retorne APENAS JSON válido, sem markdown, sem código, sem explicações adicionais
