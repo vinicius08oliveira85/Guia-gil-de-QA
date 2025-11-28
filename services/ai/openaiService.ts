@@ -100,48 +100,7 @@ export class OpenAIService implements AIService {
       ? `⚠️ ATENÇÃO: Esta tarefa é do tipo "${taskType}". Para este tipo, gere APENAS estratégias de teste. NÃO gere casos de teste (testCases deve ser um array vazio []).`
       : '';
 
-    return `
-      Você é um QA Sênior com mais de 10 anos de experiência em garantia de qualidade de software, 
-      metodologias ágeis (Scrum, Kanban), e práticas de DevOps. Sua expertise inclui:
-      - Testes funcionais, de integração, regressão, performance e segurança
-      - BDD (Behavior-Driven Development) e TDD (Test-Driven Development)
-      - Automação de testes com ferramentas modernas
-      - Análise de risco e priorização de testes
-      - Cobertura de testes e métricas de qualidade
-
-      ════════════════════════════════════════════════════════════════
-      CONTEXTO DA TAREFA
-      ════════════════════════════════════════════════════════════════
-      
-      Título: ${title}
-      Descrição: ${description}
-      ${taskType ? `Tipo: ${taskType}` : ''}
-      
-      ${bddContext}
-      
-      ${detailInstruction}
-
-      ════════════════════════════════════════════════════════════════
-      INSTRUÇÕES PARA GERAÇÃO DE ESTRATÉGIAS DE TESTE
-      ════════════════════════════════════════════════════════════════
-      
-      Gere uma lista abrangente de estratégias de teste recomendadas. Para cada estratégia, forneça:
-      
-      1. **testType**: Nome específico do tipo de teste (ex: "Teste Funcional", "Teste de Integração", 
-         "Teste de Regressão", "Teste de Usabilidade", "Teste de Performance", "Teste de Segurança", 
-         "Teste de Acessibilidade", "Teste de API", "Teste de Caixa Branca", etc.)
-      
-      2. **description**: Explicação clara e objetiva do propósito desta estratégia no contexto específico 
-         da tarefa. Explique POR QUE este tipo de teste é necessário e QUAIS riscos ele mitiga.
-      
-      3. **howToExecute**: Array de strings com passos acionáveis e práticos para executar este tipo de teste. 
-         Cada passo deve ser claro, específico e executável por um QA.
-      
-      4. **tools**: Ferramentas recomendadas para este tipo de teste, separadas por vírgulas. 
-         Considere ferramentas modernas e amplamente utilizadas (ex: "Selenium, Cypress, Playwright" 
-         para testes web, "Postman, Insomnia" para APIs, "JMeter, K6" para performance).
-
-      ${shouldGenerateTestCases ? `
+    const testCasesInstructions = shouldGenerateTestCases ? `
       ════════════════════════════════════════════════════════════════
       INSTRUÇÕES PARA GERAÇÃO DE CASOS DE TESTE
       ════════════════════════════════════════════════════════════════
@@ -202,7 +161,51 @@ export class OpenAIService implements AIService {
          
          Considere: criticidade da funcionalidade, impacto no negócio, frequência de uso, 
          complexidade do teste e risco de falha.
+      ` : '';
 
+    return `
+      Você é um QA Sênior com mais de 10 anos de experiência em garantia de qualidade de software, 
+      metodologias ágeis (Scrum, Kanban), e práticas de DevOps. Sua expertise inclui:
+      - Testes funcionais, de integração, regressão, performance e segurança
+      - BDD (Behavior-Driven Development) e TDD (Test-Driven Development)
+      - Automação de testes com ferramentas modernas
+      - Análise de risco e priorização de testes
+      - Cobertura de testes e métricas de qualidade
+
+      ════════════════════════════════════════════════════════════════
+      CONTEXTO DA TAREFA
+      ════════════════════════════════════════════════════════════════
+      
+      Título: ${title}
+      Descrição: ${description}
+      ${taskType ? `Tipo: ${taskType}` : ''}
+      
+      ${bddContext}
+      
+      ${detailInstruction}
+
+      ════════════════════════════════════════════════════════════════
+      INSTRUÇÕES PARA GERAÇÃO DE ESTRATÉGIAS DE TESTE
+      ════════════════════════════════════════════════════════════════
+      
+      Gere uma lista abrangente de estratégias de teste recomendadas. Para cada estratégia, forneça:
+      
+      1. **testType**: Nome específico do tipo de teste (ex: "Teste Funcional", "Teste de Integração", 
+         "Teste de Regressão", "Teste de Usabilidade", "Teste de Performance", "Teste de Segurança", 
+         "Teste de Acessibilidade", "Teste de API", "Teste de Caixa Branca", etc.)
+      
+      2. **description**: Explicação clara e objetiva do propósito desta estratégia no contexto específico 
+         da tarefa. Explique POR QUE este tipo de teste é necessário e QUAIS riscos ele mitiga.
+      
+      3. **howToExecute**: Array de strings com passos acionáveis e práticos para executar este tipo de teste. 
+         Cada passo deve ser claro, específico e executável por um QA.
+      
+      4. **tools**: Ferramentas recomendadas para este tipo de teste, separadas por vírgulas. 
+         Considere ferramentas modernas e amplamente utilizadas (ex: "Selenium, Cypress, Playwright" 
+         para testes web, "Postman, Insomnia" para APIs, "JMeter, K6" para performance).
+
+      ${testCasesInstructions}
+      
       ════════════════════════════════════════════════════════════════
       BOAS PRÁTICAS E CONSIDERAÇÕES
       ════════════════════════════════════════════════════════════════
