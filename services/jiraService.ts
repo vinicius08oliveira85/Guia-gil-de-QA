@@ -1211,7 +1211,7 @@ export const updateJiraIssue = async (
     issueKey: string,
     fieldsToUpdate: { [key: string]: any }
 ): Promise<void> => {
-    const endpoint = `rest/api/3/issue/${issueKey}`;
+    const endpoint = `issue/${issueKey}`;
     
     const body = {
         fields: fieldsToUpdate,
