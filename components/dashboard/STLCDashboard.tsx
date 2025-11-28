@@ -163,7 +163,7 @@ export const STLCDashboard: React.FC<STLCDashboardProps> = ({ project, onUpdateP
     }, [projectSnapshot]);
 
     return (
-        <div className="space-y-xl">
+        <div className="space-y-2xl">
             {/* Header */}
             <div className="win-toolbar flex flex-col gap-md rounded-[26px] border border-surface-border/60 bg-gradient-to-br from-white/8 via-white/2 to-transparent px-4 py-3 sm:px-5 sm:py-4">
                 <div className="space-y-sm">
