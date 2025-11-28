@@ -96,6 +96,7 @@ const testCaseGenerationSchema = {
   required: ['strategy', 'testCases']
 };
 
+export class GeminiService implements AIService {
   /**
    * Constrói um prompt robusto e profissional para geração de testes como um QA Sênior
    */
@@ -270,7 +271,6 @@ const testCaseGenerationSchema = {
     `;
   }
 
-export class GeminiService implements AIService {
   async generateTestCasesForTask(
     title: string, 
     description: string, 
