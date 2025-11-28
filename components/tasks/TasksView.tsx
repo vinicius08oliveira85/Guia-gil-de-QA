@@ -291,6 +291,26 @@ export const TasksView: React.FC<{
         }
     }, [project, onUpdateProject, handleError, handleSuccess]);
 
+    const handleSyncTaskToJira = useCallback(async (taskId: string) => {
+        setSyncingTaskId(taskId);
+        try {
+            const task = project.tasks.find(t => t.id === taskId);
+            if (!task) throw new Error("Task not found");
+
+            const config = getJiraConfig();
+            if (!config) {
+                throw new Error("Jira não configurado. Configure nas configurações primeiro.");
+            }
+
+            await syncTaskToJira(config, task);
+            handleSuccess('Tarefa sincronizada com o Jira com sucesso!');
+        } catch (error) {
+            handleError(error, 'Sincronizar com Jira');
+        } finally {
+            setSyncingTaskId(null);
+        }
+    }, [project, handleError, handleSuccess]);
+
     const handleConfirmFail = useCallback(() => {
         const { taskId, testCaseId, observedResult, createBug } = failModalState;
         if (!taskId || !testCaseId) return;
@@ -1100,7 +1120,7 @@ export const TasksView: React.FC<{
                 </JiraTaskItem>
             );
         });
-    }, [selectedTasks, generatingTestsTaskId, generatingBddTaskId, generatingAllTaskId, handleTestCaseStatusChange, handleToggleTestCaseAutomated, handleExecutedStrategyChange, handleTaskToolsChange, handleTestCaseToolsChange, handleStrategyExecutedChange, handleStrategyToolsChange, handleDeleteTask, handleGenerateTests, openTaskFormForNew, openTaskFormForEdit, handleGenerateBddScenarios, handleGenerateAll, handleSaveBddScenario, handleDeleteBddScenario, handleTaskStatusChange, handleAddTestCaseFromTemplate, handleAddComment, handleEditComment, handleDeleteComment, project, onUpdateProject, toggleTaskSelection]);
+    }, [selectedTasks, generatingTestsTaskId, generatingBddTaskId, generatingAllTaskId, syncingTaskId, handleTestCaseStatusChange, handleToggleTestCaseAutomated, handleExecutedStrategyChange, handleTaskToolsChange, handleTestCaseToolsChange, handleStrategyExecutedChange, handleStrategyToolsChange, handleDeleteTask, handleGenerateTests, openTaskFormForNew, openTaskFormForEdit, handleGenerateBddScenarios, handleGenerateAll, handleSyncTaskToJira, handleSaveBddScenario, handleDeleteBddScenario, handleTaskStatusChange, handleAddTestCaseFromTemplate, handleAddComment, handleEditComment, handleDeleteComment, project, onUpdateProject, toggleTaskSelection]);
 
     return (
         <>
