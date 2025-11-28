@@ -2,8 +2,11 @@ import React, { useState } from 'react';
 import { Project } from '../../types';
 import { useProjectMetrics } from '../../hooks/useProjectMetrics';
 import { useSTLCPhase } from '../../hooks/useSTLCPhase';
+import { useDashboardAnalysis } from '../../hooks/useDashboardAnalysis';
 import { Card } from '../common/Card';
 import { RequirementsManager } from '../requirements/RequirementsManager';
+import { DashboardAnalysisModal } from './DashboardAnalysisModal';
+import { Badge } from '../common/Badge';
 
 interface STLCDashboardProps {
     project: Project;
@@ -126,6 +129,17 @@ export const STLCDashboard: React.FC<STLCDashboardProps> = ({ project, onUpdateP
     const metrics = useProjectMetrics(project);
     const { currentPhase } = useSTLCPhase(project);
     const [activeSection, setActiveSection] = useState<'overview' | 'requirements'>('overview');
+    const [showOverviewAnalysis, setShowOverviewAnalysis] = useState(false);
+    const [showRequirementsAnalysis, setShowRequirementsAnalysis] = useState(false);
+    
+    const {
+        overviewAnalysis,
+        requirementsAnalysis,
+        isGeneratingOverview,
+        isGeneratingRequirements,
+        generateOverviewAnalysis,
+        generateRequirementsAnalysis,
+    } = useDashboardAnalysis(project, onUpdateProject);
 
     return (
         <div className="space-y-8">
@@ -353,6 +367,29 @@ export const STLCDashboard: React.FC<STLCDashboardProps> = ({ project, onUpdateP
             </Card>
                 </>
             )}
+
+            {/* Modais de Análise */}
+            <DashboardAnalysisModal
+                isOpen={showOverviewAnalysis}
+                onClose={() => setShowOverviewAnalysis(false)}
+                type="overview"
+                analysis={overviewAnalysis}
+                isLoading={isGeneratingOverview}
+                onRegenerate={async () => {
+                    await generateOverviewAnalysis();
+                }}
+            />
+            
+            <DashboardAnalysisModal
+                isOpen={showRequirementsAnalysis}
+                onClose={() => setShowRequirementsAnalysis(false)}
+                type="requirements"
+                analysis={requirementsAnalysis}
+                isLoading={isGeneratingRequirements}
+                onRegenerate={async () => {
+                    await generateRequirementsAnalysis();
+                }}
+            />
         </div>
     );
 };

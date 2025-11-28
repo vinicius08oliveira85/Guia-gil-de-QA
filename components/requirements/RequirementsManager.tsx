@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { Project, Requirement, STLCPhaseName, RequirementType, RequirementStatus } from '../../types';
 import { useRequirements } from '../../hooks/useRequirements';
 import { useSTLCPhase } from '../../hooks/useSTLCPhase';
+import { useDashboardAnalysis } from '../../hooks/useDashboardAnalysis';
 import { createRequirement, updateRequirement, deleteRequirement } from '../../services/requirementService';
 import { RequirementForm } from './RequirementForm';
 import { RequirementCard } from './RequirementCard';
 import { RTMView } from './RTMView';
+import { DashboardAnalysisModal } from '../dashboard/DashboardAnalysisModal';
 import { Card } from '../common/Card';
 import { Badge } from '../common/Badge';
 import { EmptyState } from '../common/EmptyState';
@@ -32,6 +34,13 @@ export const RequirementsManager: React.FC<RequirementsManagerProps> = ({
     const [filterType, setFilterType] = useState<RequirementType | 'all'>('all');
     const [filterStatus, setFilterStatus] = useState<RequirementStatus | 'all'>('all');
     const [filterPhase, setFilterPhase] = useState<STLCPhaseName | 'all'>('all');
+    const [showRequirementsAnalysis, setShowRequirementsAnalysis] = useState(false);
+    
+    const {
+        requirementsAnalysis,
+        isGeneratingRequirements,
+        generateRequirementsAnalysis,
+    } = useDashboardAnalysis(project, onUpdateProject);
 
     const handleCreateRequirement = () => {
         setEditingRequirement(null);
@@ -258,6 +267,18 @@ export const RequirementsManager: React.FC<RequirementsManagerProps> = ({
                 onSubmit={handleSubmitRequirement}
                 initialData={editingRequirement}
                 currentPhase={currentPhase}
+            />
+
+            {/* Modal de Análise de Requisitos */}
+            <DashboardAnalysisModal
+                isOpen={showRequirementsAnalysis}
+                onClose={() => setShowRequirementsAnalysis(false)}
+                type="requirements"
+                analysis={requirementsAnalysis}
+                isLoading={isGeneratingRequirements}
+                onRegenerate={async () => {
+                    await generateRequirementsAnalysis();
+                }}
             />
         </div>
     );

@@ -207,6 +207,39 @@ export interface TestPyramidAnalysis {
   distribution: TestPyramidLevel[];
 }
 
+export interface DashboardOverviewAnalysis {
+  summary: string; // Resumo executivo
+  currentPhase: string; // Análise da fase atual
+  metrics: {
+    analysis: string; // Análise das métricas do projeto
+    strengths: string[]; // Pontos fortes identificados
+    weaknesses: string[]; // Pontos fracos identificados
+  };
+  risks: string[]; // Riscos identificados
+  recommendations: string[]; // Recomendações
+  generatedAt: string;
+  isOutdated?: boolean;
+}
+
+export interface DashboardRequirementsAnalysis {
+  summary: string;
+  coverage: {
+    analysis: string; // Análise de cobertura RTM
+    percentage: number; // Percentual de cobertura
+    gaps: string[]; // Gaps de cobertura identificados
+  };
+  quality: {
+    analysis: string; // Análise de qualidade dos requisitos
+    issues: string[]; // Problemas de qualidade
+    strengths: string[]; // Pontos fortes
+  };
+  gaps: string[]; // Gaps identificados
+  inconsistencies: string[]; // Inconsistências
+  suggestions: string[]; // Sugestões de melhoria
+  generatedAt: string;
+  isOutdated?: boolean;
+}
+
 export interface Project {
   id: string;
   name: string;
@@ -221,6 +254,8 @@ export interface Project {
   settings?: ProjectSettings;
   requirements?: Requirement[];
   rtm?: RTMEntry[];
+  dashboardOverviewAnalysis?: DashboardOverviewAnalysis;
+  dashboardRequirementsAnalysis?: DashboardRequirementsAnalysis;
 }
 
 export interface Comment {
