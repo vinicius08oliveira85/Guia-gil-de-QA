@@ -33,6 +33,7 @@ export const TestCaseEditorModal: React.FC<TestCaseEditorModalProps> = ({
     const [testEnvironment, setTestEnvironment] = useState(testCase.testEnvironment || '');
     const [isAutomated, setIsAutomated] = useState<boolean>(!!testCase.isAutomated);
     const [toolsUsed, setToolsUsed] = useState<string[]>(testCase.toolsUsed || []);
+    const [priority, setPriority] = useState<'Baixa' | 'Média' | 'Alta' | 'Urgente' | ''>(testCase.priority || '');
 
     useEffect(() => {
         setDescription(testCase.description);
@@ -47,6 +48,7 @@ export const TestCaseEditorModal: React.FC<TestCaseEditorModalProps> = ({
         setTestEnvironment(testCase.testEnvironment || '');
         setIsAutomated(!!testCase.isAutomated);
         setToolsUsed(testCase.toolsUsed || []);
+        setPriority(testCase.priority || '');
     }, [testCase]);
 
     const canRemoveStep = useMemo(() => steps.length > 1, [steps.length]);
@@ -109,6 +111,7 @@ export const TestCaseEditorModal: React.FC<TestCaseEditorModalProps> = ({
             testEnvironment: testEnvironment.trim() || undefined,
             isAutomated,
             toolsUsed: sanitizedTools.length > 0 ? sanitizedTools : undefined,
+            priority: priority || undefined,
         });
         onClose();
     };
@@ -269,17 +272,33 @@ export const TestCaseEditorModal: React.FC<TestCaseEditorModalProps> = ({
                     </div>
                 </div>
 
-                <div>
-                    <label className="block text-xs font-semibold text-text-secondary mb-1">Status</label>
-                    <select
-                        value={status}
-                        onChange={e => setStatus(e.target.value as TestCase['status'])}
-                        className="w-full bg-surface-hover border border-surface-border rounded-md px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/50"
-                    >
-                        <option value="Not Run">Não Executado</option>
-                        <option value="Passed">Aprovado</option>
-                        <option value="Failed">Reprovado</option>
-                    </select>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label className="block text-xs font-semibold text-text-secondary mb-1">Status</label>
+                        <select
+                            value={status}
+                            onChange={e => setStatus(e.target.value as TestCase['status'])}
+                            className="w-full bg-surface-hover border border-surface-border rounded-md px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/50"
+                        >
+                            <option value="Not Run">Não Executado</option>
+                            <option value="Passed">Aprovado</option>
+                            <option value="Failed">Reprovado</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block text-xs font-semibold text-text-secondary mb-1">Prioridade</label>
+                        <select
+                            value={priority}
+                            onChange={e => setPriority(e.target.value as 'Baixa' | 'Média' | 'Alta' | 'Urgente' | '')}
+                            className="w-full bg-surface-hover border border-surface-border rounded-md px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/50"
+                        >
+                            <option value="">Sem prioridade</option>
+                            <option value="Urgente">Urgente</option>
+                            <option value="Alta">Alta</option>
+                            <option value="Média">Média</option>
+                            <option value="Baixa">Baixa</option>
+                        </select>
+                    </div>
                 </div>
 
                 <div className="flex items-center justify-between bg-surface-hover rounded-lg border border-surface-border px-4 py-3">

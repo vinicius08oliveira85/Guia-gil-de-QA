@@ -90,22 +90,27 @@ export const getAllProjects = async (): Promise<Project[]> => {
       
       const mergedProjects = Array.from(projectsMap.values());
       
+      // Limpar casos de teste de tipos não permitidos (Bug, Epic, História)
+      const cleanedProjects = cleanupTestCasesForProjects(mergedProjects);
+      
       if (supabaseProjects.length === 0 && indexedDBProjects.length > 0) {
         console.log(`📦 Usando projetos do cache local: ${indexedDBProjects.length}`);
       } else if (supabaseProjects.length > 0) {
-        console.log(`✅ ${mergedProjects.length} projetos carregados (${supabaseProjects.length} do Supabase + ${indexedDBProjects.length} do cache local)`);
+        console.log(`✅ ${cleanedProjects.length} projetos carregados (${supabaseProjects.length} do Supabase + ${indexedDBProjects.length} do cache local)`);
       }
       
-      return mergedProjects;
+      return cleanedProjects;
     } catch (error) {
       console.warn('⚠️ Erro ao carregar do Supabase, usando apenas IndexedDB:', error);
       // Retornar projetos do IndexedDB em caso de erro (já migrados)
-      return migratedIndexedDBProjects;
+      // Limpar casos de teste de tipos não permitidos (Bug, Epic, História)
+      return cleanupTestCasesForProjects(migratedIndexedDBProjects);
     }
   }
   
   // Se Supabase não está disponível, retornar apenas IndexedDB (já migrados)
-  return migratedIndexedDBProjects;
+  // Limpar casos de teste de tipos não permitidos (Bug, Epic, História)
+  return cleanupTestCasesForProjects(migratedIndexedDBProjects);
 };
 
 export const addProject = async (project: Project): Promise<void> => {

@@ -15,6 +15,13 @@ const strategyColorMap: { [key: string]: string } = {
 };
 const defaultStrategyColor = 'bg-accent/30 text-accent-light';
 
+const priorityColorMap: { [key: string]: { bg: string; text: string } } = {
+    'Urgente': { bg: 'bg-red-600/30', text: 'text-red-300' },
+    'Alta': { bg: 'bg-orange-600/30', text: 'text-orange-300' },
+    'Média': { bg: 'bg-yellow-600/30', text: 'text-yellow-300' },
+    'Baixa': { bg: 'bg-green-600/30', text: 'text-green-300' },
+};
+
 export const TestCaseItem: React.FC<{ 
     testCase: TestCase; 
     onStatusChange: (status: 'Passed' | 'Failed') => void;
@@ -179,7 +186,14 @@ export const TestCaseItem: React.FC<{
                     </div>
                 )}
             </div>
-            <p className="font-semibold text-text-primary mt-4">{testCase.description}</p>
+            <div className="flex items-center justify-between mt-4">
+                <p className="font-semibold text-text-primary">{testCase.description}</p>
+                {testCase.priority && (
+                    <span className={`px-2 py-1 text-xs font-semibold rounded-full ${priorityColorMap[testCase.priority]?.bg || 'bg-slate-600/30'} ${priorityColorMap[testCase.priority]?.text || 'text-slate-300'}`}>
+                        {testCase.priority}
+                    </span>
+                )}
+            </div>
             <div className="mt-2 pl-4 border-l-2 border-slate-700">
                 {testCase.preconditions && (
                     <>

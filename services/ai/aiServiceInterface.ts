@@ -1,4 +1,4 @@
-import { TestCase, TestStrategy, PhaseName, ShiftLeftAnalysis, BddScenario, JiraTask, TestPyramidAnalysis, TestCaseDetailLevel } from '../../types';
+import { TestCase, TestStrategy, PhaseName, ShiftLeftAnalysis, BddScenario, JiraTask, TestPyramidAnalysis, TestCaseDetailLevel, JiraTaskType } from '../../types';
 
 /**
  * Interface comum para todos os serviços de IA
@@ -8,7 +8,8 @@ export interface AIService {
         title: string,
         description: string,
         bddScenarios?: BddScenario[],
-        detailLevel?: TestCaseDetailLevel
+        detailLevel?: TestCaseDetailLevel,
+        taskType?: JiraTaskType
     ): Promise<{ strategy: TestStrategy[]; testCases: TestCase[] }>;
 
     analyzeDocumentContent(content: string): Promise<string>;

@@ -13,6 +13,7 @@ export interface TestCase {
   preconditions?: string; // Précondições
   testSuite?: string; // Suite de teste
   testEnvironment?: string; // Ambiente de teste
+  priority?: 'Baixa' | 'Média' | 'Alta' | 'Urgente'; // Prioridade do caso de teste
 }
 
 export type TestCaseDetailLevel = 'Resumido' | 'Padrão' | 'Detalhado';

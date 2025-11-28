@@ -1,5 +1,5 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import { TestCase, TestStrategy, PhaseName, ShiftLeftAnalysis, BddScenario, JiraTask, TestPyramidAnalysis, TestCaseDetailLevel } from '../../types';
+import { TestCase, TestStrategy, PhaseName, ShiftLeftAnalysis, BddScenario, JiraTask, TestPyramidAnalysis, TestCaseDetailLevel, JiraTaskType } from '../../types';
 import { marked } from 'marked';
 import { sanitizeHTML } from '../../utils/sanitize';
 import { AIService } from './aiServiceInterface';
@@ -82,6 +82,11 @@ const testCaseGenerationSchema = {
           testEnvironment: {
             type: Type.STRING,
             description: 'Ambiente(s) de teste onde este caso deve ser executado (ex: Chrome, Firefox, Safari, Mobile, API). Pode incluir múltiplos ambientes separados por "/" (ex: "Chrome / Firefox").'
+          },
+          priority: {
+            type: Type.STRING,
+            enum: ['Baixa', 'Média', 'Alta', 'Urgente'],
+            description: 'Prioridade do caso de teste baseada em criticidade da funcionalidade, impacto no negócio, frequência de uso e risco de falha.'
           }
         },
         required: ['description', 'steps', 'expectedResult', 'strategies', 'isAutomated'],
@@ -91,48 +96,189 @@ const testCaseGenerationSchema = {
   required: ['strategy', 'testCases']
 };
 
-export class GeminiService implements AIService {
-  async generateTestCasesForTask(title: string, description: string, bddScenarios?: BddScenario[], detailLevel: TestCaseDetailLevel = 'Padrão'): Promise<{ strategy: TestStrategy[]; testCases: TestCase[] }> {
+  /**
+   * Constrói um prompt robusto e profissional para geração de testes como um QA Sênior
+   */
+  private buildRobustTestGenerationPrompt(
+    title: string,
+    description: string,
+    bddScenarios?: BddScenario[],
+    detailLevel: TestCaseDetailLevel = 'Padrão',
+    taskType?: JiraTaskType
+  ): string {
     const bddContext = bddScenarios && bddScenarios.length > 0
       ? `
-      IMPORTANTE: Baseie seus testes PRIMARIAMENTE nos seguintes cenários BDD (Gherkin). Eles representam os requisitos de negócio mais críticos e devem guiar a criação dos casos de teste.
-      --- INÍCIO DOS CENÁRIOS BDD ---
-      ${bddScenarios.map(sc => `Cenário: ${sc.title}\n${sc.gherkin}`).join('\n\n')}
-      --- FIM DOS CENÁRIOS BDD ---
+      ════════════════════════════════════════════════════════════════
+      CENÁRIOS BDD (Gherkin) - BASE PRIMÁRIA PARA TESTES
+      ════════════════════════════════════════════════════════════════
+      IMPORTANTE: Baseie seus testes PRIMARIAMENTE nos seguintes cenários BDD (Gherkin). 
+      Eles representam os requisitos de negócio mais críticos e devem guiar a criação dos casos de teste.
+      
+      ${bddScenarios.map((sc, idx) => `
+      [Cenário ${idx + 1}] ${sc.title}
+      ${sc.gherkin}
+      `).join('\n')}
+      ════════════════════════════════════════════════════════════════
       `
       : '';
 
     const detailInstruction = `
-      **Nível de Detalhe para os Passos do Teste:** Para a chave "steps" em cada caso de teste, siga este nível de detalhe: ${detailLevel}.
-      - Se 'Resumido', forneça apenas os passos essenciais de alto nível.
-      - Se 'Padrão', forneça um bom equilíbrio de detalhes, suficiente para um analista de QA entender o fluxo.
-      - Se 'Detalhado', forneça passos muito granulares e específicos, incluindo dados de exemplo e pré-condições, se aplicável.
+      📋 NÍVEL DE DETALHE PARA OS PASSOS DO TESTE: ${detailLevel}
+      
+      - Se 'Resumido': Forneça apenas os passos essenciais de alto nível (3-5 passos).
+      - Se 'Padrão': Forneça um bom equilíbrio de detalhes (5-8 passos), suficiente para um analista de QA entender o fluxo completo.
+      - Se 'Detalhado': Forneça passos muito granulares e específicos (8+ passos), incluindo dados de exemplo, validações intermediárias e pré-condições explícitas.
     `;
 
-    const prompt = `
-      Aja como um mentor de garantia de qualidade de software (QA) de nível sênior. Para a tarefa a seguir, forneça uma resposta estruturada em JSON:
+    const shouldGenerateTestCases = taskType === 'Tarefa' || !taskType;
+
+    return `
+      Você é um QA Sênior com mais de 10 anos de experiência em garantia de qualidade de software, 
+      metodologias ágeis (Scrum, Kanban), e práticas de DevOps. Sua expertise inclui:
+      - Testes funcionais, de integração, regressão, performance e segurança
+      - BDD (Behavior-Driven Development) e TDD (Test-Driven Development)
+      - Automação de testes com ferramentas modernas
+      - Análise de risco e priorização de testes
+      - Cobertura de testes e métricas de qualidade
+
+      ════════════════════════════════════════════════════════════════
+      CONTEXTO DA TAREFA
+      ════════════════════════════════════════════════════════════════
+      
+      Título: ${title}
+      Descrição: ${description}
+      ${taskType ? `Tipo: ${taskType}` : ''}
+      
       ${bddContext}
+      
       ${detailInstruction}
 
-      1.  **strategy**: Uma lista de estratégias de teste recomendadas. Para cada estratégia, especifique:
-          *   **testType**: O nome do tipo de teste (ex: Teste Funcional, Teste de Integração, Teste de Caixa Branca, Teste de Usabilidade).
-          *   **description**: Uma breve explicação do propósito deste teste no contexto da tarefa.
-          *   **howToExecute**: Um array de strings, onde cada string é um passo curto e acionável para executar o teste.
-          *   **tools**: Ferramentas recomendadas para este tipo de teste, listadas como uma string separada por vírgulas.
+      ════════════════════════════════════════════════════════════════
+      INSTRUÇÕES PARA GERAÇÃO DE ESTRATÉGIAS DE TESTE
+      ════════════════════════════════════════════════════════════════
+      
+      Gere uma lista abrangente de estratégias de teste recomendadas. Para cada estratégia, forneça:
+      
+      1. **testType**: Nome específico do tipo de teste (ex: "Teste Funcional", "Teste de Integração", 
+         "Teste de Regressão", "Teste de Usabilidade", "Teste de Performance", "Teste de Segurança", 
+         "Teste de Acessibilidade", "Teste de API", "Teste de Caixa Branca", etc.)
+      
+      2. **description**: Explicação clara e objetiva do propósito desta estratégia no contexto específico 
+         da tarefa. Explique POR QUE este tipo de teste é necessário e QUAIS riscos ele mitiga.
+      
+      3. **howToExecute**: Array de strings com passos acionáveis e práticos para executar este tipo de teste. 
+         Cada passo deve ser claro, específico e executável por um QA.
+      
+      4. **tools**: Ferramentas recomendadas para este tipo de teste, separadas por vírgulas. 
+         Considere ferramentas modernas e amplamente utilizadas (ex: "Selenium, Cypress, Playwright" 
+         para testes web, "Postman, Insomnia" para APIs, "JMeter, K6" para performance).
 
-      2.  **testCases**: Uma lista abrangente de casos de teste específicos. Para cada caso de teste, inclua:
-          *   **description**: Uma descrição concisa.
-          *   **steps**: Passos detalhados para execução.
-          *   **expectedResult**: O resultado esperado.
-          *   **strategies**: Uma lista de strings contendo os 'testType's da seção de estratégia acima que se aplicam a este caso de teste.
-          *   **isAutomated**: true se o teste for um bom candidato para automação (repetitivo, crítico, de regressão), false caso contrário (ex: exploratório, usabilidade).
-          *   **preconditions**: Précondições necessárias para executar este teste (ex: dados que devem existir no sistema, estados prévios, configurações). Deixe vazio ou omita se não houver précondições específicas.
-          *   **testSuite**: Nome da suite de teste à qual este caso pertence, baseado no contexto da tarefa e funcionalidade testada (ex: "Login", "Cadastro", "Pagamento", "Relatórios").
-          *   **testEnvironment**: Ambiente(s) de teste onde este caso deve ser executado (ex: "Chrome", "Firefox", "Safari", "Mobile", "API"). Pode incluir múltiplos ambientes separados por " / " (ex: "Chrome / Firefox").
+      ${shouldGenerateTestCases ? `
+      ════════════════════════════════════════════════════════════════
+      INSTRUÇÕES PARA GERAÇÃO DE CASOS DE TESTE
+      ════════════════════════════════════════════════════════════════
+      
+      Gere uma lista abrangente e detalhada de casos de teste específicos. Para cada caso de teste, 
+      siga rigorosamente a seguinte estrutura:
+      
+      1. **description**: Descrição clara, concisa e objetiva do que está sendo testado. 
+         Use linguagem técnica mas acessível. Exemplo: "Validar login com credenciais válidas" 
+         ao invés de "Teste de login".
+      
+      2. **steps**: Array de strings com passos detalhados para execução. Cada passo deve:
+         - Ser acionável e verificável
+         - Incluir dados específicos quando relevante (ex: "Informar email: usuario@exemplo.com")
+         - Ser numerado logicamente (1, 2, 3...)
+         - Incluir validações intermediárias quando necessário
+         - Seguir o nível de detalhe especificado (${detailLevel})
+      
+      3. **expectedResult**: Resultado esperado após a execução dos passos. Deve ser:
+         - Específico e mensurável
+         - Incluir valores, mensagens ou comportamentos esperados
+         - Considerar diferentes cenários (sucesso, erro, edge cases)
+         - Exemplo: "Sistema deve exibir mensagem 'Login realizado com sucesso' e redirecionar para /dashboard"
+      
+      4. **preconditions**: Pré-condições necessárias para executar este teste. Inclua:
+         - Dados que devem existir no sistema (ex: "Usuário cadastrado com email usuario@exemplo.com")
+         - Estados prévios do sistema (ex: "Sessão anterior deve estar encerrada")
+         - Configurações necessárias (ex: "Ambiente de teste configurado com dados de homologação")
+         - Permissões ou roles necessárias (ex: "Usuário deve ter permissão de administrador")
+         - Deixe vazio ou omita apenas se NÃO houver pré-condições específicas
+      
+      5. **strategies**: Array de strings contendo os 'testType's da seção de estratégia que se aplicam 
+         a este caso de teste. Um caso pode ter múltiplas estratégias (ex: ["Teste Funcional", "Teste de Regressão"]).
+      
+      6. **isAutomated**: Boolean indicando se o teste é candidato para automação.
+         - true: Teste repetitivo, crítico, de regressão, baseado em dados, ou que será executado frequentemente
+         - false: Teste exploratório, de usabilidade, ad-hoc, ou que requer análise humana
+      
+      7. **testSuite**: Nome da suite de teste à qual este caso pertence. Baseie-se no contexto da tarefa 
+         e funcionalidade testada. Exemplos: "Login", "Cadastro", "Pagamento", "Relatórios", "Dashboard", 
+         "Configurações", "Perfil do Usuário".
+      
+      8. **testEnvironment**: Ambiente(s) de teste onde este caso deve ser executado. Pode incluir:
+         - Navegadores: "Chrome", "Firefox", "Safari", "Edge"
+         - Dispositivos: "Mobile", "Tablet", "Desktop"
+         - Ambientes: "API", "Web", "Mobile App"
+         - Para múltiplos ambientes, separe por " / " (ex: "Chrome / Firefox / Mobile")
+      
+      9. **priority**: Prioridade do caso de teste baseada em:
+         - **Urgente**: Testes críticos que validam funcionalidades essenciais do negócio, 
+           que podem causar impacto grave se falharem (ex: pagamento, autenticação, segurança)
+         - **Alta**: Testes importantes que validam funcionalidades principais, 
+           com impacto significativo se falharem (ex: fluxos principais, integrações críticas)
+         - **Média**: Testes que validam funcionalidades secundárias ou melhorias, 
+           com impacto moderado se falharem (ex: relatórios, configurações, validações)
+         - **Baixa**: Testes que validam funcionalidades de baixa criticidade, 
+           melhorias cosméticas ou edge cases raros (ex: formatação, textos, validações opcionais)
+         
+         Considere: criticidade da funcionalidade, impacto no negócio, frequência de uso, 
+         complexidade do teste e risco de falha.
 
-      Título da Tarefa: ${title}
-      Descrição da Tarefa: ${description}
-      `;
+      ════════════════════════════════════════════════════════════════
+      BOAS PRÁTICAS E CONSIDERAÇÕES
+      ════════════════════════════════════════════════════════════════
+      
+      - Cobertura: Garanta cobertura de casos de sucesso, falha, edge cases e validações
+      - Clareza: Cada caso de teste deve ser compreensível e executável por qualquer QA
+      - Rastreabilidade: Relacione casos de teste com os cenários BDD quando disponíveis
+      - Priorização: Priorize testes críticos e de alto impacto
+      - Reutilização: Considere pré-condições que podem ser reutilizadas entre testes
+      - Manutenibilidade: Use descrições e passos que facilitem a manutenção futura
+      - Automação: Identifique claramente quais testes são candidatos à automação
+      
+      ════════════════════════════════════════════════════════════════
+      FORMATO DE RESPOSTA
+      ════════════════════════════════════════════════════════════════
+      
+      Retorne APENAS um objeto JSON válido com a seguinte estrutura:
+      {
+        "strategy": [...],
+        "testCases": ${shouldGenerateTestCases ? '[...]' : '[]'}
+      }
+      
+      ${shouldGenerateTestCases ? '' : `
+      ⚠️ ATENÇÃO: Esta tarefa é do tipo "${taskType}". Para este tipo, gere APENAS estratégias de teste. 
+      NÃO gere casos de teste (testCases deve ser um array vazio []).
+      `}
+      
+      IMPORTANTE: 
+      - Retorne APENAS JSON válido, sem markdown, sem código, sem explicações adicionais
+      - Todos os campos obrigatórios devem estar presentes
+      - Valores devem ser apropriados e realistas
+      - Use português brasileiro em todas as descrições
+    `;
+  }
+
+export class GeminiService implements AIService {
+  async generateTestCasesForTask(
+    title: string, 
+    description: string, 
+    bddScenarios?: BddScenario[], 
+    detailLevel: TestCaseDetailLevel = 'Padrão',
+    taskType?: JiraTaskType
+  ): Promise<{ strategy: TestStrategy[]; testCases: TestCase[] }> {
+    const prompt = this.buildRobustTestGenerationPrompt(title, description, bddScenarios, detailLevel, taskType);
 
     try {
       const response = await getAI().models.generateContent({
@@ -152,18 +298,22 @@ export class GeminiService implements AIService {
           throw new Error("Resposta da IA com estrutura inválida.");
       }
 
-      const testCases: TestCase[] = parsedResponse.testCases.map((item: any, index: number) => ({
-        id: `tc-${Date.now()}-${index}`,
-        description: item.description,
-        steps: item.steps,
-        expectedResult: item.expectedResult,
-        status: 'Not Run' as const,
-        strategies: item.strategies || [],
-        isAutomated: item.isAutomated || false,
-        preconditions: item.preconditions || undefined,
-        testSuite: item.testSuite || undefined,
-        testEnvironment: item.testEnvironment || undefined,
-      }));
+      const shouldGenerateTestCases = taskType === 'Tarefa' || !taskType;
+      const testCases: TestCase[] = shouldGenerateTestCases 
+        ? (parsedResponse.testCases || []).map((item: any, index: number) => ({
+            id: `tc-${Date.now()}-${index}`,
+            description: item.description,
+            steps: item.steps,
+            expectedResult: item.expectedResult,
+            status: 'Not Run' as const,
+            strategies: item.strategies || [],
+            isAutomated: item.isAutomated || false,
+            preconditions: item.preconditions || undefined,
+            testSuite: item.testSuite || undefined,
+            testEnvironment: item.testEnvironment || undefined,
+            priority: item.priority || undefined,
+          }))
+        : [];
       
       const strategy: TestStrategy[] = parsedResponse.strategy.map((item: any) => ({
         testType: item.testType,
@@ -229,7 +379,7 @@ export class GeminiService implements AIService {
 
     2.  **strategy**: A mesma estrutura da função generateTestCasesForTask. Uma lista de estratégias de teste recomendadas.
 
-    3.  **testCases**: A mesma estrutura da função generateTestCasesForTask. Uma lista abrangente de casos de teste derivados dos requisitos do documento, incluindo a chave "isAutomated".
+    3.  **testCases**: Deve ser sempre um array vazio [], pois tarefas do tipo "História" não devem ter casos de teste. Apenas estratégias de teste são necessárias.
 
     Conteúdo do Documento:
     ---
@@ -266,12 +416,8 @@ export class GeminiService implements AIService {
 
         const parsedResponse = JSON.parse(response.text.trim());
         
-        const testCases: TestCase[] = parsedResponse.testCases.map((item: any, index: number) => ({
-          id: `tc-doc-${Date.now()}-${index}`,
-          ...item,
-          status: 'Not Run' as const,
-          isAutomated: item.isAutomated || false,
-        }));
+        // Histórias não devem ter casos de teste, apenas estratégias
+        const testCases: TestCase[] = [];
         
         const strategy: TestStrategy[] = parsedResponse.strategy.map((item: any) => ({
           ...item,

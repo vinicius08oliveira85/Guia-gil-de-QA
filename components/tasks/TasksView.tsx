@@ -233,7 +233,13 @@ export const TasksView: React.FC<{
             const task = project.tasks.find(t => t.id === taskId);
             if (!task) throw new Error("Task not found");
             const aiService = getAIService();
-            const { strategy, testCases } = await aiService.generateTestCasesForTask(task.title, task.description, task.bddScenarios, detailLevel);
+            const { strategy, testCases } = await aiService.generateTestCasesForTask(
+                task.title, 
+                task.description, 
+                task.bddScenarios, 
+                detailLevel,
+                task.type
+            );
             const updatedTask = { ...task, testStrategy: strategy, testCases };
             const newTasks = project.tasks.map(t => t.id === updatedTask.id ? updatedTask : t);
             onUpdateProject({ ...project, tasks: newTasks });

@@ -504,137 +504,150 @@ export const JiraTaskItem: React.FC<{
         </div>
     );
 
-    const renderTestsSection = () => (
-        <div className="space-y-md">
-            <div>
-                <div className="flex items-center justify-between gap-2">
-                    <h3 className="text-lg font-semibold text-text-primary">Estratégia de Teste</h3>
-                    <span className="text-xs text-text-secondary">{task.testStrategy?.length || 0} item(ns)</span>
+    const renderTestsSection = () => {
+        const canHaveTestCases = task.type === 'Tarefa';
+        
+        return (
+            <div className="space-y-md">
+                <div>
+                    <div className="flex items-center justify-between gap-2">
+                        <h3 className="text-lg font-semibold text-text-primary">Estratégia de Teste</h3>
+                        <span className="text-xs text-text-secondary">{task.testStrategy?.length || 0} item(ns)</span>
+                    </div>
+                    {isGenerating && <div className="flex justify-center py-2"><Spinner small /></div>}
+                    {task.testStrategy && task.testStrategy.length > 0 ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-md mt-md">
+                            {task.testStrategy.map((strategy, i) => {
+                                if (!strategy) return null;
+                                return (
+                                    <TestStrategyCard 
+                                        key={i} 
+                                        strategy={strategy}
+                                        strategyIndex={i}
+                                        isExecuted={(task.executedStrategies && task.executedStrategies.includes(i)) || false}
+                                        onToggleExecuted={onStrategyExecutedChange}
+                                        toolsUsed={(task.strategyTools && task.strategyTools[i]) || []}
+                                        onToolsChange={onStrategyToolsChange}
+                                    />
+                                );
+                            })}
+                        </div>
+                    ) : (
+                        !isGenerating && (
+                            <EmptyState
+                                icon="📊"
+                                title="Nenhuma estratégia de teste gerada ainda"
+                                description="Gere uma estratégia de teste com IA para esta tarefa."
+                                action={{
+                                    label: "Gerar Estratégia com IA",
+                                    onClick: () => onGenerateTests(task.id, detailLevel)
+                                }}
+                                tip="A estratégia de teste ajuda a definir quais tipos de teste são necessários para validar esta funcionalidade."
+                            />
+                        )
+                    )}
                 </div>
-                {isGenerating && <div className="flex justify-center py-2"><Spinner small /></div>}
-                {task.testStrategy && task.testStrategy.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-md mt-md">
-                        {task.testStrategy.map((strategy, i) => {
-                            if (!strategy) return null;
-                            return (
-                                <TestStrategyCard 
-                                    key={i} 
-                                    strategy={strategy}
-                                    strategyIndex={i}
-                                    isExecuted={(task.executedStrategies && task.executedStrategies.includes(i)) || false}
-                                    onToggleExecuted={onStrategyExecutedChange}
-                                    toolsUsed={(task.strategyTools && task.strategyTools[i]) || []}
-                                    onToolsChange={onStrategyToolsChange}
+
+                {canHaveTestCases ? (
+                    <div>
+                        <div className="flex items-center justify-between gap-2">
+                            <h3 className="text-lg font-semibold text-text-primary">Casos de Teste</h3>
+                            <span className="text-xs text-text-secondary">{task.testCases?.length || 0} caso(s)</span>
+                        </div>
+                        {isGenerating ? (
+                            <div className="space-y-3 mt-4">
+                                <LoadingSkeleton variant="task" count={3} />
+                                <div className="flex flex-col items-center justify-center py-4">
+                                    <Spinner small />
+                                    <p className="text-sm text-text-secondary mt-2">Gerando casos de teste com IA...</p>
+                                    <p className="text-xs text-text-secondary mt-1">⏱️ Isso pode levar 10-30 segundos</p>
+                                </div>
+                            </div>
+                        ) : (task.testCases || []).length > 0 ? (
+                            <div className="space-y-3 mt-4">
+                                {task.testCases.map(tc => (
+                                    <TestCaseItem 
+                                        key={tc.id} 
+                                        testCase={tc} 
+                                        onStatusChange={(status) => onTestCaseStatusChange(tc.id, status)}
+                                        onToggleAutomated={(isAutomated) => onToggleTestCaseAutomated(tc.id, isAutomated)}
+                                        onExecutedStrategyChange={(strategies) => onExecutedStrategyChange(tc.id, strategies)}
+                                        onToolsChange={onTestCaseToolsChange ? (tools) => onTestCaseToolsChange(tc.id, tools) : undefined}
+                                        onEdit={onEditTestCase ? () => onEditTestCase(task.id, tc) : undefined}
+                                        onDelete={onDeleteTestCase ? () => onDeleteTestCase(task.id, tc.id) : undefined}
+                                    />
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="mt-4">
+                                <EmptyState
+                                    icon="🧪"
+                                    title="Nenhum caso de teste ainda"
+                                    description="Comece gerando casos de teste com IA ou adicione manualmente."
+                                    tips={isBeginnerMode ? [
+                                        "Use a IA para gerar casos de teste automaticamente",
+                                        "Ou adicione manualmente usando templates",
+                                        "Cada caso de teste deve ter passos claros e resultado esperado"
+                                    ] : undefined}
+                                    action={{
+                                        label: "Gerar com IA",
+                                        onClick: () => onGenerateTests(task.id, detailLevel)
+                                    }}
+                                    secondaryAction={onAddTestCaseFromTemplate ? {
+                                        label: "Usar Template",
+                                        onClick: () => {
+                                            // Abrir modal de templates com esta tarefa pré-selecionada
+                                            onAddTestCaseFromTemplate(task.id);
+                                        }
+                                    } : undefined}
                                 />
-                            );
-                        })}
+                            </div>
+                        )}
                     </div>
                 ) : (
-                    !isGenerating && (
-                        <EmptyState
-                            icon="📊"
-                            title="Nenhuma estratégia de teste gerada ainda"
-                            description="Gere uma estratégia de teste com IA para esta tarefa."
-                            action={{
-                                label: "Gerar Estratégia com IA",
-                                onClick: () => onGenerateTests(task.id, detailLevel)
-                            }}
-                            tip="A estratégia de teste ajuda a definir quais tipos de teste são necessários para validar esta funcionalidade."
-                        />
-                    )
+                    <div className="mt-4 p-4 bg-slate-800/50 border border-slate-700 rounded-lg">
+                        <p className="text-sm text-text-secondary">
+                            <strong className="text-text-primary">ℹ️ Informação:</strong> Casos de teste são disponíveis apenas para tarefas do tipo <strong>"Tarefa"</strong>. 
+                            Para tarefas do tipo <strong>"{task.type}"</strong>, apenas estratégias de teste são geradas.
+                        </p>
+                    </div>
                 )}
-            </div>
 
-            <div>
-                <div className="flex items-center justify-between gap-2">
-                    <h3 className="text-lg font-semibold text-text-primary">Casos de Teste</h3>
-                    <span className="text-xs text-text-secondary">{task.testCases?.length || 0} caso(s)</span>
-                </div>
-                {isGenerating ? (
-                    <div className="space-y-3 mt-4">
-                        <LoadingSkeleton variant="task" count={3} />
-                        <div className="flex flex-col items-center justify-center py-4">
-                            <Spinner small />
-                            <p className="text-sm text-text-secondary mt-2">Gerando casos de teste com IA...</p>
-                            <p className="text-xs text-text-secondary mt-1">⏱️ Isso pode levar 10-30 segundos</p>
+                {/* Ferramentas Utilizadas na Task */}
+                {onTaskToolsChange && (
+                    <div className="mt-md p-3 bg-surface-hover rounded-lg border border-surface-border">
+                        <ToolsSelector
+                            selectedTools={task.toolsUsed || []}
+                            onToolsChange={onTaskToolsChange}
+                            label="Ferramentas Utilizadas (Geral)"
+                            compact={false}
+                        />
+                    </div>
+                )}
+
+                {!isGenerating && (
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-3">
+                        <button onClick={() => onGenerateTests(task.id, detailLevel)} className="btn btn-primary">
+                            {hasTests ? <RefreshIcon /> : <PlusIcon />}
+                            <span>{hasTests ? 'Regerar com IA' : 'Gerar com IA'}</span>
+                        </button>
+                        <div className="flex-1">
+                            <label htmlFor={`detail-level-${task.id}`} className="block text-sm text-text-secondary mb-1">Nível de Detalhe</label>
+                            <select
+                                id={`detail-level-${task.id}`}
+                                value={detailLevel}
+                                onChange={(e) => setDetailLevel(e.target.value as TestCaseDetailLevel)}
+                            >
+                                <option value="Padrão">Padrão</option>
+                                <option value="Resumido">Resumido</option>
+                                <option value="Detalhado">Detalhado</option>
+                            </select>
                         </div>
                     </div>
-                ) : (task.testCases || []).length > 0 ? (
-                    <div className="space-y-3 mt-4">
-                        {task.testCases.map(tc => (
-                            <TestCaseItem 
-                                key={tc.id} 
-                                testCase={tc} 
-                                onStatusChange={(status) => onTestCaseStatusChange(tc.id, status)}
-                                onToggleAutomated={(isAutomated) => onToggleTestCaseAutomated(tc.id, isAutomated)}
-                                onExecutedStrategyChange={(strategies) => onExecutedStrategyChange(tc.id, strategies)}
-                                onToolsChange={onTestCaseToolsChange ? (tools) => onTestCaseToolsChange(tc.id, tools) : undefined}
-                                onEdit={onEditTestCase ? () => onEditTestCase(task.id, tc) : undefined}
-                                onDelete={onDeleteTestCase ? () => onDeleteTestCase(task.id, tc.id) : undefined}
-                            />
-                        ))}
-                    </div>
-                ) : (
-                    <div className="mt-4">
-                        <EmptyState
-                            icon="🧪"
-                            title="Nenhum caso de teste ainda"
-                            description="Comece gerando casos de teste com IA ou adicione manualmente."
-                            tips={isBeginnerMode ? [
-                                "Use a IA para gerar casos de teste automaticamente",
-                                "Ou adicione manualmente usando templates",
-                                "Cada caso de teste deve ter passos claros e resultado esperado"
-                            ] : undefined}
-                            action={{
-                                label: "Gerar com IA",
-                                onClick: () => onGenerateTests(task.id, detailLevel)
-                            }}
-                            secondaryAction={onAddTestCaseFromTemplate ? {
-                                label: "Usar Template",
-                                onClick: () => {
-                                    // Abrir modal de templates com esta tarefa pré-selecionada
-                                    onAddTestCaseFromTemplate(task.id);
-                                }
-                            } : undefined}
-                        />
-                    </div>
                 )}
             </div>
-
-            {/* Ferramentas Utilizadas na Task */}
-            {onTaskToolsChange && (
-                <div className="mt-md p-3 bg-surface-hover rounded-lg border border-surface-border">
-                    <ToolsSelector
-                        selectedTools={task.toolsUsed || []}
-                        onToolsChange={onTaskToolsChange}
-                        label="Ferramentas Utilizadas (Geral)"
-                        compact={false}
-                    />
-                </div>
-            )}
-
-            {!isGenerating && (
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-3">
-                    <button onClick={() => onGenerateTests(task.id, detailLevel)} className="btn btn-primary">
-                        {hasTests ? <RefreshIcon /> : <PlusIcon />}
-                        <span>{hasTests ? 'Regerar com IA' : 'Gerar com IA'}</span>
-                    </button>
-                    <div className="flex-1">
-                        <label htmlFor={`detail-level-${task.id}`} className="block text-sm text-text-secondary mb-1">Nível de Detalhe</label>
-                        <select
-                            id={`detail-level-${task.id}`}
-                            value={detailLevel}
-                            onChange={(e) => setDetailLevel(e.target.value as TestCaseDetailLevel)}
-                        >
-                            <option value="Padrão">Padrão</option>
-                            <option value="Resumido">Resumido</option>
-                            <option value="Detalhado">Detalhado</option>
-                        </select>
-                    </div>
-                </div>
-            )}
-        </div>
-    );
+        );
+    };
 
     const renderPlanningSection = () => {
         if (!project || !onUpdateProject) {
