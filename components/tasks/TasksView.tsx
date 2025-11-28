@@ -1061,24 +1061,26 @@ export const TasksView: React.FC<{
     return (
         <>
         <Card>
-            <div className="flex flex-col gap-md mb-md">
-                <div className="flex flex-col lg:flex-row justify-between gap-md mb-md">
+            <div className="flex flex-col gap-3 mb-4">
+                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3">
                     <div className="flex-shrink-0">
                         <h3 className="heading-section text-text-primary mb-1">Tarefas & Casos de Teste</h3>
                         <p className="text-muted text-sm">Acompanhe o progresso das atividades e resultados de QA.</p>
                     </div>
-                    <div className="flex flex-col sm:flex-row gap-2 flex-wrap">
-                        {/* Grupo: Ações Principais */}
-                        <div className="flex gap-2 flex-wrap">
-                            <button 
-                                onClick={() => openTaskFormForNew()} 
-                                className="btn btn-primary btn-md flex items-center gap-2 font-semibold shadow-md hover:shadow-lg transition-all"
-                            >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                                </svg>
-                                Adicionar Tarefa
-                            </button>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                        {/* Botão Principal */}
+                        <button 
+                            onClick={() => openTaskFormForNew()} 
+                            className="btn btn-primary btn-sm flex items-center gap-1.5 font-semibold flex-shrink-0"
+                        >
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                            </svg>
+                            <span className="text-sm">Adicionar Tarefa</span>
+                        </button>
+                        
+                        {/* Botão de Análise IA */}
+                        <div className="flex-shrink-0">
                             <GeneralIAAnalysisButton 
                                 onAnalyze={handleGeneralIAAnalysis}
                                 isAnalyzing={isRunningGeneralAnalysis}
@@ -1086,52 +1088,51 @@ export const TasksView: React.FC<{
                             />
                         </div>
                         
-                        {/* Grupo: Filtros e Templates */}
-                        <div className="flex gap-2 flex-wrap">
-                            <button 
-                                onClick={() => setShowFilters(prev => !prev)} 
-                                className="btn btn-secondary btn-md flex items-center gap-2"
-                            >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-                                </svg>
-                                {showFilters ? 'Ocultar Filtros' : `Filtros${activeFiltersCount > 0 ? ` (${activeFiltersCount})` : ''}`}
-                            </button>
-                            <button 
-                                onClick={() => setShowTemplateSelector(true)} 
-                                className="btn btn-secondary btn-md flex items-center gap-2"
-                            >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                </svg>
-                                Templates
-                            </button>
-                        </div>
+                        {/* Separador visual */}
+                        <div className="w-px h-5 bg-surface-border flex-shrink-0" />
                         
-                        {/* Grupo: Sincronização */}
-                        <div className="flex gap-2 flex-wrap">
-                            <button 
-                                onClick={handleSyncJira} 
-                                className="btn btn-secondary btn-md flex items-center gap-2"
-                                disabled={isSyncingJira}
-                            >
-                                {isSyncingJira ? (
-                                    <>
-                                        <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                        </svg>
-                                        Sincronizando...
-                                    </>
-                                ) : (
-                                    <>
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                        </svg>
-                                        Atualizar do Jira
-                                    </>
-                                )}
-                            </button>
-                        </div>
+                        {/* Botões Secundários */}
+                        <button 
+                            onClick={() => setShowFilters(prev => !prev)} 
+                            className="btn btn-secondary btn-sm flex items-center gap-1.5 flex-shrink-0"
+                        >
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                            </svg>
+                            <span className="text-sm">{showFilters ? 'Ocultar Filtros' : `Filtros${activeFiltersCount > 0 ? ` (${activeFiltersCount})` : ''}`}</span>
+                        </button>
+                        
+                        <button 
+                            onClick={() => setShowTemplateSelector(true)} 
+                            className="btn btn-secondary btn-sm flex items-center gap-1.5 flex-shrink-0"
+                        >
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            <span className="text-sm">Templates</span>
+                        </button>
+                        
+                        <button 
+                            onClick={handleSyncJira} 
+                            className="btn btn-secondary btn-sm flex items-center gap-1.5 flex-shrink-0"
+                            disabled={isSyncingJira}
+                        >
+                            {isSyncingJira ? (
+                                <>
+                                    <svg className="w-3.5 h-3.5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                    </svg>
+                                    <span className="text-sm">Sincronizando...</span>
+                                </>
+                            ) : (
+                                <>
+                                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                    </svg>
+                                    <span className="text-sm">Atualizar do Jira</span>
+                                </>
+                            )}
+                        </button>
                     </div>
                 </div>
 

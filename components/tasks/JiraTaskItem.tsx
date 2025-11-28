@@ -298,9 +298,13 @@ export const JiraTaskItem: React.FC<{
     const sectionTabs = useMemo(() => {
         const tabs: { id: DetailSection; label: string; badge?: number }[] = [
             { id: 'overview', label: 'Resumo' },
-            { id: 'bdd', label: 'Cenários BDD', badge: task.bddScenarios?.length || 0 },
-            { id: 'tests', label: 'Testes', badge: task.testCases?.length || 0 }
+            { id: 'bdd', label: 'Cenários BDD', badge: task.bddScenarios?.length || 0 }
         ];
+
+        // Adicionar aba "Testes" apenas para tipo "Tarefa"
+        if (task.type === 'Tarefa') {
+            tabs.push({ id: 'tests', label: 'Testes', badge: task.testCases?.length || 0 });
+        }
 
         if (project && onUpdateProject) {
             const planningBadge = (task.dependencies?.length || 0) + (task.attachments?.length || 0) + (task.checklist?.length || 0) + (task.estimatedHours ? 1 : 0);
@@ -313,6 +317,7 @@ export const JiraTaskItem: React.FC<{
 
         return tabs;
     }, [
+        task.type,
         task.bddScenarios,
         task.testCases,
         task.dependencies,
@@ -340,7 +345,14 @@ export const JiraTaskItem: React.FC<{
         if (isDetailsOpen && !sectionTabs.find(tab => tab.id === activeSection)) {
             setActiveSection(sectionTabs[0]?.id ?? 'overview');
         }
-    }, [isDetailsOpen, sectionTabs, activeSection]);
+        // Se estiver na aba "tests" e não for tipo "Tarefa", redirecionar para "overview" ou "bdd"
+        if (activeSection === 'tests' && task.type !== 'Tarefa') {
+            const firstAvailableTab = sectionTabs.find(tab => tab.id === 'bdd') || sectionTabs[0];
+            if (firstAvailableTab) {
+                setActiveSection(firstAvailableTab.id);
+            }
+        }
+    }, [isDetailsOpen, sectionTabs, activeSection, task.type]);
 
     const handleToggleDetails = () => {
         if (isDetailsOpen) {
@@ -380,8 +392,8 @@ export const JiraTaskItem: React.FC<{
                 </div>
             )}
             
-            {/* Botão para Gerar Registro de Testes */}
-            {(task.testCases?.length > 0 || task.testStrategy?.length > 0) && (
+            {/* Botão para Gerar Registro de Testes - apenas para tipo "Tarefa" */}
+            {task.type === 'Tarefa' && (task.testCases?.length > 0 || task.testStrategy?.length > 0) && (
                 <div className="flex justify-end">
                     <button
                         onClick={() => setShowTestReport(true)}
@@ -505,6 +517,11 @@ export const JiraTaskItem: React.FC<{
     );
 
     const renderTestsSection = () => {
+        // Retornar null se não for tipo "Tarefa" - não deve ser acessado, mas por segurança
+        if (task.type !== 'Tarefa') {
+            return null;
+        }
+
         const canHaveTestCases = task.type === 'Tarefa';
         
         return (
@@ -604,14 +621,7 @@ export const JiraTaskItem: React.FC<{
                             </div>
                         )}
                     </div>
-                ) : (
-                    <div className="mt-4 p-4 bg-slate-800/50 border border-slate-700 rounded-lg">
-                        <p className="text-sm text-text-secondary">
-                            <strong className="text-text-primary">ℹ️ Informação:</strong> Casos de teste são disponíveis apenas para tarefas do tipo <strong>"Tarefa"</strong>. 
-                            Para tarefas do tipo <strong>"{task.type}"</strong>, apenas estratégias de teste são geradas.
-                        </p>
-                    </div>
-                )}
+                ) : null}
 
                 {/* Ferramentas Utilizadas na Task */}
                 {onTaskToolsChange && (
@@ -1006,7 +1016,7 @@ export const JiraTaskItem: React.FC<{
                             )}
                         </div>
                     )}
-                    {testTypeBadges.length > 0 && (
+                    {task.type === 'Tarefa' && testTypeBadges.length > 0 && (
                         <div className="task-card-compact_line task-card-compact_line--tight flex flex-wrap gap-1">
                             {testTypeBadges.map(badge => {
                                 const baseClass = 'px-2 py-0.5 rounded-full text-[11px] font-semibold border';

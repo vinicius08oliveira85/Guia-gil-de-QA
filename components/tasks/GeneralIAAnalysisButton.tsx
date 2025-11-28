@@ -72,7 +72,7 @@ export const GeneralIAAnalysisButton: React.FC<GeneralIAAnalysisButtonProps> = (
         relative overflow-hidden
         ${windows12Styles.card}
         ${windows12Styles.transition.normal}
-        px-4 py-3
+        px-2.5 py-1.5
         ${isAnalyzing 
           ? 'cursor-wait shadow-lg shadow-accent/30 border-accent/40' 
           : `${windows12Styles.cardHover} group`
@@ -90,10 +90,10 @@ export const GeneralIAAnalysisButton: React.FC<GeneralIAAnalysisButtonProps> = (
         `} />
       )}
 
-      <div className="relative flex items-center gap-3 z-10">
+      <div className="relative flex items-center gap-2 z-10">
         {/* Ícone de cérebro/chip com animação aprimorada */}
         <div className={`
-          relative w-6 h-6 flex items-center justify-center
+          relative w-4 h-4 flex items-center justify-center
           ${windows12Styles.transition.normal}
           ${isAnalyzing 
             ? 'animate-spin' 
@@ -116,7 +116,7 @@ export const GeneralIAAnalysisButton: React.FC<GeneralIAAnalysisButtonProps> = (
             </>
           ) : (
             <svg 
-              className="w-6 h-6 text-accent-light group-hover:text-accent transition-colors" 
+              className="w-4 h-4 text-accent-light group-hover:text-accent transition-colors" 
               fill="none" 
               viewBox="0 0 24 24" 
               stroke="currentColor"
@@ -133,15 +133,15 @@ export const GeneralIAAnalysisButton: React.FC<GeneralIAAnalysisButtonProps> = (
 
         <div className="flex flex-col items-start">
           <span className={`
-            text-sm font-semibold
+            text-xs font-semibold leading-tight
             ${isAnalyzing ? 'text-accent-light' : 'text-text-primary'}
             ${windows12Styles.transition.fast}
           `}>
-            {isAnalyzing ? 'Analisando...' : 'Análise Geral IA'}
+            {isAnalyzing ? 'Analisando...' : 'Análise IA'}
           </span>
-          {isAnalyzing && (
-            <span className="text-xs text-text-secondary mt-0.5 animate-pulse">
-              {progress?.message || 'Processando tarefas e testes...'}
+          {isAnalyzing && progress?.message && (
+            <span className="text-[10px] text-text-secondary mt-0.5 animate-pulse leading-tight">
+              {progress.message.length > 30 ? `${progress.message.substring(0, 30)}...` : progress.message}
             </span>
           )}
         </div>
