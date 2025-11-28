@@ -112,6 +112,8 @@ export const JiraTaskItem: React.FC<{
     onEdit: (task: JiraTask) => void;
     onGenerateBddScenarios: (taskId: string) => Promise<void>;
     isGeneratingBdd: boolean;
+    onGenerateAll?: (taskId: string, detailLevel?: TestCaseDetailLevel) => Promise<void>;
+    isGeneratingAll?: boolean;
     onSaveBddScenario: (taskId: string, scenario: Omit<BddScenario, 'id'>, scenarioId?: string) => void;
     onDeleteBddScenario: (taskId: string, scenarioId: string) => void;
     onTaskStatusChange: (status: 'To Do' | 'In Progress' | 'Done') => void;
@@ -129,7 +131,7 @@ export const JiraTaskItem: React.FC<{
     level: number;
     activeTaskId?: string | null;
     onFocusTask?: (taskId: string | null) => void;
-}> = React.memo(({ task, onTestCaseStatusChange, onToggleTestCaseAutomated, onExecutedStrategyChange, onTaskToolsChange, onTestCaseToolsChange, onStrategyExecutedChange, onStrategyToolsChange, onDelete, onGenerateTests, isGenerating, onAddSubtask, onEdit, onGenerateBddScenarios, isGeneratingBdd, onSaveBddScenario, onDeleteBddScenario, onTaskStatusChange, onAddTestCaseFromTemplate, onAddComment, onEditComment, onDeleteComment, onEditTestCase, onDeleteTestCase, project, onUpdateProject, isSelected, onToggleSelect, children, level, activeTaskId, onFocusTask }) => {
+}> = React.memo(({ task, onTestCaseStatusChange, onToggleTestCaseAutomated, onExecutedStrategyChange, onTaskToolsChange, onTestCaseToolsChange, onStrategyExecutedChange, onStrategyToolsChange, onDelete, onGenerateTests, isGenerating, onAddSubtask, onEdit, onGenerateBddScenarios, isGeneratingBdd, onGenerateAll, isGeneratingAll, onSaveBddScenario, onDeleteBddScenario, onTaskStatusChange, onAddTestCaseFromTemplate, onAddComment, onEditComment, onDeleteComment, onEditTestCase, onDeleteTestCase, project, onUpdateProject, isSelected, onToggleSelect, children, level, activeTaskId, onFocusTask }) => {
     const [isDetailsOpen, setIsDetailsOpen] = useState(false); // Colapsado por padrão para compactar
     const [isChildrenOpen, setIsChildrenOpen] = useState(false);
     const [editingBddScenario, setEditingBddScenario] = useState<BddScenario | null>(null);
@@ -1067,6 +1069,27 @@ export const JiraTaskItem: React.FC<{
                                         </button>
                                     );
                                 })}
+                                {task.type === 'Tarefa' && onGenerateAll && (
+                                    <button
+                                        onClick={() => onGenerateAll(task.id)}
+                                        disabled={isGeneratingAll || isGenerating || isGeneratingBdd}
+                                        className="btn btn-sm flex items-center gap-1.5 bg-green-500/20 border-green-500/30 hover:bg-green-500/40 text-green-400 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        {isGeneratingAll ? (
+                                            <>
+                                                <Spinner small />
+                                                <span>Gerando...</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                                </svg>
+                                                <span>Gerar Tudo</span>
+                                            </>
+                                        )}
+                                    </button>
+                                )}
                             </div>
                             <div className="mt-4">{renderSectionContent()}</div>
                         </div>

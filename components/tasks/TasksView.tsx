@@ -70,6 +70,7 @@ export const TasksView: React.FC<{
 }> = ({ project, onUpdateProject, onNavigateToTab }) => {
     const [generatingTestsTaskId, setGeneratingTestsTaskId] = useState<string | null>(null);
     const [generatingBddTaskId, setGeneratingBddTaskId] = useState<string | null>(null);
+    const [generatingAllTaskId, setGeneratingAllTaskId] = useState<string | null>(null);
     const [showTemplateSelector, setShowTemplateSelector] = useState(false);
     const [selectedTaskForTemplate, setSelectedTaskForTemplate] = useState<string | null>(null);
     const [selectedTasks, setSelectedTasks] = useState<Set<string>>(new Set());
@@ -248,6 +249,44 @@ export const TasksView: React.FC<{
             handleError(error, 'Gerar casos de teste');
         } finally {
             setGeneratingTestsTaskId(null);
+        }
+    }, [project, onUpdateProject, handleError, handleSuccess]);
+
+    const handleGenerateAll = useCallback(async (taskId: string, detailLevel: TestCaseDetailLevel = 'Padrão') => {
+        setGeneratingAllTaskId(taskId);
+        try {
+            const task = project.tasks.find(t => t.id === taskId);
+            if (!task) throw new Error("Task not found");
+            
+            const aiService = getAIService();
+            
+            // Passo 1: Gerar BDD primeiro
+            const bddScenarios = await aiService.generateBddScenarios(task.title, task.description);
+            
+            // Passo 2: Gerar estratégias e casos de teste usando os BDD recém-gerados
+            const { strategy, testCases } = await aiService.generateTestCasesForTask(
+                task.title,
+                task.description,
+                bddScenarios, // Usar os BDD recém-gerados
+                detailLevel,
+                task.type
+            );
+            
+            // Atualizar a tarefa com todos os dados sincronizados (substituir, não adicionar)
+            const updatedTask = {
+                ...task,
+                bddScenarios, // Substituir BDD
+                testStrategy: strategy, // Substituir estratégias
+                testCases // Substituir casos de teste
+            };
+            
+            const newTasks = project.tasks.map(t => t.id === updatedTask.id ? updatedTask : t);
+            onUpdateProject({ ...project, tasks: newTasks });
+            handleSuccess('BDD, estratégias e casos de teste gerados com sucesso!');
+        } catch (error) {
+            handleError(error, 'Gerar BDD, estratégias e testes');
+        } finally {
+            setGeneratingAllTaskId(null);
         }
     }, [project, onUpdateProject, handleError, handleSuccess]);
 
@@ -1036,6 +1075,8 @@ export const TasksView: React.FC<{
                     onEdit={openTaskFormForEdit}
                     onGenerateBddScenarios={handleGenerateBddScenarios}
                     isGeneratingBdd={generatingBddTaskId === task.id}
+                    onGenerateAll={handleGenerateAll}
+                    isGeneratingAll={generatingAllTaskId === task.id}
                     onSaveBddScenario={handleSaveBddScenario}
                     onDeleteBddScenario={handleDeleteBddScenario}
                     onTaskStatusChange={(status) => handleTaskStatusChange(task.id, status)}
@@ -1056,7 +1097,7 @@ export const TasksView: React.FC<{
                 </JiraTaskItem>
             );
         });
-    }, [selectedTasks, generatingTestsTaskId, generatingBddTaskId, handleTestCaseStatusChange, handleToggleTestCaseAutomated, handleExecutedStrategyChange, handleTaskToolsChange, handleTestCaseToolsChange, handleStrategyExecutedChange, handleStrategyToolsChange, handleDeleteTask, handleGenerateTests, openTaskFormForNew, openTaskFormForEdit, handleGenerateBddScenarios, handleSaveBddScenario, handleDeleteBddScenario, handleTaskStatusChange, handleAddTestCaseFromTemplate, handleAddComment, handleEditComment, handleDeleteComment, project, onUpdateProject, toggleTaskSelection]);
+    }, [selectedTasks, generatingTestsTaskId, generatingBddTaskId, generatingAllTaskId, handleTestCaseStatusChange, handleToggleTestCaseAutomated, handleExecutedStrategyChange, handleTaskToolsChange, handleTestCaseToolsChange, handleStrategyExecutedChange, handleStrategyToolsChange, handleDeleteTask, handleGenerateTests, openTaskFormForNew, openTaskFormForEdit, handleGenerateBddScenarios, handleGenerateAll, handleSaveBddScenario, handleDeleteBddScenario, handleTaskStatusChange, handleAddTestCaseFromTemplate, handleAddComment, handleEditComment, handleDeleteComment, project, onUpdateProject, toggleTaskSelection]);
 
     return (
         <>
