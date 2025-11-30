@@ -118,89 +118,105 @@ export const ProgressTrendsCard: React.FC<ProgressTrendsCardProps> = ({ project,
 
     // Calcular dimensões do gráfico - aumentado para melhor visualização
     const chartWidth = 100;
-    const chartHeight = 250;
-    const padding = { top: 25, right: 10, bottom: 35, left: 10 };
+    const chartHeight = 280;
+    const padding = { top: 25, right: 10, bottom: 40, left: 10 };
     const graphWidth = chartWidth - padding.left - padding.right;
     const graphHeight = chartHeight - padding.top - padding.bottom;
 
-    // Preparar dados para SVG - formato empilhado
+    // Preparar dados para SVG com normalização de escala
     const maxValue = Math.max(
-        ...trends.tasksByDay.map(d => d.created),
+        ...trends.tasksByDay.map(d => Math.max(d.created, d.completed)),
         1
     );
 
-    // Calcular pontos para gráfico empilhado
+    // Calcular diferenças mínimas e máximas para detectar quando linhas estão muito próximas
+    const differences = trends.tasksByDay.map(d => Math.abs(d.created - d.completed));
+    const minDifference = Math.min(...differences);
+    const maxDifference = Math.max(...differences);
+    const avgDifference = differences.reduce((a, b) => a + b, 0) / differences.length;
+    
+    // Determinar se precisa de normalização (quando diferença média é < 20% do valor máximo)
+    const needsNormalization = avgDifference < (maxValue * 0.2) && minDifference < (maxValue * 0.15);
+    
+    // Fator de amplificação para criar espaço mínimo visual (15% da altura do gráfico)
+    const minVisualSeparation = graphHeight * 0.15;
+    const scaleFactor = needsNormalization 
+        ? Math.max(1.5, minVisualSeparation / (avgDifference || 1) * (maxValue / graphHeight))
+        : 1;
+
+    // Calcular pontos com normalização adaptativa
     const points = trends.tasksByDay.map((day, index) => {
         const x = padding.left + (index / (trends.tasksByDay.length - 1 || 1)) * graphWidth;
         
-        // Base (zero)
-        const bottomY = padding.top + graphHeight;
+        // Valores normalizados para visualização
+        let normalizedCreated = day.created;
+        let normalizedCompleted = day.completed;
         
-        // Topo da área de concluídas (verde)
-        const completedTopY = padding.top + graphHeight - (day.completed / maxValue) * graphHeight;
+        if (needsNormalization && scaleFactor > 1) {
+            // Aplicar escala amplificada mantendo proporção
+            const center = (day.created + day.completed) / 2;
+            const diff = day.created - day.completed;
+            const amplifiedDiff = diff * scaleFactor;
+            
+            normalizedCreated = center + amplifiedDiff / 2;
+            normalizedCompleted = center - amplifiedDiff / 2;
+            
+            // Garantir que não ultrapassem os limites
+            normalizedCreated = Math.max(0, Math.min(normalizedCreated, maxValue * 1.2));
+            normalizedCompleted = Math.max(0, Math.min(normalizedCompleted, maxValue * 1.2));
+        }
         
-        // Topo da área total (criadas) - azul vai de completedTopY até createdTopY
-        const createdTopY = padding.top + graphHeight - (day.created / maxValue) * graphHeight;
+        const effectiveMax = needsNormalization ? maxValue * 1.2 : maxValue;
         
-        // Área pendente (criadas - concluídas)
-        const pendingHeight = day.created > day.completed ? day.created - day.completed : 0;
-        const pendingTopY = padding.top + graphHeight - ((day.completed + pendingHeight) / maxValue) * graphHeight;
+        const createdY = padding.top + graphHeight - (normalizedCreated / effectiveMax) * graphHeight;
+        const completedY = padding.top + graphHeight - (normalizedCompleted / effectiveMax) * graphHeight;
         
         return {
             x,
-            bottomY,
-            completedTopY,
-            createdTopY,
-            pendingTopY,
+            createdY,
+            completedY,
             day,
             index,
-            completed: day.completed,
-            created: day.created,
-            pending: pendingHeight,
+            // Valores reais para tooltips
+            realCreated: day.created,
+            realCompleted: day.completed,
         };
     });
 
-    // Criar paths para áreas empilhadas
-    const createStackedAreaPath = (points: typeof points, type: 'completed' | 'pending') => {
+    // Criar paths para áreas
+    const createAreaPath = (points: typeof points, isCreated: boolean) => {
         if (points.length === 0) return '';
         
-        // Path superior (topo da área)
-        const topPoints = points.map(p => {
-            const y = type === 'completed' ? p.completedTopY : p.pendingTopY;
+        const pathPoints = points.map(p => {
+            const y = isCreated ? p.createdY : p.completedY;
             return `${p.x},${y}`;
         });
-        
-        // Path inferior (base da área)
-        const bottomPoints = [...points].reverse().map(p => {
-            const y = type === 'completed' ? p.bottomY : p.completedTopY;
-            return `${p.x},${y}`;
-        });
-        
+
+        // Criar área fechada
         const firstPoint = points[0];
         const lastPoint = points[points.length - 1];
-        const topY = type === 'completed' ? firstPoint.completedTopY : firstPoint.pendingTopY;
-        const bottomY = type === 'completed' ? firstPoint.bottomY : firstPoint.completedTopY;
+        const bottomY = padding.top + graphHeight;
         
-        return `M ${firstPoint.x},${bottomY} L ${topPoints.join(' L ')} L ${lastPoint.x},${topY} L ${bottomPoints.join(' L ')} Z`;
+        return `M ${firstPoint.x},${bottomY} L ${pathPoints.join(' L ')} L ${lastPoint.x},${bottomY} Z`;
     };
 
-    const completedAreaPath = createStackedAreaPath(points, 'completed');
-    const pendingAreaPath = createStackedAreaPath(points, 'pending');
+    const createdAreaPath = createAreaPath(points, true);
+    const completedAreaPath = createAreaPath(points, false);
 
-    // Criar paths para linhas de referência (topo de cada área)
-    const createLinePath = (points: typeof points, type: 'completed' | 'created') => {
+    // Criar paths para linhas
+    const createLinePath = (points: typeof points, isCreated: boolean) => {
         if (points.length === 0) return '';
         
         const pathPoints = points.map((p, i) => {
-            const y = type === 'completed' ? p.completedTopY : p.createdTopY;
+            const y = isCreated ? p.createdY : p.completedY;
             return i === 0 ? `M ${p.x},${y}` : `L ${p.x},${y}`;
         });
 
         return pathPoints.join(' ');
     };
 
-    const completedLinePath = createLinePath(points, 'completed');
-    const createdLinePath = createLinePath(points, 'created');
+    const createdLinePath = createLinePath(points, true);
+    const completedLinePath = createLinePath(points, false);
 
     // Handler para hover
     const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>, index: number) => {
@@ -217,8 +233,8 @@ export const ProgressTrendsCard: React.FC<ProgressTrendsCardProps> = ({ project,
                 day: '2-digit', 
                 month: '2-digit' 
             }),
-            created: day.created,
-            completed: day.completed,
+            created: point.realCreated,
+            completed: point.realCompleted,
             x: e.clientX - rect.left,
             y: e.clientY - rect.top,
         });
@@ -295,32 +311,27 @@ export const ProgressTrendsCard: React.FC<ProgressTrendsCardProps> = ({ project,
                     <div className="relative bg-surface-hover/30 rounded-2xl p-4 overflow-hidden">
                         <svg
                             viewBox={`0 0 ${chartWidth} ${chartHeight}`}
-                            className="w-full h-80"
+                            className="w-full h-96"
                             onMouseLeave={handleMouseLeave}
                             aria-label="Gráfico de progresso de tarefas"
                             role="img"
                         >
                             <defs>
-                                {/* Gradiente para área de concluídas (base) - Verde */}
+                                {/* Gradiente para área de criadas - Azul */}
+                                <linearGradient id="createdGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                                    <stop offset="0%" stopColor="rgb(14, 109, 253)" stopOpacity="0.5" />
+                                    <stop offset="100%" stopColor="rgb(14, 109, 253)" stopOpacity="0.1" />
+                                </linearGradient>
+                                
+                                {/* Gradiente para área de concluídas - Verde */}
                                 <linearGradient id="completedGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                                    <stop offset="0%" stopColor="rgb(47, 219, 147)" stopOpacity="0.7" />
-                                    <stop offset="100%" stopColor="rgb(47, 219, 147)" stopOpacity="0.3" />
+                                    <stop offset="0%" stopColor="rgb(47, 219, 147)" stopOpacity="0.6" />
+                                    <stop offset="100%" stopColor="rgb(47, 219, 147)" stopOpacity="0.15" />
                                 </linearGradient>
-                                
-                                {/* Gradiente para área de pendentes (topo) - Azul */}
-                                <linearGradient id="pendingGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                                    <stop offset="0%" stopColor="rgb(14, 109, 253)" stopOpacity="0.6" />
-                                    <stop offset="100%" stopColor="rgb(14, 109, 253)" stopOpacity="0.2" />
-                                </linearGradient>
-                                
-                                {/* Padrão para grid lines */}
-                                <pattern id="gridPattern" x="0" y="0" width="10" height="10" patternUnits="userSpaceOnUse">
-                                    <path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255, 255, 255, 0.05)" strokeWidth="0.5"/>
-                                </pattern>
                             </defs>
                             
                             {/* Grid lines horizontais */}
-                            {[0, 0.25, 0.5, 0.75, 1].map((ratio) => {
+                            {[0, 0.2, 0.4, 0.6, 0.8, 1].map((ratio) => {
                                 const y = padding.top + graphHeight - (ratio * graphHeight);
                                 return (
                                     <line
@@ -336,37 +347,23 @@ export const ProgressTrendsCard: React.FC<ProgressTrendsCardProps> = ({ project,
                                 );
                             })}
 
-                            {/* Área de concluídas (base) - Verde */}
+                            {/* Área de criadas - Azul */}
+                            <path
+                                d={createdAreaPath}
+                                fill="url(#createdGradient)"
+                                className="transition-opacity duration-300"
+                                style={{ opacity: hoveredIndex !== null ? 0.5 : 1 }}
+                            />
+                            
+                            {/* Área de concluídas - Verde */}
                             <path
                                 d={completedAreaPath}
                                 fill="url(#completedGradient)"
                                 className="transition-opacity duration-300"
-                                style={{ opacity: hoveredIndex !== null ? 0.7 : 1 }}
-                            />
-                            
-                            {/* Área de pendentes (topo) - Azul - destacando a diferença */}
-                            <path
-                                d={pendingAreaPath}
-                                fill="url(#pendingGradient)"
-                                stroke="rgba(14, 109, 253, 0.4)"
-                                strokeWidth="0.5"
-                                className="transition-opacity duration-300"
-                                style={{ opacity: hoveredIndex !== null ? 0.7 : 1 }}
+                                style={{ opacity: hoveredIndex !== null ? 0.5 : 1 }}
                             />
 
-                            {/* Linha de separação entre concluídas e pendentes */}
-                            <path
-                                d={completedLinePath}
-                                fill="none"
-                                stroke="rgb(47, 219, 147)"
-                                strokeWidth="2.5"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                className="transition-opacity duration-300"
-                                style={{ opacity: hoveredIndex !== null ? 0.8 : 1 }}
-                            />
-
-                            {/* Linha de topo (total criadas) - Azul */}
+                            {/* Linha de criadas - Azul sólida */}
                             <path
                                 d={createdLinePath}
                                 fill="none"
@@ -375,16 +372,29 @@ export const ProgressTrendsCard: React.FC<ProgressTrendsCardProps> = ({ project,
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
                                 className="transition-opacity duration-300"
-                                style={{ opacity: hoveredIndex !== null ? 0.8 : 1 }}
+                                style={{ opacity: hoveredIndex !== null ? 0.7 : 1 }}
+                            />
+
+                            {/* Linha de concluídas - Verde tracejada */}
+                            <path
+                                d={completedLinePath}
+                                fill="none"
+                                stroke="rgb(47, 219, 147)"
+                                strokeWidth="3"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeDasharray="6 4"
+                                className="transition-opacity duration-300"
+                                style={{ opacity: hoveredIndex !== null ? 0.7 : 1 }}
                             />
 
                             {/* Pontos interativos */}
                             {points.map((point, index) => (
                                 <g key={index}>
-                                    {/* Círculo no topo (total criadas) - Azul */}
+                                    {/* Círculo para criadas - Azul */}
                                     <circle
                                         cx={point.x}
-                                        cy={point.createdTopY}
+                                        cy={point.createdY}
                                         r={hoveredIndex === index ? 6 : 4}
                                         fill="rgb(14, 109, 253)"
                                         stroke="rgba(255, 255, 255, 0.4)"
@@ -394,10 +404,10 @@ export const ProgressTrendsCard: React.FC<ProgressTrendsCardProps> = ({ project,
                                         style={{ opacity: hoveredIndex === index || hoveredIndex === null ? 1 : 0.5 }}
                                     />
                                     
-                                    {/* Círculo na linha de separação (concluídas) - Verde */}
+                                    {/* Círculo para concluídas - Verde */}
                                     <circle
                                         cx={point.x}
-                                        cy={point.completedTopY}
+                                        cy={point.completedY}
                                         r={hoveredIndex === index ? 6 : 4}
                                         fill="rgb(47, 219, 147)"
                                         stroke="rgba(255, 255, 255, 0.4)"
@@ -422,18 +432,18 @@ export const ProgressTrendsCard: React.FC<ProgressTrendsCardProps> = ({ project,
                                             {/* Marcadores horizontais no hover */}
                                             <line
                                                 x1={padding.left}
-                                                y1={point.completedTopY}
+                                                y1={point.completedY}
                                                 x2={padding.left + graphWidth}
-                                                y2={point.completedTopY}
+                                                y2={point.completedY}
                                                 stroke="rgba(47, 219, 147, 0.3)"
                                                 strokeWidth="1"
                                                 strokeDasharray="2 2"
                                             />
                                             <line
                                                 x1={padding.left}
-                                                y1={point.createdTopY}
+                                                y1={point.createdY}
                                                 x2={padding.left + graphWidth}
-                                                y2={point.createdTopY}
+                                                y2={point.createdY}
                                                 stroke="rgba(14, 109, 253, 0.3)"
                                                 strokeWidth="1"
                                                 strokeDasharray="2 2"
@@ -480,19 +490,21 @@ export const ProgressTrendsCard: React.FC<ProgressTrendsCardProps> = ({ project,
                                     <p className="text-sm font-semibold text-text-primary">{tooltip.date}</p>
                                     <div className="space-y-1">
                                         <div className="flex items-center gap-2">
-                                            <div className="w-3 h-3 rounded bg-[#2FDB93]"></div>
+                                            <div className="w-3 h-3 rounded-full bg-[#0E6DFD]"></div>
+                                            <span className="text-xs text-text-secondary">Criadas:</span>
+                                            <span className="text-sm font-bold text-text-primary">{tooltip.created}</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-3 h-3 rounded-full bg-[#2FDB93] border-2 border-[#2FDB93]"></div>
                                             <span className="text-xs text-text-secondary">Concluídas:</span>
                                             <span className="text-sm font-bold text-text-primary">{tooltip.completed}</span>
                                         </div>
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-3 h-3 rounded bg-[#0E6DFD]"></div>
-                                            <span className="text-xs text-text-secondary">Pendentes:</span>
-                                            <span className="text-sm font-bold text-text-primary">{tooltip.created - tooltip.completed}</span>
-                                        </div>
-                                        <div className="flex items-center gap-2 pt-1 border-t border-surface-border/50">
-                                            <span className="text-xs text-text-secondary">Total Criadas:</span>
-                                            <span className="text-sm font-bold text-text-primary">{tooltip.created}</span>
-                                        </div>
+                                        {tooltip.created > tooltip.completed && (
+                                            <div className="flex items-center gap-2 pt-1 border-t border-surface-border/50">
+                                                <span className="text-xs text-text-tertiary">Pendentes:</span>
+                                                <span className="text-sm font-semibold text-text-secondary">{tooltip.created - tooltip.completed}</span>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -500,18 +512,20 @@ export const ProgressTrendsCard: React.FC<ProgressTrendsCardProps> = ({ project,
                     </div>
 
                     {/* Legenda */}
-                    <div className="flex items-center justify-center gap-4 mt-4">
+                    <div className="flex items-center justify-center gap-6 mt-4">
+                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-hover/50 border border-[#0E6DFD]/20">
+                            <div className="w-4 h-4 rounded-full bg-[#0E6DFD] shadow-sm"></div>
+                            <span className="text-sm font-medium text-text-primary">Criadas</span>
+                        </div>
                         <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-hover/50 border border-[#2FDB93]/20">
-                            <div className="w-4 h-4 rounded bg-[#2FDB93] shadow-sm"></div>
+                            <div className="w-4 h-4 rounded-full bg-[#2FDB93] border-2 border-[#2FDB93] shadow-sm"></div>
                             <span className="text-sm font-medium text-text-primary">Concluídas</span>
                         </div>
-                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-hover/50 border border-[#0E6DFD]/20">
-                            <div className="w-4 h-4 rounded bg-[#0E6DFD] shadow-sm"></div>
-                            <span className="text-sm font-medium text-text-primary">Pendentes</span>
-                        </div>
-                        <div className="text-xs text-text-tertiary px-2">
-                            (Total: Concluídas + Pendentes)
-                        </div>
+                        {needsNormalization && (
+                            <div className="text-xs text-text-tertiary px-2 italic">
+                                * Escala amplificada para melhor visualização
+                            </div>
+                        )}
                     </div>
                 </div>
 
