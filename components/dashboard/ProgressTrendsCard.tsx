@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useRef } from 'react';
 import { Card } from '../common/Card';
 import { Project } from '../../types';
 
@@ -7,7 +7,22 @@ interface ProgressTrendsCardProps {
     cumulativeProgress: Array<{ date: number; series: number[] }>;
 }
 
+type PeriodFilter = 7 | 14 | 30;
+
+interface TooltipData {
+    date: string;
+    created: number;
+    completed: number;
+    x: number;
+    y: number;
+}
+
 export const ProgressTrendsCard: React.FC<ProgressTrendsCardProps> = ({ project, cumulativeProgress }) => {
+    const [period, setPeriod] = useState<PeriodFilter>(7);
+    const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+    const [tooltip, setTooltip] = useState<TooltipData | null>(null);
+    const chartRef = useRef<HTMLDivElement>(null);
+    
     const tasks = project.tasks || [];
     const allTestCases = tasks.flatMap(t => t.testCases || []);
 
@@ -17,15 +32,15 @@ export const ProgressTrendsCard: React.FC<ProgressTrendsCardProps> = ({ project,
             new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime()
         );
 
-        // Últimos 7 dias de atividade
-        const last7Days = Array.from({ length: 7 }, (_, i) => {
+        // Dias baseado no período selecionado
+        const days = Array.from({ length: period }, (_, i) => {
             const date = new Date();
-            date.setDate(date.getDate() - (6 - i));
+            date.setDate(date.getDate() - (period - 1 - i));
             date.setHours(0, 0, 0, 0);
             return date.getTime();
         });
 
-        const tasksByDay = last7Days.map(day => {
+        const tasksByDay = days.map(day => {
             const dayStart = day;
             const dayEnd = day + (24 * 60 * 60 * 1000);
             return {
@@ -41,125 +56,436 @@ export const ProgressTrendsCard: React.FC<ProgressTrendsCardProps> = ({ project,
             };
         });
 
-        // Calcular tendência (melhorando, piorando, estável)
-        const recentCompleted = tasksByDay.slice(-3).reduce((sum, day) => sum + day.completed, 0);
-        const previousCompleted = tasksByDay.slice(0, 3).reduce((sum, day) => sum + day.completed, 0);
+        // Calcular tendência melhorada
+        const recentCompleted = tasksByDay.slice(-Math.ceil(period / 3)).reduce((sum, day) => sum + day.completed, 0);
+        const previousCompleted = tasksByDay.slice(0, Math.ceil(period / 3)).reduce((sum, day) => sum + day.completed, 0);
         
         let trend: 'improving' | 'declining' | 'stable' = 'stable';
-        if (recentCompleted > previousCompleted * 1.1) {
+        const changePercent = previousCompleted > 0 ? ((recentCompleted - previousCompleted) / previousCompleted) * 100 : 0;
+        
+        if (changePercent > 10) {
             trend = 'improving';
-        } else if (recentCompleted < previousCompleted * 0.9) {
+        } else if (changePercent < -10) {
             trend = 'declining';
         }
 
-        // Testes executados nos últimos 7 dias
-        const testsByDay = last7Days.map(day => {
-            const dayStart = day;
-            const dayEnd = day + (24 * 60 * 60 * 1000);
-            return {
-                date: day,
-                executed: allTestCases.filter(tc => {
-                    // Assumindo que testes executados têm um campo executedAt
-                    // Por enquanto, vamos usar uma estimativa baseada no status
-                    return tc.status !== 'Not Run';
-                }).length,
-            };
-        });
+        // Calcular velocidade média
+        const totalCompleted = tasksByDay.reduce((sum, day) => sum + day.completed, 0);
+        const averageVelocity = totalCompleted / period;
+
+        // Calcular variação percentual
+        const totalCreated = tasksByDay.reduce((sum, day) => sum + day.created, 0);
+        const totalCompletedSum = tasksByDay.reduce((sum, day) => sum + day.completed, 0);
+        const completionRate = totalCreated > 0 ? (totalCompletedSum / totalCreated) * 100 : 0;
 
         return {
             tasksByDay,
-            testsByDay,
             trend,
+            changePercent: Math.abs(changePercent),
+            averageVelocity: Math.round(averageVelocity * 10) / 10,
+            totalCreated,
+            totalCompleted: totalCompletedSum,
+            completionRate: Math.round(completionRate),
+            testsExecuted: allTestCases.filter(tc => tc.status !== 'Not Run').length,
         };
-    }, [tasks, allTestCases]);
+    }, [tasks, allTestCases, period]);
 
     const trendLabels = {
-        improving: { label: 'Melhorando', icon: '📈', color: 'text-success' },
-        declining: { label: 'Declinando', icon: '📉', color: 'text-danger' },
-        stable: { label: 'Estável', icon: '➡️', color: 'text-text-secondary' },
+        improving: { 
+            label: 'Melhorando', 
+            icon: '📈', 
+            color: 'text-success',
+            bgColor: 'bg-success/10',
+            borderColor: 'border-success/30'
+        },
+        declining: { 
+            label: 'Declinando', 
+            icon: '📉', 
+            color: 'text-danger',
+            bgColor: 'bg-danger/10',
+            borderColor: 'border-danger/30'
+        },
+        stable: { 
+            label: 'Estável', 
+            icon: '➡️', 
+            color: 'text-text-secondary',
+            bgColor: 'bg-surface-hover/50',
+            borderColor: 'border-surface-border'
+        },
     };
 
     const trendInfo = trendLabels[trends.trend];
 
+    // Calcular dimensões do gráfico
+    const chartWidth = 100;
+    const chartHeight = 200;
+    const padding = { top: 20, right: 10, bottom: 30, left: 10 };
+    const graphWidth = chartWidth - padding.left - padding.right;
+    const graphHeight = chartHeight - padding.top - padding.bottom;
+
+    // Preparar dados para SVG
+    const maxValue = Math.max(
+        ...trends.tasksByDay.map(d => Math.max(d.created, d.completed)),
+        1
+    );
+
+    const points = trends.tasksByDay.map((day, index) => {
+        const x = padding.left + (index / (trends.tasksByDay.length - 1 || 1)) * graphWidth;
+        const createdY = padding.top + graphHeight - (day.created / maxValue) * graphHeight;
+        const completedY = padding.top + graphHeight - (day.completed / maxValue) * graphHeight;
+        return {
+            x,
+            createdY,
+            completedY,
+            day,
+            index,
+        };
+    });
+
+    // Criar paths para área
+    const createAreaPath = (points: typeof points, isCreated: boolean) => {
+        if (points.length === 0) return '';
+        
+        const pathPoints = points.map(p => {
+            const y = isCreated ? p.createdY : p.completedY;
+            return `${p.x},${y}`;
+        });
+
+        // Criar área fechada
+        const firstPoint = points[0];
+        const lastPoint = points[points.length - 1];
+        const bottomY = padding.top + graphHeight;
+        
+        return `M ${firstPoint.x},${bottomY} L ${pathPoints.join(' L ')} L ${lastPoint.x},${bottomY} Z`;
+    };
+
+    const createdAreaPath = createAreaPath(points, true);
+    const completedAreaPath = createAreaPath(points, false);
+
+    // Criar paths para linhas
+    const createLinePath = (points: typeof points, isCreated: boolean) => {
+        if (points.length === 0) return '';
+        
+        const pathPoints = points.map((p, i) => {
+            const y = isCreated ? p.createdY : p.completedY;
+            return i === 0 ? `M ${p.x},${y}` : `L ${p.x},${y}`;
+        });
+
+        return pathPoints.join(' ');
+    };
+
+    const createdLinePath = createLinePath(points, true);
+    const completedLinePath = createLinePath(points, false);
+
+    // Handler para hover
+    const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>, index: number) => {
+        if (!chartRef.current) return;
+        
+        const rect = chartRef.current.getBoundingClientRect();
+        const point = points[index];
+        const day = trends.tasksByDay[index];
+        
+        setHoveredIndex(index);
+        setTooltip({
+            date: new Date(day.date).toLocaleDateString('pt-BR', { 
+                weekday: 'short', 
+                day: '2-digit', 
+                month: '2-digit' 
+            }),
+            created: day.created,
+            completed: day.completed,
+            x: e.clientX - rect.left,
+            y: e.clientY - rect.top,
+        });
+    };
+
+    const handleMouseLeave = () => {
+        setHoveredIndex(null);
+        setTooltip(null);
+    };
+
     return (
         <Card>
-            <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold text-text-primary">Tendências e Progresso</h3>
+            <div className="space-y-6">
+                {/* Header com filtros */}
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div>
+                        <h3 className="text-xl font-semibold text-text-primary mb-1">
+                            Tendências e Progresso
+                        </h3>
+                        <p className="text-sm text-text-secondary">
+                            Acompanhamento de produtividade e progresso do projeto
+                        </p>
+                    </div>
+                    
+                    {/* Filtros de período */}
                     <div className="flex items-center gap-2">
-                        <span className="text-lg">{trendInfo.icon}</span>
-                        <span className={`text-sm font-semibold ${trendInfo.color}`}>{trendInfo.label}</span>
+                        {([7, 14, 30] as PeriodFilter[]).map((p) => (
+                            <button
+                                key={p}
+                                onClick={() => setPeriod(p)}
+                                className={`px-4 py-2 text-sm font-medium rounded-xl transition-all ${
+                                    period === p
+                                        ? 'bg-accent text-white shadow-lg shadow-accent/20'
+                                        : 'bg-surface-hover text-text-secondary hover:text-text-primary hover:bg-surface-hover/80'
+                                }`}
+                                aria-label={`Filtrar últimos ${p} dias`}
+                            >
+                                {p}d
+                            </button>
+                        ))}
                     </div>
                 </div>
 
-                {/* Gráfico de Progresso de Tarefas (Últimos 7 dias) */}
-                <div>
-                    <h4 className="text-sm font-semibold text-text-secondary mb-3">Progresso de Tarefas (Últimos 7 dias)</h4>
-                    <div className="h-32 flex items-end justify-between gap-1">
-                        {trends.tasksByDay.map((day, index) => {
-                            const maxValue = Math.max(
-                                ...trends.tasksByDay.map(d => Math.max(d.created, d.completed)),
-                                1
-                            );
-                            const createdHeight = maxValue > 0 ? (day.created / maxValue) * 100 : 0;
-                            const completedHeight = maxValue > 0 ? (day.completed / maxValue) * 100 : 0;
+                {/* Indicador de tendência melhorado */}
+                <div className={`flex items-center justify-between p-4 rounded-2xl border-2 ${trendInfo.bgColor} ${trendInfo.borderColor} transition-all`}>
+                    <div className="flex items-center gap-3">
+                        <span className="text-3xl">{trendInfo.icon}</span>
+                        <div>
+                            <p className="text-sm text-text-secondary">Tendência</p>
+                            <p className={`text-lg font-bold ${trendInfo.color}`}>
+                                {trendInfo.label}
+                            </p>
+                        </div>
+                    </div>
+                    <div className="text-right">
+                        <p className="text-xs text-text-tertiary">Variação</p>
+                        <p className={`text-lg font-bold ${trendInfo.color}`}>
+                            {trends.changePercent > 0 ? '+' : ''}{trends.changePercent.toFixed(1)}%
+                        </p>
+                    </div>
+                </div>
+
+                {/* Gráfico de Área */}
+                <div className="relative" ref={chartRef}>
+                    <div className="mb-4">
+                        <h4 className="text-sm font-semibold text-text-primary mb-1">
+                            Progresso de Tarefas (Últimos {period} dias)
+                        </h4>
+                        <p className="text-xs text-text-tertiary">
+                            Visualização temporal de criação e conclusão de tarefas
+                        </p>
+                    </div>
+                    
+                    <div className="relative bg-surface-hover/30 rounded-2xl p-4 overflow-hidden">
+                        <svg
+                            viewBox={`0 0 ${chartWidth} ${chartHeight}`}
+                            className="w-full h-64"
+                            onMouseLeave={handleMouseLeave}
+                            aria-label="Gráfico de progresso de tarefas"
+                            role="img"
+                        >
+                            <defs>
+                                {/* Gradiente para área de criadas */}
+                                <linearGradient id="createdGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                                    <stop offset="0%" stopColor="rgb(20, 184, 166)" stopOpacity="0.4" />
+                                    <stop offset="100%" stopColor="rgb(20, 184, 166)" stopOpacity="0.1" />
+                                </linearGradient>
+                                
+                                {/* Gradiente para área de concluídas */}
+                                <linearGradient id="completedGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                                    <stop offset="0%" stopColor="rgb(20, 184, 166)" stopOpacity="0.6" />
+                                    <stop offset="100%" stopColor="rgb(20, 184, 166)" stopOpacity="0.2" />
+                                </linearGradient>
+                            </defs>
+
+                            {/* Área de criadas */}
+                            <path
+                                d={createdAreaPath}
+                                fill="url(#createdGradient)"
+                                className="transition-opacity duration-300"
+                                style={{ opacity: hoveredIndex !== null ? 0.5 : 1 }}
+                            />
                             
-                            return (
-                                <div key={index} className="flex-1 flex flex-col items-center gap-1">
-                                    <div className="w-full flex flex-col-reverse gap-0.5" style={{ height: '100%' }}>
-                                        <div
-                                            className="w-full bg-accent/60 rounded-t transition-all"
-                                            style={{ height: `${completedHeight}%`, minHeight: completedHeight > 0 ? '4px' : '0' }}
-                                            title={`Concluídas: ${day.completed}`}
+                            {/* Área de concluídas */}
+                            <path
+                                d={completedAreaPath}
+                                fill="url(#completedGradient)"
+                                className="transition-opacity duration-300"
+                                style={{ opacity: hoveredIndex !== null ? 0.5 : 1 }}
+                            />
+
+                            {/* Linha de criadas */}
+                            <path
+                                d={createdLinePath}
+                                fill="none"
+                                stroke="rgb(20, 184, 166)"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                className="transition-opacity duration-300"
+                                style={{ opacity: hoveredIndex !== null ? 0.5 : 1 }}
+                            />
+
+                            {/* Linha de concluídas */}
+                            <path
+                                d={completedLinePath}
+                                fill="none"
+                                stroke="rgb(20, 184, 166)"
+                                strokeWidth="2.5"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeDasharray="4 4"
+                                className="transition-opacity duration-300"
+                                style={{ opacity: hoveredIndex !== null ? 0.5 : 1 }}
+                            />
+
+                            {/* Pontos interativos */}
+                            {points.map((point, index) => (
+                                <g key={index}>
+                                    {/* Círculo para criadas */}
+                                    <circle
+                                        cx={point.x}
+                                        cy={point.createdY}
+                                        r={hoveredIndex === index ? 5 : 3}
+                                        fill="rgb(20, 184, 166)"
+                                        className="transition-all duration-200 cursor-pointer"
+                                        onMouseMove={(e) => handleMouseMove(e, index)}
+                                        style={{ opacity: hoveredIndex === index || hoveredIndex === null ? 1 : 0.3 }}
+                                    />
+                                    
+                                    {/* Círculo para concluídas */}
+                                    <circle
+                                        cx={point.x}
+                                        cy={point.completedY}
+                                        r={hoveredIndex === index ? 5 : 3}
+                                        fill="rgb(20, 184, 166)"
+                                        className="transition-all duration-200 cursor-pointer"
+                                        onMouseMove={(e) => handleMouseMove(e, index)}
+                                        style={{ opacity: hoveredIndex === index || hoveredIndex === null ? 1 : 0.3 }}
+                                    />
+                                    
+                                    {/* Linha vertical no hover */}
+                                    {hoveredIndex === index && (
+                                        <line
+                                            x1={point.x}
+                                            y1={padding.top}
+                                            x2={point.x}
+                                            y2={padding.top + graphHeight}
+                                            stroke="rgba(255, 255, 255, 0.3)"
+                                            strokeWidth="1"
+                                            strokeDasharray="2 2"
                                         />
-                                        <div
-                                            className="w-full bg-accent rounded-t transition-all"
-                                            style={{ height: `${createdHeight}%`, minHeight: createdHeight > 0 ? '4px' : '0' }}
-                                            title={`Criadas: ${day.created}`}
-                                        />
+                                    )}
+                                </g>
+                            ))}
+
+                            {/* Labels do eixo X */}
+                            {points.map((point, index) => {
+                                if (period === 7 && index % 1 !== 0 && index !== points.length - 1) return null;
+                                if (period === 14 && index % 2 !== 0 && index !== points.length - 1) return null;
+                                if (period === 30 && index % 5 !== 0 && index !== points.length - 1) return null;
+                                
+                                return (
+                                    <text
+                                        key={index}
+                                        x={point.x}
+                                        y={chartHeight - padding.bottom + 15}
+                                        textAnchor="middle"
+                                        className="text-xs fill-text-tertiary"
+                                    >
+                                        {new Date(point.day.date).toLocaleDateString('pt-BR', { 
+                                            day: '2-digit', 
+                                            month: '2-digit' 
+                                        })}
+                                    </text>
+                                );
+                            })}
+                        </svg>
+
+                        {/* Tooltip */}
+                        {tooltip && (
+                            <div
+                                className="absolute z-10 px-4 py-3 rounded-xl bg-surface border border-surface-border shadow-2xl pointer-events-none transition-all"
+                                style={{
+                                    left: `${tooltip.x}px`,
+                                    top: `${tooltip.y - 100}px`,
+                                    transform: 'translateX(-50%)',
+                                }}
+                            >
+                                <div className="space-y-2">
+                                    <p className="text-sm font-semibold text-text-primary">{tooltip.date}</p>
+                                    <div className="space-y-1">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-3 h-3 rounded-full bg-accent"></div>
+                                            <span className="text-xs text-text-secondary">Criadas:</span>
+                                            <span className="text-sm font-bold text-text-primary">{tooltip.created}</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-3 h-3 rounded-full bg-accent/60 border-2 border-accent"></div>
+                                            <span className="text-xs text-text-secondary">Concluídas:</span>
+                                            <span className="text-sm font-bold text-text-primary">{tooltip.completed}</span>
+                                        </div>
                                     </div>
-                                    <span className="text-xs text-text-tertiary mt-1">
-                                        {new Date(day.date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
-                                    </span>
                                 </div>
-                            );
-                        })}
+                            </div>
+                        )}
                     </div>
-                    <div className="flex items-center justify-center gap-4 mt-2">
+
+                    {/* Legenda */}
+                    <div className="flex items-center justify-center gap-6 mt-4">
                         <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 rounded bg-accent"></div>
-                            <span className="text-xs text-text-secondary">Criadas</span>
+                            <div className="w-4 h-4 rounded bg-accent"></div>
+                            <span className="text-sm text-text-secondary">Criadas</span>
                         </div>
                         <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 rounded bg-accent/60"></div>
-                            <span className="text-xs text-text-secondary">Concluídas</span>
+                            <div className="w-4 h-4 rounded bg-accent/60 border-2 border-accent"></div>
+                            <span className="text-sm text-text-secondary">Concluídas</span>
                         </div>
                     </div>
                 </div>
 
-                {/* Resumo de Progresso */}
-                <div className="grid grid-cols-3 gap-2 pt-md border-t border-surface-border">
-                    <div className="text-center p-2 rounded-xl bg-surface-hover/50">
+                {/* Cards de Métricas Melhorados */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="p-4 rounded-2xl bg-gradient-to-br from-accent/10 to-accent/5 border border-accent/20 hover:border-accent/40 transition-all group">
+                        <div className="flex items-center justify-between mb-2">
+                            <span className="text-2xl">📝</span>
+                            <span className="text-xs text-text-tertiary group-hover:text-text-secondary transition-colors">
+                                Últimos {period}d
+                            </span>
+                        </div>
                         <p className="text-xs text-text-tertiary mb-1">Tarefas Criadas</p>
-                        <p className="text-lg font-bold text-text-primary">
-                            {trends.tasksByDay.reduce((sum, day) => sum + day.created, 0)}
-                        </p>
+                        <p className="text-2xl font-bold text-text-primary">{trends.totalCreated}</p>
                     </div>
-                    <div className="text-center p-2 rounded-xl bg-surface-hover/50">
+
+                    <div className="p-4 rounded-2xl bg-gradient-to-br from-success/10 to-success/5 border border-success/20 hover:border-success/40 transition-all group">
+                        <div className="flex items-center justify-between mb-2">
+                            <span className="text-2xl">✅</span>
+                            <span className="text-xs text-text-tertiary group-hover:text-text-secondary transition-colors">
+                                Últimos {period}d
+                            </span>
+                        </div>
                         <p className="text-xs text-text-tertiary mb-1">Tarefas Concluídas</p>
-                        <p className="text-lg font-bold text-text-primary">
-                            {trends.tasksByDay.reduce((sum, day) => sum + day.completed, 0)}
+                        <p className="text-2xl font-bold text-text-primary">{trends.totalCompleted}</p>
+                        <p className="text-xs text-success mt-1">
+                            {trends.completionRate}% de conclusão
                         </p>
                     </div>
-                    <div className="text-center p-2 rounded-xl bg-surface-hover/50">
+
+                    <div className="p-4 rounded-2xl bg-gradient-to-br from-purple-500/10 to-purple-500/5 border border-purple-500/20 hover:border-purple-500/40 transition-all group">
+                        <div className="flex items-center justify-between mb-2">
+                            <span className="text-2xl">⚡</span>
+                            <span className="text-xs text-text-tertiary group-hover:text-text-secondary transition-colors">
+                                Média diária
+                            </span>
+                        </div>
+                        <p className="text-xs text-text-tertiary mb-1">Velocidade</p>
+                        <p className="text-2xl font-bold text-text-primary">{trends.averageVelocity}</p>
+                        <p className="text-xs text-text-tertiary mt-1">tarefas/dia</p>
+                    </div>
+
+                    <div className="p-4 rounded-2xl bg-gradient-to-br from-blue-500/10 to-blue-500/5 border border-blue-500/20 hover:border-blue-500/40 transition-all group">
+                        <div className="flex items-center justify-between mb-2">
+                            <span className="text-2xl">🧪</span>
+                            <span className="text-xs text-text-tertiary group-hover:text-text-secondary transition-colors">
+                                Total
+                            </span>
+                        </div>
                         <p className="text-xs text-text-tertiary mb-1">Testes Executados</p>
-                        <p className="text-lg font-bold text-text-primary">
-                            {allTestCases.filter(tc => tc.status !== 'Not Run').length}
-                        </p>
+                        <p className="text-2xl font-bold text-text-primary">{trends.testsExecuted}</p>
                     </div>
                 </div>
             </div>
         </Card>
     );
 };
-
