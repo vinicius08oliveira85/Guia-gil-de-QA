@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useRef } from 'react';
+import React, { useMemo } from 'react';
 import { Card } from '../common/Card';
 import { Project } from '../../types';
 
@@ -7,32 +7,19 @@ interface ProgressTrendsCardProps {
     cumulativeProgress: Array<{ date: number; series: number[] }>;
 }
 
-type PeriodFilter = 7 | 14 | 30;
-
-interface TooltipData {
-    date: string;
-    created: number;
-    completed: number;
-    x: number;
-    y: number;
-}
-
-export const ProgressTrendsCard: React.FC<ProgressTrendsCardProps> = ({ project, cumulativeProgress }) => {
-    const [period, setPeriod] = useState<PeriodFilter>(7);
-    const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-    const [tooltip, setTooltip] = useState<TooltipData | null>(null);
-    const chartRef = useRef<HTMLDivElement>(null);
+export const ProgressTrendsCard: React.FC<ProgressTrendsCardProps> = ({ project }) => {
+    const period = 7; // Período fixo de 7 dias
     
     const tasks = project.tasks || [];
     const allTestCases = tasks.flatMap(t => t.testCases || []);
 
-    // Calcular tendências
+    // Calcular métricas
     const trends = useMemo(() => {
         const sortedTasks = [...tasks].sort((a, b) => 
             new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime()
         );
 
-        // Dias baseado no período selecionado
+        // Dias baseado no período
         const days = Array.from({ length: period }, (_, i) => {
             const date = new Date();
             date.setDate(date.getDate() - (period - 1 - i));
@@ -56,32 +43,16 @@ export const ProgressTrendsCard: React.FC<ProgressTrendsCardProps> = ({ project,
             };
         });
 
-        // Calcular tendência melhorada
-        const recentCompleted = tasksByDay.slice(-Math.ceil(period / 3)).reduce((sum, day) => sum + day.completed, 0);
-        const previousCompleted = tasksByDay.slice(0, Math.ceil(period / 3)).reduce((sum, day) => sum + day.completed, 0);
-        
-        let trend: 'improving' | 'declining' | 'stable' = 'stable';
-        const changePercent = previousCompleted > 0 ? ((recentCompleted - previousCompleted) / previousCompleted) * 100 : 0;
-        
-        if (changePercent > 10) {
-            trend = 'improving';
-        } else if (changePercent < -10) {
-            trend = 'declining';
-        }
-
         // Calcular velocidade média
         const totalCompleted = tasksByDay.reduce((sum, day) => sum + day.completed, 0);
         const averageVelocity = totalCompleted / period;
 
-        // Calcular variação percentual
+        // Calcular taxa de conclusão
         const totalCreated = tasksByDay.reduce((sum, day) => sum + day.created, 0);
         const totalCompletedSum = tasksByDay.reduce((sum, day) => sum + day.completed, 0);
         const completionRate = totalCreated > 0 ? (totalCompletedSum / totalCreated) * 100 : 0;
 
         return {
-            tasksByDay,
-            trend,
-            changePercent: Math.abs(changePercent),
             averageVelocity: Math.round(averageVelocity * 10) / 10,
             totalCreated,
             totalCompleted: totalCompletedSum,
@@ -90,446 +61,10 @@ export const ProgressTrendsCard: React.FC<ProgressTrendsCardProps> = ({ project,
         };
     }, [tasks, allTestCases, period]);
 
-    const trendLabels = {
-        improving: { 
-            label: 'Melhorando', 
-            icon: '📈', 
-            color: 'text-success',
-            bgColor: 'bg-success/10',
-            borderColor: 'border-success/30'
-        },
-        declining: { 
-            label: 'Declinando', 
-            icon: '📉', 
-            color: 'text-danger',
-            bgColor: 'bg-danger/10',
-            borderColor: 'border-danger/30'
-        },
-        stable: { 
-            label: 'Estável', 
-            icon: '➡️', 
-            color: 'text-text-secondary',
-            bgColor: 'bg-surface-hover/50',
-            borderColor: 'border-surface-border'
-        },
-    };
-
-    const trendInfo = trendLabels[trends.trend];
-
-    // Calcular dimensões do gráfico - aumentado para melhor visualização
-    const chartWidth = 100;
-    const chartHeight = 280;
-    const padding = { top: 25, right: 10, bottom: 40, left: 10 };
-    const graphWidth = chartWidth - padding.left - padding.right;
-    const graphHeight = chartHeight - padding.top - padding.bottom;
-
-    // Preparar dados para SVG com normalização de escala
-    const maxValue = Math.max(
-        ...trends.tasksByDay.map(d => Math.max(d.created, d.completed)),
-        1
-    );
-
-    // Calcular diferenças mínimas e máximas para detectar quando linhas estão muito próximas
-    const differences = trends.tasksByDay.map(d => Math.abs(d.created - d.completed));
-    const minDifference = Math.min(...differences);
-    const maxDifference = Math.max(...differences);
-    const avgDifference = differences.reduce((a, b) => a + b, 0) / differences.length;
-    
-    // Determinar se precisa de normalização (quando diferença média é < 20% do valor máximo)
-    const needsNormalization = avgDifference < (maxValue * 0.2) && minDifference < (maxValue * 0.15);
-    
-    // Fator de amplificação para criar espaço mínimo visual (15% da altura do gráfico)
-    const minVisualSeparation = graphHeight * 0.15;
-    const scaleFactor = needsNormalization 
-        ? Math.max(1.5, minVisualSeparation / (avgDifference || 1) * (maxValue / graphHeight))
-        : 1;
-
-    // Calcular pontos com normalização adaptativa
-    const points = trends.tasksByDay.map((day, index) => {
-        const x = padding.left + (index / (trends.tasksByDay.length - 1 || 1)) * graphWidth;
-        
-        // Valores normalizados para visualização
-        let normalizedCreated = day.created;
-        let normalizedCompleted = day.completed;
-        
-        if (needsNormalization && scaleFactor > 1) {
-            // Aplicar escala amplificada mantendo proporção
-            const center = (day.created + day.completed) / 2;
-            const diff = day.created - day.completed;
-            const amplifiedDiff = diff * scaleFactor;
-            
-            normalizedCreated = center + amplifiedDiff / 2;
-            normalizedCompleted = center - amplifiedDiff / 2;
-            
-            // Garantir que não ultrapassem os limites
-            normalizedCreated = Math.max(0, Math.min(normalizedCreated, maxValue * 1.2));
-            normalizedCompleted = Math.max(0, Math.min(normalizedCompleted, maxValue * 1.2));
-        }
-        
-        const effectiveMax = needsNormalization ? maxValue * 1.2 : maxValue;
-        
-        const createdY = padding.top + graphHeight - (normalizedCreated / effectiveMax) * graphHeight;
-        const completedY = padding.top + graphHeight - (normalizedCompleted / effectiveMax) * graphHeight;
-        
-        return {
-            x,
-            createdY,
-            completedY,
-            day,
-            index,
-            // Valores reais para tooltips
-            realCreated: day.created,
-            realCompleted: day.completed,
-        };
-    });
-
-    // Criar paths para áreas
-    const createAreaPath = (points: typeof points, isCreated: boolean) => {
-        if (points.length === 0) return '';
-        
-        const pathPoints = points.map(p => {
-            const y = isCreated ? p.createdY : p.completedY;
-            return `${p.x},${y}`;
-        });
-
-        // Criar área fechada
-        const firstPoint = points[0];
-        const lastPoint = points[points.length - 1];
-        const bottomY = padding.top + graphHeight;
-        
-        return `M ${firstPoint.x},${bottomY} L ${pathPoints.join(' L ')} L ${lastPoint.x},${bottomY} Z`;
-    };
-
-    const createdAreaPath = createAreaPath(points, true);
-    const completedAreaPath = createAreaPath(points, false);
-
-    // Criar paths para linhas
-    const createLinePath = (points: typeof points, isCreated: boolean) => {
-        if (points.length === 0) return '';
-        
-        const pathPoints = points.map((p, i) => {
-            const y = isCreated ? p.createdY : p.completedY;
-            return i === 0 ? `M ${p.x},${y}` : `L ${p.x},${y}`;
-        });
-
-        return pathPoints.join(' ');
-    };
-
-    const createdLinePath = createLinePath(points, true);
-    const completedLinePath = createLinePath(points, false);
-
-    // Handler para hover
-    const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>, index: number) => {
-        if (!chartRef.current) return;
-        
-        const rect = chartRef.current.getBoundingClientRect();
-        const point = points[index];
-        const day = trends.tasksByDay[index];
-        
-        setHoveredIndex(index);
-        setTooltip({
-            date: new Date(day.date).toLocaleDateString('pt-BR', { 
-                weekday: 'short', 
-                day: '2-digit', 
-                month: '2-digit' 
-            }),
-            created: point.realCreated,
-            completed: point.realCompleted,
-            x: e.clientX - rect.left,
-            y: e.clientY - rect.top,
-        });
-    };
-
-    const handleMouseLeave = () => {
-        setHoveredIndex(null);
-        setTooltip(null);
-    };
-
     return (
         <Card>
-            <div className="space-y-6">
-                {/* Header com filtros */}
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div>
-                        <h3 className="text-xl font-semibold text-text-primary mb-1">
-                            Tendências e Progresso
-                        </h3>
-                        <p className="text-sm text-text-secondary">
-                            Acompanhamento de produtividade e progresso do projeto
-                        </p>
-                    </div>
-                    
-                    {/* Filtros de período */}
-                    <div className="flex items-center gap-2">
-                        {([7, 14, 30] as PeriodFilter[]).map((p) => (
-                            <button
-                                key={p}
-                                onClick={() => setPeriod(p)}
-                                className={`px-4 py-2 text-sm font-medium rounded-xl transition-all ${
-                                    period === p
-                                        ? 'bg-accent text-white shadow-lg shadow-accent/20'
-                                        : 'bg-surface-hover text-text-secondary hover:text-text-primary hover:bg-surface-hover/80'
-                                }`}
-                                aria-label={`Filtrar últimos ${p} dias`}
-                            >
-                                {p}d
-                            </button>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Indicador de tendência melhorado */}
-                <div className={`flex items-center justify-between p-4 rounded-2xl border-2 ${trendInfo.bgColor} ${trendInfo.borderColor} transition-all`}>
-                    <div className="flex items-center gap-3">
-                        <span className="text-3xl">{trendInfo.icon}</span>
-                        <div>
-                            <p className="text-sm text-text-secondary">Tendência</p>
-                            <p className={`text-lg font-bold ${trendInfo.color}`}>
-                                {trendInfo.label}
-                            </p>
-                        </div>
-                    </div>
-                    <div className="text-right">
-                        <p className="text-xs text-text-tertiary">Variação</p>
-                        <p className={`text-lg font-bold ${trendInfo.color}`}>
-                            {trends.changePercent > 0 ? '+' : ''}{trends.changePercent.toFixed(1)}%
-                        </p>
-                    </div>
-                </div>
-
-                {/* Gráfico de Área */}
-                <div className="relative" ref={chartRef}>
-                    <div className="mb-4">
-                        <h4 className="text-sm font-semibold text-text-primary mb-1">
-                            Progresso de Tarefas (Últimos {period} dias)
-                        </h4>
-                        <p className="text-xs text-text-tertiary">
-                            Visualização temporal de criação e conclusão de tarefas
-                        </p>
-                    </div>
-                    
-                    <div className="relative bg-surface-hover/30 rounded-2xl p-4 overflow-hidden">
-                        <svg
-                            viewBox={`0 0 ${chartWidth} ${chartHeight}`}
-                            className="w-full h-96"
-                            onMouseLeave={handleMouseLeave}
-                            aria-label="Gráfico de progresso de tarefas"
-                            role="img"
-                        >
-                            <defs>
-                                {/* Gradiente para área de criadas - Azul */}
-                                <linearGradient id="createdGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                                    <stop offset="0%" stopColor="rgb(14, 109, 253)" stopOpacity="0.5" />
-                                    <stop offset="100%" stopColor="rgb(14, 109, 253)" stopOpacity="0.1" />
-                                </linearGradient>
-                                
-                                {/* Gradiente para área de concluídas - Verde */}
-                                <linearGradient id="completedGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                                    <stop offset="0%" stopColor="rgb(47, 219, 147)" stopOpacity="0.6" />
-                                    <stop offset="100%" stopColor="rgb(47, 219, 147)" stopOpacity="0.15" />
-                                </linearGradient>
-                            </defs>
-                            
-                            {/* Grid lines horizontais */}
-                            {[0, 0.2, 0.4, 0.6, 0.8, 1].map((ratio) => {
-                                const y = padding.top + graphHeight - (ratio * graphHeight);
-                                return (
-                                    <line
-                                        key={ratio}
-                                        x1={padding.left}
-                                        y1={y}
-                                        x2={padding.left + graphWidth}
-                                        y2={y}
-                                        stroke="rgba(255, 255, 255, 0.08)"
-                                        strokeWidth="0.5"
-                                        strokeDasharray="2 2"
-                                    />
-                                );
-                            })}
-
-                            {/* Área de criadas - Azul */}
-                            <path
-                                d={createdAreaPath}
-                                fill="url(#createdGradient)"
-                                className="transition-opacity duration-300"
-                                style={{ opacity: hoveredIndex !== null ? 0.5 : 1 }}
-                            />
-                            
-                            {/* Área de concluídas - Verde */}
-                            <path
-                                d={completedAreaPath}
-                                fill="url(#completedGradient)"
-                                className="transition-opacity duration-300"
-                                style={{ opacity: hoveredIndex !== null ? 0.5 : 1 }}
-                            />
-
-                            {/* Linha de criadas - Azul sólida */}
-                            <path
-                                d={createdLinePath}
-                                fill="none"
-                                stroke="rgb(14, 109, 253)"
-                                strokeWidth="3"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                className="transition-opacity duration-300"
-                                style={{ opacity: hoveredIndex !== null ? 0.7 : 1 }}
-                            />
-
-                            {/* Linha de concluídas - Verde tracejada */}
-                            <path
-                                d={completedLinePath}
-                                fill="none"
-                                stroke="rgb(47, 219, 147)"
-                                strokeWidth="3"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeDasharray="6 4"
-                                className="transition-opacity duration-300"
-                                style={{ opacity: hoveredIndex !== null ? 0.7 : 1 }}
-                            />
-
-                            {/* Pontos interativos */}
-                            {points.map((point, index) => (
-                                <g key={index}>
-                                    {/* Círculo para criadas - Azul */}
-                                    <circle
-                                        cx={point.x}
-                                        cy={point.createdY}
-                                        r={hoveredIndex === index ? 6 : 4}
-                                        fill="rgb(14, 109, 253)"
-                                        stroke="rgba(255, 255, 255, 0.4)"
-                                        strokeWidth="1.5"
-                                        className="transition-all duration-200 cursor-pointer"
-                                        onMouseMove={(e) => handleMouseMove(e, index)}
-                                        style={{ opacity: hoveredIndex === index || hoveredIndex === null ? 1 : 0.5 }}
-                                    />
-                                    
-                                    {/* Círculo para concluídas - Verde */}
-                                    <circle
-                                        cx={point.x}
-                                        cy={point.completedY}
-                                        r={hoveredIndex === index ? 6 : 4}
-                                        fill="rgb(47, 219, 147)"
-                                        stroke="rgba(255, 255, 255, 0.4)"
-                                        strokeWidth="1.5"
-                                        className="transition-all duration-200 cursor-pointer"
-                                        onMouseMove={(e) => handleMouseMove(e, index)}
-                                        style={{ opacity: hoveredIndex === index || hoveredIndex === null ? 1 : 0.5 }}
-                                    />
-                                    
-                                    {/* Linha vertical no hover */}
-                                    {hoveredIndex === index && (
-                                        <>
-                                            <line
-                                                x1={point.x}
-                                                y1={padding.top}
-                                                x2={point.x}
-                                                y2={padding.top + graphHeight}
-                                                stroke="rgba(255, 255, 255, 0.4)"
-                                                strokeWidth="1.5"
-                                                strokeDasharray="3 3"
-                                            />
-                                            {/* Marcadores horizontais no hover */}
-                                            <line
-                                                x1={padding.left}
-                                                y1={point.completedY}
-                                                x2={padding.left + graphWidth}
-                                                y2={point.completedY}
-                                                stroke="rgba(47, 219, 147, 0.3)"
-                                                strokeWidth="1"
-                                                strokeDasharray="2 2"
-                                            />
-                                            <line
-                                                x1={padding.left}
-                                                y1={point.createdY}
-                                                x2={padding.left + graphWidth}
-                                                y2={point.createdY}
-                                                stroke="rgba(14, 109, 253, 0.3)"
-                                                strokeWidth="1"
-                                                strokeDasharray="2 2"
-                                            />
-                                        </>
-                                    )}
-                                </g>
-                            ))}
-
-                            {/* Labels do eixo X */}
-                            {points.map((point, index) => {
-                                if (period === 7 && index % 1 !== 0 && index !== points.length - 1) return null;
-                                if (period === 14 && index % 2 !== 0 && index !== points.length - 1) return null;
-                                if (period === 30 && index % 5 !== 0 && index !== points.length - 1) return null;
-                                
-                                return (
-                                    <text
-                                        key={index}
-                                        x={point.x}
-                                        y={chartHeight - padding.bottom + 15}
-                                        textAnchor="middle"
-                                        className="text-xs fill-text-tertiary"
-                                    >
-                                        {new Date(point.day.date).toLocaleDateString('pt-BR', { 
-                                            day: '2-digit', 
-                                            month: '2-digit' 
-                                        })}
-                                    </text>
-                                );
-                            })}
-                        </svg>
-
-                        {/* Tooltip */}
-                        {tooltip && (
-                            <div
-                                className="absolute z-10 px-4 py-3 rounded-xl bg-surface border border-surface-border shadow-2xl pointer-events-none transition-all"
-                                style={{
-                                    left: `${tooltip.x}px`,
-                                    top: `${tooltip.y - 100}px`,
-                                    transform: 'translateX(-50%)',
-                                }}
-                            >
-                                <div className="space-y-2">
-                                    <p className="text-sm font-semibold text-text-primary">{tooltip.date}</p>
-                                    <div className="space-y-1">
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-3 h-3 rounded-full bg-[#0E6DFD]"></div>
-                                            <span className="text-xs text-text-secondary">Criadas:</span>
-                                            <span className="text-sm font-bold text-text-primary">{tooltip.created}</span>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-3 h-3 rounded-full bg-[#2FDB93] border-2 border-[#2FDB93]"></div>
-                                            <span className="text-xs text-text-secondary">Concluídas:</span>
-                                            <span className="text-sm font-bold text-text-primary">{tooltip.completed}</span>
-                                        </div>
-                                        {tooltip.created > tooltip.completed && (
-                                            <div className="flex items-center gap-2 pt-1 border-t border-surface-border/50">
-                                                <span className="text-xs text-text-tertiary">Pendentes:</span>
-                                                <span className="text-sm font-semibold text-text-secondary">{tooltip.created - tooltip.completed}</span>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Legenda */}
-                    <div className="flex items-center justify-center gap-6 mt-4">
-                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-hover/50 border border-[#0E6DFD]/20">
-                            <div className="w-4 h-4 rounded-full bg-[#0E6DFD] shadow-sm"></div>
-                            <span className="text-sm font-medium text-text-primary">Criadas</span>
-                        </div>
-                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-hover/50 border border-[#2FDB93]/20">
-                            <div className="w-4 h-4 rounded-full bg-[#2FDB93] border-2 border-[#2FDB93] shadow-sm"></div>
-                            <span className="text-sm font-medium text-text-primary">Concluídas</span>
-                        </div>
-                        {needsNormalization && (
-                            <div className="text-xs text-text-tertiary px-2 italic">
-                                * Escala amplificada para melhor visualização
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-                {/* Cards de Métricas Melhorados */}
+            <div className="p-6">
+                {/* Cards de Métricas */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     <div className="p-4 rounded-2xl bg-gradient-to-br from-accent/10 to-accent/5 border border-accent/20 hover:border-accent/40 transition-all group">
                         <div className="flex items-center justify-between mb-2">
