@@ -170,9 +170,8 @@ export const STLCDashboard: React.FC<STLCDashboardProps> = ({ project, onUpdateP
                 </div>
             </div>
 
-            <>
-                    {/* Métricas do Projeto */}
-                    <Card>
+            {/* Métricas do Projeto */}
+            <Card>
                         <div className="flex items-center justify-between mb-md">
                             <h3 className="text-lg font-semibold text-text-primary">Métricas do Projeto</h3>
                             <div className="flex items-center gap-sm">
@@ -387,8 +386,6 @@ export const STLCDashboard: React.FC<STLCDashboardProps> = ({ project, onUpdateP
                     </div>
                 </div>
             </Card>
-                </>
-            )}
 
             {/* Modal de Análise */}
             <DashboardAnalysisModal
