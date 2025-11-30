@@ -61,7 +61,6 @@ import { Spinner } from '../common/Spinner';
 import { addNewJiraTasks, getJiraConfig, getJiraProjects, JiraConfig, syncTaskToJira } from '../../services/jiraService';
 import { GeneralIAAnalysisButton } from './GeneralIAAnalysisButton';
 import { generateGeneralIAAnalysis } from '../../services/ai/generalAnalysisService';
-import { useRequirementAutomation } from '../../hooks/useRequirementAutomation';
 
 export const TasksView: React.FC<{ 
     project: Project, 
@@ -102,9 +101,6 @@ export const TasksView: React.FC<{
     const [showWizard, setShowWizard] = useState(false);
     const { isBeginnerMode } = useBeginnerMode();
     const [hasSeenWizard, setHasSeenWizard] = useLocalStorage<boolean>('task_creation_wizard_seen', false);
-    const [showRequirementExtractionPrompt, setShowRequirementExtractionPrompt] = useState<string | null>(null);
-    
-    const { extractRequirementsFromTask, isExtracting } = useRequirementAutomation(project, onUpdateProject);
     const suggestions = useSuggestions(project);
     const [dismissedSuggestions, setDismissedSuggestions] = useState<Set<string>>(new Set());
     const currentSuggestion = suggestions.find(s => !dismissedSuggestions.has(s.id)) || null;
@@ -843,14 +839,6 @@ export const TasksView: React.FC<{
             const newTask: JiraTask = { ...taskData, status: 'To Do', testCases: [], bddScenarios: [], createdAt: new Date().toISOString() };
             newTasks = [...project.tasks, newTask];
             onUpdateProject({ ...project, tasks: newTasks });
-            
-            // Oferecer extração de requisitos para novas tarefas (exceto bugs)
-            if (newTask.type !== 'Bug') {
-                // Usar setTimeout para garantir que o projeto foi atualizado
-                setTimeout(() => {
-                    setShowRequirementExtractionPrompt(newTask.id);
-                }, 100);
-            }
         }
         setIsTaskFormOpen(false);
         setEditingTask(undefined);
@@ -1630,58 +1618,6 @@ export const TasksView: React.FC<{
             onStart={handleWizardStart}
         />
 
-            {/* Modal de Extração de Requisitos */}
-            <Modal
-                isOpen={showRequirementExtractionPrompt !== null}
-                onClose={() => setShowRequirementExtractionPrompt(null)}
-                title="Extrair Requisitos da Tarefa?"
-            >
-                <div className="space-y-md">
-                    <p className="text-sm text-text-secondary">
-                        Deseja extrair requisitos automaticamente desta tarefa usando IA?
-                    </p>
-                    {showRequirementExtractionPrompt && (
-                        <div className="p-3 rounded-xl bg-surface-hover">
-                            <p className="text-sm font-semibold text-text-primary">
-                                {project.tasks.find(t => t.id === showRequirementExtractionPrompt)?.title}
-                            </p>
-                        </div>
-                    )}
-                    <div className="flex gap-3 justify-end pt-4 border-t border-surface-border">
-                        <button
-                            onClick={() => setShowRequirementExtractionPrompt(null)}
-                            className="px-6 py-2 rounded-xl border border-surface-border bg-surface-card text-text-primary hover:bg-surface-hover transition-colors"
-                        >
-                            Não, Obrigado
-                        </button>
-                        <button
-                            onClick={async () => {
-                                if (showRequirementExtractionPrompt) {
-                                    const task = project.tasks.find(t => t.id === showRequirementExtractionPrompt);
-                                    if (task) {
-                                        await extractRequirementsFromTask(task);
-                                        setShowRequirementExtractionPrompt(null);
-                                        if (onNavigateToTab) {
-                                            onNavigateToTab('dashboard');
-                                        }
-                                    }
-                                }
-                            }}
-                            disabled={isExtracting}
-                            className="px-6 py-2 rounded-xl bg-accent text-white hover:bg-accent-light transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                        >
-                            {isExtracting ? (
-                                <>
-                                    <Spinner small />
-                                    Extraindo...
-                                </>
-                            ) : (
-                                'Sim, Extrair Requisitos'
-                            )}
-                        </button>
-                    </div>
-                </div>
-            </Modal>
         </>
     );
 };

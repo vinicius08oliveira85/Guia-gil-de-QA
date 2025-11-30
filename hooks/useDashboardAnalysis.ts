@@ -1,8 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
-import { Project, DashboardOverviewAnalysis, DashboardRequirementsAnalysis } from '../types';
+import { Project, DashboardOverviewAnalysis } from '../types';
 import { 
     generateDashboardOverviewAnalysis, 
-    generateDashboardRequirementsAnalysis,
     markDashboardAnalysesAsOutdated 
 } from '../services/ai/dashboardAnalysisService';
 import { useErrorHandler } from './useErrorHandler';
@@ -12,18 +11,16 @@ import { useErrorHandler } from './useErrorHandler';
  */
 export function useDashboardAnalysis(project: Project, onUpdateProject?: (project: Project) => void) {
     const [isGeneratingOverview, setIsGeneratingOverview] = useState(false);
-    const [isGeneratingRequirements, setIsGeneratingRequirements] = useState(false);
     const { handleError, handleSuccess } = useErrorHandler();
 
     // Marcar análises como desatualizadas quando o projeto muda
     useEffect(() => {
-        if (onUpdateProject && (project.dashboardOverviewAnalysis || project.dashboardRequirementsAnalysis)) {
+        if (onUpdateProject && project.dashboardOverviewAnalysis) {
             const updatedProject = markDashboardAnalysesAsOutdated(project);
             // Só atualizar se realmente mudou
             const overviewChanged = updatedProject.dashboardOverviewAnalysis?.isOutdated !== project.dashboardOverviewAnalysis?.isOutdated;
-            const requirementsChanged = updatedProject.dashboardRequirementsAnalysis?.isOutdated !== project.dashboardRequirementsAnalysis?.isOutdated;
             
-            if (overviewChanged || requirementsChanged) {
+            if (overviewChanged) {
                 onUpdateProject(updatedProject);
             }
         }
@@ -33,8 +30,6 @@ export function useDashboardAnalysis(project: Project, onUpdateProject?: (projec
         project.tasks.map(t => `${t.id}-${t.status}-${t.title}`).join(','), // Detectar mudanças em tarefas
         project.documents.length, // Detectar mudanças em documentos
         project.documents.map(d => `${d.name}-${d.content.length}`).join(','), // Detectar mudanças em conteúdo de documentos
-        project.requirements?.length,
-        project.rtm?.length,
         project.phases.map(p => `${p.name}-${p.status}`).join(','),
         project.description,
     ]);
@@ -61,35 +56,10 @@ export function useDashboardAnalysis(project: Project, onUpdateProject?: (projec
         }
     }, [project, onUpdateProject, handleError, handleSuccess]);
 
-    const generateRequirementsAnalysis = useCallback(async () => {
-        setIsGeneratingRequirements(true);
-        try {
-            const analysis = await generateDashboardRequirementsAnalysis(project);
-            
-            if (onUpdateProject) {
-                onUpdateProject({
-                    ...project,
-                    dashboardRequirementsAnalysis: analysis,
-                });
-            }
-            
-            handleSuccess('Análise de requisitos gerada com sucesso!');
-            return analysis;
-        } catch (error) {
-            handleError(error, 'Erro ao gerar análise de requisitos');
-            throw error;
-        } finally {
-            setIsGeneratingRequirements(false);
-        }
-    }, [project, onUpdateProject, handleError, handleSuccess]);
-
     return {
         overviewAnalysis: project.dashboardOverviewAnalysis || null,
-        requirementsAnalysis: project.dashboardRequirementsAnalysis || null,
         isGeneratingOverview,
-        isGeneratingRequirements,
         generateOverviewAnalysis,
-        generateRequirementsAnalysis,
     };
 }
 

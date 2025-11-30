@@ -4,7 +4,6 @@ import { useProjectMetrics } from '../../hooks/useProjectMetrics';
 import { useSTLCPhase } from '../../hooks/useSTLCPhase';
 import { useDashboardAnalysis } from '../../hooks/useDashboardAnalysis';
 import { Card } from '../common/Card';
-import { RequirementsManager } from '../requirements/RequirementsManager';
 import { DashboardAnalysisModal } from './DashboardAnalysisModal';
 import { Badge } from '../common/Badge';
 import { TaskStatusCard } from './TaskStatusCard';
@@ -131,17 +130,12 @@ const stlcPhases: STLCPhase[] = [
 export const STLCDashboard: React.FC<STLCDashboardProps> = ({ project, onUpdateProject }) => {
     const metrics = useProjectMetrics(project);
     const { currentPhase } = useSTLCPhase(project);
-    const [activeSection, setActiveSection] = useState<'overview' | 'requirements'>('overview');
     const [showOverviewAnalysis, setShowOverviewAnalysis] = useState(false);
-    const [showRequirementsAnalysis, setShowRequirementsAnalysis] = useState(false);
     
     const {
         overviewAnalysis,
-        requirementsAnalysis,
         isGeneratingOverview,
-        isGeneratingRequirements,
         generateOverviewAnalysis,
-        generateRequirementsAnalysis,
     } = useDashboardAnalysis(project, onUpdateProject);
 
     // Monitorar mudanças em tempo real
@@ -149,11 +143,10 @@ export const STLCDashboard: React.FC<STLCDashboardProps> = ({ project, onUpdateP
         return JSON.stringify({
             tasksCount: project.tasks.length,
             documentsCount: project.documents.length,
-            requirementsCount: (project.requirements || []).length,
             tasksHash: project.tasks.map(t => `${t.id}-${t.status}-${t.title}`).join(','),
             documentsHash: project.documents.map(d => `${d.name}-${d.content.length}`).join(','),
         });
-    }, [project.tasks, project.documents, project.requirements]);
+    }, [project.tasks, project.documents]);
 
     // Atualização automática quando o projeto muda
     useEffect(() => {
@@ -175,34 +168,9 @@ export const STLCDashboard: React.FC<STLCDashboardProps> = ({ project, onUpdateP
                         Visão completa do Software Testing Life Cycle (STLC) com atividades, tipos de teste e estratégias por fase.
                     </p>
                 </div>
-                <div className="flex gap-sm pt-sm border-t border-surface-border/30">
-                    <button
-                        onClick={() => setActiveSection('overview')}
-                        className={`px-4 py-2 rounded-xl transition-colors ${
-                            activeSection === 'overview'
-                                ? 'bg-accent/20 text-accent font-semibold'
-                                : 'bg-surface-card text-text-secondary hover:text-text-primary'
-                        }`}
-                    >
-                        Visão Geral
-                    </button>
-                    <button
-                        onClick={() => setActiveSection('requirements')}
-                        className={`px-4 py-2 rounded-xl transition-colors ${
-                            activeSection === 'requirements'
-                                ? 'bg-accent/20 text-accent font-semibold'
-                                : 'bg-surface-card text-text-secondary hover:text-text-primary'
-                        }`}
-                    >
-                        Requisitos
-                    </button>
-                </div>
             </div>
 
-            {activeSection === 'requirements' && onUpdateProject ? (
-                <RequirementsManager project={project} onUpdateProject={onUpdateProject} />
-            ) : (
-                <>
+            <>
                     {/* Métricas do Projeto */}
                     <Card>
                         <div className="flex items-center justify-between mb-md">
@@ -422,7 +390,7 @@ export const STLCDashboard: React.FC<STLCDashboardProps> = ({ project, onUpdateP
                 </>
             )}
 
-            {/* Modais de Análise */}
+            {/* Modal de Análise */}
             <DashboardAnalysisModal
                 isOpen={showOverviewAnalysis}
                 onClose={() => setShowOverviewAnalysis(false)}
@@ -431,17 +399,6 @@ export const STLCDashboard: React.FC<STLCDashboardProps> = ({ project, onUpdateP
                 isLoading={isGeneratingOverview}
                 onRegenerate={async () => {
                     await generateOverviewAnalysis();
-                }}
-            />
-            
-            <DashboardAnalysisModal
-                isOpen={showRequirementsAnalysis}
-                onClose={() => setShowRequirementsAnalysis(false)}
-                type="requirements"
-                analysis={requirementsAnalysis}
-                isLoading={isGeneratingRequirements}
-                onRegenerate={async () => {
-                    await generateRequirementsAnalysis();
                 }}
             />
         </div>
