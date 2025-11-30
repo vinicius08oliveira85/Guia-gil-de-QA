@@ -276,16 +276,16 @@ export const ProgressTrendsCard: React.FC<ProgressTrendsCardProps> = ({ project,
                             role="img"
                         >
                             <defs>
-                                {/* Gradiente para área de criadas */}
+                                {/* Gradiente para área de criadas - Azul/Cyan */}
                                 <linearGradient id="createdGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                                    <stop offset="0%" stopColor="rgb(20, 184, 166)" stopOpacity="0.4" />
-                                    <stop offset="100%" stopColor="rgb(20, 184, 166)" stopOpacity="0.1" />
+                                    <stop offset="0%" stopColor="rgb(14, 109, 253)" stopOpacity="0.5" />
+                                    <stop offset="100%" stopColor="rgb(14, 109, 253)" stopOpacity="0.1" />
                                 </linearGradient>
                                 
-                                {/* Gradiente para área de concluídas */}
+                                {/* Gradiente para área de concluídas - Verde */}
                                 <linearGradient id="completedGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                                    <stop offset="0%" stopColor="rgb(20, 184, 166)" stopOpacity="0.6" />
-                                    <stop offset="100%" stopColor="rgb(20, 184, 166)" stopOpacity="0.2" />
+                                    <stop offset="0%" stopColor="rgb(47, 219, 147)" stopOpacity="0.6" />
+                                    <stop offset="100%" stopColor="rgb(47, 219, 147)" stopOpacity="0.15" />
                                 </linearGradient>
                             </defs>
 
@@ -305,54 +305,58 @@ export const ProgressTrendsCard: React.FC<ProgressTrendsCardProps> = ({ project,
                                 style={{ opacity: hoveredIndex !== null ? 0.5 : 1 }}
                             />
 
-                            {/* Linha de criadas */}
+                            {/* Linha de criadas - Azul sólida */}
                             <path
                                 d={createdLinePath}
                                 fill="none"
-                                stroke="rgb(20, 184, 166)"
-                                strokeWidth="2"
+                                stroke="rgb(14, 109, 253)"
+                                strokeWidth="3"
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
                                 className="transition-opacity duration-300"
-                                style={{ opacity: hoveredIndex !== null ? 0.5 : 1 }}
+                                style={{ opacity: hoveredIndex !== null ? 0.6 : 1 }}
                             />
 
-                            {/* Linha de concluídas */}
+                            {/* Linha de concluídas - Verde tracejada */}
                             <path
                                 d={completedLinePath}
                                 fill="none"
-                                stroke="rgb(20, 184, 166)"
-                                strokeWidth="2.5"
+                                stroke="rgb(47, 219, 147)"
+                                strokeWidth="3"
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
-                                strokeDasharray="4 4"
+                                strokeDasharray="6 4"
                                 className="transition-opacity duration-300"
-                                style={{ opacity: hoveredIndex !== null ? 0.5 : 1 }}
+                                style={{ opacity: hoveredIndex !== null ? 0.6 : 1 }}
                             />
 
                             {/* Pontos interativos */}
                             {points.map((point, index) => (
                                 <g key={index}>
-                                    {/* Círculo para criadas */}
+                                    {/* Círculo para criadas - Azul */}
                                     <circle
                                         cx={point.x}
                                         cy={point.createdY}
-                                        r={hoveredIndex === index ? 5 : 3}
-                                        fill="rgb(20, 184, 166)"
+                                        r={hoveredIndex === index ? 6 : 4}
+                                        fill="rgb(14, 109, 253)"
+                                        stroke="rgba(255, 255, 255, 0.3)"
+                                        strokeWidth="1.5"
                                         className="transition-all duration-200 cursor-pointer"
                                         onMouseMove={(e) => handleMouseMove(e, index)}
-                                        style={{ opacity: hoveredIndex === index || hoveredIndex === null ? 1 : 0.3 }}
+                                        style={{ opacity: hoveredIndex === index || hoveredIndex === null ? 1 : 0.4 }}
                                     />
                                     
-                                    {/* Círculo para concluídas */}
+                                    {/* Círculo para concluídas - Verde */}
                                     <circle
                                         cx={point.x}
                                         cy={point.completedY}
-                                        r={hoveredIndex === index ? 5 : 3}
-                                        fill="rgb(20, 184, 166)"
+                                        r={hoveredIndex === index ? 6 : 4}
+                                        fill="rgb(47, 219, 147)"
+                                        stroke="rgba(255, 255, 255, 0.3)"
+                                        strokeWidth="1.5"
                                         className="transition-all duration-200 cursor-pointer"
                                         onMouseMove={(e) => handleMouseMove(e, index)}
-                                        style={{ opacity: hoveredIndex === index || hoveredIndex === null ? 1 : 0.3 }}
+                                        style={{ opacity: hoveredIndex === index || hoveredIndex === null ? 1 : 0.4 }}
                                     />
                                     
                                     {/* Linha vertical no hover */}
@@ -407,12 +411,12 @@ export const ProgressTrendsCard: React.FC<ProgressTrendsCardProps> = ({ project,
                                     <p className="text-sm font-semibold text-text-primary">{tooltip.date}</p>
                                     <div className="space-y-1">
                                         <div className="flex items-center gap-2">
-                                            <div className="w-3 h-3 rounded-full bg-accent"></div>
+                                            <div className="w-3 h-3 rounded-full bg-[#0E6DFD]"></div>
                                             <span className="text-xs text-text-secondary">Criadas:</span>
                                             <span className="text-sm font-bold text-text-primary">{tooltip.created}</span>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            <div className="w-3 h-3 rounded-full bg-accent/60 border-2 border-accent"></div>
+                                            <div className="w-3 h-3 rounded-full bg-[#2FDB93] border-2 border-[#2FDB93]"></div>
                                             <span className="text-xs text-text-secondary">Concluídas:</span>
                                             <span className="text-sm font-bold text-text-primary">{tooltip.completed}</span>
                                         </div>
@@ -424,13 +428,13 @@ export const ProgressTrendsCard: React.FC<ProgressTrendsCardProps> = ({ project,
 
                     {/* Legenda */}
                     <div className="flex items-center justify-center gap-6 mt-4">
-                        <div className="flex items-center gap-2">
-                            <div className="w-4 h-4 rounded bg-accent"></div>
-                            <span className="text-sm text-text-secondary">Criadas</span>
+                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-hover/50">
+                            <div className="w-4 h-4 rounded-full bg-[#0E6DFD] shadow-sm"></div>
+                            <span className="text-sm font-medium text-text-primary">Criadas</span>
                         </div>
-                        <div className="flex items-center gap-2">
-                            <div className="w-4 h-4 rounded bg-accent/60 border-2 border-accent"></div>
-                            <span className="text-sm text-text-secondary">Concluídas</span>
+                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-hover/50">
+                            <div className="w-4 h-4 rounded-full bg-[#2FDB93] border-2 border-[#2FDB93] shadow-sm"></div>
+                            <span className="text-sm font-medium text-text-primary">Concluídas</span>
                         </div>
                     </div>
                 </div>
