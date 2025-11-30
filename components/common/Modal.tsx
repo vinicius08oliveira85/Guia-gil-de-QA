@@ -30,6 +30,30 @@ export const Modal: React.FC<ModalProps> = ({
         return () => document.removeEventListener('keydown', handleEscape);
     }, [isOpen, onClose]);
 
+    // Bloquear scroll do body quando modal estiver aberto
+    useEffect(() => {
+        if (!isOpen) return;
+        
+        // Salvar o valor original do overflow
+        const originalOverflow = document.body.style.overflow;
+        const originalPaddingRight = document.body.style.paddingRight;
+        
+        // Calcular largura da barra de rolagem para evitar shift de layout
+        const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+        
+        // Bloquear scroll do body
+        document.body.style.overflow = 'hidden';
+        if (scrollbarWidth > 0) {
+            document.body.style.paddingRight = `${scrollbarWidth}px`;
+        }
+        
+        return () => {
+            // Restaurar valores originais
+            document.body.style.overflow = originalOverflow;
+            document.body.style.paddingRight = originalPaddingRight;
+        };
+    }, [isOpen]);
+
     // Foco no modal quando abrir
     useEffect(() => {
         if (!isOpen) return;
@@ -78,8 +102,8 @@ export const Modal: React.FC<ModalProps> = ({
                         &times;
                     </button>
                 </div>
-                {/* Content - No scroll */}
-                <div className="p-card flex-1 overflow-hidden flex flex-col min-h-0">
+                {/* Content - Scrollable */}
+                <div className="p-card flex-1 overflow-y-auto flex flex-col min-h-0">
                   {children}
                 </div>
             </div>
