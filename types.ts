@@ -211,6 +211,53 @@ export interface DashboardOverviewAnalysis {
   isOutdated?: boolean;
 }
 
+export interface DashboardInsightsAnalysis {
+  qualityScore: number; // Score de qualidade geral (0-100)
+  qualityLevel: 'Excelente' | 'Bom' | 'Regular' | 'Ruim' | 'Crítico';
+  insights: Array<{
+    type: 'success' | 'warning' | 'error' | 'info';
+    title: string;
+    description: string;
+    priority: 'Baixa' | 'Média' | 'Alta' | 'Crítica';
+    actionable: boolean;
+  }>;
+  predictions: {
+    nextWeekPassRate?: number; // Previsão de taxa de sucesso para próxima semana
+    nextWeekBugs?: number; // Previsão de bugs para próxima semana
+    riskFactors: Array<{
+      factor: string;
+      probability: 'Baixa' | 'Média' | 'Alta';
+      impact: string;
+    }>;
+  };
+  recommendations: Array<{
+    category: 'Testes' | 'Bugs' | 'Cobertura' | 'Processo' | 'Qualidade';
+    title: string;
+    description: string;
+    impact: 'Baixo' | 'Médio' | 'Alto';
+    effort: 'Baixo' | 'Médio' | 'Alto';
+  }>;
+  metricEnhancements: {
+    testPassRate: {
+      current: number;
+      predicted: number;
+      suggestion: string;
+    };
+    bugResolution: {
+      current: number;
+      predicted: number;
+      suggestion: string;
+    };
+    coverage: {
+      current: number;
+      target: number;
+      suggestion: string;
+    };
+  };
+  generatedAt: string;
+  isOutdated?: boolean;
+}
+
 export interface ProjectFunctionality {
   id: string;
   name: string;
@@ -246,6 +293,7 @@ export interface Project {
   tags?: string[];
   settings?: ProjectSettings;
   dashboardOverviewAnalysis?: DashboardOverviewAnalysis;
+  dashboardInsightsAnalysis?: DashboardInsightsAnalysis;
   functionalities?: ProjectFunctionality[];
   metricsHistory?: MetricsSnapshot[];
 }
