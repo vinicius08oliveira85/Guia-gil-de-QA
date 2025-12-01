@@ -43,11 +43,11 @@ export const CoverageCard: React.FC<CoverageCardProps> = React.memo(({ project }
   return (
     <>
       <Card className="space-y-4" aria-label="Cobertura por funcionalidade">
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-text-primary">Cobertura por Funcionalidade</h3>
+        <div className="flex items-center justify-between gap-4 flex-wrap">
+          <h3 className="text-lg font-semibold text-text-primary flex-shrink-0">Cobertura por Funcionalidade</h3>
           <button
             onClick={() => setShowManager(true)}
-            className="text-sm text-accent hover:text-accent-light transition-colors"
+            className="text-sm text-accent hover:text-accent-light transition-colors whitespace-nowrap flex-shrink-0"
             aria-label="Gerenciar funcionalidades"
           >
             ⚙️ Gerenciar

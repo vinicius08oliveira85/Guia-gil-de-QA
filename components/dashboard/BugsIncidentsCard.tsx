@@ -31,13 +31,13 @@ export const BugsIncidentsCard: React.FC<BugsIncidentsCardProps> = React.memo(({
 
   return (
     <Card className="space-y-4" aria-label="Bugs e incidentes">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-text-primary">Bugs e Incidentes</h3>
+      <div className="flex items-center justify-between gap-4 flex-wrap">
+        <h3 className="text-lg font-semibold text-text-primary flex-shrink-0">Bugs e Incidentes</h3>
         {hasJiraConfig && (
           <button
             onClick={syncBugs}
             disabled={isLoading}
-            className="text-sm text-accent hover:text-accent-light disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="text-sm text-accent hover:text-accent-light disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap flex-shrink-0 min-w-[140px]"
             aria-label="Sincronizar bugs do Jira"
           >
             {isLoading ? 'Sincronizando...' : '🔄 Sincronizar Jira'}

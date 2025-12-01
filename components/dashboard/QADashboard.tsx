@@ -98,15 +98,15 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
 
       {/* Análise de IA */}
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold text-text-primary">Análise de IA</h2>
-          <div className="flex items-center gap-3">
-            <label className="flex items-center gap-2 text-sm text-text-secondary">
+        <div className="flex items-center justify-between gap-4 flex-wrap">
+          <h2 className="text-xl font-semibold text-text-primary flex-shrink-0">Análise de IA</h2>
+          <div className="flex items-center gap-3 flex-shrink-0">
+            <label className="flex items-center gap-2 text-sm text-text-secondary whitespace-nowrap">
               <input
                 type="checkbox"
                 checked={autoGenerateInsights}
                 onChange={(e) => setAutoGenerateInsights(e.target.checked)}
-                className="rounded"
+                className="rounded flex-shrink-0"
                 aria-label="Gerar análise automaticamente"
               />
               <span>Auto-gerar</span>
@@ -114,7 +114,7 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
             <button
               onClick={generateInsightsAnalysis}
               disabled={isGenerating}
-              className="btn btn-primary text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn btn-primary text-sm disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap min-w-[140px]"
               aria-label="Gerar análise de insights"
             >
               {isGenerating ? 'Gerando...' : '🔄 Gerar Análise'}
