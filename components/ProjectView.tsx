@@ -8,7 +8,7 @@ import { PrintableReport } from './PrintableReport';
 import { ExportMenu } from './common/ExportMenu';
 import { Modal } from './common/Modal';
 import { LoadingSkeleton } from './common/LoadingSkeleton';
-import { STLCDashboard } from './dashboard/STLCDashboard';
+import { QADashboard } from './dashboard/QADashboard';
 
 export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project: Project) => void; onBack: () => void; }> = ({ project, onUpdateProject, onBack }) => {
     const [activeTab, setActiveTab] = useState('dashboard');
@@ -163,7 +163,7 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                     {activeTab === 'dashboard' && (
                         <section id="tab-panel-dashboard" role="tabpanel" aria-labelledby="tab-dashboard tab-dashboard-mobile">
                         <Suspense fallback={<LoadingSkeleton variant="card" count={3} />}>
-                            <STLCDashboard project={project} onUpdateProject={onUpdateProject} />
+                            <QADashboard project={project} onUpdateProject={onUpdateProject} />
                         </Suspense>
                         </section>
                     )}

@@ -189,11 +189,14 @@ export const calculateProjectMetrics = (project: Project) => {
     ];
 
     // --- Test Execution Status Metrics ---
+    const failedTestCases = allTestCases.filter(tc => tc.status === 'Failed').length;
+    const blockedTestCases = allTestCases.filter(tc => tc.status === 'Blocked').length;
+    
     const testExecution = {
-        passed: allTestCases.filter(tc => tc.status === 'Passed').length,
-        failed: allTestCases.filter(tc => tc.status === 'Failed').length,
+        passed: passedTestCases,
+        failed: failedTestCases,
         notRun: allTestCases.filter(tc => tc.status === 'Not Run').length,
-        blocked: allTestCases.filter(tc => tc.status === 'Blocked').length,
+        blocked: blockedTestCases,
         passRate: executedTestCases > 0 ? Math.round((passedTestCases / executedTestCases) * 100) : 0,
     };
 
@@ -204,12 +207,63 @@ export const calculateProjectMetrics = (project: Project) => {
         { status: 'Blocked', count: testExecution.blocked, percentage: totalTestCases > 0 ? Math.round((testExecution.blocked / totalTestCases) * 100) : 0 },
     ];
 
+    // --- Quick Analysis Metrics ---
+    // Calcular média de falhas por dia (últimos 30 dias)
+    const now = new Date();
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    
+    // Contar falhas por tarefa (testes que falharam)
+    const taskFailureCount = new Map<string, number>();
+    tasks.forEach(task => {
+        const failedInTask = task.testCases?.filter(tc => tc.status === 'Failed').length || 0;
+        if (failedInTask > 0) {
+            taskFailureCount.set(task.id, failedInTask);
+        }
+    });
+
+    // Top 3 funcionalidades/tarefas mais problemáticas
+    const topProblematicTasks = Array.from(taskFailureCount.entries())
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3)
+        .map(([taskId, count]) => {
+            const task = tasks.find(t => t.id === taskId);
+            return {
+                taskId,
+                taskTitle: task?.title || 'Tarefa desconhecida',
+                failureCount: count,
+            };
+        });
+
+    // Calcular retrabalho: testes que foram executados mais de uma vez (mudaram de status)
+    // Para isso, precisamos verificar histórico ou assumir que testes que mudaram de status indicam retrabalho
+    // Por enquanto, vamos contar testes que falharam e depois passaram (indicando retrabalho)
+    // Como não temos histórico detalhado, vamos usar uma heurística: testes com observedResult indicam reexecução
+    const reexecutedTests = allTestCases.filter(tc => 
+        tc.observedResult && tc.status !== 'Not Run'
+    ).length;
+
+    // Média de falhas por dia (simplificado: total de falhas / 30)
+    const averageFailuresPerDay = totalTestCases > 0 
+        ? Math.round((failedTestCases / 30) * 10) / 10 
+        : 0;
+
+    // Bugs resolvidos recentemente (últimos 7 dias)
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const recentlyResolvedBugs = bugs.filter(bug => {
+        if (!bug.completedAt) return false;
+        const completedDate = new Date(bug.completedAt);
+        return completedDate >= sevenDaysAgo;
+    }).length;
+
     return {
         newPhases,
         currentPhase,
         totalTestCases,
         executedTestCases,
         passedTestCases,
+        failedTestCases,
+        blockedTestCases,
+        notRunTestCases: testExecution.notRun,
         automatedTestCases,
         totalTasks,
         tasksWithTestCases,
@@ -237,6 +291,13 @@ export const calculateProjectMetrics = (project: Project) => {
         testExecution: {
             ...testExecution,
             distribution: testExecutionDistribution,
+        },
+        // Quick analysis metrics
+        quickAnalysis: {
+            averageFailuresPerDay,
+            topProblematicTasks,
+            reexecutedTests,
+            recentlyResolvedBugs,
         },
     };
 };

@@ -4,7 +4,7 @@ export interface TestCase {
   description: string;
   steps: string[];
   expectedResult: string;
-  status: 'Not Run' | 'Passed' | 'Failed';
+  status: 'Not Run' | 'Passed' | 'Failed' | 'Blocked';
   strategies?: string[];
   executedStrategy?: string | string[]; // Suporta string (legado) ou array (novo formato)
   isAutomated?: boolean;
@@ -211,6 +211,28 @@ export interface DashboardOverviewAnalysis {
   isOutdated?: boolean;
 }
 
+export interface ProjectFunctionality {
+  id: string;
+  name: string;
+  description?: string;
+  testSuite?: string; // Para associar via testSuite
+  targetCoverage?: number; // Meta de cobertura (0-100)
+}
+
+export interface MetricsSnapshot {
+  date: string; // ISO string
+  totalTestCases: number;
+  passedTestCases: number;
+  failedTestCases: number;
+  blockedTestCases: number;
+  notRunTestCases: number;
+  totalBugs: number;
+  bugsBySeverity: Record<BugSeverity, number>;
+  executedTestCases: number;
+  testPassRate: number;
+  automationRatio: number;
+}
+
 export interface Project {
   id: string;
   name: string;
@@ -224,6 +246,8 @@ export interface Project {
   tags?: string[];
   settings?: ProjectSettings;
   dashboardOverviewAnalysis?: DashboardOverviewAnalysis;
+  functionalities?: ProjectFunctionality[];
+  metricsHistory?: MetricsSnapshot[];
 }
 
 export interface Comment {
