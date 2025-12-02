@@ -122,6 +122,8 @@ const sdlcPhaseAnalysisSchema = {
  */
 function calculatePhaseProgress(project: Project, currentPhase: PhaseName): number {
   const metrics = calculateProjectMetrics(project);
+  const totalTasks = project.tasks.filter(t => t.type === 'Tarefa').length;
+  const doneTasks = project.tasks.filter(t => t.type !== 'Bug' && t.status === 'Done').length;
   
   switch (currentPhase) {
     case 'Request':
@@ -131,7 +133,6 @@ function calculatePhaseProgress(project: Project, currentPhase: PhaseName): numb
       
     case 'Analysis':
       // Progresso baseado em cenários BDD
-      const totalTasks = project.tasks.filter(t => t.type === 'Tarefa').length;
       const tasksWithBdd = project.tasks.filter(t => t.bddScenarios && t.bddScenarios.length > 0).length;
       return totalTasks > 0 ? Math.round((tasksWithBdd / totalTasks) * 100) : 0;
       
@@ -143,7 +144,6 @@ function calculatePhaseProgress(project: Project, currentPhase: PhaseName): numb
       
     case 'Analysis and Code':
       // Progresso baseado em tarefas concluídas
-      const doneTasks = project.tasks.filter(t => t.type !== 'Bug' && t.status === 'Done').length;
       return totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0;
       
     case 'Build':
