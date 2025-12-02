@@ -132,68 +132,6 @@ export function parseJiraDescription(description: any): string {
 }
 
 /**
- * Converte descrição do Jira para HTML preservando formatação rica
- * Suporta string HTML renderizada, objeto ADF, ou array de objetos ADF
- * Retorna HTML sanitizado pronto para renderização
- */
-export function parseJiraDescriptionHTML(description: any): string {
-    if (!description) {
-        return '';
-    }
-    
-    // Se já é uma string HTML renderizada
-    if (typeof description === 'string') {
-        // Se contém HTML, preservar e sanitizar
-        if (description.includes('<')) {
-            // Sanitizar HTML mantendo formatação rica
-            return sanitizeHTML(description);
-        }
-        
-        // String simples sem HTML, retornar como parágrafo
-        return sanitizeHTML(`<p>${description.trim()}</p>`);
-    }
-    
-    // Se é um objeto ADF, converter para HTML
-    if (typeof description === 'object') {
-        // Pode ser um documento ADF completo
-        if (description.type === 'doc' && Array.isArray(description.content)) {
-            const html = adfNodeToHTML(description);
-            return sanitizeHTML(html);
-        }
-        
-        // Pode ser um array de nós ADF
-        if (Array.isArray(description)) {
-            const html = description.map(node => adfNodeToHTML(node)).join('');
-            return sanitizeHTML(html);
-        }
-        
-        // Pode ser um único nó ADF
-        if (description.type) {
-            const html = adfNodeToHTML(description);
-            return sanitizeHTML(html);
-        }
-        
-        // Se tem propriedade 'content', tenta processar
-        if (description.content) {
-            return parseJiraDescriptionHTML(description.content);
-        }
-        
-        // Se tem propriedade 'html', usar ela
-        if (description.html) {
-            return parseJiraDescriptionHTML(description.html);
-        }
-        
-        // Se tem propriedade 'text', converter para parágrafo
-        if (description.text) {
-            return sanitizeHTML(`<p>${description.text}</p>`);
-        }
-    }
-    
-    // Fallback: retornar vazio
-    return '';
-}
-
-/**
  * Converte um nó ADF para HTML
  */
 function adfNodeToHTML(node: ADFNode): string {
@@ -282,5 +220,117 @@ function escapeHTML(text: string): string {
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;');
+}
+
+/**
+ * Interface para anexos do Jira
+ */
+interface JiraAttachment {
+    id: string;
+    filename: string;
+    size: number;
+    created: string;
+    author: string;
+}
+
+/**
+ * Processa imagens no HTML do Jira, convertendo nomes de arquivo para URLs completas
+ * @param html HTML sanitizado do Jira
+ * @param jiraUrl URL base do Jira (ex: https://jira.example.com)
+ * @param jiraAttachments Array de anexos do Jira para mapear nomes de arquivo
+ * @returns HTML com URLs de imagens corrigidas
+ */
+function processJiraImages(
+    html: string,
+    jiraUrl?: string,
+    jiraAttachments?: JiraAttachment[]
+): string {
+    if (!html || !jiraUrl || !jiraAttachments || jiraAttachments.length === 0) {
+        return html;
+    }
+
+    // Remover barra final da URL do Jira se existir
+    const baseUrl = jiraUrl.replace(/\/$/, '');
+
+    // Criar mapa de filename -> attachment para busca rápida
+    const attachmentMap = new Map<string, JiraAttachment>();
+    jiraAttachments.forEach(att => {
+        attachmentMap.set(att.filename.toLowerCase(), att);
+    });
+
+    // Processar tags <img> que têm src com apenas nome de arquivo (não URL completa)
+    return html.replace(/<img([^>]*)\ssrc=["']([^"']+)["']([^>]*)>/gi, (match, before, src, after) => {
+        // Se src já é uma URL completa (http/https/data), não processar
+        if (src.startsWith('http://') || src.startsWith('https://') || src.startsWith('data:')) {
+            return match;
+        }
+
+        // Se src é apenas um nome de arquivo, tentar mapear para anexo
+        const filename = src.split('/').pop() || src; // Pegar apenas o nome do arquivo
+        const attachment = attachmentMap.get(filename.toLowerCase());
+
+        if (attachment) {
+            // Construir URL completa do Jira
+            const imageUrl = `${baseUrl}/secure/attachment/${attachment.id}/${encodeURIComponent(attachment.filename)}`;
+            return `<img${before} src="${escapeHTML(imageUrl)}"${after}>`;
+        }
+
+        // Se não encontrou anexo, retornar original (pode ser uma imagem externa ou não encontrada)
+        return match;
+    });
+}
+
+/**
+ * Converte descrição do Jira para HTML preservando formatação rica
+ * Suporta string HTML renderizada, objeto ADF, ou array de objetos ADF
+ * Retorna HTML sanitizado pronto para renderização
+ * 
+ * @param description Descrição do Jira (HTML, ADF ou string)
+ * @param jiraUrl URL base do Jira para construir URLs de imagens (opcional)
+ * @param jiraAttachments Array de anexos do Jira para mapear imagens (opcional)
+ */
+export function parseJiraDescriptionHTML(
+    description: any,
+    jiraUrl?: string,
+    jiraAttachments?: JiraAttachment[]
+): string {
+    if (!description) {
+        return '';
+    }
+    
+    let html = '';
+    
+    // Se já é uma string HTML renderizada
+    if (typeof description === 'string') {
+        // Se contém HTML, preservar e sanitizar
+        if (description.includes('<')) {
+            html = sanitizeHTML(description);
+        } else {
+            // String simples sem HTML, retornar como parágrafo
+            html = sanitizeHTML(`<p>${description.trim()}</p>`);
+        }
+    } else if (typeof description === 'object') {
+        // Se é um objeto ADF, converter para HTML
+        if (description.type === 'doc' && Array.isArray(description.content)) {
+            html = sanitizeHTML(adfNodeToHTML(description));
+        } else if (Array.isArray(description)) {
+            html = sanitizeHTML(description.map(node => adfNodeToHTML(node)).join(''));
+        } else if (description.type) {
+            html = sanitizeHTML(adfNodeToHTML(description));
+        } else if (description.content) {
+            return parseJiraDescriptionHTML(description.content, jiraUrl, jiraAttachments);
+        } else if (description.html) {
+            return parseJiraDescriptionHTML(description.html, jiraUrl, jiraAttachments);
+        } else if (description.text) {
+            html = sanitizeHTML(`<p>${description.text}</p>`);
+        }
+    }
+    
+    // Processar imagens se temos URL do Jira e anexos
+    if (html && jiraUrl && jiraAttachments && jiraAttachments.length > 0) {
+        html = processJiraImages(html, jiraUrl, jiraAttachments);
+    }
+    
+    return html;
 }
 

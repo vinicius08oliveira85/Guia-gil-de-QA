@@ -25,13 +25,21 @@ import { LoadingSkeleton } from '../common/LoadingSkeleton';
 import { ensureJiraHexColor, getJiraStatusColor, getJiraStatusTextColor } from '../../utils/jiraStatusColors';
 import { windows12Styles } from '../../utils/windows12Styles';
 import { parseJiraDescriptionHTML } from '../../utils/jiraDescriptionParser';
+import { getJiraConfig } from '../../services/jiraService';
 
 // Componente para renderizar descrição com formatação rica do Jira
-const DescriptionRenderer: React.FC<{ description: string | any }> = ({ description }) => {
+const DescriptionRenderer: React.FC<{ 
+    description: string | any;
+    jiraAttachments?: Array<{ id: string; filename: string; size: number; created: string; author: string }>;
+}> = ({ description, jiraAttachments }) => {
     // Garantir que description existe
     if (!description) {
         return <p className="text-text-secondary italic">Sem descrição</p>;
     }
+    
+    // Obter configuração do Jira para processar imagens
+    const jiraConfig = getJiraConfig();
+    const jiraUrl = jiraConfig?.url;
     
     // Se description já é HTML (string com tags), usar diretamente
     // Caso contrário, converter usando parseJiraDescriptionHTML
@@ -41,13 +49,22 @@ const DescriptionRenderer: React.FC<{ description: string | any }> = ({ descript
         // Se já contém HTML, usar diretamente (já foi processado)
         if (description.includes('<')) {
             htmlContent = description;
+            // Se ainda tem nomes de arquivo e temos URL/anexos, reprocessar imagens
+            if (jiraUrl && jiraAttachments && jiraAttachments.length > 0 && 
+                /<img[^>]*src=["'][^"']*\.(png|jpg|jpeg|gif|webp)["']/i.test(htmlContent)) {
+                // Verificar se há imagens com apenas nome de arquivo (não URL completa)
+                const hasFileNames = /<img[^>]*src=["'](?!https?:\/\/|data:)([^"']+)["']/i.test(htmlContent);
+                if (hasFileNames) {
+                    htmlContent = parseJiraDescriptionHTML(description, jiraUrl, jiraAttachments);
+                }
+            }
         } else {
             // String simples, converter para HTML
-            htmlContent = parseJiraDescriptionHTML(description);
+            htmlContent = parseJiraDescriptionHTML(description, jiraUrl, jiraAttachments);
         }
     } else {
         // Objeto ADF ou outro formato, converter para HTML
-        htmlContent = parseJiraDescriptionHTML(description);
+        htmlContent = parseJiraDescriptionHTML(description, jiraUrl, jiraAttachments);
     }
     
     // Se não há conteúdo após processamento, mostrar mensagem
@@ -408,7 +425,10 @@ export const JiraTaskItem: React.FC<{
             )}
             <div className="text-text-secondary">
                 {task.description ? (
-                    <DescriptionRenderer description={task.description} />
+                    <DescriptionRenderer 
+                        description={task.description} 
+                        jiraAttachments={task.jiraAttachments}
+                    />
                 ) : (
                     <p className="text-text-secondary italic">Sem descrição</p>
                 )}

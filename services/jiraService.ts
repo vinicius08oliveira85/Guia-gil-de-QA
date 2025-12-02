@@ -775,15 +775,35 @@ export const importJiraProject = async (
         const taskType = mapJiraTypeToTaskType(issue.fields?.issuetype?.name);
         const isBug = taskType === 'Bug';
         
+        // Buscar anexos do Jira antes de processar descrição (para mapear imagens)
+        let jiraAttachments: Array<{ id: string; filename: string; size: number; created: string; author: string }> = [];
+        if (issue.fields?.attachment && issue.fields.attachment.length > 0) {
+            jiraAttachments = issue.fields.attachment.map((att: any) => ({
+                id: att.id,
+                filename: att.filename,
+                size: att.size,
+                created: att.created,
+                author: att.author?.displayName || 'Desconhecido',
+            }));
+        }
+        
         // Converter descrição do formato ADF para HTML preservando formatação rica
         // Tentar também renderedFields.description se disponível (formato HTML renderizado)
         let description = '';
         if (issue.renderedFields?.description) {
             // Se temos descrição renderizada (HTML), preservar formatação rica
-            description = parseJiraDescriptionHTML(issue.renderedFields.description);
+            description = parseJiraDescriptionHTML(
+                issue.renderedFields.description,
+                config.url,
+                jiraAttachments
+            );
         } else if (issue.fields?.description) {
             // Caso contrário, converter a descrição raw (ADF) para HTML
-            description = parseJiraDescriptionHTML(issue.fields.description);
+            description = parseJiraDescriptionHTML(
+                issue.fields.description,
+                config.url,
+                jiraAttachments
+            );
         }
         
         // Log para debug das primeiras tarefas
@@ -793,7 +813,8 @@ export const importJiraProject = async (
                 type: taskType,
                 hasDescription: !!description,
                 descriptionLength: description.length,
-                descriptionPreview: description.substring(0, 100)
+                descriptionPreview: description.substring(0, 100),
+                attachmentsCount: jiraAttachments.length
             });
         }
         
@@ -984,15 +1005,35 @@ export const syncJiraProject = async (
         const taskType = mapJiraTypeToTaskType(issue.fields?.issuetype?.name);
         const isBug = taskType === 'Bug';
 
+        // Buscar anexos do Jira antes de processar descrição (para mapear imagens)
+        let jiraAttachments: Array<{ id: string; filename: string; size: number; created: string; author: string }> = [];
+        if (issue.fields?.attachment && issue.fields.attachment.length > 0) {
+            jiraAttachments = issue.fields.attachment.map((att: any) => ({
+                id: att.id,
+                filename: att.filename,
+                size: att.size,
+                created: att.created,
+                author: att.author?.displayName || 'Desconhecido',
+            }));
+        }
+
         // Converter descrição do formato ADF para HTML preservando formatação rica
         // Tentar também renderedFields.description se disponível (formato HTML renderizado)
         let description = '';
         if (issue.renderedFields?.description) {
             // Se temos descrição renderizada (HTML), preservar formatação rica
-            description = parseJiraDescriptionHTML(issue.renderedFields.description);
+            description = parseJiraDescriptionHTML(
+                issue.renderedFields.description,
+                config.url,
+                jiraAttachments
+            );
         } else if (issue.fields?.description) {
             // Caso contrário, converter a descrição raw (ADF) para HTML
-            description = parseJiraDescriptionHTML(issue.fields.description);
+            description = parseJiraDescriptionHTML(
+                issue.fields.description,
+                config.url,
+                jiraAttachments
+            );
         }
         
         // Buscar comentários do Jira
@@ -1254,14 +1295,34 @@ export const addNewJiraTasks = async (
         const taskType = mapJiraTypeToTaskType(issue.fields?.issuetype?.name);
         const isBug = taskType === 'Bug';
         
+        // Buscar anexos do Jira antes de processar descrição (para mapear imagens)
+        let jiraAttachments: Array<{ id: string; filename: string; size: number; created: string; author: string }> = [];
+        if (issue.fields?.attachment && issue.fields.attachment.length > 0) {
+            jiraAttachments = issue.fields.attachment.map((att: any) => ({
+                id: att.id,
+                filename: att.filename,
+                size: att.size,
+                created: att.created,
+                author: att.author?.displayName || 'Desconhecido',
+            }));
+        }
+        
         // Converter descrição do formato ADF para HTML preservando formatação rica
         let description = '';
         if (issue.renderedFields?.description) {
             // Se temos descrição renderizada (HTML), preservar formatação rica
-            description = parseJiraDescriptionHTML(issue.renderedFields.description);
+            description = parseJiraDescriptionHTML(
+                issue.renderedFields.description,
+                config.url,
+                jiraAttachments
+            );
         } else if (issue.fields?.description) {
             // Caso contrário, converter a descrição raw (ADF) para HTML
-            description = parseJiraDescriptionHTML(issue.fields.description);
+            description = parseJiraDescriptionHTML(
+                issue.fields.description,
+                config.url,
+                jiraAttachments
+            );
         }
         
         // Buscar comentários do Jira
