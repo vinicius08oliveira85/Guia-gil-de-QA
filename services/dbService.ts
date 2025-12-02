@@ -38,7 +38,7 @@ const openDB = (): Promise<IDBDatabase> => {
   });
 };
 
-import { cleanupTestCasesForProjects } from '../utils/testCaseCleanup';
+import { cleanupTestCasesForProjects, cleanupTestCasesForNonTaskTypes } from '../utils/testCaseCleanup';
 
 /**
  * Carrega projetos apenas do IndexedDB (carregamento rápido inicial)
@@ -127,16 +127,19 @@ export const getAllProjects = async (): Promise<Project[]> => {
 };
 
 export const addProject = async (project: Project): Promise<void> => {
+  // Limpar BDD e casos de teste de tipos não permitidos antes de salvar
+  const cleanedProject = cleanupTestCasesForNonTaskTypes(project);
+  
   // Tentar Supabase primeiro se disponível
   if (isSupabaseAvailable()) {
     try {
-      await saveProjectToSupabase(project);
+      await saveProjectToSupabase(cleanedProject);
       // Também salvar no IndexedDB como backup local
       const db = await openDB();
       return new Promise((resolve, reject) => {
         const transaction = db.transaction(STORE_NAME, 'readwrite');
         const store = transaction.objectStore(STORE_NAME);
-        const request = store.add(project);
+        const request = store.add(cleanedProject);
         request.onerror = () => reject(request.error);
         request.onsuccess = () => resolve();
       });
@@ -151,7 +154,7 @@ export const addProject = async (project: Project): Promise<void> => {
   return new Promise((resolve, reject) => {
     const transaction = db.transaction(STORE_NAME, 'readwrite');
     const store = transaction.objectStore(STORE_NAME);
-    const request = store.add(project);
+    const request = store.add(cleanedProject);
 
     request.onerror = () => reject(request.error);
     request.onsuccess = () => resolve();
@@ -159,12 +162,15 @@ export const addProject = async (project: Project): Promise<void> => {
 };
 
 export const updateProject = async (project: Project): Promise<void> => {
+  // Limpar BDD e casos de teste de tipos não permitidos antes de salvar
+  const cleanedProject = cleanupTestCasesForNonTaskTypes(project);
+  
   // Salvar apenas no IndexedDB (salvamento no Supabase é manual)
   const db = await openDB();
   return new Promise((resolve, reject) => {
     const transaction = db.transaction(STORE_NAME, 'readwrite');
     const store = transaction.objectStore(STORE_NAME);
-    const request = store.put(project);
+    const request = store.put(cleanedProject);
 
     request.onerror = () => reject(request.error);
     request.onsuccess = () => resolve();

@@ -16,8 +16,9 @@ export const calculateProjectMetrics = (project: Project) => {
     const passedTestCases = allTestCases.filter(tc => tc.status === 'Passed').length;
     const automatedTestCases = allTestCases.filter(tc => tc.isAutomated).length;
 
-    const totalTasks = tasks.filter(t => t.type !== 'Bug').length;
-    const tasksWithTestCases = tasks.filter(t => t.type !== 'Bug' && t.testCases && t.testCases.length > 0).length;
+    // Apenas tarefas do tipo "Tarefa" devem ter casos de teste
+    const totalTasks = tasks.filter(t => t.type === 'Tarefa').length;
+    const tasksWithTestCases = tasks.filter(t => t.type === 'Tarefa' && t.testCases && t.testCases.length > 0).length;
 
     const bugs = tasks.filter(t => t.type === 'Bug');
     const openBugs = bugs.filter(t => t.status !== 'Done');

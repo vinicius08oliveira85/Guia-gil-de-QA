@@ -311,9 +311,13 @@ export const JiraTaskItem: React.FC<{
 
     const sectionTabs = useMemo(() => {
         const tabs: { id: DetailSection; label: string; badge?: number }[] = [
-            { id: 'overview', label: 'Resumo' },
-            { id: 'bdd', label: 'Cenários BDD', badge: task.bddScenarios?.length || 0 }
+            { id: 'overview', label: 'Resumo' }
         ];
+
+        // Adicionar aba "Cenários BDD" apenas para tipo "Tarefa"
+        if (task.type === 'Tarefa') {
+            tabs.push({ id: 'bdd', label: 'Cenários BDD', badge: task.bddScenarios?.length || 0 });
+        }
 
         // Adicionar aba "Testes" apenas para tipo "Tarefa"
         if (task.type === 'Tarefa') {
@@ -359,12 +363,9 @@ export const JiraTaskItem: React.FC<{
         if (isDetailsOpen && !sectionTabs.find(tab => tab.id === activeSection)) {
             setActiveSection(sectionTabs[0]?.id ?? 'overview');
         }
-        // Se estiver na aba "tests" e não for tipo "Tarefa", redirecionar para "overview" ou "bdd"
-        if (activeSection === 'tests' && task.type !== 'Tarefa') {
-            const firstAvailableTab = sectionTabs.find(tab => tab.id === 'bdd') || sectionTabs[0];
-            if (firstAvailableTab) {
-                setActiveSection(firstAvailableTab.id);
-            }
+        // Se estiver na aba "tests" ou "bdd" e não for tipo "Tarefa", redirecionar para "overview"
+        if ((activeSection === 'tests' || activeSection === 'bdd') && task.type !== 'Tarefa') {
+            setActiveSection('overview');
         }
     }, [isDetailsOpen, sectionTabs, activeSection, task.type]);
 
@@ -664,7 +665,13 @@ export const JiraTaskItem: React.FC<{
         </div>
     );
 
-    const renderBddSection = () => (
+    const renderBddSection = () => {
+        // Retornar null se não for tipo "Tarefa" - não deve ser acessado, mas por segurança
+        if (task.type !== 'Tarefa') {
+            return null;
+        }
+
+        return (
         <div className="space-y-md">
             <div className="flex items-center justify-between gap-2">
                 <h3 className="text-lg font-semibold text-text-primary">Cenários BDD (Gherkin)</h3>
@@ -692,7 +699,8 @@ export const JiraTaskItem: React.FC<{
                 </button>
             </div>
         </div>
-    );
+        );
+    };
 
     const renderTestsSection = () => {
         // Retornar null se não for tipo "Tarefa" - não deve ser acessado, mas por segurança

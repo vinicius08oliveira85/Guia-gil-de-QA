@@ -146,11 +146,11 @@ export const syncBugsFromJira = async (
       const existingBug = existingBugsMap.get(bug.id);
       
       if (existingBug) {
-        // Bug existe - atualizar preservando testCases e bddScenarios locais
+        // Bug existe - atualizar preservando apenas comentários (bugs não devem ter testCases nem bddScenarios)
         const updatedBug: JiraTask = {
           ...bug,
-          testCases: existingBug.testCases || [], // Preservar casos de teste locais
-          bddScenarios: existingBug.bddScenarios || [], // Preservar cenários BDD locais
+          testCases: [], // Bugs não devem ter casos de teste
+          bddScenarios: [], // Bugs não devem ter cenários BDD
           comments: existingBug.comments || bug.comments || [], // Merge de comentários
         };
         updatedBugs.push(updatedBug);
