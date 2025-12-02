@@ -970,9 +970,14 @@ export const syncJiraProject = async (
     // Buscar TODAS as issues atualizadas desde a última sincronização (sem limite)
     const jiraIssues = await getJiraIssues(config, jiraProjectKey);
     
+    console.log(`[syncJiraProject] Buscadas ${jiraIssues.length} issues do Jira para projeto ${jiraProjectKey}`);
+    console.log(`[syncJiraProject] Tarefas existentes no projeto: ${project.tasks.length}`);
+    
     // Atualizar tarefas existentes e adicionar novas
     const existingTaskKeys = new Set(project.tasks.map(t => t.id));
     const updatedTasks = [...project.tasks];
+    let updatedCount = 0;
+    let newCount = 0;
 
     for (const issue of jiraIssues) {
         const existingIndex = updatedTasks.findIndex(t => t.id === issue.key);
@@ -1171,11 +1176,43 @@ export const syncJiraProject = async (
         }
 
         if (existingIndex >= 0) {
-            updatedTasks[existingIndex] = task;
+            const oldTask = updatedTasks[existingIndex];
+            // Verificar se realmente houve mudanças antes de atualizar
+            const hasChanges = (
+                oldTask.title !== task.title ||
+                oldTask.description !== task.description ||
+                oldTask.status !== task.status ||
+                oldTask.jiraStatus !== task.jiraStatus ||
+                oldTask.priority !== task.priority ||
+                JSON.stringify(oldTask.tags || []) !== JSON.stringify(task.tags || []) ||
+                oldTask.severity !== task.severity ||
+                oldTask.completedAt !== task.completedAt ||
+                oldTask.dueDate !== task.dueDate ||
+                oldTask.parentId !== task.parentId ||
+                oldTask.epicKey !== task.epicKey
+            );
+            
+            if (hasChanges) {
+                console.log(`[syncJiraProject] Atualizando tarefa ${task.id}:`, {
+                    titleChanged: oldTask.title !== task.title,
+                    statusChanged: oldTask.status !== task.status || oldTask.jiraStatus !== task.jiraStatus,
+                    priorityChanged: oldTask.priority !== task.priority,
+                    descriptionChanged: oldTask.description !== task.description
+                });
+                updatedTasks[existingIndex] = task;
+                updatedCount++;
+            } else {
+                // Preservar tarefa existente se não houve mudanças
+                updatedTasks[existingIndex] = oldTask;
+            }
         } else {
+            console.log(`[syncJiraProject] Nova tarefa encontrada: ${task.id} - ${task.title}`);
             updatedTasks.push(task);
+            newCount++;
         }
     }
+
+    console.log(`[syncJiraProject] Resumo: ${updatedCount} atualizadas, ${newCount} novas, ${updatedTasks.length} total`);
 
     return {
         ...project,

@@ -1027,14 +1027,33 @@ export const TasksView: React.FC<{
             const updatedTasks = updatedProject.tasks.filter(t => {
                 if (existingTaskIds.has(t.id)) {
                     const oldTask = project.tasks.find(ot => ot.id === t.id);
-                    // Considerar atualizado se algum campo importante mudou
-                    return oldTask && (
+                    if (!oldTask) return false;
+                    
+                    // Comparar mais campos para detectar mudanças
+                    const hasChanges = (
                         oldTask.title !== t.title ||
                         oldTask.description !== t.description ||
                         oldTask.status !== t.status ||
                         oldTask.jiraStatus !== t.jiraStatus ||
-                        oldTask.priority !== t.priority
+                        oldTask.priority !== t.priority ||
+                        oldTask.severity !== t.severity ||
+                        JSON.stringify(oldTask.tags || []) !== JSON.stringify(t.tags || []) ||
+                        oldTask.completedAt !== t.completedAt ||
+                        oldTask.dueDate !== t.dueDate ||
+                        oldTask.parentId !== t.parentId ||
+                        oldTask.epicKey !== t.epicKey
                     );
+                    
+                    if (hasChanges) {
+                        console.log(`[TasksView] Tarefa ${t.id} foi atualizada:`, {
+                            title: { old: oldTask.title, new: t.title },
+                            status: { old: oldTask.status, new: t.status },
+                            jiraStatus: { old: oldTask.jiraStatus, new: t.jiraStatus },
+                            priority: { old: oldTask.priority, new: t.priority }
+                        });
+                    }
+                    
+                    return hasChanges;
                 }
                 return false;
             });
