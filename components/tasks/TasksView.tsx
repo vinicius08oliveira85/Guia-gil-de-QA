@@ -289,7 +289,6 @@ export const TasksView: React.FC<{
                 detailLevel,
                 task.type,
                 project
-                task.type
             );
             
             // Atualizar a tarefa com todos os dados sincronizados (substituir, não adicionar)
