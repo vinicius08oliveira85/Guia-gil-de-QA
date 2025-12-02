@@ -1,11 +1,15 @@
 import { create } from 'zustand';
 import { Project, JiraTask } from '../types';
 import { 
-  getAllProjects, 
+  getAllProjects,
+  loadProjectsFromIndexedDB,
   addProject, 
   updateProject, 
   deleteProject 
 } from '../services/dbService';
+import { loadProjectsFromSupabase, isSupabaseAvailable } from '../services/supabaseService';
+import { migrateTestCases } from '../utils/testCaseMigration';
+import { cleanupTestCasesForProjects } from '../utils/testCaseCleanup';
 import { createProjectFromTemplate } from '../utils/projectTemplates';
 import { PHASE_NAMES } from '../utils/constants';
 import { addAuditLog } from '../utils/auditLog';
@@ -19,6 +23,7 @@ interface ProjectsState {
   
   // Actions
   loadProjects: () => Promise<void>;
+  syncProjectsFromSupabase: () => Promise<void>;
   createProject: (name: string, description: string, templateId?: string) => Promise<Project>;
   updateProject: (project: Project) => Promise<void>;
   deleteProject: (projectId: string) => Promise<void>;
@@ -39,10 +44,20 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
   loadProjects: async () => {
     set({ isLoading: true, error: null });
     try {
-      logger.debug('Carregando projetos...', 'ProjectsStore');
-      const projects = await getAllProjects();
-      set({ projects, isLoading: false });
-      logger.info(`Projetos carregados: ${projects.length}`, 'ProjectsStore');
+      logger.debug('Carregando projetos do IndexedDB (fase rápida)...', 'ProjectsStore');
+      
+      // Fase 1: Carregar rapidamente do IndexedDB
+      const indexedDBProjects = await loadProjectsFromIndexedDB();
+      set({ projects: indexedDBProjects, isLoading: false });
+      logger.info(`Projetos carregados do IndexedDB: ${indexedDBProjects.length}`, 'ProjectsStore');
+      
+      // Fase 2: Sincronizar com Supabase em background (não bloqueia UI)
+      if (isSupabaseAvailable()) {
+        // Não usar await - executar em background
+        get().syncProjectsFromSupabase().catch((error) => {
+          logger.warn('Erro ao sincronizar com Supabase em background', 'ProjectsStore', error);
+        });
+      }
     } catch (error) {
       const errorObj = error instanceof Error ? error : new Error('Erro ao carregar projetos');
       logger.error('Erro ao carregar projetos', 'ProjectsStore', errorObj);
@@ -50,6 +65,54 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
         error: errorObj,
         isLoading: false 
       });
+    }
+  },
+
+  syncProjectsFromSupabase: async () => {
+    try {
+      logger.debug('Sincronizando projetos do Supabase...', 'ProjectsStore');
+      const supabaseProjects = await loadProjectsFromSupabase();
+      
+      if (supabaseProjects.length === 0) {
+        logger.debug('Nenhum projeto encontrado no Supabase', 'ProjectsStore');
+        return;
+      }
+      
+      // Migrar TestCases dos projetos do Supabase (otimizado)
+      const migratedSupabaseProjects = supabaseProjects.map(project => ({
+        ...project,
+        tasks: project.tasks.map(task => ({
+          ...task,
+          testCases: migrateTestCases(task.testCases || [])
+        }))
+      }));
+      
+      const state = get();
+      const currentProjects = state.projects;
+      
+      // Fazer merge: criar um Map com ID como chave, priorizando Supabase
+      const projectsMap = new Map<string, Project>();
+      
+      // Primeiro adicionar projetos atuais (IndexedDB)
+      currentProjects.forEach(project => {
+        projectsMap.set(project.id, project);
+      });
+      
+      // Depois sobrescrever/atualizar com projetos do Supabase (prioridade)
+      migratedSupabaseProjects.forEach(project => {
+        projectsMap.set(project.id, project);
+      });
+      
+      const mergedProjects = Array.from(projectsMap.values());
+      
+      // Limpar casos de teste de tipos não permitidos
+      const cleanedProjects = cleanupTestCasesForProjects(mergedProjects);
+      
+      set({ projects: cleanedProjects });
+      logger.info(`Projetos sincronizados do Supabase: ${cleanedProjects.length} (${supabaseProjects.length} do Supabase + ${currentProjects.length} do cache local)`, 'ProjectsStore');
+    } catch (error) {
+      logger.warn('Erro ao sincronizar projetos do Supabase', 'ProjectsStore', error);
+      // Não atualizar estado em caso de erro - manter projetos do IndexedDB
     }
   },
 

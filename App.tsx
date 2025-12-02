@@ -16,6 +16,7 @@ import { loadProjectsFromSupabase, isSupabaseAvailable } from './services/supaba
 import { getExportPreferences } from './utils/preferencesService';
 import { startExportScheduler } from './utils/exportScheduler';
 import { useIsMobile } from './hooks/useIsMobile';
+import { lazyWithRetry } from './utils/lazyWithRetry';
 
 // Code splitting - Lazy loading de componentes pesados
 const ProjectView = lazyWithRetry(() => import('./components/ProjectView').then(m => ({ default: m.ProjectView })));
@@ -23,7 +24,6 @@ const ProjectsDashboard = lazyWithRetry(() => import('./components/ProjectsDashb
 const AdvancedSearch = lazyWithRetry(() => import('./components/common/AdvancedSearch').then(m => ({ default: m.AdvancedSearch })));
 const ProjectComparisonModal = lazyWithRetry(() => import('./components/common/ProjectComparisonModal').then(m => ({ default: m.ProjectComparisonModal })));
 const OnboardingGuide = lazyWithRetry(() => import('./components/onboarding/OnboardingGuide').then(m => ({ default: m.OnboardingGuide })));
-import { lazyWithRetry } from './utils/lazyWithRetry';
 
 const App: React.FC = () => {
     // Estado global do store

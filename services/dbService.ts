@@ -40,8 +40,11 @@ const openDB = (): Promise<IDBDatabase> => {
 
 import { cleanupTestCasesForProjects } from '../utils/testCaseCleanup';
 
-export const getAllProjects = async (): Promise<Project[]> => {
-  // Sempre carregar do IndexedDB como base
+/**
+ * Carrega projetos apenas do IndexedDB (carregamento rápido inicial)
+ * Usado para mostrar UI imediatamente enquanto Supabase carrega em background
+ */
+export const loadProjectsFromIndexedDB = async (): Promise<Project[]> => {
   const db = await openDB();
   const indexedDBProjects = await new Promise<Project[]>((resolve, reject) => {
     const transaction = db.transaction(STORE_NAME, 'readonly');
@@ -52,7 +55,7 @@ export const getAllProjects = async (): Promise<Project[]> => {
     request.onsuccess = () => resolve(request.result || []);
   });
 
-  // Migrar TestCases dos projetos do IndexedDB
+  // Migrar TestCases dos projetos do IndexedDB (otimizado)
   const migratedIndexedDBProjects = indexedDBProjects.map(project => ({
     ...project,
     tasks: project.tasks.map(task => ({
@@ -61,12 +64,24 @@ export const getAllProjects = async (): Promise<Project[]> => {
     }))
   }));
 
+  // Limpar casos de teste de tipos não permitidos (Bug, Epic, História)
+  return cleanupTestCasesForProjects(migratedIndexedDBProjects);
+};
+
+/**
+ * Carrega todos os projetos (IndexedDB + Supabase)
+ * Mantido para compatibilidade, mas agora getAllProjects() usa carregamento em duas fases
+ */
+export const getAllProjects = async (): Promise<Project[]> => {
+  // Fase 1: Carregar rapidamente do IndexedDB
+  const indexedDBProjects = await loadProjectsFromIndexedDB();
+
   // Se Supabase está disponível, fazer merge com IndexedDB
   if (isSupabaseAvailable()) {
     try {
       const supabaseProjects = await loadProjectsFromSupabase();
       
-      // Migrar TestCases dos projetos do Supabase
+      // Migrar TestCases dos projetos do Supabase (otimizado)
       const migratedSupabaseProjects = supabaseProjects.map(project => ({
         ...project,
         tasks: project.tasks.map(task => ({
@@ -79,7 +94,7 @@ export const getAllProjects = async (): Promise<Project[]> => {
       const projectsMap = new Map<string, Project>();
       
       // Primeiro adicionar projetos do IndexedDB (já migrados)
-      migratedIndexedDBProjects.forEach(project => {
+      indexedDBProjects.forEach(project => {
         projectsMap.set(project.id, project);
       });
       
@@ -102,15 +117,13 @@ export const getAllProjects = async (): Promise<Project[]> => {
       return cleanedProjects;
     } catch (error) {
       console.warn('⚠️ Erro ao carregar do Supabase, usando apenas IndexedDB:', error);
-      // Retornar projetos do IndexedDB em caso de erro (já migrados)
-      // Limpar casos de teste de tipos não permitidos (Bug, Epic, História)
-      return cleanupTestCasesForProjects(migratedIndexedDBProjects);
+      // Retornar projetos do IndexedDB em caso de erro (já migrados e limpos)
+      return indexedDBProjects;
     }
   }
   
-  // Se Supabase não está disponível, retornar apenas IndexedDB (já migrados)
-  // Limpar casos de teste de tipos não permitidos (Bug, Epic, História)
-  return cleanupTestCasesForProjects(migratedIndexedDBProjects);
+  // Se Supabase não está disponível, retornar apenas IndexedDB (já migrados e limpos)
+  return indexedDBProjects;
 };
 
 export const addProject = async (project: Project): Promise<void> => {

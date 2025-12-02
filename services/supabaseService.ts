@@ -61,15 +61,26 @@ const getSharedAnonymousId = (): string => {
 };
 
 /**
+ * Cria uma promise que rejeita após o timeout especificado
+ */
+const createTimeoutPromise = <T>(timeoutMs: number, errorMessage: string): Promise<T> => {
+    return new Promise((_, reject) => {
+        setTimeout(() => reject(new Error(errorMessage)), timeoutMs);
+    });
+};
+
+/**
  * Salva um projeto no Supabase
  * Não lança erro - apenas loga aviso se falhar
+ * Adiciona timeout de 5 segundos para evitar travamentos
  */
 const callSupabaseProxy = async <T = any>(
     method: 'GET' | 'POST' | 'DELETE',
     options?: {
         body?: unknown;
         query?: Record<string, string>;
-    }
+    },
+    timeoutMs: number = 5000
 ): Promise<T> => {
     if (!supabaseProxyUrl) {
         throw new Error('Supabase proxy não configurado');
@@ -83,21 +94,26 @@ const callSupabaseProxy = async <T = any>(
         }
     }
 
-    const response = await fetch(url, {
+    const fetchPromise = fetch(url, {
         method,
         headers: {
             'Content-Type': 'application/json'
         },
         body: options?.body ? JSON.stringify(options.body) : undefined
+    }).then(async (response) => {
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || data?.success === false) {
+            const message = data?.error || `Erro HTTP ${response.status}`;
+            throw new Error(message);
+        }
+        return data as T;
     });
 
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok || data?.success === false) {
-        const message = data?.error || `Erro HTTP ${response.status}`;
-        throw new Error(message);
-    }
-
-    return data as T;
+    // Race entre fetch e timeout
+    return Promise.race([
+        fetchPromise,
+        createTimeoutPromise<T>(timeoutMs, `Timeout: requisição ao Supabase excedeu ${timeoutMs}ms`)
+    ]);
 };
 
 const saveThroughProxy = async (project: Project) => {
@@ -161,6 +177,7 @@ export const saveProjectToSupabase = async (project: Project): Promise<void> => 
  * Não filtra por user_id - todos os projetos são compartilhados entre dispositivos
  * Unifica plataformas: desktop e celular veem os mesmos projetos
  * Nunca lança erro - retorna array vazio se falhar
+ * Adiciona timeout de 5 segundos para evitar travamentos
  */
 export const loadProjectsFromSupabase = async (): Promise<Project[]> => {
     if (supabaseProxyUrl) {
@@ -168,7 +185,7 @@ export const loadProjectsFromSupabase = async (): Promise<Project[]> => {
             const userId = await getUserId();
             const response = await callSupabaseProxy<{ projects?: Project[] }>('GET', {
                 query: { userId }
-            });
+            }, 5000); // Timeout de 5 segundos
             const projects = response.projects ?? [];
             if (projects.length === 0) {
                 console.log('📭 Nenhum projeto encontrado no Supabase (proxy)');
@@ -178,6 +195,7 @@ export const loadProjectsFromSupabase = async (): Promise<Project[]> => {
             return projects;
         } catch (error) {
             console.warn('⚠️ Erro ao carregar projetos via proxy Supabase:', error);
+            return [];
         }
     }
 
@@ -186,11 +204,21 @@ export const loadProjectsFromSupabase = async (): Promise<Project[]> => {
     }
     
     try {
-        const { data, error } = await supabase
+        // Timeout para SDK também
+        const queryPromise = supabase
             .from('projects')
             .select('data')
             .or('user_id.eq.anonymous-shared,user_id.like.anon-%')
             .order('updated_at', { ascending: false });
+        
+        const timeoutPromise = createTimeoutPromise<{ data: null; error: { message: string } }>(5000, 'Timeout: requisição ao Supabase excedeu 5s');
+        
+        const result = await Promise.race([
+            queryPromise,
+            timeoutPromise
+        ]);
+        
+        const { data, error } = result;
         
         if (error) {
             console.warn('⚠️ Erro ao carregar projetos do Supabase:', error.message);

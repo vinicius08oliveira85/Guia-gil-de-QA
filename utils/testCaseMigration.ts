@@ -18,11 +18,18 @@ export function normalizeExecutedStrategy(executedStrategy?: string | string[]):
 }
 
 /**
+ * Verifica se um TestCase precisa de migração
+ */
+export function needsMigration(testCase: TestCase): boolean {
+  return typeof testCase.executedStrategy === 'string';
+}
+
+/**
  * Migra um TestCase antigo para o novo formato
  * Converte executedStrategy de string para array se necessário
  */
 export function migrateTestCase(testCase: TestCase): TestCase {
-  if (typeof testCase.executedStrategy === 'string') {
+  if (needsMigration(testCase)) {
     return {
       ...testCase,
       executedStrategy: normalizeExecutedStrategy(testCase.executedStrategy)
@@ -33,8 +40,14 @@ export function migrateTestCase(testCase: TestCase): TestCase {
 
 /**
  * Migra um array de TestCases
+ * Otimizado: apenas migra quando necessário
  */
 export function migrateTestCases(testCases: TestCase[]): TestCase[] {
+  // Verificar se há algum caso que precisa de migração
+  const needsAnyMigration = testCases.some(needsMigration);
+  if (!needsAnyMigration) {
+    return testCases; // Retornar array original se não precisa migrar
+  }
   return testCases.map(migrateTestCase);
 }
 
