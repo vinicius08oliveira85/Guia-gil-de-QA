@@ -241,16 +241,16 @@
   color-scheme: light;
   --font-sans: 'Montserrat', 'Segoe UI Variable', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
   --bg-color: #FFFFFF;
-  --bg-muted: #F8F9FA;
-  --layer-1: rgba(255, 255, 255, 0.95);
-  --layer-2: rgba(248, 249, 250, 0.95);
-  --layer-3: rgba(241, 243, 245, 0.95);
-  --backdrop-color: rgba(0, 0, 0, 0.03);
-  --surface-color: rgba(255, 255, 255, 0.95);
+  --bg-muted: #FAFAFA;
+  --layer-1: rgba(255, 255, 255, 0.98);
+  --layer-2: rgba(255, 255, 255, 0.98);
+  --layer-3: rgba(255, 255, 255, 0.95);
+  --backdrop-color: rgba(0, 0, 0, 0.02);
+  --surface-color: rgba(255, 255, 255, 0.98);
   --surface-hover: rgba(252, 76, 2, 0.06);
   --surface-border: rgba(0, 0, 0, 0.08);
   --surface-outline: rgba(252, 76, 2, 0.15);
-  --surface-contrast: rgba(0, 0, 0, 0.04);
+  --surface-contrast: rgba(0, 0, 0, 0.03);
   --text-primary: #1a1a1a;
   --text-secondary: #4a5568;
   --text-tertiary: #6B7280;
@@ -838,6 +838,11 @@ select option:focus {
   box-shadow: var(--shadow-soft);
 }
 
+/* Leve Saúde - Garantir fundos claros para melhor visibilidade */
+.leve-saude .acrylic {
+  background: rgba(255, 255, 255, 0.98);
+}
+
 .card-surface {
   position: relative;
   background: var(--surface-color);
@@ -1351,6 +1356,19 @@ select option:focus {
   gap: 0.4rem;
   width: 100%;
   position: relative;
+}
+
+/* Leve Saúde - Garantir fundos claros para melhor visibilidade */
+.leve-saude .task-card-compact:not(.task-card-compact--bug):not(.task-card-compact--epic):not(.task-card-compact--historia):not(.task-card-compact--tarefa) {
+  background: rgba(255, 255, 255, 0.98);
+}
+
+.leve-saude .win-panel {
+  background: rgba(255, 255, 255, 0.98);
+}
+
+.leve-saude .card-surface {
+  background: rgba(255, 255, 255, 0.98);
 }
 
 .task-card-compact.is-selected {
