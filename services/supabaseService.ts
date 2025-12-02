@@ -13,12 +13,31 @@ const supabaseAnonKey =
     import.meta.env.VITE_PUBLIC_SUPABASE_ANON_KEY ||
     import.meta.env.SUPABASE_ANON_KEY;
 
+/**
+ * Verifica se está em ambiente de produção (Vercel)
+ */
+const isProduction = (): boolean => {
+    if (typeof window === 'undefined') return false;
+    const hostname = window.location.hostname;
+    return hostname.includes('vercel.app') || hostname.includes('vercel.com');
+};
+
+/**
+ * Verifica se é ambiente de desenvolvimento local
+ */
+const isLocalDevelopment = (): boolean => {
+    if (typeof window === 'undefined') return false;
+    return window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+};
+
 let supabase: SupabaseClient | null = null;
 let supabaseAuthPromise: Promise<void> | null = null;
 let isAuthReady = false;
 
-// Cliente direto só é usado como fallback (ex.: desenvolvimento local sem proxy)
-if (!supabaseProxyUrl && supabaseUrl && supabaseAnonKey) {
+// Cliente direto só é usado em desenvolvimento local como fallback
+// Em produção, SEMPRE usar proxy para evitar CORS
+if (!supabaseProxyUrl && supabaseUrl && supabaseAnonKey && isLocalDevelopment()) {
+    console.log('🔧 Modo desenvolvimento: inicializando SDK Supabase direto (fallback)');
     supabase = createClient(supabaseUrl, supabaseAnonKey);
     supabaseAuthPromise = supabase.auth.signInAnonymously().then(result => {
         if (result.error) {
@@ -27,13 +46,17 @@ if (!supabaseProxyUrl && supabaseUrl && supabaseAnonKey) {
             return;
         }
         isAuthReady = true;
-        console.log('✅ Supabase configurado via SDK (modo fallback)');
+        console.log('✅ Supabase configurado via SDK (modo fallback - apenas desenvolvimento)');
     }).catch(error => {
         console.warn('⚠️ Erro ao configurar autenticação Supabase (modo fallback):', error);
         isAuthReady = false;
     });
 } else if (!supabaseProxyUrl) {
-    console.warn('⚠️ Supabase não configurado. Usando apenas armazenamento local (IndexedDB).');
+    if (isProduction()) {
+        console.warn('⚠️ Supabase não configurado em produção. Configure VITE_SUPABASE_PROXY_URL no Vercel. Usando apenas armazenamento local (IndexedDB).');
+    } else {
+        console.warn('⚠️ Supabase não configurado. Usando apenas armazenamento local (IndexedDB).');
+    }
 }
 
 /**
@@ -70,9 +93,25 @@ const createTimeoutPromise = <T>(timeoutMs: number, errorMessage: string): Promi
 };
 
 /**
- * Salva um projeto no Supabase
- * Não lança erro - apenas loga aviso se falhar
- * Adiciona timeout de 5 segundos para evitar travamentos
+ * Verifica se um erro é relacionado a CORS
+ */
+const isCorsError = (error: unknown): boolean => {
+    if (error instanceof Error) {
+        const message = error.message.toLowerCase();
+        return message.includes('cors') || 
+               message.includes('access-control-allow-origin') ||
+               message.includes('blocked by cors policy');
+    }
+    if (error instanceof TypeError) {
+        return error.message.includes('Failed to fetch') || 
+               error.message.includes('NetworkError');
+    }
+    return false;
+};
+
+/**
+ * Chama o proxy do Supabase com timeout e tratamento de erros melhorado
+ * Timeout de 10 segundos (limite do Vercel)
  */
 const callSupabaseProxy = async <T = any>(
     method: 'GET' | 'POST' | 'DELETE',
@@ -80,7 +119,7 @@ const callSupabaseProxy = async <T = any>(
         body?: unknown;
         query?: Record<string, string>;
     },
-    timeoutMs: number = 5000
+    timeoutMs: number = 10000 // 10 segundos (limite do Vercel)
 ): Promise<T> => {
     if (!supabaseProxyUrl) {
         throw new Error('Supabase proxy não configurado');
@@ -101,12 +140,23 @@ const callSupabaseProxy = async <T = any>(
         },
         body: options?.body ? JSON.stringify(options.body) : undefined
     }).then(async (response) => {
+        // Verificar se é erro de CORS
+        if (response.status === 0 || response.type === 'opaque') {
+            throw new Error('CORS: Requisição bloqueada. Configure o proxy corretamente.');
+        }
+
         const data = await response.json().catch(() => ({}));
         if (!response.ok || data?.success === false) {
             const message = data?.error || `Erro HTTP ${response.status}`;
             throw new Error(message);
         }
         return data as T;
+    }).catch((error) => {
+        // Melhorar mensagem de erro para CORS
+        if (isCorsError(error)) {
+            throw new Error('CORS: Não é possível acessar Supabase diretamente. Configure VITE_SUPABASE_PROXY_URL.');
+        }
+        throw error;
     });
 
     // Race entre fetch e timeout
@@ -156,20 +206,39 @@ export const saveProjectToSupabase = async (project: Project): Promise<void> => 
             await saveThroughProxy(project);
             return;
         } catch (error) {
-            console.warn('⚠️ Erro ao salvar via proxy Supabase:', error);
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            if (isCorsError(error)) {
+                console.error('❌ Erro CORS ao salvar no Supabase. Configure VITE_SUPABASE_PROXY_URL:', errorMessage);
+            } else {
+                console.warn('⚠️ Erro ao salvar via proxy Supabase:', errorMessage);
+            }
+            // Não tentar fallback para SDK em produção ou se for erro CORS
+            if (isProduction() || isCorsError(error)) {
+                return;
+            }
         }
     }
 
-    if (supabase) {
+    // SDK direto apenas em desenvolvimento local
+    if (supabase && isLocalDevelopment()) {
         try {
             await saveThroughSdk(project);
             return;
         } catch (error) {
-            console.warn('⚠️ Erro ao salvar via SDK Supabase:', error);
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            if (isCorsError(error)) {
+                console.error('❌ Erro CORS ao salvar via SDK. Use proxy em produção:', errorMessage);
+            } else {
+                console.warn('⚠️ Erro ao salvar via SDK Supabase:', errorMessage);
+            }
         }
     }
 
-    console.warn('⚠️ Supabase não configurado. Projeto salvo apenas localmente.');
+    if (!supabaseProxyUrl && isProduction()) {
+        console.warn('⚠️ Supabase não configurado em produção. Configure VITE_SUPABASE_PROXY_URL. Projeto salvo apenas localmente.');
+    } else if (!supabaseProxyUrl) {
+        console.warn('⚠️ Supabase não configurado. Projeto salvo apenas localmente.');
+    }
 };
 
 /**
@@ -177,7 +246,7 @@ export const saveProjectToSupabase = async (project: Project): Promise<void> => 
  * Não filtra por user_id - todos os projetos são compartilhados entre dispositivos
  * Unifica plataformas: desktop e celular veem os mesmos projetos
  * Nunca lança erro - retorna array vazio se falhar
- * Adiciona timeout de 5 segundos para evitar travamentos
+ * Timeout de 10 segundos (limite do Vercel)
  */
 export const loadProjectsFromSupabase = async (): Promise<Project[]> => {
     if (supabaseProxyUrl) {
@@ -185,7 +254,7 @@ export const loadProjectsFromSupabase = async (): Promise<Project[]> => {
             const userId = await getUserId();
             const response = await callSupabaseProxy<{ projects?: Project[] }>('GET', {
                 query: { userId }
-            }, 5000); // Timeout de 5 segundos
+            }, 10000); // Timeout de 10 segundos (limite do Vercel)
             const projects = response.projects ?? [];
             if (projects.length === 0) {
                 console.log('📭 Nenhum projeto encontrado no Supabase (proxy)');
@@ -194,24 +263,35 @@ export const loadProjectsFromSupabase = async (): Promise<Project[]> => {
             }
             return projects;
         } catch (error) {
-            console.warn('⚠️ Erro ao carregar projetos via proxy Supabase:', error);
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            if (isCorsError(error)) {
+                console.error('❌ Erro CORS ao carregar do Supabase. Configure VITE_SUPABASE_PROXY_URL:', errorMessage);
+            } else if (errorMessage.includes('Timeout')) {
+                console.warn('⏱️ Timeout ao carregar projetos do Supabase (proxy). Usando cache local:', errorMessage);
+            } else {
+                console.warn('⚠️ Erro ao carregar projetos via proxy Supabase:', errorMessage);
+            }
             return [];
         }
     }
 
-    if (!supabase) {
+    // SDK direto apenas em desenvolvimento local
+    if (!supabase || isProduction()) {
+        if (isProduction()) {
+            console.warn('⚠️ Supabase não disponível em produção sem proxy. Configure VITE_SUPABASE_PROXY_URL.');
+        }
         return [];
     }
     
     try {
-        // Timeout para SDK também
+        // Timeout para SDK também (10 segundos)
         const queryPromise = supabase
             .from('projects')
             .select('data')
             .or('user_id.eq.anonymous-shared,user_id.like.anon-%')
             .order('updated_at', { ascending: false });
         
-        const timeoutPromise = createTimeoutPromise<{ data: null; error: { message: string } }>(5000, 'Timeout: requisição ao Supabase excedeu 5s');
+        const timeoutPromise = createTimeoutPromise<{ data: null; error: { message: string } }>(10000, 'Timeout: requisição ao Supabase excedeu 10s');
         
         const result = await Promise.race([
             queryPromise,
@@ -221,7 +301,12 @@ export const loadProjectsFromSupabase = async (): Promise<Project[]> => {
         const { data, error } = result;
         
         if (error) {
-            console.warn('⚠️ Erro ao carregar projetos do Supabase:', error.message);
+            const errorMessage = error.message || String(error);
+            if (isCorsError(error)) {
+                console.error('❌ Erro CORS ao carregar via SDK. Use proxy em produção:', errorMessage);
+            } else {
+                console.warn('⚠️ Erro ao carregar projetos do Supabase:', errorMessage);
+            }
             return [];
         }
         
@@ -231,10 +316,15 @@ export const loadProjectsFromSupabase = async (): Promise<Project[]> => {
         }
         
         const projects = data.map(row => row.data as Project);
-        console.log(`✅ ${projects.length} projetos carregados do Supabase (fallback SDK)`);
+        console.log(`✅ ${projects.length} projetos carregados do Supabase (fallback SDK - apenas desenvolvimento)`);
         return projects;
     } catch (error) {
-        console.warn('⚠️ Erro ao carregar do Supabase (usando cache local):', error);
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        if (isCorsError(error)) {
+            console.error('❌ Erro CORS ao carregar do Supabase. Use proxy:', errorMessage);
+        } else {
+            console.warn('⚠️ Erro ao carregar do Supabase (usando cache local):', errorMessage);
+        }
         return [];
     }
 };
@@ -249,43 +339,78 @@ export const deleteProjectFromSupabase = async (projectId: string): Promise<void
             const userId = await getUserId();
             await callSupabaseProxy('DELETE', {
                 body: { projectId, userId }
-            });
+            }, 10000); // Timeout de 10 segundos
             console.log(`✅ Projeto ${projectId} removido via proxy Supabase`);
             return;
         } catch (error) {
-            console.warn('⚠️ Erro ao deletar via proxy Supabase:', error);
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            if (isCorsError(error)) {
+                console.error('❌ Erro CORS ao deletar do Supabase. Configure VITE_SUPABASE_PROXY_URL:', errorMessage);
+            } else {
+                console.warn('⚠️ Erro ao deletar via proxy Supabase:', errorMessage);
+            }
+            // Não tentar fallback para SDK em produção ou se for erro CORS
+            if (isProduction() || isCorsError(error)) {
+                return;
+            }
         }
     }
 
-    if (!supabase) {
-        console.warn('⚠️ Supabase não configurado, projeto deletado apenas localmente');
+    // SDK direto apenas em desenvolvimento local
+    if (!supabase || isProduction()) {
+        if (isProduction()) {
+            console.warn('⚠️ Supabase não configurado em produção. Configure VITE_SUPABASE_PROXY_URL. Projeto deletado apenas localmente');
+        } else {
+            console.warn('⚠️ Supabase não configurado, projeto deletado apenas localmente');
+        }
         return;
     }
     
     try {
         const userId = await getUserId();
         
-        const { error } = await supabase
+        const queryPromise = supabase
             .from('projects')
             .delete()
             .eq('id', projectId)
             .eq('user_id', userId);
         
+        const timeoutPromise = createTimeoutPromise<{ error: { message: string } }>(10000, 'Timeout: requisição ao Supabase excedeu 10s');
+        
+        const result = await Promise.race([queryPromise, timeoutPromise]);
+        const { error } = result as { error?: { message: string } };
+        
         if (error) {
-            console.warn('⚠️ Erro ao deletar projeto do Supabase (deletado apenas localmente):', error.message);
+            const errorMessage = error.message || String(error);
+            if (isCorsError(error)) {
+                console.error('❌ Erro CORS ao deletar via SDK. Use proxy em produção:', errorMessage);
+            } else {
+                console.warn('⚠️ Erro ao deletar projeto do Supabase (deletado apenas localmente):', errorMessage);
+            }
             return;
         }
         
-        console.log(`✅ Projeto ${projectId} deletado do Supabase (fallback SDK)`);
+        console.log(`✅ Projeto ${projectId} deletado do Supabase (fallback SDK - apenas desenvolvimento)`);
     } catch (error) {
-        console.warn('⚠️ Erro ao deletar do Supabase (deletado apenas localmente):', error);
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        if (isCorsError(error)) {
+            console.error('❌ Erro CORS ao deletar do Supabase. Use proxy:', errorMessage);
+        } else {
+            console.warn('⚠️ Erro ao deletar do Supabase (deletado apenas localmente):', errorMessage);
+        }
     }
 };
 
 /**
  * Verifica se Supabase está configurado e disponível
+ * Em produção, apenas proxy é considerado disponível (SDK direto causa CORS)
  */
 export const isSupabaseAvailable = (): boolean => {
+    if (isProduction()) {
+        // Em produção, apenas proxy é válido (SDK direto causa CORS)
+        return Boolean(supabaseProxyUrl);
+    }
+    // Em desenvolvimento, aceita proxy ou SDK direto
     return Boolean(supabaseProxyUrl) || supabase !== null;
 };
 

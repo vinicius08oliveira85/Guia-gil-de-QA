@@ -70,7 +70,7 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
 
   syncProjectsFromSupabase: async () => {
     try {
-      logger.debug('Sincronizando projetos do Supabase...', 'ProjectsStore');
+      logger.debug('Sincronizando projetos do Supabase em background...', 'ProjectsStore');
       const supabaseProjects = await loadProjectsFromSupabase();
       
       if (supabaseProjects.length === 0) {
@@ -111,7 +111,15 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
       set({ projects: cleanedProjects });
       logger.info(`Projetos sincronizados do Supabase: ${cleanedProjects.length} (${supabaseProjects.length} do Supabase + ${currentProjects.length} do cache local)`, 'ProjectsStore');
     } catch (error) {
-      logger.warn('Erro ao sincronizar projetos do Supabase', 'ProjectsStore', error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      // Log mais detalhado para erros CORS ou timeout
+      if (errorMessage.includes('CORS') || errorMessage.includes('cors')) {
+        logger.warn('Erro CORS ao sincronizar projetos do Supabase. Configure VITE_SUPABASE_PROXY_URL.', 'ProjectsStore', error);
+      } else if (errorMessage.includes('Timeout') || errorMessage.includes('timeout')) {
+        logger.warn('Timeout ao sincronizar projetos do Supabase. Usando cache local.', 'ProjectsStore', error);
+      } else {
+        logger.warn('Erro ao sincronizar projetos do Supabase', 'ProjectsStore', error);
+      }
       // Não atualizar estado em caso de erro - manter projetos do IndexedDB
     }
   },
