@@ -561,7 +561,7 @@ export const ProjectsDashboard: React.FC<{
                                             <div className="flex justify-between items-center text-xs text-text-tertiary mt-1">
                                                 <span>{totalTasks} {totalTasks === 1 ? 'tarefa' : 'tarefas'}</span>
                                                 {p.settings?.jiraProjectKey && (
-                                                    <span className="bg-blue-900/30 text-blue-400 px-1.5 py-0.5 rounded text-[10px]">JIRA: {p.settings.jiraProjectKey}</span>
+                                                    <span className="bg-blue-600 dark:bg-blue-900/30 text-white dark:text-blue-400 px-1.5 py-0.5 rounded text-[10px]">JIRA: {p.settings.jiraProjectKey}</span>
                                                 )}
                                             </div>
                                         </div>
@@ -608,7 +608,7 @@ export const ProjectsDashboard: React.FC<{
                                                     {p.name}
                                                 </h3>
                                                 {p.settings?.jiraProjectKey && (
-                                                    <span className="bg-blue-900/30 text-blue-400 px-1.5 py-0.5 rounded text-[10px] font-mono">{p.settings.jiraProjectKey}</span>
+                                                    <span className="bg-blue-600 dark:bg-blue-900/30 text-white dark:text-blue-400 px-1.5 py-0.5 rounded text-[10px] font-mono">{p.settings.jiraProjectKey}</span>
                                                 )}
                                             </div>
                                             <p className="text-muted text-sm truncate">

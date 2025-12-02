@@ -20,11 +20,11 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
   const percentage = max > 0 ? Math.min(100, Math.max(0, (value / max) * 100)) : 0;
   
   const colorClasses = {
-    green: 'bg-green-500',
-    blue: 'bg-blue-500',
-    orange: 'bg-orange-500',
-    red: 'bg-red-500',
-    purple: 'bg-purple-500'
+    green: 'bg-green-600 dark:bg-green-500',
+    blue: 'bg-blue-600 dark:bg-blue-500',
+    orange: 'bg-orange-600 dark:bg-orange-500',
+    red: 'bg-red-600 dark:bg-red-500',
+    purple: 'bg-purple-600 dark:bg-purple-500'
   };
 
   const sizeClasses = {
