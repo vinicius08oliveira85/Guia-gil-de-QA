@@ -86,15 +86,15 @@
 }
 
 .leve-saude .chip--accent {
-  background: #FC4C02;
-  border-color: rgba(252, 76, 2, 0.4);
+  background: linear-gradient(135deg, #FC4C02, #E85D00);
+  border-color: rgba(252, 76, 2, 0.3);
   color: #ffffff;
-  box-shadow: 0 12px 28px rgba(252, 76, 2, 0.25);
+  box-shadow: 0 8px 20px rgba(252, 76, 2, 0.2);
 }
 
 .leve-saude .chip--neutral {
-  background: rgba(0, 0, 0, 0.08);
-  border-color: rgba(0, 0, 0, 0.15);
+  background: rgba(0, 0, 0, 0.06);
+  border-color: rgba(0, 0, 0, 0.12);
   color: #1a1a1a;
 }
 
@@ -241,31 +241,31 @@
   color-scheme: light;
   --font-sans: 'Montserrat', 'Segoe UI Variable', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
   --bg-color: #FFFFFF;
-  --bg-muted: #FFFFFF;
+  --bg-muted: #F8F9FA;
   --layer-1: rgba(255, 255, 255, 0.95);
-  --layer-2: rgba(255, 255, 255, 0.95);
-  --layer-3: rgba(255, 255, 255, 0.95);
-  --backdrop-color: rgba(0, 0, 0, 0.05);
+  --layer-2: rgba(248, 249, 250, 0.95);
+  --layer-3: rgba(241, 243, 245, 0.95);
+  --backdrop-color: rgba(0, 0, 0, 0.03);
   --surface-color: rgba(255, 255, 255, 0.95);
-  --surface-hover: rgba(252, 76, 2, 0.08);
+  --surface-hover: rgba(252, 76, 2, 0.06);
   --surface-border: rgba(0, 0, 0, 0.08);
-  --surface-outline: rgba(252, 76, 2, 0.22);
-  --surface-contrast: rgba(0, 0, 0, 0.05);
+  --surface-outline: rgba(252, 76, 2, 0.15);
+  --surface-contrast: rgba(0, 0, 0, 0.04);
   --text-primary: #1a1a1a;
-  --text-secondary: #525252;
+  --text-secondary: #4a5568;
   --text-tertiary: #6B7280;
-  --text-muted: rgba(26, 26, 26, 0.55);
+  --text-muted: rgba(26, 26, 26, 0.5);
   --input-bg: #FFFFFF;
-  --input-border: rgba(0, 0, 0, 0.15);
+  --input-border: rgba(0, 0, 0, 0.12);
   --input-text: #1a1a1a;
   --tooltip-bg: #FFFFFF;
   --tooltip-text: #1a1a1a;
-  --tooltip-border: rgba(0, 0, 0, 0.12);
+  --tooltip-border: rgba(0, 0, 0, 0.1);
   --primary-color: #FC4C02;
   --secondary-color: #126232;
   --accent-color: #FC4C02;
-  --accent-color-strong: #D93D00;
-  --accent-color-soft: rgba(252, 76, 2, 0.18);
+  --accent-color-strong: #E85D00;
+  --accent-color-soft: rgba(252, 76, 2, 0.12);
 }
 
 *, *::before, *::after {
@@ -673,7 +673,7 @@ select {
 
 .leve-saude .input-select:focus {
   border-color: #FC4C02;
-  box-shadow: 0 0 0 2px rgba(252, 76, 2, 0.25);
+  box-shadow: 0 0 0 2px rgba(252, 76, 2, 0.15);
 }
 
 input::placeholder,
@@ -701,7 +701,7 @@ select:focus {
 .leve-saude textarea:focus,
 .leve-saude select:focus {
   border-color: #FC4C02;
-  box-shadow: 0 0 0 3px rgba(252, 76, 2, 0.25);
+  box-shadow: 0 0 0 2px rgba(252, 76, 2, 0.15);
   background-color: #FFFFFF;
 }
 
@@ -1049,20 +1049,20 @@ select option:focus {
   background: #FC4C02;
   color: #ffffff;
   border-color: #FC4C02;
-  box-shadow: 0 10px 30px rgba(252, 76, 2, 0.35);
+  box-shadow: 0 8px 24px rgba(252, 76, 2, 0.25);
   font-weight: 700;
 }
 
 .leve-saude .btn-primary:hover {
-  background: #D93D00;
-  border-color: #D93D00;
-  box-shadow: 0 14px 36px rgba(252, 76, 2, 0.45);
+  background: #E85D00;
+  border-color: #E85D00;
+  box-shadow: 0 12px 32px rgba(252, 76, 2, 0.35);
   transform: translateY(-1px);
 }
 
 .leve-saude .btn-primary:active {
-  background: #C23600;
-  border-color: #C23600;
+  background: #D93D00;
+  border-color: #D93D00;
   transform: translateY(0);
 }
 
@@ -1077,14 +1077,14 @@ select option:focus {
 }
 
 .leve-saude .btn-secondary {
-  background: rgba(252, 76, 2, 0.08);
-  border-color: rgba(252, 76, 2, 0.2);
+  background: rgba(252, 76, 2, 0.06);
+  border-color: rgba(252, 76, 2, 0.15);
   color: #1a1a1a;
 }
 
 .leve-saude .btn-secondary:hover {
-  background: rgba(252, 76, 2, 0.15);
-  border-color: rgba(252, 76, 2, 0.3);
+  background: rgba(252, 76, 2, 0.1);
+  border-color: rgba(252, 76, 2, 0.25);
   color: #1a1a1a;
 }
 
@@ -1187,6 +1187,14 @@ select option:focus {
   box-shadow: 0 10px 28px rgba(15, 23, 42, 0.12);
 }
 
+.leve-saude .tab-pill--active {
+  background: rgba(252, 76, 2, 0.12);
+  color: #FC4C02;
+  border-color: rgba(252, 76, 2, 0.3);
+  box-shadow: 0 8px 24px rgba(252, 76, 2, 0.15);
+  font-weight: 700;
+}
+
 .mini-tab {
   border-radius: 999px;
   border: 1px solid var(--surface-border);
@@ -1217,6 +1225,14 @@ select option:focus {
   border-color: rgba(20, 184, 166, 0.35);
 }
 
+.leve-saude .mini-tab--active {
+  background: rgba(252, 76, 2, 0.12);
+  color: #FC4C02;
+  border-color: rgba(252, 76, 2, 0.3);
+  box-shadow: 0 6px 20px rgba(252, 76, 2, 0.12);
+  font-weight: 700;
+}
+
 .mini-tab__badge {
   background: var(--surface-hover);
   color: var(--text-secondary);
@@ -1229,6 +1245,12 @@ select option:focus {
 .mini-tab--active .mini-tab__badge {
   background: var(--accent-color);
   color: #fff;
+}
+
+.leve-saude .mini-tab--active .mini-tab__badge {
+  background: #FC4C02;
+  color: #ffffff;
+  font-weight: 700;
 }
 
 .phase-pill {
