@@ -259,6 +259,25 @@ export interface DashboardInsightsAnalysis {
   isOutdated?: boolean;
 }
 
+export interface SDLCPhaseAnalysis {
+  currentPhase: PhaseName;
+  explanation: string; // Explicação da IA sobre por que está nessa fase
+  nextSteps: Array<{
+    step: string;
+    description: string;
+    priority: 'Baixa' | 'Média' | 'Alta' | 'Crítica';
+  }>;
+  blockers: Array<{
+    blocker: string;
+    description: string;
+    impact: 'Baixo' | 'Médio' | 'Alto' | 'Crítico';
+    suggestion: string;
+  }>;
+  progressPercentage: number; // Percentual de conclusão da fase atual (0-100)
+  generatedAt: string;
+  isOutdated?: boolean;
+}
+
 export interface MetricsSnapshot {
   date: string; // ISO string
   totalTestCases: number;
@@ -287,6 +306,7 @@ export interface Project {
   settings?: ProjectSettings;
   dashboardOverviewAnalysis?: DashboardOverviewAnalysis;
   dashboardInsightsAnalysis?: DashboardInsightsAnalysis;
+  sdlcPhaseAnalysis?: SDLCPhaseAnalysis;
   metricsHistory?: MetricsSnapshot[];
 }
 

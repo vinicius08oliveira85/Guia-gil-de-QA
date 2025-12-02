@@ -14,6 +14,7 @@ import { DashboardInsightsCard } from './DashboardInsightsCard';
 import { PredictionsCard } from './PredictionsCard';
 import { RecommendationsCard } from './RecommendationsCard';
 import { MetricEnhancementsCard } from './MetricEnhancementsCard';
+import { SDLCPhaseTimeline } from './SDLCPhaseTimeline';
 
 interface QADashboardProps {
   project: Project;
@@ -48,6 +49,9 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
         passRate={metrics.testPassRate}
         totalBugs={metrics.openVsClosedBugs.open}
       />
+
+      {/* Timeline SDLC */}
+      <SDLCPhaseTimeline project={project} onUpdateProject={onUpdateProject} />
 
       {/* Visão Geral dos Testes */}
       <div>
