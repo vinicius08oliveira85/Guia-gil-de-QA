@@ -5,7 +5,8 @@ import {
   loadProjectsFromIndexedDB,
   addProject, 
   updateProject, 
-  deleteProject 
+  deleteProject,
+  saveProjectToSupabaseOnly
 } from '../services/dbService';
 import { loadProjectsFromSupabase, isSupabaseAvailable } from '../services/supabaseService';
 import { migrateTestCases } from '../utils/testCaseMigration';
@@ -24,6 +25,7 @@ interface ProjectsState {
   // Actions
   loadProjects: () => Promise<void>;
   syncProjectsFromSupabase: () => Promise<void>;
+  saveProjectToSupabase: (projectId: string) => Promise<void>;
   createProject: (name: string, description: string, templateId?: string) => Promise<Project>;
   updateProject: (project: Project) => Promise<void>;
   deleteProject: (projectId: string) => Promise<void>;
@@ -121,6 +123,29 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
         logger.warn('Erro ao sincronizar projetos do Supabase', 'ProjectsStore', error);
       }
       // Não atualizar estado em caso de erro - manter projetos do IndexedDB
+    }
+  },
+
+  saveProjectToSupabase: async (projectId: string) => {
+    const state = get();
+    const project = state.projects.find((p) => p.id === projectId);
+    
+    if (!project) {
+      throw new Error('Projeto não encontrado');
+    }
+
+    if (!isSupabaseAvailable()) {
+      throw new Error('Supabase não está disponível. Configure VITE_SUPABASE_PROXY_URL.');
+    }
+
+    try {
+      logger.debug(`Salvando projeto "${project.name}" no Supabase...`, 'ProjectsStore');
+      await saveProjectToSupabaseOnly(project);
+      logger.info(`Projeto "${project.name}" salvo no Supabase com sucesso`, 'ProjectsStore');
+    } catch (error) {
+      const errorObj = error instanceof Error ? error : new Error('Erro ao salvar projeto no Supabase');
+      logger.error('Erro ao salvar projeto no Supabase', 'ProjectsStore', errorObj);
+      throw errorObj;
     }
   },
 

@@ -159,26 +159,7 @@ export const addProject = async (project: Project): Promise<void> => {
 };
 
 export const updateProject = async (project: Project): Promise<void> => {
-  // Tentar Supabase primeiro se disponível
-  if (isSupabaseAvailable()) {
-    try {
-      await saveProjectToSupabase(project);
-      // Também atualizar no IndexedDB como backup local
-      const db = await openDB();
-      return new Promise((resolve, reject) => {
-        const transaction = db.transaction(STORE_NAME, 'readwrite');
-        const store = transaction.objectStore(STORE_NAME);
-        const request = store.put(project);
-        request.onerror = () => reject(request.error);
-        request.onsuccess = () => resolve();
-      });
-    } catch (error) {
-      console.warn('⚠️ Erro ao atualizar no Supabase, usando apenas IndexedDB:', error);
-      // Continuar para fallback IndexedDB
-    }
-  }
-  
-  // Fallback para IndexedDB
+  // Salvar apenas no IndexedDB (salvamento no Supabase é manual)
   const db = await openDB();
   return new Promise((resolve, reject) => {
     const transaction = db.transaction(STORE_NAME, 'readwrite');
@@ -188,6 +169,18 @@ export const updateProject = async (project: Project): Promise<void> => {
     request.onerror = () => reject(request.error);
     request.onsuccess = () => resolve();
   });
+};
+
+/**
+ * Salva um projeto apenas no Supabase (sem salvar no IndexedDB)
+ * Usado para salvamento manual pelo usuário
+ */
+export const saveProjectToSupabaseOnly = async (project: Project): Promise<void> => {
+  if (!isSupabaseAvailable()) {
+    throw new Error('Supabase não está disponível. Configure VITE_SUPABASE_PROXY_URL.');
+  }
+  
+  await saveProjectToSupabase(project);
 };
 
 export const deleteProject = async (projectId: string): Promise<void> => {

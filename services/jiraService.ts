@@ -599,6 +599,49 @@ const mapJiraSeverity = (labels?: string[]): 'Crítico' | 'Alto' | 'Médio' | 'B
 };
 
 /**
+ * Extrai o Epic Link (key do Epic) dos campos customizados do Jira
+ * O Epic Link pode estar em diferentes campos customizados dependendo da configuração do Jira
+ */
+const extractEpicLink = (fields: any): string | undefined => {
+    if (!fields) return undefined;
+    
+    // Tentar campos comuns do Epic Link
+    const epicLinkFields = [
+        'customfield_10011', // Campo padrão mais comum
+        'epicLink',
+        'epic',
+        'customfield_10014', // Epic Name (alternativo)
+    ];
+    
+    // Procurar em campos conhecidos
+    for (const fieldName of epicLinkFields) {
+        if (fields[fieldName]) {
+            // Pode ser string (key) ou objeto com key
+            if (typeof fields[fieldName] === 'string') {
+                return fields[fieldName];
+            }
+            if (fields[fieldName]?.key) {
+                return fields[fieldName].key;
+            }
+        }
+    }
+    
+    // Procurar em todos os campos customizados que contenham "epic" no nome
+    for (const key in fields) {
+        if (key.toLowerCase().includes('epic') && fields[key]) {
+            if (typeof fields[key] === 'string') {
+                return fields[key];
+            }
+            if (fields[key]?.key) {
+                return fields[key].key;
+            }
+        }
+    }
+    
+    return undefined;
+};
+
+/**
  * Busca comentários de uma issue específica do Jira
  * Fallback caso os comentários não venham no expand
  */
@@ -782,6 +825,12 @@ export const importJiraProject = async (
             task.parentId = issue.fields.parent.key;
         }
 
+        // Capturar Epic Link (para Histórias vinculadas a Epics)
+        const epicKey = extractEpicLink(issue.fields);
+        if (epicKey) {
+            task.epicKey = epicKey;
+        }
+
         // Mapear assignee
         if (issue.fields?.assignee?.emailAddress) {
             const email = issue.fields.assignee.emailAddress.toLowerCase();
@@ -861,6 +910,7 @@ export const importJiraProject = async (
         }
 
         // Mapear campos customizados (todos os campos que não são padrão)
+        // Excluir campos de Epic Link da lista de customizados pois já foram processados
         const standardFields = [
             'summary', 'description', 'issuetype', 'status', 'priority', 'assignee', 'reporter',
             'created', 'updated', 'resolutiondate', 'labels', 'parent', 'subtasks', 'comment',
@@ -869,7 +919,8 @@ export const importJiraProject = async (
         ];
         const customFields: { [key: string]: any } = {};
         Object.keys(issue.fields).forEach((key) => {
-            if (!standardFields.includes(key) && !key.startsWith('_')) {
+            // Não incluir campos de Epic Link nos customizados (já processados)
+            if (!standardFields.includes(key) && !key.startsWith('_') && !key.toLowerCase().includes('epic')) {
                 customFields[key] = issue.fields[key];
             }
         });
@@ -884,15 +935,14 @@ export const importJiraProject = async (
         return task;
     }));
 
-    // Organizar hierarquia (Epics e subtarefas)
-    const epics = tasks.filter(t => t.type === 'Epic');
-    const tasksWithChildren = tasks.map(task => {
-        if (task.type === 'Epic') {
-            const children = tasks.filter(t => t.parentId === task.id);
-            return { ...task, children };
-        }
-        return task;
-    });
+    // Organizar hierarquia (Epics, Histórias e subtarefas)
+    // A hierarquia é:
+    // - Epic (tipo Epic)
+    //   - História (tipo História com epicKey apontando para Epic)
+    //     - Tarefa (tipo Tarefa com parentId apontando para História)
+    //   - Bug (tipo Bug com epicKey ou parentId)
+    // Nota: A hierarquia é preservada através dos campos epicKey e parentId
+    // Não precisamos reorganizar aqui, apenas garantir que os campos estão corretos
 
     // Criar projeto local
     const project: Project = {
@@ -947,18 +997,20 @@ export const syncJiraProject = async (
         const existingComments = existingIndex >= 0 ? (updatedTasks[existingIndex].comments || []) : [];
         const mergedComments = mergeComments(existingComments, jiraComments);
         
+        const jiraStatusName = issue.fields?.status?.name || '';
         const task: JiraTask = {
             id: issue.key || `jira-${Date.now()}-${Math.random()}`,
             title: issue.fields?.summary || 'Sem título',
             description: description || '',
-            status: mapJiraStatusToTaskStatus(issue.fields?.status?.name),
+            status: mapJiraStatusToTaskStatus(jiraStatusName),
+            jiraStatus: jiraStatusName, // Sempre atualizar status original do Jira
             type: taskType,
             priority: mapJiraPriorityToTaskPriority(issue.fields?.priority?.name),
             createdAt: issue.fields?.created || new Date().toISOString(),
-            completedAt: issue.fields?.resolutiondate,
+            completedAt: issue.fields?.resolutiondate || undefined, // Atualizar exatamente como está no Jira
             tags: issue.fields?.labels || [],
-            testCases: existingIndex >= 0 ? updatedTasks[existingIndex].testCases : [],
-            bddScenarios: existingIndex >= 0 ? updatedTasks[existingIndex].bddScenarios : [],
+            testCases: existingIndex >= 0 ? updatedTasks[existingIndex].testCases : [], // Preservar casos de teste locais
+            bddScenarios: existingIndex >= 0 ? updatedTasks[existingIndex].bddScenarios : [], // Preservar cenários BDD locais
             comments: mergedComments,
         };
 
@@ -966,11 +1018,24 @@ export const syncJiraProject = async (
             task.severity = mapJiraSeverity(issue.fields.labels);
         }
 
+        // Atualizar parentId exatamente como está no Jira
         if (issue.fields?.parent?.key) {
             task.parentId = issue.fields.parent.key;
+        } else {
+            // Se não há parent no Jira, remover se existia anteriormente
+            task.parentId = undefined;
         }
 
-        // Mapear assignee
+        // Capturar Epic Link (para Histórias vinculadas a Epics) - sempre atualizar do Jira
+        const epicKey = extractEpicLink(issue.fields);
+        if (epicKey) {
+            task.epicKey = epicKey;
+        } else {
+            // Se não há Epic Link no Jira, remover se existia anteriormente
+            task.epicKey = undefined;
+        }
+
+        // Mapear assignee - sempre atualizar do Jira
         if (issue.fields?.assignee?.emailAddress) {
             const email = issue.fields.assignee.emailAddress.toLowerCase();
             if (email.includes('qa') || email.includes('test')) {
@@ -984,65 +1049,79 @@ export const syncJiraProject = async (
             task.assignee = existingIndex >= 0 ? updatedTasks[existingIndex].assignee : 'Product';
         }
 
-        // Mapear campos adicionais do Jira (preservar existentes se já existirem)
+        // Mapear campos adicionais do Jira - sempre atualizar exatamente como estão no Jira
         if (issue.fields?.duedate) {
             task.dueDate = issue.fields.duedate;
-        } else if (existingIndex >= 0 && updatedTasks[existingIndex].dueDate) {
-            task.dueDate = updatedTasks[existingIndex].dueDate;
+        } else {
+            // Se não há dueDate no Jira, remover se existia anteriormente
+            task.dueDate = undefined;
         }
 
+        // Atualizar timeTracking exatamente como está no Jira
         if (issue.fields?.timetracking) {
             task.timeTracking = {
                 originalEstimate: issue.fields.timetracking.originalEstimate,
                 remainingEstimate: issue.fields.timetracking.remainingEstimate,
                 timeSpent: issue.fields.timetracking.timeSpent,
             };
-        } else if (existingIndex >= 0 && updatedTasks[existingIndex].timeTracking) {
-            task.timeTracking = updatedTasks[existingIndex].timeTracking;
+        } else {
+            // Se não há timetracking no Jira, remover se existia anteriormente
+            task.timeTracking = undefined;
         }
 
+        // Atualizar components exatamente como estão no Jira
         if (issue.fields?.components && issue.fields.components.length > 0) {
             task.components = issue.fields.components.map((comp: any) => ({
                 id: comp.id,
                 name: comp.name,
             }));
-        } else if (existingIndex >= 0 && updatedTasks[existingIndex].components) {
-            task.components = updatedTasks[existingIndex].components;
+        } else {
+            // Se não há components no Jira, remover se existiam anteriormente
+            task.components = undefined;
         }
 
+        // Atualizar fixVersions exatamente como estão no Jira
         if (issue.fields?.fixVersions && issue.fields.fixVersions.length > 0) {
             task.fixVersions = issue.fields.fixVersions.map((version: any) => ({
                 id: version.id,
                 name: version.name,
             }));
-        } else if (existingIndex >= 0 && updatedTasks[existingIndex].fixVersions) {
-            task.fixVersions = updatedTasks[existingIndex].fixVersions;
+        } else {
+            // Se não há fixVersions no Jira, remover se existiam anteriormente
+            task.fixVersions = undefined;
         }
 
+        // Atualizar environment exatamente como está no Jira
         if (issue.fields?.environment) {
             task.environment = issue.fields.environment;
-        } else if (existingIndex >= 0 && updatedTasks[existingIndex].environment) {
-            task.environment = updatedTasks[existingIndex].environment;
+        } else {
+            // Se não há environment no Jira, remover se existia anteriormente
+            task.environment = undefined;
         }
 
+        // Atualizar reporter exatamente como está no Jira
         if (issue.fields?.reporter) {
             task.reporter = {
                 displayName: issue.fields.reporter.displayName,
                 emailAddress: issue.fields.reporter.emailAddress,
             };
-        } else if (existingIndex >= 0 && updatedTasks[existingIndex].reporter) {
-            task.reporter = updatedTasks[existingIndex].reporter;
+        } else {
+            // Se não há reporter no Jira, remover se existia anteriormente
+            task.reporter = undefined;
         }
 
+        // Atualizar watchers exatamente como estão no Jira
         if (issue.fields?.watches) {
             task.watchers = {
                 watchCount: issue.fields.watches.watchCount || 0,
                 isWatching: issue.fields.watches.isWatching || false,
             };
-        } else if (existingIndex >= 0 && updatedTasks[existingIndex].watchers) {
-            task.watchers = updatedTasks[existingIndex].watchers;
+        } else {
+            // Se não há watches no Jira, remover se existiam anteriormente
+            task.watchers = undefined;
         }
 
+        // Atualizar issueLinks exatamente como estão no Jira
         if (issue.fields?.issuelinks && issue.fields.issuelinks.length > 0) {
             task.issueLinks = issue.fields.issuelinks.map((link: any) => ({
                 id: link.id,
@@ -1050,10 +1129,12 @@ export const syncJiraProject = async (
                 relatedKey: link.outwardIssue?.key || link.inwardIssue?.key || '',
                 direction: link.outwardIssue ? 'outward' : 'inward',
             }));
-        } else if (existingIndex >= 0 && updatedTasks[existingIndex].issueLinks) {
-            task.issueLinks = updatedTasks[existingIndex].issueLinks;
+        } else {
+            // Se não há issueLinks no Jira, remover se existiam anteriormente
+            task.issueLinks = undefined;
         }
 
+        // Atualizar jiraAttachments exatamente como estão no Jira
         if (issue.fields?.attachment && issue.fields.attachment.length > 0) {
             task.jiraAttachments = issue.fields.attachment.map((att: any) => ({
                 id: att.id,
@@ -1062,11 +1143,13 @@ export const syncJiraProject = async (
                 created: att.created,
                 author: att.author?.displayName || 'Desconhecido',
             }));
-        } else if (existingIndex >= 0 && updatedTasks[existingIndex].jiraAttachments) {
-            task.jiraAttachments = updatedTasks[existingIndex].jiraAttachments;
+        } else {
+            // Se não há attachments no Jira, remover se existiam anteriormente
+            task.jiraAttachments = undefined;
         }
 
-        // Mapear campos customizados
+        // Mapear campos customizados - sempre atualizar exatamente como estão no Jira
+        // Excluir campos de Epic Link da lista de customizados pois já foram processados
         const standardFields = [
             'summary', 'description', 'issuetype', 'status', 'priority', 'assignee', 'reporter',
             'created', 'updated', 'resolutiondate', 'labels', 'parent', 'subtasks', 'comment',
@@ -1075,14 +1158,16 @@ export const syncJiraProject = async (
         ];
         const customFields: { [key: string]: any } = {};
         Object.keys(issue.fields).forEach((key) => {
-            if (!standardFields.includes(key) && !key.startsWith('_')) {
+            // Não incluir campos de Epic Link nos customizados (já processados)
+            if (!standardFields.includes(key) && !key.startsWith('_') && !key.toLowerCase().includes('epic')) {
                 customFields[key] = issue.fields[key];
             }
         });
         if (Object.keys(customFields).length > 0) {
             task.jiraCustomFields = customFields;
-        } else if (existingIndex >= 0 && updatedTasks[existingIndex].jiraCustomFields) {
-            task.jiraCustomFields = updatedTasks[existingIndex].jiraCustomFields;
+        } else {
+            // Se não há customFields no Jira, remover se existiam anteriormente
+            task.jiraCustomFields = undefined;
         }
 
         if (existingIndex >= 0) {
@@ -1168,6 +1253,12 @@ export const addNewJiraTasks = async (
             task.parentId = issue.fields.parent.key;
         }
 
+        // Capturar Epic Link (para Histórias vinculadas a Epics)
+        const epicKey = extractEpicLink(issue.fields);
+        if (epicKey) {
+            task.epicKey = epicKey;
+        }
+
         // Mapear assignee
         if (issue.fields?.assignee?.emailAddress) {
             const email = issue.fields.assignee.emailAddress.toLowerCase();
@@ -1180,6 +1271,89 @@ export const addNewJiraTasks = async (
             }
         } else {
             task.assignee = 'Product';
+        }
+
+        // Mapear campos adicionais do Jira (exatamente como estão no Jira)
+        if (issue.fields?.duedate) {
+            task.dueDate = issue.fields.duedate;
+        }
+
+        if (issue.fields?.timetracking) {
+            task.timeTracking = {
+                originalEstimate: issue.fields.timetracking.originalEstimate,
+                remainingEstimate: issue.fields.timetracking.remainingEstimate,
+                timeSpent: issue.fields.timetracking.timeSpent,
+            };
+        }
+
+        if (issue.fields?.components && issue.fields.components.length > 0) {
+            task.components = issue.fields.components.map((comp: any) => ({
+                id: comp.id,
+                name: comp.name,
+            }));
+        }
+
+        if (issue.fields?.fixVersions && issue.fields.fixVersions.length > 0) {
+            task.fixVersions = issue.fields.fixVersions.map((version: any) => ({
+                id: version.id,
+                name: version.name,
+            }));
+        }
+
+        if (issue.fields?.environment) {
+            task.environment = issue.fields.environment;
+        }
+
+        if (issue.fields?.reporter) {
+            task.reporter = {
+                displayName: issue.fields.reporter.displayName,
+                emailAddress: issue.fields.reporter.emailAddress,
+            };
+        }
+
+        if (issue.fields?.watches) {
+            task.watchers = {
+                watchCount: issue.fields.watches.watchCount || 0,
+                isWatching: issue.fields.watches.isWatching || false,
+            };
+        }
+
+        if (issue.fields?.issuelinks && issue.fields.issuelinks.length > 0) {
+            task.issueLinks = issue.fields.issuelinks.map((link: any) => ({
+                id: link.id,
+                type: link.type?.name || '',
+                relatedKey: link.outwardIssue?.key || link.inwardIssue?.key || '',
+                direction: link.outwardIssue ? 'outward' : 'inward',
+            }));
+        }
+
+        if (issue.fields?.attachment && issue.fields.attachment.length > 0) {
+            task.jiraAttachments = issue.fields.attachment.map((att: any) => ({
+                id: att.id,
+                filename: att.filename,
+                size: att.size,
+                created: att.created,
+                author: att.author?.displayName || 'Desconhecido',
+            }));
+        }
+
+        // Mapear campos customizados (todos os campos que não são padrão)
+        // Excluir campos de Epic Link da lista de customizados pois já foram processados
+        const standardFields = [
+            'summary', 'description', 'issuetype', 'status', 'priority', 'assignee', 'reporter',
+            'created', 'updated', 'resolutiondate', 'labels', 'parent', 'subtasks', 'comment',
+            'duedate', 'timetracking', 'components', 'fixVersions', 'environment', 'watches',
+            'issuelinks', 'attachment'
+        ];
+        const customFields: { [key: string]: any } = {};
+        Object.keys(issue.fields).forEach((key) => {
+            // Não incluir campos de Epic Link nos customizados (já processados)
+            if (!standardFields.includes(key) && !key.startsWith('_') && !key.toLowerCase().includes('epic')) {
+                customFields[key] = issue.fields[key];
+            }
+        });
+        if (Object.keys(customFields).length > 0) {
+            task.jiraCustomFields = customFields;
         }
 
         return task;

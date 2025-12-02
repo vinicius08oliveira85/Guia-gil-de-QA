@@ -105,6 +105,7 @@ export interface JiraTask {
   testStrategy?: TestStrategy[];
   type: JiraTaskType;
   parentId?: string;
+  epicKey?: string; // Key do Epic vinculado (para Histórias vinculadas a Epics)
   bddScenarios?: BddScenario[];
   severity?: BugSeverity;
   priority?: TaskPriority;

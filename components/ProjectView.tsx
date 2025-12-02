@@ -9,16 +9,23 @@ import { ExportMenu } from './common/ExportMenu';
 import { Modal } from './common/Modal';
 import { LoadingSkeleton } from './common/LoadingSkeleton';
 import { QADashboard } from './dashboard/QADashboard';
+import { useProjectsStore } from '../store/projectsStore';
+import { isSupabaseAvailable } from '../services/supabaseService';
+import toast from 'react-hot-toast';
+import { Spinner } from './common/Spinner';
 
 export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project: Project) => void; onBack: () => void; }> = ({ project, onUpdateProject, onBack }) => {
     const [activeTab, setActiveTab] = useState('dashboard');
     const [isPrinting, setIsPrinting] = useState(false);
     const [showExportMenu, setShowExportMenu] = useState(false);
+    const [isSavingToSupabase, setIsSavingToSupabase] = useState(false);
     const metrics = useProjectMetrics(project);
     const previousPhasesRef = useRef<string>('');
     const isMountedRef = useRef(true);
     const projectRef = useRef(project);
     const onUpdateProjectRef = useRef(onUpdateProject);
+    const { saveProjectToSupabase } = useProjectsStore();
+    const supabaseAvailable = isSupabaseAvailable();
 
     // Keep refs updated
     useEffect(() => {
@@ -69,6 +76,24 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
     const handlePrint = () => {
         setIsPrinting(true);
     };
+
+    const handleSaveToSupabase = async () => {
+        if (!supabaseAvailable) {
+            toast.error('Supabase não está configurado. Configure VITE_SUPABASE_PROXY_URL.');
+            return;
+        }
+
+        setIsSavingToSupabase(true);
+        try {
+            await saveProjectToSupabase(project.id);
+            toast.success(`Projeto "${project.name}" salvo no Supabase com sucesso!`);
+        } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+            toast.error(`Erro ao salvar no Supabase: ${errorMessage}`);
+        } finally {
+            setIsSavingToSupabase(false);
+        }
+    };
     
     const tabBaseClass = "tab-pill whitespace-nowrap";
     const activeTabStyle = "tab-pill--active";
@@ -95,6 +120,28 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                         &larr; Voltar para Projetos
                     </button>
                     <div className="flex flex-wrap gap-sm w-full justify-end">
+                        <button 
+                            onClick={handleSaveToSupabase}
+                            disabled={!supabaseAvailable || isSavingToSupabase}
+                            className="btn btn-primary flex items-center justify-center gap-2 w-full sm:w-auto lg:min-w-[180px] disabled:opacity-50 disabled:cursor-not-allowed"
+                            title={!supabaseAvailable ? 'Supabase não está configurado' : 'Salvar projeto no Supabase'}
+                        >
+                            {isSavingToSupabase ? (
+                                <>
+                                    <Spinner small />
+                                    <span>Salvando...</span>
+                                </>
+                            ) : (
+                                <>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                        <polyline points="17 8 12 3 7 8"></polyline>
+                                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                                    </svg>
+                                    <span>Salvar no Supabase</span>
+                                </>
+                            )}
+                        </button>
                         <button 
                             onClick={() => setShowExportMenu(true)} 
                             className="btn btn-secondary flex items-center justify-center gap-2 w-full sm:w-auto lg:min-w-[180px]"
