@@ -21,20 +21,34 @@ VITE_SUPABASE_ANON_KEY=sua_chave_anon_aqui
 # Esta chave deve ser usada apenas em serverless functions ou backend
 SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZlYnBhbGhjdnpiYnptZHpnbGFnIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MjUxMDA2OSwiZXhwIjoyMDc4MDg2MDY5fQ.ZptQY6-bpBEAI8u4zUmJN6zMefef8ZlGMQCeJh3Myxw
 
-# URL do proxy do Supabase (recomendado para produção - Vercel)
-# Configure esta variável no Vercel para evitar problemas de CORS
-# Exemplo: https://your-app.vercel.app/api/supabase
-VITE_SUPABASE_PROXY_URL=
+# URL do proxy do Supabase (OBRIGATÓRIO para produção, recomendado para desenvolvimento)
+# Para desenvolvimento local com vercel dev: http://localhost:3000/api/supabaseProxy
+# Para produção no Vercel: /api/supabaseProxy (caminho relativo)
+# O proxy evita problemas de CORS e mantém a service role key segura no backend
+VITE_SUPABASE_PROXY_URL=http://localhost:3000/api/supabaseProxy
 ```
 
 ### Para Produção (Vercel)
 
 1. Acesse: https://vercel.com/seu-projeto/settings/environment-variables
-2. Adicione as seguintes variáveis:
-   - `VITE_PUBLIC_SUPABASE_URL`: `https://vebpalhcvzbbzmdzglag.supabase.co`
+2. Adicione as seguintes variáveis de ambiente:
+
+#### Variáveis para Backend (Functions - api/supabaseProxy.ts):
    - `SUPABASE_URL`: `https://vebpalhcvzbbzmdzglag.supabase.co`
-   - `SUPABASE_SERVICE_ROLE_KEY`: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...`
-   - `VITE_SUPABASE_PROXY_URL`: URL do seu proxy (se configurado)
+   - `SUPABASE_SERVICE_ROLE_KEY`: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZlYnBhbGhjdnpiYnptZHpnbGFnIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MjUxMDA2OSwiZXhwIjoyMDc4MDg2MDY5fQ.ZptQY6-bpBEAI8u4zUmJN6zMefef8ZlGMQCeJh3Myxw`
+   
+   > **Importante**: Marque estas variáveis como "Available for Production, Preview, and Development" para que funcionem nas serverless functions.
+
+#### Variáveis para Frontend:
+   - `VITE_PUBLIC_SUPABASE_URL`: `https://vebpalhcvzbbzmdzglag.supabase.co`
+   - `VITE_SUPABASE_PROXY_URL`: `/api/supabaseProxy` (caminho relativo para o proxy)
+
+3. Após adicionar as variáveis, faça um novo deploy no Vercel para que as mudanças tenham efeito.
+
+#### Como Obter a Chave Anônima (Opcional - para desenvolvimento local):
+   - Acesse: https://supabase.com/dashboard/project/vebpalhcvzbbzmdzglag/settings/api
+   - Copie a "anon public" key
+   - Adicione em `.env.local` como `VITE_SUPABASE_ANON_KEY`
 
 ## Variáveis do Jira
 

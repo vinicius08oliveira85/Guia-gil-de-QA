@@ -7,6 +7,9 @@
   "functions": {
     "api/jira-proxy.ts": {
       "maxDuration": 60
+    },
+    "api/supabaseProxy.ts": {
+      "maxDuration": 30
     }
   },
   "rewrites": [
