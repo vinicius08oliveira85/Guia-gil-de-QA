@@ -21,6 +21,28 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState('');
 
+  /**
+   * Formata a data do comentário com validação
+   * Retorna uma string formatada ou fallback se a data for inválida
+   */
+  const formatCommentDate = (dateString: string | undefined): string => {
+    if (!dateString) {
+      return 'Data não disponível';
+    }
+
+    try {
+      const date = new Date(dateString);
+      // Verifica se a data é válida
+      if (isNaN(date.getTime())) {
+        return 'Data inválida';
+      }
+      return format(date, "dd/MM/yyyy 'às' HH:mm");
+    } catch (error) {
+      console.warn('Erro ao formatar data do comentário:', error);
+      return 'Data inválida';
+    }
+  };
+
   const handleSubmit = () => {
     if (newComment.trim()) {
       onAddComment(newComment.trim());
@@ -109,7 +131,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
                       </span>
                     )}
                     <span className="text-sm text-text-secondary">
-                      {format(new Date(comment.createdAt), "dd/MM/yyyy 'às' HH:mm")}
+                      {formatCommentDate(comment.createdAt)}
                     </span>
                   </div>
                   {comment.author === currentUser && !comment.fromJira && (onEditComment || onDeleteComment) && (
