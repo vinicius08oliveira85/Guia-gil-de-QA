@@ -1245,7 +1245,7 @@ export const TasksView: React.FC<{
                     </div>
                 </div>
 
-                <div className="mb-md">
+                <div className="mb-sm">
                     <label 
                         htmlFor="quick-task-search" 
                         className="text-sm font-semibold text-text-primary mb-2 flex items-center gap-2"
@@ -1283,13 +1283,13 @@ export const TasksView: React.FC<{
                     </p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-md mb-md">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-sm mb-sm">
                     <div 
-                        className="mica rounded-xl p-4 border border-surface-border hover:border-accent/30 transition-all duration-200 hover:shadow-lg group cursor-help" 
+                        className="mica rounded-xl p-3 border border-surface-border hover:border-accent/30 transition-all duration-200 hover:shadow-lg group cursor-help" 
                         aria-live="polite"
                         title={`Total de ${stats.total} tarefas no projeto. Inclui todas as tarefas independente do status.`}
                     >
-                        <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center justify-between mb-1.5">
                             <div className="p-2 bg-blue-500/10 rounded-lg group-hover:bg-blue-500/20 transition-colors">
                                 <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
@@ -1301,11 +1301,11 @@ export const TasksView: React.FC<{
                     </div>
                     
                     <div 
-                        className="mica rounded-xl p-4 border border-surface-border hover:border-accent/30 transition-all duration-200 hover:shadow-lg group cursor-help" 
+                        className="mica rounded-xl p-3 border border-surface-border hover:border-accent/30 transition-all duration-200 hover:shadow-lg group cursor-help" 
                         aria-live="polite"
                         title={`${stats.inProgress} tarefas em andamento. Tarefas que estão sendo trabalhadas atualmente.`}
                     >
-                        <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center justify-between mb-1.5">
                             <div className="p-2 bg-accent/10 rounded-lg group-hover:bg-accent/20 transition-colors">
                                 <svg className="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -1317,11 +1317,11 @@ export const TasksView: React.FC<{
                     </div>
                     
                     <div 
-                        className="mica rounded-xl p-4 border border-surface-border hover:border-green-400/30 transition-all duration-200 hover:shadow-lg group cursor-help" 
+                        className="mica rounded-xl p-3 border border-surface-border hover:border-green-400/30 transition-all duration-200 hover:shadow-lg group cursor-help" 
                         aria-live="polite"
                         title={`${stats.done} tarefas concluídas. Tarefas finalizadas e validadas.`}
                     >
-                        <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center justify-between mb-1.5">
                             <div className="p-2 bg-green-500/10 rounded-lg group-hover:bg-green-500/20 transition-colors">
                                 <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -1333,11 +1333,11 @@ export const TasksView: React.FC<{
                     </div>
                     
                     <div 
-                        className="mica rounded-xl p-4 border border-surface-border hover:border-red-400/30 transition-all duration-200 hover:shadow-lg group cursor-help" 
+                        className="mica rounded-xl p-3 border border-surface-border hover:border-red-400/30 transition-all duration-200 hover:shadow-lg group cursor-help" 
                         aria-live="polite"
                         title={`${stats.bugsOpen} bugs abertos. Problemas identificados que ainda precisam ser resolvidos.`}
                     >
-                        <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center justify-between mb-1.5">
                             <div className="p-2 bg-red-500/10 rounded-lg group-hover:bg-red-500/20 transition-colors">
                                 <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -1349,10 +1349,10 @@ export const TasksView: React.FC<{
                     </div>
                     
                     <div 
-                        className="mica rounded-xl p-4 border border-surface-border hover:border-accent/30 transition-all duration-200 hover:shadow-lg col-span-1 md:col-span-2 lg:col-span-4 cursor-help"
+                        className="mica rounded-xl p-3 border border-surface-border hover:border-accent/30 transition-all duration-200 hover:shadow-lg col-span-1 md:col-span-2 lg:col-span-4 cursor-help"
                         title={`Taxa de execução de testes: ${testExecutionRate}%. ${stats.executedTests} de ${stats.totalTests} casos foram executados. Taxa de automação: ${automationRate}%.`}
                     >
-                        <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center gap-2">
                                 <div className="p-2 bg-accent/10 rounded-lg">
                                     <svg className="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -1363,7 +1363,7 @@ export const TasksView: React.FC<{
                             </div>
                             <span className="text-lg font-bold text-accent" aria-label={`${testExecutionRate}% de execução`}>{testExecutionRate}%</span>
                         </div>
-                        <div className="w-full bg-surface-hover/50 rounded-full h-3 mb-2 overflow-hidden" role="progressbar" aria-valuenow={testExecutionRate} aria-valuemin={0} aria-valuemax={100} aria-label={`Progresso de execução: ${testExecutionRate}%`}>
+                        <div className="w-full bg-surface-hover/50 rounded-full h-3 mb-1.5 overflow-hidden" role="progressbar" aria-valuenow={testExecutionRate} aria-valuemin={0} aria-valuemax={100} aria-label={`Progresso de execução: ${testExecutionRate}%`}>
                             <div 
                                 className="h-full bg-gradient-to-r from-accent via-accent-light to-accent rounded-full transition-all duration-500 relative overflow-hidden"
                                 style={{ width: `${testExecutionRate}%` }}
@@ -1384,7 +1384,7 @@ export const TasksView: React.FC<{
             </div>
 
             {filterChips.length > 0 && (
-                <div className="mb-md p-3 mica rounded-xl border border-surface-border">
+                <div className="mb-sm p-3 mica rounded-xl border border-surface-border">
                     <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-2">
                             <svg className="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1441,7 +1441,7 @@ export const TasksView: React.FC<{
             />
 
             {showFilters && (
-                <div className="mb-md">
+                <div className="mb-sm">
                     <FilterPanel
                         filters={filters}
                         onFilterChange={updateFilter}
@@ -1452,10 +1452,10 @@ export const TasksView: React.FC<{
                 </div>
             )}
 
-            <div className="flex flex-col gap-md mb-md">
+            <div className="flex flex-col gap-sm mb-sm">
                 {currentSuggestion && showSuggestions && (
                     <div className="mica rounded-xl border border-surface-border overflow-hidden shadow-lg">
-                        <div className="flex items-center justify-between bg-surface-hover/50 px-4 py-3 border-b border-surface-border">
+                        <div className="flex items-center justify-between bg-surface-hover/50 px-3 py-2 border-b border-surface-border">
                             <div className="flex items-center gap-2">
                                 <div className="p-1.5 bg-accent/10 rounded-lg">
                                     <svg className="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1473,7 +1473,7 @@ export const TasksView: React.FC<{
                                 </svg>
                             </button>
                         </div>
-                        <div className="p-4 bg-surface/30">
+                        <div className="p-3 bg-surface/30">
                             <SuggestionBanner
                                 suggestion={currentSuggestion}
                                 onDismiss={() => setDismissedSuggestions(new Set([...dismissedSuggestions, currentSuggestion.id]))}
@@ -1502,7 +1502,7 @@ export const TasksView: React.FC<{
             </div>
 
             {isTaskFormOpen && (
-                <div className="mb-md p-3 bg-surface rounded-lg border border-surface-border">
+                <div className="mb-sm p-3 bg-surface rounded-lg border border-surface-border">
                     <TaskForm 
                         onSave={handleSaveTask} 
                         onCancel={() => { setIsTaskFormOpen(false); setEditingTask(undefined); }} 
