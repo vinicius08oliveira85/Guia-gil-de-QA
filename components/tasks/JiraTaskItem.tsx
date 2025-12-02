@@ -960,8 +960,8 @@ export const JiraTaskItem: React.FC<{
                 <CommentSection
                     comments={task.comments || []}
                     onAddComment={(content) => onAddComment(content)}
-                    onEditComment={(commentId, content) => onEditComment?.(commentId, content)}
-                    onDeleteComment={(commentId) => onDeleteComment?.(commentId)}
+                    onEditComment={onEditComment}
+                    onDeleteComment={onDeleteComment}
                 />
             </div>
         );

@@ -7,7 +7,6 @@ import { TestOverviewCards } from './TestOverviewCards';
 import { SuccessRateCard } from './SuccessRateCard';
 import { BugsIncidentsCard } from './BugsIncidentsCard';
 import { ExecutionProgressCard } from './ExecutionProgressCard';
-import { CoverageCard } from './CoverageCard';
 import { QuickAnalysisCard } from './QuickAnalysisCard';
 import { DashboardAlerts } from './DashboardAlerts';
 import { QualityScoreCard } from './QualityScoreCard';
@@ -85,9 +84,6 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
         totalBugs={metrics.openVsClosedBugs.open}
         recentlyResolved={metrics.quickAnalysis.recentlyResolvedBugs}
       />
-
-      {/* Cobertura por Funcionalidade */}
-      <CoverageCard project={project} />
 
       {/* Análises Rápidas */}
       <QuickAnalysisCard

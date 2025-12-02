@@ -259,14 +259,6 @@ export interface DashboardInsightsAnalysis {
   isOutdated?: boolean;
 }
 
-export interface ProjectFunctionality {
-  id: string;
-  name: string;
-  description?: string;
-  testSuite?: string; // Para associar via testSuite
-  targetCoverage?: number; // Meta de cobertura (0-100)
-}
-
 export interface MetricsSnapshot {
   date: string; // ISO string
   totalTestCases: number;
@@ -295,7 +287,6 @@ export interface Project {
   settings?: ProjectSettings;
   dashboardOverviewAnalysis?: DashboardOverviewAnalysis;
   dashboardInsightsAnalysis?: DashboardInsightsAnalysis;
-  functionalities?: ProjectFunctionality[];
   metricsHistory?: MetricsSnapshot[];
 }
 

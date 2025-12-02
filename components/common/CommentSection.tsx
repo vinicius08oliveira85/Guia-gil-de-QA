@@ -5,8 +5,8 @@ import { format } from 'date-fns';
 interface CommentSectionProps {
   comments: Comment[];
   onAddComment: (content: string) => void;
-  onEditComment: (commentId: string, content: string) => void;
-  onDeleteComment: (commentId: string) => void;
+  onEditComment?: (commentId: string, content: string) => void;
+  onDeleteComment?: (commentId: string) => void;
   currentUser?: string;
 }
 
@@ -34,7 +34,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
   };
 
   const handleSaveEdit = () => {
-    if (editingId && editContent.trim()) {
+    if (editingId && editContent.trim() && onEditComment) {
       onEditComment(editingId, editContent.trim());
       setEditingId(null);
       setEditContent('');
@@ -112,20 +112,24 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
                       {format(new Date(comment.createdAt), "dd/MM/yyyy 'às' HH:mm")}
                     </span>
                   </div>
-                  {comment.author === currentUser && !comment.fromJira && (
+                  {comment.author === currentUser && !comment.fromJira && (onEditComment || onDeleteComment) && (
                     <div className="flex gap-2">
-                      <button
-                        onClick={() => handleStartEdit(comment)}
-                        className="text-sm text-text-secondary hover:text-text-primary"
-                      >
-                        Editar
-                      </button>
-                      <button
-                        onClick={() => onDeleteComment(comment.id)}
-                        className="text-sm text-red-400 hover:text-red-300"
-                      >
-                        Excluir
-                      </button>
+                      {onEditComment && (
+                        <button
+                          onClick={() => handleStartEdit(comment)}
+                          className="text-sm text-text-secondary hover:text-text-primary"
+                        >
+                          Editar
+                        </button>
+                      )}
+                      {onDeleteComment && (
+                        <button
+                          onClick={() => onDeleteComment(comment.id)}
+                          className="text-sm text-red-400 hover:text-red-300"
+                        >
+                          Excluir
+                        </button>
+                      )}
                     </div>
                   )}
                   {comment.fromJira && (
