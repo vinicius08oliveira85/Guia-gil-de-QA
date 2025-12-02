@@ -252,9 +252,9 @@
   --surface-outline: rgba(252, 76, 2, 0.15);
   --surface-contrast: rgba(0, 0, 0, 0.03);
   --text-primary: #1a1a1a;
-  --text-secondary: #4a5568;
-  --text-tertiary: #6B7280;
-  --text-muted: rgba(26, 26, 26, 0.5);
+  --text-secondary: #6B7280;
+  --text-tertiary: #9CA3AF;
+  --text-muted: rgba(26, 26, 26, 0.4);
   --input-bg: #FFFFFF;
   --input-border: rgba(0, 0, 0, 0.12);
   --input-text: #1a1a1a;
