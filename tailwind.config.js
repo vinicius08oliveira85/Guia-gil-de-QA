@@ -30,6 +30,10 @@ export default {
           'DEFAULT': '#14B8A6',
           'dark': '#0D9488',
         },
+        'success': 'var(--success-color)',
+        'warning': 'var(--warning-color)',
+        'danger': 'var(--danger-color)',
+        'info': 'var(--info-color)',
         'surface': {
           'DEFAULT': 'var(--surface-color)',
           'border': 'var(--surface-border)',
