@@ -1005,13 +1005,24 @@ export const JiraTaskItem: React.FC<{
         }
     };
 
+    // Função helper para obter classe de tipo de tarefa
+    const getTaskTypeClass = (type: string): string => {
+        const typeMap: Record<string, string> = {
+            'Bug': 'task-card-compact--bug',
+            'Epic': 'task-card-compact--epic',
+            'História': 'task-card-compact--historia',
+            'Tarefa': 'task-card-compact--tarefa'
+        };
+        return typeMap[type] || '';
+    };
+
     return (
-        <div className="relative" data-task-id={task.id}>
+        <div className={`relative ${getTaskTypeClass(task.type)}`} data-task-id={task.id}>
             <div style={indentationStyle} className="py-1">
                 <div
                     className={`task-card-compact ${isSelected ? 'is-selected' : ''} ${
                         activeTaskId === task.id ? 'ring-1 ring-accent/40' : ''
-                    }`}
+                    } ${getTaskTypeClass(task.type)}`}
                 >
                     <div className="task-card-compact_line">
                         <div className="flex min-w-0 flex-1 items-center gap-2">

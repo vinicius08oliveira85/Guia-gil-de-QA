@@ -1358,6 +1358,91 @@ select option:focus {
   box-shadow: 0 0 0 1px rgba(14, 109, 253, 0.25);
 }
 
+/* Leve Saúde - Fundos coloridos por tipo de tarefa */
+.leve-saude .task-card-compact--bug {
+  background: rgba(239, 68, 68, 0.08);
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.leve-saude .relative.task-card-compact--bug {
+  background: rgba(239, 68, 68, 0.05);
+  border-radius: var(--radius-lg);
+  padding: 0.25rem;
+}
+
+.leve-saude .task-card-compact--bug .task-card-compact_code,
+.leve-saude .task-card-compact--bug .task-card-compact_title {
+  color: #991B1B;
+}
+
+.leve-saude .task-card-compact--bug .task-card-compact_next,
+.leve-saude .task-card-compact--bug .task-card-compact_meta {
+  color: #7F1D1D;
+}
+
+.leve-saude .task-card-compact--epic {
+  background: rgba(147, 51, 234, 0.08);
+  border-color: rgba(147, 51, 234, 0.2);
+}
+
+.leve-saude .relative.task-card-compact--epic {
+  background: rgba(147, 51, 234, 0.05);
+  border-radius: var(--radius-lg);
+  padding: 0.25rem;
+}
+
+.leve-saude .task-card-compact--epic .task-card-compact_code,
+.leve-saude .task-card-compact--epic .task-card-compact_title {
+  color: #6B21A8;
+}
+
+.leve-saude .task-card-compact--epic .task-card-compact_next,
+.leve-saude .task-card-compact--epic .task-card-compact_meta {
+  color: #581C87;
+}
+
+.leve-saude .task-card-compact--historia {
+  background: rgba(16, 185, 129, 0.08);
+  border-color: rgba(16, 185, 129, 0.2);
+}
+
+.leve-saude .relative.task-card-compact--historia {
+  background: rgba(16, 185, 129, 0.05);
+  border-radius: var(--radius-lg);
+  padding: 0.25rem;
+}
+
+.leve-saude .task-card-compact--historia .task-card-compact_code,
+.leve-saude .task-card-compact--historia .task-card-compact_title {
+  color: #065F46;
+}
+
+.leve-saude .task-card-compact--historia .task-card-compact_next,
+.leve-saude .task-card-compact--historia .task-card-compact_meta {
+  color: #047857;
+}
+
+.leve-saude .task-card-compact--tarefa {
+  background: rgba(59, 130, 246, 0.08);
+  border-color: rgba(59, 130, 246, 0.2);
+}
+
+.leve-saude .relative.task-card-compact--tarefa {
+  background: rgba(59, 130, 246, 0.05);
+  border-radius: var(--radius-lg);
+  padding: 0.25rem;
+}
+
+.leve-saude .task-card-compact--tarefa .task-card-compact_code,
+.leve-saude .task-card-compact--tarefa .task-card-compact_title {
+  color: #1E40AF;
+}
+
+.leve-saude .task-card-compact--tarefa .task-card-compact_next,
+.leve-saude .task-card-compact--tarefa .task-card-compact_meta {
+  color: #1E3A8A;
+}
+
 .task-card-compact_line {
   display: flex;
   align-items: center;
