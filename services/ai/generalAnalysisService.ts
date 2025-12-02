@@ -1,5 +1,6 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { Project, GeneralIAAnalysis, TaskIAAnalysis, TestIAAnalysis, JiraTask, TestCase } from '../../types';
+import { getFormattedContext } from './documentContextService';
 
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.GEMINI_API_KEY;
 
@@ -571,7 +572,8 @@ export async function generateGeneralIAAnalysis(project: Project): Promise<Gener
       return cached;
     }
 
-    const prompt = `
+    const documentContext = await getFormattedContext();
+    const prompt = `${documentContext}
 Você é um especialista sênior em QA e precisa produzir uma análise estratégica e acionável.
 Use o contexto JSON fornecido (tarefas e testes mais críticos já foram filtrados para você).
 

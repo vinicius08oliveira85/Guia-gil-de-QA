@@ -1,6 +1,7 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { Project, SDLCPhaseAnalysis, PhaseName } from '../../types';
 import { calculateProjectMetrics } from '../../hooks/useProjectMetrics';
+import { getFormattedContext } from './documentContextService';
 
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.GEMINI_API_KEY;
 
@@ -213,7 +214,8 @@ export async function generateSDLCPhaseAnalysis(project: Project): Promise<SDLCP
     'Monitor': 'Coleta de métricas e logs para avaliar o desempenho e a saúde da aplicação.'
   };
   
-  const prompt = `
+  const documentContext = await getFormattedContext();
+  const prompt = `${documentContext}
 Você é um especialista sênior em QA e gestão de projetos de software seguindo metodologias ágeis e DevOps.
 Analise o estado atual do projeto e forneça uma análise didática sobre a fase SDLC atual.
 

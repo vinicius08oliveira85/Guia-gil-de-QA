@@ -2,6 +2,7 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { Project, DashboardOverviewAnalysis, STLCPhaseName } from '../../types';
 import { detectCurrentSTLCPhase } from '../../utils/stlcPhaseDetector';
 import { calculateProjectMetrics } from '../../hooks/useProjectMetrics';
+import { getFormattedContext } from './documentContextService';
 
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.GEMINI_API_KEY;
 
@@ -158,7 +159,8 @@ export async function generateDashboardOverviewAnalysis(project: Project): Promi
   const currentPhase = detectCurrentSTLCPhase(project);
   const allTestCases = project.tasks.flatMap(t => t.testCases || []);
   
-  const prompt = `
+  const documentContext = await getFormattedContext();
+  const prompt = `${documentContext}
 Você é um especialista sênior em QA e STLC (Software Testing Life Cycle). 
 Analise o projeto fornecido e gere uma análise estratégica focada na visão geral do projeto.
 

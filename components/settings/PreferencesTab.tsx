@@ -6,8 +6,9 @@ import { LoadingSkeleton } from '../common/LoadingSkeleton';
 const NotificationPreferences = lazy(() => import('./NotificationPreferences').then(m => ({ default: m.NotificationPreferences })));
 const KeyboardShortcutsEditor = lazy(() => import('./KeyboardShortcutsEditor').then(m => ({ default: m.KeyboardShortcutsEditor })));
 const ExportPreferences = lazy(() => import('./ExportPreferences').then(m => ({ default: m.ExportPreferences })));
+const SpecificationDocumentProcessor = lazy(() => import('./SpecificationDocumentProcessor').then(m => ({ default: m.SpecificationDocumentProcessor })));
 
-type PreferenceSection = 'notifications' | 'shortcuts' | 'export';
+type PreferenceSection = 'notifications' | 'shortcuts' | 'export' | 'document';
 
 export const PreferencesTab: React.FC = () => {
     const [activeSection, setActiveSection] = useState<PreferenceSection>('notifications');
@@ -16,6 +17,7 @@ export const PreferencesTab: React.FC = () => {
         { id: 'notifications', label: 'Notificações', icon: '🔔' },
         { id: 'shortcuts', label: 'Atalhos', icon: '⌨️' },
         { id: 'export', label: 'Exportação', icon: '📤' },
+        { id: 'document', label: 'Documento', icon: '📄' },
     ];
 
     return (
@@ -48,6 +50,7 @@ export const PreferencesTab: React.FC = () => {
                 {activeSection === 'notifications' && <NotificationPreferences />}
                 {activeSection === 'shortcuts' && <KeyboardShortcutsEditor />}
                 {activeSection === 'export' && <ExportPreferences />}
+                {activeSection === 'document' && <SpecificationDocumentProcessor />}
             </Suspense>
         </div>
     );
