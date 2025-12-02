@@ -367,15 +367,15 @@ export const ProjectsDashboard: React.FC<{
                                     🧭 Avançado
                                 </button>
                             )}
-                            {onSyncSupabase && (
-                                <button
-                                    onClick={handleSyncSupabase}
-                                    className="text-text-secondary hover:text-accent transition-colors flex items-center gap-1"
-                                    disabled={isSyncingSupabase}
-                                >
-                                    {isSyncingSupabase ? 'Sincronizando...' : '☁️ Sync Supabase'}
-                                </button>
-                            )}
+                            {/* Botão sempre visível, mas desabilitado se Supabase não estiver disponível */}
+                            <button
+                                onClick={handleSyncSupabase}
+                                className="text-text-secondary hover:text-accent transition-colors flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                                disabled={isSyncingSupabase || !onSyncSupabase}
+                                title={!onSyncSupabase ? 'Supabase não está configurado. Configure VITE_SUPABASE_PROXY_URL.' : 'Sincronizar projetos do Supabase'}
+                            >
+                                {isSyncingSupabase ? 'Sincronizando...' : '☁️ Sync Supabase'}
+                            </button>
                         </div>
                     </div>
                 )}

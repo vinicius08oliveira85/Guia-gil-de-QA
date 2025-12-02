@@ -274,7 +274,7 @@ const App: React.FC = () => {
                                 onSearchClick={() => setShowSearch(true)}
                                 onAdvancedSearchClick={() => setShowAdvancedSearch(true)}
                                 onComparisonClick={() => setShowProjectComparison(true)}
-                                onSyncSupabase={supabaseEnabled ? handleSyncSupabase : undefined}
+                                onSyncSupabase={handleSyncSupabase}
                             />
                         </Suspense>
                     )}

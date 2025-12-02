@@ -31,16 +31,37 @@ export const useJiraBugs = (project: Project) => {
     setError(null);
 
     try {
-      const newBugs = await syncBugsFromJira(projectKey, project.tasks);
+      const { updatedBugs, newBugs } = await syncBugsFromJira(projectKey, project.tasks);
 
-      if (newBugs.length > 0) {
+      if (updatedBugs.length > 0 || newBugs.length > 0) {
+        // Criar um Map de tarefas existentes para atualização eficiente
+        const tasksMap = new Map(project.tasks.map(t => [t.id, t]));
+        
+        // Atualizar bugs existentes
+        updatedBugs.forEach(bug => {
+          tasksMap.set(bug.id, bug);
+        });
+        
+        // Adicionar novos bugs
+        newBugs.forEach(bug => {
+          tasksMap.set(bug.id, bug);
+        });
+
         const updatedProject: Project = {
           ...project,
-          tasks: [...project.tasks, ...newBugs],
+          tasks: Array.from(tasksMap.values()),
         };
 
         await updateProject(updatedProject);
-        logger.info(`${newBugs.length} novos bugs sincronizados do Jira`, 'useJiraBugs');
+        
+        const messages: string[] = [];
+        if (updatedBugs.length > 0) {
+          messages.push(`${updatedBugs.length} bug(s) atualizado(s)`);
+        }
+        if (newBugs.length > 0) {
+          messages.push(`${newBugs.length} novo(s) bug(s) adicionado(s)`);
+        }
+        logger.info(messages.join(' e ') + ' do Jira', 'useJiraBugs');
       }
     } catch (err) {
       const error = err instanceof Error ? err : new Error('Erro ao sincronizar bugs do Jira');

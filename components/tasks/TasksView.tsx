@@ -58,7 +58,7 @@ import { useSuggestions } from '../../hooks/useSuggestions';
 import { SuggestionBanner } from '../common/SuggestionBanner';
 import { EmptyState } from '../common/EmptyState';
 import { Spinner } from '../common/Spinner';
-import { addNewJiraTasks, getJiraConfig, getJiraProjects, JiraConfig, syncTaskToJira } from '../../services/jiraService';
+import { syncJiraProject, getJiraConfig, getJiraProjects, JiraConfig, syncTaskToJira } from '../../services/jiraService';
 import { GeneralIAAnalysisButton } from './GeneralIAAnalysisButton';
 import { generateGeneralIAAnalysis } from '../../services/ai/generalAnalysisService';
 
@@ -1011,25 +1011,41 @@ export const TasksView: React.FC<{
     const performSync = useCallback(async (config: JiraConfig, jiraProjectKey: string) => {
         setIsSyncingJira(true);
         try {
-            const result = await addNewJiraTasks(
+            // Usar syncJiraProject que atualiza tarefas existentes e adiciona novas
+            // Isso garante que bugs e tarefas modificados no Jira sejam atualizados corretamente
+            const updatedProject = await syncJiraProject(
                 config,
                 project,
-                jiraProjectKey,
-                (current, total) => {
-                    // Progress callback pode ser usado para mostrar progresso
-                    console.log(`Sincronizando: ${current}${total ? ` de ${total}` : ''}`);
-                }
+                jiraProjectKey
             );
             
-            onUpdateProject(result.project);
+            onUpdateProject(updatedProject);
+            
+            // Contar quantas tarefas foram atualizadas/adicionadas
+            const existingTaskIds = new Set(project.tasks.map(t => t.id));
+            const newTasks = updatedProject.tasks.filter(t => !existingTaskIds.has(t.id));
+            const updatedTasks = updatedProject.tasks.filter(t => {
+                if (existingTaskIds.has(t.id)) {
+                    const oldTask = project.tasks.find(ot => ot.id === t.id);
+                    // Considerar atualizado se algum campo importante mudou
+                    return oldTask && (
+                        oldTask.title !== t.title ||
+                        oldTask.description !== t.description ||
+                        oldTask.status !== t.status ||
+                        oldTask.jiraStatus !== t.jiraStatus ||
+                        oldTask.priority !== t.priority
+                    );
+                }
+                return false;
+            });
             
             // Montar mensagem de sucesso com informações detalhadas
             const messages: string[] = [];
-            if (result.newTasksCount > 0) {
-                messages.push(`${result.newTasksCount} nova(s) tarefa(s) adicionada(s)`);
+            if (newTasks.length > 0) {
+                messages.push(`${newTasks.length} nova(s) tarefa(s) adicionada(s)`);
             }
-            if (result.updatedStatusCount > 0) {
-                messages.push(`${result.updatedStatusCount} status atualizado(s)`);
+            if (updatedTasks.length > 0) {
+                messages.push(`${updatedTasks.length} tarefa(s) atualizada(s)`);
             }
             
             if (messages.length > 0) {

@@ -120,11 +120,12 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                         &larr; Voltar para Projetos
                     </button>
                     <div className="flex flex-wrap gap-sm w-full justify-end">
+                        {/* Botão sempre visível, mas desabilitado se Supabase não estiver disponível */}
                         <button 
                             onClick={handleSaveToSupabase}
                             disabled={!supabaseAvailable || isSavingToSupabase}
                             className="btn btn-primary flex items-center justify-center gap-2 w-full sm:w-auto lg:min-w-[180px] disabled:opacity-50 disabled:cursor-not-allowed"
-                            title={!supabaseAvailable ? 'Supabase não está configurado' : 'Salvar projeto no Supabase'}
+                            title={!supabaseAvailable ? 'Supabase não está configurado. Configure VITE_SUPABASE_PROXY_URL.' : 'Salvar projeto no Supabase'}
                         >
                             {isSavingToSupabase ? (
                                 <>

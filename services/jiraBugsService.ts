@@ -68,7 +68,7 @@ export const mapJiraBugToTask = (jiraIssue: JiraIssue): JiraTask => {
   const status = mapStatus(jiraIssue.fields.status.name);
 
   return {
-    id: `jira-${jiraIssue.id}`,
+    id: jiraIssue.key || `jira-${jiraIssue.id}`, // Usar issue.key (ex: GDPI-232) como ID
     title: jiraIssue.fields.summary,
     description: jiraIssue.fields.description || '',
     status,
@@ -111,43 +111,64 @@ export const mapJiraBugToTask = (jiraIssue: JiraIssue): JiraTask => {
 
 /**
  * Sincroniza bugs do Jira com o projeto
- * Retorna apenas bugs que ainda não estão no projeto (baseado no ID do Jira)
+ * Atualiza bugs existentes e retorna novos bugs
+ * Retorna objeto com bugs atualizados e novos bugs separadamente
  */
 export const syncBugsFromJira = async (
   projectKey: string,
   existingTasks: JiraTask[]
-): Promise<JiraTask[]> => {
+): Promise<{ updatedBugs: JiraTask[]; newBugs: JiraTask[] }> => {
   const config = getJiraConfig();
   if (!config) {
     logger.warn('Configuração do Jira não encontrada', 'JiraBugsService');
-    return [];
+    return { updatedBugs: [], newBugs: [] };
   }
 
   try {
     const jiraBugs = await fetchBugsFromJira(config, projectKey);
     const mappedBugs = jiraBugs.map(mapJiraBugToTask);
 
-    // Filtrar bugs que já existem no projeto (comparar por título ou ID do Jira)
-    const existingBugIds = new Set(
-      existingTasks
-        .filter(t => t.type === 'Bug')
-        .map(t => {
-          // Tentar extrair ID do Jira do ID local (formato: jira-{id})
-          const match = t.id.match(/jira-(\d+)/);
-          return match ? match[1] : t.title;
-        })
-    );
+    // Criar um Map de bugs existentes por ID (issue.key como GDPI-XXX)
+    const existingBugsMap = new Map<string, JiraTask>();
+    existingTasks
+      .filter(t => t.type === 'Bug')
+      .forEach(t => {
+        // O ID pode ser no formato GDPI-XXX ou jira-{id}
+        // Normalizar para comparar corretamente
+        const normalizedId = t.id.match(/^[A-Z]+-\d+$/) ? t.id : t.id;
+        existingBugsMap.set(normalizedId, t);
+      });
 
-    const newBugs = mappedBugs.filter(bug => {
-      const jiraId = bug.id.replace('jira-', '');
-      return !existingBugIds.has(jiraId) && !existingBugIds.has(bug.title);
+    const updatedBugs: JiraTask[] = [];
+    const newBugs: JiraTask[] = [];
+
+    mappedBugs.forEach(bug => {
+      const existingBug = existingBugsMap.get(bug.id);
+      
+      if (existingBug) {
+        // Bug existe - atualizar preservando testCases e bddScenarios locais
+        const updatedBug: JiraTask = {
+          ...bug,
+          testCases: existingBug.testCases || [], // Preservar casos de teste locais
+          bddScenarios: existingBug.bddScenarios || [], // Preservar cenários BDD locais
+          comments: existingBug.comments || bug.comments || [], // Merge de comentários
+        };
+        updatedBugs.push(updatedBug);
+      } else {
+        // Bug novo
+        newBugs.push(bug);
+      }
     });
 
-    logger.info(`Sincronizados ${newBugs.length} novos bugs do Jira`, 'JiraBugsService');
-    return newBugs;
+    logger.info(
+      `Sincronizados ${updatedBugs.length} bugs atualizados e ${newBugs.length} novos bugs do Jira`,
+      'JiraBugsService'
+    );
+    
+    return { updatedBugs, newBugs };
   } catch (error) {
     logger.error('Erro ao sincronizar bugs do Jira', 'JiraBugsService', error);
-    return [];
+    return { updatedBugs: [], newBugs: [] };
   }
 };
 
