@@ -52,7 +52,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
       {task.status === 'To Do' && isReady && (
         <button
           onClick={handleMarkAsReady}
-          className="px-3 py-1 text-sm bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 rounded hover:bg-yellow-500/30"
+          className="px-3 py-1 text-sm bg-yellow-500/20 text-yellow-700 dark:text-yellow-400 border border-yellow-500/30 rounded hover:bg-yellow-500/30"
         >
           Iniciar Teste
         </button>
@@ -61,14 +61,14 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
       {task.status === 'In Progress' && (
         <button
           onClick={handleComplete}
-          className="px-3 py-1 text-sm bg-green-500/20 text-green-400 border border-green-500/30 rounded hover:bg-green-500/30"
+          className="px-3 py-1 text-sm bg-green-500/20 text-green-700 dark:text-green-400 border border-green-500/30 rounded hover:bg-green-500/30"
         >
           Concluir Teste
         </button>
       )}
 
       {isBlocked && (
-        <span className="px-3 py-1 text-sm bg-orange-500/20 text-orange-400 border border-orange-500/30 rounded">
+        <span className="px-3 py-1 text-sm bg-orange-500/20 text-orange-700 dark:text-orange-400 border border-orange-500/30 rounded">
           ⏳ Bloqueada
         </span>
       )}
@@ -82,7 +82,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
             <>
               <span className="text-text-secondary">• Real:</span>
               <span className={`font-semibold ${
-                estimation.actualHours <= estimation.estimatedHours ? 'text-green-400' : 'text-orange-400'
+                estimation.actualHours <= estimation.estimatedHours ? 'text-green-700 dark:text-green-400' : 'text-orange-700 dark:text-orange-400'
               }`}>
                 {estimation.actualHours}h
               </span>

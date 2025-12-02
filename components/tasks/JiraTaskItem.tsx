@@ -93,9 +93,9 @@ const normalizeStatusName = (value: string) =>
 
 const TeamRoleBadge: React.FC<{ role: TeamRole }> = ({ role }) => {
     const roleStyles: Record<TeamRole, { bg: string, text: string }> = {
-        'Product': { bg: 'bg-purple-500/30', text: 'text-purple-300' },
-        'QA': { bg: 'bg-accent/30', text: 'text-accent-light' },
-        'Dev': { bg: 'bg-blue-500/30', text: 'text-blue-300' },
+        'Product': { bg: 'bg-purple-500/30', text: 'text-purple-700 dark:text-purple-300' },
+        'QA': { bg: 'bg-accent/30', text: 'text-accent-dark dark:text-accent-light' },
+        'Dev': { bg: 'bg-blue-500/30', text: 'text-blue-700 dark:text-blue-300' },
     };
     const styles = roleStyles[role];
 
@@ -590,7 +590,7 @@ export const JiraTaskItem: React.FC<{
                                             <p className="text-[11px] uppercase text-text-secondary tracking-wide mb-2">Components</p>
                                             <div className="flex flex-wrap gap-2">
                                                 {task.components.map((comp) => (
-                                                    <span key={comp.id} className="text-xs px-2 py-1 bg-blue-500/20 text-blue-400 rounded">
+                                                    <span key={comp.id} className="text-xs px-2 py-1 bg-blue-500/20 text-blue-700 dark:text-blue-400 rounded">
                                                         {comp.name}
                                                     </span>
                                                 ))}
@@ -602,7 +602,7 @@ export const JiraTaskItem: React.FC<{
                                             <p className="text-[11px] uppercase text-text-secondary tracking-wide mb-2">Fix Versions</p>
                                             <div className="flex flex-wrap gap-2">
                                                 {task.fixVersions.map((version) => (
-                                                    <span key={version.id} className="text-xs px-2 py-1 bg-green-500/20 text-green-400 rounded">
+                                                    <span key={version.id} className="text-xs px-2 py-1 bg-green-500/20 text-green-700 dark:text-green-400 rounded">
                                                         {version.name}
                                                     </span>
                                                 ))}
@@ -930,7 +930,7 @@ export const JiraTaskItem: React.FC<{
                                     <div className="flex items-center justify-between mt-2">
                                         <span className="text-text-secondary">Real:</span>
                                         <span className={`font-semibold ${
-                                            task.actualHours <= task.estimatedHours ? 'text-green-400' : 'text-orange-400'
+                                            task.actualHours <= task.estimatedHours ? 'text-green-700 dark:text-green-400' : 'text-orange-700 dark:text-orange-400'
                                         }`}>
                                             {task.actualHours}h
                                         </span>
@@ -1201,17 +1201,17 @@ export const JiraTaskItem: React.FC<{
                     </div>
                     {testExecutionSummary.total > 0 && (
                         <div className="task-card-compact_line task-card-compact_line--tight text-[11px] text-text-secondary flex flex-wrap gap-3">
-                            <span className="inline-flex items-center gap-1 text-green-400 font-semibold">
-                                <span className="w-2 h-2 rounded-full bg-green-400" />
+                            <span className="inline-flex items-center gap-1 text-green-700 dark:text-green-400 font-semibold">
+                                <span className="w-2 h-2 rounded-full bg-green-600 dark:bg-green-400" />
                                 {testExecutionSummary.passed} aprov.
                             </span>
-                            <span className="inline-flex items-center gap-1 text-red-300 font-semibold">
-                                <span className="w-2 h-2 rounded-full bg-red-400" />
+                            <span className="inline-flex items-center gap-1 text-red-700 dark:text-red-300 font-semibold">
+                                <span className="w-2 h-2 rounded-full bg-red-600 dark:bg-red-400" />
                                 {testExecutionSummary.failed} reprov.
                             </span>
                             {testExecutionSummary.pending > 0 && (
-                                <span className="inline-flex items-center gap-1 text-amber-300 font-semibold">
-                                    <span className="w-2 h-2 rounded-full bg-amber-300" />
+                                <span className="inline-flex items-center gap-1 text-amber-700 dark:text-amber-300 font-semibold">
+                                    <span className="w-2 h-2 rounded-full bg-amber-600 dark:bg-amber-300" />
                                     {testExecutionSummary.pending} pend.
                                 </span>
                             )}
@@ -1222,11 +1222,11 @@ export const JiraTaskItem: React.FC<{
                             {testTypeBadges.map(badge => {
                                 const baseClass = 'px-2 py-0.5 rounded-full text-[11px] font-semibold border';
                                 const colorClass = badge.status === 'failed'
-                                    ? 'bg-red-500/10 text-red-200 border-red-400/40'
+                                    ? 'bg-red-500/10 text-red-700 dark:text-red-200 border-red-400/40 dark:border-red-400/40'
                                     : badge.status === 'done'
-                                        ? 'bg-green-500/10 text-green-200 border-green-400/40'
+                                        ? 'bg-green-500/10 text-green-700 dark:text-green-200 border-green-400/40 dark:border-green-400/40'
                                         : badge.status === 'partial'
-                                            ? 'bg-amber-500/10 text-amber-200 border-amber-400/40'
+                                            ? 'bg-amber-500/10 text-amber-700 dark:text-amber-200 border-amber-400/40 dark:border-amber-400/40'
                                             : 'bg-surface border-surface-border text-text-secondary';
                                 return (
                                     <span key={badge.type} className={`${baseClass} ${colorClass}`}>
@@ -1272,7 +1272,7 @@ export const JiraTaskItem: React.FC<{
                                     <button
                                         onClick={() => onGenerateAll(task.id)}
                                         disabled={isGeneratingAll || isGenerating || isGeneratingBdd}
-                                        className="btn btn-sm flex items-center gap-1.5 bg-green-500/20 border-green-500/30 hover:bg-green-500/40 text-green-400 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        className="btn btn-sm flex items-center gap-1.5 bg-green-500/20 border-green-500/30 hover:bg-green-500/40 text-green-700 dark:text-green-400 disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
                                         {isGeneratingAll ? (
                                             <>

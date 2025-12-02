@@ -126,7 +126,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
                   <div className="flex items-center gap-2">
                     <span className="font-semibold text-text-primary">{comment.author}</span>
                     {comment.fromJira && (
-                      <span className="text-xs px-2 py-0.5 bg-blue-500/20 text-blue-300 rounded-full border border-blue-500/30">
+                      <span className="text-xs px-2 py-0.5 bg-blue-500/20 text-blue-700 dark:text-blue-300 rounded-full border border-blue-500/30">
                         Jira
                       </span>
                     )}
@@ -147,7 +147,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
                       {onDeleteComment && (
                         <button
                           onClick={() => onDeleteComment(comment.id)}
-                          className="text-sm text-red-400 hover:text-red-300"
+                          className="text-sm text-red-700 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300"
                         >
                           Excluir
                         </button>

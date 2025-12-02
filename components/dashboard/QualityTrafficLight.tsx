@@ -17,10 +17,10 @@ export const QualityTrafficLight: React.FC<QualityTrafficLightProps> = ({ projec
     // Status: Go (verde), Warning (amarelo), No-Go (vermelho)
     const status = hasCriticalBugs || hasRegressionFail ? 'No-Go' : 'Go';
     const statusColor = status === 'Go' 
-        ? 'text-emerald-400' 
+        ? 'text-emerald-700 dark:text-emerald-400' 
         : status === 'Warning' 
-        ? 'text-amber-400' 
-        : 'text-rose-400';
+        ? 'text-amber-700 dark:text-amber-400' 
+        : 'text-rose-700 dark:text-rose-400';
     
     const statusBg = status === 'Go'
         ? 'bg-emerald-500/20'
@@ -78,7 +78,7 @@ export const QualityTrafficLight: React.FC<QualityTrafficLightProps> = ({ projec
                         <div className={`rounded-2xl border ${hasCriticalBugs ? 'border-rose-500/40 bg-rose-500/10' : 'border-emerald-500/40 bg-emerald-500/10'} p-4`}>
                             <div className="flex items-center justify-between">
                                 <span className="text-text-secondary text-sm">Bugs Críticos em Aberto</span>
-                                <span className={`text-2xl font-bold ${hasCriticalBugs ? 'text-rose-400' : 'text-emerald-400'}`}>
+                                <span className={`text-2xl font-bold ${hasCriticalBugs ? 'text-rose-700 dark:text-rose-400' : 'text-emerald-700 dark:text-emerald-400'}`}>
                                     {metrics.criticalBugsOpen}
                                 </span>
                             </div>
@@ -90,7 +90,7 @@ export const QualityTrafficLight: React.FC<QualityTrafficLightProps> = ({ projec
                         <div className={`rounded-2xl border ${hasRegressionFail ? 'border-rose-500/40 bg-rose-500/10' : 'border-emerald-500/40 bg-emerald-500/10'} p-4`}>
                             <div className="flex items-center justify-between">
                                 <span className="text-text-secondary text-sm">Regressão Automática</span>
-                                <span className={`text-2xl font-bold ${hasRegressionFail ? 'text-rose-400' : 'text-emerald-400'}`}>
+                                <span className={`text-2xl font-bold ${hasRegressionFail ? 'text-rose-700 dark:text-rose-400' : 'text-emerald-700 dark:text-emerald-400'}`}>
                                     {metrics.regressionStatus === 'Pass' ? 'PASS' : 'FAIL'}
                                 </span>
                             </div>

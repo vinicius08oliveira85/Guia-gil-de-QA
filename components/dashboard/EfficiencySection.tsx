@@ -85,7 +85,7 @@ export const EfficiencySection: React.FC<EfficiencySectionProps> = ({ project })
                 <DonutChart
                     title="Estabilidade da Automação"
                     percentage={stabilityPercentage}
-                    color="text-emerald-400"
+                    color="text-emerald-700 dark:text-emerald-400"
                     note={`${metrics.flakyTests.totalAutomated - metrics.flakyTests.count} de ${metrics.flakyTests.totalAutomated} testes estáveis`}
                     interactive={true}
                     onClick={() => {

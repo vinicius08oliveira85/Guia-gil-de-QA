@@ -216,7 +216,7 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
                         title="Bugs críticos"
                         value={metrics.bugsBySeverity['Crítico']}
                         description="Monitoramento contínuo"
-                        statusColor={metrics.bugsBySeverity['Crítico'] > 0 ? 'text-red-400' : 'text-emerald-400'}
+                        statusColor={metrics.bugsBySeverity['Crítico'] > 0 ? 'text-red-700 dark:text-red-400' : 'text-emerald-700 dark:text-emerald-400'}
                         accent="danger"
                     />
                 </div>
@@ -227,7 +227,7 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
                             <DonutChart
                                 title="Cobertura consolidada"
                                 percentage={metrics.testCoverage}
-                                color="text-emerald-400"
+                                color="text-emerald-700 dark:text-emerald-400"
                                 note={`${metrics.tasksWithTestCases} tarefas com QA de ${metrics.totalTasks}`}
                                 interactive={true}
                                 onClick={() => {
@@ -238,7 +238,7 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
                             <DonutChart
                                 title="Automação x Manual"
                                 percentage={metrics.automationRatio}
-                                color="text-blue-400"
+                                color="text-blue-700 dark:text-blue-400"
                                 note={`${metrics.automatedTestCases} automatizados (${metrics.totalTestCases} totais)`}
                                 interactive={true}
                                 onClick={() => {
@@ -314,7 +314,7 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
                             <DonutChart
                                 title="Taxa de aprovação"
                                 percentage={metrics.testPassRate}
-                                color="text-emerald-400"
+                                color="text-emerald-700 dark:text-emerald-400"
                                 note={`${metrics.passedTestCases} de ${metrics.executedTestCases} casos passaram`}
                                 interactive={true}
                                 onClick={() => {
@@ -369,7 +369,7 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
                         <div className="win-panel space-y-4">
                             <div className="flex items-center justify-between">
                                 <h3 className="heading-card text-text-primary">Alertas imediatos</h3>
-                                <CheckCircleIcon className="h-5 w-5 text-emerald-400" />
+                                <CheckCircleIcon className="h-5 w-5 text-emerald-700 dark:text-emerald-400" />
                             </div>
                             <div className="space-y-3" role="list" aria-label="Alertas de qualidade">
                                 {qaAlerts.map((alert) => (

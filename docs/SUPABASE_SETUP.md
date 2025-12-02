@@ -44,7 +44,6 @@ VITE_SUPABASE_PROXY_URL=/api/supabaseProxy
 **Alternativas:**
 - **`docs/SUPABASE_SIMPLE.sql`** - versão simplificada (pode mostrar aviso de operação destrutiva)
 - **`docs/SUPABASE_MIGRATION_SAFE.sql`** - versão segura com verificações (execute o script COMPLETO)
-- **`docs/SUPABASE_SQL.sql`** - para criar do zero
 
 **IMPORTANTE:** Execute o script COMPLETO de uma vez, não apenas partes dele!
 

@@ -1,5 +1,0 @@
-{
-  "name": "QA Agile Guide",
-  "description": "A comprehensive application to guide Software QA professionals through the entire project lifecycle. It allows importing Jira tasks, uploading project documents for analysis, and uses AI to generate test cases and provide expert guidance.",
-  "requestFramePermissions": []
-}

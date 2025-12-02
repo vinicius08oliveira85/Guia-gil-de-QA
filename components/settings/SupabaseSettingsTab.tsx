@@ -186,7 +186,7 @@ export const SupabaseSettingsTab: React.FC = () => {
                             <div className="mt-4 p-3 rounded-lg bg-blue-500/10 border border-blue-500/30">
                                 <p className="text-sm text-text-secondary">
                                     <strong className="text-text-primary">📚 Documentação:</strong> Consulte{' '}
-                                    <code className="bg-black/30 px-1 rounded">VERCEL_SETUP.md</code> para um guia passo a passo de configuração no Vercel.
+                                    <code className="bg-black/30 px-1 rounded">docs/SUPABASE_SETUP.md</code> para um guia passo a passo de configuração.
                                 </p>
                             </div>
                         </>

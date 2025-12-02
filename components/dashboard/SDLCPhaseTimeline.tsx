@@ -34,21 +34,21 @@ export const SDLCPhaseTimeline: React.FC<SDLCPhaseTimelineProps> = React.memo(({
     const baseStyles = {
       'Concluído': {
         bg: 'bg-green-500',
-        text: 'text-green-300',
+        text: 'text-green-800 dark:text-green-300',
         border: 'border-green-500',
         ring: 'ring-green-500/30',
         pulse: false,
       },
       'Em Andamento': {
         bg: 'bg-yellow-500',
-        text: 'text-yellow-300',
+        text: 'text-yellow-800 dark:text-yellow-300',
         border: 'border-yellow-500',
         ring: 'ring-yellow-500/30',
         pulse: true,
       },
       'Não Iniciado': {
         bg: 'bg-slate-600',
-        text: 'text-slate-400',
+        text: 'text-slate-700 dark:text-slate-400',
         border: 'border-slate-600',
         ring: 'ring-slate-600/30',
         pulse: false,
@@ -164,11 +164,11 @@ export const SDLCPhaseTimeline: React.FC<SDLCPhaseTimelineProps> = React.memo(({
 
                   {/* Tooltip */}
                   <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block z-20">
-                    <div className="bg-slate-800 text-white text-xs rounded-lg py-2 px-3 shadow-xl max-w-xs border border-slate-700">
+                    <div className="bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-white text-xs rounded-lg py-2 px-3 shadow-xl max-w-xs border border-slate-300 dark:border-slate-700">
                       <p className="font-semibold mb-1">{phaseDisplayNames[phaseName as PhaseName]}</p>
-                      <p className="text-slate-300">{phaseDescriptions[phaseName as PhaseName]}</p>
+                      <p className="text-slate-600 dark:text-slate-300">{phaseDescriptions[phaseName as PhaseName]}</p>
                       <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-full">
-                        <div className="border-4 border-transparent border-t-slate-800" />
+                        <div className="border-4 border-transparent border-t-slate-100 dark:border-t-slate-800" />
                       </div>
                     </div>
                   </div>
@@ -220,10 +220,10 @@ export const SDLCPhaseTimeline: React.FC<SDLCPhaseTimelineProps> = React.memo(({
                 <div className="space-y-2">
                   {phaseAnalysis.nextSteps.map((step, index) => {
                     const priorityColors = {
-                      'Crítica': 'bg-red-500/20 text-red-300 border-red-500/50',
-                      'Alta': 'bg-orange-500/20 text-orange-300 border-orange-500/50',
-                      'Média': 'bg-yellow-500/20 text-yellow-300 border-yellow-500/50',
-                      'Baixa': 'bg-blue-500/20 text-blue-300 border-blue-500/50',
+                      'Crítica': 'bg-red-500/20 text-red-700 dark:text-red-300 border-red-500/50',
+                      'Alta': 'bg-orange-500/20 text-orange-700 dark:text-orange-300 border-orange-500/50',
+                      'Média': 'bg-yellow-500/20 text-yellow-700 dark:text-yellow-300 border-yellow-500/50',
+                      'Baixa': 'bg-blue-500/20 text-blue-700 dark:text-blue-300 border-blue-500/50',
                     };
                     
                     return (
@@ -254,10 +254,10 @@ export const SDLCPhaseTimeline: React.FC<SDLCPhaseTimelineProps> = React.memo(({
                 <div className="space-y-2">
                   {phaseAnalysis.blockers.map((blocker, index) => {
                     const impactColors = {
-                      'Crítico': 'bg-red-500/20 text-red-300 border-red-500/50',
-                      'Alto': 'bg-orange-500/20 text-orange-300 border-orange-500/50',
-                      'Médio': 'bg-yellow-500/20 text-yellow-300 border-yellow-500/50',
-                      'Baixo': 'bg-blue-500/20 text-blue-300 border-blue-500/50',
+                      'Crítico': 'bg-red-500/20 text-red-700 dark:text-red-300 border-red-500/50',
+                      'Alto': 'bg-orange-500/20 text-orange-700 dark:text-orange-300 border-orange-500/50',
+                      'Médio': 'bg-yellow-500/20 text-yellow-700 dark:text-yellow-300 border-yellow-500/50',
+                      'Baixo': 'bg-blue-500/20 text-blue-700 dark:text-blue-300 border-blue-500/50',
                     };
                     
                     return (

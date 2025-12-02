@@ -1291,7 +1291,7 @@ export const TasksView: React.FC<{
                     >
                         <div className="flex items-center justify-between mb-1.5">
                             <div className="p-2 bg-blue-500/10 rounded-lg group-hover:bg-blue-500/20 transition-colors">
-                                <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <svg className="w-5 h-5 text-blue-700 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                                 </svg>
                             </div>
@@ -1323,13 +1323,13 @@ export const TasksView: React.FC<{
                     >
                         <div className="flex items-center justify-between mb-1.5">
                             <div className="p-2 bg-green-500/10 rounded-lg group-hover:bg-green-500/20 transition-colors">
-                                <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <svg className="w-5 h-5 text-green-700 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                             </div>
                         </div>
                         <p className="data-label mb-1">Concluídas</p>
-                        <p className="data-value text-green-400" aria-label={`${stats.done} tarefas concluídas`}>{stats.done}</p>
+                        <p className="data-value text-green-700 dark:text-green-400" aria-label={`${stats.done} tarefas concluídas`}>{stats.done}</p>
                     </div>
                     
                     <div 
@@ -1339,13 +1339,13 @@ export const TasksView: React.FC<{
                     >
                         <div className="flex items-center justify-between mb-1.5">
                             <div className="p-2 bg-red-500/10 rounded-lg group-hover:bg-red-500/20 transition-colors">
-                                <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <svg className="w-5 h-5 text-red-700 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                                 </svg>
                             </div>
                         </div>
                         <p className="data-label mb-1">Bugs Abertos</p>
-                        <p className="data-value text-red-400" aria-label={`${stats.bugsOpen} bugs abertos`}>{stats.bugsOpen}</p>
+                        <p className="data-value text-red-700 dark:text-red-400" aria-label={`${stats.bugsOpen} bugs abertos`}>{stats.bugsOpen}</p>
                     </div>
                     
                     <div 
@@ -1417,7 +1417,7 @@ export const TasksView: React.FC<{
                                     {chip.label}
                                     <button
                                         onClick={() => removeFilter(chip.key)}
-                                        className="ml-1 text-text-secondary hover:text-red-400 transition-colors rounded-full hover:bg-red-400/10 p-0.5"
+                                        className="ml-1 text-text-secondary hover:text-red-700 dark:hover:text-red-400 transition-colors rounded-full hover:bg-red-400/10 p-0.5"
                                         aria-label={`Remover filtro ${chip.label}`}
                                     >
                                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

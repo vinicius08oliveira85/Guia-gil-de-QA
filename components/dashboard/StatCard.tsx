@@ -67,7 +67,7 @@ export const StatCard: React.FC<StatCardProps> = ({
                 <div className="relative flex items-center gap-2 text-sm font-semibold">
                     <span
                         className={`inline-flex h-6 min-w-[2.5rem] items-center justify-center rounded-full px-2 text-xs ${
-                            trendIsPositive ? 'bg-emerald-500/20 text-emerald-300' : 'bg-rose-500/20 text-rose-300'
+                            trendIsPositive ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300' : 'bg-rose-500/20 text-rose-700 dark:text-rose-300'
                         }`}
                     >
                         {trendIsPositive ? '▲' : '▼'} {Math.abs(trend)}%
