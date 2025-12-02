@@ -1,5 +1,5 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import { TestCase, TestStrategy, PhaseName, ShiftLeftAnalysis, BddScenario, JiraTask, TestPyramidAnalysis, TestCaseDetailLevel, JiraTaskType } from '../../types';
+import { TestCase, TestStrategy, PhaseName, ShiftLeftAnalysis, BddScenario, JiraTask, TestPyramidAnalysis, TestCaseDetailLevel, JiraTaskType, Project } from '../../types';
 import { marked } from 'marked';
 import { sanitizeHTML } from '../../utils/sanitize';
 import { AIService } from './aiServiceInterface';
@@ -106,9 +106,10 @@ export class GeminiService implements AIService {
     description: string,
     bddScenarios?: BddScenario[],
     detailLevel: TestCaseDetailLevel = 'Padrão',
-    taskType?: JiraTaskType
+    taskType?: JiraTaskType,
+    project?: Project | null
   ): Promise<string> {
-    const documentContext = await getFormattedContext();
+    const documentContext = await getFormattedContext(project || null);
     const bddContext = bddScenarios && bddScenarios.length > 0
       ? `
       ════════════════════════════════════════════════════════════════
@@ -279,11 +280,12 @@ export class GeminiService implements AIService {
   async generateTestCasesForTask(
     title: string, 
     description: string, 
-    bddScenarios?: BddScenario[], 
+    bddScenarios?: BddScenario[],
     detailLevel: TestCaseDetailLevel = 'Padrão',
-    taskType?: JiraTaskType
+    taskType?: JiraTaskType,
+    project?: Project | null
   ): Promise<{ strategy: TestStrategy[]; testCases: TestCase[] }> {
-    const prompt = await this.buildRobustTestGenerationPrompt(title, description, bddScenarios, detailLevel, taskType);
+    const prompt = await this.buildRobustTestGenerationPrompt(title, description, bddScenarios, detailLevel, taskType, project);
 
     try {
       const response = await getAI().models.generateContent({
@@ -334,8 +336,8 @@ export class GeminiService implements AIService {
     }
   }
 
-  async analyzeDocumentContent(content: string): Promise<string> {
-    const documentContext = await getFormattedContext();
+  async analyzeDocumentContent(content: string, project?: Project | null): Promise<string> {
+    const documentContext = await getFormattedContext(project || null);
     const prompt = `${documentContext}
     Aja como um analista de QA sênior. Analise o seguinte documento de requisitos do projeto.
     Sua tarefa é fornecer uma análise estruturada e fácil de ler.
@@ -372,8 +374,8 @@ export class GeminiService implements AIService {
     }
   }
 
-  async generateTaskFromDocument(documentContent: string): Promise<{ task: Omit<JiraTask, 'id' | 'status' | 'parentId' | 'bddScenarios' | 'createdAt' | 'completedAt'>, strategy: TestStrategy[], testCases: TestCase[] }> {
-    const documentContext = await getFormattedContext();
+  async generateTaskFromDocument(documentContent: string, project?: Project | null): Promise<{ task: Omit<JiraTask, 'id' | 'status' | 'parentId' | 'bddScenarios' | 'createdAt' | 'completedAt'>, strategy: TestStrategy[], testCases: TestCase[] }> {
+    const documentContext = await getFormattedContext(project || null);
     const prompt = `${documentContext}
     Aja como um Product Owner e um Analista de QA Sênior. A partir do documento de requisitos fornecido, gere um objeto JSON estruturado.
 
@@ -449,8 +451,8 @@ export class GeminiService implements AIService {
     }
   }
 
-  async generateProjectLifecyclePlan(projectName: string, projectDescription: string, tasks: JiraTask[]): Promise<{ [key in PhaseName]?: { summary: string, testTypes: string[] } }> {
-    const documentContext = await getFormattedContext();
+  async generateProjectLifecyclePlan(projectName: string, projectDescription: string, tasks: JiraTask[], project?: Project | null): Promise<{ [key in PhaseName]?: { summary: string, testTypes: string[] } }> {
+    const documentContext = await getFormattedContext(project || null);
     const taskSummaries = tasks.map(t => `- ${t.title}: ${t.description.substring(0, 100)}...`).join('\n');
     const prompt = `${documentContext}
     Aja como um gerente de QA sênior e gerente de projetos experiente. Para o projeto de software a seguir, forneça um plano de ciclo de vida em formato JSON.
@@ -508,8 +510,8 @@ export class GeminiService implements AIService {
     }
   }
 
-  async generateShiftLeftAnalysis(projectName: string, projectDescription: string, tasks: JiraTask[]): Promise<ShiftLeftAnalysis> {
-    const documentContext = await getFormattedContext();
+  async generateShiftLeftAnalysis(projectName: string, projectDescription: string, tasks: JiraTask[], project?: Project | null): Promise<ShiftLeftAnalysis> {
+    const documentContext = await getFormattedContext(project || null);
     const taskSummaries = tasks.map(t => `- ${t.title}: ${t.description.substring(0, 100)}...`).join('\n');
     const prompt = `${documentContext}
     Aja como um especialista em "Shift Left Testing". Para o projeto a seguir, forneça recomendações práticas e acionáveis para introduzir atividades de qualidade e teste o mais cedo possível no ciclo de vida.
@@ -562,8 +564,8 @@ export class GeminiService implements AIService {
     }
   }
 
-  async generateBddScenarios(title: string, description: string): Promise<BddScenario[]> {
-    const documentContext = await getFormattedContext();
+  async generateBddScenarios(title: string, description: string, project?: Project | null): Promise<BddScenario[]> {
+    const documentContext = await getFormattedContext(project || null);
     const prompt = `${documentContext}
     Aja como um especialista em BDD (Behavior-Driven Development). Para a tarefa a seguir, crie cenários de comportamento usando a sintaxe Gherkin (Dado, Quando, Então).
     Foque em descrever o comportamento do sistema do ponto de vista do usuário.
@@ -620,8 +622,8 @@ export class GeminiService implements AIService {
     }
   }
 
-  async generateTestPyramidAnalysis(projectName: string, projectDescription: string, tasks: JiraTask[]): Promise<TestPyramidAnalysis> {
-    const documentContext = await getFormattedContext();
+  async generateTestPyramidAnalysis(projectName: string, projectDescription: string, tasks: JiraTask[], project?: Project | null): Promise<TestPyramidAnalysis> {
+    const documentContext = await getFormattedContext(project || null);
     const taskSummaries = tasks.map(t => `- ${t.id} ${t.title}`).join('\n');
     const prompt = `${documentContext}
     Aja como um arquiteto de QA especialista em automação de testes. Para o projeto a seguir, analise os requisitos e forneça uma estratégia de Pirâmide de Testes.

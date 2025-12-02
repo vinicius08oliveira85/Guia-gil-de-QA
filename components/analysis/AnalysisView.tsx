@@ -41,9 +41,9 @@ export const AnalysisView: React.FC<{
         setIsAnalyzing(true);
         try {
             const [lifecyclePlan, shiftLeft, testPyramid] = await Promise.all([
-                generateProjectLifecyclePlan(project.name, project.description, project.tasks),
-                generateShiftLeftAnalysis(project.name, project.description, project.tasks),
-                generateTestPyramidAnalysis(project.name, project.description, project.tasks)
+                generateProjectLifecyclePlan(project.name, project.description, project.tasks, project),
+                generateShiftLeftAnalysis(project.name, project.description, project.tasks, project),
+                generateTestPyramidAnalysis(project.name, project.description, project.tasks, project)
             ]);
     
             const updatedPhases = project.phases.map(phase => ({

@@ -192,7 +192,7 @@ export const TasksView: React.FC<{
             }
             
             const aiService = getAIService();
-            const scenarios = await aiService.generateBddScenarios(task.title, task.description);
+            const scenarios = await aiService.generateBddScenarios(task.title, task.description, project);
             const updatedTask = { ...task, bddScenarios: [...(task.bddScenarios || []), ...scenarios] };
             const newTasks = project.tasks.map(t => t.id === taskId ? updatedTask : t);
             onUpdateProject({ ...project, tasks: newTasks });
@@ -250,7 +250,8 @@ export const TasksView: React.FC<{
                 task.description, 
                 task.bddScenarios, 
                 detailLevel,
-                task.type
+                task.type,
+                project
             );
             const updatedTask = { ...task, testStrategy: strategy, testCases };
             const newTasks = project.tasks.map(t => t.id === updatedTask.id ? updatedTask : t);
@@ -278,7 +279,7 @@ export const TasksView: React.FC<{
             const aiService = getAIService();
             
             // Passo 1: Gerar BDD primeiro
-            const bddScenarios = await aiService.generateBddScenarios(task.title, task.description);
+            const bddScenarios = await aiService.generateBddScenarios(task.title, task.description, project);
             
             // Passo 2: Gerar estratégias e casos de teste usando os BDD recém-gerados
             const { strategy, testCases } = await aiService.generateTestCasesForTask(
@@ -286,6 +287,8 @@ export const TasksView: React.FC<{
                 task.description,
                 bddScenarios, // Usar os BDD recém-gerados
                 detailLevel,
+                task.type,
+                project
                 task.type
             );
             
@@ -672,7 +675,7 @@ export const TasksView: React.FC<{
 
                     try {
                         const scenarios = await withTimeout(
-                            aiService.generateBddScenarios(task.title, task.description || ''),
+                            aiService.generateBddScenarios(task.title, task.description || '', project),
                             60000
                         );
                         
@@ -729,7 +732,9 @@ export const TasksView: React.FC<{
                                 currentTask.title, 
                                 currentTask.description || '', 
                                 currentTask.bddScenarios, 
-                                'Padrão'
+                                'Padrão',
+                                currentTask.type,
+                                project
                             ),
                             60000
                         );

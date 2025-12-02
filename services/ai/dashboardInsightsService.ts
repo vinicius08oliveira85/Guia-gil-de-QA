@@ -207,7 +207,7 @@ export async function generateDashboardInsightsAnalysis(project: Project): Promi
   const metrics = calculateProjectMetrics(project);
   const periodMetrics = getCurrentAndPreviousPeriodMetrics(project, 'week');
   
-  const documentContext = await getFormattedContext();
+  const documentContext = await getFormattedContext(project);
   const prompt = `${documentContext}
 Você é um especialista sênior em QA e análise de métricas de qualidade de software.
 Analise as métricas do dashboard fornecidas e gere insights acionáveis, previsões e recomendações.

@@ -159,7 +159,7 @@ export async function generateDashboardOverviewAnalysis(project: Project): Promi
   const currentPhase = detectCurrentSTLCPhase(project);
   const allTestCases = project.tasks.flatMap(t => t.testCases || []);
   
-  const documentContext = await getFormattedContext();
+  const documentContext = await getFormattedContext(project);
   const prompt = `${documentContext}
 Você é um especialista sênior em QA e STLC (Software Testing Life Cycle). 
 Analise o projeto fornecido e gere uma análise estratégica focada na visão geral do projeto.

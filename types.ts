@@ -308,6 +308,7 @@ export interface Project {
   dashboardInsightsAnalysis?: DashboardInsightsAnalysis;
   sdlcPhaseAnalysis?: SDLCPhaseAnalysis;
   metricsHistory?: MetricsSnapshot[];
+  specificationDocument?: string; // Conteúdo processado do documento de especificação
 }
 
 export interface Comment {

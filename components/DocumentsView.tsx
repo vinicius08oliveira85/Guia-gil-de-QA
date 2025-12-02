@@ -14,6 +14,7 @@ import { Tooltip } from './common/Tooltip';
 import { CopyButton } from './common/CopyButton';
 import { createDocumentFromFile, convertDocumentFileToProjectDocument, formatFileSize, getFileIcon, canPreview } from '../utils/documentService';
 import { SolusSchemaModal } from './solus/SolusSchemaModal';
+import { SpecificationDocumentProcessor } from './settings/SpecificationDocumentProcessor';
 
 interface DocumentWithMetadata extends ProjectDocument {
     uploadedAt?: string;
@@ -173,7 +174,7 @@ export const DocumentsView: React.FC<{ project: Project; onUpdateProject: (proje
     const handleAnalyze = async (doc: ProjectDocument) => {
         setLoadingStates(prev => ({ ...prev, [doc.name]: 'analyze' }));
         try {
-            const analysis = await analyzeDocumentContent(doc.content);
+            const analysis = await analyzeDocumentContent(doc.content, project);
             const sanitizedAnalysis = sanitizeHTML(analysis);
             
             // Salvar análise no documento
@@ -194,7 +195,7 @@ export const DocumentsView: React.FC<{ project: Project; onUpdateProject: (proje
     const handleGenerateTask = async (doc: ProjectDocument) => {
         setLoadingStates(prev => ({ ...prev, [doc.name]: 'generate' }));
         try {
-            const { task, strategy, testCases } = await generateTaskFromDocument(doc.content);
+            const { task, strategy, testCases } = await generateTaskFromDocument(doc.content, project);
             const newTask: JiraTask = {
                 ...task,
                 id: `DOC-${doc.name.substring(0, 5)}-${Date.now().toString().slice(-4)}`,
@@ -250,6 +251,12 @@ export const DocumentsView: React.FC<{ project: Project; onUpdateProject: (proje
 
     return (
         <div className="space-y-6">
+            {/* Documento de Especificação */}
+            <SpecificationDocumentProcessor 
+                project={project} 
+                onUpdateProject={onUpdateProject} 
+            />
+            
         <Card>
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                     <div>

@@ -1,8 +1,6 @@
 import mammoth from 'mammoth';
 import { logger } from '../utils/logger';
-
-const SPECIFICATION_STORAGE_KEY = 'qa_specification_document';
-const SPECIFICATION_PROCESSED_KEY = 'qa_specification_processed';
+import { Project } from '../types';
 
 /**
  * Processa um arquivo .docx e converte para texto
@@ -24,13 +22,19 @@ export async function processDocxFile(file: File): Promise<string> {
 }
 
 /**
- * Salva o documento processado no armazenamento local
+ * Salva o documento processado no projeto
+ * @param project Projeto onde o documento será salvo
+ * @param content Conteúdo processado do documento
+ * @returns Projeto atualizado com o documento de especificação
  */
-export function saveProcessedDocument(content: string): void {
+export function saveProcessedDocument(project: Project, content: string): Project {
   try {
-    localStorage.setItem(SPECIFICATION_PROCESSED_KEY, content);
-    localStorage.setItem(SPECIFICATION_STORAGE_KEY, 'processed');
-    logger.info('Documento de especificação processado e salvo com sucesso');
+    const updatedProject: Project = {
+      ...project,
+      specificationDocument: content
+    };
+    logger.info(`Documento de especificação processado e salvo no projeto ${project.id}`);
+    return updatedProject;
   } catch (error) {
     logger.error('Erro ao salvar documento processado:', error);
     throw new Error('Falha ao salvar documento processado');
@@ -38,12 +42,13 @@ export function saveProcessedDocument(content: string): void {
 }
 
 /**
- * Carrega o documento processado do armazenamento local
+ * Carrega o documento processado do projeto
+ * @param project Projeto de onde o documento será carregado
+ * @returns Conteúdo do documento ou null se não existir
  */
-export function loadProcessedDocument(): string | null {
+export function loadProcessedDocument(project: Project): string | null {
   try {
-    const content = localStorage.getItem(SPECIFICATION_PROCESSED_KEY);
-    return content;
+    return project.specificationDocument || null;
   } catch (error) {
     logger.error('Erro ao carregar documento processado:', error);
     return null;
@@ -51,12 +56,15 @@ export function loadProcessedDocument(): string | null {
 }
 
 /**
- * Verifica se o documento já foi processado
+ * Verifica se o documento já foi processado para o projeto
+ * @param project Projeto a verificar
+ * @returns true se o documento existe, false caso contrário
  */
-export function isDocumentProcessed(): boolean {
+export function isDocumentProcessed(project: Project): boolean {
   try {
-    return localStorage.getItem(SPECIFICATION_STORAGE_KEY) === 'processed' && 
-           localStorage.getItem(SPECIFICATION_PROCESSED_KEY) !== null;
+    return project.specificationDocument !== undefined && 
+           project.specificationDocument !== null &&
+           project.specificationDocument.trim().length > 0;
   } catch (error) {
     logger.error('Erro ao verificar status do documento:', error);
     return false;
@@ -64,24 +72,30 @@ export function isDocumentProcessed(): boolean {
 }
 
 /**
- * Remove o documento processado do armazenamento
+ * Remove o documento processado do projeto
+ * @param project Projeto de onde o documento será removido
+ * @returns Projeto atualizado sem o documento de especificação
  */
-export function clearProcessedDocument(): void {
+export function clearProcessedDocument(project: Project): Project {
   try {
-    localStorage.removeItem(SPECIFICATION_STORAGE_KEY);
-    localStorage.removeItem(SPECIFICATION_PROCESSED_KEY);
-    logger.info('Documento de especificação removido');
+    const { specificationDocument, ...projectWithoutSpec } = project;
+    logger.info(`Documento de especificação removido do projeto ${project.id}`);
+    return projectWithoutSpec as Project;
   } catch (error) {
     logger.error('Erro ao remover documento processado:', error);
+    throw error;
   }
 }
 
 /**
- * Processa um arquivo .docx e salva automaticamente
+ * Processa um arquivo .docx e retorna o projeto atualizado e o conteúdo
+ * @param project Projeto onde o documento será salvo
+ * @param file Arquivo .docx a ser processado
+ * @returns Objeto com o projeto atualizado e o conteúdo processado
  */
-export async function processAndSaveDocument(file: File): Promise<string> {
+export async function processAndSaveDocument(project: Project, file: File): Promise<{ project: Project; content: string }> {
   const processedContent = await processDocxFile(file);
-  saveProcessedDocument(processedContent);
-  return processedContent;
+  const updatedProject = saveProcessedDocument(project, processedContent);
+  return { project: updatedProject, content: processedContent };
 }
 

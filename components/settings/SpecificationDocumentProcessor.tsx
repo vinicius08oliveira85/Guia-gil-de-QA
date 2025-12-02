@@ -9,8 +9,17 @@ import {
   loadProcessedDocument 
 } from '../../services/documentProcessingService';
 import { invalidateContextCache } from '../../services/ai/documentContextService';
+import { Project } from '../../types';
 
-export const SpecificationDocumentProcessor: React.FC = () => {
+interface SpecificationDocumentProcessorProps {
+  project: Project;
+  onUpdateProject: (project: Project) => void;
+}
+
+export const SpecificationDocumentProcessor: React.FC<SpecificationDocumentProcessorProps> = ({ 
+  project, 
+  onUpdateProject 
+}) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isProcessed, setIsProcessed] = useState(false);
   const [documentSize, setDocumentSize] = useState<number | null>(null);
@@ -19,17 +28,19 @@ export const SpecificationDocumentProcessor: React.FC = () => {
   useEffect(() => {
     // Verificar se o documento já foi processado
     const checkStatus = () => {
-      const processed = isDocumentProcessed();
+      const processed = isDocumentProcessed(project);
       setIsProcessed(processed);
       if (processed) {
-        const content = loadProcessedDocument();
+        const content = loadProcessedDocument(project);
         if (content) {
           setDocumentSize(content.length);
         }
+      } else {
+        setDocumentSize(null);
       }
     };
     checkStatus();
-  }, []);
+  }, [project]);
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -44,10 +55,11 @@ export const SpecificationDocumentProcessor: React.FC = () => {
 
     setIsProcessing(true);
     try {
-      await processAndSaveDocument(file);
-      invalidateContextCache(); // Invalidar cache para recarregar o contexto
+      const { project: updatedProject, content } = await processAndSaveDocument(project, file);
+      onUpdateProject(updatedProject);
+      invalidateContextCache(project.id); // Invalidar cache para recarregar o contexto
       setIsProcessed(true);
-      setDocumentSize(file.size);
+      setDocumentSize(content.length);
       handleSuccess('Documento de especificação processado com sucesso! O contexto será usado em todas as análises de IA.');
     } catch (error) {
       handleError(error instanceof Error ? error : new Error('Erro ao processar documento'), 'Processar documento');
@@ -57,10 +69,11 @@ export const SpecificationDocumentProcessor: React.FC = () => {
     }
   };
 
-  const handleClear = () => {
+  const handleClear = async () => {
     try {
-      clearProcessedDocument();
-      invalidateContextCache();
+      const updatedProject = clearProcessedDocument(project);
+      onUpdateProject(updatedProject);
+      invalidateContextCache(project.id);
       setIsProcessed(false);
       setDocumentSize(null);
       handleSuccess('Documento de especificação removido. As análises de IA não usarão mais o contexto do documento.');
