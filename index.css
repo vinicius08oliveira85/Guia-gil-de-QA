@@ -1393,6 +1393,29 @@ select option:focus {
   color: #333333 !important;
 }
 
+/* Leve Saude - Card PRÓXIMO PASSO com melhor contraste */
+.leve-saude .bg-accent\/10,
+.leve-saude [class*="bg-accent/10"] {
+  background-color: #EAF3EE !important;
+  border-color: #109685 !important;
+}
+
+.leve-saude .bg-accent\/10 .text-accent,
+.leve-saude [class*="bg-accent/10"] [class*="text-accent"] {
+  color: #109685 !important;
+  font-weight: 700;
+}
+
+.leve-saude .bg-accent\/10 .text-text-primary,
+.leve-saude [class*="bg-accent/10"] [class*="text-text-primary"] {
+  color: #333333 !important;
+}
+
+.leve-saude .bg-accent\/10 p,
+.leve-saude [class*="bg-accent/10"] p {
+  color: #333333 !important;
+}
+
 .tab-pill {
   border-radius: var(--radius-lg);
   border: 1px solid transparent;
@@ -1488,10 +1511,19 @@ select option:focus {
 
 .leve-saude .mini-tab--active {
   background: #FC4C02;
-  color: #FFFFFF;
+  color: #FFFFFF !important;
   border-color: #FC4C02;
   box-shadow: 0 4px 12px rgba(252, 76, 2, 0.3);
   font-weight: 700;
+}
+
+/* Leve Saude - Garantir texto branco em todos os elementos dentro da aba ativa */
+.leve-saude .mini-tab--active * {
+  color: #FFFFFF !important;
+}
+
+.leve-saude .mini-tab--active span {
+  color: #FFFFFF !important;
 }
 
 .mini-tab__badge {
