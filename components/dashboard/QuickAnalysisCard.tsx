@@ -56,16 +56,26 @@ export const QuickAnalysisCard: React.FC<QuickAnalysisCardProps> = React.memo(({
             {topProblematicTasks.map((task, index) => (
               <div
                 key={task.taskId}
-                className="flex items-center justify-between p-2 bg-red-50 rounded border border-red-200"
+                className="flex items-center justify-between p-3 bg-surface-hover rounded-lg border border-surface-outline"
+                style={{
+                  backgroundColor: 'rgba(255, 92, 112, 0.12)',
+                  borderColor: 'rgba(255, 92, 112, 0.35)',
+                }}
                 aria-label={`${index + 1}º lugar: ${task.taskTitle} com ${task.failureCount} falhas`}
               >
                 <div className="flex items-center gap-2 flex-1 min-w-0">
-                  <span className="text-sm font-bold text-red-600 flex-shrink-0">
+                  <span 
+                    className="text-sm font-bold flex-shrink-0"
+                    style={{ color: 'var(--danger-color)' }}
+                  >
                     #{index + 1}
                   </span>
-                  <p className="text-sm text-text-primary truncate">{task.taskTitle}</p>
+                  <p className="text-sm text-text-primary truncate font-medium">{task.taskTitle}</p>
                 </div>
-                <span className="text-sm font-semibold text-red-600 ml-2 flex-shrink-0">
+                <span 
+                  className="text-sm font-semibold ml-2 flex-shrink-0"
+                  style={{ color: 'var(--danger-color)' }}
+                >
                   {task.failureCount} falhas
                 </span>
               </div>
