@@ -217,6 +217,12 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({
                         Ferramentas: {testCase.toolsUsed.join(', ')}
                       </p>
                     )}
+                    {testCase.observedResult && testCase.observedResult.trim() && (
+                      <div className="mt-1">
+                        <p className="text-xs font-medium text-text-secondary mb-0.5">Resultado Encontrado:</p>
+                        <p className="text-xs text-red-400 whitespace-pre-wrap">{testCase.observedResult}</p>
+                      </div>
+                    )}
                   </li>
                 );
               })}

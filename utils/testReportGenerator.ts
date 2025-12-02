@@ -156,6 +156,18 @@ export function generateTestReport(
       lines.push(`${index + 1}. ${description} - Status: ${statusEmoji} ${statusLabel}`);
       lines.push('');
       lines.push(`   Testes Executados: ${testType}`);
+      
+      // Adicionar Resultado Encontrado se existir
+      if (testCase.observedResult && testCase.observedResult.trim()) {
+        if (format === 'markdown') {
+          lines.push('');
+          lines.push(`   **Resultado Encontrado:** <span style="color: red;">${testCase.observedResult}</span>`);
+        } else {
+          lines.push('');
+          lines.push(`   RESULTADO ENCONTRADO: ${testCase.observedResult}`);
+        }
+      }
+      
       lines.push('');
       lines.push('');
     });
