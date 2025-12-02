@@ -68,11 +68,13 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported }) => {
                         <button
                             onClick={toggleTheme}
                             className="win-icon-button"
-                            title={`Tema: ${theme === 'dark' ? 'Escuro' : theme === 'light' ? 'Claro' : 'Automático'}`}
+                            title={`Tema: ${theme === 'dark' ? 'Escuro' : theme === 'light' ? 'Claro' : theme === 'leve-saude' ? 'Leve Saúde' : 'Automático'}`}
                             aria-label="Alternar tema"
                             aria-pressed={theme === 'dark'}
                         >
-                            <span className="text-xl">{theme === 'dark' ? '🌙' : theme === 'light' ? '☀️' : '💻'}</span>
+                            <span className="text-xl">
+                                {theme === 'dark' ? '🌙' : theme === 'light' ? '☀️' : theme === 'leve-saude' ? '🧡' : '💻'}
+                            </span>
                         </button>
                     </div>
                 </div>

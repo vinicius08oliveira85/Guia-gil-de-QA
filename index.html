@@ -5,6 +5,9 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>QA Agile Guide</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <style>
       :root {
         /* Dark theme colors (default) */
@@ -38,6 +41,24 @@
         --tooltip-border: #d4d4d4;
       }
 
+      .leve-saude {
+        /* Leve Saúde theme colors - Identidade Visual Institucional */
+        --bg-color: #FFFFFF;
+        --surface-color: rgba(255, 255, 255, 0.95);
+        --surface-border: rgba(0, 0, 0, 0.08);
+        --surface-hover: rgba(252, 76, 2, 0.08);
+        --text-primary: #1a1a1a;
+        --text-secondary: #525252;
+        --input-bg: #FFFFFF;
+        --input-border: rgba(0, 0, 0, 0.15);
+        --input-text: #1a1a1a;
+        --tooltip-bg: #FFFFFF;
+        --tooltip-text: #1a1a1a;
+        --tooltip-border: rgba(0, 0, 0, 0.12);
+        --primary-color: #FC4C02;
+        --secondary-color: #126232;
+      }
+
       html {
         scroll-behavior: smooth;
       }
@@ -54,6 +75,11 @@
 
       .light body {
         background-image: radial-gradient(circle at 100% 0%, rgba(20, 184, 166, 0.03), transparent 30%);
+      }
+
+      .leve-saude body {
+        background-image: none;
+        background-color: #FFFFFF;
       }
 
       .mica {
@@ -107,6 +133,13 @@
         border-color: #14B8A6; /* accent */
         box-shadow: 0 0 0 2px rgba(20, 184, 166, 0.3);
         background-color: var(--input-bg);
+      }
+
+      .leve-saude input:focus,
+      .leve-saude textarea:focus,
+      .leve-saude select:focus {
+        border-color: #FC4C02;
+        box-shadow: 0 0 0 2px rgba(252, 76, 2, 0.3);
       }
       
       input:disabled,
@@ -345,6 +378,8 @@
         const effectiveTheme = savedTheme === 'auto' 
           ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
           : savedTheme;
+        // Remove all theme classes first
+        document.documentElement.classList.remove('light', 'dark', 'leve-saude');
         document.documentElement.classList.add(effectiveTheme);
       })();
     </script>

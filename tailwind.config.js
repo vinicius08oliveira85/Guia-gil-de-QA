@@ -30,6 +30,8 @@ export default {
           'DEFAULT': '#14B8A6',
           'dark': '#0D9488',
         },
+        'primary-leve': '#FC4C02',
+        'secondary-leve': '#126232',
         'success': 'var(--success-color)',
         'warning': 'var(--warning-color)',
         'danger': 'var(--danger-color)',

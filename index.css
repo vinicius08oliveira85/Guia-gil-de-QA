@@ -84,6 +84,20 @@
   border-color: rgba(15, 23, 42, 0.15);
   color: #0f172a;
 }
+
+.leve-saude .chip--accent {
+  background: #FC4C02;
+  border-color: rgba(252, 76, 2, 0.4);
+  color: #ffffff;
+  box-shadow: 0 12px 28px rgba(252, 76, 2, 0.25);
+}
+
+.leve-saude .chip--neutral {
+  background: rgba(0, 0, 0, 0.08);
+  border-color: rgba(0, 0, 0, 0.15);
+  color: #1a1a1a;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -223,6 +237,37 @@
   --tooltip-border: rgba(15, 23, 42, 0.12);
 }
 
+.leve-saude {
+  color-scheme: light;
+  --font-sans: 'Montserrat', 'Segoe UI Variable', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+  --bg-color: #FFFFFF;
+  --bg-muted: #FFFFFF;
+  --layer-1: rgba(255, 255, 255, 0.95);
+  --layer-2: rgba(255, 255, 255, 0.95);
+  --layer-3: rgba(255, 255, 255, 0.95);
+  --backdrop-color: rgba(0, 0, 0, 0.05);
+  --surface-color: rgba(255, 255, 255, 0.95);
+  --surface-hover: rgba(252, 76, 2, 0.08);
+  --surface-border: rgba(0, 0, 0, 0.08);
+  --surface-outline: rgba(252, 76, 2, 0.22);
+  --surface-contrast: rgba(0, 0, 0, 0.05);
+  --text-primary: #1a1a1a;
+  --text-secondary: #525252;
+  --text-tertiary: #6B7280;
+  --text-muted: rgba(26, 26, 26, 0.55);
+  --input-bg: #FFFFFF;
+  --input-border: rgba(0, 0, 0, 0.15);
+  --input-text: #1a1a1a;
+  --tooltip-bg: #FFFFFF;
+  --tooltip-text: #1a1a1a;
+  --tooltip-border: rgba(0, 0, 0, 0.12);
+  --primary-color: #FC4C02;
+  --secondary-color: #126232;
+  --accent-color: #FC4C02;
+  --accent-color-strong: #D93D00;
+  --accent-color-soft: rgba(252, 76, 2, 0.18);
+}
+
 *, *::before, *::after {
   box-sizing: border-box;
 }
@@ -232,6 +277,10 @@ html {
   text-size-adjust: 100%;
   color-scheme: dark;
   background-color: var(--bg-color);
+}
+
+.leve-saude {
+  color-scheme: light;
 }
 
 html,
@@ -265,6 +314,16 @@ body {
     radial-gradient(circle at 15% 25%, rgba(14, 109, 253, 0.12), transparent 45%),
     radial-gradient(circle at 80% 0, rgba(95, 44, 255, 0.08), transparent 45%),
     radial-gradient(circle at 20% 85%, rgba(47, 219, 147, 0.12), transparent 55%);
+}
+
+.leve-saude body {
+  background-image: none;
+  background-color: #FFFFFF;
+}
+
+.leve-saude body::before,
+.leve-saude body::after {
+  display: none;
 }
 
 body::before,
@@ -601,9 +660,20 @@ select {
   box-shadow: 0 10px 26px rgba(15, 23, 42, 0.15);
 }
 
+.leve-saude .input-select {
+  background: #FFFFFF;
+  border-color: rgba(0, 0, 0, 0.15);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.08);
+}
+
 .input-select:focus {
   border-color: var(--accent-color);
   box-shadow: 0 0 0 2px rgba(14, 109, 253, 0.25);
+}
+
+.leve-saude .input-select:focus {
+  border-color: #FC4C02;
+  box-shadow: 0 0 0 2px rgba(252, 76, 2, 0.25);
 }
 
 input::placeholder,
@@ -625,6 +695,14 @@ select:focus {
 .light textarea:focus,
 .light select:focus {
   background-color: rgba(14, 109, 253, 0.05);
+}
+
+.leve-saude input:focus,
+.leve-saude textarea:focus,
+.leve-saude select:focus {
+  border-color: #FC4C02;
+  box-shadow: 0 0 0 3px rgba(252, 76, 2, 0.25);
+  background-color: #FFFFFF;
 }
 
 input:disabled,
@@ -656,6 +734,23 @@ select:hover {
 .light select option {
   background-color: #ffffff;
   color: #0F172A;
+}
+
+.leve-saude select {
+  background-color: #FFFFFF;
+  border-color: rgba(0, 0, 0, 0.15);
+  color: var(--text-primary);
+}
+
+.leve-saude select option {
+  background-color: #ffffff;
+  color: #1a1a1a;
+}
+
+.leve-saude select option:checked,
+.leve-saude select option:focus {
+  background-color: rgba(252, 76, 2, 0.15);
+  color: #1a1a1a;
 }
 
 select option:checked,
@@ -949,6 +1044,28 @@ select option:focus {
   background: linear-gradient(135deg, var(--accent-color-strong), var(--accent-color));
 }
 
+/* Leve Saúde - Botões CTA com Laranja Institucional */
+.leve-saude .btn-primary {
+  background: #FC4C02;
+  color: #ffffff;
+  border-color: #FC4C02;
+  box-shadow: 0 10px 30px rgba(252, 76, 2, 0.35);
+  font-weight: 700;
+}
+
+.leve-saude .btn-primary:hover {
+  background: #D93D00;
+  border-color: #D93D00;
+  box-shadow: 0 14px 36px rgba(252, 76, 2, 0.45);
+  transform: translateY(-1px);
+}
+
+.leve-saude .btn-primary:active {
+  background: #C23600;
+  border-color: #C23600;
+  transform: translateY(0);
+}
+
 .btn-secondary {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
   border-color: var(--surface-border);
@@ -957,6 +1074,18 @@ select option:focus {
 
 .btn-secondary:hover {
   border-color: var(--accent-color-soft);
+}
+
+.leve-saude .btn-secondary {
+  background: rgba(252, 76, 2, 0.08);
+  border-color: rgba(252, 76, 2, 0.2);
+  color: #1a1a1a;
+}
+
+.leve-saude .btn-secondary:hover {
+  background: rgba(252, 76, 2, 0.15);
+  border-color: rgba(252, 76, 2, 0.3);
+  color: #1a1a1a;
 }
 
 .btn-danger {
