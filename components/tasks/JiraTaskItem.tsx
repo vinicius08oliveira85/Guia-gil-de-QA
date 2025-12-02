@@ -24,50 +24,43 @@ import { EmptyState } from '../common/EmptyState';
 import { LoadingSkeleton } from '../common/LoadingSkeleton';
 import { ensureJiraHexColor, getJiraStatusColor, getJiraStatusTextColor } from '../../utils/jiraStatusColors';
 import { windows12Styles } from '../../utils/windows12Styles';
+import { parseJiraDescriptionHTML } from '../../utils/jiraDescriptionParser';
 
-// Componente para renderizar descrição com suporte a imagens
-const DescriptionRenderer: React.FC<{ description: string }> = ({ description }) => {
-    // Garantir que description é uma string válida
-    if (!description || typeof description !== 'string') {
+// Componente para renderizar descrição com formatação rica do Jira
+const DescriptionRenderer: React.FC<{ description: string | any }> = ({ description }) => {
+    // Garantir que description existe
+    if (!description) {
         return <p className="text-text-secondary italic">Sem descrição</p>;
     }
     
-    // Detectar imagens no formato markdown ![alt](data:image/...)
-    const imageRegex = /!\[([^\]]*)\]\((data:image\/[^)]+)\)/g;
-    const parts: React.ReactNode[] = [];
-    let lastIndex = 0;
-    let match;
-    let key = 0;
-
-    while ((match = imageRegex.exec(description)) !== null) {
-        // Adicionar texto antes da imagem
-        if (match.index > lastIndex) {
-            parts.push(
-                <span key={key++}>{description.substring(lastIndex, match.index)}</span>
-            );
+    // Se description já é HTML (string com tags), usar diretamente
+    // Caso contrário, converter usando parseJiraDescriptionHTML
+    let htmlContent = '';
+    
+    if (typeof description === 'string') {
+        // Se já contém HTML, usar diretamente (já foi processado)
+        if (description.includes('<')) {
+            htmlContent = description;
+        } else {
+            // String simples, converter para HTML
+            htmlContent = parseJiraDescriptionHTML(description);
         }
-        
-        // Adicionar imagem
-        parts.push(
-            <img
-                key={key++}
-                src={match[2]}
-                alt={match[1] || 'Imagem'}
-                className="max-w-full h-auto rounded-lg border border-surface-border my-2"
-            />
-        );
-        
-        lastIndex = match.index + match[0].length;
+    } else {
+        // Objeto ADF ou outro formato, converter para HTML
+        htmlContent = parseJiraDescriptionHTML(description);
     }
     
-    // Adicionar texto restante
-    if (lastIndex < description.length) {
-        parts.push(
-            <span key={key++}>{description.substring(lastIndex)}</span>
-        );
+    // Se não há conteúdo após processamento, mostrar mensagem
+    if (!htmlContent || htmlContent.trim() === '') {
+        return <p className="text-text-secondary italic">Sem descrição</p>;
     }
     
-    return <div className="whitespace-pre-wrap">{parts.length > 0 ? parts : description}</div>;
+    return (
+        <div 
+            className="jira-rich-content prose prose-invert prose-sm max-w-none"
+            dangerouslySetInnerHTML={{ __html: htmlContent }}
+        />
+    );
 };
 
 export type TaskWithChildren = JiraTask & { children: TaskWithChildren[] };

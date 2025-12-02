@@ -1,5 +1,5 @@
 import { Project, JiraTask, PhaseName, Comment } from '../types';
-import { parseJiraDescription } from '../utils/jiraDescriptionParser';
+import { parseJiraDescription, parseJiraDescriptionHTML } from '../utils/jiraDescriptionParser';
 import { getCache, setCache, clearCache } from '../utils/apiCache';
 import { getJiraStatusColor } from '../utils/jiraStatusColors';
 
@@ -775,15 +775,15 @@ export const importJiraProject = async (
         const taskType = mapJiraTypeToTaskType(issue.fields?.issuetype?.name);
         const isBug = taskType === 'Bug';
         
-        // Converter descrição do formato ADF para texto
+        // Converter descrição do formato ADF para HTML preservando formatação rica
         // Tentar também renderedFields.description se disponível (formato HTML renderizado)
         let description = '';
         if (issue.renderedFields?.description) {
-            // Se temos descrição renderizada (HTML), usar ela
-            description = parseJiraDescription(issue.renderedFields.description);
+            // Se temos descrição renderizada (HTML), preservar formatação rica
+            description = parseJiraDescriptionHTML(issue.renderedFields.description);
         } else if (issue.fields?.description) {
-            // Caso contrário, usar a descrição raw (ADF)
-            description = parseJiraDescription(issue.fields.description);
+            // Caso contrário, converter a descrição raw (ADF) para HTML
+            description = parseJiraDescriptionHTML(issue.fields.description);
         }
         
         // Log para debug das primeiras tarefas
@@ -984,15 +984,15 @@ export const syncJiraProject = async (
         const taskType = mapJiraTypeToTaskType(issue.fields?.issuetype?.name);
         const isBug = taskType === 'Bug';
 
-        // Converter descrição do formato ADF para texto
+        // Converter descrição do formato ADF para HTML preservando formatação rica
         // Tentar também renderedFields.description se disponível (formato HTML renderizado)
         let description = '';
         if (issue.renderedFields?.description) {
-            // Se temos descrição renderizada (HTML), usar ela
-            description = parseJiraDescription(issue.renderedFields.description);
+            // Se temos descrição renderizada (HTML), preservar formatação rica
+            description = parseJiraDescriptionHTML(issue.renderedFields.description);
         } else if (issue.fields?.description) {
-            // Caso contrário, usar a descrição raw (ADF)
-            description = parseJiraDescription(issue.fields.description);
+            // Caso contrário, converter a descrição raw (ADF) para HTML
+            description = parseJiraDescriptionHTML(issue.fields.description);
         }
         
         // Buscar comentários do Jira
@@ -1254,12 +1254,14 @@ export const addNewJiraTasks = async (
         const taskType = mapJiraTypeToTaskType(issue.fields?.issuetype?.name);
         const isBug = taskType === 'Bug';
         
-        // Converter descrição do formato ADF para texto
+        // Converter descrição do formato ADF para HTML preservando formatação rica
         let description = '';
         if (issue.renderedFields?.description) {
-            description = parseJiraDescription(issue.renderedFields.description);
+            // Se temos descrição renderizada (HTML), preservar formatação rica
+            description = parseJiraDescriptionHTML(issue.renderedFields.description);
         } else if (issue.fields?.description) {
-            description = parseJiraDescription(issue.fields.description);
+            // Caso contrário, converter a descrição raw (ADF) para HTML
+            description = parseJiraDescriptionHTML(issue.fields.description);
         }
         
         // Buscar comentários do Jira

@@ -1478,6 +1478,228 @@ select option:focus {
   color: var(--text-primary);
 }
 
+/* Estilos específicos para conteúdo rico do Jira */
+.jira-rich-content {
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.jira-rich-content p {
+  margin: 0.75rem 0;
+  color: var(--text-secondary);
+}
+
+.jira-rich-content p:first-child {
+  margin-top: 0;
+}
+
+.jira-rich-content p:last-child {
+  margin-bottom: 0;
+}
+
+.jira-rich-content h1,
+.jira-rich-content h2,
+.jira-rich-content h3,
+.jira-rich-content h4,
+.jira-rich-content h5,
+.jira-rich-content h6 {
+  color: var(--text-primary);
+  font-weight: 600;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  line-height: 1.3;
+}
+
+.jira-rich-content h1 {
+  font-size: 1.75rem;
+}
+
+.jira-rich-content h2 {
+  font-size: 1.5rem;
+}
+
+.jira-rich-content h3 {
+  font-size: 1.25rem;
+}
+
+.jira-rich-content h4 {
+  font-size: 1.1rem;
+}
+
+.jira-rich-content h5,
+.jira-rich-content h6 {
+  font-size: 1rem;
+}
+
+.jira-rich-content ul,
+.jira-rich-content ol {
+  margin: 0.75rem 0;
+  padding-left: 1.5rem;
+  color: var(--text-secondary);
+}
+
+.jira-rich-content li {
+  margin: 0.5rem 0;
+  color: var(--text-secondary);
+}
+
+.jira-rich-content ul {
+  list-style-type: disc;
+}
+
+.jira-rich-content ol {
+  list-style-type: decimal;
+}
+
+.jira-rich-content a {
+  color: var(--accent-color);
+  text-decoration: underline;
+  transition: color var(--transition-fast);
+}
+
+.jira-rich-content a:hover {
+  color: #5A94FF;
+}
+
+.jira-rich-content strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.jira-rich-content em {
+  font-style: italic;
+  color: var(--text-secondary);
+}
+
+.jira-rich-content code {
+  background-color: var(--surface-hover);
+  color: var(--text-primary);
+  padding: 0.2em 0.4em;
+  border-radius: 4px;
+  font-size: 0.9em;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+}
+
+.jira-rich-content pre {
+  background-color: var(--surface-hover);
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+}
+
+.jira-rich-content pre code {
+  background-color: transparent;
+  padding: 0;
+  border-radius: 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.jira-rich-content blockquote {
+  border-left: 3px solid var(--surface-border);
+  padding-left: 1rem;
+  margin: 1rem 0;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.jira-rich-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--surface-border);
+  margin: 1rem 0;
+  display: block;
+}
+
+.jira-rich-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.jira-rich-content thead {
+  background-color: var(--surface-hover);
+}
+
+.jira-rich-content th {
+  padding: 0.75rem;
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-primary);
+  border-bottom: 2px solid var(--surface-border);
+}
+
+.jira-rich-content td {
+  padding: 0.75rem;
+  border-bottom: 1px solid var(--surface-border);
+  color: var(--text-secondary);
+}
+
+.jira-rich-content tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.jira-rich-content tbody tr:hover {
+  background-color: var(--surface-hover);
+}
+
+.light .jira-rich-content {
+  color: var(--text-secondary);
+}
+
+.light .jira-rich-content h1,
+.light .jira-rich-content h2,
+.light .jira-rich-content h3,
+.light .jira-rich-content h4,
+.light .jira-rich-content h5,
+.light .jira-rich-content h6 {
+  color: var(--text-primary);
+}
+
+.light .jira-rich-content code {
+  background-color: rgba(15, 23, 42, 0.1);
+  color: var(--text-primary);
+}
+
+.light .jira-rich-content pre {
+  background-color: rgba(15, 23, 42, 0.08);
+  border-color: rgba(15, 23, 42, 0.15);
+}
+
+.light .jira-rich-content blockquote {
+  border-left-color: rgba(15, 23, 42, 0.2);
+}
+
+.light .jira-rich-content img {
+  border-color: rgba(15, 23, 42, 0.15);
+}
+
+.light .jira-rich-content table {
+  border-color: rgba(15, 23, 42, 0.15);
+}
+
+.light .jira-rich-content thead {
+  background-color: rgba(15, 23, 42, 0.08);
+}
+
+.light .jira-rich-content th {
+  border-bottom-color: rgba(15, 23, 42, 0.15);
+}
+
+.light .jira-rich-content td {
+  border-bottom-color: rgba(15, 23, 42, 0.1);
+}
+
+.light .jira-rich-content tbody tr:hover {
+  background-color: rgba(15, 23, 42, 0.05);
+}
+
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
