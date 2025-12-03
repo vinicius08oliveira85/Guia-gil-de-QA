@@ -1,4 +1,5 @@
 import type { Preview } from '@storybook/react';
+import React from 'react';
 import '../index.css';
 
 const preview: Preview = {
@@ -29,11 +30,7 @@ const preview: Preview = {
     },
   },
   decorators: [
-    (Story) => (
-      <div style={{ padding: '2rem' }}>
-        <Story />
-      </div>
-    ),
+    (Story) => React.createElement('div', { style: { padding: '2rem' } }, React.createElement(Story)),
   ],
 };
 
