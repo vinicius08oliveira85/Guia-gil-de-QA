@@ -4,7 +4,8 @@
  * 
  * Documentação: https://amzn.github.io/style-dictionary/
  */
-export default {
+
+module.exports = {
   source: ['tokens/design-tokens.json'],
   platforms: {
     css: {
