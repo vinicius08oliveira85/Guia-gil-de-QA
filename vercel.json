@@ -1,5 +1,5 @@
 {
-  "buildCommand": "npm run build",
+  "buildCommand": "npm run tokens:build && npm run build",
   "outputDirectory": "dist",
   "framework": "vite",
   "installCommand": "npm install --legacy-peer-deps",
@@ -9,6 +9,9 @@
       "maxDuration": 60
     },
     "api/supabaseProxy.ts": {
+      "maxDuration": 30
+    },
+    "api/sync-figma-tokens.ts": {
       "maxDuration": 30
     }
   },

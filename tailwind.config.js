@@ -1,4 +1,15 @@
 /** @type {import('tailwindcss').Config} */
+
+// Tenta importar tokens gerados (opcional - fallback para valores padrão)
+// Nota: Se tokens não existirem, usa valores padrão do CSS
+let designTokens = {};
+try {
+  // Importação síncrona não funciona com ES modules, então usamos valores padrão
+  // Os tokens serão aplicados via CSS variables no index.css
+} catch (error) {
+  // Se tokens não existirem, usa valores padrão
+}
+
 export default {
   darkMode: 'class',
   content: [
@@ -11,6 +22,7 @@ export default {
     "./api/**/*.{js,ts,jsx,tsx}",
     "./pages/**/*.{js,ts,jsx,tsx}",
     "./app/**/*.{js,ts,jsx,tsx}",
+    "./stories/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
     screens: {
@@ -22,11 +34,13 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ['Segoe UI Variable', 'Segoe UI', 'sans-serif'],
-        heading: ['Poppins', 'Montserrat', 'Segoe UI Variable', 'Segoe UI', 'sans-serif'],
-        body: ['Inter', 'Segoe UI Variable', 'Segoe UI', 'sans-serif'],
+        ...(designTokens.fontFamily || {}),
+        sans: designTokens.fontFamily?.sans || ['Segoe UI Variable', 'Segoe UI', 'sans-serif'],
+        heading: designTokens.fontFamily?.heading || ['Poppins', 'Montserrat', 'Segoe UI Variable', 'Segoe UI', 'sans-serif'],
+        body: designTokens.fontFamily?.body || ['Inter', 'Segoe UI Variable', 'Segoe UI', 'sans-serif'],
       },
       colors: {
+        ...(designTokens.colors || {}),
         'accent': {
           'light': '#2DD4BF',
           'DEFAULT': '#14B8A6',
@@ -65,12 +79,13 @@ export default {
         'text-secondary': 'var(--text-secondary)',
       },
       spacing: {
-        'xs': 'var(--spacing-xs)',
-        'sm': 'var(--spacing-sm)',
-        'md': 'var(--spacing-md)',
-        'lg': 'var(--spacing-lg)',
-        'xl': 'var(--spacing-xl)',
-        '2xl': 'var(--spacing-2xl)',
+        ...(designTokens.spacing || {}),
+        'xs': designTokens.spacing?.xs || 'var(--spacing-xs)',
+        'sm': designTokens.spacing?.sm || 'var(--spacing-sm)',
+        'md': designTokens.spacing?.md || 'var(--spacing-md)',
+        'lg': designTokens.spacing?.lg || 'var(--spacing-lg)',
+        'xl': designTokens.spacing?.xl || 'var(--spacing-xl)',
+        '2xl': designTokens.spacing?.['2xl'] || 'var(--spacing-2xl)',
         '3xl': 'var(--spacing-3xl)',
       },
       fontSize: {
@@ -89,10 +104,14 @@ export default {
         'relaxed': 'var(--lh-relaxed)',
       },
       borderRadius: {
-        'leve-sm': 'var(--radius-sm)',
-        'leve-md': 'var(--radius-md)',
-        'leve-lg': 'var(--radius-lg)',
-        'leve-xl': 'var(--radius-xl)',
+        ...(designTokens.borderRadius || {}),
+        'leve-sm': designTokens.borderRadius?.sm || 'var(--radius-sm)',
+        'leve-md': designTokens.borderRadius?.md || 'var(--radius-md)',
+        'leve-lg': designTokens.borderRadius?.lg || 'var(--radius-lg)',
+        'leve-xl': designTokens.borderRadius?.xl || 'var(--radius-xl)',
+      },
+      boxShadow: {
+        ...(designTokens.boxShadow || {}),
       },
     }
   },

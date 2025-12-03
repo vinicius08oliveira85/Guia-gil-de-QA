@@ -102,6 +102,15 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 
+ * Design Tokens do Figma
+ * Tokens gerados automaticamente podem ser importados aqui:
+ * @import './tokens/generated/tokens.css';
+ * 
+ * Para gerar tokens: npm run tokens:build
+ * Para sincronizar do Figma: npm run tokens:sync
+ */
+
 /* Windows 12 inspired global theme */
 
 :root {

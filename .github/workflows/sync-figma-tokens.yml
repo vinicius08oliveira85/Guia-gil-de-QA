@@ -1,0 +1,45 @@
+name: Sync Figma Tokens
+
+on:
+  workflow_dispatch:  # Permite execução manual
+  schedule:
+    # Executa diariamente às 2h da manhã (UTC)
+    - cron: '0 2 * * *'
+  push:
+    branches:
+      - main
+    paths:
+      - '.env'
+      - 'tokens/design-tokens.json'
+
+jobs:
+  sync-tokens:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Sync Figma Tokens
+        env:
+          VITE_FIGMA_API_TOKEN: ${{ secrets.FIGMA_API_TOKEN }}
+          FIGMA_FILE_KEY: ${{ secrets.FIGMA_FILE_KEY }}
+        run: |
+          npm run tokens:sync ${{ secrets.FIGMA_FILE_KEY }}
+          npm run tokens:build
+      
+      - name: Commit changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add tokens/design-tokens.json tokens/generated/
+          git diff --staged --quiet || git commit -m "chore: sync design tokens from Figma [skip ci]"
+          git push
+
