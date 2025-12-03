@@ -2098,9 +2098,12 @@ select option:focus {
 }
 
 .task-card-compact {
-  border: 1px solid var(--surface-border);
+  border: 1px solid rgba(255, 255, 255, .14);
   border-radius: var(--radius-lg);
-  background: var(--layer-2);
+  background: #ffffff8c;
+  backdrop-filter: blur(calc(var(--glass-blur) * .45)) saturate(140%);
+  -webkit-backdrop-filter: blur(calc(var(--glass-blur) * .45)) saturate(140%);
+  box-shadow: var(--shadow-soft);
   padding: clamp(0.65rem, 1.5vw, 0.85rem);
   display: flex;
   flex-direction: column;
@@ -2111,8 +2114,11 @@ select option:focus {
 
 /* Leve Saúde - Garantir fundos claros para melhor visibilidade */
 .leve-saude .task-card-compact:not(.task-card-compact--bug):not(.task-card-compact--epic):not(.task-card-compact--historia):not(.task-card-compact--tarefa) {
-  background: #FFFFFF;
-  border-color: rgba(0, 0, 0, 0.1);
+  background: #ffffff8c;
+  border-color: rgba(255, 255, 255, .14);
+  backdrop-filter: blur(calc(var(--glass-blur) * .45)) saturate(140%);
+  -webkit-backdrop-filter: blur(calc(var(--glass-blur) * .45)) saturate(140%);
+  box-shadow: var(--shadow-soft);
 }
 
 .leve-saude .win-panel {
