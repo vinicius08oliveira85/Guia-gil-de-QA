@@ -31,10 +31,15 @@ jobs:
         run: npm run build-storybook
       
       - name: Run Chromatic
+        if: ${{ secrets.CHROMATIC_PROJECT_TOKEN != '' }}
         uses: chromaui/action@v1
         with:
           projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
           buildScriptName: build-storybook
           exitOnceUploaded: true
           exitZeroOnChanges: true
+      
+      - name: Skip Chromatic (token not configured)
+        if: ${{ secrets.CHROMATIC_PROJECT_TOKEN == '' }}
+        run: echo "⚠️ Chromatic token not configured. Skipping visual testing. Configure CHROMATIC_PROJECT_TOKEN secret to enable."
 
