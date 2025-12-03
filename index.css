@@ -2224,6 +2224,13 @@ select option:focus {
   color: #1E3A8A;
 }
 
+/* Leve Saúde - Ajuste de contraste para badges das tasks */
+.leve-saude .task-card-compact_badge {
+  background: rgba(0, 0, 0, 0.06);
+  color: #0F172A;
+  border-color: rgba(0, 0, 0, 0.12);
+}
+
 /* Leve Saude - Cores de estratégias de teste com melhor contraste */
 .leve-saude .bg-blue-500\/30,
 .leve-saude [class*="bg-blue-500"] {
@@ -2386,6 +2393,8 @@ select option:focus {
   display: inline-flex;
   align-items: center;
   line-height: 1;
+  background: var(--surface-contrast);
+  color: var(--text-primary);
 }
 
 .task-card-compact_title {
