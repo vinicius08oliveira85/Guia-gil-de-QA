@@ -35,7 +35,7 @@ export const HeaderLeveSaude = React.memo<HeaderLeveSaudeProps>(({
             <img
               src={logoUrl}
               alt={logoAlt}
-              className="h-10 w-auto"
+              className="h-10 w-auto logo-leve-shadow"
               loading="lazy"
             />
           )}
