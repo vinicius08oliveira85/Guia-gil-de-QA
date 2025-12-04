@@ -61,6 +61,8 @@ import { Spinner } from '../common/Spinner';
 import { syncJiraProject, getJiraConfig, getJiraProjects, JiraConfig, syncTaskToJira } from '../../services/jiraService';
 import { GeneralIAAnalysisButton } from './GeneralIAAnalysisButton';
 import { generateGeneralIAAnalysis } from '../../services/ai/generalAnalysisService';
+import { FileImportModal } from '../common/FileImportModal';
+import { FileExportModal } from '../common/FileExportModal';
 
 export const TasksView: React.FC<{ 
     project: Project, 
@@ -98,6 +100,9 @@ export const TasksView: React.FC<{
     const [editingTask, setEditingTask] = useState<JiraTask | undefined>(undefined);
     const [testCaseEditorRef, setTestCaseEditorRef] = useState<{ taskId: string; testCase: TestCase } | null>(null);
     const [defaultParentId, setDefaultParentId] = useState<string | undefined>(undefined);
+    const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+    const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+    const [importTaskId, setImportTaskId] = useState<string | undefined>(undefined);
     const [showWizard, setShowWizard] = useState(false);
     const { isBeginnerMode } = useBeginnerMode();
     const [hasSeenWizard, setHasSeenWizard] = useLocalStorage<boolean>('task_creation_wizard_seen', false);
@@ -1216,6 +1221,29 @@ export const TasksView: React.FC<{
                         </button>
                         
                         <button 
+                            onClick={() => {
+                                setIsImportModalOpen(true);
+                                setImportTaskId(undefined);
+                            }}
+                            className="btn btn-secondary btn-sm flex items-center gap-1.5 flex-shrink-0"
+                            title="Importar tarefas"
+                        >
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                            </svg>
+                            <span className="text-sm">Importar</span>
+                        </button>
+                        <button 
+                            onClick={() => setIsExportModalOpen(true)}
+                            className="btn btn-secondary btn-sm flex items-center gap-1.5 flex-shrink-0"
+                            title="Exportar tarefas"
+                        >
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                            <span className="text-sm">Exportar</span>
+                        </button>
+                        <button 
                             onClick={() => setShowTemplateSelector(true)} 
                             className="btn btn-secondary btn-sm flex items-center gap-1.5 flex-shrink-0"
                         >
@@ -1679,6 +1707,49 @@ export const TasksView: React.FC<{
             isOpen={showWizard}
             onClose={() => setShowWizard(false)}
             onStart={handleWizardStart}
+        />
+
+        {/* Modal de Importação */}
+        <FileImportModal
+            isOpen={isImportModalOpen}
+            onClose={() => {
+                setIsImportModalOpen(false);
+                setImportTaskId(undefined);
+            }}
+            importType={importTaskId ? 'test-cases' : 'tasks'}
+            taskId={importTaskId}
+            onImportTasks={(tasks) => {
+                onUpdateProject({
+                    ...project,
+                    tasks: [...project.tasks, ...tasks]
+                });
+                handleSuccess(`${tasks.length} tarefa(s) importada(s) com sucesso!`);
+            }}
+            onImportTestCases={(testCases, taskId) => {
+                if (taskId) {
+                    const task = project.tasks.find(t => t.id === taskId);
+                    if (task) {
+                        const updatedTask = {
+                            ...task,
+                            testCases: [...(task.testCases || []), ...testCases]
+                        };
+                        onUpdateProject({
+                            ...project,
+                            tasks: project.tasks.map(t => t.id === taskId ? updatedTask : t)
+                        });
+                        handleSuccess(`${testCases.length} caso(s) de teste importado(s) com sucesso!`);
+                    }
+                }
+            }}
+        />
+
+        {/* Modal de Exportação */}
+        <FileExportModal
+            isOpen={isExportModalOpen}
+            onClose={() => setIsExportModalOpen(false)}
+            exportType="tasks"
+            project={project}
+            tasks={project.tasks}
         />
 
         </>

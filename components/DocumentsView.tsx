@@ -15,6 +15,9 @@ import { CopyButton } from './common/CopyButton';
 import { createDocumentFromFile, convertDocumentFileToProjectDocument, formatFileSize, getFileIcon, canPreview } from '../utils/documentService';
 import { SolusSchemaModal } from './solus/SolusSchemaModal';
 import { SpecificationDocumentProcessor } from './settings/SpecificationDocumentProcessor';
+import { FileImportModal } from './common/FileImportModal';
+import { FileViewer } from './common/FileViewer';
+import { viewFileInNewTab } from '../services/fileViewerService';
 
 interface DocumentWithMetadata extends ProjectDocument {
     uploadedAt?: string;
@@ -40,6 +43,8 @@ export const DocumentsView: React.FC<{ project: Project; onUpdateProject: (proje
     const [showPreview, setShowPreview] = useState(false);
     const [editingDoc, setEditingDoc] = useState<DocumentWithMetadata | null>(null);
     const [isSolusSchemaOpen, setIsSolusSchemaOpen] = useState(false);
+    const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+    const [viewingDocument, setViewingDocument] = useState<DocumentWithMetadata | null>(null);
     const { handleError, handleSuccess, handleWarning } = useErrorHandler();
     const normalizedProjectName = useMemo(
         () =>
@@ -221,6 +226,45 @@ export const DocumentsView: React.FC<{ project: Project; onUpdateProject: (proje
         handleSuccess('Documento removido com sucesso!');
     };
 
+    const handleImportDocument = (document: ProjectDocument) => {
+        onUpdateProject({
+            ...project,
+            documents: [...project.documents, document]
+        });
+    };
+
+    const handleViewDocument = (doc: DocumentWithMetadata) => {
+        try {
+            // Detectar tipo MIME baseado no nome do arquivo
+            const fileName = doc.name.toLowerCase();
+            let mimeType = 'text/plain';
+            
+            if (fileName.endsWith('.pdf')) mimeType = 'application/pdf';
+            else if (fileName.endsWith('.jpg') || fileName.endsWith('.jpeg')) mimeType = 'image/jpeg';
+            else if (fileName.endsWith('.png')) mimeType = 'image/png';
+            else if (fileName.endsWith('.gif')) mimeType = 'image/gif';
+            else if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) mimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+            else if (fileName.endsWith('.docx') || fileName.endsWith('.doc')) mimeType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+            else if (fileName.endsWith('.csv')) mimeType = 'text/csv';
+            else if (fileName.endsWith('.json')) mimeType = 'application/json';
+            else if (doc.content.startsWith('data:')) {
+                // Extrair MIME type de data URL
+                const match = doc.content.match(/^data:([^;]+)/);
+                if (match) mimeType = match[1];
+            }
+
+            // Se for data URL, usar diretamente, senão converter para blob
+            if (doc.content.startsWith('data:')) {
+                viewFileInNewTab(doc.content, doc.name, mimeType, { openInNewTab: true });
+            } else {
+                const blob = new Blob([doc.content], { type: mimeType });
+                viewFileInNewTab(blob, doc.name, mimeType, { openInNewTab: true });
+            }
+        } catch (error) {
+            handleError(error, 'Visualizar documento');
+        }
+    };
+
     const handleEdit = (doc: DocumentWithMetadata) => {
         setEditingDoc(doc);
     };
@@ -281,6 +325,12 @@ export const DocumentsView: React.FC<{ project: Project; onUpdateProject: (proje
                                 📚 Esquema API Solus
                             </button>
                         )}
+                        <button
+                            onClick={() => setIsImportModalOpen(true)}
+                            className="btn btn-secondary"
+                        >
+                            📥 Importar
+                        </button>
                 <label className="btn btn-primary cursor-pointer">
                             📤 Carregar Documento
                             <input 
@@ -406,15 +456,22 @@ export const DocumentsView: React.FC<{ project: Project; onUpdateProject: (proje
                                         </div>
 
                                         <div className="flex flex-wrap gap-2 mt-4">
-                                            <Tooltip content="Visualizar conteúdo">
+                                            <Tooltip content="Visualizar em nova aba">
                                                 <button
-                                                    onClick={() => {
-                                                        setSelectedDoc(doc);
-                                                        setShowPreview(true);
-                                                    }}
+                                                    onClick={() => handleViewDocument(doc)}
                                                     className="btn btn-secondary text-xs !py-1 !px-2"
                                                 >
                                                     👁️ Ver
+                                                </button>
+                                            </Tooltip>
+                                            <Tooltip content="Visualizar inline">
+                                                <button
+                                                    onClick={() => {
+                                                        setViewingDocument(doc);
+                                                    }}
+                                                    className="btn btn-secondary text-xs !py-1 !px-2"
+                                                >
+                                                    📄 Preview
                                                 </button>
                                             </Tooltip>
                                             <Tooltip content="Analisar com IA">
@@ -625,6 +682,28 @@ export const DocumentsView: React.FC<{ project: Project; onUpdateProject: (proje
                         )}
                     </div>
                 </Modal>
+            )}
+
+            {/* Modal de Importação */}
+            <FileImportModal
+                isOpen={isImportModalOpen}
+                onClose={() => setIsImportModalOpen(false)}
+                importType="document"
+                onImportDocument={handleImportDocument}
+            />
+
+            {/* Modal de Visualização */}
+            {viewingDocument && (
+                <FileViewer
+                    content={viewingDocument.content}
+                    fileName={viewingDocument.name}
+                    mimeType={viewingDocument.content.startsWith('data:') 
+                        ? viewingDocument.content.match(/^data:([^;]+)/)?.[1] || 'application/octet-stream'
+                        : 'application/octet-stream'}
+                    onClose={() => setViewingDocument(null)}
+                    showDownload={true}
+                    showViewInNewTab={true}
+                />
             )}
 
             {/* Modal de Análise */}
