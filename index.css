@@ -1966,7 +1966,7 @@ select option:focus {
 
 .leve-saude .text-accent,
 .leve-saude [class*="text-accent"]:not([class*="text-accent-light"]) {
-  color: #fc4c02 !important;
+  color: #000000 !important;
 }
 
 .leve-saude .text-success,
@@ -2009,7 +2009,7 @@ select option:focus {
 /* Leve Saude - Card PRÓXIMO PASSO com melhor contraste */
 .leve-saude .bg-accent\/10,
 .leve-saude [class*="bg-accent/10"] {
-  background-color: #fc4c02 !important;
+  background-color: #fc4c024f !important;
   border-color: var(--color-primary) !important;
 }
 
@@ -2130,13 +2130,13 @@ select option:focus {
   font-weight: 700;
 }
 
-/* Leve Saude - Garantir texto branco em todos os elementos dentro da aba ativa */
+/* Leve Saude - Garantir texto preto em todos os elementos dentro da aba ativa */
 .leve-saude .mini-tab--active * {
-  color: #FFFFFF !important;
+  color: #000000 !important;
 }
 
 .leve-saude .mini-tab--active span {
-  color: #FFFFFF !important;
+  color: #000000 !important;
 }
 
 .mini-tab__badge {
@@ -2498,7 +2498,7 @@ select option:focus {
 
 .leve-saude .text-accent-light,
 .leve-saude [class*="text-accent-light"] {
-  color: #FC4C02 !important;
+  color: #3e5cbc !important;
 }
 
 /* Leve Saude - Ajuste para bordas escuras em fundo claro */
