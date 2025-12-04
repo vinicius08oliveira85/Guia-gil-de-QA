@@ -812,26 +812,62 @@
 /* ============================================
    ELEMENTOS ESTRUTURAIS - Header/Footer
    ============================================ */
-.leve-saude header,
-.leve-saude .header,
-.leve-saude footer,
-.leve-saude .footer {
-  background: #f2f2f2;
+/* Header principal do aplicativo - específico para win-toolbar */
+.leve-saude header.win-toolbar {
+  background: #0f172a;
   color: var(--color-white);
 }
 
-.leve-saude header a,
-.leve-saude .header a,
-.leve-saude footer a,
-.leve-saude .footer a {
+.leve-saude header.win-toolbar a {
   color: var(--color-white);
 }
 
-.leve-saude header a:hover,
-.leve-saude .header a:hover,
-.leve-saude footer a:hover,
-.leve-saude .footer a:hover {
+.leve-saude header.win-toolbar a:hover {
   color: var(--color-primary); /* Vermilion no hover */
+}
+
+/* HeaderLeveSaude - header com classe leve-saude diretamente */
+header.leve-saude:not([class*="modal"]):not([class*="solus"]) {
+  background: #0f172a !important;
+  color: var(--color-white) !important;
+}
+
+header.leve-saude:not([class*="modal"]):not([class*="solus"]) a {
+  color: var(--color-white) !important;
+}
+
+header.leve-saude:not([class*="modal"]):not([class*="solus"]) a:hover {
+  color: var(--color-primary) !important;
+}
+
+/* Footer - separado para não afetar modais/Solus */
+.leve-saude footer:not([class*="modal"]):not([class*="solus"]),
+.leve-saude .footer:not([class*="modal"]):not([class*="solus"]) {
+  background: #0f172a;
+  color: var(--color-white);
+}
+
+.leve-saude footer:not([class*="modal"]):not([class*="solus"]) a,
+.leve-saude .footer:not([class*="modal"]):not([class*="solus"]) a {
+  color: var(--color-white);
+}
+
+.leve-saude footer:not([class*="modal"]):not([class*="solus"]) a:hover,
+.leve-saude .footer:not([class*="modal"]):not([class*="solus"]) a:hover {
+  color: var(--color-primary); /* Vermilion no hover */
+}
+
+/* Garantir que modais e Solus mantenham fundo branco */
+.leve-saude .modal header,
+.leve-saude .modal .header,
+.leve-saude [class*="modal"] header,
+.leve-saude [class*="modal"] .header,
+.leve-saude [class*="solus"] header,
+.leve-saude [class*="solus"] .header,
+.leve-saude [class*="solus"] footer,
+.leve-saude [class*="solus"] .footer {
+  background: #ffffff !important;
+  color: var(--text-primary) !important;
 }
 
 /* ============================================
