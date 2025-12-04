@@ -1962,9 +1962,8 @@ select option:focus {
   color: #FFFFFF !important;
 }
 
-/* Leve Saude - bg-accent/30 e classes bg-accent */
-.leve-saude .bg-accent\/30, 
-.leve-saude [class*=bg-accent] {
+/* Leve Saude - bg-accent/30 */
+.leve-saude .bg-accent\/30 {
   background-color: #fc4c02 !important;
 }
 
@@ -2463,11 +2462,6 @@ select option:focus {
   background-color: rgba(22, 163, 74, 0.15) !important;
 }
 
-/* Leve Saude - Ajuste para accent color em fundo claro */
-.leve-saude .bg-accent\/30,
-.leve-saude [class*="bg-accent"] {
-  background-color: rgba(252, 76, 2, 0.12) !important;
-}
 
 .leve-saude .text-accent-light,
 .leve-saude [class*="text-accent-light"] {
