@@ -2269,8 +2269,8 @@ select option:focus {
 
 /* Leve Saúde - Fundos coloridos por tipo de tarefa */
 .leve-saude .task-card-compact--bug {
-  background: #ffffff;
-  border-color: #fff;
+  background: #fff;
+  border-color: #dc2626;
 }
 
 .leve-saude .relative.task-card-compact--bug {
@@ -2290,8 +2290,8 @@ select option:focus {
 }
 
 .leve-saude .task-card-compact--epic {
-  background: #ffffff;
-  border-color: #fff;
+  background: #fff;
+  border-color: #6b21a8;
 }
 
 .leve-saude .relative.task-card-compact--epic {
@@ -2311,8 +2311,8 @@ select option:focus {
 }
 
 .leve-saude .task-card-compact--historia {
-  background: #ffffff;
-  border-color: #ffffff;
+  background: #fff;
+  border-color: #3d826f;
 }
 
 .leve-saude .relative.task-card-compact--historia {
@@ -2332,8 +2332,8 @@ select option:focus {
 }
 
 .leve-saude .task-card-compact--tarefa {
-  background: #ffffff;
-  border-color: #fff;
+  background: #fff;
+  border-color: #0e6dfd;
 }
 
 .leve-saude .relative.task-card-compact--tarefa {
