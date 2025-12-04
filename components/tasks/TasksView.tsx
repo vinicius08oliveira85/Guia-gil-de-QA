@@ -729,13 +729,14 @@ export const TasksView: React.FC<{
 
                     try {
                         const taskIndex = updatedTasks.findIndex(t => t.id === task.id);
+                        // Usar a tarefa atualizada do array para garantir que BDDs recém-gerados sejam incluídos
                         const currentTask = taskIndex !== -1 ? updatedTasks[taskIndex] : task;
                         
                         const { strategy, testCases } = await withTimeout(
                             aiService.generateTestCasesForTask(
                                 currentTask.title, 
                                 currentTask.description || '', 
-                                currentTask.bddScenarios, 
+                                currentTask.bddScenarios || [], // Garantir que seja array
                                 'Padrão',
                                 currentTask.type,
                                 project
@@ -773,9 +774,10 @@ export const TasksView: React.FC<{
                 }
             }
 
+            // Criar novo array de tarefas para garantir que React detecte a mudança
             const updatedProject = {
                 ...project,
-                tasks: updatedTasks,
+                tasks: [...updatedTasks], // Criar novo array
                 generalIAAnalysis: analysis
             };
 

@@ -28,9 +28,9 @@ export const useSuggestions = (project: Project): Suggestion[] => {
             return suggestions; // Retornar apenas esta se não houver tarefas
         }
 
-        // Sugestão 2: Tarefas sem BDD
+        // Sugestão 2: Tarefas sem BDD (apenas tipo "Tarefa")
         const tasksWithoutBDD = tasks.filter(
-            t => t.type !== 'Bug' && 
+            t => t.type === 'Tarefa' && 
             (!t.bddScenarios || t.bddScenarios.length === 0) &&
             t.status !== 'Done'
         );
@@ -43,9 +43,9 @@ export const useSuggestions = (project: Project): Suggestion[] => {
             });
         }
 
-        // Sugestão 3: Tarefas sem casos de teste
+        // Sugestão 3: Tarefas sem casos de teste (apenas tipo "Tarefa")
         const tasksWithoutTests = tasks.filter(
-            t => t.type !== 'Bug' &&
+            t => t.type === 'Tarefa' &&
             (!t.testCases || t.testCases.length === 0) &&
             t.status !== 'Done'
         );
