@@ -974,7 +974,7 @@ span {
 
 .leve-saude .text-text-secondary,
 .leve-saude [class*="text-text-secondary"] {
-  color: ##ffffff !important;
+  color: #666666 !important;
 }
 
 .leve-saude .text-text-tertiary,
@@ -2345,6 +2345,12 @@ select option:focus {
 .leve-saude .bg-blue-500\/30,
 .leve-saude [class*="bg-blue-500"] {
   background-color: rgba(59, 130, 246, 0.15) !important;
+}
+
+.leve-saude .bg-blue-600,
+.leve-saude [class*="bg-blue-600"]:not([class*="bg-blue-500"]) {
+  --tw-bg-opacity: 1;
+  background-color: rgba(252, 76, 2, 0.27) !important; /* Vermilion #fc4c02 com ~27% opacidade */
 }
 
 .leve-saude .text-blue-300,

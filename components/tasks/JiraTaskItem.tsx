@@ -83,6 +83,7 @@ const DescriptionRenderer: React.FC<{
 export type TaskWithChildren = JiraTask & { children: TaskWithChildren[] };
 
 type DetailSection = 'overview' | 'bdd' | 'tests' | 'planning' | 'collaboration';
+type TestSubSection = 'strategy' | 'test-cases';
 
 const normalizeStatusName = (value: string) =>
     value
@@ -155,6 +156,7 @@ export const JiraTaskItem: React.FC<{
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [showTestReport, setShowTestReport] = useState(false);
     const [activeSection, setActiveSection] = useState<DetailSection>('overview');
+    const [activeTestSubSection, setActiveTestSubSection] = useState<TestSubSection>('strategy');
     const hasTests = task.testCases && task.testCases.length > 0;
     const hasChildren = task.children && task.children.length > 0;
     const { isBeginnerMode } = useBeginnerMode();
@@ -712,46 +714,79 @@ export const JiraTaskItem: React.FC<{
         
         return (
             <div className="space-y-md">
-                <div>
-                    <div className="flex items-center justify-between gap-2">
-                        <h3 className="text-lg font-semibold text-text-primary">Estratégia de Teste</h3>
-                        <span className="text-xs text-text-secondary">{task.testStrategy?.length || 0} item(ns)</span>
-                    </div>
-                    {isGenerating && <div className="flex justify-center py-2"><Spinner small /></div>}
-                    {task.testStrategy && task.testStrategy.length > 0 ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-md mt-md">
-                            {task.testStrategy.map((strategy, i) => {
-                                if (!strategy) return null;
-                                return (
-                                    <TestStrategyCard 
-                                        key={i} 
-                                        strategy={strategy}
-                                        strategyIndex={i}
-                                        isExecuted={(task.executedStrategies && task.executedStrategies.includes(i)) || false}
-                                        onToggleExecuted={onStrategyExecutedChange}
-                                        toolsUsed={(task.strategyTools && task.strategyTools[i]) || []}
-                                        onToolsChange={onStrategyToolsChange}
-                                    />
-                                );
-                            })}
-                        </div>
-                    ) : (
-                        !isGenerating && (
-                            <EmptyState
-                                icon="📊"
-                                title="Nenhuma estratégia de teste gerada ainda"
-                                description="Gere uma estratégia de teste com IA para esta tarefa."
-                                action={{
-                                    label: "Gerar Estratégia com IA",
-                                    onClick: () => onGenerateTests(task.id, detailLevel)
-                                }}
-                                tip="A estratégia de teste ajuda a definir quais tipos de teste são necessários para validar esta funcionalidade."
-                            />
-                        )
-                    )}
+                {/* Sub-abas de Testes */}
+                <div className="flex gap-2 border-b border-surface-border">
+                    <button
+                        onClick={() => setActiveTestSubSection('strategy')}
+                        className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 ${
+                            activeTestSubSection === 'strategy'
+                                ? 'border-accent text-accent'
+                                : 'border-transparent text-text-secondary hover:text-text-primary'
+                        }`}
+                    >
+                        Estratégia de Teste
+                    </button>
+                    <button
+                        onClick={() => setActiveTestSubSection('test-cases')}
+                        className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 ${
+                            activeTestSubSection === 'test-cases'
+                                ? 'border-accent text-accent'
+                                : 'border-transparent text-text-secondary hover:text-text-primary'
+                        }`}
+                    >
+                        Casos de Teste
+                        {task.testCases?.length ? (
+                            <span className="ml-2 px-1.5 py-0.5 text-xs rounded-full bg-accent/10 text-accent">
+                                {task.testCases.length}
+                            </span>
+                        ) : null}
+                    </button>
                 </div>
 
-                {canHaveTestCases ? (
+                {/* Conteúdo da sub-aba "Estratégia de Teste" */}
+                {activeTestSubSection === 'strategy' && (
+                    <div>
+                        <div className="flex items-center justify-between gap-2">
+                            <h3 className="text-lg font-semibold text-text-primary">Estratégia de Teste</h3>
+                            <span className="text-xs text-text-secondary">{task.testStrategy?.length || 0} item(ns)</span>
+                        </div>
+                        {isGenerating && <div className="flex justify-center py-2"><Spinner small /></div>}
+                        {task.testStrategy && task.testStrategy.length > 0 ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-md mt-md">
+                                {task.testStrategy.map((strategy, i) => {
+                                    if (!strategy) return null;
+                                    return (
+                                        <TestStrategyCard 
+                                            key={i} 
+                                            strategy={strategy}
+                                            strategyIndex={i}
+                                            isExecuted={(task.executedStrategies && task.executedStrategies.includes(i)) || false}
+                                            onToggleExecuted={onStrategyExecutedChange}
+                                            toolsUsed={(task.strategyTools && task.strategyTools[i]) || []}
+                                            onToolsChange={onStrategyToolsChange}
+                                        />
+                                    );
+                                })}
+                            </div>
+                        ) : (
+                            !isGenerating && (
+                                <EmptyState
+                                    icon="📊"
+                                    title="Nenhuma estratégia de teste gerada ainda"
+                                    description="Gere uma estratégia de teste com IA para esta tarefa."
+                                    action={{
+                                        label: "Gerar Estratégia com IA",
+                                        onClick: () => onGenerateTests(task.id, detailLevel)
+                                    }}
+                                    tip="A estratégia de teste ajuda a definir quais tipos de teste são necessários para validar esta funcionalidade."
+                                />
+                            )
+                        )}
+                    </div>
+                )}
+
+                {/* Conteúdo da sub-aba "Casos de Teste" */}
+                {activeTestSubSection === 'test-cases' && canHaveTestCases && (
                     <div>
                         <div className="flex items-center justify-between gap-2">
                             <h3 className="text-lg font-semibold text-text-primary">Casos de Teste</h3>
@@ -807,7 +842,7 @@ export const JiraTaskItem: React.FC<{
                             </div>
                         )}
                     </div>
-                ) : null}
+                )}
 
                 {/* Ferramentas Utilizadas na Task */}
                 {onTaskToolsChange && (

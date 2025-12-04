@@ -25,7 +25,7 @@ interface QADashboardProps {
  * Dashboard principal de QA com visão geral de testes, bugs, cobertura e análises
  */
 export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, onUpdateProject }) => {
-  const [autoGenerateInsights, setAutoGenerateInsights] = useState(true);
+  const [autoGenerateInsights, setAutoGenerateInsights] = useState(false);
   const metrics = useProjectMetrics(project);
   const { trends } = useMetricsHistory(project, 'week');
   const { insightsAnalysis, isGenerating, generateInsightsAnalysis } = useDashboardInsights(
