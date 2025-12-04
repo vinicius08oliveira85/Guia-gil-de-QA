@@ -1976,8 +1976,8 @@ select option:focus {
 /* Leve Saude - Card PRÓXIMO PASSO com melhor contraste */
 .leve-saude .bg-accent\/10,
 .leve-saude [class*="bg-accent/10"] {
-  background-color: rgba(252, 76, 2, 0.1) !important; /* Vermilion com transparência */
-  border-color: var(--color-primary) !important; /* Vermilion */
+  background-color: #fc4c02 !important;
+  border-color: var(--color-primary) !important;
 }
 
 .leve-saude .bg-accent\/10 .text-accent,
@@ -2269,8 +2269,8 @@ select option:focus {
 
 /* Leve Saúde - Fundos coloridos por tipo de tarefa */
 .leve-saude .task-card-compact--bug {
-  background: rgba(239, 68, 68, 0.08);
-  border-color: rgba(239, 68, 68, 0.2);
+  background: #ffffff;
+  border-color: #fff;
 }
 
 .leve-saude .relative.task-card-compact--bug {
@@ -2290,8 +2290,8 @@ select option:focus {
 }
 
 .leve-saude .task-card-compact--epic {
-  background: rgba(147, 51, 234, 0.08);
-  border-color: rgba(147, 51, 234, 0.2);
+  background: #ffffff;
+  border-color: #fff;
 }
 
 .leve-saude .relative.task-card-compact--epic {
@@ -2311,8 +2311,8 @@ select option:focus {
 }
 
 .leve-saude .task-card-compact--historia {
-  background: rgba(16, 185, 129, 0.08);
-  border-color: rgba(16, 185, 129, 0.2);
+  background: #ffffff;
+  border-color: #ffffff;
 }
 
 .leve-saude .relative.task-card-compact--historia {
@@ -2332,8 +2332,8 @@ select option:focus {
 }
 
 .leve-saude .task-card-compact--tarefa {
-  background: rgba(59, 130, 246, 0.08);
-  border-color: rgba(59, 130, 246, 0.2);
+  background: #ffffff;
+  border-color: #fff;
 }
 
 .leve-saude .relative.task-card-compact--tarefa {
@@ -2354,9 +2354,9 @@ select option:focus {
 
 /* Leve Saúde - Ajuste de contraste para badges das tasks */
 .leve-saude .task-card-compact_badge {
-  background: rgba(0, 0, 0, 0.06);
-  color: #0F172A;
-  border-color: rgba(0, 0, 0, 0.12);
+  background: #6b728026;
+  color: #000;
+  border-color: #6b728026;
 }
 
 /* Leve Saude - Cores de estratégias de teste com melhor contraste */
