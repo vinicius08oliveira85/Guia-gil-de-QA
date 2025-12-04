@@ -3,17 +3,7 @@ import { TestCase } from '../../types';
 import { CheckIcon, EditIcon, TrashIcon } from '../common/Icons';
 import { normalizeExecutedStrategy } from '../../utils/testCaseMigration';
 import { ToolsSelector } from './ToolsSelector';
-
-const strategyColorMap: { [key: string]: string } = {
-    'Teste Funcional': 'bg-blue-500/30 text-blue-300',
-    'Teste de Integração': 'bg-purple-500/30 text-purple-300',
-    'Teste de Usabilidade': 'bg-green-500/30 text-green-300',
-    'Teste de Desempenho': 'bg-yellow-500/30 text-yellow-300',
-    'Teste de Segurança': 'bg-red-500/30 text-red-300',
-    'Teste de Regressão': 'bg-indigo-500/30 text-indigo-300',
-    'Teste Caixa Branca': 'bg-slate-500/30 text-slate-300',
-};
-const defaultStrategyColor = 'bg-accent/30 text-accent-light';
+import { TestTypeBadge } from '../common/TestTypeBadge';
 
 const priorityColorMap: { [key: string]: { bg: string; text: string } } = {
     'Urgente': { bg: 'bg-red-600/30', text: 'text-red-300' },
@@ -82,9 +72,7 @@ export const TestCaseItem: React.FC<{
             <div className="flex flex-wrap gap-4 mb-3 items-center">
                 <div className="flex flex-wrap gap-2 items-center flex-1">
                     {testCase.strategies && testCase.strategies.map(strategy => (
-                        <span key={strategy} className={`px-2 py-0.5 text-xs font-medium rounded-full ${strategyColorMap[strategy] || defaultStrategyColor}`}>
-                            {strategy}
-                        </span>
+                        <TestTypeBadge key={strategy} testType={strategy} size="sm" />
                     ))}
                 </div>
 

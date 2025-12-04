@@ -26,6 +26,7 @@ import { ensureJiraHexColor, getJiraStatusColor, getJiraStatusTextColor } from '
 import { windows12Styles } from '../../utils/windows12Styles';
 import { parseJiraDescriptionHTML } from '../../utils/jiraDescriptionParser';
 import { getJiraConfig } from '../../services/jiraService';
+import { TestTypeBadge } from '../common/TestTypeBadge';
 
 // Componente para renderizar descrição com formatação rica do Jira
 const DescriptionRenderer: React.FC<{ 
@@ -1265,21 +1266,15 @@ export const JiraTaskItem: React.FC<{
                     )}
                     {task.type === 'Tarefa' && testTypeBadges.length > 0 && (
                         <div className="task-card-compact_line task-card-compact_line--tight flex flex-wrap gap-1">
-                            {testTypeBadges.map(badge => {
-                                const baseClass = 'px-2 py-0.5 rounded-full text-[11px] font-semibold border';
-                                const colorClass = badge.status === 'failed'
-                                    ? 'bg-red-500/10 text-red-700 dark:text-red-200 border-red-400/40 dark:border-red-400/40'
-                                    : badge.status === 'done'
-                                        ? 'bg-green-500/10 text-green-700 dark:text-green-200 border-green-400/40 dark:border-green-400/40'
-                                        : badge.status === 'partial'
-                                            ? 'bg-amber-500/10 text-amber-700 dark:text-amber-200 border-amber-400/40 dark:border-amber-400/40'
-                                            : 'bg-surface border-surface-border text-text-secondary';
-                                return (
-                                    <span key={badge.type} className={`${baseClass} ${colorClass}`}>
-                                        {badge.type} • {badge.label}
-                                    </span>
-                                );
-                            })}
+                            {testTypeBadges.map(badge => (
+                                <TestTypeBadge 
+                                    key={badge.type} 
+                                    testType={badge.type} 
+                                    status={badge.status}
+                                    label={badge.label}
+                                    size="sm"
+                                />
+                            ))}
                         </div>
                     )}
                     {task.tags && task.tags.length > 0 && (

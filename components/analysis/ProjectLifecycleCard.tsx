@@ -3,6 +3,7 @@ import { Project, PhaseName, PhaseStatus } from '../../types';
 import { Card } from '../common/Card';
 import { InfoIcon } from '../common/Icons';
 import { AnalysisModal } from './AnalysisModal';
+import { TestTypeBadge } from '../common/TestTypeBadge';
 
 const phaseNamesInOrder: PhaseName[] = ['Request', 'Analysis', 'Design', 'Analysis and Code', 'Build', 'Test', 'Release', 'Deploy', 'Operate', 'Monitor'];
 
@@ -21,18 +22,6 @@ export const ProjectLifecycleCard: React.FC<{ project: Project; }> = ({ project 
         'Monitor': 'Coleta de métricas e logs para avaliar o desempenho e a saúde da aplicação.'
     };
 
-    const testTypeColorMap: { [key: string]: string } = {
-        'Unitário': 'bg-blue-500/30 text-blue-300',
-        'Integração': 'bg-purple-500/30 text-purple-300',
-        'Sistema': 'bg-teal-500/30 text-teal-300',
-        'Aceitação': 'bg-emerald-500/30 text-emerald-300',
-        'Desempenho': 'bg-orange-500/30 text-orange-300',
-        'Segurança': 'bg-red-500/30 text-red-300',
-        'API': 'bg-pink-500/30 text-pink-300',
-        'Usabilidade': 'bg-green-500/30 text-green-300',
-        'Regressão': 'bg-indigo-500/30 text-indigo-300',
-    };
-    const defaultTestTypeColor = 'bg-slate-500/30 text-slate-300';
     
     const getStatusStyles = (status: PhaseStatus) => {
         switch (status) {
@@ -99,9 +88,7 @@ export const ProjectLifecycleCard: React.FC<{ project: Project; }> = ({ project 
                                     {phase.testTypes && phase.testTypes.length > 0 && (
                                         <div className="mt-2 flex flex-wrap gap-1">
                                             {phase.testTypes.slice(0, 3).map(type => (
-                                                <span key={type} className={`px-1.5 py-0.5 text-xs font-medium rounded-full ${testTypeColorMap[type] || defaultTestTypeColor}`}>
-                                                    {type}
-                                                </span>
+                                                <TestTypeBadge key={type} testType={type} size="sm" />
                                             ))}
                                             {phase.testTypes.length > 3 && (
                                                 <span className="px-1.5 py-0.5 text-xs text-text-secondary">
@@ -148,9 +135,7 @@ export const ProjectLifecycleCard: React.FC<{ project: Project; }> = ({ project 
                                 <h4 className="font-bold text-lg text-text-primary mb-2">Testes Recomendados</h4>
                                 <div className="flex flex-wrap gap-2">
                                     {selectedPhaseData.testTypes.map(type => (
-                                        <span key={type} className={`px-3 py-1.5 text-sm font-medium rounded-full ${testTypeColorMap[type] || defaultTestTypeColor}`}>
-                                            {type}
-                                        </span>
+                                        <TestTypeBadge key={type} testType={type} size="md" />
                                     ))}
                                 </div>
                             </div>
