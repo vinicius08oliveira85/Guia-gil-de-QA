@@ -1918,6 +1918,19 @@ select option:focus {
   color: inherit;
 }
 
+/* Leve Saude - Cores de texto padrão */
+.leve-saude p, 
+.leve-saude li, 
+.leve-saude span, 
+.leve-saude h1, 
+.leve-saude h2, 
+.leve-saude h3, 
+.leve-saude h4, 
+.leve-saude h5, 
+.leve-saude h6 {
+  color: #0f172a;
+}
+
 .leve-saude .text-accent,
 .leve-saude [class*="text-accent"]:not([class*="text-accent-light"]) {
   color: #FC4C02 !important;
@@ -1949,6 +1962,12 @@ select option:focus {
   color: #FFFFFF !important;
 }
 
+/* Leve Saude - bg-accent/30 e classes bg-accent */
+.leve-saude .bg-accent\/30, 
+.leve-saude [class*=bg-accent] {
+  background-color: #fc4c02 !important;
+}
+
 .leve-saude .bg-accent\/5,
 .leve-saude [class*="bg-accent/5"] {
   background-color: rgba(252, 76, 2, 0.05) !important;
@@ -1964,7 +1983,7 @@ select option:focus {
 
 .leve-saude .bg-accent\/10 .text-accent,
 .leve-saude [class*="bg-accent/10"] [class*="text-accent"] {
-  color: var(--color-primary) !important; /* Vermilion */
+  color: #f5f5f5 !important;
   font-weight: 700;
 }
 

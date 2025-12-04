@@ -1489,10 +1489,12 @@ export const TasksView: React.FC<{
                 {selectedTasks.size > 0 && (
                     <BulkActions
                         selectedTasks={selectedTasks}
+                        project={project}
+                        onUpdateProject={onUpdateProject}
                         onClearSelection={() => setSelectedTasks(new Set())}
-                        onDeleteSelected={() => {
-                            selectedTasks.forEach(taskId => handleDeleteTask(taskId));
-                            setSelectedTasks(new Set());
+                        onProjectCreated={(projectId) => {
+                            const { selectProject } = useProjectsStore.getState();
+                            selectProject(projectId);
                         }}
                     />
                 )}
