@@ -258,20 +258,25 @@
   --font-sans: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   
   /* ============================================
-     CORES PRIMÁRIAS - Brand Green
+     CORES PRIMÁRIAS - Vermilion/Azul Marinho
      ============================================ */
-  /* Cor primária principal: botões primários, links principais, ícones de ação */
-  --color-primary: #109685;
-  /* Primária escura: hover/estado ativo do primary, cabeçalhos em fundos claros */
-  --color-primary-dark: #007367;
-  /* Primária profunda: elementos que exigem contraste maior (barras, rodapés escuros) */
-  --color-primary-deep: #0B6156;
+  /* Cor primária principal: Vermilion - CTAs, botões de conversão, elementos de destaque */
+  --color-primary: #FC4C02;
+  /* Primária escura: hover/estado ativo do primary */
+  --color-primary-dark: #E85D00;
+  /* Primária profunda: elementos que exigem contraste maior */
+  --color-primary-deep: #D93D00;
+  
+  /* Azul Marinho Escuro: textos de títulos, fundo da marca, elementos estruturais */
+  --color-navy: #004B7A;
+  --color-navy-dark: #003A5D;
+  --color-navy-deep: #002940;
   
   /* ============================================
-     CORES DE ACENTO - Laranja
+     CORES DE ACENTO - Vermilion
      ============================================ */
-  /* Acento laranja: CTAs secundários, alertas leves, badges */
-  --color-accent: #FB4C00;
+  /* Acento Vermilion: CTAs, botões de conversão, elementos de destaque */
+  --color-accent: #FC4C02;
   --color-accent-2: #FC4C02;
   --color-accent-strong: #E85D00;
   --color-accent-soft: rgba(252, 76, 2, 0.15);
@@ -279,38 +284,42 @@
   /* ============================================
      CORES DE ESTADO
      ============================================ */
-  /* Sucesso: mensagens de sucesso, estados positivos */
+  /* Sucesso: mensagens de sucesso, estados positivos, confirmações */
   --color-success: #15803D;
   --color-success-bg: #EAF3EE;
   --color-success-text: #15803D;
   
+  /* Erro: mensagens de erro, alertas, atenção */
+  --color-error: #DC2626;
+  --color-error-bg: #FEE2E2;
+  --color-error-text: #DC2626;
+  
   /* ============================================
      CORES NEUTRAS - Texto e Superfícies
      ============================================ */
-  /* Texto principal: bom contraste em branco */
+  /* Texto principal: WCAG compliant para contraste ideal */
   --color-text: #333333;
   /* Textos secundários, legendas */
-  --color-muted: #7F7F7F;
+  --color-muted: #666666;
   --color-text-tertiary: #4D4640;
   
   /* Fundo principal */
   --color-bg: #FFFFFF;
-  /* Cartões e superfícies neutras */
-  --color-surface: #F6F6F6;
-  --color-surface-alt: #F2F2F2;
+  /* Cartões e superfícies neutras - Cinza Claro */
+  --color-surface: #F5F5F5;
+  --color-surface-alt: #EEEEEE;
   /* Fundos suaves para seções informativas */
-  --color-soft-bg: #EAF3EE;
+  --color-soft-bg: #F5F5F5;
   
-  /* Bordas suaves */
-  --color-border: #C6BEBF;
+  /* Bordas sutis - Cinza Claro */
+  --color-border: #E0E0E0;
   --color-border-light: rgba(0, 0, 0, 0.12);
   --color-border-medium: rgba(0, 0, 0, 0.15);
   
   /* ============================================
      CORES ESPECIAIS
      ============================================ */
-  /* Navy: para cabeçalhos ou contraste forte em versões institucionais */
-  --color-navy: #191970;
+  /* Navy: Azul Marinho Escuro - já definido acima como --color-navy: #004B7A */
   /* Branco e preto */
   --color-white: #FFFFFF;
   --color-black: #000000;
@@ -327,7 +336,7 @@
   --surface-color: var(--color-bg);
   --surface-hover: var(--color-surface-alt);
   --surface-border: var(--color-border-light);
-  --surface-outline: rgba(16, 150, 133, 0.2);
+  --surface-outline: rgba(252, 76, 2, 0.2); /* Vermilion com transparência */
   --surface-contrast: var(--color-surface-alt);
   --text-primary: var(--color-text);
   --text-secondary: var(--color-muted);
@@ -339,9 +348,9 @@
   --tooltip-bg: var(--color-bg);
   --tooltip-text: var(--color-text);
   --tooltip-border: var(--color-border-medium);
-  --primary-color: var(--color-primary);
+  --primary-color: var(--color-primary); /* Vermilion */
   --secondary-color: var(--color-primary);
-  --accent-color: var(--color-accent);
+  --accent-color: var(--color-accent); /* Vermilion */
   --accent-color-strong: var(--color-accent-strong);
   --accent-color-soft: var(--color-accent-soft);
   
@@ -395,7 +404,7 @@
   --radius-xl: 16px;
   
   --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.04);
-  --shadow-md: 0 2px 6px rgba(16, 150, 133, 0.12);
+  --shadow-md: 0 2px 6px rgba(252, 76, 2, 0.12); /* Vermilion */
   --shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.08);
   
   /* ============================================
@@ -413,7 +422,7 @@
   font-size: var(--fs-h1);
   font-weight: var(--fw-extrabold); /* 800 - ExtraBold */
   line-height: var(--lh-tight);
-  color: var(--color-text);
+  color: var(--color-navy); /* Azul Marinho Escuro */
   margin-bottom: var(--spacing-lg);
 }
 
@@ -422,7 +431,7 @@
   font-size: var(--fs-h2);
   font-weight: var(--fw-bold); /* 700 - Bold */
   line-height: var(--lh-tight);
-  color: var(--color-text);
+  color: var(--color-navy); /* Azul Marinho Escuro */
   margin-bottom: var(--spacing-md);
 }
 
@@ -431,7 +440,7 @@
   font-size: var(--fs-h3);
   font-weight: var(--fw-semibold); /* 600 - SemiBold */
   line-height: var(--lh-normal);
-  color: var(--color-text);
+  color: var(--color-navy); /* Azul Marinho Escuro */
   margin-bottom: var(--spacing-md);
 }
 
@@ -440,7 +449,7 @@
   font-size: var(--fs-h4);
   font-weight: var(--fw-semibold); /* 600 - SemiBold */
   line-height: var(--lh-normal);
-  color: var(--color-text);
+  color: var(--color-navy); /* Azul Marinho Escuro */
   margin-bottom: var(--spacing-sm);
 }
 
@@ -529,7 +538,7 @@
 
 .btn-primary-leve:hover {
   background: var(--color-primary-dark);
-  box-shadow: 0 4px 12px rgba(16, 150, 133, 0.2);
+  box-shadow: 0 4px 12px rgba(252, 76, 2, 0.3); /* Vermilion */
   transform: translateY(-1px);
 }
 
@@ -540,7 +549,7 @@
 
 .btn-primary-leve:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 4px rgba(16, 150, 133, 0.2);
+  box-shadow: 0 0 0 4px rgba(252, 76, 2, 0.2); /* Vermilion */
 }
 
 .btn-primary-leve:disabled {
@@ -572,18 +581,18 @@
 }
 
 .btn-secondary-leve:hover {
-  background: rgba(16, 150, 133, 0.06);
+  background: rgba(252, 76, 2, 0.06); /* Vermilion */
   border-color: var(--color-primary-dark);
   color: var(--color-primary-dark);
 }
 
 .btn-secondary-leve:active {
-  background: rgba(16, 150, 133, 0.1);
+  background: rgba(252, 76, 2, 0.1); /* Vermilion */
 }
 
 .btn-secondary-leve:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 4px rgba(16, 150, 133, 0.2);
+  box-shadow: 0 0 0 4px rgba(252, 76, 2, 0.2); /* Vermilion */
 }
 
 .btn-secondary-leve:disabled {
@@ -613,17 +622,17 @@
 }
 
 .btn-ghost-leve:hover {
-  background: rgba(16, 150, 133, 0.06);
+  background: rgba(252, 76, 2, 0.06); /* Vermilion */
   border-color: transparent;
 }
 
 .btn-ghost-leve:active {
-  background: rgba(16, 150, 133, 0.1);
+  background: rgba(252, 76, 2, 0.1); /* Vermilion */
 }
 
 .btn-ghost-leve:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 4px rgba(16, 150, 133, 0.2);
+  box-shadow: 0 0 0 4px rgba(252, 76, 2, 0.2); /* Vermilion */
 }
 
 .btn-ghost-leve:disabled {
@@ -688,7 +697,7 @@
 .input-leve:focus {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 4px rgba(16, 150, 133, 0.06);
+  box-shadow: 0 0 0 4px rgba(252, 76, 2, 0.06); /* Vermilion */
 }
 
 .input-leve:disabled {
@@ -721,7 +730,7 @@
    CARDS - Leve Saúde
    ============================================ */
 .card-leve {
-  background: var(--color-white);
+  background: var(--color-surface); /* Cinza Claro #F5F5F5 */
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   padding: var(--spacing-lg);
@@ -731,13 +740,13 @@
 
 .card-leve:hover {
   box-shadow: var(--shadow-md);
-  border-color: var(--color-primary);
+  border-color: var(--color-primary); /* Vermilion */
 }
 
 .card-leve .card-title {
   font-size: var(--fs-h4);
   font-weight: var(--fw-semibold);
-  color: var(--color-primary-deep);
+  color: var(--color-navy); /* Azul Marinho Escuro */
   margin-bottom: var(--spacing-md);
   font-family: var(--font-heading);
 }
@@ -765,6 +774,31 @@
 .card-info-leve .card-title {
   color: var(--color-success);
   font-weight: var(--fw-semibold);
+}
+
+/* ============================================
+   ELEMENTOS ESTRUTURAIS - Header/Footer
+   ============================================ */
+.leve-saude header,
+.leve-saude .header,
+.leve-saude footer,
+.leve-saude .footer {
+  background: var(--color-navy); /* Azul Marinho Escuro */
+  color: var(--color-white);
+}
+
+.leve-saude header a,
+.leve-saude .header a,
+.leve-saude footer a,
+.leve-saude .footer a {
+  color: var(--color-white);
+}
+
+.leve-saude header a:hover,
+.leve-saude .header a:hover,
+.leve-saude footer a:hover,
+.leve-saude .footer a:hover {
+  color: var(--color-primary); /* Vermilion no hover */
 }
 
 /* ============================================
@@ -1886,7 +1920,7 @@ select option:focus {
 
 .leve-saude .text-success,
 .leve-saude [class*="text-success"] {
-  color: #109685 !important;
+  color: var(--color-success) !important; /* #15803D */
 }
 
 .leve-saude .text-warning,
@@ -1919,13 +1953,13 @@ select option:focus {
 /* Leve Saude - Card PRÓXIMO PASSO com melhor contraste */
 .leve-saude .bg-accent\/10,
 .leve-saude [class*="bg-accent/10"] {
-  background-color: #EAF3EE !important;
-  border-color: #109685 !important;
+  background-color: rgba(252, 76, 2, 0.1) !important; /* Vermilion com transparência */
+  border-color: var(--color-primary) !important; /* Vermilion */
 }
 
 .leve-saude .bg-accent\/10 .text-accent,
 .leve-saude [class*="bg-accent/10"] [class*="text-accent"] {
-  color: #109685 !important;
+  color: var(--color-primary) !important; /* Vermilion */
   font-weight: 700;
 }
 
