@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Project } from '../../types';
 import { useProjectMetrics } from '../../hooks/useProjectMetrics';
 import { useMetricsHistory } from '../../hooks/useMetricsHistory';
@@ -25,13 +25,12 @@ interface QADashboardProps {
  * Dashboard principal de QA com visão geral de testes, bugs, cobertura e análises
  */
 export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, onUpdateProject }) => {
-  const [autoGenerateInsights, setAutoGenerateInsights] = useState(false);
   const metrics = useProjectMetrics(project);
   const { trends } = useMetricsHistory(project, 'week');
   const { insightsAnalysis, isGenerating, generateInsightsAnalysis } = useDashboardInsights(
     project,
     onUpdateProject,
-    autoGenerateInsights
+    false
   );
 
   // Verificar se há testes críticos falhando (bugs críticos ou muitos testes falhando)
@@ -101,16 +100,6 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <h2 className="text-xl font-semibold text-text-primary flex-shrink-0">Análise de IA</h2>
           <div className="flex items-center gap-3 flex-shrink-0">
-            <label className="flex items-center gap-2 text-sm text-text-secondary whitespace-nowrap">
-              <input
-                type="checkbox"
-                checked={autoGenerateInsights}
-                onChange={(e) => setAutoGenerateInsights(e.target.checked)}
-                className="rounded flex-shrink-0"
-                aria-label="Gerar análise automaticamente"
-              />
-              <span>Auto-gerar</span>
-            </label>
             <button
               onClick={generateInsightsAnalysis}
               disabled={isGenerating}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Project, PhaseStatus, PhaseName } from '../../types';
 import { useProjectMetrics } from '../../hooks/useProjectMetrics';
 import { useSDLCPhaseAnalysis } from '../../hooks/useSDLCPhaseAnalysis';
@@ -19,12 +19,11 @@ export const SDLCPhaseTimeline: React.FC<SDLCPhaseTimelineProps> = React.memo(({
   project, 
   onUpdateProject 
 }) => {
-  const [autoGenerate, setAutoGenerate] = useState(true);
   const metrics = useProjectMetrics(project);
   const { phaseAnalysis, isGenerating, generatePhaseAnalysis } = useSDLCPhaseAnalysis(
     project,
     onUpdateProject,
-    autoGenerate
+    false
   );
 
   const currentPhase = (metrics.currentPhase === 'Concluído' ? 'Monitor' : metrics.currentPhase) as PhaseName;
@@ -85,16 +84,6 @@ export const SDLCPhaseTimeline: React.FC<SDLCPhaseTimelineProps> = React.memo(({
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <label className="flex items-center gap-2 text-sm text-text-secondary whitespace-nowrap">
-              <input
-                type="checkbox"
-                checked={autoGenerate}
-                onChange={(e) => setAutoGenerate(e.target.checked)}
-                className="rounded flex-shrink-0"
-                aria-label="Gerar análise automaticamente"
-              />
-              <span>Auto-gerar</span>
-            </label>
             <button
               onClick={generatePhaseAnalysis}
               disabled={isGenerating}

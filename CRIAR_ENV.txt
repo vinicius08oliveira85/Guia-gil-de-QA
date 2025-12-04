@@ -1,0 +1,9 @@
+# Figma API Integration
+VITE_FIGMA_API_TOKEN=YOUR_FIGMA_TOKEN_HERE
+
+# Figma File Key
+FIGMA_FILE_KEY=
+
+# Storybook Figma URL (opcional)
+STORYBOOK_FIGMA_URL=
+

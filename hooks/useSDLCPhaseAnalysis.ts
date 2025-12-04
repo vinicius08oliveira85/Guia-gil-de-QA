@@ -31,22 +31,7 @@ export function useSDLCPhaseAnalysis(project: Project, onUpdateProject?: (projec
         project.phases.map(p => `${p.name}-${p.status}`).join(','),
     ]);
 
-    // Gerar automaticamente se configurado e análise estiver desatualizada ou não existir
-    useEffect(() => {
-        if (autoGenerate && onUpdateProject) {
-            const needsGeneration = !project.sdlcPhaseAnalysis || project.sdlcPhaseAnalysis.isOutdated;
-            
-            if (needsGeneration && !isGenerating) {
-                // Delay para não bloquear renderização inicial
-                const timer = setTimeout(() => {
-                    generatePhaseAnalysis();
-                }, 2000);
-
-                return () => clearTimeout(timer);
-            }
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [autoGenerate, project.id]);
+    // Geração automática removida - apenas manual através do botão
 
     const generatePhaseAnalysis = useCallback(async () => {
         setIsGenerating(true);

@@ -75,7 +75,7 @@ export const Modal: React.FC<ModalProps> = ({
 
     return (
         <div 
-            className="glass-overlay fixed inset-0 z-50 flex justify-center items-start pt-4 sm:pt-6 px-4 sm:px-6 transition-opacity duration-300"
+            className="glass-overlay fixed inset-0 z-50 flex justify-center items-center py-2 sm:py-4 px-4 sm:px-6 transition-opacity duration-300"
             onClick={onClose}
             role="dialog"
             aria-modal="true"
@@ -87,7 +87,7 @@ export const Modal: React.FC<ModalProps> = ({
                 onClick={(e) => e.stopPropagation()}
                 tabIndex={-1}
                 style={{ 
-                    maxHeight: `calc(100vh - 2rem)`
+                    maxHeight: maxHeight || `calc(100vh - 4rem)`
                 }}
             >
                 {/* Title Bar - Fixed */}

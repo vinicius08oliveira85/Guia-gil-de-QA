@@ -336,7 +336,8 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({ onProjectImpor
                 isOpen={showConfigModal}
                 onClose={() => setShowConfigModal(false)}
                 title="Configurar Conexão com Jira"
-                size="md"
+                size="lg"
+                maxHeight="85vh"
             >
                 <div className="space-y-4">
                     <div>

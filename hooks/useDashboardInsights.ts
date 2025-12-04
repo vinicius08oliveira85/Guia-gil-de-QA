@@ -30,22 +30,7 @@ export function useDashboardInsights(project: Project, onUpdateProject?: (projec
         project.metricsHistory?.length || 0,
     ]);
 
-    // Gerar automaticamente se configurado e análise estiver desatualizada ou não existir
-    useEffect(() => {
-        if (autoGenerate && onUpdateProject) {
-            const needsGeneration = !project.dashboardInsightsAnalysis || project.dashboardInsightsAnalysis.isOutdated;
-            
-            if (needsGeneration && !isGenerating) {
-                // Delay para não bloquear renderização inicial
-                const timer = setTimeout(() => {
-                    generateInsightsAnalysis();
-                }, 2000);
-
-                return () => clearTimeout(timer);
-            }
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [autoGenerate, project.id]);
+    // Geração automática removida - apenas manual através do botão
 
     const generateInsightsAnalysis = useCallback(async () => {
         setIsGenerating(true);
