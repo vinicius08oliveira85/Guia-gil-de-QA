@@ -252,9 +252,10 @@
   /* ============================================
      FONTES - Leve Saúde
      ============================================ */
-  --font-heading: 'Poppins', 'Montserrat', 'Segoe UI Variable', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
-  --font-body: 'Inter', 'Segoe UI Variable', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
-  --font-sans: 'Inter', 'Montserrat', 'Segoe UI Variable', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+  /* Inter como fonte principal para todos os elementos */
+  --font-heading: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-body: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-sans: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   
   /* ============================================
      CORES PRIMÁRIAS - Brand Green
@@ -347,15 +348,18 @@
   /* ============================================
      ESCALA TIPOGRÁFICA - Leve Saúde
      ============================================ */
-  /* Títulos */
-  --fs-h1: 2.25rem;      /* 36px - peso 600 */
-  --fs-h2: 1.75rem;      /* 28px - peso 600 */
-  --fs-h3: 1.375rem;     /* 22px - peso 600 */
-  --fs-h4: 1.125rem;     /* 18px - peso 600 */
+  /* Títulos - Desktop (fixos) */
+  --fs-h1: 3rem;         /* 48px - peso 800 (ExtraBold) */
+  --fs-h2: 2rem;         /* 32px - peso 700 (Bold) */
+  --fs-h3: 1.5rem;       /* 24px - peso 600 (SemiBold) */
+  --fs-h4: 1.25rem;      /* 20px - peso 600 (SemiBold) */
   /* Corpo */
-  --fs-body: 1rem;       /* 16px - peso 400 */
+  --fs-body: 1rem;       /* 16px - peso 400 (Regular) */
   --fs-small: 0.875rem;  /* 14px - peso 400 */
   --fs-label: 0.9375rem; /* 15px - peso 500 */
+  /* Botões e Menus */
+  --fs-button: 1rem;     /* 16px - peso 700 (Bold) ou 500 (Medium) */
+  --fs-menu: 0.875rem;   /* 14px - peso 500 (Medium) */
   
   /* Line Heights */
   --lh-tight: 1.15;      /* Títulos */
@@ -369,6 +373,7 @@
   --fw-medium: 500;
   --fw-semibold: 600;
   --fw-bold: 700;
+  --fw-extrabold: 800;  /* Para H1 */
   
   /* ============================================
      ESPAÇAMENTO - Leve Saúde
@@ -406,7 +411,7 @@
 .leve-saude h1 {
   font-family: var(--font-heading);
   font-size: var(--fs-h1);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-extrabold); /* 800 - ExtraBold */
   line-height: var(--lh-tight);
   color: var(--color-text);
   margin-bottom: var(--spacing-lg);
@@ -415,7 +420,7 @@
 .leve-saude h2 {
   font-family: var(--font-heading);
   font-size: var(--fs-h2);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-bold); /* 700 - Bold */
   line-height: var(--lh-tight);
   color: var(--color-text);
   margin-bottom: var(--spacing-md);
@@ -424,7 +429,7 @@
 .leve-saude h3 {
   font-family: var(--font-heading);
   font-size: var(--fs-h3);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-semibold); /* 600 - SemiBold */
   line-height: var(--lh-normal);
   color: var(--color-text);
   margin-bottom: var(--spacing-md);
@@ -433,17 +438,36 @@
 .leve-saude h4 {
   font-family: var(--font-heading);
   font-size: var(--fs-h4);
-  font-weight: var(--fw-semibold);
+  font-weight: var(--fw-semibold); /* 600 - SemiBold */
   line-height: var(--lh-normal);
   color: var(--color-text);
   margin-bottom: var(--spacing-sm);
+}
+
+/* Tamanhos responsivos para mobile */
+@media (max-width: 640px) {
+  .leve-saude h1 {
+    font-size: clamp(2rem, 5vw, 3rem); /* 32px - 48px */
+  }
+  
+  .leve-saude h2 {
+    font-size: clamp(1.5rem, 4vw, 2rem); /* 24px - 32px */
+  }
+  
+  .leve-saude h3 {
+    font-size: clamp(1.25rem, 3vw, 1.5rem); /* 20px - 24px */
+  }
+  
+  .leve-saude h4 {
+    font-size: clamp(1.125rem, 2.5vw, 1.25rem); /* 18px - 20px */
+  }
 }
 
 .leve-saude p,
 .leve-saude body {
   font-family: var(--font-body);
   font-size: var(--fs-body);
-  font-weight: var(--fw-regular);
+  font-weight: var(--fw-regular); /* 400 - Regular */
   line-height: var(--lh-comfortable);
   color: var(--color-text);
 }
@@ -451,7 +475,7 @@
 .leve-saude small {
   font-family: var(--font-body);
   font-size: var(--fs-small);
-  font-weight: var(--fw-regular);
+  font-weight: var(--fw-regular); /* 400 - Regular */
   line-height: var(--lh-comfortable);
   color: var(--color-muted);
 }
@@ -459,9 +483,25 @@
 .leve-saude label {
   font-family: var(--font-body);
   font-size: var(--fs-label);
-  font-weight: var(--fw-medium);
+  font-weight: var(--fw-medium); /* 500 - Medium */
   line-height: var(--lh-comfortable);
   color: var(--color-text);
+}
+
+/* Tamanhos responsivos para mobile */
+@media (max-width: 640px) {
+  .leve-saude p,
+  .leve-saude body {
+    font-size: clamp(0.875rem, 2vw, 1rem); /* 14px - 16px */
+  }
+  
+  .leve-saude small {
+    font-size: clamp(0.8125rem, 1.5vw, 0.875rem); /* 13px - 14px */
+  }
+  
+  .leve-saude label {
+    font-size: clamp(0.875rem, 2vw, 0.9375rem); /* 14px - 15px */
+  }
 }
 
 /* ============================================
@@ -473,9 +513,9 @@
   color: var(--color-white);
   padding: 0.75rem 1.25rem;
   border-radius: var(--radius-md);
-  font-weight: var(--fw-medium);
-  font-size: var(--fs-body);
-  font-family: var(--font-body);
+  font-weight: var(--fw-bold); /* 700 - Bold para CTA principal */
+  font-size: var(--fs-button); /* 16px */
+  font-family: var(--font-body); /* Inter */
   border: none;
   box-shadow: var(--shadow-md);
   min-height: 44px; /* Touch target mínimo para mobile */
@@ -519,9 +559,9 @@
   border: 2px solid var(--color-primary);
   padding: 0.625rem 1.125rem;
   border-radius: var(--radius-md);
-  font-weight: var(--fw-medium);
-  font-size: var(--fs-body);
-  font-family: var(--font-body);
+  font-weight: var(--fw-medium); /* 500 - Medium para botões secundários */
+  font-size: var(--fs-button); /* 16px */
+  font-family: var(--font-body); /* Inter */
   min-height: 44px;
   display: inline-flex;
   align-items: center;
@@ -560,9 +600,9 @@
   border: 2px solid transparent;
   padding: 0.5rem 1rem;
   border-radius: var(--radius-md);
-  font-weight: var(--fw-medium);
-  font-size: var(--fs-body);
-  font-family: var(--font-body);
+  font-weight: var(--fw-medium); /* 500 - Medium */
+  font-size: var(--fs-button); /* 16px */
+  font-family: var(--font-body); /* Inter */
   min-height: 44px;
   display: inline-flex;
   align-items: center;
@@ -590,6 +630,37 @@
   color: var(--color-muted);
   cursor: not-allowed;
   opacity: 0.6;
+}
+
+/* ============================================
+   MENUS E NAVEGAÇÃO - Leve Saúde
+   ============================================ */
+.leve-saude nav,
+.leve-saude .nav,
+.leve-saude .menu,
+.leve-saude .navigation,
+.leve-saude nav a,
+.leve-saude .nav a,
+.leve-saude .menu a,
+.leve-saude .navigation a {
+  font-family: var(--font-body); /* Inter */
+  font-size: var(--fs-menu); /* 14px */
+  font-weight: var(--fw-medium); /* 500 - Medium */
+  line-height: var(--lh-comfortable);
+}
+
+/* Tamanhos responsivos para mobile */
+@media (max-width: 640px) {
+  .leve-saude nav,
+  .leve-saude .nav,
+  .leve-saude .menu,
+  .leve-saude .navigation,
+  .leve-saude nav a,
+  .leve-saude .nav a,
+  .leve-saude .menu a,
+  .leve-saude .navigation a {
+    font-size: clamp(0.8125rem, 1.5vw, 0.875rem); /* 13px - 14px */
+  }
 }
 
 /* ============================================
@@ -700,20 +771,14 @@
    RESPONSIVIDADE - Mobile
    ============================================ */
 @media (max-width: 640px) {
-  .leve-saude h1 {
-    font-size: 1.75rem; /* Reduzido de 2.25rem */
-  }
-  
-  .leve-saude h2 {
-    font-size: 1.5rem; /* Reduzido de 1.75rem */
-  }
+  /* Headings já têm media queries específicas acima */
   
   .btn-primary-leve,
   .btn-secondary-leve,
   .btn-ghost-leve {
     min-height: 44px; /* Mantém touch target mínimo */
     padding: 0.75rem 1rem;
-    font-size: var(--fs-body);
+    font-size: clamp(0.875rem, 2vw, 1rem); /* 14px - 16px responsivo */
   }
   
   .input-leve {
