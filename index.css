@@ -355,6 +355,39 @@
   --accent-color-soft: var(--color-accent-soft);
   
   /* ============================================
+     VARIÁVEIS ESPECÍFICAS POR CONTEXTO
+     (Desvinculadas para permitir alterações independentes)
+     ============================================ */
+  
+  /* Task Cards - Cores específicas por tipo */
+  --task-card-historia-bg: #fff;
+  --task-card-historia-border: #3d826f;
+  --task-card-bug-bg: #fff;
+  --task-card-bug-border: #dc2626;
+  --task-card-epic-bg: #fff;
+  --task-card-epic-border: #6b21a8;
+  --task-card-tarefa-bg: #fff;
+  --task-card-tarefa-border: #0e6dfd;
+  
+  /* Task Card Badge - Cores específicas */
+  --task-card-badge-bg: #6b728026;
+  --task-card-badge-color: #000;
+  --task-card-badge-border: #6b728026;
+  
+  /* Task Card Textos - Cores específicas */
+  --task-card-title-color: var(--color-text);
+  --task-card-code-color: var(--color-text);
+  --task-card-meta-color: var(--text-tertiary);
+  
+  /* Painéis de Interface - Cores específicas */
+  --win-panel-bg: #FFFFFF;
+  --win-panel-border: rgba(0, 0, 0, 0.1);
+  --card-surface-bg: #FFFFFF;
+  --card-surface-border: rgba(0, 0, 0, 0.1);
+  --mica-bg: #FFFFFF;
+  --mica-border: rgba(0, 0, 0, 0.1);
+  
+  /* ============================================
      ESCALA TIPOGRÁFICA - Leve Saúde
      ============================================ */
   /* Títulos - Desktop (fixos) */
@@ -2244,18 +2277,18 @@ select option:focus {
 }
 
 .leve-saude .win-panel {
-  background: #FFFFFF;
-  border-color: rgba(0, 0, 0, 0.1);
+  background: var(--win-panel-bg);
+  border-color: var(--win-panel-border);
 }
 
 .leve-saude .card-surface {
-  background: #FFFFFF;
-  border-color: rgba(0, 0, 0, 0.1);
+  background: var(--card-surface-bg);
+  border-color: var(--card-surface-border);
 }
 
 .leve-saude .mica {
-  background: #FFFFFF;
-  border-color: rgba(0, 0, 0, 0.1);
+  background: var(--mica-bg);
+  border-color: var(--mica-border);
 }
 
 .leve-saude .win-card {
@@ -2269,8 +2302,8 @@ select option:focus {
 
 /* Leve Saúde - Fundos coloridos por tipo de tarefa */
 .leve-saude .task-card-compact--bug {
-  background: #fff;
-  border-color: #dc2626;
+  background: var(--task-card-bug-bg);
+  border-color: var(--task-card-bug-border);
 }
 
 .leve-saude .relative.task-card-compact--bug {
@@ -2290,8 +2323,8 @@ select option:focus {
 }
 
 .leve-saude .task-card-compact--epic {
-  background: #fff;
-  border-color: #6b21a8;
+  background: var(--task-card-epic-bg);
+  border-color: var(--task-card-epic-border);
 }
 
 .leve-saude .relative.task-card-compact--epic {
@@ -2311,8 +2344,8 @@ select option:focus {
 }
 
 .leve-saude .task-card-compact--historia {
-  background: #fff;
-  border-color: #3d826f;
+  background: var(--task-card-historia-bg);
+  border-color: var(--task-card-historia-border);
 }
 
 .leve-saude .relative.task-card-compact--historia {
@@ -2332,8 +2365,8 @@ select option:focus {
 }
 
 .leve-saude .task-card-compact--tarefa {
-  background: #fff;
-  border-color: #0e6dfd;
+  background: var(--task-card-tarefa-bg);
+  border-color: var(--task-card-tarefa-border);
 }
 
 .leve-saude .relative.task-card-compact--tarefa {
@@ -2354,9 +2387,9 @@ select option:focus {
 
 /* Leve Saúde - Ajuste de contraste para badges das tasks */
 .leve-saude .task-card-compact_badge {
-  background: #6b728026;
-  color: #000;
-  border-color: #6b728026;
+  background: var(--task-card-badge-bg);
+  color: var(--task-card-badge-color);
+  border-color: var(--task-card-badge-border);
 }
 
 /* Leve Saude - Cores de estratégias de teste com melhor contraste */
