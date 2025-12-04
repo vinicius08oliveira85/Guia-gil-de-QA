@@ -74,10 +74,10 @@ export const RecommendationsCard: React.FC<RecommendationsCardProps> = React.mem
             <div className="flex items-start justify-between gap-3 mb-2">
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${getCategoryColor(rec.category)}`}>
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium whitespace-nowrap ${getCategoryColor(rec.category)}`}>
                     {rec.category}
                   </span>
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${getImpactEffortBadge(rec.impact, rec.effort)}`}>
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium whitespace-nowrap ${getImpactEffortBadge(rec.impact, rec.effort)}`}>
                     Impacto: {rec.impact} | Esforço: {rec.effort}
                   </span>
                 </div>

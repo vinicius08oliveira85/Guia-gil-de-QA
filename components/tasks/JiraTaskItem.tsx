@@ -736,7 +736,7 @@ export const JiraTaskItem: React.FC<{
                     >
                         Casos de Teste
                         {task.testCases?.length ? (
-                            <span className="ml-2 px-1.5 py-0.5 text-xs rounded-full bg-accent/10 text-accent">
+                            <span className="ml-2 px-1.5 py-0.5 text-xs rounded-full bg-accent/10 text-accent whitespace-nowrap">
                                 {task.testCases.length}
                             </span>
                         ) : null}

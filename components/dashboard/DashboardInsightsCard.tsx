@@ -85,11 +85,11 @@ export const DashboardInsightsCard: React.FC<DashboardInsightsCardProps> = React
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <h4 className="font-semibold text-text-primary">{insight.title}</h4>
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${getPriorityBadge(insight.priority)}`}>
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium whitespace-nowrap ${getPriorityBadge(insight.priority)}`}>
                       {insight.priority}
                     </span>
                     {insight.actionable && (
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-accent/10 text-accent font-medium">
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-accent/10 text-accent font-medium whitespace-nowrap">
                         Acionável
                       </span>
                     )}
