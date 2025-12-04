@@ -68,13 +68,6 @@ export const SDLCPhaseTimeline: React.FC<SDLCPhaseTimelineProps> = React.memo(({
     };
   };
 
-  const getProgressBarColor = (phaseStatus: PhaseStatus) => {
-    if (phaseStatus === 'Concluído') return 'bg-green-600';
-    if (phaseStatus === 'Em Andamento') return 'bg-yellow-500';
-    return 'bg-red-600';
-  };
-
-  const currentPhaseIndex = PHASE_NAMES.indexOf(currentPhase);
   const progressPercentage = phaseAnalysis?.progressPercentage || 0;
 
   return (
@@ -103,9 +96,6 @@ export const SDLCPhaseTimeline: React.FC<SDLCPhaseTimelineProps> = React.memo(({
 
         {/* Timeline Horizontal */}
         <div className="relative mb-8">
-          {/* Barra de progresso de fundo */}
-          <div className="absolute top-6 left-0 right-0 h-1 bg-slate-700 rounded-full z-0" />
-          
           {/* Timeline com fases */}
           <div className="relative flex items-center justify-between gap-2 overflow-x-auto pb-4">
             {PHASE_NAMES.map((phaseName, index) => {
@@ -121,14 +111,6 @@ export const SDLCPhaseTimeline: React.FC<SDLCPhaseTimelineProps> = React.memo(({
                   key={phaseName}
                   className="flex flex-col items-center flex-1 min-w-[80px] max-w-[120px] relative group"
                 >
-                  {/* Barra de conexão */}
-                  {index < PHASE_NAMES.length - 1 && (
-                    <div
-                      className={`absolute top-6 left-1/2 w-full h-1 ${getProgressBarColor(phase.status)} z-0`}
-                      style={{ transform: 'translateX(50%)' }}
-                    />
-                  )}
-
                   {/* Ícone da fase */}
                   <div
                     className={`relative z-10 w-12 h-12 rounded-full ${styles.bg} ${styles.border} border-2 ${styles.ring} flex items-center justify-center text-2xl transition-all duration-300 ${
