@@ -1,7 +1,8 @@
 import { useState, useCallback, useEffect } from 'react';
-import { Project, DashboardInsightsAnalysis } from '../types';
+import { Project, DashboardInsightsAnalysis, SDLCPhaseAnalysis } from '../types';
 import { 
     generateDashboardInsightsAnalysis, 
+    generateCompleteDashboardAnalysis,
     markDashboardInsightsAsOutdated 
 } from '../services/ai/dashboardInsightsService';
 import { useErrorHandler } from './useErrorHandler';
@@ -54,10 +55,34 @@ export function useDashboardInsights(project: Project, onUpdateProject?: (projec
         }
     }, [project, onUpdateProject, handleError, handleSuccess]);
 
+    const generateCompleteAnalysis = useCallback(async () => {
+        setIsGenerating(true);
+        try {
+            const { sdlcAnalysis, insightsAnalysis } = await generateCompleteDashboardAnalysis(project);
+            
+            if (onUpdateProject) {
+                onUpdateProject({
+                    ...project,
+                    sdlcPhaseAnalysis: sdlcAnalysis,
+                    dashboardInsightsAnalysis: insightsAnalysis,
+                });
+            }
+            
+            handleSuccess('Análise completa gerada com sucesso!');
+            return { sdlcAnalysis, insightsAnalysis };
+        } catch (error) {
+            handleError(error, 'Erro ao gerar análise completa');
+            throw error;
+        } finally {
+            setIsGenerating(false);
+        }
+    }, [project, onUpdateProject, handleError, handleSuccess]);
+
     return {
         insightsAnalysis: project.dashboardInsightsAnalysis || null,
         isGenerating,
         generateInsightsAnalysis,
+        generateCompleteAnalysis,
     };
 }
 

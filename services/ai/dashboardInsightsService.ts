@@ -1,8 +1,9 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import { Project, DashboardInsightsAnalysis } from '../../types';
+import { Project, DashboardInsightsAnalysis, SDLCPhaseAnalysis } from '../../types';
 import { calculateProjectMetrics } from '../../hooks/useProjectMetrics';
 import { getCurrentAndPreviousPeriodMetrics } from '../metricsHistoryService';
 import { getFormattedContext } from './documentContextService';
+import { generateSDLCPhaseAnalysis } from './sdlcPhaseAnalysisService';
 
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.GEMINI_API_KEY;
 
@@ -206,6 +207,7 @@ export async function generateDashboardInsightsAnalysis(project: Project): Promi
   
   const metrics = calculateProjectMetrics(project);
   const periodMetrics = getCurrentAndPreviousPeriodMetrics(project, 'week');
+  const tasksAndTestsData = prepareTasksAndTestsData(project);
   
   const documentContext = await getFormattedContext(project);
   const prompt = `${documentContext}
@@ -232,6 +234,13 @@ ${JSON.stringify({
     reexecutedTests: metrics.quickAnalysis.reexecutedTests,
     recentlyResolvedBugs: metrics.quickAnalysis.recentlyResolvedBugs,
   },
+  tarefasETestes: {
+    resumo: tasksAndTestsData.summary,
+    tarefasSemTestes: tasksAndTestsData.tasksWithoutTests.length,
+    tarefasSemBdd: tasksAndTestsData.tasksWithoutBdd.length,
+    tarefasProblematicas: tasksAndTestsData.problematicTasks,
+    detalhesTarefas: tasksAndTestsData.tasks.slice(0, 20), // Limitar a 20 tarefas para não exceder tokens
+  },
   tendencias: periodMetrics.current && periodMetrics.previous ? {
     passRate: {
       atual: periodMetrics.current.testPassRate,
@@ -246,17 +255,22 @@ ${JSON.stringify({
 }, null, 2)}
 
 INSTRUÇÕES:
+Como um QA sênior experiente, analise profundamente os dados fornecidos de Tarefas, Testes e Documentos para gerar indicadores completos do Dashboard.
+
 1. Calcule um score de qualidade geral (0-100) baseado em:
    - Taxa de sucesso dos testes
    - Número e severidade de bugs
-   - Cobertura de testes
+   - Cobertura de testes (considere tarefas sem testes e sem BDD)
    - Tendências (melhoria ou piora)
    - Retrabalho (testes reexecutados)
+   - Tarefas problemáticas identificadas
 
 2. Gere insights específicos e acionáveis (mínimo 3, máximo 8):
-   - Identifique padrões, anomalias e oportunidades
+   - Analise os dados de Tarefas & Testes fornecidos (tarefasSemTestes, tarefasSemBdd, tarefasProblematicas)
+   - Identifique padrões, anomalias e oportunidades baseados nos detalhes das tarefas
    - Cada insight deve ter tipo (success/warning/error/info), título, descrição, prioridade e se é acionável
-   - Foque em insights que ajudem a melhorar a qualidade
+   - Foque em insights que ajudem a melhorar a qualidade, considerando o contexto dos documentos
+   - Use os dados detalhados de tarefas para identificar problemas específicos
 
 3. Faça previsões baseadas em tendências:
    - Preveja taxa de sucesso para próxima semana (se houver histórico suficiente)
@@ -309,6 +323,80 @@ Respeite o schema JSON fornecido.
     console.error('Erro ao gerar análise de insights do dashboard:', error);
     throw error;
   }
+}
+
+/**
+ * Prepara dados detalhados de Tarefas e Testes para o prompt
+ */
+function prepareTasksAndTestsData(project: Project) {
+  const tasks = project.tasks.map(task => ({
+    id: task.id,
+    title: task.title,
+    type: task.type,
+    status: task.status,
+    priority: task.priority,
+    testCases: task.testCases?.map(tc => ({
+      title: tc.title,
+      status: tc.status,
+      isAutomated: tc.isAutomated || false,
+    })) || [],
+    bddScenarios: task.bddScenarios?.length || 0,
+    hasBddScenarios: (task.bddScenarios?.length || 0) > 0,
+  }));
+
+  const tasksWithoutTests = tasks.filter(t => t.testCases.length === 0 && t.type !== 'Bug');
+  const tasksWithoutBdd = tasks.filter(t => !t.hasBddScenarios && t.type !== 'Bug');
+  
+  const problematicTasks = tasks
+    .filter(t => {
+      const failedTests = t.testCases.filter(tc => tc.status === 'Failed').length;
+      return failedTests > 0;
+    })
+    .map(t => ({
+      id: t.id,
+      title: t.title,
+      failedTests: t.testCases.filter(tc => tc.status === 'Failed').length,
+      totalTests: t.testCases.length,
+    }))
+    .sort((a, b) => b.failedTests - a.failedTests)
+    .slice(0, 5);
+
+  return {
+    tasks,
+    tasksWithoutTests,
+    tasksWithoutBdd,
+    problematicTasks,
+    summary: {
+      totalTasks: tasks.length,
+      tasksWithTests: tasks.filter(t => t.testCases.length > 0).length,
+      tasksWithBdd: tasks.filter(t => t.hasBddScenarios).length,
+      totalTestCases: tasks.reduce((sum, t) => sum + t.testCases.length, 0),
+      automatedTestCases: tasks.reduce((sum, t) => 
+        sum + t.testCases.filter(tc => tc.isAutomated).length, 0
+      , 0),
+      failedTestCases: tasks.reduce((sum, t) => 
+        sum + t.testCases.filter(tc => tc.status === 'Failed').length, 0
+      , 0),
+    },
+  };
+}
+
+/**
+ * Gera análise completa do dashboard (SDLC + Insights) com prompt unificado
+ */
+export async function generateCompleteDashboardAnalysis(
+  project: Project
+): Promise<{ sdlcAnalysis: SDLCPhaseAnalysis; insightsAnalysis: DashboardInsightsAnalysis }> {
+  // Gerar ambas análises em paralelo para melhor performance
+  const [sdlcAnalysis, insightsAnalysis] = await Promise.all([
+    generateSDLCPhaseAnalysis(project),
+    generateDashboardInsightsAnalysis(project),
+  ]);
+
+  return {
+    sdlcAnalysis,
+    insightsAnalysis,
+  };
 }
 
 /**

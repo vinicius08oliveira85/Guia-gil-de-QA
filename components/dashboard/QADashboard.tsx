@@ -27,7 +27,7 @@ interface QADashboardProps {
 export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, onUpdateProject }) => {
   const metrics = useProjectMetrics(project);
   const { trends } = useMetricsHistory(project, 'week');
-  const { insightsAnalysis, isGenerating, generateInsightsAnalysis } = useDashboardInsights(
+  const { insightsAnalysis, isGenerating, generateCompleteAnalysis } = useDashboardInsights(
     project,
     onUpdateProject,
     false
@@ -41,6 +41,18 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
 
   return (
     <div className="space-y-6" role="main" aria-label="Dashboard de QA">
+      {/* Botão único de análise completa */}
+      <div className="flex items-center justify-end">
+        <button
+          onClick={generateCompleteAnalysis}
+          disabled={isGenerating}
+          className="btn btn-primary text-sm disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap min-w-[180px]"
+          aria-label="Gerar análise completa do dashboard"
+        >
+          {isGenerating ? 'Gerando...' : '🔄 Gerar Análise Completa'}
+        </button>
+      </div>
+
       {/* Alertas */}
       <DashboardAlerts
         hasCriticalFailures={hasCriticalFailures}
@@ -99,16 +111,6 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
       <div className="space-y-6">
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <h2 className="text-xl font-semibold text-text-primary flex-shrink-0">Análise de IA</h2>
-          <div className="flex items-center gap-3 flex-shrink-0">
-            <button
-              onClick={generateInsightsAnalysis}
-              disabled={isGenerating}
-              className="btn btn-primary text-sm disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap min-w-[140px]"
-              aria-label="Gerar análise de insights"
-            >
-              {isGenerating ? 'Gerando...' : '🔄 Gerar Análise'}
-            </button>
-          </div>
         </div>
 
         {/* Score de Qualidade */}

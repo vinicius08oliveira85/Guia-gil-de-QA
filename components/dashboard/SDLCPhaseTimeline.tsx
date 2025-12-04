@@ -82,16 +82,6 @@ export const SDLCPhaseTimeline: React.FC<SDLCPhaseTimelineProps> = React.memo(({
               Acompanhe o progresso do projeto através do ciclo de vida do desenvolvimento
             </p>
           </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={generatePhaseAnalysis}
-              disabled={isGenerating}
-              className="btn btn-primary text-sm disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
-              aria-label="Gerar análise de fase SDLC"
-            >
-              {isGenerating ? 'Gerando...' : '🔄 Gerar Análise'}
-            </button>
-          </div>
         </div>
 
         {/* Timeline Horizontal */}
