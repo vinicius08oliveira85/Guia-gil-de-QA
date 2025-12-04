@@ -4,7 +4,7 @@ import { useProjectMetrics } from '../../hooks/useProjectMetrics';
 import { useSDLCPhaseAnalysis } from '../../hooks/useSDLCPhaseAnalysis';
 import { Card } from '../common/Card';
 import { InfoIcon } from '../common/Icons';
-import { phaseIcons, phaseDescriptions, phaseColors, phaseDisplayNames } from '../../utils/sdlcPhaseIcons';
+import { phaseIcons, phaseDescriptions, phaseDisplayNames } from '../../utils/sdlcPhaseIcons';
 import { PHASE_NAMES } from '../../utils/constants';
 
 interface SDLCPhaseTimelineProps {
@@ -32,25 +32,31 @@ export const SDLCPhaseTimeline: React.FC<SDLCPhaseTimelineProps> = React.memo(({
   const getStatusStyles = (status: PhaseStatus, isCurrent: boolean) => {
     const baseStyles = {
       'Concluído': {
-        bg: 'bg-green-500',
+        bg: 'bg-green-600',
         text: 'text-green-800 dark:text-green-300',
-        border: 'border-green-500',
-        ring: 'ring-green-500/30',
+        border: 'border-green-600',
+        ring: 'ring-green-600/30',
         pulse: false,
+        badgeBg: 'bg-green-600/20',
+        badgeText: 'text-green-700 dark:text-green-300',
       },
       'Em Andamento': {
         bg: 'bg-yellow-500',
-        text: 'text-yellow-800 dark:text-yellow-300',
+        text: 'text-yellow-900 dark:text-yellow-200',
         border: 'border-yellow-500',
         ring: 'ring-yellow-500/30',
         pulse: true,
+        badgeBg: 'bg-yellow-500/20',
+        badgeText: 'text-yellow-700 dark:text-yellow-300',
       },
       'Não Iniciado': {
-        bg: 'bg-slate-600',
-        text: 'text-slate-700 dark:text-slate-400',
-        border: 'border-slate-600',
-        ring: 'ring-slate-600/30',
+        bg: 'bg-red-600',
+        text: 'text-red-800 dark:text-red-300',
+        border: 'border-red-600',
+        ring: 'ring-red-600/30',
         pulse: false,
+        badgeBg: 'bg-red-600/20',
+        badgeText: 'text-red-700 dark:text-red-300',
       },
     };
 
@@ -62,10 +68,10 @@ export const SDLCPhaseTimeline: React.FC<SDLCPhaseTimelineProps> = React.memo(({
     };
   };
 
-  const getProgressBarColor = (phaseName: PhaseName, index: number, currentIndex: number) => {
-    if (index < currentIndex) return 'bg-green-500';
-    if (index === currentIndex) return 'bg-yellow-500';
-    return 'bg-slate-600';
+  const getProgressBarColor = (phaseStatus: PhaseStatus) => {
+    if (phaseStatus === 'Concluído') return 'bg-green-600';
+    if (phaseStatus === 'Em Andamento') return 'bg-yellow-500';
+    return 'bg-red-600';
   };
 
   const currentPhaseIndex = PHASE_NAMES.indexOf(currentPhase);
@@ -98,7 +104,7 @@ export const SDLCPhaseTimeline: React.FC<SDLCPhaseTimelineProps> = React.memo(({
         {/* Timeline Horizontal */}
         <div className="relative mb-8">
           {/* Barra de progresso de fundo */}
-          <div className="absolute top-6 left-0 right-0 h-1 bg-slate-700 rounded-full" />
+          <div className="absolute top-6 left-0 right-0 h-1 bg-slate-700 rounded-full z-0" />
           
           {/* Timeline com fases */}
           <div className="relative flex items-center justify-between gap-2 overflow-x-auto pb-4">
@@ -109,7 +115,6 @@ export const SDLCPhaseTimeline: React.FC<SDLCPhaseTimelineProps> = React.memo(({
               };
               const isCurrent = phaseName === currentPhase;
               const styles = getStatusStyles(phase.status, isCurrent);
-              const phaseColor = phaseColors[phaseName as PhaseName];
               
               return (
                 <div
@@ -119,11 +124,7 @@ export const SDLCPhaseTimeline: React.FC<SDLCPhaseTimelineProps> = React.memo(({
                   {/* Barra de conexão */}
                   {index < PHASE_NAMES.length - 1 && (
                     <div
-                      className={`absolute top-6 left-1/2 w-full h-1 ${getProgressBarColor(
-                        phaseName as PhaseName,
-                        index,
-                        currentPhaseIndex
-                      )} z-0`}
+                      className={`absolute top-6 left-1/2 w-full h-1 ${getProgressBarColor(phase.status)} z-0`}
                       style={{ transform: 'translateX(50%)' }}
                     />
                   )}
@@ -146,7 +147,7 @@ export const SDLCPhaseTimeline: React.FC<SDLCPhaseTimelineProps> = React.memo(({
                     <p className="text-xs font-semibold text-text-primary line-clamp-2">
                       {phaseDisplayNames[phaseName as PhaseName]}
                     </p>
-                    <span className={`text-xs mt-1 inline-block px-2 py-0.5 rounded-full ${phaseColor.bg} ${phaseColor.text}`}>
+                    <span className={`text-xs mt-1 inline-block px-2 py-0.5 rounded-full ${styles.badgeBg} ${styles.badgeText}`}>
                       {phase.status}
                     </span>
                   </div>
