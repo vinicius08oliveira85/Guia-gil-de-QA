@@ -149,3 +149,57 @@ export const canPreview = (type: string): boolean => {
            type.includes('csv');
 };
 
+/**
+ * Verifica se o arquivo é um PDF
+ */
+export const isPDF = (fileName: string, mimeType?: string): boolean => {
+    return fileName.toLowerCase().endsWith('.pdf') || mimeType === 'application/pdf';
+};
+
+/**
+ * Verifica se o arquivo é um Excel
+ */
+export const isExcel = (fileName: string, mimeType?: string): boolean => {
+    const lowerName = fileName.toLowerCase();
+    return lowerName.endsWith('.xlsx') || 
+           lowerName.endsWith('.xls') || 
+           mimeType?.includes('spreadsheet') || 
+           mimeType?.includes('excel');
+};
+
+/**
+ * Verifica se o arquivo é um Word
+ */
+export const isWord = (fileName: string, mimeType?: string): boolean => {
+    const lowerName = fileName.toLowerCase();
+    return lowerName.endsWith('.docx') || 
+           lowerName.endsWith('.doc') || 
+           mimeType?.includes('word') || 
+           mimeType?.includes('document');
+};
+
+/**
+ * Obtém o tipo MIME baseado na extensão do arquivo
+ */
+export const getMimeTypeFromFileName = (fileName: string): string => {
+    const extension = fileName.toLowerCase().split('.').pop() || '';
+    const mimeTypes: Record<string, string> = {
+        'pdf': 'application/pdf',
+        'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'xls': 'application/vnd.ms-excel',
+        'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'doc': 'application/msword',
+        'csv': 'text/csv',
+        'json': 'application/json',
+        'txt': 'text/plain',
+        'md': 'text/markdown',
+        'jpg': 'image/jpeg',
+        'jpeg': 'image/jpeg',
+        'png': 'image/png',
+        'gif': 'image/gif',
+        'webp': 'image/webp',
+        'svg': 'image/svg+xml'
+    };
+    return mimeTypes[extension] || 'application/octet-stream';
+};
+

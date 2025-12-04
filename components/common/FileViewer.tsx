@@ -177,27 +177,39 @@ export const FileViewer: React.FC<FileViewerProps> = React.memo(({
     }, [content, mimeType, canView, handleError]);
 
     const handleViewInNewTab = useCallback(() => {
-        try {
-            setIsLoading(true);
-            viewFile(content, fileName, mimeType, { openInNewTab: true });
-            handleSuccess('Arquivo aberto em nova aba');
-        } catch (error) {
-            handleError(error, 'Abrir arquivo');
-        } finally {
-            setIsLoading(false);
-        }
+        // Executar de forma assíncrona para não bloquear UI
+        requestAnimationFrame(() => {
+            try {
+                setIsLoading(true);
+                viewFile(content, fileName, mimeType, { openInNewTab: true });
+                // Usar setTimeout para não bloquear
+                setTimeout(() => {
+                    handleSuccess('Arquivo aberto em nova aba');
+                    setIsLoading(false);
+                }, 0);
+            } catch (error) {
+                handleError(error, 'Abrir arquivo');
+                setIsLoading(false);
+            }
+        });
     }, [content, fileName, mimeType, handleError, handleSuccess]);
 
     const handleDownload = useCallback(() => {
-        try {
-            setIsLoading(true);
-            downloadFile(content, fileName, mimeType || 'application/octet-stream');
-            handleSuccess('Arquivo baixado com sucesso');
-        } catch (error) {
-            handleError(error, 'Baixar arquivo');
-        } finally {
-            setIsLoading(false);
-        }
+        // Executar de forma assíncrona para não bloquear UI
+        requestAnimationFrame(() => {
+            try {
+                setIsLoading(true);
+                downloadFile(content, fileName, mimeType || 'application/octet-stream');
+                // Usar setTimeout para não bloquear
+                setTimeout(() => {
+                    handleSuccess('Arquivo baixado com sucesso');
+                    setIsLoading(false);
+                }, 0);
+            } catch (error) {
+                handleError(error, 'Baixar arquivo');
+                setIsLoading(false);
+            }
+        });
     }, [content, fileName, mimeType, handleError, handleSuccess]);
 
     // Se não pode visualizar inline, mostrar apenas opções de download/view

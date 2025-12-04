@@ -62,6 +62,7 @@ export const canViewInBrowser = (fileType: FileViewerType): boolean => {
 
 /**
  * Visualiza um arquivo em uma nova aba do navegador
+ * Otimizado para melhor performance
  */
 export const viewFileInNewTab = (
     content: string | ArrayBuffer | Blob,
@@ -70,42 +71,64 @@ export const viewFileInNewTab = (
     options: FileViewerOptions = {}
 ): void => {
     try {
+        // Se for uma data URL, usar diretamente (mais rápido)
+        if (typeof content === 'string' && content.startsWith('data:')) {
+            // Usar window.open para melhor performance
+            const newWindow = window.open(content, '_blank', 'noopener,noreferrer');
+            if (!newWindow) {
+                // Fallback se popup foi bloqueado
+                const link = document.createElement('a');
+                link.href = content;
+                link.target = '_blank';
+                link.rel = 'noopener noreferrer';
+                link.style.display = 'none';
+                document.body.appendChild(link);
+                link.click();
+                // Remover de forma assíncrona para não bloquear
+                requestAnimationFrame(() => {
+                    document.body.removeChild(link);
+                });
+            }
+            logger.info(`Arquivo visualizado em nova aba: ${fileName}`, 'FileViewerService');
+            return;
+        }
+
+        // Para outros tipos, criar blob e URL
         let blob: Blob;
-        
         if (content instanceof Blob) {
             blob = content;
         } else if (content instanceof ArrayBuffer) {
             blob = new Blob([content], { type: mimeType });
         } else if (typeof content === 'string') {
-            // Se for uma data URL, usar diretamente
-            if (content.startsWith('data:')) {
-                const link = document.createElement('a');
-                link.href = content;
-                link.target = '_blank';
-                link.rel = 'noopener noreferrer';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                return;
-            }
             blob = new Blob([content], { type: mimeType });
         } else {
             throw new Error('Tipo de conteúdo não suportado');
         }
 
         const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.target = '_blank';
-        link.rel = 'noopener noreferrer';
-        link.download = options.download ? fileName : '';
         
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        // Limpar URL após um tempo para liberar memória
-        setTimeout(() => URL.revokeObjectURL(url), 100);
+        // Usar window.open para melhor performance
+        const newWindow = window.open(url, '_blank', 'noopener,noreferrer');
+        if (!newWindow) {
+            // Fallback se popup foi bloqueado
+            const link = document.createElement('a');
+            link.href = url;
+            link.target = '_blank';
+            link.rel = 'noopener noreferrer';
+            link.download = options.download ? fileName : '';
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+            // Remover de forma assíncrona
+            requestAnimationFrame(() => {
+                document.body.removeChild(link);
+                // Limpar URL após um tempo para liberar memória
+                setTimeout(() => URL.revokeObjectURL(url), 1000);
+            });
+        } else {
+            // Limpar URL após um tempo se window.open funcionou
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+        }
         
         logger.info(`Arquivo visualizado em nova aba: ${fileName}`, 'FileViewerService');
     } catch (error) {
