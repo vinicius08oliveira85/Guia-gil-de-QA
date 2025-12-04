@@ -5,7 +5,7 @@
  * Documentação: https://amzn.github.io/style-dictionary/
  */
 
-module.exports = {
+export default {
   source: ['tokens/design-tokens.json'],
   platforms: {
     css: {

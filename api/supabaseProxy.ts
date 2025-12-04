@@ -53,12 +53,6 @@ const getPayloadSize = (data: unknown): number => {
   }
 };
 
-interface SupabaseProxyResponse {
-  success: boolean;
-  error?: string;
-  projects?: unknown[];
-}
-
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   allowCors(res);
 
