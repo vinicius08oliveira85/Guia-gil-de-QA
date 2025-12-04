@@ -16,7 +16,7 @@ export const Modal: React.FC<ModalProps> = ({
     title, 
     children, 
     size = 'md',
-    maxHeight = '90vh'
+    maxHeight = '95vh'
 }) => {
     // Fechar com ESC
     useEffect(() => {
@@ -83,11 +83,11 @@ export const Modal: React.FC<ModalProps> = ({
         >
             <div 
                 id="modal-content"
-                className={`mica w-full ${sizeClasses[size]} flex flex-col overflow-hidden animate-fade-in shadow-[0_35px_120px_rgba(3,7,23,0.65)]`}
+                className={`mica w-full ${sizeClasses[size]} flex flex-col overflow-hidden animate-fade-in shadow-[0_35px_120px_rgba(3,7,23,0.65)] rounded-lg`}
                 onClick={(e) => e.stopPropagation()}
                 tabIndex={-1}
                 style={{ 
-                    maxHeight: maxHeight || `calc(100vh - 4rem)`
+                    maxHeight: maxHeight || `calc(100vh - 2rem)`
                 }}
             >
                 {/* Title Bar - Fixed */}
@@ -103,8 +103,10 @@ export const Modal: React.FC<ModalProps> = ({
                     </button>
                 </div>
                 {/* Content - Scrollable */}
-                <div className="p-card flex-1 overflow-y-auto flex flex-col min-h-0">
-                  {children}
+                <div className="p-card flex-1 overflow-y-auto flex flex-col min-h-0 overscroll-contain">
+                  <div className="flex-1 min-h-0">
+                    {children}
+                  </div>
                 </div>
             </div>
         </div>

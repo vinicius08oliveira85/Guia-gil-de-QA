@@ -345,9 +345,9 @@ export const JiraIntegration: React.FC<JiraIntegrationProps> = ({ onProjectImpor
                 onClose={() => setShowConfigModal(false)}
                 title="Configurar Conexão com Jira"
                 size="lg"
-                maxHeight="85vh"
+                maxHeight="90vh"
             >
-                <div className="space-y-4">
+                <div className="space-y-5 pb-2">
                     <div>
                         <label className="block text-sm font-medium text-text-secondary mb-1">
                             URL do Jira *
@@ -400,7 +400,7 @@ export const JiraIntegration: React.FC<JiraIntegrationProps> = ({ onProjectImpor
                         </p>
                     </div>
 
-                    <div className="flex justify-end gap-2 pt-4">
+                    <div className="flex justify-end gap-2 pt-4 border-t border-surface-border mt-6">
                         <button
                             onClick={() => setShowConfigModal(false)}
                             className="btn btn-secondary"
