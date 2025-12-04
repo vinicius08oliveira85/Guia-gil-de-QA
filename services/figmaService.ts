@@ -58,7 +58,7 @@ export class FigmaService {
       });
       return response.data;
     } catch (error) {
-      logger.error('Erro ao buscar arquivo do Figma:', error);
+      logger.error('Erro ao buscar arquivo do Figma', 'FigmaService', error);
       throw error;
     }
   }
@@ -78,7 +78,7 @@ export class FigmaService {
       );
       return response.data.meta?.variables || [];
     } catch (error) {
-      logger.error('Erro ao buscar variáveis do Figma:', error);
+      logger.error('Erro ao buscar variáveis do Figma', 'FigmaService', error);
       throw error;
     }
   }
@@ -95,7 +95,7 @@ export class FigmaService {
       });
       return response.data.meta?.styles || [];
     } catch (error) {
-      logger.error('Erro ao buscar estilos do Figma:', error);
+      logger.error('Erro ao buscar estilos do Figma', 'FigmaService', error);
       throw error;
     }
   }
@@ -115,7 +115,7 @@ export class FigmaService {
         styles,
       };
     } catch (error) {
-      logger.error('Erro ao buscar tokens do Figma:', error);
+      logger.error('Erro ao buscar tokens do Figma', 'FigmaService', error);
       throw error;
     }
   }

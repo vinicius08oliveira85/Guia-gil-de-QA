@@ -1,9 +1,8 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
-import { gzip, gunzip } from 'zlib';
+import { gunzip } from 'zlib';
 import { promisify } from 'util';
 
-const gzipAsync = promisify(gzip);
 const gunzipAsync = promisify(gunzip);
 
 const supabaseUrl =
@@ -60,7 +59,7 @@ interface SupabaseProxyResponse {
   projects?: unknown[];
 }
 
-export default async function handler(req: VercelRequest, res: VercelResponse<SupabaseProxyResponse>) {
+export default async function handler(req: VercelRequest, res: VercelResponse) {
   allowCors(res);
 
   if (req.method === 'OPTIONS') {
