@@ -24,6 +24,7 @@ const ProjectsDashboard = lazyWithRetry(() => import('./components/ProjectsDashb
 const AdvancedSearch = lazyWithRetry(() => import('./components/common/AdvancedSearch').then(m => ({ default: m.AdvancedSearch })));
 const ProjectComparisonModal = lazyWithRetry(() => import('./components/common/ProjectComparisonModal').then(m => ({ default: m.ProjectComparisonModal })));
 const OnboardingGuide = lazyWithRetry(() => import('./components/onboarding/OnboardingGuide').then(m => ({ default: m.OnboardingGuide })));
+const SettingsView = lazyWithRetry(() => import('./components/settings/SettingsView').then(m => ({ default: m.SettingsView })));
 
 const App: React.FC = () => {
     // Estado global do store
@@ -44,6 +45,7 @@ const App: React.FC = () => {
     const [showSearch, setShowSearch] = useState(false);
     const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
     const [showProjectComparison, setShowProjectComparison] = useState(false);
+    const [showSettings, setShowSettings] = useState(false);
     const { handleError, handleSuccess } = useErrorHandler();
     const { searchQuery, setSearchQuery, searchResults } = useSearch(projects);
     const supabaseEnabled = isSupabaseAvailable();
@@ -212,7 +214,10 @@ const App: React.FC = () => {
                         },
                     }}
                 />
-                <Header onProjectImported={handleImportJiraProject} />
+                <Header 
+                    onProjectImported={handleImportJiraProject}
+                    onOpenSettings={() => setShowSettings(true)}
+                />
                 {showSearch && (
                     <div className="glass-overlay fixed inset-0 z-50 flex items-start justify-center pt-20 p-4">
                         <div className="w-full max-w-2xl">
@@ -256,7 +261,14 @@ const App: React.FC = () => {
                 )}
 
                 <main id="main-content">
-                    {selectedProject ? (
+                    {showSettings ? (
+                        <Suspense fallback={<div className="container mx-auto p-8"><LoadingSkeleton variant="card" count={3} /></div>}>
+                            <SettingsView 
+                                onClose={() => setShowSettings(false)}
+                                onProjectImported={handleImportJiraProject}
+                            />
+                        </Suspense>
+                    ) : selectedProject ? (
                         <Suspense fallback={<div className="container mx-auto p-8"><LoadingSkeleton variant="card" count={3} /></div>}>
                             <ProjectView 
                                 project={selectedProject} 
