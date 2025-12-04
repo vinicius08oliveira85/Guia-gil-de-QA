@@ -816,7 +816,7 @@
 .leve-saude .header,
 .leve-saude footer,
 .leve-saude .footer {
-  background: var(--color-navy); /* Azul Marinho Escuro */
+  background: #f2f2f2;
   color: var(--color-white);
 }
 
