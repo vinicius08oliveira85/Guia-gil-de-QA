@@ -110,6 +110,73 @@ const isCorsError = (error: unknown): boolean => {
 };
 
 /**
+ * Verifica se um erro é 413 (Content Too Large)
+ */
+const isPayloadTooLargeError = (error: unknown): boolean => {
+    if (error instanceof Error) {
+        const message = error.message.toLowerCase();
+        return message.includes('413') || 
+               message.includes('content too large') ||
+               message.includes('payload muito grande');
+    }
+    return false;
+};
+
+/**
+ * Comprime dados usando CompressionStream (API nativa do browser)
+ * Retorna o payload comprimido em base64
+ */
+const compressData = async (data: unknown): Promise<string> => {
+    try {
+        // Verificar se CompressionStream está disponível
+        if (typeof CompressionStream === 'undefined') {
+            throw new Error('CompressionStream não disponível neste navegador');
+        }
+
+        const jsonString = JSON.stringify(data);
+        const encoder = new TextEncoder();
+        const decoder = new TextDecoder();
+        
+        const stream = new CompressionStream('gzip');
+        const writer = stream.writable.getWriter();
+        const reader = stream.readable.getReader();
+        
+        // Escrever dados
+        writer.write(encoder.encode(jsonString));
+        writer.close();
+        
+        // Ler dados comprimidos
+        const chunks: Uint8Array[] = [];
+        let done = false;
+        
+        while (!done) {
+            const { value, done: readerDone } = await reader.read();
+            done = readerDone;
+            if (value) {
+                chunks.push(value);
+            }
+        }
+        
+        // Combinar chunks e converter para base64
+        const totalLength = chunks.reduce((acc, chunk) => acc + chunk.length, 0);
+        const combined = new Uint8Array(totalLength);
+        let offset = 0;
+        for (const chunk of chunks) {
+            combined.set(chunk, offset);
+            offset += chunk.length;
+        }
+        
+        // Converter para base64
+        const base64 = btoa(String.fromCharCode(...combined));
+        return base64;
+    } catch (error) {
+        console.warn('⚠️ Erro ao comprimir dados, enviando sem compressão:', error);
+        // Fallback: retornar dados sem compressão
+        return JSON.stringify(data);
+    }
+};
+
+/**
  * Chama o proxy do Supabase com timeout e tratamento de erros melhorado
  * Timeout de 10 segundos (limite do Vercel)
  */
@@ -118,6 +185,7 @@ const callSupabaseProxy = async <T = any>(
     options?: {
         body?: unknown;
         query?: Record<string, string>;
+        headers?: Record<string, string>;
     },
     timeoutMs: number = 10000 // 10 segundos (limite do Vercel)
 ): Promise<T> => {
@@ -133,12 +201,20 @@ const callSupabaseProxy = async <T = any>(
         }
     }
 
+    const defaultHeaders: Record<string, string> = {
+        'Content-Type': 'application/json'
+    };
+    const headers = { ...defaultHeaders, ...options?.headers };
+
+    // Se o body for string (comprimido), enviar como está, senão stringify
+    const body = options?.body 
+        ? (typeof options.body === 'string' ? options.body : JSON.stringify(options.body))
+        : undefined;
+
     const fetchPromise = fetch(url, {
         method,
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: options?.body ? JSON.stringify(options.body) : undefined
+        headers,
+        body
     }).then(async (response) => {
         // Verificar se é erro de CORS
         if (response.status === 0 || response.type === 'opaque') {
@@ -166,10 +242,63 @@ const callSupabaseProxy = async <T = any>(
     ]);
 };
 
+/**
+ * Otimiza o projeto removendo campos muito grandes se necessário
+ * Remove specificationDocument se o payload ainda estiver muito grande após compressão
+ */
+const optimizeProjectForUpload = (project: Project): Project => {
+    const optimized = { ...project };
+    
+    // Se specificationDocument for muito grande (>500KB), remover
+    if (optimized.specificationDocument) {
+        const docSize = new Blob([optimized.specificationDocument]).size;
+        if (docSize > 500 * 1024) { // 500KB
+            console.warn(`⚠️ Removendo specificationDocument muito grande (${(docSize / 1024).toFixed(2)}KB) para reduzir tamanho do payload`);
+            optimized.specificationDocument = undefined;
+        }
+    }
+    
+    return optimized;
+};
+
 const saveThroughProxy = async (project: Project) => {
     const userId = await getUserId();
+    
+    // Otimizar projeto antes de enviar (remover campos muito grandes)
+    const optimizedProject = optimizeProjectForUpload(project);
+    const payload = { project: optimizedProject, userId };
+    
+    // Verificar tamanho do payload antes de enviar
+    const payloadString = JSON.stringify(payload);
+    const payloadSize = new Blob([payloadString]).size;
+    const payloadSizeMB = payloadSize / (1024 * 1024);
+    
+    // Se o payload for maior que 1MB, tentar comprimir
+    let body: unknown;
+    let headers: Record<string, string> = {
+        'Content-Type': 'application/json'
+    };
+    
+    if (payloadSizeMB > 1 && typeof CompressionStream !== 'undefined') {
+        try {
+            const compressed = await compressData(payload);
+            const compressedSize = new Blob([compressed]).size;
+            const compressedSizeMB = compressedSize / (1024 * 1024);
+            body = compressed;
+            headers['x-content-compressed'] = 'gzip';
+            headers['Content-Type'] = 'text/plain'; // Base64 string
+            console.log(`📦 Payload comprimido: ${payloadSizeMB.toFixed(2)}MB -> ${compressedSizeMB.toFixed(2)}MB`);
+        } catch (error) {
+            console.warn('⚠️ Erro ao comprimir, enviando sem compressão:', error);
+            body = payload;
+        }
+    } else {
+        body = payload;
+    }
+    
     await callSupabaseProxy('POST', {
-        body: { project, userId }
+        body,
+        headers
     });
     console.log(`✅ Projeto "${project.name}" salvo via proxy Supabase`);
 };
@@ -207,6 +336,20 @@ export const saveProjectToSupabase = async (project: Project): Promise<void> => 
             return;
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : String(error);
+            
+            // Tratamento específico para erro 413 (Payload Too Large)
+            if (isPayloadTooLargeError(error)) {
+                console.error('❌ Erro 413: Payload muito grande para salvar no Supabase:', errorMessage);
+                throw new Error(
+                    `O projeto "${project.name}" é muito grande para ser salvo no Supabase. ` +
+                    `O limite é de 4MB. Considere:\n` +
+                    `- Remover documentos de especificação muito grandes\n` +
+                    `- Reduzir o número de tarefas ou análises\n` +
+                    `- Dividir o projeto em partes menores\n\n` +
+                    `O projeto foi salvo apenas localmente.`
+                );
+            }
+            
             if (isCorsError(error)) {
                 console.error('❌ Erro CORS ao salvar no Supabase. Configure VITE_SUPABASE_PROXY_URL:', errorMessage);
             } else {

@@ -144,6 +144,22 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
       logger.info(`Projeto "${project.name}" salvo no Supabase com sucesso`, 'ProjectsStore');
     } catch (error) {
       const errorObj = error instanceof Error ? error : new Error('Erro ao salvar projeto no Supabase');
+      const errorMessage = errorObj.message.toLowerCase();
+      
+      // Tratamento específico para erro 413 (Payload Too Large)
+      if (errorMessage.includes('413') || 
+          errorMessage.includes('payload muito grande') || 
+          errorMessage.includes('content too large')) {
+        logger.warn(
+          `Projeto "${project.name}" muito grande para Supabase. Salvo apenas localmente.`,
+          'ProjectsStore',
+          errorObj
+        );
+        // Não lançar erro para 413 - apenas logar aviso
+        // O projeto já está salvo localmente
+        return;
+      }
+      
       logger.error('Erro ao salvar projeto no Supabase', 'ProjectsStore', errorObj);
       throw errorObj;
     }
