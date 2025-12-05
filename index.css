@@ -1038,12 +1038,17 @@ span {
 
 .leve-saude .text-text-primary,
 .leve-saude [class*="text-text-primary"] {
-  color: #333333 !important;
+  color: #451e44 !important;
 }
 
 .leve-saude .text-text-secondary,
 .leve-saude [class*="text-text-secondary"] {
-  color: #666666 !important;
+  color: #333333 !important;
+}
+
+.text-gray-500 {
+  --tw-text-opacity: 1;
+  color: #451e44;
 }
 
 .leve-saude .text-text-tertiary,
@@ -1071,7 +1076,7 @@ span {
 /* Leve Saude - Cards com bordas visíveis */
 .leve-saude .border,
 .leve-saude [class*="border"]:not([class*="border-transparent"]) {
-  border-color: rgba(0, 0, 0, 0.12) !important;
+  border-color: #fcf9ec !important;
 }
 
 .heading-display {
@@ -2543,7 +2548,7 @@ select option:focus {
 
 .leve-saude .bg-red-500\/20,
 .leve-saude [class*="bg-red-500"]:not([class*="bg-red-600"]) {
-  background-color: rgba(239, 68, 68, 0.15) !important;
+  background-color: #fcf9ec !important;
 }
 
 .leve-saude .text-red-800,
@@ -3025,7 +3030,7 @@ select option:focus {
 /* Leve Saude - Cores de estratégias de teste com melhor contraste */
 .leve-saude .bg-blue-500\/30,
 .leve-saude [class*="bg-blue-500"] {
-  background-color: rgba(59, 130, 246, 0.15) !important;
+  background-color: #fcf9ec !important;
 }
 
 .leve-saude .bg-blue-600,
@@ -3128,7 +3133,7 @@ select option:focus {
 
 .leve-saude .text-accent-light,
 .leve-saude [class*="text-accent-light"] {
-  color: #3e5cbc !important;
+  color: #fb4c00 !important;
 }
 
 /* Leve Saude - Ajuste para bordas escuras em fundo claro */
