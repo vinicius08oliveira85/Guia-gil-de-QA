@@ -256,7 +256,7 @@ export const ProjectsDashboard: React.FC<{
                     <div className="flex flex-col items-end gap-md w-full sm:w-auto">
                         <div className="flex flex-wrap gap-sm justify-end items-center">
                             {/* View Toggle */}
-                            <div className="flex items-center bg-surface-card border border-surface-border rounded-lg p-0.5 mr-2">
+                            <div className="view-toggle-custom flex items-center bg-surface-card border border-surface-border rounded-lg p-0.5 mr-2">
                                 <button
                                     onClick={() => setViewMode('grid')}
                                     className={`p-1.5 rounded ${viewMode === 'grid' ? 'bg-surface-hover text-accent shadow-sm' : 'text-text-tertiary hover:text-text-secondary'}`}
@@ -279,7 +279,7 @@ export const ProjectsDashboard: React.FC<{
                             <div className="relative">
                                 <button
                                     onClick={() => setShowTagFilter(!showTagFilter)}
-                                    className={`btn btn-secondary flex items-center gap-2 ${showTagFilter || selectedTags.length > 0 ? 'border-accent text-accent' : ''}`}
+                                    className={`btn-filters-custom btn btn-secondary flex items-center gap-2 ${showTagFilter || selectedTags.length > 0 ? 'border-accent text-accent' : ''}`}
                                 >
                                     <FilterIcon />
                                     <span className="hidden lg:inline">Filtros</span>

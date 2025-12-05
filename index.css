@@ -3288,6 +3288,35 @@ select option:focus {
   border-color: #fff !important;
 }
 
+/* Toggle de visualização - cores personalizadas */
+.view-toggle-custom .text-accent,
+.view-toggle-custom [class*="text-accent"]:not([class*="text-accent-light"]) {
+  color: #fb4c00 !important;
+}
+
+.view-toggle-custom .text-text-tertiary,
+.view-toggle-custom [class*="text-text-tertiary"] {
+  color: #fb4c00 !important;
+}
+
+.view-toggle-custom button.bg-surface-hover:hover,
+.view-toggle-custom .bg-surface-hover:hover {
+  background: #fc4c0214 !important;
+  border-color: #fc4c0233 !important;
+  color: #451e44 !important;
+}
+
+/* Botão de filtros - cores personalizadas */
+.btn-filters-custom * {
+  color: #fb4c00;
+}
+
+.btn-filters-custom .btn {
+  background: #fffffff2;
+  border-color: #fb4c00;
+  color: #000000;
+}
+
 .leve-saude .text-slate-300,
 .leve-saude [class*="text-slate-300"] {
   color: #475569 !important;
