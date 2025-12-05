@@ -4,7 +4,7 @@ import { Modal } from './common/Modal';
 import { Card } from './common/Card';
 import { ConfirmDialog } from './common/ConfirmDialog';
 import { ProjectTemplateSelector } from './common/ProjectTemplateSelector';
-import { TrashIcon, GridIcon, ListIcon, FilterIcon, CheckIcon } from './common/Icons';
+import { TrashIcon, CheckIcon } from './common/Icons';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { Badge } from './common/Badge';
 import { ProgressIndicator } from './common/ProgressIndicator';
@@ -203,7 +203,7 @@ export const ProjectsDashboard: React.FC<{
                                 onClick={() => setShowTagFilter(!showTagFilter)}
                                 className={`p-1.5 rounded border ${showTagFilter ? 'bg-accent text-white border-accent' : 'bg-surface-card border-surface-border text-text-secondary'}`}
                             >
-                                <FilterIcon />
+                                <span className="emoji-sticker">🔽</span>
                             </button>
                         </div>
                          {showTagFilter && allTags.length > 0 && (
@@ -265,7 +265,7 @@ export const ProjectsDashboard: React.FC<{
                                     title="Visualização em Grade"
                                     aria-pressed={viewMode === 'grid'}
                                 >
-                                    <GridIcon />
+                                    <span className="emoji-sticker">🔲</span>
                                 </button>
                                 <button
                                     onClick={() => setViewMode('list')}
@@ -273,7 +273,7 @@ export const ProjectsDashboard: React.FC<{
                                     title="Visualização em Lista"
                                     aria-pressed={viewMode === 'list'}
                                 >
-                                    <ListIcon />
+                                    <span className="emoji-sticker">📋</span>
                                 </button>
                             </div>
 
@@ -283,7 +283,7 @@ export const ProjectsDashboard: React.FC<{
                                     onClick={() => setShowTagFilter(!showTagFilter)}
                                     className={`toolbar-buttons-custom btn btn-secondary flex items-center gap-2 ${showTagFilter || selectedTags.length > 0 ? 'border-accent text-accent' : ''}`}
                                 >
-                                    <FilterIcon />
+                                    <span className="emoji-sticker">🔽</span>
                                     <span className="hidden lg:inline">Filtros</span>
                                     {selectedTags.length > 0 && (
                                         <span className="bg-accent text-white text-[10px] px-1.5 py-0.5 rounded-full ml-1">
