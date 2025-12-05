@@ -4,7 +4,7 @@ import { Modal } from './common/Modal';
 import { Card } from './common/Card';
 import { ConfirmDialog } from './common/ConfirmDialog';
 import { ProjectTemplateSelector } from './common/ProjectTemplateSelector';
-import { TrashIcon, GridIcon, ListIcon, FilterIcon, CheckIcon } from './common/Icons';
+import { TrashIcon, GridIcon, ListIcon, FilterIcon, CheckIcon, PlusIcon, SearchIcon, BookIcon, BarChartIcon, CompassIcon, CloudIcon, TypeIcon, FileTextIcon, TrendingUpIcon, RefreshIcon } from './common/Icons';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { Badge } from './common/Badge';
 import { ProgressIndicator } from './common/ProgressIndicator';
@@ -124,11 +124,11 @@ export const ProjectsDashboard: React.FC<{
     }, [projects, sortBy, selectedTags]);
 
     const quickActions = useMemo(() => {
-        const actions: Array<{ id: string; label: string; icon: string; onClick: () => void | Promise<void> }> = [
+        const actions: Array<{ id: string; label: string; icon: React.ReactNode; onClick: () => void | Promise<void> }> = [
             {
                 id: 'search',
                 label: 'Buscar Projetos',
-                icon: '🔍',
+                icon: <SearchIcon />,
                 onClick: onSearchClick
             }
         ];
@@ -137,7 +137,7 @@ export const ProjectsDashboard: React.FC<{
             actions.push({
                 id: 'advanced-search',
                 label: 'Busca Avançada',
-                icon: '🧭',
+                icon: <CompassIcon />,
                 onClick: onAdvancedSearchClick
             });
         }
@@ -146,7 +146,7 @@ export const ProjectsDashboard: React.FC<{
             actions.push({
                 id: 'compare',
                 label: 'Comparar Projetos',
-                icon: '📊',
+                icon: <BarChartIcon />,
                 onClick: onComparisonClick
             });
         }
@@ -155,7 +155,7 @@ export const ProjectsDashboard: React.FC<{
             actions.push({
                 id: 'supabase',
                 label: 'Carregar do Supabase',
-                icon: '☁️',
+                icon: <CloudIcon />,
                 onClick: handleSyncSupabase
             });
         }
@@ -163,7 +163,7 @@ export const ProjectsDashboard: React.FC<{
         actions.push({
             id: 'schema',
             label: 'Esquema Solus',
-            icon: '📚',
+            icon: <BookIcon />,
             onClick: () => setShowSchemaModal(true)
         });
 
@@ -229,16 +229,18 @@ export const ProjectsDashboard: React.FC<{
                             </div>
                         )}
 
-                        <div className="mobile-actions-inline" role="group" aria-label="Ações principais">
+                        <div className="mobile-actions-inline toolbar-icons-custom" role="group" aria-label="Ações principais">
                             <button 
                                 onClick={() => setIsCreating(true)} 
-                                className="btn btn-primary btn-md flex-shrink-0"
+                                className="btn btn-primary btn-md flex-shrink-0 flex items-center gap-1.5"
                                 data-onboarding="create-project"
                             >
-                                ➕ Novo
+                                <PlusIcon />
+                                <span>Novo</span>
                             </button>
-                            <button onClick={onSearchClick} className="btn btn-secondary btn-md flex-shrink-0">
-                                🔍 Buscar
+                            <button onClick={onSearchClick} className="btn btn-secondary btn-md flex-shrink-0 flex items-center gap-1.5">
+                                <SearchIcon />
+                                <span>Buscar</span>
                             </button>
                             {quickActions.length > 1 && (
                                 <button 
@@ -328,43 +330,48 @@ export const ProjectsDashboard: React.FC<{
                                  <select 
                                     value={sortBy} 
                                     onChange={(e) => setSortBy(e.target.value as any)}
-                                    className="toolbar-buttons-custom bg-surface-card border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-accent/50 outline-none transition-colors cursor-pointer"
+                                    className="toolbar-buttons-custom toolbar-icons-custom bg-surface-card border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-accent/50 outline-none transition-colors cursor-pointer"
                                     aria-label="Ordenar projetos"
                                 >
-                                    <option value="name">🔤 Nome</option>
-                                    <option value="tasks">📝 Tarefas</option>
-                                    <option value="progress">📈 Progresso</option>
+                                    <option value="name">Nome</option>
+                                    <option value="tasks">Tarefas</option>
+                                    <option value="progress">Progresso</option>
                                 </select>
                             </div>
                             
-                            <button onClick={onSearchClick} className="toolbar-buttons-custom btn btn-secondary btn-md" title="Buscar">
-                                🔍
+                            <button onClick={onSearchClick} className="toolbar-buttons-custom toolbar-icons-custom btn btn-secondary btn-md flex items-center gap-1.5" title="Buscar">
+                                <SearchIcon />
+                                <span>Buscar</span>
                             </button>
                             <button 
                                 onClick={() => setIsCreating(true)} 
-                                className="toolbar-buttons-custom btn btn-primary btn-md"
+                                className="toolbar-buttons-custom toolbar-icons-custom btn btn-primary btn-md flex items-center gap-1.5"
                                 data-onboarding="create-project"
                             >
-                                ➕ Novo Projeto
+                                <PlusIcon />
+                                <span>Novo Projeto</span>
                             </button>
                             <button
                                 onClick={() => setShowSchemaModal(true)}
-                                className="toolbar-buttons-custom btn btn-secondary"
+                                className="toolbar-buttons-custom toolbar-icons-custom btn btn-secondary flex items-center gap-1.5"
                                 title="Esquema da API Solus"
                             >
-                                📚 Esquema API
+                                <BookIcon />
+                                <span>Esquema API</span>
                             </button>
                         </div>
                          {/* Secondary Actions Row */}
-                         <div className="flex gap-2 text-xs">
+                         <div className="flex gap-2 text-xs toolbar-icons-custom">
                             {onComparisonClick && projects.length > 1 && (
                                 <button onClick={onComparisonClick} className="text-text-secondary hover:text-accent transition-colors flex items-center gap-1">
-                                    📊 Comparar
+                                    <BarChartIcon />
+                                    <span>Comparar</span>
                                 </button>
                             )}
                             {onAdvancedSearchClick && (
                                 <button onClick={onAdvancedSearchClick} className="text-text-secondary hover:text-accent transition-colors flex items-center gap-1">
-                                    🧭 Avançado
+                                    <CompassIcon />
+                                    <span>Avançado</span>
                                 </button>
                             )}
                             {/* Botão sempre visível, mas desabilitado se Supabase não estiver disponível */}
@@ -374,7 +381,17 @@ export const ProjectsDashboard: React.FC<{
                                 disabled={isSyncingSupabase || !onSyncSupabase}
                                 title={!onSyncSupabase ? 'Supabase não está configurado. Configure VITE_SUPABASE_PROXY_URL.' : 'Sincronizar projetos do Supabase'}
                             >
-                                {isSyncingSupabase ? 'Sincronizando...' : '☁️ Sync Supabase'}
+                                {isSyncingSupabase ? (
+                                    <>
+                                        <RefreshIcon />
+                                        <span>Sincronizando...</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <CloudIcon />
+                                        <span>Sync Supabase</span>
+                                    </>
+                                )}
                             </button>
                         </div>
                     </div>
@@ -387,14 +404,14 @@ export const ProjectsDashboard: React.FC<{
                 title="Ações rápidas"
                 size="sm"
             >
-                <div className="space-y-3 mobile-action-shadow">
+                <div className="space-y-3 mobile-action-shadow toolbar-icons-custom">
                     {quickActions.map(action => (
                         <button
                             key={action.id}
                             onClick={() => handleMobileAction(action.onClick)}
                             className="w-full flex items-center gap-3 p-3 rounded-lg border border-surface-border text-left hover:border-accent hover:text-accent transition-colors active:scale-95"
                         >
-                            <span className="text-xl">{action.icon}</span>
+                            <span className="flex-shrink-0">{action.icon}</span>
                             <span className="font-semibold">{action.label}</span>
                         </button>
                     ))}
@@ -402,7 +419,8 @@ export const ProjectsDashboard: React.FC<{
                         onClick={() => handleMobileAction(() => setIsCreating(true))}
                         className="w-full flex items-center gap-3 p-3 rounded-lg bg-accent/20 text-accent font-semibold justify-center"
                     >
-                        ➕ Criar Projeto
+                        <PlusIcon />
+                        <span>Criar Projeto</span>
                     </button>
                 </div>
             </Modal>
@@ -675,8 +693,9 @@ export const ProjectsDashboard: React.FC<{
                             Limpar Filtros
                         </button>
                     ) : (
-                        <button onClick={() => setIsCreating(true)} className="btn btn-primary flex items-center gap-2 px-6 py-2.5 text-base shadow-lg shadow-primary/20 hover:shadow-primary/30 hover:-translate-y-0.5 transition-all">
-                            <span>➕</span> Criar Primeiro Projeto
+                        <button onClick={() => setIsCreating(true)} className="toolbar-icons-custom btn btn-primary flex items-center gap-2 px-6 py-2.5 text-base shadow-lg shadow-primary/20 hover:shadow-primary/30 hover:-translate-y-0.5 transition-all">
+                            <PlusIcon />
+                            <span>Criar Primeiro Projeto</span>
                         </button>
                     )}
                 </div>
