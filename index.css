@@ -3306,15 +3306,67 @@ select option:focus {
   color: #451e44 !important;
 }
 
-/* Botão de filtros - cores personalizadas */
-.btn-filters-custom * {
-  color: #fb4c00;
+/* Botões da toolbar - cores personalizadas e isoladas */
+.toolbar-buttons-custom {
+  min-height: 42px !important;
+  padding: 0.55rem 1.35rem !important;
+  font-size: 0.92rem !important;
+  border-color: #fb4c00 !important;
+  color: #000000 !important;
+  background: #fffffff2 !important;
 }
 
-.btn-filters-custom .btn {
-  background: #fffffff2;
-  border-color: #fb4c00;
-  color: #000000;
+/* Ícones e SVG em laranja */
+.toolbar-buttons-custom svg {
+  color: #fb4c00 !important;
+  stroke: #fb4c00 !important;
+}
+
+.toolbar-buttons-custom svg * {
+  stroke: #fb4c00 !important;
+  fill: #fb4c00 !important;
+}
+
+/* Texto em preto - sobrescreve qualquer cor aplicada aos filhos */
+.toolbar-buttons-custom > span:not(svg),
+.toolbar-buttons-custom {
+  color: #000000 !important;
+}
+
+.toolbar-buttons-custom:hover {
+  border-color: #fb4c00 !important;
+  background: #fffffff2 !important;
+}
+
+.toolbar-buttons-custom:focus {
+  border-color: #fb4c00 !important;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(251, 76, 0, 0.2) !important;
+}
+
+.toolbar-buttons-custom:active {
+  border-color: #fb4c00 !important;
+  background: #fffffff2 !important;
+}
+
+/* Dropdown Nome na toolbar */
+.toolbar-buttons-custom select {
+  min-height: 42px !important;
+  padding: 0.55rem 1.35rem !important;
+  font-size: 0.92rem !important;
+  border-color: #fb4c00 !important;
+  color: #000000 !important;
+  background: #fffffff2 !important;
+}
+
+.toolbar-buttons-custom select:hover {
+  border-color: #fb4c00 !important;
+}
+
+.toolbar-buttons-custom select:focus {
+  border-color: #fb4c00 !important;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(251, 76, 0, 0.2) !important;
 }
 
 .leve-saude .text-slate-300,

@@ -279,7 +279,7 @@ export const ProjectsDashboard: React.FC<{
                             <div className="relative">
                                 <button
                                     onClick={() => setShowTagFilter(!showTagFilter)}
-                                    className={`btn-filters-custom btn btn-secondary flex items-center gap-2 ${showTagFilter || selectedTags.length > 0 ? 'border-accent text-accent' : ''}`}
+                                    className={`toolbar-buttons-custom btn btn-secondary flex items-center gap-2 ${showTagFilter || selectedTags.length > 0 ? 'border-accent text-accent' : ''}`}
                                 >
                                     <FilterIcon />
                                     <span className="hidden lg:inline">Filtros</span>
@@ -328,7 +328,7 @@ export const ProjectsDashboard: React.FC<{
                                  <select 
                                     value={sortBy} 
                                     onChange={(e) => setSortBy(e.target.value as any)}
-                                    className="bg-surface-card border border-surface-border rounded-lg px-3 py-2 text-sm text-text-primary focus:ring-2 focus:ring-accent/50 outline-none hover:border-accent/50 transition-colors cursor-pointer"
+                                    className="toolbar-buttons-custom bg-surface-card border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-accent/50 outline-none transition-colors cursor-pointer"
                                     aria-label="Ordenar projetos"
                                 >
                                     <option value="name">🔤 Nome</option>
@@ -337,19 +337,19 @@ export const ProjectsDashboard: React.FC<{
                                 </select>
                             </div>
                             
-                            <button onClick={onSearchClick} className="btn btn-secondary btn-md" title="Buscar">
+                            <button onClick={onSearchClick} className="toolbar-buttons-custom btn btn-secondary btn-md" title="Buscar">
                                 🔍
                             </button>
                             <button 
                                 onClick={() => setIsCreating(true)} 
-                                className="btn btn-primary btn-md"
+                                className="toolbar-buttons-custom btn btn-primary btn-md"
                                 data-onboarding="create-project"
                             >
                                 ➕ Novo Projeto
                             </button>
                             <button
                                 onClick={() => setShowSchemaModal(true)}
-                                className="btn btn-secondary"
+                                className="toolbar-buttons-custom btn btn-secondary"
                                 title="Esquema da API Solus"
                             >
                                 📚 Esquema API
