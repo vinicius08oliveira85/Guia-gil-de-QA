@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { JiraTask, JiraTaskType, BugSeverity, TeamRole, TaskPriority } from '../../types';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import { TagInput } from '../common/TagInput';
@@ -32,6 +32,41 @@ export const TaskForm: React.FC<{
     });
 
     const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+
+    // Atualizar taskData quando existingTask mudar
+    useEffect(() => {
+        if (existingTask) {
+            setTaskData({
+                id: existingTask.id || '',
+                title: existingTask.title || '',
+                description: existingTask.description || '',
+                type: existingTask.type || 'Tarefa',
+                parentId: existingTask.parentId || parentId || '',
+                severity: existingTask.severity || 'Médio',
+                priority: existingTask.priority || 'Média',
+                owner: existingTask.owner || (parentId ? 'QA' : 'Product'),
+                assignee: existingTask.assignee || (parentId ? 'Dev' : 'QA'),
+                tags: existingTask.tags || []
+            });
+            // Limpar erros de validação quando a tarefa mudar
+            setValidationErrors({});
+        } else {
+            // Se não há tarefa existente, resetar para valores padrão
+            setTaskData({
+                id: '',
+                title: '',
+                description: '',
+                type: 'Tarefa',
+                parentId: parentId || '',
+                severity: 'Médio',
+                priority: 'Média',
+                owner: parentId ? 'QA' : 'Product',
+                assignee: parentId ? 'Dev' : 'QA',
+                tags: []
+            });
+            setValidationErrors({});
+        }
+    }, [existingTask, parentId]);
 
     const validateForm = (): boolean => {
         const errors: Record<string, string> = {};
