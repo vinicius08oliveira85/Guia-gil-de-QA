@@ -3250,6 +3250,44 @@ select option:focus {
   box-shadow: none;
 }
 
+/* Cards de projeto - cores personalizadas */
+.project-card-custom {
+  background: #451e44 !important;
+}
+
+.project-card-custom .text-text-primary,
+.project-card-custom [class*="text-text-primary"] {
+  color: #ffffff !important;
+}
+
+.project-card-custom p,
+.project-card-custom li,
+.project-card-custom span,
+.project-card-custom h1,
+.project-card-custom h2,
+.project-card-custom h3,
+.project-card-custom h4,
+.project-card-custom h5,
+.project-card-custom h6 {
+  color: #fff !important;
+}
+
+.project-card-custom .bg-blue-600,
+.project-card-custom [class*="bg-blue-600"]:not([class*="bg-blue-500"]) {
+  --tw-bg-opacity: 1;
+  background-color: #fc4c02 !important;
+}
+
+.project-card-custom .text-text-secondary,
+.project-card-custom [class*="text-text-secondary"] {
+  color: #fc4c02 !important;
+}
+
+.project-card-custom .border,
+.project-card-custom [class*="border"]:not([class*="border-transparent"]) {
+  border-color: #fff !important;
+}
+
 .leve-saude .text-slate-300,
 .leve-saude [class*="text-slate-300"] {
   color: #475569 !important;
