@@ -1076,7 +1076,7 @@ span {
 /* Leve Saude - Cards com bordas visíveis */
 .leve-saude .border,
 .leve-saude [class*="border"]:not([class*="border-transparent"]) {
-  border-color: #fcf9ec !important;
+  border-color: #333333 !important;
 }
 
 .heading-display {
@@ -3056,7 +3056,7 @@ select option:focus {
 
 .leve-saude .bg-green-500\/30,
 .leve-saude [class*="bg-green-500"] {
-  background-color: rgba(34, 197, 94, 0.15) !important;
+  background-color: #fcf9ec !important;
 }
 
 .leve-saude .text-green-300,
@@ -3097,6 +3097,11 @@ select option:focus {
 .leve-saude .bg-slate-500\/30,
 .leve-saude [class*="bg-slate-500"] {
   background-color: rgba(100, 116, 139, 0.15) !important;
+}
+
+.bg-slate-700 {
+  --tw-bg-opacity: 1;
+  background-color: #333333;
 }
 
 .leve-saude .text-slate-300,
