@@ -232,13 +232,15 @@ export const ProjectsDashboard: React.FC<{
                         <div className="mobile-actions-inline" role="group" aria-label="Ações principais">
                             <button 
                                 onClick={() => setIsCreating(true)} 
-                                className="btn btn-primary btn-md flex-shrink-0"
+                                className="btn btn-primary btn-md flex-shrink-0 flex items-center gap-1.5"
                                 data-onboarding="create-project"
                             >
-                                ➕ Novo
+                                <span className="emoji-sticker">➕</span>
+                                <span>Novo</span>
                             </button>
-                            <button onClick={onSearchClick} className="btn btn-secondary btn-md flex-shrink-0">
-                                🔍 Buscar
+                            <button onClick={onSearchClick} className="btn btn-secondary btn-md flex-shrink-0 flex items-center gap-1.5">
+                                <span className="emoji-sticker">🔍</span>
+                                <span>Buscar</span>
                             </button>
                             {quickActions.length > 1 && (
                                 <button 
@@ -337,34 +339,39 @@ export const ProjectsDashboard: React.FC<{
                                 </select>
                             </div>
                             
-                            <button onClick={onSearchClick} className="toolbar-buttons-custom btn btn-secondary btn-md" title="Buscar">
-                                🔍
+                            <button onClick={onSearchClick} className="toolbar-buttons-custom btn btn-secondary btn-md flex items-center gap-1.5" title="Buscar">
+                                <span className="emoji-sticker">🔍</span>
+                                <span>Buscar</span>
                             </button>
                             <button 
                                 onClick={() => setIsCreating(true)} 
-                                className="toolbar-buttons-custom btn btn-primary btn-md"
+                                className="toolbar-buttons-custom btn btn-primary btn-md flex items-center gap-1.5"
                                 data-onboarding="create-project"
                             >
-                                ➕ Novo Projeto
+                                <span className="emoji-sticker">➕</span>
+                                <span>Novo Projeto</span>
                             </button>
                             <button
                                 onClick={() => setShowSchemaModal(true)}
-                                className="toolbar-buttons-custom btn btn-secondary"
+                                className="toolbar-buttons-custom btn btn-secondary flex items-center gap-1.5"
                                 title="Esquema da API Solus"
                             >
-                                📚 Esquema API
+                                <span className="emoji-sticker">📚</span>
+                                <span>Esquema API</span>
                             </button>
                         </div>
                          {/* Secondary Actions Row */}
                          <div className="flex gap-2 text-xs">
                             {onComparisonClick && projects.length > 1 && (
                                 <button onClick={onComparisonClick} className="text-text-secondary hover:text-accent transition-colors flex items-center gap-1">
-                                    📊 Comparar
+                                    <span className="emoji-sticker">📊</span>
+                                    <span>Comparar</span>
                                 </button>
                             )}
                             {onAdvancedSearchClick && (
                                 <button onClick={onAdvancedSearchClick} className="text-text-secondary hover:text-accent transition-colors flex items-center gap-1">
-                                    🧭 Avançado
+                                    <span className="emoji-sticker">🧭</span>
+                                    <span>Avançado</span>
                                 </button>
                             )}
                             {/* Botão sempre visível, mas desabilitado se Supabase não estiver disponível */}
@@ -374,7 +381,17 @@ export const ProjectsDashboard: React.FC<{
                                 disabled={isSyncingSupabase || !onSyncSupabase}
                                 title={!onSyncSupabase ? 'Supabase não está configurado. Configure VITE_SUPABASE_PROXY_URL.' : 'Sincronizar projetos do Supabase'}
                             >
-                                {isSyncingSupabase ? 'Sincronizando...' : '☁️ Sync Supabase'}
+                                {isSyncingSupabase ? (
+                                    <>
+                                        <span className="emoji-sticker">🔄</span>
+                                        <span>Sincronizando...</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <span className="emoji-sticker">☁️</span>
+                                        <span>Sync Supabase</span>
+                                    </>
+                                )}
                             </button>
                         </div>
                     </div>
@@ -394,7 +411,7 @@ export const ProjectsDashboard: React.FC<{
                             onClick={() => handleMobileAction(action.onClick)}
                             className="w-full flex items-center gap-3 p-3 rounded-lg border border-surface-border text-left hover:border-accent hover:text-accent transition-colors active:scale-95"
                         >
-                            <span className="text-xl">{action.icon}</span>
+                            <span className="emoji-sticker">{action.icon}</span>
                             <span className="font-semibold">{action.label}</span>
                         </button>
                     ))}
@@ -402,7 +419,8 @@ export const ProjectsDashboard: React.FC<{
                         onClick={() => handleMobileAction(() => setIsCreating(true))}
                         className="w-full flex items-center gap-3 p-3 rounded-lg bg-accent/20 text-accent font-semibold justify-center"
                     >
-                        ➕ Criar Projeto
+                        <span className="emoji-sticker">➕</span>
+                        <span>Criar Projeto</span>
                     </button>
                 </div>
             </Modal>
@@ -676,7 +694,8 @@ export const ProjectsDashboard: React.FC<{
                         </button>
                     ) : (
                         <button onClick={() => setIsCreating(true)} className="btn btn-primary flex items-center gap-2 px-6 py-2.5 text-base shadow-lg shadow-primary/20 hover:shadow-primary/30 hover:-translate-y-0.5 transition-all">
-                            <span>➕</span> Criar Primeiro Projeto
+                            <span className="emoji-sticker">➕</span>
+                            <span>Criar Primeiro Projeto</span>
                         </button>
                     )}
                 </div>

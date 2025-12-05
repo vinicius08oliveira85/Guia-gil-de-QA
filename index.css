@@ -3417,6 +3417,20 @@ select option:focus {
   box-shadow: 0 0 0 2px rgba(251, 76, 0, 0.2) !important;
 }
 
+/* Emojis Stickers - tamanho padrão e estilos */
+.emoji-sticker {
+  font-size: 1rem;
+  line-height: 1;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+/* Aplicar cor laranja aos emojis da toolbar quando necessário */
+.toolbar-buttons-custom .emoji-sticker,
+.toolbar-icons-custom .emoji-sticker {
+  color: #fb4c00;
+}
+
 .leve-saude .text-slate-300,
 .leve-saude [class*="text-slate-300"] {
   color: #475569 !important;

@@ -37,7 +37,7 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported, onOpenSetting
                         title="Configurações"
                         aria-label="Abrir configurações"
                     >
-                        <span className="text-xl">⚙️</span>
+                        <span className="emoji-sticker">⚙️</span>
                     </button>
                     <button
                         onClick={toggleBeginnerMode}
@@ -46,7 +46,7 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported, onOpenSetting
                         aria-label="Alternar modo iniciante"
                         aria-pressed={isBeginnerMode}
                     >
-                        <span className="text-xl">{isBeginnerMode ? '🎓' : '📚'}</span>
+                        <span className="emoji-sticker">{isBeginnerMode ? '🎓' : '📚'}</span>
                     </button>
                     <div className="flex-shrink-0">
                         <NotificationBell />
@@ -58,7 +58,7 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported, onOpenSetting
                         aria-label="Alternar tema"
                         aria-pressed={theme === 'dark'}
                     >
-                        <span className="text-xl">
+                        <span className="emoji-sticker">
                             {theme === 'dark' ? '🌙' : theme === 'light' ? '☀️' : theme === 'leve-saude' ? '🧡' : '💻'}
                         </span>
                     </button>
