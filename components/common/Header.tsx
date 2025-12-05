@@ -23,7 +23,7 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported, onOpenSetting
                     <img
                         src="/logo@erasebg-transformed.png"
                         alt="Logo QA Agile Guide"
-                        className="h-10 w-auto sm:h-12 flex-shrink-0 logo-leve-shadow"
+                        className="h-16 w-auto sm:h-20 flex-shrink-0 logo-leve-shadow"
                         loading="lazy"
                         decoding="async"
                         draggable={false}
