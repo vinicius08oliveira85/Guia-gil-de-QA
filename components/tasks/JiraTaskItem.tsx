@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { JiraTask, BddScenario, TestCaseDetailLevel, TeamRole, Project, TestCase } from '../../types';
 import { Spinner } from '../common/Spinner';
-import { TaskTypeIcon, TaskStatusIcon, PlusIcon, EditIcon, TrashIcon, ChevronDownIcon, RefreshIcon } from '../common/Icons';
+import { TaskTypeIcon, TaskStatusIcon, StartTestIcon, CompleteTestIcon, PlusIcon, EditIcon, TrashIcon, ChevronDownIcon, RefreshIcon } from '../common/Icons';
 import { BddScenarioForm, BddScenarioItem } from './BddScenario';
 import { TestCaseItem } from './TestCaseItem';
 import { TestStrategyCard } from './TestStrategyCard';
@@ -1084,7 +1084,13 @@ export const JiraTaskItem: React.FC<{
                             ) : (
                                 <span className="w-6" />
                             )}
-                            <TaskStatusIcon status={task.status} />
+                            {task.status === 'In Progress' ? (
+                                <StartTestIcon />
+                            ) : task.status === 'Done' ? (
+                                <CompleteTestIcon />
+                            ) : (
+                                <TaskStatusIcon status={task.status} />
+                            )}
                             <TaskTypeIcon type={task.type} />
                             <span className="task-card-compact_code">{task.id}</span>
                             {(() => {
