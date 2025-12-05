@@ -416,7 +416,7 @@ export const JiraTaskItem: React.FC<{
                     <button
                         onClick={() => setShowTestReport(true)}
                         className={`
-                            ${windows12Styles.buttonPrimary}
+                            btn-generate-test-record
                             flex items-center gap-2
                         `}
                     >

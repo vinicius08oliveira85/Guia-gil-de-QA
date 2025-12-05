@@ -3104,6 +3104,88 @@ select option:focus {
   background-color: #333333;
 }
 
+/* Botão específico "Gerar Registro de Testes" - cores personalizadas */
+.btn-generate-test-record {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  border: 1px solid transparent;
+  padding: 0.55rem 1.35rem;
+  min-height: 42px;
+  font-weight: 600;
+  font-size: 0.92rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
+  background: linear-gradient(to right, #451e44, #451e44);
+  color: #fb4c00;
+  border-color: rgba(251, 76, 0, 0.3);
+  box-shadow: 0 8px 24px rgba(69, 30, 68, 0.25);
+}
+
+.btn-generate-test-record .to-emerald-500 {
+  --tw-gradient-to: #451e44 var(--tw-gradient-to-position);
+}
+
+.btn-generate-test-record .from-accent {
+  --tw-gradient-from: #451e44 var(--tw-gradient-from-position);
+  --tw-gradient-to: rgb(20 184 166 / 0) var(--tw-gradient-to-position);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+
+.btn-generate-test-record p,
+.btn-generate-test-record li,
+.btn-generate-test-record span,
+.btn-generate-test-record h1,
+.btn-generate-test-record h2,
+.btn-generate-test-record h3,
+.btn-generate-test-record h4,
+.btn-generate-test-record h5,
+.btn-generate-test-record h6 {
+  color: #fb4c00;
+}
+
+.btn-generate-test-record .text-text-primary,
+.btn-generate-test-record [class*="text-text-primary"] {
+  color: #fb4c00;
+}
+
+.btn-generate-test-record svg {
+  color: #fb4c00;
+  stroke: #fb4c00;
+}
+
+.btn-generate-test-record:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 32px rgba(69, 30, 68, 0.35);
+  background: linear-gradient(to right, #451e44, #451e44);
+  color: #fb4c00;
+}
+
+.btn-generate-test-record:hover svg {
+  color: #fb4c00;
+  stroke: #fb4c00;
+}
+
+.btn-generate-test-record:active {
+  transform: translateY(1px) scale(0.99);
+  background: linear-gradient(to right, #451e44, #451e44);
+}
+
+.btn-generate-test-record:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(251, 76, 0, 0.3);
+}
+
+.btn-generate-test-record:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
 .leve-saude .text-slate-300,
 .leve-saude [class*="text-slate-300"] {
   color: #475569 !important;
