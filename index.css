@@ -1062,7 +1062,7 @@ span {
 .leve-saude .bg-surface,
 .leve-saude [class*="bg-surface"]:not([class*="bg-surface-hover"]):not([class*="bg-surface-border"]) {
   background-color: #FFFFFF !important;
-  border-color: rgba(0, 0, 0, 0.12) !important;
+  border-color: #F44336 !important;
 }
 
 .leve-saude .bg-surface-hover,
@@ -1073,6 +1073,10 @@ span {
 .leve-saude .border-surface-border,
 .leve-saude [class*="border-surface-border"] {
   border-color: rgba(0, 0, 0, 0.12) !important;
+}
+
+.bg-surface-border {
+  background-color: #fb4c00;
 }
 
 /* Leve Saude - Cards com bordas visíveis */
@@ -3411,24 +3415,6 @@ select option:focus {
   border-color: #fb4c00 !important;
   outline: none;
   box-shadow: 0 0 0 2px rgba(251, 76, 0, 0.2) !important;
-}
-
-/* Ícones da toolbar - cor laranja isolada */
-.toolbar-icons-custom svg {
-  color: #fb4c00 !important;
-  stroke: #fb4c00 !important;
-  flex-shrink: 0;
-}
-
-.toolbar-icons-custom svg * {
-  stroke: #fb4c00 !important;
-  fill: #fb4c00 !important;
-}
-
-.toolbar-icons-custom {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
 }
 
 .leve-saude .text-slate-300,
