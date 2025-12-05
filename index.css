@@ -1062,7 +1062,7 @@ span {
 .leve-saude .bg-surface,
 .leve-saude [class*="bg-surface"]:not([class*="bg-surface-hover"]):not([class*="bg-surface-border"]) {
   background-color: #FFFFFF !important;
-  border-color: rgba(0, 0, 0, 0.12) !important;
+  border-color: #F44336 !important;
 }
 
 .leve-saude .bg-surface-hover,
@@ -1073,6 +1073,10 @@ span {
 .leve-saude .border-surface-border,
 .leve-saude [class*="border-surface-border"] {
   border-color: rgba(0, 0, 0, 0.12) !important;
+}
+
+.bg-surface-border {
+  background-color: #fb4c00;
 }
 
 /* Leve Saude - Cards com bordas visíveis */
