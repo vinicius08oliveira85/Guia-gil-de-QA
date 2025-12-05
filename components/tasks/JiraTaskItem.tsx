@@ -1321,7 +1321,7 @@ export const JiraTaskItem: React.FC<{
                                     <button
                                         onClick={() => onGenerateAll(task.id)}
                                         disabled={isGeneratingAll || isGenerating || isGeneratingBdd}
-                                        className="btn btn-sm flex items-center gap-1.5 bg-green-500/20 border-green-500/30 hover:bg-green-500/40 text-green-700 dark:text-green-400 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        className="btn-generate-all btn btn-sm flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
                                         {isGeneratingAll ? (
                                             <>

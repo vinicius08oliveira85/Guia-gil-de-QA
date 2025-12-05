@@ -3186,6 +3186,70 @@ select option:focus {
   box-shadow: none;
 }
 
+/* Botão específico "Gerar Tudo" - cores personalizadas */
+.btn-generate-all {
+  background-color: #451e44 !important;
+  border-color: rgba(251, 76, 0, 0.3) !important;
+  color: #fb4c00 !important;
+  box-shadow: 0 8px 24px rgba(69, 30, 68, 0.25);
+}
+
+.btn-generate-all .bg-green-500\/30,
+.btn-generate-all [class*="bg-green-500"] {
+  background-color: #451e44 !important;
+}
+
+.btn-generate-all p,
+.btn-generate-all li,
+.btn-generate-all span,
+.btn-generate-all h1,
+.btn-generate-all h2,
+.btn-generate-all h3,
+.btn-generate-all h4,
+.btn-generate-all h5,
+.btn-generate-all h6 {
+  color: #fb4c00 !important;
+}
+
+.btn-generate-all * {
+  color: #fb4c00 !important;
+}
+
+.btn-generate-all svg {
+  color: #fb4c00 !important;
+  stroke: #fb4c00 !important;
+}
+
+.btn-generate-all:hover {
+  background-color: #451e44 !important;
+  border-color: rgba(251, 76, 0, 0.5) !important;
+  color: #fb4c00 !important;
+  box-shadow: 0 12px 32px rgba(69, 30, 68, 0.35);
+  transform: translateY(-1px);
+}
+
+.btn-generate-all:hover svg {
+  color: #fb4c00 !important;
+  stroke: #fb4c00 !important;
+}
+
+.btn-generate-all:active {
+  background-color: #451e44 !important;
+  transform: translateY(1px) scale(0.99);
+}
+
+.btn-generate-all:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(251, 76, 0, 0.3);
+}
+
+.btn-generate-all:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
 .leve-saude .text-slate-300,
 .leve-saude [class*="text-slate-300"] {
   color: #475569 !important;
