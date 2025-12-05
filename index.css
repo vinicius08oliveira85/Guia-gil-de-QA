@@ -3308,6 +3308,48 @@ select option:focus {
   color: #451e44 !important;
 }
 
+/* Lista de projetos - cores personalizadas e isoladas */
+.project-list-custom .bg-surface,
+.project-list-custom [class*="bg-surface"]:not([class*="bg-surface-hover"]):not([class*="bg-surface-border"]) {
+  background-color: #451e44 !important;
+  border-color: #0000001f !important;
+}
+
+.project-list-custom .text-text-primary,
+.project-list-custom [class*="text-text-primary"] {
+  color: #ffffff !important;
+}
+
+.project-list-custom p,
+.project-list-custom li,
+.project-list-custom span,
+.project-list-custom h1,
+.project-list-custom h2,
+.project-list-custom h3,
+.project-list-custom h4,
+.project-list-custom h5,
+.project-list-custom h6 {
+  color: #ffffff;
+}
+
+.project-list-custom .bg-blue-500\/30,
+.project-list-custom [class*="bg-blue-500"] {
+  background-color: #fb4c00;
+}
+
+.project-list-custom .bg-blue-600,
+.project-list-custom [class*="bg-blue-600"]:not([class*="bg-blue-500"]) {
+  --tw-bg-opacity: 1;
+  background-color: #fb4c00 !important;
+}
+
+.project-list-custom button.bg-surface-hover,
+.project-list-custom .bg-surface-hover {
+  background: #0000000a !important;
+  color: #fb4c00 !important;
+  border-color: #0000001f !important;
+}
+
 /* Botões da toolbar - cores personalizadas e isoladas */
 .toolbar-buttons-custom {
   min-height: 42px !important;

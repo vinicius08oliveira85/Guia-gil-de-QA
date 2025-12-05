@@ -582,7 +582,7 @@ export const ProjectsDashboard: React.FC<{
                             })}
                         </div>
                     ) : (
-                         <div className="flex flex-col space-y-3">
+                         <div className="project-list-custom flex flex-col space-y-3">
                             {filteredProjects.map(p => {
                                 const completedTasks = calculateProgress(p.tasks || []);
                                 const totalTasks = p.tasks?.length || 0;
