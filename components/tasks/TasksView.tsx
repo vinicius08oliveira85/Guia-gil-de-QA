@@ -5,7 +5,6 @@ import { Card } from '../common/Card';
 import { Modal } from '../common/Modal';
 import { FilterPanel } from '../common/FilterPanel';
 import { QuickFilters } from '../common/QuickFilters';
-import { TestCaseTemplateSelector } from './TestCaseTemplateSelector';
 import { TaskForm } from './TaskForm';
 import { TestCaseEditorModal } from './TestCaseEditorModal';
 
@@ -48,7 +47,6 @@ import { useFilters, FilterOptions } from '../../hooks/useFilters';
 import { createBugFromFailedTest } from '../../utils/bugAutoCreation';
 import { getTaskDependents, getReadyTasks } from '../../utils/dependencyService';
 import { notifyTestFailed, notifyBugCreated, notifyCommentAdded, notifyDependencyResolved } from '../../utils/notificationService';
-import { createTestCaseFromTemplate } from '../../utils/testCaseTemplates';
 import { Comment } from '../../types';
 import { BulkActions } from '../common/BulkActions';
 import { TaskCreationWizard } from './TaskCreationWizard';
@@ -61,8 +59,6 @@ import { Spinner } from '../common/Spinner';
 import { syncJiraProject, getJiraConfig, getJiraProjects, JiraConfig, syncTaskToJira } from '../../services/jiraService';
 import { GeneralIAAnalysisButton } from './GeneralIAAnalysisButton';
 import { generateGeneralIAAnalysis } from '../../services/ai/generalAnalysisService';
-import { FileImportModal } from '../common/FileImportModal';
-import { FileExportModal } from '../common/FileExportModal';
 
 export const TasksView: React.FC<{ 
     project: Project, 
@@ -73,8 +69,6 @@ export const TasksView: React.FC<{
     const [generatingBddTaskId, setGeneratingBddTaskId] = useState<string | null>(null);
     const [generatingAllTaskId, setGeneratingAllTaskId] = useState<string | null>(null);
     const [syncingTaskId, setSyncingTaskId] = useState<string | null>(null);
-    const [showTemplateSelector, setShowTemplateSelector] = useState(false);
-    const [selectedTaskForTemplate, setSelectedTaskForTemplate] = useState<string | null>(null);
     const [selectedTasks, setSelectedTasks] = useState<Set<string>>(new Set());
     const { handleError, handleSuccess } = useErrorHandler();
     const { filters, filteredTasks, updateFilter, clearFilters, removeFilter, activeFiltersCount } = useFilters(project);
@@ -100,9 +94,6 @@ export const TasksView: React.FC<{
     const [editingTask, setEditingTask] = useState<JiraTask | undefined>(undefined);
     const [testCaseEditorRef, setTestCaseEditorRef] = useState<{ taskId: string; testCase: TestCase } | null>(null);
     const [defaultParentId, setDefaultParentId] = useState<string | undefined>(undefined);
-    const [isImportModalOpen, setIsImportModalOpen] = useState(false);
-    const [isExportModalOpen, setIsExportModalOpen] = useState(false);
-    const [importTaskId, setImportTaskId] = useState<string | undefined>(undefined);
     const [showWizard, setShowWizard] = useState(false);
     const { isBeginnerMode } = useBeginnerMode();
     const [hasSeenWizard, setHasSeenWizard] = useLocalStorage<boolean>('task_creation_wizard_seen', false);
@@ -969,23 +960,6 @@ export const TasksView: React.FC<{
         return tree;
     }, [filteredTasks]);
 
-    const handleAddTestCaseFromTemplate = useCallback((taskId: string, templateId: string) => {
-        const task = project.tasks.find(t => t.id === taskId);
-        if (!task) return;
-
-        try {
-            const newTestCase = createTestCaseFromTemplate(templateId);
-            const updatedTask = {
-                ...task,
-                testCases: [...(task.testCases || []), newTestCase]
-            };
-            const newTasks = project.tasks.map(t => t.id === taskId ? updatedTask : t);
-            onUpdateProject({ ...project, tasks: newTasks });
-            handleSuccess('Caso de teste adicionado do template');
-        } catch (error) {
-            handleError(error instanceof Error ? error : new Error('Erro ao adicionar template'));
-        }
-    }, [project, onUpdateProject, handleSuccess, handleError]);
 
     const toggleTaskSelection = (taskId: string) => {
         setSelectedTasks(prev => {
@@ -1160,10 +1134,6 @@ export const TasksView: React.FC<{
                     onDeleteBddScenario={handleDeleteBddScenario}
                     onTaskStatusChange={(status) => handleTaskStatusChange(task.id, status)}
                     level={level}
-                    onAddTestCaseFromTemplate={(templateId) => {
-                        setSelectedTaskForTemplate(task.id);
-                        handleAddTestCaseFromTemplate(task.id, templateId);
-                    }}
                     onAddComment={(content) => handleAddComment(task.id, content)}
                     onEditComment={(commentId, content) => handleEditComment(task.id, commentId, content)}
                     onDeleteComment={(commentId) => handleDeleteComment(task.id, commentId)}
@@ -1176,7 +1146,7 @@ export const TasksView: React.FC<{
                 </JiraTaskItem>
             );
         });
-    }, [selectedTasks, generatingTestsTaskId, generatingBddTaskId, generatingAllTaskId, syncingTaskId, handleTestCaseStatusChange, handleToggleTestCaseAutomated, handleExecutedStrategyChange, handleTaskToolsChange, handleTestCaseToolsChange, handleStrategyExecutedChange, handleStrategyToolsChange, handleDeleteTask, handleGenerateTests, openTaskFormForNew, openTaskFormForEdit, handleGenerateBddScenarios, handleGenerateAll, handleSyncTaskToJira, handleSaveBddScenario, handleDeleteBddScenario, handleTaskStatusChange, handleAddTestCaseFromTemplate, handleAddComment, handleEditComment, handleDeleteComment, project, onUpdateProject, toggleTaskSelection]);
+    }, [selectedTasks, generatingTestsTaskId, generatingBddTaskId, generatingAllTaskId, syncingTaskId, handleTestCaseStatusChange, handleToggleTestCaseAutomated, handleExecutedStrategyChange, handleTaskToolsChange, handleTestCaseToolsChange, handleStrategyExecutedChange, handleStrategyToolsChange, handleDeleteTask, handleGenerateTests, openTaskFormForNew, openTaskFormForEdit, handleGenerateBddScenarios, handleGenerateAll, handleSyncTaskToJira, handleSaveBddScenario, handleDeleteBddScenario, handleTaskStatusChange, handleAddComment, handleEditComment, handleDeleteComment, project, onUpdateProject, toggleTaskSelection]);
 
     return (
         <>
@@ -1218,33 +1188,6 @@ export const TasksView: React.FC<{
                         >
                             <span className="emoji-sticker">🔽</span>
                             <span className="text-sm">{showFilters ? 'Ocultar Filtros' : `Filtros${activeFiltersCount > 0 ? ` (${activeFiltersCount})` : ''}`}</span>
-                        </button>
-                        
-                        <button 
-                            onClick={() => {
-                                setIsImportModalOpen(true);
-                                setImportTaskId(undefined);
-                            }}
-                            className="btn btn-secondary btn-sm flex items-center gap-1.5 flex-shrink-0"
-                            title="Importar tarefas"
-                        >
-                            <span className="emoji-sticker">📥</span>
-                            <span className="text-sm">Importar</span>
-                        </button>
-                        <button 
-                            onClick={() => setIsExportModalOpen(true)}
-                            className="btn btn-secondary btn-sm flex items-center gap-1.5 flex-shrink-0"
-                            title="Exportar tarefas"
-                        >
-                            <span className="emoji-sticker">📤</span>
-                            <span className="text-sm">Exportar</span>
-                        </button>
-                        <button 
-                            onClick={() => setShowTemplateSelector(true)} 
-                            className="btn btn-secondary btn-sm flex items-center gap-1.5 flex-shrink-0"
-                        >
-                            <span className="emoji-sticker">📝</span>
-                            <span className="text-sm">Templates</span>
                         </button>
                         
                         <button 
@@ -1643,50 +1586,6 @@ export const TasksView: React.FC<{
             </div>
         </Modal>
 
-        <Modal
-            isOpen={showTemplateSelector}
-            onClose={() => {
-                setShowTemplateSelector(false);
-                setSelectedTaskForTemplate(null);
-            }}
-            title="Selecionar Template de Caso de Teste"
-        >
-            <div>
-                {selectedTaskForTemplate ? (
-                    <p className="mb-4 text-sm text-text-secondary">
-                        Selecione um template para adicionar à tarefa <span className="font-semibold text-accent">{selectedTaskForTemplate}</span>.
-                    </p>
-                ) : (
-                    <p className="mb-4 text-sm text-text-secondary">
-                        Selecione uma tarefa e depois escolha um template de caso de teste para adicionar.
-                    </p>
-                )}
-                <TestCaseTemplateSelector
-                    onSelectTemplate={(templateId, taskId) => {
-                        const targetTaskId = taskId || selectedTaskForTemplate;
-                        if (targetTaskId) {
-                            handleAddTestCaseFromTemplate(targetTaskId, templateId);
-                            setShowTemplateSelector(false);
-                            setSelectedTaskForTemplate(null);
-                        }
-                    }}
-                    onClose={() => {
-                        setShowTemplateSelector(false);
-                        setSelectedTaskForTemplate(null);
-                    }}
-                    selectedTaskId={selectedTaskForTemplate}
-                    availableTasks={project.tasks}
-                    onSelectTask={(taskId) => {
-                        if (taskId) {
-                            setSelectedTaskForTemplate(taskId);
-                        } else {
-                            setSelectedTaskForTemplate(null);
-                        }
-                    }}
-                />
-            </div>
-        </Modal>
-
         {testCaseEditorRef && (
             <TestCaseEditorModal
                 testCase={testCaseEditorRef.testCase}
@@ -1703,48 +1602,6 @@ export const TasksView: React.FC<{
             onStart={handleWizardStart}
         />
 
-        {/* Modal de Importação */}
-        <FileImportModal
-            isOpen={isImportModalOpen}
-            onClose={() => {
-                setIsImportModalOpen(false);
-                setImportTaskId(undefined);
-            }}
-            importType={importTaskId ? 'test-cases' : 'tasks'}
-            taskId={importTaskId}
-            onImportTasks={(tasks) => {
-                onUpdateProject({
-                    ...project,
-                    tasks: [...project.tasks, ...tasks]
-                });
-                handleSuccess(`${tasks.length} tarefa(s) importada(s) com sucesso!`);
-            }}
-            onImportTestCases={(testCases, taskId) => {
-                if (taskId) {
-                    const task = project.tasks.find(t => t.id === taskId);
-                    if (task) {
-                        const updatedTask = {
-                            ...task,
-                            testCases: [...(task.testCases || []), ...testCases]
-                        };
-                        onUpdateProject({
-                            ...project,
-                            tasks: project.tasks.map(t => t.id === taskId ? updatedTask : t)
-                        });
-                        handleSuccess(`${testCases.length} caso(s) de teste importado(s) com sucesso!`);
-                    }
-                }
-            }}
-        />
-
-        {/* Modal de Exportação */}
-        <FileExportModal
-            isOpen={isExportModalOpen}
-            onClose={() => setIsExportModalOpen(false)}
-            exportType="tasks"
-            project={project}
-            tasks={project.tasks}
-        />
 
         </>
     );

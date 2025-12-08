@@ -5,25 +5,17 @@ import { TasksView } from './tasks/TasksView';
 import { DocumentsView } from './DocumentsView';
 import { GlossaryView } from './glossary/GlossaryView';
 import { PrintableReport } from './PrintableReport';
-import { ExportMenu } from './common/ExportMenu';
-import { Modal } from './common/Modal';
 import { LoadingSkeleton } from './common/LoadingSkeleton';
 import { QADashboard } from './dashboard/QADashboard';
 import { useProjectsStore } from '../store/projectsStore';
 import { isSupabaseAvailable } from '../services/supabaseService';
 import toast from 'react-hot-toast';
 import { Spinner } from './common/Spinner';
-import { FileImportModal } from './common/FileImportModal';
-import { FileExportModal } from './common/FileExportModal';
-import { useProjectsStore as useStore } from '../store/projectsStore';
 
 export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project: Project) => void; onBack: () => void; }> = ({ project, onUpdateProject, onBack }) => {
     const [activeTab, setActiveTab] = useState('dashboard');
     const [isPrinting, setIsPrinting] = useState(false);
-    const [showExportMenu, setShowExportMenu] = useState(false);
     const [isSavingToSupabase, setIsSavingToSupabase] = useState(false);
-    const [isImportModalOpen, setIsImportModalOpen] = useState(false);
-    const [isExportModalOpen, setIsExportModalOpen] = useState(false);
     const metrics = useProjectMetrics(project);
     const previousPhasesRef = useRef<string>('');
     const isMountedRef = useRef(true);
@@ -129,7 +121,7 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                         <button 
                             onClick={handleSaveToSupabase}
                             disabled={!supabaseAvailable || isSavingToSupabase}
-                            className="btn btn-primary flex items-center justify-center gap-2 w-full sm:w-auto lg:min-w-[180px] disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="btn btn-primary flex items-center justify-center gap-2 w-full sm:w-auto lg:min-w-[120px] disabled:opacity-50 disabled:cursor-not-allowed"
                             title={!supabaseAvailable ? 'Supabase não está configurado. Configure VITE_SUPABASE_PROXY_URL.' : 'Salvar projeto no Supabase'}
                         >
                             {isSavingToSupabase ? (
@@ -139,28 +131,12 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                                 </>
                             ) : (
                                 <>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                        <polyline points="17 8 12 3 7 8"></polyline>
-                                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M21.362 9.354H12V.396a.396.396 0 0 0-.716-.233L2.203 12.424l-.401.562a1.04 1.04 0 0 0 .836 1.659H12v8.959a.396.396 0 0 0 .724.229l9.075-12.476.401-.562a1.04 1.04 0 0 0-.838-1.66Z" fill="#3ECF8E"/>
                                     </svg>
-                                    <span>Salvar no Supabase</span>
+                                    <span>Salvar</span>
                                 </>
                             )}
-                        </button>
-                        <button 
-                            onClick={() => setIsImportModalOpen(true)} 
-                            className="btn btn-secondary flex items-center justify-center gap-2 w-full sm:w-auto lg:min-w-[150px]"
-                        >
-                            <span className="emoji-sticker">📥</span>
-                            <span>Importar</span>
-                        </button>
-                        <button 
-                            onClick={() => setIsExportModalOpen(true)} 
-                            className="btn btn-secondary flex items-center justify-center gap-2 w-full sm:w-auto lg:min-w-[180px]"
-                        >
-                            <span className="emoji-sticker">📤</span>
-                            <span>Exportar</span>
                         </button>
                         <button 
                             onClick={handlePrint} 
@@ -172,28 +148,6 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                     </div>
                 </div>
                 
-                <Modal isOpen={showExportMenu} onClose={() => setShowExportMenu(false)} title="Exportar Projeto">
-                    <ExportMenu project={project} onClose={() => setShowExportMenu(false)} />
-                </Modal>
-                
-                {/* Modal de Importação */}
-                <FileImportModal
-                    isOpen={isImportModalOpen}
-                    onClose={() => setIsImportModalOpen(false)}
-                    importType="project"
-                    onImportProject={(importedProject) => {
-                        onUpdateProject(importedProject);
-                        toast.success('Projeto importado com sucesso!');
-                    }}
-                />
-
-                {/* Modal de Exportação */}
-                <FileExportModal
-                    isOpen={isExportModalOpen}
-                    onClose={() => setIsExportModalOpen(false)}
-                    exportType="project"
-                    project={project}
-                />
                 <h2 className="heading-page text-text-primary mb-4 break-words">{project.name}</h2>
                 <p className="text-lead mb-10 max-w-3xl break-words">{project.description}</p>
                 
