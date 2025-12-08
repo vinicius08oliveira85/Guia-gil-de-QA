@@ -104,18 +104,18 @@ export async function callGeminiWithRetry(
   ai: GoogleGenAI,
   params: GeminiGenerateContentParams
 ): Promise<GeminiResponse> {
-  // Aplicar rate limiting antes de fazer a requisição
-  await geminiRateLimiter.acquire();
-  
-  logger.debug(
-    'Chamando API Gemini',
-    'callGeminiWithRetry',
-    { model: params.model }
-  );
-
   // Executar com retry automático
   return retryWithBackoff(
     async () => {
+      // Aplicar rate limiting antes de cada tentativa (incluindo retries)
+      await geminiRateLimiter.acquire();
+      
+      logger.debug(
+        'Chamando API Gemini',
+        'callGeminiWithRetry',
+        { model: params.model }
+      );
+
       try {
         const response = await ai.models.generateContent({
           model: params.model,
@@ -145,6 +145,9 @@ export async function callGeminiWithRetry(
         }
         
         throw error;
+      } finally {
+        // Sempre liberar a requisição simultânea quando terminar (sucesso ou erro)
+        geminiRateLimiter.release();
       }
     },
     {

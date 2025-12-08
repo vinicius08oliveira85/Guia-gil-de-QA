@@ -10,6 +10,10 @@ export interface RateLimiterOptions {
   maxRequests?: number;
   /** Janela de tempo em milissegundos (padrão: 60000ms = 1 minuto) */
   windowMs?: number;
+  /** Delay mínimo entre requisições em milissegundos (padrão: 0ms) */
+  minDelayMs?: number;
+  /** Número máximo de requisições simultâneas em execução (padrão: 1) */
+  maxConcurrent?: number;
 }
 
 interface RequestRecord {
@@ -23,6 +27,10 @@ export class RateLimiter {
   private requests: RequestRecord[] = [];
   private readonly maxRequests: number;
   private readonly windowMs: number;
+  private readonly minDelayMs: number;
+  private readonly maxConcurrent: number;
+  private lastRequestTime: number = 0;
+  private currentConcurrent: number = 0;
   private queue: Array<{
     resolve: () => void;
     reject: (error: Error) => void;
@@ -32,6 +40,8 @@ export class RateLimiter {
   constructor(options: RateLimiterOptions = {}) {
     this.maxRequests = options.maxRequests ?? 10;
     this.windowMs = options.windowMs ?? 60000; // 1 minuto por padrão
+    this.minDelayMs = options.minDelayMs ?? 0; // Delay mínimo entre requisições
+    this.maxConcurrent = options.maxConcurrent ?? 1; // Máximo de requisições simultâneas
   }
 
   /**
@@ -48,7 +58,8 @@ export class RateLimiter {
    */
   private canProceed(): boolean {
     this.cleanup();
-    return this.requests.length < this.maxRequests;
+    // Verificar tanto o limite de requisições na janela quanto requisições simultâneas
+    return this.requests.length < this.maxRequests && this.currentConcurrent < this.maxConcurrent;
   }
 
   /**
@@ -99,9 +110,21 @@ export class RateLimiter {
 
       // Verificar novamente se pode prosseguir
       if (this.canProceed()) {
+        // Verificar delay mínimo
+        const now = Date.now();
+        const timeSinceLastRequest = now - this.lastRequestTime;
+        
+        if (timeSinceLastRequest < this.minDelayMs) {
+          const delayNeeded = this.minDelayMs - timeSinceLastRequest;
+          await new Promise(resolve => setTimeout(resolve, delayNeeded));
+        }
+
         const next = this.queue.shift();
         if (next) {
-          this.requests.push({ timestamp: Date.now() });
+          const currentTime = Date.now();
+          this.requests.push({ timestamp: currentTime });
+          this.lastRequestTime = currentTime;
+          this.currentConcurrent++;
           next.resolve();
         }
       } else {
@@ -117,15 +140,34 @@ export class RateLimiter {
    * Aguarda até que uma requisição possa ser feita
    * Registra a requisição quando permitida
    * 
+   * IMPORTANTE: Após usar acquire(), deve-se chamar release() quando a requisição terminar
+   * 
    * @returns Promise que resolve quando a requisição pode ser feita
    */
   async acquire(): Promise<void> {
     // Limpar requisições antigas
     this.cleanup();
 
-    // Se pode prosseguir imediatamente, registrar e retornar
+    // Verificar delay mínimo desde a última requisição
+    const now = Date.now();
+    const timeSinceLastRequest = now - this.lastRequestTime;
+    
+    if (timeSinceLastRequest < this.minDelayMs) {
+      const delayNeeded = this.minDelayMs - timeSinceLastRequest;
+      logger.debug(
+        `Aplicando delay mínimo de ${delayNeeded}ms entre requisições`,
+        'RateLimiter',
+        { delayNeeded, minDelayMs: this.minDelayMs }
+      );
+      await new Promise(resolve => setTimeout(resolve, delayNeeded));
+    }
+
+    // Verificar se pode prosseguir (dentro do limite de requisições e requisições simultâneas)
     if (this.canProceed()) {
-      this.requests.push({ timestamp: Date.now() });
+      const currentTime = Date.now();
+      this.requests.push({ timestamp: currentTime });
+      this.lastRequestTime = currentTime;
+      this.currentConcurrent++;
       return;
     }
 
@@ -137,6 +179,19 @@ export class RateLimiter {
   }
 
   /**
+   * Libera uma requisição simultânea (deve ser chamado após a requisição terminar)
+   */
+  release(): void {
+    if (this.currentConcurrent > 0) {
+      this.currentConcurrent--;
+      // Processar fila se houver espaço para mais requisições
+      if (this.queue.length > 0 && this.canProceed()) {
+        this.processQueue();
+      }
+    }
+  }
+
+  /**
    * Obtém estatísticas do rate limiter
    */
   getStats(): {
@@ -145,6 +200,8 @@ export class RateLimiter {
     windowMs: number;
     queueLength: number;
     timeUntilNextSlot: number;
+    currentConcurrent: number;
+    maxConcurrent: number;
   } {
     this.cleanup();
     return {
@@ -153,6 +210,8 @@ export class RateLimiter {
       windowMs: this.windowMs,
       queueLength: this.queue.length,
       timeUntilNextSlot: this.getTimeUntilNextSlot(),
+      currentConcurrent: this.currentConcurrent,
+      maxConcurrent: this.maxConcurrent,
     };
   }
 
@@ -163,15 +222,19 @@ export class RateLimiter {
     this.requests = [];
     this.queue = [];
     this.processingQueue = false;
+    this.lastRequestTime = 0;
+    this.currentConcurrent = 0;
   }
 }
 
 /**
  * Instância global de rate limiter para API Gemini
- * Configurado para 10 requisições por minuto (padrão da API)
+ * Configurado para 6 requisições por minuto com delay mínimo de 2s entre requisições
+ * (mais conservador para evitar erros 429)
  */
 export const geminiRateLimiter = new RateLimiter({
-  maxRequests: 10,
+  maxRequests: 6,
   windowMs: 60000, // 1 minuto
+  minDelayMs: 2000, // 2 segundos de delay mínimo entre requisições
 });
 
