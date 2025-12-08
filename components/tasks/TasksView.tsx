@@ -194,7 +194,19 @@ export const TasksView: React.FC<{
             onUpdateProject({ ...project, tasks: newTasks });
             handleSuccess('Cenários BDD gerados com sucesso!');
         } catch (error) {
-            handleError(error, 'Gerar cenários BDD');
+            // Melhorar mensagem de erro para rate limiting
+            let errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+            
+            if (errorMessage.includes('429') || 
+                errorMessage.includes('Too Many Requests') ||
+                errorMessage.includes('rate limit') ||
+                errorMessage.toLowerCase().includes('muitas requisições')) {
+                errorMessage = 'Muitas requisições à API. Aguarde alguns segundos e tente novamente. O sistema tentará automaticamente novamente em breve.';
+            } else if (errorMessage.includes('Falha ao comunicar com a API Gemini')) {
+                errorMessage = 'Erro ao comunicar com a API. Verifique sua conexão e tente novamente. Se o problema persistir, aguarde alguns minutos.';
+            }
+            
+            handleError(new Error(errorMessage), 'Gerar cenários BDD');
         } finally {
             setGeneratingBddTaskId(null);
         }
@@ -242,9 +254,9 @@ export const TasksView: React.FC<{
             
             const aiService = getAIService();
             const { strategy, testCases } = await aiService.generateTestCasesForTask(
-                task.title, 
-                task.description, 
-                task.bddScenarios, 
+                task.title,
+                task.description,
+                task.bddScenarios,
                 detailLevel,
                 task.type,
                 project
@@ -254,7 +266,19 @@ export const TasksView: React.FC<{
             onUpdateProject({ ...project, tasks: newTasks });
             handleSuccess('Casos de teste gerados com sucesso!');
         } catch (error) {
-            handleError(error, 'Gerar casos de teste');
+            // Melhorar mensagem de erro para rate limiting
+            let errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+            
+            if (errorMessage.includes('429') || 
+                errorMessage.includes('Too Many Requests') ||
+                errorMessage.includes('rate limit') ||
+                errorMessage.toLowerCase().includes('muitas requisições')) {
+                errorMessage = 'Muitas requisições à API. Aguarde alguns segundos e tente novamente. O sistema tentará automaticamente novamente em breve.';
+            } else if (errorMessage.includes('Failed to communicate with the Gemini API')) {
+                errorMessage = 'Erro ao comunicar com a API. Verifique sua conexão e tente novamente. Se o problema persistir, aguarde alguns minutos.';
+            }
+            
+            handleError(new Error(errorMessage), 'Gerar casos de teste');
         } finally {
             setGeneratingTestsTaskId(null);
         }
@@ -299,7 +323,20 @@ export const TasksView: React.FC<{
             onUpdateProject({ ...project, tasks: newTasks });
             handleSuccess('BDD, estratégias e casos de teste gerados com sucesso!');
         } catch (error) {
-            handleError(error, 'Gerar BDD, estratégias e testes');
+            // Melhorar mensagem de erro para rate limiting
+            let errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+            
+            if (errorMessage.includes('429') || 
+                errorMessage.includes('Too Many Requests') ||
+                errorMessage.includes('rate limit') ||
+                errorMessage.toLowerCase().includes('muitas requisições')) {
+                errorMessage = 'Muitas requisições à API. Aguarde alguns segundos e tente novamente. O sistema tentará automaticamente novamente em breve.';
+            } else if (errorMessage.includes('Failed to communicate with the Gemini API') ||
+                       errorMessage.includes('Falha ao comunicar com a API Gemini')) {
+                errorMessage = 'Erro ao comunicar com a API. Verifique sua conexão e tente novamente. Se o problema persistir, aguarde alguns minutos.';
+            }
+            
+            handleError(new Error(errorMessage), 'Gerar BDD, estratégias e testes');
         } finally {
             setGeneratingAllTaskId(null);
         }
