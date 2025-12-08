@@ -1,25 +1,9 @@
-import { GoogleGenAI, Type } from "@google/genai";
+import { Type } from "@google/genai";
 import { Project, DashboardOverviewAnalysis, STLCPhaseName } from '../../types';
 import { detectCurrentSTLCPhase } from '../../utils/stlcPhaseDetector';
 import { calculateProjectMetrics } from '../../hooks/useProjectMetrics';
 import { getFormattedContext } from './documentContextService';
-
-const API_KEY = import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.GEMINI_API_KEY;
-
-let ai: GoogleGenAI | null = null;
-
-if (API_KEY) {
-  ai = new GoogleGenAI({ apiKey: API_KEY });
-} else {
-  console.warn("GEMINI_API_KEY environment variable not set. Some features may not work.");
-}
-
-const getAI = () => {
-  if (!ai) {
-    throw new Error("GEMINI_API_KEY não configurada. Por favor, configure a variável de ambiente VITE_GEMINI_API_KEY.");
-  }
-  return ai;
-};
+import { callGeminiWithRetry } from './geminiApiWrapper';
 
 const CACHE_TTL_MS = 1000 * 60 * 5; // 5 minutos
 
@@ -229,7 +213,7 @@ Respeite o schema JSON fornecido.
   `;
   
   try {
-    const response = await getAI().models.generateContent({
+    const response = await callGeminiWithRetry({
       model: "gemini-2.5-flash",
       contents: prompt,
       config: {

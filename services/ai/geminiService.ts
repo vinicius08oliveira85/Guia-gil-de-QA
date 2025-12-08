@@ -1,27 +1,10 @@
-import { GoogleGenAI, Type } from "@google/genai";
+import { Type } from "@google/genai";
 import { TestCase, TestStrategy, PhaseName, ShiftLeftAnalysis, BddScenario, JiraTask, TestPyramidAnalysis, TestCaseDetailLevel, JiraTaskType, Project } from '../../types';
 import { marked } from 'marked';
 import { sanitizeHTML } from '../../utils/sanitize';
 import { AIService } from './aiServiceInterface';
 import { getFormattedContext } from './documentContextService';
 import { callGeminiWithRetry } from './geminiApiWrapper';
-
-const API_KEY = import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.GEMINI_API_KEY;
-
-let ai: GoogleGenAI | null = null;
-
-if (API_KEY) {
-  ai = new GoogleGenAI({ apiKey: API_KEY });
-} else {
-  console.warn("GEMINI_API_KEY environment variable not set. Some features may not work.");
-}
-
-const getAI = () => {
-  if (!ai) {
-    throw new Error("GEMINI_API_KEY não configurada. Por favor, configure a variável de ambiente VITE_GEMINI_API_KEY.");
-  }
-  return ai;
-};
 
 const testCaseGenerationSchema = {
   type: Type.OBJECT,
@@ -289,7 +272,7 @@ export class GeminiService implements AIService {
     const prompt = await this.buildRobustTestGenerationPrompt(title, description, bddScenarios, detailLevel, taskType, project);
 
     try {
-      const response = await callGeminiWithRetry(getAI(), {
+      const response = await callGeminiWithRetry({
         model: "gemini-2.5-flash",
         contents: prompt,
         config: {
@@ -361,7 +344,7 @@ export class GeminiService implements AIService {
     `;
 
     try {
-        const response = await callGeminiWithRetry(getAI(), {
+        const response = await callGeminiWithRetry({
             model: "gemini-2.5-flash",
             contents: prompt,
         });
@@ -415,7 +398,7 @@ export class GeminiService implements AIService {
     };
 
     try {
-        const response = await callGeminiWithRetry(getAI(), {
+        const response = await callGeminiWithRetry({
             model: "gemini-2.5-flash",
             contents: prompt,
             config: {
@@ -496,7 +479,7 @@ export class GeminiService implements AIService {
     };
 
     try {
-        const response = await callGeminiWithRetry(getAI(), {
+        const response = await callGeminiWithRetry({
             model: "gemini-2.5-flash",
             contents: prompt,
             config: {
@@ -549,7 +532,7 @@ export class GeminiService implements AIService {
     };
 
     try {
-        const response = await callGeminiWithRetry(getAI(), {
+        const response = await callGeminiWithRetry({
             model: "gemini-2.5-flash",
             contents: prompt,
             config: {
@@ -599,7 +582,7 @@ export class GeminiService implements AIService {
     };
 
     try {
-        const response = await callGeminiWithRetry(getAI(), {
+        const response = await callGeminiWithRetry({
             model: "gemini-2.5-flash",
             contents: prompt,
             config: {
@@ -662,7 +645,7 @@ export class GeminiService implements AIService {
     };
 
      try {
-        const response = await callGeminiWithRetry(getAI(), {
+        const response = await callGeminiWithRetry({
             model: "gemini-2.5-flash",
             contents: prompt,
             config: {
