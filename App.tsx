@@ -283,8 +283,6 @@ const App: React.FC = () => {
                                 onSelectProject={selectProject} 
                                 onCreateProject={handleCreateProject}
                                 onDeleteProject={handleDeleteProject}
-                                onSearchClick={() => setShowSearch(true)}
-                                onAdvancedSearchClick={() => setShowAdvancedSearch(true)}
                                 onComparisonClick={() => setShowProjectComparison(true)}
                                 onSyncSupabase={handleSyncSupabase}
                             />
