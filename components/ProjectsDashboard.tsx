@@ -306,6 +306,8 @@ export const ProjectsDashboard: React.FC<{
                                 return (
                                     <Card
                                         key={p.id}
+                                        variant="elevated"
+                                        hoverable={true}
                                         onClick={(e) => {
                                             // Não fazer nada se o clique foi em um botão ou link
                                             const target = e.target as HTMLElement;
@@ -322,7 +324,7 @@ export const ProjectsDashboard: React.FC<{
                                                 onSelectProject(p.id);
                                             }
                                         }}
-                                        className="project-card-custom group cursor-pointer transition-all duration-300 hover:border-accent/70 hover:shadow-accent/20 hover:shadow-xl relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 flex flex-col h-full"
+                                        className="project-card-custom group cursor-pointer relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 flex flex-col h-full"
                                     >
                                         <div className="flex-1 space-y-3">
                                             <div className="flex justify-between items-start">

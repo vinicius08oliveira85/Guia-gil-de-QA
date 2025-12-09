@@ -1,10 +1,18 @@
 import React from 'react';
+import { motion } from 'framer-motion';
+import { cn } from '../../utils/windows12Styles';
 
 interface LoadingSkeletonProps {
-    variant?: 'task' | 'card' | 'list' | 'text' | 'button';
+    variant?: 'task' | 'card' | 'list' | 'text' | 'button' | 'table';
     count?: number;
     className?: string;
 }
+
+const shimmerAnimation = {
+    background: 'linear-gradient(90deg, var(--surface-hover) 0%, rgba(255,255,255,0.1) 50%, var(--surface-hover) 100%)',
+    backgroundSize: '200% 100%',
+    animation: 'shimmer 1.5s ease-in-out infinite',
+};
 
 export const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({ 
     variant = 'card', 
@@ -12,55 +20,126 @@ export const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({
     className = '' 
 }) => {
     const renderSkeleton = () => {
+        const baseClasses = 'relative overflow-hidden rounded-lg';
+        const shimmerClasses = 'absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-shimmer';
+        
         switch (variant) {
             case 'task':
                 return (
-                    <div className="bg-surface border border-surface-border rounded-lg p-4 animate-pulse">
-                        <div className="flex items-center gap-3 mb-3">
-                            <div className="w-8 h-8 bg-surface-hover rounded-full"></div>
-                            <div className="flex-1">
-                                <div className="h-4 bg-surface-hover rounded w-1/4 mb-2"></div>
-                                <div className="h-5 bg-surface-hover rounded w-3/4"></div>
+                    <motion.div 
+                        className={cn(baseClasses, 'bg-surface border border-surface-border p-4')}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3 }}
+                    >
+                        <div className="relative">
+                            <div className="flex items-center gap-3 mb-3">
+                                <div className="w-8 h-8 bg-surface-hover rounded-full"></div>
+                                <div className="flex-1">
+                                    <div className="h-4 bg-surface-hover rounded w-1/4 mb-2"></div>
+                                    <div className="h-5 bg-surface-hover rounded w-3/4"></div>
+                                </div>
                             </div>
+                            <div className="h-3 bg-surface-hover rounded w-full mb-2"></div>
+                            <div className="h-3 bg-surface-hover rounded w-5/6"></div>
+                            <div className={shimmerClasses}></div>
                         </div>
-                        <div className="h-3 bg-surface-hover rounded w-full mb-2"></div>
-                        <div className="h-3 bg-surface-hover rounded w-5/6"></div>
-                    </div>
+                    </motion.div>
                 );
             case 'card':
                 return (
-                    <div className="bg-surface border border-surface-border rounded-lg p-6 animate-pulse">
-                        <div className="h-6 bg-surface-hover rounded w-1/3 mb-4"></div>
-                        <div className="space-y-3">
-                            <div className="h-4 bg-surface-hover rounded w-full"></div>
-                            <div className="h-4 bg-surface-hover rounded w-5/6"></div>
-                            <div className="h-4 bg-surface-hover rounded w-4/6"></div>
+                    <motion.div 
+                        className={cn(baseClasses, 'bg-surface border border-surface-border p-6')}
+                        initial={{ opacity: 0, scale: 0.98 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.3 }}
+                    >
+                        <div className="relative">
+                            <div className="h-6 bg-surface-hover rounded w-1/3 mb-4"></div>
+                            <div className="space-y-3">
+                                <div className="h-4 bg-surface-hover rounded w-full"></div>
+                                <div className="h-4 bg-surface-hover rounded w-5/6"></div>
+                                <div className="h-4 bg-surface-hover rounded w-4/6"></div>
+                            </div>
+                            <div className={shimmerClasses}></div>
                         </div>
-                    </div>
+                    </motion.div>
                 );
             case 'list':
                 return (
-                    <div className="space-y-2 animate-pulse">
-                        <div className="h-10 bg-surface-hover rounded"></div>
-                        <div className="h-10 bg-surface-hover rounded"></div>
-                        <div className="h-10 bg-surface-hover rounded"></div>
-                    </div>
+                    <motion.div 
+                        className="space-y-2"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.3 }}
+                    >
+                        {[0, 1, 2].map((i) => (
+                            <motion.div
+                                key={i}
+                                className={cn(baseClasses, 'h-10 bg-surface-hover')}
+                                initial={{ opacity: 0, x: -10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: i * 0.1, duration: 0.3 }}
+                            >
+                                <div className={shimmerClasses}></div>
+                            </motion.div>
+                        ))}
+                    </motion.div>
+                );
+            case 'table':
+                return (
+                    <motion.div 
+                        className={cn(baseClasses, 'bg-surface border border-surface-border p-4')}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.3 }}
+                    >
+                        <div className="relative">
+                            <div className="space-y-3">
+                                <div className="h-12 bg-surface-hover rounded"></div>
+                                {[0, 1, 2, 3].map((i) => (
+                                    <div key={i} className="h-10 bg-surface-hover rounded"></div>
+                                ))}
+                            </div>
+                            <div className={shimmerClasses}></div>
+                        </div>
+                    </motion.div>
                 );
             case 'text':
                 return (
-                    <div className="animate-pulse">
+                    <motion.div 
+                        className="relative"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.3 }}
+                    >
                         <div className="h-4 bg-surface-hover rounded w-full mb-2"></div>
                         <div className="h-4 bg-surface-hover rounded w-5/6 mb-2"></div>
                         <div className="h-4 bg-surface-hover rounded w-4/6"></div>
-                    </div>
+                        <div className={shimmerClasses}></div>
+                    </motion.div>
                 );
             case 'button':
                 return (
-                    <div className="h-10 bg-surface-hover rounded w-24 animate-pulse"></div>
+                    <motion.div 
+                        className={cn(baseClasses, 'h-10 bg-surface-hover w-24')}
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.3 }}
+                    >
+                        <div className={shimmerClasses}></div>
+                    </motion.div>
                 );
             default:
                 return (
-                    <div className="h-20 bg-surface-hover rounded animate-pulse"></div>
+                    <motion.div 
+                        className={cn(baseClasses, 'h-20 bg-surface-hover')}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.3 }}
+                    >
+                        <div className={shimmerClasses}></div>
+                    </motion.div>
                 );
         }
     };
@@ -72,9 +151,15 @@ export const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({
     return (
         <div className={className}>
             {Array.from({ length: count }).map((_, index) => (
-                <div key={index} className={index < count - 1 ? 'mb-4' : ''}>
+                <motion.div 
+                    key={index} 
+                    className={index < count - 1 ? 'mb-4' : ''}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1, duration: 0.3 }}
+                >
                     {renderSkeleton()}
-                </div>
+                </motion.div>
             ))}
         </div>
     );

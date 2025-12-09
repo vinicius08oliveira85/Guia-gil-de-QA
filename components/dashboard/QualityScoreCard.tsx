@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 import { Card } from '../common/Card';
 import { DashboardInsightsAnalysis } from '../../types';
 
@@ -56,9 +57,21 @@ export const QualityScoreCard: React.FC<QualityScoreCardProps> = React.memo(({
     }
   };
 
+  const circumference = 2 * Math.PI * 56;
+  const strokeDashoffset = circumference - (qualityScore / 100) * circumference;
+
   return (
-    <Card className={`${getScoreBgColor(qualityScore)} border-2`} aria-label={`Score de qualidade: ${qualityScore} (${qualityLevel})`}>
-      <div className="text-center space-y-4">
+    <Card 
+      variant="elevated"
+      className={`${getScoreBgColor(qualityScore)} border-2`} 
+      aria-label={`Score de qualidade: ${qualityScore} (${qualityLevel})`}
+    >
+      <motion.div 
+        className="text-center space-y-4"
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.4 }}
+      >
         <div>
           <p className="text-sm font-medium text-text-secondary mb-2">Score de Qualidade</p>
           <div className="relative inline-block">
@@ -73,32 +86,50 @@ export const QualityScoreCard: React.FC<QualityScoreCardProps> = React.memo(({
                   fill="none"
                   className="text-surface-border"
                 />
-                <circle
+                <motion.circle
                   cx="64"
                   cy="64"
                   r="56"
                   stroke="currentColor"
                   strokeWidth="8"
                   fill="none"
-                  strokeDasharray={`${(qualityScore / 100) * 352} 352`}
+                  strokeDasharray={circumference}
+                  strokeDashoffset={circumference}
                   className={getScoreColor(qualityScore)}
                   strokeLinecap="round"
+                  initial={{ strokeDashoffset: circumference }}
+                  animate={{ strokeDashoffset }}
+                  transition={{ duration: 1.5, ease: "easeOut" }}
                 />
               </svg>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className={`text-3xl font-bold ${getScoreColor(qualityScore)}`}>
+              <motion.div 
+                className="absolute inset-0 flex items-center justify-center"
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.5, type: "spring", stiffness: 200 }}
+              >
+                <motion.span 
+                  className={`text-3xl font-bold ${getScoreColor(qualityScore)}`}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.7 }}
+                >
                   {qualityScore}
-                </span>
-              </div>
+                </motion.span>
+              </motion.div>
             </div>
           </div>
         </div>
-        <div>
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.8 }}
+        >
           <span className={`inline-block px-3 py-1 rounded-full text-sm font-semibold ${getLevelBadgeColor(qualityLevel)}`}>
             {qualityLevel}
           </span>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     </Card>
   );
 });

@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useMemo } from 'react';
+import { motion } from 'framer-motion';
 import { Project, JiraTask, BddScenario, TestCaseDetailLevel, BugSeverity, TeamRole, TestCase } from '../../types';
 import { getAIService } from '../../services/ai/aiServiceFactory';
 import { Card } from '../common/Card';
@@ -1574,7 +1575,21 @@ export const TasksView: React.FC<{
                 </div>
             </Modal>
             {taskTree.length > 0 ? (
-                <div>{renderTaskTree(taskTree, 0)}</div>
+                <div>
+                    {renderTaskTree(taskTree, 0).map((taskElement, index) => (
+                        <motion.div
+                            key={taskElement.key || index}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ 
+                                delay: index * 0.05,
+                                duration: 0.3 
+                            }}
+                        >
+                            {taskElement}
+                        </motion.div>
+                    ))}
+                </div>
             ) : (
                 <EmptyState
                     icon="📋"

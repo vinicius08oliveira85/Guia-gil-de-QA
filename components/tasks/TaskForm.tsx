@@ -1,10 +1,12 @@
 
 import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { JiraTask, JiraTaskType, BugSeverity, TeamRole, TaskPriority } from '../../types';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import { TagInput } from '../common/TagInput';
 import { RichTextEditor } from '../common/RichTextEditor';
 import { HelpTooltip } from '../common/HelpTooltip';
+import { Input } from '../common/Input';
 import { helpContent } from '../../utils/helpContent';
 import { useBeginnerMode } from '../../hooks/useBeginnerMode';
 import { getTaskExample, taskExamples } from '../../utils/taskExamples';
@@ -157,19 +159,26 @@ export const TaskForm: React.FC<{
                     </div>
                 </div>
             )}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <motion.div 
+                className="grid grid-cols-1 md:grid-cols-2 gap-4"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+            >
                 <div>
-                    <label htmlFor="id" className="flex items-center gap-2 text-sm font-medium text-text-secondary mb-1">
-                        ID da Tarefa (ex: PROJ-123)
-                        <HelpTooltip 
-                            title={helpContent.task.fields.id.title}
-                            content={helpContent.task.fields.id.content}
-                        />
-                    </label>
-                    <input 
-                        type="text" 
-                        id="id" 
-                        value={taskData.id} 
+                    <Input
+                        label={
+                            <span className="flex items-center gap-2">
+                                ID da Tarefa (ex: PROJ-123)
+                                <HelpTooltip 
+                                    title={helpContent.task.fields.id.title}
+                                    content={helpContent.task.fields.id.content}
+                                />
+                            </span>
+                        }
+                        type="text"
+                        id="id"
+                        value={taskData.id}
                         onChange={(e) => {
                             setTaskData({ ...taskData, id: e.target.value });
                             if (validationErrors.id) {
@@ -177,25 +186,25 @@ export const TaskForm: React.FC<{
                             }
                         }}
                         placeholder={isBeginnerMode ? "Ex: PROJ-001, LOGIN-001" : ""}
-                        className={validationErrors.id ? 'border-red-500' : ''}
-                        required 
+                        error={validationErrors.id}
+                        success={taskData.id && !validationErrors.id && taskData.id.length >= 3}
+                        required
                     />
-                    {validationErrors.id && (
-                        <p className="text-xs text-red-400 mt-1">{validationErrors.id}</p>
-                    )}
                 </div>
                 <div>
-                    <label htmlFor="title" className="flex items-center gap-2 text-sm font-medium text-text-secondary mb-1">
-                        Título
-                        <HelpTooltip 
-                            title={helpContent.task.fields.title.title}
-                            content={helpContent.task.fields.title.content}
-                        />
-                    </label>
-                    <input 
-                        type="text" 
-                        id="title" 
-                        value={taskData.title} 
+                    <Input
+                        label={
+                            <span className="flex items-center gap-2">
+                                Título
+                                <HelpTooltip 
+                                    title={helpContent.task.fields.title.title}
+                                    content={helpContent.task.fields.title.content}
+                                />
+                            </span>
+                        }
+                        type="text"
+                        id="title"
+                        value={taskData.title}
                         onChange={(e) => {
                             setTaskData({ ...taskData, title: e.target.value });
                             if (validationErrors.title) {
@@ -203,12 +212,10 @@ export const TaskForm: React.FC<{
                             }
                         }}
                         placeholder={isBeginnerMode ? "Ex: Implementar login com email" : ""}
-                        className={validationErrors.title ? 'border-red-500' : ''}
+                        error={validationErrors.title}
+                        success={taskData.title && !validationErrors.title && taskData.title.length >= 5}
                         required 
                     />
-                    {validationErrors.title && (
-                        <p className="text-xs text-red-400 mt-1">{validationErrors.title}</p>
-                    )}
                 </div>
                 <div>
                     <label htmlFor="type" className="flex items-center gap-2 text-sm font-medium text-text-secondary mb-1">

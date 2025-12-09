@@ -1,9 +1,12 @@
 import React from 'react';
 import { HelpTooltip } from './HelpTooltip';
 import { useBeginnerMode } from '../../hooks/useBeginnerMode';
+import { Button } from './Button';
+import { cn } from '../../utils/windows12Styles';
+import { motion } from 'framer-motion';
 
 interface EmptyStateProps {
-  icon?: string;
+  icon?: string | React.ReactNode;
   title: string;
   description?: string;
   action?: {
@@ -22,6 +25,7 @@ interface EmptyStateProps {
     content: string;
   };
   helpText?: string;
+  illustration?: React.ReactNode;
 }
 
 export const EmptyState: React.FC<EmptyStateProps> = ({
@@ -33,63 +37,134 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   tip,
   tips,
   helpContent,
-  helpText
+  helpText,
+  illustration
 }) => {
   const { isBeginnerMode } = useBeginnerMode();
 
   return (
-    <div className="flex flex-col items-center justify-center py-16 px-4 text-center" role="status" aria-live="polite">
-      <div className="text-6xl mb-6" aria-hidden="true">{icon}</div>
-      <div className="flex items-center gap-2 mb-3">
+    <motion.div 
+      className="flex flex-col items-center justify-center py-16 px-4 text-center" 
+      role="status" 
+      aria-live="polite"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+    >
+      {/* Ícone ou ilustração */}
+      <motion.div 
+        className="mb-6"
+        aria-hidden="true"
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ delay: 0.1, duration: 0.3 }}
+      >
+        {illustration ? (
+          <div className="text-6xl">{illustration}</div>
+        ) : typeof icon === 'string' ? (
+          <div className="text-6xl">{icon}</div>
+        ) : (
+          icon
+        )}
+      </motion.div>
+
+      {/* Título */}
+      <motion.div 
+        className="flex items-center gap-2 mb-3"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.2 }}
+      >
         <h3 className="heading-section text-text-primary">{title}</h3>
         {helpContent && (
           <HelpTooltip title={helpContent.title} content={helpContent.content} />
         )}
-      </div>
+      </motion.div>
+
+      {/* Descrição */}
       {description && (
-        <p className="text-lead text-text-secondary max-w-md mb-6">{description}</p>
+        <motion.p 
+          className="text-lead text-text-secondary max-w-md mb-6"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+        >
+          {description}
+        </motion.p>
       )}
+
+      {/* Dica única */}
       {tip && (
-        <div className="bg-accent/10 border border-accent/30 rounded-lg p-4 mb-6 max-w-md">
+        <motion.div 
+          className="bg-accent/10 border border-accent/30 rounded-xl p-4 mb-6 max-w-md backdrop-blur-sm"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.4 }}
+        >
           <p className="text-sm text-text-primary leading-relaxed">
             💡 <strong>Dica:</strong> {tip}
           </p>
-        </div>
+        </motion.div>
       )}
+
+      {/* Múltiplas dicas (modo iniciante) */}
       {isBeginnerMode && tips && tips.length > 0 && (
-        <div className="bg-accent/10 border border-accent/30 rounded-lg p-4 mb-6 max-w-md text-left">
+        <motion.div 
+          className="bg-accent/10 border border-accent/30 rounded-xl p-4 mb-6 max-w-md text-left backdrop-blur-sm"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.4 }}
+        >
           <p className="text-sm font-semibold text-accent mb-2">💡 Dicas:</p>
           <ul className="text-sm text-text-secondary space-y-1 list-disc list-inside">
             {tips.map((tipItem, index) => (
               <li key={index}>{tipItem}</li>
             ))}
           </ul>
-        </div>
+        </motion.div>
       )}
+
+      {/* Texto de ajuda */}
       {helpText && (
-        <p className="text-xs text-text-secondary max-w-md mb-6">{helpText}</p>
+        <motion.p 
+          className="text-xs text-text-secondary max-w-md mb-6"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+        >
+          {helpText}
+        </motion.p>
       )}
-      <div className="flex gap-3 flex-wrap justify-center">
+
+      {/* Ações */}
+      <motion.div 
+        className="flex gap-3 flex-wrap justify-center"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5 }}
+      >
         {action && (
-          <button 
-            onClick={action.onClick} 
-            className={`btn ${action.variant === 'secondary' ? 'btn-secondary' : 'btn-primary'} min-h-[44px]`}
+          <Button
+            variant={action.variant === 'secondary' ? 'outline' : 'default'}
+            onClick={action.onClick}
+            className="min-h-[44px]"
             aria-label={action.label}
           >
             {action.label}
-          </button>
+          </Button>
         )}
         {secondaryAction && (
-          <button 
-            onClick={secondaryAction.onClick} 
-            className="btn btn-secondary min-h-[44px]"
+          <Button
+            variant="outline"
+            onClick={secondaryAction.onClick}
+            className="min-h-[44px]"
             aria-label={secondaryAction.label}
           >
             {secondaryAction.label}
-          </button>
+          </Button>
         )}
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };
 

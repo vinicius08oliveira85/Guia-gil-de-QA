@@ -7,6 +7,8 @@ import { GlossaryView } from './glossary/GlossaryView';
 import { PrintableReport } from './PrintableReport';
 import { LoadingSkeleton } from './common/LoadingSkeleton';
 import { QADashboard } from './dashboard/QADashboard';
+import { Breadcrumbs } from './common/Breadcrumbs';
+import { PageTransition } from './common/PageTransition';
 import { useProjectsStore } from '../store/projectsStore';
 import { isSupabaseAvailable } from '../services/supabaseService';
 import toast from 'react-hot-toast';
@@ -106,16 +108,40 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
         setActiveTab(tabId);
     };
 
+    // Breadcrumbs items baseado na aba ativa
+    const getBreadcrumbItems = () => {
+        const baseItems = [
+            { label: 'Projetos', onClick: onBack },
+            { label: project.name }
+        ];
+
+        const tabLabels: Record<string, string> = {
+            dashboard: 'Dashboard',
+            tasks: 'Tarefas & Testes',
+            documents: 'Documentos',
+            glossary: 'Glossário'
+        };
+
+        if (activeTab !== 'dashboard') {
+            baseItems.push({ label: tabLabels[activeTab] || activeTab });
+        }
+
+        return baseItems;
+    };
+
     return (
         <>
             <div className="container-wide py-md sm:py-lg non-printable w-full">
+                {/* Breadcrumbs */}
+                <div className="mb-4">
+                    <Breadcrumbs 
+                        items={getBreadcrumbItems()}
+                        onHomeClick={onBack}
+                        className="mb-2"
+                    />
+                </div>
+
                 <div className="grid gap-md mb-lg w-full lg:grid-cols-[auto,1fr] lg:items-center">
-                    <button 
-                        onClick={onBack} 
-                        className="text-accent hover:text-accent-light transition-colors font-semibold w-full sm:w-auto text-left"
-                    >
-                        &larr; Voltar para Projetos
-                    </button>
                     <div className="flex flex-wrap gap-sm w-full justify-end">
                         {/* Botão sempre visível, mas desabilitado se Supabase não estiver disponível */}
                         <button 
@@ -193,38 +219,40 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                 </div>
                 
                 <div className="mt-8">
-                    {activeTab === 'dashboard' && (
-                        <section id="tab-panel-dashboard" role="tabpanel" aria-labelledby="tab-dashboard tab-dashboard-mobile">
-                        <Suspense fallback={<LoadingSkeleton variant="card" count={3} />}>
-                            <QADashboard project={project} onUpdateProject={onUpdateProject} />
-                        </Suspense>
-                        </section>
-                    )}
-                    {activeTab === 'tasks' && (
-                        <section id="tab-panel-tasks" role="tabpanel" aria-labelledby="tab-tasks tab-tasks-mobile">
-                        <Suspense fallback={<LoadingSkeleton variant="task" count={5} />}>
-                            <TasksView 
-                                project={project} 
-                                onUpdateProject={onUpdateProject}
-                                onNavigateToTab={(tabId) => handleTabClick(tabId)}
-                            />
-                        </Suspense>
-                        </section>
-                    )}
-                    {activeTab === 'documents' && (
-                        <section id="tab-panel-documents" role="tabpanel" aria-labelledby="tab-documents tab-documents-mobile">
-                        <Suspense fallback={<LoadingSkeleton variant="card" count={3} />}>
-                            <DocumentsView project={project} onUpdateProject={onUpdateProject} />
-                        </Suspense>
-                        </section>
-                    )}
-                    {activeTab === 'glossary' && (
-                        <section id="tab-panel-glossary" role="tabpanel" aria-labelledby="tab-glossary tab-glossary-mobile">
-                        <Suspense fallback={<LoadingSkeleton variant="card" count={2} />}>
-                            <GlossaryView />
-                        </Suspense>
-                        </section>
-                    )}
+                    <PageTransition key={activeTab}>
+                        {activeTab === 'dashboard' && (
+                            <section id="tab-panel-dashboard" role="tabpanel" aria-labelledby="tab-dashboard tab-dashboard-mobile">
+                            <Suspense fallback={<LoadingSkeleton variant="card" count={3} />}>
+                                <QADashboard project={project} onUpdateProject={onUpdateProject} />
+                            </Suspense>
+                            </section>
+                        )}
+                        {activeTab === 'tasks' && (
+                            <section id="tab-panel-tasks" role="tabpanel" aria-labelledby="tab-tasks tab-tasks-mobile">
+                            <Suspense fallback={<LoadingSkeleton variant="task" count={5} />}>
+                                <TasksView 
+                                    project={project} 
+                                    onUpdateProject={onUpdateProject}
+                                    onNavigateToTab={(tabId) => handleTabClick(tabId)}
+                                />
+                            </Suspense>
+                            </section>
+                        )}
+                        {activeTab === 'documents' && (
+                            <section id="tab-panel-documents" role="tabpanel" aria-labelledby="tab-documents tab-documents-mobile">
+                            <Suspense fallback={<LoadingSkeleton variant="card" count={3} />}>
+                                <DocumentsView project={project} onUpdateProject={onUpdateProject} />
+                            </Suspense>
+                            </section>
+                        )}
+                        {activeTab === 'glossary' && (
+                            <section id="tab-panel-glossary" role="tabpanel" aria-labelledby="tab-glossary tab-glossary-mobile">
+                            <Suspense fallback={<LoadingSkeleton variant="card" count={2} />}>
+                                <GlossaryView />
+                            </Suspense>
+                            </section>
+                        )}
+                    </PageTransition>
                 </div>
             </div>
             {isPrinting && <PrintableReport project={project} metrics={metrics} />}
