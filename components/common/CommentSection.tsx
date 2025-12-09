@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Comment } from '../../types';
 import { format } from 'date-fns';
+import { logger } from '../../utils/logger';
 
 interface CommentSectionProps {
   comments: Comment[];
@@ -38,7 +39,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
       }
       return format(date, "dd/MM/yyyy 'às' HH:mm");
     } catch (error) {
-      console.warn('Erro ao formatar data do comentário:', error);
+      logger.warn('Erro ao formatar data do comentário', 'CommentSection', error);
       return 'Data inválida';
     }
   };

@@ -1,4 +1,5 @@
 import { UserPreferences, NotificationPreferences, KeyboardShortcutPreferences, ExportPreferences } from '../types';
+import { logger } from './logger';
 
 const STORAGE_KEY = 'qa_user_preferences';
 
@@ -48,7 +49,7 @@ export const getPreferences = (): UserPreferences => {
       export: { ...defaultExportPreferences, ...parsed.export },
     };
   } catch (error) {
-    console.error('Error loading preferences:', error);
+    logger.error('Error loading preferences', 'preferencesService', error);
     return defaultPreferences;
   }
 };
@@ -67,7 +68,7 @@ export const savePreferences = (preferences: Partial<UserPreferences>): void => 
     // Dispatch event to notify components
     window.dispatchEvent(new CustomEvent('preferences-updated', { detail: updated }));
   } catch (error) {
-    console.error('Error saving preferences:', error);
+    logger.error('Error saving preferences', 'preferencesService', error);
   }
 };
 
@@ -76,7 +77,7 @@ export const resetPreferences = (): void => {
     localStorage.removeItem(STORAGE_KEY);
     window.dispatchEvent(new CustomEvent('preferences-updated', { detail: defaultPreferences }));
   } catch (error) {
-    console.error('Error resetting preferences:', error);
+    logger.error('Error resetting preferences', 'preferencesService', error);
   }
 };
 

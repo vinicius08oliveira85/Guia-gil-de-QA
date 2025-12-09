@@ -4,6 +4,7 @@ import { LineChartWidget } from './LineChartWidget';
 import { BarChartWidget } from './BarChartWidget';
 import { useQualityMetrics } from '../../hooks/useQualityMetrics';
 import { Project } from '../../types';
+import { logger } from '../../utils/logger';
 
 interface QualityTrendSectionProps {
     project: Project;
@@ -67,7 +68,7 @@ export const QualityTrendSection: React.FC<QualityTrendSectionProps> = ({ projec
                         onBarClick={(label, value) => {
                             const module = metrics.topDefectiveModules.find(m => m.module === label);
                             if (module) {
-                                console.log(`Módulo ${label}: ${module.openBugs} bugs abertos de ${module.totalTasks} tarefas (${value}% de densidade)`);
+                                logger.debug(`Módulo ${label}: ${module.openBugs} bugs abertos de ${module.totalTasks} tarefas (${value}% de densidade)`, 'QualityTrendSection');
                             }
                         }}
                     />

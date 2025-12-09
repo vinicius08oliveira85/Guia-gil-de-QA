@@ -2,6 +2,7 @@ import { Project, JiraTask, PhaseName, Comment } from '../types';
 import { parseJiraDescription, parseJiraDescriptionHTML } from '../utils/jiraDescriptionParser';
 import { getCache, setCache, clearCache } from '../utils/apiCache';
 import { getJiraStatusColor } from '../utils/jiraStatusColors';
+import { logger } from '../utils/logger';
 
 export interface JiraConfig {
     url: string;
@@ -164,7 +165,7 @@ const jiraApiCall = async <T>(
             body: options.body ? (typeof options.body === 'string' ? JSON.parse(options.body) : options.body) : undefined,
         };
         
-        console.log('Fazendo requisição ao proxy Jira:', { endpoint, method: requestBody.method });
+        logger.debug('Fazendo requisição ao proxy Jira', 'jiraService', { endpoint, method: requestBody.method });
         
         const response = await fetch('/api/jira-proxy', {
             method: 'POST',
@@ -177,31 +178,31 @@ const jiraApiCall = async <T>(
 
         clearTimeout(timeoutId);
 
-        console.log('Resposta do proxy:', { status: response.status, ok: response.ok });
+        logger.debug('Resposta do proxy', 'jiraService', { status: response.status, ok: response.ok });
 
         if (!response.ok) {
             let errorData: { error?: string };
             try {
                 errorData = await response.json();
-                console.error('Erro do proxy:', errorData);
+                logger.error('Erro do proxy', 'jiraService', errorData);
             } catch {
                 const errorText = await response.text();
-                console.error('Erro do proxy (texto):', errorText);
+                logger.error('Erro do proxy (texto)', 'jiraService', errorText);
                 errorData = { error: errorText };
             }
             throw new Error(errorData.error || `Jira API Error (${response.status})`);
         }
 
         const data = await response.json();
-        console.log('Dados recebidos do proxy:', data);
+        logger.debug('Dados recebidos do proxy', 'jiraService', data);
         return data;
     } catch (error) {
         clearTimeout(timeoutId);
         if (error instanceof Error && error.name === 'AbortError') {
-            console.error('Timeout na requisição');
+            logger.error('Timeout na requisição', 'jiraService', error);
             throw new Error(`Timeout: A requisição demorou mais de ${timeout / 1000} segundos. Verifique sua conexão ou tente novamente.`);
         }
-        console.error('Erro na requisição:', error);
+        logger.error('Erro na requisição', 'jiraService', error);
         throw error;
     }
 };
@@ -212,7 +213,7 @@ export const testJiraConnection = async (config: JiraConfig): Promise<boolean> =
         await jiraApiCall(config, 'myself');
         return true;
     } catch (error) {
-        console.error('Jira connection test failed:', error);
+        logger.error('Jira connection test failed', 'jiraService', error);
         return false;
     }
 };
@@ -224,11 +225,11 @@ export const getJiraProjects = async (config: JiraConfig, useCache: boolean = tr
     if (useCache) {
         const cached = getCache<JiraProject[]>(cacheKey);
         if (cached) {
-            console.log('✅ Usando projetos do cache');
+            logger.debug('Usando projetos do cache', 'jiraService');
             return cached;
         }
     }
-    console.log('Buscando projetos do Jira...', { url: config.url, endpoint: 'project?maxResults=100' });
+    logger.debug('Buscando projetos do Jira', 'jiraService', { url: config.url, endpoint: 'project?maxResults=100' });
     
     try {
         const response = await jiraApiCall<{ values?: JiraProject[] }>(
@@ -237,23 +238,23 @@ export const getJiraProjects = async (config: JiraConfig, useCache: boolean = tr
             { timeout: 20000 } // 20 segundos para listar projetos
         );
         
-        console.log('Resposta do Jira:', response);
+        logger.debug('Resposta do Jira', 'jiraService', response);
         
         if (!response) {
-            console.error('Resposta vazia do Jira');
+            logger.error('Resposta vazia do Jira', 'jiraService');
             throw new Error('Resposta vazia do servidor Jira');
         }
         
         let projects: JiraProject[] = [];
         
         if (Array.isArray(response.values)) {
-            console.log(`Encontrados ${response.values.length} projetos`);
+            logger.info(`Encontrados ${response.values.length} projetos`, 'jiraService');
             projects = response.values;
         } else if (Array.isArray(response)) {
-            console.log(`Encontrados ${response.length} projetos (formato alternativo)`);
+            logger.info(`Encontrados ${response.length} projetos (formato alternativo)`, 'jiraService');
             projects = response;
         } else {
-            console.warn('Formato de resposta inesperado:', response);
+            logger.warn('Formato de resposta inesperado', 'jiraService', response);
             projects = [];
         }
         
@@ -264,7 +265,7 @@ export const getJiraProjects = async (config: JiraConfig, useCache: boolean = tr
         
         return projects;
     } catch (error) {
-        console.error('Erro em getJiraProjects:', error);
+        logger.error('Erro em getJiraProjects', 'jiraService', error);
         // Limpar cache em caso de erro
         clearCache(cacheKey);
         throw error;
@@ -277,7 +278,7 @@ export const getJiraStatuses = async (config: JiraConfig, projectKey: string): P
     // Tentar cache primeiro
     const cached = getCache<Array<{ name: string; color: string }>>(cacheKey);
     if (cached) {
-        console.log('✅ Usando status do Jira do cache');
+        logger.debug('Usando status do Jira do cache', 'jiraService');
         return cached;
     }
 
@@ -319,7 +320,7 @@ export const getJiraStatuses = async (config: JiraConfig, projectKey: string): P
         
         // Se não conseguir via API de status, extrair dos issues
         if (statuses.length === 0) {
-            console.log('⚠️ Não foi possível buscar status via API, extraindo das issues...');
+            logger.warn('Não foi possível buscar status via API, extraindo das issues', 'jiraService');
             const issues = await getJiraIssues(config, projectKey, 100); // Buscar apenas 100 para extrair status
             issues.forEach(issue => {
                 if (issue.fields?.status?.name) {
@@ -340,7 +341,7 @@ export const getJiraStatuses = async (config: JiraConfig, projectKey: string): P
 
         return statuses;
     } catch (error) {
-        console.error('Erro ao buscar status do Jira:', error);
+        logger.error('Erro ao buscar status do Jira', 'jiraService', error);
         // Fallback: extrair dos issues
         try {
             const issues = await getJiraIssues(config, projectKey, 100);
@@ -356,7 +357,7 @@ export const getJiraStatuses = async (config: JiraConfig, projectKey: string): P
             });
             return Array.from(statusMap.entries()).map(([name, color]) => ({ name, color }));
         } catch (fallbackError) {
-            console.error('Erro no fallback de status:', fallbackError);
+            logger.error('Erro no fallback de status', 'jiraService', fallbackError);
             return [];
         }
     }
@@ -430,12 +431,12 @@ export const getJiraIssues = async (
             { timeout: 60000 }
         );
         if (label) {
-            console.log(`📦 ${label}: Recebidas ${(response.issues || []).length} issues`);
+            logger.debug(`${label}: Recebidas ${(response.issues || []).length} issues`, 'jiraService');
         }
         return response;
     };
 
-    console.log(`🔍 Buscando TODAS as issues do projeto ${projectKey}...`);
+    logger.info(`Buscando TODAS as issues do projeto ${projectKey}`, 'jiraService');
     const firstResponse = await fetchPage({ startAt: 0 }, 'Página 1');
     pushIssues(firstResponse.issues || [], firstResponse.total);
 
@@ -456,7 +457,7 @@ export const getJiraIssues = async (
             const response = await fetchPage({ nextPageToken: nextToken }, `Página ${pageIndex}`);
             const issues = response.issues || [];
             if (issues.length === 0) {
-                console.log('⚠️ Nenhuma issue retornada nesta página. Parando paginação.');
+                logger.warn('Nenhuma issue retornada nesta página. Parando paginação', 'jiraService');
                 break;
             }
             pushIssues(issues, response.total);
@@ -498,7 +499,7 @@ export const getJiraIssues = async (
             const response = await fetchPage({ startAt: nextStartAt }, `Página ${pageIndex}`);
             const issues = response.issues || [];
             if (issues.length === 0) {
-                console.log('⚠️ Nenhuma issue retornada nesta página. Parando paginação.');
+                logger.warn('Nenhuma issue retornada nesta página. Parando paginação', 'jiraService');
                 break;
             }
             pushIssues(issues, response.total);
@@ -510,7 +511,7 @@ export const getJiraIssues = async (
             }
 
             if (maxResults === undefined && allIssues.length >= 50000) {
-                console.warn(`⚠️ Limite de segurança de 50000 issues atingido para o projeto ${projectKey}.`);
+                logger.warn(`Limite de segurança de 50000 issues atingido para o projeto ${projectKey}`, 'jiraService');
                 break;
             }
         }
@@ -538,10 +539,10 @@ export const getJiraIssues = async (
     }).length;
     
     const uniqueTypes = [...new Set(allIssues.map(i => i.fields?.issuetype?.name).filter(Boolean))];
-    console.log(`   📋 Tipos encontrados no Jira:`, uniqueTypes.slice(0, 10));
+    logger.debug(`Tipos encontrados no Jira: ${uniqueTypes.slice(0, 10).join(', ')}`, 'jiraService');
     
-    console.log(`✅ Total de issues buscadas: ${allIssues.length} para o projeto ${projectKey}`);
-    console.log(`   📊 Breakdown: ${epics} Epics, ${stories} Histórias, ${tasks} Tarefas, ${bugs} Bugs`);
+    logger.info(`Total de issues buscadas: ${allIssues.length} para o projeto ${projectKey}`, 'jiraService');
+    logger.info(`Breakdown: ${epics} Epics, ${stories} Histórias, ${tasks} Tarefas, ${bugs} Bugs`, 'jiraService');
     
     return allIssues;
 };
@@ -677,7 +678,7 @@ const getJiraIssueComments = async (
             fromJira: true,
         }));
     } catch (error) {
-        console.warn(`Erro ao buscar comentários da issue ${issueKey}:`, error);
+        logger.warn(`Erro ao buscar comentários da issue ${issueKey}`, 'jiraService', error);
         return [];
     }
 };
@@ -808,7 +809,7 @@ export const importJiraProject = async (
         
         // Log para debug das primeiras tarefas
         if (index < 3) {
-            console.log(`📝 Tarefa ${issue.key}:`, {
+            logger.debug(`Tarefa ${issue.key}`, 'jiraService', {
                 title: issue.fields?.summary,
                 type: taskType,
                 hasDescription: !!description,
@@ -991,8 +992,8 @@ export const syncJiraProject = async (
     // Buscar TODAS as issues atualizadas desde a última sincronização (sem limite)
     const jiraIssues = await getJiraIssues(config, jiraProjectKey);
     
-    console.log(`[syncJiraProject] Buscadas ${jiraIssues.length} issues do Jira para projeto ${jiraProjectKey}`);
-    console.log(`[syncJiraProject] Tarefas existentes no projeto: ${project.tasks.length}`);
+    logger.info(`Buscadas ${jiraIssues.length} issues do Jira para projeto ${jiraProjectKey}`, 'jiraService');
+    logger.info(`Tarefas existentes no projeto: ${project.tasks.length}`, 'jiraService');
     
     // Atualizar tarefas existentes e adicionar novas
     const existingTaskKeys = new Set(project.tasks.map(t => t.id));
@@ -1234,7 +1235,7 @@ export const syncJiraProject = async (
             );
             
             if (hasChanges) {
-                console.log(`[syncJiraProject] Atualizando tarefa ${task.id}:`, {
+                logger.debug(`Atualizando tarefa ${task.id}`, 'jiraService', {
                     titleChanged: oldTask.title !== task.title,
                     statusChanged: oldTask.status !== task.status || oldTask.jiraStatus !== task.jiraStatus,
                     priorityChanged: oldTask.priority !== task.priority,
@@ -1247,13 +1248,13 @@ export const syncJiraProject = async (
                 updatedTasks[existingIndex] = oldTask;
             }
         } else {
-            console.log(`[syncJiraProject] Nova tarefa encontrada: ${task.id} - ${task.title}`);
+            logger.info(`Nova tarefa encontrada: ${task.id} - ${task.title}`, 'jiraService');
             updatedTasks.push(task);
             newCount++;
         }
     }
 
-    console.log(`[syncJiraProject] Resumo: ${updatedCount} atualizadas, ${newCount} novas, ${updatedTasks.length} total`);
+    logger.info(`Resumo: ${updatedCount} atualizadas, ${newCount} novas, ${updatedTasks.length} total`, 'jiraService');
 
     return {
         ...project,

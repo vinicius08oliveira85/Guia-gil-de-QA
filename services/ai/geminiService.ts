@@ -5,6 +5,7 @@ import { sanitizeHTML } from '../../utils/sanitize';
 import { AIService } from './aiServiceInterface';
 import { getFormattedContext } from './documentContextService';
 import { callGeminiWithRetry } from './geminiApiWrapper';
+import { logger } from '../../utils/logger';
 
 const testCaseGenerationSchema = {
   type: Type.OBJECT,
@@ -285,7 +286,7 @@ export class GeminiService implements AIService {
       const parsedResponse = JSON.parse(jsonString);
 
       if (!parsedResponse || !Array.isArray(parsedResponse.strategy) || !Array.isArray(parsedResponse.testCases)) {
-          console.error("Invalid response structure from Gemini:", parsedResponse);
+          logger.error("Resposta da IA com estrutura inválida", 'geminiService', parsedResponse);
           throw new Error("Resposta da IA com estrutura inválida.");
       }
 
@@ -315,7 +316,7 @@ export class GeminiService implements AIService {
 
       return { strategy, testCases };
     } catch (error) {
-      console.error("Error generating test cases:", error);
+      logger.error("Erro ao gerar casos de teste", 'geminiService', error);
       throw new Error("Failed to communicate with the Gemini API.");
     }
   }
@@ -353,7 +354,7 @@ export class GeminiService implements AIService {
         const html = marked(markdownText) as string;
         return sanitizeHTML(html);
     } catch (error) {
-        console.error("Error analyzing document:", error);
+        logger.error("Erro ao analisar documento", 'geminiService', error);
         throw new Error("Failed to communicate with the Gemini API for document analysis.");
     }
   }
@@ -430,7 +431,7 @@ export class GeminiService implements AIService {
         };
 
     } catch (error) {
-        console.error("Error generating task from document:", error);
+        logger.error("Erro ao gerar tarefa a partir do documento", 'geminiService', error);
         throw new Error("Failed to generate task from document.");
     }
   }
@@ -489,7 +490,7 @@ export class GeminiService implements AIService {
         });
         return JSON.parse(response.text.trim());
     } catch (error) {
-        console.error("Error generating project lifecycle plan:", error);
+        logger.error("Erro ao gerar plano de ciclo de vida do projeto", 'geminiService', error);
         throw new Error("Failed to communicate with the Gemini API for project planning.");
     }
   }
@@ -543,7 +544,7 @@ export class GeminiService implements AIService {
         const parsedResponse = JSON.parse(response.text.trim());
         return parsedResponse;
     } catch (error) {
-        console.error("Error generating Shift Left analysis:", error);
+        logger.error("Erro ao gerar análise Shift Left", 'geminiService', error);
         throw new Error("Failed to communicate with the Gemini API for Shift Left analysis.");
     }
   }
@@ -601,7 +602,7 @@ export class GeminiService implements AIService {
             id: `bdd-${Date.now()}-${index}`,
         }));
     } catch (error) {
-        console.error("Error generating BDD scenarios:", error);
+        logger.error("Erro ao gerar cenários BDD", 'geminiService', error);
         throw new Error("Falha ao comunicar com a API Gemini para gerar cenários BDD.");
     }
   }
@@ -656,7 +657,7 @@ export class GeminiService implements AIService {
         const parsedResponse = JSON.parse(response.text.trim());
         return parsedResponse;
     } catch (error) {
-        console.error("Error generating Test Pyramid analysis:", error);
+        logger.error("Erro ao gerar análise Test Pyramid", 'geminiService', error);
         throw new Error("Failed to communicate with the Gemini API for Test Pyramid analysis.");
     }
   }

@@ -4,6 +4,7 @@ import { marked } from 'marked';
 import { sanitizeHTML } from '../../utils/sanitize';
 import { AIService } from './aiServiceInterface';
 import { getFormattedContext } from './documentContextService';
+import { logger } from '../../utils/logger';
 
 const API_KEY = import.meta.env.VITE_OPENAI_API_KEY || import.meta.env.OPENAI_API_KEY;
 
@@ -24,7 +25,7 @@ if (API_KEY) {
 } else {
   // Só mostrar aviso se não houver nenhuma chave de IA configurada
   if (!hasAnyAIKey()) {
-    console.warn("OPENAI_API_KEY environment variable not set. Some features may not work.");
+    logger.warn("OPENAI_API_KEY environment variable not set. Some features may not work.", 'openaiService');
   }
 }
 
@@ -256,7 +257,7 @@ export class OpenAIService implements AIService {
       const parsedResponse = JSON.parse(jsonString);
 
       if (!parsedResponse || !Array.isArray(parsedResponse.strategy) || !Array.isArray(parsedResponse.testCases)) {
-          console.error("Invalid response structure from OpenAI:", parsedResponse);
+          logger.error("Resposta da IA com estrutura inválida", 'openaiService', parsedResponse);
           throw new Error("Resposta da IA com estrutura inválida.");
       }
 
@@ -286,7 +287,7 @@ export class OpenAIService implements AIService {
 
       return { strategy, testCases };
     } catch (error) {
-      console.error("Error generating test cases:", error);
+      logger.error("Erro ao gerar casos de teste", 'openaiService', error);
       throw new Error("Failed to communicate with the OpenAI API.");
     }
   }
@@ -319,7 +320,7 @@ export class OpenAIService implements AIService {
         const html = marked(markdownText) as string;
         return sanitizeHTML(html);
     } catch (error) {
-        console.error("Error analyzing document:", error);
+        logger.error("Erro ao analisar documento", 'openaiService', error);
         throw new Error("Failed to communicate with the OpenAI API for document analysis.");
     }
   }
@@ -373,7 +374,7 @@ export class OpenAIService implements AIService {
         };
 
     } catch (error) {
-        console.error("Error generating task from document:", error);
+        logger.error("Erro ao gerar tarefa a partir do documento", 'openaiService', error);
         throw new Error("Failed to generate task from document.");
     }
   }
@@ -402,7 +403,7 @@ export class OpenAIService implements AIService {
         const jsonString = await this.callAPI(prompt, { type: 'json_object' });
         return JSON.parse(jsonString);
     } catch (error) {
-        console.error("Error generating project lifecycle plan:", error);
+        logger.error("Erro ao gerar plano de ciclo de vida do projeto", 'openaiService', error);
         throw new Error("Failed to communicate with the OpenAI API for project planning.");
     }
   }
@@ -433,7 +434,7 @@ export class OpenAIService implements AIService {
         const parsedResponse = JSON.parse(jsonString);
         return parsedResponse;
     } catch (error) {
-        console.error("Error generating Shift Left analysis:", error);
+        logger.error("Erro ao gerar análise Shift Left", 'openaiService', error);
         throw new Error("Failed to communicate with the OpenAI API for Shift Left analysis.");
     }
   }
@@ -468,7 +469,7 @@ export class OpenAIService implements AIService {
             id: `bdd-${Date.now()}-${index}`,
         }));
     } catch (error) {
-        console.error("Error generating BDD scenarios:", error);
+        logger.error("Erro ao gerar cenários BDD", 'openaiService', error);
         throw new Error("Falha ao comunicar com a API OpenAI para gerar cenários BDD.");
     }
   }
@@ -499,7 +500,7 @@ export class OpenAIService implements AIService {
         const parsedResponse = JSON.parse(jsonString);
         return parsedResponse;
     } catch (error) {
-        console.error("Error generating Test Pyramid analysis:", error);
+        logger.error("Erro ao gerar análise Test Pyramid", 'openaiService', error);
         throw new Error("Failed to communicate with the OpenAI API for Test Pyramid analysis.");
     }
   }

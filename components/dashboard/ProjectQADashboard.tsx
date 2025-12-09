@@ -11,6 +11,7 @@ import { ProgressIndicator } from '../common/ProgressIndicator';
 import { Badge } from '../common/Badge';
 import { EmptyState } from '../common/EmptyState';
 import { CompassIcon, CheckCircleIcon } from '../common/Icons';
+import { logger } from '../../utils/logger';
 
 export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) => {
     const metrics = useProjectMetrics(project);
@@ -232,7 +233,7 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
                                 interactive={true}
                                 onClick={() => {
                                     // Navegar para a aba de tarefas com filtro de tarefas sem testes
-                                    console.log('Clicou em cobertura - pode navegar para tarefas sem testes');
+                                    logger.debug('Clicou em cobertura - pode navegar para tarefas sem testes', 'ProjectQADashboard');
                                 }}
                             />
                             <DonutChart
@@ -243,7 +244,7 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
                                 interactive={true}
                                 onClick={() => {
                                     // Navegar para a aba de tarefas com filtro de automação
-                                    console.log('Clicou em automação - pode navegar para tarefas automatizadas');
+                                    logger.debug('Clicou em automação - pode navegar para tarefas automatizadas', 'ProjectQADashboard');
                                 }}
                             />
                         </div>
@@ -288,7 +289,7 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
                                 rawData={testExecutionData}
                                 interactive={true}
                                 onBarClick={(label, value) => {
-                                    console.log(`Clicou em ${label} com valor ${value}`);
+                                    logger.debug(`Clicou em ${label} com valor ${value}`, 'ProjectQADashboard');
                                     // Pode navegar para filtros específicos
                                 }}
                             />
@@ -298,7 +299,7 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
                                 rawData={bugSeverityData}
                                 interactive={true}
                                 onBarClick={(label, value) => {
-                                    console.log(`Clicou em ${label} com valor ${value}`);
+                                    logger.debug(`Clicou em ${label} com valor ${value}`, 'ProjectQADashboard');
                                     // Pode navegar para bugs filtrados por severidade
                                 }}
                             />
@@ -318,7 +319,7 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
                                 note={`${metrics.passedTestCases} de ${metrics.executedTestCases} casos passaram`}
                                 interactive={true}
                                 onClick={() => {
-                                    console.log('Clicou em taxa de aprovação');
+                                    logger.debug('Clicou em taxa de aprovação', 'ProjectQADashboard');
                                 }}
                             />
                         </div>

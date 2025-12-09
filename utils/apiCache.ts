@@ -2,6 +2,7 @@
  * Sistema de cache simples para chamadas de API
  * Armazena resultados em localStorage com TTL (Time To Live)
  */
+import { logger } from './logger';
 
 interface CacheEntry<T> {
     data: T;
@@ -23,7 +24,7 @@ export const setCache = <T>(key: string, data: T, ttl: number = 5 * 60 * 1000): 
         };
         localStorage.setItem(`${CACHE_PREFIX}${key}`, JSON.stringify(entry));
     } catch (error) {
-        console.warn('Erro ao salvar no cache:', error);
+        logger.warn('Erro ao salvar no cache', 'apiCache', error);
     }
 };
 
@@ -47,7 +48,7 @@ export const getCache = <T>(key: string): T | null => {
 
         return entry.data;
     } catch (error) {
-        console.warn('Erro ao ler do cache:', error);
+        logger.warn('Erro ao ler do cache', 'apiCache', error);
         return null;
     }
 };
@@ -59,7 +60,7 @@ export const clearCache = (key: string): void => {
     try {
         localStorage.removeItem(`${CACHE_PREFIX}${key}`);
     } catch (error) {
-        console.warn('Erro ao limpar cache:', error);
+        logger.warn('Erro ao limpar cache', 'apiCache', error);
     }
 };
 
@@ -75,7 +76,7 @@ export const clearAllCache = (): void => {
             }
         });
     } catch (error) {
-        console.warn('Erro ao limpar todo o cache:', error);
+        logger.warn('Erro ao limpar todo o cache', 'apiCache', error);
     }
 };
 

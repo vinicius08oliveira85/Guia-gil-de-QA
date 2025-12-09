@@ -2,6 +2,7 @@ import { Type } from "@google/genai";
 import { Project, GeneralIAAnalysis, TaskIAAnalysis, TestIAAnalysis, JiraTask, TestCase } from '../../types';
 import { getFormattedContext } from './documentContextService';
 import { callGeminiWithRetry } from './geminiApiWrapper';
+import { logger } from '../../utils/logger';
 
 const CACHE_TTL_MS = 1000 * 60 * 5; // 5 minutos
 const MAX_AI_TASKS = 20;
@@ -660,7 +661,7 @@ OBSERVAÇÕES IMPORTANTES:
 
     return analysis;
   } catch (error) {
-    console.error("Error generating general IA analysis:", error);
+    logger.error("Erro ao gerar análise geral de IA", 'generalAnalysisService', error);
     throw new Error("Falha ao gerar análise geral de IA. Verifique a configuração da API e tente novamente.");
   }
 }

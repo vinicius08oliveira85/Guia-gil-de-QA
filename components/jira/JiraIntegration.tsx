@@ -6,6 +6,7 @@ import { Modal } from '../common/Modal';
 import { Spinner } from '../common/Spinner';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import { Badge } from '../common/Badge';
+import { logger } from '../../utils/logger';
 
 interface JiraIntegrationProps {
     onProjectImported: (project: Project) => void;
@@ -50,19 +51,19 @@ export const JiraIntegration: React.FC<JiraIntegrationProps> = ({ onProjectImpor
                     
                     // Não usar cache se estiver vazio ou muito antigo
                     if (Array.isArray(projects) && projects.length > 0 && cacheAge < 5 * 60 * 1000) {
-                        console.log('Usando projetos do cache:', projects.length);
+                        logger.debug(`Usando projetos do cache: ${projects.length}`, 'JiraIntegration');
                         setJiraProjects(projects);
                         return;
                     } else if (Array.isArray(projects) && projects.length === 0) {
                         // Cache vazio - limpar e fazer nova requisição
-                        console.log('Cache vazio detectado, limpando e fazendo nova requisição');
+                        logger.debug('Cache vazio detectado, limpando e fazendo nova requisição', 'JiraIntegration');
                         localStorage.removeItem(cacheKey);
                     } else if (cacheAge >= 5 * 60 * 1000) {
-                        console.log('Cache expirado, fazendo nova requisição');
+                        logger.debug('Cache expirado, fazendo nova requisição', 'JiraIntegration');
                         localStorage.removeItem(cacheKey);
                     }
                 } catch (e) {
-                    console.warn('Cache inválido, continuando com requisição');
+                    logger.warn('Cache inválido, continuando com requisição', 'JiraIntegration', e);
                     // Cache inválido, limpar e continuar com requisição
                     localStorage.removeItem(cacheKey);
                 }
@@ -70,11 +71,11 @@ export const JiraIntegration: React.FC<JiraIntegrationProps> = ({ onProjectImpor
         }
 
         setIsLoadingProjects(true);
-        console.log('Carregando projetos do Jira...', { url: jiraConfig.url, email: jiraConfig.email });
+        logger.info('Carregando projetos do Jira', 'JiraIntegration', { url: jiraConfig.url, email: jiraConfig.email });
         
         try {
             const projects = await getJiraProjects(jiraConfig);
-            console.log('Projetos recebidos do Jira:', projects.length, projects);
+            logger.info(`Projetos recebidos do Jira: ${projects.length}`, 'JiraIntegration', projects);
             
             if (Array.isArray(projects) && projects.length > 0) {
                 setJiraProjects(projects);
@@ -84,16 +85,16 @@ export const JiraIntegration: React.FC<JiraIntegrationProps> = ({ onProjectImpor
                     projects,
                     timestamp: Date.now()
                 }));
-                console.log(`✅ ${projects.length} projetos salvos no cache`);
+                logger.info(`${projects.length} projetos salvos no cache`, 'JiraIntegration');
             } else if (Array.isArray(projects) && projects.length === 0) {
-                console.warn('⚠️ Nenhum projeto encontrado no Jira');
+                logger.warn('Nenhum projeto encontrado no Jira', 'JiraIntegration');
                 setJiraProjects([]);
                 // Não salvar cache vazio - isso impede novas tentativas
                 const cacheKey = `jira_projects_${jiraConfig.url}`;
                 localStorage.removeItem(cacheKey);
                 handleError(new Error('Nenhum projeto encontrado no Jira. Verifique se você tem acesso a projetos.'), 'Carregar Projetos');
             } else {
-                console.error('❌ Resposta inválida do Jira:', projects);
+                logger.error('Resposta inválida do Jira', 'JiraIntegration', projects);
                 setJiraProjects([]);
                 // Limpar cache em caso de erro
                 const cacheKey = `jira_projects_${jiraConfig.url}`;
@@ -101,7 +102,7 @@ export const JiraIntegration: React.FC<JiraIntegrationProps> = ({ onProjectImpor
                 handleError(new Error('Resposta inválida do servidor Jira'), 'Carregar Projetos');
             }
         } catch (error) {
-            console.error('Erro ao carregar projetos do Jira:', error);
+            logger.error('Erro ao carregar projetos do Jira', 'JiraIntegration', error);
             const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido ao carregar projetos do Jira';
             handleError(new Error(errorMessage), 'Carregar Projetos');
             setJiraProjects([]);

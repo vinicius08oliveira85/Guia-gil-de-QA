@@ -7,6 +7,7 @@ import { FilterPanel } from '../common/FilterPanel';
 import { QuickFilters } from '../common/QuickFilters';
 import { TaskForm } from './TaskForm';
 import { TestCaseEditorModal } from './TestCaseEditorModal';
+import { logger } from '../../utils/logger';
 
 const TASK_ID_REGEX = /^([A-Z]+)-(\d+)/i;
 
@@ -721,7 +722,7 @@ export const TasksView: React.FC<{
                         bddGenerationResults.push({ taskId: task.id, success: true });
                     } catch (error) {
                         const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
-                        console.error(`Erro ao gerar BDDs para tarefa ${task.id}:`, error);
+                        logger.error(`Erro ao gerar BDDs para tarefa ${task.id}`, 'TasksView', error);
                         bddGenerationResults.push({ 
                             taskId: task.id, 
                             success: false, 
@@ -787,7 +788,7 @@ export const TasksView: React.FC<{
                         testCaseGenerationResults.push({ taskId: task.id, success: true });
                     } catch (error) {
                         const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
-                        console.error(`Erro ao gerar casos de teste para tarefa ${task.id}:`, error);
+                        logger.error(`Erro ao gerar casos de teste para tarefa ${task.id}`, 'TasksView', error);
                         testCaseGenerationResults.push({ 
                             taskId: task.id, 
                             success: false, 
@@ -1089,7 +1090,7 @@ export const TasksView: React.FC<{
                     );
                     
                     if (hasChanges) {
-                        console.log(`[TasksView] Tarefa ${t.id} foi atualizada:`, {
+                        logger.debug(`Tarefa ${t.id} foi atualizada`, 'TasksView', {
                             title: { old: oldTask.title, new: t.title },
                             status: { old: oldTask.status, new: t.status },
                             jiraStatus: { old: oldTask.jiraStatus, new: t.jiraStatus },

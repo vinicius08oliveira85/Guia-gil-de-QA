@@ -8,6 +8,7 @@ import {
     deleteProjectFromSupabase 
 } from './supabaseService';
 import { migrateTestCases } from '../utils/testCaseMigration';
+import { logger } from '../utils/logger';
 
 let db: IDBDatabase;
 
@@ -20,8 +21,9 @@ const openDB = (): Promise<IDBDatabase> => {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
 
     request.onerror = () => {
-      console.error("Database error:", request.error);
-      reject("Database error");
+      const error = request.error || new Error('Erro desconhecido ao abrir banco de dados');
+      logger.error('Erro ao abrir banco de dados IndexedDB', 'dbService', error);
+      reject(error);
     };
 
     request.onsuccess = () => {
@@ -109,14 +111,14 @@ export const getAllProjects = async (): Promise<Project[]> => {
       const cleanedProjects = cleanupTestCasesForProjects(mergedProjects);
       
       if (supabaseProjects.length === 0 && indexedDBProjects.length > 0) {
-        console.log(`📦 Usando projetos do cache local: ${indexedDBProjects.length}`);
+        logger.info(`Usando projetos do cache local: ${indexedDBProjects.length}`, 'dbService');
       } else if (supabaseProjects.length > 0) {
-        console.log(`✅ ${cleanedProjects.length} projetos carregados (${supabaseProjects.length} do Supabase + ${indexedDBProjects.length} do cache local)`);
+        logger.info(`${cleanedProjects.length} projetos carregados (${supabaseProjects.length} do Supabase + ${indexedDBProjects.length} do cache local)`, 'dbService');
       }
       
       return cleanedProjects;
     } catch (error) {
-      console.warn('⚠️ Erro ao carregar do Supabase, usando apenas IndexedDB:', error);
+      logger.warn('Erro ao carregar do Supabase, usando apenas IndexedDB', 'dbService', error);
       // Retornar projetos do IndexedDB em caso de erro (já migrados e limpos)
       return indexedDBProjects;
     }
@@ -144,7 +146,7 @@ export const addProject = async (project: Project): Promise<void> => {
         request.onsuccess = () => resolve();
       });
     } catch (error) {
-      console.warn('⚠️ Erro ao salvar no Supabase, usando apenas IndexedDB:', error);
+      logger.warn('Erro ao salvar no Supabase, usando apenas IndexedDB', 'dbService', error);
       // Continuar para fallback IndexedDB
     }
   }
@@ -204,7 +206,7 @@ export const deleteProject = async (projectId: string): Promise<void> => {
                 request.onsuccess = () => resolve();
             });
         } catch (error) {
-            console.warn('⚠️ Erro ao deletar do Supabase, usando apenas IndexedDB:', error);
+            logger.warn('Erro ao deletar do Supabase, usando apenas IndexedDB', 'dbService', error);
             // Continuar para fallback IndexedDB
         }
     }

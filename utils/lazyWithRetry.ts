@@ -1,4 +1,5 @@
 import React from 'react';
+import { logger } from './logger';
 
 const isChunkLoadError = (error: any) => {
     if (!error) return false;
@@ -22,8 +23,9 @@ export function lazyWithRetry<T extends React.ComponentType<any>>(
             if (isChunkLoadError(error) && attempt < maxRetries) {
                 attempt += 1;
                 const delay = attempt * 500;
-                console.warn(
-                    `[lazyWithRetry] Erro ao carregar chunk (tentativa ${attempt}/${maxRetries}). Re-tentando em ${delay}ms...`,
+                logger.warn(
+                    `Erro ao carregar chunk (tentativa ${attempt}/${maxRetries}). Re-tentando em ${delay}ms...`,
+                    'lazyWithRetry',
                     error
                 );
                 return new Promise((resolve, reject) => {
@@ -34,7 +36,7 @@ export function lazyWithRetry<T extends React.ComponentType<any>>(
             }
 
             if (isChunkLoadError(error)) {
-                console.error('[lazyWithRetry] Falha definitiva ao carregar chunk. Recarregando página...', error);
+                logger.error('Falha definitiva ao carregar chunk. Recarregando página...', 'lazyWithRetry', error);
                 onFail?.();
                 if (typeof window !== 'undefined') {
                     window.location.reload();

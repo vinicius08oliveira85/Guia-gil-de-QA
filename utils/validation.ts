@@ -1,13 +1,39 @@
 import { z } from 'zod';
+import { PhaseName, PhaseStatus } from '../types';
+
+// Schemas auxiliares
+export const ProjectDocumentSchema = z.object({
+  name: z.string().min(1),
+  content: z.string(),
+  analysis: z.string().optional(),
+});
+
+export const PhaseSchema = z.object({
+  name: z.enum([
+    'Request',
+    'Analysis',
+    'Design',
+    'Analysis and Code',
+    'Build',
+    'Test',
+    'Release',
+    'Deploy',
+    'Operate',
+    'Monitor',
+  ]),
+  status: z.enum(['Não Iniciado', 'Em Andamento', 'Concluído']),
+  summary: z.string().optional(),
+  testTypes: z.array(z.string()).optional(),
+});
 
 // Schemas de validação
 export const ProjectSchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1, 'Nome do projeto é obrigatório').max(100, 'Nome muito longo'),
   description: z.string().max(1000, 'Descrição muito longa'),
-  documents: z.array(z.any()).default([]),
-  tasks: z.array(z.any()).default([]),
-  phases: z.array(z.any()).default([]),
+  documents: z.array(ProjectDocumentSchema).default([]),
+  tasks: z.array(z.any()).default([]), // TaskSchema é muito complexo, manter any por enquanto
+  phases: z.array(PhaseSchema).default([]),
 });
 
 export const TaskSchema = z.object({

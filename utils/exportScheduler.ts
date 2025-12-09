@@ -4,6 +4,7 @@ import { exportProjectToJSON, exportProjectToCSV, generateProjectReport, downloa
 import { saveProjectToSupabase } from '../services/supabaseService';
 import { createNotification } from './notificationService';
 import { getNotificationPreferences } from './preferencesService';
+import { logger } from './logger';
 
 let schedulerInterval: NodeJS.Timeout | null = null;
 let lastRunDate: string | null = null;
@@ -123,7 +124,7 @@ const executeScheduledExport = async (schedule: ExportSchedule): Promise<void> =
             }
         }
     } catch (error) {
-        console.error('Error executing scheduled export:', error);
+        logger.error('Error executing scheduled export', 'exportScheduler', error);
         const notificationPrefs = getNotificationPreferences();
         if (notificationPrefs.testFailed) {
             createNotification({

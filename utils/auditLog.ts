@@ -1,3 +1,5 @@
+import { logger } from './logger';
+
 const STORAGE_KEY = 'qa_audit_logs';
 
 export interface AuditLogEntry {
@@ -28,7 +30,7 @@ export const addAuditLog = (entry: Omit<AuditLogEntry, 'id' | 'timestamp'>) => {
     
     localStorage.setItem(STORAGE_KEY, JSON.stringify(logs));
   } catch (error) {
-    console.error('Error saving audit log:', error);
+    logger.error('Error saving audit log', 'auditLog', error);
   }
 };
 
@@ -37,7 +39,7 @@ export const getAuditLogs = (): AuditLogEntry[] => {
     const logs = localStorage.getItem(STORAGE_KEY);
     return logs ? JSON.parse(logs) : [];
   } catch (error) {
-    console.error('Error reading audit logs:', error);
+    logger.error('Error reading audit logs', 'auditLog', error);
     return [];
   }
 };

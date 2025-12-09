@@ -6,6 +6,7 @@ import { BarChartWidget } from './BarChartWidget';
 import { useQualityMetrics } from '../../hooks/useQualityMetrics';
 import { Project } from '../../types';
 import { Badge } from '../common/Badge';
+import { logger } from '../../utils/logger';
 
 interface EfficiencySectionProps {
     project: Project;
@@ -77,7 +78,7 @@ export const EfficiencySection: React.FC<EfficiencySectionProps> = ({ project })
                     rawData={cycleTimeDistributionData}
                     interactive={true}
                     onBarClick={(label, value) => {
-                        console.log(`${label}: ${value} bugs`);
+                        logger.debug(`${label}: ${value} bugs`, 'EfficiencySection');
                     }}
                 />
                 
@@ -89,7 +90,7 @@ export const EfficiencySection: React.FC<EfficiencySectionProps> = ({ project })
                     note={`${metrics.flakyTests.totalAutomated - metrics.flakyTests.count} de ${metrics.flakyTests.totalAutomated} testes estáveis`}
                     interactive={true}
                     onClick={() => {
-                        console.log('Detalhes de flaky tests');
+                        logger.debug('Detalhes de flaky tests', 'EfficiencySection');
                     }}
                 />
             </div>

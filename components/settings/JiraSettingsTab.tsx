@@ -5,6 +5,7 @@ import { Modal } from '../common/Modal';
 import { Spinner } from '../common/Spinner';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import { Badge } from '../common/Badge';
+import { logger } from '../../utils/logger';
 
 interface JiraSettingsTabProps {
     onProjectImported?: (project: Project) => void;
@@ -48,29 +49,29 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({ onProjectImpor
                     const cacheAge = Date.now() - timestamp;
                     
                     if (Array.isArray(projects) && projects.length > 0 && cacheAge < 5 * 60 * 1000) {
-                        console.log('Usando projetos do cache:', projects.length);
+                        logger.debug(`Usando projetos do cache: ${projects.length}`, 'JiraSettingsTab');
                         setJiraProjects(projects);
                         return;
                     } else if (Array.isArray(projects) && projects.length === 0) {
-                        console.log('Cache vazio detectado, limpando e fazendo nova requisição');
+                        logger.debug('Cache vazio detectado, limpando e fazendo nova requisição', 'JiraSettingsTab');
                         localStorage.removeItem(cacheKey);
                     } else if (cacheAge >= 5 * 60 * 1000) {
-                        console.log('Cache expirado, fazendo nova requisição');
+                        logger.debug('Cache expirado, fazendo nova requisição', 'JiraSettingsTab');
                         localStorage.removeItem(cacheKey);
                     }
                 } catch (e) {
-                    console.warn('Cache inválido, continuando com requisição');
+                    logger.warn('Cache inválido, continuando com requisição', 'JiraSettingsTab', e);
                     localStorage.removeItem(cacheKey);
                 }
             }
         }
 
         setIsLoadingProjects(true);
-        console.log('Carregando projetos do Jira...', { url: jiraConfig.url, email: jiraConfig.email });
+        logger.info('Carregando projetos do Jira', 'JiraSettingsTab', { url: jiraConfig.url, email: jiraConfig.email });
         
         try {
             const projects = await getJiraProjects(jiraConfig);
-            console.log('Projetos recebidos do Jira:', projects.length, projects);
+            logger.info(`Projetos recebidos do Jira: ${projects.length}`, 'JiraSettingsTab', projects);
             
             if (Array.isArray(projects) && projects.length > 0) {
                 setJiraProjects(projects);
@@ -79,22 +80,22 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({ onProjectImpor
                     projects,
                     timestamp: Date.now()
                 }));
-                console.log(`✅ ${projects.length} projetos salvos no cache`);
+                logger.info(`${projects.length} projetos salvos no cache`, 'JiraSettingsTab');
             } else if (Array.isArray(projects) && projects.length === 0) {
-                console.warn('⚠️ Nenhum projeto encontrado no Jira');
+                logger.warn('Nenhum projeto encontrado no Jira', 'JiraSettingsTab');
                 setJiraProjects([]);
                 const cacheKey = `jira_projects_${jiraConfig.url}`;
                 localStorage.removeItem(cacheKey);
                 handleError(new Error('Nenhum projeto encontrado no Jira. Verifique se você tem acesso a projetos.'), 'Carregar Projetos');
             } else {
-                console.error('❌ Resposta inválida do Jira:', projects);
+                logger.error('Resposta inválida do Jira', 'JiraSettingsTab', projects);
                 setJiraProjects([]);
                 const cacheKey = `jira_projects_${jiraConfig.url}`;
                 localStorage.removeItem(cacheKey);
                 handleError(new Error('Resposta inválida do servidor Jira'), 'Carregar Projetos');
             }
         } catch (error) {
-            console.error('Erro ao carregar projetos do Jira:', error);
+            logger.error('Erro ao carregar projetos do Jira', 'JiraSettingsTab', error);
             const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido ao carregar projetos do Jira';
             handleError(new Error(errorMessage), 'Carregar Projetos');
             setJiraProjects([]);

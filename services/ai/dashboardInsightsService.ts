@@ -5,6 +5,7 @@ import { getCurrentAndPreviousPeriodMetrics } from '../metricsHistoryService';
 import { getFormattedContext } from './documentContextService';
 import { generateSDLCPhaseAnalysis } from './sdlcPhaseAnalysisService';
 import { callGeminiWithRetry } from './geminiApiWrapper';
+import { logger } from '../../utils/logger';
 
 const CACHE_TTL_MS = 1000 * 60 * 10; // 10 minutos
 
@@ -304,7 +305,7 @@ Respeite o schema JSON fornecido.
     
     return analysis;
   } catch (error) {
-    console.error('Erro ao gerar análise de insights do dashboard:', error);
+    logger.error('Erro ao gerar análise de insights do dashboard', 'dashboardInsightsService', error);
     throw error;
   }
 }

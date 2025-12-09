@@ -5,6 +5,7 @@ import { JiraTask } from '../../types';
 import { generateTestReport, TestReportFormat } from '../../utils/testReportGenerator';
 import { downloadFile } from '../../utils/exportService';
 import { Badge } from '../common/Badge';
+import { logger } from '../../utils/logger';
 
 interface TestReportModalProps {
   isOpen: boolean;
@@ -58,7 +59,7 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (error) {
-      console.error('Erro ao copiar:', error);
+      logger.error('Erro ao copiar', 'TestReportModal', error);
       // Fallback para navegadores antigos
       const textArea = document.createElement('textarea');
       textArea.value = reportText;
@@ -71,7 +72,7 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
       } catch (err) {
-        console.error('Fallback copy failed:', err);
+        logger.error('Fallback copy failed', 'TestReportModal', err);
       }
       document.body.removeChild(textArea);
     }

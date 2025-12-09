@@ -1,6 +1,7 @@
 import { AIService } from './aiServiceInterface';
 import { GeminiService } from './geminiService';
 import { OpenAIService } from './openaiService';
+import { logger } from '../../utils/logger';
 
 export type AIProvider = 'gemini' | 'openai';
 
@@ -49,7 +50,7 @@ export const getAIService = (provider?: AIProvider): AIService => {
   if (!currentService || currentProvider !== selectedProvider) {
     currentService = createAIService(selectedProvider);
     currentProvider = selectedProvider;
-    console.log(`AI Service inicializado com provedor: ${selectedProvider}`);
+    logger.info(`AI Service inicializado com provedor: ${selectedProvider}`, 'aiServiceFactory');
   }
   
   return currentService;
@@ -61,7 +62,7 @@ export const getAIService = (provider?: AIProvider): AIService => {
 export const setAIProvider = (provider: AIProvider): void => {
   currentService = createAIService(provider);
   currentProvider = provider;
-  console.log(`Provedor de IA alterado para: ${provider}`);
+  logger.info(`Provedor de IA alterado para: ${provider}`, 'aiServiceFactory');
 };
 
 /**

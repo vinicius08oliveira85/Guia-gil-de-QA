@@ -4,6 +4,7 @@ import { detectCurrentSTLCPhase } from '../../utils/stlcPhaseDetector';
 import { calculateProjectMetrics } from '../../hooks/useProjectMetrics';
 import { getFormattedContext } from './documentContextService';
 import { callGeminiWithRetry } from './geminiApiWrapper';
+import { logger } from '../../utils/logger';
 
 const CACHE_TTL_MS = 1000 * 60 * 5; // 5 minutos
 
@@ -239,7 +240,7 @@ Respeite o schema JSON fornecido.
     
     return analysis;
   } catch (error) {
-    console.error('Erro ao gerar análise de visão geral:', error);
+    logger.error('Erro ao gerar análise de visão geral', 'dashboardAnalysisService', error);
     throw error;
   }
 }

@@ -3,6 +3,7 @@ import { Project, SDLCPhaseAnalysis, PhaseName } from '../../types';
 import { calculateProjectMetrics } from '../../hooks/useProjectMetrics';
 import { getFormattedContext } from './documentContextService';
 import { callGeminiWithRetry } from './geminiApiWrapper';
+import { logger } from '../../utils/logger';
 
 const CACHE_TTL_MS = 1000 * 60 * 10; // 10 minutos
 
@@ -289,7 +290,7 @@ Respeite o schema JSON fornecido.
     
     return analysis;
   } catch (error) {
-    console.error('Erro ao gerar análise de fase SDLC:', error);
+    logger.error('Erro ao gerar análise de fase SDLC', 'sdlcPhaseAnalysisService', error);
     throw error;
   }
 }
