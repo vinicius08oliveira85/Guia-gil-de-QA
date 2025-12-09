@@ -1,10 +1,33 @@
 import React, { useState, useEffect } from 'react';
 import { getNotifications, getUnreadCount, markAsRead, markAllAsRead, deleteNotification, Notification } from '../../utils/notificationService';
 
-export const NotificationBell: React.FC<{ onClick?: () => void }> = ({ onClick }) => {
+interface NotificationBellProps {
+  onClick?: () => void;
+  isOpen?: boolean;
+  onClose?: () => void;
+  showButton?: boolean;
+}
+
+export const NotificationBell: React.FC<NotificationBellProps> = ({ 
+  onClick, 
+  isOpen: externalIsOpen,
+  onClose,
+  showButton = true 
+}) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [isOpen, setIsOpen] = useState(false);
+  const [internalIsOpen, setInternalIsOpen] = useState(false);
+  
+  // Usar isOpen externo se fornecido, senão usar estado interno
+  const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen;
+  
+  const setIsOpen = (value: boolean) => {
+    if (externalIsOpen === undefined) {
+      setInternalIsOpen(value);
+    } else {
+      onClose?.();
+    }
+  };
 
   useEffect(() => {
     const loadNotifications = () => {
@@ -55,29 +78,33 @@ export const NotificationBell: React.FC<{ onClick?: () => void }> = ({ onClick }
 
   return (
       <div className="relative">
-      <button
-        onClick={() => {
-          setIsOpen(!isOpen);
-          onClick?.();
-        }}
+      {showButton && (
+        <button
+          onClick={() => {
+            setIsOpen(!isOpen);
+            onClick?.();
+          }}
           className="relative win-icon-button"
-        aria-label="Notificações"
+          aria-label="Notificações"
         >
           <span className="text-xl">🔔</span>
-        {unreadCount > 0 && (
+          {unreadCount > 0 && (
             <span className="absolute top-0 right-0 bg-danger/90 text-white text-[0.65rem] rounded-full w-5 h-5 flex items-center justify-center shadow-[0_6px_18px_rgba(255,92,112,0.45)]">
-            {unreadCount > 9 ? '9+' : unreadCount}
-          </span>
-        )}
-      </button>
+              {unreadCount > 9 ? '9+' : unreadCount}
+            </span>
+          )}
+        </button>
+      )}
 
       {isOpen && (
           <>
-            <div
-            className="fixed inset-0 z-40"
-            onClick={() => setIsOpen(false)}
-          />
-            <div className="absolute right-0 mt-3 w-80 mica border border-white/10 rounded-2xl shadow-[0_35px_80px_rgba(3,7,23,0.55)] z-50 max-h-96 overflow-hidden flex flex-col">
+            {showButton && (
+              <div
+                className="fixed inset-0 z-40"
+                onClick={() => setIsOpen(false)}
+              />
+            )}
+            <div className={`${showButton ? 'absolute right-0 mt-3' : 'relative'} w-80 mica border border-white/10 rounded-2xl shadow-[0_35px_80px_rgba(3,7,23,0.55)] z-50 max-h-96 overflow-hidden flex flex-col`}>
               <div className="p-4 border-b border-white/10 flex items-center justify-between">
               <h3 className="font-semibold text-text-primary">Notificações</h3>
               {unreadCount > 0 && (

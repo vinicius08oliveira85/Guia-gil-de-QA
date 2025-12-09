@@ -41,7 +41,10 @@
     "xlsx": "^0.18.5",
     "pdf-lib": "^1.17.1",
     "docx": "^8.5.0",
-    "file-saver": "^2.0.5"
+    "file-saver": "^2.0.5",
+    "framer-motion": "^11.0.0",
+    "usehooks-ts": "^3.0.0",
+    "lucide-react": "^0.400.0"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
