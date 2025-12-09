@@ -1,6 +1,9 @@
 import React from 'react';
 import { Card } from '../common/Card';
 import { DashboardInsightsAnalysis } from '../../types';
+import { useTheme } from '../../hooks/useTheme';
+import { getCardTextSecondaryClasses } from '../../utils/themeCardColors';
+import { StatusBadge } from '../common/StatusBadge';
 
 interface PredictionsCardProps {
   analysis: DashboardInsightsAnalysis | null;
@@ -29,14 +32,15 @@ export const PredictionsCard: React.FC<PredictionsCardProps> = React.memo(({
     return null;
   }
 
+  const { theme } = useTheme();
   const { predictions } = analysis;
 
-  const getProbabilityColor = (probability: string) => {
+  const getProbabilityStatus = (probability: string): 'error' | 'warning' | 'info' | 'default' => {
     switch (probability) {
-      case 'Alta': return 'bg-red-100 text-red-800';
-      case 'Média': return 'bg-yellow-100 text-yellow-800';
-      case 'Baixa': return 'bg-blue-100 text-blue-800';
-      default: return 'bg-slate-100 text-slate-800';
+      case 'Alta': return 'error';
+      case 'Média': return 'warning';
+      case 'Baixa': return 'info';
+      default: return 'default';
     }
   };
 
@@ -48,16 +52,16 @@ export const PredictionsCard: React.FC<PredictionsCardProps> = React.memo(({
       {(predictions.nextWeekPassRate !== undefined || predictions.nextWeekBugs !== undefined) && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {predictions.nextWeekPassRate !== undefined && (
-            <div className="p-3 bg-surface-hover rounded-lg border border-surface-border">
-              <p className="text-xs text-text-secondary mb-1">Taxa de Sucesso (Próxima Semana)</p>
+            <Card className={`p-3 border-2 ${theme === 'leve-saude' ? 'bg-white/80 dark:bg-gray-900/50 border-gray-300 dark:border-gray-700' : 'bg-surface-hover border-surface-border'}`}>
+              <p className={`text-xs mb-1 ${getCardTextSecondaryClasses(theme)}`}>Taxa de Sucesso (Próxima Semana)</p>
               <p className="text-2xl font-bold text-text-primary">{predictions.nextWeekPassRate}%</p>
-            </div>
+            </Card>
           )}
           {predictions.nextWeekBugs !== undefined && (
-            <div className="p-3 bg-surface-hover rounded-lg border border-surface-border">
-              <p className="text-xs text-text-secondary mb-1">Bugs Previstos (Próxima Semana)</p>
+            <Card className={`p-3 border-2 ${theme === 'leve-saude' ? 'bg-white/80 dark:bg-gray-900/50 border-gray-300 dark:border-gray-700' : 'bg-surface-hover border-surface-border'}`}>
+              <p className={`text-xs mb-1 ${getCardTextSecondaryClasses(theme)}`}>Bugs Previstos (Próxima Semana)</p>
               <p className="text-2xl font-bold text-text-primary">{predictions.nextWeekBugs}</p>
-            </div>
+            </Card>
           )}
         </div>
       )}
@@ -68,19 +72,19 @@ export const PredictionsCard: React.FC<PredictionsCardProps> = React.memo(({
           <p className="text-sm font-medium text-text-primary">Fatores de Risco Identificados:</p>
           <div className="space-y-2">
             {predictions.riskFactors.map((risk, index) => (
-              <div
+              <Card
                 key={index}
-                className="p-3 bg-surface-hover rounded-lg border border-surface-border"
+                className={`p-3 border-2 ${theme === 'leve-saude' ? 'bg-white/80 dark:bg-gray-900/50 border-gray-300 dark:border-gray-700' : 'bg-surface-hover border-surface-border'}`}
                 aria-label={`Fator de risco: ${risk.factor} (${risk.probability})`}
               >
                 <div className="flex items-start justify-between gap-2 mb-1">
                   <p className="font-medium text-text-primary flex-1">{risk.factor}</p>
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium whitespace-nowrap ${getProbabilityColor(risk.probability)}`}>
+                  <StatusBadge status={getProbabilityStatus(risk.probability)}>
                     {risk.probability}
-                  </span>
+                  </StatusBadge>
                 </div>
-                <p className="text-sm text-text-secondary">{risk.impact}</p>
-              </div>
+                <p className={`text-sm ${getCardTextSecondaryClasses(theme)}`}>{risk.impact}</p>
+              </Card>
             ))}
           </div>
         </div>

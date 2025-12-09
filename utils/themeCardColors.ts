@@ -66,6 +66,27 @@ export const getErrorCardClasses = (theme: Theme): string => {
 };
 
 /**
+ * Retorna classes CSS para cards de warning baseadas no tema
+ */
+export const getWarningCardClasses = (theme: Theme): string => {
+  switch (theme) {
+    case 'dark':
+      return 'bg-yellow-500/15 border-yellow-500/40 text-text-primary';
+    case 'light':
+      return 'bg-yellow-50 border-yellow-200 text-yellow-900';
+    case 'leve-saude':
+      return 'bg-yellow-50 border-yellow-300 text-yellow-900 dark:bg-yellow-950/30 dark:border-yellow-500/50 dark:text-yellow-100';
+    case 'auto':
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      return prefersDark 
+        ? 'bg-yellow-500/15 border-yellow-500/40 text-text-primary'
+        : 'bg-yellow-50 border-yellow-200 text-yellow-900';
+    default:
+      return 'bg-yellow-500/15 border-yellow-500/40 text-text-primary';
+  }
+};
+
+/**
  * Retorna classes CSS para texto secundário em cards baseadas no tema
  */
 export const getCardTextSecondaryClasses = (theme: Theme): string => {

@@ -1,6 +1,9 @@
 import React from 'react';
 import { Card } from '../common/Card';
 import { DashboardInsightsAnalysis } from '../../types';
+import { useTheme } from '../../hooks/useTheme';
+import { getCardTextSecondaryClasses } from '../../utils/themeCardColors';
+import { StatusBadge } from '../common/StatusBadge';
 
 interface RecommendationsCardProps {
   analysis: DashboardInsightsAnalysis | null;
@@ -29,26 +32,28 @@ export const RecommendationsCard: React.FC<RecommendationsCardProps> = React.mem
     return null;
   }
 
-  const getCategoryColor = (category: string) => {
-    const colors: Record<string, string> = {
-      'Testes': 'bg-blue-100 text-blue-800',
-      'Bugs': 'bg-red-100 text-red-800',
-      'Cobertura': 'bg-purple-100 text-purple-800',
-      'Processo': 'bg-green-100 text-green-800',
-      'Qualidade': 'bg-yellow-100 text-yellow-800',
-    };
-    return colors[category] || 'bg-slate-100 text-slate-800';
+  const { theme } = useTheme();
+
+  const getCategoryStatus = (category: string): 'info' | 'error' | 'warning' | 'success' | 'default' => {
+    switch (category) {
+      case 'Testes': return 'info';
+      case 'Bugs': return 'error';
+      case 'Cobertura': return 'warning';
+      case 'Processo': return 'success';
+      case 'Qualidade': return 'warning';
+      default: return 'default';
+    }
   };
 
-  const getImpactEffortBadge = (impact: string, effort: string) => {
+  const getImpactEffortStatus = (impact: string, effort: string): 'success' | 'warning' | 'default' => {
     // Priorizar recomendações de alto impacto e baixo esforço
     if (impact === 'Alto' && effort === 'Baixo') {
-      return 'bg-emerald-100 text-emerald-800';
+      return 'success';
     }
     if (impact === 'Alto') {
-      return 'bg-orange-100 text-orange-800';
+      return 'warning';
     }
-    return 'bg-slate-100 text-slate-800';
+    return 'default';
   };
 
   // Ordenar por impacto e esforço (alto impacto + baixo esforço primeiro)
@@ -66,26 +71,26 @@ export const RecommendationsCard: React.FC<RecommendationsCardProps> = React.mem
       
       <div className="space-y-3">
         {sortedRecommendations.map((rec, index) => (
-          <div
+          <Card
             key={index}
-            className="p-4 bg-surface-hover rounded-lg border border-surface-border"
+            className={`p-4 border-2 ${theme === 'leve-saude' ? 'bg-white/80 dark:bg-gray-900/50 border-gray-300 dark:border-gray-700' : 'bg-surface-hover border-surface-border'}`}
             aria-label={`Recomendação: ${rec.title} (${rec.category})`}
           >
             <div className="flex items-start justify-between gap-3 mb-2">
               <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium whitespace-nowrap ${getCategoryColor(rec.category)}`}>
+                <div className="flex items-center gap-2 mb-1 flex-wrap">
+                  <StatusBadge status={getCategoryStatus(rec.category)}>
                     {rec.category}
-                  </span>
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium whitespace-nowrap ${getImpactEffortBadge(rec.impact, rec.effort)}`}>
+                  </StatusBadge>
+                  <StatusBadge status={getImpactEffortStatus(rec.impact, rec.effort)}>
                     Impacto: {rec.impact} | Esforço: {rec.effort}
-                  </span>
+                  </StatusBadge>
                 </div>
                 <h4 className="font-semibold text-text-primary">{rec.title}</h4>
               </div>
             </div>
-            <p className="text-sm text-text-secondary">{rec.description}</p>
-          </div>
+            <p className={`text-sm ${getCardTextSecondaryClasses(theme)}`}>{rec.description}</p>
+          </Card>
         ))}
       </div>
     </Card>
