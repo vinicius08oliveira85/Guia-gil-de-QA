@@ -307,7 +307,7 @@ export const TaskForm: React.FC<{
                         <option value="Dev">Desenvolvimento</option>
                     </select>
                 </div>
-            </div>
+            </motion.div>
             <div>
                 <label className="flex items-center gap-2 text-sm font-medium text-text-secondary mb-1">
                     Descrição
