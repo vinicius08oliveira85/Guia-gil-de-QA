@@ -7,6 +7,8 @@ import { FilterPanel } from '../common/FilterPanel';
 import { QuickFilters } from '../common/QuickFilters';
 import { TaskForm } from './TaskForm';
 import { TestCaseEditorModal } from './TestCaseEditorModal';
+import { Button } from '../common/Button';
+import { Plus, Filter, RefreshCw, Loader2 } from 'lucide-react';
 import { logger } from '../../utils/logger';
 
 const TASK_ID_REGEX = /^([A-Z]+)-(\d+)/i;
@@ -1197,15 +1199,15 @@ export const TasksView: React.FC<{
                     </div>
                     <div className="flex items-center gap-1.5 flex-wrap">
                         {/* Botão Principal */}
-                        <button 
+                        <Button 
+                            variant="default"
+                            size="sm"
                             onClick={() => openTaskFormForNew()} 
-                            className="btn btn-primary btn-sm flex items-center gap-1.5 font-semibold flex-shrink-0"
+                            className="flex items-center gap-1.5 font-semibold flex-shrink-0"
                         >
-                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                            </svg>
-                            <span className="text-sm">Adicionar Tarefa</span>
-                        </button>
+                            <Plus className="w-3.5 h-3.5" />
+                            <span>Adicionar Tarefa</span>
+                        </Button>
                         
                         {/* Botão de Análise IA */}
                         <div className="flex-shrink-0">
@@ -1220,35 +1222,35 @@ export const TasksView: React.FC<{
                         <div className="w-px h-5 bg-surface-border flex-shrink-0" />
                         
                         {/* Botões Secundários */}
-                        <button 
+                        <Button 
+                            variant="outline"
+                            size="sm"
                             onClick={() => setShowFilters(prev => !prev)} 
-                            className="btn btn-secondary btn-sm flex items-center gap-1.5 flex-shrink-0"
+                            className="flex items-center gap-1.5 flex-shrink-0"
                         >
-                            <span className="emoji-sticker">🔽</span>
-                            <span className="text-sm">{showFilters ? 'Ocultar Filtros' : `Filtros${activeFiltersCount > 0 ? ` (${activeFiltersCount})` : ''}`}</span>
-                        </button>
+                            <Filter className="w-3.5 h-3.5" />
+                            <span>{showFilters ? 'Ocultar Filtros' : `Filtros${activeFiltersCount > 0 ? ` (${activeFiltersCount})` : ''}`}</span>
+                        </Button>
                         
-                        <button 
+                        <Button 
+                            variant="outline"
+                            size="sm"
                             onClick={handleSyncJira} 
-                            className="btn btn-secondary btn-sm flex items-center gap-1.5 flex-shrink-0"
                             disabled={isSyncingJira}
+                            className="flex items-center gap-1.5 flex-shrink-0"
                         >
                             {isSyncingJira ? (
                                 <>
-                                    <svg className="w-3.5 h-3.5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                    </svg>
-                                    <span className="text-sm">Sincronizando...</span>
+                                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                    <span>Sincronizando...</span>
                                 </>
                             ) : (
                                 <>
-                                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                    </svg>
-                                    <span className="text-sm">Atualizar do Jira</span>
+                                    <RefreshCw className="w-3.5 h-3.5" />
+                                    <span>Atualizar do Jira</span>
                                 </>
                             )}
-                        </button>
+                        </Button>
                     </div>
                 </div>
 
