@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Project, PhaseStatus, PhaseName } from '../../types';
 import { useProjectMetrics } from '../../hooks/useProjectMetrics';
 import { useSDLCPhaseAnalysis } from '../../hooks/useSDLCPhaseAnalysis';
 import { Card } from '../common/Card';
 import { InfoIcon } from '../common/Icons';
+import { ProcessPillars, Pillar } from '../common/ProcessPillars';
 import { phaseIcons, phaseDescriptions, phaseDisplayNames } from '../../utils/sdlcPhaseIcons';
 import { PHASE_NAMES } from '../../utils/constants';
 
@@ -70,6 +71,40 @@ export const SDLCPhaseTimeline: React.FC<SDLCPhaseTimelineProps> = React.memo(({
 
   const progressPercentage = phaseAnalysis?.progressPercentage || 0;
 
+  // Mapear fases para pillars com alturas baseadas no status
+  const pillars = useMemo<Pillar[]>(() => {
+    return PHASE_NAMES.map((phaseName, index) => {
+      const phase = phases.find(p => p.name === phaseName) || { 
+        name: phaseName, 
+        status: 'Não Iniciado' as PhaseStatus 
+      };
+      const isCurrent = phaseName === currentPhase;
+      
+      // Calcular altura baseada no status
+      let height: string;
+      if (phase.status === 'Concluído') {
+        // Fases concluídas: altura máxima
+        height = 'h-full';
+      } else if (phase.status === 'Em Andamento' || isCurrent) {
+        // Fase atual ou em andamento: altura alta
+        const heights = ['h-16', 'h-24', 'h-32', 'h-40', 'h-48', 'h-56', 'h-64', 'h-72', 'h-80', 'h-96'];
+        height = heights[Math.min(index, heights.length - 1)] || 'h-48';
+      } else {
+        // Não iniciado: altura baixa
+        const heights = ['h-8', 'h-12', 'h-16', 'h-20', 'h-24'];
+        height = heights[Math.min(index % 5, heights.length - 1)] || 'h-12';
+      }
+      
+      return {
+        label: phaseDisplayNames[phaseName as PhaseName],
+        height,
+        delay: index * 0.1,
+        status: phase.status,
+        isCurrent,
+      };
+    });
+  }, [phases, currentPhase]);
+
   return (
     <div className="space-y-6" role="region" aria-label="Timeline de Fases SDLC">
       <Card className="p-6">
@@ -84,59 +119,10 @@ export const SDLCPhaseTimeline: React.FC<SDLCPhaseTimelineProps> = React.memo(({
           </div>
         </div>
 
-        {/* Timeline Horizontal */}
-        <div className="relative mb-8">
-          {/* Timeline com fases */}
-          <div className="relative flex items-center justify-between gap-2 overflow-x-auto pb-4">
-            {PHASE_NAMES.map((phaseName, index) => {
-              const phase = phases.find(p => p.name === phaseName) || { 
-                name: phaseName, 
-                status: 'Não Iniciado' as PhaseStatus 
-              };
-              const isCurrent = phaseName === currentPhase;
-              const styles = getStatusStyles(phase.status, isCurrent);
-              
-              return (
-                <div
-                  key={phaseName}
-                  className="flex flex-col items-center flex-1 min-w-[80px] max-w-[120px] relative group"
-                >
-                  {/* Ícone da fase */}
-                  <div
-                    className={`relative z-10 w-12 h-12 rounded-full ${styles.bg} ${styles.border} border-2 ${styles.ring} flex items-center justify-center text-2xl transition-all duration-300 ${
-                      styles.pulse && isCurrent ? 'animate-pulse' : ''
-                    } ${
-                      isCurrent ? 'scale-110 shadow-lg' : 'hover:scale-105'
-                    } cursor-pointer group-hover:shadow-lg`}
-                    title={phaseDescriptions[phaseName as PhaseName]}
-                    aria-label={`Fase ${phaseDisplayNames[phaseName as PhaseName]}: ${phase.status}`}
-                  >
-                    {phaseIcons[phaseName as PhaseName]}
-                  </div>
-
-                  {/* Nome da fase */}
-                  <div className="mt-2 text-center">
-                    <p className="text-xs font-semibold text-text-primary line-clamp-2">
-                      {phaseDisplayNames[phaseName as PhaseName]}
-                    </p>
-                    <span className={`text-xs mt-1 inline-block px-2 py-0.5 rounded-full ${styles.badgeBg} ${styles.badgeText}`}>
-                      {phase.status}
-                    </span>
-                  </div>
-
-                  {/* Tooltip */}
-                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:block z-20">
-                    <div className="bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-white text-xs rounded-lg py-2 px-3 shadow-xl max-w-xs border border-slate-300 dark:border-slate-700">
-                      <p className="font-semibold mb-1">{phaseDisplayNames[phaseName as PhaseName]}</p>
-                      <p className="text-slate-600 dark:text-slate-300">{phaseDescriptions[phaseName as PhaseName]}</p>
-                      <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-full">
-                        <div className="border-4 border-transparent border-t-slate-100 dark:border-t-slate-800" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+        {/* Process Pillars */}
+        <div className="relative mb-8 overflow-x-auto pb-4">
+          <div className="flex justify-center min-w-max">
+            <ProcessPillars pillars={pillars} />
           </div>
         </div>
 
