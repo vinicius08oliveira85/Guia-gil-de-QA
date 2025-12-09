@@ -1,13 +1,14 @@
 import React, { useMemo, useState } from 'react';
 import { Project, JiraTask } from '../types';
 import { Modal } from './common/Modal';
-import { Card } from './common/Card';
+import { GlowCard } from './common/GlowCard';
 import { ConfirmDialog } from './common/ConfirmDialog';
 import { ProjectTemplateSelector } from './common/ProjectTemplateSelector';
 import { TrashIcon } from './common/Icons';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { Badge } from './common/Badge';
 import { ProgressIndicator } from './common/ProgressIndicator';
+import { getGlowColorForProject } from '../utils/projectColorMapper';
 
 export const ProjectsDashboard: React.FC<{
     projects: Project[];
@@ -302,10 +303,13 @@ export const ProjectsDashboard: React.FC<{
                                 const completedTasks = calculateProgress(p.tasks || []);
                                 const totalTasks = p.tasks?.length || 0;
                                 const tags = p.tags || [];
+                                const glowColor = getGlowColorForProject(p);
 
                                 return (
-                                    <Card
+                                    <GlowCard
                                         key={p.id}
+                                        glowColor={glowColor}
+                                        customSize={true}
                                         onClick={(e) => {
                                             // Não fazer nada se o clique foi em um botão ou link
                                             const target = e.target as HTMLElement;
@@ -322,16 +326,16 @@ export const ProjectsDashboard: React.FC<{
                                                 onSelectProject(p.id);
                                             }
                                         }}
-                                        className="project-card-custom group cursor-pointer transition-all duration-300 hover:border-accent/70 hover:shadow-accent/20 hover:shadow-xl relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 flex flex-col h-full"
+                                        className="group cursor-pointer transition-all duration-300 hover:shadow-xl relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 flex flex-col h-full w-full"
                                     >
-                                        <div className="flex-1 space-y-3">
+                                        <div className="flex-1 space-y-3 relative z-10">
                                             <div className="flex justify-between items-start">
                                                 <h3 className="heading-card text-text-primary leading-snug line-clamp-2 text-balance pr-6">
                                                     {p.name}
                                                 </h3>
                                             </div>
                                             
-                                            <p className="text-muted text-sm line-clamp-2 min-h-[2.5em]">
+                                            <p className="text-muted text-sm line-clamp-2 min-h-[2.5em] text-text-secondary">
                                                 {p.description || 'Sem descrição.'}
                                             </p>
 
@@ -352,7 +356,7 @@ export const ProjectsDashboard: React.FC<{
                                             )}
                                         </div>
 
-                                        <div className="mt-4 pt-3 border-t border-surface-border space-y-2">
+                                        <div className="mt-4 pt-3 border-t border-surface-border/50 space-y-2 relative z-10">
                                             <ProgressIndicator 
                                                 value={completedTasks} 
                                                 max={totalTasks} 
@@ -375,12 +379,12 @@ export const ProjectsDashboard: React.FC<{
                                                 e.preventDefault();
                                                 openDeleteModal(p, e);
                                             }} 
-                                            className="absolute top-3 right-3 h-8 w-8 flex items-center justify-center rounded-full bg-surface-hover/60 text-text-secondary opacity-100 sm:opacity-0 group-hover:opacity-100 hover:bg-red-500 hover:text-white transition-all active:scale-95 z-10"
+                                            className="absolute top-3 right-3 h-8 w-8 flex items-center justify-center rounded-full bg-surface-hover/80 backdrop-blur-sm text-text-secondary opacity-100 sm:opacity-0 group-hover:opacity-100 hover:bg-red-500 hover:text-white transition-all active:scale-95 z-20"
                                             aria-label={`Excluir projeto ${p.name}`}
                                         >
                                             <TrashIcon />
                                         </button>
-                                    </Card>
+                                    </GlowCard>
                                 );
                             })}
                         </div>
