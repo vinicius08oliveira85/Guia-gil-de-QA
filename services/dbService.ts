@@ -167,7 +167,26 @@ export const updateProject = async (project: Project): Promise<void> => {
   // Limpar BDD e casos de teste de tipos não permitidos antes de salvar
   const cleanedProject = cleanupTestCasesForNonTaskTypes(project);
   
-  // Salvar apenas no IndexedDB (salvamento no Supabase é manual)
+  // Tentar Supabase primeiro se disponível
+  if (isSupabaseAvailable()) {
+    try {
+      await saveProjectToSupabase(cleanedProject);
+      // Também salvar no IndexedDB como backup local
+      const db = await openDB();
+      return new Promise((resolve, reject) => {
+        const transaction = db.transaction(STORE_NAME, 'readwrite');
+        const store = transaction.objectStore(STORE_NAME);
+        const request = store.put(cleanedProject);
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => resolve();
+      });
+    } catch (error) {
+      logger.warn('Erro ao salvar no Supabase, usando apenas IndexedDB', 'dbService', error);
+      // Continuar para fallback IndexedDB
+    }
+  }
+  
+  // Fallback para IndexedDB
   const db = await openDB();
   return new Promise((resolve, reject) => {
     const transaction = db.transaction(STORE_NAME, 'readwrite');
