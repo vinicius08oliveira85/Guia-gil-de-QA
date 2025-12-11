@@ -141,26 +141,41 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
     try {
       logger.debug(`Salvando projeto "${project.name}" no Supabase...`, 'ProjectsStore');
       await saveProjectToSupabaseOnly(project);
-      logger.info(`Projeto "${project.name}" salvo no Supabase com sucesso`, 'ProjectsStore');
+      // Log reduzido - apenas debug para evitar spam de "Success"
+      logger.debug(`Projeto "${project.name}" salvo no Supabase`, 'ProjectsStore');
     } catch (error) {
       const errorObj = error instanceof Error ? error : new Error('Erro ao salvar projeto no Supabase');
       const errorMessage = errorObj.message.toLowerCase();
+      
+      // Verificar se é erro de rede - não logar como error se for
+      const isNetworkErr = errorMessage.includes('timeout') || 
+                          errorMessage.includes('connection reset') ||
+                          errorMessage.includes('err_timed_out') ||
+                          errorMessage.includes('err_connection_reset') ||
+                          errorMessage.includes('err_name_not_resolved') ||
+                          errorMessage.includes('failed to fetch') ||
+                          errorMessage.includes('network');
       
       // Tratamento específico para erro 413 (Payload Too Large)
       if (errorMessage.includes('413') || 
           errorMessage.includes('payload muito grande') || 
           errorMessage.includes('content too large')) {
-        logger.warn(
+        logger.debug(
           `Projeto "${project.name}" muito grande para Supabase. Salvo apenas localmente.`,
-          'ProjectsStore',
-          errorObj
+          'ProjectsStore'
         );
         // Não lançar erro para 413 - apenas logar aviso
         // O projeto já está salvo localmente
         return;
       }
       
-      logger.error('Erro ao salvar projeto no Supabase', 'ProjectsStore', errorObj);
+      // Se for erro de rede, não lançar erro (evita loop) - apenas logar debug
+      if (isNetworkErr) {
+        logger.debug('Erro de rede ao salvar projeto no Supabase. Projeto salvo apenas localmente.', 'ProjectsStore', errorObj);
+        return; // Não lançar erro para evitar loop
+      }
+      
+      logger.warn('Erro ao salvar projeto no Supabase', 'ProjectsStore', errorObj);
       throw errorObj;
     }
   },

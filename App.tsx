@@ -93,12 +93,40 @@ const App: React.FC = () => {
         }
     }, [createProject, handleError, handleSuccess]);
 
+    // Ref para rastrear último projeto atualizado e evitar toasts repetidos
+    const lastUpdatedProjectRef = React.useRef<{ id: string; timestamp: number } | null>(null);
+    const updateDebounceMs = 1000; // 1 segundo de debounce para toasts
+
     const handleUpdateProject = useCallback(async (updatedProject: Project) => {
         try {
             await updateProject(updatedProject);
-            handleSuccess('Projeto atualizado com sucesso!');
+            
+            // Mostrar toast apenas se não foi atualizado recentemente (evita spam)
+            const now = Date.now();
+            const lastUpdate = lastUpdatedProjectRef.current;
+            const shouldShowToast = !lastUpdate || 
+                lastUpdate.id !== updatedProject.id || 
+                (now - lastUpdate.timestamp) > updateDebounceMs;
+            
+            if (shouldShowToast) {
+                lastUpdatedProjectRef.current = { id: updatedProject.id, timestamp: now };
+                handleSuccess('Projeto atualizado com sucesso!');
+            }
         } catch (error) {
-            handleError(error, 'Atualizar projeto');
+            // Verificar se é erro de rede - não mostrar toast de erro se for
+            const errorMessage = error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
+            const isNetworkErr = errorMessage.includes('timeout') || 
+                                errorMessage.includes('connection reset') ||
+                                errorMessage.includes('err_timed_out') ||
+                                errorMessage.includes('err_connection_reset') ||
+                                errorMessage.includes('err_name_not_resolved') ||
+                                errorMessage.includes('failed to fetch') ||
+                                errorMessage.includes('network');
+            
+            if (!isNetworkErr) {
+                handleError(error, 'Atualizar projeto');
+            }
+            // Erros de rede são silenciosos - projeto já está salvo localmente
         }
     }, [updateProject, handleError, handleSuccess]);
     

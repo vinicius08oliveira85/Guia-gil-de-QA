@@ -74,6 +74,37 @@ export const SDLCPhaseTimeline: React.FC<SDLCPhaseTimelineProps> = React.memo(({
 
   const progressPercentage = phaseAnalysis?.progressPercentage || 0;
 
+  // Calcular percentual de progresso por fase
+  const calculatePhaseProgress = (phaseName: PhaseName, phase: { name: string; status: PhaseStatus }): number => {
+    if (phase.status === 'Concluído') {
+      return 100;
+    } else if (phase.status === 'Em Andamento' || phaseName === currentPhase) {
+      // Calcular progresso baseado em tarefas da fase
+      const phaseTasks = project.tasks.filter(task => {
+        const taskPhase = task.phase || 'Request';
+        return taskPhase === phaseName;
+      });
+      
+      if (phaseTasks.length === 0) {
+        return 25; // Fase iniciada mas sem tarefas ainda
+      }
+      
+      const completedTasks = phaseTasks.filter(task => task.status === 'Done').length;
+      const inProgressTasks = phaseTasks.filter(task => task.status === 'In Progress').length;
+      const totalTasks = phaseTasks.length;
+      
+      // Progresso = (tarefas concluídas * 100% + tarefas em progresso * 50%) / total
+      const progress = ((completedTasks * 100) + (inProgressTasks * 50)) / totalTasks;
+      return Math.max(25, Math.min(95, Math.round(progress))); // Mínimo 25%, máximo 95% (100% só quando concluído)
+    }
+    return 0;
+  };
+
+  // Contar fases concluídas
+  const completedPhasesCount = useMemo(() => {
+    return phases.filter(p => p.status === 'Concluído').length;
+  }, [phases]);
+
   // Mapear fases para pillars com alturas baseadas no status
   const pillars = useMemo<Pillar[]>(() => {
     return PHASE_NAMES.map((phaseName, index) => {
@@ -82,16 +113,22 @@ export const SDLCPhaseTimeline: React.FC<SDLCPhaseTimelineProps> = React.memo(({
         status: 'Não Iniciado' as PhaseStatus 
       };
       const isCurrent = phaseName === currentPhase;
+      const progressPercentage = calculatePhaseProgress(phaseName as PhaseName, phase);
       
-      // Calcular altura baseada no status
+      // Calcular altura baseada no status e progresso
       let height: string;
+      let heightStyle: React.CSSProperties | undefined;
       if (phase.status === 'Concluído') {
         // Fases concluídas: altura máxima
         height = 'h-full';
       } else if (phase.status === 'Em Andamento' || isCurrent) {
-        // Fase atual ou em andamento: altura alta
-        const heights = ['h-16', 'h-24', 'h-32', 'h-40', 'h-48', 'h-56', 'h-64', 'h-72', 'h-80', 'h-96'];
-        height = heights[Math.min(index, heights.length - 1)] || 'h-48';
+        // Fase atual ou em andamento: altura proporcional ao progresso
+        // Progresso de 25% a 95% mapeado para 96px a 320px (h-24 a h-80)
+        const minHeight = 96; // h-24 = 96px
+        const maxHeight = 320; // h-80 = 320px
+        const heightPx = minHeight + ((progressPercentage - 25) / 70) * (maxHeight - minHeight);
+        height = 'h-auto'; // Usar auto para permitir style inline
+        heightStyle = { height: `${Math.round(heightPx)}px` };
       } else {
         // Não iniciado: altura baixa
         const heights = ['h-8', 'h-12', 'h-16', 'h-20', 'h-24'];
@@ -104,12 +141,17 @@ export const SDLCPhaseTimeline: React.FC<SDLCPhaseTimelineProps> = React.memo(({
         delay: index * 0.1,
         status: phase.status,
         isCurrent,
+        icon: phaseIcons[phaseName as PhaseName],
+        progressPercentage,
+        description: phaseDescriptions[phaseName as PhaseName],
+        phaseName: phaseName as PhaseName,
+        heightStyle,
       };
     });
-  }, [phases, currentPhase]);
+  }, [phases, currentPhase, project.tasks]);
 
   return (
-    <div className="space-y-6" role="region" aria-label="Timeline de Fases SDLC">
+    <div className="space-y-6" role="region" aria-label="Timeline de Fases SDLC" aria-live="polite">
       <Card className="p-6">
         <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
           <div>
@@ -119,12 +161,21 @@ export const SDLCPhaseTimeline: React.FC<SDLCPhaseTimelineProps> = React.memo(({
             <p className="text-sm text-text-secondary">
               Acompanhe o progresso do projeto através do ciclo de vida do desenvolvimento
             </p>
+            <div className="mt-2 flex items-center gap-4 text-xs text-text-secondary">
+              <span>
+                {completedPhasesCount} de {PHASE_NAMES.length} fases concluídas
+              </span>
+              <span className="text-text-tertiary">•</span>
+              <span>
+                {Math.round((completedPhasesCount / PHASE_NAMES.length) * 100)}% do ciclo completo
+              </span>
+            </div>
           </div>
         </div>
 
         {/* Process Pillars */}
-        <div className="relative mb-8 overflow-x-auto pb-4">
-          <div className="flex justify-center min-w-max">
+        <div className="relative mb-8 overflow-x-auto pb-4 -mx-2 px-2 scrollbar-thin scrollbar-thumb-surface-border scrollbar-track-transparent">
+          <div className="flex justify-center min-w-max px-2">
             <ProcessPillars pillars={pillars} />
           </div>
         </div>
