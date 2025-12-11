@@ -130,12 +130,36 @@ npm run test:coverage
 
 Veja [tests/README.md](tests/README.md) para mais informações.
 
+## Integração com Figma (MCP Server)
+
+O projeto suporta integração com Figma através do MCP (Model Context Protocol) Server, permitindo gerar código diretamente a partir de designs do Figma.
+
+### Configuração Rápida
+
+1. **Via Deep Link (Recomendado)**: Clique em [Configurar Figma MCP](https://cursor.sh/mcp?server=figma&url=https://mcp.figma.com/mcp)
+
+2. **Configuração Manual**: Siga o guia completo em [docs/MCP_FIGMA_SETUP.md](docs/MCP_FIGMA_SETUP.md)
+
+### Como Usar
+
+1. Copie o link de um frame ou componente no Figma
+2. Cole o link em uma prompt para o assistente AI
+3. O assistente gerará código React baseado no design
+
+**Exemplo:**
+```
+Implemente este design do Figma: https://www.figma.com/file/xxxxx/Design?node-id=12345
+```
+
+Para mais detalhes, consulte a [documentação completa do Figma MCP](docs/MCP_FIGMA_SETUP.md).
+
 ## Documentação Adicional
 
 - [Arquitetura](docs/ARCHITECTURE.md) - Decisões arquiteturais e estrutura
 - [Guia de Contribuição](CONTRIBUTING.md) - Como contribuir com o projeto
 - [Migração para Store](docs/MIGRATION_TO_STORE.md) - Guia de migração para Zustand
 - [Uso do Store](docs/STORE_USAGE.md) - Como usar o store global de projetos
+- [Configuração Figma MCP](docs/MCP_FIGMA_SETUP.md) - Integração com Figma via MCP Server
 
 ## Armazenamento
 
