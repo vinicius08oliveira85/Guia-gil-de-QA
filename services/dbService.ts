@@ -167,10 +167,31 @@ export const updateProject = async (project: Project): Promise<void> => {
   // Limpar BDD e casos de teste de tipos não permitidos antes de salvar
   const cleanedProject = cleanupTestCasesForNonTaskTypes(project);
   
+  // Log para rastrear estratégias de teste sendo salvas
+  const totalStrategies = cleanedProject.tasks.reduce((sum, task) => {
+    return sum + (task.testStrategy?.length || 0);
+  }, 0);
+  const totalExecutedStrategies = cleanedProject.tasks.reduce((sum, task) => {
+    return sum + (task.executedStrategies?.length || 0);
+  }, 0);
+  
+  if (totalStrategies > 0 || totalExecutedStrategies > 0) {
+    logger.debug(
+      `Salvando projeto com ${totalStrategies} estratégias de teste e ${totalExecutedStrategies} estratégias executadas`,
+      'dbService',
+      { projectId: cleanedProject.id, projectName: cleanedProject.name }
+    );
+  }
+  
   // Tentar Supabase primeiro se disponível
   if (isSupabaseAvailable()) {
     try {
       await saveProjectToSupabase(cleanedProject);
+      logger.debug(
+        `Projeto "${cleanedProject.name}" salvo no Supabase com estratégias preservadas`,
+        'dbService',
+        { totalStrategies, totalExecutedStrategies }
+      );
       // Também salvar no IndexedDB como backup local
       const db = await openDB();
       return new Promise((resolve, reject) => {

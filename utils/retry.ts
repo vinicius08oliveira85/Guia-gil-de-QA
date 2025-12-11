@@ -158,9 +158,26 @@ export async function retryWithBackoff<T>(
       
       // Verificar se há header Retry-After
       const retryAfterDelay = getRetryAfterDelay(error);
+      
+      // Detectar se é erro 503 e usar delay maior
+      let effectiveInitialDelay = initialDelay;
+      let effectiveMaxDelay = maxDelay;
+      const errorStatus = (error as { status?: number })?.status;
+      
+      if (errorStatus === 503) {
+        // Para erros 503, usar delay inicial de 5 segundos e max de 60 segundos
+        effectiveInitialDelay = 5000;
+        effectiveMaxDelay = 60000;
+        logger.debug(
+          'Erro 503 detectado, usando delay aumentado',
+          'retryWithBackoff',
+          { attempt, initialDelay: effectiveInitialDelay, maxDelay: effectiveMaxDelay }
+        );
+      }
+      
       const delay = retryAfterDelay 
-        ? Math.min(retryAfterDelay, maxDelay)
-        : calculateDelay(attempt, initialDelay, backoffMultiplier, maxDelay, useJitter);
+        ? Math.min(retryAfterDelay, effectiveMaxDelay)
+        : calculateDelay(attempt, effectiveInitialDelay, backoffMultiplier, effectiveMaxDelay, useJitter);
       
       logger.warn(
         `Tentativa ${attempt}/${maxRetries} falhou, retentando em ${delay}ms`,

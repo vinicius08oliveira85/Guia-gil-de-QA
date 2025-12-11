@@ -121,16 +121,49 @@ function isRetryableGeminiError(error: unknown): boolean {
 }
 
 /**
+ * Extrai status HTTP de um erro do SDK Gemini
+ */
+function extractHttpStatus(error: unknown): number | null {
+  if (typeof error === 'object' && error !== null) {
+    const err = error as Record<string, unknown>;
+    
+    // Tentar extrair status de diferentes formatos
+    const status = err.status || err.statusCode || err.code;
+    
+    if (typeof status === 'number') {
+      return status;
+    }
+    
+    // Tentar extrair de mensagem de erro
+    const errorMessage = getErrorMessage(error);
+    const statusMatch = errorMessage.match(/\b(50[0-9]|429|503)\b/);
+    if (statusMatch) {
+      return parseInt(statusMatch[1], 10);
+    }
+  }
+  
+  return null;
+}
+
+/**
  * Extrai informações de retry de um erro (se disponível)
  */
-function extractRetryInfo(error: unknown): { retryAfter?: number } {
-  const info: { retryAfter?: number } = {};
+function extractRetryInfo(error: unknown): { retryAfter?: number; status?: number } {
+  const info: { retryAfter?: number; status?: number } = {};
+  
+  // Extrair status HTTP
+  const status = extractHttpStatus(error);
+  if (status) {
+    info.status = status;
+  }
   
   if (typeof error === 'object' && error !== null) {
     const err = error as Record<string, unknown>;
     
-    // Tentar extrair Retry-After
-    const retryAfter = err.retryAfter || err['retry-after'] || err.retry_after;
+    // Tentar extrair Retry-After de diferentes formatos
+    const retryAfter = err.retryAfter || err['retry-after'] || err.retry_after || 
+                       (err.response as Record<string, unknown>)?.headers?.['retry-after'] ||
+                       (err.response as Record<string, unknown>)?.headers?.['Retry-After'];
     
     if (typeof retryAfter === 'number') {
       info.retryAfter = retryAfter * 1000; // Converter segundos para ms
@@ -210,35 +243,40 @@ export async function callGeminiWithRetry(
 
             // Enriquecer erro com informações de retry se disponíveis
             const retryInfo = extractRetryInfo(error);
-            if (retryInfo.retryAfter) {
-              const enrichedError = error instanceof Error 
-                ? error 
-                : new Error(String(error));
-              
-              // Adicionar retryAfter ao erro para ser usado pelo retryWithBackoff
-              (enrichedError as unknown as { retryAfter?: number }).retryAfter = retryInfo.retryAfter;
-              
-              throw enrichedError;
+            const enrichedError = error instanceof Error 
+              ? error 
+              : new Error(String(error));
+            
+            // Adicionar status HTTP se disponível
+            if (retryInfo.status) {
+              (enrichedError as unknown as { status?: number }).status = retryInfo.status;
             }
             
-            throw error;
+            // Adicionar retryAfter ao erro para ser usado pelo retryWithBackoff
+            if (retryInfo.retryAfter) {
+              (enrichedError as unknown as { retryAfter?: number }).retryAfter = retryInfo.retryAfter;
+            }
+            
+            throw enrichedError;
           } finally {
             // Sempre liberar a requisição simultânea quando terminar (sucesso ou erro)
             geminiRateLimiter.release();
           }
         },
         {
-          maxRetries: 3,
+          maxRetries: 5, // Aumentado para 5 tentativas para melhor recuperação de erros 503
           initialDelay: 1000,
           backoffMultiplier: 2,
-          maxDelay: 30000,
+          maxDelay: 60000, // Aumentado para 60s para erros 503
           useJitter: true,
           isRetryable: isRetryableGeminiError,
           onRetry: (attempt, error, delay) => {
+            const retryInfo = extractRetryInfo(error);
+            const statusInfo = retryInfo.status ? ` (HTTP ${retryInfo.status})` : '';
             logger.warn(
-              `Retry ${attempt}/3 para API Gemini após ${delay}ms`,
+              `Retry ${attempt}/5 para API Gemini após ${delay}ms${statusInfo}`,
               'callGeminiWithRetry',
-              { error, attempt, delay, keyAttempt: keyAttempt + 1 }
+              { error, attempt, delay, keyAttempt: keyAttempt + 1, status: retryInfo.status }
             );
           },
         }

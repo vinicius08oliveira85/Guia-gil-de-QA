@@ -198,15 +198,19 @@ export const TasksView: React.FC<{
             onUpdateProject({ ...project, tasks: newTasks });
             handleSuccess('Cenários BDD gerados com sucesso!');
         } catch (error) {
-            // Melhorar mensagem de erro para rate limiting
+            // Melhorar mensagem de erro para rate limiting e erros de servidor
             let errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+            const errorStatus = (error as { status?: number })?.status;
             
-            if (errorMessage.includes('429') || 
+            if (errorStatus === 503 || errorMessage.includes('503') || errorMessage.includes('Service Unavailable')) {
+                errorMessage = 'A API do Gemini está temporariamente indisponível. O sistema tentará novamente automaticamente. Aguarde alguns minutos e tente novamente.';
+            } else if (errorMessage.includes('429') || 
                 errorMessage.includes('Too Many Requests') ||
                 errorMessage.includes('rate limit') ||
                 errorMessage.toLowerCase().includes('muitas requisições')) {
                 errorMessage = 'Muitas requisições à API. Aguarde alguns segundos e tente novamente. O sistema tentará automaticamente novamente em breve.';
-            } else if (errorMessage.includes('Falha ao comunicar com a API Gemini')) {
+            } else if (errorMessage.includes('Falha ao comunicar com a API Gemini') ||
+                       errorMessage.includes('Failed to communicate with the Gemini API')) {
                 errorMessage = 'Erro ao comunicar com a API. Verifique sua conexão e tente novamente. Se o problema persistir, aguarde alguns minutos.';
             }
             
@@ -270,15 +274,19 @@ export const TasksView: React.FC<{
             onUpdateProject({ ...project, tasks: newTasks });
             handleSuccess('Casos de teste gerados com sucesso!');
         } catch (error) {
-            // Melhorar mensagem de erro para rate limiting
+            // Melhorar mensagem de erro para rate limiting e erros de servidor
             let errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+            const errorStatus = (error as { status?: number })?.status;
             
-            if (errorMessage.includes('429') || 
+            if (errorStatus === 503 || errorMessage.includes('503') || errorMessage.includes('Service Unavailable')) {
+                errorMessage = 'A API do Gemini está temporariamente indisponível. O sistema tentará novamente automaticamente. Aguarde alguns minutos e tente novamente.';
+            } else if (errorMessage.includes('429') || 
                 errorMessage.includes('Too Many Requests') ||
                 errorMessage.includes('rate limit') ||
                 errorMessage.toLowerCase().includes('muitas requisições')) {
                 errorMessage = 'Muitas requisições à API. Aguarde alguns segundos e tente novamente. O sistema tentará automaticamente novamente em breve.';
-            } else if (errorMessage.includes('Failed to communicate with the Gemini API')) {
+            } else if (errorMessage.includes('Failed to communicate with the Gemini API') ||
+                       errorMessage.includes('Falha ao comunicar com a API Gemini')) {
                 errorMessage = 'Erro ao comunicar com a API. Verifique sua conexão e tente novamente. Se o problema persistir, aguarde alguns minutos.';
             }
             
@@ -327,10 +335,13 @@ export const TasksView: React.FC<{
             onUpdateProject({ ...project, tasks: newTasks });
             handleSuccess('BDD, estratégias e casos de teste gerados com sucesso!');
         } catch (error) {
-            // Melhorar mensagem de erro para rate limiting
+            // Melhorar mensagem de erro para rate limiting e erros de servidor
             let errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+            const errorStatus = (error as { status?: number })?.status;
             
-            if (errorMessage.includes('429') || 
+            if (errorStatus === 503 || errorMessage.includes('503') || errorMessage.includes('Service Unavailable')) {
+                errorMessage = 'A API do Gemini está temporariamente indisponível. O sistema tentará novamente automaticamente. Aguarde alguns minutos e tente novamente.';
+            } else if (errorMessage.includes('429') || 
                 errorMessage.includes('Too Many Requests') ||
                 errorMessage.includes('rate limit') ||
                 errorMessage.toLowerCase().includes('muitas requisições')) {
