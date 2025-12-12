@@ -13,10 +13,9 @@ interface HeaderProps {
     onOpenSettings?: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ onProjectImported, onOpenSettings }) => {
-    const { theme, toggleTheme } = useTheme();
+export const Header: React.FC<HeaderProps> = ({ onProjectImported: _onProjectImported, onOpenSettings }) => {
+    const { theme, toggleTheme, isOnlyLightSupported } = useTheme();
     const { isBeginnerMode, toggleBeginnerMode } = useBeginnerMode();
-    const [selectedTab, setSelectedTab] = useState<number | null>(null);
     const [notificationUnreadCount, setNotificationUnreadCount] = useState(0);
     const [showNotificationDropdown, setShowNotificationDropdown] = useState(false);
 
@@ -57,22 +56,21 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported, onOpenSetting
 
     // Obter título do tema
     const getThemeTitle = () => {
+        const suffix = theme !== 'light' ? ' (em breve)' : '';
         switch (theme) {
             case 'dark':
-                return 'Tema Escuro';
+                return `Tema Escuro${suffix}`;
             case 'light':
                 return 'Tema Claro';
             case 'leve-saude':
-                return 'Leve Saúde';
+                return `Leve Saúde${suffix}`;
             default:
-                return 'Tema Automático';
+                return `Tema Automático${suffix}`;
         }
     };
 
     // Handler para quando um tab é selecionado
     const handleTabChange = (index: number | null) => {
-        setSelectedTab(index);
-        
         if (index === null) {
             setShowNotificationDropdown(false);
             return;
@@ -86,15 +84,12 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported, onOpenSetting
         
         if (index === 0) {
             onOpenSettings?.();
-            setSelectedTab(null);
         } else if (index === 1) {
             toggleBeginnerMode();
-            setSelectedTab(null);
         } else if (index === 2) {
             setShowNotificationDropdown(true);
         } else if (index === 3) {
             toggleTheme();
-            setSelectedTab(null);
         }
     };
 
@@ -109,22 +104,27 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported, onOpenSetting
 
     return (
         <header
-            className="win-toolbar sticky top-0 z-30 shadow-[0_18px_60px_rgba(3,7,23,0.45)]"
+            className="sticky top-0 z-30 border-b border-base-300 bg-base-100/80 backdrop-blur"
             style={{ paddingTop: 'max(0.5rem, env(safe-area-inset-top))' }}
         >
-            <div className="container mx-auto flex flex-wrap items-center justify-between gap-sm min-w-0 py-1.5 sm:py-2 px-3">
-                <div className="flex items-center gap-sm min-w-0">
+            <div className="container mx-auto flex flex-wrap items-center justify-between gap-3 min-w-0 py-2 px-4">
+                <div className="flex items-center gap-3 min-w-0">
                     <img
                         src="/logo@erasebg-transformed.png"
                         alt="Logo QA Agile Guide"
-                        className="h-16 w-auto sm:h-20 flex-shrink-0 logo-leve-shadow"
+                        className="h-10 w-auto sm:h-12 flex-shrink-0"
                         loading="lazy"
                         decoding="async"
                         draggable={false}
                     />
-                    <span className="sr-only">QA Agile Guide</span>
+                    <div className="min-w-0">
+                        <p className="font-semibold leading-tight truncate">QA Agile Guide</p>
+                        <p className="text-xs text-base-content/60 truncate hidden sm:block">
+                            Gestão de QA ágil, métricas e automação
+                        </p>
+                    </div>
                 </div>
-                <div className="flex flex-wrap items-center justify-end gap-xs sm:gap-sm w-full sm:w-auto relative">
+                <div className="flex flex-wrap items-center justify-end gap-2 w-full sm:w-auto relative">
                     <div className="relative">
                         <ExpandableTabs
                             tabs={tabs}
@@ -134,7 +134,7 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported, onOpenSetting
                         
                         {/* Badge de notificações não lidas */}
                         {notificationUnreadCount > 0 && (
-                            <span className="absolute -top-1 -right-1 bg-danger/90 text-white text-[0.65rem] rounded-full w-5 h-5 flex items-center justify-center shadow-[0_6px_18px_rgba(255,92,112,0.45)] pointer-events-none z-10">
+                            <span className="absolute -top-1 -right-1 bg-error text-error-content text-[0.65rem] rounded-full w-5 h-5 flex items-center justify-center shadow-sm pointer-events-none z-10">
                                 {notificationUnreadCount > 9 ? '9+' : notificationUnreadCount}
                             </span>
                         )}
@@ -147,7 +147,6 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported, onOpenSetting
                                 className="fixed inset-0 z-40"
                                 onClick={() => {
                                     setShowNotificationDropdown(false);
-                                    setSelectedTab(null);
                                 }}
                             />
                             <div className="absolute right-0 top-full mt-2 z-50 w-80">
@@ -155,12 +154,18 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported, onOpenSetting
                                     isOpen={showNotificationDropdown}
                                     onClose={() => {
                                         setShowNotificationDropdown(false);
-                                        setSelectedTab(null);
                                     }}
                                     showButton={false}
                                 />
                             </div>
                         </>
+                    )}
+
+                    {/* Nota: nesta fase, apenas Light é suportado (toggle permanece para futura expansão) */}
+                    {isOnlyLightSupported && (
+                        <span className="badge badge-outline badge-sm hidden sm:inline-flex">
+                            Tema em breve
+                        </span>
                     )}
                 </div>
             </div>

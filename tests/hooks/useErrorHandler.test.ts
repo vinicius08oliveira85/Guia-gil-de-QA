@@ -5,11 +5,11 @@ import toast from 'react-hot-toast';
 
 // Mock do react-hot-toast
 vi.mock('react-hot-toast', () => ({
-  default: {
+  default: Object.assign(vi.fn(), {
     error: vi.fn(),
     success: vi.fn(),
-    warn: vi.fn(),
-  },
+  }),
+  Toaster: () => null,
 }));
 
 describe('useErrorHandler', () => {
@@ -64,7 +64,11 @@ describe('useErrorHandler', () => {
       result.current.handleWarning('Aviso importante');
     });
 
-    expect(toast.warn).toHaveBeenCalled();
+    expect(toast).toHaveBeenCalledWith('Aviso importante', {
+      icon: '⚠️',
+      duration: 4000,
+      position: 'top-right',
+    });
   });
 });
 

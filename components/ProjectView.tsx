@@ -94,9 +94,6 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
         }
     };
     
-    const tabBaseClass = "tab-pill whitespace-nowrap";
-    const activeTabStyle = "tab-pill--active";
-    
     const tabs: Array<{ id: string; label: string; 'data-onboarding'?: string }> = [
         { id: 'dashboard', label: 'Dashboard' },
         { id: 'tasks', label: 'Tarefas & Testes', 'data-onboarding': 'tasks-tab' },
@@ -131,7 +128,7 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
 
     return (
         <>
-            <div className="container-wide py-md sm:py-lg non-printable w-full">
+            <div className="container mx-auto w-full max-w-7xl px-4 py-8 sm:py-10 non-printable">
                 {/* Breadcrumbs */}
                 <div className="mb-4">
                     <Breadcrumbs 
@@ -141,14 +138,14 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                     />
                 </div>
 
-                <div className="grid gap-md mb-lg w-full lg:grid-cols-[auto,1fr] lg:items-center">
-                    <div className="flex flex-wrap gap-sm w-full justify-end">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end gap-2 mb-6">
                         {/* Botão sempre visível, mas desabilitado se Supabase não estiver disponível */}
                         <button 
                             onClick={handleSaveToSupabase}
                             disabled={!supabaseAvailable || isSavingToSupabase}
-                            className="btn btn-primary flex items-center justify-center gap-2 w-full sm:w-auto lg:min-w-[120px] disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="btn btn-primary flex items-center justify-center gap-2 w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
                             title={!supabaseAvailable ? 'Supabase não está configurado. Configure VITE_SUPABASE_PROXY_URL.' : 'Salvar projeto no Supabase'}
+                            type="button"
                         >
                             {isSavingToSupabase ? (
                                 <>
@@ -166,24 +163,29 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                         </button>
                         <button 
                             onClick={handlePrint} 
-                            className="btn btn-secondary flex items-center justify-center gap-2 w-full sm:w-auto lg:min-w-[150px]"
+                            className="btn btn-outline flex items-center justify-center gap-2 w-full sm:w-auto"
+                            type="button"
                         >
-                            <span className="emoji-sticker">📄</span>
+                            <span aria-hidden="true">📄</span>
                             <span>PDF</span>
                         </button>
-                    </div>
                 </div>
                 
-                <h2 className="heading-page text-text-primary mb-4 break-words">{project.name}</h2>
-                <p className="text-lead mb-10 max-w-3xl break-words">{project.description}</p>
+                <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mb-3 break-words">{project.name}</h2>
+                <p className="text-base-content/70 mb-8 max-w-3xl break-words">{project.description}</p>
                 
-                <div className="border-b border-surface-border mb-lg sticky top-[72px] md:static bg-background/90 backdrop-blur-lg z-10 px-2 sm:px-0 shadow-sm">
-                    <nav className="hidden md:flex flex-wrap gap-2 py-2" aria-label="Navegação de abas desktop" role="tablist">
+                <div className="border-b border-base-300 pb-3">
+                    <nav
+                        className="tabs tabs-boxed overflow-x-auto w-full"
+                        aria-label="Navegação de abas"
+                        role="tablist"
+                    >
                         {tabs.map(tab => (
-                            <button 
+                            <button
                                 key={tab.id}
-                                onClick={() => handleTabClick(tab.id)} 
-                                className={`${tabBaseClass} ${activeTab === tab.id ? activeTabStyle : ''}`}
+                                type="button"
+                                onClick={() => handleTabClick(tab.id)}
+                                className={`tab whitespace-nowrap ${activeTab === tab.id ? 'tab-active' : ''}`}
                                 data-onboarding={tab['data-onboarding']}
                                 id={`tab-${tab.id}`}
                                 role="tab"
@@ -194,41 +196,19 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                             </button>
                         ))}
                     </nav>
-                    <div className="md:hidden px-1 pb-3">
-                        <div 
-                            className="flex gap-2 overflow-x-auto no-scrollbar snap-x snap-mandatory w-full"
-                            role="tablist"
-                            aria-label="Navegação de abas mobile"
-                        >
-                            {tabs.map(tab => (
-                                <button 
-                                    key={tab.id}
-                                    onClick={() => handleTabClick(tab.id)} 
-                                    className={`${tabBaseClass} ${activeTab === tab.id ? activeTabStyle : ''} flex-shrink-0 snap-center`}
-                                    data-onboarding={tab['data-onboarding']}
-                                    id={`tab-${tab.id}-mobile`}
-                                    role="tab"
-                                    aria-selected={activeTab === tab.id}
-                                    aria-controls={`tab-panel-${tab.id}`}
-                                >
-                                    {tab.label}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
                 </div>
                 
                 <div className="mt-8">
                     <PageTransition key={activeTab}>
                         {activeTab === 'dashboard' && (
-                            <section id="tab-panel-dashboard" role="tabpanel" aria-labelledby="tab-dashboard tab-dashboard-mobile">
+                            <section id="tab-panel-dashboard" role="tabpanel" aria-labelledby="tab-dashboard">
                             <Suspense fallback={<LoadingSkeleton variant="card" count={3} />}>
                                 <QADashboard project={project} onUpdateProject={onUpdateProject} />
                             </Suspense>
                             </section>
                         )}
                         {activeTab === 'tasks' && (
-                            <section id="tab-panel-tasks" role="tabpanel" aria-labelledby="tab-tasks tab-tasks-mobile">
+                            <section id="tab-panel-tasks" role="tabpanel" aria-labelledby="tab-tasks">
                             <Suspense fallback={<LoadingSkeleton variant="task" count={5} />}>
                                 <TasksView 
                                     project={project} 
@@ -239,14 +219,14 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                             </section>
                         )}
                         {activeTab === 'documents' && (
-                            <section id="tab-panel-documents" role="tabpanel" aria-labelledby="tab-documents tab-documents-mobile">
+                            <section id="tab-panel-documents" role="tabpanel" aria-labelledby="tab-documents">
                             <Suspense fallback={<LoadingSkeleton variant="card" count={3} />}>
                                 <DocumentsView project={project} onUpdateProject={onUpdateProject} />
                             </Suspense>
                             </section>
                         )}
                         {activeTab === 'glossary' && (
-                            <section id="tab-panel-glossary" role="tabpanel" aria-labelledby="tab-glossary tab-glossary-mobile">
+                            <section id="tab-panel-glossary" role="tabpanel" aria-labelledby="tab-glossary">
                             <Suspense fallback={<LoadingSkeleton variant="card" count={2} />}>
                                 <GlossaryView />
                             </Suspense>

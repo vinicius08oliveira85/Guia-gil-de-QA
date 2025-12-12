@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { PROJECT_TEMPLATES, ProjectTemplate } from '../../utils/projectTemplates';
+import { cn } from '../../utils/windows12Styles';
 
 interface ProjectTemplateSelectorProps {
   onSelectTemplate: (templateId: string) => void;
@@ -32,16 +33,16 @@ export const ProjectTemplateSelector: React.FC<ProjectTemplateSelectorProps> = (
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap gap-2 mb-4">
+      <div className="flex flex-wrap gap-2">
         {categories.map(category => (
           <button
             key={category}
             onClick={() => setSelectedCategory(category)}
-            className={`px-3 py-1 rounded-md text-sm transition-colors ${
-              selectedCategory === category
-                ? 'bg-accent text-white'
-                : 'bg-surface border border-surface-border text-text-secondary hover:bg-surface-hover'
-            }`}
+            type="button"
+            className={cn(
+              'btn btn-sm',
+              selectedCategory === category ? 'btn-primary' : 'btn-outline'
+            )}
           >
             {category === 'all' ? 'Todos' : `${getCategoryIcon(category)} ${category}`}
           </button>
@@ -56,24 +57,31 @@ export const ProjectTemplateSelector: React.FC<ProjectTemplateSelectorProps> = (
               onSelectTemplate(template.id);
               onClose();
             }}
-            className="text-left p-4 bg-surface border border-surface-border rounded-lg hover:border-accent transition-all hover:shadow-lg"
+            type="button"
+            className={cn(
+              'text-left p-4',
+              'bg-base-100 border border-base-300',
+              'rounded-[var(--rounded-box)]',
+              'transition-all hover:shadow-md hover:border-primary/30',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20'
+            )}
           >
             <div className="flex items-start justify-between mb-2">
-              <h3 className="font-semibold text-text-primary">{template.name}</h3>
+              <h3 className="font-semibold text-base-content">{template.name}</h3>
               <span className="text-2xl">{getCategoryIcon(template.category)}</span>
             </div>
-            <p className="text-sm text-text-secondary mb-3">{template.description}</p>
+            <p className="text-sm text-base-content/70 mb-3">{template.description}</p>
             <div className="flex flex-wrap gap-2">
               {template.defaultTasks.slice(0, 3).map((task, idx) => (
                 <span
                   key={idx}
-                  className="text-xs px-2 py-1 bg-black/20 rounded text-text-secondary"
+                  className="badge badge-outline badge-sm"
                 >
                   {task.title}
                 </span>
               ))}
               {template.defaultTasks.length > 3 && (
-                <span className="text-xs px-2 py-1 bg-black/20 rounded text-text-secondary">
+                <span className="badge badge-outline badge-sm">
                   +{template.defaultTasks.length - 3} mais
                 </span>
               )}

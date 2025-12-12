@@ -4,41 +4,34 @@ export type Theme = 'light' | 'dark' | 'leve-saude' | 'auto';
 
 export const useTheme = () => {
   const [theme, setTheme] = useState<Theme>(() => {
-    const saved = localStorage.getItem('theme') as Theme;
-    return saved || 'dark';
+    const saved = localStorage.getItem('theme') as Theme | null;
+    return saved || 'light';
   });
 
   useEffect(() => {
     const root = document.documentElement;
-    const effectiveTheme = theme === 'auto' 
-      ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
-      : theme;
 
-    // Remove all theme classes first to avoid conflicts
+    // Nesta fase do Visual Reboot, apenas o tema DaisyUI "light" é suportado.
+    // Mantemos o valor selecionado em localStorage para, no futuro, habilitar dark/auto/etc.
+    root.setAttribute('data-theme', 'light');
+
+    // Remover classes legadas para evitar conflitos com CSS antigo (cleanup está em andamento).
     root.classList.remove('light', 'dark', 'leve-saude');
-    
-    // Apply base theme class
-    root.classList.add(effectiveTheme);
-
-    // Apply DaisyUI theme attribute for 'light' theme
-    if (effectiveTheme === 'light') {
-      root.setAttribute('data-theme', 'light');
-    } else {
-      root.removeAttribute('data-theme');
-    }
 
     localStorage.setItem('theme', theme);
   }, [theme]);
 
   const toggleTheme = () => {
     setTheme(prev => {
-      if (prev === 'dark') return 'light';
-      if (prev === 'light') return 'leve-saude';
-      if (prev === 'leve-saude') return 'dark';
-      return 'dark';
+      if (prev === 'light') return 'dark';
+      if (prev === 'dark') return 'leve-saude';
+      if (prev === 'leve-saude') return 'auto';
+      return 'light';
     });
   };
 
-  return { theme, setTheme, toggleTheme };
+  const isOnlyLightSupported = theme !== 'light';
+
+  return { theme, setTheme, toggleTheme, isOnlyLightSupported };
 };
 

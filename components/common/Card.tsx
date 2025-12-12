@@ -34,28 +34,26 @@ export const Card = React.memo<CardProps>(({
     ...rest 
 }) => {
     const variantClasses = {
-        default: 'card-surface',
-        elevated: 'card-surface shadow-lg shadow-black/20',
-        outlined: 'card-surface border-2 border-surface-border',
+        default: 'border border-base-300 shadow-sm',
+        elevated: 'border border-base-300 shadow-lg',
+        outlined: 'border-2 border-base-300 shadow-none',
     };
 
     const hoverClasses = hoverable 
-        ? 'hover:shadow-xl hover:shadow-black/30 hover:border-accent/20 hover:scale-[1.01] transition-all duration-300 ease-out' 
+        ? 'transition-all duration-300 ease-out hover:-translate-y-0.5 hover:shadow-xl hover:border-primary/30' 
         : '';
 
     return (
         <section
             className={cn(
-                'win-card dense-card gap-sm p-card w-full max-w-full',
-                'focus-within:ring-2 focus-within:ring-accent/30',
-                'mobile-no-overflow',
-                'backdrop-blur-sm',
+                'w-full max-w-full',
+                'bg-base-100 text-base-content',
+                'rounded-[var(--rounded-box)]',
+                'focus-within:ring-2 focus-within:ring-primary/20 focus-within:ring-offset-0',
                 variantClasses[variant],
                 hoverClasses,
                 className
             )}
-            role="region"
-            aria-label="Card container"
             {...rest}
         >
             {children}

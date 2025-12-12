@@ -1,4 +1,5 @@
 import React from 'react';
+import { cn } from '../../utils/windows12Styles';
 
 /**
  * Props do componente Badge
@@ -30,24 +31,29 @@ export const Badge = React.memo<BadgeProps>(({
   className = ''
 }) => {
   const variantClasses = {
-    default: 'bg-white/5 dark:bg-white/5 text-text-secondary border-white/10 dark:border-white/10',
-    success: 'bg-emerald-500/20 text-emerald-800 dark:bg-success/15 dark:text-success font-semibold border-emerald-500/40 dark:border-success/30',
-    warning: 'bg-amber-500/20 text-amber-800 dark:bg-warning/15 dark:text-amber-400 font-semibold border-amber-500/40 dark:border-warning/30',
-    error: 'bg-red-500/20 text-red-800 dark:bg-danger/15 dark:text-danger font-semibold border-red-500/40 dark:border-danger/30',
-    info: 'bg-blue-500/20 text-blue-800 dark:bg-info/15 dark:text-info font-semibold border-blue-500/40 dark:border-info/30'
+    default: 'badge-outline',
+    success: 'badge-success',
+    warning: 'badge-warning',
+    error: 'badge-error',
+    info: 'badge-info'
   };
 
   const sizeClasses = {
-    sm: 'chip-compact text-[0.68rem]',
-    md: 'h-7 px-2 text-[0.72rem]',
-    lg: 'h-8 px-3 text-[0.8rem]'
+    sm: 'badge-sm',
+    md: 'badge-md',
+    lg: 'badge-lg'
   };
 
   const label = typeof children === 'string' ? children : undefined;
 
   return (
     <span
-      className={`badge-chip whitespace-nowrap truncate font-semibold transition-transform duration-200 hover:scale-105 ${variantClasses[variant]} ${sizeClasses[size]} ${className}`}
+      className={cn(
+        'badge whitespace-nowrap truncate',
+        variantClasses[variant],
+        sizeClasses[size],
+        className
+      )}
       aria-label={label}
       role="status"
     >

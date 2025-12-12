@@ -6,9 +6,11 @@ import * as dbService from '../../services/dbService';
 // Mock do dbService
 vi.mock('../../services/dbService', () => ({
   getAllProjects: vi.fn(),
+  loadProjectsFromIndexedDB: vi.fn(),
   addProject: vi.fn(),
   updateProject: vi.fn(),
   deleteProject: vi.fn(),
+  saveProjectToSupabaseOnly: vi.fn(),
 }));
 
 // Mock do auditLog
@@ -41,7 +43,7 @@ describe('useProjectsStore', () => {
         },
       ];
 
-      vi.mocked(dbService.getAllProjects).mockResolvedValue(mockProjects);
+      vi.mocked(dbService.loadProjectsFromIndexedDB).mockResolvedValue(mockProjects);
 
       await useProjectsStore.getState().loadProjects();
 
@@ -53,7 +55,7 @@ describe('useProjectsStore', () => {
 
     it('deve tratar erro ao carregar projetos', async () => {
       const error = new Error('Erro ao carregar');
-      vi.mocked(dbService.getAllProjects).mockRejectedValue(error);
+      vi.mocked(dbService.loadProjectsFromIndexedDB).mockRejectedValue(error);
 
       await useProjectsStore.getState().loadProjects();
 
@@ -93,7 +95,7 @@ describe('useProjectsStore', () => {
       const created = await useProjectsStore.getState().createProject(
         'Projeto Template',
         'Descrição',
-        'template-id'
+        'web-app'
       );
 
       expect(created.name).toBe('Projeto Template');

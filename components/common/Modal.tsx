@@ -75,7 +75,7 @@ export const Modal: React.FC<ModalProps> = ({
 
     return (
         <div 
-            className="glass-overlay fixed inset-0 z-50 flex justify-center items-center py-2 sm:py-4 px-4 sm:px-6 transition-opacity duration-300"
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-base-100/60 backdrop-blur-sm transition-opacity duration-200"
             onClick={onClose}
             role="dialog"
             aria-modal="true"
@@ -83,7 +83,7 @@ export const Modal: React.FC<ModalProps> = ({
         >
             <div 
                 id="modal-content"
-                className={`mica w-full ${sizeClasses[size]} flex flex-col overflow-hidden animate-fade-in shadow-[0_35px_120px_rgba(3,7,23,0.65)] rounded-lg`}
+                className={`w-full ${sizeClasses[size]} flex flex-col overflow-hidden animate-fade-in shadow-2xl border border-base-300 bg-base-100 rounded-[var(--rounded-box)]`}
                 onClick={(e) => e.stopPropagation()}
                 tabIndex={-1}
                 style={{ 
@@ -91,19 +91,22 @@ export const Modal: React.FC<ModalProps> = ({
                 }}
             >
                 {/* Title Bar - Fixed */}
-                <div className="flex justify-between items-center p-card bg-white/5 border-b border-white/10 backdrop-blur-sm flex-shrink-0">
-                    <h2 id="modal-title" className="text-xl font-semibold text-text-primary pr-4 truncate text-balance">{title}</h2>
+                <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-base-300 flex-shrink-0">
+                    <h2 id="modal-title" className="text-lg sm:text-xl font-semibold text-base-content truncate">
+                        {title}
+                    </h2>
                     <button 
                         onClick={onClose} 
-                        className="win-icon-button text-text-secondary hover:text-white flex-shrink-0"
+                        className="btn btn-ghost btn-sm flex-shrink-0"
                         aria-label="Fechar modal"
                         aria-describedby="modal-title"
+                        type="button"
                     >
                         &times;
                     </button>
                 </div>
                 {/* Content - Scrollable */}
-                <div className="p-card flex-1 overflow-y-auto flex flex-col min-h-0 overscroll-contain">
+                <div className="px-5 py-4 flex-1 overflow-y-auto flex flex-col min-h-0 overscroll-contain">
                   <div className="flex-1 min-h-0">
                     {children}
                   </div>

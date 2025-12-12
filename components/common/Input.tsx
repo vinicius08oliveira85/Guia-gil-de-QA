@@ -38,25 +38,26 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
     id,
     ...props 
   }, ref) => {
-    const inputId = id || `input-${Math.random().toString(36).substr(2, 9)}`;
+    const reactId = React.useId();
+    const inputId = id || `input-${reactId.replace(/[:]/g, '')}`;
     
     const variantClasses = {
-      default: 'bg-surface-input border-surface-border',
-      outlined: 'bg-transparent border-2 border-surface-border',
-      filled: 'bg-surface-hover border-surface-border',
+      default: 'input-bordered bg-base-100',
+      outlined: 'input-bordered bg-base-100',
+      filled: 'border border-base-300 bg-base-200',
     };
 
     const baseInputClasses = cn(
-      'w-full px-3 py-2 rounded-lg',
-      'text-text-primary placeholder:text-text-secondary/60',
-      'focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent',
-      'transition-all duration-200',
+      'input w-full',
+      'text-base-content placeholder:text-base-content/50',
+      'focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary',
+      'transition',
       'disabled:opacity-50 disabled:cursor-not-allowed',
       variantClasses[variant],
-      error && 'border-danger focus:ring-danger/50',
-      success && 'border-success focus:ring-success/50',
-      leftIcon && 'pl-10',
-      rightIcon && 'pr-10',
+      error && 'input-error focus:ring-error/20',
+      success && 'input-success focus:ring-success/20',
+      leftIcon ? 'pl-10' : undefined,
+      rightIcon ? 'pr-10' : undefined,
       className
     );
 
@@ -65,7 +66,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         {label && (
           <label 
             htmlFor={inputId}
-            className="block text-sm font-medium text-text-secondary mb-1.5"
+            className="block text-sm font-medium text-base-content/70 mb-1.5"
           >
             {label}
           </label>
@@ -73,7 +74,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         
         <div className="relative">
           {leftIcon && (
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary pointer-events-none">
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-base-content/60 pointer-events-none">
               {leftIcon}
             </div>
           )}
@@ -92,13 +93,13 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           />
           
           {rightIcon && !error && !success && (
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary pointer-events-none">
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-base-content/60 pointer-events-none">
               {rightIcon}
             </div>
           )}
           
           {error && (
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-danger pointer-events-none">
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-error pointer-events-none">
               <AlertCircle className="w-4 h-4" />
             </div>
           )}
@@ -113,7 +114,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         {error && (
           <p 
             id={`${inputId}-error`}
-            className="mt-1.5 text-sm text-danger flex items-center gap-1"
+            className="mt-1.5 text-sm text-error flex items-center gap-1"
             role="alert"
           >
             <AlertCircle className="w-3.5 h-3.5" />
@@ -124,7 +125,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         {helperText && !error && (
           <p 
             id={`${inputId}-helper`}
-            className="mt-1.5 text-sm text-text-secondary"
+            className="mt-1.5 text-sm text-base-content/70"
           >
             {helperText}
           </p>

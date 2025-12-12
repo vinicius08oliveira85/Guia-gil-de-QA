@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, CheckCircle2, Sparkles } from 'lucide-react';
+import { logger } from '../../utils/logger';
 
 /**
  * CTA Section - Call to action principal
@@ -13,7 +14,7 @@ export const CTASection: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // Aqui você pode integrar com um serviço de email ou API
-    console.log('Email submitted:', email);
+    logger.info('Email capturado na CTA (mock)', 'Landing/CTASection', { email });
     setIsSubmitted(true);
     setTimeout(() => {
       setIsSubmitted(false);

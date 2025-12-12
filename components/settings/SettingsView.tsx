@@ -26,21 +26,22 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClose, onProjectIm
     return (
         <div className="min-h-screen flex flex-col">
             {/* Header */}
-            <div className="win-toolbar border-b border-surface-border bg-surface/95 backdrop-blur-sm sticky top-0 z-20">
+            <div className="sticky top-0 z-20 border-b border-base-300 bg-base-100/80 backdrop-blur">
                 <div className="container mx-auto px-4 sm:px-6 py-4">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
                             <button
                                 onClick={onClose}
-                                className="win-icon-button"
+                                className="btn btn-ghost btn-sm"
                                 title="Voltar"
                                 aria-label="Voltar"
+                                type="button"
                             >
                                 <span className="text-xl">←</span>
                             </button>
                             <div>
-                                <h1 className="text-2xl font-bold text-text-primary">Configurações</h1>
-                                <p className="text-sm text-text-secondary mt-1">
+                                <h1 className="text-2xl font-bold text-base-content">Configurações</h1>
+                                <p className="text-sm text-base-content/70 mt-1">
                                     Gerencie suas integrações e preferências
                                 </p>
                             </div>
@@ -50,20 +51,19 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClose, onProjectIm
             </div>
 
             {/* Tab Navigation */}
-            <div className="border-b border-surface-border bg-surface/50">
-                <div className="container mx-auto px-4 sm:px-6">
-                    <div className="flex gap-4 overflow-x-auto no-scrollbar">
+            <div className="border-b border-base-300 bg-base-100/60">
+                <div className="container mx-auto px-4 sm:px-6 py-3">
+                    <div className="tabs tabs-boxed overflow-x-auto w-full" role="tablist" aria-label="Abas de configurações">
                         {tabs.map((tab) => (
                             <button
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
-                                className={`px-4 py-3 text-sm font-medium transition-colors border-b-2 -mb-px whitespace-nowrap ${
-                                    activeTab === tab.id
-                                        ? 'border-accent text-accent'
-                                        : 'border-transparent text-text-secondary hover:text-text-primary hover:border-surface-border'
-                                }`}
+                                className={`tab whitespace-nowrap ${activeTab === tab.id ? 'tab-active' : ''}`}
+                                role="tab"
+                                aria-selected={activeTab === tab.id}
+                                type="button"
                             >
-                                <span className="mr-2">{tab.icon}</span>
+                                <span className="mr-2" aria-hidden="true">{tab.icon}</span>
                                 {tab.label}
                             </button>
                         ))}

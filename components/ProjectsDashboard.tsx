@@ -111,94 +111,82 @@ export const ProjectsDashboard: React.FC<{
     };
 
     return (
-        <div className="container-wide py-md sm:py-lg w-full">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-md mb-lg w-full">
-                <div className="flex flex-col gap-sm">
-                     <h1 className="heading-page text-text-primary line-clamp-2 w-full">
+        <div className="container mx-auto w-full max-w-7xl px-4 py-8 sm:py-10">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                <div className="space-y-1">
+                    <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
                         Meus Projetos
                     </h1>
-                    <p className="text-lead hidden sm:block">
+                    <p className="text-base-content/70 hidden sm:block">
                         Gerencie e acompanhe o progresso dos seus projetos de QA
                     </p>
                 </div>
-                <div className="flex items-center gap-2">
-                    <a 
-                        href="#landing" 
-                        onClick={(e) => {
-                            e.preventDefault();
-                            window.dispatchEvent(new CustomEvent('show-landing'));
-                        }}
-                        className="btn btn-ghost btn-sm text-sm"
+
+                <div className="flex flex-wrap items-center gap-2">
+                    <button
+                        type="button"
+                        onClick={() => window.dispatchEvent(new CustomEvent('show-landing'))}
+                        className="btn btn-ghost btn-sm"
                     >
-                        Ver Landing Page
-                    </a>
-                </div>
-               
-                {isMobile ? (
-                    <div className="w-full space-y-sm">
-                        <div className="mobile-actions-inline" role="group" aria-label="Ações principais">
-                            <button 
-                                onClick={() => setIsCreating(true)} 
-                                className="btn btn-primary btn-md flex-shrink-0 flex items-center gap-1.5"
+                        Ver Landing
+                    </button>
+
+                    {isMobile ? (
+                        <>
+                            <button
+                                type="button"
+                                onClick={() => setIsCreating(true)}
+                                className="btn btn-primary btn-sm"
                                 data-onboarding="create-project"
                             >
-                                <span className="emoji-sticker">➕</span>
-                                <span>Novo</span>
+                                Novo Projeto
                             </button>
+
                             {quickActions.length > 0 && (
-                                <button 
-                                    onClick={() => setShowMobileActions(true)} 
-                                    className="btn btn-secondary btn-md flex-shrink-0"
-                                    aria-label="Abrir menu de ações rápidas"
+                                <button
+                                    type="button"
+                                    onClick={() => setShowMobileActions(true)}
+                                    className="btn btn-outline btn-sm"
+                                    aria-label="Abrir ações rápidas"
                                     aria-expanded={showMobileActions}
                                 >
-                                    ⋯
+                                    Ações
                                 </button>
                             )}
-                        </div>
-                    </div>
-                ) : (
-                    <div className="flex flex-col items-end gap-md w-full sm:w-auto">
-                        <div className="flex flex-wrap gap-sm justify-end items-center">
-                            <button 
-                                onClick={() => setIsCreating(true)} 
-                                className="toolbar-buttons-custom btn btn-primary btn-md flex items-center gap-1.5"
+                        </>
+                    ) : (
+                        <>
+                            <button
+                                type="button"
+                                onClick={() => setIsCreating(true)}
+                                className="btn btn-primary btn-sm"
                                 data-onboarding="create-project"
                             >
-                                <span className="emoji-sticker">➕</span>
-                                <span>Novo Projeto</span>
+                                Novo Projeto
                             </button>
-                        </div>
-                         {/* Secondary Actions Row */}
-                         <div className="flex gap-2 text-xs">
+
                             {onComparisonClick && projects.length > 1 && (
-                                <button onClick={onComparisonClick} className="text-text-secondary hover:text-accent transition-colors flex items-center gap-1">
-                                    <span className="emoji-sticker">📊</span>
-                                    <span>Comparar</span>
+                                <button
+                                    type="button"
+                                    onClick={onComparisonClick}
+                                    className="btn btn-outline btn-sm"
+                                >
+                                    Comparar
                                 </button>
                             )}
-                            {/* Botão sempre visível, mas desabilitado se Supabase não estiver disponível */}
+
                             <button
+                                type="button"
                                 onClick={handleSyncSupabase}
-                                className="text-text-secondary hover:text-accent transition-colors flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="btn btn-outline btn-sm"
                                 disabled={isSyncingSupabase || !onSyncSupabase}
                                 title={!onSyncSupabase ? 'Supabase não está configurado. Configure VITE_SUPABASE_PROXY_URL.' : 'Sincronizar projetos do Supabase'}
                             >
-                                {isSyncingSupabase ? (
-                                    <>
-                                        <span className="emoji-sticker">🔄</span>
-                                        <span>Sincronizando...</span>
-                                    </>
-                                ) : (
-                                    <>
-                                        <span className="emoji-sticker">☁️</span>
-                                        <span>Sync Supabase</span>
-                                    </>
-                                )}
+                                {isSyncingSupabase ? 'Sincronizando…' : 'Sync Supabase'}
                             </button>
-                        </div>
-                    </div>
-                )}
+                        </>
+                    )}
+                </div>
             </div>
 
             <Modal
@@ -207,23 +195,24 @@ export const ProjectsDashboard: React.FC<{
                 title="Ações rápidas"
                 size="sm"
             >
-                <div className="space-y-3 mobile-action-shadow">
+                <div className="space-y-2">
                     {quickActions.map(action => (
                         <button
                             key={action.id}
                             onClick={() => handleMobileAction(action.onClick)}
-                            className="w-full flex items-center gap-3 p-3 rounded-lg border border-surface-border text-left hover:border-accent hover:text-accent transition-colors active:scale-95"
+                            type="button"
+                            className="btn btn-outline w-full justify-start gap-3"
                         >
-                            <span className="emoji-sticker">{action.icon}</span>
-                            <span className="font-semibold">{action.label}</span>
+                            <span className="text-lg" aria-hidden="true">{action.icon}</span>
+                            <span>{action.label}</span>
                         </button>
                     ))}
                     <button
                         onClick={() => handleMobileAction(() => setIsCreating(true))}
-                        className="w-full flex items-center gap-3 p-3 rounded-lg bg-accent/20 text-accent font-semibold justify-center"
+                        type="button"
+                        className="btn btn-primary w-full"
                     >
-                        <span className="emoji-sticker">➕</span>
-                        <span>Criar Projeto</span>
+                        Criar Projeto
                     </button>
                 </div>
             </Modal>
@@ -232,36 +221,83 @@ export const ProjectsDashboard: React.FC<{
             <Modal isOpen={isCreating} onClose={() => {
                 setIsCreating(false);
                 setSelectedTemplate(undefined);
+                setShowTemplates(false);
             }} title="Criar Novo Projeto">
-                 <div className="space-y-md">
+                 <div className="space-y-4">
                     {!showTemplates ? (
                         <>
-                            <div className="mb-md">
+                            <div>
                                 <button
                                     onClick={() => setShowTemplates(true)}
-                                    className="w-full p-4 border-2 border-dashed border-surface-border rounded-lg hover:border-accent transition-colors text-text-secondary hover:text-text-primary"
+                                    type="button"
+                                    className="w-full rounded-[var(--rounded-box)] border-2 border-dashed border-base-300 p-4 text-left transition-colors hover:border-primary/40"
                                 >
-                                    📋 Usar Template (Recomendado)
+                                    <div className="flex items-start gap-3">
+                                        <span className="text-xl" aria-hidden="true">📋</span>
+                                        <div className="space-y-0.5">
+                                            <p className="font-semibold">Usar Template</p>
+                                            <p className="text-sm text-base-content/70">
+                                                Recomendado para começar mais rápido com um checklist inicial.
+                                            </p>
+                                        </div>
+                                    </div>
                                 </button>
                             </div>
-                            <div>
-                                <label htmlFor="proj-name" className="block text-sm font-medium text-text-secondary mb-xs">Nome do Projeto</label>
-                                <input id="proj-name" type="text" value={newName} onChange={e => setNewName(e.target.value)} className="w-full px-3 py-2 bg-surface-input border border-surface-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent/50 text-text-primary" placeholder="Ex: E-commerce App" />
+
+                            <div className="grid gap-4">
+                                <label className="form-control w-full">
+                                    <div className="label">
+                                        <span className="label-text">Nome do Projeto</span>
+                                    </div>
+                                    <input
+                                        id="proj-name"
+                                        type="text"
+                                        value={newName}
+                                        onChange={e => setNewName(e.target.value)}
+                                        className="input input-bordered w-full"
+                                        placeholder="Ex: E-commerce App"
+                                    />
+                                </label>
+
+                                <label className="form-control w-full">
+                                    <div className="label">
+                                        <span className="label-text">Descrição</span>
+                                    </div>
+                                    <textarea
+                                        id="proj-desc"
+                                        value={newDesc}
+                                        onChange={e => setNewDesc(e.target.value)}
+                                        rows={3}
+                                        className="textarea textarea-bordered w-full"
+                                        placeholder="Breve descrição do projeto..."
+                                    />
+                                </label>
                             </div>
-                            <div>
-                                <label htmlFor="proj-desc" className="block text-sm font-medium text-text-secondary mb-xs">Descrição</label>
-                                <textarea id="proj-desc" value={newDesc} onChange={e => setNewDesc(e.target.value)} rows={3} className="w-full px-3 py-2 bg-surface-input border border-surface-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent/50 text-text-primary" placeholder="Breve descrição do projeto..."></textarea>
-                            </div>
-                            <div className="flex justify-end gap-3 pt-4">
-                                <button onClick={() => setIsCreating(false)} className="btn btn-secondary">Cancelar</button>
-                                <button onClick={handleCreate} className="btn btn-primary" disabled={!newName.trim()}>Criar</button>
+
+                            <div className="flex justify-end gap-2 pt-2">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsCreating(false)}
+                                    className="btn btn-ghost"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={handleCreate}
+                                    className="btn btn-primary"
+                                    disabled={!newName.trim()}
+                                >
+                                    Criar
+                                </button>
                             </div>
                         </>
                     ) : (
-                        <div>
+                        <div className="space-y-4">
                             <button
+                                type="button"
                                 onClick={() => setShowTemplates(false)}
-                                className="mb-4 text-text-secondary hover:text-text-primary flex items-center gap-2"
+                                className="btn btn-ghost btn-sm self-start"
                             >
                                 ← Voltar
                             </button>
@@ -273,24 +309,59 @@ export const ProjectsDashboard: React.FC<{
                                 onClose={() => setShowTemplates(false)}
                             />
                             {selectedTemplate && (
-                                <div className="mt-4 p-3 bg-accent/10 border border-accent/30 rounded-lg">
-                                    <p className="text-sm text-text-primary">Template selecionado! Preencha os dados abaixo.</p>
+                                <div className="alert alert-success">
+                                    <span>Template selecionado! Preencha os dados abaixo.</span>
                                 </div>
                             )}
-                            <div className="mt-4">
-                                <label htmlFor="proj-name-template" className="block text-sm font-medium text-text-secondary mb-1">Nome do Projeto</label>
-                                <input id="proj-name-template" type="text" value={newName} onChange={e => setNewName(e.target.value)} className="w-full px-3 py-2 bg-surface-input border border-surface-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent/50 text-text-primary" />
+
+                            <div className="grid gap-4">
+                                <label className="form-control w-full">
+                                    <div className="label">
+                                        <span className="label-text">Nome do Projeto</span>
+                                    </div>
+                                    <input
+                                        id="proj-name-template"
+                                        type="text"
+                                        value={newName}
+                                        onChange={e => setNewName(e.target.value)}
+                                        className="input input-bordered w-full"
+                                    />
+                                </label>
+
+                                <label className="form-control w-full">
+                                    <div className="label">
+                                        <span className="label-text">Descrição</span>
+                                    </div>
+                                    <textarea
+                                        id="proj-desc-template"
+                                        value={newDesc}
+                                        onChange={e => setNewDesc(e.target.value)}
+                                        rows={3}
+                                        className="textarea textarea-bordered w-full"
+                                    />
+                                </label>
                             </div>
-                            <div className="mt-4">
-                                <label htmlFor="proj-desc-template" className="block text-sm font-medium text-text-secondary mb-1">Descrição</label>
-                                <textarea id="proj-desc-template" value={newDesc} onChange={e => setNewDesc(e.target.value)} rows={3} className="w-full px-3 py-2 bg-surface-input border border-surface-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent/50 text-text-primary"></textarea>
-                            </div>
-                            <div className="flex justify-end gap-3 pt-4">
-                                <button onClick={() => {
-                                    setIsCreating(false);
-                                    setSelectedTemplate(undefined);
-                                }} className="btn btn-secondary">Cancelar</button>
-                                <button onClick={handleCreate} className="btn btn-primary" disabled={!newName.trim()}>Criar com Template</button>
+
+                            <div className="flex justify-end gap-2 pt-2">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setIsCreating(false);
+                                        setSelectedTemplate(undefined);
+                                        setShowTemplates(false);
+                                    }}
+                                    className="btn btn-ghost"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={handleCreate}
+                                    className="btn btn-primary"
+                                    disabled={!newName.trim()}
+                                >
+                                    Criar com Template
+                                </button>
                             </div>
                         </div>
                     )}
@@ -308,113 +379,119 @@ export const ProjectsDashboard: React.FC<{
                 variant="danger"
             />
 
-            {filteredProjects.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-md">
-                    {filteredProjects.map(p => {
-                                const completedTasks = calculateProgress(p.tasks || []);
-                                const totalTasks = p.tasks?.length || 0;
-                                const tags = p.tags || [];
+            <div className="mt-6">
+                {filteredProjects.length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+                        {filteredProjects.map(p => {
+                            const completedTasks = calculateProgress(p.tasks || []);
+                            const totalTasks = p.tasks?.length || 0;
+                            const tags = p.tags || [];
 
-                                return (
-                                    <Card
-                                        key={p.id}
-                                        variant="elevated"
-                                        hoverable={true}
-                                        onClick={(e) => {
-                                            // Não fazer nada se o clique foi em um botão ou link
-                                            const target = e.target as HTMLElement;
-                                            if (target.closest('button, a')) {
-                                                return;
-                                            }
+                            return (
+                                <Card
+                                    key={p.id}
+                                    variant="elevated"
+                                    hoverable={true}
+                                    onClick={(e) => {
+                                        const target = e.target as HTMLElement;
+                                        if (target.closest('button, a')) {
+                                            return;
+                                        }
+                                        onSelectProject(p.id);
+                                    }}
+                                    role="button"
+                                    tabIndex={0}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' || e.key === ' ') {
+                                            e.preventDefault();
                                             onSelectProject(p.id);
-                                        }}
-                                        role="button"
-                                        tabIndex={0}
-                                        onKeyDown={(e) => {
-                                            if (e.key === 'Enter' || e.key === ' ') {
-                                                e.preventDefault();
-                                                onSelectProject(p.id);
-                                            }
-                                        }}
-                                        className="project-card-custom group cursor-pointer relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 flex flex-col h-full"
-                                    >
-                                        <div className="flex-1 space-y-3">
-                                            <div className="flex justify-between items-start">
-                                                <h3 className="heading-card text-text-primary leading-snug line-clamp-2 text-balance pr-6">
-                                                    {p.name}
-                                                </h3>
-                                            </div>
-                                            
-                                            <p className="text-muted text-sm line-clamp-2 min-h-[2.5em]">
-                                                {p.description || 'Sem descrição.'}
-                                            </p>
+                                        }
+                                    }}
+                                    className="group cursor-pointer relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 flex flex-col h-full"
+                                >
+                                    <div className="flex-1 space-y-3">
+                                        <h3 className="text-lg font-semibold leading-snug line-clamp-2 pr-10 text-balance">
+                                            {p.name}
+                                        </h3>
 
-                                            {/* Tags */}
-                                            {tags.length > 0 && (
-                                                <div className="flex flex-wrap gap-1 mt-2">
-                                                    {tags.slice(0, 3).map(tag => (
-                                                        <Badge key={tag} variant="default" size="sm">
-                                                            {tag}
-                                                        </Badge>
-                                                    ))}
-                                                    {tags.length > 3 && (
-                                                        <Badge variant="default" size="sm">
-                                                            +{tags.length - 3}
-                                                        </Badge>
-                                                    )}
-                                                </div>
-                                            )}
-                                        </div>
+                                        <p className="text-sm text-base-content/70 line-clamp-2 min-h-[2.5em]">
+                                            {p.description || 'Sem descrição.'}
+                                        </p>
 
-                                        <div className="mt-4 pt-3 border-t border-surface-border space-y-2">
-                                            <ProgressIndicator 
-                                                value={completedTasks} 
-                                                max={totalTasks} 
-                                                label="Progresso" 
-                                                size="sm" 
-                                                color="blue"
-                                                showPercentage={true}
-                                            />
-                                            <div className="flex justify-between items-center text-xs text-text-tertiary mt-1">
-                                                <span>{totalTasks} {totalTasks === 1 ? 'tarefa' : 'tarefas'}</span>
-                                                {p.settings?.jiraProjectKey && (
-                                                    <span className="bg-blue-600 dark:bg-blue-900/30 text-white dark:text-blue-400 px-1.5 py-0.5 rounded text-[10px]">JIRA: {p.settings.jiraProjectKey}</span>
+                                        {tags.length > 0 && (
+                                            <div className="flex flex-wrap gap-1">
+                                                {tags.slice(0, 3).map(tag => (
+                                                    <Badge key={tag} variant="default" size="sm">
+                                                        {tag}
+                                                    </Badge>
+                                                ))}
+                                                {tags.length > 3 && (
+                                                    <Badge variant="default" size="sm">
+                                                        +{tags.length - 3}
+                                                    </Badge>
                                                 )}
                                             </div>
-                                        </div>
+                                        )}
+                                    </div>
 
-                                        <button 
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                e.preventDefault();
-                                                openDeleteModal(p, e);
-                                            }} 
-                                            className="absolute top-3 right-3 h-8 w-8 flex items-center justify-center rounded-full bg-surface-hover/60 text-text-secondary opacity-100 sm:opacity-0 group-hover:opacity-100 hover:bg-red-500 hover:text-white transition-all active:scale-95 z-10"
-                                            aria-label={`Excluir projeto ${p.name}`}
-                                        >
-                                            <TrashIcon />
-                                        </button>
-                                    </Card>
-                                );
-                            })}
-                        </div>
-            ) : (
-                <div className="flex flex-col items-center justify-center py-20 px-4 border-2 border-dashed border-surface-border rounded-xl mt-8 bg-surface-card/30">
-                    <div className="w-16 h-16 bg-surface-hover rounded-full flex items-center justify-center mb-4">
-                        <span className="text-3xl">🚀</span>
+                                    <div className="mt-4 pt-4 border-t border-base-300 space-y-2">
+                                        <ProgressIndicator
+                                            value={completedTasks}
+                                            max={totalTasks}
+                                            label="Progresso"
+                                            size="sm"
+                                            color="blue"
+                                            showPercentage={true}
+                                        />
+                                        <div className="flex justify-between items-center text-xs text-base-content/60">
+                                            <span>
+                                                {totalTasks} {totalTasks === 1 ? 'tarefa' : 'tarefas'}
+                                            </span>
+                                            {p.settings?.jiraProjectKey && (
+                                                <span className="badge badge-outline badge-sm">
+                                                    JIRA: {p.settings.jiraProjectKey}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <button
+                                        type="button"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            e.preventDefault();
+                                            openDeleteModal(p, e);
+                                        }}
+                                        className="btn btn-ghost btn-sm btn-circle absolute top-3 right-3 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 text-base-content/60 hover:text-error hover:bg-error/10 transition-all active:scale-95 z-10"
+                                        aria-label={`Excluir projeto ${p.name}`}
+                                    >
+                                        <TrashIcon />
+                                    </button>
+                                </Card>
+                            );
+                        })}
                     </div>
-                    <h3 className="text-xl font-semibold text-text-primary mb-2">
-                        Nenhum projeto ainda
-                    </h3>
-                    <p className="text-text-secondary text-center max-w-md mb-6">
-                        Comece criando seu primeiro projeto para gerenciar tarefas, testes e documentação.
-                    </p>
-                    <button onClick={() => setIsCreating(true)} className="btn btn-primary flex items-center gap-2 px-6 py-2.5 text-base shadow-lg shadow-primary/20 hover:shadow-primary/30 hover:-translate-y-0.5 transition-all">
-                        <span className="emoji-sticker">➕</span>
-                        <span>Criar Primeiro Projeto</span>
-                    </button>
-                </div>
-            )}
+                ) : (
+                    <div className="mt-8 rounded-[var(--rounded-box)] border border-base-300 bg-base-100 p-10 sm:p-12 text-center">
+                        <div className="mx-auto mb-4 h-14 w-14 rounded-full bg-base-200 flex items-center justify-center text-2xl" aria-hidden="true">
+                            🚀
+                        </div>
+                        <h3 className="text-xl font-semibold">Nenhum projeto ainda</h3>
+                        <p className="mt-2 text-base-content/70 max-w-md mx-auto">
+                            Comece criando seu primeiro projeto para gerenciar tarefas, testes e documentação.
+                        </p>
+                        <div className="mt-6">
+                            <button
+                                type="button"
+                                onClick={() => setIsCreating(true)}
+                                className="btn btn-primary"
+                            >
+                                Criar Primeiro Projeto
+                            </button>
+                        </div>
+                    </div>
+                )}
+            </div>
         </div>
     );
 }

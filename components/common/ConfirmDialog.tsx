@@ -28,28 +28,30 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
     onConfirm();
   };
 
-    const variantStyles = {
-      danger: 'btn-danger',
-      warning: 'btn-warning',
-      info: 'btn-info',
-    };
+  const variantStyles = {
+    danger: 'btn-error',
+    warning: 'btn-warning',
+    info: 'btn-info',
+  } as const;
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={title}>
       <div className="space-y-4">
-        <p className="text-text-primary">{message}</p>
+        <p className="text-base-content/80">{message}</p>
         <div className="flex gap-3 justify-end pt-4">
           <button
             onClick={onClose}
             disabled={isLoading}
-            className="btn btn-secondary"
+            className="btn btn-ghost"
+            type="button"
           >
             {cancelText}
           </button>
           <button
             onClick={handleConfirm}
             disabled={isLoading}
-              className={`btn ${variantStyles[variant]}`}
+            className={`btn ${variantStyles[variant]}`}
+            type="button"
           >
             {isLoading ? 'Processando...' : confirmText}
           </button>

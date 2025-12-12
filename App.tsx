@@ -1,7 +1,7 @@
 
 import React, { useState, useCallback, useMemo, useEffect, Suspense } from 'react';
 import { Toaster } from 'react-hot-toast';
-import { Project, PhaseName } from './types';
+import { Project } from './types';
 import { Header } from './components/common/Header';
 import { Spinner } from './components/common/Spinner';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
@@ -16,6 +16,7 @@ import { loadProjectsFromSupabase, isSupabaseAvailable } from './services/supaba
 import { getExportPreferences } from './utils/preferencesService';
 import { startExportScheduler } from './utils/exportScheduler';
 import { useIsMobile } from './hooks/useIsMobile';
+import { useTheme } from './hooks/useTheme';
 import { lazyWithRetry } from './utils/lazyWithRetry';
 
 // Code splitting - Lazy loading de componentes pesados
@@ -29,6 +30,9 @@ const OnboardingGuide = lazyWithRetry(() => import('./components/onboarding/Onbo
 const SettingsView = lazyWithRetry(() => import('./components/settings/SettingsView').then(m => ({ default: m.SettingsView })));
 
 const App: React.FC = () => {
+    // Tema global (fase atual: DaisyUI light fixo; outras opções permanecem no toggle para futuro)
+    useTheme();
+
     // Estado global do store
     const {
         projects,
@@ -40,7 +44,6 @@ const App: React.FC = () => {
         updateProject,
         deleteProject,
         selectProject,
-        getSelectedProject,
     } = useProjectsStore();
 
     // Estado local de UI
@@ -212,18 +215,6 @@ const App: React.FC = () => {
         const shouldShow = forceShowLanding || (!selectedProject && projects.length === 0 && !showSettings);
         return shouldShow;
     }, [forceShowLanding, selectedProject, projects.length, showSettings]);
-
-    // Aplicar tema light quando mostrar landing page
-    useEffect(() => {
-        if (shouldShowLandingPage) {
-            const root = document.documentElement;
-            root.setAttribute('data-theme', 'light');
-            // Também adicionar classe light para compatibilidade
-            if (!root.classList.contains('light')) {
-                root.classList.add('light');
-            }
-        }
-    }, [shouldShowLandingPage]);
 
     // Listener para eventos da landing page
     useEffect(() => {
