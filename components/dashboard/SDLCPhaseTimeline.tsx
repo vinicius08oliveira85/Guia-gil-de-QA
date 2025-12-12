@@ -67,13 +67,13 @@ export const SDLCPhaseTimeline: React.FC<SDLCPhaseTimelineProps> = React.memo(({
           <div className="mt-6 space-y-4">
             <div className="flex items-center gap-2 mb-4">
               <span className="text-2xl">{phaseIcons[currentPhase as PhaseName]}</span>
-              <h3 className="text-lg font-semibold text-text-primary">
+              <h3 className="text-lg font-semibold text-white">
                 Fase Atual: {phaseDisplayNames[currentPhase as PhaseName]}
               </h3>
               <div className="flex-1" />
               <div className="flex items-center gap-2">
-                <div className="text-sm text-text-secondary">
-                  Progresso: <span className="font-semibold text-text-primary">{progressPercentage}%</span>
+                <div className="text-sm text-white">
+                  Progresso: <span className="font-semibold text-white">{progressPercentage}%</span>
                 </div>
                 <div className="w-24 h-2 bg-slate-700 rounded-full overflow-hidden">
                   <div
