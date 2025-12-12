@@ -39,6 +39,21 @@ export const SDLCPhaseTimeline: React.FC<SDLCPhaseTimelineProps> = React.memo(({
     return phases.filter(p => p.status === 'Concluído').length;
   }, [phases]);
 
+  // Função para determinar o status de cada fase
+  const getPhaseStatus = useMemo(() => {
+    const phaseMap = new Map(phases.map(p => [p.name, p.status]));
+    const currentPhaseIndex = PHASE_NAMES.findIndex(name => name === currentPhase);
+    
+    return (phaseName: PhaseName, index: number) => {
+      const status = phaseMap.get(phaseName);
+      const phaseIndex = PHASE_NAMES.indexOf(phaseName);
+      
+      if (status === 'Concluído') return 'completed';
+      if (phaseIndex === currentPhaseIndex || (status === 'Em Andamento' && phaseIndex <= currentPhaseIndex)) return 'current';
+      return 'upcoming';
+    };
+  }, [phases, currentPhase]);
+
   return (
     <div className="space-y-6" role="region" aria-label="Timeline de Fases SDLC" aria-live="polite">
       <Card className="p-4">
@@ -60,6 +75,127 @@ export const SDLCPhaseTimeline: React.FC<SDLCPhaseTimelineProps> = React.memo(({
               </span>
             </div>
           </div>
+        </div>
+
+        {/* Timeline das Fases */}
+        <div className="mt-6">
+          <ul className="relative" style={{ minHeight: `${PHASE_NAMES.length * 80}px` }}>
+            {/* Linha vertical central */}
+            <div className="absolute left-1/2 top-0 w-0.5 bg-gray-700 -translate-x-1/2" style={{ height: `${PHASE_NAMES.length * 80}px` }} />
+            
+            {PHASE_NAMES.map((phaseName, index) => {
+              const status = getPhaseStatus(phaseName as PhaseName, index);
+              const isCompleted = status === 'completed';
+              const isCurrent = status === 'current';
+              const isLast = index === PHASE_NAMES.length - 1;
+              const isEven = index % 2 === 0;
+              
+              // Cor primária para fases concluídas e atual
+              const primaryColor = isCompleted || isCurrent ? 'text-accent' : 'text-gray-500';
+              const hrColor = isCompleted || isCurrent ? 'bg-accent' : 'bg-gray-700';
+              
+              // Determinar se a linha deve ser colorida (até a fase atual)
+              const currentPhaseIndex = PHASE_NAMES.indexOf(currentPhase);
+              const shouldColorLine = index <= currentPhaseIndex;
+              
+              const topOffset = index * 80; // Espaçamento vertical entre itens
+              
+              return (
+                <li key={phaseName} className="relative" style={{ minHeight: '80px' }}>
+                  {/* Linha horizontal antes (exceto no primeiro item) */}
+                  {index > 0 && (
+                    <hr className={`absolute ${isEven ? 'left-0 right-1/2 mr-9' : 'left-1/2 right-0 ml-9'} h-0.5 ${shouldColorLine ? hrColor : 'bg-gray-700'}`} style={{ top: `${topOffset + 18}px` }} />
+                  )}
+                  
+                  {/* Conteúdo da fase - lado esquerdo para pares, direito para ímpares */}
+                  {isEven ? (
+                    <>
+                      <div className={`absolute left-0 right-1/2 pr-9`} style={{ top: `${topOffset}px` }}>
+                        <div className={`bg-black/20 border border-surface-border rounded-lg p-3 ${isCurrent ? 'ring-2 ring-accent' : ''}`}>
+                          <div className="flex items-center gap-2">
+                            <span className="text-lg">{phaseIcons[phaseName as PhaseName]}</span>
+                            <div>
+                              <div className="font-semibold text-white text-sm">
+                                {phaseDisplayNames[phaseName as PhaseName]}
+                              </div>
+                              {isCurrent && (
+                                <div className="text-xs text-accent mt-0.5">Fase Atual</div>
+                              )}
+                              {isCompleted && (
+                                <div className="text-xs text-green-400 mt-0.5">Concluído</div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Ícone do meio */}
+                      <div className="absolute left-1/2 -translate-x-1/2 z-10" style={{ top: `${topOffset + 18}px` }}>
+                        <div className={`w-9 h-9 rounded-full flex items-center justify-center ${isCompleted || isCurrent ? 'bg-accent/20' : 'bg-gray-500/20'}`}>
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                            className={`${primaryColor} h-5 w-5`}
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      {/* Ícone do meio */}
+                      <div className="absolute left-1/2 -translate-x-1/2 z-10" style={{ top: `${topOffset + 18}px` }}>
+                        <div className={`w-9 h-9 rounded-full flex items-center justify-center ${isCompleted || isCurrent ? 'bg-accent/20' : 'bg-gray-500/20'}`}>
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                            className={`${primaryColor} h-5 w-5`}
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                        </div>
+                      </div>
+                      
+                      <div className={`absolute left-1/2 right-0 pl-9`} style={{ top: `${topOffset}px` }}>
+                        <div className={`bg-black/20 border border-surface-border rounded-lg p-3 ${isCurrent ? 'ring-2 ring-accent' : ''}`}>
+                          <div className="flex items-center gap-2">
+                            <span className="text-lg">{phaseIcons[phaseName as PhaseName]}</span>
+                            <div>
+                              <div className="font-semibold text-white text-sm">
+                                {phaseDisplayNames[phaseName as PhaseName]}
+                              </div>
+                              {isCurrent && (
+                                <div className="text-xs text-accent mt-0.5">Fase Atual</div>
+                              )}
+                              {isCompleted && (
+                                <div className="text-xs text-green-400 mt-0.5">Concluído</div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                  
+                  {/* Linha horizontal depois (exceto no último item) */}
+                  {!isLast && (
+                    <hr className={`absolute ${isEven ? 'left-1/2 right-0 ml-9' : 'left-0 right-1/2 mr-9'} h-0.5 ${shouldColorLine ? hrColor : 'bg-gray-700'}`} style={{ top: `${topOffset + 18}px` }} />
+                  )}
+                </li>
+              );
+            })}
+          </ul>
         </div>
 
         {/* Card de Análise da Fase Atual */}
