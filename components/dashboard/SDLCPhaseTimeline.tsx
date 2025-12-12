@@ -44,17 +44,17 @@ export const SDLCPhaseTimeline: React.FC<SDLCPhaseTimelineProps> = React.memo(({
       <Card className="p-6">
         <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
           <div>
-            <h2 className="text-xl font-semibold text-text-primary mb-1">
+            <h2 className="text-xl font-semibold text-white mb-1">
               Fases do SDLC - Onde você está agora
             </h2>
-            <p className="text-sm text-text-secondary">
+            <p className="text-sm text-white">
               Acompanhe o progresso do projeto através do ciclo de vida do desenvolvimento
             </p>
-            <div className="mt-2 flex items-center gap-4 text-xs text-text-secondary">
+            <div className="mt-2 flex items-center gap-4 text-xs text-white">
               <span>
                 {completedPhasesCount} de {PHASE_NAMES.length} fases concluídas
               </span>
-              <span className="text-text-tertiary">•</span>
+              <span className="text-white">•</span>
               <span>
                 {Math.round((completedPhasesCount / PHASE_NAMES.length) * 100)}% do ciclo completo
               </span>
