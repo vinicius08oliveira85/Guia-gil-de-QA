@@ -34,7 +34,7 @@ export const CTASection: React.FC = () => {
   };
 
   return (
-    <section id="cta-section" className="py-20 md:py-32 bg-gradient-to-br from-primary/10 via-secondary/5 to-accent/10">
+    <section id="cta-section" className="py-20 md:py-32 bg-gradient-to-br from-primary/10 via-secondary/5 to-accent/10 scroll-mt-24">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
           <SectionHeader

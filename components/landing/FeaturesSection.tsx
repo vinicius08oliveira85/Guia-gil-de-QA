@@ -86,7 +86,7 @@ export const FeaturesSection: React.FC = () => {
   const reduceMotion = useReducedMotion();
 
   return (
-    <section id="features-section" className="py-20 md:py-32 bg-base-100">
+    <section id="features-section" className="py-20 md:py-32 bg-base-100 scroll-mt-24">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <SectionHeader
           eyebrow="Capacidades do produto"

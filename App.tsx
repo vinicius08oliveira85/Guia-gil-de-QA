@@ -291,17 +291,57 @@ const App: React.FC = () => {
                     />
                 )}
                 {shouldShowLandingPage && (
-                    <header className="sticky top-0 z-30 bg-base-100 border-b border-base-300">
-                        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-                            <div className="flex items-center gap-4">
-                                <h1 className="text-xl font-bold text-base-content">QA Agile Guide</h1>
+                    <header className="sticky top-0 z-30 border-b border-base-300 bg-base-100/80 backdrop-blur">
+                        <div className="container mx-auto px-4 py-3 flex items-center justify-between gap-3">
+                            <div className="flex items-center gap-3 min-w-0">
+                                <h1 className="text-lg sm:text-xl font-bold text-base-content truncate">
+                                    QA Agile Guide
+                                </h1>
+                                <span className="badge badge-outline badge-sm hidden sm:inline-flex">
+                                    QA ágil
+                                </span>
                             </div>
-                            <button
-                                onClick={() => setForceShowLanding(false)}
-                                className="btn btn-ghost btn-sm"
-                            >
-                                Ver Projetos
-                            </button>
+
+                            <nav className="hidden md:flex items-center gap-1" aria-label="Navegação da landing">
+                                <a href="#features-section" className="btn btn-ghost btn-sm rounded-full">
+                                    Funcionalidades
+                                </a>
+                                <a href="#benefits-section" className="btn btn-ghost btn-sm rounded-full">
+                                    Benefícios
+                                </a>
+                                <a href="#cta-section" className="btn btn-ghost btn-sm rounded-full">
+                                    Começar
+                                </a>
+                            </nav>
+
+                            <div className="flex items-center gap-2">
+                                <div className="dropdown dropdown-end md:hidden">
+                                    <button
+                                        type="button"
+                                        tabIndex={0}
+                                        className="btn btn-ghost btn-sm rounded-full"
+                                        aria-label="Abrir menu"
+                                    >
+                                        Menu
+                                    </button>
+                                    <ul
+                                        tabIndex={0}
+                                        className="menu dropdown-content z-[1] mt-2 p-2 shadow bg-base-100 rounded-box w-56 border border-base-300"
+                                    >
+                                        <li><a href="#features-section">Funcionalidades</a></li>
+                                        <li><a href="#benefits-section">Benefícios</a></li>
+                                        <li><a href="#cta-section">Começar</a></li>
+                                    </ul>
+                                </div>
+
+                                <button
+                                    type="button"
+                                    onClick={() => setForceShowLanding(false)}
+                                    className="btn btn-primary btn-sm rounded-full"
+                                >
+                                    Abrir Meus Projetos
+                                </button>
+                            </div>
                         </div>
                     </header>
                 )}

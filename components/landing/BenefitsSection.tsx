@@ -50,7 +50,7 @@ export const BenefitsSection: React.FC = () => {
   const reduceMotion = useReducedMotion();
 
   return (
-    <section id="benefits-section" className="py-20 md:py-32 bg-gradient-to-b from-base-100 to-base-200">
+    <section id="benefits-section" className="py-20 md:py-32 bg-gradient-to-b from-base-100 to-base-200 scroll-mt-24">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <SectionHeader
           eyebrow="Impacto no dia a dia"

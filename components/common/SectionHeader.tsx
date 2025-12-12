@@ -3,12 +3,14 @@ import { motion, useReducedMotion } from 'framer-motion';
 import { cn } from '../../utils/windows12Styles';
 
 type SectionHeaderAlign = 'left' | 'center';
+type SectionHeaderHeading = 'h1' | 'h2' | 'h3';
 
 export interface SectionHeaderProps {
   eyebrow?: string;
   title: React.ReactNode;
   description?: React.ReactNode;
   align?: SectionHeaderAlign;
+  as?: SectionHeaderHeading;
   className?: string;
 }
 
@@ -22,10 +24,12 @@ export const SectionHeader = React.memo<SectionHeaderProps>(({
   title,
   description,
   align = 'center',
+  as = 'h2',
   className,
 }) => {
   const reduceMotion = useReducedMotion();
   const isCenter = align === 'center';
+  const Heading = as;
 
   return (
     <motion.div
@@ -47,12 +51,12 @@ export const SectionHeader = React.memo<SectionHeaderProps>(({
         </div>
       )}
 
-      <h2 className={cn(
+      <Heading className={cn(
         'mt-4 text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-base-content',
         eyebrow ? '' : 'mt-0'
       )}>
         {title}
-      </h2>
+      </Heading>
 
       {description && (
         <p className="mt-4 text-lg sm:text-xl text-base-content/70 leading-relaxed">

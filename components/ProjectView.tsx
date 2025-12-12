@@ -9,6 +9,7 @@ import { LoadingSkeleton } from './common/LoadingSkeleton';
 import { QADashboard } from './dashboard/QADashboard';
 import { Breadcrumbs } from './common/Breadcrumbs';
 import { PageTransition } from './common/PageTransition';
+import { SectionHeader } from './common/SectionHeader';
 import { useProjectsStore } from '../store/projectsStore';
 import { isSupabaseAvailable } from '../services/supabaseService';
 import toast from 'react-hot-toast';
@@ -171,8 +172,18 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                         </button>
                 </div>
                 
-                <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mb-3 break-words">{project.name}</h2>
-                <p className="text-base-content/70 mb-8 max-w-3xl break-words">{project.description}</p>
+                <SectionHeader
+                    as="h1"
+                    align="left"
+                    eyebrow={project.settings?.jiraProjectKey ? `Jira: ${project.settings.jiraProjectKey}` : 'Projeto'}
+                    title={<span className="break-words">{project.name}</span>}
+                    description={
+                        project.description
+                            ? <span className="break-words">{project.description}</span>
+                            : 'Sem descrição.'
+                    }
+                    className="max-w-4xl mb-8"
+                />
                 
                 <div className="border-b border-base-300 pb-3">
                     <nav
