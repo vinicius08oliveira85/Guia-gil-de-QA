@@ -382,6 +382,12 @@
         // Remove all theme classes first
         document.documentElement.classList.remove('light', 'dark', 'leve-saude');
         document.documentElement.classList.add(effectiveTheme);
+        // Apply DaisyUI theme attribute for 'light' theme
+        if (effectiveTheme === 'light') {
+          document.documentElement.setAttribute('data-theme', 'light');
+        } else {
+          document.documentElement.removeAttribute('data-theme');
+        }
       })();
     </script>
   </body>

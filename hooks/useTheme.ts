@@ -20,6 +20,13 @@ export const useTheme = () => {
     // Apply base theme class
     root.classList.add(effectiveTheme);
 
+    // Apply DaisyUI theme attribute for 'light' theme
+    if (effectiveTheme === 'light') {
+      root.setAttribute('data-theme', 'light');
+    } else {
+      root.removeAttribute('data-theme');
+    }
+
     localStorage.setItem('theme', theme);
   }, [theme]);
 

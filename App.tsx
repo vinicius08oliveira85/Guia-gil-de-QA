@@ -21,6 +21,8 @@ import { lazyWithRetry } from './utils/lazyWithRetry';
 // Code splitting - Lazy loading de componentes pesados
 const ProjectView = lazyWithRetry(() => import('./components/ProjectView').then(m => ({ default: m.ProjectView })));
 const ProjectsDashboard = lazyWithRetry(() => import('./components/ProjectsDashboard').then(m => ({ default: m.ProjectsDashboard })));
+// Importação direta temporária para debug da landing page
+import { LandingPage } from './components/landing/LandingPage';
 const AdvancedSearch = lazyWithRetry(() => import('./components/common/AdvancedSearch').then(m => ({ default: m.AdvancedSearch })));
 const ProjectComparisonModal = lazyWithRetry(() => import('./components/common/ProjectComparisonModal').then(m => ({ default: m.ProjectComparisonModal })));
 const OnboardingGuide = lazyWithRetry(() => import('./components/onboarding/OnboardingGuide').then(m => ({ default: m.OnboardingGuide })));
@@ -203,6 +205,48 @@ const App: React.FC = () => {
         return projects.find(p => p.id === selectedProjectId);
     }, [projects, selectedProjectId]);
 
+    // Mostrar landing page quando não há projetos e não há projeto selecionado
+    const shouldShowLandingPage = useMemo(() => {
+        const shouldShow = !selectedProject && projects.length === 0 && !showSettings;
+        console.log('[DEBUG] shouldShowLandingPage:', {
+            shouldShow,
+            selectedProject: !!selectedProject,
+            projectsLength: projects.length,
+            showSettings
+        });
+        return shouldShow;
+    }, [selectedProject, projects.length, showSettings]);
+
+    // Aplicar tema light quando mostrar landing page
+    useEffect(() => {
+        if (shouldShowLandingPage) {
+            const root = document.documentElement;
+            root.setAttribute('data-theme', 'light');
+            // Também adicionar classe light para compatibilidade
+            if (!root.classList.contains('light')) {
+                root.classList.add('light');
+            }
+        }
+    }, [shouldShowLandingPage]);
+
+    // Listener para evento de mostrar dashboard (vindo da landing page)
+    useEffect(() => {
+        const handleShowDashboard = () => {
+            // Quando o usuário clica em "Começar Agora", criar um projeto inicial
+            // Isso fará com que shouldShowLandingPage se torne false automaticamente
+            if (projects.length === 0) {
+                handleCreateProject(
+                    'Meu Primeiro Projeto',
+                    'Bem-vindo ao QA Agile Guide! Este é seu primeiro projeto. Comece adicionando tarefas e casos de teste.'
+                ).catch(() => {
+                    // Erro já é tratado pelo handleCreateProject
+                });
+            }
+        };
+        window.addEventListener('show-dashboard', handleShowDashboard);
+        return () => window.removeEventListener('show-dashboard', handleShowDashboard);
+    }, [projects.length, handleCreateProject]);
+
     if (isLoading) {
         return (
             <div className="min-h-screen flex justify-center items-center">
@@ -242,10 +286,12 @@ const App: React.FC = () => {
                         },
                     }}
                 />
-                <Header 
-                    onProjectImported={handleImportJiraProject}
-                    onOpenSettings={() => setShowSettings(true)}
-                />
+                {!shouldShowLandingPage && (
+                    <Header 
+                        onProjectImported={handleImportJiraProject}
+                        onOpenSettings={() => setShowSettings(true)}
+                    />
+                )}
                 {showSearch && (
                     <div className="glass-overlay fixed inset-0 z-50 flex items-start justify-center pt-20 p-4">
                         <div className="w-full max-w-2xl">
@@ -296,6 +342,8 @@ const App: React.FC = () => {
                                 onProjectImported={handleImportJiraProject}
                             />
                         </Suspense>
+                    ) : shouldShowLandingPage ? (
+                        <LandingPage />
                     ) : selectedProject ? (
                         <Suspense fallback={<div className="container mx-auto p-8"><LoadingSkeleton variant="card" count={3} /></div>}>
                             <ProjectView 
