@@ -1,11 +1,10 @@
 import React, { useMemo } from 'react';
-import { Project, PhaseStatus, PhaseName } from '../../types';
+import { Project, PhaseName } from '../../types';
 import { useProjectMetrics } from '../../hooks/useProjectMetrics';
 import { useSDLCPhaseAnalysis } from '../../hooks/useSDLCPhaseAnalysis';
 import { Card } from '../common/Card';
 import { InfoIcon } from '../common/Icons';
-import { ProcessPillars, Pillar } from '../common/ProcessPillars';
-import { phaseIcons, phaseDescriptions, phaseDisplayNames } from '../../utils/sdlcPhaseIcons';
+import { phaseIcons, phaseDisplayNames } from '../../utils/sdlcPhaseIcons';
 import { PHASE_NAMES } from '../../utils/constants';
 import { useTheme } from '../../hooks/useTheme';
 import { getInfoCardClasses, getSuccessCardClasses, getErrorCardClasses, getCardTextSecondaryClasses } from '../../utils/themeCardColors';
@@ -33,122 +32,12 @@ export const SDLCPhaseTimeline: React.FC<SDLCPhaseTimelineProps> = React.memo(({
   const currentPhase = (metrics.currentPhase === 'Concluído' ? 'Monitor' : metrics.currentPhase) as PhaseName;
   const phases = project.phases || [];
 
-  const getStatusStyles = (status: PhaseStatus, isCurrent: boolean) => {
-    const baseStyles = {
-      'Concluído': {
-        bg: 'bg-green-600',
-        text: 'text-green-800 dark:text-green-300',
-        border: 'border-green-600',
-        ring: 'ring-green-600/30',
-        pulse: false,
-        badgeBg: 'bg-green-600/20',
-        badgeText: 'text-green-700 dark:text-green-300',
-      },
-      'Em Andamento': {
-        bg: 'bg-yellow-500',
-        text: 'text-yellow-900 dark:text-yellow-200',
-        border: 'border-yellow-500',
-        ring: 'ring-yellow-500/30',
-        pulse: true,
-        badgeBg: 'bg-yellow-500/20',
-        badgeText: 'text-yellow-700 dark:text-yellow-300',
-      },
-      'Não Iniciado': {
-        bg: 'bg-red-600',
-        text: 'text-red-800 dark:text-red-300',
-        border: 'border-red-600',
-        ring: 'ring-red-600/30',
-        pulse: false,
-        badgeBg: 'bg-red-600/20',
-        badgeText: 'text-red-700 dark:text-red-300',
-      },
-    };
-
-    const styles = baseStyles[status];
-    
-    return {
-      ...styles,
-      ring: isCurrent ? `ring-2 ${styles.ring}` : '',
-    };
-  };
-
   const progressPercentage = phaseAnalysis?.progressPercentage || 0;
-
-  // Calcular percentual de progresso por fase
-  const calculatePhaseProgress = (phaseName: PhaseName, phase: { name: string; status: PhaseStatus }): number => {
-    if (phase.status === 'Concluído') {
-      return 100;
-    } else if (phase.status === 'Em Andamento' || phaseName === currentPhase) {
-      // Calcular progresso baseado em tarefas da fase
-      const phaseTasks = project.tasks.filter(task => {
-        const taskPhase = task.phase || 'Request';
-        return taskPhase === phaseName;
-      });
-      
-      if (phaseTasks.length === 0) {
-        return 25; // Fase iniciada mas sem tarefas ainda
-      }
-      
-      const completedTasks = phaseTasks.filter(task => task.status === 'Done').length;
-      const inProgressTasks = phaseTasks.filter(task => task.status === 'In Progress').length;
-      const totalTasks = phaseTasks.length;
-      
-      // Progresso = (tarefas concluídas * 100% + tarefas em progresso * 50%) / total
-      const progress = ((completedTasks * 100) + (inProgressTasks * 50)) / totalTasks;
-      return Math.max(25, Math.min(95, Math.round(progress))); // Mínimo 25%, máximo 95% (100% só quando concluído)
-    }
-    return 0;
-  };
 
   // Contar fases concluídas
   const completedPhasesCount = useMemo(() => {
     return phases.filter(p => p.status === 'Concluído').length;
   }, [phases]);
-
-  // Mapear fases para pillars com alturas baseadas no status
-  const pillars = useMemo<Pillar[]>(() => {
-    return PHASE_NAMES.map((phaseName, index) => {
-      const phase = phases.find(p => p.name === phaseName) || { 
-        name: phaseName, 
-        status: 'Não Iniciado' as PhaseStatus 
-      };
-      const isCurrent = phaseName === currentPhase;
-      const progressPercentage = calculatePhaseProgress(phaseName as PhaseName, phase);
-      
-      // Calcular altura baseada no status e progresso
-      let height: string;
-      let heightStyle: React.CSSProperties | undefined;
-      if (phase.status === 'Concluído') {
-        // Fases concluídas: altura máxima
-        height = 'h-full';
-      } else if (phase.status === 'Em Andamento' || isCurrent) {
-        // Fase atual ou em andamento: altura proporcional ao progresso
-        // Progresso de 25% a 95% mapeado para 96px a 320px (h-24 a h-80)
-        const minHeight = 96; // h-24 = 96px
-        const maxHeight = 320; // h-80 = 320px
-        const heightPx = minHeight + ((progressPercentage - 25) / 70) * (maxHeight - minHeight);
-        height = 'h-auto'; // Usar auto para permitir style inline
-        heightStyle = { height: `${Math.round(heightPx)}px` };
-      } else {
-        // Não iniciado: altura baixa
-        const heights = ['h-8', 'h-12', 'h-16', 'h-20', 'h-24'];
-        height = heights[Math.min(index % 5, heights.length - 1)] || 'h-12';
-      }
-      
-      return {
-        label: phaseDisplayNames[phaseName as PhaseName],
-        height,
-        delay: index * 0.1,
-        status: phase.status,
-        isCurrent,
-        icon: phaseIcons[phaseName as PhaseName],
-        progressPercentage,
-        description: phaseDescriptions[phaseName as PhaseName],
-        phaseName: phaseName as PhaseName,
-        heightStyle,
-      };
-    });
-  }, [phases, currentPhase, project.tasks]);
 
   return (
     <div className="space-y-6" role="region" aria-label="Timeline de Fases SDLC" aria-live="polite">
@@ -170,13 +59,6 @@ export const SDLCPhaseTimeline: React.FC<SDLCPhaseTimelineProps> = React.memo(({
                 {Math.round((completedPhasesCount / PHASE_NAMES.length) * 100)}% do ciclo completo
               </span>
             </div>
-          </div>
-        </div>
-
-        {/* Process Pillars */}
-        <div className="relative mb-8 overflow-x-auto pb-4 -mx-2 px-2 scrollbar-thin scrollbar-thumb-surface-border scrollbar-track-transparent">
-          <div className="flex justify-center min-w-max px-2">
-            <ProcessPillars pillars={pillars} />
           </div>
         </div>
 
