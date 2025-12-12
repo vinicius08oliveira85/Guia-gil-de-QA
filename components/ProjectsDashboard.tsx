@@ -121,6 +121,18 @@ export const ProjectsDashboard: React.FC<{
                         Gerencie e acompanhe o progresso dos seus projetos de QA
                     </p>
                 </div>
+                <div className="flex items-center gap-2">
+                    <a 
+                        href="#landing" 
+                        onClick={(e) => {
+                            e.preventDefault();
+                            window.dispatchEvent(new CustomEvent('show-landing'));
+                        }}
+                        className="btn btn-ghost btn-sm text-sm"
+                    >
+                        Ver Landing Page
+                    </a>
+                </div>
                
                 {isMobile ? (
                     <div className="w-full space-y-sm">

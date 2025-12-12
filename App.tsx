@@ -48,6 +48,7 @@ const App: React.FC = () => {
     const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
     const [showProjectComparison, setShowProjectComparison] = useState(false);
     const [showSettings, setShowSettings] = useState(false);
+    const [forceShowLanding, setForceShowLanding] = useState(false);
     const { handleError, handleSuccess } = useErrorHandler();
     const { searchQuery, setSearchQuery, searchResults } = useSearch(projects);
     const supabaseEnabled = isSupabaseAvailable();
@@ -206,16 +207,11 @@ const App: React.FC = () => {
     }, [projects, selectedProjectId]);
 
     // Mostrar landing page quando não há projetos e não há projeto selecionado
+    // OU quando forceShowLanding está ativo
     const shouldShowLandingPage = useMemo(() => {
-        const shouldShow = !selectedProject && projects.length === 0 && !showSettings;
-        console.log('[DEBUG] shouldShowLandingPage:', {
-            shouldShow,
-            selectedProject: !!selectedProject,
-            projectsLength: projects.length,
-            showSettings
-        });
+        const shouldShow = forceShowLanding || (!selectedProject && projects.length === 0 && !showSettings);
         return shouldShow;
-    }, [selectedProject, projects.length, showSettings]);
+    }, [forceShowLanding, selectedProject, projects.length, showSettings]);
 
     // Aplicar tema light quando mostrar landing page
     useEffect(() => {
@@ -229,11 +225,12 @@ const App: React.FC = () => {
         }
     }, [shouldShowLandingPage]);
 
-    // Listener para evento de mostrar dashboard (vindo da landing page)
+    // Listener para eventos da landing page
     useEffect(() => {
         const handleShowDashboard = () => {
-            // Quando o usuário clica em "Começar Agora", criar um projeto inicial
-            // Isso fará com que shouldShowLandingPage se torne false automaticamente
+            // Quando o usuário clica em "Começar Agora", desativar landing page forçada
+            // Se não houver projetos, criar um projeto inicial
+            setForceShowLanding(false);
             if (projects.length === 0) {
                 handleCreateProject(
                     'Meu Primeiro Projeto',
@@ -243,8 +240,18 @@ const App: React.FC = () => {
                 });
             }
         };
+        
+        const handleShowLanding = () => {
+            // Quando o usuário clica em "Ver Landing Page" no dashboard
+            setForceShowLanding(true);
+        };
+        
         window.addEventListener('show-dashboard', handleShowDashboard);
-        return () => window.removeEventListener('show-dashboard', handleShowDashboard);
+        window.addEventListener('show-landing', handleShowLanding);
+        return () => {
+            window.removeEventListener('show-dashboard', handleShowDashboard);
+            window.removeEventListener('show-landing', handleShowLanding);
+        };
     }, [projects.length, handleCreateProject]);
 
     if (isLoading) {
@@ -291,6 +298,21 @@ const App: React.FC = () => {
                         onProjectImported={handleImportJiraProject}
                         onOpenSettings={() => setShowSettings(true)}
                     />
+                )}
+                {shouldShowLandingPage && (
+                    <header className="sticky top-0 z-30 bg-base-100 border-b border-base-300">
+                        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                                <h1 className="text-xl font-bold text-base-content">QA Agile Guide</h1>
+                            </div>
+                            <button
+                                onClick={() => setForceShowLanding(false)}
+                                className="btn btn-ghost btn-sm"
+                            >
+                                Ver Projetos
+                            </button>
+                        </div>
+                    </header>
                 )}
                 {showSearch && (
                     <div className="glass-overlay fixed inset-0 z-50 flex items-start justify-center pt-20 p-4">
