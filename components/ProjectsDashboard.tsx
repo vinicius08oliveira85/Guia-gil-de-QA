@@ -113,12 +113,12 @@ export const ProjectsDashboard: React.FC<{
 
     return (
         <div className="min-h-[calc(100vh-4rem)] bg-gradient-to-b from-base-100 to-base-200/60">
-            <div className="container mx-auto w-full max-w-7xl px-4 py-8 sm:py-10">
+            <div className="container mx-auto w-full max-w-7xl px-4 py-6 sm:py-8">
                 {/* Header (sem hero, mas com padrão visual da Landing) */}
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                     <div className="space-y-2">
                         <div className="inline-flex items-center gap-2">
-                            <span className="badge badge-outline px-4 py-3 border-primary/30 text-primary bg-primary/10">
+                            <span className="badge badge-outline badge-sm sm:badge-md border-primary/30 text-primary bg-primary/10">
                                 Workspace
                             </span>
                             <span className="text-sm text-base-content/60 hidden sm:inline">
@@ -130,11 +130,11 @@ export const ProjectsDashboard: React.FC<{
                             Meus Projetos
                         </h1>
                         <p className="text-base-content/70 max-w-2xl">
-                            Crie, organize e acompanhe o progresso do QA por projeto — com templates, métricas e integrações opcionais.
+                            Crie, organize e acompanhe o QA por projeto — templates, métricas e integrações opcionais quando fizer sentido.
                         </p>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2 justify-start lg:justify-end">
                         <button
                             type="button"
                             onClick={() => window.dispatchEvent(new CustomEvent('show-landing'))}
@@ -194,7 +194,7 @@ export const ProjectsDashboard: React.FC<{
                                 <button
                                     type="button"
                                     onClick={handleSyncSupabase}
-                                    className="btn btn-outline btn-sm rounded-full"
+                                    className={`btn btn-outline btn-sm rounded-full ${isSyncingSupabase ? 'loading' : ''}`}
                                     disabled={isSyncingSupabase || !onSyncSupabase}
                                     title={!onSyncSupabase ? 'Supabase não está configurado. Configure VITE_SUPABASE_PROXY_URL.' : 'Sincronizar projetos do Supabase'}
                                 >
@@ -247,7 +247,7 @@ export const ProjectsDashboard: React.FC<{
                                 <button
                                     onClick={() => setShowTemplates(true)}
                                     type="button"
-                                    className="w-full rounded-[var(--rounded-box)] border-2 border-dashed border-base-300 p-4 text-left transition-colors hover:border-primary/40"
+                                    className="w-full rounded-[var(--rounded-box)] border-2 border-dashed border-base-300 bg-base-100 p-4 text-left transition-colors hover:border-primary/40 hover:bg-base-200/40"
                                 >
                                     <div className="flex items-start gap-3">
                                         <span className="text-xl" aria-hidden="true">📋</span>
@@ -295,14 +295,14 @@ export const ProjectsDashboard: React.FC<{
                                 <button
                                     type="button"
                                     onClick={() => setIsCreating(false)}
-                                    className="btn btn-ghost"
+                                    className="btn btn-ghost rounded-full"
                                 >
                                     Cancelar
                                 </button>
                                 <button
                                     type="button"
                                     onClick={handleCreate}
-                                    className="btn btn-primary"
+                                    className="btn btn-primary rounded-full"
                                     disabled={!newName.trim()}
                                 >
                                     Criar
@@ -314,7 +314,7 @@ export const ProjectsDashboard: React.FC<{
                             <button
                                 type="button"
                                 onClick={() => setShowTemplates(false)}
-                                className="btn btn-ghost btn-sm self-start"
+                                className="btn btn-ghost btn-sm rounded-full self-start"
                             >
                                 ← Voltar
                             </button>
@@ -367,14 +367,14 @@ export const ProjectsDashboard: React.FC<{
                                         setSelectedTemplate(undefined);
                                         setShowTemplates(false);
                                     }}
-                                    className="btn btn-ghost"
+                                    className="btn btn-ghost rounded-full"
                                 >
                                     Cancelar
                                 </button>
                                 <button
                                     type="button"
                                     onClick={handleCreate}
-                                    className="btn btn-primary"
+                                    className="btn btn-primary rounded-full"
                                     disabled={!newName.trim()}
                                 >
                                     Criar com Template
@@ -403,6 +403,9 @@ export const ProjectsDashboard: React.FC<{
                             const completedTasks = calculateProgress(p.tasks || []);
                             const totalTasks = p.tasks?.length || 0;
                             const tags = p.tags || [];
+                            const progressPercent = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+                            const jiraKey = p.settings?.jiraProjectKey;
+                            const desc = (p.description || '').trim();
 
                             return (
                                 <Card
@@ -426,13 +429,15 @@ export const ProjectsDashboard: React.FC<{
                                     }}
                                     className="group cursor-pointer relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 flex flex-col h-full"
                                 >
-                                    <div className="flex-1 space-y-3">
-                                        <h3 className="text-lg font-semibold leading-snug line-clamp-2 pr-10 text-balance">
-                                            {p.name}
-                                        </h3>
+                                    <div className="p-5 sm:p-6 flex flex-col gap-3 h-full">
+                                        <div className="flex items-start justify-between gap-3">
+                                            <h3 className="text-base sm:text-lg font-semibold leading-snug line-clamp-2 pr-10 text-balance">
+                                                {p.name}
+                                            </h3>
+                                        </div>
 
                                         <p className="text-sm text-base-content/70 line-clamp-2 min-h-[2.5em]">
-                                            {p.description || 'Sem descrição.'}
+                                            {desc ? desc : (jiraKey ? `Projeto importado do Jira: ${jiraKey}` : 'Sem descrição.')}
                                         </p>
 
                                         {tags.length > 0 && (
@@ -449,26 +454,28 @@ export const ProjectsDashboard: React.FC<{
                                                 )}
                                             </div>
                                         )}
-                                    </div>
 
-                                    <div className="mt-4 pt-4 border-t border-base-300 space-y-2">
-                                        <ProgressIndicator
-                                            value={completedTasks}
-                                            max={totalTasks}
-                                            label="Progresso"
-                                            size="sm"
-                                            color="blue"
-                                            showPercentage={true}
-                                        />
-                                        <div className="flex justify-between items-center text-xs text-base-content/60">
-                                            <span>
-                                                {totalTasks} {totalTasks === 1 ? 'tarefa' : 'tarefas'}
-                                            </span>
-                                            {p.settings?.jiraProjectKey && (
-                                                <span className="badge badge-outline badge-sm">
-                                                    JIRA: {p.settings.jiraProjectKey}
+                                        <div className="mt-auto pt-4 border-t border-base-300 space-y-2">
+                                            <div className="flex items-center justify-between text-xs text-base-content/60">
+                                                <span>
+                                                    {totalTasks} {totalTasks === 1 ? 'tarefa' : 'tarefas'}
                                                 </span>
-                                            )}
+                                                <div className="flex items-center gap-2">
+                                                    <span className="font-semibold text-base-content">{progressPercent}%</span>
+                                                    {jiraKey && (
+                                                        <span className="badge badge-outline badge-sm">
+                                                            Jira: {jiraKey}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <ProgressIndicator
+                                                value={completedTasks}
+                                                max={totalTasks}
+                                                size="sm"
+                                                color="blue"
+                                                showPercentage={false}
+                                            />
                                         </div>
                                     </div>
 
@@ -479,7 +486,7 @@ export const ProjectsDashboard: React.FC<{
                                             e.preventDefault();
                                             openDeleteModal(p, e);
                                         }}
-                                        className="btn btn-ghost btn-sm btn-circle absolute top-3 right-3 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 text-base-content/60 hover:text-error hover:bg-error/10 transition-all active:scale-95 z-10"
+                                        className="btn btn-ghost btn-xs btn-circle absolute top-3 right-3 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 text-base-content/60 hover:text-error hover:bg-error/10 transition-all active:scale-95 z-10"
                                         aria-label={`Excluir projeto ${p.name}`}
                                     >
                                         <TrashIcon />

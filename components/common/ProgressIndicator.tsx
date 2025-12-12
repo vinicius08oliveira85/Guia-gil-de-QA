@@ -20,37 +20,37 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
   const percentage = max > 0 ? Math.min(100, Math.max(0, (value / max) * 100)) : 0;
   
   const colorClasses = {
-    green: 'bg-green-600 dark:bg-green-500',
-    blue: 'bg-blue-600 dark:bg-blue-500',
-    orange: 'bg-orange-600 dark:bg-orange-500',
-    red: 'bg-red-600 dark:bg-red-500',
-    purple: 'bg-purple-600 dark:bg-purple-500'
-  };
+    green: 'bg-success',
+    blue: 'bg-primary',
+    orange: 'bg-primary',
+    red: 'bg-error',
+    purple: 'bg-secondary',
+  } as const;
 
   const sizeClasses = {
-    sm: 'h-1',
+    sm: 'h-1.5',
     md: 'h-2',
-    lg: 'h-3'
-  };
+    lg: 'h-3',
+  } as const;
 
   return (
     <div className="w-full">
       {label && (
         <div className="flex items-center justify-between mb-1">
-          <span className="text-sm text-text-secondary">{label}</span>
+          <span className="text-xs font-medium text-base-content/70">{label}</span>
           {showPercentage && (
-            <span className="text-sm font-semibold text-text-primary">{Math.round(percentage)}%</span>
+            <span className="text-xs font-semibold text-base-content">{Math.round(percentage)}%</span>
           )}
         </div>
       )}
-      <div className={`w-full bg-surface-hover rounded-full overflow-hidden ${sizeClasses[size]}`}>
+      <div className={`w-full bg-base-300/60 rounded-full overflow-hidden ${sizeClasses[size]}`}>
         <div
           className={`${colorClasses[color]} transition-all duration-300 ease-out`}
           style={{ width: `${percentage}%`, height: '100%' }}
         />
       </div>
       {!label && showPercentage && (
-        <div className="text-xs text-text-secondary mt-1 text-right">{Math.round(percentage)}%</div>
+        <div className="text-xs text-base-content/60 mt-1 text-right">{Math.round(percentage)}%</div>
       )}
     </div>
   );
