@@ -84,12 +84,13 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
             setIsOpen(!isOpen);
             onClick?.();
           }}
-          className="relative win-icon-button"
+          className="relative btn btn-ghost btn-sm btn-circle"
           aria-label="Notificações"
+          type="button"
         >
           <span className="text-xl">🔔</span>
           {unreadCount > 0 && (
-            <span className="absolute top-0 right-0 bg-danger/90 text-white text-[0.65rem] rounded-full w-5 h-5 flex items-center justify-center shadow-[0_6px_18px_rgba(255,92,112,0.45)]">
+            <span className="absolute top-0 right-0 bg-error text-error-content text-[0.65rem] rounded-full w-5 h-5 flex items-center justify-center shadow-sm">
               {unreadCount > 9 ? '9+' : unreadCount}
             </span>
           )}
@@ -104,13 +105,14 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
                 onClick={() => setIsOpen(false)}
               />
             )}
-            <div className={`${showButton ? 'absolute right-0 mt-3' : 'relative'} w-80 mica border border-white/10 rounded-2xl shadow-[0_35px_80px_rgba(3,7,23,0.55)] z-50 max-h-96 overflow-hidden flex flex-col`}>
-              <div className="p-4 border-b border-white/10 flex items-center justify-between">
-              <h3 className="font-semibold text-text-primary">Notificações</h3>
+            <div className={`${showButton ? 'absolute right-0 mt-3' : 'relative'} w-80 bg-base-100 border border-base-300 rounded-[var(--rounded-box)] shadow-2xl z-50 max-h-96 overflow-hidden flex flex-col`}>
+              <div className="p-4 border-b border-base-300 flex items-center justify-between">
+              <h3 className="font-semibold text-base-content">Notificações</h3>
               {unreadCount > 0 && (
                 <button
                   onClick={handleMarkAllAsRead}
-                    className="text-sm text-accent hover:text-accent-light transition-colors"
+                    className="btn btn-ghost btn-xs rounded-full"
+                    type="button"
                 >
                   Marcar todas como lidas
                 </button>
@@ -121,8 +123,8 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
                 notifications.map(notification => (
                   <div
                     key={notification.id}
-                    className={`p-4 border-b border-surface-border hover:bg-surface-hover transition-colors cursor-pointer ${
-                      !notification.read ? 'bg-accent/10' : ''
+                    className={`p-4 border-b border-base-300 hover:bg-base-200 transition-colors cursor-pointer ${
+                      !notification.read ? 'bg-primary/5' : ''
                     }`}
                     onClick={() => {
                       if (!notification.read) {
@@ -134,15 +136,15 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
                           <span>{getNotificationIcon(notification.type)}</span>
-                          <span className="font-semibold text-text-primary text-sm">
+                          <span className="font-semibold text-base-content text-sm">
                             {notification.title}
                           </span>
                           {!notification.read && (
-                            <span className="w-2 h-2 bg-accent rounded-full" />
+                            <span className="w-2 h-2 bg-primary rounded-full" />
                           )}
                         </div>
-                        <p className="text-sm text-text-secondary">{notification.message}</p>
-                        <p className="text-xs text-text-secondary mt-1">
+                        <p className="text-sm text-base-content/70">{notification.message}</p>
+                        <p className="text-xs text-base-content/60 mt-1">
                           {new Date(notification.createdAt).toLocaleString('pt-BR')}
                         </p>
                       </div>
@@ -151,7 +153,8 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
                           e.stopPropagation();
                           handleDelete(notification.id);
                         }}
-                        className="text-text-secondary hover:text-red-400"
+                        className="btn btn-ghost btn-xs btn-circle text-base-content/60 hover:text-error hover:bg-error/10"
+                        type="button"
                       >
                         ×
                       </button>
@@ -159,7 +162,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
                   </div>
                 ))
               ) : (
-                <div className="p-8 text-center text-text-secondary">
+                <div className="p-8 text-center text-base-content/60">
                   Nenhuma notificação
                 </div>
               )}

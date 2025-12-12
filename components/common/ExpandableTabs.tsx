@@ -80,14 +80,14 @@ export const ExpandableTabs: React.FC<ExpandableTabsProps> = ({
   };
 
   const Separator = () => (
-    <div className="mx-1 h-[24px] w-[1.2px] bg-surface-border" aria-hidden="true" />
+    <div className="mx-1 h-[24px] w-px bg-base-300" aria-hidden="true" />
   );
 
   return (
     <div
       ref={outsideClickRef}
       className={cn(
-        "flex flex-wrap items-center gap-2 rounded-2xl border border-surface-border bg-surface p-1 shadow-sm",
+        "flex flex-wrap items-center gap-2 rounded-full border border-base-300 bg-base-100/70 p-1 shadow-sm backdrop-blur",
         className
       )}
     >
@@ -107,13 +107,14 @@ export const ExpandableTabs: React.FC<ExpandableTabsProps> = ({
             onClick={() => handleSelect(index)}
             transition={transition}
             className={cn(
-              "relative flex items-center rounded-xl px-4 py-2 text-sm font-medium transition-colors duration-300",
+              "relative flex items-center rounded-full px-4 py-2 text-sm font-semibold transition-colors duration-300",
               selected === index
-                ? cn("bg-surface-hover", activeColor)
-                : "text-text-secondary hover:bg-surface-hover hover:text-text-primary"
+                ? cn("bg-base-200", activeColor)
+                : "text-base-content/70 hover:bg-base-200 hover:text-base-content"
             )}
             aria-label={tab.title}
             aria-pressed={selected === index}
+            type="button"
           >
             <Icon size={20} />
             <AnimatePresence initial={false}>
