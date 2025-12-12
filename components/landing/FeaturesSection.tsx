@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import {
   TestTube,
   FileText,
@@ -12,6 +12,7 @@ import {
   Clock,
   CheckCircle2,
 } from 'lucide-react';
+import { SectionHeader } from '../common/SectionHeader';
 
 interface Feature {
   icon: React.ComponentType<{ className?: string }>;
@@ -23,56 +24,56 @@ interface Feature {
 const features: Feature[] = [
   {
     icon: TestTube,
-    title: 'Gestão de Testes',
-    description: 'Organize casos de teste, execute testes e acompanhe resultados em tempo real.',
+    title: 'Tarefas, testes e evidências',
+    description: 'Estruture tarefas de QA, casos de teste e resultados no mesmo fluxo — com rastreabilidade e histórico.',
     color: 'text-primary',
   },
   {
     icon: FileText,
-    title: 'Documentação Inteligente',
-    description: 'Gere documentação automaticamente e mantenha tudo sincronizado.',
+    title: 'Documentos e padrões',
+    description: 'Centralize estratégia, planos e artefatos do projeto, evitando duplicação e perda de contexto.',
     color: 'text-secondary',
   },
   {
     icon: BarChart3,
-    title: 'Métricas e Analytics',
-    description: 'Dashboards interativos com insights sobre qualidade e progresso.',
+    title: 'Métricas e visão executiva',
+    description: 'Dashboards para acompanhar progresso, riscos e qualidade — sem “montagem manual” de relatórios.',
     color: 'text-accent',
   },
   {
     icon: GitBranch,
-    title: 'Integração DevOps',
-    description: 'Conecte-se com Jira, GitHub e outras ferramentas do seu fluxo.',
+    title: 'Integração com Jira',
+    description: 'Importe e conecte informações do Jira ao seu fluxo de QA para reduzir retrabalho e manter alinhamento.',
     color: 'text-primary',
   },
   {
     icon: Zap,
-    title: 'Automação Inteligente',
-    description: 'IA integrada para sugestões, análises e otimizações automáticas.',
+    title: 'IA assistida (quando disponível)',
+    description: 'Sugestões e análises para acelerar escrita e revisão de artefatos, com controle humano e transparência.',
     color: 'text-secondary',
   },
   {
     icon: Shield,
-    title: 'Qualidade Garantida',
-    description: 'Sistema de semáforo de qualidade e validações automáticas.',
+    title: 'Sinais de qualidade',
+    description: 'Indicadores e checagens para orientar priorização, prevenção e decisões de release.',
     color: 'text-accent',
   },
   {
     icon: Users,
-    title: 'Colaboração em Equipe',
-    description: 'Trabalhe em equipe com comentários, atribuições e notificações.',
+    title: 'Colaboração e consistência',
+    description: 'Padronize a forma como a equipe registra decisões, evidências e status do QA ao longo do ciclo.',
     color: 'text-primary',
   },
   {
     icon: TrendingUp,
-    title: 'Tendências e Previsões',
-    description: 'Análise preditiva e identificação de tendências de qualidade.',
+    title: 'Evolução de métricas',
+    description: 'Acompanhe tendências ao longo do tempo para validar melhorias e capturar regressões cedo.',
     color: 'text-secondary',
   },
   {
     icon: Clock,
-    title: 'Tempo Real',
-    description: 'Atualizações instantâneas e sincronização em tempo real.',
+    title: 'Armazenamento local + cloud opcional',
+    description: 'Funciona localmente (IndexedDB) com possibilidade de sincronização via Supabase quando configurado.',
     color: 'text-accent',
   },
 ];
@@ -82,32 +83,25 @@ const features: Feature[] = [
  * Layout responsivo com hover states e animações
  */
 export const FeaturesSection: React.FC = () => {
+  const reduceMotion = useReducedMotion();
+
   return (
     <section id="features-section" className="py-20 md:py-32 bg-base-100">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header da seção */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-16"
-        >
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-base-content mb-4">
-            Funcionalidades Poderosas
-          </h2>
-          <p className="text-lg sm:text-xl text-base-content/70 max-w-2xl mx-auto">
-            Tudo que você precisa para gerenciar qualidade de software de forma ágil e eficiente
-          </p>
-        </motion.div>
+        <SectionHeader
+          eyebrow="Capacidades do produto"
+          title="Funcionalidades que reduzem atrito no QA"
+          description="Centralize projetos, tarefas, testes, documentos e métricas em um fluxo único — com integrações e automações para acelerar o ciclo."
+          className="mb-16"
+        />
 
         {/* Grid de features */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
           {features.map((feature, index) => (
             <motion.div
               key={index}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              initial={reduceMotion ? false : { opacity: 0, y: 30 }}
+              whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
               className="group relative p-6 lg:p-8 rounded-2xl bg-base-200 border border-base-300 hover:border-primary/30 transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
@@ -135,8 +129,8 @@ export const FeaturesSection: React.FC = () => {
 
         {/* CTA adicional */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          initial={reduceMotion ? false : { opacity: 0, y: 30 }}
+          whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.3 }}
           className="mt-16 text-center"

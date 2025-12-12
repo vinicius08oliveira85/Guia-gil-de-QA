@@ -8,6 +8,7 @@ import { TrashIcon } from './common/Icons';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { Badge } from './common/Badge';
 import { ProgressIndicator } from './common/ProgressIndicator';
+import { ArrowRight, Plus, LayoutGrid, Cloud } from 'lucide-react';
 
 export const ProjectsDashboard: React.FC<{
     projects: Project[];
@@ -111,83 +112,99 @@ export const ProjectsDashboard: React.FC<{
     };
 
     return (
-        <div className="container mx-auto w-full max-w-7xl px-4 py-8 sm:py-10">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-                <div className="space-y-1">
-                    <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
-                        Meus Projetos
-                    </h1>
-                    <p className="text-base-content/70 hidden sm:block">
-                        Gerencie e acompanhe o progresso dos seus projetos de QA
-                    </p>
-                </div>
+        <div className="min-h-[calc(100vh-4rem)] bg-gradient-to-b from-base-100 to-base-200/60">
+            <div className="container mx-auto w-full max-w-7xl px-4 py-8 sm:py-10">
+                {/* Header (sem hero, mas com padrão visual da Landing) */}
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                    <div className="space-y-2">
+                        <div className="inline-flex items-center gap-2">
+                            <span className="badge badge-outline px-4 py-3 border-primary/30 text-primary bg-primary/10">
+                                Workspace
+                            </span>
+                            <span className="text-sm text-base-content/60 hidden sm:inline">
+                                {projects.length} {projects.length === 1 ? 'projeto' : 'projetos'}
+                            </span>
+                        </div>
 
-                <div className="flex flex-wrap items-center gap-2">
-                    <button
-                        type="button"
-                        onClick={() => window.dispatchEvent(new CustomEvent('show-landing'))}
-                        className="btn btn-ghost btn-sm"
-                    >
-                        Ver Landing
-                    </button>
+                        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
+                            Meus Projetos
+                        </h1>
+                        <p className="text-base-content/70 max-w-2xl">
+                            Crie, organize e acompanhe o progresso do QA por projeto — com templates, métricas e integrações opcionais.
+                        </p>
+                    </div>
 
-                    {isMobile ? (
-                        <>
-                            <button
-                                type="button"
-                                onClick={() => setIsCreating(true)}
-                                className="btn btn-primary btn-sm"
-                                data-onboarding="create-project"
-                            >
-                                Novo Projeto
-                            </button>
+                    <div className="flex flex-wrap items-center gap-2">
+                        <button
+                            type="button"
+                            onClick={() => window.dispatchEvent(new CustomEvent('show-landing'))}
+                            className="btn btn-ghost btn-sm rounded-full"
+                        >
+                            <LayoutGrid className="w-4 h-4" />
+                            <span>Ver Landing</span>
+                        </button>
 
-                            {quickActions.length > 0 && (
+                        {isMobile ? (
+                            <>
                                 <button
                                     type="button"
-                                    onClick={() => setShowMobileActions(true)}
-                                    className="btn btn-outline btn-sm"
-                                    aria-label="Abrir ações rápidas"
-                                    aria-expanded={showMobileActions}
+                                    onClick={() => setIsCreating(true)}
+                                    className="btn btn-primary btn-sm rounded-full"
+                                    data-onboarding="create-project"
                                 >
-                                    Ações
+                                    <Plus className="w-4 h-4" />
+                                    <span>Novo</span>
                                 </button>
-                            )}
-                        </>
-                    ) : (
-                        <>
-                            <button
-                                type="button"
-                                onClick={() => setIsCreating(true)}
-                                className="btn btn-primary btn-sm"
-                                data-onboarding="create-project"
-                            >
-                                Novo Projeto
-                            </button>
 
-                            {onComparisonClick && projects.length > 1 && (
+                                {quickActions.length > 0 && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowMobileActions(true)}
+                                        className="btn btn-outline btn-sm rounded-full"
+                                        aria-label="Abrir ações rápidas"
+                                        aria-expanded={showMobileActions}
+                                    >
+                                        Ações
+                                        <ArrowRight className="w-4 h-4" />
+                                    </button>
+                                )}
+                            </>
+                        ) : (
+                            <>
                                 <button
                                     type="button"
-                                    onClick={onComparisonClick}
-                                    className="btn btn-outline btn-sm"
+                                    onClick={() => setIsCreating(true)}
+                                    className="btn btn-primary btn-sm rounded-full"
+                                    data-onboarding="create-project"
                                 >
-                                    Comparar
+                                    <Plus className="w-4 h-4" />
+                                    <span>Novo Projeto</span>
                                 </button>
-                            )}
 
-                            <button
-                                type="button"
-                                onClick={handleSyncSupabase}
-                                className="btn btn-outline btn-sm"
-                                disabled={isSyncingSupabase || !onSyncSupabase}
-                                title={!onSyncSupabase ? 'Supabase não está configurado. Configure VITE_SUPABASE_PROXY_URL.' : 'Sincronizar projetos do Supabase'}
-                            >
-                                {isSyncingSupabase ? 'Sincronizando…' : 'Sync Supabase'}
-                            </button>
-                        </>
-                    )}
+                                {onComparisonClick && projects.length > 1 && (
+                                    <button
+                                        type="button"
+                                        onClick={onComparisonClick}
+                                        className="btn btn-outline btn-sm rounded-full"
+                                    >
+                                        Comparar
+                                    </button>
+                                )}
+
+                                <button
+                                    type="button"
+                                    onClick={handleSyncSupabase}
+                                    className="btn btn-outline btn-sm rounded-full"
+                                    disabled={isSyncingSupabase || !onSyncSupabase}
+                                    title={!onSyncSupabase ? 'Supabase não está configurado. Configure VITE_SUPABASE_PROXY_URL.' : 'Sincronizar projetos do Supabase'}
+                                >
+                                    <Cloud className="w-4 h-4" />
+                                    <span>{isSyncingSupabase ? 'Sincronizando…' : 'Sync Supabase'}</span>
+                                </button>
+                            </>
+                        )}
+                    </div>
                 </div>
-            </div>
 
             <Modal
                 isOpen={showMobileActions}
@@ -379,7 +396,7 @@ export const ProjectsDashboard: React.FC<{
                 variant="danger"
             />
 
-            <div className="mt-6">
+            <div className="mt-8">
                 {filteredProjects.length > 0 ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
                         {filteredProjects.map(p => {
@@ -472,25 +489,26 @@ export const ProjectsDashboard: React.FC<{
                         })}
                     </div>
                 ) : (
-                    <div className="mt-8 rounded-[var(--rounded-box)] border border-base-300 bg-base-100 p-10 sm:p-12 text-center">
+                    <div className="mt-8 rounded-[var(--rounded-box)] border border-base-300 bg-base-100 p-10 sm:p-12 text-center shadow-sm">
                         <div className="mx-auto mb-4 h-14 w-14 rounded-full bg-base-200 flex items-center justify-center text-2xl" aria-hidden="true">
                             🚀
                         </div>
                         <h3 className="text-xl font-semibold">Nenhum projeto ainda</h3>
                         <p className="mt-2 text-base-content/70 max-w-md mx-auto">
-                            Comece criando seu primeiro projeto para gerenciar tarefas, testes e documentação.
+                            Crie um projeto para organizar tarefas, testes, documentos e métricas em um fluxo único.
                         </p>
                         <div className="mt-6">
                             <button
                                 type="button"
                                 onClick={() => setIsCreating(true)}
-                                className="btn btn-primary"
+                                className="btn btn-primary rounded-full"
                             >
-                                Criar Primeiro Projeto
+                                Criar Projeto
                             </button>
                         </div>
                     </div>
                 )}
+            </div>
             </div>
         </div>
     );

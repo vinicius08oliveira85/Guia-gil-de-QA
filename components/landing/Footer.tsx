@@ -12,36 +12,30 @@ const footerLinks: FooterLink[] = [
     title: 'Produto',
     links: [
       { label: 'Funcionalidades', href: '#features-section' },
-      { label: 'Preços', href: '#pricing' },
-      { label: 'Changelog', href: '#changelog' },
-      { label: 'Roadmap', href: '#roadmap' },
+      { label: 'Benefícios', href: '#benefits-section' },
+      { label: 'Começar', href: '#cta-section' },
     ],
   },
   {
     title: 'Recursos',
     links: [
-      { label: 'Documentação', href: '#docs' },
-      { label: 'API', href: '#api' },
-      { label: 'Integrações', href: '#integrations' },
-      { label: 'Tutoriais', href: '#tutorials' },
+      { label: 'Templates de projeto', href: '#features-section' },
+      { label: 'Dashboard e métricas', href: '#features-section' },
+      { label: 'Exportação e relatórios', href: '#features-section' },
     ],
   },
   {
-    title: 'Empresa',
+    title: 'Integrações',
     links: [
-      { label: 'Sobre', href: '#about' },
-      { label: 'Blog', href: '#blog' },
-      { label: 'Carreiras', href: '#careers' },
-      { label: 'Contato', href: '#contact' },
+      { label: 'Jira (opcional)', href: '#features-section' },
+      { label: 'Supabase (opcional)', href: '#features-section' },
     ],
   },
   {
     title: 'Legal',
     links: [
-      { label: 'Privacidade', href: '#privacy' },
       { label: 'Termos', href: '#terms' },
-      { label: 'Cookies', href: '#cookies' },
-      { label: 'Licença', href: '#license' },
+      { label: 'Privacidade', href: '#privacy' },
     ],
   },
 ];
@@ -76,11 +70,10 @@ export const Footer: React.FC = () => {
             >
               <h3 className="text-2xl font-bold text-base-content mb-4">QA Agile Guide</h3>
               <p className="text-base-content/70 mb-6 max-w-sm">
-                A plataforma completa para gestão de qualidade de software com metodologias ágeis e
-                automação inteligente.
+                Plataforma para organizar QA ágil com templates, métricas, relatórios e integrações opcionais.
               </p>
               {/* Social links */}
-              <div className="flex gap-4">
+              <div className="flex gap-4" aria-label="Links sociais">
                 {socialLinks.map((social, index) => (
                   <motion.a
                     key={index}
@@ -143,6 +136,7 @@ export const Footer: React.FC = () => {
             onClick={scrollToTop}
             className="btn btn-ghost btn-sm rounded-full"
             aria-label="Voltar ao topo"
+            type="button"
           >
             <ArrowUp className="w-4 h-4" />
             <span className="ml-2">Voltar ao topo</span>
