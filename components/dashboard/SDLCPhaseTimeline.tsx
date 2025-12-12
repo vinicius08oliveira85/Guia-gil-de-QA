@@ -41,16 +41,16 @@ export const SDLCPhaseTimeline: React.FC<SDLCPhaseTimelineProps> = React.memo(({
 
   return (
     <div className="space-y-6" role="region" aria-label="Timeline de Fases SDLC" aria-live="polite">
-      <Card className="p-6">
-        <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
+      <Card className="p-4">
+        <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
           <div>
-            <h2 className="text-xl font-semibold text-white mb-1">
+            <h2 className="text-lg font-semibold text-white mb-0.5">
               Fases do SDLC - Onde você está agora
             </h2>
-            <p className="text-sm text-white">
+            <p className="text-xs text-white">
               Acompanhe o progresso do projeto através do ciclo de vida do desenvolvimento
             </p>
-            <div className="mt-2 flex items-center gap-4 text-xs text-white">
+            <div className="mt-1 flex items-center gap-2 text-xs text-white">
               <span>
                 {completedPhasesCount} de {PHASE_NAMES.length} fases concluídas
               </span>
@@ -64,10 +64,10 @@ export const SDLCPhaseTimeline: React.FC<SDLCPhaseTimelineProps> = React.memo(({
 
         {/* Card de Análise da Fase Atual */}
         {phaseAnalysis && (
-          <div className="mt-6 space-y-4">
-            <div className="flex items-center gap-2 mb-4">
-              <span className="text-2xl">{phaseIcons[currentPhase as PhaseName]}</span>
-              <h3 className="text-lg font-semibold text-white">
+          <div className="mt-4 space-y-3">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-xl">{phaseIcons[currentPhase as PhaseName]}</span>
+              <h3 className="text-base font-semibold text-white">
                 Fase Atual: {phaseDisplayNames[currentPhase as PhaseName]}
               </h3>
               <div className="flex-1" />
@@ -85,11 +85,11 @@ export const SDLCPhaseTimeline: React.FC<SDLCPhaseTimelineProps> = React.memo(({
             </div>
 
             {/* Explicação */}
-            <Card className={`p-4 border-2 ${getInfoCardClasses(theme)}`}>
+            <Card className={`p-3 border-2 ${getInfoCardClasses(theme)}`}>
               <div className="flex items-start gap-3">
                 <InfoIcon />
                 <div className="flex-1">
-                  <h4 className="font-semibold mb-2">Por que estamos nesta fase?</h4>
+                  <h4 className="font-semibold mb-1.5">Por que estamos nesta fase?</h4>
                   <p className={`text-sm leading-relaxed ${getCardTextSecondaryClasses(theme)}`}>{phaseAnalysis.explanation}</p>
                 </div>
               </div>
@@ -97,11 +97,11 @@ export const SDLCPhaseTimeline: React.FC<SDLCPhaseTimelineProps> = React.memo(({
 
             {/* Próximos Passos */}
             {phaseAnalysis.nextSteps && phaseAnalysis.nextSteps.length > 0 && (
-              <Card className={`p-4 border-2 ${getSuccessCardClasses(theme)}`}>
-                <h4 className="font-semibold text-text-primary mb-3 flex items-center gap-2">
+              <Card className={`p-3 border-2 ${getSuccessCardClasses(theme)}`}>
+                <h4 className="font-semibold text-text-primary mb-1.5 flex items-center gap-2">
                   <span>✅</span> Próximos Passos
                 </h4>
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   {phaseAnalysis.nextSteps.map((step, index) => {
                     const getPriorityColors = () => {
                       if (theme === 'leve-saude') {
@@ -124,7 +124,7 @@ export const SDLCPhaseTimeline: React.FC<SDLCPhaseTimelineProps> = React.memo(({
                     return (
                       <div
                         key={index}
-                        className={`p-3 rounded-lg border ${theme === 'leve-saude' ? 'bg-white/80 dark:bg-gray-900/50 border-gray-300 dark:border-gray-700' : 'bg-black/20 border-surface-border'}`}
+                        className={`p-2.5 rounded-lg border ${theme === 'leve-saude' ? 'bg-white/80 dark:bg-gray-900/50 border-gray-300 dark:border-gray-700' : 'bg-black/20 border-surface-border'}`}
                       >
                         <div className="flex items-start justify-between gap-2 mb-1">
                           <span className="font-medium text-text-primary">{step.step}</span>
@@ -142,11 +142,11 @@ export const SDLCPhaseTimeline: React.FC<SDLCPhaseTimelineProps> = React.memo(({
 
             {/* Bloqueios */}
             {phaseAnalysis.blockers && phaseAnalysis.blockers.length > 0 && (
-              <Card className={`p-4 border-2 ${getErrorCardClasses(theme)}`}>
-                <h4 className="font-semibold text-text-primary mb-3 flex items-center gap-2">
+              <Card className={`p-3 border-2 ${getErrorCardClasses(theme)}`}>
+                <h4 className="font-semibold text-text-primary mb-1.5 flex items-center gap-2">
                   <span>⚠️</span> Bloqueios Identificados
                 </h4>
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   {phaseAnalysis.blockers.map((blocker, index) => {
                     const getImpactColors = () => {
                       if (theme === 'leve-saude') {
@@ -169,7 +169,7 @@ export const SDLCPhaseTimeline: React.FC<SDLCPhaseTimelineProps> = React.memo(({
                     return (
                       <div
                         key={index}
-                        className={`p-3 rounded-lg border ${theme === 'leve-saude' ? 'bg-white/80 dark:bg-gray-900/50 border-gray-300 dark:border-gray-700' : 'bg-black/20 border-surface-border'}`}
+                        className={`p-2.5 rounded-lg border ${theme === 'leve-saude' ? 'bg-white/80 dark:bg-gray-900/50 border-gray-300 dark:border-gray-700' : 'bg-black/20 border-surface-border'}`}
                       >
                         <div className="flex items-start justify-between gap-2 mb-1">
                           <span className="font-medium text-text-primary">{blocker.blocker}</span>
@@ -192,7 +192,7 @@ export const SDLCPhaseTimeline: React.FC<SDLCPhaseTimelineProps> = React.memo(({
 
         {/* Loading State */}
         {isGenerating && !phaseAnalysis && (
-          <Card className="p-6">
+          <Card className="p-4">
             <div className="flex items-center justify-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div>
               <span className="ml-3 text-text-secondary">Analisando fase atual...</span>
@@ -202,7 +202,7 @@ export const SDLCPhaseTimeline: React.FC<SDLCPhaseTimelineProps> = React.memo(({
 
         {/* Empty State */}
         {!isGenerating && !phaseAnalysis && (
-          <Card className="p-6 text-center">
+          <Card className="p-4 text-center">
             <p className="text-text-secondary mb-4">
               Clique em "Gerar Análise" para obter insights sobre a fase atual do projeto.
             </p>
