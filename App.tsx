@@ -51,7 +51,7 @@ const App: React.FC = () => {
     const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
     const [showProjectComparison, setShowProjectComparison] = useState(false);
     const [showSettings, setShowSettings] = useState(false);
-    const [forceShowLanding, setForceShowLanding] = useState(false);
+    const [forceShowLanding, setForceShowLanding] = useState(true); // Sempre começar na landing page
     const { handleError, handleSuccess } = useErrorHandler();
     const { searchQuery, setSearchQuery, searchResults } = useSearch(projects);
     const supabaseEnabled = isSupabaseAvailable();
@@ -209,12 +209,18 @@ const App: React.FC = () => {
         return projects.find(p => p.id === selectedProjectId);
     }, [projects, selectedProjectId]);
 
-    // Mostrar landing page quando não há projetos e não há projeto selecionado
-    // OU quando forceShowLanding está ativo
+    // Mostrar landing page quando forceShowLanding está ativo
+    // O usuário pode navegar para projetos através do botão "Abrir Meus Projetos"
     const shouldShowLandingPage = useMemo(() => {
-        const shouldShow = forceShowLanding || (!selectedProject && projects.length === 0 && !showSettings);
-        return shouldShow;
-    }, [forceShowLanding, selectedProject, projects.length, showSettings]);
+        return forceShowLanding && !showSettings;
+    }, [forceShowLanding, showSettings]);
+
+    // Sair da landing page quando um projeto é selecionado
+    useEffect(() => {
+        if (selectedProject) {
+            setForceShowLanding(false);
+        }
+    }, [selectedProject]);
 
     // Listener para eventos da landing page
     useEffect(() => {
