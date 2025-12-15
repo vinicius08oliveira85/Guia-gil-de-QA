@@ -23,18 +23,49 @@ export const BddScenarioForm: React.FC<{
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-4 p-4 bg-surface rounded-lg my-2 border border-surface-border">
+        <form onSubmit={handleSubmit} className="space-y-4 p-5 bg-base-100 rounded-xl my-2 border border-base-300">
             <div>
-                <label className="block text-sm font-medium text-text-secondary">Título do Cenário</label>
-                <input type="text" value={title} onChange={e => setTitle(e.target.value)} required className="mt-1 block w-full bg-surface-hover border border-surface-border rounded-md py-2 px-3 text-text-primary focus:outline-none focus:ring-accent"/>
+                <label className="label">
+                    <span className="label-text text-sm font-medium text-base-content/70">Título do Cenário</span>
+                </label>
+                <input 
+                    type="text" 
+                    value={title} 
+                    onChange={e => setTitle(e.target.value)} 
+                    required 
+                    className="input input-bordered w-full bg-base-100 border-base-300 text-base-content focus:outline-none focus:border-primary"
+                    placeholder="Ex: Login com credenciais válidas"
+                />
             </div>
             <div>
-                 <label className="block text-sm font-medium text-text-secondary">Cenário (Gherkin: Dado, Quando, Então)</label>
-                 <textarea value={gherkin} onChange={e => setGherkin(e.target.value)} rows={5} required className="mt-1 block w-full bg-surface-hover border border-surface-border rounded-md py-2 px-3 text-text-primary focus:outline-none focus:ring-accent font-mono text-sm" placeholder={`Dado que um usuário está na página de login\nQuando ele insere credenciais válidas\nEntão ele deve ser redirecionado para o dashboard`}></textarea>
+                <label className="label">
+                    <span className="label-text text-sm font-medium text-base-content/70">Cenário (Gherkin: Dado, Quando, Então)</span>
+                </label>
+                <textarea 
+                    value={gherkin} 
+                    onChange={e => setGherkin(e.target.value)} 
+                    rows={5} 
+                    required 
+                    className="textarea textarea-bordered w-full bg-base-100 border-base-300 text-base-content font-mono text-sm focus:outline-none focus:border-primary" 
+                    placeholder={`Dado que um usuário está na página de login
+Quando ele insere credenciais válidas
+Então ele deve ser redirecionado para o dashboard`}
+                />
             </div>
-             <div className="flex justify-end gap-3">
-                <button type="button" onClick={onCancel} className="px-4 py-2 bg-surface-hover text-text-primary rounded-md hover:bg-surface border border-surface-border">Cancelar</button>
-                <button type="submit" className="px-4 py-2 bg-accent text-white rounded-md hover:bg-accent-light">Salvar Cenário</button>
+            <div className="flex justify-end gap-2 pt-2">
+                <button 
+                    type="button" 
+                    onClick={onCancel} 
+                    className="btn btn-ghost btn-sm"
+                >
+                    Cancelar
+                </button>
+                <button 
+                    type="submit" 
+                    className="btn btn-primary btn-sm"
+                >
+                    Salvar Cenário
+                </button>
             </div>
         </form>
     );
@@ -46,15 +77,27 @@ export const BddScenarioItem: React.FC<{
     onDelete: () => void;
 }> = ({ scenario, onEdit, onDelete }) => {
     return (
-        <div className="bg-surface p-4 rounded-md border border-surface-border">
-            <div className="flex justify-between items-start">
-                <h5 className="font-semibold text-white">{scenario.title}</h5>
-                <div className="flex gap-2 flex-shrink-0 ml-2">
-                    <button onClick={onEdit} className="text-gray-400 hover:text-white"><EditIcon /></button>
-                    <button onClick={onDelete} className="text-gray-400 hover:text-red-400"><TrashIcon /></button>
+        <div className="bg-base-100 p-4 rounded-xl border border-base-300 hover:border-primary/30 hover:shadow-md transition-all duration-200">
+            <div className="flex justify-between items-start mb-3">
+                <h5 className="font-semibold text-base-content flex-1 pr-2">{scenario.title}</h5>
+                <div className="flex gap-1 flex-shrink-0">
+                    <button 
+                        onClick={onEdit} 
+                        className="btn btn-ghost btn-sm btn-square"
+                        aria-label="Editar cenário BDD"
+                    >
+                        <EditIcon />
+                    </button>
+                    <button 
+                        onClick={onDelete} 
+                        className="btn btn-ghost btn-sm btn-square text-error hover:bg-error/10"
+                        aria-label="Excluir cenário BDD"
+                    >
+                        <TrashIcon />
+                    </button>
                 </div>
             </div>
-            <pre className="mt-2 text-gray-300 whitespace-pre-wrap font-mono text-sm bg-surface p-3 rounded-md border border-surface-border">
+            <pre className="mt-3 text-base-content whitespace-pre-wrap font-mono text-sm bg-base-200 p-4 rounded-lg border border-base-300 leading-relaxed">
                 {scenario.gherkin}
             </pre>
         </div>

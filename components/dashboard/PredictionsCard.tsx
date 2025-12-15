@@ -32,12 +32,12 @@ export const PredictionsCard: React.FC<PredictionsCardProps> = React.memo(({
 
   const { predictions } = analysis;
 
-  const getProbabilityStatus = (probability: string): 'error' | 'warning' | 'info' | 'default' => {
+  const getProbabilityStatus = (probability: string): 'error' | 'warning' | 'info' => {
     switch (probability) {
       case 'Alta': return 'error';
       case 'Média': return 'warning';
       case 'Baixa': return 'info';
-      default: return 'default';
+      default: return 'info';
     }
   };
 

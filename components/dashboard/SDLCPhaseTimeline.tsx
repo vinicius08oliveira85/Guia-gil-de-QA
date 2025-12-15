@@ -114,7 +114,7 @@ export const SDLCPhaseTimeline: React.FC<SDLCPhaseTimelineProps> = React.memo(({
                       >
                         <div className="flex items-start justify-between gap-2 mb-1">
                           <span className="font-medium text-base-content">{step.step}</span>
-                          <span className={priorityColors[step.priority] || 'badge badge-neutral badge-outline'}>
+                          <span className={priorityColors[step.priority] || 'badge badge-base-content badge-outline'}>
                             {step.priority}
                           </span>
                         </div>
@@ -148,7 +148,7 @@ export const SDLCPhaseTimeline: React.FC<SDLCPhaseTimelineProps> = React.memo(({
                       >
                         <div className="flex items-start justify-between gap-2 mb-1">
                           <span className="font-medium text-base-content">{blocker.blocker}</span>
-                          <span className={impactColors[blocker.impact] || 'badge badge-neutral badge-outline'}>
+                          <span className={impactColors[blocker.impact] || 'badge badge-base-content badge-outline'}>
                             Impacto: {blocker.impact}
                           </span>
                         </div>

@@ -238,7 +238,7 @@ export const GeneralAnalysisCard: React.FC<GeneralAnalysisCardProps> = ({
                   {suggestion.scenarios.map((scenario, sIdx) => (
                     <div
                       key={sIdx}
-                      className="p-3 bg-base-100 rounded border border-base-300 text-base text-base-content/70 font-mono leading-relaxed"
+                      className="p-4 bg-base-200 rounded-lg border border-base-300 text-sm text-base-content font-mono leading-relaxed hover:border-primary/30 transition-all"
                     >
                       {scenario}
                     </div>

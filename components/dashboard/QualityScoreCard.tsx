@@ -53,7 +53,7 @@ export const QualityScoreCard: React.FC<QualityScoreCardProps> = React.memo(({
       case 'Regular': return 'badge badge-warning badge-outline';
       case 'Ruim': return 'badge badge-warning badge-outline';
       case 'Crítico': return 'badge badge-error badge-outline';
-      default: return 'badge badge-neutral badge-outline';
+      default: return 'badge badge-base-content badge-outline';
     }
   };
 

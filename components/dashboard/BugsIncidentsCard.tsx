@@ -26,7 +26,7 @@ export const BugsIncidentsCard: React.FC<BugsIncidentsCardProps> = React.memo(({
     { severity: 'Crítico', label: 'Crítico', badgeClass: 'badge-error' },
     { severity: 'Alto', label: 'Alto', badgeClass: 'badge-warning' },
     { severity: 'Médio', label: 'Médio', badgeClass: 'badge-info' },
-    { severity: 'Baixo', label: 'Baixo', badgeClass: 'badge-neutral' },
+    { severity: 'Baixo', label: 'Baixo', badgeClass: 'badge-info' },
   ];
 
   return (

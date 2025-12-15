@@ -50,13 +50,13 @@ export const DashboardInsightsCard: React.FC<DashboardInsightsCardProps> = React
     }
   };
 
-  const getPriorityStatus = (priority: string): 'error' | 'warning' | 'info' | 'default' => {
+  const getPriorityStatus = (priority: string): 'error' | 'warning' | 'info' => {
     switch (priority) {
       case 'Crítica': return 'error';
       case 'Alta': return 'warning';
       case 'Média': return 'info';
-      case 'Baixa': return 'default';
-      default: return 'default';
+      case 'Baixa': return 'info';
+      default: return 'info';
     }
   };
 

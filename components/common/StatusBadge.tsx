@@ -42,7 +42,7 @@ const getStatusConfig = (): Record<StatusType, StatusConfig> => ({
   },
   default: {
     icon: MinusCircle,
-    classNames: 'badge-neutral badge-outline',
+    classNames: 'badge-base-content badge-outline',
     role: 'none',
   },
 });

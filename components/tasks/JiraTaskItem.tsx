@@ -1207,8 +1207,8 @@ export const JiraTaskItem: React.FC<{
                                             {testExecutionSummary.failed} reprov.
                                         </span>
                                         {testExecutionSummary.pending > 0 && (
-                                            <span className="inline-flex items-center gap-1 font-semibold text-warning">
-                                                <span className="w-2 h-2 rounded-full bg-warning" aria-hidden="true" />
+                                            <span className="inline-flex items-center gap-1 font-semibold text-yellow-700 dark:text-yellow-500">
+                                                <span className="w-2 h-2 rounded-full bg-yellow-600 dark:bg-yellow-500" aria-hidden="true" />
                                                 {testExecutionSummary.pending} pend.
                                             </span>
                                         )}

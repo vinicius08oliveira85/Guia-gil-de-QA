@@ -41,7 +41,7 @@ export const RecommendationsCard: React.FC<RecommendationsCardProps> = React.mem
     }
   };
 
-  const getImpactEffortStatus = (impact: string, effort: string): 'success' | 'warning' | 'default' => {
+  const getImpactEffortStatus = (impact: string, effort: string): 'success' | 'warning' | 'info' => {
     // Priorizar recomendações de alto impacto e baixo esforço
     if (impact === 'Alto' && effort === 'Baixo') {
       return 'success';
@@ -49,7 +49,8 @@ export const RecommendationsCard: React.FC<RecommendationsCardProps> = React.mem
     if (impact === 'Alto') {
       return 'warning';
     }
-    return 'default';
+    // Para impacto médio ou baixo, usar 'info' para melhor visibilidade
+    return 'info';
   };
 
   // Ordenar por impacto e esforço (alto impacto + baixo esforço primeiro)
