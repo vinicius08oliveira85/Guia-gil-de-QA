@@ -15,12 +15,14 @@ export const TimeTracker: React.FC<TimeTrackerProps> = ({ task, onUpdate }) => {
   const { handleSuccess } = useErrorHandler();
 
   useEffect(() => {
-    if (isRunning && startTime) {
-      const interval = setInterval(() => {
-        setElapsedTime(Date.now() - startTime);
-      }, 1000);
-      return () => clearInterval(interval);
+    if (!(isRunning && startTime)) {
+      return;
     }
+
+    const interval = setInterval(() => {
+      setElapsedTime(Date.now() - startTime);
+    }, 1000);
+    return () => clearInterval(interval);
   }, [isRunning, startTime]);
 
   const handleStart = () => {

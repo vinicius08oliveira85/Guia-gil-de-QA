@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { Project, DashboardInsightsAnalysis, SDLCPhaseAnalysis } from '../types';
+import { Project } from '../types';
 import { 
     generateDashboardInsightsAnalysis, 
     generateCompleteDashboardAnalysis,
@@ -10,7 +10,7 @@ import { useErrorHandler } from './useErrorHandler';
 /**
  * Hook para gerenciar análise de insights do dashboard com IA
  */
-export function useDashboardInsights(project: Project, onUpdateProject?: (project: Project) => void, autoGenerate: boolean = false) {
+export function useDashboardInsights(project: Project, onUpdateProject?: (project: Project) => void, _autoGenerate: boolean = false) {
     const [isGenerating, setIsGenerating] = useState(false);
     const { handleError, handleSuccess } = useErrorHandler();
 

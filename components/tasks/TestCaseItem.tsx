@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { TestCase } from '../../types';
 import { CheckIcon, EditIcon, TrashIcon } from '../common/Icons';
 import { normalizeExecutedStrategy } from '../../utils/testCaseMigration';
@@ -25,12 +25,24 @@ export const TestCaseItem: React.FC<{
         'Not Run': 'bg-slate-600',
         'Passed': 'bg-green-600',
         'Failed': 'bg-red-600',
+        'Blocked': 'bg-yellow-600',
+    };
+    const statusLabel = {
+        'Not Run': 'Não Executado',
+        'Passed': 'Aprovado',
+        'Failed': 'Reprovado',
+        'Blocked': 'Bloqueado',
     };
     const recommendedStrategies = testCase.strategies || [];
     const selectedStrategies = normalizeExecutedStrategy(testCase.executedStrategy);
     const customStrategies = selectedStrategies.filter(s => !recommendedStrategies.includes(s));
     const customStrategyValue = customStrategies.join(', ');
     const showExecutedStrategySummary = selectedStrategies.length > 0;
+    const [customStrategyDraft, setCustomStrategyDraft] = useState(customStrategyValue);
+
+    useEffect(() => {
+        setCustomStrategyDraft(customStrategyValue);
+    }, [customStrategyValue]);
 
     const handleStrategyToggle = (strategy: string) => {
         const currentStrategies = normalizeExecutedStrategy(testCase.executedStrategy);
@@ -145,10 +157,8 @@ export const TestCaseItem: React.FC<{
                 </label>
                 <input
                     type="text"
-                    value={customStrategyValue}
-                    onChange={(e) => {
-                        // Permite edição livre, mas só salva no blur
-                    }}
+                    value={customStrategyDraft}
+                    onChange={(e) => setCustomStrategyDraft(e.target.value)}
                     onBlur={(e) => handleCustomStrategyBlur(e.target.value)}
                     placeholder="Ex: Teste Exploratório, Teste de Acessibilidade (separados por vírgula)"
                     className="w-full bg-surface-hover border border-surface-border rounded-md px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/50"
@@ -218,8 +228,22 @@ export const TestCaseItem: React.FC<{
                     </div>
                 )}
             </div>
+
+            {onToolsChange && (
+                <div className="mt-4 p-3 bg-surface-hover rounded-lg border border-surface-border">
+                    <ToolsSelector
+                        selectedTools={testCase.toolsUsed || []}
+                        onToolsChange={onToolsChange}
+                        label="Ferramentas (caso de teste)"
+                        compact
+                    />
+                </div>
+            )}
+
             <div className="mt-4 flex items-center justify-between">
-                <span className={`px-3 py-1 text-xs font-semibold text-white rounded-full ${statusColor[testCase.status]}`}>{testCase.status === 'Not Run' ? 'Não Executado' : testCase.status === 'Passed' ? 'Aprovado' : 'Reprovado'}</span>
+                <span className={`px-3 py-1 text-xs font-semibold text-white rounded-full ${statusColor[testCase.status]}`}>
+                    {statusLabel[testCase.status]}
+                </span>
                 <div className="flex gap-2">
                     <button onClick={() => onStatusChange('Passed')} className="btn btn-approve text-sm">Aprovar</button>
                     <button onClick={() => onStatusChange('Failed')} className="btn btn-reject text-sm">Reprovar</button>

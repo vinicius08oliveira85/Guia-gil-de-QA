@@ -120,38 +120,38 @@ export const TestCaseEditorModal: React.FC<TestCaseEditorModalProps> = ({
         <Modal isOpen={isOpen} onClose={onClose} title={`Editar caso de teste: ${testCase.description}`} size="xl">
             <div className="space-y-4">
                 <div>
-                    <label className="block text-xs font-semibold text-text-secondary mb-1">Descrição</label>
+                    <label className="block text-xs font-semibold text-base-content/70 mb-1">Descrição</label>
                     <input
                         value={description}
                         onChange={e => setDescription(e.target.value)}
-                        className="w-full bg-surface-hover border border-surface-border rounded-md px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/50"
+                        className="input input-bordered w-full bg-base-100 border-base-300 text-base-content focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                     />
                 </div>
 
                 <div>
-                    <label className="block text-xs font-semibold text-text-secondary mb-1">Précondições</label>
+                    <label className="block text-xs font-semibold text-base-content/70 mb-1">Précondições</label>
                     <textarea
                         value={preconditions}
                         onChange={e => setPreconditions(e.target.value)}
-                        className="w-full bg-surface-hover border border-surface-border rounded-md px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/50 min-h-[80px]"
+                        className="textarea textarea-bordered w-full bg-base-100 border-base-300 text-base-content focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary min-h-[80px]"
                         placeholder="Descreva as précondições necessárias para executar este teste"
                     />
                 </div>
 
                 <div>
-                    <label className="block text-xs font-semibold text-text-secondary mb-2">Passo-a-passo</label>
+                    <label className="block text-xs font-semibold text-base-content/70 mb-2">Passo-a-passo</label>
                     <div className="space-y-2">
                         {steps.map((step, index) => (
                             <div key={`step-${index}`} className="flex gap-2">
                                 <input
                                     value={step}
                                     onChange={e => handleListChange(setSteps)(index, e.target.value)}
-                                    className="flex-1 bg-surface-hover border border-surface-border rounded-md px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-1 focus:ring-accent/40"
+                                    className="input input-bordered flex-1 bg-base-100 border-base-300 text-base-content focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                                     placeholder={`Passo ${index + 1}`}
                                 />
                                 <button
                                     type="button"
-                                    className="px-3 py-2 text-sm text-red-300 border border-red-400/60 rounded-md hover:bg-red-400/10 disabled:opacity-40"
+                                    className="btn btn-outline btn-error btn-sm disabled:opacity-40"
                                     disabled={!canRemoveStep}
                                     onClick={() => handleListRemove(setSteps, canRemoveStep)(index)}
                                 >
@@ -163,7 +163,7 @@ export const TestCaseEditorModal: React.FC<TestCaseEditorModalProps> = ({
                     <button
                         type="button"
                         onClick={handleListAdd(setSteps)}
-                        className="mt-3 text-sm text-accent hover:text-accent-light"
+                        className="btn btn-ghost btn-sm rounded-full mt-3 text-primary"
                     >
                         + Adicionar passo
                     </button>
@@ -171,19 +171,19 @@ export const TestCaseEditorModal: React.FC<TestCaseEditorModalProps> = ({
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label className="block text-xs font-semibold text-text-secondary mb-2">Estratégias Recomendadas</label>
+                        <label className="block text-xs font-semibold text-base-content/70 mb-2">Estratégias Recomendadas</label>
                         <div className="space-y-2">
                             {strategies.map((strategy, index) => (
                                 <div key={`strategy-${index}`} className="flex gap-2">
                                     <input
                                         value={strategy}
                                         onChange={e => handleListChange(setStrategies)(index, e.target.value)}
-                                        className="flex-1 bg-surface-hover border border-surface-border rounded-md px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-1 focus:ring-accent/40"
+                                        className="input input-bordered flex-1 bg-base-100 border-base-300 text-base-content focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                                         placeholder={`Estratégia ${index + 1}`}
                                     />
                                     <button
                                         type="button"
-                                        className="px-3 py-2 text-sm text-red-300 border border-red-400/60 rounded-md hover:bg-red-400/10 disabled:opacity-40"
+                                        className="btn btn-outline btn-error btn-sm disabled:opacity-40"
                                         disabled={!canRemoveStrategy}
                                         onClick={() => handleListRemove(setStrategies, canRemoveStrategy)(index)}
                                     >
@@ -195,26 +195,26 @@ export const TestCaseEditorModal: React.FC<TestCaseEditorModalProps> = ({
                         <button
                             type="button"
                             onClick={handleListAdd(setStrategies)}
-                            className="mt-3 text-sm text-accent hover:text-accent-light"
+                            className="btn btn-ghost btn-sm rounded-full mt-3 text-primary"
                         >
                             + Adicionar estratégia
                         </button>
                     </div>
 
                     <div>
-                        <label className="block text-xs font-semibold text-text-secondary mb-2">Testes executados</label>
+                        <label className="block text-xs font-semibold text-base-content/70 mb-2">Testes executados</label>
                         <div className="space-y-2">
                             {executedStrategies.map((strategy, index) => (
                                 <div key={`executed-${index}`} className="flex gap-2">
                                     <input
                                         value={strategy}
                                         onChange={e => handleExecutedStrategyChange(index, e.target.value)}
-                                        className="flex-1 bg-surface-hover border border-surface-border rounded-md px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-1 focus:ring-accent/40"
+                                        className="input input-bordered flex-1 bg-base-100 border-base-300 text-base-content focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                                         placeholder={`Execução ${index + 1}`}
                                     />
                                     <button
                                         type="button"
-                                        className="px-3 py-2 text-sm text-red-300 border border-red-400/60 rounded-md hover:bg-red-400/10 disabled:opacity-40"
+                                        className="btn btn-outline btn-error btn-sm disabled:opacity-40"
                                         onClick={() => handleRemoveExecutedStrategy(index)}
                                     >
                                         Remover
@@ -225,7 +225,7 @@ export const TestCaseEditorModal: React.FC<TestCaseEditorModalProps> = ({
                         <button
                             type="button"
                             onClick={handleAddExecutedStrategy}
-                            className="mt-3 text-sm text-accent hover:text-accent-light"
+                            className="btn btn-ghost btn-sm rounded-full mt-3 text-primary"
                         >
                             + Adicionar execução
                         </button>
@@ -233,40 +233,40 @@ export const TestCaseEditorModal: React.FC<TestCaseEditorModalProps> = ({
                 </div>
 
                 <div>
-                    <label className="block text-xs font-semibold text-text-secondary mb-1">Resultado esperado</label>
+                    <label className="block text-xs font-semibold text-base-content/70 mb-1">Resultado esperado</label>
                     <textarea
                         value={expectedResult}
                         onChange={e => setExpectedResult(e.target.value)}
-                        className="w-full bg-surface-hover border border-surface-border rounded-md px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/50 min-h-[80px]"
+                        className="textarea textarea-bordered w-full bg-base-100 border-base-300 text-base-content focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary min-h-[80px]"
                     />
                 </div>
 
                 <div>
-                    <label className="block text-xs font-semibold text-text-secondary mb-1">Resultado encontrado</label>
+                    <label className="block text-xs font-semibold text-base-content/70 mb-1">Resultado encontrado</label>
                     <textarea
                         value={observedResult}
                         onChange={e => setObservedResult(e.target.value)}
-                        className="w-full bg-surface-hover border border-surface-border rounded-md px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/50 min-h-[80px]"
+                        className="textarea textarea-bordered w-full bg-base-100 border-base-300 text-base-content focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary min-h-[80px]"
                         placeholder="Preencha apenas se o teste falhou"
                     />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label className="block text-xs font-semibold text-text-secondary mb-1">Suite de teste</label>
+                        <label className="block text-xs font-semibold text-base-content/70 mb-1">Suite de teste</label>
                         <input
                             value={testSuite}
                             onChange={e => setTestSuite(e.target.value)}
-                            className="w-full bg-surface-hover border border-surface-border rounded-md px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/50"
+                            className="input input-bordered w-full bg-base-100 border-base-300 text-base-content focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                             placeholder="Ex: Login"
                         />
                     </div>
                     <div>
-                        <label className="block text-xs font-semibold text-text-secondary mb-1">Ambiente de teste</label>
+                        <label className="block text-xs font-semibold text-base-content/70 mb-1">Ambiente de teste</label>
                         <input
                             value={testEnvironment}
                             onChange={e => setTestEnvironment(e.target.value)}
-                            className="w-full bg-surface-hover border border-surface-border rounded-md px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/50"
+                            className="input input-bordered w-full bg-base-100 border-base-300 text-base-content focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                             placeholder="Ex: Chrome / Firefox"
                         />
                     </div>
@@ -274,11 +274,11 @@ export const TestCaseEditorModal: React.FC<TestCaseEditorModalProps> = ({
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label className="block text-xs font-semibold text-text-secondary mb-1">Status</label>
+                        <label className="block text-xs font-semibold text-base-content/70 mb-1">Status</label>
                         <select
                             value={status}
                             onChange={e => setStatus(e.target.value as TestCase['status'])}
-                            className="w-full bg-surface-hover border border-surface-border rounded-md px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/50"
+                            className="select select-bordered w-full bg-base-100 border-base-300 text-base-content focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                         >
                             <option value="Not Run">Não Executado</option>
                             <option value="Passed">Aprovado</option>
@@ -286,11 +286,11 @@ export const TestCaseEditorModal: React.FC<TestCaseEditorModalProps> = ({
                         </select>
                     </div>
                     <div>
-                        <label className="block text-xs font-semibold text-text-secondary mb-1">Prioridade</label>
+                        <label className="block text-xs font-semibold text-base-content/70 mb-1">Prioridade</label>
                         <select
                             value={priority}
                             onChange={e => setPriority(e.target.value as 'Baixa' | 'Média' | 'Alta' | 'Urgente' | '')}
-                            className="w-full bg-surface-hover border border-surface-border rounded-md px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/50"
+                            className="select select-bordered w-full bg-base-100 border-base-300 text-base-content focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                         >
                             <option value="">Sem prioridade</option>
                             <option value="Urgente">Urgente</option>
@@ -301,10 +301,10 @@ export const TestCaseEditorModal: React.FC<TestCaseEditorModalProps> = ({
                     </div>
                 </div>
 
-                <div className="flex items-center justify-between bg-surface-hover rounded-lg border border-surface-border px-4 py-3">
+                <div className="flex items-center justify-between bg-base-200 rounded-lg border border-base-300 px-4 py-3">
                     <div>
-                        <p className="text-sm font-semibold text-text-primary">Automatizado</p>
-                        <p className="text-xs text-text-secondary">Marque se este caso possui automação</p>
+                        <p className="text-sm font-semibold text-base-content">Automatizado</p>
+                        <p className="text-xs text-base-content/70">Marque se este caso possui automação</p>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                         <input
@@ -313,11 +313,11 @@ export const TestCaseEditorModal: React.FC<TestCaseEditorModalProps> = ({
                             onChange={e => setIsAutomated(e.target.checked)}
                             className="sr-only peer"
                         />
-                        <div className="w-11 h-6 bg-slate-600 rounded-full peer peer-focus:ring-2 peer-focus:ring-accent/50 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent"></div>
+                        <div className="w-11 h-6 bg-base-300 rounded-full peer peer-focus:ring-2 peer-focus:ring-primary/20 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-base-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
                     </label>
                 </div>
 
-                <div className="p-4 bg-surface-hover rounded-lg border border-surface-border">
+                <div className="p-4 bg-base-200 rounded-lg border border-base-300">
                     <ToolsSelector
                         selectedTools={toolsUsed}
                         onToolsChange={setToolsUsed}
@@ -326,17 +326,17 @@ export const TestCaseEditorModal: React.FC<TestCaseEditorModalProps> = ({
                     />
                 </div>
 
-                <div className="flex flex-wrap justify-end gap-2 pt-4 border-t border-surface-border">
+                <div className="flex flex-wrap justify-end gap-2 pt-4 border-t border-base-300">
                     {onDelete && (
                         <button
                             type="button"
-                            className="btn btn-secondary text-red-300 border-red-400/60 hover:bg-red-400/10"
+                            className="btn btn-outline btn-error"
                             onClick={onDelete}
                         >
                             Excluir caso
                         </button>
                     )}
-                    <button type="button" className="btn btn-secondary" onClick={onClose}>
+                    <button type="button" className="btn btn-ghost" onClick={onClose}>
                         Cancelar
                     </button>
                     <button type="button" className="btn btn-primary" onClick={handleSubmit}>

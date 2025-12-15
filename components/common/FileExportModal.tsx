@@ -238,7 +238,7 @@ export const FileExportModal: React.FC<FileExportModalProps> = React.memo(({
                 >
                     {isExporting ? (
                         <>
-                            <Spinner size="sm" />
+                            <Spinner small />
                             <span>Exportando...</span>
                         </>
                     ) : (

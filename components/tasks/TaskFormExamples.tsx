@@ -1,4 +1,4 @@
-import { JiraTask, JiraTaskType } from '../../types';
+import { JiraTaskType } from '../../types';
 
 export interface TaskExample {
     id: string;

@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Project, ProjectDocument } from '../types';
+import { Project } from '../types';
 
 /**
  * Detecta a categoria de um documento baseado no nome e conteúdo
@@ -40,7 +40,6 @@ export function useDocumentMetrics(project: Project) {
         
         // Documentos recentes (últimos 7 dias)
         // Em produção, seria necessário ter um campo createdAt no ProjectDocument
-        const sevenDaysAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
         const recent = documents.length; // Por enquanto, todos são considerados recentes
         
         // Documentos vinculados a tarefas

@@ -1,32 +1,51 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Tooltip } from './Tooltip';
 
 interface HelpTooltipProps {
-    content: string;
-    title?: string;
+    content: React.ReactNode;
+    title?: React.ReactNode;
+    /** Prefer `placement` (compatibilidade com uso legado) */
     position?: 'top' | 'bottom' | 'left' | 'right';
-    children?: React.ReactNode;
+    /** Posição do tooltip (alias de `position`) */
+    placement?: 'top' | 'bottom' | 'left' | 'right';
+    /** Elemento disparador; se omitido, usa ícone padrão */
+    children?: React.ReactElement;
+    ariaLabel?: string;
 }
 
 export const HelpTooltip: React.FC<HelpTooltipProps> = ({ 
     content, 
     title, 
     position = 'top',
-    children 
+    placement,
+    children,
+    ariaLabel,
 }) => {
-    const [isVisible, setIsVisible] = useState(false);
+    const resolvedPosition = placement ?? position;
+    const tooltipContent = (
+        <div className="space-y-1">
+            {title ? (
+                <div className="font-semibold text-base-content">{title}</div>
+            ) : null}
+            {typeof content === 'string' ? (
+                <div className="text-sm text-base-content/70 whitespace-pre-line max-w-xs">
+                    {content}
+                </div>
+            ) : (
+                <div className="text-sm text-base-content/70 max-w-xs">
+                    {content}
+                </div>
+            )}
+        </div>
+    );
 
     return (
-        <span 
-            className="inline-flex items-center"
-            onMouseEnter={() => setIsVisible(true)}
-            onMouseLeave={() => setIsVisible(false)}
-        >
-            {children || (
+        <Tooltip content={tooltipContent} position={resolvedPosition} ariaLabel={ariaLabel}>
+            {children ?? (
                 <button
                     type="button"
-                    className="ml-1 text-accent hover:text-accent-hover transition-colors"
-                    aria-label="Ajuda"
+                    className="btn btn-ghost btn-xs btn-circle ml-1 text-base-content/70 hover:text-base-content"
+                    aria-label={typeof title === 'string' ? title : ariaLabel ?? 'Ajuda'}
                 >
                     <svg 
                         xmlns="http://www.w3.org/2000/svg" 
@@ -38,6 +57,7 @@ export const HelpTooltip: React.FC<HelpTooltipProps> = ({
                         strokeWidth="2" 
                         strokeLinecap="round" 
                         strokeLinejoin="round"
+                        aria-hidden="true"
                     >
                         <circle cx="12" cy="12" r="10"></circle>
                         <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
@@ -45,15 +65,7 @@ export const HelpTooltip: React.FC<HelpTooltipProps> = ({
                     </svg>
                 </button>
             )}
-            {isVisible && (
-                <Tooltip position={position}>
-                    {title && <div className="font-bold text-white mb-1">{title}</div>}
-                    <div className="text-sm text-gray-200 whitespace-pre-line max-w-xs">
-                        {content}
-                    </div>
-                </Tooltip>
-            )}
-        </span>
+        </Tooltip>
     );
 };
 

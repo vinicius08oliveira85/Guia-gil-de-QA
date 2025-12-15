@@ -35,13 +35,13 @@ export const QualityTrendSection: React.FC<QualityTrendSectionProps> = ({ projec
     
     return (
         <div className="space-y-6">
-            <div className="win-toolbar flex flex-col gap-4 rounded-[26px] border border-surface-border/60 bg-gradient-to-br from-white/8 via-white/2 to-transparent px-4 py-4 sm:px-6 sm:py-6">
+            <div className="flex flex-col gap-4 rounded-[var(--rounded-box)] border border-base-300 bg-gradient-to-br from-base-100 to-base-200 px-4 py-4 sm:px-6 sm:py-6">
                 <div className="space-y-2">
-                    <p className="eyebrow text-text-secondary/80">Análise de Risco</p>
-                    <h2 className="heading-section text-text-primary">
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-base-content/60">Análise de Risco</p>
+                    <h2 className="text-2xl font-semibold tracking-tight text-base-content">
                         Tendência de Qualidade
                     </h2>
-                    <p className="text-lead text-sm sm:text-base">
+                    <p className="text-sm text-base-content/70 sm:text-base">
                         Acompanhamento de defeitos e identificação de módulos com maior densidade de problemas.
                     </p>
                 </div>
@@ -75,7 +75,7 @@ export const QualityTrendSection: React.FC<QualityTrendSectionProps> = ({ projec
                 ) : (
                     <Card className="!p-4 sm:!p-6">
                         <h4 className="heading-card text-text-primary mb-2">Top Módulos Defeituosos</h4>
-                        <div className="flex h-48 items-center justify-center rounded-2xl border border-dashed border-surface-border text-text-secondary/70">
+                        <div className="flex h-48 items-center justify-center rounded-2xl border border-dashed border-base-300 text-base-content/60">
                             Nenhum módulo com bugs abertos encontrado.
                         </div>
                     </Card>
@@ -90,7 +90,7 @@ export const QualityTrendSection: React.FC<QualityTrendSectionProps> = ({ projec
                         {metrics.topDefectiveModules.slice(0, 5).map((module, index) => (
                             <div
                                 key={module.module}
-                                className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/4 px-4 py-3"
+                                className="flex items-center justify-between rounded-2xl border border-base-300 bg-base-100 px-4 py-3"
                             >
                                 <div className="flex items-center gap-3">
                                     <span className="flex h-8 w-8 items-center justify-center rounded-full bg-accent/20 text-sm font-semibold text-accent">

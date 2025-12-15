@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Project, JiraTask, BugSeverity, TestCase } from '../types';
+import { Project, JiraTask, TestCase } from '../types';
 
 export interface QualityMetrics {
     // Semáforo
@@ -120,7 +120,6 @@ export const calculateQualityMetrics = (project: Project): QualityMetrics => {
     // Semáforo: Status da Regressão Automática
     const allTestCases: TestCase[] = tasks.flatMap(t => t.testCases || []);
     const automatedTests = allTestCases.filter(tc => tc.isAutomated === true);
-    const automatedPassed = automatedTests.filter(tc => tc.status === 'Passed');
     const automatedFailed = automatedTests.filter(tc => tc.status === 'Failed' || tc.status === 'Not Run');
     
     const regressionStatus: 'Pass' | 'Fail' = 

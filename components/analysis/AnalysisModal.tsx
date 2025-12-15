@@ -1,6 +1,5 @@
 import React from 'react';
 import { Modal } from '../common/Modal';
-import { Project } from '../../types';
 
 interface AnalysisModalProps {
     isOpen: boolean;

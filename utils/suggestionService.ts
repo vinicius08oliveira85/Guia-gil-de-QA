@@ -1,4 +1,4 @@
-import { Project, JiraTask } from '../types';
+import { Project } from '../types';
 
 export interface Suggestion {
     id: string;

@@ -1,8 +1,6 @@
 import React from 'react';
 import { Card } from '../common/Card';
 import { DashboardInsightsAnalysis } from '../../types';
-import { useTheme } from '../../hooks/useTheme';
-import { getInfoCardClasses, getErrorCardClasses, getWarningCardClasses, getSuccessCardClasses, getCardTextSecondaryClasses } from '../../utils/themeCardColors';
 import { StatusBadge } from '../common/StatusBadge';
 
 interface DashboardInsightsCardProps {
@@ -21,8 +19,8 @@ export const DashboardInsightsCard: React.FC<DashboardInsightsCardProps> = React
     return (
       <Card className="p-6">
         <div className="flex items-center justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div>
-          <span className="ml-3 text-text-secondary">Gerando insights...</span>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          <span className="ml-3 text-base-content/70">Gerando insights...</span>
         </div>
       </Card>
     );
@@ -42,15 +40,13 @@ export const DashboardInsightsCard: React.FC<DashboardInsightsCardProps> = React
     }
   };
 
-  const { theme } = useTheme();
-
   const getInsightColor = (type: string) => {
     switch (type) {
-      case 'success': return getSuccessCardClasses(theme);
-      case 'warning': return getWarningCardClasses(theme);
-      case 'error': return getErrorCardClasses(theme);
-      case 'info': return getInfoCardClasses(theme);
-      default: return theme === 'leve-saude' ? 'bg-gray-50 border-gray-300 text-gray-900 dark:bg-gray-900/50 dark:border-gray-700 dark:text-gray-100' : 'bg-slate-50 border-slate-200 text-slate-600';
+      case 'success': return 'bg-success/10 border-success/30';
+      case 'warning': return 'bg-warning/10 border-warning/30';
+      case 'error': return 'bg-error/10 border-error/30';
+      case 'info': return 'bg-info/10 border-info/30';
+      default: return 'bg-base-200 border-base-300';
     }
   };
 
@@ -72,14 +68,14 @@ export const DashboardInsightsCard: React.FC<DashboardInsightsCardProps> = React
   });
 
   return (
-    <Card className="space-y-4" aria-label="Insights do dashboard">
-      <h3 className="text-lg font-semibold text-text-primary">Insights da IA</h3>
+    <Card className="p-5 space-y-4" aria-label="Insights do dashboard">
+      <h3 className="text-lg font-semibold text-base-content">Insights da IA</h3>
       
       <div className="space-y-3">
         {sortedInsights.map((insight, index) => (
-          <Card
+          <div
             key={index}
-            className={`p-4 border-2 ${getInsightColor(insight.type)}`}
+            className={`p-4 rounded-xl border ${getInsightColor(insight.type)}`}
             aria-label={`${insight.type}: ${insight.title}`}
           >
             <div className="flex items-start justify-between gap-3">
@@ -89,7 +85,7 @@ export const DashboardInsightsCard: React.FC<DashboardInsightsCardProps> = React
                 </span>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1 flex-wrap">
-                    <h4 className="font-semibold text-text-primary">{insight.title}</h4>
+                    <h4 className="font-semibold text-base-content">{insight.title}</h4>
                     <StatusBadge status={getPriorityStatus(insight.priority)}>
                       {insight.priority}
                     </StatusBadge>
@@ -99,11 +95,11 @@ export const DashboardInsightsCard: React.FC<DashboardInsightsCardProps> = React
                       </StatusBadge>
                     )}
                   </div>
-                  <p className={`text-sm ${getCardTextSecondaryClasses(theme)}`}>{insight.description}</p>
+                  <p className="text-sm text-base-content/70">{insight.description}</p>
                 </div>
               </div>
             </div>
-          </Card>
+          </div>
         ))}
       </div>
     </Card>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { PROJECT_TEMPLATES, ProjectTemplate } from '../../utils/projectTemplates';
-import { cn } from '../../utils/windows12Styles';
+import { PROJECT_TEMPLATES } from '../../utils/projectTemplates';
+import { cn } from '../../utils/cn';
 
 interface ProjectTemplateSelectorProps {
   onSelectTemplate: (templateId: string) => void;

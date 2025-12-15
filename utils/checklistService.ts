@@ -1,5 +1,4 @@
-import { ChecklistItem, Phase, Project } from '../types';
-import { PHASE_NAMES } from './constants';
+import { ChecklistItem } from '../types';
 
 export const DEFAULT_CHECKLISTS: Record<string, ChecklistItem[]> = {
   'Request': [

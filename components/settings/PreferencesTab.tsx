@@ -1,5 +1,4 @@
 import React, { useState, Suspense, lazy } from 'react';
-import { Card } from '../common/Card';
 import { LoadingSkeleton } from '../common/LoadingSkeleton';
 
 // Lazy load preference components

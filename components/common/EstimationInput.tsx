@@ -15,14 +15,12 @@ export const EstimationInput: React.FC<EstimationInputProps> = ({
 }) => {
   const [estimatedHours, setEstimatedHours] = useState<number>(task.estimatedHours || 0);
   const [actualHours, setActualHours] = useState<number>(task.actualHours || 0);
-  const [useSuggestion, setUseSuggestion] = useState(false);
 
   const complexity = estimateTaskComplexity(task);
   const suggestion = suggestEstimation(task);
 
   const handleUseSuggestion = () => {
     setEstimatedHours(suggestion);
-    setUseSuggestion(true);
   };
 
   const handleSave = () => {

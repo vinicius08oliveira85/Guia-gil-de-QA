@@ -346,7 +346,7 @@ const App: React.FC = () => {
                     </header>
                 )}
                 {showSearch && (
-                    <div className="glass-overlay fixed inset-0 z-50 flex items-start justify-center pt-20 p-4">
+                    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/30 backdrop-blur pt-20 p-4">
                         <div className="w-full max-w-2xl">
                             <SearchBar
                                 searchQuery={searchQuery}
@@ -359,7 +359,7 @@ const App: React.FC = () => {
                 )}
 
                 {showAdvancedSearch && (
-                    <Suspense fallback={<div className="glass-overlay fixed inset-0 z-50 flex items-center justify-center"><Spinner /></div>}>
+                    <Suspense fallback={<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur"><Spinner /></div>}>
                         <AdvancedSearch
                             projects={projects}
                             onResultSelect={(result) => {
@@ -374,7 +374,7 @@ const App: React.FC = () => {
                 )}
 
                 {showProjectComparison && (
-                    <Suspense fallback={<div className="glass-overlay fixed inset-0 z-50 flex items-center justify-center"><Spinner /></div>}>
+                    <Suspense fallback={<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur"><Spinner /></div>}>
                         <ProjectComparisonModal
                             isOpen={showProjectComparison}
                             onClose={() => setShowProjectComparison(false)}

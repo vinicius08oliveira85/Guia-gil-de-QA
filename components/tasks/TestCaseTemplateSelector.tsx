@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { TEST_CASE_TEMPLATES, TestCaseTemplate } from '../../utils/testCaseTemplates';
+import { TEST_CASE_TEMPLATES } from '../../utils/testCaseTemplates';
 import { JiraTask } from '../../types';
 
 interface TestCaseTemplateSelectorProps {
@@ -44,7 +44,7 @@ export const TestCaseTemplateSelector: React.FC<TestCaseTemplateSelectorProps> =
     <div className="space-y-4">
       {/* Seletor de Tarefa - Mostrar apenas se não houver tarefa selecionada */}
       {needsTaskSelection && (
-        <div className="mb-4 p-4 mica rounded-xl border border-surface-border">
+        <div className="mb-4 rounded-2xl border border-base-300 bg-base-100 p-4">
           <label className="block text-sm font-semibold text-text-primary mb-2">
             Selecione a tarefa para adicionar o template:
           </label>

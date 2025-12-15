@@ -37,7 +37,7 @@ const getOpenAI = () => {
 };
 
 export class OpenAIService implements AIService {
-  private async callAPI(prompt: string, responseFormat: { type: 'json_object' } | null = null): Promise<string> {
+  private async callAPI(prompt: string, responseFormat?: { type: 'json_object' }): Promise<string> {
     const client = getOpenAI();
     
     const response = await client.chat.completions.create({

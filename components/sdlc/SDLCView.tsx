@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Project } from '../../types';
 import { Badge } from '../common/Badge';
-import { ProgressIndicator } from '../common/ProgressIndicator';
 import { Modal } from '../common/Modal';
 
 interface SDLCPhase {
@@ -244,14 +243,15 @@ export const SDLCView: React.FC<{ project: Project }> = ({ project }) => {
     <div className="space-y-6">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-text-primary mb-2">Ciclo de Vida do Projeto (SDLC & DevOps)</h2>
-          <p className="text-text-secondary">
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2">Ciclo de Vida do Projeto (SDLC & DevOps)</h2>
+          <p className="text-base-content/70 max-w-2xl">
             Visualize o ciclo de vida completo do projeto integrando práticas de QA e DevOps
           </p>
         </div>
         <button
+          type="button"
           onClick={() => setShowShiftLeft(!showShiftLeft)}
-          className="btn btn-secondary"
+          className="btn btn-outline btn-sm rounded-full"
         >
           {showShiftLeft ? 'Ocultar' : 'Mostrar'} Shift Left
         </button>
@@ -259,7 +259,7 @@ export const SDLCView: React.FC<{ project: Project }> = ({ project }) => {
 
       {/* Timeline Visual */}
       <div className="relative">
-        <div className="absolute left-8 top-0 bottom-0 w-1 bg-surface-border"></div>
+        <div className="absolute left-8 top-0 bottom-0 w-1 bg-base-300"></div>
         
         <div className="space-y-8">
           {sdlcPhases.map((phase, index) => {
@@ -279,21 +279,22 @@ export const SDLCView: React.FC<{ project: Project }> = ({ project }) => {
 
                 {/* Conteúdo da fase */}
                 <div className="flex-1 pb-8">
-                  <div className="p-6 bg-surface border border-surface-border rounded-lg hover:shadow-lg transition-shadow">
+                  <div className="p-6 bg-base-100 border border-base-300 rounded-xl hover:shadow-lg transition-shadow">
                     <div className="flex items-start justify-between mb-4">
                       <div>
-                        <h3 className="text-xl font-bold text-text-primary mb-2">{phase.name}</h3>
-                        <p className="text-text-secondary mb-3">{phase.description}</p>
+                        <h3 className="text-xl font-bold text-base-content mb-2">{phase.name}</h3>
+                        <p className="text-base-content/70 mb-3">{phase.description}</p>
                         <div className="flex items-center gap-3 text-sm">
                           <Badge variant={status === 'completed' ? 'success' : status === 'current' ? 'info' : 'default'}>
                             {status === 'completed' ? '✅ Concluída' : status === 'current' ? '🔄 Atual' : '⏳ Próxima'}
                           </Badge>
-                          <span className="text-text-secondary">⏱️ {phase.duration}</span>
+                          <span className="text-base-content/70">⏱️ {phase.duration}</span>
                         </div>
                       </div>
                       <button
+                        type="button"
                         onClick={() => setSelectedPhase(phase)}
-                        className="text-accent hover:text-accent-light text-sm font-semibold"
+                        className="btn btn-ghost btn-sm text-primary hover:text-primary/80"
                       >
                         Ver Detalhes →
                       </button>
@@ -302,8 +303,8 @@ export const SDLCView: React.FC<{ project: Project }> = ({ project }) => {
                     {/* Grid de atividades */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
                       <div>
-                        <h4 className="text-sm font-semibold text-text-secondary mb-2">📋 Atividades</h4>
-                        <ul className="space-y-1 text-sm text-text-secondary">
+                        <h4 className="text-sm font-semibold text-base-content/70 mb-2">📋 Atividades</h4>
+                        <ul className="space-y-1 text-sm text-base-content/70">
                           {phase.activities.slice(0, 3).map((activity, idx) => (
                             <li key={idx} className="flex items-start">
                               <span className="mr-2">•</span>
@@ -319,8 +320,8 @@ export const SDLCView: React.FC<{ project: Project }> = ({ project }) => {
                       {showShiftLeft && (
                         <>
                           <div>
-                            <h4 className="text-sm font-semibold text-text-secondary mb-2">🧪 QA (Shift Left)</h4>
-                            <ul className="space-y-1 text-sm text-text-secondary">
+                            <h4 className="text-sm font-semibold text-base-content/70 mb-2">🧪 QA (Shift Left)</h4>
+                            <ul className="space-y-1 text-sm text-base-content/70">
                               {phase.qaActivities.slice(0, 3).map((activity, idx) => (
                                 <li key={idx} className="flex items-start">
                                   <span className="mr-2">•</span>
@@ -334,8 +335,8 @@ export const SDLCView: React.FC<{ project: Project }> = ({ project }) => {
                           </div>
 
                           <div>
-                            <h4 className="text-sm font-semibold text-text-secondary mb-2">🚀 DevOps</h4>
-                            <ul className="space-y-1 text-sm text-text-secondary">
+                            <h4 className="text-sm font-semibold text-base-content/70 mb-2">🚀 DevOps</h4>
+                            <ul className="space-y-1 text-sm text-base-content/70">
                               {phase.devopsActivities.slice(0, 3).map((activity, idx) => (
                                 <li key={idx} className="flex items-start">
                                   <span className="mr-2">•</span>
@@ -369,17 +370,17 @@ export const SDLCView: React.FC<{ project: Project }> = ({ project }) => {
         >
           <div className="space-y-4">
             <div>
-              <h4 className="text-xs font-semibold text-text-secondary mb-1.5 uppercase tracking-wide">Descrição</h4>
-              <p className="text-sm text-text-primary leading-relaxed">{selectedPhase.description}</p>
+              <h4 className="text-xs font-semibold text-base-content/70 mb-1.5 uppercase tracking-wide">Descrição</h4>
+              <p className="text-sm text-base-content leading-relaxed">{selectedPhase.description}</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <h4 className="text-xs font-semibold text-text-secondary mb-2 uppercase tracking-wide">📋 Atividades Principais</h4>
+                <h4 className="text-xs font-semibold text-base-content/70 mb-2 uppercase tracking-wide">📋 Atividades Principais</h4>
                 <ul className="space-y-1.5">
                   {selectedPhase.activities.map((activity, idx) => (
-                    <li key={idx} className="flex items-start text-text-primary text-sm">
-                      <span className="mr-2 text-accent flex-shrink-0 mt-0.5">•</span>
+                    <li key={idx} className="flex items-start text-base-content text-sm">
+                      <span className="mr-2 text-primary flex-shrink-0 mt-0.5">•</span>
                       <span className="leading-relaxed">{activity}</span>
                     </li>
                   ))}
@@ -387,10 +388,10 @@ export const SDLCView: React.FC<{ project: Project }> = ({ project }) => {
               </div>
 
               <div>
-                <h4 className="text-xs font-semibold text-text-secondary mb-2 uppercase tracking-wide">📦 Entregas</h4>
+                <h4 className="text-xs font-semibold text-base-content/70 mb-2 uppercase tracking-wide">📦 Entregas</h4>
                 <ul className="space-y-1.5">
                   {selectedPhase.deliverables.map((deliverable, idx) => (
-                    <li key={idx} className="flex items-start text-text-primary text-sm">
+                    <li key={idx} className="flex items-start text-base-content text-sm">
                       <span className="mr-2 text-green-400 flex-shrink-0 mt-0.5">✓</span>
                       <span className="leading-relaxed">{deliverable}</span>
                     </li>
@@ -401,10 +402,10 @@ export const SDLCView: React.FC<{ project: Project }> = ({ project }) => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <h4 className="text-xs font-semibold text-text-secondary mb-2 uppercase tracking-wide">🧪 Atividades de QA</h4>
+                <h4 className="text-xs font-semibold text-base-content/70 mb-2 uppercase tracking-wide">🧪 Atividades de QA</h4>
                 <ul className="space-y-1.5">
                   {selectedPhase.qaActivities.map((activity, idx) => (
-                    <li key={idx} className="flex items-start text-text-primary text-sm">
+                    <li key={idx} className="flex items-start text-base-content text-sm">
                       <span className="mr-2 text-blue-400 flex-shrink-0 mt-0.5">•</span>
                       <span className="leading-relaxed">{activity}</span>
                     </li>
@@ -413,10 +414,10 @@ export const SDLCView: React.FC<{ project: Project }> = ({ project }) => {
               </div>
 
               <div>
-                <h4 className="text-xs font-semibold text-text-secondary mb-2 uppercase tracking-wide">🚀 Atividades de DevOps</h4>
+                <h4 className="text-xs font-semibold text-base-content/70 mb-2 uppercase tracking-wide">🚀 Atividades de DevOps</h4>
                 <ul className="space-y-1.5">
                   {selectedPhase.devopsActivities.map((activity, idx) => (
-                    <li key={idx} className="flex items-start text-text-primary text-sm">
+                    <li key={idx} className="flex items-start text-base-content text-sm">
                       <span className="mr-2 text-purple-400 flex-shrink-0 mt-0.5">•</span>
                       <span className="leading-relaxed">{activity}</span>
                     </li>
@@ -427,7 +428,7 @@ export const SDLCView: React.FC<{ project: Project }> = ({ project }) => {
 
             {selectedPhase.dependencies.length > 0 && (
               <div>
-                <h4 className="text-xs font-semibold text-text-secondary mb-2 uppercase tracking-wide">Dependências</h4>
+                <h4 className="text-xs font-semibold text-base-content/70 mb-2 uppercase tracking-wide">Dependências</h4>
                 <div className="flex flex-wrap gap-2">
                   {selectedPhase.dependencies.map(depId => {
                     const dep = sdlcPhases.find(p => p.id === depId);

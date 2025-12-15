@@ -38,7 +38,7 @@ export async function getDocumentContext(project: Project | null): Promise<strin
     cacheInitialized.add(projectId);
     return null;
   } catch (error) {
-    logger.error('Erro ao carregar contexto do documento:', error);
+    logger.error('Erro ao carregar contexto do documento', 'documentContextService', error);
     cacheInitialized.add(projectId);
     contextCache.set(projectId, null);
     return null;

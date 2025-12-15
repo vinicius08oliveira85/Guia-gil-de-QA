@@ -21,7 +21,8 @@ const hashString = (value: string): string => {
 
 const createPhaseSnapshot = (project: Project): string => {
   const metrics = calculateProjectMetrics(project);
-  const currentPhase = metrics.currentPhase;
+  const rawCurrentPhase = metrics.currentPhase;
+  const currentPhase = rawCurrentPhase === 'Concluído' ? 'Monitor' : rawCurrentPhase;
   const currentPhaseData = project.phases.find(p => p.name === currentPhase);
   
   const snapshot = {
@@ -183,7 +184,8 @@ export async function generateSDLCPhaseAnalysis(project: Project): Promise<SDLCP
   }
   
   const metrics = calculateProjectMetrics(project);
-  const currentPhase = metrics.currentPhase;
+  const rawCurrentPhase = metrics.currentPhase;
+  const currentPhase = (rawCurrentPhase === 'Concluído' ? 'Monitor' : rawCurrentPhase) as PhaseName;
   const progressPercentage = calculatePhaseProgress(project, currentPhase);
   
   const phaseDescriptions: Record<PhaseName, string> = {

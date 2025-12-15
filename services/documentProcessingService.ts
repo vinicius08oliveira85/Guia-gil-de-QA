@@ -11,12 +11,12 @@ export async function processDocxFile(file: File): Promise<string> {
     const result = await mammoth.extractRawText({ arrayBuffer });
     
     if (result.messages.length > 0) {
-      logger.warn('Avisos ao processar documento:', result.messages);
+      logger.warn('Avisos ao processar documento', 'documentProcessingService', { messages: result.messages });
     }
     
     return result.value;
   } catch (error) {
-    logger.error('Erro ao processar arquivo .docx:', error);
+    logger.error('Erro ao processar arquivo .docx', 'documentProcessingService', error);
     throw new Error('Falha ao processar arquivo .docx. Verifique se o arquivo está no formato correto.');
   }
 }
@@ -36,7 +36,7 @@ export function saveProcessedDocument(project: Project, content: string): Projec
     logger.info(`Documento de especificação processado e salvo no projeto ${project.id}`);
     return updatedProject;
   } catch (error) {
-    logger.error('Erro ao salvar documento processado:', error);
+    logger.error('Erro ao salvar documento processado', 'documentProcessingService', error);
     throw new Error('Falha ao salvar documento processado');
   }
 }
@@ -50,7 +50,7 @@ export function loadProcessedDocument(project: Project): string | null {
   try {
     return project.specificationDocument || null;
   } catch (error) {
-    logger.error('Erro ao carregar documento processado:', error);
+    logger.error('Erro ao carregar documento processado', 'documentProcessingService', error);
     return null;
   }
 }
@@ -66,7 +66,7 @@ export function isDocumentProcessed(project: Project): boolean {
            project.specificationDocument !== null &&
            project.specificationDocument.trim().length > 0;
   } catch (error) {
-    logger.error('Erro ao verificar status do documento:', error);
+    logger.error('Erro ao verificar status do documento', 'documentProcessingService', error);
     return false;
   }
 }
@@ -82,7 +82,7 @@ export function clearProcessedDocument(project: Project): Project {
     logger.info(`Documento de especificação removido do projeto ${project.id}`);
     return projectWithoutSpec as Project;
   } catch (error) {
-    logger.error('Erro ao remover documento processado:', error);
+    logger.error('Erro ao remover documento processado', 'documentProcessingService', error);
     throw error;
   }
 }

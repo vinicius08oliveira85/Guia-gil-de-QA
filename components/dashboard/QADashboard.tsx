@@ -123,9 +123,10 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
       {/* Botão único de análise completa */}
       <div className="flex items-center justify-end">
         <button
+          type="button"
           onClick={generateCompleteAnalysis}
           disabled={isGenerating}
-          className="btn btn-primary text-sm disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap min-w-[180px]"
+          className="btn btn-primary btn-sm rounded-full disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap min-w-[180px]"
           aria-label="Gerar análise completa do dashboard"
         >
           {isGenerating ? 'Gerando...' : '🔄 Gerar Análise Completa'}
@@ -137,7 +138,6 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
         hasCriticalFailures={hasCriticalFailures}
         bugsBySeverity={metrics.bugsBySeverity}
         passRate={metrics.testPassRate}
-        totalBugs={metrics.openVsClosedBugs.open}
       />
 
       {/* Timeline SDLC */}
@@ -154,7 +154,7 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
       {/* Análise de IA */}
       <div className="space-y-6">
         <div className="flex items-center justify-between gap-4 flex-wrap">
-          <h2 className="text-xl font-semibold text-text-primary flex-shrink-0">Análise de IA</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-base-content flex-shrink-0">Análise de IA</h2>
         </div>
 
         {/* Score de Qualidade */}

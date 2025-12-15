@@ -7,7 +7,6 @@ import { Spinner } from '../common/Spinner';
 interface DashboardAnalysisModalProps {
     isOpen: boolean;
     onClose: () => void;
-    type: 'overview';
     analysis: DashboardOverviewAnalysis | null;
     isLoading: boolean;
     onRegenerate?: () => void;
@@ -16,7 +15,6 @@ interface DashboardAnalysisModalProps {
 export const DashboardAnalysisModal: React.FC<DashboardAnalysisModalProps> = ({
     isOpen,
     onClose,
-    type,
     analysis,
     isLoading,
     onRegenerate,

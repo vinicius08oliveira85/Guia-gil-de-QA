@@ -1,5 +1,5 @@
 import { useMemo, useEffect } from 'react';
-import { Project, MetricsSnapshot } from '../types';
+import { Project } from '../types';
 import { useProjectMetrics } from './useProjectMetrics';
 import {
   saveMetricsSnapshot,

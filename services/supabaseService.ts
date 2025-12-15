@@ -26,14 +26,7 @@ const isProduction = (): boolean => {
 /**
  * Verifica se é ambiente de desenvolvimento local
  */
-const isLocalDevelopment = (): boolean => {
-    if (typeof window === 'undefined') return false;
-    return window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-};
-
 let supabase: SupabaseClient | null = null;
-let supabaseAuthPromise: Promise<void> | null = null;
-let isAuthReady = false;
 
 // Sistema de controle de salvamentos para evitar loops e salvamentos simultâneos
 const savingProjects = new Map<string, Promise<void>>(); // Rastreia salvamentos em progresso
@@ -49,17 +42,14 @@ const requestTimeoutMs = 5000; // Timeout de 5 segundos para requisições
 if (supabaseUrl && supabaseAnonKey) {
     logger.info('Inicializando SDK Supabase direto para salvamento', 'supabaseService');
     supabase = createClient(supabaseUrl, supabaseAnonKey);
-    supabaseAuthPromise = supabase.auth.signInAnonymously().then(result => {
+    void supabase.auth.signInAnonymously().then(result => {
         if (result.error) {
             logger.warn('Erro ao autenticar anonimamente no Supabase', 'supabaseService', result.error);
-            isAuthReady = false;
             return;
         }
-        isAuthReady = true;
         logger.info('Supabase configurado via SDK (salvamento direto habilitado)', 'supabaseService');
     }).catch(error => {
         logger.warn('Erro ao configurar autenticação Supabase', 'supabaseService', error);
-        isAuthReady = false;
     });
 } else if (!supabaseProxyUrl) {
     if (isProduction()) {
@@ -171,7 +161,6 @@ const compressData = async (data: unknown): Promise<string> => {
 
         const jsonString = JSON.stringify(data);
         const encoder = new TextEncoder();
-        const decoder = new TextDecoder();
         
         const stream = new CompressionStream('gzip');
         const writer = stream.writable.getWriter();
@@ -446,7 +435,6 @@ export const saveProjectToSupabase = async (project: Project): Promise<void> => 
                         throw error; // Não tentar proxy se for erro de rede
                     }
                     
-                    const errorMessage = error instanceof Error ? error.message : String(error);
                     logger.debug('Erro ao salvar via SDK Supabase, tentando proxy como fallback', 'supabaseService', error);
                     // Continuar para tentar proxy como fallback apenas se não for erro de rede
                 }
@@ -458,8 +446,6 @@ export const saveProjectToSupabase = async (project: Project): Promise<void> => 
                     await saveThroughProxy(project);
                     return;
                 } catch (error) {
-                    const errorMessage = error instanceof Error ? error.message : String(error);
-                    
                     // Se for erro de rede, não tentar mais - salvar apenas localmente
                     if (isNetworkError(error)) {
                         logger.warn('Erro de rede ao salvar via proxy Supabase. Salvando apenas localmente.', 'supabaseService', error);
@@ -582,7 +568,6 @@ export const loadProjectsFromSupabase = async (): Promise<Project[]> => {
         const { data, error } = result;
         
         if (error) {
-            const errorMessage = error.message || String(error);
             if (isCorsError(error)) {
                 logger.error('Erro CORS ao carregar via SDK. Use proxy em produção', 'supabaseService', error);
             } else {
@@ -600,7 +585,6 @@ export const loadProjectsFromSupabase = async (): Promise<Project[]> => {
         logger.info(`${projects.length} projetos carregados do Supabase via SDK`, 'supabaseService');
         return projects;
     } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
         if (isCorsError(error)) {
             logger.error('Erro CORS ao carregar do Supabase. Use proxy', 'supabaseService', error);
         } else {
@@ -624,7 +608,6 @@ export const deleteProjectFromSupabase = async (projectId: string): Promise<void
             logger.info(`Projeto ${projectId} removido via proxy Supabase`, 'supabaseService');
             return;
         } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : String(error);
             if (isCorsError(error)) {
                 logger.error('Erro CORS ao deletar do Supabase. Configure VITE_SUPABASE_PROXY_URL', 'supabaseService', error);
             } else {
@@ -662,7 +645,6 @@ export const deleteProjectFromSupabase = async (projectId: string): Promise<void
         const { error } = result as { error?: { message: string } };
         
         if (error) {
-            const errorMessage = error.message || String(error);
             if (isCorsError(error)) {
                 logger.error('Erro CORS ao deletar via SDK. Use proxy em produção', 'supabaseService', error);
             } else {
@@ -673,7 +655,6 @@ export const deleteProjectFromSupabase = async (projectId: string): Promise<void
         
         logger.info(`Projeto ${projectId} deletado do Supabase via SDK`, 'supabaseService');
     } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
         if (isCorsError(error)) {
             logger.error('Erro CORS ao deletar do Supabase. Use proxy', 'supabaseService', error);
         } else {

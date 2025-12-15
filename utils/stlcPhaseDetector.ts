@@ -1,5 +1,4 @@
 import { Project, STLCPhaseName } from '../types';
-import { calculateProjectMetrics } from '../hooks/useProjectMetrics';
 
 /**
  * Detecta a fase atual do STLC baseado nas métricas do projeto
@@ -8,7 +7,6 @@ import { calculateProjectMetrics } from '../hooks/useProjectMetrics';
  * @returns Fase atual do STLC
  */
 export function detectCurrentSTLCPhase(project: Project): STLCPhaseName {
-    const metrics = calculateProjectMetrics(project);
     const tasks = project.tasks || [];
     const documents = project.documents || [];
     const allTestCases = tasks.flatMap(t => t.testCases || []);

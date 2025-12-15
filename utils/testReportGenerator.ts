@@ -7,12 +7,6 @@ interface GenerateTestReportOptions {
   format?: TestReportFormat;
 }
 
-const sectionTitle = (format: TestReportFormat, title: string) =>
-  format === 'markdown' ? `## ${title}` : `${title.toUpperCase()}:`;
-
-const boldLabel = (format: TestReportFormat, label: string) =>
-  format === 'markdown' ? `**${label}**` : label.toUpperCase();
-
 /**
  * Formata data no formato dd/MM/yyyy às HH:mm:ss
  */

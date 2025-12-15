@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Project, JiraTask } from '../types';
+import { Project } from '../types';
 import { getJiraConfig } from '../services/jiraService';
 import { syncBugsFromJira } from '../services/jiraBugsService';
 import { useProjectsStore } from '../store/projectsStore';
@@ -74,15 +74,17 @@ export const useJiraBugs = (project: Project) => {
 
   // Sincronizar automaticamente quando o projeto carregar (se configurado)
   useEffect(() => {
-    if (projectKey && getJiraConfig()) {
-      // Sincronizar após um pequeno delay para não bloquear renderização inicial
-      const timer = setTimeout(() => {
-        syncBugs();
-      }, 1000);
-
-      return () => clearTimeout(timer);
+    if (!(projectKey && getJiraConfig())) {
+      return;
     }
-  }, [projectKey]); // Apenas quando projectKey mudar
+
+    // Sincronizar após um pequeno delay para não bloquear renderização inicial
+    const timer = setTimeout(() => {
+      syncBugs();
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [projectKey, syncBugs]); // Apenas quando projectKey mudar
 
   return {
     syncBugs,

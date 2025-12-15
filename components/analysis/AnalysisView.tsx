@@ -13,8 +13,6 @@ import { TestAnalysisCard } from './TestAnalysisCard';
 import { AnalysisSection } from './AnalysisSection';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import { useAnalysisSync } from '../../hooks/useAnalysisSync';
-import { EmptyState } from '../common/EmptyState';
-import { windows12Styles } from '../../utils/windows12Styles';
 
 type ViewMode = 'list' | 'grid' | 'detailed';
 
@@ -137,15 +135,6 @@ export const AnalysisView: React.FC<{
         );
     }, [filteredTaskAnalyses]);
 
-    // Obter testes incompletos
-    const incompleteTests = useMemo(() => {
-        return (project.tasks || []).flatMap(task => 
-            (task?.testCases || [])
-                .filter(tc => tc && (tc.status === 'Not Run' || tc.status === 'Failed'))
-                .map(tc => ({ testCase: tc, task }))
-        );
-    }, [project.tasks]);
-
     // Obter tarefas sem análise
     const tasksWithoutAnalysis = useMemo(() => {
         return (project.tasks || []).filter(task => task && (!task.iaAnalysis || task.iaAnalysis.isOutdated));
@@ -164,29 +153,22 @@ export const AnalysisView: React.FC<{
 
     return (
         <div className="space-y-6 pb-6">
-            {/* Header com ações - Estilo Windows 12 */}
-            <div className={`
-                ${windows12Styles.card}
-                ${windows12Styles.spacing.md}
-                flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4
-            `}>
+            {/* Header com ações */}
+            <div className="p-5 bg-base-100 border border-base-300 rounded-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div className="flex-1">
-                    <h2 className="heading-section text-text-primary mb-2">
+                    <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2">
                         Análise IA do Projeto
                     </h2>
-                    <p className="text-sm text-text-secondary leading-relaxed">
+                    <p className="text-sm text-base-content/70 leading-relaxed max-w-2xl">
                         Análises estratégicas e consolidadas geradas por IA para seu projeto
                     </p>
                 </div>
                 <div className="flex flex-wrap gap-2 w-full sm:w-auto">
                     <button 
+                        type="button"
                         onClick={handleAnalyzeAndUpdateDashboard} 
                         disabled={isAnalyzing} 
-                        className={`
-                            ${windows12Styles.buttonSecondary}
-                            disabled:opacity-50 disabled:cursor-not-allowed
-                            flex items-center gap-2 text-sm
-                        `}
+                        className="btn btn-outline btn-sm rounded-full disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                         aria-label="Analisar projeto completo"
                     >
                         {isAnalyzing ? <Spinner small /> : '🔄'}
@@ -194,13 +176,10 @@ export const AnalysisView: React.FC<{
                     </button>
                     {(!project.generalIAAnalysis || needsGeneralReanalysis()) && (
                         <button
+                            type="button"
                             onClick={handleRefreshGeneralAnalysis}
                             disabled={isAnalyzingGeneral}
-                            className={`
-                                ${windows12Styles.buttonPrimary}
-                                disabled:opacity-50 disabled:cursor-not-allowed
-                                flex items-center gap-2 text-sm
-                            `}
+                            className="btn btn-primary btn-sm rounded-full disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                             aria-label="Executar análise geral IA"
                         >
                             {isAnalyzingGeneral ? <Spinner small /> : '🧠'}
@@ -218,37 +197,29 @@ export const AnalysisView: React.FC<{
                 />
             )}
 
-            {/* Aviso se análise geral está desatualizada ou não existe - Estilo Windows 12 */}
+            {/* Aviso se análise geral está desatualizada ou não existe */}
             {(!project.generalIAAnalysis || needsGeneralReanalysis()) && (
-                <div className={`
-                    ${windows12Styles.card}
-                    ${windows12Styles.spacing.md}
-                    border-yellow-400/30 bg-yellow-400/10
-                    ${windows12Styles.glow('yellow')}
-                `}>
+                <div className="p-5 bg-warning/10 border border-warning/30 rounded-xl">
                     <div className="flex items-start gap-3">
                         <span className="text-2xl animate-pulse">⚠️</span>
                         <div className="flex-1">
-                            <h4 className="font-semibold text-text-primary mb-1">
+                            <h4 className="font-semibold text-base-content mb-1">
                                 {!project.generalIAAnalysis 
                                     ? 'Nenhuma análise geral disponível'
                                     : 'Análise geral desatualizada'
                                 }
                             </h4>
-                            <p className="text-sm text-text-secondary mb-3">
+                            <p className="text-sm text-base-content/70 mb-3">
                                 {!project.generalIAAnalysis
                                     ? 'Execute uma análise geral para obter insights consolidados sobre todas as tarefas e testes do projeto.'
                                     : 'A análise geral pode estar desatualizada devido a mudanças recentes no projeto. Execute uma nova análise para obter resultados atualizados.'
                                 }
                             </p>
                             <button
+                                type="button"
                                 onClick={handleRefreshGeneralAnalysis}
                                 disabled={isAnalyzingGeneral}
-                                className={`
-                                    ${windows12Styles.buttonPrimary}
-                                    disabled:opacity-50 disabled:cursor-not-allowed
-                                    flex items-center gap-2
-                                `}
+                                className="btn btn-primary btn-sm rounded-full disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                             >
                                 {isAnalyzingGeneral ? <Spinner small /> : '🧠'}
                                 <span>Executar Análise Geral</span>
@@ -273,26 +244,21 @@ export const AnalysisView: React.FC<{
                 >
                     {tasksWithoutAnalysis.length > 0 && (
                         <div className="mb-4">
-                            <h4 className="text-sm font-semibold text-text-secondary mb-2 uppercase tracking-wide">
+                            <h4 className="text-sm font-semibold text-base-content/70 mb-2 uppercase tracking-wide">
                                 Tarefas sem análise ({tasksWithoutAnalysis.length})
                             </h4>
                             <div className="space-y-2">
                                 {tasksWithoutAnalysis.slice(0, 5).map(task => (
                                     <div
                                         key={task.id}
-                                        className={`
-                                            ${windows12Styles.card}
-                                            ${windows12Styles.spacing.sm}
-                                            border-yellow-400/30 bg-yellow-400/5
-                                            hover:border-yellow-400/50 ${windows12Styles.transition.normal}
-                                        `}
+                                        className="p-3 bg-warning/5 border border-warning/30 rounded-lg hover:border-warning/50 transition-all"
                                     >
                                         <div className="flex items-start justify-between">
                                             <div className="flex-1">
-                                                <h5 className="font-semibold text-text-primary mb-1">
+                                                <h5 className="font-semibold text-base-content mb-1">
                                                     {task.title}
                                                 </h5>
-                                                <p className="text-xs text-text-secondary">
+                                                <p className="text-xs text-base-content/70">
                                                     ID: {task.id} • Status: {task.status}
                                                 </p>
                                                 {task.iaAnalysis?.isOutdated && (
@@ -303,11 +269,9 @@ export const AnalysisView: React.FC<{
                                             </div>
                                             {onNavigateToTask && (
                                                 <button
+                                                    type="button"
                                                     onClick={() => onNavigateToTask(task.id)}
-                                                    className={`
-                                                        ${windows12Styles.buttonSecondary}
-                                                        ml-2 text-xs
-                                                    `}
+                                                    className="btn btn-ghost btn-xs rounded-full ml-2"
                                                 >
                                                     Ver →
                                                 </button>
@@ -320,36 +284,29 @@ export const AnalysisView: React.FC<{
                     )}
                     {testsWithoutAnalysis.length > 0 && (
                         <div>
-                            <h4 className="text-sm font-semibold text-text-secondary mb-2 uppercase tracking-wide">
+                            <h4 className="text-sm font-semibold text-base-content/70 mb-2 uppercase tracking-wide">
                                 Testes sem análise ({testsWithoutAnalysis.length})
                             </h4>
                             <div className="space-y-2">
                                 {testsWithoutAnalysis.slice(0, 5).map(({ testCase, task }) => (
                                     <div
                                         key={testCase.id}
-                                        className={`
-                                            ${windows12Styles.card}
-                                            ${windows12Styles.spacing.sm}
-                                            border-blue-400/30 bg-blue-400/5
-                                            hover:border-blue-400/50 ${windows12Styles.transition.normal}
-                                        `}
+                                        className="p-3 bg-info/5 border border-info/30 rounded-lg hover:border-info/50 transition-all"
                                     >
                                         <div className="flex items-start justify-between">
                                             <div className="flex-1">
-                                                <h5 className="font-semibold text-text-primary mb-1 line-clamp-1">
+                                                <h5 className="font-semibold text-base-content mb-1 line-clamp-1">
                                                     {testCase.description}
                                                 </h5>
-                                                <p className="text-xs text-text-secondary">
+                                                <p className="text-xs text-base-content/70">
                                                     Tarefa: {task.title} • Status: {testCase.status}
                                                 </p>
                                             </div>
                                             {onNavigateToTask && (
                                                 <button
+                                                    type="button"
                                                     onClick={() => onNavigateToTask(task.id)}
-                                                    className={`
-                                                        ${windows12Styles.buttonSecondary}
-                                                        ml-2 text-xs
-                                                    `}
+                                                    className="btn btn-ghost btn-xs rounded-full ml-2"
                                                 >
                                                     Ver →
                                                 </button>
@@ -412,11 +369,10 @@ export const AnalysisView: React.FC<{
                     filters={
                         <div className="flex flex-wrap gap-2">
                             <button
+                                type="button"
                                 onClick={() => setRiskFilter('all')}
-                                className={`px-3 py-1 rounded-lg text-sm transition-colors ${
-                                    riskFilter === 'all'
-                                        ? 'bg-accent/20 text-accent-light border border-accent/30'
-                                        : 'bg-surface border border-surface-border text-text-secondary hover:text-text-primary'
+                                className={`btn btn-sm rounded-full transition-colors ${
+                                    riskFilter === 'all' ? 'btn-primary' : 'btn-outline'
                                 }`}
                             >
                                 Todos
@@ -424,11 +380,10 @@ export const AnalysisView: React.FC<{
                             {['Crítico', 'Alto', 'Médio', 'Baixo'].map(risk => (
                                 <button
                                     key={risk}
+                                    type="button"
                                     onClick={() => setRiskFilter(risk)}
-                                    className={`px-3 py-1 rounded-lg text-sm transition-colors ${
-                                        riskFilter === risk
-                                            ? 'bg-accent/20 text-accent-light border border-accent/30'
-                                            : 'bg-surface border border-surface-border text-text-secondary hover:text-text-primary'
+                                    className={`btn btn-sm rounded-full transition-colors ${
+                                        riskFilter === risk ? 'btn-primary' : 'btn-outline'
                                     }`}
                                 >
                                     {risk}
@@ -536,24 +491,18 @@ export const AnalysisView: React.FC<{
                             return (
                                 <div
                                     key={idx}
-                                    className={`
-                                        ${windows12Styles.card}
-                                        ${windows12Styles.spacing.md}
-                                        ${windows12Styles.cardHover}
-                                    `}
+                                    className="p-5 bg-base-100 border border-base-300 rounded-xl hover:border-primary/30 transition-all"
                                 >
                                     <div className="flex items-start justify-between mb-3">
                                         <div>
-                                            <h4 className="font-semibold text-text-primary">
+                                            <h4 className="font-semibold text-base-content">
                                                 {suggestion.taskTitle}
                                             </h4>
                                             {task && onNavigateToTask && (
                                                 <button
+                                                    type="button"
                                                     onClick={() => onNavigateToTask(task.id)}
-                                                    className={`
-                                                        text-xs text-accent hover:text-accent-light mt-1
-                                                        ${windows12Styles.transition.fast}
-                                                    `}
+                                                    className="text-xs text-primary hover:text-primary/80 mt-1 inline-flex"
                                                 >
                                                     Ver tarefa →
                                                 </button>
@@ -564,13 +513,7 @@ export const AnalysisView: React.FC<{
                                         {suggestion.scenarios.map((scenario, sIdx) => (
                                             <div
                                                 key={sIdx}
-                                                className={`
-                                                    p-3 bg-surface-hover rounded-lg
-                                                    border border-surface-border
-                                                    text-sm text-text-secondary font-mono
-                                                    ${windows12Styles.transition.normal}
-                                                    hover:border-accent/30
-                                                `}
+                                                className="p-3 bg-base-200 rounded-lg border border-base-300 text-sm text-base-content/70 font-mono hover:border-primary/30 transition-all"
                                             >
                                                 {scenario}
                                             </div>

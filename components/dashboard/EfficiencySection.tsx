@@ -34,13 +34,13 @@ export const EfficiencySection: React.FC<EfficiencySectionProps> = ({ project })
     
     return (
         <div className="space-y-6">
-            <div className="win-toolbar flex flex-col gap-4 rounded-[26px] border border-surface-border/60 bg-gradient-to-br from-white/8 via-white/2 to-transparent px-4 py-4 sm:px-6 sm:py-6">
+            <div className="flex flex-col gap-4 rounded-[var(--rounded-box)] border border-base-300 bg-gradient-to-br from-base-100 to-base-200 px-4 py-4 sm:px-6 sm:py-6">
                 <div className="space-y-2">
-                    <p className="eyebrow text-text-secondary/80">Melhoria Contínua</p>
-                    <h2 className="heading-section text-text-primary">
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-base-content/60">Melhoria Contínua</p>
+                    <h2 className="text-2xl font-semibold tracking-tight text-base-content">
                         Eficiência & Processo
                     </h2>
-                    <p className="text-lead text-sm sm:text-base">
+                    <p className="text-sm text-base-content/70 sm:text-base">
                         Métricas de eficiência, estabilidade e qualidade do processo de QA.
                     </p>
                 </div>

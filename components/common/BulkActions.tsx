@@ -1,9 +1,8 @@
 import React, { useState, useMemo } from 'react';
-import { JiraTask, Project } from '../../types';
+import { Project } from '../../types';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import { Modal } from './Modal';
 import { useProjectsStore } from '../../store/projectsStore';
-import { PHASE_NAMES } from '../../utils/constants';
 
 interface BulkActionsProps {
   selectedTasks: string[] | Set<string>;

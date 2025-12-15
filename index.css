@@ -112,12 +112,6 @@
     transform: translateY(0);
   }
 
-  /* Overlay helper (transitório — enquanto refatoramos modais/overlays) */
-  .glass-overlay {
-    background: color-mix(in oklch, oklch(var(--b1)) 55%, transparent);
-    backdrop-filter: blur(10px);
-  }
-
   /* Prose mínimo para markdown (sem typography plugin) */
   .prose {
     color: color-mix(in oklch, oklch(var(--bc)) 80%, transparent);

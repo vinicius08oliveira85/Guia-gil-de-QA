@@ -17,7 +17,6 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({ onProjectImpor
         email: '',
         apiToken: '',
     });
-    const [isConfiguring, setIsConfiguring] = useState(false);
     const [isTesting, setIsTesting] = useState(false);
     const [isConnected, setIsConnected] = useState(false);
     const [jiraProjects, setJiraProjects] = useState<JiraProject[]>([]);

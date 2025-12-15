@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { useProjectsStore } from '../../store/projectsStore';
-import { Project, JiraTask } from '../../types';
+import { Project } from '../../types';
 import * as dbService from '../../services/dbService';
 
 // Mock do dbService
@@ -68,15 +68,6 @@ describe('useProjectsStore', () => {
 
   describe('createProject', () => {
     it('deve criar projeto sem template', async () => {
-      const newProject: Project = {
-        id: 'proj-1',
-        name: 'Novo Projeto',
-        description: 'Descrição',
-        documents: [],
-        tasks: [],
-        phases: [],
-      };
-
       vi.mocked(dbService.addProject).mockResolvedValue(undefined);
 
       const created = await useProjectsStore.getState().createProject(

@@ -1,5 +1,5 @@
 import React from 'react';
-import { cn } from '../../utils/windows12Styles';
+import { cn } from '../../utils/cn';
 
 /**
  * Props do componente Badge

@@ -1,5 +1,5 @@
 import { Type } from "@google/genai";
-import { Project, DashboardOverviewAnalysis, STLCPhaseName } from '../../types';
+import { Project, DashboardOverviewAnalysis } from '../../types';
 import { detectCurrentSTLCPhase } from '../../utils/stlcPhaseDetector';
 import { calculateProjectMetrics } from '../../hooks/useProjectMetrics';
 import { getFormattedContext } from './documentContextService';

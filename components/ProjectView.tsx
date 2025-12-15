@@ -60,17 +60,19 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
     }, [metrics.newPhases]);
 
     useEffect(() => {
-        if (isPrinting) {
-            const originalTitle = document.title;
-            document.title = `Relatorio_${project.name.replace(/\s/g, '_')}`;
-            const timer = setTimeout(() => {
-                window.print();
-                setIsPrinting(false);
-                document.title = originalTitle;
-            }, 300);
-
-            return () => clearTimeout(timer);
+        if (!isPrinting) {
+            return;
         }
+
+        const originalTitle = document.title;
+        document.title = `Relatorio_${project.name.replace(/\s/g, '_')}`;
+        const timer = setTimeout(() => {
+            window.print();
+            setIsPrinting(false);
+            document.title = originalTitle;
+        }, 300);
+
+        return () => clearTimeout(timer);
     }, [isPrinting, project.name]);
     
     const handlePrint = () => {

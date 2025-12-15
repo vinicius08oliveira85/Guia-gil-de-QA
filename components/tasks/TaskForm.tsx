@@ -187,7 +187,7 @@ export const TaskForm: React.FC<{
                         }}
                         placeholder={isBeginnerMode ? "Ex: PROJ-001, LOGIN-001" : ""}
                         error={validationErrors.id}
-                        success={taskData.id && !validationErrors.id && taskData.id.length >= 3}
+                        success={taskData.id.length >= 3 && !validationErrors.id}
                         required
                     />
                 </div>
@@ -213,7 +213,7 @@ export const TaskForm: React.FC<{
                         }}
                         placeholder={isBeginnerMode ? "Ex: Implementar login com email" : ""}
                         error={validationErrors.title}
-                        success={taskData.title && !validationErrors.title && taskData.title.length >= 5}
+                        success={taskData.title.length >= 5 && !validationErrors.title}
                         required 
                     />
                 </div>

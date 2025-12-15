@@ -2,32 +2,47 @@
 // Redireciona para a nova arquitetura de serviços de IA
 
 import { getAIService } from './ai/aiServiceFactory';
+import type { AIService } from './ai/aiServiceInterface';
 
 // Re-exporta todas as funções usando o serviço de IA configurado
-export const generateTestCasesForTask = async (...args: Parameters<typeof import('./ai/aiServiceInterface').AIService['generateTestCasesForTask']>) => {
+export const generateTestCasesForTask = async (
+  ...args: Parameters<AIService['generateTestCasesForTask']>
+) => {
   return getAIService().generateTestCasesForTask(...args);
 };
 
-export const analyzeDocumentContent = async (...args: Parameters<typeof import('./ai/aiServiceInterface').AIService['analyzeDocumentContent']>) => {
+export const analyzeDocumentContent = async (
+  ...args: Parameters<AIService['analyzeDocumentContent']>
+) => {
   return getAIService().analyzeDocumentContent(...args);
 };
 
-export const generateTaskFromDocument = async (...args: Parameters<typeof import('./ai/aiServiceInterface').AIService['generateTaskFromDocument']>) => {
+export const generateTaskFromDocument = async (
+  ...args: Parameters<AIService['generateTaskFromDocument']>
+) => {
   return getAIService().generateTaskFromDocument(...args);
 };
 
-export const generateProjectLifecyclePlan = async (...args: Parameters<typeof import('./ai/aiServiceInterface').AIService['generateProjectLifecyclePlan']>) => {
+export const generateProjectLifecyclePlan = async (
+  ...args: Parameters<AIService['generateProjectLifecyclePlan']>
+) => {
   return getAIService().generateProjectLifecyclePlan(...args);
 };
 
-export const generateShiftLeftAnalysis = async (...args: Parameters<typeof import('./ai/aiServiceInterface').AIService['generateShiftLeftAnalysis']>) => {
+export const generateShiftLeftAnalysis = async (
+  ...args: Parameters<AIService['generateShiftLeftAnalysis']>
+) => {
   return getAIService().generateShiftLeftAnalysis(...args);
 };
 
-export const generateBddScenarios = async (...args: Parameters<typeof import('./ai/aiServiceInterface').AIService['generateBddScenarios']>) => {
+export const generateBddScenarios = async (
+  ...args: Parameters<AIService['generateBddScenarios']>
+) => {
   return getAIService().generateBddScenarios(...args);
 };
 
-export const generateTestPyramidAnalysis = async (...args: Parameters<typeof import('./ai/aiServiceInterface').AIService['generateTestPyramidAnalysis']>) => {
+export const generateTestPyramidAnalysis = async (
+  ...args: Parameters<AIService['generateTestPyramidAnalysis']>
+) => {
   return getAIService().generateTestPyramidAnalysis(...args);
 };

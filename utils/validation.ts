@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { PhaseName, PhaseStatus } from '../types';
 
 // Schemas auxiliares
 export const ProjectDocumentSchema = z.object({
@@ -40,7 +39,7 @@ export const TaskSchema = z.object({
   id: z.string().min(3, 'ID deve ter pelo menos 3 caracteres').max(50, 'ID muito longo'),
   title: z.string().min(5, 'Título deve ter pelo menos 5 caracteres').max(200, 'Título muito longo'),
   description: z.string().max(5000, 'Descrição muito longa').optional(),
-  status: z.enum(['To Do', 'In Progress', 'Done']).default('To Do'),
+  status: z.enum(['To Do', 'In Progress', 'Done', 'Blocked']).default('To Do'),
   type: z.enum(['Epic', 'História', 'Tarefa', 'Bug']),
   priority: z.enum(['Baixa', 'Média', 'Alta', 'Urgente']).optional(),
   severity: z.enum(['Crítico', 'Alto', 'Médio', 'Baixo']).optional(),

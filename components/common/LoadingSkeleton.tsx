@@ -1,18 +1,12 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { cn } from '../../utils/windows12Styles';
+import { cn } from '../../utils/cn';
 
 interface LoadingSkeletonProps {
     variant?: 'task' | 'card' | 'list' | 'text' | 'button' | 'table';
     count?: number;
     className?: string;
 }
-
-const shimmerAnimation = {
-    background: 'linear-gradient(90deg, var(--surface-hover) 0%, rgba(255,255,255,0.1) 50%, var(--surface-hover) 100%)',
-    backgroundSize: '200% 100%',
-    animation: 'shimmer 1.5s ease-in-out infinite',
-};
 
 export const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({ 
     variant = 'card', 
@@ -27,21 +21,21 @@ export const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({
             case 'task':
                 return (
                     <motion.div 
-                        className={cn(baseClasses, 'bg-surface border border-surface-border p-4')}
+                        className={cn(baseClasses, 'bg-base-100 border border-base-300 p-4')}
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.3 }}
                     >
                         <div className="relative">
                             <div className="flex items-center gap-3 mb-3">
-                                <div className="w-8 h-8 bg-surface-hover rounded-full"></div>
+                                <div className="w-8 h-8 bg-base-200 rounded-full"></div>
                                 <div className="flex-1">
-                                    <div className="h-4 bg-surface-hover rounded w-1/4 mb-2"></div>
-                                    <div className="h-5 bg-surface-hover rounded w-3/4"></div>
+                                    <div className="h-4 bg-base-200 rounded w-1/4 mb-2"></div>
+                                    <div className="h-5 bg-base-200 rounded w-3/4"></div>
                                 </div>
                             </div>
-                            <div className="h-3 bg-surface-hover rounded w-full mb-2"></div>
-                            <div className="h-3 bg-surface-hover rounded w-5/6"></div>
+                            <div className="h-3 bg-base-200 rounded w-full mb-2"></div>
+                            <div className="h-3 bg-base-200 rounded w-5/6"></div>
                             <div className={shimmerClasses}></div>
                         </div>
                     </motion.div>
@@ -49,17 +43,17 @@ export const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({
             case 'card':
                 return (
                     <motion.div 
-                        className={cn(baseClasses, 'bg-surface border border-surface-border p-6')}
+                        className={cn(baseClasses, 'bg-base-100 border border-base-300 p-6')}
                         initial={{ opacity: 0, scale: 0.98 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ duration: 0.3 }}
                     >
                         <div className="relative">
-                            <div className="h-6 bg-surface-hover rounded w-1/3 mb-4"></div>
+                            <div className="h-6 bg-base-200 rounded w-1/3 mb-4"></div>
                             <div className="space-y-3">
-                                <div className="h-4 bg-surface-hover rounded w-full"></div>
-                                <div className="h-4 bg-surface-hover rounded w-5/6"></div>
-                                <div className="h-4 bg-surface-hover rounded w-4/6"></div>
+                                <div className="h-4 bg-base-200 rounded w-full"></div>
+                                <div className="h-4 bg-base-200 rounded w-5/6"></div>
+                                <div className="h-4 bg-base-200 rounded w-4/6"></div>
                             </div>
                             <div className={shimmerClasses}></div>
                         </div>
@@ -76,7 +70,7 @@ export const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({
                         {[0, 1, 2].map((i) => (
                             <motion.div
                                 key={i}
-                                className={cn(baseClasses, 'h-10 bg-surface-hover')}
+                                className={cn(baseClasses, 'h-10 bg-base-200')}
                                 initial={{ opacity: 0, x: -10 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ delay: i * 0.1, duration: 0.3 }}
@@ -89,16 +83,16 @@ export const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({
             case 'table':
                 return (
                     <motion.div 
-                        className={cn(baseClasses, 'bg-surface border border-surface-border p-4')}
+                        className={cn(baseClasses, 'bg-base-100 border border-base-300 p-4')}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ duration: 0.3 }}
                     >
                         <div className="relative">
                             <div className="space-y-3">
-                                <div className="h-12 bg-surface-hover rounded"></div>
+                                <div className="h-12 bg-base-200 rounded"></div>
                                 {[0, 1, 2, 3].map((i) => (
-                                    <div key={i} className="h-10 bg-surface-hover rounded"></div>
+                                    <div key={i} className="h-10 bg-base-200 rounded"></div>
                                 ))}
                             </div>
                             <div className={shimmerClasses}></div>
@@ -113,16 +107,16 @@ export const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({
                         animate={{ opacity: 1 }}
                         transition={{ duration: 0.3 }}
                     >
-                        <div className="h-4 bg-surface-hover rounded w-full mb-2"></div>
-                        <div className="h-4 bg-surface-hover rounded w-5/6 mb-2"></div>
-                        <div className="h-4 bg-surface-hover rounded w-4/6"></div>
+                        <div className="h-4 bg-base-200 rounded w-full mb-2"></div>
+                        <div className="h-4 bg-base-200 rounded w-5/6 mb-2"></div>
+                        <div className="h-4 bg-base-200 rounded w-4/6"></div>
                         <div className={shimmerClasses}></div>
                     </motion.div>
                 );
             case 'button':
                 return (
                     <motion.div 
-                        className={cn(baseClasses, 'h-10 bg-surface-hover w-24')}
+                        className={cn(baseClasses, 'h-10 bg-base-200 w-24')}
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ duration: 0.3 }}
@@ -133,7 +127,7 @@ export const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({
             default:
                 return (
                     <motion.div 
-                        className={cn(baseClasses, 'h-20 bg-surface-hover')}
+                        className={cn(baseClasses, 'h-20 bg-base-200')}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ duration: 0.3 }}

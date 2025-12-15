@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { viewFile, downloadFile, detectFileType, canViewInBrowser, getFileViewerURL, dataURLToBlob } from '../../services/fileViewerService';
+import { viewFile, downloadFile, detectFileType, canViewInBrowser, getFileViewerURL } from '../../services/fileViewerService';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import { Modal } from './Modal';
 import { Spinner } from './Spinner';
@@ -58,10 +58,11 @@ const ImageViewer: React.FC<{ src: string; alt: string }> = ({ src, alt }) => {
 
     useEffect(() => {
         const handleGlobalMouseUp = () => setIsDragging(false);
-        if (isDragging) {
-            document.addEventListener('mouseup', handleGlobalMouseUp);
-            return () => document.removeEventListener('mouseup', handleGlobalMouseUp);
+        if (!isDragging) {
+            return;
         }
+        document.addEventListener('mouseup', handleGlobalMouseUp);
+        return () => document.removeEventListener('mouseup', handleGlobalMouseUp);
     }, [isDragging]);
 
     return (
@@ -136,7 +137,7 @@ export interface FileViewerProps {
     content: string | ArrayBuffer | Blob;
     fileName: string;
     mimeType?: string;
-    onClose?: () => void;
+    onClose: () => void;
     showDownload?: boolean;
     showViewInNewTab?: boolean;
 }
@@ -161,19 +162,26 @@ export const FileViewer: React.FC<FileViewerProps> = React.memo(({
     const canView = canViewInBrowser(fileType);
 
     React.useEffect(() => {
-        if (canView && content) {
-            try {
-                const url = getFileViewerURL(content, mimeType || 'application/octet-stream');
-                setViewerURL(url);
-                return () => {
-                    if (url.startsWith('blob:')) {
-                        URL.revokeObjectURL(url);
-                    }
-                };
-            } catch (error) {
-                handleError(error, 'Carregar visualizador');
-            }
+        if (!canView || !content) {
+            setViewerURL(null);
+            return;
         }
+
+        let url: string | null = null;
+        try {
+            url = getFileViewerURL(content, mimeType || 'application/octet-stream');
+            setViewerURL(url);
+        } catch (error) {
+            setViewerURL(null);
+            handleError(error, 'Carregar visualizador');
+            return;
+        }
+
+        return () => {
+            if (url && url.startsWith('blob:')) {
+                URL.revokeObjectURL(url);
+            }
+        };
     }, [content, mimeType, canView, handleError]);
 
     const handleViewInNewTab = useCallback(() => {
@@ -231,7 +239,7 @@ export const FileViewer: React.FC<FileViewerProps> = React.memo(({
                                 disabled={isLoading}
                                 className="btn btn-primary"
                             >
-                                {isLoading ? <Spinner size="sm" /> : 'Abrir em Nova Aba'}
+                                {isLoading ? <Spinner small /> : 'Abrir em Nova Aba'}
                             </button>
                         )}
                         {showDownload && (
@@ -240,7 +248,7 @@ export const FileViewer: React.FC<FileViewerProps> = React.memo(({
                                 disabled={isLoading}
                                 className="btn btn-secondary"
                             >
-                                {isLoading ? <Spinner size="sm" /> : 'Baixar'}
+                                {isLoading ? <Spinner small /> : 'Baixar'}
                             </button>
                         )}
                     </div>
@@ -255,7 +263,7 @@ export const FileViewer: React.FC<FileViewerProps> = React.memo(({
             isOpen={true}
             onClose={onClose}
             title={fileName}
-            size="large"
+            size="xl"
         >
             <div className="relative">
                 {isLoading && (

@@ -1,17 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { ArrowUpRight, LucideIcon } from "lucide-react";
 import { Button } from "./Button";
-import { cn } from "../../utils/windows12Styles";
-import { useTheme } from "../../hooks/useTheme";
-import {
-  getActiveCardClasses,
-  getInactiveCardClasses,
-  getActiveIconClasses,
-  getInactiveIconClasses,
-  getTitleClasses,
-  getDescriptionClasses,
-  getItemsContainerClasses,
-} from "../../utils/timelineColors";
+import { cn } from "../../utils/cn";
 
 export type TimeLine_01Entry = {
   icon: LucideIcon;
@@ -53,7 +43,6 @@ export const ReleaseTimeline: React.FC<TimeLine_01Props> = ({
   const [activeIndex, setActiveIndex] = useState(0);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
   const sentinelRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const { theme } = useTheme();
 
   // Create stable setters for refs inside map
   const setItemRef = (el: HTMLDivElement | null, i: number) => {
@@ -112,10 +101,10 @@ export const ReleaseTimeline: React.FC<TimeLine_01Props> = ({
     <section className={cn("py-8", className)}>
       <div className="container">
         <div className="mx-auto max-w-3xl">
-          <h1 className="mb-4 text-3xl font-bold tracking-tight text-text-primary md:text-5xl">
+          <h1 className="mb-4 text-3xl font-bold tracking-tight text-base-content md:text-5xl">
             {title}
           </h1>
-          <p className="mb-6 text-base text-text-secondary md:text-lg">
+          <p className="mb-6 text-base text-base-content/70 md:text-lg">
             {description}
           </p>
         </div>
@@ -138,18 +127,16 @@ export const ReleaseTimeline: React.FC<TimeLine_01Props> = ({
                     <div
                       className={cn(
                         "p-2 rounded-lg transition-colors duration-300",
-                        isActive
-                          ? getActiveIconClasses(theme)
-                          : getInactiveIconClasses(theme)
+                        isActive ? "bg-primary/10 text-primary" : "bg-base-200 text-base-content/60"
                       )}
                     >
                       <Icon className="h-4 w-4" />
                     </div>
                     <div className="flex flex-col">
-                      <span className="text-sm font-medium text-text-primary">
+                      <span className="text-sm font-medium text-base-content">
                         {entry.title}
                       </span>
-                      <span className="text-xs text-text-secondary">
+                      <span className="text-xs text-base-content/70">
                         {entry.subtitle}
                       </span>
                     </div>
@@ -166,10 +153,8 @@ export const ReleaseTimeline: React.FC<TimeLine_01Props> = ({
                 {/* Content column */}
                 <article
                   className={cn(
-                    "flex flex-col rounded-2xl border p-3 transition-all duration-300",
-                    isActive
-                      ? getActiveCardClasses(theme)
-                      : getInactiveCardClasses(theme)
+                    "flex flex-col rounded-2xl border p-4 transition-all duration-300 bg-base-100",
+                    isActive ? "border-primary/30 shadow-lg" : "border-base-300 shadow-sm"
                   )}
                 >
                   {entry.image && (
@@ -184,12 +169,17 @@ export const ReleaseTimeline: React.FC<TimeLine_01Props> = ({
                   <div className="space-y-4">
                     {/* Header with improved typography */}
                     <div className="space-y-2">
-                      <h2 className={getTitleClasses(theme, isActive)}>
+                      <h2
+                        className={cn(
+                          "text-xl font-semibold tracking-tight",
+                          isActive ? "text-base-content" : "text-base-content/80"
+                        )}
+                      >
                         {entry.title}
                       </h2>
 
                       {/* Improved description with better spacing */}
-                      <p className={getDescriptionClasses(theme, isActive)}>
+                      <p className="text-base-content/70">
                         {entry.description}
                       </p>
                     </div>
@@ -207,14 +197,14 @@ export const ReleaseTimeline: React.FC<TimeLine_01Props> = ({
                       <div className="overflow-hidden">
                         <div className="space-y-4 pt-2">
                           {entry.items && entry.items.length > 0 && (
-                            <div className={getItemsContainerClasses(theme)}>
+                            <div className="rounded-lg border border-base-300 bg-base-100 p-4">
                               <ul className="space-y-2">
                                 {entry.items.map((item, itemIndex) => (
                                   <li
                                     key={itemIndex}
-                                    className="flex items-start gap-2 text-sm text-text-primary"
+                                    className="flex items-start gap-2 text-sm text-base-content"
                                   >
-                                    <div className="mt-1.5 h-1.5 w-1.5 rounded-full bg-accent flex-shrink-0" />
+                                    <div className="mt-1.5 h-1.5 w-1.5 rounded-full bg-primary flex-shrink-0" />
                                     <span className="leading-relaxed">{item}</span>
                                   </li>
                                 ))}
@@ -227,7 +217,7 @@ export const ReleaseTimeline: React.FC<TimeLine_01Props> = ({
                               <Button
                                 variant="default"
                                 size="sm"
-                                className="group hover:bg-accent hover:text-white font-normal transition-all duration-200"
+                                className="group rounded-full font-normal transition-all duration-200"
                                 asChild
                               >
                                 <a

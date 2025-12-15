@@ -1,8 +1,6 @@
 import React from 'react';
 import { Card } from '../common/Card';
 import { DashboardInsightsAnalysis } from '../../types';
-import { useTheme } from '../../hooks/useTheme';
-import { getCardTextSecondaryClasses } from '../../utils/themeCardColors';
 import { StatusBadge } from '../common/StatusBadge';
 
 interface RecommendationsCardProps {
@@ -21,8 +19,8 @@ export const RecommendationsCard: React.FC<RecommendationsCardProps> = React.mem
     return (
       <Card className="p-6">
         <div className="flex items-center justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div>
-          <span className="ml-3 text-text-secondary">Gerando recomendações...</span>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          <span className="ml-3 text-base-content/70">Gerando recomendações...</span>
         </div>
       </Card>
     );
@@ -31,8 +29,6 @@ export const RecommendationsCard: React.FC<RecommendationsCardProps> = React.mem
   if (!analysis || !analysis.recommendations || analysis.recommendations.length === 0) {
     return null;
   }
-
-  const { theme } = useTheme();
 
   const getCategoryStatus = (category: string): 'info' | 'error' | 'warning' | 'success' | 'default' => {
     switch (category) {
@@ -66,14 +62,14 @@ export const RecommendationsCard: React.FC<RecommendationsCardProps> = React.mem
   });
 
   return (
-    <Card className="space-y-4" aria-label="Recomendações priorizadas">
-      <h3 className="text-lg font-semibold text-text-primary">Recomendações Priorizadas</h3>
+    <Card className="p-5 space-y-4" aria-label="Recomendações priorizadas">
+      <h3 className="text-lg font-semibold text-base-content">Recomendações Priorizadas</h3>
       
       <div className="space-y-3">
         {sortedRecommendations.map((rec, index) => (
-          <Card
+          <div
             key={index}
-            className={`p-4 border-2 ${theme === 'leve-saude' ? 'bg-white/80 dark:bg-gray-900/50 border-gray-300 dark:border-gray-700' : 'bg-surface-hover border-surface-border'}`}
+            className="p-4 bg-base-200 border border-base-300 rounded-xl"
             aria-label={`Recomendação: ${rec.title} (${rec.category})`}
           >
             <div className="flex items-start justify-between gap-3 mb-2">
@@ -86,11 +82,11 @@ export const RecommendationsCard: React.FC<RecommendationsCardProps> = React.mem
                     Impacto: {rec.impact} | Esforço: {rec.effort}
                   </StatusBadge>
                 </div>
-                <h4 className="font-semibold text-text-primary">{rec.title}</h4>
+                <h4 className="font-semibold text-base-content">{rec.title}</h4>
               </div>
             </div>
-            <p className={`text-sm ${getCardTextSecondaryClasses(theme)}`}>{rec.description}</p>
-          </Card>
+            <p className="text-sm text-base-content/70">{rec.description}</p>
+          </div>
         ))}
       </div>
     </Card>
@@ -98,4 +94,5 @@ export const RecommendationsCard: React.FC<RecommendationsCardProps> = React.mem
 });
 
 RecommendationsCard.displayName = 'RecommendationsCard';
+
 

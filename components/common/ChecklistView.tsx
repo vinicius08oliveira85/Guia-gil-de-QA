@@ -1,7 +1,7 @@
 import React from 'react';
 import { ChecklistItem } from '../../types';
 import { getChecklistProgress, canMoveToNextPhase } from '../../utils/checklistService';
-import { windows12Styles, cn } from '../../utils/windows12Styles';
+import { cn } from '../../utils/cn';
 
 interface ChecklistViewProps {
   checklist: ChecklistItem[];
@@ -26,21 +26,21 @@ export const ChecklistView: React.FC<ChecklistViewProps> = ({
   return (
     <div className="space-y-4">
       {showProgress && (
-        <div className={cn("p-3", windows12Styles.card)}>
+        <div className="p-4 bg-base-100 border border-base-300 rounded-xl">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-semibold text-text-primary">Progresso</span>
-            <span className="text-sm text-text-secondary">
+            <span className="text-sm font-semibold text-base-content">Progresso</span>
+            <span className="text-sm text-base-content/70">
               {progress.completed} / {progress.total} ({Math.round((progress.completed / progress.total) * 100)}%)
             </span>
           </div>
-          <div className="w-full bg-surface-hover rounded-full h-2">
+          <div className="w-full bg-base-200 rounded-full h-2">
             <div
-              className="bg-accent h-2 rounded-full transition-all"
+              className="bg-primary h-2 rounded-full transition-all"
               style={{ width: `${(progress.completed / progress.total) * 100}%` }}
             />
           </div>
           {progress.required > 0 && (
-            <div className="mt-2 text-xs text-text-secondary">
+            <div className="mt-2 text-xs text-base-content/70">
               Obrigatórios: {progress.requiredCompleted} / {progress.required}
             </div>
           )}
@@ -48,17 +48,17 @@ export const ChecklistView: React.FC<ChecklistViewProps> = ({
       )}
 
       {showValidation && !validation.canMove && (
-        <div className={cn("p-3 bg-orange-500/20 border border-orange-500/50 rounded-xl", windows12Styles.transition.all)}>
+        <div className="p-4 bg-warning/10 border border-warning/30 rounded-xl">
           <div className="flex items-start gap-2">
             <span className="text-lg">⚠️</span>
             <div className="flex-1">
-              <div className="font-semibold text-orange-400 mb-1">
+              <div className="font-semibold text-warning mb-1">
                 Não é possível avançar para a próxima fase
               </div>
-              <div className="text-sm text-text-secondary">
+              <div className="text-sm text-base-content/70">
                 Itens obrigatórios pendentes:
               </div>
-              <ul className="list-disc list-inside mt-1 text-sm text-text-secondary">
+              <ul className="list-disc list-inside mt-1 text-sm text-base-content/70">
                 {validation.missingRequired.map((item, idx) => (
                   <li key={idx}>{item}</li>
                 ))}
@@ -69,10 +69,10 @@ export const ChecklistView: React.FC<ChecklistViewProps> = ({
       )}
 
       {showValidation && validation.canMove && (
-        <div className={cn("p-3 bg-green-500/20 border border-green-500/50 rounded-xl", windows12Styles.transition.all, windows12Styles.glow('green'))}>
+        <div className="p-4 bg-success/10 border border-success/30 rounded-xl">
           <div className="flex items-center gap-2">
             <span className="text-lg">✅</span>
-            <span className="text-sm font-semibold text-green-400">
+            <span className="text-sm font-semibold text-success">
               Todos os itens obrigatórios concluídos. Pronto para avançar!
             </span>
           </div>
@@ -85,25 +85,24 @@ export const ChecklistView: React.FC<ChecklistViewProps> = ({
             key={item.id}
             className={cn(
               "flex items-start gap-3 p-3 rounded-xl border",
-              windows12Styles.transition.all,
               item.checked
-                ? 'bg-green-500/10 border-green-500/30 shadow-md shadow-green-500/10'
-                : windows12Styles.card
+                ? 'bg-success/10 border-success/30 shadow-sm'
+                : 'bg-base-100 border-base-300'
             )}
           >
             <input
               type="checkbox"
               checked={item.checked}
               onChange={() => onToggleItem(item.id)}
-              className="mt-1 w-5 h-5 rounded border-surface-border text-accent focus:ring-accent"
+              className="checkbox checkbox-sm mt-1 [--chkfg:theme(colors.base-100)]"
             />
             <div className="flex-1">
               <div className="flex items-center gap-2">
-                <span className={`${item.checked ? 'line-through text-text-secondary' : 'text-text-primary'}`}>
+                <span className={`${item.checked ? 'line-through text-base-content/60' : 'text-base-content'}`}>
                   {item.text}
                 </span>
                 {item.required && (
-                  <span className="text-xs px-2 py-0.5 bg-red-500/20 text-red-400 rounded">
+                  <span className="badge badge-error badge-outline badge-sm">
                     Obrigatório
                   </span>
                 )}
@@ -113,19 +112,21 @@ export const ChecklistView: React.FC<ChecklistViewProps> = ({
               <div className="flex gap-2">
                 {onEditItem && (
                   <button
+                    type="button"
                     onClick={() => {
                       const newText = prompt('Editar item:', item.text);
                       if (newText) onEditItem(item.id, newText);
                     }}
-                    className="text-text-secondary hover:text-text-primary text-sm"
+                    className="btn btn-ghost btn-xs btn-circle"
                   >
                     ✏️
                   </button>
                 )}
                 {onDeleteItem && (
                   <button
+                    type="button"
                     onClick={() => onDeleteItem(item.id)}
-                    className="text-red-400 hover:text-red-300 text-sm"
+                    className="btn btn-ghost btn-xs btn-circle text-error"
                   >
                     ✕
                   </button>
@@ -137,7 +138,7 @@ export const ChecklistView: React.FC<ChecklistViewProps> = ({
       </div>
 
       {checklist.length === 0 && (
-        <p className="text-center text-text-secondary py-4">
+        <p className="text-center text-base-content/70 py-4">
           Nenhum item no checklist
         </p>
       )}

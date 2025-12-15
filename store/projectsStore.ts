@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 import { Project, JiraTask } from '../types';
 import { 
-  getAllProjects,
   loadProjectsFromIndexedDB,
   addProject, 
   updateProject, 

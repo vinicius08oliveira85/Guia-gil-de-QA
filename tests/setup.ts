@@ -1,4 +1,4 @@
-import { expect, afterEach } from 'vitest';
+import { afterEach } from 'vitest';
 import { cleanup } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
 
@@ -8,11 +8,27 @@ afterEach(() => {
 });
 
 // Mock do IndexedDB
-class IDBFactory {
-  databases = new Map<string, IDBDatabase>();
+class MockIDBFactory {
+  private databasesMap = new Map<string, IDBDatabase>();
+
+  // API moderna do IDBFactory (nem todos os runtimes chamam isso, mas existe na tipagem)
+  async databases(): Promise<IDBDatabaseInfo[]> {
+    return [];
+  }
   
   open(name: string, version?: number): IDBOpenDBRequest {
-    const request = {
+    type MutableOpenDBRequest = {
+      result: IDBDatabase | null;
+      error: DOMException | null;
+      onsuccess: ((event: Event) => void) | null;
+      onerror: ((event: Event) => void) | null;
+      onupgradeneeded: ((event: IDBVersionChangeEvent) => void) | null;
+      readyState: IDBRequestReadyState;
+      transaction: IDBTransaction | null;
+      source: IDBObjectStore | IDBIndex | IDBCursor | IDBTransaction | null;
+    };
+
+    const request: MutableOpenDBRequest = {
       result: null as IDBDatabase | null,
       error: null as DOMException | null,
       onsuccess: null as ((event: Event) => void) | null,
@@ -21,46 +37,49 @@ class IDBFactory {
       readyState: 'pending' as IDBRequestReadyState,
       transaction: null as IDBTransaction | null,
       source: null as IDBObjectStore | IDBIndex | IDBCursor | IDBTransaction | null,
-    } as IDBOpenDBRequest;
+    };
 
     setTimeout(() => {
-      const db = {
+      const db = ({
         name,
         version: version || 1,
         objectStoreNames: {
-          contains: (name: string) => false,
+          contains: (_name: string) => false,
         },
-        createObjectStore: (name: string) => ({} as IDBObjectStore),
+        createObjectStore: (_name: string) => ({} as IDBObjectStore),
         transaction: () => ({} as IDBTransaction),
-      } as IDBDatabase;
+      } as unknown) as IDBDatabase;
 
       request.result = db;
       request.readyState = 'done';
+      this.databasesMap.set(name, db);
       if (request.onsuccess) {
         request.onsuccess({} as Event);
       }
     }, 0);
 
-    return request;
+    return request as unknown as IDBOpenDBRequest;
   }
 
   deleteDatabase(name: string): IDBOpenDBRequest {
-    return {
+    this.databasesMap.delete(name);
+    const request = {
       result: null,
       error: null,
       onsuccess: null,
       onerror: null,
       readyState: 'done',
-    } as IDBOpenDBRequest;
+    };
+    return request as unknown as IDBOpenDBRequest;
   }
 
-  cmp(first: any, second: any): number {
+  cmp(_first: unknown, _second: unknown): number {
     return 0;
   }
 }
 
 // Mock global do IndexedDB
-global.indexedDB = new IDBFactory() as unknown as IDBFactory;
+globalThis.indexedDB = new MockIDBFactory() as unknown as IDBFactory;
 
 // Mock do localStorage
 const localStorageMock = (() => {

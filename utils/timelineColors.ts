@@ -61,14 +61,14 @@ export const getActiveIconClasses = (theme: Theme): string => {
 /**
  * Retorna classes CSS para o ícone inativo do timeline baseado no tema
  */
-export const getInactiveIconClasses = (theme: Theme): string => {
+export const getInactiveIconClasses = (_theme: Theme): string => {
   return 'bg-surface-hover text-text-secondary';
 };
 
 /**
  * Retorna classes CSS para o texto do título baseado no tema e estado
  */
-export const getTitleClasses = (theme: Theme, isActive: boolean): string => {
+export const getTitleClasses = (_theme: Theme, isActive: boolean): string => {
   const baseClasses = 'text-md font-medium leading-tight tracking-tight md:text-lg transition-colors duration-200';
   if (isActive) {
     return `${baseClasses} text-text-primary`;
@@ -80,7 +80,7 @@ export const getTitleClasses = (theme: Theme, isActive: boolean): string => {
 /**
  * Retorna classes CSS para a descrição baseado no tema e estado
  */
-export const getDescriptionClasses = (theme: Theme, isActive: boolean): string => {
+export const getDescriptionClasses = (_theme: Theme, isActive: boolean): string => {
   const baseClasses = 'text-xs leading-relaxed md:text-sm transition-all duration-300';
   if (isActive) {
     return `${baseClasses} text-text-secondary line-clamp-none`;

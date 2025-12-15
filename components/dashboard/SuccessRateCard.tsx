@@ -1,5 +1,4 @@
 import React from 'react';
-import { Card } from '../common/Card';
 import { StatCard } from './StatCard';
 
 interface SuccessRateCardProps {

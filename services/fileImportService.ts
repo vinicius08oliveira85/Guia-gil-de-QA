@@ -1,8 +1,17 @@
 import * as XLSX from 'xlsx';
-import { Project, JiraTask, TestCase, ProjectDocument, JiraTaskType } from '../types';
+import { Project, JiraTask, TestCase, ProjectDocument, JiraTaskType, TeamRole } from '../types';
 import { logger } from '../utils/logger';
 
 const MAX_DOCUMENT_SIZE = 50 * 1024 * 1024; // 50MB
+
+const parseTeamRole = (value: unknown): TeamRole | undefined => {
+    if (typeof value !== 'string') return undefined;
+    const normalized = value.trim();
+    if (normalized === 'Product' || normalized === 'QA' || normalized === 'Dev') {
+        return normalized;
+    }
+    return undefined;
+};
 
 /**
  * Valida o tamanho do arquivo
@@ -20,7 +29,6 @@ const validateFileSize = (file: File, maxSize: number = MAX_DOCUMENT_SIZE): void
  * Valida o tipo de arquivo
  */
 const validateFileType = (file: File, allowedTypes: string[]): void => {
-    const fileExtension = file.name.toLowerCase().split('.').pop() || '';
     const isValidType = allowedTypes.some(type => 
         file.type.includes(type) || file.name.toLowerCase().endsWith(`.${type}`)
     );
@@ -133,13 +141,12 @@ export const importTasksFromExcel = async (file: File, options: ImportOptions = 
                     status: (row['Status'] || row['status'] || 'To Do') as JiraTask['status'],
                     priority: (row['Prioridade'] || row['Priority'] || row['priority'] || 'Média') as JiraTask['priority'],
                     description: row['Descrição'] || row['Descricao'] || row['Description'] || row['description'] || '',
-                    assignee: row['Responsável'] || row['Assignee'] || row['assignee'] || '',
+                    assignee: parseTeamRole(row['Responsável'] ?? row['Assignee'] ?? row['assignee']),
                     testCases: [],
-                    testStrategies: [],
+                    testStrategy: [],
                     bddScenarios: [],
                     tags: row['Tags'] || row['tags'] ? String(row['Tags'] || row['tags']).split(',').map((t: string) => t.trim()) : [],
                     createdAt: row['Criado em'] || row['Created At'] || new Date().toISOString(),
-                    updatedAt: row['Atualizado em'] || row['Updated At'] || new Date().toISOString()
                 };
 
                 if (options.validateData) {
@@ -216,13 +223,12 @@ export const importTasksFromCSV = async (file: File, options: ImportOptions = {}
                     status: (row['Status'] || row['status'] || 'To Do') as JiraTask['status'],
                     priority: (row['Prioridade'] || row['Priority'] || row['priority'] || 'Média') as JiraTask['priority'],
                     description: row['Descrição'] || row['Descricao'] || row['Description'] || row['description'] || '',
-                    assignee: row['Responsável'] || row['Assignee'] || row['assignee'] || '',
+                    assignee: parseTeamRole(row['Responsável'] ?? row['Assignee'] ?? row['assignee']),
                     testCases: [],
-                    testStrategies: [],
+                    testStrategy: [],
                     bddScenarios: [],
                     tags: row['Tags'] || row['tags'] ? row['Tags'].split(',').map((t: string) => t.trim()) : [],
                     createdAt: row['Criado em'] || row['Created At'] || new Date().toISOString(),
-                    updatedAt: row['Atualizado em'] || row['Updated At'] || new Date().toISOString()
                 };
 
                 if (options.validateData) {

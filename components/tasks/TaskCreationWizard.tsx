@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 import { Modal } from '../common/Modal';
-import { HelpTooltip } from '../common/HelpTooltip';
-import { helpContent } from '../../utils/helpContent';
 import { useBeginnerMode } from '../../hooks/useBeginnerMode';
 
 interface TaskCreationWizardProps {

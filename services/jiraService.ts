@@ -1,4 +1,4 @@
-import { Project, JiraTask, PhaseName, Comment } from '../types';
+import { Project, JiraTask, Comment } from '../types';
 import { parseJiraDescription, parseJiraDescriptionHTML } from '../utils/jiraDescriptionParser';
 import { getCache, setCache, clearCache } from '../utils/apiCache';
 import { getJiraStatusColor } from '../utils/jiraStatusColors';
@@ -138,11 +138,6 @@ export const getJiraConfig = (): JiraConfig | null => {
 
 export const deleteJiraConfig = (): void => {
     localStorage.removeItem(JIRA_CONFIG_KEY);
-};
-
-const getAuthHeader = (config: JiraConfig): string => {
-    const credentials = btoa(`${config.email}:${config.apiToken}`);
-    return `Basic ${credentials}`;
 };
 
 const jiraApiCall = async <T>(
@@ -996,7 +991,6 @@ export const syncJiraProject = async (
     logger.info(`Tarefas existentes no projeto: ${project.tasks.length}`, 'jiraService');
     
     // Atualizar tarefas existentes e adicionar novas
-    const existingTaskKeys = new Set(project.tasks.map(t => t.id));
     const updatedTasks = [...project.tasks];
     let updatedCount = 0;
     let newCount = 0;

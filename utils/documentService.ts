@@ -12,8 +12,6 @@ export interface DocumentFile {
     category?: 'requisitos' | 'testes' | 'arquitetura' | 'outros';
 }
 
-const DOCUMENTS_STORAGE_KEY = 'qa_documents';
-
 export const createDocumentFromFile = (file: File): Promise<DocumentFile> => {
     return new Promise((resolve, reject) => {
         if (file.size > MAX_DOCUMENT_SIZE) {
@@ -163,8 +161,8 @@ export const isExcel = (fileName: string, mimeType?: string): boolean => {
     const lowerName = fileName.toLowerCase();
     return lowerName.endsWith('.xlsx') || 
            lowerName.endsWith('.xls') || 
-           mimeType?.includes('spreadsheet') || 
-           mimeType?.includes('excel');
+           Boolean(mimeType?.includes('spreadsheet')) || 
+           Boolean(mimeType?.includes('excel'));
 };
 
 /**
@@ -174,8 +172,8 @@ export const isWord = (fileName: string, mimeType?: string): boolean => {
     const lowerName = fileName.toLowerCase();
     return lowerName.endsWith('.docx') || 
            lowerName.endsWith('.doc') || 
-           mimeType?.includes('word') || 
-           mimeType?.includes('document');
+           Boolean(mimeType?.includes('word')) || 
+           Boolean(mimeType?.includes('document'));
 };
 
 /**

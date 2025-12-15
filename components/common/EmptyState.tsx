@@ -2,7 +2,6 @@ import React from 'react';
 import { HelpTooltip } from './HelpTooltip';
 import { useBeginnerMode } from '../../hooks/useBeginnerMode';
 import { Button } from './Button';
-import { cn } from '../../utils/windows12Styles';
 import { motion } from 'framer-motion';
 
 interface EmptyStateProps {
@@ -75,7 +74,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2 }}
       >
-        <h3 className="heading-section text-text-primary">{title}</h3>
+        <h3 className="text-xl sm:text-2xl font-semibold tracking-tight text-base-content">{title}</h3>
         {helpContent && (
           <HelpTooltip title={helpContent.title} content={helpContent.content} />
         )}
@@ -84,7 +83,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
       {/* Descrição */}
       {description && (
         <motion.p 
-          className="text-lead text-text-secondary max-w-md mb-6"
+          className="text-base-content/70 max-w-md mb-6"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
@@ -96,12 +95,12 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
       {/* Dica única */}
       {tip && (
         <motion.div 
-          className="bg-accent/10 border border-accent/30 rounded-xl p-4 mb-6 max-w-md backdrop-blur-sm"
+          className="bg-primary/10 border border-primary/30 rounded-xl p-4 mb-6 max-w-md"
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.4 }}
         >
-          <p className="text-sm text-text-primary leading-relaxed">
+          <p className="text-sm text-base-content leading-relaxed">
             💡 <strong>Dica:</strong> {tip}
           </p>
         </motion.div>
@@ -110,13 +109,13 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
       {/* Múltiplas dicas (modo iniciante) */}
       {isBeginnerMode && tips && tips.length > 0 && (
         <motion.div 
-          className="bg-accent/10 border border-accent/30 rounded-xl p-4 mb-6 max-w-md text-left backdrop-blur-sm"
+          className="bg-primary/10 border border-primary/30 rounded-xl p-4 mb-6 max-w-md text-left"
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.4 }}
         >
-          <p className="text-sm font-semibold text-accent mb-2">💡 Dicas:</p>
-          <ul className="text-sm text-text-secondary space-y-1 list-disc list-inside">
+          <p className="text-sm font-semibold text-primary mb-2">💡 Dicas:</p>
+          <ul className="text-sm text-base-content/70 space-y-1 list-disc list-inside">
             {tips.map((tipItem, index) => (
               <li key={index}>{tipItem}</li>
             ))}
@@ -127,7 +126,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
       {/* Texto de ajuda */}
       {helpText && (
         <motion.p 
-          className="text-xs text-text-secondary max-w-md mb-6"
+          className="text-xs text-base-content/70 max-w-md mb-6"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}

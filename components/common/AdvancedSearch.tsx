@@ -1,7 +1,6 @@
-import React, { useState, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { Project } from '../../types';
-import { useSearch } from '../../hooks/useSearch';
-import { SearchBar } from './SearchBar';
+import { useSearch, type SearchResult } from '../../hooks/useSearch';
 
 interface AdvancedSearchProps {
   projects: Project[];
@@ -14,8 +13,17 @@ export const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
   onResultSelect,
   onClose
 }) => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const { searchResults } = useSearch(projects);
+  const { searchQuery, setSearchQuery, searchResults } = useSearch(projects);
+
+  const getTypeIcon = (type: SearchResult['type']) => {
+    switch (type) {
+      case 'project': return '📁';
+      case 'task': return '📋';
+      case 'document': return '📄';
+      case 'testcase': return '✅';
+      default: return '🔍';
+    }
+  };
   
   // Filtrar resultados baseado na query
   const filteredResults = useMemo(() => {
@@ -61,14 +69,15 @@ export const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
   }, [searchQuery, searchResults]);
 
     return (
-      <div className="glass-overlay fixed inset-0 z-50 flex items-start justify-center pt-20 p-4">
-        <div className="w-full max-w-3xl mica rounded-2xl shadow-[0_35px_90px_rgba(3,7,23,0.55)]">
-        <div className="p-4 border-b border-surface-border">
+      <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/30 backdrop-blur pt-20 p-4">
+        <div className="w-full max-w-3xl rounded-[var(--rounded-box)] border border-base-300 bg-base-100 shadow-xl">
+        <div className="p-4 border-b border-base-300">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-text-primary">Busca Avançada</h2>
+            <h2 className="text-xl font-bold text-base-content">Busca Avançada</h2>
             <button
               onClick={onClose}
-                className="win-icon-button text-lg"
+              className="btn btn-ghost btn-sm btn-circle"
+              aria-label="Fechar busca avançada"
             >
               ✕
             </button>
@@ -80,16 +89,16 @@ export const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Buscar... (use: status:, type:, tag:, project:)"
-                className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-text-primary placeholder:text-text-secondary focus:outline-none focus:ring-2 focus:ring-accent/40"
+              className="input input-bordered w-full"
               autoFocus
             />
             
-            <div className="text-xs text-text-secondary space-y-1">
+            <div className="space-y-1 text-xs text-base-content/70">
               <div><strong>Operadores disponíveis:</strong></div>
-                <div>• <code className="bg-white/10 px-1.5 py-0.5 rounded-md text-text-primary">status:done</code> - Filtrar por status</div>
-                <div>• <code className="bg-white/10 px-1.5 py-0.5 rounded-md text-text-primary">type:bug</code> - Filtrar por tipo</div>
-                <div>• <code className="bg-white/10 px-1.5 py-0.5 rounded-md text-text-primary">tag:crítico</code> - Filtrar por tag</div>
-                <div>• <code className="bg-white/10 px-1.5 py-0.5 rounded-md text-text-primary">project:nome</code> - Filtrar por projeto</div>
+              <div>• <code className="rounded-md bg-base-200 px-1.5 py-0.5 text-base-content">status:done</code> - Filtrar por status</div>
+              <div>• <code className="rounded-md bg-base-200 px-1.5 py-0.5 text-base-content">type:bug</code> - Filtrar por tipo</div>
+              <div>• <code className="rounded-md bg-base-200 px-1.5 py-0.5 text-base-content">tag:crítico</code> - Filtrar por tag</div>
+              <div>• <code className="rounded-md bg-base-200 px-1.5 py-0.5 text-base-content">project:nome</code> - Filtrar por projeto</div>
             </div>
           </div>
         </div>
@@ -104,41 +113,41 @@ export const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
                     onResultSelect(result);
                     onClose();
                   }}
-                    className="w-full text-left p-3 rounded-xl border border-white/10 bg-white/5 hover:border-accent/50 hover:bg-white/10 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40"
+                  className="w-full rounded-2xl border border-base-300 bg-base-100 p-3 text-left transition-colors hover:bg-base-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
                 >
                   <div className="flex items-center justify-between">
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="text-lg">{result.icon}</span>
-                        <span className="font-semibold text-text-primary">{result.title}</span>
+                        <span className="text-lg">{getTypeIcon(result.type)}</span>
+                        <span className="font-semibold text-base-content">{result.title}</span>
                         {result.type && (
-                          <span className="text-xs px-2 py-0.5 bg-accent/20 text-accent rounded">
+                          <span className="badge badge-outline badge-sm">
                             {result.type}
-                          </span>
+                          </span>  
                         )}
                       </div>
                       {result.description && (
-                        <p className="text-sm text-text-secondary mt-1 line-clamp-1">
+                        <p className="mt-1 line-clamp-1 text-sm text-base-content/70">
                           {result.description}
                         </p>
                       )}
                       {result.projectName && (
-                        <p className="text-xs text-text-secondary mt-1">
+                        <p className="mt-1 text-xs text-base-content/70">
                           Projeto: {result.projectName}
                         </p>
                       )}
                     </div>
-                    <span className="text-text-secondary">→</span>
+                    <span className="text-base-content/40">→</span>
                   </div>
                 </button>
               ))}
             </div>
           ) : searchQuery.trim() ? (
-            <div className="text-center py-8 text-text-secondary">
+            <div className="py-8 text-center text-base-content/70">
               Nenhum resultado encontrado
             </div>
           ) : (
-            <div className="text-center py-8 text-text-secondary">
+            <div className="py-8 text-center text-base-content/70">
               Digite para buscar...
             </div>
           )}

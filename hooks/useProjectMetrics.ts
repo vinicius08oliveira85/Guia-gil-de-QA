@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Project, JiraTask, Phase, PhaseName, BugSeverity, PhaseStatus, TestCase } from '../types';
+import { Project, PhaseName, BugSeverity, PhaseStatus, TestCase } from '../types';
 import { PHASE_NAMES } from '../utils/constants';
 
 const phaseNamesInOrder: PhaseName[] = [...PHASE_NAMES];
@@ -211,7 +211,6 @@ export const calculateProjectMetrics = (project: Project) => {
     // --- Quick Analysis Metrics ---
     // Calcular média de falhas por dia (últimos 30 dias)
     const now = new Date();
-    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
     
     // Contar falhas por tarefa (testes que falharam)
     const taskFailureCount = new Map<string, number>();

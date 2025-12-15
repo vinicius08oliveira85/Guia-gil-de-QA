@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { Project, ProjectDocument, JiraTask, TestStrategy, TestCase } from '../types';
+import { Project, ProjectDocument } from '../types';
+import type { JiraTask } from '../types';
 import { analyzeDocumentContent, generateTaskFromDocument } from '../services/geminiService';
 import { Card } from './common/Card';
 import { Modal } from './common/Modal';
@@ -7,12 +8,11 @@ import { Spinner } from './common/Spinner';
 import { TrashIcon } from './common/Icons';
 import { useErrorHandler } from '../hooks/useErrorHandler';
 import { sanitizeHTML } from '../utils/sanitize';
-import { MAX_FILE_SIZE, ALLOWED_FILE_TYPES } from '../utils/constants';
 import { Badge } from './common/Badge';
 import { EmptyState } from './common/EmptyState';
 import { Tooltip } from './common/Tooltip';
 import { CopyButton } from './common/CopyButton';
-import { createDocumentFromFile, convertDocumentFileToProjectDocument, formatFileSize, getFileIcon, canPreview } from '../utils/documentService';
+import { createDocumentFromFile, convertDocumentFileToProjectDocument } from '../utils/documentService';
 import { SolusSchemaModal } from './solus/SolusSchemaModal';
 import { SpecificationDocumentProcessor } from './settings/SpecificationDocumentProcessor';
 import { FileImportModal } from './common/FileImportModal';
@@ -288,11 +288,6 @@ export const DocumentsView: React.FC<{ project: Project; onUpdateProject: (proje
         return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
     };
 
-    const getPreviewContent = (doc: DocumentWithMetadata): string => {
-        const lines = doc.content.split('\n');
-        return lines.slice(0, 10).join('\n') + (lines.length > 10 ? '\n...' : '');
-    };
-
     return (
         <div className="space-y-6">
             {/* Documento de Especificação */}
@@ -301,37 +296,40 @@ export const DocumentsView: React.FC<{ project: Project; onUpdateProject: (proje
                 onUpdateProject={onUpdateProject} 
             />
             
-        <Card>
+        <Card className="p-5">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                     <div>
-                        <h3 className="text-2xl font-bold text-text-primary mb-2">Documentos do Projeto</h3>
-                        <p className="text-text-secondary text-sm">
+                        <h3 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2">Documentos do Projeto</h3>
+                        <p className="text-base-content/70 text-sm">
                             {stats.total} documento{stats.total !== 1 ? 's' : ''} • {formatFileSize(stats.totalSize)}
                         </p>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 flex-wrap">
                         <button
+                            type="button"
                             onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
-                            className="btn btn-secondary"
+                            className="btn btn-outline btn-sm rounded-full"
                         >
                             {viewMode === 'grid' ? '📋 Lista' : '🔲 Grade'}
                         </button>
                         {shouldShowSolusButton && (
                             <button
+                                type="button"
                                 onClick={() => setIsSolusSchemaOpen(true)}
-                                className="btn btn-secondary whitespace-nowrap"
+                                className="btn btn-outline btn-sm rounded-full whitespace-nowrap"
                                 aria-label="Abrir Esquema da API Solus"
                             >
                                 📚 Esquema API Solus
                             </button>
                         )}
                         <button
+                            type="button"
                             onClick={() => setIsImportModalOpen(true)}
-                            className="btn btn-secondary"
+                            className="btn btn-outline btn-sm rounded-full"
                         >
                             📥 Importar
                         </button>
-                <label className="btn btn-primary cursor-pointer">
+                <label className="btn btn-primary btn-sm rounded-full cursor-pointer">
                             📤 Carregar Documento
                             <input 
                                 type="file" 
@@ -347,11 +345,11 @@ export const DocumentsView: React.FC<{ project: Project; onUpdateProject: (proje
                 {stats.total > 0 && (
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                         {DOCUMENT_CATEGORIES.map(cat => (
-                            <div key={cat.id} className="p-3 bg-surface border border-surface-border rounded-lg text-center">
-                                <div className="text-2xl font-bold text-accent">
+                            <div key={cat.id} className="p-4 bg-base-100 border border-base-300 rounded-xl text-center hover:border-primary/30 transition-all hover:shadow-lg">
+                                <div className="text-2xl font-bold text-primary">
                                     {stats.categoryCounts[cat.id] || 0}
                                 </div>
-                                <div className="text-xs text-text-secondary">{cat.label}</div>
+                                <div className="text-xs text-base-content/70 mt-1">{cat.label}</div>
                             </div>
                         ))}
                     </div>
@@ -366,16 +364,17 @@ export const DocumentsView: React.FC<{ project: Project; onUpdateProject: (proje
                                 placeholder="🔍 Buscar documentos..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full px-4 py-2 bg-surface border border-surface-border rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:border-accent"
+                                className="input input-bordered w-full bg-base-100 border-base-300 text-base-content placeholder:text-base-content/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                             />
                         </div>
                         <div className="flex gap-2 flex-wrap">
                             <button
+                                type="button"
                                 onClick={() => setSelectedCategory('all')}
-                                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                                className={`btn btn-sm rounded-full transition-colors ${
                                     selectedCategory === 'all'
-                                        ? 'bg-accent text-white'
-                                        : 'bg-surface border border-surface-border text-text-secondary hover:bg-surface-hover'
+                                        ? 'btn-primary'
+                                        : 'btn-outline'
                                 }`}
                             >
                                 Todas ({stats.total})
@@ -383,11 +382,12 @@ export const DocumentsView: React.FC<{ project: Project; onUpdateProject: (proje
                             {DOCUMENT_CATEGORIES.map(cat => (
                                 <button
                                     key={cat.id}
+                                    type="button"
                                     onClick={() => setSelectedCategory(cat.id)}
-                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                                    className={`btn btn-sm rounded-full transition-colors ${
                                         selectedCategory === cat.id
-                                            ? 'bg-accent text-white'
-                                            : 'bg-surface border border-surface-border text-text-secondary hover:bg-surface-hover'
+                                            ? 'btn-primary'
+                                            : 'btn-outline'
                                     }`}
                                 >
                                     {cat.label} ({stats.categoryCounts[cat.id] || 0})
@@ -408,11 +408,11 @@ export const DocumentsView: React.FC<{ project: Project; onUpdateProject: (proje
                                 return (
                                     <div
                                         key={doc.name}
-                                        className="p-4 bg-surface border border-surface-border rounded-lg hover:border-accent transition-all hover:shadow-lg"
+                                        className="p-5 bg-base-100 border border-base-300 rounded-xl hover:border-primary/30 transition-all hover:shadow-lg"
                                     >
                                         <div className="flex items-start justify-between mb-3">
                                             <div className="flex-1 min-w-0">
-                                                <h4 className="text-text-primary font-semibold truncate mb-1" title={doc.name}>
+                                                <h4 className="text-base-content font-semibold truncate mb-2" title={doc.name}>
                                                     {doc.name}
                                                 </h4>
                                                 <div className="flex items-center gap-2 flex-wrap">
@@ -430,7 +430,7 @@ export const DocumentsView: React.FC<{ project: Project; onUpdateProject: (proje
                                             </div>
                                         </div>
 
-                                        <div className="text-xs text-text-secondary mb-3 space-y-1">
+                                        <div className="text-xs text-base-content/70 mb-3 space-y-1">
                                             <div>📏 {formatFileSize(doc.size || 0)}</div>
                                             {doc.content && !doc.content.startsWith('data:') && (
                                                 <div>📄 {doc.content.split('\n').length} linhas</div>
@@ -444,12 +444,12 @@ export const DocumentsView: React.FC<{ project: Project; onUpdateProject: (proje
                                             {doc.tags && doc.tags.length > 0 && (
                                                 <div className="flex flex-wrap gap-1 mt-2">
                                                     {doc.tags.slice(0, 3).map((tag, idx) => (
-                                                        <span key={idx} className="px-2 py-0.5 bg-accent/20 text-accent text-xs rounded">
+                                                        <span key={idx} className="badge badge-outline badge-sm text-primary">
                                                             #{tag}
                                                         </span>
                                                     ))}
                                                     {doc.tags.length > 3 && (
-                                                        <span className="text-text-secondary">+{doc.tags.length - 3}</span>
+                                                        <span className="text-base-content/60">+{doc.tags.length - 3}</span>
                                                     )}
                                                 </div>
                                             )}
@@ -458,44 +458,49 @@ export const DocumentsView: React.FC<{ project: Project; onUpdateProject: (proje
                                         <div className="flex flex-wrap gap-2 mt-4">
                                             <Tooltip content="Visualizar em nova aba">
                                                 <button
+                                                    type="button"
                                                     onClick={() => handleViewDocument(doc)}
-                                                    className="btn btn-secondary text-xs !py-1 !px-2"
+                                                    className="btn btn-outline btn-xs rounded-full"
                                                 >
                                                     👁️ Ver
                                                 </button>
                                             </Tooltip>
                                             <Tooltip content="Visualizar inline">
                                                 <button
+                                                    type="button"
                                                     onClick={() => {
                                                         setViewingDocument(doc);
                                                     }}
-                                                    className="btn btn-secondary text-xs !py-1 !px-2"
+                                                    className="btn btn-outline btn-xs rounded-full"
                                                 >
                                                     📄 Preview
                                                 </button>
                                             </Tooltip>
                                             <Tooltip content="Analisar com IA">
                                                 <button
+                                                    type="button"
                                                     onClick={() => handleAnalyze(doc)}
                                                     disabled={!!loadingStates[doc.name]}
-                                                    className="btn btn-secondary text-xs !py-1 !px-2 bg-blue-500/20 border-blue-500/30 hover:bg-blue-500/40"
+                                                    className="btn btn-outline btn-xs rounded-full bg-info/10 border-info/30 hover:bg-info/20"
                                                 >
                                                     {loadingStates[doc.name] === 'analyze' ? <Spinner small/> : '🤖 Analisar'}
                                                 </button>
                                             </Tooltip>
                                             <Tooltip content="Gerar tarefa">
                                                 <button
+                                                    type="button"
                                                     onClick={() => handleGenerateTask(doc)}
                                                     disabled={!!loadingStates[doc.name]}
-                                                    className="btn btn-secondary text-xs !py-1 !px-2 bg-purple-500/20 border-purple-500/30 hover:bg-purple-500/40"
+                                                    className="btn btn-outline btn-xs rounded-full bg-secondary/10 border-secondary/30 hover:bg-secondary/20"
                                                 >
                                                     {loadingStates[doc.name] === 'generate' ? <Spinner small/> : '📝 Gerar'}
                                                 </button>
                                             </Tooltip>
                                             <Tooltip content="Editar">
                                                 <button
+                                                    type="button"
                                                     onClick={() => handleEdit(doc)}
-                                                    className="btn btn-secondary text-xs !py-1 !px-2"
+                                                    className="btn btn-outline btn-xs rounded-full"
                                                 >
                                                     ✏️ Editar
                                                 </button>
@@ -505,8 +510,9 @@ export const DocumentsView: React.FC<{ project: Project; onUpdateProject: (proje
                                             </Tooltip>
                                             <Tooltip content="Excluir">
                                                 <button
+                                                    type="button"
                                                     onClick={() => handleDelete(doc.name)}
-                                                    className="btn btn-secondary text-xs !py-1 !px-2 hover:bg-red-500/20 hover:border-red-500/30"
+                                                    className="btn btn-outline btn-xs rounded-full hover:bg-error/10 hover:border-error/30"
                                                 >
                                                     🗑️
                                                 </button>
@@ -525,11 +531,11 @@ export const DocumentsView: React.FC<{ project: Project; onUpdateProject: (proje
                                 return (
                                     <li
                                         key={doc.name}
-                                        className="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-surface border border-surface-border p-4 rounded-lg hover:border-accent transition-all gap-4"
+                                        className="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-base-100 border border-base-300 p-5 rounded-xl hover:border-primary/30 transition-all gap-4"
                                     >
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-2 mb-2">
-                                                <h4 className="text-text-primary font-semibold truncate" title={doc.name}>
+                                                <h4 className="text-base-content font-semibold truncate" title={doc.name}>
                                                     {doc.name}
                                                 </h4>
                                                 {category && (
@@ -543,13 +549,13 @@ export const DocumentsView: React.FC<{ project: Project; onUpdateProject: (proje
                                                     </Badge>
                                                 )}
                                             </div>
-                                            <div className="flex items-center gap-4 text-xs text-text-secondary flex-wrap">
+                                            <div className="flex items-center gap-4 text-xs text-base-content/70 flex-wrap">
                                                 <span>📏 {formatFileSize(doc.size || 0)}</span>
                                                 <span>📄 {doc.content.split('\n').length} linhas</span>
                                                 {doc.tags && doc.tags.length > 0 && (
                                                     <div className="flex flex-wrap gap-1">
                                                         {doc.tags.slice(0, 5).map((tag, idx) => (
-                                                            <span key={idx} className="px-2 py-0.5 bg-accent/20 text-accent rounded">
+                                                            <span key={idx} className="badge badge-outline badge-sm text-primary">
                                                                 #{tag}
                                                             </span>
                                                         ))}
@@ -560,45 +566,50 @@ export const DocumentsView: React.FC<{ project: Project; onUpdateProject: (proje
                                         <div className="flex items-center gap-2 flex-shrink-0">
                                             <Tooltip content="Visualizar">
                                                 <button
+                                                    type="button"
                                                     onClick={() => {
                                                         setSelectedDoc(doc);
                                                         setShowPreview(true);
                                                     }}
-                                                    className="btn btn-secondary text-sm !py-1.5 !px-3"
+                                                    className="btn btn-outline btn-sm rounded-full"
                                                 >
                                                     👁️ Ver
                                                 </button>
                                             </Tooltip>
                                             <Tooltip content="Analisar">
                                                 <button
+                                                    type="button"
                                                     onClick={() => handleAnalyze(doc)}
                                                     disabled={!!loadingStates[doc.name]}
-                                                    className="btn btn-secondary text-sm !py-1.5 !px-3 bg-blue-500/20 border-blue-500/30 hover:bg-blue-500/40"
+                                                    className="btn btn-outline btn-sm rounded-full bg-info/10 border-info/30 hover:bg-info/20"
                                                 >
                                                     {loadingStates[doc.name] === 'analyze' ? <Spinner small/> : '🤖 Analisar'}
                                                 </button>
                                             </Tooltip>
                                             <Tooltip content="Gerar Tarefa">
                                                 <button
+                                                    type="button"
                                                     onClick={() => handleGenerateTask(doc)}
                                                     disabled={!!loadingStates[doc.name]}
-                                                    className="btn btn-secondary text-sm !py-1.5 !px-3 bg-purple-500/20 border-purple-500/30 hover:bg-purple-500/40"
+                                                    className="btn btn-outline btn-sm rounded-full bg-secondary/10 border-secondary/30 hover:bg-secondary/20"
                                                 >
                                                     {loadingStates[doc.name] === 'generate' ? <Spinner small/> : '📝 Gerar'}
                                                 </button>
                                             </Tooltip>
                                             <Tooltip content="Editar">
                                                 <button
+                                                    type="button"
                                                     onClick={() => handleEdit(doc)}
-                                                    className="btn btn-secondary text-sm !py-1.5 !px-3"
+                                                    className="btn btn-outline btn-sm rounded-full"
                                                 >
                                                     ✏️
                                 </button>
                                             </Tooltip>
                                             <Tooltip content="Excluir">
                                                 <button
+                                                    type="button"
                                                     onClick={() => handleDelete(doc.name)}
-                                                    className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-red-500/80 hover:text-white transition-colors text-text-secondary"
+                                                    className="btn btn-ghost btn-sm rounded-full hover:bg-error/10 hover:text-error"
                                                 >
                                                     <TrashIcon/>
                                 </button>
@@ -642,15 +653,15 @@ export const DocumentsView: React.FC<{ project: Project; onUpdateProject: (proje
                                 </Badge>
                             )}
                         </div>
-                        <div className="bg-surface-hover p-4 rounded-lg max-h-96 overflow-y-auto">
+                        <div className="bg-base-200 p-4 rounded-lg max-h-96 overflow-y-auto">
                             {selectedDoc.content.startsWith('data:image/') ? (
                                 <div className="space-y-4">
                                     <img 
                                         src={selectedDoc.content} 
                                         alt={selectedDoc.name}
-                                        className="max-w-full h-auto rounded-lg border border-surface-border"
+                                        className="max-w-full h-auto rounded-lg border border-base-300"
                                     />
-                                    <div className="text-sm text-text-secondary">
+                                    <div className="text-sm text-base-content/70">
                                         <p><strong>Nome:</strong> {selectedDoc.name}</p>
                                         <p><strong>Tamanho:</strong> {formatFileSize(selectedDoc.size || 0)}</p>
                                         <p><strong>Tipo:</strong> {selectedDoc.category || 'Não categorizado'}</p>
@@ -660,24 +671,24 @@ export const DocumentsView: React.FC<{ project: Project; onUpdateProject: (proje
                                 <div className="space-y-4">
                                     <iframe 
                                         src={selectedDoc.content} 
-                                        className="w-full h-96 rounded-lg border border-surface-border"
+                                        className="w-full h-96 rounded-lg border border-base-300"
                                         title={selectedDoc.name}
                                     />
-                                    <div className="text-sm text-text-secondary">
+                                    <div className="text-sm text-base-content/70">
                                         <p><strong>Nome:</strong> {selectedDoc.name}</p>
                                         <p><strong>Tamanho:</strong> {formatFileSize(selectedDoc.size || 0)}</p>
                                     </div>
                                 </div>
                             ) : (
-                                <pre className="text-sm text-text-primary whitespace-pre-wrap font-mono">
+                                <pre className="text-sm text-base-content whitespace-pre-wrap font-mono">
                                     {selectedDoc.content}
                                 </pre>
                             )}
                         </div>
                         {selectedDoc.analysis && (
                             <div>
-                                <h4 className="text-sm font-semibold text-text-secondary mb-2">Análise IA</h4>
-                                <div className="prose max-w-none bg-surface-hover p-4 rounded-lg" dangerouslySetInnerHTML={{ __html: selectedDoc.analysis }} />
+                                <h4 className="text-sm font-semibold text-base-content/70 mb-2">Análise IA</h4>
+                                <div className="prose max-w-none bg-base-200 p-4 rounded-lg" dangerouslySetInnerHTML={{ __html: selectedDoc.analysis }} />
                             </div>
                         )}
                     </div>
@@ -726,35 +737,37 @@ export const DocumentsView: React.FC<{ project: Project; onUpdateProject: (proje
                 >
                     <div className="space-y-4">
                         <div>
-                            <label className="block text-sm font-semibold text-text-secondary mb-2">
+                            <label className="block text-sm font-semibold text-base-content/70 mb-2">
                                 Nome do Documento
                             </label>
                             <input
                                 type="text"
                                 value={editingDoc.name}
                                 onChange={(e) => setEditingDoc({ ...editingDoc, name: e.target.value })}
-                                className="w-full px-4 py-2 bg-surface border border-surface-border rounded-lg text-text-primary focus:outline-none focus:border-accent"
+                                className="input input-bordered w-full bg-base-100 border-base-300 text-base-content focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-semibold text-text-secondary mb-2">
+                            <label className="block text-sm font-semibold text-base-content/70 mb-2">
                                 Conteúdo
                             </label>
                             <textarea
                                 value={editingDoc.content}
                                 onChange={(e) => setEditingDoc({ ...editingDoc, content: e.target.value })}
                                 rows={15}
-                                className="w-full px-4 py-2 bg-surface border border-surface-border rounded-lg text-text-primary font-mono text-sm focus:outline-none focus:border-accent"
+                                className="textarea textarea-bordered w-full bg-base-100 border-base-300 text-base-content font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                             />
                         </div>
                         <div className="flex justify-end gap-2">
                             <button
+                                type="button"
                                 onClick={() => setEditingDoc(null)}
-                                className="btn btn-secondary"
+                                className="btn btn-ghost"
                             >
                                 Cancelar
                             </button>
                             <button
+                                type="button"
                                 onClick={handleSaveEdit}
                                 className="btn btn-primary"
                             >

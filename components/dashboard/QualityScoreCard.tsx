@@ -19,8 +19,8 @@ export const QualityScoreCard: React.FC<QualityScoreCardProps> = React.memo(({
     return (
       <Card className="p-6">
         <div className="flex items-center justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div>
-          <span className="ml-3 text-text-secondary">Calculando score...</span>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          <span className="ml-3 text-base-content/70">Calculando score...</span>
         </div>
       </Card>
     );
@@ -33,27 +33,27 @@ export const QualityScoreCard: React.FC<QualityScoreCardProps> = React.memo(({
   const { qualityScore, qualityLevel } = analysis;
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-emerald-600';
-    if (score >= 60) return 'text-yellow-600';
-    if (score >= 40) return 'text-orange-600';
-    return 'text-red-600';
+    if (score >= 80) return 'text-success';
+    if (score >= 60) return 'text-warning';
+    if (score >= 40) return 'text-warning';
+    return 'text-error';
   };
 
   const getScoreBgColor = (score: number) => {
-    if (score >= 80) return 'bg-emerald-50 border-emerald-200';
-    if (score >= 60) return 'bg-yellow-50 border-yellow-200';
-    if (score >= 40) return 'bg-orange-50 border-orange-200';
-    return 'bg-red-50 border-red-200';
+    if (score >= 80) return 'bg-success/10 border-success/30';
+    if (score >= 60) return 'bg-warning/10 border-warning/30';
+    if (score >= 40) return 'bg-warning/5 border-warning/20';
+    return 'bg-error/10 border-error/30';
   };
 
   const getLevelBadgeColor = (level: string) => {
     switch (level) {
-      case 'Excelente': return 'bg-emerald-100 text-emerald-800';
-      case 'Bom': return 'bg-blue-100 text-blue-800';
-      case 'Regular': return 'bg-yellow-100 text-yellow-800';
-      case 'Ruim': return 'bg-orange-100 text-orange-800';
-      case 'Crítico': return 'bg-red-100 text-red-800';
-      default: return 'bg-slate-100 text-slate-800';
+      case 'Excelente': return 'badge badge-success badge-outline';
+      case 'Bom': return 'badge badge-info badge-outline';
+      case 'Regular': return 'badge badge-warning badge-outline';
+      case 'Ruim': return 'badge badge-warning badge-outline';
+      case 'Crítico': return 'badge badge-error badge-outline';
+      default: return 'badge badge-neutral badge-outline';
     }
   };
 
@@ -73,7 +73,7 @@ export const QualityScoreCard: React.FC<QualityScoreCardProps> = React.memo(({
         transition={{ duration: 0.4 }}
       >
         <div>
-          <p className="text-sm font-medium text-text-secondary mb-2">Score de Qualidade</p>
+          <p className="text-sm font-medium text-base-content/70 mb-2">Score de Qualidade</p>
           <div className="relative inline-block">
             <div className="relative w-32 h-32 mx-auto">
               <svg className="transform -rotate-90 w-32 h-32">
@@ -84,7 +84,7 @@ export const QualityScoreCard: React.FC<QualityScoreCardProps> = React.memo(({
                   stroke="currentColor"
                   strokeWidth="8"
                   fill="none"
-                  className="text-surface-border"
+                  className="text-base-300"
                 />
                 <motion.circle
                   cx="64"
@@ -125,7 +125,7 @@ export const QualityScoreCard: React.FC<QualityScoreCardProps> = React.memo(({
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8 }}
         >
-          <span className={`inline-block px-3 py-1 rounded-full text-sm font-semibold ${getLevelBadgeColor(qualityLevel)}`}>
+          <span className={`${getLevelBadgeColor(qualityLevel)}`}>
             {qualityLevel}
           </span>
         </motion.div>

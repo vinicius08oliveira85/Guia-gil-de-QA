@@ -3,7 +3,7 @@ import { JiraTask, PhaseName } from '../types';
 /**
  * Determina em qual fase do projeto uma tarefa está baseado em seu status e características
  */
-export const getTaskPhase = (task: JiraTask, projectPhases?: { name: PhaseName; status: string }[]): PhaseName | null => {
+export const getTaskPhase = (task: JiraTask, _projectPhases?: { name: PhaseName; status: string }[]): PhaseName | null => {
     // Se a tarefa está "Done", está na fase mais avançada possível
     if (task.status === 'Done') {
         // Se tem testes executados, está em Test ou posterior

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Modal } from '../common/Modal';
 import { useLocalStorage } from '../../hooks/useLocalStorage';
-import { helpContent } from '../../utils/helpContent';
 
 interface OnboardingStep {
     id: string;

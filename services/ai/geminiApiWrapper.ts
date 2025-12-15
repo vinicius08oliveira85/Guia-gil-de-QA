@@ -159,12 +159,19 @@ function extractRetryInfo(error: unknown): { retryAfter?: number; status?: numbe
   
   if (typeof error === 'object' && error !== null) {
     const err = error as Record<string, unknown>;
-    
+
     // Tentar extrair Retry-After de diferentes formatos
-    const retryAfter = err.retryAfter || err['retry-after'] || err.retry_after || 
-                       (err.response as Record<string, unknown>)?.headers?.['retry-after'] ||
-                       (err.response as Record<string, unknown>)?.headers?.['Retry-After'];
-    
+    let retryAfter: unknown =
+      err.retryAfter ?? err['retry-after'] ?? err.retry_after;
+
+    if (retryAfter === undefined && typeof err.response === 'object' && err.response !== null) {
+      const headers = (err.response as Record<string, unknown>).headers;
+      if (typeof headers === 'object' && headers !== null) {
+        const headerRecord = headers as Record<string, unknown>;
+        retryAfter = headerRecord['retry-after'] ?? headerRecord['Retry-After'];
+      }
+    }
+
     if (typeof retryAfter === 'number') {
       info.retryAfter = retryAfter * 1000; // Converter segundos para ms
     } else if (typeof retryAfter === 'string') {
@@ -227,7 +234,8 @@ export async function callGeminiWithRetry(
               { model: params.model, textLength: response.text?.length || 0 }
             );
 
-            return response;
+            const text = response.text ?? '';
+            return { text };
           } catch (error) {
             // Verificar se é erro de quota
             if (isQuotaExceededError(error)) {

@@ -3,13 +3,12 @@ import { Card } from '../common/Card';
 import { BugSeverity } from '../../types';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AlertTriangle, CheckCircle2, AlertCircle } from 'lucide-react';
-import { cn } from '../../utils/windows12Styles';
+import { cn } from '../../utils/cn';
 
 interface DashboardAlertsProps {
   hasCriticalFailures: boolean;
   bugsBySeverity: Record<BugSeverity, number>;
   passRate: number;
-  totalBugs: number;
 }
 
 /**
@@ -19,7 +18,6 @@ export const DashboardAlerts: React.FC<DashboardAlertsProps> = React.memo(({
   hasCriticalFailures,
   bugsBySeverity,
   passRate,
-  totalBugs,
 }) => {
   const alerts = useMemo(() => {
     const alertList: Array<{ 
@@ -37,9 +35,9 @@ export const DashboardAlerts: React.FC<DashboardAlertsProps> = React.memo(({
         type: 'error',
         message: 'Há testes críticos falhando',
         icon: <AlertTriangle className="w-5 h-5" />,
-        bgColor: 'bg-danger/10',
-        borderColor: 'border-danger/50',
-        textColor: 'text-danger',
+        bgColor: 'bg-error/10',
+        borderColor: 'border-error/30',
+        textColor: 'text-error',
       });
     }
 
@@ -49,9 +47,9 @@ export const DashboardAlerts: React.FC<DashboardAlertsProps> = React.memo(({
         type: 'error',
         message: `${bugsBySeverity['Crítico']} bug(s) crítico(s) em aberto`,
         icon: <AlertCircle className="w-5 h-5" />,
-        bgColor: 'bg-danger/10',
-        borderColor: 'border-danger/50',
-        textColor: 'text-danger',
+        bgColor: 'bg-error/10',
+        borderColor: 'border-error/30',
+        textColor: 'text-error',
       });
     }
 
@@ -62,7 +60,7 @@ export const DashboardAlerts: React.FC<DashboardAlertsProps> = React.memo(({
         message: `${bugsBySeverity['Alto']} bugs de alta severidade em aberto`,
         icon: <AlertTriangle className="w-5 h-5" />,
         bgColor: 'bg-warning/10',
-        borderColor: 'border-warning/50',
+        borderColor: 'border-warning/30',
         textColor: 'text-warning',
       });
     }
@@ -74,7 +72,7 @@ export const DashboardAlerts: React.FC<DashboardAlertsProps> = React.memo(({
         message: `Taxa de sucesso baixa: ${passRate}%`,
         icon: <AlertTriangle className="w-5 h-5" />,
         bgColor: 'bg-warning/10',
-        borderColor: 'border-warning/50',
+        borderColor: 'border-warning/30',
         textColor: 'text-warning',
       });
     }
@@ -86,7 +84,7 @@ export const DashboardAlerts: React.FC<DashboardAlertsProps> = React.memo(({
         message: 'Tudo estável',
         icon: <CheckCircle2 className="w-5 h-5" />,
         bgColor: 'bg-success/10',
-        borderColor: 'border-success/50',
+        borderColor: 'border-success/30',
         textColor: 'text-success',
       });
     }

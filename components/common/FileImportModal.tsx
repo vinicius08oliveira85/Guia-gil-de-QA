@@ -272,7 +272,7 @@ export const FileImportModal: React.FC<FileImportModalProps> = React.memo(({
                 >
                     {isImporting ? (
                         <>
-                            <Spinner size="sm" />
+                            <Spinner small />
                             <span>Importando...</span>
                         </>
                     ) : (

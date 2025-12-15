@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { Project, SDLCPhaseAnalysis } from '../types';
+import { Project } from '../types';
 import { 
     generateSDLCPhaseAnalysis, 
     markSDLCPhaseAnalysisAsOutdated 
@@ -9,7 +9,7 @@ import { useErrorHandler } from './useErrorHandler';
 /**
  * Hook para gerenciar análise de fase SDLC com IA
  */
-export function useSDLCPhaseAnalysis(project: Project, onUpdateProject?: (project: Project) => void, autoGenerate: boolean = false) {
+export function useSDLCPhaseAnalysis(project: Project, onUpdateProject?: (project: Project) => void, _autoGenerate: boolean = false) {
     const [isGenerating, setIsGenerating] = useState(false);
     const { handleError, handleSuccess } = useErrorHandler();
 

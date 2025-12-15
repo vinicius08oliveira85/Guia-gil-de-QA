@@ -9,30 +9,6 @@ import { logger } from './logger';
 let schedulerInterval: NodeJS.Timeout | null = null;
 let lastRunDate: string | null = null;
 
-const getNextRunTime = (schedule: ExportSchedule): Date => {
-    const [hours, minutes] = schedule.time.split(':').map(Number);
-    const now = new Date();
-    const nextRun = new Date();
-    nextRun.setHours(hours, minutes, 0, 0);
-
-    if (nextRun <= now) {
-        // If time has passed today, schedule for next period
-        switch (schedule.frequency) {
-            case 'daily':
-                nextRun.setDate(nextRun.getDate() + 1);
-                break;
-            case 'weekly':
-                nextRun.setDate(nextRun.getDate() + 7);
-                break;
-            case 'monthly':
-                nextRun.setMonth(nextRun.getMonth() + 1);
-                break;
-        }
-    }
-
-    return nextRun;
-};
-
 const shouldRunNow = (schedule: ExportSchedule): boolean => {
     const now = new Date();
     const [hours, minutes] = schedule.time.split(':').map(Number);

@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Project, JiraTask } from '../../types';
+import { Project } from '../../types';
 import { calculateProjectEstimations } from '../../utils/estimationService';
 
 interface BurndownChartProps {

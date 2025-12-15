@@ -7,7 +7,6 @@ interface QuickFiltersProps {
     onFilterChange: <K extends keyof FilterOptions>(key: K, value: FilterOptions[K]) => void;
     onClearFilters: () => void;
     onRemoveFilter: (key: keyof FilterOptions) => void;
-    availableTestTypes: string[];
 }
 
 /**
@@ -20,32 +19,7 @@ export const QuickFilters: React.FC<QuickFiltersProps> = ({
     onFilterChange,
     onClearFilters,
     onRemoveFilter,
-    availableTestTypes
 }) => {
-    const toggleArrayFilter = <K extends keyof FilterOptions>(
-        key: K,
-        value: any
-    ) => {
-        const current = (filters[key] as any[]) || [];
-        if (current.includes(value)) {
-            if (current.length === 1) {
-                onRemoveFilter(key);
-            } else {
-                onFilterChange(key, current.filter(v => v !== value) as any);
-            }
-        } else {
-            onFilterChange(key, [...current, value] as any);
-        }
-    };
-
-    const toggleBooleanFilter = (key: keyof FilterOptions, value: boolean) => {
-        if (filters[key] === value) {
-            onRemoveFilter(key);
-        } else {
-            onFilterChange(key, value as any);
-        }
-    };
-
     const getFilterChips = () => {
         const chips: Array<{ key: string; label: string; value: string; onRemove: () => void }> = [];
 

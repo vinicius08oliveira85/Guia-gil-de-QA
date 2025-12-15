@@ -1,4 +1,20 @@
-import { PhaseName, Project } from '../types';
+import type { BugSeverity, JiraTask, PhaseName, Project } from '../types';
+
+type ProjectMetricsForChecklist = {
+    totalTasks: number;
+    totalTestCases: number;
+    automatedTestCases: number;
+    executedTestCases: number;
+    openVsClosedBugs: { open: number; closed: number };
+    bugsBySeverity: Record<BugSeverity, number>;
+    project: Project;
+};
+
+type TimelineChecklistItem = {
+    label: string;
+    description?: string;
+    check: (metrics: ProjectMetricsForChecklist) => boolean;
+};
 
 interface TimelinePhase {
     phase: PhaseName;
@@ -6,7 +22,7 @@ interface TimelinePhase {
     dependencies: string;
     exitCriteria: string;
     milestone: string;
-    checklist: { label: string; check: (metrics: any) => boolean; description?: string; };
+    checklist: TimelineChecklistItem[];
     qaActivities?: string[];
     deliverables?: string[];
     risks?: string[];
@@ -67,7 +83,7 @@ export const timelineData: TimelinePhase[] = [
             },
             { 
                 label: 'Criar cenários BDD', 
-                check: (m) => m.project.tasks.some((t:any) => t.bddScenarios && t.bddScenarios.length > 0),
+                check: (m) => m.project.tasks.some((t: JiraTask) => (t.bddScenarios?.length ?? 0) > 0),
                 description: 'Escrever cenários Given-When-Then para cada história'
             },
             { 
@@ -142,7 +158,9 @@ export const timelineData: TimelinePhase[] = [
         checklist: [
             { 
                 label: 'Desenvolvimento concluído', 
-                check: (m) => m.totalTasks > 0 && m.project.tasks.filter((t:any) => t.type !== 'Bug').every((t:any) => t.status === 'Done'),
+                check: (m) =>
+                    m.totalTasks > 0 &&
+                    m.project.tasks.filter((t: JiraTask) => t.type !== 'Bug').every((t: JiraTask) => t.status === 'Done'),
                 description: 'Todas as tarefas de desenvolvimento finalizadas'
             },
             { 
@@ -234,7 +252,7 @@ export const timelineData: TimelinePhase[] = [
             },
             { 
                 label: 'Obter aprovação (Sign-off) do UAT', 
-                check: (m) => m.bugsBySeverity['Crítico'] === 0 && m.bugsBySeverity['Alto'] === 0,
+                check: (m) => (m.bugsBySeverity['Crítico'] ?? 0) === 0 && (m.bugsBySeverity['Alto'] ?? 0) === 0,
                 description: 'Aprovação formal dos stakeholders'
             },
         ],

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Spinner } from '../common/Spinner';
-import { windows12Styles } from '../../utils/windows12Styles';
+import { cn } from '../../utils/cn';
 
 interface GeneralIAAnalysisButtonProps {
   onAnalyze: () => Promise<void>;
@@ -66,35 +66,27 @@ export const GeneralIAAnalysisButton: React.FC<GeneralIAAnalysisButtonProps> = (
 
   return (
     <button
+      type="button"
       onClick={handleClick}
       disabled={isAnalyzing}
-      className={`
-        relative overflow-hidden
-        ${windows12Styles.card}
-        ${windows12Styles.transition.normal}
-        px-2.5 py-1.5
-        ${isAnalyzing 
-          ? 'cursor-wait shadow-lg shadow-accent/30 border-accent/40' 
-          : `${windows12Styles.cardHover} group`
-        }
-        disabled:opacity-50 disabled:cursor-not-allowed
-      `}
+      className={cn(
+        'relative overflow-hidden px-3 py-2',
+        'bg-base-100 border border-base-300 rounded-xl',
+        'transition-all',
+        isAnalyzing ? 'cursor-wait shadow-lg border-primary/30' : 'group hover:shadow-lg hover:border-primary/30',
+        'disabled:opacity-50 disabled:cursor-not-allowed'
+      )}
     >
       {/* Efeito de fundo glow durante análise */}
       {isAnalyzing && (
-        <div className={`
-          absolute inset-0 rounded-xl
-          bg-gradient-to-br from-accent/10 via-accent/5 to-transparent
-          animate-pulse
-          ${windows12Styles.glow('accent')}
-        `} />
+        <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent animate-pulse" />
       )}
 
       <div className="relative flex items-center gap-2 z-10">
         {/* Ícone de cérebro/chip com animação aprimorada */}
         <div className={`
           relative w-4 h-4 flex items-center justify-center
-          ${windows12Styles.transition.normal}
+          transition-all
           ${isAnalyzing 
             ? 'animate-spin' 
             : 'group-hover:scale-110 group-hover:rotate-12'
@@ -106,17 +98,17 @@ export const GeneralIAAnalysisButton: React.FC<GeneralIAAnalysisButtonProps> = (
               {/* Glow pulsante ao redor do spinner */}
               <div className={`
                 absolute inset-0 rounded-full
-                bg-accent/40 animate-pulse blur-sm
+                bg-primary/40 animate-pulse blur-sm
                 ${pulsePhase === 0 ? 'scale-100' : ''}
                 ${pulsePhase === 1 ? 'scale-110' : ''}
                 ${pulsePhase === 2 ? 'scale-120' : ''}
                 ${pulsePhase === 3 ? 'scale-110' : ''}
-                ${windows12Styles.transition.slow}
+                transition-all duration-300
               `} />
             </>
           ) : (
             <svg 
-              className="w-4 h-4 text-accent-light group-hover:text-accent transition-colors" 
+              className="w-4 h-4 text-primary group-hover:text-primary/80 transition-colors" 
               fill="none" 
               viewBox="0 0 24 24" 
               stroke="currentColor"
@@ -134,13 +126,13 @@ export const GeneralIAAnalysisButton: React.FC<GeneralIAAnalysisButtonProps> = (
         <div className="flex flex-col items-start">
           <span className={`
             text-xs font-semibold leading-tight
-            ${isAnalyzing ? 'text-accent-light' : 'text-text-primary'}
-            ${windows12Styles.transition.fast}
+            ${isAnalyzing ? 'text-primary' : 'text-base-content'}
+            transition-all
           `}>
             {isAnalyzing ? 'Analisando...' : 'Análise IA'}
           </span>
           {isAnalyzing && progress?.message && (
-            <span className="text-[10px] text-text-secondary mt-0.5 animate-pulse leading-tight">
+            <span className="text-[10px] text-base-content/70 mt-0.5 animate-pulse leading-tight">
               {progress.message.length > 30 ? `${progress.message.substring(0, 30)}...` : progress.message}
             </span>
           )}
@@ -149,12 +141,12 @@ export const GeneralIAAnalysisButton: React.FC<GeneralIAAnalysisButtonProps> = (
 
       {/* Barra de progresso melhorada com gradiente animado */}
       {isAnalyzing && (
-        <div className="absolute bottom-0 left-0 right-0 h-1 bg-surface-hover/50 rounded-b-xl overflow-hidden">
+        <div className="absolute bottom-0 left-0 right-0 h-1 bg-base-200 rounded-b-xl overflow-hidden">
           <div 
             className={`
               h-full 
-              bg-gradient-to-r from-accent via-accent-light to-accent
-              ${windows12Styles.transition.slow}
+              bg-gradient-to-r from-primary via-primary/70 to-primary
+              transition-all duration-300
               relative
             `}
             style={{ 
@@ -174,7 +166,7 @@ export const GeneralIAAnalysisButton: React.FC<GeneralIAAnalysisButtonProps> = (
         <div className={`
           absolute inset-0 
           -translate-x-full group-hover:translate-x-full 
-          ${windows12Styles.transition.slow}
+          transition-transform duration-500
           bg-gradient-to-r from-transparent via-white/10 to-transparent
           pointer-events-none
         `} />
@@ -184,7 +176,7 @@ export const GeneralIAAnalysisButton: React.FC<GeneralIAAnalysisButtonProps> = (
       {isAnalyzing && (
         <div className={`
           absolute inset-0 rounded-xl
-          border-2 border-accent/30
+          border-2 border-primary/20
           animate-pulse
           pointer-events-none
         `} />

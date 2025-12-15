@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Modal } from '../common/Modal';
-import { windows12Styles } from '../../utils/windows12Styles';
 import { JiraTask } from '../../types';
 import { generateTestReport, TestReportFormat } from '../../utils/testReportGenerator';
 import { downloadFile } from '../../utils/exportService';
@@ -109,11 +108,12 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({
       <div className="h-full flex flex-col min-h-0 space-y-md">
         {/* Texto descritivo e botões - linha compacta */}
         <div className="flex-shrink-0 space-y-sm">
-          <p className="text-sm text-text-secondary">
+          <p className="text-sm text-base-content/70">
             Copie o registro abaixo para colar em outras plataformas
           </p>
-          <div className="flex flex-wrap items-center justify-end gap-md pb-2 border-b border-surface-border">
+          <div className="flex flex-wrap items-center justify-end gap-md pb-2 border-b border-base-300">
           <button
+            type="button"
             onClick={handleDownload}
             className="btn btn-secondary btn-md flex items-center gap-2"
           >
@@ -123,6 +123,7 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({
             <span>Baixar .{format === 'markdown' ? 'md' : 'txt'}</span>
           </button>
           <button
+            type="button"
             onClick={handleCopy}
             className={`
               btn btn-primary btn-md
@@ -151,7 +152,7 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({
 
         {/* Formato do relatório - grid 2 colunas */}
         <div className="flex-shrink-0 flex flex-col gap-sm">
-          <p className="text-xs uppercase tracking-wide text-text-secondary font-semibold">Formato do relatório</p>
+          <p className="text-xs uppercase tracking-wide text-base-content/70 font-semibold">Formato do relatório</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-md">
             {formatOptions.map((option) => (
               <button
@@ -161,12 +162,12 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({
                 className={`
                   border rounded-lg p-card text-left transition-all duration-200
                   ${format === option.value
-                    ? 'border-accent bg-accent/10 text-white shadow-md ring-2 ring-accent/30'
-                    : 'border-surface-border text-text-secondary hover:text-text-primary hover:border-accent/40 hover:bg-surface-hover'}
+                    ? 'border-primary bg-primary/10 text-base-content shadow-md ring-2 ring-primary/20'
+                    : 'border-base-300 text-base-content/70 hover:text-base-content hover:border-primary/30 hover:bg-base-200'}
                 `}
               >
                 <p className="font-medium">{option.label}</p>
-                <p className="text-sm text-text-secondary">{option.description}</p>
+                <p className="text-sm text-base-content/70">{option.description}</p>
               </button>
             ))}
           </div>
@@ -175,14 +176,14 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({
         {/* Resumo visual - compacto */}
         <div className="flex-shrink-0 space-y-sm">
           <div className="flex flex-wrap items-center justify-between gap-sm">
-            <p className="text-xs uppercase tracking-wide text-text-secondary font-semibold">Resumo visual</p>
-            <div className="flex gap-md text-xs text-text-secondary">
+            <p className="text-xs uppercase tracking-wide text-base-content/70 font-semibold">Resumo visual</p>
+            <div className="flex gap-md text-xs text-base-content/70">
               <div className="flex items-center gap-xs">
                 <span className="w-2 h-2 rounded-full bg-success"></span>
                 <span>Aprovado</span>
               </div>
               <div className="flex items-center gap-xs">
-                <span className="w-2 h-2 rounded-full bg-danger"></span>
+                <span className="w-2 h-2 rounded-full bg-error"></span>
                 <span>Reprovado</span>
               </div>
             </div>
@@ -194,15 +195,15 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({
                 return (
                   <li
                     key={`${testCase.id}-${index}`}
-                    className="flex flex-col gap-sm rounded-lg border border-surface-border bg-surface p-card"
+                    className="flex flex-col gap-sm rounded-xl border border-base-300 bg-base-100 p-card"
                   >
                     <div className="flex items-start justify-between gap-md">
                       <div>
-                        <p className="text-sm font-medium text-text-primary">
+                        <p className="text-sm font-medium text-base-content">
                           {testCase.description || `Teste ${index + 1}`}
                         </p>
                         {testCase.executedStrategy && (
-                          <p className="text-xs text-text-secondary">
+                          <p className="text-xs text-base-content/70">
                             {Array.isArray(testCase.executedStrategy)
                               ? testCase.executedStrategy.join(', ')
                               : testCase.executedStrategy}
@@ -214,14 +215,14 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({
                       </Badge>
                     </div>
                     {testCase.toolsUsed && testCase.toolsUsed.length > 0 && (
-                      <p className="text-xs text-text-secondary">
+                      <p className="text-xs text-base-content/70">
                         Ferramentas: {testCase.toolsUsed.join(', ')}
                       </p>
                     )}
                     {testCase.observedResult && testCase.observedResult.trim() && (
                       <div className="mt-1">
-                        <p className="text-xs font-medium text-text-secondary mb-0.5">Resultado Encontrado:</p>
-                        <p className="text-xs text-red-400 whitespace-pre-wrap">{testCase.observedResult}</p>
+                        <p className="text-xs font-medium text-base-content/70 mb-0.5">Resultado Encontrado:</p>
+                        <p className="text-xs text-error whitespace-pre-wrap">{testCase.observedResult}</p>
                       </div>
                     )}
                   </li>
@@ -229,7 +230,7 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({
               })}
             </ul>
           ) : (
-            <p className="text-sm text-text-secondary">Nenhum teste executado até o momento.</p>
+            <p className="text-sm text-base-content/70">Nenhum teste executado até o momento.</p>
           )}
         </div>
 
@@ -240,11 +241,11 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({
             readOnly
             className={`
               w-full flex-1 min-h-[200px]
-              bg-surface border border-surface-border rounded-lg
-              p-card text-sm text-text-primary
+              bg-base-100 border border-base-300 rounded-lg
+              p-card text-sm text-base-content
               font-mono
               resize-none
-              focus:outline-none focus:ring-2 focus:ring-accent/50
+              focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary
               transition-all duration-200
             `}
             onClick={(e) => {
@@ -254,8 +255,9 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({
         </div>
 
         {/* Botão Fechar */}
-        <div className="flex-shrink-0 flex justify-end gap-md pt-2 border-t border-surface-border">
+        <div className="flex-shrink-0 flex justify-end gap-md pt-2 border-t border-base-300">
           <button
+            type="button"
             onClick={onClose}
             className="btn btn-secondary btn-md"
           >

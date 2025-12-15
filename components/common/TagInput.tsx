@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { DEFAULT_TAGS, TAG_COLORS, getTagColor } from '../../utils/tagService';
+import { DEFAULT_TAGS, getTagColor } from '../../utils/tagService';
 
 interface TagInputProps {
   tags: string[];

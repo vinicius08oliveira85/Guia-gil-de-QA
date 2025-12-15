@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { Project, PhaseName } from '../../types';
 import { Card } from '../common/Card';
 import { useProjectMetrics } from '../../hooks/useProjectMetrics';
@@ -14,7 +14,7 @@ interface TimelinePhase {
     dependencies: string;
     exitCriteria: string;
     milestone: string;
-    checklist: { label: string; check: (metrics: any) => boolean; description?: string; };
+    checklist: Array<{ label: string; check: (metrics: any) => boolean; description?: string }>;
     qaActivities?: string[];
     deliverables?: string[];
     risks?: string[];
@@ -23,7 +23,7 @@ interface TimelinePhase {
 
 const Checkbox: React.FC<{ checked: boolean; description?: string }> = ({ checked, description }) => (
     <Tooltip content={description || ''}>
-        <div className={`w-5 h-5 rounded border-2 ${checked ? 'bg-green-500 border-green-500' : 'border-surface-border'} flex items-center justify-center flex-shrink-0 cursor-help transition-all`}>
+        <div className={`w-5 h-5 rounded border-2 ${checked ? 'bg-success border-success' : 'border-base-300'} flex items-center justify-center flex-shrink-0 cursor-help transition-all`}>
         {checked && <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 14 11"><path d="M1 5.25L5.028 9L13 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>}
     </div>
     </Tooltip>
@@ -66,29 +66,31 @@ export const TimelineView: React.FC<{ project: Project, currentPhaseName: PhaseN
 
     return (
         <div className="space-y-6">
-        <Card>
+        <Card className="p-5">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                     <div>
-                        <h3 className="text-2xl font-bold text-text-primary mb-2">Timeline Completa do Projeto</h3>
-                        <p className="text-text-secondary">Cronograma detalhado do fluxo de trabalho de QA com dependências, marcos e entregáveis.</p>
+                        <h3 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2">Timeline Completa do Projeto</h3>
+                        <p className="text-base-content/70 max-w-2xl">Cronograma detalhado do fluxo de trabalho de QA com dependências, marcos e entregáveis.</p>
                     </div>
                     <div className="flex gap-2">
                         <button
+                            type="button"
                             onClick={() => setViewMode('timeline')}
-                            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                            className={`btn btn-sm rounded-full transition-colors ${
                                 viewMode === 'timeline'
-                                    ? 'bg-accent text-white'
-                                    : 'bg-surface border border-surface-border text-text-secondary hover:bg-surface-hover'
+                                    ? 'btn-primary'
+                                    : 'btn-outline'
                             }`}
                         >
                             Timeline
                         </button>
                         <button
+                            type="button"
                             onClick={() => setViewMode('table')}
-                            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                            className={`btn btn-sm rounded-full transition-colors ${
                                 viewMode === 'table'
-                                    ? 'bg-accent text-white'
-                                    : 'bg-surface border border-surface-border text-text-secondary hover:bg-surface-hover'
+                                    ? 'btn-primary'
+                                    : 'btn-outline'
                             }`}
                         >
                             Tabela
@@ -97,10 +99,10 @@ export const TimelineView: React.FC<{ project: Project, currentPhaseName: PhaseN
                 </div>
 
                 {/* Progresso Geral */}
-                <div className="p-4 bg-surface border border-surface-border rounded-lg mb-6">
+                <div className="p-5 bg-base-100 border border-base-300 rounded-xl mb-6">
                     <div className="flex items-center justify-between mb-2">
-                        <span className="text-text-secondary font-semibold">Progresso Geral do Projeto</span>
-                        <span className="text-text-primary font-bold">{Math.round(overallProgress)}%</span>
+                        <span className="text-base-content/70 font-semibold">Progresso Geral do Projeto</span>
+                        <span className="text-base-content font-bold">{Math.round(overallProgress)}%</span>
                     </div>
                     <ProgressIndicator
                         value={completedPhases}
@@ -108,7 +110,7 @@ export const TimelineView: React.FC<{ project: Project, currentPhaseName: PhaseN
                         color="green"
                         size="lg"
                     />
-                    <div className="flex items-center justify-between mt-2 text-sm text-text-secondary">
+                    <div className="flex items-center justify-between mt-2 text-sm text-base-content/70">
                         <span>{completedPhases} de {totalPhases} fases concluídas</span>
                         <span>Fase atual: {currentPhaseName}</span>
                     </div>
@@ -117,7 +119,7 @@ export const TimelineView: React.FC<{ project: Project, currentPhaseName: PhaseN
                 {viewMode === 'timeline' ? (
                     /* Visualização Timeline */
                     <div className="relative">
-                        <div className="absolute left-8 top-0 bottom-0 w-1 bg-surface-border"></div>
+                        <div className="absolute left-8 top-0 bottom-0 w-1 bg-base-300"></div>
                         
                         <div className="space-y-8">
                             {timelineData.map((phase, index) => {
@@ -141,23 +143,23 @@ export const TimelineView: React.FC<{ project: Project, currentPhaseName: PhaseN
 
                                         {/* Conteúdo da fase */}
                                         <div className="flex-1 pb-8">
-                                            <div className={`p-6 bg-surface border ${isCurrent ? 'border-accent' : 'border-surface-border'} rounded-lg hover:shadow-lg transition-all`}>
+                                            <div className={`p-6 bg-base-100 border ${isCurrent ? 'border-primary' : 'border-base-300'} rounded-xl hover:shadow-lg transition-all`}>
                                                 <div className="flex items-start justify-between mb-4">
                                                     <div className="flex-1">
                                                         <div className="flex items-center gap-3 mb-2">
-                                                            <h4 className="text-xl font-bold text-text-primary">{phase.phase}</h4>
+                                                            <h4 className="text-xl font-bold text-base-content">{phase.phase}</h4>
                                                             <Badge variant={status === 'completed' ? 'success' : status === 'current' ? 'info' : 'default'}>
                                                                 {status === 'completed' ? '✅ Concluída' : status === 'current' ? '🔄 Atual' : '⏳ Próxima'}
                                                             </Badge>
-                                                            <span className="text-sm text-text-secondary">⏱️ {phase.duration}</span>
+                                                            <span className="text-sm text-base-content/70">⏱️ {phase.duration}</span>
                                                         </div>
-                                                        <p className="text-text-secondary mb-3">{phase.milestone}</p>
+                                                        <p className="text-base-content/70 mb-3">{phase.milestone}</p>
                                                         
                                                         {/* Progresso da fase */}
                                                         <div className="mb-4">
                                                             <div className="flex items-center justify-between mb-1">
-                                                                <span className="text-xs text-text-secondary">Progresso da fase</span>
-                                                                <span className="text-xs font-semibold text-text-primary">{Math.round(progress)}%</span>
+                                                                <span className="text-xs text-base-content/70">Progresso da fase</span>
+                                                                <span className="text-xs font-semibold text-base-content">{Math.round(progress)}%</span>
                                                             </div>
                                                             <ProgressIndicator
                                                                 value={phase.checklist.filter(item => item.check(metricsWithProject)).length}
@@ -178,25 +180,25 @@ export const TimelineView: React.FC<{ project: Project, currentPhaseName: PhaseN
                                                 {/* Informações básicas */}
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                                                     <div>
-                                                        <h5 className="text-xs font-semibold text-text-secondary mb-1">Dependências</h5>
-                                                        <p className="text-sm text-text-primary">{phase.dependencies}</p>
+                                                        <h5 className="text-xs font-semibold text-base-content/70 mb-1">Dependências</h5>
+                                                        <p className="text-sm text-base-content">{phase.dependencies}</p>
                                                     </div>
                                                     <div>
-                                                        <h5 className="text-xs font-semibold text-text-secondary mb-1">Critério de Saída</h5>
-                                                        <p className="text-sm text-text-primary">{phase.exitCriteria}</p>
+                                                        <h5 className="text-xs font-semibold text-base-content/70 mb-1">Critério de Saída</h5>
+                                                        <p className="text-sm text-base-content">{phase.exitCriteria}</p>
                                                     </div>
                                                 </div>
 
                                                 {/* Checklist */}
                                                 <div className="mb-4">
-                                                    <h5 className="text-sm font-semibold text-text-secondary mb-2">✅ Checklist</h5>
+                                                    <h5 className="text-sm font-semibold text-base-content/70 mb-2">✅ Checklist</h5>
                                                     <div className="space-y-2">
                                                         {phase.checklist.map((item, idx) => {
                                                             const checked = item.check(metricsWithProject);
                                                             return (
-                                                                <div key={idx} className={`flex items-start gap-2 p-2 rounded ${checked ? 'bg-green-500/20' : 'bg-surface-hover'}`}>
+                                                                <div key={idx} className={`flex items-start gap-2 p-2 rounded ${checked ? 'bg-success/10' : 'bg-base-200'}`}>
                                                                     <Checkbox checked={checked} description={item.description} />
-                                                                    <span className={`text-sm flex-1 ${checked ? 'text-green-400 line-through' : 'text-text-primary'}`}>
+                                                                    <span className={`text-sm flex-1 ${checked ? 'text-success line-through' : 'text-base-content'}`}>
                                                                         {item.label}
                                                                     </span>
                                                                 </div>
@@ -207,13 +209,13 @@ export const TimelineView: React.FC<{ project: Project, currentPhaseName: PhaseN
 
                                                 {/* Informações expandidas */}
                                                 {isExpanded && (
-                                                    <div className="mt-4 pt-4 border-t border-surface-border space-y-4">
+                                                    <div className="mt-4 pt-4 border-t border-base-300 space-y-4">
                                                         {phase.qaActivities && (
                                                             <div>
-                                                                <h5 className="text-sm font-semibold text-text-secondary mb-2">🧪 Atividades de QA</h5>
+                                                                <h5 className="text-sm font-semibold text-base-content/70 mb-2">🧪 Atividades de QA</h5>
                                                                 <ul className="space-y-1">
                                                                     {phase.qaActivities.map((activity, idx) => (
-                                                                        <li key={idx} className="flex items-start text-sm text-text-primary">
+                                                                        <li key={idx} className="flex items-start text-sm text-base-content">
                                                                             <span className="mr-2 text-blue-400">•</span>
                                                                             <span>{activity}</span>
                                                                         </li>
@@ -224,10 +226,10 @@ export const TimelineView: React.FC<{ project: Project, currentPhaseName: PhaseN
 
                                                         {phase.deliverables && (
                                                             <div>
-                                                                <h5 className="text-sm font-semibold text-text-secondary mb-2">📦 Entregas</h5>
+                                                                <h5 className="text-sm font-semibold text-base-content/70 mb-2">📦 Entregas</h5>
                                                                 <ul className="space-y-1">
                                                                     {phase.deliverables.map((deliverable, idx) => (
-                                                                        <li key={idx} className="flex items-start text-sm text-text-primary">
+                                                                        <li key={idx} className="flex items-start text-sm text-base-content">
                                                                             <span className="mr-2 text-green-400">✓</span>
                                                                             <span>{deliverable}</span>
                                                                         </li>
@@ -238,10 +240,10 @@ export const TimelineView: React.FC<{ project: Project, currentPhaseName: PhaseN
 
                                                         {phase.risks && (
                                                             <div>
-                                                                <h5 className="text-sm font-semibold text-text-secondary mb-2">⚠️ Riscos</h5>
+                                                                <h5 className="text-sm font-semibold text-base-content/70 mb-2">⚠️ Riscos</h5>
                                                                 <ul className="space-y-1">
                                                                     {phase.risks.map((risk, idx) => (
-                                                                        <li key={idx} className="flex items-start text-sm text-text-primary">
+                                                                        <li key={idx} className="flex items-start text-sm text-base-content">
                                                                             <span className="mr-2 text-orange-400">⚠</span>
                                                                             <span>{risk}</span>
                                                                         </li>
@@ -269,7 +271,7 @@ export const TimelineView: React.FC<{ project: Project, currentPhaseName: PhaseN
                     /* Visualização Tabela */
             <div className="overflow-x-auto scrollbar-hide">
                 <table className="w-full min-w-[1000px] text-left text-sm">
-                            <thead className="border-b-2 border-surface-border text-text-secondary">
+                            <thead className="border-b-2 border-base-300 text-base-content/70">
                         <tr>
                             <th className="p-3 w-1/12">Fase</th>
                                     <th className="p-3 w-1/12">Status</th>
@@ -280,19 +282,18 @@ export const TimelineView: React.FC<{ project: Project, currentPhaseName: PhaseN
                                     <th className="p-3 w-3/12">Checklist</th>
                         </tr>
                     </thead>
-                            <tbody className="divide-y divide-surface-border">
+                            <tbody className="divide-y divide-base-300">
                                 {timelineData.map(phase => {
                                     const isCurrent = phase.phase === currentPhaseName;
                                     const isDone = getPhaseStatus(phase.phase) === 'completed';
-                                    const progress = getPhaseProgress(phase);
                             
                             return (
                                         <tr 
                                             key={phase.phase} 
-                                            className={`${isCurrent ? 'bg-accent/10' : ''} ${isDone ? 'opacity-60' : ''} transition-colors hover:bg-surface-hover cursor-pointer`}
+                                            className={`${isCurrent ? 'bg-primary/10' : ''} ${isDone ? 'opacity-60' : ''} transition-colors hover:bg-base-200 cursor-pointer`}
                                             onClick={() => setSelectedPhase(phase)}
                                         >
-                                            <td className={`p-3 font-semibold align-top ${isDone ? 'text-text-secondary' : 'text-accent'}`}>
+                                            <td className={`p-3 font-semibold align-top ${isDone ? 'text-base-content/70' : 'text-primary'}`}>
                                                 {phase.phase}
                                             </td>
                                             <td className="p-3 align-top">
@@ -300,16 +301,16 @@ export const TimelineView: React.FC<{ project: Project, currentPhaseName: PhaseN
                                                     {isDone ? '✅' : isCurrent ? '🔄' : '⏳'}
                                                 </Badge>
                                             </td>
-                                            <td className={`p-3 align-top ${isDone ? 'text-text-secondary' : 'text-text-primary'}`}>
+                                            <td className={`p-3 align-top ${isDone ? 'text-base-content/70' : 'text-base-content'}`}>
                                                 {phase.duration}
                                             </td>
-                                            <td className={`p-3 align-top ${isDone ? 'text-text-secondary' : 'text-text-primary'}`}>
+                                            <td className={`p-3 align-top ${isDone ? 'text-base-content/70' : 'text-base-content'}`}>
                                                 {phase.dependencies}
                                             </td>
-                                            <td className={`p-3 align-top ${isDone ? 'text-text-secondary' : 'text-text-primary'}`}>
+                                            <td className={`p-3 align-top ${isDone ? 'text-base-content/70' : 'text-base-content'}`}>
                                                 {phase.exitCriteria}
                                             </td>
-                                            <td className={`p-3 align-top ${isDone ? 'text-text-secondary' : 'text-text-primary'}`}>
+                                            <td className={`p-3 align-top ${isDone ? 'text-base-content/70' : 'text-base-content'}`}>
                                                 {phase.milestone}
                                             </td>
                                             <td className="p-3 align-top">
@@ -319,7 +320,7 @@ export const TimelineView: React.FC<{ project: Project, currentPhaseName: PhaseN
                                                         return (
                                                             <div key={idx} className="flex items-center gap-2">
                                                                 <Checkbox checked={checked} description={item.description} />
-                                                                <span className={`text-xs ${checked ? 'text-green-400 line-through' : 'text-text-primary'}`}>
+                                                                <span className={`text-xs ${checked ? 'text-success line-through' : 'text-base-content'}`}>
                                                                     {item.label}
                                                                 </span>
                                                             </div>
@@ -359,40 +360,40 @@ export const TimelineView: React.FC<{ project: Project, currentPhaseName: PhaseN
                         </div>
 
                         <div>
-                            <h4 className="text-sm font-semibold text-text-secondary mb-2">Marco</h4>
-                            <p className="text-text-primary">{selectedPhase.milestone}</p>
+                            <h4 className="text-sm font-semibold text-base-content/70 mb-2">Marco</h4>
+                            <p className="text-base-content">{selectedPhase.milestone}</p>
                         </div>
 
                         <div>
-                            <h4 className="text-sm font-semibold text-text-secondary mb-2">Duração</h4>
-                            <p className="text-text-primary">⏱️ {selectedPhase.duration}</p>
+                            <h4 className="text-sm font-semibold text-base-content/70 mb-2">Duração</h4>
+                            <p className="text-base-content">⏱️ {selectedPhase.duration}</p>
                         </div>
 
                         <div>
-                            <h4 className="text-sm font-semibold text-text-secondary mb-2">Dependências</h4>
-                            <p className="text-text-primary">{selectedPhase.dependencies}</p>
+                            <h4 className="text-sm font-semibold text-base-content/70 mb-2">Dependências</h4>
+                            <p className="text-base-content">{selectedPhase.dependencies}</p>
                         </div>
 
                         <div>
-                            <h4 className="text-sm font-semibold text-text-secondary mb-2">Critério de Saída</h4>
-                            <p className="text-text-primary">{selectedPhase.exitCriteria}</p>
+                            <h4 className="text-sm font-semibold text-base-content/70 mb-2">Critério de Saída</h4>
+                            <p className="text-base-content">{selectedPhase.exitCriteria}</p>
                         </div>
 
                         <div>
-                            <h4 className="text-sm font-semibold text-text-secondary mb-3">✅ Checklist</h4>
+                            <h4 className="text-sm font-semibold text-base-content/70 mb-3">✅ Checklist</h4>
                             <div className="space-y-2">
                                 {selectedPhase.checklist.map((item, idx) => {
                                     const checked = item.check(metricsWithProject);
                                     return (
-                                        <div key={idx} className={`p-3 rounded-lg ${checked ? 'bg-green-500/20 border border-green-500/30' : 'bg-surface-hover border border-surface-border'}`}>
+                                        <div key={idx} className={`p-3 rounded-lg ${checked ? 'bg-success/10 border border-success/30' : 'bg-base-200 border border-base-300'}`}>
                                             <div className="flex items-start gap-2">
                                                 <Checkbox checked={checked} description={item.description} />
                                                 <div className="flex-1">
-                                                    <span className={`text-sm font-medium ${checked ? 'text-green-400 line-through' : 'text-text-primary'}`}>
+                                                    <span className={`text-sm font-medium ${checked ? 'text-success line-through' : 'text-base-content'}`}>
                                                         {item.label}
                                                     </span>
                                                     {item.description && (
-                                                        <p className="text-xs text-text-secondary mt-1">{item.description}</p>
+                                                        <p className="text-xs text-base-content/70 mt-1">{item.description}</p>
                                                     )}
                                                 </div>
                                             </div>
@@ -412,10 +413,10 @@ export const TimelineView: React.FC<{ project: Project, currentPhaseName: PhaseN
 
                         {selectedPhase.qaActivities && (
                             <div>
-                                <h4 className="text-sm font-semibold text-text-secondary mb-3">🧪 Atividades de QA</h4>
+                                <h4 className="text-sm font-semibold text-base-content/70 mb-3">🧪 Atividades de QA</h4>
                                 <ul className="space-y-2">
                                     {selectedPhase.qaActivities.map((activity, idx) => (
-                                        <li key={idx} className="flex items-start text-text-primary">
+                                        <li key={idx} className="flex items-start text-base-content">
                                             <span className="mr-2 text-blue-400">•</span>
                                             <span>{activity}</span>
                                         </li>
@@ -426,10 +427,10 @@ export const TimelineView: React.FC<{ project: Project, currentPhaseName: PhaseN
 
                         {selectedPhase.deliverables && (
                             <div>
-                                <h4 className="text-sm font-semibold text-text-secondary mb-3">📦 Entregas</h4>
+                                <h4 className="text-sm font-semibold text-base-content/70 mb-3">📦 Entregas</h4>
                                 <ul className="space-y-2">
                                     {selectedPhase.deliverables.map((deliverable, idx) => (
-                                        <li key={idx} className="flex items-start text-text-primary">
+                                        <li key={idx} className="flex items-start text-base-content">
                                             <span className="mr-2 text-green-400">✓</span>
                                             <span>{deliverable}</span>
                                         </li>
@@ -440,10 +441,10 @@ export const TimelineView: React.FC<{ project: Project, currentPhaseName: PhaseN
 
                         {selectedPhase.risks && (
                             <div>
-                                <h4 className="text-sm font-semibold text-text-secondary mb-3">⚠️ Riscos</h4>
+                                <h4 className="text-sm font-semibold text-base-content/70 mb-3">⚠️ Riscos</h4>
                                 <ul className="space-y-2">
                                     {selectedPhase.risks.map((risk, idx) => (
-                                        <li key={idx} className="flex items-start text-text-primary">
+                                        <li key={idx} className="flex items-start text-base-content">
                                             <span className="mr-2 text-orange-400">⚠</span>
                                             <span>{risk}</span>
                                         </li>

@@ -59,7 +59,7 @@ const getShortcuts = () => {
 // Shortcuts exportados para uso no App (usando preferências)
 // This is a getter function that always returns current preferences
 export const SHORTCUTS = new Proxy({} as ReturnType<typeof getShortcuts>, {
-  get(target, prop) {
+  get(_target, prop) {
     const shortcuts = getShortcuts();
     return shortcuts[prop as keyof typeof shortcuts];
   }

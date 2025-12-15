@@ -4,7 +4,7 @@ import React, { useEffect } from 'react';
 interface ModalProps {
     isOpen: boolean;
     onClose: () => void;
-    title: string;
+    title: React.ReactNode;
     children: React.ReactNode;
     size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
     maxHeight?: string;
@@ -92,9 +92,17 @@ export const Modal: React.FC<ModalProps> = ({
             >
                 {/* Title Bar - Fixed */}
                 <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-base-300 flex-shrink-0">
-                    <h2 id="modal-title" className="text-lg sm:text-xl font-semibold text-base-content truncate">
-                        {title}
-                    </h2>
+                    <div id="modal-title" className="min-w-0 flex-1">
+                        {typeof title === 'string' ? (
+                            <h2 className="text-lg sm:text-xl font-semibold text-base-content truncate">
+                                {title}
+                            </h2>
+                        ) : (
+                            <div className="text-lg sm:text-xl font-semibold text-base-content">
+                                {title}
+                            </div>
+                        )}
+                    </div>
                     <button 
                         onClick={onClose} 
                         className="btn btn-ghost btn-sm flex-shrink-0"

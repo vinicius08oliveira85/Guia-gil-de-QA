@@ -43,9 +43,9 @@ export const GlossaryView: React.FC = () => {
     return (
         <div className="container mx-auto p-4 sm:p-6 md:p-8">
             <div className="mb-8">
-                <h1 className="text-3xl sm:text-4xl font-bold text-text-primary mb-4">📚 Glossário de Termos de QA</h1>
-                <p className="text-text-secondary mb-6">
-                    Explore mais de <strong className="text-accent">{glossaryTerms.length} termos</strong> relacionados a Quality Assurance, Testes de Software, Metodologias Ágeis e muito mais.
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-base-content mb-4">📚 Glossário de Termos de QA</h1>
+                <p className="text-base-content/70 mb-6 max-w-2xl">
+                    Explore mais de <strong className="text-primary">{glossaryTerms.length} termos</strong> relacionados a Quality Assurance, Testes de Software, Metodologias Ágeis e muito mais.
                 </p>
 
                 {/* Busca */}
@@ -55,18 +55,19 @@ export const GlossaryView: React.FC = () => {
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder="🔍 Buscar termos..."
-                        className="w-full px-4 py-3 bg-surface border border-surface-border rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-accent"
+                        className="input input-bordered w-full bg-base-100 border-base-300 text-base-content placeholder:text-base-content/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                     />
                 </div>
 
                 {/* Filtros por categoria */}
                 <div className="flex flex-wrap gap-2 mb-6">
                     <button
+                        type="button"
                         onClick={() => setSelectedCategory('Todos')}
-                        className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                        className={`btn btn-sm rounded-full transition-colors ${
                             selectedCategory === 'Todos'
-                                ? 'bg-accent text-white'
-                                : 'bg-surface border border-surface-border text-text-secondary hover:bg-surface-hover'
+                                ? 'btn-primary'
+                                : 'btn-outline'
                         }`}
                     >
                         Todos ({glossaryTerms.length})
@@ -76,11 +77,12 @@ export const GlossaryView: React.FC = () => {
                         return (
                             <button
                                 key={category}
+                                type="button"
                                 onClick={() => setSelectedCategory(category)}
-                                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                                className={`btn btn-sm rounded-full transition-colors ${
                                     selectedCategory === category
-                                        ? 'bg-accent text-white'
-                                        : 'bg-surface border border-surface-border text-text-secondary hover:bg-surface-hover'
+                                        ? 'btn-primary'
+                                        : 'btn-outline'
                                 }`}
                             >
                                 {category} ({count})
@@ -97,19 +99,19 @@ export const GlossaryView: React.FC = () => {
                         <div
                             key={index}
                             onClick={() => setSelectedTerm(term)}
-                            className="p-4 bg-surface border border-surface-border rounded-lg hover:border-accent cursor-pointer transition-all hover:shadow-lg"
+                            className="p-5 bg-base-100 border border-base-300 rounded-xl hover:border-primary/30 cursor-pointer transition-all hover:shadow-lg"
                         >
                             <div className="flex items-start justify-between mb-2">
-                                <h3 className="text-lg font-semibold text-text-primary flex-1">{term.term}</h3>
-                                <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getCategoryColor(term.category)}`}>
+                                <h3 className="text-lg font-semibold text-base-content flex-1">{term.term}</h3>
+                                <span className={`badge badge-outline badge-sm ${getCategoryColor(term.category)}`}>
                                     {term.category}
                                 </span>
                             </div>
-                            <p className="text-text-secondary text-sm line-clamp-2">{term.definition}</p>
+                            <p className="text-base-content/70 text-sm line-clamp-2">{term.definition}</p>
                             {term.relatedTerms && term.relatedTerms.length > 0 && (
                                 <div className="mt-2 flex flex-wrap gap-1">
                                     {term.relatedTerms.slice(0, 3).map((related, idx) => (
-                                        <span key={idx} className="text-xs text-accent">#{related}</span>
+                                        <span key={idx} className="text-xs text-primary">#{related}</span>
                                     ))}
                                 </div>
                             )}
@@ -118,8 +120,8 @@ export const GlossaryView: React.FC = () => {
                 ) : (
                     <div className="col-span-2 text-center py-12">
                         <div className="text-6xl mb-4">🔍</div>
-                        <h3 className="text-xl font-semibold text-text-primary mb-2">Nenhum termo encontrado</h3>
-                        <p className="text-text-secondary">Tente buscar com outras palavras ou selecione uma categoria diferente.</p>
+                        <h3 className="text-xl font-semibold text-base-content mb-2">Nenhum termo encontrado</h3>
+                        <p className="text-base-content/70">Tente buscar com outras palavras ou selecione uma categoria diferente.</p>
                     </div>
                 )}
             </div>
@@ -127,80 +129,80 @@ export const GlossaryView: React.FC = () => {
             {/* Modal de detalhes */}
             {selectedTerm && (
                 <div
-                    className="glass-overlay fixed inset-0 z-50 flex items-center justify-center p-4"
+                    className="modal modal-open"
                     onClick={() => setSelectedTerm(null)}
                 >
                     <div
-                        className="mica rounded-2xl shadow-[0_35px_90px_rgba(3,7,23,0.55)] max-w-2xl w-full max-h-[80vh] overflow-y-auto"
+                        className="modal-box max-w-2xl max-h-[80vh] overflow-y-auto"
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <div className="p-6">
-                            <div className="flex items-start justify-between mb-4">
-                                <div className="flex-1">
-                                    <h2 className="text-2xl font-bold text-text-primary mb-2">{selectedTerm.term}</h2>
-                                    <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium border ${getCategoryColor(selectedTerm.category)}`}>
-                                        {selectedTerm.category}
-                                    </span>
+                        <div className="flex items-start justify-between mb-4">
+                            <div className="flex-1">
+                                <h2 className="text-2xl font-bold text-base-content mb-2">{selectedTerm.term}</h2>
+                                <span className={`badge badge-outline ${getCategoryColor(selectedTerm.category)}`}>
+                                    {selectedTerm.category}
+                                </span>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setSelectedTerm(null)}
+                                className="btn btn-sm btn-circle btn-ghost"
+                            >
+                                ×
+                            </button>
+                        </div>
+
+                        <div className="mb-4">
+                            <h3 className="text-sm font-semibold text-base-content/70 mb-2">Definição</h3>
+                            <p className="text-base-content leading-relaxed">{selectedTerm.definition}</p>
+                        </div>
+
+                        {selectedTerm.relatedTerms && selectedTerm.relatedTerms.length > 0 && (
+                            <div>
+                                <h3 className="text-sm font-semibold text-base-content/70 mb-2">Termos Relacionados</h3>
+                                <div className="flex flex-wrap gap-2">
+                                    {selectedTerm.relatedTerms.map((related, idx) => (
+                                        <span
+                                            key={idx}
+                                            className="badge badge-outline badge-sm text-primary hover:bg-primary/10 cursor-pointer transition-colors"
+                                            onClick={() => {
+                                                const relatedTerm = glossaryTerms.find(t => 
+                                                    t.term.toLowerCase().includes(related.toLowerCase()) ||
+                                                    related.toLowerCase().includes(t.term.toLowerCase())
+                                                );
+                                                if (relatedTerm) setSelectedTerm(relatedTerm);
+                                            }}
+                                        >
+                                            {related}
+                                        </span>
+                                    ))}
                                 </div>
-                                <button
-                                    onClick={() => setSelectedTerm(null)}
-                                        className="win-icon-button text-2xl"
-                                >
-                                    ×
-                                </button>
                             </div>
+                        )}
 
-                            <div className="mb-4">
-                                <h3 className="text-sm font-semibold text-text-secondary mb-2">Definição</h3>
-                                <p className="text-text-primary leading-relaxed">{selectedTerm.definition}</p>
-                            </div>
-
-                            {selectedTerm.relatedTerms && selectedTerm.relatedTerms.length > 0 && (
-                                <div>
-                                    <h3 className="text-sm font-semibold text-text-secondary mb-2">Termos Relacionados</h3>
-                                    <div className="flex flex-wrap gap-2">
-                                        {selectedTerm.relatedTerms.map((related, idx) => (
-                                            <span
-                                                key={idx}
-                                                className="px-3 py-1 bg-surface-hover border border-surface-border rounded-md text-sm text-accent hover:bg-accent/20 cursor-pointer transition-colors"
-                                                onClick={() => {
-                                                    const relatedTerm = glossaryTerms.find(t => 
-                                                        t.term.toLowerCase().includes(related.toLowerCase()) ||
-                                                        related.toLowerCase().includes(t.term.toLowerCase())
-                                                    );
-                                                    if (relatedTerm) setSelectedTerm(relatedTerm);
-                                                }}
-                                            >
-                                                {related}
-                                            </span>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-
-                            <div className="mt-6 pt-4 border-t border-surface-border">
-                                <button
-                                    onClick={() => setSelectedTerm(null)}
-                                    className="w-full btn btn-primary"
-                                >
-                                    Fechar
-                                </button>
-                            </div>
+                        <div className="modal-action">
+                            <button
+                                type="button"
+                                onClick={() => setSelectedTerm(null)}
+                                className="btn btn-primary"
+                            >
+                                Fechar
+                            </button>
                         </div>
                     </div>
                 </div>
             )}
 
             {/* Estatísticas */}
-            <div className="mt-8 p-4 bg-surface border border-surface-border rounded-lg">
-                <h3 className="text-lg font-semibold text-text-primary mb-4">📊 Estatísticas do Glossário</h3>
+            <div className="mt-8 p-5 bg-base-100 border border-base-300 rounded-xl">
+                <h3 className="text-lg font-semibold text-base-content mb-4">📊 Estatísticas do Glossário</h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {categories.map(category => {
                         const count = getTermsByCategory(category).length;
                         return (
-                            <div key={category} className="text-center">
-                                <div className="text-2xl font-bold text-accent">{count}</div>
-                                <div className="text-sm text-text-secondary">{category}</div>
+                            <div key={category} className="text-center p-3 bg-base-200 rounded-lg">
+                                <div className="text-2xl font-bold text-primary">{count}</div>
+                                <div className="text-sm text-base-content/70">{category}</div>
                             </div>
                         );
                     })}

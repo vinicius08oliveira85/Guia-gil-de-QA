@@ -39,7 +39,7 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
     const maxBugsValue = Math.max(...bugSeverityData.map((d) => d.value), 1);
     const normalizedBugSeverityData = bugSeverityData.map((d) => ({ ...d, value: (d.value / maxBugsValue) * 100 }));
 
-    const statusOrder = ['To Do', 'In Progress', 'Done'] as const;
+      const statusOrder = ['To Do', 'In Progress', 'Blocked', 'Done'] as const;
     const priorityRanking: Record<TaskPriority, number> = { Urgente: 0, Alta: 1, Média: 2, Baixa: 3 };
     const periodWindowMs =
         selectedPeriod === 'week'
@@ -153,21 +153,29 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
         month: 'Últimos 30 dias',
     };
 
-    const statusColors: Record<(typeof statusOrder)[number], string> = {
-        'To Do': 'bg-slate-500',
-        'In Progress': 'bg-amber-400',
-        Done: 'bg-emerald-500',
-    };
+      const statusColors: Record<(typeof statusOrder)[number], string> = {
+          'To Do': 'bg-neutral',
+          'In Progress': 'bg-warning',
+          Blocked: 'bg-error',
+          Done: 'bg-success',
+      };
 
     return (
         <div className="space-y-6">
-            <div className="win-toolbar flex flex-col gap-4 rounded-[26px] border border-surface-border/60 bg-gradient-to-br from-white/8 via-white/2 to-transparent px-4 py-4 sm:px-6 sm:py-6 md:flex-row md:items-center md:justify-between">
+            <div className="flex flex-col gap-4 rounded-xl border border-base-300 bg-base-100 px-4 py-4 sm:px-6 sm:py-6 md:flex-row md:items-center md:justify-between">
                 <div className="space-y-2">
-                    <p className="eyebrow text-text-secondary/80">Dashboard sincronizado</p>
-                    <h2 className="heading-section text-text-primary">
+                    <div className="inline-flex items-center gap-2">
+                        <span className="badge badge-outline px-4 py-3 border-primary/30 text-primary bg-primary/10">
+                            Dashboard
+                        </span>
+                        <span className="text-sm text-base-content/60 hidden sm:inline">
+                            Dashboard sincronizado
+                        </span>
+                    </div>
+                    <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
                         Qualidade de QA • {project.name}
                     </h2>
-                    <p className="text-lead text-sm sm:text-base">
+                    <p className="text-base-content/70 max-w-2xl text-sm sm:text-base">
                         Visual unificado com tarefas, sugestões inteligentes e indicadores do fluxo de QA.
                     </p>
                 </div>
@@ -175,11 +183,10 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
                     {(['all', 'week', 'month'] as const).map((period) => (
                         <button
                             key={period}
+                            type="button"
                             onClick={() => setSelectedPeriod(period)}
-                            className={`rounded-2xl border px-4 py-2 text-sm font-semibold transition-all ${
-                                selectedPeriod === period
-                                    ? 'border-accent/40 bg-accent/20 text-text-primary shadow-[0_10px_40px_rgba(14,109,253,0.2)]'
-                                    : 'border-white/10 bg-white/5 text-text-secondary hover:text-text-primary'
+                            className={`btn btn-sm rounded-full transition-colors ${
+                                selectedPeriod === period ? 'btn-primary' : 'btn-outline'
                             }`}
                             aria-pressed={selectedPeriod === period}
                             aria-label={`Selecionar período ${periodLabels[period]}`}
@@ -249,7 +256,7 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
                             />
                         </div>
 
-                        <div className="win-panel space-y-5">
+                        <div className="space-y-5 rounded-[var(--rounded-box)] border border-base-300 bg-base-100 p-5 shadow-sm">
                             <div className="flex items-center justify-between gap-3">
                                 <h3 className="heading-card text-text-primary">Progresso geral</h3>
                                 <Badge
@@ -337,7 +344,7 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
                         </div>
                     </div>
                     <aside className="space-y-4">
-                        <div className="win-panel space-y-4">
+                        <div className="space-y-4 rounded-[var(--rounded-box)] border border-base-300 bg-base-100 p-5 shadow-sm">
                             <div className="flex items-center justify-between">
                                 <h3 className="heading-card text-text-primary">Fluxo das tarefas de QA</h3>
                                 <Badge variant="info" size="sm">
@@ -351,7 +358,7 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
                                             <span>{bucket.status}</span>
                                             <span className="font-semibold text-text-primary">{bucket.count}</span>
                                         </div>
-                                        <div className="mt-1 h-2 rounded-full bg-white/5">
+                                        <div className="mt-1 h-2 rounded-full bg-base-300">
                                             <div
                                                 className={`h-2 rounded-full ${statusColors[bucket.status]}`}
                                                 style={{ width: `${bucket.percentage}%` }}
@@ -367,7 +374,7 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
                             </div>
                         </div>
 
-                        <div className="win-panel space-y-4">
+                        <div className="space-y-4 rounded-[var(--rounded-box)] border border-base-300 bg-base-100 p-5 shadow-sm">
                             <div className="flex items-center justify-between">
                                 <h3 className="heading-card text-text-primary">Alertas imediatos</h3>
                                 <CheckCircleIcon className="h-5 w-5 text-emerald-700 dark:text-emerald-400" />
@@ -376,7 +383,7 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
                                 {qaAlerts.map((alert) => (
                                     <div
                                         key={alert.label}
-                                        className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/4 px-3 py-2"
+                                        className="flex items-center justify-between rounded-2xl border border-base-300 bg-base-100 px-3 py-2"
                                         role="listitem"
                                     >
                                         <div>
@@ -391,7 +398,7 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
                             </div>
                         </div>
 
-                        <div className="win-panel space-y-4">
+                        <div className="space-y-4 rounded-[var(--rounded-box)] border border-base-300 bg-base-100 p-5 shadow-sm">
                             <div className="flex items-center justify-between">
                                 <h3 className="heading-card text-text-primary">Próximas ações de QA</h3>
                                 <Badge variant="default" size="sm">
@@ -405,7 +412,7 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
                                     {highlightTasks.map((task) => (
                                         <div
                                             key={task.id}
-                                            className="rounded-2xl border border-white/10 bg-gradient-to-r from-white/6 to-transparent px-3 py-2"
+                                            className="rounded-2xl border border-base-300 bg-base-100 px-3 py-2"
                                             role="listitem"
                                         >
                                             <div className="flex items-center justify-between text-xs uppercase tracking-[0.2em] text-text-secondary">

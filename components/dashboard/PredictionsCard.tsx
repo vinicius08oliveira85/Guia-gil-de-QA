@@ -1,8 +1,6 @@
 import React from 'react';
 import { Card } from '../common/Card';
 import { DashboardInsightsAnalysis } from '../../types';
-import { useTheme } from '../../hooks/useTheme';
-import { getCardTextSecondaryClasses } from '../../utils/themeCardColors';
 import { StatusBadge } from '../common/StatusBadge';
 
 interface PredictionsCardProps {
@@ -21,8 +19,8 @@ export const PredictionsCard: React.FC<PredictionsCardProps> = React.memo(({
     return (
       <Card className="p-6">
         <div className="flex items-center justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div>
-          <span className="ml-3 text-text-secondary">Gerando previsões...</span>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          <span className="ml-3 text-base-content/70">Gerando previsões...</span>
         </div>
       </Card>
     );
@@ -32,7 +30,6 @@ export const PredictionsCard: React.FC<PredictionsCardProps> = React.memo(({
     return null;
   }
 
-  const { theme } = useTheme();
   const { predictions } = analysis;
 
   const getProbabilityStatus = (probability: string): 'error' | 'warning' | 'info' | 'default' => {
@@ -45,23 +42,23 @@ export const PredictionsCard: React.FC<PredictionsCardProps> = React.memo(({
   };
 
   return (
-    <Card className="space-y-4" aria-label="Previsões e fatores de risco">
-      <h3 className="text-lg font-semibold text-text-primary">Previsões e Riscos</h3>
+    <Card className="p-5 space-y-4" aria-label="Previsões e fatores de risco">
+      <h3 className="text-lg font-semibold text-base-content">Previsões e Riscos</h3>
 
       {/* Previsões numéricas */}
       {(predictions.nextWeekPassRate !== undefined || predictions.nextWeekBugs !== undefined) && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {predictions.nextWeekPassRate !== undefined && (
-            <Card className={`p-3 border-2 ${theme === 'leve-saude' ? 'bg-white/80 dark:bg-gray-900/50 border-gray-300 dark:border-gray-700' : 'bg-surface-hover border-surface-border'}`}>
-              <p className={`text-xs mb-1 ${getCardTextSecondaryClasses(theme)}`}>Taxa de Sucesso (Próxima Semana)</p>
-              <p className="text-2xl font-bold text-text-primary">{predictions.nextWeekPassRate}%</p>
-            </Card>
+            <div className="p-4 bg-base-200 border border-base-300 rounded-xl">
+              <p className="text-xs mb-1 text-base-content/70">Taxa de Sucesso (Próxima Semana)</p>
+              <p className="text-2xl font-bold text-base-content">{predictions.nextWeekPassRate}%</p>
+            </div>
           )}
           {predictions.nextWeekBugs !== undefined && (
-            <Card className={`p-3 border-2 ${theme === 'leve-saude' ? 'bg-white/80 dark:bg-gray-900/50 border-gray-300 dark:border-gray-700' : 'bg-surface-hover border-surface-border'}`}>
-              <p className={`text-xs mb-1 ${getCardTextSecondaryClasses(theme)}`}>Bugs Previstos (Próxima Semana)</p>
-              <p className="text-2xl font-bold text-text-primary">{predictions.nextWeekBugs}</p>
-            </Card>
+            <div className="p-4 bg-base-200 border border-base-300 rounded-xl">
+              <p className="text-xs mb-1 text-base-content/70">Bugs Previstos (Próxima Semana)</p>
+              <p className="text-2xl font-bold text-base-content">{predictions.nextWeekBugs}</p>
+            </div>
           )}
         </div>
       )}
@@ -69,22 +66,22 @@ export const PredictionsCard: React.FC<PredictionsCardProps> = React.memo(({
       {/* Fatores de risco */}
       {predictions.riskFactors && predictions.riskFactors.length > 0 && (
         <div className="space-y-2">
-          <p className="text-sm font-medium text-text-primary">Fatores de Risco Identificados:</p>
+          <p className="text-sm font-medium text-base-content">Fatores de Risco Identificados:</p>
           <div className="space-y-2">
             {predictions.riskFactors.map((risk, index) => (
-              <Card
+              <div
                 key={index}
-                className={`p-3 border-2 ${theme === 'leve-saude' ? 'bg-white/80 dark:bg-gray-900/50 border-gray-300 dark:border-gray-700' : 'bg-surface-hover border-surface-border'}`}
+                className="p-4 bg-base-200 border border-base-300 rounded-xl"
                 aria-label={`Fator de risco: ${risk.factor} (${risk.probability})`}
               >
                 <div className="flex items-start justify-between gap-2 mb-1">
-                  <p className="font-medium text-text-primary flex-1">{risk.factor}</p>
+                  <p className="font-medium text-base-content flex-1">{risk.factor}</p>
                   <StatusBadge status={getProbabilityStatus(risk.probability)}>
                     {risk.probability}
                   </StatusBadge>
                 </div>
-                <p className={`text-sm ${getCardTextSecondaryClasses(theme)}`}>{risk.impact}</p>
-              </Card>
+                <p className="text-sm text-base-content/70">{risk.impact}</p>
+              </div>
             ))}
           </div>
         </div>

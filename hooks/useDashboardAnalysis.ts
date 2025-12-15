@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { Project, DashboardOverviewAnalysis } from '../types';
+import { Project } from '../types';
 import { 
     generateDashboardOverviewAnalysis, 
     markDashboardAnalysesAsOutdated 

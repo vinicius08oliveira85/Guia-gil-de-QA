@@ -1,11 +1,10 @@
 import { useEffect, useRef } from 'react';
-import { Project, JiraTask, TestCase } from '../types';
+import { Project, JiraTask } from '../types';
 
 interface UseAnalysisSyncOptions {
   project: Project;
   onUpdateProject: (project: Project) => void;
   autoMarkOutdated?: boolean; // Se true, marca análises como desatualizadas quando há mudanças
-  autoReanalyze?: boolean; // Se true, re-executa análise automaticamente (não recomendado por padrão)
 }
 
 /**
@@ -15,7 +14,6 @@ export const useAnalysisSync = ({
   project,
   onUpdateProject,
   autoMarkOutdated = true,
-  autoReanalyze = false
 }: UseAnalysisSyncOptions) => {
   const previousTasksRef = useRef<string>('');
   const previousTestsRef = useRef<string>('');

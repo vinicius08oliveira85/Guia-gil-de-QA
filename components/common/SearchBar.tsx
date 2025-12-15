@@ -83,16 +83,17 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           }}
           onFocus={() => setIsOpen(true)}
           placeholder={placeholder}
-          className="w-full px-4 py-2 pl-10 bg-surface border border-surface-border rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-accent"
+          className="input input-bordered w-full px-4 py-2 pl-10 bg-base-100 border-base-300 text-base-content placeholder:text-base-content/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
         />
-        <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-secondary">🔍</span>
+        <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-base-content/60">🔍</span>
         {searchQuery && (
           <button
+            type="button"
             onClick={() => {
               onSearchChange('');
               setIsOpen(false);
             }}
-            className="absolute right-3 top-1/2 transform -translate-y-1/2 min-h-[44px] min-w-[44px] flex items-center justify-center text-text-secondary hover:text-text-primary active:scale-95 active:opacity-80"
+            className="btn btn-ghost btn-sm btn-circle absolute right-2 top-1/2 -translate-y-1/2"
             aria-label="Limpar busca"
           >
             ✕
@@ -103,27 +104,28 @@ export const SearchBar: React.FC<SearchBarProps> = ({
       {isOpen && searchQuery && searchResults.length > 0 && (
         <div
           ref={resultsRef}
-          className="absolute z-50 w-full mt-2 bg-surface border border-surface-border rounded-lg shadow-xl max-h-96 overflow-y-auto"
+          className="absolute z-50 w-full mt-2 bg-base-100 border border-base-300 rounded-xl shadow-xl max-h-96 overflow-y-auto"
         >
           {searchResults.map((result, index) => (
             <button
               key={`${result.type}-${result.id}`}
+              type="button"
               onClick={() => {
                 onSelectResult(result);
                 setIsOpen(false);
                 inputRef.current?.blur();
               }}
-              className={`w-full text-left px-4 py-3 hover:bg-surface-hover transition-colors ${
-                index === selectedIndex ? 'bg-surface-hover' : ''
-              } ${index > 0 ? 'border-t border-surface-border' : ''}`}
+              className={`w-full text-left px-4 py-3 hover:bg-base-200 transition-colors ${
+                index === selectedIndex ? 'bg-base-200' : ''
+              } ${index > 0 ? 'border-t border-base-300' : ''}`}
             >
               <div className="flex items-start gap-3">
                 <span className="text-xl">{getTypeIcon(result.type)}</span>
                 <div className="flex-1 min-w-0">
-                  <div className="font-semibold text-text-primary truncate">{result.title}</div>
-                  <div className="text-sm text-text-secondary truncate">{result.description}</div>
+                  <div className="font-semibold text-base-content truncate">{result.title}</div>
+                  <div className="text-sm text-base-content/70 truncate">{result.description}</div>
                   {result.projectName && (
-                    <div className="text-xs text-text-secondary mt-1">Projeto: {result.projectName}</div>
+                    <div className="text-xs text-base-content/70 mt-1">Projeto: {result.projectName}</div>
                   )}
                 </div>
               </div>
@@ -133,7 +135,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
       )}
 
       {isOpen && searchQuery && searchResults.length === 0 && (
-        <div className="absolute z-50 w-full mt-2 bg-surface border border-surface-border rounded-lg shadow-xl p-4 text-center text-text-secondary">
+        <div className="absolute z-50 w-full mt-2 bg-base-100 border border-base-300 rounded-xl shadow-xl p-4 text-center text-base-content/70">
           Nenhum resultado encontrado
         </div>
       )}

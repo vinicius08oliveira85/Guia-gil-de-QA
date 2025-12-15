@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Project, JiraTask, BddScenario, TestCaseDetailLevel, BugSeverity, TeamRole, TestCase } from '../../types';
+import { Project, JiraTask, BddScenario, TestCaseDetailLevel, TestCase, Comment } from '../../types';
 import { getAIService } from '../../services/ai/aiServiceFactory';
 import { Card } from '../common/Card';
 import { Modal } from '../common/Modal';
@@ -11,6 +11,7 @@ import { TestCaseEditorModal } from './TestCaseEditorModal';
 import { Button } from '../common/Button';
 import { Plus, Filter, RefreshCw, Loader2 } from 'lucide-react';
 import { logger } from '../../utils/logger';
+import { useProjectsStore } from '../../store/projectsStore';
 
 const TASK_ID_REGEX = /^([A-Z]+)-(\d+)/i;
 
@@ -51,7 +52,6 @@ import { useFilters, FilterOptions } from '../../hooks/useFilters';
 import { createBugFromFailedTest } from '../../utils/bugAutoCreation';
 import { getTaskDependents, getReadyTasks } from '../../utils/dependencyService';
 import { notifyTestFailed, notifyBugCreated, notifyCommentAdded, notifyDependencyResolved } from '../../utils/notificationService';
-import { Comment } from '../../types';
 import { BulkActions } from '../common/BulkActions';
 import { TaskCreationWizard } from './TaskCreationWizard';
 import { useBeginnerMode } from '../../hooks/useBeginnerMode';
@@ -59,7 +59,6 @@ import { useLocalStorage } from '../../hooks/useLocalStorage';
 import { useSuggestions } from '../../hooks/useSuggestions';
 import { SuggestionBanner } from '../common/SuggestionBanner';
 import { EmptyState } from '../common/EmptyState';
-import { Spinner } from '../common/Spinner';
 import { syncJiraProject, getJiraConfig, getJiraProjects, JiraConfig, syncTaskToJira } from '../../services/jiraService';
 import { GeneralIAAnalysisButton } from './GeneralIAAnalysisButton';
 import { generateGeneralIAAnalysis } from '../../services/ai/generalAnalysisService';
@@ -578,9 +577,11 @@ export const TasksView: React.FC<{
                         [strategyIndex]: tools.length > 0 ? tools : undefined
                     };
                     // Remove entradas vazias
-                    Object.keys(newStrategyTools).forEach(key => {
-                        if (!newStrategyTools[Number(key)] || newStrategyTools[Number(key)].length === 0) {
-                            delete newStrategyTools[Number(key)];
+                    Object.keys(newStrategyTools).forEach((key) => {
+                        const index = Number(key);
+                        const toolsForIndex = newStrategyTools[index];
+                        if (!toolsForIndex || toolsForIndex.length === 0) {
+                            delete newStrategyTools[index];
                         }
                     });
                     
@@ -698,7 +699,6 @@ export const TasksView: React.FC<{
             const limitedBDDTasks = tasksNeedingBDD.slice(0, MAX_TASKS_TO_PROCESS);
             const limitedTestTasks = tasksNeedingTestCases.slice(0, MAX_TASKS_TO_PROCESS);
             
-            const totalTasksToProcess = limitedBDDTasks.length + limitedTestTasks.length;
             let processedCount = 0;
 
             // Passo 2: Gerar BDDs automaticamente
@@ -1202,22 +1202,22 @@ export const TasksView: React.FC<{
 
     return (
         <>
-        <Card>
-            <div className="flex flex-col gap-3 mb-4">
-                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3">
+        <Card className="p-5">
+            <div className="flex flex-col gap-4 mb-6">
+                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
                     <div className="flex-shrink-0">
-                        <h3 className="heading-section text-text-primary mb-1">Tarefas & Casos de Teste</h3>
-                        <p className="text-muted text-sm">Acompanhe o progresso das atividades e resultados de QA.</p>
+                        <h3 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2">Tarefas & Casos de Teste</h3>
+                        <p className="text-base-content/70 text-sm max-w-2xl">Acompanhe o progresso das atividades e resultados de QA.</p>
                     </div>
-                    <div className="flex items-center gap-1.5 flex-wrap">
+                    <div className="flex items-center gap-2 flex-wrap">
                         {/* Botão Principal */}
                         <Button 
                             variant="default"
                             size="sm"
                             onClick={() => openTaskFormForNew()} 
-                            className="flex items-center gap-1.5 font-semibold flex-shrink-0"
+                            className="btn btn-primary btn-sm rounded-full flex items-center gap-1.5 font-semibold flex-shrink-0"
                         >
-                            <Plus className="w-3.5 h-3.5" />
+                            <Plus className="w-4 h-4" />
                             <span>Adicionar Tarefa</span>
                         </Button>
                         
@@ -1231,16 +1231,16 @@ export const TasksView: React.FC<{
                         </div>
                         
                         {/* Separador visual */}
-                        <div className="w-px h-5 bg-surface-border flex-shrink-0" />
+                        <div className="w-px h-5 bg-base-300 flex-shrink-0" />
                         
                         {/* Botões Secundários */}
                         <Button 
                             variant="outline"
                             size="sm"
                             onClick={() => setShowFilters(prev => !prev)} 
-                            className="flex items-center gap-1.5 flex-shrink-0"
+                            className="btn btn-outline btn-sm rounded-full flex items-center gap-1.5 flex-shrink-0"
                         >
-                            <Filter className="w-3.5 h-3.5" />
+                            <Filter className="w-4 h-4" />
                             <span>{showFilters ? 'Ocultar Filtros' : `Filtros${activeFiltersCount > 0 ? ` (${activeFiltersCount})` : ''}`}</span>
                         </Button>
                         
@@ -1249,16 +1249,16 @@ export const TasksView: React.FC<{
                             size="sm"
                             onClick={handleSyncJira} 
                             disabled={isSyncingJira}
-                            className="flex items-center gap-1.5 flex-shrink-0"
+                            className="btn btn-outline btn-sm rounded-full flex items-center gap-1.5 flex-shrink-0"
                         >
                             {isSyncingJira ? (
                                 <>
-                                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                    <Loader2 className="w-4 h-4 animate-spin" />
                                     <span>Sincronizando...</span>
                                 </>
                             ) : (
                                 <>
-                                    <RefreshCw className="w-3.5 h-3.5" />
+                                    <RefreshCw className="w-4 h-4" />
                                     <span>Atualizar do Jira</span>
                                 </>
                             )}
@@ -1266,18 +1266,18 @@ export const TasksView: React.FC<{
                     </div>
                 </div>
 
-                <div className="mb-sm">
+                <div className="mb-4">
                     <label 
                         htmlFor="quick-task-search" 
-                        className="text-sm font-semibold text-text-primary mb-2 flex items-center gap-2"
+                        className="text-sm font-semibold text-base-content mb-2 flex items-center gap-2"
                     >
-                        <svg className="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
                         Busca rápida por tarefa ou teste
                     </label>
                     <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary">🔍</span>
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-base-content/60">🔍</span>
                         <input
                             id="quick-task-search"
                             type="search"
@@ -1286,118 +1286,118 @@ export const TasksView: React.FC<{
                             value={filters.searchQuery || ''}
                             onChange={(e) => updateFilter('searchQuery', e.target.value)}
                             placeholder="Digite ID, título ou palavra-chave..."
-                            className="w-full pl-10 pr-12 py-2.5 bg-surface border border-surface-border rounded-lg text-text-primary placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition-all"
+                            className="input input-bordered w-full pl-10 pr-12 py-2.5 bg-base-100 border-base-300 text-base-content placeholder:text-base-content/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                         />
                         {filters.searchQuery && (
                             <button
                                 type="button"
                                 onClick={() => updateFilter('searchQuery', '')}
-                                className="absolute right-2 top-1/2 -translate-y-1/2 text-text-secondary hover:text-text-primary p-2 rounded-full hover:bg-surface-hover focus:outline-none focus:ring-2 focus:ring-accent/40"
+                                className="absolute right-2 top-1/2 -translate-y-1/2 text-base-content/60 hover:text-base-content p-2 rounded-full hover:bg-base-200 focus:outline-none focus:ring-2 focus:ring-primary/20"
                                 aria-label="Limpar busca rápida"
                             >
                                 ✕
                             </button>
                         )}
                     </div>
-                    <p className="text-xs text-text-secondary mt-2">
+                    <p className="text-xs text-base-content/70 mt-2">
                         Filtre tarefas e casos instantaneamente sem precisar abrir o painel completo de filtros.
                     </p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-sm mb-sm">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
                     <div 
-                        className="mica rounded-xl p-3 border border-surface-border hover:border-accent/30 transition-all duration-200 hover:shadow-lg group cursor-help" 
+                        className="bg-base-100 rounded-xl p-4 border border-base-300 hover:border-primary/30 transition-all duration-200 hover:shadow-lg group cursor-help" 
                         aria-live="polite"
                         title={`Total de ${stats.total} tarefas no projeto. Inclui todas as tarefas independente do status.`}
                     >
-                        <div className="flex items-center justify-between mb-1.5">
-                            <div className="p-2 bg-blue-500/10 rounded-lg group-hover:bg-blue-500/20 transition-colors">
-                                <svg className="w-5 h-5 text-blue-700 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <div className="flex items-center justify-between mb-2">
+                            <div className="p-2 bg-info/10 rounded-lg group-hover:bg-info/20 transition-colors">
+                                <svg className="w-5 h-5 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                                 </svg>
                             </div>
                         </div>
-                        <p className="data-label mb-1">Total de Tarefas</p>
-                        <p className="data-value" aria-label={`${stats.total} tarefas totais`}>{stats.total}</p>
+                        <p className="text-xs font-medium text-base-content/70 mb-1">Total de Tarefas</p>
+                        <p className="text-2xl font-bold text-base-content" aria-label={`${stats.total} tarefas totais`}>{stats.total}</p>
                     </div>
                     
                     <div 
-                        className="mica rounded-xl p-3 border border-surface-border hover:border-accent/30 transition-all duration-200 hover:shadow-lg group cursor-help" 
+                        className="bg-base-100 rounded-xl p-4 border border-base-300 hover:border-primary/30 transition-all duration-200 hover:shadow-lg group cursor-help" 
                         aria-live="polite"
                         title={`${stats.inProgress} tarefas em andamento. Tarefas que estão sendo trabalhadas atualmente.`}
                     >
-                        <div className="flex items-center justify-between mb-1.5">
-                            <div className="p-2 bg-accent/10 rounded-lg group-hover:bg-accent/20 transition-colors">
-                                <svg className="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <div className="flex items-center justify-between mb-2">
+                            <div className="p-2 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
+                                <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                                 </svg>
                             </div>
                         </div>
-                        <p className="data-label mb-1">Em Andamento</p>
-                        <p className="data-value text-accent" aria-label={`${stats.inProgress} tarefas em andamento`}>{stats.inProgress}</p>
+                        <p className="text-xs font-medium text-base-content/70 mb-1">Em Andamento</p>
+                        <p className="text-2xl font-bold text-primary" aria-label={`${stats.inProgress} tarefas em andamento`}>{stats.inProgress}</p>
                     </div>
                     
                     <div 
-                        className="mica rounded-xl p-3 border border-surface-border hover:border-green-400/30 transition-all duration-200 hover:shadow-lg group cursor-help" 
+                        className="bg-base-100 rounded-xl p-4 border border-base-300 hover:border-success/30 transition-all duration-200 hover:shadow-lg group cursor-help" 
                         aria-live="polite"
                         title={`${stats.done} tarefas concluídas. Tarefas finalizadas e validadas.`}
                     >
-                        <div className="flex items-center justify-between mb-1.5">
-                            <div className="p-2 bg-green-500/10 rounded-lg group-hover:bg-green-500/20 transition-colors">
-                                <svg className="w-5 h-5 text-green-700 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <div className="flex items-center justify-between mb-2">
+                            <div className="p-2 bg-success/10 rounded-lg group-hover:bg-success/20 transition-colors">
+                                <svg className="w-5 h-5 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                             </div>
                         </div>
-                        <p className="data-label mb-1">Concluídas</p>
-                        <p className="data-value text-green-700 dark:text-green-400" aria-label={`${stats.done} tarefas concluídas`}>{stats.done}</p>
+                        <p className="text-xs font-medium text-base-content/70 mb-1">Concluídas</p>
+                        <p className="text-2xl font-bold text-success" aria-label={`${stats.done} tarefas concluídas`}>{stats.done}</p>
                     </div>
                     
                     <div 
-                        className="mica rounded-xl p-3 border border-surface-border hover:border-red-400/30 transition-all duration-200 hover:shadow-lg group cursor-help" 
+                        className="bg-base-100 rounded-xl p-4 border border-base-300 hover:border-error/30 transition-all duration-200 hover:shadow-lg group cursor-help" 
                         aria-live="polite"
                         title={`${stats.bugsOpen} bugs abertos. Problemas identificados que ainda precisam ser resolvidos.`}
                     >
-                        <div className="flex items-center justify-between mb-1.5">
-                            <div className="p-2 bg-red-500/10 rounded-lg group-hover:bg-red-500/20 transition-colors">
-                                <svg className="w-5 h-5 text-red-700 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <div className="flex items-center justify-between mb-2">
+                            <div className="p-2 bg-error/10 rounded-lg group-hover:bg-error/20 transition-colors">
+                                <svg className="w-5 h-5 text-error" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                                 </svg>
                             </div>
                         </div>
-                        <p className="data-label mb-1">Bugs Abertos</p>
-                        <p className="data-value text-red-700 dark:text-red-400" aria-label={`${stats.bugsOpen} bugs abertos`}>{stats.bugsOpen}</p>
+                        <p className="text-xs font-medium text-base-content/70 mb-1">Bugs Abertos</p>
+                        <p className="text-2xl font-bold text-error" aria-label={`${stats.bugsOpen} bugs abertos`}>{stats.bugsOpen}</p>
                     </div>
                     
                     <div 
-                        className="mica rounded-xl p-3 border border-surface-border hover:border-accent/30 transition-all duration-200 hover:shadow-lg col-span-1 md:col-span-2 lg:col-span-4 cursor-help"
+                        className="bg-base-100 rounded-xl p-4 border border-base-300 hover:border-primary/30 transition-all duration-200 hover:shadow-lg col-span-1 md:col-span-2 lg:col-span-4 cursor-help"
                         title={`Taxa de execução de testes: ${testExecutionRate}%. ${stats.executedTests} de ${stats.totalTests} casos foram executados. Taxa de automação: ${automationRate}%.`}
                     >
                         <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center gap-2">
-                                <div className="p-2 bg-accent/10 rounded-lg">
-                                    <svg className="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <div className="p-2 bg-primary/10 rounded-lg">
+                                    <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                                     </svg>
                                 </div>
-                                <p className="text-sm font-semibold text-text-primary">Execução de Testes</p>
+                                <p className="text-sm font-semibold text-base-content">Execução de Testes</p>
                             </div>
-                            <span className="text-lg font-bold text-accent" aria-label={`${testExecutionRate}% de execução`}>{testExecutionRate}%</span>
+                            <span className="text-lg font-bold text-primary" aria-label={`${testExecutionRate}% de execução`}>{testExecutionRate}%</span>
                         </div>
-                        <div className="w-full bg-surface-hover/50 rounded-full h-3 mb-1.5 overflow-hidden" role="progressbar" aria-valuenow={testExecutionRate} aria-valuemin={0} aria-valuemax={100} aria-label={`Progresso de execução: ${testExecutionRate}%`}>
+                        <div className="w-full bg-base-200 rounded-full h-3 mb-1.5 overflow-hidden" role="progressbar" aria-valuenow={testExecutionRate} aria-valuemin={0} aria-valuemax={100} aria-label={`Progresso de execução: ${testExecutionRate}%`}>
                             <div 
-                                className="h-full bg-gradient-to-r from-accent via-accent-light to-accent rounded-full transition-all duration-500 relative overflow-hidden"
+                                className="h-full bg-gradient-to-r from-primary to-primary/80 rounded-full transition-all duration-500 relative overflow-hidden"
                                 style={{ width: `${testExecutionRate}%` }}
                             >
                                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-pulse" />
                             </div>
                         </div>
-                        <div className="flex items-center justify-between text-xs text-muted">
+                        <div className="flex items-center justify-between text-xs text-base-content/70">
                             <p aria-label={`${stats.executedTests} de ${stats.totalTests} casos executados`}>
                                 {stats.executedTests}/{stats.totalTests} casos executados
                             </p>
                             <p>
-                                Automação <span className="font-semibold text-accent" aria-label={`${automationRate}% de automação`}>{automationRate}%</span>
+                                Automação <span className="font-semibold text-primary" aria-label={`${automationRate}% de automação`}>{automationRate}%</span>
                             </p>
                         </div>
                     </div>
@@ -1405,20 +1405,21 @@ export const TasksView: React.FC<{
             </div>
 
             {filterChips.length > 0 && (
-                <div className="mb-sm p-3 mica rounded-xl border border-surface-border">
+                <div className="mb-4 p-4 bg-base-100 rounded-xl border border-base-300">
                     <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-2">
-                            <svg className="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
                             </svg>
-                            <span className="text-sm font-semibold text-text-primary">Filtros Ativos</span>
-                            <span className="text-xs bg-accent/20 text-accent px-2 py-0.5 rounded-full font-medium whitespace-nowrap">
+                            <span className="text-sm font-semibold text-base-content">Filtros Ativos</span>
+                            <span className="badge badge-primary badge-sm">
                                 {filterChips.length}
                             </span>
                         </div>
                         <button 
+                            type="button"
                             onClick={clearFilters} 
-                            className="text-sm text-accent hover:text-accent-light transition-colors flex items-center gap-1"
+                            className="btn btn-ghost btn-sm text-sm text-primary hover:text-primary/80 transition-colors flex items-center gap-1"
                         >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -1430,15 +1431,16 @@ export const TasksView: React.FC<{
                             {filterChips.map(chip => (
                                 <span
                                     key={`${chip.key}-${chip.label}`}
-                                    className="chip chip--neutral group flex items-center gap-2 text-xs font-semibold"
+                                    className="badge badge-outline badge-neutral group flex items-center gap-2 text-xs font-semibold"
                                 >
-                                    <svg className="w-3 h-3 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg className="w-3 h-3 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                                     </svg>
                                     {chip.label}
                                     <button
+                                        type="button"
                                         onClick={() => removeFilter(chip.key)}
-                                        className="ml-1 text-text-secondary hover:text-red-700 dark:hover:text-red-400 transition-colors rounded-full hover:bg-red-400/10 p-0.5"
+                                        className="ml-1 text-base-content/60 hover:text-error transition-colors rounded-full hover:bg-error/10 p-0.5"
                                         aria-label={`Remover filtro ${chip.label}`}
                                     >
                                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1458,11 +1460,10 @@ export const TasksView: React.FC<{
                 onFilterChange={updateFilter}
                 onClearFilters={clearFilters}
                 onRemoveFilter={removeFilter}
-                availableTestTypes={availableTestTypes}
             />
 
             {showFilters && (
-                <div className="mb-sm">
+                <div className="mb-4">
                     <FilterPanel
                         filters={filters}
                         onFilterChange={updateFilter}
@@ -1473,32 +1474,32 @@ export const TasksView: React.FC<{
                 </div>
             )}
 
-            <div className="flex flex-col gap-sm mb-sm">
+            <div className="flex flex-col gap-4 mb-4">
                 {currentSuggestion && showSuggestions && (
-                    <div className="mica rounded-xl border border-surface-border overflow-hidden shadow-lg">
-                        <div className="flex items-center justify-between bg-surface-hover/50 px-3 py-2 border-b border-surface-border">
+                    <div className="bg-base-100 rounded-xl border border-base-300 overflow-hidden shadow-lg">
+                        <div className="flex items-center justify-between bg-base-200 px-4 py-3 border-b border-base-300">
                             <div className="flex items-center gap-2">
-                                <div className="p-1.5 bg-accent/10 rounded-lg">
-                                    <svg className="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <div className="p-1.5 bg-primary/10 rounded-lg">
+                                    <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                                     </svg>
                                 </div>
-                                <span className="text-sm font-semibold text-text-primary">Sugestões inteligentes</span>
+                                <span className="text-sm font-semibold text-base-content">Sugestões inteligentes</span>
                             </div>
                             <button
+                                type="button"
                                 onClick={() => setShowSuggestions(false)}
-                                className="text-xs text-text-secondary hover:text-text-primary transition-colors p-1 rounded hover:bg-surface-hover"
+                                className="btn btn-ghost btn-sm text-xs text-base-content/60 hover:text-base-content transition-colors p-1 rounded"
                             >
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                 </svg>
                             </button>
                         </div>
-                        <div className="p-3 bg-surface/30">
+                        <div className="p-4 bg-base-100">
                             <SuggestionBanner
                                 suggestion={currentSuggestion}
-                                onDismiss={() => setDismissedSuggestions(new Set([...dismissedSuggestions, currentSuggestion.id]))}
-                                onClose={() => setShowSuggestions(false)}
+                                onDismiss={(id) => setDismissedSuggestions((prev) => new Set([...prev, id]))}
                             />
                         </div>
                     </div>
@@ -1516,8 +1517,8 @@ export const TasksView: React.FC<{
                     />
                 )}
                 {(generatingTestsTaskId || generatingBddTaskId) && (
-                    <div className="p-3 bg-accent/10 border border-accent/40 rounded-lg text-sm text-text-primary flex items-center gap-2">
-                        <span className="animate-spin rounded-full h-4 w-4 border-2 border-accent border-t-transparent"></span>
+                    <div className="p-4 bg-primary/10 border border-primary/40 rounded-lg text-sm text-base-content flex items-center gap-2">
+                        <span className="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent"></span>
                         {generatingTestsTaskId && <span>Gerando casos de teste para {generatingTestsTaskId}...</span>}
                         {generatingBddTaskId && <span>Gerando cenários BDD para {generatingBddTaskId}...</span>}
                     </div>
@@ -1525,7 +1526,7 @@ export const TasksView: React.FC<{
             </div>
 
             {isTaskFormOpen && (
-                <div className="mb-sm p-3 bg-surface rounded-lg border border-surface-border">
+                <div className="mb-4 p-4 bg-base-100 rounded-lg border border-base-300">
                     <TaskForm 
                         onSave={handleSaveTask} 
                         onCancel={() => { setIsTaskFormOpen(false); setEditingTask(undefined); }} 
@@ -1536,26 +1537,26 @@ export const TasksView: React.FC<{
                 </div>
             )}
 
-            <Modal 
-                isOpen={showJiraProjectSelector} 
-                onClose={() => {
-                    setShowJiraProjectSelector(false);
-                    setSelectedJiraProjectKey('');
-                }}
-                title="Selecionar Projeto do Jira"
-            >
-                <div className="space-y-md">
-                    <p className="text-text-secondary text-sm">
+        <Modal 
+            isOpen={showJiraProjectSelector} 
+            onClose={() => {
+                setShowJiraProjectSelector(false);
+                setSelectedJiraProjectKey('');
+            }}
+            title="Selecionar Projeto do Jira"
+        >
+                <div className="space-y-4">
+                    <p className="text-base-content/70 text-sm">
                         Selecione o projeto do Jira para sincronizar apenas as novas tarefas:
                     </p>
                     <div>
-                        <label className="block text-sm font-medium text-text-primary mb-2">
+                        <label className="block text-sm font-medium text-base-content mb-2">
                             Projeto
                         </label>
                         <select
                             value={selectedJiraProjectKey}
                             onChange={(e) => setSelectedJiraProjectKey(e.target.value)}
-                            className="w-full"
+                            className="select select-bordered w-full"
                         >
                             <option value="">Selecione um projeto...</option>
                             {availableJiraProjects.map(proj => (
@@ -1567,15 +1568,17 @@ export const TasksView: React.FC<{
                     </div>
                     <div className="flex justify-end gap-2">
                         <button
+                            type="button"
                             onClick={() => {
                                 setShowJiraProjectSelector(false);
                                 setSelectedJiraProjectKey('');
                             }}
-                            className="btn btn-secondary"
+                            className="btn btn-ghost"
                         >
                             Cancelar
                         </button>
                         <button
+                            type="button"
                             onClick={handleConfirmJiraProject}
                             disabled={!selectedJiraProjectKey || isSyncingJira}
                             className="btn btn-primary"
@@ -1627,12 +1630,13 @@ export const TasksView: React.FC<{
         >
             <div className="space-y-4">
                 <div>
-                    <label htmlFor="observed-result" className="block text-sm font-medium text-text-secondary mb-1">Resultado Encontrado (O que aconteceu de errado?)</label>
+                    <label htmlFor="observed-result" className="block text-sm font-medium text-base-content/70 mb-1">Resultado Encontrado (O que aconteceu de errado?)</label>
                     <textarea 
                         id="observed-result" 
                         value={failModalState.observedResult} 
                         onChange={e => setFailModalState({ ...failModalState, observedResult: e.target.value })} 
                         rows={4}
+                        className="textarea textarea-bordered w-full"
                     ></textarea>
                 </div>
                 <div className="flex items-center">
@@ -1641,13 +1645,13 @@ export const TasksView: React.FC<{
                         type="checkbox" 
                         checked={failModalState.createBug} 
                         onChange={e => setFailModalState({ ...failModalState, createBug: e.target.checked })}
-                        className="h-4 w-4 text-accent bg-slate-700 border-slate-600 rounded focus:ring-accent"
+                        className="checkbox checkbox-primary"
                     />
-                    <label htmlFor="create-bug-task" className="ml-2 block text-sm text-text-primary">Criar tarefa de Bug automaticamente</label>
+                    <label htmlFor="create-bug-task" className="ml-2 block text-sm text-base-content">Criar tarefa de Bug automaticamente</label>
                 </div>
                 <div className="flex justify-end gap-3 pt-4">
-                    <button onClick={() => setFailModalState({ ...failModalState, isOpen: false })} className="btn btn-secondary">Cancelar</button>
-                    <button onClick={handleConfirmFail} className="btn bg-red-600 text-white hover:bg-red-500">Confirmar Reprovação</button>
+                    <button type="button" onClick={() => setFailModalState({ ...failModalState, isOpen: false })} className="btn btn-ghost">Cancelar</button>
+                    <button type="button" onClick={handleConfirmFail} className="btn btn-error">Confirmar Reprovação</button>
                 </div>
             </div>
         </Modal>

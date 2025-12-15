@@ -20,7 +20,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
 }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
-  const timeoutRef = useRef<NodeJS.Timeout>();
+  const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
   const tooltipRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLElement>(null);
 
@@ -32,9 +32,8 @@ export const Tooltip: React.FC<TooltipProps> = ({
     };
   }, []);
 
-  const showTooltip = (element: HTMLElement) => {
+  const showTooltip = () => {
     if (disabled) return;
-    triggerRef.current = element;
     timeoutRef.current = setTimeout(() => {
       setIsVisible(true);
       updatePosition();
@@ -49,7 +48,8 @@ export const Tooltip: React.FC<TooltipProps> = ({
   };
 
   const handleMouseEnter = (e: React.MouseEvent) => {
-    showTooltip(e.currentTarget as HTMLElement);
+    void e;
+    showTooltip();
   };
 
   const handleMouseLeave = () => {
@@ -57,7 +57,8 @@ export const Tooltip: React.FC<TooltipProps> = ({
   };
 
   const handleFocus = (e: React.FocusEvent) => {
-    showTooltip(e.currentTarget as HTMLElement);
+    void e;
+    showTooltip();
   };
 
   const handleBlur = () => {
@@ -77,7 +78,6 @@ export const Tooltip: React.FC<TooltipProps> = ({
 
     let top = 0;
     let left = 0;
-    let finalPosition = position;
 
     // Calcular posição base
     switch (position) {
@@ -86,7 +86,6 @@ export const Tooltip: React.FC<TooltipProps> = ({
         left = triggerRect.left + scrollX + (triggerRect.width / 2) - (tooltipRect.width / 2);
         // Se sair da tela em cima, mudar para bottom
         if (top < scrollY) {
-          finalPosition = 'bottom';
           top = triggerRect.bottom + scrollY + spacing;
         }
         break;
@@ -95,7 +94,6 @@ export const Tooltip: React.FC<TooltipProps> = ({
         left = triggerRect.left + scrollX + (triggerRect.width / 2) - (tooltipRect.width / 2);
         // Se sair da tela embaixo, mudar para top
         if (top + tooltipRect.height > scrollY + viewportHeight) {
-          finalPosition = 'top';
           top = triggerRect.top + scrollY - tooltipRect.height - spacing;
         }
         break;
@@ -104,7 +102,6 @@ export const Tooltip: React.FC<TooltipProps> = ({
         left = triggerRect.left + scrollX - tooltipRect.width - spacing;
         // Se sair da tela à esquerda, mudar para right
         if (left < scrollX) {
-          finalPosition = 'right';
           left = triggerRect.right + scrollX + spacing;
         }
         break;
@@ -113,7 +110,6 @@ export const Tooltip: React.FC<TooltipProps> = ({
         left = triggerRect.right + scrollX + spacing;
         // Se sair da tela à direita, mudar para left
         if (left + tooltipRect.width > scrollX + viewportWidth) {
-          finalPosition = 'left';
           left = triggerRect.left + scrollX - tooltipRect.width - spacing;
         }
         break;
@@ -137,15 +133,17 @@ export const Tooltip: React.FC<TooltipProps> = ({
   };
 
   useEffect(() => {
-    if (isVisible) {
-      updatePosition();
-      window.addEventListener('scroll', updatePosition);
-      window.addEventListener('resize', updatePosition);
-      return () => {
-        window.removeEventListener('scroll', updatePosition);
-        window.removeEventListener('resize', updatePosition);
-      };
+    if (!isVisible) {
+      return;
     }
+
+    updatePosition();
+    window.addEventListener('scroll', updatePosition);
+    window.addEventListener('resize', updatePosition);
+    return () => {
+      window.removeEventListener('scroll', updatePosition);
+      window.removeEventListener('resize', updatePosition);
+    };
   }, [isVisible]);
 
   return (

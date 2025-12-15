@@ -19,32 +19,28 @@ function adfNodeToText(node: ADFNode): string {
     if (node.text) {
         return node.text;
     }
-    
-    if (node.content && Array.isArray(node.content)) {
-        return node.content.map(adfNodeToText).join('');
-    }
-    
+
     // Tratamento de tipos específicos
     switch (node.type) {
         case 'paragraph':
-            return (node.content?.map(adfNodeToText).join('') || '') + '\n';
+            return (node.content ?? []).map(adfNodeToText).join('') + '\n';
         case 'heading':
             const level = node.attrs?.level || 1;
             const prefix = '#'.repeat(level) + ' ';
-            return prefix + (node.content?.map(adfNodeToText).join('') || '') + '\n';
+            return prefix + (node.content ?? []).map(adfNodeToText).join('') + '\n';
         case 'bulletList':
         case 'orderedList':
-            return (node.content?.map(adfNodeToText).join('') || '') + '\n';
+            return (node.content ?? []).map(adfNodeToText).join('') + '\n';
         case 'listItem':
-            return '• ' + (node.content?.map(adfNodeToText).join('') || '') + '\n';
+            return '• ' + (node.content ?? []).map(adfNodeToText).join('') + '\n';
         case 'codeBlock':
-            return '```\n' + (node.content?.map(adfNodeToText).join('') || '') + '\n```\n';
+            return '```\n' + (node.content ?? []).map(adfNodeToText).join('') + '\n```\n';
         case 'hardBreak':
             return '\n';
         case 'blockquote':
-            return '> ' + (node.content?.map(adfNodeToText).join('') || '') + '\n';
+            return '> ' + (node.content ?? []).map(adfNodeToText).join('') + '\n';
         default:
-            return node.content?.map(adfNodeToText).join('') || '';
+            return (node.content ?? []).map(adfNodeToText).join('');
     }
 }
 

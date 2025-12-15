@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { TestIAAnalysis, TestCase, JiraTask } from '../../types';
 import { format } from 'date-fns';
-import { windows12Styles, getStatusStyle } from '../../utils/windows12Styles';
+import { cn } from '../../utils/cn';
 
 interface TestAnalysisCardProps {
   analysis: TestIAAnalysis;
@@ -20,59 +20,61 @@ export const TestAnalysisCard: React.FC<TestAnalysisCardProps> = ({
 }) => {
   const [expanded, setExpanded] = useState(!compact);
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'Passed': return 'text-green-400 bg-green-400/20 border-green-400/30';
-      case 'Failed': return 'text-red-400 bg-red-400/20 border-red-400/30';
-      case 'Not Run': return 'text-gray-400 bg-gray-400/20 border-gray-400/30';
-      default: return 'text-text-secondary bg-surface-hover border-surface-border';
+  const statusBadgeClass = useMemo(() => {
+    if (!testCase) return 'badge badge-neutral badge-outline';
+    switch (testCase.status) {
+      case 'Passed':
+        return 'badge badge-success badge-outline';
+      case 'Failed':
+        return 'badge badge-error badge-outline';
+      case 'Not Run':
+        return 'badge badge-neutral badge-outline';
+      default:
+        return 'badge badge-neutral badge-outline';
     }
-  };
+  }, [testCase]);
 
   return (
-    <div className={`
-      ${windows12Styles.card}
-      ${windows12Styles.spacing.md}
-      ${expanded ? `${windows12Styles.glow('accent')} shadow-xl` : 'shadow'}
-      ${windows12Styles.transition.normal}
-      hover:shadow-xl hover:border-accent/30 hover:scale-[1.01]
-      ${analysis.isOutdated ? 'border-yellow-400/30 bg-yellow-400/5' : ''}
-    `}>
+    <div
+      className={cn(
+        'p-5 bg-base-100 border rounded-xl transition-all',
+        expanded ? 'shadow-lg border-primary/30' : 'shadow-sm border-base-300',
+        analysis.isOutdated ? 'bg-warning/5 border-warning/30' : undefined
+      )}
+    >
       {/* Header */}
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1">
           {testCase ? (
             <div>
-              <h4 className="font-semibold text-text-primary mb-1 line-clamp-1">
+              <h4 className="font-semibold text-base-content mb-1 line-clamp-1">
                 {testCase.description}
               </h4>
               {task && onTaskClick ? (
                 <button
+                  type="button"
                   onClick={() => onTaskClick(task.id)}
-                  className="text-xs text-accent hover:text-accent-light transition-colors"
+                  className="text-xs text-primary hover:text-primary/80 transition-colors"
                 >
                   Tarefa: {task.title}
                 </button>
               ) : (
-                <p className="text-xs text-text-secondary">Tarefa: {analysis.taskId}</p>
+                <p className="text-xs text-base-content/70">Tarefa: {analysis.taskId}</p>
               )}
             </div>
           ) : (
             <div>
-              <h4 className="font-semibold text-text-primary mb-1">
+              <h4 className="font-semibold text-base-content mb-1">
                 Teste {analysis.testId}
               </h4>
-              <p className="text-xs text-text-secondary">Tarefa: {analysis.taskId}</p>
+              <p className="text-xs text-base-content/70">Tarefa: {analysis.taskId}</p>
             </div>
           )}
         </div>
         
         {/* Status Badge */}
         {testCase && (
-          <div className={`
-            ${getStatusStyle(testCase.status)}
-            ${windows12Styles.transition.fast}
-          `}>
+          <div className={cn('badge badge-sm whitespace-nowrap', statusBadgeClass)}>
             {testCase.status}
           </div>
         )}
@@ -80,35 +82,27 @@ export const TestAnalysisCard: React.FC<TestAnalysisCardProps> = ({
 
       {/* Summary */}
       <div className="mb-3">
-        <p className="text-sm text-text-primary line-clamp-2">
+        <p className="text-sm text-base-content line-clamp-2">
           {analysis.summary}
         </p>
       </div>
 
       {/* Coverage */}
-      <div className={`
-        mb-3 p-2 bg-surface-hover rounded-lg border border-surface-border
-        ${windows12Styles.transition.fast}
-        hover:border-accent/30
-      `}>
-        <p className="text-xs font-semibold text-text-secondary mb-1">Cobertura</p>
-        <p className="text-sm text-text-primary">{analysis.coverage}</p>
+      <div className="mb-3 p-3 bg-base-200 rounded-lg border border-base-300 hover:border-primary/30 transition-all">
+        <p className="text-xs font-semibold text-base-content/70 mb-1">Cobertura</p>
+        <p className="text-sm text-base-content">{analysis.coverage}</p>
       </div>
 
       {/* Expand/Collapse */}
       {compact && (
         <button
+          type="button"
           onClick={() => setExpanded(!expanded)}
-          className={`
-            w-full flex items-center justify-center gap-2 py-2 text-sm
-            text-text-secondary hover:text-text-primary
-            ${windows12Styles.transition.fast}
-            rounded-lg hover:bg-surface-hover
-          `}
+          className="btn btn-ghost btn-sm w-full rounded-full"
         >
           <span>{expanded ? 'Ocultar detalhes' : 'Ver detalhes'}</span>
           <svg
-            className={`w-4 h-4 ${windows12Styles.transition.normal} ${expanded ? 'rotate-180' : ''}`}
+            className={cn('w-4 h-4 transition-transform', expanded ? 'rotate-180' : undefined)}
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -120,26 +114,18 @@ export const TestAnalysisCard: React.FC<TestAnalysisCardProps> = ({
 
       {/* Expanded Details */}
       {expanded && (
-        <div className={`
-          space-y-3 mt-3 pt-3 border-t border-surface-border
-          ${windows12Styles.transition.normal}
-        `}>
+        <div className="space-y-3 mt-3 pt-3 border-t border-base-300">
           {/* Problems */}
           {analysis.detectedProblems.length > 0 && (
             <div>
-              <p className="text-xs font-semibold text-text-secondary mb-2 uppercase tracking-wide">
+              <p className="text-xs font-semibold text-base-content/70 mb-2 uppercase tracking-wide">
                 Problemas ({analysis.detectedProblems.length})
               </p>
               <div className="space-y-1">
                 {analysis.detectedProblems.map((problem, idx) => (
                   <div
                     key={idx}
-                    className={`
-                      p-2 bg-red-400/10 border border-red-400/20 rounded-lg
-                      text-xs text-text-primary
-                      ${windows12Styles.transition.fast}
-                      hover:bg-red-400/15 hover:border-red-400/30
-                    `}
+                    className="p-2 bg-error/10 border border-error/20 rounded-lg text-xs text-base-content hover:bg-error/15 hover:border-error/30 transition-all"
                   >
                     {problem}
                   </div>
@@ -151,19 +137,14 @@ export const TestAnalysisCard: React.FC<TestAnalysisCardProps> = ({
           {/* Suggestions */}
           {analysis.suggestions.length > 0 && (
             <div>
-              <p className="text-xs font-semibold text-text-secondary mb-2 uppercase tracking-wide">
+              <p className="text-xs font-semibold text-base-content/70 mb-2 uppercase tracking-wide">
                 Sugestões ({analysis.suggestions.length})
               </p>
               <div className="space-y-1">
                 {analysis.suggestions.map((suggestion, idx) => (
                   <div
                     key={idx}
-                    className={`
-                      p-2 bg-accent/10 border border-accent/20 rounded-lg
-                      text-xs text-text-primary flex items-start gap-2
-                      ${windows12Styles.transition.fast}
-                      hover:bg-accent/15 hover:border-accent/30
-                    `}
+                    className="p-2 bg-primary/10 border border-primary/20 rounded-lg text-xs text-base-content flex items-start gap-2 hover:bg-primary/15 hover:border-primary/30 transition-all"
                   >
                     <span>💡</span>
                     <span>{suggestion}</span>
@@ -174,16 +155,11 @@ export const TestAnalysisCard: React.FC<TestAnalysisCardProps> = ({
           )}
 
           {/* Metadata */}
-          <div className="pt-2 border-t border-surface-border">
-            <p className="text-xs text-text-secondary flex items-center gap-2">
+          <div className="pt-2 border-t border-base-300">
+            <p className="text-xs text-base-content/70 flex items-center gap-2">
               <span>Gerada em {format(new Date(analysis.generatedAt), "dd/MM/yyyy 'às' HH:mm")}</span>
               {analysis.isOutdated && (
-                <span className={`
-                  inline-flex items-center gap-1 px-2 py-0.5 rounded
-                  bg-yellow-400/20 text-yellow-400 border border-yellow-400/30
-                  ${windows12Styles.transition.fast}
-                  animate-pulse
-                `}>
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-warning/10 text-warning border border-warning/30 animate-pulse">
                   ⚠️ Desatualizada
                 </span>
               )}

@@ -1,6 +1,5 @@
 import React from 'react';
 import { SUGGESTED_TOOLS, SuggestedTool } from '../../types';
-import { windows12Styles } from '../../utils/windows12Styles';
 import { CheckIcon } from '../common/Icons';
 
 interface ToolsSelectorProps {
@@ -45,7 +44,7 @@ export const ToolsSelector: React.FC<ToolsSelectorProps> = ({
 
   return (
     <div className={`space-y-3 ${compact ? 'space-y-2' : ''}`}>
-      <label className={`block font-semibold text-text-secondary ${compact ? 'text-xs' : 'text-sm'}`}>
+      <label className={`block font-semibold text-base-content/70 ${compact ? 'text-xs' : 'text-sm'}`}>
         {label}
       </label>
       
@@ -60,12 +59,12 @@ export const ToolsSelector: React.FC<ToolsSelectorProps> = ({
               onClick={() => handleToolToggle(tool)}
               className={`
                 px-3 py-1.5 rounded-lg text-xs font-semibold border
-                ${windows12Styles.transition.fast}
+                transition-all
                 flex items-center gap-1.5
                 ${
                   isSelected
-                    ? 'bg-accent text-white border-accent shadow-md shadow-accent/20'
-                    : 'bg-surface-hover text-text-primary border-surface-border hover:border-accent/50 hover:bg-surface'
+                    ? 'bg-primary text-primary-content border-primary shadow-sm'
+                    : 'bg-base-200 text-base-content border-base-300 hover:border-primary/30 hover:bg-base-200'
                 }
               `}
               title={toolDescriptions[tool]}
@@ -85,23 +84,23 @@ export const ToolsSelector: React.FC<ToolsSelectorProps> = ({
       {/* Ferramentas Customizadas */}
       {customTools.length > 0 && (
         <div className="space-y-1">
-          <p className="text-xs text-text-secondary">Ferramentas customizadas:</p>
+          <p className="text-xs text-base-content/70">Ferramentas customizadas:</p>
           <div className="flex flex-wrap gap-2">
             {customTools.map(tool => (
               <div
                 key={tool}
                 className={`
                   px-3 py-1.5 rounded-lg text-xs font-semibold
-                  bg-accent/20 text-accent-light border border-accent/30
+                  bg-primary/10 text-primary border border-primary/20
                   flex items-center gap-2
-                  ${windows12Styles.transition.fast}
+                  transition-all
                 `}
               >
                 <span>{tool}</span>
                 <button
                   type="button"
                   onClick={() => handleRemoveTool(tool)}
-                  className="hover:text-red-400 transition-colors"
+                  className="btn btn-ghost btn-xs btn-circle hover:text-error"
                   title="Remover"
                 >
                   <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -131,15 +130,9 @@ export const ToolsSelector: React.FC<ToolsSelectorProps> = ({
               e.target.value = '';
             }
           }}
-          className={`
-            w-full bg-surface-hover border border-surface-border rounded-lg
-            px-3 py-2 text-sm text-text-primary
-            focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent
-            ${windows12Styles.transition.fast}
-            ${compact ? 'text-xs py-1.5' : ''}
-          `}
+          className={`input input-bordered w-full bg-base-100 border-base-300 text-base-content focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all ${compact ? 'text-xs py-1.5' : ''}`}
         />
-        <p className="text-[0.65rem] text-text-secondary mt-1">
+        <p className="text-[0.65rem] text-base-content/70 mt-1">
           Pressione Enter ou clique fora para adicionar
         </p>
       </div>

@@ -1,4 +1,4 @@
-import { Project, JiraTask, TestCase } from '../types';
+import { Project, JiraTask } from '../types';
 import { format } from 'date-fns';
 import * as XLSX from 'xlsx';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
@@ -240,12 +240,11 @@ export const exportProjectToExcel = async (project: Project): Promise<void> => {
 export const exportProjectToPDF = async (project: Project): Promise<void> => {
   try {
     const pdfDoc = await PDFDocument.create();
-    const page = pdfDoc.addPage([595, 842]); // A4
+    let page = pdfDoc.addPage([595, 842]); // A4
     const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
     const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
 
     let yPosition = 800;
-    const lineHeight = 20;
     const margin = 50;
 
     // Título
@@ -270,7 +269,7 @@ export const exportProjectToPDF = async (project: Project): Promise<void> => {
       const descLines = project.description.split('\n');
       descLines.forEach(line => {
         if (yPosition < 50) {
-          const newPage = pdfDoc.addPage([595, 842]);
+          page = pdfDoc.addPage([595, 842]);
           yPosition = 800;
         }
         page.drawText(line.substring(0, 80), {
@@ -308,7 +307,7 @@ export const exportProjectToPDF = async (project: Project): Promise<void> => {
 
     summary.forEach(line => {
       if (yPosition < 50) {
-        const newPage = pdfDoc.addPage([595, 842]);
+        page = pdfDoc.addPage([595, 842]);
         yPosition = 800;
       }
       page.drawText(line, {
@@ -323,7 +322,7 @@ export const exportProjectToPDF = async (project: Project): Promise<void> => {
     // Tarefas
     yPosition -= 20;
     if (yPosition < 100) {
-      const newPage = pdfDoc.addPage([595, 842]);
+      page = pdfDoc.addPage([595, 842]);
       yPosition = 800;
     }
 
@@ -337,7 +336,7 @@ export const exportProjectToPDF = async (project: Project): Promise<void> => {
 
     tasks.slice(0, 20).forEach(task => {
       if (yPosition < 50) {
-        const newPage = pdfDoc.addPage([595, 842]);
+        page = pdfDoc.addPage([595, 842]);
         yPosition = 800;
       }
       page.drawText(`${task.id}: ${task.title}`, {

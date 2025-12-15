@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
-import { cn } from '../../utils/windows12Styles';
+import { cn } from '../../utils/cn';
 
 type SectionHeaderAlign = 'left' | 'center';
 type SectionHeaderHeading = 'h1' | 'h2' | 'h3';

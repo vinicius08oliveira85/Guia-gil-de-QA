@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Card } from '../common/Card';
 import { getExportPreferences, updateExportPreferences } from '../../utils/preferencesService';
-import { ExportPreferences, ExportTemplate, ExportSchedule } from '../../types';
+import type { ExportPreferences as ExportPreferencesType, ExportTemplate, ExportSchedule } from '../../types';
 import { startExportScheduler, stopExportScheduler } from '../../utils/exportScheduler';
 
 export const ExportPreferences: React.FC = () => {
-    const [preferences, setPreferences] = useState<ExportPreferences>(getExportPreferences());
+    const [preferences, setPreferences] = useState<ExportPreferencesType>(getExportPreferences());
     const [newTemplateName, setNewTemplateName] = useState('');
 
     useEffect(() => {

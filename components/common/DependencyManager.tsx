@@ -10,7 +10,7 @@ import {
   getReadyTasks
 } from '../../utils/dependencyService';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
-import { windows12Styles, cn } from '../../utils/windows12Styles';
+import { cn } from '../../utils/cn';
 
 interface DependencyManagerProps {
   task: JiraTask;
@@ -76,43 +76,40 @@ export const DependencyManager: React.FC<DependencyManagerProps> = ({
   const isReady = readyTasks.some(t => t.id === task.id);
 
   return (
-    <div className={cn("space-y-4", windows12Styles.spacing.md)}>
+    <div className="space-y-4 p-5">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-text-primary">Dependências da Tarefa</h3>
+        <h3 className="text-lg font-semibold text-base-content">Dependências da Tarefa</h3>
         <button 
+          type="button"
           onClick={onClose} 
-          className={cn(
-            "text-text-secondary hover:text-text-primary",
-            windows12Styles.transition.all,
-            "p-1 rounded-lg hover:bg-surface-hover"
-          )}
+          className="btn btn-ghost btn-sm btn-circle"
         >
           ✕
         </button>
       </div>
 
       {/* Status da tarefa */}
-      <div className={cn("p-3", windows12Styles.card)}>
+      <div className="p-4 bg-base-100 border border-base-300 rounded-xl">
         {isBlocked && (
-          <div className="flex items-center gap-2 text-orange-400">
+          <div className="flex items-center gap-2 text-warning">
             <span>⚠️</span>
             <span className="font-semibold">Esta tarefa está bloqueada por dependências não concluídas</span>
           </div>
         )}
         {isReady && !isBlocked && (
-          <div className="flex items-center gap-2 text-green-400">
+          <div className="flex items-center gap-2 text-success">
             <span>✅</span>
             <span className="font-semibold">Esta tarefa está pronta para ser iniciada</span>
           </div>
         )}
         {!isBlocked && !isReady && dependencies.length === 0 && (
-          <div className="text-text-secondary">Nenhuma dependência definida</div>
+          <div className="text-base-content/70">Nenhuma dependência definida</div>
         )}
       </div>
 
       {/* Dependências (bloqueiam esta tarefa) */}
       <div>
-        <h4 className="text-md font-semibold text-text-primary mb-2">
+        <h4 className="text-md font-semibold text-base-content mb-2">
           Dependências ({dependencies.length})
         </h4>
         {dependencies.length > 0 ? (
@@ -127,26 +124,24 @@ export const DependencyManager: React.FC<DependencyManagerProps> = ({
                 <div
                   key={dep.id}
                   className={cn(
-                    "p-3 rounded-xl border flex items-center justify-between",
-                    windows12Styles.transition.all,
-                    isCompleted 
-                      ? 'border-green-500/50 bg-green-500/10 shadow-md shadow-green-500/10' 
-                      : 'border-orange-500/50 bg-orange-500/10 shadow-md shadow-orange-500/10'
+                    "p-3 rounded-xl border flex items-center justify-between transition-all",
+                    isCompleted ? "border-success/30 bg-success/10" : "border-warning/30 bg-warning/10"
                   )}
                 >
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <span>{isCompleted ? '✅' : '⏳'}</span>
-                      <span className="font-semibold text-text-primary">{depTask.id}</span>
-                      <span className="text-text-secondary">{depTask.title}</span>
+                      <span className="font-semibold text-base-content">{depTask.id}</span>
+                      <span className="text-base-content/70">{depTask.title}</span>
                     </div>
-                    <div className="text-sm text-text-secondary mt-1">
+                    <div className="text-sm text-base-content/70 mt-1">
                       Status: {depTask.status === 'Done' ? 'Concluída' : depTask.status === 'In Progress' ? 'Em Andamento' : 'A Fazer'}
                     </div>
                   </div>
                   <button
+                    type="button"
                     onClick={() => handleRemoveDependency(dep.id)}
-                    className="text-red-400 hover:text-red-300 px-2"
+                    className="btn btn-ghost btn-sm btn-circle text-error"
                     title="Remover dependência"
                   >
                     ✕
@@ -156,18 +151,18 @@ export const DependencyManager: React.FC<DependencyManagerProps> = ({
             })}
           </div>
         ) : (
-          <p className="text-text-secondary text-sm">Nenhuma dependência definida</p>
+          <p className="text-base-content/70 text-sm">Nenhuma dependência definida</p>
         )}
       </div>
 
       {/* Adicionar nova dependência */}
-      <div className="border-t border-surface-border pt-4">
-        <h4 className="text-md font-semibold text-text-primary mb-2">Adicionar Dependência</h4>
+      <div className="border-t border-base-300 pt-4">
+        <h4 className="text-md font-semibold text-base-content mb-2">Adicionar Dependência</h4>
         <div className="flex gap-2">
           <select
             value={selectedTaskId}
             onChange={(e) => setSelectedTaskId(e.target.value)}
-            className={cn("flex-1 px-3 py-2", windows12Styles.input)}
+            className="select select-bordered flex-1 bg-base-100 border-base-300 text-base-content"
           >
             <option value="">Selecione uma tarefa...</option>
             {availableTasks.map(t => (
@@ -177,12 +172,10 @@ export const DependencyManager: React.FC<DependencyManagerProps> = ({
             ))}
           </select>
           <button
+            type="button"
             onClick={handleAddDependency}
             disabled={!selectedTaskId}
-            className={cn(
-              windows12Styles.buttonPrimary,
-              "disabled:opacity-50 disabled:cursor-not-allowed"
-            )}
+            className="btn btn-primary btn-sm rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Adicionar
           </button>
@@ -191,8 +184,8 @@ export const DependencyManager: React.FC<DependencyManagerProps> = ({
 
       {/* Dependentes (são bloqueados por esta tarefa) */}
       {dependents.length > 0 && (
-        <div className="border-t border-surface-border pt-4">
-          <h4 className="text-md font-semibold text-text-primary mb-2">
+        <div className="border-t border-base-300 pt-4">
+          <h4 className="text-md font-semibold text-base-content mb-2">
             Tarefas que dependem desta ({dependents.length})
           </h4>
           <div className="space-y-2">
@@ -203,10 +196,10 @@ export const DependencyManager: React.FC<DependencyManagerProps> = ({
               return (
                 <div
                   key={dep.id}
-                  className="p-2 rounded-lg border border-surface-border bg-surface/50"
+                  className="p-3 rounded-lg border border-base-300 bg-base-100"
                 >
-                  <span className="font-semibold text-text-primary">{depTask.id}</span>
-                  <span className="text-text-secondary ml-2">{depTask.title}</span>
+                  <span className="font-semibold text-base-content">{depTask.id}</span>
+                  <span className="text-base-content/70 ml-2">{depTask.title}</span>
                 </div>
               );
             })}

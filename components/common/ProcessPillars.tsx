@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { cn } from "../../utils/windows12Styles";
+import { cn } from "../../utils/cn";
 import { useTheme } from "../../hooks/useTheme";
 import { PhaseStatus } from "../../types";
 import { Tooltip } from "./Tooltip";
@@ -107,12 +107,8 @@ export const ProcessPillars: React.FC<ProcessPillarsProps> = ({
         const isCompleted = pillar.status === 'Concluído' && nextPillar.status === 'Concluído';
         const isPartiallyCompleted = pillar.status === 'Concluído' || nextPillar.status === 'Concluído';
         
-        // Calcular posição baseada no índice
-        // Mobile: 56px (w-14) + 4px (gap-1) = 60px por pilar
-        // sm: 64px (w-16) + 8px (gap-2) = 72px por pilar  
+        // Calcular posição baseada no índice (md+)
         // md+: 80px (w-20) + 8px (gap-2) = 88px por pilar
-        const leftMobile = `calc(${index * 60}px + 56px)`;
-        const leftSm = `calc(${index * 72}px + 64px)`;
         const leftMd = `calc(${index * 88}px + 80px)`;
         
         const connectionColor = isCompleted 

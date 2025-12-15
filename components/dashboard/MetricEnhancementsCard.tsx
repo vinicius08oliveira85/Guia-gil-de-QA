@@ -18,8 +18,8 @@ export const MetricEnhancementsCard: React.FC<MetricEnhancementsCardProps> = Rea
     return (
       <Card className="p-6">
         <div className="flex items-center justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div>
-          <span className="ml-3 text-text-secondary">Analisando métricas...</span>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          <span className="ml-3 text-base-content/70">Analisando métricas...</span>
         </div>
       </Card>
     );
@@ -32,9 +32,9 @@ export const MetricEnhancementsCard: React.FC<MetricEnhancementsCardProps> = Rea
   const { metricEnhancements } = analysis;
 
   const getTrendColor = (current: number, predicted: number) => {
-    if (predicted > current) return 'text-emerald-600';
-    if (predicted < current) return 'text-red-600';
-    return 'text-slate-600';
+    if (predicted > current) return 'text-success';
+    if (predicted < current) return 'text-error';
+    return 'text-base-content/60';
   };
 
   const getTrendIcon = (current: number, predicted: number) => {
@@ -44,50 +44,50 @@ export const MetricEnhancementsCard: React.FC<MetricEnhancementsCardProps> = Rea
   };
 
   return (
-    <Card className="space-y-4" aria-label="Melhorias de métricas">
-      <h3 className="text-lg font-semibold text-text-primary">Melhorias de Métricas</h3>
+    <Card className="p-5 space-y-4" aria-label="Melhorias de métricas">
+      <h3 className="text-lg font-semibold text-base-content">Melhorias de Métricas</h3>
 
       <div className="space-y-4">
         {/* Taxa de Sucesso */}
-        <div className="p-4 bg-surface-hover rounded-lg border border-surface-border">
+        <div className="p-4 bg-base-200 rounded-xl border border-base-300">
           <div className="flex items-center justify-between mb-2">
-            <h4 className="font-semibold text-text-primary">Taxa de Sucesso dos Testes</h4>
+            <h4 className="font-semibold text-base-content">Taxa de Sucesso dos Testes</h4>
             <div className="flex items-center gap-2">
-              <span className="text-sm text-text-secondary">Atual: {metricEnhancements.testPassRate.current}%</span>
+              <span className="text-sm text-base-content/70">Atual: {metricEnhancements.testPassRate.current}%</span>
               <span className={`text-sm font-semibold ${getTrendColor(metricEnhancements.testPassRate.current, metricEnhancements.testPassRate.predicted)}`}>
                 {getTrendIcon(metricEnhancements.testPassRate.current, metricEnhancements.testPassRate.predicted)} {metricEnhancements.testPassRate.predicted}%
               </span>
             </div>
           </div>
-          <p className="text-sm text-text-secondary">{metricEnhancements.testPassRate.suggestion}</p>
+          <p className="text-sm text-base-content/70">{metricEnhancements.testPassRate.suggestion}</p>
         </div>
 
         {/* Resolução de Bugs */}
-        <div className="p-4 bg-surface-hover rounded-lg border border-surface-border">
+        <div className="p-4 bg-base-200 rounded-xl border border-base-300">
           <div className="flex items-center justify-between mb-2">
-            <h4 className="font-semibold text-text-primary">Resolução de Bugs</h4>
+            <h4 className="font-semibold text-base-content">Resolução de Bugs</h4>
             <div className="flex items-center gap-2">
-              <span className="text-sm text-text-secondary">Atual: {metricEnhancements.bugResolution.current}</span>
+              <span className="text-sm text-base-content/70">Atual: {metricEnhancements.bugResolution.current}</span>
               <span className={`text-sm font-semibold ${getTrendColor(metricEnhancements.bugResolution.current, metricEnhancements.bugResolution.predicted)}`}>
                 {getTrendIcon(metricEnhancements.bugResolution.current, metricEnhancements.bugResolution.predicted)} {metricEnhancements.bugResolution.predicted}
               </span>
             </div>
           </div>
-          <p className="text-sm text-text-secondary">{metricEnhancements.bugResolution.suggestion}</p>
+          <p className="text-sm text-base-content/70">{metricEnhancements.bugResolution.suggestion}</p>
         </div>
 
         {/* Cobertura */}
-        <div className="p-4 bg-surface-hover rounded-lg border border-surface-border">
+        <div className="p-4 bg-base-200 rounded-xl border border-base-300">
           <div className="flex items-center justify-between mb-2">
-            <h4 className="font-semibold text-text-primary">Cobertura de Testes</h4>
+            <h4 className="font-semibold text-base-content">Cobertura de Testes</h4>
             <div className="flex items-center gap-2">
-              <span className="text-sm text-text-secondary">Atual: {metricEnhancements.coverage.current}%</span>
-              <span className="text-sm font-semibold text-accent">
+              <span className="text-sm text-base-content/70">Atual: {metricEnhancements.coverage.current}%</span>
+              <span className="text-sm font-semibold text-primary">
                 → Meta: {metricEnhancements.coverage.target}%
               </span>
             </div>
           </div>
-          <p className="text-sm text-text-secondary">{metricEnhancements.coverage.suggestion}</p>
+          <p className="text-sm text-base-content/70">{metricEnhancements.coverage.suggestion}</p>
         </div>
       </div>
     </Card>

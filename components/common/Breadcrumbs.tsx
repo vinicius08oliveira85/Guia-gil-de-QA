@@ -1,6 +1,6 @@
 import React from 'react';
-import { ChevronRight, Home } from 'lucide-react';
-import { cn } from '../../utils/windows12Styles';
+import { Home } from 'lucide-react';
+import { cn } from '../../utils/cn';
 
 export interface BreadcrumbItem {
   label: string;

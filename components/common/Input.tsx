@@ -1,9 +1,9 @@
 import React from 'react';
-import { cn } from '../../utils/windows12Styles';
+import { cn } from '../../utils/cn';
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
 
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  label?: string;
+  label?: React.ReactNode;
   error?: string;
   success?: boolean;
   helperText?: string;

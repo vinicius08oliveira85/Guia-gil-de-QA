@@ -9,11 +9,13 @@ export const Confetti: React.FC<ConfettiProps> = ({ show, duration = 3000 }) => 
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    if (show) {
-      setIsVisible(true);
-      const timer = setTimeout(() => setIsVisible(false), duration);
-      return () => clearTimeout(timer);
+    if (!show) {
+      return;
     }
+
+    setIsVisible(true);
+    const timer = setTimeout(() => setIsVisible(false), duration);
+    return () => clearTimeout(timer);
   }, [show, duration]);
 
   if (!isVisible) return null;

@@ -9,7 +9,7 @@ import {
   getAttachmentUrl
 } from '../../utils/attachmentService';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
-import { windows12Styles, cn } from '../../utils/windows12Styles';
+import { cn } from '../../utils/cn';
 
 interface AttachmentManagerProps {
   task: JiraTask;
@@ -75,17 +75,15 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = ({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-text-primary">Anexos ({attachments.length})</h3>
+        <h3 className="text-lg font-semibold text-base-content">Anexos ({attachments.length})</h3>
         {onClose && (
-          <button onClick={onClose} className="text-text-secondary hover:text-text-primary">✕</button>
+          <button type="button" onClick={onClose} className="btn btn-ghost btn-sm btn-circle">✕</button>
         )}
       </div>
 
       {/* Upload */}
       <div className={cn(
-        "border-2 border-dashed border-surface-border rounded-xl p-4",
-        windows12Styles.transition.all,
-        "hover:border-accent/50 hover:bg-accent/5"
+        "border-2 border-dashed border-base-300 rounded-xl p-4 hover:border-primary/40 hover:bg-primary/5 transition-all"
       )}>
         <input
           ref={fileInputRef}
@@ -102,10 +100,10 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = ({
           }`}
         >
           <span className="text-4xl mb-2">📎</span>
-          <span className="text-text-primary font-semibold">
+          <span className="text-base-content font-semibold">
             {uploading ? 'Enviando...' : 'Clique para anexar arquivo'}
           </span>
-          <span className="text-sm text-text-secondary mt-1">
+          <span className="text-sm text-base-content/70 mt-1">
             Tamanho máximo: 10MB
           </span>
         </label>
@@ -117,17 +115,13 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = ({
           {attachments.map(attachment => (
             <div
               key={attachment.id}
-              className={cn(
-                "flex items-center justify-between p-3",
-                windows12Styles.card,
-                windows12Styles.cardHover
-              )}
+              className="flex items-center justify-between p-4 bg-base-100 border border-base-300 rounded-xl hover:border-primary/30 transition-all"
             >
               <div className="flex items-center gap-3 flex-1 min-w-0">
                 <span className="text-2xl">{getFileIcon(attachment.type)}</span>
                 <div className="flex-1 min-w-0">
-                  <div className="font-semibold text-text-primary truncate">{attachment.name}</div>
-                  <div className="text-sm text-text-secondary">
+                  <div className="font-semibold text-base-content truncate">{attachment.name}</div>
+                  <div className="text-sm text-base-content/70">
                     {formatFileSize(attachment.size)} • {new Date(attachment.uploadedAt).toLocaleDateString('pt-BR')}
                   </div>
                 </div>
@@ -135,26 +129,29 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = ({
               <div className="flex items-center gap-2">
                 {attachment.type.startsWith('image/') && (
                   <button
+                    type="button"
                     onClick={() => {
                       const url = getAttachmentUrl(attachment);
                       window.open(url, '_blank');
                     }}
-                    className="px-3 py-1 text-sm bg-accent/20 text-accent hover:bg-accent/30 rounded"
+                    className="btn btn-outline btn-sm rounded-full"
                     title="Visualizar"
                   >
                     👁️ Ver
                   </button>
                 )}
                 <button
+                  type="button"
                   onClick={() => handleDownload(attachment)}
-                  className="px-3 py-1 text-sm bg-surface-hover text-text-primary hover:bg-surface rounded"
+                  className="btn btn-outline btn-sm rounded-full"
                   title="Download"
                 >
                   ⬇️
                 </button>
                 <button
+                  type="button"
                   onClick={() => handleRemove(attachment.id)}
-                  className="px-3 py-1 text-sm text-red-400 hover:text-red-300"
+                  className="btn btn-ghost btn-sm btn-circle text-error"
                   title="Remover"
                 >
                   ✕
@@ -166,7 +163,7 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = ({
       )}
 
       {attachments.length === 0 && (
-        <p className="text-center text-text-secondary py-4">
+        <p className="text-center text-base-content/70 py-4">
           Nenhum anexo ainda. Clique acima para adicionar arquivos.
         </p>
       )}

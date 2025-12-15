@@ -13,7 +13,6 @@ import { AttachmentManager } from '../common/AttachmentManager';
 import { ChecklistView } from '../common/ChecklistView';
 import { EstimationInput } from '../common/EstimationInput';
 import { QuickActions } from '../common/QuickActions';
-import { TimeTracker } from '../common/TimeTracker';
 import { getTagColor, getTaskVersions } from '../../utils/tagService';
 import { VersionBadges } from './VersionBadge';
 import { updateChecklistItem } from '../../utils/checklistService';
@@ -23,7 +22,6 @@ import { ConfirmDialog } from '../common/ConfirmDialog';
 import { EmptyState } from '../common/EmptyState';
 import { LoadingSkeleton } from '../common/LoadingSkeleton';
 import { ensureJiraHexColor, getJiraStatusColor, getJiraStatusTextColor } from '../../utils/jiraStatusColors';
-import { windows12Styles } from '../../utils/windows12Styles';
 import { parseJiraDescriptionHTML } from '../../utils/jiraDescriptionParser';
 import { getJiraConfig } from '../../services/jiraService';
 import { TestTypeBadge } from '../common/TestTypeBadge';
@@ -220,9 +218,7 @@ export const JiraTaskItem: React.FC<{
         });
 
         (task.testCases || []).forEach(testCase => {
-            const fallbackType = task.testStrategy && task.testStrategy.length > 0
-                ? task.testStrategy[0]?.testType || 'Testes Gerais'
-                : 'Testes Gerais';
+            const fallbackType = (task.testStrategy ?? [])[0]?.testType || 'Testes Gerais';
             const associatedTypes = testCase.strategies && testCase.strategies.length > 0
                 ? testCase.strategies
                 : [fallbackType];
@@ -396,7 +392,8 @@ export const JiraTaskItem: React.FC<{
     
     const indentationStyle = { paddingLeft: `${level * 1.2}rem` };
 
-    const iconButtonClass = 'task-card-compact_icon-btn';
+    const iconButtonClass = 'btn btn-ghost btn-sm btn-circle';
+    const iconButtonSmallClass = 'btn btn-ghost btn-xs btn-circle';
 
     const renderOverviewSection = () => (
         <div className="space-y-md">
@@ -411,14 +408,11 @@ export const JiraTaskItem: React.FC<{
             )}
             
             {/* Botão para Gerar Registro de Testes - apenas para tipo "Tarefa" */}
-            {task.type === 'Tarefa' && (task.testCases?.length > 0 || task.testStrategy?.length > 0) && (
+            {task.type === 'Tarefa' && (task.testCases?.length > 0 || (task.testStrategy?.length ?? 0) > 0) && (
                 <div className="flex justify-end">
                     <button
                         onClick={() => setShowTestReport(true)}
-                        className={`
-                            btn-generate-test-record
-                            flex items-center gap-2
-                        `}
+                        className="btn btn-outline btn-sm flex items-center gap-2"
                     >
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -752,9 +746,9 @@ export const JiraTaskItem: React.FC<{
                             <span className="text-xs text-text-secondary">{task.testStrategy?.length || 0} item(ns)</span>
                         </div>
                         {isGenerating && <div className="flex justify-center py-2"><Spinner small /></div>}
-                        {task.testStrategy && task.testStrategy.length > 0 ? (
+                        {(task.testStrategy?.length ?? 0) > 0 ? (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-md mt-md">
-                                {task.testStrategy.map((strategy, i) => {
+                                {(task.testStrategy ?? []).map((strategy, i) => {
                                     if (!strategy) return null;
                                     return (
                                         <TestStrategyCard 
@@ -1076,7 +1070,7 @@ export const JiraTaskItem: React.FC<{
                             {hasChildren ? (
                                 <button
                                     onClick={() => setIsChildrenOpen(!isChildrenOpen)}
-                                    className={`${iconButtonClass} !w-6 !h-6`}
+                                    className={iconButtonSmallClass}
                                     aria-label="Alternar subtarefas"
                                 >
                                     <ChevronDownIcon className={`h-3.5 w-3.5 transition-transform ${isChildrenOpen ? 'rotate-180' : ''}`} />

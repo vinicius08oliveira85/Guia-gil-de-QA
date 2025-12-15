@@ -1,11 +1,11 @@
-import { Attachment, JiraTask, Project } from '../types';
+import { Attachment, Project } from '../types';
 
 // Simulação de armazenamento (em produção, seria um serviço de upload real)
 const ATTACHMENTS_STORAGE_KEY = 'qa_attachments';
 
 export const createAttachment = (
   file: File,
-  taskId: string
+  _taskId: string
 ): Promise<Attachment> => {
   return new Promise((resolve, reject) => {
     if (file.size > 10 * 1024 * 1024) { // 10MB limit

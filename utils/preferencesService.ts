@@ -35,6 +35,12 @@ const defaultPreferences: UserPreferences = {
   export: defaultExportPreferences,
 };
 
+type PreferencesUpdate = {
+  notifications?: Partial<NotificationPreferences>;
+  keyboardShortcuts?: Partial<KeyboardShortcutPreferences>;
+  export?: Partial<ExportPreferences>;
+};
+
 export const getPreferences = (): UserPreferences => {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
@@ -54,7 +60,7 @@ export const getPreferences = (): UserPreferences => {
   }
 };
 
-export const savePreferences = (preferences: Partial<UserPreferences>): void => {
+export const savePreferences = (preferences: PreferencesUpdate): void => {
   try {
     const current = getPreferences();
     const updated = {

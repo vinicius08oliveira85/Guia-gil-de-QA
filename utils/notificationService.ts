@@ -124,7 +124,7 @@ export const notifyTestFailed = (testCase: TestCase, task: JiraTask, project: Pr
   });
 };
 
-export const notifyTaskAssigned = (task: JiraTask, project: Project, assignee: string) => {
+export const notifyTaskAssigned = (task: JiraTask, project: Project, _assignee: string) => {
   return createNotification({
     type: 'task_assigned',
     title: 'Tarefa Atribuída',

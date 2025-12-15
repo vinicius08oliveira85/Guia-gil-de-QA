@@ -356,12 +356,14 @@ function prepareTasksAndTestsData(project: Project) {
       tasksWithTests: tasks.filter(t => t.testCases.length > 0).length,
       tasksWithBdd: tasks.filter(t => t.hasBddScenarios).length,
       totalTestCases: tasks.reduce((sum, t) => sum + t.testCases.length, 0),
-      automatedTestCases: tasks.reduce((sum, t) => 
-        sum + t.testCases.filter(tc => tc.isAutomated).length, 0
-      , 0),
-      failedTestCases: tasks.reduce((sum, t) => 
-        sum + t.testCases.filter(tc => tc.status === 'Failed').length, 0
-      , 0),
+      automatedTestCases: tasks.reduce(
+        (sum, t) => sum + t.testCases.filter((tc) => tc.isAutomated).length,
+        0
+      ),
+      failedTestCases: tasks.reduce(
+        (sum, t) => sum + t.testCases.filter((tc) => tc.status === 'Failed').length,
+        0
+      ),
     },
   };
 }

@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Card } from '../common/Card';
-import { windows12Styles, cn } from '../../utils/windows12Styles';
+import { cn } from '../../utils/cn';
 
 type DonutChartProps = {
     title: string;
@@ -34,7 +34,7 @@ export const DonutChart: React.FC<DonutChartProps> = ({
         <Card 
             className={cn(
                 '!p-4 sm:!p-6 !gap-2',
-                interactive && windows12Styles.cardHover,
+                interactive && 'hover:shadow-lg hover:border-primary/30 transition-all',
                 interactive && 'cursor-pointer',
                 className
             )}
@@ -44,15 +44,15 @@ export const DonutChart: React.FC<DonutChartProps> = ({
         >
             <div className="flex items-center justify-between gap-4">
                 <div>
-                    <p className="data-label text-text-secondary/90">{title}</p>
+                    <p className="text-sm text-base-content/70">{title}</p>
                     {note ? (
                         <p className="text-muted text-[clamp(0.8rem,1.6vw,0.95rem)]">{note}</p>
                     ) : null}
                 </div>
                 <div
                     className={cn(
-                        "rounded-2xl bg-white/5 px-3 py-1 text-[clamp(0.75rem,1.8vw,0.9rem)] font-semibold text-text-primary",
-                        interactive && isHovered && windows12Styles.glow('accent')
+                        "rounded-2xl bg-base-200 px-3 py-1 text-[clamp(0.75rem,1.8vw,0.9rem)] font-semibold text-base-content",
+                        interactive && isHovered && "ring-2 ring-primary/20"
                     )}
                     aria-hidden="true"
                 >
@@ -62,8 +62,8 @@ export const DonutChart: React.FC<DonutChartProps> = ({
             <div className="relative mx-auto flex items-center justify-center">
                 <svg
                     className={cn(
-                        "drop-shadow-[0_12px_35px_rgba(4,4,17,0.55)]",
-                        interactive && windows12Styles.transition.all,
+                        "drop-shadow-[0_12px_35px_rgba(4,4,17,0.18)]",
+                        interactive && "transition-all",
                         interactive && isHovered && "scale-105"
                     )}
                     viewBox="0 0 120 120"
@@ -100,11 +100,11 @@ export const DonutChart: React.FC<DonutChartProps> = ({
                 </svg>
                 <div className={cn(
                     "absolute flex flex-col items-center",
-                    interactive && windows12Styles.transition.all,
+                    interactive && "transition-all",
                     interactive && isHovered && "scale-110"
                 )}>
-                    <span className="text-[clamp(1.35rem,3vw,2rem)] font-semibold text-text-primary">{percentage}%</span>
-                    <span className="text-xs uppercase tracking-[0.2em] text-text-secondary">Atual</span>
+                    <span className="text-[clamp(1.35rem,3vw,2rem)] font-semibold text-base-content">{percentage}%</span>
+                    <span className="text-xs uppercase tracking-[0.2em] text-base-content/60">Atual</span>
                 </div>
             </div>
         </Card>

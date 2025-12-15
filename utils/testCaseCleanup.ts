@@ -1,4 +1,4 @@
-import { Project, JiraTask, JiraTaskType } from '../types';
+import { Project, JiraTask } from '../types';
 
 /**
  * Remove casos de teste e cenários BDD de tarefas que não são do tipo "Tarefa"

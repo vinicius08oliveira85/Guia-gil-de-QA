@@ -1,6 +1,8 @@
 
 export interface TestCase {
   id: string;
+  /** Título curto (opcional). Alguns fluxos usam a própria description como título. */
+  title?: string;
   description: string;
   steps: string[];
   expectedResult: string;
@@ -99,7 +101,8 @@ export interface JiraTask {
   id: string;
   title: string;
   description: string;
-  status: 'To Do' | 'In Progress' | 'Done';
+  /** Status padrão do app. "Blocked" pode ser usado por integrações/fluxos avançados. */
+  status: 'To Do' | 'In Progress' | 'Done' | 'Blocked';
   jiraStatus?: string; // Status original do Jira (ex: "Em Andamento", "Concluído", etc.)
   testCases: TestCase[];
   testStrategy?: TestStrategy[];
@@ -123,7 +126,8 @@ export interface JiraTask {
   iaAnalysis?: TaskIAAnalysis;
   toolsUsed?: string[]; // Ferramentas utilizadas nesta task
   executedStrategies?: number[]; // Índices das estratégias que foram executadas
-  strategyTools?: { [strategyIndex: number]: string[] }; // Ferramentas utilizadas por estratégia (índice -> ferramentas)
+  /** Ferramentas utilizadas por estratégia (índice -> ferramentas) */
+  strategyTools?: { [strategyIndex: number]: string[] | undefined };
   isEscapedDefect?: boolean; // Indica se o bug foi vazado para produção
   // Campos adicionais do Jira
   dueDate?: string; // ISO string
@@ -296,6 +300,8 @@ export interface Project {
   id: string;
   name: string;
   description: string;
+  createdAt?: string;
+  updatedAt?: string;
   documents: ProjectDocument[];
   tasks: JiraTask[];
   phases: Phase[];

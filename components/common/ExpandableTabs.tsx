@@ -1,7 +1,7 @@
 import * as React from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useOnClickOutside } from "usehooks-ts";
-import { cn } from "../../utils/windows12Styles";
+import { cn } from "../../utils/cn";
 import { LucideIcon } from "lucide-react";
 
 interface Tab {

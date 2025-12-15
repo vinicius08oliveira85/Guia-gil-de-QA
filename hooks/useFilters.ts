@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react';
-import { Project, JiraTask, TestCase } from '../types';
+import { Project } from '../types';
 
 export interface FilterOptions {
-  status?: ('To Do' | 'In Progress' | 'Done')[];
+  status?: ('To Do' | 'In Progress' | 'Blocked' | 'Done')[];
   type?: ('Epic' | 'História' | 'Tarefa' | 'Bug')[];
   tags?: string[];
   priority?: ('Baixa' | 'Média' | 'Alta' | 'Urgente')[];

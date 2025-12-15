@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Project, JiraTask, ProjectDocument } from '../types';
+import { Project } from '../types';
 
 export interface SearchResult {
   type: 'project' | 'task' | 'document' | 'testcase';
