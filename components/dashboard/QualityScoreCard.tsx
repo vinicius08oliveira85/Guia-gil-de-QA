@@ -28,8 +28,8 @@ const STATUS_CONFIG: Record<StatusLevel, StatusConfig> = {
     icon: CheckCircle2,
     textColor: 'text-success',
     ringColor: 'stroke-success',
-    bgGradient: 'from-success/20 via-success/10 to-success/5',
-    borderColor: 'border-success/40',
+    bgGradient: 'from-success/25 via-success/15 to-success/8',
+    borderColor: 'border-success/50',
     badgeClass: 'badge-success',
   },
   good: {
@@ -37,26 +37,26 @@ const STATUS_CONFIG: Record<StatusLevel, StatusConfig> = {
     icon: Activity,
     textColor: 'text-info',
     ringColor: 'stroke-info',
-    bgGradient: 'from-info/20 via-info/10 to-info/5',
-    borderColor: 'border-info/40',
+    bgGradient: 'from-info/25 via-info/15 to-info/8',
+    borderColor: 'border-info/50',
     badgeClass: 'badge-info',
   },
   fair: {
     label: 'Regular',
     icon: AlertCircle,
-    textColor: 'text-warning',
-    ringColor: 'stroke-warning',
-    bgGradient: 'from-warning/20 via-warning/10 to-warning/5',
-    borderColor: 'border-warning/40',
+    textColor: 'text-warning-content',
+    ringColor: 'stroke-warning-content',
+    bgGradient: 'from-warning-content/30 via-warning-content/20 to-warning-content/10',
+    borderColor: 'border-warning-content/60',
     badgeClass: 'badge-warning',
   },
   poor: {
     label: 'Ruim',
     icon: AlertTriangle,
-    textColor: 'text-warning',
-    ringColor: 'stroke-warning',
-    bgGradient: 'from-warning/30 via-warning/15 to-warning/8',
-    borderColor: 'border-warning/50',
+    textColor: 'text-warning-content',
+    ringColor: 'stroke-warning-content',
+    bgGradient: 'from-warning-content/40 via-warning-content/25 to-warning-content/15',
+    borderColor: 'border-warning-content/70',
     badgeClass: 'badge-warning',
   },
   critical: {
@@ -64,8 +64,8 @@ const STATUS_CONFIG: Record<StatusLevel, StatusConfig> = {
     icon: XCircle,
     textColor: 'text-error',
     ringColor: 'stroke-error',
-    bgGradient: 'from-error/30 via-error/15 to-error/8',
-    borderColor: 'border-error/50',
+    bgGradient: 'from-error/35 via-error/20 to-error/12',
+    borderColor: 'border-error/60',
     badgeClass: 'badge-error',
   },
 };
@@ -136,8 +136,9 @@ export const QualityScoreCard: React.FC<QualityScoreCardProps> = React.memo(({
           <div
             className={cn(
               'flex items-center gap-2 px-3 py-1.5 rounded-full',
-              'bg-base-100/80 backdrop-blur-sm border border-base-300/50',
-              'shadow-sm'
+              'bg-base-100 border-2',
+              config.borderColor,
+              'shadow-md'
             )}
           >
             <Icon className={cn('h-4 w-4', config.textColor)} aria-hidden="true" />
@@ -159,7 +160,7 @@ export const QualityScoreCard: React.FC<QualityScoreCardProps> = React.memo(({
               cx="50%"
               cy="50%"
               r="60"
-              className="stroke-base-300"
+              className="stroke-base-300/50"
               strokeWidth="10"
               fill="none"
             />
@@ -189,7 +190,7 @@ export const QualityScoreCard: React.FC<QualityScoreCardProps> = React.memo(({
             <motion.div
               className={cn(
                 'text-5xl md:text-6xl font-bold tabular-nums tracking-tight',
-                config.textColor
+                'text-base-content'
               )}
               initial={{ opacity: 0, scale: 0.5 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -198,7 +199,7 @@ export const QualityScoreCard: React.FC<QualityScoreCardProps> = React.memo(({
               {qualityScore}
             </motion.div>
             <motion.div
-              className="text-sm text-base-content/70 font-medium mt-1"
+              className="text-sm text-base-content/80 font-medium mt-1"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.7 }}
@@ -210,7 +211,7 @@ export const QualityScoreCard: React.FC<QualityScoreCardProps> = React.memo(({
 
         {/* Barra de progresso horizontal */}
         <div className="w-full mt-6">
-          <div className="relative h-2.5 bg-base-300/30 rounded-full overflow-hidden backdrop-blur-sm">
+          <div className="relative h-2.5 bg-base-300/50 rounded-full overflow-hidden">
             <motion.div
               className={cn(
                 'h-full rounded-full transition-all duration-1000 ease-out',
