@@ -55,20 +55,19 @@ export const RecommendationsCard: React.FC<RecommendationsCardProps> = React.mem
 
   /**
    * Retorna classes customizadas para melhorar o contraste do badge de impacto/esforço
-   * Garante contraste adequado WCAG AA contra o fundo bg-base-100
+   * Garante contraste adequado WCAG AA contra o fundo bg-base-100 do tema light
    */
   const getImpactEffortBadgeClasses = (status: 'success' | 'warning' | 'info'): string => {
     switch (status) {
       case 'warning':
-        // Usa fundo amarelo mais escuro e texto com alto contraste para warning
-        // warning-content (oklch(57% 0.245 27.325)) tem bom contraste sobre fundo amarelo claro
-        return 'bg-yellow-100 dark:bg-yellow-900/30 text-warning-content border-yellow-300 dark:border-yellow-600';
+        // Usa warning-content com fundo mais visível para melhor contraste no tema light
+        return 'text-warning-content border-warning-content/70 bg-warning-content/25';
       case 'info':
-        // Adiciona fundo sutil e texto com melhor contraste para info
-        return 'bg-info/20 text-info-content border-info/40';
+        // Usa info-content com fundo mais visível para melhor contraste
+        return 'text-info-content border-info/70 bg-info/20';
       case 'success':
-        // Adiciona fundo sutil para success (já tem bom contraste, mas mantém consistência)
-        return 'bg-success/20 text-success-content border-success/40';
+        // Usa success-content com fundo mais visível para melhor contraste
+        return 'text-success-content border-success/70 bg-success/20';
       default:
         return '';
     }

@@ -17,27 +17,27 @@ interface StatusConfig {
 const getStatusConfig = (): Record<StatusType, StatusConfig> => ({
   success: {
     icon: CheckCircle,
-    classNames: 'badge-success badge-outline',
+    classNames: 'badge-success text-success-content border-success/60 bg-success/15',
     role: 'status',
   },
   error: {
     icon: XCircle,
-    classNames: 'badge-error badge-outline',
+    classNames: 'badge-error text-error-content border-error/60 bg-error/15',
     role: 'alert',
   },
   warning: {
     icon: AlertCircle,
-    classNames: 'badge-warning badge-outline',
+    classNames: 'badge-warning text-warning-content border-warning-content/60 bg-warning-content/20',
     role: 'alert',
   },
   info: {
     icon: Info,
-    classNames: 'badge-info badge-outline',
+    classNames: 'badge-info text-info-content border-info/60 bg-info/15',
     role: 'status',
   },
   pending: {
     icon: Clock,
-    classNames: 'badge-warning badge-outline',
+    classNames: 'badge-warning text-warning-content border-warning-content/60 bg-warning-content/20',
     role: 'status',
   },
   default: {

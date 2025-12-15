@@ -42,10 +42,10 @@ export const DashboardInsightsCard: React.FC<DashboardInsightsCardProps> = React
 
   const getInsightColor = (type: string) => {
     switch (type) {
-      case 'success': return 'bg-success/10 border-success/30';
-      case 'warning': return 'bg-warning/10 border-warning/30';
-      case 'error': return 'bg-error/10 border-error/30';
-      case 'info': return 'bg-info/10 border-info/30';
+      case 'success': return 'bg-success/20 border-success/50';
+      case 'warning': return 'bg-warning-content/20 border-warning-content/60';
+      case 'error': return 'bg-error/20 border-error/50';
+      case 'info': return 'bg-info/20 border-info/50';
       default: return 'bg-base-200 border-base-300';
     }
   };
