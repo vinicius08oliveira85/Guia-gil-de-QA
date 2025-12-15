@@ -24,10 +24,10 @@ export const ExecutionProgressCard: React.FC<ExecutionProgressCardProps> = React
   const remaining = total - executed;
 
   return (
-    <Card className="space-y-4" aria-label="Progresso das execuções">
+    <Card className="p-5 space-y-4 border border-base-300 hover:border-primary/30 hover:shadow-md transition-all duration-200" aria-label="Progresso das execuções">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-text-primary">Status das Execuções</h3>
-        <span className="text-sm text-text-secondary">
+        <h3 className="text-lg font-semibold text-base-content">Status das Execuções</h3>
+        <span className="text-sm text-base-content/70">
           {executed} de {total} executados
         </span>
       </div>
@@ -41,22 +41,22 @@ export const ExecutionProgressCard: React.FC<ExecutionProgressCardProps> = React
         />
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 border-t border-surface-border">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t border-base-300">
         <div>
-          <p className="text-xs text-text-secondary mb-1">Aprovados</p>
-          <p className="text-lg font-bold text-emerald-600">{passed}</p>
+          <p className="text-xs text-base-content/70 mb-1">Aprovados</p>
+          <p className="text-lg font-bold text-success">{passed}</p>
         </div>
         <div>
-          <p className="text-xs text-text-secondary mb-1">Com Falha</p>
-          <p className="text-lg font-bold text-red-600">{failed}</p>
+          <p className="text-xs text-base-content/70 mb-1">Com Falha</p>
+          <p className="text-lg font-bold text-error">{failed}</p>
         </div>
         <div>
-          <p className="text-xs text-text-secondary mb-1">Bloqueados</p>
-          <p className="text-lg font-bold text-yellow-600">{blocked}</p>
+          <p className="text-xs text-base-content/70 mb-1">Bloqueados</p>
+          <p className="text-lg font-bold text-warning">{blocked}</p>
         </div>
         <div>
-          <p className="text-xs text-text-secondary mb-1">Pendentes</p>
-          <p className="text-lg font-bold text-slate-600">{remaining}</p>
+          <p className="text-xs text-base-content/70 mb-1">Pendentes</p>
+          <p className="text-lg font-bold text-base-content/60">{remaining}</p>
         </div>
       </div>
     </Card>

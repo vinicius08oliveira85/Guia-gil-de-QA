@@ -71,10 +71,10 @@ export const TestOverviewCards: React.FC<TestOverviewCardsProps> = React.memo(({
               <p className={`text-sm font-medium ${card.color} mb-1`}>
                 {card.label}
               </p>
-              <p className="text-2xl font-bold text-text-primary">
+              <p className="text-2xl font-bold text-base-content">
                 {card.value}
               </p>
-              <p className="text-xs text-text-secondary mt-1">
+              <p className="text-xs text-base-content/70 mt-1">
                 {card.percentage}% do total
               </p>
             </div>

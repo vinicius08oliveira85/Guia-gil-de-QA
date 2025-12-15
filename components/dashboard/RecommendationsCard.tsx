@@ -62,19 +62,22 @@ export const RecommendationsCard: React.FC<RecommendationsCardProps> = React.mem
   });
 
   return (
-    <Card className="p-5 space-y-4" aria-label="Recomendações priorizadas">
-      <h3 className="text-lg font-semibold text-base-content">Recomendações Priorizadas</h3>
+    <Card className="p-5 space-y-4 border border-base-300 hover:border-primary/30 hover:shadow-md transition-all duration-200" aria-label="Recomendações priorizadas">
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-semibold text-base-content">Recomendações Priorizadas</h3>
+        <div className="badge badge-primary badge-sm">{sortedRecommendations.length}</div>
+      </div>
       
       <div className="space-y-3">
         {sortedRecommendations.map((rec, index) => (
           <div
             key={index}
-            className="p-4 bg-base-200 border border-base-300 rounded-xl"
+            className="p-4 bg-base-100 border border-base-300 rounded-xl hover:border-primary/30 hover:shadow-sm transition-all duration-200"
             aria-label={`Recomendação: ${rec.title} (${rec.category})`}
           >
             <div className="flex items-start justify-between gap-3 mb-2">
               <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1 flex-wrap">
+                <div className="flex items-center gap-2 mb-2 flex-wrap">
                   <StatusBadge status={getCategoryStatus(rec.category)}>
                     {rec.category}
                   </StatusBadge>
@@ -82,10 +85,10 @@ export const RecommendationsCard: React.FC<RecommendationsCardProps> = React.mem
                     Impacto: {rec.impact} | Esforço: {rec.effort}
                   </StatusBadge>
                 </div>
-                <h4 className="font-semibold text-base-content">{rec.title}</h4>
+                <h4 className="font-semibold text-base-content mb-1">{rec.title}</h4>
               </div>
             </div>
-            <p className="text-sm text-base-content/70">{rec.description}</p>
+            <p className="text-sm text-base-content/70 leading-relaxed">{rec.description}</p>
           </div>
         ))}
       </div>

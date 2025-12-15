@@ -177,8 +177,8 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({ onProjectImpor
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <div>
-                    <h3 className="text-xl font-bold text-text-primary mb-2">Integração com Jira</h3>
-                    <p className="text-text-secondary text-sm">
+                    <h3 className="text-xl font-bold text-base-content mb-2">Integração com Jira</h3>
+                    <p className="text-base-content/70 text-sm">
                         Importe projetos existentes do Jira para o aplicativo
                     </p>
                 </div>
@@ -191,10 +191,10 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({ onProjectImpor
 
             {!isConnected ? (
                 <div className="space-y-4">
-                    <p className="text-text-secondary text-sm">
+                    <p className="text-base-content/70 text-sm">
                         Configure sua conexão com o Jira para importar projetos. Você precisará de:
                     </p>
-                    <ul className="list-disc list-inside text-text-secondary text-sm space-y-1 ml-4">
+                    <ul className="list-disc list-inside text-base-content/70 text-sm space-y-1 ml-4">
                         <li>URL do seu Jira (ex: https://seu-dominio.atlassian.net)</li>
                         <li>Email da sua conta Atlassian</li>
                         <li>API Token (gerado em: Account Settings → Security → API tokens)</li>
@@ -210,10 +210,10 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({ onProjectImpor
                 <div className="space-y-4">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-text-secondary text-sm">
-                                Conectado como: <strong className="text-text-primary">{config.email}</strong>
+                            <p className="text-base-content/70 text-sm">
+                                Conectado como: <strong className="text-base-content">{config.email}</strong>
                             </p>
-                            <p className="text-text-secondary text-xs">
+                            <p className="text-base-content/70 text-xs">
                                 URL: {config.url}
                             </p>
                         </div>
@@ -237,14 +237,14 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({ onProjectImpor
                         <div className="flex items-center justify-center py-8">
                             <div className="flex flex-col items-center gap-3">
                                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div>
-                                <p className="text-text-secondary text-sm">Carregando projetos do Jira...</p>
-                                <p className="text-text-secondary text-xs">Isso pode levar alguns segundos</p>
+                                <p className="text-base-content/70 text-sm">Carregando projetos do Jira...</p>
+                                <p className="text-base-content/70 text-xs">Isso pode levar alguns segundos</p>
                             </div>
                         </div>
                     ) : jiraProjects.length > 0 ? (
                         <div className="space-y-3">
                             <div className="flex items-center justify-between">
-                                <label className="block text-sm font-medium text-text-secondary">
+                                <label className="block text-sm font-medium text-base-content/70">
                                     Selecione o projeto para importar:
                                 </label>
                                 <button
@@ -258,7 +258,7 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({ onProjectImpor
                             <select
                                 value={selectedProjectKey}
                                 onChange={(e) => setSelectedProjectKey(e.target.value)}
-                                className="w-full px-4 py-2 bg-surface border border-surface-border rounded-lg text-text-primary focus:outline-none focus:border-accent"
+                                className="select select-bordered w-full bg-base-100 border-base-300 text-base-content focus:outline-none focus:border-primary"
                             >
                                 <option value="">Selecione um projeto...</option>
                                 {Array.isArray(jiraProjects) && jiraProjects.map(project => (
@@ -292,14 +292,14 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({ onProjectImpor
                                 )}
                             </button>
                             {isImporting && (
-                                <div className="mt-2 p-4 bg-surface border border-surface-border rounded-lg">
+                                <div className="mt-2 p-4 bg-base-200 border border-base-300 rounded-lg">
                                     <div className="flex items-center justify-between mb-3">
-                                        <span className="text-sm font-medium text-text-primary">Importando tarefas do Jira...</span>
+                                        <span className="text-sm font-medium text-base-content">Importando tarefas do Jira...</span>
                                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-accent"></div>
                                     </div>
-                                    <div className="w-full bg-surface-hover rounded-full h-2.5 mb-2">
+                                    <div className="w-full bg-base-200 rounded-full h-2.5 mb-2">
                                         <div 
-                                            className="bg-accent h-2.5 rounded-full transition-all duration-300"
+                                            className="bg-primary h-2.5 rounded-full transition-all duration-300"
                                             style={{ 
                                                 width: importProgress?.total 
                                                     ? `${Math.min((importProgress.current / importProgress.total) * 100, 100)}%` 
@@ -307,7 +307,7 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({ onProjectImpor
                                             }}
                                         />
                                     </div>
-                                    <div className="space-y-1 text-xs text-text-secondary">
+                                    <div className="space-y-1 text-xs text-base-content/70">
                                         <p>
                                             ⏳ <strong>Aguarde...</strong> Projetos grandes podem levar vários minutos.
                                         </p>
@@ -323,7 +323,7 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({ onProjectImpor
                         </div>
                     ) : (
                         <div className="text-center py-4">
-                            <p className="text-text-secondary text-sm">
+                            <p className="text-base-content/70 text-sm">
                                 Carregando projetos do Jira...
                             </p>
                         </div>
@@ -341,7 +341,7 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({ onProjectImpor
             >
                 <div className="space-y-5 pb-2">
                     <div>
-                        <label className="block text-sm font-medium text-text-secondary mb-1">
+                        <label className="block text-sm font-medium text-base-content/70 mb-1">
                             URL do Jira *
                         </label>
                         <input
@@ -349,15 +349,15 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({ onProjectImpor
                             value={config.url}
                             onChange={(e) => setConfig({ ...config, url: e.target.value })}
                             placeholder="https://seu-dominio.atlassian.net"
-                            className="w-full px-4 py-2 bg-surface border border-surface-border rounded-lg text-text-primary focus:outline-none focus:border-accent"
+                            className="input input-bordered w-full bg-base-100 border-base-300 text-base-content focus:outline-none focus:border-primary"
                         />
-                        <p className="text-xs text-text-secondary mt-1">
+                        <p className="text-xs text-base-content/70 mt-1">
                             URL completa do seu Jira (sem barra no final)
                         </p>
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-text-secondary mb-1">
+                        <label className="block text-sm font-medium text-base-content/70 mb-1">
                             Email *
                         </label>
                         <input
@@ -365,12 +365,12 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({ onProjectImpor
                             value={config.email}
                             onChange={(e) => setConfig({ ...config, email: e.target.value })}
                             placeholder="seu-email@exemplo.com"
-                            className="w-full px-4 py-2 bg-surface border border-surface-border rounded-lg text-text-primary focus:outline-none focus:border-accent"
+                            className="input input-bordered w-full bg-base-100 border-base-300 text-base-content focus:outline-none focus:border-primary"
                         />
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-text-secondary mb-1">
+                        <label className="block text-sm font-medium text-base-content/70 mb-1">
                             API Token *
                         </label>
                         <input
@@ -378,9 +378,9 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({ onProjectImpor
                             value={config.apiToken}
                             onChange={(e) => setConfig({ ...config, apiToken: e.target.value })}
                             placeholder="Seu API Token do Jira"
-                            className="w-full px-4 py-2 bg-surface border border-surface-border rounded-lg text-text-primary focus:outline-none focus:border-accent"
+                            className="input input-bordered w-full bg-base-100 border-base-300 text-base-content focus:outline-none focus:border-primary"
                         />
-                        <p className="text-xs text-text-secondary mt-1">
+                        <p className="text-xs text-base-content/70 mt-1">
                             <a
                                 href="https://id.atlassian.com/manage-profile/security/api-tokens"
                                 target="_blank"
@@ -392,7 +392,7 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({ onProjectImpor
                         </p>
                     </div>
 
-                    <div className="flex justify-end gap-2 pt-4 border-t border-surface-border mt-6">
+                    <div className="flex justify-end gap-2 pt-4 border-t border-base-300 mt-6">
                         <button
                             onClick={() => setShowConfigModal(false)}
                             className="btn btn-secondary"

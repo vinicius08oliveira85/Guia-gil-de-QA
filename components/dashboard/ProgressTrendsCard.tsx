@@ -62,57 +62,55 @@ export const ProgressTrendsCard: React.FC<ProgressTrendsCardProps> = ({ project 
     }, [tasks, allTestCases, period]);
 
     return (
-        <Card>
-            <div className="p-6">
-                {/* Cards de Métricas */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div className="p-4 rounded-2xl bg-gradient-to-br from-accent/10 to-accent/5 border border-accent/20 hover:border-accent/40 transition-all group">
-                        <div className="flex items-center justify-between mb-2">
-                            <span className="text-2xl">📝</span>
-                            <span className="text-xs text-text-tertiary group-hover:text-text-secondary transition-colors">
-                                Últimos {period}d
-                            </span>
-                        </div>
-                        <p className="text-xs text-text-tertiary mb-1">Tarefas Criadas</p>
-                        <p className="text-2xl font-bold text-text-primary">{trends.totalCreated}</p>
+        <Card className="p-5 border border-base-300 hover:border-primary/30 hover:shadow-md transition-all duration-200">
+            {/* Cards de Métricas */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="p-4 rounded-xl bg-primary/10 border border-primary/20 hover:border-primary/40 transition-all group">
+                    <div className="flex items-center justify-between mb-2">
+                        <span className="text-2xl">📝</span>
+                        <span className="text-xs text-base-content/50 group-hover:text-base-content/70 transition-colors">
+                            Últimos {period}d
+                        </span>
                     </div>
+                    <p className="text-xs text-base-content/70 mb-1">Tarefas Criadas</p>
+                    <p className="text-2xl font-bold text-base-content">{trends.totalCreated}</p>
+                </div>
 
-                    <div className="p-4 rounded-2xl bg-gradient-to-br from-success/10 to-success/5 border border-success/20 hover:border-success/40 transition-all group">
-                        <div className="flex items-center justify-between mb-2">
-                            <span className="text-2xl">✅</span>
-                            <span className="text-xs text-text-tertiary group-hover:text-text-secondary transition-colors">
-                                Últimos {period}d
-                            </span>
-                        </div>
-                        <p className="text-xs text-text-tertiary mb-1">Tarefas Concluídas</p>
-                        <p className="text-2xl font-bold text-text-primary">{trends.totalCompleted}</p>
-                        <p className="text-xs text-success mt-1">
-                            {trends.completionRate}% de conclusão
-                        </p>
+                <div className="p-4 rounded-xl bg-success/10 border border-success/20 hover:border-success/40 transition-all group">
+                    <div className="flex items-center justify-between mb-2">
+                        <span className="text-2xl">✅</span>
+                        <span className="text-xs text-base-content/50 group-hover:text-base-content/70 transition-colors">
+                            Últimos {period}d
+                        </span>
                     </div>
+                    <p className="text-xs text-base-content/70 mb-1">Tarefas Concluídas</p>
+                    <p className="text-2xl font-bold text-base-content">{trends.totalCompleted}</p>
+                    <p className="text-xs text-success mt-1">
+                        {trends.completionRate}% de conclusão
+                    </p>
+                </div>
 
-                    <div className="p-4 rounded-2xl bg-gradient-to-br from-purple-500/10 to-purple-500/5 border border-purple-500/20 hover:border-purple-500/40 transition-all group">
-                        <div className="flex items-center justify-between mb-2">
-                            <span className="text-2xl">⚡</span>
-                            <span className="text-xs text-text-tertiary group-hover:text-text-secondary transition-colors">
-                                Média diária
-                            </span>
-                        </div>
-                        <p className="text-xs text-text-tertiary mb-1">Velocidade</p>
-                        <p className="text-2xl font-bold text-text-primary">{trends.averageVelocity}</p>
-                        <p className="text-xs text-text-tertiary mt-1">tarefas/dia</p>
+                <div className="p-4 rounded-xl bg-info/10 border border-info/20 hover:border-info/40 transition-all group">
+                    <div className="flex items-center justify-between mb-2">
+                        <span className="text-2xl">⚡</span>
+                        <span className="text-xs text-base-content/50 group-hover:text-base-content/70 transition-colors">
+                            Média diária
+                        </span>
                     </div>
+                    <p className="text-xs text-base-content/70 mb-1">Velocidade</p>
+                    <p className="text-2xl font-bold text-base-content">{trends.averageVelocity}</p>
+                    <p className="text-xs text-base-content/60 mt-1">tarefas/dia</p>
+                </div>
 
-                    <div className="p-4 rounded-2xl bg-gradient-to-br from-blue-500/10 to-blue-500/5 border border-blue-500/20 hover:border-blue-500/40 transition-all group">
-                        <div className="flex items-center justify-between mb-2">
-                            <span className="text-2xl">🧪</span>
-                            <span className="text-xs text-text-tertiary group-hover:text-text-secondary transition-colors">
-                                Total
-                            </span>
-                        </div>
-                        <p className="text-xs text-text-tertiary mb-1">Testes Executados</p>
-                        <p className="text-2xl font-bold text-text-primary">{trends.testsExecuted}</p>
+                <div className="p-4 rounded-xl bg-accent/10 border border-accent/20 hover:border-accent/40 transition-all group">
+                    <div className="flex items-center justify-between mb-2">
+                        <span className="text-2xl">🧪</span>
+                        <span className="text-xs text-base-content/50 group-hover:text-base-content/70 transition-colors">
+                            Total
+                        </span>
                     </div>
+                    <p className="text-xs text-base-content/70 mb-1">Testes Executados</p>
+                    <p className="text-2xl font-bold text-base-content">{trends.testsExecuted}</p>
                 </div>
             </div>
         </Card>

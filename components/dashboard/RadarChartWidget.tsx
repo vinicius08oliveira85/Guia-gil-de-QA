@@ -16,8 +16,8 @@ export const RadarChartWidget: React.FC<RadarChartWidgetProps> = ({ title, data,
     if (!data || data.length === 0) {
         return (
             <Card className={`!p-4 sm:!p-6 ${className}`}>
-                <h4 className="heading-card text-text-primary mb-2">{title}</h4>
-                <div className="flex h-48 items-center justify-center rounded-2xl border border-dashed border-surface-border text-text-secondary/70">
+                <h4 className="text-lg font-semibold text-base-content mb-2">{title}</h4>
+                <div className="flex h-48 items-center justify-center rounded-2xl border border-dashed border-base-300 text-base-content/60">
                     Nenhum módulo (Epic) encontrado.
                 </div>
             </Card>
@@ -39,8 +39,8 @@ export const RadarChartWidget: React.FC<RadarChartWidgetProps> = ({ title, data,
     return (
         <Card className={`!p-4 sm:!p-6 ${className}`}>
             <div className="flex items-center justify-between gap-4">
-                <h4 className="heading-card text-text-primary">{title}</h4>
-                <span className="eyebrow text-text-secondary/80">Qualidade por Epic</span>
+                <h4 className="text-lg font-semibold text-base-content">{title}</h4>
+                <span className="text-xs text-base-content/70">Qualidade por Epic</span>
             </div>
             <div className="mt-4 flex justify-center">
                 <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>

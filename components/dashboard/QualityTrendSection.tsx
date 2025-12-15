@@ -74,7 +74,7 @@ export const QualityTrendSection: React.FC<QualityTrendSectionProps> = ({ projec
                     />
                 ) : (
                     <Card className="!p-4 sm:!p-6">
-                        <h4 className="heading-card text-text-primary mb-2">Top Módulos Defeituosos</h4>
+                        <h4 className="text-lg font-semibold text-base-content mb-2">Top Módulos Defeituosos</h4>
                         <div className="flex h-48 items-center justify-center rounded-2xl border border-dashed border-base-300 text-base-content/60">
                             Nenhum módulo com bugs abertos encontrado.
                         </div>
@@ -85,7 +85,7 @@ export const QualityTrendSection: React.FC<QualityTrendSectionProps> = ({ projec
             {/* Resumo dos Módulos */}
             {metrics.topDefectiveModules.length > 0 && (
                 <Card className="!p-4 sm:!p-6">
-                    <h4 className="heading-card text-text-primary mb-4">Detalhes dos Módulos</h4>
+                    <h4 className="text-lg font-semibold text-base-content mb-4">Detalhes dos Módulos</h4>
                     <div className="space-y-3">
                         {metrics.topDefectiveModules.slice(0, 5).map((module, index) => (
                             <div
@@ -97,15 +97,15 @@ export const QualityTrendSection: React.FC<QualityTrendSectionProps> = ({ projec
                                         {index + 1}
                                     </span>
                                     <div>
-                                        <p className="font-semibold text-text-primary">{module.module}</p>
-                                        <p className="text-xs text-text-secondary">
+                                        <p className="font-semibold text-base-content">{module.module}</p>
+                                        <p className="text-xs text-base-content/70">
                                             {module.openBugs} bugs abertos • {module.totalTasks} tarefas
                                         </p>
                                     </div>
                                 </div>
                                 <div className="text-right">
                                     <p className="text-lg font-bold text-rose-400">{module.defectDensity}%</p>
-                                    <p className="text-xs text-text-secondary">Densidade</p>
+                                    <p className="text-xs text-base-content/70">Densidade</p>
                                 </div>
                             </div>
                         ))}

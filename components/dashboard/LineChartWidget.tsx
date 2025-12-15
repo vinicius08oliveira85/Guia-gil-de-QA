@@ -22,8 +22,8 @@ export const LineChartWidget: React.FC<LineChartWidgetProps> = ({ title, data, s
     if (data.length < 2) {
         return (
             <Card className={`!p-4 sm:!p-6 ${className}`}>
-                <h4 className="heading-card text-text-primary mb-2">{title}</h4>
-                <div className="flex h-48 items-center justify-center rounded-2xl border border-dashed border-surface-border text-text-secondary/70">
+                <h4 className="text-lg font-semibold text-base-content mb-2">{title}</h4>
+                <div className="flex h-48 items-center justify-center rounded-2xl border border-dashed border-base-300 text-base-content/60">
                     Dados insuficientes para exibir o gráfico.
                 </div>
             </Card>
@@ -51,12 +51,12 @@ export const LineChartWidget: React.FC<LineChartWidgetProps> = ({ title, data, s
     return (
         <Card className={`!p-4 sm:!p-6 ${className}`}>
             <div className="flex items-center justify-between gap-4">
-                <h4 className="heading-card text-text-primary">{title}</h4>
-                <span className="eyebrow text-text-secondary/80">
+                <h4 className="text-lg font-semibold text-base-content">{title}</h4>
+                <span className="text-xs text-base-content/70">
                     {formatDate(minDate)} — {formatDate(maxDate)}
                 </span>
             </div>
-            <div className="mt-4 h-48 rounded-2xl border border-surface-border/60 bg-gradient-to-b from-white/5 to-transparent p-3">
+            <div className="mt-4 h-48 rounded-2xl border border-base-300 bg-base-200/50 p-3">
                 <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
                     <defs>
                         <linearGradient id="chartGrid" x1="0" x2="0" y1="0" y2="1">
@@ -80,7 +80,7 @@ export const LineChartWidget: React.FC<LineChartWidgetProps> = ({ title, data, s
                     ))}
                 </svg>
             </div>
-            <div className="mt-4 flex flex-wrap items-center gap-3 text-xs uppercase tracking-[0.2em] text-text-secondary">
+            <div className="mt-4 flex flex-wrap items-center gap-3 text-xs uppercase tracking-[0.2em] text-base-content/70">
                 {series.map((item) => (
                     <span key={item.name} className="inline-flex items-center gap-2">
                         <span className={`h-2 w-6 rounded-full ${item.color.replace('stroke', 'bg')}`} />

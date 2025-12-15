@@ -99,7 +99,7 @@ export const EfficiencySection: React.FC<EfficiencySectionProps> = ({ project })
             {metrics.escapedDefects.count > 0 && (
                 <Card className="!p-4 sm:!p-6">
                     <div className="flex items-center justify-between mb-4">
-                        <h4 className="heading-card text-text-primary">
+                        <h4 className="text-lg font-semibold text-base-content">
                             Defeitos Vazados para Produção ({metrics.escapedDefects.count})
                         </h4>
                         <button
@@ -120,7 +120,7 @@ export const EfficiencySection: React.FC<EfficiencySectionProps> = ({ project })
                                     <div className="flex items-start justify-between gap-3">
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-2 mb-1">
-                                                <span className="text-sm font-mono text-text-secondary">{bug.id}</span>
+                                                <span className="text-sm font-mono text-base-content/70">{bug.id}</span>
                                                 <Badge variant="error" size="sm">
                                                     {bug.severity || 'N/A'}
                                                 </Badge>
@@ -130,9 +130,9 @@ export const EfficiencySection: React.FC<EfficiencySectionProps> = ({ project })
                                                     </Badge>
                                                 )}
                                             </div>
-                                            <p className="font-semibold text-text-primary">{bug.title}</p>
+                                            <p className="font-semibold text-base-content">{bug.title}</p>
                                             {bug.description && (
-                                                <p className="text-sm text-text-secondary mt-1 line-clamp-2">
+                                                <p className="text-sm text-base-content/70 mt-1 line-clamp-2">
                                                     {bug.description}
                                                 </p>
                                             )}

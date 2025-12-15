@@ -42,11 +42,16 @@ export const GlossaryView: React.FC = () => {
 
     return (
         <div className="container mx-auto p-4 sm:p-6 md:p-8">
-            <div className="mb-8">
-                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-base-content mb-4">📚 Glossário de Termos de QA</h1>
-                <p className="text-base-content/70 mb-6 max-w-2xl">
-                    Explore mais de <strong className="text-primary">{glossaryTerms.length} termos</strong> relacionados a Quality Assurance, Testes de Software, Metodologias Ágeis e muito mais.
-                </p>
+            {/* Header v0-like */}
+            <div className="flex flex-col gap-4 mb-8">
+                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+                    <div className="flex-shrink-0">
+                        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2">Glossário de Termos de QA</h1>
+                        <p className="text-base-content/70 text-sm max-w-2xl">
+                            Explore mais de <strong className="text-primary">{glossaryTerms.length} termos</strong> relacionados a Quality Assurance, Testes de Software, Metodologias Ágeis e muito mais.
+                        </p>
+                    </div>
+                </div>
 
                 {/* Busca */}
                 <div className="mb-6">

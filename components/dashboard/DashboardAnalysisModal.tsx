@@ -45,7 +45,7 @@ export const DashboardAnalysisModal: React.FC<DashboardAnalysisModalProps> = ({
                 {isLoading ? (
                     <div className="flex flex-col items-center justify-center py-12">
                         <Spinner />
-                        <p className="mt-4 text-text-secondary">
+                        <p className="mt-4 text-base-content/70">
                             Gerando análise com IA...
                         </p>
                     </div>
@@ -55,8 +55,8 @@ export const DashboardAnalysisModal: React.FC<DashboardAnalysisModalProps> = ({
                             analysis={analysis as DashboardOverviewAnalysis}
                         />
                         
-                        <div className="flex items-center justify-between pt-4 border-t border-surface-border">
-                            <p className="text-xs text-text-tertiary">
+                        <div className="flex items-center justify-between pt-4 border-t border-base-300">
+                            <p className="text-xs text-base-content/60">
                                 {generatedAt && `Gerada em: ${generatedAt}`}
                             </p>
                             {onRegenerate && (
@@ -70,7 +70,7 @@ export const DashboardAnalysisModal: React.FC<DashboardAnalysisModalProps> = ({
                         </div>
                     </>
                 ) : (
-                    <div className="text-center py-12 text-text-secondary">
+                    <div className="text-center py-12 text-base-content/70">
                         <p>Nenhuma análise disponível.</p>
                         {onRegenerate && (
                             <button
@@ -92,31 +92,31 @@ const OverviewAnalysisContent: React.FC<{ analysis: DashboardOverviewAnalysis }>
         <div className="space-y-6">
             {/* Resumo Executivo */}
             <section>
-                <h3 className="text-lg font-semibold text-text-primary mb-3">Resumo Executivo</h3>
-                <p className="text-sm text-text-primary leading-relaxed whitespace-pre-wrap">
+                <h3 className="text-lg font-semibold text-base-content mb-3">Resumo Executivo</h3>
+                <p className="text-sm text-base-content leading-relaxed whitespace-pre-wrap">
                     {analysis.summary}
                 </p>
             </section>
 
             {/* Fase Atual */}
             <section>
-                <h3 className="text-lg font-semibold text-text-primary mb-3">Análise da Fase Atual</h3>
-                <p className="text-sm text-text-primary leading-relaxed whitespace-pre-wrap">
+                <h3 className="text-lg font-semibold text-base-content mb-3">Análise da Fase Atual</h3>
+                <p className="text-sm text-base-content leading-relaxed whitespace-pre-wrap">
                     {analysis.currentPhase}
                 </p>
             </section>
 
             {/* Métricas */}
             <section>
-                <h3 className="text-lg font-semibold text-text-primary mb-3">Análise de Métricas</h3>
-                <p className="text-sm text-text-primary leading-relaxed mb-4 whitespace-pre-wrap">
+                <h3 className="text-lg font-semibold text-base-content mb-3">Análise de Métricas</h3>
+                <p className="text-sm text-base-content leading-relaxed mb-4 whitespace-pre-wrap">
                     {analysis.metrics.analysis}
                 </p>
                 
                 {analysis.metrics.strengths.length > 0 && (
                     <div className="mb-4">
                         <h4 className="text-sm font-semibold text-success mb-2">Pontos Fortes</h4>
-                        <ul className="list-disc list-inside space-y-1 text-sm text-text-primary">
+                        <ul className="list-disc list-inside space-y-1 text-sm text-base-content">
                             {analysis.metrics.strengths.map((strength, idx) => (
                                 <li key={idx}>{strength}</li>
                             ))}
@@ -127,7 +127,7 @@ const OverviewAnalysisContent: React.FC<{ analysis: DashboardOverviewAnalysis }>
                 {analysis.metrics.weaknesses.length > 0 && (
                     <div>
                         <h4 className="text-sm font-semibold text-warning-dark mb-2">Pontos Fracos</h4>
-                        <ul className="list-disc list-inside space-y-1 text-sm text-text-primary">
+                        <ul className="list-disc list-inside space-y-1 text-sm text-base-content">
                             {analysis.metrics.weaknesses.map((weakness, idx) => (
                                 <li key={idx}>{weakness}</li>
                             ))}
@@ -139,8 +139,8 @@ const OverviewAnalysisContent: React.FC<{ analysis: DashboardOverviewAnalysis }>
             {/* Riscos */}
             {analysis.risks.length > 0 && (
                 <section>
-                    <h3 className="text-lg font-semibold text-text-primary mb-3">Riscos Identificados</h3>
-                    <ul className="list-disc list-inside space-y-2 text-sm text-text-primary">
+                    <h3 className="text-lg font-semibold text-base-content mb-3">Riscos Identificados</h3>
+                    <ul className="list-disc list-inside space-y-2 text-sm text-base-content">
                         {analysis.risks.map((risk, idx) => (
                             <li key={idx}>{risk}</li>
                         ))}
@@ -151,8 +151,8 @@ const OverviewAnalysisContent: React.FC<{ analysis: DashboardOverviewAnalysis }>
             {/* Recomendações */}
             {analysis.recommendations.length > 0 && (
                 <section>
-                    <h3 className="text-lg font-semibold text-text-primary mb-3">Recomendações</h3>
-                    <ul className="list-disc list-inside space-y-2 text-sm text-text-primary">
+                    <h3 className="text-lg font-semibold text-base-content mb-3">Recomendações</h3>
+                    <ul className="list-disc list-inside space-y-2 text-sm text-base-content">
                         {analysis.recommendations.map((recommendation, idx) => (
                             <li key={idx}>{recommendation}</li>
                         ))}

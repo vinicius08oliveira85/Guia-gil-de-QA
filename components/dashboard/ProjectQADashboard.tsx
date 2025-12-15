@@ -258,7 +258,7 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
 
                         <div className="space-y-5 rounded-[var(--rounded-box)] border border-base-300 bg-base-100 p-5 shadow-sm">
                             <div className="flex items-center justify-between gap-3">
-                                <h3 className="heading-card text-text-primary">Progresso geral</h3>
+                                <h3 className="text-lg font-semibold text-base-content">Progresso geral</h3>
                                 <Badge
                                     variant={
                                         metrics.testPassRate >= 80 ? 'success' : metrics.testPassRate >= 60 ? 'warning' : 'error'
@@ -346,7 +346,7 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
                     <aside className="space-y-4">
                         <div className="space-y-4 rounded-[var(--rounded-box)] border border-base-300 bg-base-100 p-5 shadow-sm">
                             <div className="flex items-center justify-between">
-                                <h3 className="heading-card text-text-primary">Fluxo das tarefas de QA</h3>
+                                <h3 className="text-lg font-semibold text-base-content">Fluxo das tarefas de QA</h3>
                                 <Badge variant="info" size="sm">
                                     {periodLabels[selectedPeriod]}
                                 </Badge>
@@ -354,9 +354,9 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
                             <div className="space-y-4">
                                 {statusBuckets.map((bucket) => (
                                     <div key={bucket.status}>
-                                        <div className="flex items-center justify-between text-sm text-text-secondary">
+                                        <div className="flex items-center justify-between text-sm text-base-content/70">
                                             <span>{bucket.status}</span>
-                                            <span className="font-semibold text-text-primary">{bucket.count}</span>
+                                            <span className="font-semibold text-base-content">{bucket.count}</span>
                                         </div>
                                         <div className="mt-1 h-2 rounded-full bg-base-300">
                                             <div
@@ -376,7 +376,7 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
 
                         <div className="space-y-4 rounded-[var(--rounded-box)] border border-base-300 bg-base-100 p-5 shadow-sm">
                             <div className="flex items-center justify-between">
-                                <h3 className="heading-card text-text-primary">Alertas imediatos</h3>
+                                <h3 className="text-lg font-semibold text-base-content">Alertas imediatos</h3>
                                 <CheckCircleIcon className="h-5 w-5 text-emerald-700 dark:text-emerald-400" />
                             </div>
                             <div className="space-y-3" role="list" aria-label="Alertas de qualidade">
@@ -387,8 +387,8 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
                                         role="listitem"
                                     >
                                         <div>
-                                            <p className="text-sm font-semibold text-text-primary">{alert.label}</p>
-                                            <p className="text-xs text-text-secondary">{alert.hint}</p>
+                                            <p className="text-sm font-semibold text-base-content">{alert.label}</p>
+                                            <p className="text-xs text-base-content/70">{alert.hint}</p>
                                         </div>
                                         <Badge variant={alert.variant as 'default' | 'success' | 'warning' | 'error' | 'info'}>
                                             {alert.value}
@@ -400,13 +400,13 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
 
                         <div className="space-y-4 rounded-[var(--rounded-box)] border border-base-300 bg-base-100 p-5 shadow-sm">
                             <div className="flex items-center justify-between">
-                                <h3 className="heading-card text-text-primary">Próximas ações de QA</h3>
+                                <h3 className="text-lg font-semibold text-base-content">Próximas ações de QA</h3>
                                 <Badge variant="default" size="sm">
                                     {highlightTasks.length} itens
                                 </Badge>
                             </div>
                             {highlightTasks.length === 0 ? (
-                                <p className="text-sm text-text-secondary">Sem pendências críticas neste período.</p>
+                                <p className="text-sm text-base-content/70">Sem pendências críticas neste período.</p>
                             ) : (
                                 <div className="space-y-3" role="list" aria-live="polite">
                                     {highlightTasks.map((task) => (
@@ -415,7 +415,7 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
                                             className="rounded-2xl border border-base-300 bg-base-100 px-3 py-2"
                                             role="listitem"
                                         >
-                                            <div className="flex items-center justify-between text-xs uppercase tracking-[0.2em] text-text-secondary">
+                                            <div className="flex items-center justify-between text-xs uppercase tracking-[0.2em] text-base-content/70">
                                                 <span className="truncate">{task.id}</span>
                                                 <Badge
                                                     variant={
@@ -430,8 +430,8 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
                                                     {task.status}
                                                 </Badge>
                                             </div>
-                                            <p className="mt-1 text-sm font-semibold text-text-primary line-clamp-2">{task.title}</p>
-                                            <p className="text-xs text-text-secondary">
+                                            <p className="mt-1 text-sm font-semibold text-base-content line-clamp-2">{task.title}</p>
+                                            <p className="text-xs text-base-content/70">
                                                 {task.priority || 'Prioridade indefinida'} •{' '}
                                                 {task.testCases?.length ? `${task.testCases.length} casos` : 'Sem testes'}
                                             </p>

@@ -153,39 +153,63 @@ export const AnalysisView: React.FC<{
 
     return (
         <div className="space-y-6 pb-6">
-            {/* Header com ações */}
-            <div className="p-5 bg-base-100 border border-base-300 rounded-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div className="flex-1">
-                    <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2">
-                        Análise IA do Projeto
-                    </h2>
-                    <p className="text-sm text-base-content/70 leading-relaxed max-w-2xl">
-                        Análises estratégicas e consolidadas geradas por IA para seu projeto
-                    </p>
-                </div>
-                <div className="flex flex-wrap gap-2 w-full sm:w-auto">
-                    <button 
-                        type="button"
-                        onClick={handleAnalyzeAndUpdateDashboard} 
-                        disabled={isAnalyzing} 
-                        className="btn btn-outline btn-sm rounded-full disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                        aria-label="Analisar projeto completo"
-                    >
-                        {isAnalyzing ? <Spinner small /> : '🔄'}
-                        <span>Analisar Projeto</span>
-                    </button>
-                    {(!project.generalIAAnalysis || needsGeneralReanalysis()) && (
-                        <button
+            {/* Header v0-like */}
+            <div className="flex flex-col gap-4 mb-6">
+                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+                    <div className="flex-shrink-0">
+                        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2">
+                            Análise IA do Projeto
+                        </h2>
+                        <p className="text-base-content/70 text-sm max-w-2xl">
+                            Análises estratégicas e consolidadas geradas por IA para seu projeto
+                        </p>
+                    </div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                        <button 
                             type="button"
-                            onClick={handleRefreshGeneralAnalysis}
-                            disabled={isAnalyzingGeneral}
-                            className="btn btn-primary btn-sm rounded-full disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                            aria-label="Executar análise geral IA"
+                            onClick={handleAnalyzeAndUpdateDashboard} 
+                            disabled={isAnalyzing} 
+                            className="btn btn-outline btn-sm rounded-full disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+                            aria-label="Analisar projeto completo"
                         >
-                            {isAnalyzingGeneral ? <Spinner small /> : '🧠'}
-                            <span>Análise Geral IA</span>
+                            {isAnalyzing ? (
+                                <>
+                                    <span className="loading loading-spinner loading-xs"></span>
+                                    <span>Analisando...</span>
+                                </>
+                            ) : (
+                                <>
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                    </svg>
+                                    <span>Analisar Projeto</span>
+                                </>
+                            )}
                         </button>
-                    )}
+                        {(!project.generalIAAnalysis || needsGeneralReanalysis()) && (
+                            <button
+                                type="button"
+                                onClick={handleRefreshGeneralAnalysis}
+                                disabled={isAnalyzingGeneral}
+                                className="btn btn-primary btn-sm rounded-full disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 font-semibold"
+                                aria-label="Executar análise geral IA"
+                            >
+                                {isAnalyzingGeneral ? (
+                                    <>
+                                        <span className="loading loading-spinner loading-xs"></span>
+                                        <span>Analisando...</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                                        </svg>
+                                        <span>Análise Geral IA</span>
+                                    </>
+                                )}
+                            </button>
+                        )}
+                    </div>
                 </div>
             </div>
 

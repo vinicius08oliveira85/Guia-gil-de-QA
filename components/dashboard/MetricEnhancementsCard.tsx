@@ -44,50 +44,50 @@ export const MetricEnhancementsCard: React.FC<MetricEnhancementsCardProps> = Rea
   };
 
   return (
-    <Card className="p-5 space-y-4" aria-label="Melhorias de métricas">
+    <Card className="p-5 space-y-4 border border-base-300 hover:border-primary/30 hover:shadow-md transition-all duration-200" aria-label="Melhorias de métricas">
       <h3 className="text-lg font-semibold text-base-content">Melhorias de Métricas</h3>
 
       <div className="space-y-4">
         {/* Taxa de Sucesso */}
-        <div className="p-4 bg-base-200 rounded-xl border border-base-300">
-          <div className="flex items-center justify-between mb-2">
+        <div className="p-4 bg-base-100 rounded-xl border border-base-300 hover:border-primary/20 transition-all">
+          <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
             <h4 className="font-semibold text-base-content">Taxa de Sucesso dos Testes</h4>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <span className="text-sm text-base-content/70">Atual: {metricEnhancements.testPassRate.current}%</span>
-              <span className={`text-sm font-semibold ${getTrendColor(metricEnhancements.testPassRate.current, metricEnhancements.testPassRate.predicted)}`}>
+              <span className={`badge badge-sm ${getTrendColor(metricEnhancements.testPassRate.current, metricEnhancements.testPassRate.predicted) === 'text-success' ? 'badge-success' : getTrendColor(metricEnhancements.testPassRate.current, metricEnhancements.testPassRate.predicted) === 'text-error' ? 'badge-error' : 'badge-warning'}`}>
                 {getTrendIcon(metricEnhancements.testPassRate.current, metricEnhancements.testPassRate.predicted)} {metricEnhancements.testPassRate.predicted}%
               </span>
             </div>
           </div>
-          <p className="text-sm text-base-content/70">{metricEnhancements.testPassRate.suggestion}</p>
+          <p className="text-sm text-base-content/70 leading-relaxed">{metricEnhancements.testPassRate.suggestion}</p>
         </div>
 
         {/* Resolução de Bugs */}
-        <div className="p-4 bg-base-200 rounded-xl border border-base-300">
-          <div className="flex items-center justify-between mb-2">
+        <div className="p-4 bg-base-100 rounded-xl border border-base-300 hover:border-primary/20 transition-all">
+          <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
             <h4 className="font-semibold text-base-content">Resolução de Bugs</h4>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <span className="text-sm text-base-content/70">Atual: {metricEnhancements.bugResolution.current}</span>
-              <span className={`text-sm font-semibold ${getTrendColor(metricEnhancements.bugResolution.current, metricEnhancements.bugResolution.predicted)}`}>
+              <span className={`badge badge-sm ${getTrendColor(metricEnhancements.bugResolution.current, metricEnhancements.bugResolution.predicted) === 'text-success' ? 'badge-success' : getTrendColor(metricEnhancements.bugResolution.current, metricEnhancements.bugResolution.predicted) === 'text-error' ? 'badge-error' : 'badge-warning'}`}>
                 {getTrendIcon(metricEnhancements.bugResolution.current, metricEnhancements.bugResolution.predicted)} {metricEnhancements.bugResolution.predicted}
               </span>
             </div>
           </div>
-          <p className="text-sm text-base-content/70">{metricEnhancements.bugResolution.suggestion}</p>
+          <p className="text-sm text-base-content/70 leading-relaxed">{metricEnhancements.bugResolution.suggestion}</p>
         </div>
 
         {/* Cobertura */}
-        <div className="p-4 bg-base-200 rounded-xl border border-base-300">
-          <div className="flex items-center justify-between mb-2">
+        <div className="p-4 bg-base-100 rounded-xl border border-base-300 hover:border-primary/20 transition-all">
+          <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
             <h4 className="font-semibold text-base-content">Cobertura de Testes</h4>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <span className="text-sm text-base-content/70">Atual: {metricEnhancements.coverage.current}%</span>
-              <span className="text-sm font-semibold text-primary">
+              <span className="badge badge-primary badge-sm">
                 → Meta: {metricEnhancements.coverage.target}%
               </span>
             </div>
           </div>
-          <p className="text-sm text-base-content/70">{metricEnhancements.coverage.suggestion}</p>
+          <p className="text-sm text-base-content/70 leading-relaxed">{metricEnhancements.coverage.suggestion}</p>
         </div>
       </div>
     </Card>

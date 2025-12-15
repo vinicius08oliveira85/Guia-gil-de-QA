@@ -120,17 +120,37 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
 
   return (
     <div className="space-y-6" role="main" aria-label="Dashboard de QA">
-      {/* Botão único de análise completa */}
-      <div className="flex items-center justify-end">
-        <button
-          type="button"
-          onClick={generateCompleteAnalysis}
-          disabled={isGenerating}
-          className="btn btn-primary btn-sm rounded-full disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap min-w-[180px]"
-          aria-label="Gerar análise completa do dashboard"
-        >
-          {isGenerating ? 'Gerando...' : '🔄 Gerar Análise Completa'}
-        </button>
+      {/* Header v0-like */}
+      <div className="flex flex-col gap-4 mb-6">
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+          <div className="flex-shrink-0">
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2">Dashboard de QA</h2>
+            <p className="text-base-content/70 text-sm max-w-2xl">Visão geral de testes, bugs, cobertura e análises do projeto.</p>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              type="button"
+              onClick={generateCompleteAnalysis}
+              disabled={isGenerating}
+              className="btn btn-primary btn-sm rounded-full disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 font-semibold"
+              aria-label="Gerar análise completa do dashboard"
+            >
+              {isGenerating ? (
+                <>
+                  <span className="loading loading-spinner loading-xs"></span>
+                  <span>Gerando...</span>
+                </>
+              ) : (
+                <>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  <span>Gerar Análise Completa</span>
+                </>
+              )}
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Alertas */}

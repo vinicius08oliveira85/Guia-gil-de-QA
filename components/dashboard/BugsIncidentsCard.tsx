@@ -22,53 +22,65 @@ export const BugsIncidentsCard: React.FC<BugsIncidentsCardProps> = React.memo(({
 }) => {
   const { syncBugs, isLoading, hasJiraConfig } = useJiraBugs(project);
 
-  const severityConfig: Array<{ severity: BugSeverity; label: string; color: string; bgColor: string }> = [
-    { severity: 'Crítico', label: 'Crítico', color: 'text-red-700', bgColor: 'bg-red-100' },
-    { severity: 'Alto', label: 'Alto', color: 'text-orange-700', bgColor: 'bg-orange-100' },
-    { severity: 'Médio', label: 'Médio', color: 'text-yellow-700', bgColor: 'bg-yellow-100' },
-    { severity: 'Baixo', label: 'Baixo', color: 'text-blue-700', bgColor: 'bg-blue-100' },
+  const severityConfigDaisy: Array<{ severity: BugSeverity; label: string; badgeClass: string }> = [
+    { severity: 'Crítico', label: 'Crítico', badgeClass: 'badge-error' },
+    { severity: 'Alto', label: 'Alto', badgeClass: 'badge-warning' },
+    { severity: 'Médio', label: 'Médio', badgeClass: 'badge-info' },
+    { severity: 'Baixo', label: 'Baixo', badgeClass: 'badge-neutral' },
   ];
 
   return (
-    <Card className="space-y-4" aria-label="Bugs e incidentes">
+    <Card className="p-5 space-y-4 border border-base-300 hover:border-primary/30 hover:shadow-md transition-all duration-200" aria-label="Bugs e incidentes">
       <div className="flex items-center justify-between gap-4 flex-wrap">
-        <h3 className="text-lg font-semibold text-text-primary flex-shrink-0">Bugs e Incidentes</h3>
+        <h3 className="text-lg font-semibold text-base-content flex-shrink-0">Bugs e Incidentes</h3>
         {hasJiraConfig && (
           <button
             onClick={syncBugs}
             disabled={isLoading}
-            className="text-sm text-accent hover:text-accent-light disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap flex-shrink-0 min-w-[140px]"
+            className="btn btn-outline btn-sm rounded-full disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
             aria-label="Sincronizar bugs do Jira"
           >
-            {isLoading ? 'Sincronizando...' : '🔄 Sincronizar Jira'}
+            {isLoading ? (
+              <>
+                <span className="loading loading-spinner loading-xs"></span>
+                <span>Sincronizando...</span>
+              </>
+            ) : (
+              <>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                <span>Sincronizar Jira</span>
+              </>
+            )}
           </button>
         )}
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {severityConfig.map(({ severity, label, color, bgColor }) => (
+        {severityConfigDaisy.map(({ severity, label, badgeClass }) => (
           <div
             key={severity}
-            className={`${bgColor} rounded-lg p-3 border-2 border-transparent`}
+            className="p-4 bg-base-200 rounded-xl border border-base-300 hover:border-primary/30 transition-all"
             aria-label={`${label}: ${bugsBySeverity[severity]} bugs`}
           >
-            <p className={`text-xs font-medium ${color} mb-1`}>{label}</p>
-            <p className={`text-xl font-bold ${color}`}>
+            <div className={`badge ${badgeClass} badge-sm mb-2`}>{label}</div>
+            <p className="text-2xl font-bold text-base-content">
               {bugsBySeverity[severity]}
             </p>
           </div>
         ))}
       </div>
 
-      <div className="flex items-center justify-between pt-2 border-t border-surface-border">
+      <div className="flex items-center justify-between pt-4 border-t border-base-300">
         <div>
-          <p className="text-sm text-text-secondary">Total de bugs abertos</p>
-          <p className="text-2xl font-bold text-text-primary">{totalBugs}</p>
+          <p className="text-sm text-base-content/70">Total de bugs abertos</p>
+          <p className="text-2xl font-bold text-base-content">{totalBugs}</p>
         </div>
         {recentlyResolved > 0 && (
           <div className="text-right">
-            <p className="text-xs text-text-secondary">Resolvidos (7 dias)</p>
-            <p className="text-lg font-semibold text-emerald-600">{recentlyResolved}</p>
+            <p className="text-xs text-base-content/70">Resolvidos (7 dias)</p>
+            <p className="text-lg font-semibold text-success">{recentlyResolved}</p>
           </div>
         )}
       </div>

@@ -25,48 +25,49 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClose, onProjectIm
 
     return (
         <div className="min-h-screen flex flex-col">
-            {/* Header */}
-            <div className="sticky top-0 z-20 border-b border-base-300 bg-base-100/80 backdrop-blur">
-                <div className="container mx-auto px-4 sm:px-6 py-4">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                            <button
-                                onClick={onClose}
-                                className="btn btn-ghost btn-sm"
-                                title="Voltar"
-                                aria-label="Voltar"
-                                type="button"
-                            >
-                                <span className="text-xl">←</span>
-                            </button>
-                            <div>
-                                <h1 className="text-2xl font-bold text-base-content">Configurações</h1>
-                                <p className="text-sm text-base-content/70 mt-1">
-                                    Gerencie suas integrações e preferências
-                                </p>
+            {/* Header v0-like */}
+            <div className="sticky top-0 z-20 border-b border-base-300 bg-base-100/95 backdrop-blur-sm">
+                <div className="container mx-auto px-4 sm:px-6 py-6">
+                    <div className="flex flex-col gap-4">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                                <button
+                                    onClick={onClose}
+                                    className="btn btn-ghost btn-sm rounded-full"
+                                    title="Voltar"
+                                    aria-label="Voltar"
+                                    type="button"
+                                >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                                    </svg>
+                                </button>
+                                <div>
+                                    <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-base-content">Configurações</h1>
+                                    <p className="text-sm text-base-content/70 mt-1 max-w-2xl">
+                                        Gerencie suas integrações, preferências e configurações do projeto
+                                    </p>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Tab Navigation */}
-            <div className="border-b border-base-300 bg-base-100/60">
-                <div className="container mx-auto px-4 sm:px-6 py-3">
-                    <div className="tabs tabs-boxed overflow-x-auto w-full" role="tablist" aria-label="Abas de configurações">
-                        {tabs.map((tab) => (
-                            <button
-                                key={tab.id}
-                                onClick={() => setActiveTab(tab.id)}
-                                className={`tab whitespace-nowrap ${activeTab === tab.id ? 'tab-active' : ''}`}
-                                role="tab"
-                                aria-selected={activeTab === tab.id}
-                                type="button"
-                            >
-                                <span className="mr-2" aria-hidden="true">{tab.icon}</span>
-                                {tab.label}
-                            </button>
-                        ))}
+                        
+                        {/* Tab Navigation */}
+                        <div className="tabs tabs-boxed overflow-x-auto w-full" role="tablist" aria-label="Abas de configurações">
+                            {tabs.map((tab) => (
+                                <button
+                                    key={tab.id}
+                                    onClick={() => setActiveTab(tab.id)}
+                                    className={`tab whitespace-nowrap flex items-center gap-2 ${activeTab === tab.id ? 'tab-active bg-primary text-primary-content' : ''}`}
+                                    role="tab"
+                                    aria-selected={activeTab === tab.id}
+                                    aria-controls={`tab-panel-${tab.id}`}
+                                    type="button"
+                                >
+                                    <span aria-hidden="true">{tab.icon}</span>
+                                    {tab.label}
+                                </button>
+                            ))}
+                        </div>
                     </div>
                 </div>
             </div>

@@ -296,50 +296,79 @@ export const DocumentsView: React.FC<{ project: Project; onUpdateProject: (proje
                 onUpdateProject={onUpdateProject} 
             />
             
-        <Card className="p-5">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                    <div>
+        <Card className="p-5 border border-base-300">
+            {/* Header v0-like */}
+            <div className="flex flex-col gap-4 mb-6">
+                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+                    <div className="flex-shrink-0">
                         <h3 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2">Documentos do Projeto</h3>
-                        <p className="text-base-content/70 text-sm">
-                            {stats.total} documento{stats.total !== 1 ? 's' : ''} • {formatFileSize(stats.totalSize)}
+                        <p className="text-base-content/70 text-sm max-w-2xl">
+                            Gerencie e analise documentos do projeto. {stats.total} documento{stats.total !== 1 ? 's' : ''} • {formatFileSize(stats.totalSize)}
                         </p>
                     </div>
-                    <div className="flex gap-2 flex-wrap">
+                    <div className="flex items-center gap-2 flex-wrap">
                         <button
                             type="button"
                             onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
-                            className="btn btn-outline btn-sm rounded-full"
+                            className="btn btn-outline btn-sm rounded-full flex items-center gap-1.5"
+                            aria-label={`Alternar para visualização em ${viewMode === 'grid' ? 'lista' : 'grade'}`}
                         >
-                            {viewMode === 'grid' ? '📋 Lista' : '🔲 Grade'}
+                            {viewMode === 'grid' ? (
+                                <>
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                                    </svg>
+                                    <span>Lista</span>
+                                </>
+                            ) : (
+                                <>
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                                    </svg>
+                                    <span>Grade</span>
+                                </>
+                            )}
                         </button>
                         {shouldShowSolusButton && (
                             <button
                                 type="button"
                                 onClick={() => setIsSolusSchemaOpen(true)}
-                                className="btn btn-outline btn-sm rounded-full whitespace-nowrap"
+                                className="btn btn-outline btn-sm rounded-full whitespace-nowrap flex items-center gap-1.5"
                                 aria-label="Abrir Esquema da API Solus"
                             >
-                                📚 Esquema API Solus
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                                </svg>
+                                <span>Esquema API</span>
                             </button>
                         )}
+                        <div className="w-px h-5 bg-base-300 flex-shrink-0" />
                         <button
                             type="button"
                             onClick={() => setIsImportModalOpen(true)}
-                            className="btn btn-outline btn-sm rounded-full"
+                            className="btn btn-outline btn-sm rounded-full flex items-center gap-1.5"
+                            aria-label="Importar documentos"
                         >
-                            📥 Importar
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                            </svg>
+                            <span>Importar</span>
                         </button>
-                <label className="btn btn-primary btn-sm rounded-full cursor-pointer">
-                            📤 Carregar Documento
+                        <label className="btn btn-primary btn-sm rounded-full cursor-pointer flex items-center gap-1.5 font-semibold">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                            </svg>
+                            <span>Carregar</span>
                             <input 
                                 type="file" 
                                 accept=".txt,.md,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar,.json,.csv,.xml,.jpg,.jpeg,.png,.gif,.webp,.svg" 
                                 onChange={handleFileUpload} 
                                 className="hidden" 
                             />
-                </label>
-            </div>
+                        </label>
+                    </div>
                 </div>
+            </div>
 
                 {/* Estatísticas */}
                 {stats.total > 0 && (
