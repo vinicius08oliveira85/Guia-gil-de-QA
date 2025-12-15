@@ -27,11 +27,36 @@ export interface GeminiResponse {
  */
 function isQuotaExceededError(error: unknown): boolean {
   const errorMessage = getErrorMessage(error).toLowerCase();
+  const status = extractHttpStatus(error);
+  
+  // Status 429 (Too Many Requests) geralmente indica quota
+  if (status === 429) {
+    return true;
+  }
   
   // Palavras-chave que indicam quota excedida
-  const quotaKeywords = ['quota', 'exceeded', 'limit exceeded', 'quota exceeded'];
+  const quotaKeywords = ['quota', 'exceeded', 'limit exceeded', 'quota exceeded', 'rate limit'];
   
   return quotaKeywords.some(keyword => errorMessage.includes(keyword));
+}
+
+/**
+ * Verifica se um erro indica que a API key é inválida ou sem permissões (deve trocar API key)
+ */
+function isInvalidApiKeyError(error: unknown): boolean {
+  const status = extractHttpStatus(error);
+  
+  // Status 403 (Forbidden) pode indicar API key inválida ou sem permissões
+  if (status === 403) {
+    return true;
+  }
+  
+  const errorMessage = getErrorMessage(error).toLowerCase();
+  
+  // Palavras-chave que indicam API key inválida
+  const invalidKeyKeywords = ['forbidden', 'invalid api key', 'unauthorized', 'permission denied', 'api key not valid'];
+  
+  return invalidKeyKeywords.some(keyword => errorMessage.includes(keyword));
 }
 
 /**
@@ -134,12 +159,21 @@ function extractHttpStatus(error: unknown): number | null {
       return status;
     }
     
-    // Tentar extrair de mensagem de erro
-    const errorMessage = getErrorMessage(error);
-    const statusMatch = errorMessage.match(/\b(50[0-9]|429|503)\b/);
-    if (statusMatch) {
-      return parseInt(statusMatch[1], 10);
+    // Tentar extrair de response.status se disponível
+    if (typeof err.response === 'object' && err.response !== null) {
+      const response = err.response as Record<string, unknown>;
+      const responseStatus = response.status || response.statusCode;
+      if (typeof responseStatus === 'number') {
+        return responseStatus;
+      }
     }
+  }
+  
+  // Tentar extrair de mensagem de erro (incluindo 403, 429, 5xx)
+  const errorMessage = getErrorMessage(error);
+  const statusMatch = errorMessage.match(/\b(40[0-9]|429|50[0-9]|503)\b/);
+  if (statusMatch) {
+    return parseInt(statusMatch[1], 10);
   }
   
   return null;
@@ -237,12 +271,26 @@ export async function callGeminiWithRetry(
             const text = response.text ?? '';
             return { text };
           } catch (error) {
-            // Verificar se é erro de quota
+            const status = extractHttpStatus(error);
+            
+            // Verificar se é erro de quota (429)
             if (isQuotaExceededError(error)) {
               logger.warn(
                 'Erro de quota detectado, marcando API key como esgotada',
                 'callGeminiWithRetry',
-                { error, keyAttempt: keyAttempt + 1 }
+                { error, keyAttempt: keyAttempt + 1, status }
+              );
+              geminiApiKeyManager.markCurrentKeyAsExhausted();
+              // Re-throw para tentar com próxima key
+              throw error;
+            }
+            
+            // Verificar se é erro de API key inválida (403)
+            if (isInvalidApiKeyError(error)) {
+              logger.warn(
+                'Erro de API key inválida detectado (403), marcando como esgotada e tentando próxima key',
+                'callGeminiWithRetry',
+                { error, keyAttempt: keyAttempt + 1, status }
               );
               geminiApiKeyManager.markCurrentKeyAsExhausted();
               // Re-throw para tentar com próxima key
@@ -291,13 +339,15 @@ export async function callGeminiWithRetry(
       );
     } catch (error) {
       lastError = error;
+      const status = extractHttpStatus(error);
       
-      // Se for erro de quota, tentar próxima key
-      if (isQuotaExceededError(error)) {
+      // Se for erro de quota ou API key inválida, tentar próxima key
+      if (isQuotaExceededError(error) || isInvalidApiKeyError(error)) {
+        const errorType = isQuotaExceededError(error) ? 'quota' : 'API key inválida';
         logger.warn(
-          `Tentando com próxima API key após erro de quota (tentativa ${keyAttempt + 1}/${maxKeyRetries})`,
+          `Tentando com próxima API key após erro de ${errorType} (tentativa ${keyAttempt + 1}/${maxKeyRetries})`,
           'callGeminiWithRetry',
-          { error, keyAttempt: keyAttempt + 1 }
+          { error, keyAttempt: keyAttempt + 1, status, errorType }
         );
         
         // Se ainda há keys disponíveis, continuar loop
@@ -307,12 +357,28 @@ export async function callGeminiWithRetry(
         }
       }
       
-      // Se não for quota ou não há mais keys, lançar erro
+      // Se não for quota/403 ou não há mais keys, lançar erro
       throw error;
     }
   }
 
   // Se chegou aqui, todas as keys foram tentadas
-  throw lastError || new Error('Falha ao chamar API Gemini após todas as tentativas');
+  const status = extractHttpStatus(lastError);
+  let errorMessage = 'Falha ao comunicar com a API Gemini após todas as tentativas.';
+  
+  if (status === 403) {
+    errorMessage = 'Todas as API keys do Gemini estão inválidas ou sem permissões. Verifique as configurações em Configurações > API Keys.';
+  } else if (status === 429 || isQuotaExceededError(lastError)) {
+    errorMessage = 'Todas as API keys do Gemini excederam a quota. Aguarde algumas horas ou configure uma nova API key em Configurações > API Keys.';
+  } else if (lastError instanceof Error) {
+    errorMessage = `Falha ao comunicar com a API Gemini: ${lastError.message}`;
+  }
+  
+  const finalError = new Error(errorMessage);
+  if (status) {
+    (finalError as unknown as { status?: number }).status = status;
+  }
+  
+  throw finalError;
 }
 
