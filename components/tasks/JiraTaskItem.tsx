@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { JiraTask, BddScenario, TestCaseDetailLevel, TeamRole, Project, TestCase } from '../../types';
 import { Spinner } from '../common/Spinner';
 import { TaskTypeIcon, TaskStatusIcon, StartTestIcon, CompleteTestIcon, ToDoTestIcon, PlusIcon, EditIcon, TrashIcon, ChevronDownIcon, RefreshIcon } from '../common/Icons';
@@ -33,7 +34,7 @@ const DescriptionRenderer: React.FC<{
 }> = ({ description, jiraAttachments }) => {
     // Garantir que description existe
     if (!description) {
-        return <p className="text-text-secondary italic">Sem descrição</p>;
+        return <p className="text-base-content/70 italic">Sem descrição</p>;
     }
     
     // Obter configuração do Jira para processar imagens
@@ -68,12 +69,12 @@ const DescriptionRenderer: React.FC<{
     
     // Se não há conteúdo após processamento, mostrar mensagem
     if (!htmlContent || htmlContent.trim() === '') {
-        return <p className="text-text-secondary italic">Sem descrição</p>;
+        return <p className="text-base-content/70 italic">Sem descrição</p>;
     }
     
     return (
         <div 
-            className="jira-rich-content prose prose-invert prose-sm max-w-none"
+            className="jira-rich-content prose prose-sm max-w-none dark:prose-invert"
             dangerouslySetInnerHTML={{ __html: htmlContent }}
         />
     );
@@ -92,15 +93,15 @@ const normalizeStatusName = (value: string) =>
         .toLowerCase();
 
 const TeamRoleBadge: React.FC<{ role: TeamRole }> = ({ role }) => {
-    const roleStyles: Record<TeamRole, { bg: string, text: string }> = {
-        'Product': { bg: 'bg-purple-500/30', text: 'text-purple-700 dark:text-purple-300' },
-        'QA': { bg: 'bg-accent/30', text: 'text-accent-dark dark:text-accent-light' },
-        'Dev': { bg: 'bg-blue-500/30', text: 'text-blue-700 dark:text-blue-300' },
+    const roleStyles: Record<TeamRole, string> = {
+        Product: 'badge-secondary badge-outline',
+        QA: 'badge-primary badge-outline',
+        Dev: 'badge-info badge-outline',
     };
-    const styles = roleStyles[role];
+    const styles = roleStyles[role] ?? 'badge-ghost badge-outline';
 
     return (
-        <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${styles.bg} ${styles.text}`}>
+        <span className={`badge badge-sm ${styles}`}>
             {role}
         </span>
     );
@@ -144,6 +145,7 @@ export const JiraTaskItem: React.FC<{
     activeTaskId?: string | null;
     onFocusTask?: (taskId: string | null) => void;
 }> = React.memo(({ task, onTestCaseStatusChange, onToggleTestCaseAutomated, onExecutedStrategyChange, onTaskToolsChange, onTestCaseToolsChange, onStrategyExecutedChange, onStrategyToolsChange, onDelete, onGenerateTests, isGenerating, onAddSubtask, onEdit, onGenerateBddScenarios, isGeneratingBdd, onGenerateAll, isGeneratingAll, onSyncToJira, isSyncing, onSaveBddScenario, onDeleteBddScenario, onTaskStatusChange, onAddTestCaseFromTemplate, onAddComment, onEditComment, onDeleteComment, onEditTestCase, onDeleteTestCase, project, onUpdateProject, isSelected, onToggleSelect, children, level, activeTaskId, onFocusTask }) => {
+    const reduceMotion = useReducedMotion();
     const [isDetailsOpen, setIsDetailsOpen] = useState(false); // Colapsado por padrão para compactar
     const [isChildrenOpen, setIsChildrenOpen] = useState(false);
     const [editingBddScenario, setEditingBddScenario] = useState<BddScenario | null>(null);
@@ -162,6 +164,37 @@ export const JiraTaskItem: React.FC<{
     const taskPhase = getTaskPhase(task);
     const phaseStyle = getPhaseBadgeStyle(taskPhase);
     const nextStep = getNextStepForTask(task);
+    const safeDomId = useMemo(() => task.id.replace(/[^a-zA-Z0-9_-]/g, '_'), [task.id]);
+    const detailsRegionId = `task-details-${safeDomId}`;
+    const childrenRegionId = `task-children-${safeDomId}`;
+    const typeAccent = useMemo(() => {
+        switch (task.type) {
+            case 'Bug':
+                return 'bg-error';
+            case 'Epic':
+                return 'bg-secondary';
+            case 'História':
+                return 'bg-success';
+            case 'Tarefa':
+                return 'bg-primary';
+            default:
+                return 'bg-info';
+        }
+    }, [task.type]);
+    const typeBadgeClass = useMemo(() => {
+        switch (task.type) {
+            case 'Bug':
+                return 'badge-error';
+            case 'Epic':
+                return 'badge-secondary';
+            case 'História':
+                return 'badge-success';
+            case 'Tarefa':
+                return 'badge-info';
+            default:
+                return 'badge-ghost';
+        }
+    }, [task.type]);
     const jiraStatusPalette = project?.settings?.jiraStatuses;
     const currentStatusColor = useMemo(() => {
         const statusName = task.jiraStatus || task.status;
@@ -392,11 +425,11 @@ export const JiraTaskItem: React.FC<{
     
     const indentationStyle = { paddingLeft: `${level * 1.2}rem` };
 
-    const iconButtonClass = 'btn btn-ghost btn-sm btn-circle';
-    const iconButtonSmallClass = 'btn btn-ghost btn-xs btn-circle';
+    const iconButtonClass = 'btn btn-ghost btn-circle btn-sm h-11 w-11 md:h-9 md:w-9 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30';
+    const iconButtonSmallClass = 'btn btn-ghost btn-circle btn-sm h-11 w-11 md:h-8 md:w-8 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30';
 
     const renderOverviewSection = () => (
-        <div className="space-y-md">
+        <div className="space-y-4">
             {project && onUpdateProject && (
                 <div>
                     <QuickActions
@@ -421,46 +454,46 @@ export const JiraTaskItem: React.FC<{
                     </button>
                 </div>
             )}
-            <div className="text-text-secondary">
+            <div className="text-base-content/80">
                 {task.description ? (
                     <DescriptionRenderer 
                         description={task.description} 
                         jiraAttachments={task.jiraAttachments}
                     />
                 ) : (
-                    <p className="text-text-secondary italic">Sem descrição</p>
+                    <p className="text-base-content/70 italic">Sem descrição</p>
                 )}
             </div>
             {(task.priority || task.severity || task.owner || task.assignee || nextStep) && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                     {task.owner && (
-                        <div className="p-3 bg-surface border border-surface-border rounded-lg">
-                            <p className="text-[11px] uppercase text-text-secondary tracking-wide">Owner</p>
-                            <p className="text-sm font-semibold text-text-primary">{task.owner}</p>
+                        <div className="p-3 bg-base-100 border border-base-300 rounded-lg">
+                            <p className="text-[11px] uppercase text-base-content/60 tracking-wide">Owner</p>
+                            <p className="text-sm font-semibold text-base-content">{task.owner}</p>
                         </div>
                     )}
                     {task.assignee && (
-                        <div className="p-3 bg-surface border border-surface-border rounded-lg">
-                            <p className="text-[11px] uppercase text-text-secondary tracking-wide">Responsável</p>
-                            <p className="text-sm font-semibold text-text-primary">{task.assignee}</p>
+                        <div className="p-3 bg-base-100 border border-base-300 rounded-lg">
+                            <p className="text-[11px] uppercase text-base-content/60 tracking-wide">Responsável</p>
+                            <p className="text-sm font-semibold text-base-content">{task.assignee}</p>
                         </div>
                     )}
                     {task.priority && (
-                        <div className="p-3 bg-surface border border-surface-border rounded-lg">
-                            <p className="text-[11px] uppercase text-text-secondary tracking-wide">Prioridade</p>
-                            <p className="text-sm font-semibold text-text-primary">{task.priority}</p>
+                        <div className="p-3 bg-base-100 border border-base-300 rounded-lg">
+                            <p className="text-[11px] uppercase text-base-content/60 tracking-wide">Prioridade</p>
+                            <p className="text-sm font-semibold text-base-content">{task.priority}</p>
                         </div>
                     )}
                     {task.severity && (
-                        <div className="p-3 bg-surface border border-surface-border rounded-lg">
-                            <p className="text-[11px] uppercase text-text-secondary tracking-wide">Severidade</p>
-                            <p className="text-sm font-semibold text-text-primary">{task.severity}</p>
+                        <div className="p-3 bg-base-100 border border-base-300 rounded-lg">
+                            <p className="text-[11px] uppercase text-base-content/60 tracking-wide">Severidade</p>
+                            <p className="text-sm font-semibold text-base-content">{task.severity}</p>
                         </div>
                     )}
                       {nextStep && (
-                          <div className="p-3 bg-accent/10 border border-accent/40 rounded-lg">
-                              <p className="text-[0.65rem] uppercase text-accent tracking-wide">Próximo passo</p>
-                              <p className="text-[0.82rem] font-semibold text-text-primary line-clamp-2">{nextStep}</p>
+                          <div className="p-3 bg-primary/10 border border-primary/30 rounded-lg">
+                              <p className="text-[0.65rem] uppercase text-primary tracking-wide">Próximo passo</p>
+                              <p className="text-[0.82rem] font-semibold text-base-content line-clamp-2">{nextStep}</p>
                           </div>
                       )}
                 </div>
@@ -473,14 +506,14 @@ export const JiraTaskItem: React.FC<{
                     <div className="space-y-2">
                         {versions.length > 0 && (
                             <div>
-                                <p className="text-[11px] uppercase text-text-secondary tracking-wide mb-1.5">Versão do Projeto</p>
+                                <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-1.5">Versão do Projeto</p>
                                 <VersionBadges versions={versions} size="md" />
                             </div>
                         )}
                         {otherTags.length > 0 && (
                             <div>
                                 {versions.length > 0 && (
-                                    <p className="text-[11px] uppercase text-text-secondary tracking-wide mb-1.5">Tags</p>
+                                    <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-1.5">Tags</p>
                                 )}
                                 <div className="flex flex-wrap gap-2">
                                     {otherTags.map(tag => (
@@ -511,7 +544,7 @@ export const JiraTaskItem: React.FC<{
 
                 return (
                     <div className="mt-6 space-y-4">
-                        <h3 className="text-lg font-semibold text-text-primary flex items-center gap-2">
+                        <h3 className="text-lg font-semibold text-base-content flex items-center gap-2">
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                             </svg>
@@ -521,29 +554,29 @@ export const JiraTaskItem: React.FC<{
                         {/* Informações Básicas */}
                         {(task.reporter || task.dueDate || task.environment) && (
                             <div className="space-y-3">
-                                <h4 className="text-sm font-semibold text-text-secondary">📋 Informações Básicas</h4>
+                                <h4 className="text-sm font-semibold text-base-content/70">📋 Informações Básicas</h4>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     {task.reporter && (
-                                        <div className="p-3 bg-surface border border-surface-border rounded-lg">
-                                            <p className="text-[11px] uppercase text-text-secondary tracking-wide mb-1">Reporter</p>
-                                            <p className="text-sm font-semibold text-text-primary">{task.reporter.displayName}</p>
+                                        <div className="p-3 bg-base-100 border border-base-300 rounded-lg">
+                                            <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-1">Reporter</p>
+                                            <p className="text-sm font-semibold text-base-content">{task.reporter.displayName}</p>
                                             {task.reporter.emailAddress && (
-                                                <p className="text-xs text-text-secondary mt-1">{task.reporter.emailAddress}</p>
+                                                <p className="text-xs text-base-content/70 mt-1">{task.reporter.emailAddress}</p>
                                             )}
                                         </div>
                                     )}
                                     {task.dueDate && (
-                                        <div className="p-3 bg-surface border border-surface-border rounded-lg">
-                                            <p className="text-[11px] uppercase text-text-secondary tracking-wide mb-1">Due Date</p>
-                                            <p className="text-sm font-semibold text-text-primary">
+                                        <div className="p-3 bg-base-100 border border-base-300 rounded-lg">
+                                            <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-1">Due Date</p>
+                                            <p className="text-sm font-semibold text-base-content">
                                                 {new Date(task.dueDate).toLocaleDateString('pt-BR')}
                                             </p>
                                         </div>
                                     )}
                                     {task.environment && (
-                                        <div className="p-3 bg-surface border border-surface-border rounded-lg sm:col-span-2">
-                                            <p className="text-[11px] uppercase text-text-secondary tracking-wide mb-1">Environment</p>
-                                            <p className="text-sm text-text-primary">{task.environment}</p>
+                                        <div className="p-3 bg-base-100 border border-base-300 rounded-lg sm:col-span-2">
+                                            <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-1">Environment</p>
+                                            <p className="text-sm text-base-content">{task.environment}</p>
                                         </div>
                                     )}
                                 </div>
@@ -553,24 +586,24 @@ export const JiraTaskItem: React.FC<{
                         {/* Time Tracking */}
                         {task.timeTracking && (
                             <div className="space-y-3">
-                                <h4 className="text-sm font-semibold text-text-secondary">⏱️ Time Tracking</h4>
+                                <h4 className="text-sm font-semibold text-base-content/70">⏱️ Time Tracking</h4>
                                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                     {task.timeTracking.originalEstimate && (
-                                        <div className="p-3 bg-surface border border-surface-border rounded-lg">
-                                            <p className="text-[11px] uppercase text-text-secondary tracking-wide mb-1">Original Estimate</p>
-                                            <p className="text-sm font-semibold text-text-primary">{task.timeTracking.originalEstimate}</p>
+                                        <div className="p-3 bg-base-100 border border-base-300 rounded-lg">
+                                            <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-1">Original Estimate</p>
+                                            <p className="text-sm font-semibold text-base-content">{task.timeTracking.originalEstimate}</p>
                                         </div>
                                     )}
                                     {task.timeTracking.remainingEstimate && (
-                                        <div className="p-3 bg-surface border border-surface-border rounded-lg">
-                                            <p className="text-[11px] uppercase text-text-secondary tracking-wide mb-1">Remaining Estimate</p>
-                                            <p className="text-sm font-semibold text-text-primary">{task.timeTracking.remainingEstimate}</p>
+                                        <div className="p-3 bg-base-100 border border-base-300 rounded-lg">
+                                            <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-1">Remaining Estimate</p>
+                                            <p className="text-sm font-semibold text-base-content">{task.timeTracking.remainingEstimate}</p>
                                         </div>
                                     )}
                                     {task.timeTracking.timeSpent && (
-                                        <div className="p-3 bg-surface border border-surface-border rounded-lg">
-                                            <p className="text-[11px] uppercase text-text-secondary tracking-wide mb-1">Time Spent</p>
-                                            <p className="text-sm font-semibold text-text-primary">{task.timeTracking.timeSpent}</p>
+                                        <div className="p-3 bg-base-100 border border-base-300 rounded-lg">
+                                            <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-1">Time Spent</p>
+                                            <p className="text-sm font-semibold text-base-content">{task.timeTracking.timeSpent}</p>
                                         </div>
                                     )}
                                 </div>
@@ -580,11 +613,11 @@ export const JiraTaskItem: React.FC<{
                         {/* Organização */}
                         {(task.components || task.fixVersions) && (
                             <div className="space-y-3">
-                                <h4 className="text-sm font-semibold text-text-secondary">🧩 Organização</h4>
+                                <h4 className="text-sm font-semibold text-base-content/70">🧩 Organização</h4>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     {task.components && task.components.length > 0 && (
-                                        <div className="p-3 bg-surface border border-surface-border rounded-lg">
-                                            <p className="text-[11px] uppercase text-text-secondary tracking-wide mb-2">Components</p>
+                                        <div className="p-3 bg-base-100 border border-base-300 rounded-lg">
+                                            <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-2">Components</p>
                                             <div className="flex flex-wrap gap-2">
                                                 {task.components.map((comp) => (
                                                     <span key={comp.id} className="text-xs px-2 py-1 bg-blue-500/20 text-blue-700 dark:text-blue-400 rounded">
@@ -595,8 +628,8 @@ export const JiraTaskItem: React.FC<{
                                         </div>
                                     )}
                                     {task.fixVersions && task.fixVersions.length > 0 && (
-                                        <div className="p-3 bg-surface border border-surface-border rounded-lg">
-                                            <p className="text-[11px] uppercase text-text-secondary tracking-wide mb-2">Fix Versions</p>
+                                        <div className="p-3 bg-base-100 border border-base-300 rounded-lg">
+                                            <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-2">Fix Versions</p>
                                             <div className="flex flex-wrap gap-2">
                                                 {task.fixVersions.map((version) => (
                                                     <span key={version.id} className="text-xs px-2 py-1 bg-green-500/20 text-green-700 dark:text-green-400 rounded">
@@ -613,23 +646,23 @@ export const JiraTaskItem: React.FC<{
                         {/* Relacionamentos */}
                         {(task.issueLinks || task.watchers) && (
                             <div className="space-y-3">
-                                <h4 className="text-sm font-semibold text-text-secondary">🔗 Relacionamentos</h4>
+                                <h4 className="text-sm font-semibold text-base-content/70">🔗 Relacionamentos</h4>
                                 {task.issueLinks && task.issueLinks.length > 0 && (
-                                    <div className="p-3 bg-surface border border-surface-border rounded-lg">
-                                        <p className="text-[11px] uppercase text-text-secondary tracking-wide mb-2">Issue Links</p>
+                                    <div className="p-3 bg-base-100 border border-base-300 rounded-lg">
+                                        <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-2">Issue Links</p>
                                         <div className="space-y-1">
                                             {task.issueLinks.map((link) => (
-                                                <div key={link.id} className="text-sm text-text-primary">
-                                                    <span className="text-text-secondary">{link.type}</span> {link.relatedKey}
+                                                <div key={link.id} className="text-sm text-base-content">
+                                                    <span className="text-base-content/70">{link.type}</span> {link.relatedKey}
                                                 </div>
                                             ))}
                                         </div>
                                     </div>
                                 )}
                                 {task.watchers && (
-                                    <div className="p-3 bg-surface border border-surface-border rounded-lg">
-                                        <p className="text-[11px] uppercase text-text-secondary tracking-wide mb-1">Watchers</p>
-                                        <p className="text-sm font-semibold text-text-primary">
+                                    <div className="p-3 bg-base-100 border border-base-300 rounded-lg">
+                                        <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-1">Watchers</p>
+                                        <p className="text-sm font-semibold text-base-content">
                                             {task.watchers.watchCount} observador(es)
                                             {task.watchers.isWatching && ' • Você está observando'}
                                         </p>
@@ -641,13 +674,13 @@ export const JiraTaskItem: React.FC<{
                         {/* Anexos do Jira */}
                         {task.jiraAttachments && task.jiraAttachments.length > 0 && (
                             <div className="space-y-3">
-                                <h4 className="text-sm font-semibold text-text-secondary">📎 Anexos do Jira</h4>
-                                <div className="p-3 bg-surface border border-surface-border rounded-lg">
+                                <h4 className="text-sm font-semibold text-base-content/70">📎 Anexos do Jira</h4>
+                                <div className="p-3 bg-base-100 border border-base-300 rounded-lg">
                                     <div className="space-y-2">
                                         {task.jiraAttachments.map((att) => (
                                             <div key={att.id} className="flex items-center justify-between text-sm">
-                                                <span className="text-text-primary">{att.filename}</span>
-                                                <span className="text-text-secondary text-xs">
+                                                <span className="text-base-content">{att.filename}</span>
+                                                <span className="text-base-content/70 text-xs">
                                                     {(att.size / 1024).toFixed(2)} KB
                                                 </span>
                                             </div>
@@ -669,10 +702,10 @@ export const JiraTaskItem: React.FC<{
         }
 
         return (
-        <div className="space-y-md">
+        <div className="space-y-4">
             <div className="flex items-center justify-between gap-2">
-                <h3 className="text-lg font-semibold text-text-primary">Cenários BDD (Gherkin)</h3>
-                <span className="text-xs text-text-secondary">{task.bddScenarios?.length || 0} cenário(s)</span>
+                <h3 className="text-lg font-semibold text-base-content">Cenários BDD (Gherkin)</h3>
+                <span className="text-xs text-base-content/70">{task.bddScenarios?.length || 0} cenário(s)</span>
             </div>
             <div className="space-y-3">
                 {(task.bddScenarios || []).map(sc => (
@@ -708,7 +741,7 @@ export const JiraTaskItem: React.FC<{
         const canHaveTestCases = task.type === 'Tarefa';
         
         return (
-            <div className="space-y-md">
+            <div className="space-y-4">
                 {/* Sub-abas de Testes */}
                 <div className="tabs tabs-boxed bg-base-200 w-fit" role="tablist" aria-label="Sub-abas de testes">
                     <button
@@ -745,7 +778,7 @@ export const JiraTaskItem: React.FC<{
                         </div>
                         {isGenerating && <div className="flex justify-center py-2"><Spinner small /></div>}
                         {(task.testStrategy?.length ?? 0) > 0 ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-md mt-md">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                                 {(task.testStrategy ?? []).map((strategy, i) => {
                                     if (!strategy) return null;
                                     return (
@@ -839,7 +872,7 @@ export const JiraTaskItem: React.FC<{
 
                 {/* Ferramentas Utilizadas na Task */}
                 {onTaskToolsChange && (
-                    <div className="mt-md p-3 bg-base-100 rounded-2xl border border-base-300">
+                    <div className="mt-4 p-3 bg-base-100 rounded-[var(--rounded-box)] border border-base-300">
                         <ToolsSelector
                             selectedTools={task.toolsUsed || []}
                             onToolsChange={onTaskToolsChange}
@@ -877,18 +910,18 @@ export const JiraTaskItem: React.FC<{
     const renderPlanningSection = () => {
         if (!project || !onUpdateProject) {
             return (
-                <p className="text-sm text-text-secondary">Conecte um projeto para gerenciar dependências e planejamento.</p>
+                <p className="text-sm text-base-content/70">Conecte um projeto para gerenciar dependências e planejamento.</p>
             );
         }
 
         return (
-            <div className="space-y-md">
+            <div className="space-y-4">
                 <div>
                     <div className="flex items-center justify-between mb-3">
-                        <h3 className="text-lg font-semibold text-text-primary">Dependências</h3>
+                        <h3 className="text-lg font-semibold text-base-content">Dependências</h3>
                         <button
                             onClick={() => setShowDependencies(!showDependencies)}
-                            className="text-sm text-accent hover:text-accent-light"
+                            className="text-sm text-primary hover:opacity-80"
                         >
                             {showDependencies ? 'Ocultar' : 'Gerenciar'}
                         </button>
@@ -905,10 +938,10 @@ export const JiraTaskItem: React.FC<{
 
                 <div>
                     <div className="flex items-center justify-between mb-3">
-                        <h3 className="text-lg font-semibold text-text-primary">Anexos</h3>
+                        <h3 className="text-lg font-semibold text-base-content">Anexos</h3>
                         <button
                             onClick={() => setShowAttachments(!showAttachments)}
-                            className="text-sm text-accent hover:text-accent-light"
+                            className="text-sm text-primary hover:opacity-80"
                         >
                             {showAttachments ? 'Ocultar' : 'Gerenciar'}
                         </button>
@@ -925,10 +958,10 @@ export const JiraTaskItem: React.FC<{
 
                 <div>
                     <div className="flex items-center justify-between mb-3">
-                        <h3 className="text-lg font-semibold text-text-primary">Estimativas</h3>
+                        <h3 className="text-lg font-semibold text-base-content">Estimativas</h3>
                         <button
                             onClick={() => setShowEstimation(!showEstimation)}
-                            className="text-sm text-accent hover:text-accent-light"
+                            className="text-sm text-primary hover:opacity-80"
                         >
                             {showEstimation ? 'Ocultar' : task.estimatedHours ? 'Editar' : 'Adicionar'}
                         </button>
@@ -949,22 +982,22 @@ export const JiraTaskItem: React.FC<{
                         />
                     )}
                     {!showEstimation && task.estimatedHours && (
-                        <div className="p-3 bg-surface border border-surface-border rounded-lg">
+                        <div className="p-3 bg-base-100 border border-base-300 rounded-lg">
                             <div className="flex items-center justify-between">
-                                <span className="text-text-secondary">Estimado:</span>
-                                <span className="font-semibold text-text-primary">{task.estimatedHours}h</span>
+                                <span className="text-base-content/70">Estimado:</span>
+                                <span className="font-semibold text-base-content">{task.estimatedHours}h</span>
                             </div>
                             {task.actualHours && (
                                 <>
                                     <div className="flex items-center justify-between mt-2">
-                                        <span className="text-text-secondary">Real:</span>
+                                        <span className="text-base-content/70">Real:</span>
                                         <span className={`font-semibold ${
                                             task.actualHours <= task.estimatedHours ? 'text-green-700 dark:text-green-400' : 'text-orange-700 dark:text-orange-400'
                                         }`}>
                                             {task.actualHours}h
                                         </span>
                                     </div>
-                                    <div className="mt-2 text-xs text-text-secondary">
+                                    <div className="mt-2 text-xs text-base-content/70">
                                         {task.actualHours <= task.estimatedHours
                                             ? `✅ Dentro do estimado (${task.estimatedHours - task.actualHours}h restantes)`
                                             : `⚠️ Acima do estimado (+${task.actualHours - task.estimatedHours}h)`
@@ -978,7 +1011,7 @@ export const JiraTaskItem: React.FC<{
 
                 {task.checklist && task.checklist.length > 0 && (
                     <div>
-                        <h3 className="text-lg font-semibold text-text-primary mb-3">Checklist</h3>
+                        <h3 className="text-lg font-semibold text-base-content mb-3">Checklist</h3>
                         <ChecklistView
                             checklist={task.checklist}
                             onToggleItem={(itemId) => {
@@ -1001,12 +1034,12 @@ export const JiraTaskItem: React.FC<{
 
     const renderCollaborationSection = () => {
         if (!onAddComment) {
-            return <p className="text-sm text-text-secondary">Comentários indisponíveis para esta tarefa.</p>;
+            return <p className="text-sm text-base-content/70">Comentários indisponíveis para esta tarefa.</p>;
         }
 
         return (
             <div>
-                <h3 className="text-lg font-semibold text-text-primary mb-3">Comentários</h3>
+                <h3 className="text-lg font-semibold text-base-content mb-3">Comentários</h3>
                 <CommentSection
                     comments={task.comments || []}
                     onAddComment={(content) => onAddComment(content)}
@@ -1034,310 +1067,408 @@ export const JiraTaskItem: React.FC<{
         }
     };
 
-    // Função helper para obter classe de tipo de tarefa
-    const getTaskTypeClass = (type: string): string => {
-        const typeMap: Record<string, string> = {
-            'Bug': 'task-card-compact--bug',
-            'Epic': 'task-card-compact--epic',
-            'História': 'task-card-compact--historia',
-            'Tarefa': 'task-card-compact--tarefa'
-        };
-        return typeMap[type] || '';
-    };
-
     return (
-        <div className={`relative ${getTaskTypeClass(task.type)}`} data-task-id={task.id}>
+        <div className="relative" data-task-id={task.id}>
             <div style={indentationStyle} className="py-1">
                 <div
-                    className={`task-card-compact ${isSelected ? 'is-selected' : ''} ${
-                        activeTaskId === task.id ? 'ring-1 ring-accent/40' : ''
-                    } ${getTaskTypeClass(task.type)}`}
+                    className={[
+                        'relative overflow-hidden rounded-[var(--rounded-box)] border border-base-300 bg-base-100',
+                        activeTaskId === task.id ? 'ring-1 ring-primary/30' : '',
+                        isSelected ? 'bg-primary/5 border-primary/40' : '',
+                    ].join(' ')}
                 >
-                    <div className="task-card-compact_line">
-                        <div className="flex min-w-0 flex-1 items-center gap-2">
-                            {onToggleSelect && (
-                                <input
-                                    type="checkbox"
-                                    checked={isSelected || false}
-                                    onChange={(e) => {
-                                        e.stopPropagation();
-                                        onToggleSelect();
-                                    }}
-                                    className="h-4 w-4 rounded border-surface-border text-accent focus:ring-accent"
-                                />
-                            )}
-                            {hasChildren ? (
-                                <button
-                                    onClick={() => setIsChildrenOpen(!isChildrenOpen)}
-                                    className={iconButtonSmallClass}
-                                    aria-label="Alternar subtarefas"
-                                >
-                                    <ChevronDownIcon className={`h-3.5 w-3.5 transition-transform ${isChildrenOpen ? 'rotate-180' : ''}`} />
-                                </button>
-                            ) : (
-                                <span className="w-6" />
-                            )}
-                            {task.status === 'In Progress' ? (
-                                <StartTestIcon />
-                            ) : task.status === 'Done' ? (
-                                <CompleteTestIcon />
-                            ) : task.status === 'To Do' ? (
-                                <ToDoTestIcon />
-                            ) : (
-                                <TaskStatusIcon status={task.status} />
-                            )}
-                            <TaskTypeIcon type={task.type} />
-                            <span className="task-card-compact_code">{task.id}</span>
-                            {(() => {
-                                const versions = getTaskVersions(task);
-                                return versions.length > 0 && (
-                                    <VersionBadges versions={versions} size="sm" />
-                                );
-                            })()}
-                            <span className="task-card-compact_badge">{task.type}</span>
-                            {task.severity && <span className="task-card-compact_badge">{task.severity}</span>}
-                            {task.priority && <span className="task-card-compact_badge">{task.priority}</span>}
-                            {taskPhase && (
-                                <span className={`task-card-compact_badge ${phaseStyle.bg} ${phaseStyle.color} flex items-center gap-1`}>
-                                    <span>{phaseStyle.icon}</span>
-                                    {taskPhase}
-                                </span>
-                            )}
-                        </div>
-                        <div className="task-card-compact_actions" onClick={(e) => e.stopPropagation()}>
-                            <div className="task-card-compact_status min-w-[120px]">
-                                <select
-                                    value={task.jiraStatus || task.status}
-                                    title={task.jiraStatus || task.status}
-                                    onChange={(e) => {
-                                        const selectedValue = e.target.value;
-                                        const jiraStatuses = project?.settings?.jiraStatuses || [];
+                    <div aria-hidden="true" className={`absolute left-0 top-0 h-full w-1 ${typeAccent}`} />
 
-                                        const mapStatus = (jiraStatus: string): 'To Do' | 'In Progress' | 'Done' => {
-                                            const status = jiraStatus.toLowerCase();
-                                            if (
-                                                status.includes('done') ||
-                                                status.includes('resolved') ||
-                                                status.includes('closed') ||
-                                                status.includes('concluído')
-                                            ) {
-                                                return 'Done';
-                                            }
-                                            if (status.includes('progress') || status.includes('andamento')) {
-                                                return 'In Progress';
-                                            }
-                                            return 'To Do';
-                                        };
+                    <div className="p-3 md:p-4">
+                        <div className="flex flex-col gap-3 md:flex-row md:items-start md:gap-4">
+                            {/* Seleção + ícones */}
+                            <div className="flex items-start gap-2 md:items-center">
+                                {onToggleSelect && (
+                                    <input
+                                        type="checkbox"
+                                        checked={isSelected || false}
+                                        onChange={(e) => {
+                                            e.stopPropagation();
+                                            onToggleSelect();
+                                        }}
+                                        className="checkbox checkbox-sm checkbox-primary"
+                                        aria-label={`Selecionar tarefa ${task.id}`}
+                                    />
+                                )}
 
-                                        const isJiraStatus = jiraStatuses.some((status) =>
-                                            typeof status === 'string' ? status === selectedValue : status.name === selectedValue
-                                        );
-
-                                        if (isJiraStatus) {
-                                            const mappedStatus = mapStatus(selectedValue);
-                                            onTaskStatusChange(mappedStatus);
-                                            if (project && onUpdateProject) {
-                                                const updatedTasks = project.tasks.map((t) =>
-                                                    t.id === task.id ? { ...t, status: mappedStatus, jiraStatus: selectedValue } : t
-                                                );
-                                                onUpdateProject({ ...project, tasks: updatedTasks });
-                                            }
-                                        } else {
-                                            onTaskStatusChange(selectedValue as 'To Do' | 'In Progress' | 'Done');
-                                            if (project && onUpdateProject && task.jiraStatus) {
-                                                const updatedTasks = project.tasks.map((t) =>
-                                                    t.id === task.id ? { ...t, jiraStatus: undefined } : t
-                                                );
-                                                onUpdateProject({ ...project, tasks: updatedTasks });
-                                            }
-                                        }
-                                    }}
-                                    style={{
-                                        backgroundColor: currentStatusColor,
-                                        color: statusTextColor,
-                                        borderColor: currentStatusColor ? `${currentStatusColor}66` : undefined,
-                                        boxShadow: currentStatusColor ? `0 0 0 1px ${currentStatusColor}33` : undefined,
-                                    }}
-                                >
-                                    {project?.settings?.jiraStatuses && project.settings.jiraStatuses.length > 0 ? (
-                                        project.settings.jiraStatuses.map((status) => {
-                                            const statusName = typeof status === 'string' ? status : status.name;
-                                            return (
-                                                <option key={statusName} value={statusName}>
-                                                    {statusName}
-                                                </option>
-                                            );
-                                        })
-                                    ) : (
-                                        <>
-                                            <option value="To Do">A Fazer</option>
-                                            <option value="In Progress">Em Andamento</option>
-                                            <option value="Done">Concluído</option>
-                                        </>
-                                    )}
-                                </select>
-                            </div>
-                            {task.type === 'Epic' && (
-                                <button onClick={() => onAddSubtask(task.id)} className={iconButtonClass} aria-label="Adicionar subtarefa">
-                                    <PlusIcon />
-                                </button>
-                            )}
-                            {onSyncToJira && /^[A-Z]+-\d+$/.test(task.id) && (
-                                <button
-                                    onClick={() => onSyncToJira(task.id)}
-                                    disabled={isSyncing}
-                                    className={`${iconButtonClass} ${isSyncing ? 'opacity-50 cursor-not-allowed' : 'hover:!bg-blue-500 hover:!text-white'}`}
-                                    aria-label="Sincronizar com Jira"
-                                    title="Sincronizar com Jira"
-                                >
-                                    {isSyncing ? (
-                                        <Spinner small />
-                                    ) : (
-                                        <RefreshIcon />
-                                    )}
-                                </button>
-                            )}
-                            <button onClick={() => onEdit(task)} className={iconButtonClass} aria-label="Editar tarefa">
-                                <EditIcon />
-                            </button>
-                            <button
-                                onClick={() => setShowDeleteConfirm(true)}
-                                className={`${iconButtonClass} hover:!bg-red-500 hover:!text-white`}
-                                aria-label="Excluir tarefa"
-                            >
-                                <TrashIcon />
-                            </button>
-                            <button className={iconButtonClass} onClick={handleToggleDetails} aria-label="Expandir detalhes">
-                                <ChevronDownIcon className={`transition-transform ${isDetailsOpen ? 'rotate-180' : ''}`} />
-                            </button>
-                        </div>
-                    </div>
-                    <div
-                        className="task-card-compact_line cursor-pointer focus-visible:ring-1 focus-visible:ring-accent"
-                        onClick={handleToggleDetails}
-                        role="button"
-                        tabIndex={0}
-                        onKeyDown={(event) => {
-                            if (event.key === 'Enter' || event.key === ' ') {
-                                event.preventDefault();
-                                handleToggleDetails();
-                            }
-                        }}
-                    >
-                        <p className="task-card-compact_title line-clamp-2 break-words">{task.title}</p>
-                    </div>
-                    <div className="task-card-compact_line task-card-compact_line--tight text-xs text-text-secondary">
-                        {nextStep && (
-                            <span className="task-card-compact_next">
-                                Próximo: <span>{nextStep}</span>
-                            </span>
-                        )}
-                        <span className="task-card-compact_meta">{task.testCases?.length || 0} casos</span>
-                        {task.parentId && <span className="task-card-compact_meta">Depende de {task.parentId}</span>}
-                        {task.owner && (
-                            <span className="inline-flex items-center gap-1">
-                                <span className="task-card-compact_meta">Owner</span>
-                                <TeamRoleBadge role={task.owner} />
-                            </span>
-                        )}
-                        {task.assignee && (
-                            <span className="inline-flex items-center gap-1">
-                                <span className="task-card-compact_meta">QA</span>
-                                <TeamRoleBadge role={task.assignee} />
-                            </span>
-                        )}
-                    </div>
-                    {testExecutionSummary.total > 0 && (
-                        <div className="task-card-compact_line task-card-compact_line--tight text-[11px] text-text-secondary flex flex-wrap gap-3">
-                            <span className="inline-flex items-center gap-1 text-green-700 dark:text-green-400 font-semibold">
-                                <span className="w-2 h-2 rounded-full bg-green-600 dark:bg-green-400" />
-                                {testExecutionSummary.passed} aprov.
-                            </span>
-                            <span className="inline-flex items-center gap-1 text-red-700 dark:text-red-300 font-semibold">
-                                <span className="w-2 h-2 rounded-full bg-red-600 dark:bg-red-400" />
-                                {testExecutionSummary.failed} reprov.
-                            </span>
-                            {testExecutionSummary.pending > 0 && (
-                                <span className="inline-flex items-center gap-1 text-amber-700 dark:text-amber-300 font-semibold">
-                                    <span className="w-2 h-2 rounded-full bg-amber-600 dark:bg-amber-300" />
-                                    {testExecutionSummary.pending} pend.
-                                </span>
-                            )}
-                        </div>
-                    )}
-                    {task.type === 'Tarefa' && testTypeBadges.length > 0 && (
-                        <div className="task-card-compact_line task-card-compact_line--tight flex flex-wrap gap-1">
-                            {testTypeBadges.map(badge => (
-                                <TestTypeBadge 
-                                    key={badge.type} 
-                                    testType={badge.type} 
-                                    status={badge.status}
-                                    label={badge.label}
-                                    size="sm"
-                                />
-                            ))}
-                        </div>
-                    )}
-                    {task.tags && task.tags.length > 0 && (
-                        <div className="flex flex-wrap gap-1">
-                            {task.tags.slice(0, 4).map((tag) => (
-                                <span key={tag} className={`task-card-compact_tag chip--accent`} style={{ borderColor: getTagColor(tag) }}>
-                                    {tag}
-                                </span>
-                            ))}
-                            {task.tags.length > 4 && (
-                                <span className="task-card-compact_tag tag-chip-muted">+{task.tags.length - 4}</span>
-                            )}
-                        </div>
-                    )}
-                    {isDetailsOpen && (
-                        <div className="mt-3 rounded-2xl glass-surface p-3">
-                            <div className="flex flex-wrap gap-2">
-                                {sectionTabs.map((tab) => {
-                                    const isActive = tab.id === activeSection;
-                                    return (
-                                        <button
-                                            key={tab.id}
-                                            className={`mini-tab ${isActive ? 'mini-tab--active' : ''}`}
-                                            onClick={() => setActiveSection(tab.id)}
-                                        >
-                                            <span>{tab.label}</span>
-                                            {typeof tab.badge === 'number' && tab.badge > 0 && (
-                                                <span className="mini-tab__badge">
-                                                    {tab.badge}
-                                                </span>
-                                            )}
-                                        </button>
-                                    );
-                                })}
-                                {task.type === 'Tarefa' && onGenerateAll && (
+                                {hasChildren ? (
                                     <button
-                                        onClick={() => onGenerateAll(task.id)}
-                                        disabled={isGeneratingAll || isGenerating || isGeneratingBdd}
-                                        className="btn-generate-all btn btn-sm flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        type="button"
+                                        onClick={() => setIsChildrenOpen(!isChildrenOpen)}
+                                        className={iconButtonSmallClass}
+                                        aria-label={isChildrenOpen ? 'Recolher subtarefas' : 'Expandir subtarefas'}
+                                        aria-expanded={isChildrenOpen}
+                                        aria-controls={childrenRegionId}
                                     >
-                                        {isGeneratingAll ? (
-                                            <>
-                                                <Spinner small />
-                                                <span>Gerando...</span>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                                                </svg>
-                                                <span>Gerar Tudo</span>
-                                            </>
-                                        )}
+                                        <div className="indicator">
+                                            <span className="indicator-item badge badge-primary badge-xs">
+                                                {task.children.length}
+                                            </span>
+                                            <ChevronDownIcon
+                                                className={`h-3.5 w-3.5 transition-transform ${isChildrenOpen ? 'rotate-180' : ''}`}
+                                            />
+                                        </div>
                                     </button>
+                                ) : (
+                                    <span className="w-8" aria-hidden="true" />
+                                )}
+
+                                <div className="flex items-center gap-2">
+                                    {task.status === 'In Progress' ? (
+                                        <StartTestIcon />
+                                    ) : task.status === 'Done' ? (
+                                        <CompleteTestIcon />
+                                    ) : task.status === 'To Do' ? (
+                                        <ToDoTestIcon />
+                                    ) : (
+                                        <TaskStatusIcon status={task.status} />
+                                    )}
+                                    <TaskTypeIcon type={task.type} />
+                                </div>
+                            </div>
+
+                            {/* Conteúdo */}
+                            <div className="min-w-0 flex-1">
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <span className="font-mono text-xs text-base-content/60">{task.id}</span>
+                                    {(() => {
+                                        const versions = getTaskVersions(task);
+                                        return versions.length > 0 ? (
+                                            <VersionBadges versions={versions} size="sm" />
+                                        ) : null;
+                                    })()}
+                                    <span className={`badge badge-sm ${typeBadgeClass}`}>{task.type}</span>
+                                    {task.severity && <span className="badge badge-sm badge-outline">{task.severity}</span>}
+                                    {task.priority && <span className="badge badge-sm badge-outline">{task.priority}</span>}
+                                    {taskPhase && (
+                                        <span className={`badge badge-sm ${phaseStyle.bg} ${phaseStyle.color} flex items-center gap-1`}>
+                                            <span aria-hidden="true">{phaseStyle.icon}</span>
+                                            {taskPhase}
+                                        </span>
+                                    )}
+                                </div>
+
+                                <button
+                                    type="button"
+                                    onClick={handleToggleDetails}
+                                    className="mt-2 w-full text-left rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
+                                    aria-expanded={isDetailsOpen}
+                                    aria-controls={detailsRegionId}
+                                >
+                                    <p className="text-sm md:text-base font-semibold leading-snug text-base-content line-clamp-2 break-words">
+                                        {task.title}
+                                    </p>
+                                </button>
+
+                                <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-base-content/70">
+                                    {nextStep && (
+                                        <span className="inline-flex items-center gap-1">
+                                            <span className="text-base-content/50">Próximo:</span>
+                                            <span className="font-medium text-base-content line-clamp-1">{nextStep}</span>
+                                        </span>
+                                    )}
+                                    <span className="inline-flex items-center gap-1">
+                                        <span className="text-base-content/50">Casos:</span>
+                                        <span className="font-medium text-base-content">{task.testCases?.length || 0}</span>
+                                    </span>
+                                    {task.parentId && (
+                                        <span className="inline-flex items-center gap-1">
+                                            <span className="text-base-content/50">Depende de</span>
+                                            <span className="font-medium text-base-content">{task.parentId}</span>
+                                        </span>
+                                    )}
+                                    {task.owner && (
+                                        <span className="inline-flex items-center gap-2">
+                                            <span className="text-base-content/50">Owner</span>
+                                            <TeamRoleBadge role={task.owner} />
+                                        </span>
+                                    )}
+                                    {task.assignee && (
+                                        <span className="inline-flex items-center gap-2">
+                                            <span className="text-base-content/50">QA</span>
+                                            <TeamRoleBadge role={task.assignee} />
+                                        </span>
+                                    )}
+                                </div>
+
+                                {testExecutionSummary.total > 0 && (
+                                    <div className="mt-2 flex flex-wrap gap-3 text-xs">
+                                        <span className="inline-flex items-center gap-1 font-semibold text-success">
+                                            <span className="w-2 h-2 rounded-full bg-success" aria-hidden="true" />
+                                            {testExecutionSummary.passed} aprov.
+                                        </span>
+                                        <span className="inline-flex items-center gap-1 font-semibold text-error">
+                                            <span className="w-2 h-2 rounded-full bg-error" aria-hidden="true" />
+                                            {testExecutionSummary.failed} reprov.
+                                        </span>
+                                        {testExecutionSummary.pending > 0 && (
+                                            <span className="inline-flex items-center gap-1 font-semibold text-warning">
+                                                <span className="w-2 h-2 rounded-full bg-warning" aria-hidden="true" />
+                                                {testExecutionSummary.pending} pend.
+                                            </span>
+                                        )}
+                                    </div>
+                                )}
+
+                                {task.type === 'Tarefa' && testTypeBadges.length > 0 && (
+                                    <div className="mt-2 flex flex-wrap gap-1">
+                                        {testTypeBadges.map(badge => (
+                                            <TestTypeBadge 
+                                                key={badge.type} 
+                                                testType={badge.type} 
+                                                status={badge.status}
+                                                label={badge.label}
+                                                size="sm"
+                                            />
+                                        ))}
+                                    </div>
+                                )}
+
+                                {task.tags && task.tags.length > 0 && (
+                                    <div className="mt-2 flex flex-wrap gap-1.5">
+                                        {task.tags.slice(0, 4).map((tag) => (
+                                            <span
+                                                key={tag}
+                                                className="badge badge-sm text-white border-none"
+                                                style={{ backgroundColor: getTagColor(tag) }}
+                                            >
+                                                {tag}
+                                            </span>
+                                        ))}
+                                        {task.tags.length > 4 && (
+                                            <span className="badge badge-sm badge-ghost">
+                                                +{task.tags.length - 4}
+                                            </span>
+                                        )}
+                                    </div>
                                 )}
                             </div>
-                            <div className="mt-4">{renderSectionContent()}</div>
+
+                            {/* Status + ações */}
+                            <div className="flex flex-col gap-2 md:items-end">
+                                <div className="w-full md:w-auto" onClick={(e) => e.stopPropagation()}>
+                                    <select
+                                        className="select select-bordered select-sm w-full md:w-48"
+                                        aria-label={`Alterar status da tarefa ${task.id}`}
+                                        value={task.jiraStatus || task.status}
+                                        title={task.jiraStatus || task.status}
+                                        onChange={(e) => {
+                                            const selectedValue = e.target.value;
+                                            const jiraStatuses = project?.settings?.jiraStatuses || [];
+
+                                            const mapStatus = (jiraStatus: string): 'To Do' | 'In Progress' | 'Done' => {
+                                                const status = jiraStatus.toLowerCase();
+                                                if (
+                                                    status.includes('done') ||
+                                                    status.includes('resolved') ||
+                                                    status.includes('closed') ||
+                                                    status.includes('concluído')
+                                                ) {
+                                                    return 'Done';
+                                                }
+                                                if (status.includes('progress') || status.includes('andamento')) {
+                                                    return 'In Progress';
+                                                }
+                                                return 'To Do';
+                                            };
+
+                                            const isJiraStatus = jiraStatuses.some((status) =>
+                                                typeof status === 'string' ? status === selectedValue : status.name === selectedValue
+                                            );
+
+                                            if (isJiraStatus) {
+                                                const mappedStatus = mapStatus(selectedValue);
+                                                onTaskStatusChange(mappedStatus);
+                                                if (project && onUpdateProject) {
+                                                    const updatedTasks = project.tasks.map((t) =>
+                                                        t.id === task.id ? { ...t, status: mappedStatus, jiraStatus: selectedValue } : t
+                                                    );
+                                                    onUpdateProject({ ...project, tasks: updatedTasks });
+                                                }
+                                            } else {
+                                                onTaskStatusChange(selectedValue as 'To Do' | 'In Progress' | 'Done');
+                                                if (project && onUpdateProject && task.jiraStatus) {
+                                                    const updatedTasks = project.tasks.map((t) =>
+                                                        t.id === task.id ? { ...t, jiraStatus: undefined } : t
+                                                    );
+                                                    onUpdateProject({ ...project, tasks: updatedTasks });
+                                                }
+                                            }
+                                        }}
+                                        style={{
+                                            backgroundColor: currentStatusColor,
+                                            color: statusTextColor,
+                                            borderColor: currentStatusColor ? `${currentStatusColor}66` : undefined,
+                                            boxShadow: currentStatusColor ? `0 0 0 1px ${currentStatusColor}33` : undefined,
+                                        }}
+                                    >
+                                        {project?.settings?.jiraStatuses && project.settings.jiraStatuses.length > 0 ? (
+                                            project.settings.jiraStatuses.map((status) => {
+                                                const statusName = typeof status === 'string' ? status : status.name;
+                                                return (
+                                                    <option key={statusName} value={statusName}>
+                                                        {statusName}
+                                                    </option>
+                                                );
+                                            })
+                                        ) : (
+                                            <>
+                                                <option value="To Do">A Fazer</option>
+                                                <option value="In Progress">Em Andamento</option>
+                                                <option value="Done">Concluído</option>
+                                            </>
+                                        )}
+                                    </select>
+                                </div>
+
+                                <div className="grid grid-cols-5 gap-1 md:flex md:gap-1" onClick={(e) => e.stopPropagation()}>
+                                    {task.type === 'Epic' && (
+                                        <button
+                                            type="button"
+                                            onClick={() => onAddSubtask(task.id)}
+                                            className={iconButtonClass}
+                                            aria-label="Adicionar subtarefa"
+                                            title="Adicionar subtarefa"
+                                        >
+                                            <PlusIcon />
+                                        </button>
+                                    )}
+                                    {onSyncToJira && /^[A-Z]+-\d+$/.test(task.id) && (
+                                        <button
+                                            type="button"
+                                            onClick={() => onSyncToJira(task.id)}
+                                            disabled={isSyncing}
+                                            className={`${iconButtonClass} ${isSyncing ? 'opacity-50 cursor-not-allowed' : 'hover:!bg-blue-500 hover:!text-white'}`}
+                                            aria-label="Sincronizar com Jira"
+                                            title="Sincronizar com Jira"
+                                        >
+                                            {isSyncing ? <Spinner small /> : <RefreshIcon />}
+                                        </button>
+                                    )}
+                                    <button
+                                        type="button"
+                                        onClick={() => onEdit(task)}
+                                        className={iconButtonClass}
+                                        aria-label="Editar tarefa"
+                                        title="Editar"
+                                    >
+                                        <EditIcon />
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowDeleteConfirm(true)}
+                                        className={`${iconButtonClass} hover:!bg-red-500 hover:!text-white`}
+                                        aria-label="Excluir tarefa"
+                                        title="Excluir"
+                                    >
+                                        <TrashIcon />
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className={iconButtonClass}
+                                        onClick={handleToggleDetails}
+                                        aria-label={isDetailsOpen ? 'Recolher detalhes' : 'Expandir detalhes'}
+                                        aria-expanded={isDetailsOpen}
+                                        aria-controls={detailsRegionId}
+                                        title={isDetailsOpen ? 'Recolher detalhes' : 'Expandir detalhes'}
+                                    >
+                                        <ChevronDownIcon className={`transition-transform ${isDetailsOpen ? 'rotate-180' : ''}`} />
+                                    </button>
+                                </div>
+                            </div>
                         </div>
-                    )}
+                    </div>
+
+                    <AnimatePresence initial={false}>
+                        {isDetailsOpen && (
+                            <motion.div
+                                id={detailsRegionId}
+                                role="region"
+                                aria-label={`Detalhes da tarefa ${task.id}`}
+                                initial={reduceMotion ? false : { opacity: 0, height: 0 }}
+                                animate={reduceMotion ? { opacity: 1 } : { opacity: 1, height: 'auto' }}
+                                exit={reduceMotion ? { opacity: 0 } : { opacity: 0, height: 0 }}
+                                transition={{ duration: reduceMotion ? 0 : 0.2 }}
+                                className="overflow-hidden border-t border-base-300"
+                            >
+                                <div className="p-3 md:p-4 bg-base-100">
+                                    <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                                        <div className="tabs tabs-boxed bg-base-200 p-1 w-fit" role="tablist" aria-label="Seções da tarefa">
+                                            {sectionTabs.map((tab) => {
+                                                const isActive = tab.id === activeSection;
+                                                const tabId = `task-${safeDomId}-tab-${tab.id}`;
+                                                const panelId = `task-${safeDomId}-panel-${tab.id}`;
+                                                return (
+                                                    <button
+                                                        key={tab.id}
+                                                        type="button"
+                                                        id={tabId}
+                                                        role="tab"
+                                                        aria-selected={isActive}
+                                                        aria-controls={panelId}
+                                                        className={`tab ${isActive ? 'tab-active' : ''}`}
+                                                        onClick={() => setActiveSection(tab.id)}
+                                                    >
+                                                        <span>{tab.label}</span>
+                                                        {typeof tab.badge === 'number' && tab.badge > 0 ? (
+                                                            <span className="badge badge-primary badge-sm ml-2">
+                                                                {tab.badge}
+                                                            </span>
+                                                        ) : null}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+
+                                        {task.type === 'Tarefa' && onGenerateAll && (
+                                            <button
+                                                type="button"
+                                                onClick={() => onGenerateAll(task.id)}
+                                                disabled={isGeneratingAll || isGenerating || isGeneratingBdd}
+                                                className="btn btn-primary btn-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                            >
+                                                {isGeneratingAll ? (
+                                                    <>
+                                                        <Spinner small />
+                                                        <span>Gerando...</span>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                                        </svg>
+                                                        <span>Gerar Tudo</span>
+                                                    </>
+                                                )}
+                                            </button>
+                                        )}
+                                    </div>
+
+                                    <div
+                                        id={`task-${safeDomId}-panel-${activeSection}`}
+                                        role="tabpanel"
+                                        aria-labelledby={`task-${safeDomId}-tab-${activeSection}`}
+                                        className="mt-4"
+                                    >
+                                        {renderSectionContent()}
+                                    </div>
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
                 </div>
             </div>
-            {hasChildren && isChildrenOpen && <div className="ml-6 border-l border-surface-border/40 pl-3">{children}</div>}
+
+            {hasChildren && isChildrenOpen && (
+                <div id={childrenRegionId} className="ml-6 border-l border-base-300/60 pl-3 mt-1">
+                    {children}
+                </div>
+            )}
 
             <ConfirmDialog
                 isOpen={showDeleteConfirm}
@@ -1361,3 +1492,4 @@ export const JiraTaskItem: React.FC<{
         </div>
     );
 });
+
