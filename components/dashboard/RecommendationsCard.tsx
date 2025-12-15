@@ -53,6 +53,27 @@ export const RecommendationsCard: React.FC<RecommendationsCardProps> = React.mem
     return 'info';
   };
 
+  /**
+   * Retorna classes customizadas para melhorar o contraste do badge de impacto/esforço
+   * Garante contraste adequado WCAG AA contra o fundo bg-base-100
+   */
+  const getImpactEffortBadgeClasses = (status: 'success' | 'warning' | 'info'): string => {
+    switch (status) {
+      case 'warning':
+        // Usa fundo amarelo mais escuro e texto com alto contraste para warning
+        // warning-content (oklch(57% 0.245 27.325)) tem bom contraste sobre fundo amarelo claro
+        return 'bg-yellow-100 dark:bg-yellow-900/30 text-warning-content border-yellow-300 dark:border-yellow-600';
+      case 'info':
+        // Adiciona fundo sutil e texto com melhor contraste para info
+        return 'bg-info/20 text-info-content border-info/40';
+      case 'success':
+        // Adiciona fundo sutil para success (já tem bom contraste, mas mantém consistência)
+        return 'bg-success/20 text-success-content border-success/40';
+      default:
+        return '';
+    }
+  };
+
   // Ordenar por impacto e esforço (alto impacto + baixo esforço primeiro)
   const sortedRecommendations = [...analysis.recommendations].sort((a, b) => {
     const aScore = (a.impact === 'Alto' ? 3 : a.impact === 'Médio' ? 2 : 1) - 
@@ -82,7 +103,10 @@ export const RecommendationsCard: React.FC<RecommendationsCardProps> = React.mem
                   <StatusBadge status={getCategoryStatus(rec.category)}>
                     {rec.category}
                   </StatusBadge>
-                  <StatusBadge status={getImpactEffortStatus(rec.impact, rec.effort)}>
+                  <StatusBadge 
+                    status={getImpactEffortStatus(rec.impact, rec.effort)}
+                    className={getImpactEffortBadgeClasses(getImpactEffortStatus(rec.impact, rec.effort))}
+                  >
                     Impacto: {rec.impact} | Esforço: {rec.effort}
                   </StatusBadge>
                 </div>
