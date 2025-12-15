@@ -21,20 +21,20 @@ const FilterSection: React.FC<FilterSectionProps> = ({
   const contentId = `filter-section-${id}`;
 
   return (
-    <div className="border border-surface-border rounded-lg overflow-hidden">
+    <div className="rounded-2xl border border-base-300 bg-base-100 overflow-hidden">
       <button
         type="button"
         onClick={() => onToggle(id)}
-        className="w-full flex items-center justify-between p-3 bg-surface-hover/50 hover:bg-surface-hover transition-colors"
+        className="w-full flex items-center justify-between p-3 bg-base-100 hover:bg-base-200 transition-colors"
         aria-expanded={isExpanded}
         aria-controls={contentId}
       >
         <div className="flex items-center gap-2">
           {icon}
-          <span className="text-sm font-semibold text-text-primary">{title}</span>
+          <span className="text-sm font-semibold text-base-content">{title}</span>
         </div>
         <svg 
-          className={`w-4 h-4 text-text-secondary transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+          className={`w-4 h-4 text-base-content/60 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
           fill="none" 
           stroke="currentColor" 
           viewBox="0 0 24 24"
@@ -43,7 +43,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
         </svg>
       </button>
       {isExpanded && (
-        <div id={contentId} className="p-3 bg-surface/50">
+        <div id={contentId} className="p-3 bg-base-100">
           {children}
         </div>
       )}
@@ -97,13 +97,13 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-text-primary flex items-center gap-2">
-          <svg className="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <h3 className="text-lg font-semibold text-base-content flex items-center gap-2">
+          <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
           </svg>
           Filtros rápidos
           {activeFiltersCount > 0 && (
-            <span className="text-xs bg-accent text-white px-2 py-1 rounded-full font-semibold">
+            <span className="badge badge-primary badge-sm">
               {activeFiltersCount}
             </span>
           )}
@@ -111,7 +111,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
         {activeFiltersCount > 0 && (
           <button
             onClick={onClearFilters}
-            className="text-sm text-accent hover:text-accent-light transition-colors flex items-center gap-1"
+            className="btn btn-ghost btn-sm"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -121,13 +121,13 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
         )}
       </div>
 
-      <div className="space-y-3 grid-responsive">
+      <div className="space-y-3">
         {availableTestTypes.length > 0 && (
           <FilterSection
             id="test-types"
             title="Estratégia de Teste"
             icon={
-              <svg className="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 3l4 4-4 4m4-4h8m-8 6l4 4-4 4m4-4h8" />
               </svg>
             }
@@ -139,10 +139,8 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
                 <button
                   key={type}
                   onClick={() => toggleArrayFilter('requiredTestTypes', type)}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
-                    filters.requiredTestTypes?.includes(type)
-                      ? 'bg-accent text-white shadow-md shadow-accent/30 border border-accent/50'
-                      : 'bg-surface border border-surface-border text-text-secondary hover:bg-surface-hover hover:border-accent/30'
+                  className={`btn btn-xs rounded-full whitespace-nowrap ${
+                    filters.requiredTestTypes?.includes(type) ? 'btn-primary' : 'btn-outline'
                   }`}
                 >
                   {type}
@@ -156,7 +154,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
           id="test-results"
           title="Status dos Testes"
           icon={
-            <svg className="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           }
@@ -168,10 +166,8 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
               <button
                 key={result}
                 onClick={() => toggleArrayFilter('testResultStatus', result as any)}
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
-                  filters.testResultStatus?.includes(result as any)
-                    ? 'bg-accent text-white shadow-md shadow-accent/30 border border-accent/50'
-                    : 'bg-surface border border-surface-border text-text-secondary hover:bg-surface-hover hover:border-accent/30'
+                className={`btn btn-xs rounded-full whitespace-nowrap ${
+                  filters.testResultStatus?.includes(result as any) ? 'btn-primary' : 'btn-outline'
                 }`}
               >
                 {result}

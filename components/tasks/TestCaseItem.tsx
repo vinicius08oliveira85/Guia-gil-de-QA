@@ -5,11 +5,11 @@ import { normalizeExecutedStrategy } from '../../utils/testCaseMigration';
 import { ToolsSelector } from './ToolsSelector';
 import { TestTypeBadge } from '../common/TestTypeBadge';
 
-const priorityColorMap: { [key: string]: { bg: string; text: string } } = {
-    'Urgente': { bg: 'bg-red-600/30', text: 'text-red-300' },
-    'Alta': { bg: 'bg-orange-600/30', text: 'text-orange-300' },
-    'Média': { bg: 'bg-yellow-600/30', text: 'text-yellow-300' },
-    'Baixa': { bg: 'bg-green-600/30', text: 'text-green-300' },
+const priorityBadgeClassName: Record<string, string> = {
+    Urgente: 'badge badge-error badge-sm',
+    Alta: 'badge badge-warning badge-sm',
+    Média: 'badge badge-info badge-sm',
+    Baixa: 'badge badge-ghost badge-sm',
 };
 
 export const TestCaseItem: React.FC<{ 
@@ -21,13 +21,13 @@ export const TestCaseItem: React.FC<{
     onEdit?: () => void;
     onDelete?: () => void;
 }> = ({ testCase, onStatusChange, onToggleAutomated, onExecutedStrategyChange, onToolsChange, onEdit, onDelete }) => {
-    const statusColor = {
-        'Not Run': 'bg-slate-600',
-        'Passed': 'bg-green-600',
-        'Failed': 'bg-red-600',
-        'Blocked': 'bg-yellow-600',
+    const statusBadgeClassName: Record<TestCase['status'], string> = {
+        'Not Run': 'badge badge-ghost badge-sm',
+        Passed: 'badge badge-success badge-sm',
+        Failed: 'badge badge-error badge-sm',
+        Blocked: 'badge badge-warning badge-sm',
     };
-    const statusLabel = {
+    const statusLabel: Record<TestCase['status'], string> = {
         'Not Run': 'Não Executado',
         'Passed': 'Aprovado',
         'Failed': 'Reprovado',
@@ -39,10 +39,17 @@ export const TestCaseItem: React.FC<{
     const customStrategyValue = customStrategies.join(', ');
     const showExecutedStrategySummary = selectedStrategies.length > 0;
     const [customStrategyDraft, setCustomStrategyDraft] = useState(customStrategyValue);
+    const [detailsOpen, setDetailsOpen] = useState(() => testCase.status === 'Failed');
 
     useEffect(() => {
         setCustomStrategyDraft(customStrategyValue);
     }, [customStrategyValue]);
+
+    useEffect(() => {
+        if (testCase.status === 'Failed') {
+            setDetailsOpen(true);
+        }
+    }, [testCase.status]);
 
     const handleStrategyToggle = (strategy: string) => {
         const currentStrategies = normalizeExecutedStrategy(testCase.executedStrategy);
@@ -74,73 +81,89 @@ export const TestCaseItem: React.FC<{
         onExecutedStrategyChange(allStrategies);
     };
 
-    const iconButtonClass = `
-        p-2 rounded-full border border-surface-border text-text-secondary hover:text-white
-        hover:border-accent hover:bg-accent/20 transition-colors
-    `;
-
     return (
-        <div className="bg-surface p-4 rounded-md border border-surface-border">
-            <div className="flex flex-wrap gap-4 mb-3 items-center">
-                <div className="flex flex-wrap gap-2 items-center flex-1">
-                    {testCase.strategies && testCase.strategies.map(strategy => (
-                        <TestTypeBadge key={strategy} testType={strategy} size="sm" />
-                    ))}
-                </div>
+        <div className="rounded-2xl border border-base-300 bg-base-100 p-4 transition-colors hover:border-primary/30">
+            <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0 flex-1 space-y-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                        {recommendedStrategies.map((strategy) => (
+                            <TestTypeBadge key={strategy} testType={strategy} size="sm" />
+                        ))}
+                    </div>
 
-                {(onEdit || onDelete) && (
-                    <div className="flex items-center gap-2 ml-auto">
-                        {onEdit && (
-                            <button
-                                type="button"
-                                onClick={onEdit}
-                                className={iconButtonClass}
-                                aria-label="Editar caso de teste"
-                            >
-                                <EditIcon className="w-4 h-4" />
-                            </button>
+                    <p className="text-sm font-semibold text-base-content break-words">{testCase.description}</p>
+
+                    <div className="flex flex-wrap items-center gap-2">
+                        <span className={statusBadgeClassName[testCase.status]}>
+                            {statusLabel[testCase.status]}
+                        </span>
+                        {testCase.priority && (
+                            <span className={priorityBadgeClassName[testCase.priority] || 'badge badge-ghost badge-sm'}>
+                                {testCase.priority}
+                            </span>
                         )}
-                        {onDelete && (
-                            <button
-                                type="button"
-                                onClick={onDelete}
-                                className={`${iconButtonClass} hover:text-red-300 hover:border-red-400`}
-                                aria-label="Excluir caso de teste"
-                            >
-                                <TrashIcon className="w-4 h-4" />
-                            </button>
+                        {testCase.isAutomated && (
+                            <span className="badge badge-outline badge-sm">Automatizado</span>
                         )}
                     </div>
-                )}
+                </div>
 
-                <label className="relative inline-flex items-center cursor-pointer ml-auto">
-                    <input 
-                        type="checkbox" 
-                        checked={!!testCase.isAutomated}
-                        onChange={e => onToggleAutomated(e.target.checked)}
-                        className="sr-only peer" 
-                    />
-                    <div className="w-11 h-6 bg-slate-600 rounded-full peer peer-focus:ring-2 peer-focus:ring-accent/50 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent"></div>
-                    <span className="ml-3 text-sm font-medium text-text-primary">Automatizado</span>
-                </label>
+                <div className="flex items-center gap-2">
+                    <label className="flex items-center gap-2">
+                        <input
+                            type="checkbox"
+                            checked={!!testCase.isAutomated}
+                            onChange={(e) => onToggleAutomated(e.target.checked)}
+                            className="toggle toggle-primary toggle-sm"
+                            aria-label="Marcar caso como automatizado"
+                        />
+                        <span className="hidden sm:inline text-xs font-semibold text-base-content/70">
+                            Automatizado
+                        </span>
+                    </label>
+
+                    {(onEdit || onDelete) && (
+                        <div className="flex items-center gap-1">
+                            {onEdit && (
+                                <button
+                                    type="button"
+                                    onClick={onEdit}
+                                    className="btn btn-ghost btn-sm btn-circle"
+                                    aria-label="Editar caso de teste"
+                                >
+                                    <EditIcon className="w-4 h-4" />
+                                </button>
+                            )}
+                            {onDelete && (
+                                <button
+                                    type="button"
+                                    onClick={onDelete}
+                                    className="btn btn-ghost btn-sm btn-circle text-error"
+                                    aria-label="Excluir caso de teste"
+                                >
+                                    <TrashIcon className="w-4 h-4" />
+                                </button>
+                            )}
+                        </div>
+                    )}
+                </div>
             </div>
+
             {recommendedStrategies.length > 0 && (
-                <div className="mt-2">
-                    <p className="text-[0.65rem] uppercase tracking-wide text-text-secondary">
+                <div className="mt-4">
+                    <p className="text-xs font-semibold text-base-content/70">
                         Selecione os testes executados
                     </p>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                        {recommendedStrategies.map(strategy => {
+                    <div className="mt-2 flex flex-wrap gap-2">
+                        {recommendedStrategies.map((strategy) => {
                             const isSelected = selectedStrategies.includes(strategy);
                             return (
                                 <button
                                     key={strategy}
                                     type="button"
                                     onClick={() => handleStrategyToggle(strategy)}
-                                    className={`px-3 py-1 rounded-full text-xs font-semibold border transition-colors flex items-center gap-1 ${
-                                        isSelected
-                                            ? 'bg-accent text-white border-accent'
-                                            : 'bg-surface-hover text-text-primary border-surface-border hover:border-accent'
+                                    className={`btn btn-xs rounded-full gap-1 ${
+                                        isSelected ? 'btn-primary' : 'btn-outline'
                                     }`}
                                 >
                                     {isSelected && <CheckIcon className="w-3 h-3" />}
@@ -151,8 +174,9 @@ export const TestCaseItem: React.FC<{
                     </div>
                 </div>
             )}
-            <div className="mt-3">
-                <label className="block text-xs font-semibold text-text-secondary mb-1">
+
+            <div className="mt-4">
+                <label className="block text-xs font-semibold text-base-content/70 mb-1">
                     Ou descreva o teste executado
                 </label>
                 <input
@@ -161,22 +185,19 @@ export const TestCaseItem: React.FC<{
                     onChange={(e) => setCustomStrategyDraft(e.target.value)}
                     onBlur={(e) => handleCustomStrategyBlur(e.target.value)}
                     placeholder="Ex: Teste Exploratório, Teste de Acessibilidade (separados por vírgula)"
-                    className="w-full bg-surface-hover border border-surface-border rounded-md px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent/50"
+                    className="input input-bordered input-sm w-full"
                 />
-                <p className="text-[0.65rem] text-text-secondary mt-1">
+                <p className="mt-1 text-xs text-base-content/70">
                     Use esta opção se executou testes diferentes das recomendações acima. Separe múltiplos testes por vírgula.
                 </p>
                 {showExecutedStrategySummary && (
                     <div className="mt-2">
-                        <p className="text-xs text-accent mb-1">
+                        <p className="text-xs font-semibold text-base-content/70 mb-1">
                             Testes registrados ({selectedStrategies.length}):
                         </p>
-                        <div className="flex flex-wrap gap-1">
+                        <div className="flex flex-wrap gap-2">
                             {selectedStrategies.map((strategy, idx) => (
-                                <span
-                                    key={idx}
-                                    className="px-2 py-0.5 text-xs font-semibold rounded-full bg-accent/20 text-accent-light border border-accent/30"
-                                >
+                                <span key={idx} className="badge badge-outline badge-sm">
                                     {strategy}
                                 </span>
                             ))}
@@ -184,53 +205,9 @@ export const TestCaseItem: React.FC<{
                     </div>
                 )}
             </div>
-            <div className="flex items-center justify-between mt-4">
-                <p className="font-semibold text-text-primary">{testCase.description}</p>
-                {testCase.priority && (
-                    <span className={`px-2 py-1 text-xs font-semibold rounded-full ${priorityColorMap[testCase.priority]?.bg || 'bg-slate-600/30'} ${priorityColorMap[testCase.priority]?.text || 'text-slate-300'}`}>
-                        {testCase.priority}
-                    </span>
-                )}
-            </div>
-            <div className="mt-2 pl-4 border-l-2 border-slate-700">
-                {testCase.preconditions && (
-                    <>
-                        <p className="font-medium text-text-secondary">Précondições:</p>
-                        <p className="text-text-primary mt-1">{testCase.preconditions}</p>
-                    </>
-                )}
-                <p className="font-medium text-text-secondary mt-2">Passos:</p>
-                <ul className="list-disc list-inside text-text-primary space-y-1 mt-1">
-                    {testCase.steps.map((step, i) => <li key={i}>{step}</li>)}
-                </ul>
-                <p className="font-medium text-text-secondary mt-2">Resultado Esperado:</p>
-                <p className="text-text-primary mt-1">{testCase.expectedResult}</p>
-                 {testCase.status === 'Failed' && testCase.observedResult && (
-                    <>
-                        <p className="font-medium text-red-400 mt-2">Resultado Encontrado:</p>
-                        <p className="text-red-300 mt-1">{testCase.observedResult}</p>
-                    </>
-                )}
-                {(testCase.testSuite || testCase.testEnvironment) && (
-                    <div className="mt-2 flex flex-wrap gap-4">
-                        {testCase.testSuite && (
-                            <div>
-                                <p className="font-medium text-text-secondary text-xs">Suite de teste:</p>
-                                <p className="text-text-primary text-sm mt-1">{testCase.testSuite}</p>
-                            </div>
-                        )}
-                        {testCase.testEnvironment && (
-                            <div>
-                                <p className="font-medium text-text-secondary text-xs">Ambiente de teste:</p>
-                                <p className="text-text-primary text-sm mt-1">{testCase.testEnvironment}</p>
-                            </div>
-                        )}
-                    </div>
-                )}
-            </div>
 
             {onToolsChange && (
-                <div className="mt-4 p-3 bg-surface-hover rounded-lg border border-surface-border">
+                <div className="mt-4 rounded-2xl border border-base-300 bg-base-100 p-3">
                     <ToolsSelector
                         selectedTools={testCase.toolsUsed || []}
                         onToolsChange={onToolsChange}
@@ -240,13 +217,75 @@ export const TestCaseItem: React.FC<{
                 </div>
             )}
 
-            <div className="mt-4 flex items-center justify-between">
-                <span className={`px-3 py-1 text-xs font-semibold text-white rounded-full ${statusColor[testCase.status]}`}>
+            <details
+                className="collapse collapse-arrow mt-4 rounded-2xl border border-base-300 bg-base-100"
+                open={detailsOpen}
+                onToggle={(event) => setDetailsOpen(event.currentTarget.open)}
+            >
+                <summary className="collapse-title text-sm font-semibold">
+                    Detalhes do caso de teste
+                </summary>
+                <div className="collapse-content space-y-4">
+                    {testCase.preconditions && (
+                        <div>
+                            <p className="text-xs font-semibold text-base-content/70">Pré-condições</p>
+                            <p className="mt-1 text-sm text-base-content">{testCase.preconditions}</p>
+                        </div>
+                    )}
+
+                    <div>
+                        <p className="text-xs font-semibold text-base-content/70">Passos</p>
+                        <ul className="mt-2 list-disc list-inside space-y-1 text-sm text-base-content">
+                            {testCase.steps.map((step, i) => (
+                                <li key={i}>{step}</li>
+                            ))}
+                        </ul>
+                    </div>
+
+                    <div>
+                        <p className="text-xs font-semibold text-base-content/70">Resultado esperado</p>
+                        <p className="mt-1 text-sm text-base-content">{testCase.expectedResult}</p>
+                    </div>
+
+                    {testCase.status === 'Failed' && testCase.observedResult && (
+                        <div className="alert alert-error">
+                            <div>
+                                <p className="text-xs font-semibold">Resultado encontrado</p>
+                                <p className="text-sm">{testCase.observedResult}</p>
+                            </div>
+                        </div>
+                    )}
+
+                    {(testCase.testSuite || testCase.testEnvironment) && (
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                            {testCase.testSuite && (
+                                <div className="rounded-xl border border-base-300 bg-base-100 p-3">
+                                    <p className="text-xs font-semibold text-base-content/70">Suite de teste</p>
+                                    <p className="mt-1 text-sm text-base-content">{testCase.testSuite}</p>
+                                </div>
+                            )}
+                            {testCase.testEnvironment && (
+                                <div className="rounded-xl border border-base-300 bg-base-100 p-3">
+                                    <p className="text-xs font-semibold text-base-content/70">Ambiente de teste</p>
+                                    <p className="mt-1 text-sm text-base-content">{testCase.testEnvironment}</p>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
+            </details>
+
+            <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <span className={statusBadgeClassName[testCase.status]}>
                     {statusLabel[testCase.status]}
                 </span>
-                <div className="flex gap-2">
-                    <button onClick={() => onStatusChange('Passed')} className="btn btn-approve text-sm">Aprovar</button>
-                    <button onClick={() => onStatusChange('Failed')} className="btn btn-reject text-sm">Reprovar</button>
+                <div className="flex items-center gap-2">
+                    <button type="button" onClick={() => onStatusChange('Passed')} className="btn btn-success btn-sm">
+                        Aprovar
+                    </button>
+                    <button type="button" onClick={() => onStatusChange('Failed')} className="btn btn-error btn-sm">
+                        Reprovar
+                    </button>
                 </div>
             </div>
         </div>

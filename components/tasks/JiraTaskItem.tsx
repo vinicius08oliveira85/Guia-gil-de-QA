@@ -710,28 +710,26 @@ export const JiraTaskItem: React.FC<{
         return (
             <div className="space-y-md">
                 {/* Sub-abas de Testes */}
-                <div className="flex gap-2 border-b border-surface-border">
+                <div className="tabs tabs-boxed bg-base-200 w-fit" role="tablist" aria-label="Sub-abas de testes">
                     <button
+                        type="button"
+                        role="tab"
+                        aria-selected={activeTestSubSection === 'strategy'}
                         onClick={() => setActiveTestSubSection('strategy')}
-                        className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 ${
-                            activeTestSubSection === 'strategy'
-                                ? 'border-accent text-accent'
-                                : 'border-transparent text-text-secondary hover:text-text-primary'
-                        }`}
+                        className={`tab ${activeTestSubSection === 'strategy' ? 'tab-active' : ''}`}
                     >
-                        Estratégia de Teste
+                        Estratégia
                     </button>
                     <button
+                        type="button"
+                        role="tab"
+                        aria-selected={activeTestSubSection === 'test-cases'}
                         onClick={() => setActiveTestSubSection('test-cases')}
-                        className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 ${
-                            activeTestSubSection === 'test-cases'
-                                ? 'border-accent text-accent'
-                                : 'border-transparent text-text-secondary hover:text-text-primary'
-                        }`}
+                        className={`tab ${activeTestSubSection === 'test-cases' ? 'tab-active' : ''}`}
                     >
-                        Casos de Teste
+                        Casos de teste
                         {task.testCases?.length ? (
-                            <span className="ml-2 px-1.5 py-0.5 text-xs rounded-full bg-accent/10 text-accent whitespace-nowrap">
+                            <span className="badge badge-primary badge-sm ml-2">
                                 {task.testCases.length}
                             </span>
                         ) : null}
@@ -742,8 +740,8 @@ export const JiraTaskItem: React.FC<{
                 {activeTestSubSection === 'strategy' && (
                     <div>
                         <div className="flex items-center justify-between gap-2">
-                            <h3 className="text-lg font-semibold text-text-primary">Estratégia de Teste</h3>
-                            <span className="text-xs text-text-secondary">{task.testStrategy?.length || 0} item(ns)</span>
+                            <h3 className="text-lg font-semibold text-base-content">Estratégia de Teste</h3>
+                            <span className="text-xs text-base-content/70">{task.testStrategy?.length || 0} item(ns)</span>
                         </div>
                         {isGenerating && <div className="flex justify-center py-2"><Spinner small /></div>}
                         {(task.testStrategy?.length ?? 0) > 0 ? (
@@ -784,16 +782,16 @@ export const JiraTaskItem: React.FC<{
                 {activeTestSubSection === 'test-cases' && canHaveTestCases && (
                     <div>
                         <div className="flex items-center justify-between gap-2">
-                            <h3 className="text-lg font-semibold text-text-primary">Casos de Teste</h3>
-                            <span className="text-xs text-text-secondary">{task.testCases?.length || 0} caso(s)</span>
+                            <h3 className="text-lg font-semibold text-base-content">Casos de Teste</h3>
+                            <span className="text-xs text-base-content/70">{task.testCases?.length || 0} caso(s)</span>
                         </div>
                         {isGenerating ? (
                             <div className="space-y-3 mt-4">
                                 <LoadingSkeleton variant="task" count={3} />
                                 <div className="flex flex-col items-center justify-center py-4">
                                     <Spinner small />
-                                    <p className="text-sm text-text-secondary mt-2">Gerando casos de teste com IA...</p>
-                                    <p className="text-xs text-text-secondary mt-1">⏱️ Isso pode levar 10-30 segundos</p>
+                                    <p className="mt-2 text-sm text-base-content/70">Gerando casos de teste com IA...</p>
+                                    <p className="mt-1 text-xs text-base-content/70">⏱️ Isso pode levar 10-30 segundos</p>
                                 </div>
                             </div>
                         ) : (task.testCases || []).length > 0 ? (
@@ -841,7 +839,7 @@ export const JiraTaskItem: React.FC<{
 
                 {/* Ferramentas Utilizadas na Task */}
                 {onTaskToolsChange && (
-                    <div className="mt-md p-3 bg-surface-hover rounded-lg border border-surface-border">
+                    <div className="mt-md p-3 bg-base-100 rounded-2xl border border-base-300">
                         <ToolsSelector
                             selectedTools={task.toolsUsed || []}
                             onToolsChange={onTaskToolsChange}
@@ -853,16 +851,17 @@ export const JiraTaskItem: React.FC<{
 
                 {!isGenerating && (
                     <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-3">
-                        <button onClick={() => onGenerateTests(task.id, detailLevel)} className="btn btn-primary">
+                        <button onClick={() => onGenerateTests(task.id, detailLevel)} className="btn btn-primary btn-sm">
                             {hasTests ? <RefreshIcon /> : <PlusIcon />}
                             <span>{hasTests ? 'Regerar com IA' : 'Gerar com IA'}</span>
                         </button>
                         <div className="flex-1">
-                            <label htmlFor={`detail-level-${task.id}`} className="block text-sm text-text-secondary mb-1">Nível de Detalhe</label>
+                            <label htmlFor={`detail-level-${task.id}`} className="block text-sm text-base-content/70 mb-1">Nível de Detalhe</label>
                             <select
                                 id={`detail-level-${task.id}`}
                                 value={detailLevel}
                                 onChange={(e) => setDetailLevel(e.target.value as TestCaseDetailLevel)}
+                                className="select select-bordered select-sm w-full"
                             >
                                 <option value="Padrão">Padrão</option>
                                 <option value="Resumido">Resumido</option>

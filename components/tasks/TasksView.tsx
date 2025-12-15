@@ -48,7 +48,7 @@ const compareTasksById = (a: JiraTask, b: JiraTask) => {
 };
 import { JiraTaskItem, TaskWithChildren } from './JiraTaskItem';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
-import { useFilters, FilterOptions } from '../../hooks/useFilters';
+import { useFilters } from '../../hooks/useFilters';
 import { createBugFromFailedTest } from '../../utils/bugAutoCreation';
 import { getTaskDependents, getReadyTasks } from '../../utils/dependencyService';
 import { notifyTestFailed, notifyBugCreated, notifyCommentAdded, notifyDependencyResolved } from '../../utils/notificationService';
@@ -973,21 +973,6 @@ export const TasksView: React.FC<{
     const testExecutionRate = stats.totalTests > 0 ? Math.round((stats.executedTests / stats.totalTests) * 100) : 0;
     const automationRate = stats.totalTests > 0 ? Math.round((stats.automatedTests / stats.totalTests) * 100) : 0;
 
-    const filterChips = useMemo(() => {
-        const chips: { key: keyof FilterOptions; label: string }[] = [];
-        const pushArray = (key: keyof FilterOptions, values?: (string | number)[], prefix?: string) => {
-            if (values && values.length > 0) {
-                chips.push({ key, label: `${prefix || ''}${values.join(', ')}`.trim() });
-            }
-        };
-        pushArray('testResultStatus', filters.testResultStatus, 'Testes: ');
-        pushArray('requiredTestTypes', filters.requiredTestTypes, 'Estratégia de teste: ');
-        if (filters.searchQuery) {
-            chips.push({ key: 'searchQuery', label: `Busca: "${filters.searchQuery}"` });
-        }
-        return chips;
-    }, [filters]);
-
     const taskTree = useMemo(() => {
         const tasks = [...filteredTasks].sort(compareTasksById);
         const taskMap = new Map(tasks.map(t => [t.id, { ...t, children: [] as TaskWithChildren[] }]));
@@ -1202,7 +1187,7 @@ export const TasksView: React.FC<{
 
     return (
         <>
-        <Card className="p-5">
+        <Card hoverable={false} className="p-5">
             <div className="flex flex-col gap-4 mb-6">
                 <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
                     <div className="flex-shrink-0">
@@ -1404,55 +1389,6 @@ export const TasksView: React.FC<{
                 </div>
             </div>
 
-            {filterChips.length > 0 && (
-                <div className="mb-4 p-4 bg-base-100 rounded-xl border border-base-300">
-                    <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-2">
-                            <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-                            </svg>
-                            <span className="text-sm font-semibold text-base-content">Filtros Ativos</span>
-                            <span className="badge badge-primary badge-sm">
-                                {filterChips.length}
-                            </span>
-                        </div>
-                        <button 
-                            type="button"
-                            onClick={clearFilters} 
-                            className="btn btn-ghost btn-sm text-sm text-primary hover:text-primary/80 transition-colors flex items-center gap-1"
-                        >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                            Limpar todos
-                        </button>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-2">
-                            {filterChips.map(chip => (
-                                <span
-                                    key={`${chip.key}-${chip.label}`}
-                                    className="badge badge-outline badge-neutral group flex items-center gap-2 text-xs font-semibold"
-                                >
-                                    <svg className="w-3 h-3 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                                    </svg>
-                                    {chip.label}
-                                    <button
-                                        type="button"
-                                        onClick={() => removeFilter(chip.key)}
-                                        className="ml-1 text-base-content/60 hover:text-error transition-colors rounded-full hover:bg-error/10 p-0.5"
-                                        aria-label={`Remover filtro ${chip.label}`}
-                                    >
-                                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                        </svg>
-                                    </button>
-                                </span>
-                            ))}
-                    </div>
-                </div>
-            )}
-
             {/* Barra de filtros rápidos visíveis */}
             <QuickFilters
                 filters={filters}
@@ -1462,80 +1398,84 @@ export const TasksView: React.FC<{
                 onRemoveFilter={removeFilter}
             />
 
-            {showFilters && (
-                <div className="mb-4">
-                    <FilterPanel
-                        filters={filters}
-                        onFilterChange={updateFilter}
-                        onClearFilters={clearFilters}
-                        availableTestTypes={availableTestTypes}
-                        activeFiltersCount={activeFiltersCount}
-                    />
-                </div>
-            )}
-
-            <div className="flex flex-col gap-4 mb-4">
-                {currentSuggestion && showSuggestions && (
-                    <div className="bg-base-100 rounded-xl border border-base-300 overflow-hidden shadow-lg">
-                        <div className="flex items-center justify-between bg-base-200 px-4 py-3 border-b border-base-300">
-                            <div className="flex items-center gap-2">
-                                <div className="p-1.5 bg-primary/10 rounded-lg">
-                                    <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                                    </svg>
-                                </div>
-                                <span className="text-sm font-semibold text-base-content">Sugestões inteligentes</span>
-                            </div>
-                            <button
-                                type="button"
-                                onClick={() => setShowSuggestions(false)}
-                                className="btn btn-ghost btn-sm text-xs text-base-content/60 hover:text-base-content transition-colors p-1 rounded"
-                            >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            </button>
-                        </div>
-                        <div className="p-4 bg-base-100">
-                            <SuggestionBanner
-                                suggestion={currentSuggestion}
-                                onDismiss={(id) => setDismissedSuggestions((prev) => new Set([...prev, id]))}
+            <div className={`grid gap-6 ${showFilters ? 'lg:grid-cols-[360px_1fr]' : ''}`}>
+                {showFilters && (
+                    <aside className="space-y-4">
+                        <div className="rounded-[var(--rounded-box)] border border-base-300 bg-base-100 p-4">
+                            <FilterPanel
+                                filters={filters}
+                                onFilterChange={updateFilter}
+                                onClearFilters={clearFilters}
+                                availableTestTypes={availableTestTypes}
+                                activeFiltersCount={activeFiltersCount}
                             />
                         </div>
-                    </div>
+                    </aside>
                 )}
-                {selectedTasks.size > 0 && (
-                    <BulkActions
-                        selectedTasks={selectedTasks}
-                        project={project}
-                        onUpdateProject={onUpdateProject}
-                        onClearSelection={() => setSelectedTasks(new Set())}
-                        onProjectCreated={(projectId) => {
-                            const { selectProject } = useProjectsStore.getState();
-                            selectProject(projectId);
-                        }}
-                    />
-                )}
-                {(generatingTestsTaskId || generatingBddTaskId) && (
-                    <div className="p-4 bg-primary/10 border border-primary/40 rounded-lg text-sm text-base-content flex items-center gap-2">
-                        <span className="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent"></span>
-                        {generatingTestsTaskId && <span>Gerando casos de teste para {generatingTestsTaskId}...</span>}
-                        {generatingBddTaskId && <span>Gerando cenários BDD para {generatingBddTaskId}...</span>}
-                    </div>
-                )}
-            </div>
 
-            {isTaskFormOpen && (
-                <div className="mb-4 p-4 bg-base-100 rounded-lg border border-base-300">
-                    <TaskForm 
-                        onSave={handleSaveTask} 
-                        onCancel={() => { setIsTaskFormOpen(false); setEditingTask(undefined); }} 
-                        existingTask={editingTask}
-                        epics={epics}
-                        parentId={defaultParentId}
-                    />
-                </div>
-            )}
+                <div className="space-y-4 min-w-0">
+                    <div className="flex flex-col gap-4">
+                        {currentSuggestion && showSuggestions && (
+                            <div className="bg-base-100 rounded-xl border border-base-300 overflow-hidden shadow-lg">
+                                <div className="flex items-center justify-between bg-base-200 px-4 py-3 border-b border-base-300">
+                                    <div className="flex items-center gap-2">
+                                        <div className="p-1.5 bg-primary/10 rounded-lg">
+                                            <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                                            </svg>
+                                        </div>
+                                        <span className="text-sm font-semibold text-base-content">Sugestões inteligentes</span>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowSuggestions(false)}
+                                        className="btn btn-ghost btn-sm text-xs text-base-content/60 hover:text-base-content transition-colors p-1 rounded"
+                                    >
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
+                                </div>
+                                <div className="p-4 bg-base-100">
+                                    <SuggestionBanner
+                                        suggestion={currentSuggestion}
+                                        onDismiss={(id) => setDismissedSuggestions((prev) => new Set([...prev, id]))}
+                                    />
+                                </div>
+                            </div>
+                        )}
+                        {selectedTasks.size > 0 && (
+                            <BulkActions
+                                selectedTasks={selectedTasks}
+                                project={project}
+                                onUpdateProject={onUpdateProject}
+                                onClearSelection={() => setSelectedTasks(new Set())}
+                                onProjectCreated={(projectId) => {
+                                    const { selectProject } = useProjectsStore.getState();
+                                    selectProject(projectId);
+                                }}
+                            />
+                        )}
+                        {(generatingTestsTaskId || generatingBddTaskId) && (
+                            <div className="p-4 bg-primary/10 border border-primary/40 rounded-lg text-sm text-base-content flex items-center gap-2">
+                                <span className="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent"></span>
+                                {generatingTestsTaskId && <span>Gerando casos de teste para {generatingTestsTaskId}...</span>}
+                                {generatingBddTaskId && <span>Gerando cenários BDD para {generatingBddTaskId}...</span>}
+                            </div>
+                        )}
+                    </div>
+
+                    {isTaskFormOpen && (
+                        <div className="p-4 bg-base-100 rounded-lg border border-base-300">
+                            <TaskForm 
+                                onSave={handleSaveTask} 
+                                onCancel={() => { setIsTaskFormOpen(false); setEditingTask(undefined); }} 
+                                existingTask={editingTask}
+                                epics={epics}
+                                parentId={defaultParentId}
+                            />
+                        </div>
+                    )}
 
         <Modal 
             isOpen={showJiraProjectSelector} 
@@ -1588,39 +1528,41 @@ export const TasksView: React.FC<{
                     </div>
                 </div>
             </Modal>
-            {taskTree.length > 0 ? (
-                <div>
-                    {renderTaskTree(taskTree, 0).map((taskElement, index) => (
-                        <motion.div
-                            key={taskElement.key || index}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ 
-                                delay: index * 0.05,
-                                duration: 0.3 
+                    {taskTree.length > 0 ? (
+                        <div>
+                            {renderTaskTree(taskTree, 0).map((taskElement, index) => (
+                                <motion.div
+                                    key={taskElement.key || index}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ 
+                                        delay: index * 0.05,
+                                        duration: 0.3 
+                                    }}
+                                >
+                                    {taskElement}
+                                </motion.div>
+                            ))}
+                        </div>
+                    ) : (
+                        <EmptyState
+                            icon="📋"
+                            title="Nenhuma tarefa criada ainda"
+                            description="Comece criando sua primeira tarefa para organizar seu trabalho de QA."
+                            action={{
+                                label: "Adicionar Tarefa",
+                                onClick: () => openTaskFormForNew(),
+                                variant: 'primary'
                             }}
-                        >
-                            {taskElement}
-                        </motion.div>
-                    ))}
+                            tip={isBeginnerMode ? "Clique em 'Adicionar Tarefa' para ver um guia passo a passo!" : undefined}
+                            helpContent={isBeginnerMode ? {
+                                title: 'Criar sua primeira tarefa',
+                                content: 'Tarefas representam funcionalidades ou bugs que precisam ser testados. Use o wizard para aprender passo a passo como criar tarefas corretamente.'
+                            } : undefined}
+                        />
+                    )}
                 </div>
-            ) : (
-                <EmptyState
-                    icon="📋"
-                    title="Nenhuma tarefa criada ainda"
-                    description="Comece criando sua primeira tarefa para organizar seu trabalho de QA."
-                    action={{
-                        label: "Adicionar Tarefa",
-                        onClick: () => openTaskFormForNew(),
-                        variant: 'primary'
-                    }}
-                    tip={isBeginnerMode ? "Clique em 'Adicionar Tarefa' para ver um guia passo a passo!" : undefined}
-                    helpContent={isBeginnerMode ? {
-                        title: 'Criar sua primeira tarefa',
-                        content: 'Tarefas representam funcionalidades ou bugs que precisam ser testados. Use o wizard para aprender passo a passo como criar tarefas corretamente.'
-                    } : undefined}
-                />
-            )}
+            </div>
         </Card>
 
         <Modal 

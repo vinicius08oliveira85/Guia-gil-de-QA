@@ -204,46 +204,41 @@ export const QuickFilters: React.FC<QuickFiltersProps> = ({
     }
 
     return (
-        <div className="sticky top-[72px] z-20 bg-background/95 backdrop-blur-lg border-b border-surface-border shadow-sm">
-            <div className="container mx-auto max-w-screen-2xl px-6 py-3 sm:px-8 lg:px-12 xl:px-16 2xl:px-20">
-                <div className="flex items-center gap-3 flex-wrap">
-                    <div className="flex items-center gap-2 text-sm text-text-secondary">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-                        </svg>
-                        <span className="font-medium">
-                            {activeFiltersCount} {activeFiltersCount === 1 ? 'filtro ativo' : 'filtros ativos'}
-                        </span>
-                    </div>
-                    
-                    <div className="flex items-center gap-2 flex-wrap">
-                        {filterChips.map(chip => (
-                            <button
-                                key={chip.key}
-                                onClick={chip.onRemove}
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent/20 text-accent text-sm font-medium hover:bg-accent/30 transition-colors border border-accent/30"
-                                title={`Remover filtro: ${chip.label}`}
-                            >
-                                <span>{chip.label}</span>
-                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                            </button>
-                        ))}
-                    </div>
+        <div className="rounded-[var(--rounded-box)] border border-base-300 bg-base-100 p-3">
+            <div className="flex flex-wrap items-center gap-2">
+                <div className="flex items-center gap-2 text-sm text-base-content/70">
+                    <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                    </svg>
+                    <span className="font-medium">
+                        {activeFiltersCount} {activeFiltersCount === 1 ? 'filtro ativo' : 'filtros ativos'}
+                    </span>
+                </div>
 
-                    {activeFiltersCount > 0 && (
+                <div className="flex flex-wrap items-center gap-2">
+                    {filterChips.map(chip => (
                         <button
-                            onClick={onClearFilters}
-                            className="ml-auto text-sm text-accent hover:text-accent-light transition-colors font-medium flex items-center gap-1"
+                            key={chip.key}
+                            type="button"
+                            onClick={chip.onRemove}
+                            className="btn btn-xs btn-outline rounded-full gap-2"
+                            title={`Remover filtro: ${chip.label}`}
                         >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <span className="truncate max-w-[240px]">{chip.label}</span>
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                             </svg>
-                            Limpar todos
                         </button>
-                    )}
+                    ))}
                 </div>
+
+                <button
+                    type="button"
+                    onClick={onClearFilters}
+                    className="btn btn-ghost btn-xs ml-auto"
+                >
+                    Limpar
+                </button>
             </div>
         </div>
     );
