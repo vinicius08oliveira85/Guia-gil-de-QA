@@ -231,7 +231,7 @@ export const RolafAvatar: React.FC<RolafAvatarProps> = ({
   onClick,
   size = 'md',
   className = '',
-  imageSrc = '/rolaf.png' // Caminho padrão para a imagem
+  imageSrc = '/Rolaf-removebg-preview.png' // Caminho para a imagem do Rolaf sem fundo
 }) => {
   const sizeMap = {
     sm: 80,
