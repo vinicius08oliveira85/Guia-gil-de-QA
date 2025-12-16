@@ -1,10 +1,12 @@
-import { afterEach } from 'vitest';
+import { afterEach, vi } from 'vitest';
 import { cleanup } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
 
 // Limpar após cada teste
 afterEach(() => {
   cleanup();
+  // Limpar mocks globais
+  vi.clearAllMocks();
 });
 
 // Mock do IndexedDB
