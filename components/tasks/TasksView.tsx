@@ -12,6 +12,7 @@ import { Button } from '../common/Button';
 import { Plus, Filter, RefreshCw, Loader2 } from 'lucide-react';
 import { logger } from '../../utils/logger';
 import { useProjectsStore } from '../../store/projectsStore';
+import { ModernIcons } from '../common/ModernIcons';
 
 const TASK_ID_REGEX = /^([A-Z]+)-(\d+)/i;
 
@@ -1310,104 +1311,140 @@ export const TasksView: React.FC<{
                     </p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                    <div 
-                        className="bg-base-100 rounded-xl p-4 border border-base-300 hover:border-primary/30 transition-all duration-200 hover:shadow-lg group cursor-help" 
+                <motion.div 
+                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4"
+                    initial="hidden"
+                    animate="visible"
+                    variants={{
+                        visible: {
+                            transition: {
+                                staggerChildren: 0.1,
+                            },
+                        },
+                    }}
+                >
+                    <motion.div 
+                        className="bg-base-100 rounded-xl p-5 border border-base-300 hover:border-primary/40 hover:shadow-lg group cursor-help relative overflow-hidden transition-all duration-300" 
                         aria-live="polite"
                         title={`Total de ${stats.total} tarefas no projeto. Inclui todas as tarefas independente do status.`}
+                        variants={{
+                            hidden: { opacity: 0, y: 10 },
+                            visible: { opacity: 1, y: 0 },
+                        }}
                     >
-                        <div className="flex items-center justify-between mb-2">
-                            <div className="p-2 bg-info/10 rounded-lg group-hover:bg-info/20 transition-colors">
-                                <svg className="w-5 h-5 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                                </svg>
+                        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                        <div className="relative z-10">
+                            <div className="flex items-center justify-between mb-3">
+                                <div className="p-2.5 bg-primary/10 rounded-xl group-hover:bg-primary/15 transition-all duration-300">
+                                    <ModernIcons.TotalTasks className="text-primary" size={20} />
+                                </div>
                             </div>
+                            <p className="text-xs font-semibold text-base-content/70 mb-2 uppercase tracking-wider">Total de Tarefas</p>
+                            <p className="text-3xl font-bold text-base-content" aria-label={`${stats.total} tarefas totais`}>{stats.total}</p>
                         </div>
-                        <p className="text-xs font-medium text-base-content/70 mb-1">Total de Tarefas</p>
-                        <p className="text-2xl font-bold text-base-content" aria-label={`${stats.total} tarefas totais`}>{stats.total}</p>
-                    </div>
+                    </motion.div>
                     
-                    <div 
-                        className="bg-base-100 rounded-xl p-4 border border-base-300 hover:border-primary/30 transition-all duration-200 hover:shadow-lg group cursor-help" 
+                    <motion.div 
+                        className="bg-base-100 rounded-xl p-5 border border-base-300 hover:border-warning/40 hover:shadow-lg group cursor-help relative overflow-hidden transition-all duration-300" 
                         aria-live="polite"
                         title={`${stats.inProgress} tarefas em andamento. Tarefas que estão sendo trabalhadas atualmente.`}
+                        variants={{
+                            hidden: { opacity: 0, y: 10 },
+                            visible: { opacity: 1, y: 0 },
+                        }}
                     >
-                        <div className="flex items-center justify-between mb-2">
-                            <div className="p-2 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
-                                <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                                </svg>
+                        <div className="absolute inset-0 bg-gradient-to-br from-warning/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                        <div className="relative z-10">
+                            <div className="flex items-center justify-between mb-3">
+                                <div className="p-2.5 bg-warning/10 rounded-xl group-hover:bg-warning/15 transition-all duration-300">
+                                    <ModernIcons.InProgress className="text-warning" size={20} />
+                                </div>
                             </div>
+                            <p className="text-xs font-semibold text-base-content/70 mb-2 uppercase tracking-wider">Em Andamento</p>
+                            <p className="text-3xl font-bold text-warning" aria-label={`${stats.inProgress} tarefas em andamento`}>{stats.inProgress}</p>
                         </div>
-                        <p className="text-xs font-medium text-base-content/70 mb-1">Em Andamento</p>
-                        <p className="text-2xl font-bold text-primary" aria-label={`${stats.inProgress} tarefas em andamento`}>{stats.inProgress}</p>
-                    </div>
+                    </motion.div>
                     
-                    <div 
-                        className="bg-base-100 rounded-xl p-4 border border-base-300 hover:border-success/30 transition-all duration-200 hover:shadow-lg group cursor-help" 
+                    <motion.div 
+                        className="bg-base-100 rounded-xl p-5 border border-base-300 hover:border-success/40 hover:shadow-lg group cursor-help relative overflow-hidden transition-all duration-300" 
                         aria-live="polite"
                         title={`${stats.done} tarefas concluídas. Tarefas finalizadas e validadas.`}
+                        variants={{
+                            hidden: { opacity: 0, y: 10 },
+                            visible: { opacity: 1, y: 0 },
+                        }}
                     >
-                        <div className="flex items-center justify-between mb-2">
-                            <div className="p-2 bg-success/10 rounded-lg group-hover:bg-success/20 transition-colors">
-                                <svg className="w-5 h-5 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
+                        <div className="absolute inset-0 bg-gradient-to-br from-success/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                        <div className="relative z-10">
+                            <div className="flex items-center justify-between mb-3">
+                                <div className="p-2.5 bg-success/10 rounded-xl group-hover:bg-success/15 transition-all duration-300">
+                                    <ModernIcons.Completed className="text-success" size={20} />
+                                </div>
                             </div>
+                            <p className="text-xs font-semibold text-base-content/70 mb-2 uppercase tracking-wider">Concluídas</p>
+                            <p className="text-3xl font-bold text-success" aria-label={`${stats.done} tarefas concluídas`}>{stats.done}</p>
                         </div>
-                        <p className="text-xs font-medium text-base-content/70 mb-1">Concluídas</p>
-                        <p className="text-2xl font-bold text-success" aria-label={`${stats.done} tarefas concluídas`}>{stats.done}</p>
-                    </div>
+                    </motion.div>
                     
-                    <div 
-                        className="bg-base-100 rounded-xl p-4 border border-base-300 hover:border-error/30 transition-all duration-200 hover:shadow-lg group cursor-help" 
+                    <motion.div 
+                        className="bg-base-100 rounded-xl p-5 border border-base-300 hover:border-error/40 hover:shadow-lg group cursor-help relative overflow-hidden transition-all duration-300" 
                         aria-live="polite"
                         title={`${stats.bugsOpen} bugs abertos. Problemas identificados que ainda precisam ser resolvidos.`}
+                        variants={{
+                            hidden: { opacity: 0, y: 10 },
+                            visible: { opacity: 1, y: 0 },
+                        }}
                     >
-                        <div className="flex items-center justify-between mb-2">
-                            <div className="p-2 bg-error/10 rounded-lg group-hover:bg-error/20 transition-colors">
-                                <svg className="w-5 h-5 text-error" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                                </svg>
-                            </div>
-                        </div>
-                        <p className="text-xs font-medium text-base-content/70 mb-1">Bugs Abertos</p>
-                        <p className="text-2xl font-bold text-error" aria-label={`${stats.bugsOpen} bugs abertos`}>{stats.bugsOpen}</p>
-                    </div>
-                    
-                    <div 
-                        className="bg-base-100 rounded-xl p-4 border border-base-300 hover:border-primary/30 transition-all duration-200 hover:shadow-lg col-span-1 md:col-span-2 lg:col-span-4 cursor-help"
-                        title={`Taxa de execução de testes: ${testExecutionRate}%. ${stats.executedTests} de ${stats.totalTests} casos foram executados. Taxa de automação: ${automationRate}%.`}
-                    >
-                        <div className="flex items-center justify-between mb-2">
-                            <div className="flex items-center gap-2">
-                                <div className="p-2 bg-primary/10 rounded-lg">
-                                    <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-                                    </svg>
+                        <div className="absolute inset-0 bg-gradient-to-br from-error/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                        <div className="relative z-10">
+                            <div className="flex items-center justify-between mb-3">
+                                <div className="p-2.5 bg-error/10 rounded-xl group-hover:bg-error/15 transition-all duration-300">
+                                    <ModernIcons.Bugs className="text-error" size={20} />
                                 </div>
-                                <p className="text-sm font-semibold text-base-content">Execução de Testes</p>
                             </div>
-                            <span className="text-lg font-bold text-primary" aria-label={`${testExecutionRate}% de execução`}>{testExecutionRate}%</span>
+                            <p className="text-xs font-semibold text-base-content/70 mb-2 uppercase tracking-wider">Bugs Abertos</p>
+                            <p className="text-3xl font-bold text-error" aria-label={`${stats.bugsOpen} bugs abertos`}>{stats.bugsOpen}</p>
                         </div>
-                        <div className="w-full bg-base-200 rounded-full h-3 mb-1.5 overflow-hidden" role="progressbar" aria-valuenow={testExecutionRate} aria-valuemin={0} aria-valuemax={100} aria-label={`Progresso de execução: ${testExecutionRate}%`}>
-                            <div 
-                                className="h-full bg-gradient-to-r from-primary to-primary/80 rounded-full transition-all duration-500 relative overflow-hidden"
-                                style={{ width: `${testExecutionRate}%` }}
-                            >
-                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-pulse" />
+                    </motion.div>
+                    
+                    <motion.div 
+                        className="bg-base-100 rounded-xl p-5 border border-base-300 hover:border-primary/40 hover:shadow-lg col-span-1 md:col-span-2 lg:col-span-4 cursor-help relative overflow-hidden transition-all duration-300"
+                        title={`Taxa de execução de testes: ${testExecutionRate}%. ${stats.executedTests} de ${stats.totalTests} casos foram executados. Taxa de automação: ${automationRate}%.`}
+                        variants={{
+                            hidden: { opacity: 0, y: 10 },
+                            visible: { opacity: 1, y: 0 },
+                        }}
+                    >
+                        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                        <div className="relative z-10">
+                            <div className="flex items-center justify-between mb-3">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2.5 bg-primary/10 rounded-xl">
+                                        <ModernIcons.TestExecution className="text-primary" size={22} />
+                                    </div>
+                                    <p className="text-base font-semibold text-base-content">Execução de Testes</p>
+                                </div>
+                                <span className="text-2xl font-bold text-primary" aria-label={`${testExecutionRate}% de execução`}>{testExecutionRate}%</span>
+                            </div>
+                            <div className="w-full bg-base-200/80 rounded-full h-3.5 mb-2 overflow-hidden relative" role="progressbar" aria-valuenow={testExecutionRate} aria-valuemin={0} aria-valuemax={100} aria-label={`Progresso de execução: ${testExecutionRate}%`}>
+                                <div 
+                                    className="h-full bg-gradient-to-r from-primary via-primary/90 to-primary/80 rounded-full transition-all duration-700 ease-out relative overflow-hidden"
+                                    style={{ width: `${testExecutionRate}%` }}
+                                >
+                                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-pulse" />
+                                </div>
+                            </div>
+                            <div className="flex items-center justify-between text-sm text-base-content/70">
+                                <p aria-label={`${stats.executedTests} de ${stats.totalTests} casos executados`} className="font-medium">
+                                    {stats.executedTests}/{stats.totalTests} casos executados
+                                </p>
+                                <p className="font-medium">
+                                    Automação <span className="font-bold text-primary" aria-label={`${automationRate}% de automação`}>{automationRate}%</span>
+                                </p>
                             </div>
                         </div>
-                        <div className="flex items-center justify-between text-xs text-base-content/70">
-                            <p aria-label={`${stats.executedTests} de ${stats.totalTests} casos executados`}>
-                                {stats.executedTests}/{stats.totalTests} casos executados
-                            </p>
-                            <p>
-                                Automação <span className="font-semibold text-primary" aria-label={`${automationRate}% de automação`}>{automationRate}%</span>
-                            </p>
-                        </div>
-                    </div>
-                </div>
+                    </motion.div>
+                </motion.div>
             </div>
 
             {/* Barra de filtros rápidos visíveis */}

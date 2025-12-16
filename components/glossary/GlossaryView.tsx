@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { glossaryTerms, searchGlossaryTerms, getTermsByCategory, GlossaryTerm } from '../../utils/glossaryTerms';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export const GlossaryView: React.FC = () => {
     const [searchQuery, setSearchQuery] = useState('');
@@ -38,6 +39,20 @@ export const GlossaryView: React.FC = () => {
             'Padrões': 'bg-red-500/20 text-red-400 border-red-500/30'
         };
         return colors[category] || 'bg-gray-500/20 text-gray-400 border-gray-500/30';
+    };
+
+    const getCategoryGradient = (category: GlossaryTerm['category']): string => {
+        const gradients: Record<GlossaryTerm['category'], string> = {
+            'Geral': 'from-blue-500/10 via-blue-500/5 to-transparent',
+            'Testes': 'from-green-500/10 via-green-500/5 to-transparent',
+            'Metodologias': 'from-purple-500/10 via-purple-500/5 to-transparent',
+            'Ferramentas': 'from-orange-500/10 via-orange-500/5 to-transparent',
+            'Métricas': 'from-teal-500/10 via-teal-500/5 to-transparent',
+            'Processos': 'from-pink-500/10 via-pink-500/5 to-transparent',
+            'Técnicas': 'from-yellow-500/10 via-yellow-500/5 to-transparent',
+            'Padrões': 'from-red-500/10 via-red-500/5 to-transparent'
+        };
+        return gradients[category] || 'from-gray-500/10 via-gray-500/5 to-transparent';
     };
 
     return (
@@ -98,38 +113,86 @@ export const GlossaryView: React.FC = () => {
             </div>
 
             {/* Lista de termos */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                {filteredTerms.length > 0 ? (
-                    filteredTerms.map((term, index) => (
-                        <div
-                            key={index}
-                            onClick={() => setSelectedTerm(term)}
-                            className="p-5 bg-base-100 border border-base-300 rounded-xl hover:border-primary/30 cursor-pointer transition-all hover:shadow-lg"
-                        >
-                            <div className="flex items-start justify-between mb-2">
-                                <h3 className="text-lg font-semibold text-base-content flex-1">{term.term}</h3>
-                                <span className={`badge badge-outline badge-sm ${getCategoryColor(term.category)}`}>
-                                    {term.category}
-                                </span>
-                            </div>
-                            <p className="text-base-content/70 text-sm line-clamp-2">{term.definition}</p>
-                            {term.relatedTerms && term.relatedTerms.length > 0 && (
-                                <div className="mt-2 flex flex-wrap gap-1">
-                                    {term.relatedTerms.slice(0, 3).map((related, idx) => (
-                                        <span key={idx} className="text-xs text-primary">#{related}</span>
-                                    ))}
+            <motion.div 
+                className="grid grid-cols-1 lg:grid-cols-2 gap-4"
+                initial="hidden"
+                animate="visible"
+                variants={{
+                    visible: {
+                        transition: {
+                            staggerChildren: 0.06,
+                        },
+                    },
+                }}
+            >
+                <AnimatePresence mode="wait">
+                    {filteredTerms.length > 0 ? (
+                        filteredTerms.map((term, index) => (
+                            <motion.div
+                                key={`${term.term}-${index}`}
+                                onClick={() => setSelectedTerm(term)}
+                                className="p-5 bg-base-100 border border-base-300 rounded-xl hover:border-primary/40 cursor-pointer transition-all duration-300 hover:shadow-xl relative overflow-hidden group"
+                                variants={{
+                                    hidden: { opacity: 0, y: 20, scale: 0.95 },
+                                    visible: { 
+                                        opacity: 1, 
+                                        y: 0, 
+                                        scale: 1,
+                                        transition: {
+                                            duration: 0.3,
+                                            ease: 'easeOut',
+                                        },
+                                    },
+                                }}
+                                whileHover={{ y: -4 }}
+                            >
+                                {/* Gradiente baseado na categoria */}
+                                <div className={`absolute inset-0 bg-gradient-to-br ${getCategoryGradient(term.category)} opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none`} />
+                                
+                                <div className="relative z-10">
+                                    <div className="flex items-start justify-between mb-3">
+                                        <h3 className="text-lg font-semibold text-base-content flex-1 group-hover:text-primary transition-colors duration-200">
+                                            {term.term}
+                                        </h3>
+                                        <motion.span 
+                                            className={`badge badge-outline badge-sm rounded-full px-2.5 py-1 ${getCategoryColor(term.category)}`}
+                                            whileHover={{ scale: 1.05 }}
+                                        >
+                                            {term.category}
+                                        </motion.span>
+                                    </div>
+                                    <p className="text-base-content/70 text-sm line-clamp-2 leading-relaxed mb-3">
+                                        {term.definition}
+                                    </p>
+                                    {term.relatedTerms && term.relatedTerms.length > 0 && (
+                                        <div className="mt-3 flex flex-wrap gap-1.5 pt-3 border-t border-base-300/50">
+                                            {term.relatedTerms.slice(0, 3).map((related, idx) => (
+                                                <span 
+                                                    key={idx} 
+                                                    className="text-xs text-primary font-medium hover:text-primary-focus transition-colors"
+                                                >
+                                                    #{related}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
-                            )}
-                        </div>
-                    ))
-                ) : (
-                    <div className="col-span-2 text-center py-12">
-                        <div className="text-6xl mb-4">🔍</div>
-                        <h3 className="text-xl font-semibold text-base-content mb-2">Nenhum termo encontrado</h3>
-                        <p className="text-base-content/70">Tente buscar com outras palavras ou selecione uma categoria diferente.</p>
-                    </div>
-                )}
-            </div>
+                            </motion.div>
+                        ))
+                    ) : (
+                        <motion.div 
+                            className="col-span-2 text-center py-12"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                        >
+                            <div className="text-6xl mb-4">🔍</div>
+                            <h3 className="text-xl font-semibold text-base-content mb-2">Nenhum termo encontrado</h3>
+                            <p className="text-base-content/70">Tente buscar com outras palavras ou selecione uma categoria diferente.</p>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </motion.div>
 
             {/* Modal de detalhes */}
             {selectedTerm && (
@@ -199,20 +262,47 @@ export const GlossaryView: React.FC = () => {
             )}
 
             {/* Estatísticas */}
-            <div className="mt-8 p-5 bg-base-100 border border-base-300 rounded-xl">
-                <h3 className="text-lg font-semibold text-base-content mb-4">📊 Estatísticas do Glossário</h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <motion.div 
+                className="mt-8 p-6 bg-base-100 border border-base-300 rounded-xl hover:border-primary/30 transition-all duration-300"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+            >
+                <h3 className="text-lg font-semibold text-base-content mb-5 flex items-center gap-2">
+                    <span>📊</span>
+                    Estatísticas do Glossário
+                </h3>
+                <motion.div 
+                    className="grid grid-cols-2 md:grid-cols-4 gap-4"
+                    initial="hidden"
+                    animate="visible"
+                    variants={{
+                        visible: {
+                            transition: {
+                                staggerChildren: 0.1,
+                            },
+                        },
+                    }}
+                >
                     {categories.map(category => {
                         const count = getTermsByCategory(category).length;
                         return (
-                            <div key={category} className="text-center p-3 bg-base-200 rounded-lg">
-                                <div className="text-2xl font-bold text-primary">{count}</div>
-                                <div className="text-sm text-base-content/70">{category}</div>
-                            </div>
+                            <motion.div 
+                                key={category} 
+                                className="text-center p-4 bg-base-200/50 rounded-xl hover:bg-base-200 transition-colors duration-200 border border-base-300/50 hover:border-primary/30 group"
+                                variants={{
+                                    hidden: { opacity: 0, scale: 0.9 },
+                                    visible: { opacity: 1, scale: 1 },
+                                }}
+                                whileHover={{ scale: 1.05 }}
+                            >
+                                <div className="text-3xl font-bold text-primary mb-1">{count}</div>
+                                <div className="text-sm font-medium text-base-content/70 uppercase tracking-wider">{category}</div>
+                            </motion.div>
                         );
                     })}
-                </div>
-            </div>
+                </motion.div>
+            </motion.div>
         </div>
     );
 };

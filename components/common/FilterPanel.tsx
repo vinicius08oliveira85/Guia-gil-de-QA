@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { FilterOptions } from '../../hooks/useFilters';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ModernIcons } from './ModernIcons';
 
 interface FilterSectionProps {
   id: string;
@@ -21,32 +23,47 @@ const FilterSection: React.FC<FilterSectionProps> = ({
   const contentId = `filter-section-${id}`;
 
   return (
-    <div className="rounded-2xl border border-base-300 bg-base-100 overflow-hidden">
+    <div className="rounded-xl border border-base-300 bg-base-100 overflow-hidden hover:border-primary/30 transition-all duration-200">
       <button
         type="button"
         onClick={() => onToggle(id)}
-        className="w-full flex items-center justify-between p-3 bg-base-100 hover:bg-base-200 transition-colors"
+        className="w-full flex items-center justify-between p-4 bg-base-100 hover:bg-base-200/50 transition-colors duration-200 group"
         aria-expanded={isExpanded}
         aria-controls={contentId}
       >
-        <div className="flex items-center gap-2">
-          {icon}
+        <div className="flex items-center gap-3">
+          <div className="p-1.5 bg-primary/10 rounded-lg group-hover:bg-primary/15 transition-colors">
+            {icon}
+          </div>
           <span className="text-sm font-semibold text-base-content">{title}</span>
         </div>
-        <svg 
-          className={`w-4 h-4 text-base-content/60 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+        <motion.svg 
+          className="w-4 h-4 text-base-content/60"
           fill="none" 
           stroke="currentColor" 
           viewBox="0 0 24 24"
+          animate={{ rotate: isExpanded ? 180 : 0 }}
+          transition={{ duration: 0.2, ease: 'easeInOut' }}
         >
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-        </svg>
+        </motion.svg>
       </button>
-      {isExpanded && (
-        <div id={contentId} className="p-3 bg-base-100">
-          {children}
-        </div>
-      )}
+      <AnimatePresence>
+        {isExpanded && (
+          <motion.div
+            id={contentId}
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2, ease: 'easeInOut' }}
+            className="overflow-hidden"
+          >
+            <div className="p-4 bg-base-100 border-t border-base-300/50">
+              {children}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
@@ -96,22 +113,27 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-base-content flex items-center gap-2">
-          <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-          </svg>
+      <div className="flex items-center justify-between mb-5">
+        <h3 className="text-lg font-semibold text-base-content flex items-center gap-2.5">
+          <div className="p-1.5 bg-primary/10 rounded-lg">
+            <ModernIcons.Filter className="text-primary" size={18} />
+          </div>
           Filtros rápidos
           {activeFiltersCount > 0 && (
-            <span className="badge badge-primary badge-sm">
+            <motion.span 
+              className="badge badge-primary badge-sm rounded-full px-2"
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+            >
               {activeFiltersCount}
-            </span>
+            </motion.span>
           )}
         </h3>
         {activeFiltersCount > 0 && (
           <button
             onClick={onClearFilters}
-            className="btn btn-ghost btn-sm"
+            className="btn btn-ghost btn-sm text-xs hover:bg-error/10 hover:text-error transition-colors"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -126,26 +148,29 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
           <FilterSection
             id="test-types"
             title="Estratégia de Teste"
-            icon={
-              <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 3l4 4-4 4m4-4h8m-8 6l4 4-4 4m4-4h8" />
-              </svg>
-            }
-              isExpanded={expandedSections.has('test-types')}
-              onToggle={toggleSection}
-            >
-            <div className="flex flex-wrap gap-2 max-h-36 overflow-y-auto">
-              {availableTestTypes.map(type => (
-                <button
-                  key={type}
-                  onClick={() => toggleArrayFilter('requiredTestTypes', type)}
-                  className={`btn btn-xs rounded-full whitespace-nowrap ${
-                    filters.requiredTestTypes?.includes(type) ? 'btn-primary' : 'btn-outline'
-                  }`}
-                >
-                  {type}
-                </button>
-              ))}
+            icon={<ModernIcons.TestStrategy className="text-primary" size={16} />}
+            isExpanded={expandedSections.has('test-types')}
+            onToggle={toggleSection}
+          >
+            <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto pr-1">
+              {availableTestTypes.map(type => {
+                const isActive = filters.requiredTestTypes?.includes(type);
+                return (
+                  <motion.button
+                    key={type}
+                    onClick={() => toggleArrayFilter('requiredTestTypes', type)}
+                    className={`btn btn-xs rounded-full whitespace-nowrap transition-all duration-200 ${
+                      isActive 
+                        ? 'btn-primary bg-primary text-primary-content shadow-sm' 
+                        : 'btn-outline hover:bg-primary/5 hover:border-primary/30'
+                    }`}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    {type}
+                  </motion.button>
+                );
+              })}
             </div>
           </FilterSection>
         )}
@@ -153,26 +178,29 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
         <FilterSection
           id="test-results"
           title="Status dos Testes"
-          icon={
-            <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          }
-            isExpanded={expandedSections.has('test-results')}
-            onToggle={toggleSection}
-          >
+          icon={<ModernIcons.TestStatus className="text-primary" size={16} />}
+          isExpanded={expandedSections.has('test-results')}
+          onToggle={toggleSection}
+        >
           <div className="flex flex-wrap gap-2">
-            {['Aprovado', 'Reprovado'].map(result => (
-              <button
-                key={result}
-                onClick={() => toggleArrayFilter('testResultStatus', result as any)}
-                className={`btn btn-xs rounded-full whitespace-nowrap ${
-                  filters.testResultStatus?.includes(result as any) ? 'btn-primary' : 'btn-outline'
-                }`}
-              >
-                {result}
-              </button>
-            ))}
+            {['Aprovado', 'Reprovado'].map(result => {
+              const isActive = filters.testResultStatus?.includes(result as any);
+              return (
+                <motion.button
+                  key={result}
+                  onClick={() => toggleArrayFilter('testResultStatus', result as any)}
+                  className={`btn btn-xs rounded-full whitespace-nowrap transition-all duration-200 ${
+                    isActive 
+                      ? 'btn-primary bg-primary text-primary-content shadow-sm' 
+                      : 'btn-outline hover:bg-primary/5 hover:border-primary/30'
+                  }`}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  {result}
+                </motion.button>
+              );
+            })}
           </div>
         </FilterSection>
 

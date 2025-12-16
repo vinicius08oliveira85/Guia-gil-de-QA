@@ -18,6 +18,8 @@ import { SpecificationDocumentProcessor } from './settings/SpecificationDocument
 import { FileImportModal } from './common/FileImportModal';
 import { FileViewer } from './common/FileViewer';
 import { viewFileInNewTab } from '../services/fileViewerService';
+import { motion } from 'framer-motion';
+import { ModernIcons } from './common/ModernIcons';
 
 interface DocumentWithMetadata extends ProjectDocument {
     uploadedAt?: string;
@@ -372,16 +374,37 @@ export const DocumentsView: React.FC<{ project: Project; onUpdateProject: (proje
 
                 {/* Estatísticas */}
                 {stats.total > 0 && (
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <motion.div 
+                        className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6"
+                        initial="hidden"
+                        animate="visible"
+                        variants={{
+                            visible: {
+                                transition: {
+                                    staggerChildren: 0.1,
+                                },
+                            },
+                        }}
+                    >
                         {DOCUMENT_CATEGORIES.map(cat => (
-                            <div key={cat.id} className="p-4 bg-base-100 border border-base-300 rounded-xl text-center hover:border-primary/30 transition-all hover:shadow-lg">
-                                <div className="text-2xl font-bold text-primary">
-                                    {stats.categoryCounts[cat.id] || 0}
+                            <motion.div 
+                                key={cat.id} 
+                                className="p-5 bg-base-100 border border-base-300 rounded-xl text-center hover:border-primary/40 transition-all duration-300 hover:shadow-lg relative overflow-hidden group"
+                                variants={{
+                                    hidden: { opacity: 0, y: 10 },
+                                    visible: { opacity: 1, y: 0 },
+                                }}
+                            >
+                                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                                <div className="relative z-10">
+                                    <div className="text-3xl font-bold text-primary mb-1">
+                                        {stats.categoryCounts[cat.id] || 0}
+                                    </div>
+                                    <div className="text-xs font-medium text-base-content/70 uppercase tracking-wider">{cat.label}</div>
                                 </div>
-                                <div className="text-xs text-base-content/70 mt-1">{cat.label}</div>
-                            </div>
+                            </motion.div>
                         ))}
-                    </div>
+                    </motion.div>
                 )}
 
                 {/* Filtros e Busca */}
@@ -429,16 +452,33 @@ export const DocumentsView: React.FC<{ project: Project; onUpdateProject: (proje
                 {/* Lista de Documentos */}
                 {filteredDocuments.length > 0 ? (
                     viewMode === 'grid' ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <motion.div 
+                            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+                            initial="hidden"
+                            animate="visible"
+                            variants={{
+                                visible: {
+                                    transition: {
+                                        staggerChildren: 0.08,
+                                    },
+                                },
+                            }}
+                        >
                             {filteredDocuments.map(doc => {
                                 const category = DOCUMENT_CATEGORIES.find(c => c.id === doc.category);
                                 const hasAnalysis = !!doc.analysis;
                                 
                                 return (
-                                    <div
+                                    <motion.div
                                         key={doc.name}
-                                        className="p-5 bg-base-100 border border-base-300 rounded-xl hover:border-primary/30 transition-all hover:shadow-lg"
+                                        className="p-5 bg-base-100 border border-base-300 rounded-xl hover:border-primary/40 transition-all duration-300 hover:shadow-lg relative overflow-hidden group"
+                                        variants={{
+                                            hidden: { opacity: 0, y: 10 },
+                                            visible: { opacity: 1, y: 0 },
+                                        }}
                                     >
+                                        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                                        <div className="relative z-10">
                                         <div className="flex items-start justify-between mb-3">
                                             <div className="flex-1 min-w-0">
                                                 <h4 className="text-base-content font-semibold truncate mb-2" title={doc.name}>
@@ -547,10 +587,11 @@ export const DocumentsView: React.FC<{ project: Project; onUpdateProject: (proje
                                                 </button>
                                             </Tooltip>
                                         </div>
-                                    </div>
+                                        </div>
+                                    </motion.div>
                                 );
                             })}
-                        </div>
+                        </motion.div>
                     ) : (
                 <ul className="space-y-3">
                             {filteredDocuments.map(doc => {

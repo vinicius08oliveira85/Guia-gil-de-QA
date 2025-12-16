@@ -43,11 +43,14 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
           )}
         </div>
       )}
-      <div className={`w-full bg-base-300/60 rounded-full overflow-hidden ${sizeClasses[size]}`}>
+      <div className={`w-full bg-base-300/60 rounded-full overflow-hidden ${sizeClasses[size]} relative`}>
         <div
-          className={`${colorClasses[color]} transition-all duration-300 ease-out`}
+          className={`${colorClasses[color]} bg-gradient-to-r ${color === 'blue' ? 'from-primary via-primary/90 to-primary/80' : color === 'green' ? 'from-success via-success/90 to-success/80' : ''} transition-all duration-500 ease-out relative`}
           style={{ width: `${percentage}%`, height: '100%' }}
-        />
+        >
+          {/* Shimmer effect sutil */}
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-pulse opacity-50" />
+        </div>
       </div>
       {!label && showPercentage && (
         <div className="text-xs text-base-content/60 mt-1 text-right">{Math.round(percentage)}%</div>
