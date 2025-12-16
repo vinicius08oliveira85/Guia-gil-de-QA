@@ -28,6 +28,7 @@ const AdvancedSearch = lazyWithRetry(() => import('./components/common/AdvancedS
 const ProjectComparisonModal = lazyWithRetry(() => import('./components/common/ProjectComparisonModal').then(m => ({ default: m.ProjectComparisonModal })));
 const OnboardingGuide = lazyWithRetry(() => import('./components/onboarding/OnboardingGuide').then(m => ({ default: m.OnboardingGuide })));
 const SettingsView = lazyWithRetry(() => import('./components/settings/SettingsView').then(m => ({ default: m.SettingsView })));
+const RolafAssistant = lazyWithRetry(() => import('./components/rolaf/RolafAssistant').then(m => ({ default: m.RolafAssistant })));
 
 const App: React.FC = () => {
     // Tema global (fase atual: DaisyUI light fixo; outras opções permanecem no toggle para futuro)
@@ -427,6 +428,17 @@ const App: React.FC = () => {
                 <KeyboardShortcutsHelp />
                 <Suspense fallback={null}>
                     <OnboardingGuide />
+                </Suspense>
+                <Suspense fallback={null}>
+                    <RolafAssistant 
+                        currentView={
+                            shouldShowLandingPage 
+                                ? 'landing' 
+                                : selectedProject 
+                                    ? 'project-view' 
+                                    : 'dashboard'
+                        }
+                    />
                 </Suspense>
             </div>
         </ErrorBoundary>

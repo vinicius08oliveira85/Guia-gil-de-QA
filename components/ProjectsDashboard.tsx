@@ -176,6 +176,7 @@ export const ProjectsDashboard: React.FC<{
                                     onClick={() => setIsCreating(true)}
                                     className="btn btn-primary btn-sm rounded-full"
                                     data-onboarding="create-project"
+                                    data-tour="create-project"
                                 >
                                     <Plus className="w-4 h-4" />
                                     <span>Novo Projeto</span>
@@ -398,7 +399,7 @@ export const ProjectsDashboard: React.FC<{
 
             <div className="mt-8">
                 {filteredProjects.length > 0 ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4" data-tour="project-list">
                         {filteredProjects.map(p => {
                             const completedTasks = calculateProgress(p.tasks || []);
                             const totalTasks = p.tasks?.length || 0;
