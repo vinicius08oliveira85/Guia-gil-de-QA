@@ -48,7 +48,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
     };
 
     const baseInputClasses = cn(
-      'input w-full',
+      'input w-full min-h-[44px]',
       'text-base-content placeholder:text-base-content/50',
       'focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary',
       'transition',

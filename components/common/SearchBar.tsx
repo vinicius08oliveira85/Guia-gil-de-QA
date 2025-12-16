@@ -104,7 +104,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
       {isOpen && searchQuery && searchResults.length > 0 && (
         <div
           ref={resultsRef}
-          className="absolute z-50 w-full mt-2 bg-base-100 border border-base-300 rounded-xl shadow-xl max-h-96 overflow-y-auto"
+          className="absolute z-50 w-full mt-2 bg-base-100 border border-base-300 rounded-xl shadow-xl max-h-[60vh] sm:max-h-96 overflow-y-auto"
         >
           {searchResults.map((result, index) => (
             <button

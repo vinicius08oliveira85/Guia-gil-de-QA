@@ -420,8 +420,9 @@ export const JiraTaskItem: React.FC<{
     
     const indentationStyle = { paddingLeft: `${level * 1.2}rem` };
 
-    const iconButtonClass = 'btn btn-ghost btn-circle btn-sm h-11 w-11 md:h-9 md:w-9 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30';
-    const iconButtonSmallClass = 'btn btn-ghost btn-circle btn-sm h-11 w-11 md:h-8 md:w-8 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30';
+    // Touch targets mínimos de 44x44px para acessibilidade (WCAG)
+    const iconButtonClass = 'btn btn-ghost btn-circle btn-sm min-h-[44px] min-w-[44px] h-11 w-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30';
+    const iconButtonSmallClass = 'btn btn-ghost btn-circle btn-sm min-h-[44px] min-w-[44px] h-11 w-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30';
 
     const renderOverviewSection = () => (
         <div className="space-y-4">
@@ -460,7 +461,7 @@ export const JiraTaskItem: React.FC<{
                 )}
             </div>
             {(task.priority || task.severity || task.owner || task.assignee || nextStep) && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3">
                     {task.owner && (
                         <div className="p-3 bg-base-100 border border-base-300 rounded-lg">
                             <p className="text-[11px] uppercase text-base-content/60 tracking-wide">Owner</p>
@@ -1321,7 +1322,7 @@ export const JiraTaskItem: React.FC<{
                                     </select>
                                 </div>
 
-                                <div className="grid grid-cols-5 gap-1 md:flex md:gap-1" onClick={(e) => e.stopPropagation()}>
+                                <div className="flex flex-wrap gap-2 md:flex-nowrap md:gap-1" onClick={(e) => e.stopPropagation()}>
                                     {task.type === 'Epic' && (
                                         <button
                                             type="button"
@@ -1393,7 +1394,7 @@ export const JiraTaskItem: React.FC<{
                             >
                                 <div className="p-3 md:p-4 bg-base-100">
                                     <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-                                        <div className="tabs tabs-boxed bg-base-200 p-1 w-fit" role="tablist" aria-label="Seções da tarefa">
+                                        <div className="tabs tabs-boxed bg-base-200 p-1 w-full md:w-fit overflow-x-auto" role="tablist" aria-label="Seções da tarefa">
                                             {sectionTabs.map((tab) => {
                                                 const isActive = tab.id === activeSection;
                                                 const tabId = `task-${safeDomId}-tab-${tab.id}`;

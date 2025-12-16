@@ -432,7 +432,7 @@ export const ProjectsDashboard: React.FC<{
                                 >
                                     <div className="p-5 sm:p-6 flex flex-col gap-3 h-full">
                                         <div className="flex items-start justify-between gap-3">
-                                            <h3 className="text-base sm:text-lg font-semibold leading-snug line-clamp-2 pr-10 text-balance">
+                                            <h3 className="text-base sm:text-lg font-semibold leading-snug line-clamp-2 sm:line-clamp-3 pr-10 text-balance">
                                                 {p.name}
                                             </h3>
                                         </div>

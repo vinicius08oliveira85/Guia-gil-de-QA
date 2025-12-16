@@ -66,16 +66,16 @@ export const Modal: React.FC<ModalProps> = ({
     if (!isOpen) return null;
 
     const sizeClasses = {
-        sm: 'max-w-md',
-        md: 'max-w-lg',
-        lg: 'max-w-2xl',
-        xl: 'max-w-4xl',
+        sm: 'max-w-[95vw] md:max-w-md',
+        md: 'max-w-[95vw] md:max-w-lg',
+        lg: 'max-w-[95vw] md:max-w-2xl',
+        xl: 'max-w-[95vw] md:max-w-4xl',
         full: 'max-w-[95vw]'
     };
 
     return (
         <div 
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-base-100/60 backdrop-blur-sm transition-opacity duration-200"
+            className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-base-100/60 backdrop-blur-sm transition-opacity duration-200"
             onClick={onClose}
             role="dialog"
             aria-modal="true"
@@ -87,11 +87,11 @@ export const Modal: React.FC<ModalProps> = ({
                 onClick={(e) => e.stopPropagation()}
                 tabIndex={-1}
                 style={{ 
-                    maxHeight: maxHeight || `calc(100vh - 2rem)`
+                    maxHeight: maxHeight || `calc(100vh - 1rem)`
                 }}
             >
                 {/* Title Bar - Fixed */}
-                <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-base-300 flex-shrink-0">
+                <div className="flex items-center justify-between gap-3 px-3 sm:px-5 py-3 sm:py-4 border-b border-base-300 flex-shrink-0">
                     <div id="modal-title" className="min-w-0 flex-1">
                         {typeof title === 'string' ? (
                             <h2 className="text-lg sm:text-xl font-semibold text-base-content truncate">
@@ -114,7 +114,7 @@ export const Modal: React.FC<ModalProps> = ({
                     </button>
                 </div>
                 {/* Content - Scrollable */}
-                <div className="px-5 py-4 flex-1 overflow-y-auto flex flex-col min-h-0 overscroll-contain">
+                <div className="px-3 sm:px-5 py-3 sm:py-4 flex-1 overflow-y-auto flex flex-col min-h-0 overscroll-contain">
                   <div className="flex-1 min-h-0">
                     {children}
                   </div>
