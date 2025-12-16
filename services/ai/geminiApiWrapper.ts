@@ -364,20 +364,34 @@ export async function callGeminiWithRetry(
 
   // Se chegou aqui, todas as keys foram tentadas
   const status = extractHttpStatus(lastError);
-  let errorMessage = 'Falha ao comunicar com a API Gemini após todas as tentativas.';
+  const stats = geminiApiKeyManager.getStats();
+  let errorMessage = `Falha ao comunicar com a API Gemini após tentar ${stats.totalKeys} API key(s).`;
+  let errorCode: string;
   
   if (status === 403) {
-    errorMessage = 'Todas as API keys do Gemini estão inválidas ou sem permissões. Verifique as configurações em Configurações > API Keys.';
+    errorMessage = `Todas as ${stats.totalKeys} API key(s) do Gemini estão inválidas ou sem permissões. Verifique as configurações em Configurações > API Keys.`;
+    errorCode = 'GEMINI_ALL_KEYS_INVALID';
   } else if (status === 429 || isQuotaExceededError(lastError)) {
-    errorMessage = 'Todas as API keys do Gemini excederam a quota. Aguarde algumas horas ou configure uma nova API key em Configurações > API Keys.';
+    const exhaustedInfo = geminiApiKeyManager.getExhaustedKeysInfo();
+    let timeInfo = '';
+    if (exhaustedInfo.length > 0 && stats.nextResetInMs) {
+      const hoursUntilReset = Math.ceil(stats.nextResetInMs / (60 * 60 * 1000));
+      timeInfo = ` As keys podem ser reutilizadas em aproximadamente ${hoursUntilReset} hora(s).`;
+    }
+    errorMessage = `Todas as ${stats.totalKeys} API key(s) do Gemini excederam a quota. Aguarde algumas horas ou adicione uma nova API key em Configurações > API Keys.${timeInfo}`;
+    errorCode = 'GEMINI_ALL_KEYS_EXHAUSTED';
   } else if (lastError instanceof Error) {
-    errorMessage = `Falha ao comunicar com a API Gemini: ${lastError.message}`;
+    errorMessage = `Falha ao comunicar com a API Gemini após tentar ${stats.totalKeys} API key(s): ${lastError.message}`;
+    errorCode = 'GEMINI_NETWORK_ERROR';
+  } else {
+    errorCode = 'GEMINI_UNKNOWN_ERROR';
   }
   
-  const finalError = new Error(errorMessage);
+  const finalError = new Error(errorMessage) as Error & { status?: number; code?: string };
   if (status) {
-    (finalError as unknown as { status?: number }).status = status;
+    finalError.status = status;
   }
+  finalError.code = errorCode;
   
   throw finalError;
 }

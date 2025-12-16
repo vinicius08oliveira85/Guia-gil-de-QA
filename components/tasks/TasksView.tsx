@@ -201,7 +201,14 @@ export const TasksView: React.FC<{
             let errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
             const errorStatus = (error as { status?: number })?.status;
             
-            if (errorStatus === 503 || errorMessage.includes('503') || errorMessage.includes('Service Unavailable')) {
+            // Preservar mensagens específicas do Gemini que já contêm informações úteis
+            if (errorMessage.includes('API keys') || 
+                errorMessage.includes('API key') ||
+                errorMessage.includes('quota') || 
+                errorMessage.includes('Gemini') ||
+                errorMessage.includes('Configurações')) {
+                // Preservar mensagem original que já tem contexto específico
+            } else if (errorStatus === 503 || errorMessage.includes('503') || errorMessage.includes('Service Unavailable')) {
                 errorMessage = 'A API do Gemini está temporariamente indisponível. O sistema tentará novamente automaticamente. Aguarde alguns minutos e tente novamente.';
             } else if (errorMessage.includes('429') || 
                 errorMessage.includes('Too Many Requests') ||
@@ -277,7 +284,14 @@ export const TasksView: React.FC<{
             let errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
             const errorStatus = (error as { status?: number })?.status;
             
-            if (errorStatus === 503 || errorMessage.includes('503') || errorMessage.includes('Service Unavailable')) {
+            // Preservar mensagens específicas do Gemini que já contêm informações úteis
+            if (errorMessage.includes('API keys') || 
+                errorMessage.includes('API key') ||
+                errorMessage.includes('quota') || 
+                errorMessage.includes('Gemini') ||
+                errorMessage.includes('Configurações')) {
+                // Preservar mensagem original que já tem contexto específico
+            } else if (errorStatus === 503 || errorMessage.includes('503') || errorMessage.includes('Service Unavailable')) {
                 errorMessage = 'A API do Gemini está temporariamente indisponível. O sistema tentará novamente automaticamente. Aguarde alguns minutos e tente novamente.';
             } else if (errorMessage.includes('429') || 
                 errorMessage.includes('Too Many Requests') ||
@@ -338,7 +352,14 @@ export const TasksView: React.FC<{
             let errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
             const errorStatus = (error as { status?: number })?.status;
             
-            if (errorStatus === 503 || errorMessage.includes('503') || errorMessage.includes('Service Unavailable')) {
+            // Preservar mensagens específicas do Gemini que já contêm informações úteis
+            if (errorMessage.includes('API keys') || 
+                errorMessage.includes('API key') ||
+                errorMessage.includes('quota') || 
+                errorMessage.includes('Gemini') ||
+                errorMessage.includes('Configurações')) {
+                // Preservar mensagem original que já tem contexto específico
+            } else if (errorStatus === 503 || errorMessage.includes('503') || errorMessage.includes('Service Unavailable')) {
                 errorMessage = 'A API do Gemini está temporariamente indisponível. O sistema tentará novamente automaticamente. Aguarde alguns minutos e tente novamente.';
             } else if (errorMessage.includes('429') || 
                 errorMessage.includes('Too Many Requests') ||
