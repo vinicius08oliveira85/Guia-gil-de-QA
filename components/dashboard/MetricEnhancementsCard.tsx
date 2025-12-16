@@ -1,6 +1,8 @@
 import React from 'react';
+import { ArrowUp, ArrowDown, ArrowRight } from 'lucide-react';
 import { Card } from '../common/Card';
 import { DashboardInsightsAnalysis } from '../../types';
+import { Badge } from '../common/Badge';
 
 interface MetricEnhancementsCardProps {
   analysis: DashboardInsightsAnalysis | null;
@@ -31,16 +33,20 @@ export const MetricEnhancementsCard: React.FC<MetricEnhancementsCardProps> = Rea
 
   const { metricEnhancements } = analysis;
 
-  const getTrendColor = (current: number, predicted: number) => {
-    if (predicted > current) return 'text-success';
-    if (predicted < current) return 'text-error';
-    return 'text-base-content/60';
+  const getTrendVariant = (current: number, predicted: number): 'success' | 'error' | 'warning' | 'info' | 'default' => {
+    if (predicted > current) return 'success';
+    if (predicted < current) return 'error';
+    return 'warning';
   };
 
   const getTrendIcon = (current: number, predicted: number) => {
-    if (predicted > current) return '↑';
-    if (predicted < current) return '↓';
-    return '→';
+    if (predicted > current) {
+      return <ArrowUp className="h-3.5 w-3.5" aria-hidden="true" />;
+    }
+    if (predicted < current) {
+      return <ArrowDown className="h-3.5 w-3.5" aria-hidden="true" />;
+    }
+    return <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />;
   };
 
   return (
@@ -49,45 +55,56 @@ export const MetricEnhancementsCard: React.FC<MetricEnhancementsCardProps> = Rea
 
       <div className="space-y-4">
         {/* Taxa de Sucesso */}
-        <div className="p-4 bg-base-100 rounded-xl border border-base-300 hover:border-primary/20 transition-all">
-          <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
+        <div className="p-5 bg-base-100 rounded-xl border border-base-300 hover:bg-base-200 transition-colors">
+          <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
             <h4 className="font-semibold text-base-content">Taxa de Sucesso dos Testes</h4>
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-sm text-base-content/70">Atual: {metricEnhancements.testPassRate.current}%</span>
-              <span className={`badge badge-sm ${getTrendColor(metricEnhancements.testPassRate.current, metricEnhancements.testPassRate.predicted) === 'text-success' ? 'badge-success' : getTrendColor(metricEnhancements.testPassRate.current, metricEnhancements.testPassRate.predicted) === 'text-error' ? 'badge-error' : 'badge-warning'}`}>
-                {getTrendIcon(metricEnhancements.testPassRate.current, metricEnhancements.testPassRate.predicted)} {metricEnhancements.testPassRate.predicted}%
-              </span>
+              <Badge 
+                variant={getTrendVariant(metricEnhancements.testPassRate.current, metricEnhancements.testPassRate.predicted)} 
+                size="sm"
+                className="inline-flex items-center gap-1"
+              >
+                {getTrendIcon(metricEnhancements.testPassRate.current, metricEnhancements.testPassRate.predicted)}
+                <span>{metricEnhancements.testPassRate.predicted}%</span>
+              </Badge>
             </div>
           </div>
-          <p className="text-sm text-base-content/70 leading-relaxed">{metricEnhancements.testPassRate.suggestion}</p>
+          <p className="text-sm text-base-content/80 leading-relaxed">{metricEnhancements.testPassRate.suggestion}</p>
         </div>
 
         {/* Resolução de Bugs */}
-        <div className="p-4 bg-base-100 rounded-xl border border-base-300 hover:border-primary/20 transition-all">
-          <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
+        <div className="p-5 bg-base-100 rounded-xl border border-base-300 hover:bg-base-200 transition-colors">
+          <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
             <h4 className="font-semibold text-base-content">Resolução de Bugs</h4>
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-sm text-base-content/70">Atual: {metricEnhancements.bugResolution.current}</span>
-              <span className={`badge badge-sm ${getTrendColor(metricEnhancements.bugResolution.current, metricEnhancements.bugResolution.predicted) === 'text-success' ? 'badge-success' : getTrendColor(metricEnhancements.bugResolution.current, metricEnhancements.bugResolution.predicted) === 'text-error' ? 'badge-error' : 'badge-warning'}`}>
-                {getTrendIcon(metricEnhancements.bugResolution.current, metricEnhancements.bugResolution.predicted)} {metricEnhancements.bugResolution.predicted}
-              </span>
+              <Badge 
+                variant={getTrendVariant(metricEnhancements.bugResolution.current, metricEnhancements.bugResolution.predicted)} 
+                size="sm"
+                className="inline-flex items-center gap-1"
+              >
+                {getTrendIcon(metricEnhancements.bugResolution.current, metricEnhancements.bugResolution.predicted)}
+                <span>{metricEnhancements.bugResolution.predicted}</span>
+              </Badge>
             </div>
           </div>
-          <p className="text-sm text-base-content/70 leading-relaxed">{metricEnhancements.bugResolution.suggestion}</p>
+          <p className="text-sm text-base-content/80 leading-relaxed">{metricEnhancements.bugResolution.suggestion}</p>
         </div>
 
         {/* Cobertura */}
-        <div className="p-4 bg-base-100 rounded-xl border border-base-300 hover:border-primary/20 transition-all">
-          <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
+        <div className="p-5 bg-base-100 rounded-xl border border-base-300 hover:bg-base-200 transition-colors">
+          <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
             <h4 className="font-semibold text-base-content">Cobertura de Testes</h4>
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-sm text-base-content/70">Atual: {metricEnhancements.coverage.current}%</span>
-              <span className="badge badge-primary badge-sm">
-                → Meta: {metricEnhancements.coverage.target}%
-              </span>
+              <Badge variant="info" size="sm" className="inline-flex items-center gap-1">
+                <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+                <span>Meta: {metricEnhancements.coverage.target}%</span>
+              </Badge>
             </div>
           </div>
-          <p className="text-sm text-base-content/70 leading-relaxed">{metricEnhancements.coverage.suggestion}</p>
+          <p className="text-sm text-base-content/80 leading-relaxed">{metricEnhancements.coverage.suggestion}</p>
         </div>
       </div>
     </Card>

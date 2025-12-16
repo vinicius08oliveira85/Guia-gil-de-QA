@@ -1,7 +1,8 @@
 import React from 'react';
+import { AlertCircle, TrendingUp, TrendingDown } from 'lucide-react';
 import { Card } from '../common/Card';
 import { DashboardInsightsAnalysis } from '../../types';
-import { StatusBadge } from '../common/StatusBadge';
+import { Badge } from '../common/Badge';
 
 interface PredictionsCardProps {
   analysis: DashboardInsightsAnalysis | null;
@@ -32,31 +33,37 @@ export const PredictionsCard: React.FC<PredictionsCardProps> = React.memo(({
 
   const { predictions } = analysis;
 
-  const getProbabilityStatus = (probability: string): 'error' | 'warning' | 'info' => {
+  const getProbabilityVariant = (probability: string): 'error' | 'warning' | 'info' | 'success' | 'default' => {
     switch (probability) {
       case 'Alta': return 'error';
       case 'Média': return 'warning';
       case 'Baixa': return 'info';
-      default: return 'info';
+      default: return 'default';
     }
   };
 
   return (
-    <Card className="p-5 space-y-4" aria-label="Previsões e fatores de risco">
+    <Card className="p-5 space-y-6" aria-label="Previsões e fatores de risco">
       <h3 className="text-lg font-semibold text-base-content">Previsões e Riscos</h3>
 
       {/* Previsões numéricas */}
       {(predictions.nextWeekPassRate !== undefined || predictions.nextWeekBugs !== undefined) && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {predictions.nextWeekPassRate !== undefined && (
-            <div className="p-4 bg-base-200 border border-base-300 rounded-xl">
-              <p className="text-xs mb-1 text-base-content/70">Taxa de Sucesso (Próxima Semana)</p>
+            <div className="p-5 bg-base-100 border border-base-300 rounded-xl hover:bg-base-200 transition-colors">
+              <div className="flex items-center gap-2 mb-2">
+                <TrendingDown className="h-4 w-4 text-base-content/60" aria-hidden="true" />
+                <p className="text-xs text-base-content/70">Taxa de Sucesso (Próxima Semana)</p>
+              </div>
               <p className="text-2xl font-bold text-base-content">{predictions.nextWeekPassRate}%</p>
             </div>
           )}
           {predictions.nextWeekBugs !== undefined && (
-            <div className="p-4 bg-base-200 border border-base-300 rounded-xl">
-              <p className="text-xs mb-1 text-base-content/70">Bugs Previstos (Próxima Semana)</p>
+            <div className="p-5 bg-base-100 border border-base-300 rounded-xl hover:bg-base-200 transition-colors">
+              <div className="flex items-center gap-2 mb-2">
+                <TrendingUp className="h-4 w-4 text-base-content/60" aria-hidden="true" />
+                <p className="text-xs text-base-content/70">Bugs Previstos (Próxima Semana)</p>
+              </div>
               <p className="text-2xl font-bold text-base-content">{predictions.nextWeekBugs}</p>
             </div>
           )}
@@ -65,22 +72,25 @@ export const PredictionsCard: React.FC<PredictionsCardProps> = React.memo(({
 
       {/* Fatores de risco */}
       {predictions.riskFactors && predictions.riskFactors.length > 0 && (
-        <div className="space-y-2">
-          <p className="text-sm font-medium text-base-content">Fatores de Risco Identificados:</p>
-          <div className="space-y-2">
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <AlertCircle className="h-5 w-5 text-error" aria-label="Alerta" />
+            <p className="text-sm font-semibold text-base-content">Fatores de Risco Identificados</p>
+          </div>
+          <div className="space-y-3">
             {predictions.riskFactors.map((risk, index) => (
               <div
                 key={index}
-                className="p-4 bg-base-200 border border-base-300 rounded-xl"
+                className="p-4 bg-base-100 border border-base-300 rounded-xl hover:bg-base-200 transition-colors"
                 aria-label={`Fator de risco: ${risk.factor} (${risk.probability})`}
               >
-                <div className="flex items-start justify-between gap-2 mb-1">
-                  <p className="font-medium text-base-content flex-1">{risk.factor}</p>
-                  <StatusBadge status={getProbabilityStatus(risk.probability)}>
+                <div className="flex items-start justify-between gap-3 mb-2">
+                  <h4 className="font-medium text-base-content flex-1 leading-relaxed">{risk.factor}</h4>
+                  <Badge variant={getProbabilityVariant(risk.probability)} size="sm" className="shrink-0">
                     {risk.probability}
-                  </StatusBadge>
+                  </Badge>
                 </div>
-                <p className="text-sm text-base-content/70">{risk.impact}</p>
+                <p className="text-sm text-base-content/70 leading-relaxed">{risk.impact}</p>
               </div>
             ))}
           </div>

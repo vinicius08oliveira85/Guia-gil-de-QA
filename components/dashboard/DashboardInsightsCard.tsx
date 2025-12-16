@@ -1,7 +1,8 @@
 import React from 'react';
+import { AlertCircle, CheckCircle2, Info, XCircle } from 'lucide-react';
 import { Card } from '../common/Card';
 import { DashboardInsightsAnalysis } from '../../types';
-import { StatusBadge } from '../common/StatusBadge';
+import { Badge } from '../common/Badge';
 
 interface DashboardInsightsCardProps {
   analysis: DashboardInsightsAnalysis | null;
@@ -32,31 +33,36 @@ export const DashboardInsightsCard: React.FC<DashboardInsightsCardProps> = React
 
   const getInsightIcon = (type: string) => {
     switch (type) {
-      case 'success': return '✓';
-      case 'warning': return '⚠';
-      case 'error': return '✗';
-      case 'info': return 'ℹ';
-      default: return '•';
+      case 'success':
+        return <CheckCircle2 className="h-5 w-5 text-success" aria-hidden="true" />;
+      case 'warning':
+        return <AlertCircle className="h-5 w-5 text-warning" aria-hidden="true" />;
+      case 'error':
+        return <XCircle className="h-5 w-5 text-error" aria-hidden="true" />;
+      case 'info':
+        return <Info className="h-5 w-5 text-info" aria-hidden="true" />;
+      default:
+        return <Info className="h-5 w-5 text-base-content/40" aria-hidden="true" />;
     }
   };
 
   const getInsightColor = (type: string) => {
     switch (type) {
-      case 'success': return 'bg-success/20 border-success/50';
-      case 'warning': return 'bg-warning-content/20 border-warning-content/60';
-      case 'error': return 'bg-error/20 border-error/50';
-      case 'info': return 'bg-info/20 border-info/50';
-      default: return 'bg-base-200 border-base-300';
+      case 'success': return 'bg-success/10 border-success/30';
+      case 'warning': return 'bg-warning/10 border-warning/30';
+      case 'error': return 'bg-error/10 border-error/30';
+      case 'info': return 'bg-info/10 border-info/30';
+      default: return 'bg-base-100 border-base-300';
     }
   };
 
-  const getPriorityStatus = (priority: string): 'error' | 'warning' | 'info' => {
+  const getPriorityVariant = (priority: string): 'error' | 'warning' | 'info' | 'success' | 'default' => {
     switch (priority) {
       case 'Crítica': return 'error';
       case 'Alta': return 'warning';
       case 'Média': return 'info';
-      case 'Baixa': return 'info';
-      default: return 'info';
+      case 'Baixa': return 'success';
+      default: return 'default';
     }
   };
 
@@ -71,32 +77,32 @@ export const DashboardInsightsCard: React.FC<DashboardInsightsCardProps> = React
     <Card className="p-5 space-y-4" aria-label="Insights do dashboard">
       <h3 className="text-lg font-semibold text-base-content">Insights da IA</h3>
       
-      <div className="space-y-3">
+      <div className="space-y-4">
         {sortedInsights.map((insight, index) => (
           <div
             key={index}
-            className={`p-4 rounded-xl border ${getInsightColor(insight.type)}`}
+            className={`p-5 rounded-xl border ${getInsightColor(insight.type)} hover:bg-base-200 transition-colors`}
             aria-label={`${insight.type}: ${insight.title}`}
           >
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex items-start gap-3 flex-1">
-                <span className="text-2xl flex-shrink-0" aria-hidden="true">
-                  {getInsightIcon(insight.type)}
-                </span>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1 flex-wrap">
-                    <h4 className="font-semibold text-base-content">{insight.title}</h4>
-                    <StatusBadge status={getPriorityStatus(insight.priority)}>
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0 mt-0.5">
+                {getInsightIcon(insight.type)}
+              </div>
+              <div className="flex-1 min-w-0 space-y-3">
+                <div className="flex items-start justify-between gap-3 flex-wrap">
+                  <h4 className="font-semibold text-base-content text-base leading-relaxed">{insight.title}</h4>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <Badge variant={getPriorityVariant(insight.priority)} size="sm">
                       {insight.priority}
-                    </StatusBadge>
+                    </Badge>
                     {insight.actionable && (
-                      <StatusBadge status="info">
+                      <Badge variant="info" size="sm">
                         Acionável
-                      </StatusBadge>
+                      </Badge>
                     )}
                   </div>
-                  <p className="text-sm text-base-content/70">{insight.description}</p>
                 </div>
+                <p className="text-sm text-base-content/80 leading-relaxed">{insight.description}</p>
               </div>
             </div>
           </div>

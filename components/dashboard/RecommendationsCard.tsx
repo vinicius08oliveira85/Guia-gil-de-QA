@@ -1,7 +1,8 @@
 import React from 'react';
+import { TestTube, Bug, Target, Settings, Award } from 'lucide-react';
 import { Card } from '../common/Card';
 import { DashboardInsightsAnalysis } from '../../types';
-import { StatusBadge } from '../common/StatusBadge';
+import { Badge } from '../common/Badge';
 
 interface RecommendationsCardProps {
   analysis: DashboardInsightsAnalysis | null;
@@ -30,7 +31,24 @@ export const RecommendationsCard: React.FC<RecommendationsCardProps> = React.mem
     return null;
   }
 
-  const getCategoryStatus = (category: string): 'info' | 'error' | 'warning' | 'success' | 'default' => {
+  const getCategoryIcon = (category: string) => {
+    switch (category) {
+      case 'Testes':
+        return <TestTube className="h-3.5 w-3.5" aria-hidden="true" />;
+      case 'Bugs':
+        return <Bug className="h-3.5 w-3.5" aria-hidden="true" />;
+      case 'Cobertura':
+        return <Target className="h-3.5 w-3.5" aria-hidden="true" />;
+      case 'Processo':
+        return <Settings className="h-3.5 w-3.5" aria-hidden="true" />;
+      case 'Qualidade':
+        return <Award className="h-3.5 w-3.5" aria-hidden="true" />;
+      default:
+        return null;
+    }
+  };
+
+  const getCategoryVariant = (category: string): 'info' | 'error' | 'warning' | 'success' | 'default' => {
     switch (category) {
       case 'Testes': return 'info';
       case 'Bugs': return 'error';
@@ -41,7 +59,7 @@ export const RecommendationsCard: React.FC<RecommendationsCardProps> = React.mem
     }
   };
 
-  const getImpactEffortStatus = (impact: string, effort: string): 'success' | 'warning' | 'info' => {
+  const getImpactEffortVariant = (impact: string, effort: string): 'success' | 'warning' | 'info' | 'error' | 'default' => {
     // Priorizar recomendações de alto impacto e baixo esforço
     if (impact === 'Alto' && effort === 'Baixo') {
       return 'success';
@@ -51,26 +69,6 @@ export const RecommendationsCard: React.FC<RecommendationsCardProps> = React.mem
     }
     // Para impacto médio ou baixo, usar 'info' para melhor visibilidade
     return 'info';
-  };
-
-  /**
-   * Retorna classes customizadas para melhorar o contraste do badge de impacto/esforço
-   * Garante contraste adequado WCAG AA contra o fundo bg-base-100 do tema light
-   */
-  const getImpactEffortBadgeClasses = (status: 'success' | 'warning' | 'info'): string => {
-    switch (status) {
-      case 'warning':
-        // Usa warning-content com fundo mais visível para melhor contraste no tema light
-        return 'text-warning-content border-warning-content/70 bg-warning-content/25';
-      case 'info':
-        // Usa info-content com fundo mais visível para melhor contraste
-        return 'text-info-content border-info/70 bg-info/20';
-      case 'success':
-        // Usa success-content com fundo mais visível para melhor contraste
-        return 'text-success-content border-success/70 bg-success/20';
-      default:
-        return '';
-    }
   };
 
   // Ordenar por impacto e esforço (alto impacto + baixo esforço primeiro)
@@ -86,33 +84,29 @@ export const RecommendationsCard: React.FC<RecommendationsCardProps> = React.mem
     <Card className="p-5 space-y-4 border border-base-300 hover:border-primary/30 hover:shadow-md transition-all duration-200" aria-label="Recomendações priorizadas">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold text-base-content">Recomendações Priorizadas</h3>
-        <div className="badge badge-primary badge-sm">{sortedRecommendations.length}</div>
+        <Badge variant="info" size="sm">{sortedRecommendations.length}</Badge>
       </div>
       
-      <div className="space-y-3">
+      <div className="space-y-4">
         {sortedRecommendations.map((rec, index) => (
           <div
             key={index}
-            className="p-4 bg-base-100 border border-base-300 rounded-xl hover:border-primary/30 hover:shadow-sm transition-all duration-200"
+            className="p-5 bg-base-100 border border-base-300 rounded-xl hover:bg-base-200 hover:border-primary/30 transition-colors"
             aria-label={`Recomendação: ${rec.title} (${rec.category})`}
           >
-            <div className="flex items-start justify-between gap-3 mb-2">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-2 flex-wrap">
-                  <StatusBadge status={getCategoryStatus(rec.category)}>
-                    {rec.category}
-                  </StatusBadge>
-                  <StatusBadge 
-                    status={getImpactEffortStatus(rec.impact, rec.effort)}
-                    className={getImpactEffortBadgeClasses(getImpactEffortStatus(rec.impact, rec.effort))}
-                  >
-                    Impacto: {rec.impact} | Esforço: {rec.effort}
-                  </StatusBadge>
-                </div>
-                <h4 className="font-semibold text-base-content mb-1">{rec.title}</h4>
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 flex-wrap">
+                <Badge variant={getCategoryVariant(rec.category)} size="sm" className="inline-flex items-center gap-1.5">
+                  {getCategoryIcon(rec.category)}
+                  <span>{rec.category}</span>
+                </Badge>
+                <Badge variant={getImpactEffortVariant(rec.impact, rec.effort)} size="sm">
+                  Impacto: {rec.impact} | Esforço: {rec.effort}
+                </Badge>
               </div>
+              <h4 className="font-semibold text-base-content text-base leading-relaxed">{rec.title}</h4>
+              <p className="text-sm text-base-content/80 leading-relaxed">{rec.description}</p>
             </div>
-            <p className="text-sm text-base-content/70 leading-relaxed">{rec.description}</p>
           </div>
         ))}
       </div>
