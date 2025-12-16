@@ -317,7 +317,8 @@ export class GeminiService implements AIService {
       return { strategy, testCases };
     } catch (error) {
       logger.error("Erro ao gerar casos de teste", 'geminiService', error);
-      throw new Error("Failed to communicate with the Gemini API.");
+      // Preservar erro original do callGeminiWithRetry que contém informações detalhadas (status, code, message)
+      throw error;
     }
   }
 
@@ -355,7 +356,8 @@ export class GeminiService implements AIService {
         return sanitizeHTML(html);
     } catch (error) {
         logger.error("Erro ao analisar documento", 'geminiService', error);
-        throw new Error("Failed to communicate with the Gemini API for document analysis.");
+        // Preservar erro original do callGeminiWithRetry que contém informações detalhadas (status, code, message)
+        throw error;
     }
   }
 
@@ -432,7 +434,8 @@ export class GeminiService implements AIService {
 
     } catch (error) {
         logger.error("Erro ao gerar tarefa a partir do documento", 'geminiService', error);
-        throw new Error("Failed to generate task from document.");
+        // Preservar erro original do callGeminiWithRetry que contém informações detalhadas (status, code, message)
+        throw error;
     }
   }
 
@@ -491,7 +494,8 @@ export class GeminiService implements AIService {
         return JSON.parse(response.text.trim());
     } catch (error) {
         logger.error("Erro ao gerar plano de ciclo de vida do projeto", 'geminiService', error);
-        throw new Error("Failed to communicate with the Gemini API for project planning.");
+        // Preservar erro original do callGeminiWithRetry que contém informações detalhadas (status, code, message)
+        throw error;
     }
   }
 
@@ -545,7 +549,8 @@ export class GeminiService implements AIService {
         return parsedResponse;
     } catch (error) {
         logger.error("Erro ao gerar análise Shift Left", 'geminiService', error);
-        throw new Error("Failed to communicate with the Gemini API for Shift Left analysis.");
+        // Preservar erro original do callGeminiWithRetry que contém informações detalhadas (status, code, message)
+        throw error;
     }
   }
 
@@ -603,7 +608,8 @@ export class GeminiService implements AIService {
         }));
     } catch (error) {
         logger.error("Erro ao gerar cenários BDD", 'geminiService', error);
-        throw new Error("Falha ao comunicar com a API Gemini para gerar cenários BDD.");
+        // Preservar erro original do callGeminiWithRetry que contém informações detalhadas (status, code, message)
+        throw error;
     }
   }
 
@@ -658,7 +664,8 @@ export class GeminiService implements AIService {
         return parsedResponse;
     } catch (error) {
         logger.error("Erro ao gerar análise Test Pyramid", 'geminiService', error);
-        throw new Error("Failed to communicate with the Gemini API for Test Pyramid analysis.");
+        // Preservar erro original do callGeminiWithRetry que contém informações detalhadas (status, code, message)
+        throw error;
     }
   }
 }
