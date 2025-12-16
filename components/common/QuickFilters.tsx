@@ -1,5 +1,6 @@
 import React from 'react';
 import { FilterOptions } from '../../hooks/useFilters';
+import { Badge } from './Badge';
 
 interface QuickFiltersProps {
     filters: FilterOptions;
@@ -216,20 +217,35 @@ export const QuickFilters: React.FC<QuickFiltersProps> = ({
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
-                    {filterChips.map(chip => (
-                        <button
-                            key={chip.key}
-                            type="button"
-                            onClick={chip.onRemove}
-                            className="btn btn-xs btn-outline rounded-full gap-2"
-                            title={`Remover filtro: ${chip.label}`}
-                        >
-                            <span className="truncate max-w-[240px]">{chip.label}</span>
-                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
-                    ))}
+                    {filterChips.map(chip => {
+                        // Determina variante baseado no tipo de filtro
+                        const getVariant = (key: string): 'default' | 'success' | 'warning' | 'error' | 'info' => {
+                            if (key.includes('priority') || key.includes('severity')) {
+                                if (chip.value.includes('Crítica') || chip.value.includes('Crítico')) return 'error';
+                                if (chip.value.includes('Alta') || chip.value.includes('Alto')) return 'warning';
+                                return 'info';
+                            }
+                            if (key.includes('status')) {
+                                if (chip.value.includes('Failed') || chip.value.includes('Erro')) return 'error';
+                                if (chip.value.includes('Passed') || chip.value.includes('Success')) return 'success';
+                                return 'info';
+                            }
+                            return 'default';
+                        };
+
+                        return (
+                            <Badge
+                                key={chip.key}
+                                variant={getVariant(chip.key)}
+                                size="sm"
+                                dismissible
+                                onDismiss={chip.onRemove}
+                                className="max-w-[240px]"
+                            >
+                                {chip.label}
+                            </Badge>
+                        );
+                    })}
                 </div>
 
                 <button

@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { cn } from '../../utils/cn';
-import { AlertCircle, CheckCircle, Clock, XCircle, MinusCircle, Info } from 'lucide-react';
+import { AlertCircle, CheckCircle, Clock, XCircle, MinusCircle, Info, X } from 'lucide-react';
 
 // Define the available standard statuses
 export type StatusType = 'success' | 'error' | 'warning' | 'info' | 'pending' | 'default';
@@ -57,17 +57,24 @@ export interface StatusBadgeProps {
   className?: string;
   /** If true, the icon will not be displayed. */
   hideIcon?: boolean;
+  /** If true, displays a dismiss button and enables removal. */
+  dismissible?: boolean;
+  /** Callback called when the badge is dismissed. */
+  onDismiss?: () => void;
 }
 
 /**
  * A professional, accessible component for displaying status or state.
  * It automatically selects color and icon based on the 'status' prop and theme.
+ * Supports dismissible mode with close button.
  */
 export const StatusBadge: React.FC<StatusBadgeProps> = ({
   children,
   status,
   className,
   hideIcon = false,
+  dismissible = false,
+  onDismiss,
 }) => {
   const config = useMemo(() => {
     const statusConfigs = getStatusConfig();
@@ -76,6 +83,68 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
 
   const IconComponent = config.icon;
 
+  // Estilos para modo dismissible seguindo padrão Radix UI
+  const dismissibleStatusStyles: Record<StatusType, string> = {
+    success: 'bg-green-50 border border-green-500 text-green-700',
+    error: 'bg-pink-50 border border-red-500 text-red-700',
+    warning: 'bg-yellow-50 border border-yellow-500 text-yellow-700',
+    info: 'bg-blue-50 border border-blue-500 text-blue-700',
+    pending: 'bg-yellow-50 border border-yellow-500 text-yellow-700',
+    default: 'bg-gray-50 border border-gray-300 text-gray-700',
+  };
+
+  const handleDismiss = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onDismiss?.();
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      e.stopPropagation();
+      onDismiss?.();
+    }
+  };
+
+  const label = typeof children === 'string' ? children : undefined;
+
+  // Se for dismissible, usa estilo customizado
+  if (dismissible && onDismiss) {
+    return (
+      <span
+        className={cn(
+          "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium cursor-default whitespace-nowrap",
+          "transition-colors hover:opacity-80",
+          dismissibleStatusStyles[status],
+          className
+        )}
+        role={config.role}
+        aria-live={config.role === 'alert' ? 'assertive' : 'polite'}
+        aria-label={label}
+      >
+        {!hideIcon && (
+          <IconComponent className="h-3 w-3 flex-shrink-0" aria-hidden="true" />
+        )}
+        <span className="truncate">{children}</span>
+        <button
+          type="button"
+          onClick={handleDismiss}
+          onKeyDown={handleKeyDown}
+          className={cn(
+            'flex items-center justify-center rounded-full bg-white text-gray-600',
+            'hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-gray-400',
+            'transition-colors cursor-pointer h-5 w-5 min-h-[20px] min-w-[20px]'
+          )}
+          aria-label={`Remover ${label || 'badge'}`}
+          tabIndex={0}
+        >
+          <X className="h-3 w-3 text-current" aria-hidden="true" />
+        </button>
+      </span>
+    );
+  }
+
+  // Comportamento original quando não é dismissible
   return (
     <span
       className={cn(
@@ -85,6 +154,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
       )}
       role={config.role}
       aria-live={config.role === 'alert' ? 'assertive' : 'polite'}
+      aria-label={label}
     >
       {!hideIcon && (
         <IconComponent className="h-3 w-3 flex-shrink-0" aria-hidden="true" />

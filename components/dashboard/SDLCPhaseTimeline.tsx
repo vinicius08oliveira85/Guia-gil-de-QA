@@ -6,6 +6,7 @@ import { Card } from '../common/Card';
 import { InfoIcon } from '../common/Icons';
 import { phaseIcons, phaseDisplayNames } from '../../utils/sdlcPhaseIcons';
 import { PHASE_NAMES } from '../../utils/constants';
+import { Badge } from '../common/Badge';
 
 interface SDLCPhaseTimelineProps {
   project: Project;
@@ -100,11 +101,12 @@ export const SDLCPhaseTimeline: React.FC<SDLCPhaseTimelineProps> = React.memo(({
                 </h4>
                 <div className="space-y-1.5">
                   {phaseAnalysis.nextSteps.map((step, index) => {
-                    const priorityColors: Record<string, string> = {
-                      'Crítica': 'badge badge-error badge-outline',
-                      'Alta': 'badge badge-warning badge-outline',
-                      'Média': 'badge badge-info badge-outline',
-                      'Baixa': 'badge badge-success badge-outline',
+                    const getPriorityVariant = (priority: string): 'default' | 'success' | 'warning' | 'error' | 'info' => {
+                      if (priority === 'Crítica') return 'error';
+                      if (priority === 'Alta') return 'warning';
+                      if (priority === 'Média') return 'info';
+                      if (priority === 'Baixa') return 'success';
+                      return 'default';
                     };
                     
                     return (
@@ -114,9 +116,9 @@ export const SDLCPhaseTimeline: React.FC<SDLCPhaseTimelineProps> = React.memo(({
                       >
                         <div className="flex items-start justify-between gap-2 mb-1">
                           <span className="font-medium text-base-content">{step.step}</span>
-                          <span className={priorityColors[step.priority] || 'badge badge-base-content badge-outline'}>
+                          <Badge variant={getPriorityVariant(step.priority)} size="sm">
                             {step.priority}
-                          </span>
+                          </Badge>
                         </div>
                         <p className="text-sm text-base-content/70">{step.description}</p>
                       </div>
@@ -134,11 +136,12 @@ export const SDLCPhaseTimeline: React.FC<SDLCPhaseTimelineProps> = React.memo(({
                 </h4>
                 <div className="space-y-1.5">
                   {phaseAnalysis.blockers.map((blocker, index) => {
-                    const impactColors: Record<string, string> = {
-                      'Crítico': 'badge badge-error badge-outline',
-                      'Alto': 'badge badge-warning badge-outline',
-                      'Médio': 'badge badge-info badge-outline',
-                      'Baixo': 'badge badge-success badge-outline',
+                    const getImpactVariant = (impact: string): 'default' | 'success' | 'warning' | 'error' | 'info' => {
+                      if (impact === 'Crítico') return 'error';
+                      if (impact === 'Alto') return 'warning';
+                      if (impact === 'Médio') return 'info';
+                      if (impact === 'Baixo') return 'success';
+                      return 'default';
                     };
                     
                     return (
@@ -148,9 +151,9 @@ export const SDLCPhaseTimeline: React.FC<SDLCPhaseTimelineProps> = React.memo(({
                       >
                         <div className="flex items-start justify-between gap-2 mb-1">
                           <span className="font-medium text-base-content">{blocker.blocker}</span>
-                          <span className={impactColors[blocker.impact] || 'badge badge-base-content badge-outline'}>
+                          <Badge variant={getImpactVariant(blocker.impact)} size="sm">
                             Impacto: {blocker.impact}
-                          </span>
+                          </Badge>
                         </div>
                         <p className="text-sm mb-2 text-base-content/70">{blocker.description}</p>
                         <p className="text-sm text-primary">

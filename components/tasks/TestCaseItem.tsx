@@ -5,11 +5,14 @@ import { normalizeExecutedStrategy } from '../../utils/testCaseMigration';
 import { ToolsSelector } from './ToolsSelector';
 import { TestTypeBadge } from '../common/TestTypeBadge';
 
-const priorityBadgeClassName: Record<string, string> = {
-    Urgente: 'badge badge-error badge-sm',
-    Alta: 'badge badge-warning badge-sm',
-    Média: 'badge badge-info badge-sm',
-    Baixa: 'badge badge-ghost badge-sm',
+import { Badge } from '../common/Badge';
+
+const getPriorityVariant = (priority: string): 'default' | 'success' | 'warning' | 'error' | 'info' => {
+    if (priority === 'Urgente' || priority === 'Crítica') return 'error';
+    if (priority === 'Alta') return 'warning';
+    if (priority === 'Média') return 'info';
+    if (priority === 'Baixa') return 'success';
+    return 'default';
 };
 
 export const TestCaseItem: React.FC<{ 
@@ -98,12 +101,12 @@ export const TestCaseItem: React.FC<{
                             {statusLabel[testCase.status]}
                         </span>
                         {testCase.priority && (
-                            <span className={priorityBadgeClassName[testCase.priority] || 'badge badge-ghost badge-sm'}>
+                            <Badge variant={getPriorityVariant(testCase.priority)} size="sm">
                                 {testCase.priority}
-                            </span>
+                            </Badge>
                         )}
                         {testCase.isAutomated && (
-                            <span className="badge badge-outline badge-sm">Automatizado</span>
+                            <Badge variant="default" size="sm">Automatizado</Badge>
                         )}
                     </div>
                 </div>
