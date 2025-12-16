@@ -7,12 +7,13 @@ import { logger } from '../utils/logger';
 
 export interface RolafPreferences {
   enabled: boolean;
-  tipsFrequency: number; // minutos entre dicas
+  tipsFrequency: number; // minutos entre dicas (pode ser aleatório 5-10)
   lastTipShownAt?: number; // timestamp
   lastTipId?: string;
   recentTipIds: string[]; // IDs das últimas 10 dicas mostradas
   tourCompleted: boolean;
   position: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left';
+  nextTipInterval?: number; // Intervalo aleatório gerado para próxima aparição (5-10 minutos)
 }
 
 const DEFAULT_PREFERENCES: RolafPreferences = {
@@ -25,6 +26,13 @@ const DEFAULT_PREFERENCES: RolafPreferences = {
 
 const STORAGE_KEY = 'rolaf_preferences';
 const MAX_RECENT_TIPS = 10;
+
+/**
+ * Gera um intervalo aleatório entre 5-10 minutos
+ */
+function getRandomTipInterval(): number {
+  return Math.floor(Math.random() * 6) + 5; // 5 a 10 minutos (inclusive)
+}
 
 /**
  * Carrega preferências do localStorage
@@ -55,19 +63,23 @@ export function saveRolafPreferences(preferences: RolafPreferences): void {
 
 /**
  * Verifica se é hora de mostrar uma nova dica
+ * Usa intervalo aleatório de 5-10 minutos
  */
 export function shouldShowTip(preferences: RolafPreferences, currentTime: number = Date.now()): boolean {
   if (!preferences.enabled) return false;
   
-  const { lastTipShownAt, tipsFrequency } = preferences;
+  const { lastTipShownAt, nextTipInterval } = preferences;
   
   if (!lastTipShownAt) {
     // Primeira vez - mostrar após 2 minutos
     return true;
   }
   
+  // Usa intervalo aleatório gerado ou gera um novo (5-10 minutos)
+  const intervalToUse = nextTipInterval || getRandomTipInterval();
   const timeSinceLastTip = (currentTime - lastTipShownAt) / (1000 * 60); // minutos
-  return timeSinceLastTip >= tipsFrequency;
+  
+  return timeSinceLastTip >= intervalToUse;
 }
 
 /**
@@ -97,6 +109,7 @@ export function selectTip(context?: string, excludeIds: string[] = []): QATip | 
 
 /**
  * Registra que uma dica foi mostrada
+ * Gera novo intervalo aleatório (5-10 minutos) para próxima aparição
  */
 export function markTipAsShown(tipId: string): void {
   const preferences = loadRolafPreferences();
@@ -104,14 +117,23 @@ export function markTipAsShown(tipId: string): void {
   // Adiciona à lista de recentes
   const recentIds = [tipId, ...preferences.recentTipIds].slice(0, MAX_RECENT_TIPS);
   
+  // Gera novo intervalo aleatório para próxima aparição (5-10 minutos)
+  const nextInterval = getRandomTipInterval();
+  
   const updated: RolafPreferences = {
     ...preferences,
     lastTipShownAt: Date.now(),
     lastTipId: tipId,
-    recentTipIds: recentIds
+    recentTipIds: recentIds,
+    nextTipInterval: nextInterval
   };
   
   saveRolafPreferences(updated);
+  
+  logger.info(
+    `Dica "${tipId}" marcada como mostrada. Próxima aparição em ${nextInterval} minutos`,
+    'rolafService'
+  );
 }
 
 /**

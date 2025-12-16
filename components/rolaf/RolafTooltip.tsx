@@ -4,7 +4,7 @@
 
 import React, { useRef, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ChevronRight, ChevronLeft } from 'lucide-react';
+import { X, ChevronRight, ChevronLeft, CheckCircle, AlertCircle, Lightbulb, Info, BookOpen, Settings, Zap } from 'lucide-react';
 import { QATip } from '../../utils/rolafTips';
 
 interface RolafTooltipProps {
@@ -108,23 +108,48 @@ export const RolafTooltip: React.FC<RolafTooltipProps> = ({
     return () => window.removeEventListener('resize', updatePosition);
   }, [position]);
 
-  const categoryColors = {
-    basico: 'bg-blue-500/10 border-blue-500/30 text-blue-200',
-    metodologias: 'bg-purple-500/10 border-purple-500/30 text-purple-200',
-    'boas-praticas': 'bg-green-500/10 border-green-500/30 text-green-200',
-    automacao: 'bg-orange-500/10 border-orange-500/30 text-orange-200',
-    ferramentas: 'bg-yellow-500/10 border-yellow-500/30 text-yellow-200',
-    processo: 'bg-pink-500/10 border-pink-500/30 text-pink-200'
+  // Configuração de categorias com fundos sólidos e alto contraste (inspirado v0)
+  const categoryConfig = {
+    basico: {
+      label: 'Básico',
+      icon: BookOpen,
+      badgeClass: 'bg-blue-100 text-blue-900 border border-blue-200',
+      iconClass: 'text-blue-600'
+    },
+    metodologias: {
+      label: 'Metodologias',
+      icon: Settings,
+      badgeClass: 'bg-purple-100 text-purple-900 border border-purple-200',
+      iconClass: 'text-purple-600'
+    },
+    'boas-praticas': {
+      label: 'Boas Práticas',
+      icon: CheckCircle,
+      badgeClass: 'bg-emerald-100 text-emerald-900 border border-emerald-200',
+      iconClass: 'text-emerald-600'
+    },
+    automacao: {
+      label: 'Automação',
+      icon: Zap,
+      badgeClass: 'bg-orange-100 text-orange-900 border border-orange-200',
+      iconClass: 'text-orange-600'
+    },
+    ferramentas: {
+      label: 'Ferramentas',
+      icon: Lightbulb,
+      badgeClass: 'bg-amber-100 text-amber-900 border border-amber-200',
+      iconClass: 'text-amber-600'
+    },
+    processo: {
+      label: 'Processo',
+      icon: Info,
+      badgeClass: 'bg-pink-100 text-pink-900 border border-pink-200',
+      iconClass: 'text-pink-600'
+    }
   };
 
-  const categoryLabels = {
-    basico: 'Básico',
-    metodologias: 'Metodologias',
-    'boas-praticas': 'Boas Práticas',
-    automacao: 'Automação',
-    ferramentas: 'Ferramentas',
-    processo: 'Processo'
-  };
+  const currentCategory = categoryConfig[tip.category] || categoryConfig.basico;
+  const CategoryIcon = currentCategory.icon;
 
   return (
     <AnimatePresence>
@@ -140,25 +165,31 @@ export const RolafTooltip: React.FC<RolafTooltipProps> = ({
         aria-labelledby="rolaf-tooltip-title"
         aria-describedby="rolaf-tooltip-content"
       >
-        <div className={`rounded-xl border-2 p-4 shadow-2xl backdrop-blur-sm ${categoryColors[tip.category] || categoryColors.basico}`}>
+        {/* Container principal com fundo sólido branco para alto contraste */}
+        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-lg">
           {/* Header */}
-          <div className="flex items-start justify-between gap-3 mb-2">
+          <div className="flex items-start justify-between gap-3 mb-3">
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-xs font-semibold uppercase tracking-wide opacity-70">
-                  {categoryLabels[tip.category] || 'Dica'}
-                </span>
+              <div className="flex items-center gap-2 mb-2">
+                {/* Badge com fundo sólido e ícone */}
+                <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${currentCategory.badgeClass}`}>
+                  <CategoryIcon className={`h-3.5 w-3.5 ${currentCategory.iconClass}`} />
+                  <span>{currentCategory.label}</span>
+                </div>
                 {tip.priority === 'high' && (
-                  <span className="text-xs bg-red-500/20 text-red-200 px-1.5 py-0.5 rounded">Importante</span>
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-900 border border-amber-200">
+                    <AlertCircle className="h-3.5 w-3.5 text-amber-600" />
+                    <span>Importante</span>
+                  </div>
                 )}
               </div>
-              <h3 id="rolaf-tooltip-title" className="text-base font-bold text-base-content line-clamp-2">
+              <h3 id="rolaf-tooltip-title" className="text-base font-bold text-slate-900 line-clamp-2">
                 {tip.title}
               </h3>
             </div>
             <button
               onClick={onClose}
-              className="btn btn-ghost btn-sm btn-square flex-shrink-0"
+              className="text-slate-400 hover:text-slate-600 transition-colors flex-shrink-0 p-1 rounded hover:bg-slate-100"
               aria-label="Fechar dica"
               type="button"
             >
@@ -166,13 +197,13 @@ export const RolafTooltip: React.FC<RolafTooltipProps> = ({
             </button>
           </div>
 
-          {/* Content */}
-          <div id="rolaf-tooltip-content" className="text-sm text-base-content/90 leading-relaxed mb-3">
+          {/* Content com texto escuro para alto contraste */}
+          <div id="rolaf-tooltip-content" className="text-sm text-slate-700 leading-relaxed mb-3">
             {tip.content}
           </div>
 
           {/* Footer com navegação */}
-          <div className="flex items-center justify-between pt-2 border-t border-current/20">
+          <div className="flex items-center justify-between pt-2 border-t border-slate-200">
             {showNavigation && (
               <div className="flex items-center gap-2">
                 {onPrevious && (
@@ -200,7 +231,7 @@ export const RolafTooltip: React.FC<RolafTooltipProps> = ({
             <div className="ml-auto">
               <button
                 onClick={onClose}
-                className="btn btn-sm btn-ghost"
+                className="px-3 py-1.5 text-sm font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-md transition-colors"
                 type="button"
               >
                 Entendi
@@ -209,22 +240,17 @@ export const RolafTooltip: React.FC<RolafTooltipProps> = ({
           </div>
         </div>
 
-        {/* Seta apontando para o avatar */}
+        {/* Seta apontando para o avatar - usando cor sólida branca */}
         <div
           className={`absolute w-0 h-0 ${
             position.includes('bottom')
-              ? 'bottom-[-8px] border-t-8 border-t-current'
-              : 'top-[-8px] border-b-8 border-b-current'
+              ? 'bottom-[-8px] border-t-8 border-t-white'
+              : 'top-[-8px] border-b-8 border-b-white'
           } ${
             position.includes('right')
               ? 'right-8 border-l-8 border-l-transparent border-r-8 border-r-transparent'
               : 'left-8 border-l-8 border-l-transparent border-r-8 border-r-transparent'
           }`}
-          style={{
-            borderColor: position.includes('bottom')
-              ? `var(--color-${tip.category === 'basico' ? 'blue' : tip.category === 'metodologias' ? 'purple' : tip.category === 'boas-praticas' ? 'green' : tip.category === 'automacao' ? 'orange' : tip.category === 'ferramentas' ? 'yellow' : 'pink'}-500/30) transparent`
-              : undefined
-          }}
         />
       </motion.div>
     </AnimatePresence>
