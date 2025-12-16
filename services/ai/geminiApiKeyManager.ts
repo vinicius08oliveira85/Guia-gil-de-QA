@@ -32,6 +32,8 @@ export class GeminiApiKeyManager {
     const primaryKey = import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.GEMINI_API_KEY;
     const fallbackKey = import.meta.env.VITE_GEMINI_API_KEY_FALLBACK;
     const hardcodedFallback = 'AIzaSyCCzdyA6LQMERCxXjQZdj5hJ5aVd_r_7W8';
+    const additionalFallback = 'AIzaSyBXe-S0U46tqOr4IT4Knv4Baal6JifjjEY';
+    const thirdFallback = 'AIzaSyBIRCPRn228RylAea7hifmsom8N_RnEOG8';
 
     // Adicionar keys na ordem de prioridade
     if (primaryKey) {
@@ -47,6 +49,14 @@ export class GeminiApiKeyManager {
     // Adicionar fallback hardcoded como última opção
     this.keys.push({ key: hardcodedFallback, exhausted: false });
     logger.info('API key de fallback hardcoded do Gemini carregada', 'GeminiApiKeyManager');
+
+    // Adicionar fallback adicional
+    this.keys.push({ key: additionalFallback, exhausted: false });
+    logger.info('API key de fallback adicional do Gemini carregada', 'GeminiApiKeyManager');
+
+    // Adicionar terceiro fallback
+    this.keys.push({ key: thirdFallback, exhausted: false });
+    logger.info('API key de terceiro fallback do Gemini carregada', 'GeminiApiKeyManager');
 
     if (this.keys.length === 0) {
       logger.warn('Nenhuma API key do Gemini configurada', 'GeminiApiKeyManager');
@@ -160,16 +170,64 @@ export class GeminiApiKeyManager {
     availableKeys: number;
     exhaustedKeys: number;
     currentKeyIndex: number;
+    nextResetInMs?: number;
   } {
     const available = this.keys.filter(k => !k.exhausted).length;
     const exhausted = this.keys.filter(k => k.exhausted).length;
+
+    // Calcular tempo até próximo reset (24h após a key mais antiga esgotada)
+    let nextResetInMs: number | undefined;
+    const now = Date.now();
+    for (const keyStatus of this.keys) {
+      if (keyStatus.exhausted && keyStatus.exhaustedAt) {
+        const timeUntilReset = this.resetIntervalMs - (now - keyStatus.exhaustedAt);
+        if (timeUntilReset > 0 && (!nextResetInMs || timeUntilReset < nextResetInMs)) {
+          nextResetInMs = timeUntilReset;
+        }
+      }
+    }
 
     return {
       totalKeys: this.keys.length,
       availableKeys: available,
       exhaustedKeys: exhausted,
       currentKeyIndex: this.currentKeyIndex,
+      nextResetInMs,
     };
+  }
+
+  /**
+   * Obtém informações sobre keys esgotadas e quando podem ser reutilizadas
+   */
+  getExhaustedKeysInfo(): Array<{
+    keyIndex: number;
+    exhaustedAt: number;
+    canBeReusedAt: number;
+    timeUntilReuseMs: number;
+  }> {
+    const now = Date.now();
+    const info: Array<{
+      keyIndex: number;
+      exhaustedAt: number;
+      canBeReusedAt: number;
+      timeUntilReuseMs: number;
+    }> = [];
+
+    this.keys.forEach((keyStatus, index) => {
+      if (keyStatus.exhausted && keyStatus.exhaustedAt) {
+        const canBeReusedAt = keyStatus.exhaustedAt + this.resetIntervalMs;
+        const timeUntilReuseMs = Math.max(0, canBeReusedAt - now);
+
+        info.push({
+          keyIndex: index,
+          exhaustedAt: keyStatus.exhaustedAt,
+          canBeReusedAt,
+          timeUntilReuseMs,
+        });
+      }
+    });
+
+    return info;
   }
 
   /**
