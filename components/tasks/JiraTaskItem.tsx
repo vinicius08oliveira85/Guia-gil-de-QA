@@ -167,33 +167,28 @@ export const JiraTaskItem: React.FC<{
     const safeDomId = useMemo(() => task.id.replace(/[^a-zA-Z0-9_-]/g, '_'), [task.id]);
     const detailsRegionId = `task-details-${safeDomId}`;
     const childrenRegionId = `task-children-${safeDomId}`;
+    // Cores customizadas para tipos de tarefa
+    const taskTypeColors = {
+        Epic: '#451e44',
+        História: '#009764',
+        Bug: '#e50006',
+        Tarefa: '#193ab7',
+    };
+
     const typeAccent = useMemo(() => {
-        switch (task.type) {
-            case 'Bug':
-                return 'bg-error';
-            case 'Epic':
-                return 'bg-secondary';
-            case 'História':
-                return 'bg-success';
-            case 'Tarefa':
-                return 'bg-primary';
-            default:
-                return 'bg-info';
+        const color = taskTypeColors[task.type as keyof typeof taskTypeColors];
+        if (color) {
+            return { backgroundColor: color };
         }
+        return { backgroundColor: '#6b7280' }; // cinza padrão
     }, [task.type]);
-    const typeBadgeClass = useMemo(() => {
-        switch (task.type) {
-            case 'Bug':
-                return 'badge-error';
-            case 'Epic':
-                return 'badge-secondary';
-            case 'História':
-                return 'badge-success';
-            case 'Tarefa':
-                return 'badge-info';
-            default:
-                return 'badge-ghost';
+
+    const typeBadgeStyle = useMemo(() => {
+        const color = taskTypeColors[task.type as keyof typeof taskTypeColors];
+        if (color) {
+            return { backgroundColor: color, color: '#ffffff', borderColor: color };
         }
+        return {};
     }, [task.type]);
     const jiraStatusPalette = project?.settings?.jiraStatuses;
     const currentStatusColor = useMemo(() => {
@@ -1077,7 +1072,7 @@ export const JiraTaskItem: React.FC<{
                         isSelected ? 'bg-primary/5 border-primary/40' : '',
                     ].join(' ')}
                 >
-                    <div aria-hidden="true" className={`absolute left-0 top-0 h-full w-1 ${typeAccent}`} />
+                    <div aria-hidden="true" className="absolute left-0 top-0 h-full w-1" style={typeAccent} />
 
                     <div className="p-3 md:p-4">
                         <div className="flex flex-col gap-3 md:flex-row md:items-start md:gap-4">
@@ -1142,7 +1137,7 @@ export const JiraTaskItem: React.FC<{
                                             <VersionBadges versions={versions} size="sm" />
                                         ) : null;
                                     })()}
-                                    <span className={`badge badge-sm ${typeBadgeClass}`}>{task.type}</span>
+                                    <span className="badge badge-sm text-white border-0" style={typeBadgeStyle}>{task.type}</span>
                                     {task.severity && <span className="badge badge-sm badge-outline">{task.severity}</span>}
                                     {task.priority && <span className="badge badge-sm badge-outline">{task.priority}</span>}
                                     {taskPhase && (
