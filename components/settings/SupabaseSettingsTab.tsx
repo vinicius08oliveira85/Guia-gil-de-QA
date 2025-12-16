@@ -1,7 +1,9 @@
 import React, { useMemo } from 'react';
+import { Database, CheckCircle2, AlertTriangle, Info } from 'lucide-react';
 import { isSupabaseAvailable } from '../../services/supabaseService';
-import { Badge } from '../common/Badge';
+import { StatusBadge } from './StatusBadge';
 import { Card } from '../common/Card';
+import { cn } from '../../utils/cn';
 
 interface VariableStatus {
     name: string;
@@ -70,79 +72,99 @@ export const SupabaseSettingsTab: React.FC = () => {
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <div>
-                    <h3 className="text-xl font-bold text-text-primary mb-2">Configurações do Supabase</h3>
-                    <p className="text-text-secondary text-sm">
-                        Gerencie as configurações de armazenamento na nuvem
-                    </p>
+            {/* Header da seção */}
+            <div className="flex items-start justify-between gap-4">
+                <div className="flex items-start gap-4 flex-1 min-w-0">
+                    <div className="shrink-0 h-12 w-12 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                        <Database className="h-6 w-6 text-blue-600 dark:text-blue-400" aria-hidden="true" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                        <h3 className="text-xl font-bold text-base-content mb-2">Configurações do Supabase</h3>
+                        <p className="text-base-content/70 text-sm leading-relaxed">
+                            Gerencie as configurações de armazenamento na nuvem
+                        </p>
+                    </div>
                 </div>
                 {supabaseAvailable ? (
-                    <Badge variant="success">Configurado</Badge>
+                    <StatusBadge variant="configured">Configurado</StatusBadge>
                 ) : (
-                    <Badge variant="warning">Não Configurado</Badge>
+                    <StatusBadge variant="warning">Não Configurado</StatusBadge>
                 )}
             </div>
 
-            <Card>
+            <Card className="p-6">
                 <div className="space-y-6">
                     {supabaseAvailable ? (
                         <>
                             <div>
-                                <p className="text-text-secondary text-sm mb-4">
+                                <p className="text-base-content/70 text-sm mb-4 leading-relaxed">
                                     Supabase está configurado e funcionando. Seus projetos podem ser salvos na nuvem.
                                 </p>
-                                <div className="space-y-2 text-sm">
-                                    <p className="text-text-secondary">
-                                        <strong className="text-text-primary">Status:</strong> Conectado
-                                    </p>
-                                    <p className="text-text-secondary">
-                                        <strong className="text-text-primary">Modo:</strong> Via Proxy (recomendado)
-                                    </p>
-                                    <p className="text-text-secondary">
-                                        <strong className="text-text-primary">Autenticação:</strong> Anônima (compartilhada)
-                                    </p>
+                                <div className="space-y-3 text-sm">
+                                    <div className="flex items-center gap-2">
+                                        <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                                        <p className="text-base-content/70">
+                                            <strong className="text-base-content">Status:</strong> Conectado
+                                        </p>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <Info className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0" />
+                                        <p className="text-base-content/70">
+                                            <strong className="text-base-content">Modo:</strong> Via Proxy (recomendado)
+                                        </p>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <Info className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0" />
+                                        <p className="text-base-content/70">
+                                            <strong className="text-base-content">Autenticação:</strong> Anônima (compartilhada)
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         </>
                     ) : (
                         <>
                             <div>
-                                <p className="text-text-secondary text-sm mb-4">
+                                <p className="text-base-content/70 text-sm mb-4 leading-relaxed">
                                     Supabase não está configurado. Configure as variáveis abaixo para habilitar o armazenamento na nuvem.
                                 </p>
                             </div>
 
-                            <div className="space-y-4">
+                            <div className="space-y-6">
                                 <div>
-                                    <h4 className="text-sm font-semibold text-text-primary mb-2">
+                                    <h4 className="text-sm font-semibold text-base-content mb-3">
                                         Variáveis do Frontend (Vercel)
                                     </h4>
                                     <div className="space-y-2">
                                         {variablesStatus.map((variable) => (
                                             <div
                                                 key={variable.name}
-                                                className="flex items-start gap-3 p-3 rounded-lg bg-surface-secondary/50"
+                                                className={cn(
+                                                    "flex items-start gap-3 p-3 rounded-lg border",
+                                                    variable.configured
+                                                        ? "bg-emerald-500/5 border-emerald-500/20"
+                                                        : "bg-base-200/50 border-base-300"
+                                                )}
                                             >
                                                 <div className="flex-shrink-0 mt-0.5">
                                                     {variable.configured ? (
-                                                        <span className="text-green-500 text-sm">✓</span>
+                                                        <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                                                     ) : (
-                                                        <span className="text-yellow-500 text-sm">⚠</span>
+                                                        <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
                                                     )}
                                                 </div>
                                                 <div className="flex-1 min-w-0">
-                                                    <div className="flex items-center gap-2 mb-1">
-                                                        <code className="text-xs bg-black/30 px-2 py-0.5 rounded text-text-primary">
+                                                    <div className="flex items-center gap-2 mb-1 flex-wrap">
+                                                        <code className="text-xs bg-base-300 px-2 py-0.5 rounded font-mono text-base-content">
                                                             {variable.name}
                                                         </code>
                                                         {variable.required && (
-                                                            <Badge variant="warning" className="text-xs">
+                                                            <StatusBadge variant="warning" className="text-xs">
                                                                 Obrigatório
-                                                            </Badge>
+                                                            </StatusBadge>
                                                         )}
                                                     </div>
-                                                    <p className="text-xs text-text-secondary">
+                                                    <p className="text-xs text-base-content/70 leading-relaxed">
                                                         {variable.description}
                                                     </p>
                                                 </div>
@@ -152,28 +174,28 @@ export const SupabaseSettingsTab: React.FC = () => {
                                 </div>
 
                                 <div>
-                                    <h4 className="text-sm font-semibold text-text-primary mb-2">
+                                    <h4 className="text-sm font-semibold text-base-content mb-3">
                                         Variáveis do Backend (Vercel - Serverless Functions)
                                     </h4>
                                     <div className="space-y-2">
                                         {backendVariables.map((variable) => (
                                             <div
                                                 key={variable.name}
-                                                className="flex items-start gap-3 p-3 rounded-lg bg-surface-secondary/50"
+                                                className="flex items-start gap-3 p-3 rounded-lg bg-blue-500/5 border border-blue-500/20"
                                             >
                                                 <div className="flex-shrink-0 mt-0.5">
-                                                    <span className="text-blue-500 text-sm">ℹ</span>
+                                                    <Info className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                                                 </div>
                                                 <div className="flex-1 min-w-0">
-                                                    <div className="flex items-center gap-2 mb-1">
-                                                        <code className="text-xs bg-black/30 px-2 py-0.5 rounded text-text-primary">
+                                                    <div className="flex items-center gap-2 mb-1 flex-wrap">
+                                                        <code className="text-xs bg-base-300 px-2 py-0.5 rounded font-mono text-base-content">
                                                             {variable.name}
                                                         </code>
-                                                        <Badge variant="warning" className="text-xs">
+                                                        <StatusBadge variant="warning" className="text-xs">
                                                             Obrigatório
-                                                        </Badge>
+                                                        </StatusBadge>
                                                     </div>
-                                                    <p className="text-xs text-text-secondary">
+                                                    <p className="text-xs text-base-content/70 leading-relaxed">
                                                         {variable.description}
                                                     </p>
                                                 </div>
@@ -183,11 +205,14 @@ export const SupabaseSettingsTab: React.FC = () => {
                                 </div>
                             </div>
 
-                            <div className="mt-4 p-3 rounded-lg bg-blue-500/10 border border-blue-500/30">
-                                <p className="text-sm text-text-secondary">
-                                    <strong className="text-text-primary">📚 Documentação:</strong> Consulte{' '}
-                                    <code className="bg-black/30 px-1 rounded">docs/SUPABASE_SETUP.md</code> para um guia passo a passo de configuração.
-                                </p>
+                            <div className="mt-4 p-4 rounded-lg bg-blue-500/10 border border-blue-500/30">
+                                <div className="flex items-start gap-2">
+                                    <Info className="h-5 w-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+                                    <p className="text-sm text-base-content/70 leading-relaxed">
+                                        <strong className="text-base-content">Documentação:</strong> Consulte{' '}
+                                        <code className="bg-base-300 px-1.5 py-0.5 rounded font-mono text-xs">docs/SUPABASE_SETUP.md</code> para um guia passo a passo de configuração.
+                                    </p>
+                                </div>
                             </div>
                         </>
                     )}

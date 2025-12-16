@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'lucide-react';
 import { JiraConfig, testJiraConnection, getJiraProjects, importJiraProject, saveJiraConfig, getJiraConfig, deleteJiraConfig, JiraProject } from '../../services/jiraService';
 import { Project } from '../../types';
 import { Modal } from '../common/Modal';
 import { Spinner } from '../common/Spinner';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
-import { Badge } from '../common/Badge';
+import { StatusBadge } from './StatusBadge';
+import { Card } from '../common/Card';
 import { logger } from '../../utils/logger';
+import { cn } from '../../utils/cn';
 
 interface JiraSettingsTabProps {
     onProjectImported?: (project: Project) => void;
@@ -175,127 +178,144 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({ onProjectImpor
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <div>
-                    <h3 className="text-xl font-bold text-base-content mb-2">Integração com Jira</h3>
-                    <p className="text-base-content/70 text-sm">
-                        Importe projetos existentes do Jira para o aplicativo
-                    </p>
+            {/* Header da seção */}
+            <div className="flex items-start justify-between gap-4">
+                <div className="flex items-start gap-4 flex-1 min-w-0">
+                    <div className="shrink-0 h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
+                        <Link className="h-6 w-6 text-primary" aria-hidden="true" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                        <h3 className="text-xl font-bold text-base-content mb-2">Integração com Jira</h3>
+                        <p className="text-base-content/70 text-sm leading-relaxed">
+                            Importe projetos existentes do Jira para o aplicativo
+                        </p>
+                    </div>
                 </div>
                 {isConnected ? (
-                    <Badge variant="success">Conectado</Badge>
+                    <StatusBadge variant="connected">Conectado</StatusBadge>
                 ) : (
-                    <Badge variant="default">Desconectado</Badge>
+                    <StatusBadge variant="disconnected">Desconectado</StatusBadge>
                 )}
             </div>
 
             {!isConnected ? (
-                <div className="space-y-4">
-                    <p className="text-base-content/70 text-sm">
-                        Configure sua conexão com o Jira para importar projetos. Você precisará de:
-                    </p>
-                    <ul className="list-disc list-inside text-base-content/70 text-sm space-y-1 ml-4">
-                        <li>URL do seu Jira (ex: https://seu-dominio.atlassian.net)</li>
-                        <li>Email da sua conta Atlassian</li>
-                        <li>API Token (gerado em: Account Settings → Security → API tokens)</li>
-                    </ul>
-                    <button
-                        onClick={() => setShowConfigModal(true)}
-                        className="btn btn-primary w-full"
-                    >
-                        🔗 Configurar Conexão
-                    </button>
-                </div>
-            ) : (
-                <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-base-content/70 text-sm">
-                                Conectado como: <strong className="text-base-content">{config.email}</strong>
-                            </p>
-                            <p className="text-base-content/70 text-xs">
-                                URL: {config.url}
-                            </p>
-                        </div>
-                        <div className="flex gap-2">
-                            <button
-                                onClick={() => setShowConfigModal(true)}
-                                className="btn btn-secondary text-sm"
-                            >
-                                ✏️ Editar
-                            </button>
-                            <button
-                                onClick={handleDisconnect}
-                                className="btn btn-secondary text-sm hover:bg-red-500/20 hover:border-red-500/30"
-                            >
-                                Desconectar
-                            </button>
-                        </div>
+                <Card className="p-6">
+                    <div className="space-y-4">
+                        <p className="text-base-content/70 text-sm leading-relaxed">
+                            Configure sua conexão com o Jira para importar projetos. Você precisará de:
+                        </p>
+                        <ul className="list-disc list-inside text-base-content/70 text-sm space-y-2 ml-4">
+                            <li>URL do seu Jira (ex: https://seu-dominio.atlassian.net)</li>
+                            <li>Email da sua conta Atlassian</li>
+                            <li>API Token (gerado em: Account Settings → Security → API tokens)</li>
+                        </ul>
+                        <button
+                            onClick={() => setShowConfigModal(true)}
+                            className="btn btn-primary w-full mt-4"
+                        >
+                            <Link className="h-4 w-4 mr-2" />
+                            Configurar Conexão
+                        </button>
                     </div>
-
-                    {isLoadingProjects ? (
-                        <div className="flex items-center justify-center py-8">
-                            <div className="flex flex-col items-center gap-3">
-                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div>
-                                <p className="text-base-content/70 text-sm">Carregando projetos do Jira...</p>
-                                <p className="text-base-content/70 text-xs">Isso pode levar alguns segundos</p>
+                </Card>
+            ) : (
+                <div className="space-y-6">
+                    <Card className="p-6">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                            <div className="space-y-1">
+                                <p className="text-base-content/70 text-sm">
+                                    Conectado como: <strong className="text-base-content">{config.email}</strong>
+                                </p>
+                                <p className="text-base-content/70 text-xs font-mono break-all">
+                                    URL: {config.url}
+                                </p>
                             </div>
-                        </div>
-                    ) : jiraProjects.length > 0 ? (
-                        <div className="space-y-3">
-                            <div className="flex items-center justify-between">
-                                <label className="block text-sm font-medium text-base-content/70">
-                                    Selecione o projeto para importar:
-                                </label>
+                            <div className="flex gap-2 shrink-0">
                                 <button
-                                    onClick={() => loadJiraProjects(config, false)}
-                                    className="text-xs text-accent hover:underline"
-                                    title="Atualizar lista de projetos"
+                                    onClick={() => setShowConfigModal(true)}
+                                    className="btn btn-secondary text-sm"
                                 >
-                                    🔄 Atualizar
+                                    Editar
+                                </button>
+                                <button
+                                    onClick={handleDisconnect}
+                                    className="btn btn-secondary text-sm hover:bg-red-500/20 hover:border-red-500/30"
+                                >
+                                    Desconectar
                                 </button>
                             </div>
-                            <select
-                                value={selectedProjectKey}
-                                onChange={(e) => setSelectedProjectKey(e.target.value)}
-                                className="select select-bordered w-full bg-base-100 border-base-300 text-base-content focus:outline-none focus:border-primary"
-                            >
-                                <option value="">Selecione um projeto...</option>
-                                {Array.isArray(jiraProjects) && jiraProjects.map(project => (
-                                    <option key={project.key} value={project.key}>
-                                        {project.key} - {project.name}
-                                    </option>
-                                ))}
-                            </select>
-                            <button
-                                onClick={handleImport}
-                                disabled={!selectedProjectKey || isImporting}
-                                className="btn btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                {isImporting ? (
-                                    <>
-                                        <Spinner small />
-                                        {importProgress ? (
-                                            importProgress.total ? (
-                                                <>Importando... {importProgress.current} de {importProgress.total}</>
+                        </div>
+                    </Card>
+
+                    {isLoadingProjects ? (
+                        <Card className="p-8">
+                            <div className="flex flex-col items-center gap-3">
+                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                                <p className="text-base-content/70 text-sm font-medium">Carregando projetos do Jira...</p>
+                                <p className="text-base-content/70 text-xs">Isso pode levar alguns segundos</p>
+                            </div>
+                        </Card>
+                    ) : jiraProjects.length > 0 ? (
+                        <Card className="p-6">
+                            <div className="space-y-4">
+                                <div className="flex items-center justify-between">
+                                    <label className="block text-sm font-medium text-base-content">
+                                        Selecione o projeto para importar:
+                                    </label>
+                                    <button
+                                        onClick={() => loadJiraProjects(config, false)}
+                                        className="text-xs text-primary hover:underline flex items-center gap-1"
+                                        title="Atualizar lista de projetos"
+                                    >
+                                        <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                        </svg>
+                                        Atualizar
+                                    </button>
+                                </div>
+                                <select
+                                    value={selectedProjectKey}
+                                    onChange={(e) => setSelectedProjectKey(e.target.value)}
+                                    className="select select-bordered w-full bg-base-100 border-base-300 text-base-content focus:outline-none focus:border-primary"
+                                >
+                                    <option value="">Selecione um projeto...</option>
+                                    {Array.isArray(jiraProjects) && jiraProjects.map(project => (
+                                        <option key={project.key} value={project.key}>
+                                            {project.key} - {project.name}
+                                        </option>
+                                    ))}
+                                </select>
+                                <button
+                                    onClick={handleImport}
+                                    disabled={!selectedProjectKey || isImporting}
+                                    className="btn btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {isImporting ? (
+                                        <>
+                                            <Spinner small />
+                                            {importProgress ? (
+                                                importProgress.total ? (
+                                                    <>Importando... {importProgress.current} de {importProgress.total}</>
+                                                ) : (
+                                                    <>Importando... {importProgress.current} tarefas</>
+                                                )
                                             ) : (
-                                                <>Importando... {importProgress.current} tarefas</>
-                                            )
-                                        ) : (
-                                            <>Importando... Isso pode levar alguns minutos para projetos grandes</>
-                                        )}
-                                    </>
-                                ) : (
-                                    <>
-                                        📥 Importar Projeto
-                                    </>
-                                )}
-                            </button>
+                                                <>Importando... Isso pode levar alguns minutos para projetos grandes</>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <>
+                                            Importar Projeto
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+                        </Card>
                             {isImporting && (
-                                <div className="mt-2 p-4 bg-base-200 border border-base-300 rounded-lg">
+                                <Card className="mt-4 p-4 border-primary/20">
                                     <div className="flex items-center justify-between mb-3">
                                         <span className="text-sm font-medium text-base-content">Importando tarefas do Jira...</span>
-                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-accent"></div>
+                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
                                     </div>
                                     <div className="w-full bg-base-200 rounded-full h-2.5 mb-2">
                                         <div 
@@ -309,24 +329,26 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({ onProjectImpor
                                     </div>
                                     <div className="space-y-1 text-xs text-base-content/70">
                                         <p>
-                                            ⏳ <strong>Aguarde...</strong> Projetos grandes podem levar vários minutos.
+                                            <strong>Aguarde...</strong> Projetos grandes podem levar vários minutos.
                                         </p>
                                         <p>
-                                            📊 Verifique o console do navegador (F12) para ver o progresso detalhado.
+                                            Verifique o console do navegador (F12) para ver o progresso detalhado.
                                         </p>
-                                        <p className="text-accent">
-                                            💡 Não feche esta página durante a importação!
+                                        <p className="text-primary font-medium">
+                                            Não feche esta página durante a importação!
                                         </p>
                                     </div>
-                                </div>
+                                </Card>
                             )}
-                        </div>
+                        </Card>
                     ) : (
-                        <div className="text-center py-4">
-                            <p className="text-base-content/70 text-sm">
-                                Carregando projetos do Jira...
-                            </p>
-                        </div>
+                        <Card className="p-8">
+                            <div className="text-center">
+                                <p className="text-base-content/70 text-sm">
+                                    Nenhum projeto encontrado. Verifique suas permissões no Jira.
+                                </p>
+                            </div>
+                        </Card>
                     )}
                 </div>
             )}
