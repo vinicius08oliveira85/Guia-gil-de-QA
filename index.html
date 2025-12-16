@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="color-scheme" content="light" />
+    <meta name="color-scheme" content="light dark" />
 
     <title>QA Agile Guide</title>
 
@@ -33,9 +33,22 @@
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
     <script>
-      // Visual Reboot (fase atual): força DaisyUI "light" já no bootstrap para evitar flash.
+      // Carrega o tema salvo do localStorage na inicialização para evitar flash de conteúdo incorreto
       (function () {
-        document.documentElement.setAttribute("data-theme", "light");
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        let themeToApply = 'light';
+        
+        if (savedTheme === 'auto') {
+          // Usar preferência do sistema para modo automático
+          const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          themeToApply = prefersDark ? 'dark' : 'light';
+        } else if (savedTheme === 'dark') {
+          themeToApply = 'dark';
+        } else if (savedTheme === 'light') {
+          themeToApply = 'light';
+        }
+        
+        document.documentElement.setAttribute("data-theme", themeToApply);
         document.documentElement.classList.remove("light", "dark", "leve-saude");
       })();
     </script>

@@ -11,9 +11,22 @@ export const useTheme = () => {
   useEffect(() => {
     const root = document.documentElement;
 
-    // Nesta fase do Visual Reboot, apenas o tema DaisyUI "light" é suportado.
-    // Mantemos o valor selecionado em localStorage para, no futuro, habilitar dark/auto/etc.
-    root.setAttribute('data-theme', 'light');
+    // Determinar qual tema aplicar
+    let themeToApply: string = 'light';
+    if (theme === 'auto') {
+      // Usar preferência do sistema para modo automático
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      themeToApply = prefersDark ? 'dark' : 'light';
+    } else if (theme === 'dark') {
+      themeToApply = 'dark';
+    } else if (theme === 'light') {
+      themeToApply = 'light';
+    } else {
+      // Para outros temas (leve-saude), manter light por enquanto
+      themeToApply = 'light';
+    }
+
+    root.setAttribute('data-theme', themeToApply);
 
     // Remover classes legadas para evitar conflitos com CSS antigo (cleanup está em andamento).
     root.classList.remove('light', 'dark', 'leve-saude');
@@ -30,7 +43,8 @@ export const useTheme = () => {
     });
   };
 
-  const isOnlyLightSupported = theme !== 'light';
+  // Verificar se apenas light é suportado (para temas futuros como leve-saude)
+  const isOnlyLightSupported = theme === 'leve-saude' || theme === 'auto';
 
   return { theme, setTheme, toggleTheme, isOnlyLightSupported };
 };

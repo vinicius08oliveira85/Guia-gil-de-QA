@@ -56,7 +56,9 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported: _onProjectImp
 
     // Obter título do tema
     const getThemeTitle = () => {
-        const suffix = theme !== 'light' ? ' (em breve)' : '';
+        // Temas suportados: light e dark não mostram "(em breve)"
+        const supportedThemes = ['light', 'dark'];
+        const suffix = supportedThemes.includes(theme) ? '' : ' (em breve)';
         switch (theme) {
             case 'dark':
                 return `Tema Escuro${suffix}`;
@@ -161,7 +163,7 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported: _onProjectImp
                         </>
                     )}
 
-                    {/* Nota: nesta fase, apenas Light é suportado (toggle permanece para futura expansão) */}
+                    {/* Badge para temas ainda não suportados (leve-saude, auto) */}
                     {isOnlyLightSupported && (
                         <span className="badge badge-outline badge-sm hidden sm:inline-flex">
                             Tema em breve
