@@ -256,61 +256,62 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({ onProjectImpor
                             </div>
                         </Card>
                     ) : jiraProjects.length > 0 ? (
-                        <Card className="p-6">
-                            <div className="space-y-4">
-                                <div className="flex items-center justify-between">
-                                    <label className="block text-sm font-medium text-base-content">
-                                        Selecione o projeto para importar:
-                                    </label>
-                                    <button
-                                        onClick={() => loadJiraProjects(config, false)}
-                                        className="text-xs text-primary hover:underline flex items-center gap-1"
-                                        title="Atualizar lista de projetos"
+                        <>
+                            <Card className="p-6">
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-between">
+                                        <label className="block text-sm font-medium text-base-content">
+                                            Selecione o projeto para importar:
+                                        </label>
+                                        <button
+                                            onClick={() => loadJiraProjects(config, false)}
+                                            className="text-xs text-primary hover:underline flex items-center gap-1"
+                                            title="Atualizar lista de projetos"
+                                        >
+                                            <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                            </svg>
+                                            Atualizar
+                                        </button>
+                                    </div>
+                                    <select
+                                        value={selectedProjectKey}
+                                        onChange={(e) => setSelectedProjectKey(e.target.value)}
+                                        className="select select-bordered w-full bg-base-100 border-base-300 text-base-content focus:outline-none focus:border-primary"
                                     >
-                                        <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                        </svg>
-                                        Atualizar
+                                        <option value="">Selecione um projeto...</option>
+                                        {Array.isArray(jiraProjects) && jiraProjects.map(project => (
+                                            <option key={project.key} value={project.key}>
+                                                {project.key} - {project.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <button
+                                        onClick={handleImport}
+                                        disabled={!selectedProjectKey || isImporting}
+                                        className="btn btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        {isImporting ? (
+                                            <>
+                                                <Spinner small />
+                                                {importProgress ? (
+                                                    importProgress.total ? (
+                                                        <>Importando... {importProgress.current} de {importProgress.total}</>
+                                                    ) : (
+                                                        <>Importando... {importProgress.current} tarefas</>
+                                                    )
+                                                ) : (
+                                                    <>Importando... Isso pode levar alguns minutos para projetos grandes</>
+                                                )}
+                                            </>
+                                        ) : (
+                                            <>
+                                                Importar Projeto
+                                            </>
+                                        )}
                                     </button>
                                 </div>
-                                <select
-                                    value={selectedProjectKey}
-                                    onChange={(e) => setSelectedProjectKey(e.target.value)}
-                                    className="select select-bordered w-full bg-base-100 border-base-300 text-base-content focus:outline-none focus:border-primary"
-                                >
-                                    <option value="">Selecione um projeto...</option>
-                                    {Array.isArray(jiraProjects) && jiraProjects.map(project => (
-                                        <option key={project.key} value={project.key}>
-                                            {project.key} - {project.name}
-                                        </option>
-                                    ))}
-                                </select>
-                                <button
-                                    onClick={handleImport}
-                                    disabled={!selectedProjectKey || isImporting}
-                                    className="btn btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    {isImporting ? (
-                                        <>
-                                            <Spinner small />
-                                            {importProgress ? (
-                                                importProgress.total ? (
-                                                    <>Importando... {importProgress.current} de {importProgress.total}</>
-                                                ) : (
-                                                    <>Importando... {importProgress.current} tarefas</>
-                                                )
-                                            ) : (
-                                                <>Importando... Isso pode levar alguns minutos para projetos grandes</>
-                                            )}
-                                        </>
-                                    ) : (
-                                        <>
-                                            Importar Projeto
-                                        </>
-                                    )}
-                                </button>
-                            </div>
-                        </Card>
+                            </Card>
                             {isImporting && (
                                 <Card className="mt-4 p-4 border-primary/20">
                                     <div className="flex items-center justify-between mb-3">
@@ -340,7 +341,7 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({ onProjectImpor
                                     </div>
                                 </Card>
                             )}
-                        </Card>
+                        </>
                     ) : (
                         <Card className="p-8">
                             <div className="text-center">
