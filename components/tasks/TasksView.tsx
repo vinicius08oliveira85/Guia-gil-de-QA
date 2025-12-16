@@ -1345,7 +1345,7 @@ export const TasksView: React.FC<{
                     </motion.div>
                     
                     <motion.div 
-                        className="bg-base-100 rounded-xl p-5 border border-base-300 hover:border-warning/40 hover:shadow-lg group cursor-help relative overflow-hidden transition-all duration-300" 
+                        className="bg-base-100 rounded-xl p-5 border border-base-300 hover:border-orange-400/50 hover:shadow-lg group cursor-help relative overflow-hidden transition-all duration-300" 
                         aria-live="polite"
                         title={`${stats.inProgress} tarefas em andamento. Tarefas que estão sendo trabalhadas atualmente.`}
                         variants={{
@@ -1353,15 +1353,15 @@ export const TasksView: React.FC<{
                             visible: { opacity: 1, y: 0 },
                         }}
                     >
-                        <div className="absolute inset-0 bg-gradient-to-br from-warning/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                        <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
                         <div className="relative z-10">
                             <div className="flex items-center justify-between mb-3">
-                                <div className="p-2.5 bg-warning/10 rounded-xl group-hover:bg-warning/15 transition-all duration-300">
-                                    <ModernIcons.InProgress className="text-warning" size={20} />
+                                <div className="p-2.5 bg-orange-500/15 rounded-xl group-hover:bg-orange-500/20 transition-all duration-300">
+                                    <ModernIcons.InProgress className="text-orange-600 dark:text-orange-400" size={20} />
                                 </div>
                             </div>
                             <p className="text-xs font-semibold text-base-content/70 mb-2 uppercase tracking-wider">Em Andamento</p>
-                            <p className="text-3xl font-bold text-warning" aria-label={`${stats.inProgress} tarefas em andamento`}>{stats.inProgress}</p>
+                            <p className="text-3xl font-bold text-orange-600 dark:text-orange-400" aria-label={`${stats.inProgress} tarefas em andamento`}>{stats.inProgress}</p>
                         </div>
                     </motion.div>
                     
