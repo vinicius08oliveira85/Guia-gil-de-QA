@@ -16,6 +16,7 @@ interface LogEntry {
 class Logger {
   private isDevelopment = import.meta.env.DEV;
   private isProduction = import.meta.env.PROD;
+  private readonly noisyProdContexts = ['gemini', 'callgeminiwithretry', 'geminiapikeymanager'];
 
   /**
    * Log de debug (apenas em desenvolvimento)
@@ -58,6 +59,15 @@ class Logger {
   }
 
   private log(level: LogLevel, message: string, context?: string, data?: unknown): void {
+    const normalizedContext = context?.toLowerCase() || '';
+    if (
+      this.isProduction &&
+      (level === 'info' || level === 'debug') &&
+      this.noisyProdContexts.some(ctx => normalizedContext.includes(ctx))
+    ) {
+      return;
+    }
+
     const entry: LogEntry = {
       level,
       message,

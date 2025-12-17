@@ -9,7 +9,7 @@ import { geminiRateLimiter } from '../../utils/rateLimiter';
 import { logger } from '../../utils/logger';
 import { geminiApiKeyManager } from './geminiApiKeyManager';
 
-type GeminiAppError = Error & { code?: string; status?: number };
+export type GeminiAppError = Error & { code?: string; status?: number; retryAfter?: number };
 
 export interface GeminiGenerateContentParams {
   model: string;
@@ -234,11 +234,19 @@ export async function callGeminiWithRetry(
   const maxKeyRetries = 1; // Apenas uma API key (sem fallbacks)
   let lastError: unknown;
 
-  const buildGeminiError = (message: string, code: string, status?: number): GeminiAppError => {
+  const buildGeminiError = (
+    message: string,
+    code: string,
+    status?: number,
+    retryAfter?: number
+  ): GeminiAppError => {
     const error = new Error(message) as GeminiAppError;
     error.code = code;
     if (status) {
       error.status = status;
+    }
+    if (retryAfter) {
+      error.retryAfter = retryAfter;
     }
     return error;
   };
@@ -287,45 +295,52 @@ export async function callGeminiWithRetry(
             return { text };
           } catch (error) {
             const status = extractHttpStatus(error);
-            
+            const retryInfo = extractRetryInfo(error);
+
             // Verificar se é erro de quota (429)
             if (isQuotaExceededError(error)) {
               logger.warn(
                 'Erro de quota detectado, marcando API key como esgotada',
                 'callGeminiWithRetry',
-                { error, keyAttempt: keyAttempt + 1, status }
+                { keyAttempt: keyAttempt + 1, status }
               );
               geminiApiKeyManager.markCurrentKeyAsExhausted();
-              // Re-throw para tentar com próxima key
-              throw error;
+              throw buildGeminiError(
+                'Limite de uso da API Gemini atingido. Aguarde e tente novamente mais tarde ou configure uma nova API key.',
+                'GEMINI_QUOTA_EXCEEDED',
+                status ?? 429,
+                retryInfo.retryAfter
+              );
             }
             
             // Verificar se é erro de API key inválida (403)
             if (isInvalidApiKeyError(error)) {
               logger.warn(
-                'Erro de API key inválida detectado (403), marcando como esgotada e tentando próxima key',
+                'Erro de API key inválida detectado (403), marcando como esgotada',
                 'callGeminiWithRetry',
-                { error, keyAttempt: keyAttempt + 1, status }
+                { keyAttempt: keyAttempt + 1, status }
               );
               geminiApiKeyManager.markCurrentKeyAsExhausted();
-              // Re-throw para tentar com próxima key
-              throw error;
+              throw buildGeminiError(
+                'API key do Gemini inválida ou sem permissão. Atualize as credenciais em Configurações > API Keys.',
+                'GEMINI_KEYS_INVALID',
+                status ?? 403
+              );
             }
 
             // Enriquecer erro com informações de retry se disponíveis
-            const retryInfo = extractRetryInfo(error);
             const enrichedError = error instanceof Error 
               ? error 
               : new Error(String(error));
             
-            // Adicionar status HTTP se disponível
             if (retryInfo.status) {
-              (enrichedError as unknown as { status?: number }).status = retryInfo.status;
+              (enrichedError as GeminiAppError).status = retryInfo.status;
+            } else if (status) {
+              (enrichedError as GeminiAppError).status = status;
             }
             
-            // Adicionar retryAfter ao erro para ser usado pelo retryWithBackoff
             if (retryInfo.retryAfter) {
-              (enrichedError as unknown as { retryAfter?: number }).retryAfter = retryInfo.retryAfter;
+              (enrichedError as GeminiAppError).retryAfter = retryInfo.retryAfter;
             }
             
             throw enrichedError;
@@ -347,23 +362,26 @@ export async function callGeminiWithRetry(
             logger.warn(
           `Retry ${attempt}/5 para API Gemini após ${delay}ms${statusInfo}`,
               'callGeminiWithRetry',
-              { error, attempt, delay, keyAttempt: keyAttempt + 1, status: retryInfo.status }
+              { attempt, delay, keyAttempt: keyAttempt + 1, status: retryInfo.status }
             );
           },
         }
       );
     } catch (error) {
       lastError = error;
-      const status = extractHttpStatus(error);
-      
-      // Se não for quota/403 ou não há mais keys, lançar erro
-      throw error;
+      // Não há outras keys; sair do loop para normalizar erro
+      break;
     }
   }
 
-  // Se chegou aqui, todas as keys foram tentadas
+  // Se chegou aqui, todas as keys foram tentadas ou houve falha final
   const status = extractHttpStatus(lastError);
   const stats = geminiApiKeyManager.getStats();
+
+  if (lastError instanceof Error && (lastError as GeminiAppError).code) {
+    throw lastError;
+  }
+
   if (status === 403) {
     throw buildGeminiError(
       `Todas as ${stats.totalKeys} API key(s) do Gemini estão inválidas ou sem permissões. Verifique as configurações em Configurações > API Keys.`,
@@ -381,7 +399,7 @@ export async function callGeminiWithRetry(
     }
     throw buildGeminiError(
       `Todas as ${stats.totalKeys} API key(s) do Gemini excederam a quota. Aguarde algumas horas ou adicione uma nova API key em Configurações > API Keys.${timeInfo}`,
-      'GEMINI_KEYS_EXHAUSTED',
+      'GEMINI_QUOTA_EXCEEDED',
       429
     );
   }

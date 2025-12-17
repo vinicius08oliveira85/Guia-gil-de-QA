@@ -13,6 +13,7 @@ import { Plus, Filter, RefreshCw, Loader2 } from 'lucide-react';
 import { logger } from '../../utils/logger';
 import { useProjectsStore } from '../../store/projectsStore';
 import { ModernIcons } from '../common/ModernIcons';
+import { getFriendlyAIErrorMessage } from '../../utils/aiErrorMapper';
 
 const TASK_ID_REGEX = /^([A-Z]+)-(\d+)/i;
 
@@ -123,6 +124,11 @@ export const TasksView: React.FC<{
         observedResult: '',
         createBug: true,
     });
+
+    const notifyAiError = useCallback((error: unknown, context: string) => {
+        const friendlyMessage = getFriendlyAIErrorMessage(error);
+        handleError(new Error(friendlyMessage), context);
+    }, [handleError]);
     const [isRunningGeneralAnalysis, setIsRunningGeneralAnalysis] = useState(false);
     const [analysisProgress, setAnalysisProgress] = useState<{
         current: number;
@@ -198,30 +204,7 @@ export const TasksView: React.FC<{
             onUpdateProject({ ...project, tasks: newTasks });
             handleSuccess('Cenários BDD gerados com sucesso!');
         } catch (error) {
-            // Melhorar mensagem de erro para rate limiting e erros de servidor
-            let errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
-            const errorStatus = (error as { status?: number })?.status;
-            
-            // Preservar mensagens específicas do Gemini que já contêm informações úteis
-            if (errorMessage.includes('API keys') || 
-                errorMessage.includes('API key') ||
-                errorMessage.includes('quota') || 
-                errorMessage.includes('Gemini') ||
-                errorMessage.includes('Configurações')) {
-                // Preservar mensagem original que já tem contexto específico
-            } else if (errorStatus === 503 || errorMessage.includes('503') || errorMessage.includes('Service Unavailable')) {
-                errorMessage = 'A API do Gemini está temporariamente indisponível. O sistema tentará novamente automaticamente. Aguarde alguns minutos e tente novamente.';
-            } else if (errorMessage.includes('429') || 
-                errorMessage.includes('Too Many Requests') ||
-                errorMessage.includes('rate limit') ||
-                errorMessage.toLowerCase().includes('muitas requisições')) {
-                errorMessage = 'Muitas requisições à API. Aguarde alguns segundos e tente novamente. O sistema tentará automaticamente novamente em breve.';
-            } else if (errorMessage.includes('Falha ao comunicar com a API Gemini') ||
-                       errorMessage.includes('Failed to communicate with the Gemini API')) {
-                errorMessage = 'Erro ao comunicar com a API. Verifique sua conexão e tente novamente. Se o problema persistir, aguarde alguns minutos.';
-            }
-            
-            handleError(new Error(errorMessage), 'Gerar cenários BDD');
+            notifyAiError(error, 'Gerar cenários BDD');
         } finally {
             setGeneratingBddTaskId(null);
         }
@@ -281,30 +264,7 @@ export const TasksView: React.FC<{
             onUpdateProject({ ...project, tasks: newTasks });
             handleSuccess('Casos de teste gerados com sucesso!');
         } catch (error) {
-            // Melhorar mensagem de erro para rate limiting e erros de servidor
-            let errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
-            const errorStatus = (error as { status?: number })?.status;
-            
-            // Preservar mensagens específicas do Gemini que já contêm informações úteis
-            if (errorMessage.includes('API keys') || 
-                errorMessage.includes('API key') ||
-                errorMessage.includes('quota') || 
-                errorMessage.includes('Gemini') ||
-                errorMessage.includes('Configurações')) {
-                // Preservar mensagem original que já tem contexto específico
-            } else if (errorStatus === 503 || errorMessage.includes('503') || errorMessage.includes('Service Unavailable')) {
-                errorMessage = 'A API do Gemini está temporariamente indisponível. O sistema tentará novamente automaticamente. Aguarde alguns minutos e tente novamente.';
-            } else if (errorMessage.includes('429') || 
-                errorMessage.includes('Too Many Requests') ||
-                errorMessage.includes('rate limit') ||
-                errorMessage.toLowerCase().includes('muitas requisições')) {
-                errorMessage = 'Muitas requisições à API. Aguarde alguns segundos e tente novamente. O sistema tentará automaticamente novamente em breve.';
-            } else if (errorMessage.includes('Failed to communicate with the Gemini API') ||
-                       errorMessage.includes('Falha ao comunicar com a API Gemini')) {
-                errorMessage = 'Erro ao comunicar com a API. Verifique sua conexão e tente novamente. Se o problema persistir, aguarde alguns minutos.';
-            }
-            
-            handleError(new Error(errorMessage), 'Gerar casos de teste');
+            notifyAiError(error, 'Gerar casos de teste');
         } finally {
             setGeneratingTestsTaskId(null);
         }
@@ -349,30 +309,7 @@ export const TasksView: React.FC<{
             onUpdateProject({ ...project, tasks: newTasks });
             handleSuccess('BDD, estratégias e casos de teste gerados com sucesso!');
         } catch (error) {
-            // Melhorar mensagem de erro para rate limiting e erros de servidor
-            let errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
-            const errorStatus = (error as { status?: number })?.status;
-            
-            // Preservar mensagens específicas do Gemini que já contêm informações úteis
-            if (errorMessage.includes('API keys') || 
-                errorMessage.includes('API key') ||
-                errorMessage.includes('quota') || 
-                errorMessage.includes('Gemini') ||
-                errorMessage.includes('Configurações')) {
-                // Preservar mensagem original que já tem contexto específico
-            } else if (errorStatus === 503 || errorMessage.includes('503') || errorMessage.includes('Service Unavailable')) {
-                errorMessage = 'A API do Gemini está temporariamente indisponível. O sistema tentará novamente automaticamente. Aguarde alguns minutos e tente novamente.';
-            } else if (errorMessage.includes('429') || 
-                errorMessage.includes('Too Many Requests') ||
-                errorMessage.includes('rate limit') ||
-                errorMessage.toLowerCase().includes('muitas requisições')) {
-                errorMessage = 'Muitas requisições à API. Aguarde alguns segundos e tente novamente. O sistema tentará automaticamente novamente em breve.';
-            } else if (errorMessage.includes('Failed to communicate with the Gemini API') ||
-                       errorMessage.includes('Falha ao comunicar com a API Gemini')) {
-                errorMessage = 'Erro ao comunicar com a API. Verifique sua conexão e tente novamente. Se o problema persistir, aguarde alguns minutos.';
-            }
-            
-            handleError(new Error(errorMessage), 'Gerar BDD, estratégias e testes');
+            notifyAiError(error, 'Gerar BDD, estratégias e testes');
         } finally {
             setGeneratingAllTaskId(null);
         }
