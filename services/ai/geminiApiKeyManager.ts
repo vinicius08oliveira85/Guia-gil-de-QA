@@ -30,42 +30,14 @@ export class GeminiApiKeyManager {
    */
   private initializeKeys(): void {
     const primaryKey = import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.GEMINI_API_KEY;
-    const fallbackKey = import.meta.env.VITE_GEMINI_API_KEY_FALLBACK;
-    const hardcodedFallback = 'AIzaSyCCzdyA6LQMERCxXjQZdj5hJ5aVd_r_7W8';
-    const additionalFallback = 'AIzaSyBXe-S0U46tqOr4IT4Knv4Baal6JifjjEY';
-    const thirdFallback = 'AIzaSyBIRCPRn228RylAea7hifmsom8N_RnEOG8';
 
-    // Adicionar keys na ordem de prioridade
     if (primaryKey) {
-      this.keys.push({ key: primaryKey, exhausted: false });
-      logger.info('API key principal do Gemini carregada', 'GeminiApiKeyManager');
+      this.keys = [{ key: primaryKey, exhausted: false }];
+      logger.info('API key do Gemini carregada via ambiente', 'GeminiApiKeyManager');
+      return;
     }
 
-    if (fallbackKey) {
-      this.keys.push({ key: fallbackKey, exhausted: false });
-      logger.info('API key de fallback do Gemini carregada (env)', 'GeminiApiKeyManager');
-    }
-
-    // Adicionar fallback hardcoded como última opção
-    this.keys.push({ key: hardcodedFallback, exhausted: false });
-    logger.info('API key de fallback hardcoded do Gemini carregada', 'GeminiApiKeyManager');
-
-    // Adicionar fallback adicional
-    this.keys.push({ key: additionalFallback, exhausted: false });
-    logger.info('API key de fallback adicional do Gemini carregada', 'GeminiApiKeyManager');
-
-    // Adicionar terceiro fallback
-    this.keys.push({ key: thirdFallback, exhausted: false });
-    logger.info('API key de terceiro fallback do Gemini carregada', 'GeminiApiKeyManager');
-
-    if (this.keys.length === 0) {
-      logger.warn('Nenhuma API key do Gemini configurada', 'GeminiApiKeyManager');
-    } else {
-      logger.info(
-        `Total de ${this.keys.length} API key(s) disponível(is)`,
-        'GeminiApiKeyManager'
-      );
-    }
+    logger.warn('Nenhuma API key do Gemini configurada', 'GeminiApiKeyManager');
   }
 
   /**
@@ -75,24 +47,20 @@ export class GeminiApiKeyManager {
   getCurrentKey(): string | null {
     // Encontrar primeira key não esgotada
     const availableKey = this.keys.find(k => !k.exhausted);
-    
+
     if (availableKey) {
-      // Atualizar índice atual
       this.currentKeyIndex = this.keys.indexOf(availableKey);
       return availableKey.key;
     }
 
-    // Se todas estiverem esgotadas, resetar e tentar novamente
-    logger.warn(
-      'Todas as API keys estão esgotadas, resetando estado',
-      'GeminiApiKeyManager'
-    );
+    // Se todas estiverem esgotadas, tentar resetar e reavaliar
+    logger.warn('Todas as API keys estão esgotadas', 'GeminiApiKeyManager');
     this.resetExhaustedKeys();
-    
-    const firstKey = this.keys[0];
-    if (firstKey) {
-      this.currentKeyIndex = 0;
-      return firstKey.key;
+
+    const refreshedKey = this.keys.find(k => !k.exhausted);
+    if (refreshedKey) {
+      this.currentKeyIndex = this.keys.indexOf(refreshedKey);
+      return refreshedKey.key;
     }
 
     return null;
@@ -110,27 +78,12 @@ export class GeminiApiKeyManager {
     if (currentKey && !currentKey.exhausted) {
       currentKey.exhausted = true;
       currentKey.exhaustedAt = Date.now();
-      
+
       logger.warn(
-        `API key ${this.currentKeyIndex + 1}/${this.keys.length} marcada como esgotada`,
+        'API key do Gemini marcada como esgotada',
         'GeminiApiKeyManager',
         { keyIndex: this.currentKeyIndex }
       );
-
-      // Tentar obter próxima key disponível
-      const nextKey = this.getCurrentKey();
-      if (nextKey) {
-        logger.info(
-          `Trocando para API key ${this.currentKeyIndex + 1}/${this.keys.length}`,
-          'GeminiApiKeyManager',
-          { keyIndex: this.currentKeyIndex }
-        );
-      } else {
-        logger.error(
-          'Nenhuma API key disponível após marcar atual como esgotada',
-          'GeminiApiKeyManager'
-        );
-      }
     }
   }
 

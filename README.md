@@ -60,6 +60,8 @@ Aplicativo completo para gestão de projetos de QA seguindo metodologias ágeis 
    ```
    VITE_GEMINI_API_KEY=sua_chave_gemini_aqui
    ```
+
+Nota: Apenas uma chave do Gemini é suportada; não há fallback. Remova variáveis antigas de fallback, se existirem.
    
    **Nota**: Se ambas as chaves estiverem configuradas, o aplicativo usará OpenAI por padrão.
    
