@@ -66,7 +66,7 @@ export async function generateFailedTestsAnalysisForPO(
       affectedTasks: Array.from(new Set(failedTests.map(ft => ft.task.id))).length
     };
 
-    const prompt = `Você é um QA Sênior experiente e precisa apresentar um relatório profissional de bugs encontrados para o Product Owner (PO).
+    const prompt = `Você é um QA Sênior experiente e precisa apresentar um relatório profissional de análise de bugs encontrados para o Product Owner (PO).
 
 CONTEXTO DO PROJETO:
 - Nome: ${projectContext.name}
@@ -78,23 +78,27 @@ TESTES REPROVADOS:
 ${JSON.stringify(testsData, null, 2)}
 
 INSTRUÇÕES:
-1. Analise cada teste reprovado e estruture como um bug profissional
-2. Determine a severidade de cada bug (Crítico, Alto, Médio, Baixo) baseado em:
-   - Impacto no negócio
-   - Frequência de uso da funcionalidade
-   - Bloqueio de outras funcionalidades
+1. Analise os erros encontrados e identifique padrões, áreas mais afetadas e tipos de problemas
+2. Agrupe bugs similares ou relacionados à mesma funcionalidade/área
+3. Determine a severidade geral (Crítico, Alto, Médio, Baixo) baseado em:
+   - Impacto consolidado no negócio
+   - Quantidade de bugs por área
+   - Bloqueio de funcionalidades críticas
    - Experiência do usuário
-3. Para cada bug, forneça:
-   - Título claro e objetivo
-   - Severidade
+4. Crie um resumo executivo consolidado que apresente:
+   - Análise geral dos bugs encontrados
+   - Padrões identificados (ex: "3 bugs relacionados a autenticação")
+   - Áreas mais afetadas
+   - Impacto geral no projeto
+5. Na análise dos bugs, forneça:
+   - Agrupamento por tipo/área/funcionalidade
+   - Severidade consolidada por grupo
    - Impacto no negócio (em linguagem que o PO entenda)
-   - Descrição técnica (para o time de desenvolvimento)
-   - Passos para reproduzir (baseado nos steps do teste)
-   - Comparação entre resultado esperado vs observado
-   - Recomendação de ação
-4. Priorize os bugs em ordem de correção
-5. Forneça um resumo executivo para o PO
-6. Sugira próximos passos para o time
+   - Descrição técnica resumida dos problemas
+   - Comparação entre resultado esperado vs observado (quando relevante)
+   - Recomendação de ação para cada grupo
+6. Priorize os grupos de bugs em ordem de correção
+7. Sugira próximos passos acionáveis para o time
 
 FORMATO DE SAÍDA:
 Gere um relatório em português, estruturado e profissional, seguindo este formato:
@@ -104,41 +108,41 @@ RELATÓRIO DE BUGS ENCONTRADOS - ANÁLISE QA SÊNIOR
 
 RESUMO EXECUTIVO
 ----------------
-[Resumo para o PO sobre impacto geral, quantidade de bugs, áreas afetadas, impacto no negócio]
+[Análise consolidada dos bugs encontrados: quantidade total, áreas mais afetadas, padrões identificados, impacto geral no projeto e no negócio. Apresente uma visão estratégica para o PO.]
 
-BUGS IDENTIFICADOS
-------------------
+ANÁLISE DOS BUGS
+----------------
 
-[Para cada bug, estruture assim:]
+[Agrupe e analise os bugs por tipo, área ou similaridade. Para cada grupo:]
 
-1. [Título do Bug]
-   - Severidade: [Crítico/Alto/Médio/Baixo]
-   - Impacto no Negócio: [Descrição clara do impacto, em linguagem de negócio]
-   - Descrição Técnica: [Detalhes técnicos para o time de desenvolvimento]
-   - Passos para Reproduzir:
-     1. [Passo 1]
-     2. [Passo 2]
-     ...
-   - Resultado Esperado: [O que deveria acontecer]
-   - Resultado Observado: [O que realmente aconteceu]
-   - Recomendação: [Ação sugerida - ex: "Correção urgente antes do release", "Incluir na próxima sprint", etc.]
+Grupo 1: [Nome do grupo - ex: "Bugs de Autenticação", "Problemas de Validação"]
+- Quantidade: [X bugs]
+- Severidade: [Crítico/Alto/Médio/Baixo]
+- Impacto no Negócio: [Descrição clara do impacto consolidado, em linguagem de negócio]
+- Descrição Técnica: [Resumo técnico dos problemas encontrados neste grupo]
+- Resultado Esperado vs Observado: [Comparação consolidada quando relevante]
+- Recomendação: [Ação sugerida para este grupo - ex: "Correção urgente antes do release", "Incluir na próxima sprint", etc.]
+
+[Repita para cada grupo identificado]
 
 PRIORIZAÇÃO
 -----------
-[Recomendações de ordem de correção, explicando o porquê de cada prioridade]
+[Recomendações de ordem de correção baseadas na análise consolidada, explicando o porquê de cada prioridade e o impacto de corrigir cada grupo primeiro]
 
 PRÓXIMOS PASSOS
 ---------------
-1. [Ação sugerida 1]
-2. [Ação sugerida 2]
+1. [Ação sugerida 1 baseada na análise]
+2. [Ação sugerida 2 baseada na análise]
 ...
 
 IMPORTANTE:
+- Foque em análise e resumo, não em detalhes de passos para reproduzir
+- Agrupe bugs similares para facilitar a compreensão
 - Use linguagem clara e profissional
 - Foque no impacto no negócio para o PO
 - Seja específico e acionável
-- Priorize bugs críticos e de alto impacto
-- Forneça contexto suficiente para tomada de decisão`;
+- Priorize grupos de bugs críticos e de alto impacto
+- Forneça contexto suficiente para tomada de decisão estratégica`;
 
     // Usar Gemini diretamente via callGeminiWithRetry
     try {
@@ -179,42 +183,65 @@ function generateManualAnalysis(
   lines.push(`Durante a execução dos testes do projeto "${project.name}", foram identificados ${failedTests.length} teste(s) reprovado(s).`);
   lines.push(`Estes testes afetam ${Array.from(new Set(failedTests.map(ft => ft.task.id))).length} tarefa(s) do projeto.`);
   lines.push('');
-  lines.push('Recomenda-se uma análise detalhada de cada bug identificado para determinar a prioridade de correção e o impacto no negócio.');
+  
+  // Agrupar por tarefa para análise
+  const bugsByTask = new Map<string, FailedTestWithTask[]>();
+  failedTests.forEach(ft => {
+    const taskId = ft.task.id;
+    if (!bugsByTask.has(taskId)) {
+      bugsByTask.set(taskId, []);
+    }
+    bugsByTask.get(taskId)!.push(ft);
+  });
+  
+  lines.push(`Análise consolidada: Os bugs estão distribuídos em ${bugsByTask.size} tarefa(s) diferentes.`);
+  
+  // Identificar padrões básicos
+  const severities = failedTests.map(ft => determineSeverity(ft.testCase));
+  const criticalCount = severities.filter(s => s === 'Crítico').length;
+  const highCount = severities.filter(s => s === 'Alto').length;
+  
+  if (criticalCount > 0 || highCount > 0) {
+    lines.push(`Identificados ${criticalCount} bug(s) crítico(s) e ${highCount} bug(s) de alta severidade que requerem atenção imediata.`);
+  }
+  
+  lines.push('');
+  lines.push('Recomenda-se priorizar a correção dos bugs críticos e de alta severidade antes do próximo release.');
   lines.push('');
   lines.push('');
   
-  // Bugs Identificados
-  lines.push('BUGS IDENTIFICADOS');
-  lines.push('------------------');
+  // Análise dos Bugs (agrupada)
+  lines.push('ANÁLISE DOS BUGS');
+  lines.push('----------------');
   lines.push('');
   
-  failedTests.forEach((ft, index) => {
-    const severity = determineSeverity(ft.testCase);
-    const priority = ft.testCase.priority || 'Média';
+  // Agrupar por tarefa
+  bugsByTask.forEach((bugs, taskId) => {
+    const task = bugs[0].task;
+    const severitiesInGroup = bugs.map(ft => determineSeverity(ft.testCase));
+    const maxSeverity = severitiesInGroup.includes('Crítico') ? 'Crítico' :
+                        severitiesInGroup.includes('Alto') ? 'Alto' :
+                        severitiesInGroup.includes('Médio') ? 'Médio' : 'Baixo';
     
-    lines.push(`${index + 1}. ${ft.testCase.description || `Bug na tarefa ${ft.task.id}`}`);
-    lines.push(`   - Severidade: ${severity}`);
-    lines.push(`   - Prioridade: ${priority}`);
-    lines.push(`   - Tarefa: ${ft.task.id} - ${ft.task.title || 'Sem título'}`);
-    lines.push(`   - Ambiente: ${ft.testCase.testEnvironment || 'Não especificado'}`);
+    lines.push(`Grupo: ${task.title || taskId}`);
+    lines.push(`- Quantidade: ${bugs.length} bug(s)`);
+    lines.push(`- Severidade: ${maxSeverity}`);
+    lines.push(`- Tarefa: ${taskId}`);
+    lines.push(`- Impacto no Negócio: ${bugs.length > 1 ? 'Múltiplos bugs afetam esta funcionalidade' : 'Bug isolado que pode impactar a funcionalidade'}`);
     lines.push('');
     
-    if (ft.testCase.steps && ft.testCase.steps.length > 0) {
-      lines.push('   Passos para Reproduzir:');
-      ft.testCase.steps.forEach((step, stepIndex) => {
-        lines.push(`     ${stepIndex + 1}. ${step}`);
-      });
-      lines.push('');
+    if (bugs.some(ft => ft.testCase.observedResult)) {
+      const observedResults = bugs
+        .map(ft => ft.testCase.observedResult)
+        .filter(r => r && r.trim())
+        .join('; ');
+      if (observedResults) {
+        lines.push(`- Resultado Observado: ${observedResults.substring(0, 200)}${observedResults.length > 200 ? '...' : ''}`);
+        lines.push('');
+      }
     }
     
-    if (ft.testCase.expectedResult) {
-      lines.push(`   Resultado Esperado: ${ft.testCase.expectedResult}`);
-    }
-    
-    if (ft.testCase.observedResult) {
-      lines.push(`   Resultado Observado: ${ft.testCase.observedResult}`);
-    }
-    
+    lines.push(`- Recomendação: ${maxSeverity === 'Crítico' || maxSeverity === 'Alto' ? 'Correção urgente antes do release' : 'Incluir na próxima sprint'}`);
     lines.push('');
     lines.push('');
   });
@@ -223,15 +250,20 @@ function generateManualAnalysis(
   lines.push('PRIORIZAÇÃO');
   lines.push('-----------');
   lines.push('Recomenda-se priorizar a correção dos bugs de acordo com a severidade e impacto no negócio.');
-  lines.push('Bugs críticos e de alta prioridade devem ser corrigidos antes do próximo release.');
+  if (criticalCount > 0) {
+    lines.push(`Bugs críticos (${criticalCount}) devem ser corrigidos imediatamente.`);
+  }
+  if (highCount > 0) {
+    lines.push(`Bugs de alta severidade (${highCount}) devem ser corrigidos antes do próximo release.`);
+  }
   lines.push('');
   lines.push('');
   
   // Próximos Passos
   lines.push('PRÓXIMOS PASSOS');
   lines.push('---------------');
-  lines.push('1. Revisar e validar cada bug identificado');
-  lines.push('2. Priorizar bugs de acordo com impacto no negócio');
+  lines.push('1. Revisar e validar os bugs identificados');
+  lines.push('2. Priorizar bugs de acordo com severidade e impacto no negócio');
   lines.push('3. Atribuir bugs ao time de desenvolvimento');
   lines.push('4. Acompanhar correção e validação dos bugs');
   lines.push('');
