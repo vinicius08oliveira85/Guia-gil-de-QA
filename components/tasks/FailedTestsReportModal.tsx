@@ -5,6 +5,9 @@ import { generateFailedTestsReport, FailedTestsReportFormat } from '../../utils/
 import { downloadFile } from '../../utils/exportService';
 import { Badge } from '../common/Badge';
 import { logger } from '../../utils/logger';
+import { generateFailedTestsAnalysisForPO } from '../../services/ai/failedTestsAnalysisService';
+import { generateFailedTestsPDF } from '../../utils/failedTestsPDFGenerator';
+import toast from 'react-hot-toast';
 
 interface FailedTestWithTask {
   testCase: TestCase;
@@ -40,6 +43,9 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
     environments: [],
     suites: []
   });
+  const [aiAnalysisText, setAiAnalysisText] = useState('');
+  const [isGeneratingAnalysis, setIsGeneratingAnalysis] = useState(false);
+  const [aiAnalysisCopied, setAiAnalysisCopied] = useState(false);
 
   // Coletar todos os testes reprovados
   const allFailedTests = useMemo((): FailedTestWithTask[] => {
@@ -224,8 +230,96 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
       }
       setSelectedTestIds(new Set());
       setFilters({ priorities: [], environments: [], suites: [] });
+      setAiAnalysisText('');
+      setAiAnalysisCopied(false);
     }
   }, [isOpen, initialTaskId]);
+
+  // Gerar análise IA
+  const handleGenerateAIAnalysis = async () => {
+    const testsToAnalyze = selectedTestIds.size > 0
+      ? filteredTests.filter(ft => selectedTestIds.has(ft.testCase.id))
+      : filteredTests;
+
+    if (testsToAnalyze.length === 0) {
+      toast.error('Selecione pelo menos um teste reprovado para análise');
+      return;
+    }
+
+    setIsGeneratingAnalysis(true);
+    try {
+      const analysis = await generateFailedTestsAnalysisForPO(project, testsToAnalyze);
+      setAiAnalysisText(analysis);
+      toast.success('Análise gerada com sucesso!');
+    } catch (error) {
+      logger.error('Erro ao gerar análise IA', 'FailedTestsReportModal', error);
+      toast.error('Erro ao gerar análise. Tente novamente.');
+    } finally {
+      setIsGeneratingAnalysis(false);
+    }
+  };
+
+  // Copiar análise IA
+  const handleCopyAIAnalysis = async () => {
+    try {
+      await navigator.clipboard.writeText(aiAnalysisText);
+      setAiAnalysisCopied(true);
+      setTimeout(() => setAiAnalysisCopied(false), 2000);
+      toast.success('Análise copiada!');
+    } catch (error) {
+      logger.error('Erro ao copiar análise', 'FailedTestsReportModal', error);
+      toast.error('Erro ao copiar. Tente novamente.');
+    }
+  };
+
+  // Salvar análise IA
+  const handleSaveAIAnalysis = () => {
+    const fileName = scope === 'task' && selectedTaskId
+      ? `${selectedTaskId}-analise-bugs.txt`
+      : `${project.id}-analise-bugs.txt`;
+    
+    downloadFile(aiAnalysisText, fileName, 'text/plain');
+    toast.success('Análise salva!');
+  };
+
+  // Gerar PDF da análise IA
+  const handleGeneratePDF = async () => {
+    const testsToInclude = selectedTestIds.size > 0
+      ? filteredTests.filter(ft => selectedTestIds.has(ft.testCase.id))
+      : filteredTests;
+
+    if (testsToInclude.length === 0) {
+      toast.error('Selecione pelo menos um teste reprovado para gerar PDF');
+      return;
+    }
+
+    try {
+      await generateFailedTestsPDF(
+        project,
+        aiAnalysisText || reportText,
+        testsToInclude.map(ft => ({
+          testCase: {
+            id: ft.testCase.id,
+            description: ft.testCase.description,
+            steps: ft.testCase.steps || [],
+            expectedResult: ft.testCase.expectedResult,
+            observedResult: ft.testCase.observedResult,
+            priority: ft.testCase.priority,
+            testEnvironment: ft.testCase.testEnvironment
+          },
+          task: {
+            id: ft.task.id,
+            title: ft.task.title || ''
+          }
+        })),
+        generationDate || new Date()
+      );
+      toast.success('PDF gerado com sucesso!');
+    } catch (error) {
+      logger.error('Erro ao gerar PDF', 'FailedTestsReportModal', error);
+      toast.error('Erro ao gerar PDF. Tente novamente.');
+    }
+  };
 
   const handleCopy = async () => {
     try {
@@ -279,6 +373,26 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
             Selecione os testes reprovados e copie o relatório para colar em outras plataformas
           </p>
           <div className="flex flex-wrap items-center justify-end gap-md pb-2 border-b border-base-300">
+            <button
+              type="button"
+              onClick={handleGenerateAIAnalysis}
+              disabled={isGeneratingAnalysis || filteredTests.length === 0}
+              className="btn btn-accent btn-md flex items-center gap-2 disabled:opacity-50"
+            >
+              {isGeneratingAnalysis ? (
+                <>
+                  <span className="loading loading-spinner loading-sm"></span>
+                  <span>Gerando Análise IA...</span>
+                </>
+              ) : (
+                <>
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                  </svg>
+                  <span>Análise IA</span>
+                </>
+              )}
+            </button>
             <button
               type="button"
               onClick={handleDownload}
@@ -524,8 +638,85 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
           </div>
         </div>
 
+        {/* Seção de Análise IA */}
+        {aiAnalysisText && (
+          <div className="flex-shrink-0 flex flex-col gap-sm border-t border-base-300 pt-md">
+            <div className="flex items-center justify-between">
+              <p className="text-xs uppercase tracking-wide text-base-content/70 font-semibold">
+                Análise IA - Relatório para PO
+              </p>
+              <div className="flex gap-xs">
+                <button
+                  type="button"
+                  onClick={handleCopyAIAnalysis}
+                  className={`
+                    btn btn-sm btn-ghost
+                    ${aiAnalysisCopied ? '!bg-green-500 hover:!bg-green-600 text-white' : ''}
+                  `}
+                >
+                  {aiAnalysisCopied ? (
+                    <>
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>Copiado!</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      </svg>
+                      <span>Copiar</span>
+                    </>
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveAIAnalysis}
+                  className="btn btn-sm btn-ghost"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v16h16M8 12h8m-8 4h5" />
+                  </svg>
+                  <span>Salvar</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleGeneratePDF}
+                  className="btn btn-sm btn-error"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                  </svg>
+                  <span>Gerar PDF</span>
+                </button>
+              </div>
+            </div>
+            <textarea
+              value={aiAnalysisText}
+              readOnly
+              className={`
+                w-full min-h-[200px] max-h-[400px]
+                bg-base-100 border border-base-300 rounded-lg
+                p-card text-sm text-base-content
+                font-mono
+                resize-none
+                overflow-y-auto
+                focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary
+                transition-all duration-200
+              `}
+              onClick={(e) => {
+                (e.target as HTMLTextAreaElement).select();
+              }}
+            />
+          </div>
+        )}
+
         {/* Textarea do relatório */}
         <div className="relative flex-1 min-h-0 flex flex-col">
+          <p className="text-xs uppercase tracking-wide text-base-content/70 font-semibold mb-sm">
+            Relatório Manual
+          </p>
           <textarea
             value={reportText}
             readOnly
