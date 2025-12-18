@@ -31,7 +31,8 @@ let supabase: SupabaseClient | null = null;
 // Sistema de controle de salvamentos para evitar loops e salvamentos simultâneos
 const savingProjects = new Map<string, Promise<void>>(); // Rastreia salvamentos em progresso
 const lastSaveTime = new Map<string, number>(); // Rastreia último tempo de salvamento para debounce
-const saveDebounceMs = 500; // Debounce de 500ms entre salvamentos do mesmo projeto
+const pendingSaves = new Map<string, Project>(); // Fila de salvamentos pendentes (última versão de cada projeto)
+const saveDebounceMs = 300; // Debounce de 300ms entre salvamentos do mesmo projeto (reduzido para ser mais responsivo)
 const maxRetries = 3; // Máximo de 3 tentativas
 const retryDelays = [1000, 2000, 4000]; // Backoff exponencial: 1s, 2s, 4s
 const requestTimeoutMs = 5000; // Timeout de 5 segundos para requisições
@@ -397,12 +398,22 @@ const saveThroughSdk = async (project: Project, retryCount: number = 0): Promise
 export const saveProjectToSupabase = async (project: Project): Promise<void> => {
     const projectId = project.id;
     
+    // Sempre atualizar a fila de salvamentos pendentes com a versão mais recente
+    pendingSaves.set(projectId, project);
+    
     // Verificar se já há um salvamento em progresso para este projeto
     const existingSave = savingProjects.get(projectId);
     if (existingSave) {
         // Aguardar o salvamento existente completar
         try {
             await existingSave;
+            // Após salvamento anterior, verificar se há versão mais recente na fila
+            const latestProject = pendingSaves.get(projectId);
+            if (latestProject && latestProject !== project) {
+                // Há uma versão mais recente - salvar novamente
+                logger.debug(`Versão mais recente do projeto "${project.name}" encontrada na fila, salvando novamente`, 'supabaseService');
+                return saveProjectToSupabase(latestProject);
+            }
             return; // Salvamento já foi feito
         } catch {
             // Se o salvamento anterior falhou, continuar para tentar novamente
@@ -416,6 +427,13 @@ export const saveProjectToSupabase = async (project: Project): Promise<void> => 
         // Aguardar até o debounce expirar
         const waitTime = saveDebounceMs - (now - lastSave);
         await new Promise(resolve => setTimeout(resolve, waitTime));
+        
+        // Após debounce, verificar se há versão mais recente na fila
+        const latestProject = pendingSaves.get(projectId);
+        if (latestProject && latestProject !== project) {
+            // Usar a versão mais recente
+            return saveProjectToSupabase(latestProject);
+        }
     }
     
     // Criar promise de salvamento e adicionar ao Map
@@ -496,6 +514,11 @@ export const saveProjectToSupabase = async (project: Project): Promise<void> => 
         } finally {
             // Remover do Map após conclusão (sucesso ou erro)
             savingProjects.delete(projectId);
+            // Remover da fila de pendentes apenas se for a versão atual
+            const latestProject = pendingSaves.get(projectId);
+            if (latestProject === project) {
+                pendingSaves.delete(projectId);
+            }
         }
     })();
     

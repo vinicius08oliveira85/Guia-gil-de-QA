@@ -12,6 +12,7 @@ import { PageTransition } from './common/PageTransition';
 import { SectionHeader } from './common/SectionHeader';
 import { useProjectsStore } from '../store/projectsStore';
 import { isSupabaseAvailable } from '../services/supabaseService';
+import { useAutoSave } from '../hooks/useAutoSave';
 import toast from 'react-hot-toast';
 import { Spinner } from './common/Spinner';
 
@@ -19,6 +20,7 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
     const [activeTab, setActiveTab] = useState('dashboard');
     const [isPrinting, setIsPrinting] = useState(false);
     const [isSavingToSupabase, setIsSavingToSupabase] = useState(false);
+    const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
     const metrics = useProjectMetrics(project);
     const previousPhasesRef = useRef<string>('');
     const isMountedRef = useRef(true);
@@ -26,6 +28,13 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
     const onUpdateProjectRef = useRef(onUpdateProject);
     const { saveProjectToSupabase } = useProjectsStore();
     const supabaseAvailable = isSupabaseAvailable();
+    
+    // Auto-save: monitora mudanças e salva automaticamente
+    useAutoSave({
+        project,
+        debounceMs: 300,
+        disabled: !supabaseAvailable,
+    });
 
     // Keep refs updated
     useEffect(() => {
@@ -86,16 +95,39 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
         }
 
         setIsSavingToSupabase(true);
+        setSaveStatus('saving');
         try {
             await saveProjectToSupabase(project.id);
+            setSaveStatus('saved');
             toast.success(`Projeto "${project.name}" salvo no Supabase com sucesso!`);
+            // Resetar status após 2 segundos
+            setTimeout(() => {
+                if (saveStatus === 'saved') {
+                    setSaveStatus('idle');
+                }
+            }, 2000);
         } catch (error) {
+            setSaveStatus('error');
             const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
             toast.error(`Erro ao salvar no Supabase: ${errorMessage}`);
+            // Resetar status de erro após 3 segundos
+            setTimeout(() => {
+                if (saveStatus === 'error') {
+                    setSaveStatus('idle');
+                }
+            }, 3000);
         } finally {
             setIsSavingToSupabase(false);
         }
     };
+    
+    // Monitorar mudanças no projeto para atualizar status de salvamento
+    useEffect(() => {
+        if (supabaseAvailable && saveStatus === 'saved') {
+            // Quando projeto muda, resetar status para indicar que precisa salvar novamente
+            setSaveStatus('idle');
+        }
+    }, [project, supabaseAvailable]);
     
     const tabs: Array<{ id: string; label: string; 'data-onboarding'?: string; 'data-tour'?: string }> = [
         { id: 'dashboard', label: 'Dashboard' },
@@ -141,13 +173,42 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                     />
                 </div>
 
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end gap-2 mb-6">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-6">
+                    {/* Indicador de status de salvamento */}
+                    {supabaseAvailable && (
+                        <div className="flex items-center gap-2 text-sm">
+                            {saveStatus === 'saving' && (
+                                <div className="flex items-center gap-2 text-info">
+                                    <Spinner small />
+                                    <span>Salvando...</span>
+                                </div>
+                            )}
+                            {saveStatus === 'saved' && (
+                                <div className="flex items-center gap-2 text-success">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" fill="currentColor"/>
+                                    </svg>
+                                    <span>Salvo</span>
+                                </div>
+                            )}
+                            {saveStatus === 'error' && (
+                                <div className="flex items-center gap-2 text-error">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/>
+                                    </svg>
+                                    <span>Erro ao salvar</span>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                    
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 ml-auto">
                         {/* Botão sempre visível, mas desabilitado se Supabase não estiver disponível */}
                         <button 
                             onClick={handleSaveToSupabase}
                             disabled={!supabaseAvailable || isSavingToSupabase}
                             className="btn btn-primary flex items-center justify-center gap-2 w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
-                            title={!supabaseAvailable ? 'Supabase não está configurado. Configure VITE_SUPABASE_PROXY_URL.' : 'Salvar projeto no Supabase'}
+                            title={!supabaseAvailable ? 'Supabase não está configurado. Configure VITE_SUPABASE_PROXY_URL.' : 'Salvar projeto no Supabase manualmente'}
                             type="button"
                         >
                             {isSavingToSupabase ? (
@@ -160,7 +221,7 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                         <path d="M21.362 9.354H12V.396a.396.396 0 0 0-.716-.233L2.203 12.424l-.401.562a1.04 1.04 0 0 0 .836 1.659H12v8.959a.396.396 0 0 0 .724.229l9.075-12.476.401-.562a1.04 1.04 0 0 0-.838-1.66Z" fill="#3ECF8E"/>
                                     </svg>
-                                    <span>Salvar</span>
+                                    <span>Salvar Agora</span>
                                 </>
                             )}
                         </button>
@@ -172,6 +233,7 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                             <span aria-hidden="true">📄</span>
                             <span>PDF</span>
                         </button>
+                    </div>
                 </div>
                 
                 <SectionHeader

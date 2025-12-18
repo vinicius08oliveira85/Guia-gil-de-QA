@@ -165,7 +165,7 @@ export const addProject = async (project: Project): Promise<void> => {
 
 // Rastrear últimos erros de rede por projeto para evitar tentativas repetidas
 const recentNetworkErrors = new Map<string, number>();
-const networkErrorCooldownMs = 10000; // 10 segundos de cooldown após erro de rede
+const networkErrorCooldownMs = 5000; // 5 segundos de cooldown após erro de rede (reduzido para ser mais responsivo)
 
 export const updateProject = async (project: Project): Promise<void> => {
   // Limpar BDD e casos de teste de tipos não permitidos antes de salvar
@@ -192,8 +192,47 @@ export const updateProject = async (project: Project): Promise<void> => {
   const now = Date.now();
   const shouldSkipSupabase = lastNetworkError && (now - lastNetworkError) < networkErrorCooldownMs;
   
-  // Tentar Supabase primeiro se disponível e não estiver em cooldown
-  if (isSupabaseAvailable() && !shouldSkipSupabase) {
+  // Sempre tentar Supabase se disponível (mesmo em cooldown, mas com retry mais espaçado)
+  // Isso garante que alterações importantes sejam salvas mesmo após erros de rede
+  if (isSupabaseAvailable()) {
+    // Se estiver em cooldown, ainda tentar mas com menor prioridade (salvar local primeiro)
+    if (shouldSkipSupabase) {
+      // Em cooldown - salvar local primeiro, depois tentar Supabase em background
+      logger.debug(`Projeto "${cleanedProject.name}" em cooldown, salvando localmente primeiro e tentando Supabase em background`, 'dbService');
+      
+      // Salvar localmente primeiro
+      const db = await openDB();
+      await new Promise<void>((resolve, reject) => {
+        const transaction = db.transaction(STORE_NAME, 'readwrite');
+        const store = transaction.objectStore(STORE_NAME);
+        const request = store.put(cleanedProject);
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => resolve();
+      });
+      
+      // Tentar Supabase em background (não bloquear)
+      saveProjectToSupabase(cleanedProject).then(() => {
+        recentNetworkErrors.delete(cleanedProject.id);
+        logger.debug(`Projeto "${cleanedProject.name}" salvo no Supabase após cooldown`, 'dbService');
+      }).catch((error) => {
+        // Se ainda falhar, manter cooldown
+        const errorMessage = error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
+        const isNetworkErr = errorMessage.includes('timeout') || 
+                            errorMessage.includes('connection reset') ||
+                            errorMessage.includes('err_timed_out') ||
+                            errorMessage.includes('err_connection_reset') ||
+                            errorMessage.includes('err_name_not_resolved') ||
+                            errorMessage.includes('failed to fetch') ||
+                            errorMessage.includes('network');
+        if (isNetworkErr) {
+          recentNetworkErrors.set(cleanedProject.id, Date.now());
+        }
+      });
+      
+      return; // Retornar após salvar localmente
+    }
+    
+    // Não está em cooldown - tentar Supabase normalmente
     try {
       await saveProjectToSupabase(cleanedProject);
       // Limpar erro de rede se salvamento foi bem-sucedido
@@ -233,9 +272,6 @@ export const updateProject = async (project: Project): Promise<void> => {
       }
       // Continuar para fallback IndexedDB
     }
-  } else if (shouldSkipSupabase) {
-    // Em cooldown - pular Supabase e salvar apenas localmente
-    logger.debug(`Projeto "${cleanedProject.name}" em cooldown após erro de rede, salvando apenas localmente`, 'dbService');
   }
   
   // Fallback para IndexedDB
