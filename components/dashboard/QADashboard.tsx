@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Project } from '../../types';
 import { useProjectMetrics } from '../../hooks/useProjectMetrics';
 import { useMetricsHistory } from '../../hooks/useMetricsHistory';
@@ -11,6 +11,7 @@ import { RecommendationsCard } from './RecommendationsCard';
 import { MetricEnhancementsCard } from './MetricEnhancementsCard';
 import { SDLCPhaseTimeline } from './SDLCPhaseTimeline';
 import { ReleaseTimeline, TimeLine_01Entry } from '../common/ReleaseTimeline';
+import { FailedTestsReportModal } from '../tasks/FailedTestsReportModal';
 import { CheckCircle2, TrendingUp, BarChart3, Bug, Zap } from 'lucide-react';
 
 interface QADashboardProps {
@@ -29,6 +30,7 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
     onUpdateProject,
     false
   );
+  const [showFailedTestsReport, setShowFailedTestsReport] = useState(false);
 
   // Verificar se há testes críticos falhando (bugs críticos ou muitos testes falhando)
   const hasCriticalFailures = metrics.bugsBySeverity['Crítico'] > 0 || 
@@ -128,6 +130,19 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
             <p className="text-base-content/70 text-sm max-w-2xl">Visão geral de testes, bugs, cobertura e análises do projeto.</p>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
+            {metrics.failedTestCases > 0 && (
+              <button
+                type="button"
+                onClick={() => setShowFailedTestsReport(true)}
+                className="btn btn-error btn-sm rounded-full flex items-center gap-1.5 font-semibold"
+                aria-label="Gerar relatório de testes reprovados"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span>Relatório de Testes Reprovados ({metrics.failedTestCases})</span>
+              </button>
+            )}
             <button
               type="button"
               onClick={generateCompleteAnalysis}
@@ -192,6 +207,13 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
         {/* Melhorias de Métricas */}
         <MetricEnhancementsCard analysis={insightsAnalysis} isLoading={isGenerating} />
       </div>
+
+      {/* Modal de Relatório de Testes Reprovados */}
+      <FailedTestsReportModal
+        isOpen={showFailedTestsReport}
+        onClose={() => setShowFailedTestsReport(false)}
+        project={project}
+      />
     </div>
   );
 });

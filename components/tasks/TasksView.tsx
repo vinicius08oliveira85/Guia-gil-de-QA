@@ -64,6 +64,8 @@ import { EmptyState } from '../common/EmptyState';
 import { syncJiraProject, getJiraConfig, getJiraProjects, JiraConfig, syncTaskToJira } from '../../services/jiraService';
 import { GeneralIAAnalysisButton } from './GeneralIAAnalysisButton';
 import { generateGeneralIAAnalysis } from '../../services/ai/generalAnalysisService';
+import { FailedTestsReportModal } from './FailedTestsReportModal';
+import { useProjectMetrics } from '../../hooks/useProjectMetrics';
 
 export const TasksView: React.FC<{ 
     project: Project, 
@@ -135,6 +137,8 @@ export const TasksView: React.FC<{
         total: number;
         message: string;
     } | null>(null);
+    const [showFailedTestsReport, setShowFailedTestsReport] = useState(false);
+    const metrics = useProjectMetrics(project);
 
     // Função helper para adicionar timeout às chamadas de IA
     const withTimeout = <T,>(promise: Promise<T>, timeoutMs: number = 60000): Promise<T> => {
@@ -1177,6 +1181,21 @@ export const TasksView: React.FC<{
                         {/* Separador visual */}
                         <div className="w-px h-5 bg-base-300 flex-shrink-0" />
                         
+                        {/* Botão de Relatório de Testes Reprovados */}
+                        {metrics.failedTestCases > 0 && (
+                            <Button 
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setShowFailedTestsReport(true)} 
+                                className="btn btn-error btn-sm rounded-full flex items-center gap-1.5 flex-shrink-0"
+                            >
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                <span>Testes Reprovados ({metrics.failedTestCases})</span>
+                            </Button>
+                        )}
+                        
                         {/* Botões Secundários */}
                         <Button 
                             variant="outline"
@@ -1609,6 +1628,12 @@ export const TasksView: React.FC<{
             onStart={handleWizardStart}
         />
 
+        {/* Modal de Relatório de Testes Reprovados */}
+        <FailedTestsReportModal
+            isOpen={showFailedTestsReport}
+            onClose={() => setShowFailedTestsReport(false)}
+            project={project}
+        />
 
         </>
     );
