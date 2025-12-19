@@ -3,6 +3,7 @@ import { Card } from '../../common/Card';
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { Project } from '../../../types';
 import { useProjectMetrics } from '../../../hooks/useProjectMetrics';
+import { cn } from '../../../utils/cn';
 
 /**
  * Props do componente TestExecutionChart
@@ -13,6 +14,79 @@ interface TestExecutionChartProps {
   /** Classes CSS adicionais */
   className?: string;
 }
+
+/**
+ * Props do CustomTooltip
+ */
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: Array<{
+    name: string;
+    value: number;
+    color: string;
+    dataKey: string;
+  }>;
+  label?: string;
+}
+
+/**
+ * Componente de tooltip customizado com melhor legibilidade para área chart
+ */
+const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload, label }) => {
+  if (active && payload && payload.length) {
+    // Calcular total de testes
+    const total = payload.reduce((sum, entry) => sum + (entry.value || 0), 0);
+    
+    // Mapear nomes para português
+    const nameMap: Record<string, string> = {
+      passed: 'Aprovados',
+      failed: 'Falhados',
+      pending: 'Pendentes',
+    };
+
+    return (
+      <div className={cn(
+        'rounded-lg border border-base-300',
+        'bg-base-100 shadow-lg',
+        'p-4 min-w-[200px]',
+        'backdrop-blur-sm'
+      )}>
+        <p className="mb-3 font-semibold text-base-content text-sm border-b border-base-300 pb-2">
+          {label}
+        </p>
+        <div className="space-y-2">
+          {payload.map((entry, index) => {
+            const displayName = nameMap[entry.dataKey] || entry.name;
+            return (
+              <div key={index} className="flex items-center gap-2">
+                <div
+                  className="h-3 w-3 rounded-sm flex-shrink-0"
+                  style={{ backgroundColor: entry.color }}
+                  aria-hidden="true"
+                />
+                <span className="text-xs text-base-content/70 flex-1">
+                  {displayName}:
+                </span>
+                <span className="font-semibold text-base-content text-sm">
+                  {entry.value || 0}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+        {total > 0 && (
+          <div className="mt-3 pt-2 border-t border-base-300">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-base-content/70">Total:</span>
+              <span className="font-bold text-base-content text-sm">{total}</span>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+  return null;
+};
 
 /**
  * Gráfico de área mostrando status de execução de testes ao longo do tempo
@@ -77,6 +151,11 @@ export const TestExecutionChart = React.memo<TestExecutionChartProps>(({ project
     return data.reverse(); // Mais antigo primeiro
   }, [project.metricsHistory, metrics]);
 
+  // Cores do tema DaisyUI
+  const passedColor = 'hsl(var(--su))'; // Success - verde
+  const failedColor = 'hsl(var(--er))'; // Error - vermelho
+  const pendingColor = 'hsl(var(--wa))'; // Warning - amarelo/laranja
+
   return (
     <Card className={className} hoverable>
       <div className="p-6">
@@ -86,61 +165,87 @@ export const TestExecutionChart = React.memo<TestExecutionChartProps>(({ project
         </div>
         <div className="h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={chartData}>
+            <AreaChart
+              data={chartData}
+              margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+            >
               <defs>
                 <linearGradient id="passedGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="hsl(var(--su))" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="hsl(var(--su))" stopOpacity={0} />
+                  <stop offset="5%" stopColor={passedColor} stopOpacity={0.4} />
+                  <stop offset="95%" stopColor={passedColor} stopOpacity={0} />
                 </linearGradient>
                 <linearGradient id="failedGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="hsl(var(--er))" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="hsl(var(--er))" stopOpacity={0} />
+                  <stop offset="5%" stopColor={failedColor} stopOpacity={0.4} />
+                  <stop offset="95%" stopColor={failedColor} stopOpacity={0} />
                 </linearGradient>
                 <linearGradient id="pendingGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="hsl(var(--wa))" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="hsl(var(--wa))" stopOpacity={0} />
+                  <stop offset="5%" stopColor={pendingColor} stopOpacity={0.4} />
+                  <stop offset="95%" stopColor={pendingColor} stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--bc) / 0.1)" />
-              <XAxis 
-                dataKey="date" 
-                stroke="hsl(var(--bc) / 0.6)" 
-                style={{ fontSize: '12px' }} 
+              <CartesianGrid 
+                strokeDasharray="3 3" 
+                stroke="hsl(var(--bc) / 0.1)" 
+                opacity={0.3}
               />
-              <YAxis 
-                stroke="hsl(var(--bc) / 0.6)" 
-                style={{ fontSize: '12px' }} 
+              <XAxis
+                dataKey="date"
+                tick={{ 
+                  fill: 'hsl(var(--bc) / 0.7)', 
+                  fontSize: 12 
+                }}
+                stroke="hsl(var(--bc) / 0.3)"
+              />
+              <YAxis
+                tick={{ 
+                  fill: 'hsl(var(--bc) / 0.7)', 
+                  fontSize: 12 
+                }}
+                stroke="hsl(var(--bc) / 0.3)"
+                label={{
+                  value: 'Quantidade de Testes',
+                  angle: -90,
+                  position: 'insideLeft',
+                  style: { 
+                    fill: 'hsl(var(--bc) / 0.7)', 
+                    fontSize: 12 
+                  },
+                }}
               />
               <Tooltip
-                contentStyle={{
-                  backgroundColor: 'hsl(var(--b1))',
-                  border: '1px solid hsl(var(--bc) / 0.2)',
-                  borderRadius: '8px',
+                content={<CustomTooltip />}
+                cursor={{ 
+                  stroke: 'hsl(var(--bc) / 0.2)', 
+                  strokeWidth: 1,
+                  strokeDasharray: '5 5'
                 }}
               />
               <Area
                 type="monotone"
                 dataKey="passed"
                 stackId="1"
-                stroke="hsl(var(--su))"
+                stroke={passedColor}
                 fill="url(#passedGradient)"
                 strokeWidth={2}
+                name="Aprovados"
               />
               <Area
                 type="monotone"
                 dataKey="failed"
                 stackId="1"
-                stroke="hsl(var(--er))"
+                stroke={failedColor}
                 fill="url(#failedGradient)"
                 strokeWidth={2}
+                name="Falhados"
               />
               <Area
                 type="monotone"
                 dataKey="pending"
                 stackId="1"
-                stroke="hsl(var(--wa))"
+                stroke={pendingColor}
                 fill="url(#pendingGradient)"
                 strokeWidth={2}
+                name="Pendentes"
               />
             </AreaChart>
           </ResponsiveContainer>
@@ -165,4 +270,3 @@ export const TestExecutionChart = React.memo<TestExecutionChartProps>(({ project
 });
 
 TestExecutionChart.displayName = 'TestExecutionChart';
-

@@ -3,6 +3,7 @@ import { Card } from '../../common/Card';
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, Legend } from 'recharts';
 import { Project } from '../../../types';
 import { useProjectMetrics } from '../../../hooks/useProjectMetrics';
+import { cn } from '../../../utils/cn';
 
 /**
  * Props do componente QualityMetricsChart
@@ -13,6 +14,58 @@ interface QualityMetricsChartProps {
   /** Classes CSS adicionais */
   className?: string;
 }
+
+/**
+ * Props do CustomTooltip
+ */
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: Array<{
+    name: string;
+    value: number;
+    color: string;
+    dataKey: string;
+  }>;
+  label?: string;
+}
+
+/**
+ * Componente de tooltip customizado com melhor legibilidade
+ */
+const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload, label }) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className={cn(
+        'rounded-lg border border-base-300',
+        'bg-base-100 shadow-lg',
+        'p-4 min-w-[180px]',
+        'backdrop-blur-sm'
+      )}>
+        <p className="mb-2 font-semibold text-base-content text-sm">
+          {label}
+        </p>
+        <div className="space-y-2">
+          {payload.map((entry, index) => (
+            <div key={index} className="flex items-center gap-2">
+              <div
+                className="h-3 w-3 rounded-sm flex-shrink-0"
+                style={{ backgroundColor: entry.color }}
+                aria-hidden="true"
+              />
+              <span className="text-xs text-base-content/70 flex-1">
+                {entry.name}:
+              </span>
+              <span className="font-semibold text-base-content text-sm">
+                {entry.value}%
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+  return null;
+};
 
 /**
  * Gráfico de barras mostrando métricas de qualidade por fase de teste
@@ -68,6 +121,10 @@ export const QualityMetricsChart = React.memo<QualityMetricsChartProps>(({ proje
     return chartData;
   }, [chartData, metrics]);
 
+  // Cores mais distintas e com melhor contraste
+  const coverageColor = 'hsl(var(--p))'; // Primary - azul/roxo
+  const qualityColor = 'hsl(var(--a))'; // Accent - verde/amarelo
+
   return (
     <Card className={className} hoverable>
       <div className="p-6">
@@ -77,36 +134,80 @@ export const QualityMetricsChart = React.memo<QualityMetricsChartProps>(({ proje
         </div>
         <div className="h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={finalData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--bc) / 0.1)" />
-              <XAxis 
-                dataKey="phase" 
-                stroke="hsl(var(--bc) / 0.6)" 
-                style={{ fontSize: '11px' }} 
+            <BarChart
+              data={finalData}
+              margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+              barGap={8}
+              barCategoryGap="20%"
+            >
+              <CartesianGrid 
+                strokeDasharray="3 3" 
+                stroke="hsl(var(--bc) / 0.1)" 
+                opacity={0.3}
               />
-              <YAxis 
-                stroke="hsl(var(--bc) / 0.6)" 
-                style={{ fontSize: '12px' }} 
+              <XAxis
+                dataKey="phase"
+                angle={-45}
+                textAnchor="end"
+                height={80}
+                tick={{ 
+                  fill: 'hsl(var(--bc) / 0.7)', 
+                  fontSize: 11 
+                }}
+                stroke="hsl(var(--bc) / 0.3)"
               />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: 'hsl(var(--b1))',
-                  border: '1px solid hsl(var(--bc) / 0.2)',
-                  borderRadius: '8px',
+              <YAxis
+                domain={[0, 100]}
+                tick={{ 
+                  fill: 'hsl(var(--bc) / 0.7)', 
+                  fontSize: 12 
+                }}
+                stroke="hsl(var(--bc) / 0.3)"
+                label={{
+                  value: 'Porcentagem (%)',
+                  angle: -90,
+                  position: 'insideLeft',
+                  style: { 
+                    fill: 'hsl(var(--bc) / 0.7)', 
+                    fontSize: 12 
+                  },
                 }}
               />
-              <Legend wrapperStyle={{ fontSize: '12px' }} />
-              <Bar 
-                dataKey="coverage" 
-                fill="hsl(var(--p))" 
-                radius={[4, 4, 0, 0]} 
-                name="Cobertura %" 
+              <Tooltip
+                content={<CustomTooltip />}
+                cursor={{ 
+                  fill: 'hsl(var(--bc) / 0.05)', 
+                  opacity: 0.2 
+                }}
               />
-              <Bar 
-                dataKey="quality" 
-                fill="hsl(var(--a))" 
-                radius={[4, 4, 0, 0]} 
-                name="Qualidade %" 
+              <Legend
+                wrapperStyle={{
+                  paddingTop: '20px',
+                }}
+                iconType="rect"
+                iconSize={14}
+                formatter={(value) => (
+                  <span style={{ 
+                    color: 'hsl(var(--bc))', 
+                    fontSize: '12px' 
+                  }}>
+                    {value}
+                  </span>
+                )}
+              />
+              <Bar
+                dataKey="coverage"
+                name="Cobertura %"
+                fill={coverageColor}
+                radius={[8, 8, 0, 0]}
+                maxBarSize={60}
+              />
+              <Bar
+                dataKey="quality"
+                name="Qualidade %"
+                fill={qualityColor}
+                radius={[8, 8, 0, 0]}
+                maxBarSize={60}
               />
             </BarChart>
           </ResponsiveContainer>
@@ -117,4 +218,3 @@ export const QualityMetricsChart = React.memo<QualityMetricsChartProps>(({ proje
 });
 
 QualityMetricsChart.displayName = 'QualityMetricsChart';
-
