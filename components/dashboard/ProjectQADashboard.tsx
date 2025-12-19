@@ -11,6 +11,7 @@ import { ProgressIndicator } from '../common/ProgressIndicator';
 import { Badge } from '../common/Badge';
 import { EmptyState } from '../common/EmptyState';
 import { CompassIcon, CheckCircleIcon } from '../common/Icons';
+import { Clipboard, Zap, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { logger } from '../../utils/logger';
 
 export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) => {
@@ -212,12 +213,14 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
                         description={`${metrics.tasksWithTestCases}/${metrics.totalTasks} tarefas com casos`}
                         trend={metrics.testCoverage >= 80 ? 5 : -8}
                         trendLabel="variação estimada"
+                        icon={<CheckCircle2 className="h-6 w-6" />}
                         accent="success"
                     />
                     <StatCard
                         title="Automação"
                         value={`${metrics.automationRatio}%`}
                         description={`${metrics.automatedTestCases}/${metrics.totalTestCases || 1} casos automatizados`}
+                        icon={<Zap className="h-6 w-6" />}
                         accent="accent"
                     />
                     <StatCard
@@ -225,6 +228,7 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
                         value={metrics.bugsBySeverity['Crítico']}
                         description="Monitoramento contínuo"
                         statusColor={metrics.bugsBySeverity['Crítico'] > 0 ? 'text-red-700 dark:text-red-400' : 'text-emerald-700 dark:text-emerald-400'}
+                        icon={<AlertTriangle className="h-6 w-6" />}
                         accent="danger"
                     />
                 </div>

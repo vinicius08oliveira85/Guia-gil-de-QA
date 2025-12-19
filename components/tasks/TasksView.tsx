@@ -9,7 +9,7 @@ import { QuickFilters } from '../common/QuickFilters';
 import { TaskForm } from './TaskForm';
 import { TestCaseEditorModal } from './TestCaseEditorModal';
 import { Button } from '../common/Button';
-import { Plus, Filter, RefreshCw, Loader2 } from 'lucide-react';
+import { Plus, Filter, RefreshCw, Loader2, Clipboard, Zap, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { logger } from '../../utils/logger';
 import { useProjectsStore } from '../../store/projectsStore';
 import { ModernIcons } from '../common/ModernIcons';
@@ -1291,7 +1291,7 @@ export const TasksView: React.FC<{
                     }}
                 >
                     <motion.div 
-                        className="bg-base-100 rounded-xl p-5 border border-base-300 hover:border-primary/40 hover:shadow-lg group cursor-help relative overflow-hidden transition-all duration-300" 
+                        className="group relative overflow-hidden rounded-2xl p-6 bg-gradient-to-br from-orange-500/20 via-amber-500/10 to-orange-500/5 backdrop-blur-xl border border-orange-500/30 hover:border-orange-500/50 transition-all duration-500 ease-out hover:scale-[1.02] hover:shadow-2xl hover:shadow-orange-500/20 cursor-help" 
                         aria-live="polite"
                         title={`Total de ${stats.total} tarefas no projeto. Inclui todas as tarefas independente do status.`}
                         variants={{
@@ -1299,20 +1299,34 @@ export const TasksView: React.FC<{
                             visible: { opacity: 1, y: 0 },
                         }}
                     >
-                        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-                        <div className="relative z-10">
-                            <div className="flex items-center justify-between mb-3">
-                                <div className="p-2.5 bg-primary/10 rounded-xl group-hover:bg-primary/15 transition-all duration-300">
-                                    <ModernIcons.TotalTasks className="text-primary" size={20} />
+                        {/* Glassmorphism overlay */}
+                        <div className="absolute inset-0 bg-base-100/60 dark:bg-base-100/40 backdrop-blur-xl" />
+                        
+                        {/* Animated gradient orb no hover */}
+                        <div className="pointer-events-none absolute -top-12 -right-12 w-32 h-32 rounded-full bg-gradient-to-br from-orange-500/20 via-amber-500/10 to-orange-500/5 opacity-0 group-hover:opacity-100 blur-3xl transition-opacity duration-700" />
+                        
+                        {/* Shine effect no hover */}
+                        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out" />
+                        </div>
+                        
+                        <div className="relative z-10 flex flex-col gap-4">
+                            <div className="flex items-start justify-between gap-4">
+                                <div className="min-w-0 flex-1">
+                                    <p className="text-xs font-medium text-base-content/70 mb-2 uppercase tracking-wider">Total de Tarefas</p>
+                                    <p className="text-5xl font-bold tracking-tight text-orange-400 dark:text-orange-300 transition-transform duration-500 group-hover:scale-110" aria-label={`${stats.total} tarefas totais`}>
+                                        {stats.total}
+                                    </p>
+                                </div>
+                                <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-orange-500/10 group-hover:bg-orange-500/15 flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:rotate-6">
+                                    <Clipboard className="w-6 h-6 text-orange-400 dark:text-orange-300" />
                                 </div>
                             </div>
-                            <p className="text-xs font-semibold text-base-content/70 mb-2 uppercase tracking-wider">Total de Tarefas</p>
-                            <p className="text-3xl font-bold text-base-content" aria-label={`${stats.total} tarefas totais`}>{stats.total}</p>
                         </div>
                     </motion.div>
                     
                     <motion.div 
-                        className="bg-base-100 rounded-xl p-5 border border-base-300 hover:border-orange-400/50 hover:shadow-lg group cursor-help relative overflow-hidden transition-all duration-300" 
+                        className="group relative overflow-hidden rounded-2xl p-6 bg-gradient-to-br from-blue-500/20 via-cyan-500/10 to-blue-500/5 backdrop-blur-xl border border-blue-500/30 hover:border-blue-500/50 transition-all duration-500 ease-out hover:scale-[1.02] hover:shadow-2xl hover:shadow-blue-500/20 cursor-help" 
                         aria-live="polite"
                         title={`${stats.inProgress} tarefas em andamento. Tarefas que estão sendo trabalhadas atualmente.`}
                         variants={{
@@ -1320,20 +1334,34 @@ export const TasksView: React.FC<{
                             visible: { opacity: 1, y: 0 },
                         }}
                     >
-                        <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-                        <div className="relative z-10">
-                            <div className="flex items-center justify-between mb-3">
-                                <div className="p-2.5 bg-orange-500/15 rounded-xl group-hover:bg-orange-500/20 transition-all duration-300">
-                                    <ModernIcons.InProgress className="text-orange-600 dark:text-orange-400" size={20} />
+                        {/* Glassmorphism overlay */}
+                        <div className="absolute inset-0 bg-base-100/60 dark:bg-base-100/40 backdrop-blur-xl" />
+                        
+                        {/* Animated gradient orb no hover */}
+                        <div className="pointer-events-none absolute -top-12 -right-12 w-32 h-32 rounded-full bg-gradient-to-br from-blue-500/20 via-cyan-500/10 to-blue-500/5 opacity-0 group-hover:opacity-100 blur-3xl transition-opacity duration-700" />
+                        
+                        {/* Shine effect no hover */}
+                        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out" />
+                        </div>
+                        
+                        <div className="relative z-10 flex flex-col gap-4">
+                            <div className="flex items-start justify-between gap-4">
+                                <div className="min-w-0 flex-1">
+                                    <p className="text-xs font-medium text-base-content/70 mb-2 uppercase tracking-wider">Em Andamento</p>
+                                    <p className="text-5xl font-bold tracking-tight text-blue-400 dark:text-blue-300 transition-transform duration-500 group-hover:scale-110" aria-label={`${stats.inProgress} tarefas em andamento`}>
+                                        {stats.inProgress}
+                                    </p>
+                                </div>
+                                <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-blue-500/10 group-hover:bg-blue-500/15 flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:rotate-6">
+                                    <Zap className="w-6 h-6 text-blue-400 dark:text-blue-300" />
                                 </div>
                             </div>
-                            <p className="text-xs font-semibold text-base-content/70 mb-2 uppercase tracking-wider">Em Andamento</p>
-                            <p className="text-3xl font-bold text-orange-600 dark:text-orange-400" aria-label={`${stats.inProgress} tarefas em andamento`}>{stats.inProgress}</p>
                         </div>
                     </motion.div>
                     
                     <motion.div 
-                        className="bg-base-100 rounded-xl p-5 border border-base-300 hover:border-success/40 hover:shadow-lg group cursor-help relative overflow-hidden transition-all duration-300" 
+                        className="group relative overflow-hidden rounded-2xl p-6 bg-gradient-to-br from-emerald-500/20 via-green-500/10 to-emerald-500/5 backdrop-blur-xl border border-emerald-500/30 hover:border-emerald-500/50 transition-all duration-500 ease-out hover:scale-[1.02] hover:shadow-2xl hover:shadow-emerald-500/20 cursor-help" 
                         aria-live="polite"
                         title={`${stats.done} tarefas concluídas. Tarefas finalizadas e validadas.`}
                         variants={{
@@ -1341,20 +1369,34 @@ export const TasksView: React.FC<{
                             visible: { opacity: 1, y: 0 },
                         }}
                     >
-                        <div className="absolute inset-0 bg-gradient-to-br from-success/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-                        <div className="relative z-10">
-                            <div className="flex items-center justify-between mb-3">
-                                <div className="p-2.5 bg-success/10 rounded-xl group-hover:bg-success/15 transition-all duration-300">
-                                    <ModernIcons.Completed className="text-success" size={20} />
+                        {/* Glassmorphism overlay */}
+                        <div className="absolute inset-0 bg-base-100/60 dark:bg-base-100/40 backdrop-blur-xl" />
+                        
+                        {/* Animated gradient orb no hover */}
+                        <div className="pointer-events-none absolute -top-12 -right-12 w-32 h-32 rounded-full bg-gradient-to-br from-emerald-500/20 via-green-500/10 to-emerald-500/5 opacity-0 group-hover:opacity-100 blur-3xl transition-opacity duration-700" />
+                        
+                        {/* Shine effect no hover */}
+                        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out" />
+                        </div>
+                        
+                        <div className="relative z-10 flex flex-col gap-4">
+                            <div className="flex items-start justify-between gap-4">
+                                <div className="min-w-0 flex-1">
+                                    <p className="text-xs font-medium text-base-content/70 mb-2 uppercase tracking-wider">Concluídas</p>
+                                    <p className="text-5xl font-bold tracking-tight text-emerald-400 dark:text-emerald-300 transition-transform duration-500 group-hover:scale-110" aria-label={`${stats.done} tarefas concluídas`}>
+                                        {stats.done}
+                                    </p>
+                                </div>
+                                <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-emerald-500/10 group-hover:bg-emerald-500/15 flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:rotate-6">
+                                    <CheckCircle2 className="w-6 h-6 text-emerald-400 dark:text-emerald-300" />
                                 </div>
                             </div>
-                            <p className="text-xs font-semibold text-base-content/70 mb-2 uppercase tracking-wider">Concluídas</p>
-                            <p className="text-3xl font-bold text-success" aria-label={`${stats.done} tarefas concluídas`}>{stats.done}</p>
                         </div>
                     </motion.div>
                     
                     <motion.div 
-                        className="bg-base-100 rounded-xl p-5 border border-base-300 hover:border-error/40 hover:shadow-lg group cursor-help relative overflow-hidden transition-all duration-300" 
+                        className="group relative overflow-hidden rounded-2xl p-6 bg-gradient-to-br from-rose-500/20 via-red-500/10 to-rose-500/5 backdrop-blur-xl border border-rose-500/30 hover:border-rose-500/50 transition-all duration-500 ease-out hover:scale-[1.02] hover:shadow-2xl hover:shadow-rose-500/20 cursor-help" 
                         aria-live="polite"
                         title={`${stats.bugsOpen} bugs abertos. Problemas identificados que ainda precisam ser resolvidos.`}
                         variants={{
@@ -1362,15 +1404,29 @@ export const TasksView: React.FC<{
                             visible: { opacity: 1, y: 0 },
                         }}
                     >
-                        <div className="absolute inset-0 bg-gradient-to-br from-error/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-                        <div className="relative z-10">
-                            <div className="flex items-center justify-between mb-3">
-                                <div className="p-2.5 bg-error/10 rounded-xl group-hover:bg-error/15 transition-all duration-300">
-                                    <ModernIcons.Bugs className="text-error" size={20} />
+                        {/* Glassmorphism overlay */}
+                        <div className="absolute inset-0 bg-base-100/60 dark:bg-base-100/40 backdrop-blur-xl" />
+                        
+                        {/* Animated gradient orb no hover */}
+                        <div className="pointer-events-none absolute -top-12 -right-12 w-32 h-32 rounded-full bg-gradient-to-br from-rose-500/20 via-red-500/10 to-rose-500/5 opacity-0 group-hover:opacity-100 blur-3xl transition-opacity duration-700" />
+                        
+                        {/* Shine effect no hover */}
+                        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out" />
+                        </div>
+                        
+                        <div className="relative z-10 flex flex-col gap-4">
+                            <div className="flex items-start justify-between gap-4">
+                                <div className="min-w-0 flex-1">
+                                    <p className="text-xs font-medium text-base-content/70 mb-2 uppercase tracking-wider">Bugs Abertos</p>
+                                    <p className="text-5xl font-bold tracking-tight text-rose-400 dark:text-rose-300 transition-transform duration-500 group-hover:scale-110" aria-label={`${stats.bugsOpen} bugs abertos`}>
+                                        {stats.bugsOpen}
+                                    </p>
+                                </div>
+                                <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-rose-500/10 group-hover:bg-rose-500/15 flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:rotate-6">
+                                    <AlertTriangle className="w-6 h-6 text-rose-400 dark:text-rose-300" />
                                 </div>
                             </div>
-                            <p className="text-xs font-semibold text-base-content/70 mb-2 uppercase tracking-wider">Bugs Abertos</p>
-                            <p className="text-3xl font-bold text-error" aria-label={`${stats.bugsOpen} bugs abertos`}>{stats.bugsOpen}</p>
                         </div>
                     </motion.div>
                     
