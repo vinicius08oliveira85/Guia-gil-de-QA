@@ -1692,6 +1692,7 @@ export const TasksView: React.FC<{
                     onDeleteTestCase={handleDeleteTestCase}
                     project={project}
                     onUpdateProject={onUpdateProject}
+                    onOpenTask={setModalTask}
                 />
             );
         })()}

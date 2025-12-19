@@ -24,8 +24,10 @@ import { LoadingSkeleton } from '../common/LoadingSkeleton';
 import { parseJiraDescriptionHTML } from '../../utils/jiraDescriptionParser';
 import { getJiraConfig } from '../../services/jiraService';
 import { TaskWithChildren } from './JiraTaskItem';
+import { TaskLinksView } from './TaskLinksView';
+import { getTaskDependents } from '../../utils/dependencyService';
 
-type DetailSection = 'overview' | 'bdd' | 'tests' | 'planning' | 'collaboration';
+type DetailSection = 'overview' | 'bdd' | 'tests' | 'planning' | 'collaboration' | 'links';
 type TestSubSection = 'strategy' | 'test-cases';
 
 // Componente para renderizar descrição com formatação rica do Jira
@@ -98,6 +100,7 @@ interface TaskDetailsModalProps {
     onDeleteTestCase?: (taskId: string, testCaseId: string) => void;
     project?: Project;
     onUpdateProject?: (project: Project) => void;
+    onOpenTask?: (task: JiraTask) => void;
 }
 
 export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
@@ -127,6 +130,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
     onDeleteTestCase,
     project,
     onUpdateProject,
+    onOpenTask,
 }) => {
     const [editingBddScenario, setEditingBddScenario] = useState<BddScenario | null>(null);
     const [isCreatingBdd, setIsCreatingBdd] = useState(false);
@@ -160,6 +164,13 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
             tabs.push({ id: 'planning', label: 'Planejamento', badge: planningBadge });
         }
 
+        if (project && onUpdateProject) {
+            const dependenciesCount = task.dependencies?.length || 0;
+            const dependentsCount = getTaskDependents(task.id, project).length;
+            const linksBadge = dependenciesCount + dependentsCount;
+            tabs.push({ id: 'links', label: '🔗 Vínculos', badge: linksBadge > 0 ? linksBadge : undefined });
+        }
+
         if (onAddComment) {
             tabs.push({ id: 'collaboration', label: 'Colaboração', badge: task.comments?.length || 0 });
         }
@@ -176,7 +187,8 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
         task.comments,
         project,
         onUpdateProject,
-        onAddComment
+        onAddComment,
+        project?.tasks
     ]);
 
     useEffect(() => {
@@ -808,6 +820,23 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
         );
     };
 
+    const renderLinksSection = () => {
+        if (!project || !onUpdateProject) {
+            return (
+                <p className="text-sm text-base-content/70">Conecte um projeto para visualizar vínculos e dependências.</p>
+            );
+        }
+
+        return (
+            <TaskLinksView
+                task={task}
+                project={project}
+                onUpdateProject={onUpdateProject}
+                onOpenTask={onOpenTask}
+            />
+        );
+    };
+
     const renderSectionContent = () => {
         switch (activeSection) {
             case 'overview':
@@ -818,6 +847,8 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                 return renderTestsSection();
             case 'planning':
                 return renderPlanningSection();
+            case 'links':
+                return renderLinksSection();
             case 'collaboration':
                 return renderCollaborationSection();
             default:
