@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Modal } from '../common/Modal';
 import { Project, JiraTask, TestCase } from '../../types';
 import { generateFailedTestsReport, FailedTestsReportFormat } from '../../utils/failedTestsReportGenerator';
@@ -8,6 +8,14 @@ import { logger } from '../../utils/logger';
 import { generateFailedTestsAnalysisForPO } from '../../services/ai/failedTestsAnalysisService';
 import { generateFailedTestsPDF } from '../../utils/failedTestsPDFGenerator';
 import toast from 'react-hot-toast';
+import { FailedTestsReportHeader } from './FailedTestsReportHeader';
+import { FilterBuilder } from './FilterBuilder';
+import { SearchBar } from './SearchBar';
+import { TestCard } from './TestCard';
+import { BulkActionsToolbar } from './BulkActionsToolbar';
+import { EmptyState } from './EmptyState';
+import { ReportPreview } from './ReportPreview';
+import { ActionMenu } from './ActionMenu';
 
 interface FailedTestWithTask {
   testCase: TestCase;
@@ -46,6 +54,11 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
   const [aiAnalysisText, setAiAnalysisText] = useState('');
   const [isGeneratingAnalysis, setIsGeneratingAnalysis] = useState(false);
   const [aiAnalysisCopied, setAiAnalysisCopied] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showPreview, setShowPreview] = useState(true);
+  const [showFilters, setShowFilters] = useState(true);
+  const testListRef = useRef<HTMLDivElement>(null);
+  const [focusedTestIndex, setFocusedTestIndex] = useState<number | null>(null);
 
   // Coletar todos os testes reprovados
   const allFailedTests = useMemo((): FailedTestWithTask[] => {
@@ -67,10 +80,11 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
     return failedTests;
   }, [project, scope, selectedTaskId]);
 
-  // Aplicar filtros
+  // Aplicar filtros e busca
   const filteredTests = useMemo(() => {
     let filtered = allFailedTests;
     
+    // Aplicar filtros
     if (filters.priorities.length > 0) {
       filtered = filtered.filter(ft => 
         ft.testCase.priority && filters.priorities.includes(ft.testCase.priority)
@@ -89,8 +103,24 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
       );
     }
     
+    // Aplicar busca
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(ft => {
+        const description = (ft.testCase.description || '').toLowerCase();
+        const taskTitle = (ft.task.title || '').toLowerCase();
+        const taskId = ft.task.id.toLowerCase();
+        const observedResult = (ft.testCase.observedResult || '').toLowerCase();
+        
+        return description.includes(query) ||
+               taskTitle.includes(query) ||
+               taskId.includes(query) ||
+               observedResult.includes(query);
+      });
+    }
+    
     return filtered;
-  }, [allFailedTests, filters]);
+  }, [allFailedTests, filters, searchQuery]);
 
   // Opções únicas para filtros
   const availablePriorities = useMemo(() => {
@@ -232,6 +262,8 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
       setFilters({ priorities: [], environments: [], suites: [] });
       setAiAnalysisText('');
       setAiAnalysisCopied(false);
+      setSearchQuery('');
+      setFocusedTestIndex(null);
     }
   }, [isOpen, initialTaskId]);
 
@@ -364,279 +396,453 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
     filteredTests.every(ft => selectedTestIds.has(ft.testCase.id));
   const someFilteredSelected = filteredTests.some(ft => selectedTestIds.has(ft.testCase.id));
 
+  // Estatísticas para o header
+  const criticalTests = useMemo(() => {
+    return filteredTests.filter(ft => ft.testCase.priority === 'Urgente').length;
+  }, [filteredTests]);
+
+  const uniqueEnvironments = useMemo(() => {
+    const envs = new Set<string>();
+    filteredTests.forEach(ft => {
+      if (ft.testCase.testEnvironment) {
+        envs.add(ft.testCase.testEnvironment);
+      }
+    });
+    return envs.size;
+  }, [filteredTests]);
+
+  // Atalhos de teclado
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Cmd/Ctrl+A para selecionar todos
+      if ((e.metaKey || e.ctrlKey) && e.key === 'a') {
+        e.preventDefault();
+        if (filteredTests.length > 0) {
+          const allIds = new Set(filteredTests.map(ft => ft.testCase.id));
+          setSelectedTestIds(allIds);
+        }
+      }
+
+      // Escape para desselecionar todos (se não estiver fechando modal)
+      if (e.key === 'Escape' && selectedTestIds.size > 0) {
+        e.preventDefault();
+        setSelectedTestIds(new Set());
+      }
+
+      // Navegação com setas
+      if (focusedTestIndex !== null && testListRef.current) {
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          setFocusedTestIndex(prev => 
+            prev !== null && prev < filteredTests.length - 1 ? prev + 1 : prev
+          );
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          setFocusedTestIndex(prev => prev !== null && prev > 0 ? prev - 1 : null);
+        } else if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          if (focusedTestIndex !== null && filteredTests[focusedTestIndex]) {
+            const testId = filteredTests[focusedTestIndex].testCase.id;
+            const newSelected = new Set(selectedTestIds);
+            if (newSelected.has(testId)) {
+              newSelected.delete(testId);
+            } else {
+              newSelected.add(testId);
+            }
+            setSelectedTestIds(newSelected);
+          }
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, filteredTests, selectedTestIds, focusedTestIndex]);
+
+  // Limpar busca ao fechar
+  useEffect(() => {
+    if (!isOpen) {
+      setSearchQuery('');
+      setFocusedTestIndex(null);
+    }
+  }, [isOpen]);
+
+  // Limpar todos os filtros
+  const handleClearAllFilters = () => {
+    setFilters({ priorities: [], environments: [], suites: [] });
+    setSearchQuery('');
+  };
+
+  const hasActiveFilters = filters.priorities.length > 0 || 
+                          filters.environments.length > 0 || 
+                          filters.suites.length > 0 ||
+                          searchQuery.trim().length > 0;
+
+  // Preparar opções de filtros com cores
+  const priorityOptions = availablePriorities.map(priority => ({
+    value: priority,
+    label: priority,
+    color: priority === 'Urgente' ? 'error' as const : 
+           priority === 'Alta' ? 'warning' as const :
+           priority === 'Média' ? 'info' as const : 'success' as const
+  }));
+
+  const environmentOptions = availableEnvironments.map(env => ({
+    value: env,
+    label: env,
+    color: 'default' as const
+  }));
+
+  const suiteOptions = availableSuites.map(suite => ({
+    value: suite,
+    label: suite,
+    color: 'default' as const
+  }));
+
+  // Menu de ações adicionais
+  const actionMenuItems = [
+    {
+      label: 'Exportar como PDF',
+      icon: (
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+        </svg>
+      ),
+      onClick: handleGeneratePDF
+    },
+    {
+      label: 'Exportar como CSV',
+      icon: (
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v16h16M8 12h8m-8 4h5" />
+        </svg>
+      ),
+      onClick: () => {
+        // TODO: Implementar exportação CSV
+        toast.info('Exportação CSV em desenvolvimento');
+      }
+    }
+  ];
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Relatório de Testes Reprovados" size="xl">
-      <div className="h-full flex flex-col min-h-0 space-y-md max-h-[90vh] overflow-y-auto">
-        {/* Botões de ação */}
-        <div className="flex-shrink-0 space-y-sm">
-          <p className="text-sm text-base-content/70">
-            Selecione os testes reprovados e copie o relatório para colar em outras plataformas
-          </p>
-          <div className="flex flex-wrap items-center justify-end gap-md pb-2 border-b border-base-300">
-            <button
-              type="button"
-              onClick={handleGenerateAIAnalysis}
-              disabled={isGeneratingAnalysis || filteredTests.length === 0}
-              className="btn btn-accent btn-md flex items-center gap-2 disabled:opacity-50"
-            >
-              {isGeneratingAnalysis ? (
-                <>
-                  <span className="loading loading-spinner loading-sm"></span>
-                  <span>Gerando Análise IA...</span>
-                </>
-              ) : (
-                <>
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                  </svg>
-                  <span>Análise IA</span>
-                </>
-              )}
-            </button>
-            <button
-              type="button"
-              onClick={handleDownload}
-              className="btn btn-secondary btn-md flex items-center gap-2"
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v16h16M8 12h8m-8 4h5" />
-              </svg>
-              <span>Baixar .{format === 'markdown' ? 'md' : 'txt'}</span>
-            </button>
-            <button
-              type="button"
-              onClick={handleCopy}
-              className={`
-                btn btn-primary btn-md
-                flex items-center gap-2
-                ${copied ? '!bg-green-500 hover:!bg-green-600' : ''}
-              `}
-            >
-              {copied ? (
-                <>
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span>Copiado!</span>
-                </>
-              ) : (
-                <>
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                  </svg>
-                  <span>Copiar</span>
-                </>
-              )}
-            </button>
-          </div>
-        </div>
+    <Modal isOpen={isOpen} onClose={onClose} title="Relatório de Testes Reprovados" size="full">
+      <div className="h-full flex flex-col min-h-0 max-h-[90vh]">
+        {/* Header sticky com estatísticas */}
+        <FailedTestsReportHeader
+          totalTests={allFailedTests.length}
+          selectedTests={selectedTestIds.size}
+          filteredTests={filteredTests.length}
+          criticalTests={criticalTests}
+          environments={uniqueEnvironments}
+          onSelectAll={handleSelectAll}
+          onDeselectAll={handleDeselectAll}
+          hasSelectedTests={selectedTestIds.size > 0}
+          canSelectAll={filteredTests.length > 0 && !allFilteredSelected}
+        />
 
-        {/* Seletor de escopo */}
-        <div className="flex-shrink-0 flex flex-col gap-sm">
-          <p className="text-xs uppercase tracking-wide text-base-content/70 font-semibold">Escopo</p>
-          <div className="flex gap-md">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="radio"
-                name="scope"
-                value="project"
-                checked={scope === 'project'}
-                onChange={() => {
-                  setScope('project');
-                  setSelectedTaskId(undefined);
-                }}
-                className="radio radio-primary"
-              />
-              <span>Projeto</span>
-            </label>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="radio"
-                name="scope"
-                value="task"
-                checked={scope === 'task'}
-                onChange={() => setScope('task')}
-                className="radio radio-primary"
-              />
-              <span>Tarefa</span>
-            </label>
-          </div>
-        </div>
-
-        {/* Seletor de tarefa (se escopo = tarefa) */}
-        {scope === 'task' && (
-          <div className="flex-shrink-0 flex flex-col gap-sm">
-            <p className="text-xs uppercase tracking-wide text-base-content/70 font-semibold">Tarefa</p>
-            <select
-              value={selectedTaskId || ''}
-              onChange={(e) => setSelectedTaskId(e.target.value || undefined)}
-              className="select select-bordered w-full"
-            >
-              <option value="">Selecione uma tarefa</option>
-              {tasksWithFailedTests.map(task => (
-                <option key={task.id} value={task.id}>
-                  {task.id} - {task.title || 'Sem título'}
-                </option>
-              ))}
-            </select>
-          </div>
+        {/* Toolbar de ações em massa */}
+        {selectedTestIds.size > 0 && (
+          <BulkActionsToolbar
+            selectedCount={selectedTestIds.size}
+            onCopySelected={() => {
+              const selectedTests = filteredTests.filter(ft => selectedTestIds.has(ft.testCase.id));
+              const selectedReport = generateFailedTestsReport(
+                project,
+                generationDate || new Date(),
+                {
+                  format,
+                  selectedTestIds: Array.from(selectedTestIds),
+                  filters: {
+                    taskId: scope === 'task' ? selectedTaskId : undefined,
+                    priorities: filters.priorities.length > 0 ? filters.priorities : undefined,
+                    environments: filters.environments.length > 0 ? filters.environments : undefined,
+                    suites: filters.suites.length > 0 ? filters.suites : undefined
+                  }
+                }
+              );
+              navigator.clipboard.writeText(selectedReport).then(() => {
+                toast.success('Testes selecionados copiados!');
+              });
+            }}
+            onExportSelected={handleDownload}
+            onClearSelection={handleDeselectAll}
+          />
         )}
 
-        {/* Filtros */}
-        <div className="flex-shrink-0 flex flex-col gap-sm">
-          <p className="text-xs uppercase tracking-wide text-base-content/70 font-semibold">Filtros</p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-md">
-            {/* Prioridade */}
-            {availablePriorities.length > 0 && (
-              <div className="flex flex-col gap-xs">
-                <p className="text-xs font-medium text-base-content/70">Prioridade</p>
-                <div className="flex flex-wrap gap-xs">
-                  {availablePriorities.map(priority => (
-                    <label key={priority} className="flex items-center gap-1 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={filters.priorities.includes(priority)}
-                        onChange={() => handleTogglePriority(priority)}
-                        className="checkbox checkbox-xs"
-                      />
-                      <span className="text-xs">{priority}</span>
-                    </label>
+        {/* Layout principal - Grid responsivo */}
+        <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-3 gap-md overflow-hidden">
+          {/* Painel esquerdo: Filtros e Escopo */}
+          <div className={`${showFilters ? 'flex' : 'hidden'} lg:flex flex-col gap-md overflow-y-auto border-r border-base-300 pr-md`}>
+            {/* Seletor de escopo */}
+            <div className="flex-shrink-0 flex flex-col gap-sm">
+              <p className="text-xs uppercase tracking-wide text-base-content/70 font-semibold">Escopo</p>
+              <div className="flex gap-md">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="scope"
+                    value="project"
+                    checked={scope === 'project'}
+                    onChange={() => {
+                      setScope('project');
+                      setSelectedTaskId(undefined);
+                    }}
+                    className="radio radio-primary radio-sm"
+                  />
+                  <span className="text-sm">Projeto</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="scope"
+                    value="task"
+                    checked={scope === 'task'}
+                    onChange={() => setScope('task')}
+                    className="radio radio-primary radio-sm"
+                  />
+                  <span className="text-sm">Tarefa</span>
+                </label>
+              </div>
+            </div>
+
+            {/* Seletor de tarefa */}
+            {scope === 'task' && (
+              <div className="flex-shrink-0 flex flex-col gap-sm">
+                <p className="text-xs uppercase tracking-wide text-base-content/70 font-semibold">Tarefa</p>
+                <select
+                  value={selectedTaskId || ''}
+                  onChange={(e) => setSelectedTaskId(e.target.value || undefined)}
+                  className="select select-bordered select-sm w-full"
+                >
+                  <option value="">Selecione uma tarefa</option>
+                  {tasksWithFailedTests.map(task => (
+                    <option key={task.id} value={task.id}>
+                      {task.id} - {task.title || 'Sem título'}
+                    </option>
                   ))}
-                </div>
+                </select>
               </div>
             )}
 
-            {/* Ambiente */}
-            {availableEnvironments.length > 0 && (
-              <div className="flex flex-col gap-xs">
-                <p className="text-xs font-medium text-base-content/70">Ambiente</p>
-                <div className="flex flex-wrap gap-xs">
-                  {availableEnvironments.map(env => (
-                    <label key={env} className="flex items-center gap-1 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={filters.environments.includes(env)}
-                        onChange={() => handleToggleEnvironment(env)}
-                        className="checkbox checkbox-xs"
-                      />
-                      <span className="text-xs">{env}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            )}
+            {/* Barra de busca */}
+            <div className="flex-shrink-0">
+              <SearchBar
+                value={searchQuery}
+                onChange={setSearchQuery}
+                placeholder="Buscar testes por descrição, tarefa ou erro..."
+              />
+            </div>
 
-            {/* Suite */}
-            {availableSuites.length > 0 && (
-              <div className="flex flex-col gap-xs">
-                <p className="text-xs font-medium text-base-content/70">Suite</p>
-                <div className="flex flex-wrap gap-xs">
-                  {availableSuites.map(suite => (
-                    <label key={suite} className="flex items-center gap-1 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={filters.suites.includes(suite)}
-                        onChange={() => handleToggleSuite(suite)}
-                        className="checkbox checkbox-xs"
-                      />
-                      <span className="text-xs">{suite}</span>
-                    </label>
-                  ))}
+            {/* Filtros com chips */}
+            <div className="flex-shrink-0 flex flex-col gap-md">
+              {hasActiveFilters && (
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-base-content/70">
+                    Filtros Ativos ({filters.priorities.length + filters.environments.length + filters.suites.length + (searchQuery.trim() ? 1 : 0)})
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleClearAllFilters}
+                    className="btn btn-xs btn-ghost"
+                  >
+                    Limpar Todos
+                  </button>
                 </div>
-              </div>
-            )}
-          </div>
-        </div>
+              )}
 
-        {/* Seleção de testes */}
-        <div className="flex-shrink-0 flex flex-col gap-sm">
-          <div className="flex items-center justify-between">
-            <p className="text-xs uppercase tracking-wide text-base-content/70 font-semibold">
-              Testes Reprovados ({filteredTests.length})
-            </p>
-            <div className="flex gap-xs">
-              <button
-                type="button"
-                onClick={handleSelectAll}
-                disabled={filteredTests.length === 0}
-                className="btn btn-xs btn-ghost"
-              >
-                Selecionar Todos
-              </button>
-              <button
-                type="button"
-                onClick={handleDeselectAll}
-                disabled={selectedTestIds.size === 0}
-                className="btn btn-xs btn-ghost"
-              >
-                Desselecionar Todos
-              </button>
+              {priorityOptions.length > 0 && (
+                <FilterBuilder
+                  title="Prioridade"
+                  options={priorityOptions}
+                  selectedValues={filters.priorities}
+                  onToggle={handleTogglePriority}
+                  onClear={() => setFilters(prev => ({ ...prev, priorities: [] }))}
+                  icon={
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                  }
+                />
+              )}
+
+              {environmentOptions.length > 0 && (
+                <FilterBuilder
+                  title="Ambiente"
+                  options={environmentOptions}
+                  selectedValues={filters.environments}
+                  onToggle={handleToggleEnvironment}
+                  onClear={() => setFilters(prev => ({ ...prev, environments: [] }))}
+                  icon={
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                  }
+                />
+              )}
+
+              {suiteOptions.length > 0 && (
+                <FilterBuilder
+                  title="Suite"
+                  options={suiteOptions}
+                  selectedValues={filters.suites}
+                  onToggle={handleToggleSuite}
+                  onClear={() => setFilters(prev => ({ ...prev, suites: [] }))}
+                  icon={
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                    </svg>
+                  }
+                />
+              )}
             </div>
           </div>
-          {filteredTests.length > 0 ? (
-            <div className="max-h-48 overflow-y-auto space-y-sm border border-base-300 rounded-lg p-sm">
-              {filteredTests.map((failedTest) => {
-                const isSelected = selectedTestIds.has(failedTest.testCase.id);
-                return (
-                  <label
-                    key={failedTest.testCase.id}
+
+          {/* Painel central: Lista de testes */}
+          <div className="flex flex-col gap-md overflow-y-auto min-h-0">
+            {/* Formato do relatório - compacto */}
+            <div className="flex-shrink-0 flex items-center justify-between gap-sm">
+              <p className="text-xs uppercase tracking-wide text-base-content/70 font-semibold">
+                Formato
+              </p>
+              <div className="flex gap-xs">
+                {formatOptions.map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => setFormat(option.value)}
                     className={`
-                      flex items-start gap-2 p-sm rounded cursor-pointer
-                      ${isSelected ? 'bg-primary/10 border border-primary' : 'border border-base-300 hover:bg-base-200'}
+                      btn btn-xs
+                      ${format === option.value ? 'btn-primary' : 'btn-ghost'}
                     `}
                   >
-                    <input
-                      type="checkbox"
-                      checked={isSelected}
-                      onChange={() => handleToggleTest(failedTest.testCase.id)}
-                      className="checkbox checkbox-sm mt-1"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-base-content">
-                        {failedTest.testCase.description || 'Sem descrição'}
-                      </p>
-                      <p className="text-xs text-base-content/70">
-                        {failedTest.task.id} - {failedTest.task.title || 'Sem título'}
-                      </p>
-                      {failedTest.testCase.priority && (
-                        <Badge variant="default" size="sm" className="mt-1">
-                          {failedTest.testCase.priority}
-                        </Badge>
-                      )}
-                    </div>
-                  </label>
-                );
-              })}
+                    {option.label}
+                  </button>
+                ))}
+              </div>
             </div>
-          ) : (
-            <p className="text-sm text-base-content/70 p-sm border border-base-300 rounded-lg">
-              Nenhum teste reprovado encontrado com os filtros aplicados.
-            </p>
-          )}
-        </div>
 
-        {/* Formato do relatório */}
-        <div className="flex-shrink-0 flex flex-col gap-sm">
-          <p className="text-xs uppercase tracking-wide text-base-content/70 font-semibold">Formato do relatório</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-md">
-            {formatOptions.map((option) => (
+            {/* Lista de testes */}
+            <div className="flex-1 min-h-0 flex flex-col gap-sm">
+              {filteredTests.length > 0 ? (
+                <div ref={testListRef} className="space-y-sm flex-1 overflow-y-auto">
+                  {filteredTests.map((failedTest, index) => (
+                    <TestCard
+                      key={failedTest.testCase.id}
+                      testCase={failedTest.testCase}
+                      task={failedTest.task}
+                      isSelected={selectedTestIds.has(failedTest.testCase.id)}
+                      onToggle={() => handleToggleTest(failedTest.testCase.id)}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <EmptyState
+                  title="Nenhum teste encontrado"
+                  message="Não há testes reprovados que correspondam aos filtros aplicados."
+                  suggestions={[
+                    'Tente remover alguns filtros',
+                    'Verifique se há testes reprovados no escopo selecionado',
+                    'Use a busca para encontrar testes específicos'
+                  ]}
+                />
+              )}
+            </div>
+
+            {/* Ações principais */}
+            <div className="flex-shrink-0 flex flex-wrap items-center justify-between gap-md pt-md border-t border-base-300">
+              <div className="flex items-center gap-xs">
+                <button
+                  type="button"
+                  onClick={handleGenerateAIAnalysis}
+                  disabled={isGeneratingAnalysis || filteredTests.length === 0}
+                  className="btn btn-primary btn-md flex items-center gap-2 disabled:opacity-50"
+                >
+                  {isGeneratingAnalysis ? (
+                    <>
+                      <span className="loading loading-spinner loading-sm"></span>
+                      <span>Gerando...</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                      </svg>
+                      <span>Análise IA</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+              <div className="flex items-center gap-xs">
+                <button
+                  type="button"
+                  onClick={handleDownload}
+                  className="btn btn-ghost btn-md flex items-center gap-2"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v16h16M8 12h8m-8 4h5" />
+                  </svg>
+                  <span>Baixar</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCopy}
+                  className={`btn btn-ghost btn-md flex items-center gap-2 ${copied ? '!bg-success !text-success-content' : ''}`}
+                >
+                  {copied ? (
+                    <>
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>Copiado!</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      </svg>
+                      <span>Copiar</span>
+                    </>
+                  )}
+                </button>
+                <ActionMenu items={actionMenuItems} />
+              </div>
+            </div>
+          </div>
+
+          {/* Painel direito: Preview do relatório */}
+          <div className={`${showPreview ? 'flex' : 'hidden'} lg:flex flex-col gap-md overflow-hidden border-l border-base-300 pl-md`}>
+            <div className="flex items-center justify-between flex-shrink-0">
+              <p className="text-xs uppercase tracking-wide text-base-content/70 font-semibold">
+                Preview do Relatório
+              </p>
               <button
-                key={option.value}
                 type="button"
-                onClick={() => setFormat(option.value)}
-                className={`
-                  border rounded-lg p-card text-left transition-all duration-200
-                  ${format === option.value
-                    ? 'border-primary bg-primary/10 text-base-content shadow-md ring-2 ring-primary/20'
-                    : 'border-base-300 text-base-content/70 hover:text-base-content hover:border-primary/30 hover:bg-base-200'}
-                `}
+                onClick={() => setShowPreview(!showPreview)}
+                className="btn btn-xs btn-ghost lg:hidden"
+                aria-label={showPreview ? 'Ocultar preview' : 'Mostrar preview'}
               >
-                <p className="font-medium">{option.label}</p>
-                <p className="text-sm text-base-content/70">{option.description}</p>
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  {showPreview ? (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  ) : (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  )}
+                </svg>
               </button>
-            ))}
+            </div>
+            <div className="flex-1 min-h-0">
+              <ReportPreview
+                reportText={reportText}
+                format={format}
+                onFormatChange={setFormat}
+              />
+            </div>
           </div>
         </div>
+
 
         {/* Seção de Análise IA */}
         {aiAnalysisText && (
@@ -712,39 +918,76 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
           </div>
         )}
 
-        {/* Textarea do relatório */}
-        <div className="relative flex-1 min-h-0 flex flex-col">
-          <p className="text-xs uppercase tracking-wide text-base-content/70 font-semibold mb-sm">
-            Relatório Manual
-          </p>
-          <textarea
-            value={reportText}
-            readOnly
-            className={`
-              w-full flex-1 min-h-[200px]
-              bg-base-100 border border-base-300 rounded-lg
-              p-card text-sm text-base-content
-              font-mono
-              resize-none
-              focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary
-              transition-all duration-200
-            `}
-            onClick={(e) => {
-              (e.target as HTMLTextAreaElement).select();
-            }}
-          />
-        </div>
-
-        {/* Botão Fechar */}
-        <div className="flex-shrink-0 flex justify-end gap-md pt-2 border-t border-base-300">
-          <button
-            type="button"
-            onClick={onClose}
-            className="btn btn-secondary btn-md"
-          >
-            Fechar
-          </button>
-        </div>
+        {/* Seção de Análise IA - mantida abaixo do preview */}
+        {aiAnalysisText && (
+          <div className="flex-shrink-0 flex flex-col gap-sm border-t border-base-300 pt-md mt-md">
+            <div className="flex items-center justify-between">
+              <p className="text-xs uppercase tracking-wide text-base-content/70 font-semibold">
+                Análise IA - Relatório para PO
+              </p>
+              <div className="flex gap-xs">
+                <button
+                  type="button"
+                  onClick={handleCopyAIAnalysis}
+                  className={`btn btn-sm btn-ghost ${aiAnalysisCopied ? '!bg-success !text-success-content' : ''}`}
+                >
+                  {aiAnalysisCopied ? (
+                    <>
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>Copiado!</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      </svg>
+                      <span>Copiar</span>
+                    </>
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveAIAnalysis}
+                  className="btn btn-sm btn-ghost"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v16h16M8 12h8m-8 4h5" />
+                  </svg>
+                  <span>Salvar</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleGeneratePDF}
+                  className="btn btn-sm btn-error"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                  </svg>
+                  <span>PDF</span>
+                </button>
+              </div>
+            </div>
+            <textarea
+              value={aiAnalysisText}
+              readOnly
+              className={`
+                w-full min-h-[200px] max-h-[400px]
+                bg-base-100 border border-base-300 rounded-lg
+                p-card text-sm text-base-content
+                font-mono
+                resize-none
+                overflow-y-auto
+                focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary
+                transition-all duration-200
+              `}
+              onClick={(e) => {
+                (e.target as HTMLTextAreaElement).select();
+              }}
+            />
+          </div>
+        )}
       </div>
     </Modal>
   );
