@@ -144,7 +144,8 @@ export const JiraTaskItem: React.FC<{
     level: number;
     activeTaskId?: string | null;
     onFocusTask?: (taskId: string | null) => void;
-}> = React.memo(({ task, onTestCaseStatusChange, onToggleTestCaseAutomated, onExecutedStrategyChange, onTaskToolsChange, onTestCaseToolsChange, onStrategyExecutedChange, onStrategyToolsChange, onDelete, onGenerateTests, isGenerating, onAddSubtask, onEdit, onGenerateBddScenarios, isGeneratingBdd, onGenerateAll, isGeneratingAll, onSyncToJira, isSyncing, onSaveBddScenario, onDeleteBddScenario, onTaskStatusChange, onAddTestCaseFromTemplate, onAddComment, onEditComment, onDeleteComment, onEditTestCase, onDeleteTestCase, project, onUpdateProject, isSelected, onToggleSelect, children, level, activeTaskId, onFocusTask }) => {
+    onOpenModal?: (task: JiraTask) => void;
+}> = React.memo(({ task, onTestCaseStatusChange, onToggleTestCaseAutomated, onExecutedStrategyChange, onTaskToolsChange, onTestCaseToolsChange, onStrategyExecutedChange, onStrategyToolsChange, onDelete, onGenerateTests, isGenerating, onAddSubtask, onEdit, onGenerateBddScenarios, isGeneratingBdd, onGenerateAll, isGeneratingAll, onSyncToJira, isSyncing, onSaveBddScenario, onDeleteBddScenario, onTaskStatusChange, onAddTestCaseFromTemplate, onAddComment, onEditComment, onDeleteComment, onEditTestCase, onDeleteTestCase, project, onUpdateProject, isSelected, onToggleSelect, children, level, activeTaskId, onFocusTask, onOpenModal }) => {
     const reduceMotion = useReducedMotion();
     const [isDetailsOpen, setIsDetailsOpen] = useState(false); // Colapsado por padrão para compactar
     const [isChildrenOpen, setIsChildrenOpen] = useState(false);
@@ -1063,15 +1064,49 @@ export const JiraTaskItem: React.FC<{
         }
     };
 
+    const handleCardClick = (e: React.MouseEvent) => {
+        // Não abrir modal se clicar em botões, inputs ou links
+        const target = e.target as HTMLElement;
+        if (
+            target.closest('button') ||
+            target.closest('input') ||
+            target.closest('select') ||
+            target.closest('a') ||
+            target.closest('[role="button"]')
+        ) {
+            return;
+        }
+        
+        if (onOpenModal) {
+            onOpenModal(task);
+        }
+    };
+
+    const handleCardKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            if (onOpenModal) {
+                onOpenModal(task);
+            }
+        }
+    };
+
     return (
         <div className="relative" data-task-id={task.id}>
             <div style={indentationStyle} className="py-1">
                 <div
                     className={[
                         'relative overflow-hidden rounded-[var(--rounded-box)] border border-base-300 bg-base-100',
-                        activeTaskId === task.id ? 'ring-1 ring-primary/30' : '',
-                        isSelected ? 'bg-primary/5 border-primary/40' : '',
+                        'transition-all duration-200 ease-in-out',
+                        activeTaskId === task.id ? 'ring-2 ring-primary/40 shadow-lg' : '',
+                        isSelected ? 'bg-primary/5 border-primary/40 ring-1 ring-primary/30' : '',
+                        onOpenModal ? 'cursor-pointer hover:bg-base-200/80 hover:shadow-lg hover:scale-[1.01] hover:border-primary/60 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2' : '',
                     ].join(' ')}
+                    onClick={onOpenModal ? handleCardClick : undefined}
+                    onKeyDown={onOpenModal ? handleCardKeyDown : undefined}
+                    role={onOpenModal ? 'button' : undefined}
+                    tabIndex={onOpenModal ? 0 : undefined}
+                    aria-label={onOpenModal ? `Abrir detalhes da tarefa ${task.id}: ${task.title}` : undefined}
                 >
                     <div aria-hidden="true" className="absolute left-0 top-0 h-full w-1" style={typeAccent} />
 
@@ -1149,17 +1184,25 @@ export const JiraTaskItem: React.FC<{
                                     )}
                                 </div>
 
-                                <button
-                                    type="button"
-                                    onClick={handleToggleDetails}
-                                    className="mt-2 w-full text-left rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
-                                    aria-expanded={isDetailsOpen}
-                                    aria-controls={detailsRegionId}
-                                >
-                                    <p className="text-sm md:text-base font-semibold leading-snug text-base-content line-clamp-2 break-words">
-                                        {task.title}
-                                    </p>
-                                </button>
+                                {onOpenModal ? (
+                                    <div className="mt-2 group-hover:text-primary transition-colors">
+                                        <p className="text-sm md:text-base font-semibold leading-snug text-base-content line-clamp-2 break-words">
+                                            {task.title}
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <button
+                                        type="button"
+                                        onClick={handleToggleDetails}
+                                        className="mt-2 w-full text-left rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
+                                        aria-expanded={isDetailsOpen}
+                                        aria-controls={detailsRegionId}
+                                    >
+                                        <p className="text-sm md:text-base font-semibold leading-snug text-base-content line-clamp-2 break-words">
+                                            {task.title}
+                                        </p>
+                                    </button>
+                                )}
 
                                 <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-base-content/70">
                                     {nextStep && (
