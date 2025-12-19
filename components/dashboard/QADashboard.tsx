@@ -1,222 +1,353 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { Project } from '../../types';
 import { useProjectMetrics } from '../../hooks/useProjectMetrics';
 import { useMetricsHistory } from '../../hooks/useMetricsHistory';
-import { useDashboardInsights } from '../../hooks/useDashboardInsights';
-import { DashboardAlerts } from './DashboardAlerts';
-import { QualityScoreCard } from './QualityScoreCard';
-import { DashboardInsightsCard } from './DashboardInsightsCard';
-import { PredictionsCard } from './PredictionsCard';
-import { RecommendationsCard } from './RecommendationsCard';
-import { MetricEnhancementsCard } from './MetricEnhancementsCard';
-import { SDLCPhaseTimeline } from './SDLCPhaseTimeline';
-import { ReleaseTimeline, TimeLine_01Entry } from '../common/ReleaseTimeline';
-import { FailedTestsReportModal } from '../tasks/FailedTestsReportModal';
-import { CheckCircle2, TrendingUp, BarChart3, Bug, Zap } from 'lucide-react';
+import { MetricCard } from './MetricCard';
+import { TestExecutionChart } from './charts/TestExecutionChart';
+import { QualityMetricsChart } from './charts/QualityMetricsChart';
+import { TestPhaseProgress } from './TestPhaseProgress';
+import { RecentActivity } from './RecentActivity';
+import { QualityKPIs } from './QualityKPIs';
+import { Card } from '../common/Card';
+import { Badge } from '../common/Badge';
+import {
+  ClipboardCheck,
+  CheckCircle2,
+  AlertCircle,
+  Activity,
+  ListChecks,
+  FileText,
+  Target,
+  Layers,
+  RefreshCw,
+  Download,
+  Filter,
+  Plus,
+} from 'lucide-react';
 
+/**
+ * Props do componente QADashboard
+ */
 interface QADashboardProps {
+  /** Projeto a ser exibido no dashboard */
   project: Project;
+  /** Callback para atualizar o projeto */
   onUpdateProject?: (project: Project) => void;
 }
 
 /**
- * Dashboard principal de QA com visão geral de testes, bugs, cobertura e análises
+ * Dashboard principal de QA com visão geral moderna de testes, bugs, cobertura e análises
+ * 
+ * @example
+ * ```tsx
+ * <QADashboard project={project} onUpdateProject={handleUpdateProject} />
+ * ```
  */
 export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, onUpdateProject }) => {
   const metrics = useProjectMetrics(project);
   const { trends } = useMetricsHistory(project, 'week');
-  const { insightsAnalysis, isGenerating, generateCompleteAnalysis } = useDashboardInsights(
-    project,
-    onUpdateProject,
-    false
-  );
-  const [showFailedTestsReport, setShowFailedTestsReport] = useState(false);
 
-  // Verificar se há testes críticos falhando (bugs críticos ou muitos testes falhando)
-  const hasCriticalFailures = metrics.bugsBySeverity['Crítico'] > 0 || 
-    (metrics.failedTestCases > 0 && metrics.testPassRate < 50);
+  // Calcular tendências para os cards de métricas
+  const tasksTrend = useMemo(() => {
+    if (!trends) return { change: '0', trend: 'neutral' as const };
+    const change = trends.totalTestCases?.change || 0;
+    return {
+      change: change > 0 ? `+${change}%` : change < 0 ? `${change}%` : '0%',
+      trend: change > 0 ? 'up' as const : change < 0 ? 'down' as const : 'neutral' as const,
+    };
+  }, [trends]);
 
-  const passRateTrend = trends?.passRate;
+  const testCasesTrend = useMemo(() => {
+    if (!trends) return { change: '0', trend: 'neutral' as const };
+    const change = trends.totalTestCases?.change || 0;
+    return {
+      change: change > 0 ? `+${change}%` : change < 0 ? `${change}%` : '0%',
+      trend: change > 0 ? 'up' as const : change < 0 ? 'down' as const : 'neutral' as const,
+    };
+  }, [trends]);
 
-  // Mapear métricas para entries do timeline
-  const timelineEntries = useMemo<TimeLine_01Entry[]>(() => {
-    const total = metrics.totalTestCases;
-    const passedPercentage = total > 0 ? Math.round((metrics.passedTestCases / total) * 100) : 0;
-    const failedPercentage = total > 0 ? Math.round((metrics.failedTestCases / total) * 100) : 0;
-    const blockedPercentage = total > 0 ? Math.round((metrics.blockedTestCases / total) * 100) : 0;
-    const notRunPercentage = total > 0 ? Math.round((metrics.notRunTestCases / total) * 100) : 0;
-    const executionPercentage = total > 0 ? Math.round((metrics.executedTestCases / total) * 100) : 0;
+  // Contar estratégias de teste únicas
+  const totalStrategies = useMemo(() => {
+    const strategies = new Set<string>();
+    project.tasks?.forEach(task => {
+      task.testStrategy?.forEach(strategy => {
+        strategies.add(strategy.testType);
+      });
+    });
+    return strategies.size;
+  }, [project.tasks]);
 
-    return [
-      {
-        icon: BarChart3,
-        title: 'Visão Geral dos Testes',
-        subtitle: `${total} casos de teste totais`,
-        description: `Resumo completo do status de execução dos testes do projeto, incluindo aprovados, com falha, bloqueados e não executados.`,
-        items: [
-          `${metrics.passedTestCases} testes aprovados (${passedPercentage}% do total)`,
-          `${metrics.failedTestCases} testes com falha (${failedPercentage}% do total)`,
-          `${metrics.blockedTestCases} testes bloqueados (${blockedPercentage}% do total)`,
-          `${metrics.notRunTestCases} testes não executados (${notRunPercentage}% do total)`,
-        ],
-      },
-      {
-        icon: TrendingUp,
-        title: 'Taxa de Sucesso',
-        subtitle: `${metrics.testPassRate}% de aprovação`,
-        description: `Taxa de sucesso dos testes executados. ${metrics.testPassRate}% dos testes executados foram aprovados.${passRateTrend?.trend ? ` Tendência: ${passRateTrend.trend === 'up' ? 'aumentando' : passRateTrend.trend === 'down' ? 'diminuindo' : 'estável'}.` : ''}`,
-        items: passRateTrend?.trend ? [
-          `Taxa atual: ${metrics.testPassRate}%`,
-          passRateTrend.previous !== undefined ? `Taxa anterior: ${passRateTrend.previous}%` : '',
-          `Tendência: ${passRateTrend.trend === 'up' ? 'Aumentando' : passRateTrend.trend === 'down' ? 'Diminuindo' : 'Estável'}`,
-        ].filter(Boolean) : [
-          `Taxa atual: ${metrics.testPassRate}%`,
-          `${metrics.executedTestCases} testes executados de ${total} totais`,
-        ],
-      },
-      {
-        icon: CheckCircle2,
-        title: 'Status das Execuções',
-        subtitle: `${metrics.executedTestCases} de ${total} executados`,
-        description: `Progresso da execução dos testes. ${executionPercentage}% dos casos de teste foram executados.`,
-        items: [
-          `${executionPercentage}% dos testes foram executados`,
-          `Aprovados: ${metrics.passedTestCases}`,
-          `Com Falha: ${metrics.failedTestCases}`,
-          `Bloqueados: ${metrics.blockedTestCases}`,
-          `Pendentes: ${total - metrics.executedTestCases}`,
-        ],
-      },
-      {
-        icon: Bug,
-        title: 'Bugs e Incidentes',
-        subtitle: `${metrics.openVsClosedBugs.open} bugs abertos`,
-        description: `Visão geral dos bugs e incidentes identificados no projeto, categorizados por severidade.`,
-        items: [
-          `Total de bugs abertos: ${metrics.openVsClosedBugs.open}`,
-          `Crítico: ${metrics.bugsBySeverity['Crítico']}`,
-          `Alto: ${metrics.bugsBySeverity['Alto']}`,
-          `Médio: ${metrics.bugsBySeverity['Médio']}`,
-          `Baixo: ${metrics.bugsBySeverity['Baixo']}`,
-          metrics.quickAnalysis.recentlyResolvedBugs > 0 
-            ? `Resolvidos (7 dias): ${metrics.quickAnalysis.recentlyResolvedBugs}`
-            : '',
-        ].filter(Boolean),
-      },
-      {
-        icon: Zap,
-        title: 'Análises Rápidas',
-        subtitle: 'Métricas de qualidade e performance',
-        description: `Análise rápida das métricas de qualidade, incluindo média de falhas, retrabalho e funcionalidades problemáticas.`,
-        items: [
-          `Média de falhas por dia: ${metrics.quickAnalysis.averageFailuresPerDay.toFixed(1)} (últimos 30 dias)`,
-          `Testes reexecutados: ${metrics.quickAnalysis.reexecutedTests} (indicador de retrabalho)`,
-          `Funcionalidades problemáticas: ${metrics.quickAnalysis.topProblematicTasks.length}`,
-          ...metrics.quickAnalysis.topProblematicTasks.slice(0, 3).map((task, idx) => 
-            `#${idx + 1} ${task.taskTitle}: ${task.failureCount} falhas`
-          ),
-        ],
-      },
-    ];
-  }, [metrics, passRateTrend]);
+  // Contar fases ativas
+  const activePhases = useMemo(() => {
+    return metrics.newPhases?.filter(p => p.status === 'Em Andamento' || p.status === 'Concluído').length || 0;
+  }, [metrics.newPhases]);
+
+  // Verificar se há alertas críticos
+  const hasCriticalAlerts = useMemo(() => {
+    return metrics.bugsBySeverity['Crítico'] > 0 || 
+           (metrics.failedTestCases > 0 && metrics.testPassRate < 50);
+  }, [metrics]);
+
+  // Gerar alertas baseados nas métricas
+  const alerts = useMemo(() => {
+    const alertsList: Array<{
+      id: string;
+      type: 'critical' | 'warning' | 'info' | 'success';
+      title: string;
+      description: string;
+      priority: 'High' | 'Medium' | 'Low';
+      time: string;
+    }> = [];
+
+    if (metrics.bugsBySeverity['Crítico'] > 0) {
+      alertsList.push({
+        id: 'critical-bug',
+        type: 'critical',
+        title: 'Bug Crítico no Projeto',
+        description: `${metrics.bugsBySeverity['Crítico']} bug(s) crítico(s) aberto(s) requerem atenção imediata`,
+        priority: 'High',
+        time: 'Agora',
+      });
+    }
+
+    if (metrics.failedTestCases > 0 && metrics.testPassRate < 50) {
+      alertsList.push({
+        id: 'low-pass-rate',
+        type: 'critical',
+        title: 'Taxa de Aprovação Baixa',
+        description: `Taxa de aprovação de ${metrics.testPassRate}% está abaixo do esperado`,
+        priority: 'High',
+        time: 'Agora',
+      });
+    }
+
+    if (metrics.testCoverage < 80) {
+      alertsList.push({
+        id: 'low-coverage',
+        type: 'warning',
+        title: 'Cobertura de Testes Abaixo do Limiar',
+        description: `Cobertura de ${metrics.testCoverage}% está abaixo do recomendado (80%)`,
+        priority: 'Medium',
+        time: 'Agora',
+      });
+    }
+
+    if (metrics.openVsClosedBugs.open > 10) {
+      alertsList.push({
+        id: 'many-bugs',
+        type: 'warning',
+        title: 'Muitos Bugs Abertos',
+        description: `${metrics.openVsClosedBugs.open} bugs abertos podem impactar a qualidade`,
+        priority: 'Medium',
+        time: 'Agora',
+      });
+    }
+
+    if (alertsList.length === 0) {
+      alertsList.push({
+        id: 'all-good',
+        type: 'success',
+        title: 'Tudo Funcionando Bem',
+        description: 'Nenhum alerta crítico. O projeto está em bom estado.',
+        priority: 'Low',
+        time: 'Agora',
+      });
+    }
+
+    return alertsList;
+  }, [metrics]);
 
   return (
     <div className="space-y-6" role="main" aria-label="Dashboard de QA">
-      {/* Header v0-like */}
+      {/* Header */}
       <div className="flex flex-col gap-4 mb-6">
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
           <div className="flex-shrink-0">
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2">Dashboard de QA</h2>
-            <p className="text-base-content/70 text-sm max-w-2xl">Visão geral de testes, bugs, cobertura e análises do projeto.</p>
+            <div className="flex items-center gap-2 mb-2">
+              <ClipboardCheck className="h-6 w-6 text-primary" aria-hidden="true" />
+              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-base-content">
+                Dashboard de QA
+              </h2>
+            </div>
+            <p className="text-base-content/70 text-sm max-w-2xl">
+              Visão geral de testes, bugs, cobertura e análises do projeto.
+            </p>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
-            {metrics.failedTestCases > 0 && (
-              <button
-                type="button"
-                onClick={() => setShowFailedTestsReport(true)}
-                className="btn btn-error btn-sm rounded-full flex items-center gap-1.5 font-semibold"
-                aria-label="Gerar relatório de testes reprovados"
-              >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                <span>Relatório de Testes Reprovados ({metrics.failedTestCases})</span>
-              </button>
-            )}
             <button
               type="button"
-              onClick={generateCompleteAnalysis}
-              disabled={isGenerating}
-              className="btn btn-primary btn-sm rounded-full disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 font-semibold"
-              aria-label="Gerar análise completa do dashboard"
+              className="btn btn-outline btn-sm rounded-full flex items-center gap-1.5"
+              aria-label="Filtrar dados do dashboard"
             >
-              {isGenerating ? (
-                <>
-                  <span className="loading loading-spinner loading-xs"></span>
-                  <span>Gerando...</span>
-                </>
-              ) : (
-                <>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                  </svg>
-                  <span>Gerar Análise Completa</span>
-                </>
-              )}
+              <Filter className="w-4 h-4" aria-hidden="true" />
+              <span>Filtrar</span>
+            </button>
+            <button
+              type="button"
+              className="btn btn-outline btn-sm rounded-full flex items-center gap-1.5"
+              aria-label="Exportar dados do dashboard"
+            >
+              <Download className="w-4 h-4" aria-hidden="true" />
+              <span>Exportar</span>
+            </button>
+            <button
+              type="button"
+              className="btn btn-primary btn-sm rounded-full flex items-center gap-1.5"
+              aria-label="Criar novo teste"
+            >
+              <Plus className="w-4 h-4" aria-hidden="true" />
+              <span>Novo Teste</span>
             </button>
           </div>
         </div>
       </div>
 
-      {/* Alertas */}
-      <DashboardAlerts
-        hasCriticalFailures={hasCriticalFailures}
-        bugsBySeverity={metrics.bugsBySeverity}
-        passRate={metrics.testPassRate}
-      />
-
-      {/* Timeline SDLC */}
-      <SDLCPhaseTimeline project={project} onUpdateProject={onUpdateProject} />
-
-      {/* Timeline de Métricas */}
-      <ReleaseTimeline
-        title="Métricas do Dashboard"
-        description="Visão geral das métricas e status do projeto de QA"
-        entries={timelineEntries}
-        className="py-4"
-      />
-
-      {/* Análise de IA */}
-      <div className="space-y-6">
-        <div className="flex items-center justify-between gap-4 flex-wrap">
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-base-content flex-shrink-0">Análise de IA</h2>
-        </div>
-
-        {/* Score de Qualidade */}
-        <QualityScoreCard analysis={insightsAnalysis} isLoading={isGenerating} />
-
-        {/* Grid com Insights e Previsões */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <DashboardInsightsCard analysis={insightsAnalysis} isLoading={isGenerating} />
-          <PredictionsCard analysis={insightsAnalysis} isLoading={isGenerating} />
-        </div>
-
-        {/* Recomendações */}
-        <RecommendationsCard analysis={insightsAnalysis} isLoading={isGenerating} />
-
-        {/* Melhorias de Métricas */}
-        <MetricEnhancementsCard analysis={insightsAnalysis} isLoading={isGenerating} />
+      {/* Overview Metrics - 4 Cards */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <MetricCard
+          title="Total de Tarefas"
+          value={metrics.totalTasks}
+          change={tasksTrend.change}
+          trend={tasksTrend.trend}
+          icon={ListChecks}
+          description="Tarefas ativas do projeto"
+        />
+        <MetricCard
+          title="Casos de Teste"
+          value={metrics.totalTestCases}
+          change={testCasesTrend.change}
+          trend={testCasesTrend.trend}
+          icon={FileText}
+          description="Total de casos de teste"
+        />
+        <MetricCard
+          title="Estratégias de Teste"
+          value={totalStrategies}
+          change="0"
+          trend="neutral"
+          icon={Target}
+          description="Estratégias ativas"
+        />
+        <MetricCard
+          title="Fases de Teste"
+          value={activePhases}
+          change="0"
+          trend="neutral"
+          icon={Layers}
+          description="Fases ativas"
+        />
       </div>
 
-      {/* Modal de Relatório de Testes Reprovados */}
-      <FailedTestsReportModal
-        isOpen={showFailedTestsReport}
-        onClose={() => setShowFailedTestsReport(false)}
-        project={project}
-      />
+      {/* Charts Row */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        <TestExecutionChart project={project} />
+        <QualityMetricsChart project={project} />
+      </div>
+
+      {/* Test Phase Progress and Quality KPIs */}
+      <div className="grid gap-4 lg:grid-cols-3">
+        <Card className="lg:col-span-2" hoverable>
+          <div className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="text-lg font-semibold text-base-content">Progresso das Fases</h3>
+                <p className="text-sm text-base-content/70">
+                  Status atual das fases de teste do projeto
+                </p>
+              </div>
+              <button
+                type="button"
+                className="btn btn-ghost btn-sm btn-circle"
+                aria-label="Atualizar progresso das fases"
+              >
+                <RefreshCw className="h-4 w-4" aria-hidden="true" />
+              </button>
+            </div>
+            <TestPhaseProgress project={project} />
+          </div>
+        </Card>
+
+        <QualityKPIs project={project} />
+      </div>
+
+      {/* Recent Activity and Alerts */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        <RecentActivity project={project} />
+
+        <Card hoverable>
+          <div className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="text-lg font-semibold text-base-content">Alertas e Notificações</h3>
+                <p className="text-sm text-base-content/70">Atualizações importantes e problemas</p>
+              </div>
+              {hasCriticalAlerts && (
+                <Badge variant="error" size="sm">
+                  {alerts.filter(a => a.type === 'critical').length} Crítico(s)
+                </Badge>
+              )}
+            </div>
+            <div className="space-y-4">
+              {alerts.map((alert) => {
+                const alertColors = {
+                  critical: 'bg-error/10 border-error/20',
+                  warning: 'bg-warning/10 border-warning/20',
+                  info: 'bg-info/10 border-info/20',
+                  success: 'bg-success/10 border-success/20',
+                };
+
+                const iconColors = {
+                  critical: 'text-error',
+                  warning: 'text-warning',
+                  info: 'text-info',
+                  success: 'text-success',
+                };
+
+                const Icon = alert.type === 'critical' || alert.type === 'warning' 
+                  ? AlertCircle 
+                  : alert.type === 'success'
+                  ? CheckCircle2
+                  : Activity;
+
+                return (
+                  <div
+                    key={alert.id}
+                    className={`flex gap-3 p-3 rounded-lg border ${alertColors[alert.type]}`}
+                  >
+                    <Icon className={`h-5 w-5 ${iconColors[alert.type]} shrink-0 mt-0.5`} aria-hidden="true" />
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-base-content">{alert.title}</p>
+                      <p className="text-xs text-base-content/70 mt-1">{alert.description}</p>
+                      <div className="flex items-center gap-2 mt-2">
+                        <Badge
+                          variant={
+                            alert.priority === 'High' 
+                              ? 'error' 
+                              : alert.priority === 'Medium' 
+                              ? 'warning' 
+                              : 'info'
+                          }
+                          size="sm"
+                          className="text-xs"
+                        >
+                          {alert.priority === 'High' 
+                            ? 'Alta Prioridade' 
+                            : alert.priority === 'Medium' 
+                            ? 'Média Prioridade' 
+                            : 'Baixa Prioridade'}
+                        </Badge>
+                        <span className="text-xs text-base-content/60">{alert.time}</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </Card>
+      </div>
     </div>
   );
 });
 
 QADashboard.displayName = 'QADashboard';
-
