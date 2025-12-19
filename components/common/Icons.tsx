@@ -4,10 +4,84 @@ import { JiraTaskType } from '../../types';
 const ICON_SIZE = 18;
 const CHEVRON_SIZE = 18;
 
-export const EpicIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width={ICON_SIZE} height={ICON_SIZE} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-purple-700 dark:text-purple-400"><path d="m15.5 7.5 3 3-3 3"/><path d="M8.5 16.5 5.5 13.5 8.5 10.5"/><path d="m18.5 10.5-13 0"/></svg>;
-export const StoryIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width={ICON_SIZE} height={ICON_SIZE} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-700 dark:text-green-400"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>;
-export const TaskIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width={ICON_SIZE} height={ICON_SIZE} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-700 dark:text-blue-400"><rect x="3" y="3" width="18" height="18" rx="2" ry="2" /><line x1="9" y1="9" x2="15" y2="15" /><line x1="15" y1="9" x2="9" y2="15" /></svg>;
-export const BugIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width={ICON_SIZE} height={ICON_SIZE} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-red-700 dark:text-red-400"><path d="M10 20.5c.5-.5.8-1.2.8-2 0-1.4-1.2-2.5-2.6-2.5-.9 0-1.7.5-2.2 1.3"/><path d="m14 16.5-4-4"/><path d="M16 14c-2-2-3-2-4 0"/><path d="M18 11.5c-1.5-1.5-1.5-2-1-4C17.5 6 18 5 18 5c-1 0-1.5 0-2.5 1-1.5 1.5-2.5 2.5-4 4C10 11.5 9.5 12 9 13c-1.5 1-3 2-3 4 0 1 .5 2.5 2 3.5C9.5 22 11 22 12 22c1.5 0 2.5-1.5 3.5-3 1-1 1-1.5 1.5-3 .5-.5 1-1.5 1-2.5 0-1-.5-1.5-1-2.5-1-1-2-2.5-3.5-4.5"/><path d="M18 5c-1-1-1-1.5-1-3"/><path d="m6 5 1-3"/><path d="M12 5V2"/><path d="M12 22v-2"/></svg>;
+export const EpicIcon: React.FC<{ className?: string }> = ({ className = '' }) => (
+    <svg 
+        xmlns="http://www.w3.org/2000/svg" 
+        width={ICON_SIZE} 
+        height={ICON_SIZE} 
+        viewBox="0 0 24 24" 
+        fill="none" 
+        stroke="currentColor" 
+        strokeWidth="2" 
+        strokeLinecap="round" 
+        strokeLinejoin="round" 
+        className={`text-purple-500 dark:text-purple-400 ${className}`}
+    >
+        <path d="m15.5 7.5 3 3-3 3"/>
+        <path d="M8.5 16.5 5.5 13.5 8.5 10.5"/>
+        <path d="m18.5 10.5-13 0"/>
+    </svg>
+);
+
+export const StoryIcon: React.FC<{ className?: string }> = ({ className = '' }) => (
+    <svg 
+        xmlns="http://www.w3.org/2000/svg" 
+        width={ICON_SIZE} 
+        height={ICON_SIZE} 
+        viewBox="0 0 24 24" 
+        fill="none" 
+        stroke="currentColor" 
+        strokeWidth="2" 
+        strokeLinecap="round" 
+        strokeLinejoin="round" 
+        className={`text-green-500 dark:text-green-400 ${className}`}
+    >
+        <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>
+    </svg>
+);
+
+export const TaskIcon: React.FC<{ className?: string }> = ({ className = '' }) => (
+    <svg 
+        xmlns="http://www.w3.org/2000/svg" 
+        width={ICON_SIZE} 
+        height={ICON_SIZE} 
+        viewBox="0 0 24 24" 
+        fill="none" 
+        stroke="currentColor" 
+        strokeWidth="2" 
+        strokeLinecap="round" 
+        strokeLinejoin="round" 
+        className={`text-blue-500 dark:text-blue-400 ${className}`}
+    >
+        <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+        <line x1="9" y1="9" x2="15" y2="15" />
+        <line x1="15" y1="9" x2="9" y2="15" />
+    </svg>
+);
+
+export const BugIcon: React.FC<{ className?: string }> = ({ className = '' }) => (
+    <svg 
+        xmlns="http://www.w3.org/2000/svg" 
+        width={ICON_SIZE} 
+        height={ICON_SIZE} 
+        viewBox="0 0 24 24" 
+        fill="none" 
+        stroke="currentColor" 
+        strokeWidth="2" 
+        strokeLinecap="round" 
+        strokeLinejoin="round" 
+        className={`text-red-500 dark:text-red-400 ${className}`}
+    >
+        <path d="M10 20.5c.5-.5.8-1.2.8-2 0-1.4-1.2-2.5-2.6-2.5-.9 0-1.7.5-2.2 1.3"/>
+        <path d="m14 16.5-4-4"/>
+        <path d="M16 14c-2-2-3-2-4 0"/>
+        <path d="M18 11.5c-1.5-1.5-1.5-2-1-4C17.5 6 18 5 18 5c-1 0-1.5 0-2.5 1-1.5 1.5-2.5 2.5-4 4C10 11.5 9.5 12 9 13c-1.5 1-3 2-3 4 0 1 .5 2.5 2 3.5C9.5 22 11 22 12 22c1.5 0 2.5-1.5 3.5-3 1-1 1-1.5 1.5-3 .5-.5 1-1.5 1-2.5 0-1-.5-1.5-1-2.5-1-1-2-2.5-3.5-4.5"/>
+        <path d="M18 5c-1-1-1-1.5-1-3"/>
+        <path d="m6 5 1-3"/>
+        <path d="M12 5V2"/>
+        <path d="M12 22v-2"/>
+    </svg>
+);
 type BasicIconProps = { className?: string };
 
 export const EditIcon: React.FC<BasicIconProps> = ({ className }) => (
@@ -43,14 +117,57 @@ export const GridIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width={ICO
 export const ListIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width={ICON_SIZE} height={ICON_SIZE} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>;
 export const FilterIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width={ICON_SIZE} height={ICON_SIZE} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>;
 
-export const TaskTypeIcon: React.FC<{ type: JiraTaskType }> = React.memo(({ type }) => {
-    switch (type) {
-        case 'Epic': return <EpicIcon />;
-        case 'História': return <StoryIcon />;
-        case 'Tarefa': return <TaskIcon />;
-        case 'Bug': return <BugIcon />;
-        default: return null;
-    }
+export const TaskTypeIcon: React.FC<{ type: JiraTaskType; className?: string }> = React.memo(({ type, className = '' }) => {
+    const typeConfig = {
+        Epic: {
+            icon: EpicIcon,
+            color: 'text-purple-500 dark:text-purple-400',
+            bgColor: 'bg-purple-500/10 dark:bg-purple-500/20',
+            borderColor: 'border-purple-500/20 dark:border-purple-500/30',
+            hoverColor: 'hover:bg-purple-500/20 dark:hover:bg-purple-500/30',
+        },
+        História: {
+            icon: StoryIcon,
+            color: 'text-green-500 dark:text-green-400',
+            bgColor: 'bg-green-500/10 dark:bg-green-500/20',
+            borderColor: 'border-green-500/20 dark:border-green-500/30',
+            hoverColor: 'hover:bg-green-500/20 dark:hover:bg-green-500/30',
+        },
+        Tarefa: {
+            icon: TaskIcon,
+            color: 'text-blue-500 dark:text-blue-400',
+            bgColor: 'bg-blue-500/10 dark:bg-blue-500/20',
+            borderColor: 'border-blue-500/20 dark:border-blue-500/30',
+            hoverColor: 'hover:bg-blue-500/20 dark:hover:bg-blue-500/30',
+        },
+        Bug: {
+            icon: BugIcon,
+            color: 'text-red-500 dark:text-red-400',
+            bgColor: 'bg-red-500/10 dark:bg-red-500/20',
+            borderColor: 'border-red-500/20 dark:border-red-500/30',
+            hoverColor: 'hover:bg-red-500/20 dark:hover:bg-red-500/30',
+        },
+    };
+
+    const config = typeConfig[type];
+    if (!config) return null;
+
+    const Icon = config.icon;
+
+    return (
+        <div
+            className={`
+                group relative flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border 
+                backdrop-blur-sm transition-all duration-300
+                ${config.bgColor}
+                ${config.borderColor}
+                ${config.hoverColor}
+                ${className}
+            `}
+        >
+            <Icon />
+        </div>
+    );
 });
 
 export const TaskStatusIcon: React.FC<{ status: 'To Do' | 'In Progress' | 'Done' | 'Blocked' }> = React.memo(({ status }) => {

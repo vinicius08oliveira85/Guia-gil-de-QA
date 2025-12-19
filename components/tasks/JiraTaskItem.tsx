@@ -1113,51 +1113,92 @@ export const JiraTaskItem: React.FC<{
                     <div className="p-3 md:p-4">
                         <div className="flex flex-col gap-3 md:flex-row md:items-start md:gap-4">
                             {/* Seleção + ícones */}
-                            <div className="flex items-start gap-2 md:items-center">
+                            <div className="flex items-start gap-3 md:items-center">
                                 {onToggleSelect && (
-                                    <input
-                                        type="checkbox"
-                                        checked={isSelected || false}
-                                        onChange={(e) => {
+                                    <button
+                                        type="button"
+                                        onClick={(e) => {
                                             e.stopPropagation();
                                             onToggleSelect();
                                         }}
-                                        className="checkbox checkbox-sm checkbox-primary"
+                                        className={`
+                                            relative flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 transition-all duration-300
+                                            ${isSelected 
+                                                ? 'border-green-500 bg-green-500 shadow-lg shadow-green-500/50' 
+                                                : 'border-base-content/30 bg-base-100/50 hover:border-base-content/50 hover:bg-base-100/80'
+                                            }
+                                        `}
                                         aria-label={`Selecionar tarefa ${task.id}`}
-                                    />
+                                        aria-pressed={isSelected || false}
+                                    >
+                                        {/* Checkmark animation */}
+                                        <svg
+                                            className={`
+                                                h-3 w-3 text-white transition-all duration-300
+                                                ${isSelected ? 'scale-100 opacity-100' : 'scale-0 opacity-0'}
+                                            `}
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                            strokeWidth={3}
+                                        >
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                        </svg>
+
+                                        {/* Ripple effect on check */}
+                                        {isSelected && (
+                                            <span className="absolute inset-0 animate-ping rounded border-2 border-green-500 opacity-75" />
+                                        )}
+                                    </button>
                                 )}
 
                                 {hasChildren ? (
-                                    <button
-                                        type="button"
-                                        onClick={() => setIsChildrenOpen(!isChildrenOpen)}
-                                        className={iconButtonSmallClass}
-                                        aria-label={isChildrenOpen ? 'Recolher subtarefas' : 'Expandir subtarefas'}
-                                        aria-expanded={isChildrenOpen}
-                                        aria-controls={childrenRegionId}
-                                    >
-                                        <div className="indicator">
-                                            <span className="indicator-item badge badge-primary badge-xs">
-                                                {task.children.length}
-                                            </span>
+                                    <div className="relative shrink-0">
+                                        <button
+                                            type="button"
+                                            onClick={() => setIsChildrenOpen(!isChildrenOpen)}
+                                            className={`
+                                                flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-base-300/50 bg-base-100/50 
+                                                transition-all duration-300 hover:bg-base-100/80 hover:border-base-300
+                                                ${isChildrenOpen ? 'bg-base-100/80' : ''}
+                                            `}
+                                            aria-label={isChildrenOpen ? 'Recolher subtarefas' : 'Expandir subtarefas'}
+                                            aria-expanded={isChildrenOpen}
+                                            aria-controls={childrenRegionId}
+                                        >
                                             <ChevronDownIcon
-                                                className={`h-3.5 w-3.5 transition-transform ${isChildrenOpen ? 'rotate-180' : ''}`}
+                                                className={`
+                                                    h-4 w-4 text-base-content/70 transition-transform duration-300
+                                                    ${isChildrenOpen ? 'rotate-180' : ''}
+                                                `}
                                             />
+                                        </button>
+                                        {/* Badge de contagem moderno */}
+                                        <div className="absolute -right-1 -top-1 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-orange-500 px-1.5 shadow-lg shadow-orange-500/50 ring-2 ring-base-100">
+                                            <span className="text-[10px] font-bold text-white">{task.children.length}</span>
                                         </div>
-                                    </button>
+                                    </div>
                                 ) : (
                                     <span className="w-8" aria-hidden="true" />
                                 )}
 
                                 <div className="flex items-center gap-2">
                                     {task.status === 'In Progress' ? (
-                                        <StartTestIcon />
+                                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-warning/20 bg-warning/10 backdrop-blur-sm transition-all duration-300 hover:bg-warning/20">
+                                            <StartTestIcon />
+                                        </div>
                                     ) : task.status === 'Done' ? (
-                                        <CompleteTestIcon />
+                                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-success/20 bg-success/10 backdrop-blur-sm transition-all duration-300 hover:bg-success/20">
+                                            <CompleteTestIcon />
+                                        </div>
                                     ) : task.status === 'To Do' ? (
-                                        <ToDoTestIcon />
+                                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-error/20 bg-error/10 backdrop-blur-sm transition-all duration-300 hover:bg-error/20">
+                                            <ToDoTestIcon />
+                                        </div>
                                     ) : (
-                                        <TaskStatusIcon status={task.status} />
+                                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-base-300/50 bg-base-100/50 backdrop-blur-sm transition-all duration-300 hover:bg-base-100/80">
+                                            <TaskStatusIcon status={task.status} />
+                                        </div>
                                     )}
                                     <TaskTypeIcon type={task.type} />
                                 </div>

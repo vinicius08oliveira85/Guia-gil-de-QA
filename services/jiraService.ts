@@ -1213,7 +1213,7 @@ export const syncJiraProject = async (
 
         if (existingIndex >= 0) {
             const oldTask = updatedTasks[existingIndex];
-            // Verificar se realmente houve mudanças antes de atualizar
+            // Verificar se realmente houve mudanças nos campos do Jira antes de atualizar
             const hasChanges = (
                 oldTask.title !== task.title ||
                 oldTask.description !== task.description ||
@@ -1225,7 +1225,17 @@ export const syncJiraProject = async (
                 oldTask.completedAt !== task.completedAt ||
                 oldTask.dueDate !== task.dueDate ||
                 oldTask.parentId !== task.parentId ||
-                oldTask.epicKey !== task.epicKey
+                oldTask.epicKey !== task.epicKey ||
+                oldTask.assignee !== task.assignee ||
+                JSON.stringify(oldTask.timeTracking) !== JSON.stringify(task.timeTracking) ||
+                JSON.stringify(oldTask.components || []) !== JSON.stringify(task.components || []) ||
+                JSON.stringify(oldTask.fixVersions || []) !== JSON.stringify(task.fixVersions || []) ||
+                oldTask.environment !== task.environment ||
+                JSON.stringify(oldTask.reporter) !== JSON.stringify(task.reporter) ||
+                JSON.stringify(oldTask.watchers) !== JSON.stringify(task.watchers) ||
+                JSON.stringify(oldTask.issueLinks || []) !== JSON.stringify(task.issueLinks || []) ||
+                JSON.stringify(oldTask.jiraAttachments || []) !== JSON.stringify(task.jiraAttachments || []) ||
+                JSON.stringify(oldTask.jiraCustomFields || {}) !== JSON.stringify(task.jiraCustomFields || {})
             );
             
             if (hasChanges) {
@@ -1235,10 +1245,45 @@ export const syncJiraProject = async (
                     priorityChanged: oldTask.priority !== task.priority,
                     descriptionChanged: oldTask.description !== task.description
                 });
-                updatedTasks[existingIndex] = task;
+                
+                // Fazer merge preservando dados locais e atualizando apenas campos do Jira
+                updatedTasks[existingIndex] = {
+                    ...oldTask, // Preservar todos os dados locais primeiro
+                    // Atualizar apenas campos importados do Jira
+                    title: task.title,
+                    description: task.description,
+                    status: task.status,
+                    jiraStatus: task.jiraStatus,
+                    priority: task.priority,
+                    tags: task.tags,
+                    severity: task.severity,
+                    completedAt: task.completedAt,
+                    dueDate: task.dueDate,
+                    parentId: task.parentId,
+                    epicKey: task.epicKey,
+                    assignee: task.assignee,
+                    timeTracking: task.timeTracking,
+                    components: task.components,
+                    fixVersions: task.fixVersions,
+                    environment: task.environment,
+                    reporter: task.reporter,
+                    watchers: task.watchers,
+                    issueLinks: task.issueLinks,
+                    jiraAttachments: task.jiraAttachments,
+                    jiraCustomFields: task.jiraCustomFields,
+                    comments: task.comments, // Já faz merge de comentários
+                    // Preservar dados locais que não vêm do Jira
+                    testCases: oldTask.testCases || [], // ✅ Preservar status dos testes
+                    bddScenarios: oldTask.bddScenarios || [], // ✅ Preservar cenários BDD
+                    testStrategy: oldTask.testStrategy, // ✅ Preservar estratégia de teste
+                    tools: oldTask.tools, // ✅ Preservar ferramentas
+                    testCaseTools: oldTask.testCaseTools, // ✅ Preservar ferramentas de testes
+                    // Preservar createdAt se já existe (não sobrescrever com data do Jira se já foi criado localmente)
+                    createdAt: oldTask.createdAt || task.createdAt,
+                };
                 updatedCount++;
             } else {
-                // Preservar tarefa existente se não houve mudanças
+                // Preservar tarefa existente se não houve mudanças no Jira
                 updatedTasks[existingIndex] = oldTask;
             }
         } else {
