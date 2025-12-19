@@ -102,7 +102,7 @@ const App: React.FC = () => {
 
     // Ref para rastrear último projeto atualizado e evitar toasts repetidos
     const lastUpdatedProjectRef = React.useRef<{ id: string; timestamp: number } | null>(null);
-    const updateDebounceMs = 1000; // 1 segundo de debounce para toasts
+    const updateDebounceMs = 2000; // 2 segundos de debounce para toasts
 
     const handleUpdateProject = useCallback(async (updatedProject: Project) => {
         try {

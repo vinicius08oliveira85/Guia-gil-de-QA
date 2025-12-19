@@ -350,17 +350,18 @@ export async function callGeminiWithRetry(
           }
         },
         {
-          maxRetries: 5, // Aumentado para 5 tentativas para melhor recuperação de erros 503
+          maxRetries: 3, // Reduzido para 3 tentativas - erros 503 persistentes indicam problema no servidor
           initialDelay: 1000,
           backoffMultiplier: 2,
-          maxDelay: 60000, // Aumentado para 60s para erros 503
+          maxDelay: 60000, // 60s máximo para erros 503
+          maxTotalTimeout: 300000, // 5 minutos máximo total para evitar retries infinitos
           useJitter: true,
           isRetryable: isRetryableGeminiError,
           onRetry: (attempt, error, delay) => {
             const retryInfo = extractRetryInfo(error);
             const statusInfo = retryInfo.status ? ` (HTTP ${retryInfo.status})` : '';
             logger.warn(
-          `Retry ${attempt}/5 para API Gemini após ${delay}ms${statusInfo}`,
+              `Retry ${attempt}/3 para API Gemini após ${delay}ms${statusInfo}`,
               'callGeminiWithRetry',
               { attempt, delay, keyAttempt: keyAttempt + 1, status: retryInfo.status }
             );
@@ -406,7 +407,7 @@ export async function callGeminiWithRetry(
 
   if (status === 503) {
     throw buildGeminiError(
-      'A API do Gemini está temporariamente indisponível. Tente novamente em alguns minutos.',
+      'A API do Gemini está temporariamente indisponível (erro 503). Após 3 tentativas, o serviço ainda não está respondendo. Tente novamente em alguns minutos ou verifique o status da API do Google.',
       'GEMINI_TEMP_UNAVAILABLE',
       status
     );

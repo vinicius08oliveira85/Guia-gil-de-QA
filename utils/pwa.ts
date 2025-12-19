@@ -177,16 +177,24 @@ export const forceUpdate = (): void => {
     return;
   }
 
-  navigator.serviceWorker.getRegistration().then((registration) => {
-    if (registration?.waiting) {
-      // Envia mensagem para o service worker para pular a espera
-      registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-      
-      // Recarrega a página após um pequeno delay
-      setTimeout(() => {
-        window.location.reload();
-      }, 100);
-    }
-  });
+  navigator.serviceWorker.getRegistration()
+    .then((registration) => {
+      if (registration?.waiting) {
+        // Envia mensagem para o service worker para pular a espera
+        try {
+          registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+        } catch (error) {
+          logger.warn('Erro ao enviar mensagem para service worker', 'pwa', error);
+        }
+        
+        // Recarrega a página após um pequeno delay
+        setTimeout(() => {
+          window.location.reload();
+        }, 100);
+      }
+    })
+    .catch((error) => {
+      logger.error('Erro ao forçar atualização do service worker', 'pwa', error);
+    });
 };
 

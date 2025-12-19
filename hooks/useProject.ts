@@ -25,6 +25,7 @@ export const useProject = (projectId: string | null) => {
 
   /**
    * Atualiza o projeto atual
+   * Nota: Toasts de sucesso são controlados no nível do componente que chama esta função
    */
   const updateProject = useCallback(async (updatedProject: Project) => {
     if (!project) {
@@ -34,11 +35,11 @@ export const useProject = (projectId: string | null) => {
     
     try {
       await updateProjectInStore(updatedProject);
-      handleSuccess('Projeto atualizado com sucesso!');
+      // Toast removido - deve ser controlado no nível do componente
     } catch (error) {
       handleError(error, 'Atualizar projeto');
     }
-  }, [project, updateProjectInStore, handleError, handleSuccess]);
+  }, [project, updateProjectInStore, handleError]);
 
   /**
    * Adiciona uma tarefa ao projeto

@@ -14,6 +14,8 @@ export interface RetryOptions {
   backoffMultiplier?: number;
   /** Delay máximo em milissegundos (padrão: 30000ms) */
   maxDelay?: number;
+  /** Timeout máximo total em milissegundos (padrão: 300000ms = 5 minutos). Se excedido, lança erro */
+  maxTotalTimeout?: number;
   /** Se deve adicionar jitter aleatório ao delay (padrão: true) */
   useJitter?: boolean;
   /** Função para determinar se um erro é recuperável */
@@ -123,12 +125,15 @@ export async function retryWithBackoff<T>(
     initialDelay = 1000,
     backoffMultiplier = 2,
     maxDelay = 30000,
+    maxTotalTimeout = 300000, // 5 minutos padrão
     useJitter = true,
     isRetryable = isRetryableError,
     onRetry,
   } = options;
 
   let lastError: unknown;
+  const startTime = Date.now();
+  let totalElapsedTime = 0;
   
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
@@ -151,7 +156,7 @@ export async function retryWithBackoff<T>(
         logger.error(
           `Todas as tentativas falharam (${maxRetries})`,
           'retryWithBackoff',
-          { error, attempt: maxRetries }
+          { error, attempt: maxRetries, totalElapsedTime }
         );
         throw error;
       }
@@ -179,10 +184,27 @@ export async function retryWithBackoff<T>(
         ? Math.min(retryAfterDelay, effectiveMaxDelay)
         : calculateDelay(attempt, effectiveInitialDelay, backoffMultiplier, effectiveMaxDelay, useJitter);
       
+      // Verificar timeout máximo total
+      totalElapsedTime = Date.now() - startTime;
+      if (totalElapsedTime + delay > maxTotalTimeout) {
+        const timeoutError = new Error(
+          `Timeout máximo total de ${maxTotalTimeout / 1000}s excedido após ${attempt} tentativa(s). Total decorrido: ${Math.round(totalElapsedTime / 1000)}s`
+        ) as Error & { status?: number };
+        if (errorStatus) {
+          timeoutError.status = errorStatus;
+        }
+        logger.error(
+          'Timeout máximo total excedido durante retry',
+          'retryWithBackoff',
+          { attempt, totalElapsedTime, maxTotalTimeout, errorStatus }
+        );
+        throw timeoutError;
+      }
+      
       logger.warn(
         `Tentativa ${attempt}/${maxRetries} falhou, retentando em ${delay}ms`,
         'retryWithBackoff',
-        { error, attempt, delay }
+        { error, attempt, delay, totalElapsedTime: Math.round(totalElapsedTime / 1000) + 's' }
       );
       
       // Chamar callback de retry se fornecido

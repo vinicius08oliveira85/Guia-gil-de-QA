@@ -28,7 +28,7 @@ interface ProjectsState {
   syncProjectsFromSupabase: () => Promise<void>;
   saveProjectToSupabase: (projectId: string) => Promise<void>;
   createProject: (name: string, description: string, templateId?: string) => Promise<Project>;
-  updateProject: (project: Project) => Promise<void>;
+  updateProject: (project: Project, options?: { silent?: boolean }) => Promise<void>;
   deleteProject: (projectId: string) => Promise<void>;
   selectProject: (projectId: string | null) => void;
   addTaskToProject: (projectId: string, task: JiraTask) => Promise<void>;
@@ -323,7 +323,7 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
     }
   },
 
-  updateProject: async (project: Project) => {
+  updateProject: async (project: Project, options?: { silent?: boolean }) => {
     try {
       const state = get();
       const oldProject = state.projects.find((p) => p.id === project.id);
@@ -335,7 +335,7 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
         ),
       }));
       
-      if (oldProject) {
+      if (oldProject && !options?.silent) {
         addAuditLog({
           action: 'UPDATE',
           entityType: 'project',

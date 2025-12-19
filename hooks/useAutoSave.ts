@@ -86,7 +86,7 @@ export const useAutoSave = ({
     try {
       isSavingRef.current = true;
       logger.debug(`Auto-save: salvando projeto "${projectToSave.name}"`, 'useAutoSave');
-      await updateProject(projectToSave);
+      await updateProject(projectToSave, { silent: true });
       logger.debug(`Auto-save: projeto "${projectToSave.name}" salvo com sucesso`, 'useAutoSave');
     } catch (error) {
       logger.warn('Erro no auto-save (projeto salvo localmente)', 'useAutoSave', error);

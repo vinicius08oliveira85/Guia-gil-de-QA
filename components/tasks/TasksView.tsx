@@ -617,11 +617,12 @@ export const TasksView: React.FC<{
         setIsRunningGeneralAnalysis(true);
         setAnalysisProgress({ current: 0, total: 0, message: 'Iniciando análise...' });
         
+        // Calcular timeout adaptativo baseado no número de tarefas (fora do try para usar no catch)
+        const taskCount = project.tasks.length;
+        const adaptiveTimeout = Math.min(120000 + (taskCount * 5000), 180000); // Base 120s + 5s por tarefa, máximo 180s
+        
         try {
             // Passo 1: Gerar análise geral
-            // Calcular timeout adaptativo baseado no número de tarefas
-            const taskCount = project.tasks.length;
-            const adaptiveTimeout = Math.min(120000 + (taskCount * 5000), 180000); // Base 120s + 5s por tarefa, máximo 180s
             setAnalysisProgress({ current: 1, total: 3, message: 'Gerando análise geral do projeto...' });
             const analysis = await withTimeout(generateGeneralIAAnalysis(project), adaptiveTimeout);
             const aiService = getAIService();
@@ -839,7 +840,14 @@ export const TasksView: React.FC<{
             setAnalysisProgress(null);
             const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
             if (errorMessage.includes('Timeout')) {
-                handleError(new Error('A análise demorou muito tempo. Tente novamente com menos tarefas.'), 'Executar análise geral com IA');
+                const taskCount = project.tasks.length;
+                const timeoutSeconds = Math.round(adaptiveTimeout / 1000);
+                const suggestedMaxTasks = Math.max(5, Math.floor(taskCount * 0.7));
+                const errorMsg = `A análise demorou mais de ${timeoutSeconds} segundos e foi interrompida. ` +
+                    `O projeto possui ${taskCount} tarefa(s), o que pode ser muito para processar de uma vez. ` +
+                    `Sugestão: Tente novamente com menos tarefas (recomendado: até ${suggestedMaxTasks} tarefas por vez) ` +
+                    `ou processe em lotes menores. O timeout é adaptativo (${timeoutSeconds}s base + 5s por tarefa, máximo 180s).`;
+                handleError(new Error(errorMsg), 'Executar análise geral com IA');
             } else {
                 handleError(error, 'Executar análise geral com IA');
             }
