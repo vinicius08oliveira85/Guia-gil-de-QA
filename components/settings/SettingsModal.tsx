@@ -7,6 +7,7 @@ import { Project } from '../../types';
 const JiraSettingsTab = React.lazy(() => import('./JiraSettingsTab').then(m => ({ default: m.JiraSettingsTab })));
 const SupabaseSettingsTab = React.lazy(() => import('./SupabaseSettingsTab').then(m => ({ default: m.SupabaseSettingsTab })));
 const PreferencesTab = React.lazy(() => import('./PreferencesTab').then(m => ({ default: m.PreferencesTab })));
+const GeminiApiKeysTab = React.lazy(() => import('./GeminiApiKeysTab').then(m => ({ default: m.GeminiApiKeysTab })));
 
 interface SettingsModalProps {
     isOpen: boolean;
@@ -14,7 +15,7 @@ interface SettingsModalProps {
     onProjectImported?: (project: Project) => void;
 }
 
-type TabType = 'jira' | 'supabase' | 'preferences';
+type TabType = 'jira' | 'supabase' | 'preferences' | 'api-keys';
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, onProjectImported }) => {
     const [activeTab, setActiveTab] = useState<TabType>('jira');
@@ -22,6 +23,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
     const tabs: { id: TabType; label: string; icon: string }[] = [
         { id: 'jira', label: 'Jira', icon: '🔗' },
         { id: 'supabase', label: 'Supabase', icon: '💾' },
+        { id: 'api-keys', label: 'API Keys', icon: '🔑' },
         { id: 'preferences', label: 'Preferências', icon: '⚙️' },
     ];
 
@@ -59,6 +61,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
                             <JiraSettingsTab onProjectImported={onProjectImported} />
                         )}
                         {activeTab === 'supabase' && <SupabaseSettingsTab />}
+                        {activeTab === 'api-keys' && <GeminiApiKeysTab />}
                         {activeTab === 'preferences' && <PreferencesTab />}
                     </Suspense>
                 </div>

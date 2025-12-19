@@ -4,6 +4,7 @@
  */
 
 import { logger } from '../../utils/logger';
+import { getGeminiConfig } from '../geminiConfigService';
 
 interface ApiKeyStatus {
   key: string;
@@ -26,9 +27,19 @@ export class GeminiApiKeyManager {
   }
 
   /**
-   * Inicializa as API keys a partir de variáveis de ambiente e fallback hardcoded
+   * Inicializa as API keys a partir de localStorage, variáveis de ambiente e fallback hardcoded
+   * Prioridade: localStorage > variáveis de ambiente
    */
   private initializeKeys(): void {
+    // 1. Tentar ler do localStorage primeiro (prioridade)
+    const savedConfig = getGeminiConfig();
+    if (savedConfig?.apiKey) {
+      this.keys = [{ key: savedConfig.apiKey, exhausted: false }];
+      logger.info('API key do Gemini carregada via localStorage', 'GeminiApiKeyManager');
+      return;
+    }
+
+    // 2. Fallback para variáveis de ambiente
     const primaryKey = import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.GEMINI_API_KEY;
 
     if (primaryKey) {
@@ -38,6 +49,21 @@ export class GeminiApiKeyManager {
     }
 
     logger.warn('Nenhuma API key do Gemini configurada', 'GeminiApiKeyManager');
+  }
+
+  /**
+   * Recarrega as API keys (útil quando configuração muda)
+   */
+  reloadKeys(): void {
+    const previousKeyCount = this.keys.length;
+    this.initializeKeys();
+    
+    if (this.keys.length !== previousKeyCount) {
+      logger.info(
+        `API keys recarregadas: ${previousKeyCount} -> ${this.keys.length}`,
+        'GeminiApiKeyManager'
+      );
+    }
   }
 
   /**

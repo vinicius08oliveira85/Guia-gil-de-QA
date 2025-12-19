@@ -1,5 +1,5 @@
 import React, { useState, Suspense } from 'react';
-import { Link, Database, Settings as SettingsIcon } from 'lucide-react';
+import { Link, Database, Settings as SettingsIcon, Key } from 'lucide-react';
 import { LoadingSkeleton } from '../common/LoadingSkeleton';
 import { Project } from '../../types';
 import { cn } from '../../utils/cn';
@@ -8,13 +8,14 @@ import { cn } from '../../utils/cn';
 const JiraSettingsTab = React.lazy(() => import('./JiraSettingsTab').then(m => ({ default: m.JiraSettingsTab })));
 const SupabaseSettingsTab = React.lazy(() => import('./SupabaseSettingsTab').then(m => ({ default: m.SupabaseSettingsTab })));
 const PreferencesTab = React.lazy(() => import('./PreferencesTab').then(m => ({ default: m.PreferencesTab })));
+const GeminiApiKeysTab = React.lazy(() => import('./GeminiApiKeysTab').then(m => ({ default: m.GeminiApiKeysTab })));
 
 interface SettingsViewProps {
     onClose: () => void;
     onProjectImported?: (project: Project) => void;
 }
 
-type TabType = 'jira' | 'supabase' | 'preferences';
+type TabType = 'jira' | 'supabase' | 'preferences' | 'api-keys';
 
 export const SettingsView: React.FC<SettingsViewProps> = ({ onClose, onProjectImported }) => {
     const [activeTab, setActiveTab] = useState<TabType>('jira');
@@ -22,6 +23,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClose, onProjectIm
     const tabs: { id: TabType; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
         { id: 'jira', label: 'Jira', icon: Link },
         { id: 'supabase', label: 'Supabase', icon: Database },
+        { id: 'api-keys', label: 'API Keys', icon: Key },
         { id: 'preferences', label: 'Preferências', icon: SettingsIcon },
     ];
 
@@ -97,6 +99,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClose, onProjectIm
                                 <JiraSettingsTab onProjectImported={onProjectImported} />
                             )}
                             {activeTab === 'supabase' && <SupabaseSettingsTab />}
+                            {activeTab === 'api-keys' && <GeminiApiKeysTab />}
                             {activeTab === 'preferences' && <PreferencesTab />}
                         </div>
                     </Suspense>
