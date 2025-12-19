@@ -121,9 +121,11 @@ export const QualityMetricsChart = React.memo<QualityMetricsChartProps>(({ proje
     return chartData;
   }, [chartData, metrics]);
 
-  // Cores mais distintas e com melhor contraste
-  const coverageColor = 'hsl(var(--p))'; // Primary - azul/roxo
-  const qualityColor = 'hsl(var(--a))'; // Accent - verde/amarelo
+  // Cores explícitas e distintas para melhor visualização
+  // Primary (azul) para Cobertura
+  const coverageColor = '#3b82f6'; // Blue-500
+  // Success (verde) para Qualidade
+  const qualityColor = '#10b981'; // Emerald-500
 
   return (
     <Card className={className} hoverable>

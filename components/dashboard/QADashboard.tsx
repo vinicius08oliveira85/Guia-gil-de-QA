@@ -49,20 +49,30 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
 
   // Calcular tendências para os cards de métricas
   const tasksTrend = useMemo(() => {
-    if (!trends) return { change: '0', trend: 'neutral' as const };
-    const change = trends.totalTestCases?.change || 0;
+    if (!trends) return { change: '0%', trend: 'neutral' as const };
+    // Usar executedTests como proxy para tendência de tarefas (mais tarefas = mais testes executados)
+    const current = trends.executedTests?.current || 0;
+    const previous = trends.executedTests?.previous || 0;
+    if (previous === 0) return { change: '0%', trend: 'neutral' as const };
+    
+    const changePercent = Math.round(((current - previous) / previous) * 100);
     return {
-      change: change > 0 ? `+${change}%` : change < 0 ? `${change}%` : '0%',
-      trend: change > 0 ? 'up' as const : change < 0 ? 'down' as const : 'neutral' as const,
+      change: changePercent > 0 ? `+${changePercent}%` : changePercent < 0 ? `${changePercent}%` : '0%',
+      trend: changePercent > 0 ? 'up' as const : changePercent < 0 ? 'down' as const : 'neutral' as const,
     };
   }, [trends]);
 
   const testCasesTrend = useMemo(() => {
-    if (!trends) return { change: '0', trend: 'neutral' as const };
-    const change = trends.totalTestCases?.change || 0;
+    if (!trends) return { change: '0%', trend: 'neutral' as const };
+    // Calcular mudança baseada em executedTests que reflete melhor o crescimento
+    const current = trends.executedTests?.current || 0;
+    const previous = trends.executedTests?.previous || 0;
+    if (previous === 0) return { change: '0%', trend: 'neutral' as const };
+    
+    const changePercent = Math.round(((current - previous) / previous) * 100);
     return {
-      change: change > 0 ? `+${change}%` : change < 0 ? `${change}%` : '0%',
-      trend: change > 0 ? 'up' as const : change < 0 ? 'down' as const : 'neutral' as const,
+      change: changePercent > 0 ? `+${changePercent}%` : changePercent < 0 ? `${changePercent}%` : '0%',
+      trend: changePercent > 0 ? 'up' as const : changePercent < 0 ? 'down' as const : 'neutral' as const,
     };
   }, [trends]);
 
@@ -77,10 +87,57 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
     return strategies.size;
   }, [project.tasks]);
 
+  // Calcular tendência de estratégias comparando com histórico
+  const strategiesTrend = useMemo(() => {
+    if (!trends || !project.metricsHistory || project.metricsHistory.length < 2) {
+      return { change: '0%', trend: 'neutral' as const };
+    }
+    
+    // Estimar estratégias anteriores baseado em crescimento de testes
+    // Se mais testes foram executados, provavelmente mais estratégias foram usadas
+    const current = trends.executedTests?.current || 0;
+    const previous = trends.executedTests?.previous || 0;
+    if (previous === 0) return { change: '0%', trend: 'neutral' as const };
+    
+    const changePercent = Math.round(((current - previous) / previous) * 100);
+    // Se a mudança for muito pequena, considerar neutral
+    if (Math.abs(changePercent) < 5) {
+      return { change: '0%', trend: 'neutral' as const };
+    }
+    
+    return {
+      change: changePercent > 0 ? `+${changePercent}%` : `${changePercent}%`,
+      trend: changePercent > 0 ? 'up' as const : 'down' as const,
+    };
+  }, [trends, project.metricsHistory]);
+
   // Contar fases ativas
   const activePhases = useMemo(() => {
     return metrics.newPhases?.filter(p => p.status === 'Em Andamento' || p.status === 'Concluído').length || 0;
   }, [metrics.newPhases]);
+
+  // Calcular tendência de fases baseado em progresso do projeto
+  const phasesTrend = useMemo(() => {
+    if (!trends || !project.metricsHistory || project.metricsHistory.length < 2) {
+      return { change: '0%', trend: 'neutral' as const };
+    }
+    
+    // Usar passRate como indicador de progresso nas fases
+    const current = trends.passRate?.current || 0;
+    const previous = trends.passRate?.previous || 0;
+    if (previous === 0) return { change: '0%', trend: 'neutral' as const };
+    
+    const changePercent = Math.round(((current - previous) / previous) * 100);
+    // Se a mudança for muito pequena, considerar neutral
+    if (Math.abs(changePercent) < 5) {
+      return { change: '0%', trend: 'neutral' as const };
+    }
+    
+    return {
+      change: changePercent > 0 ? `+${changePercent}%` : `${changePercent}%`,
+      trend: changePercent > 0 ? 'up' as const : 'down' as const,
+    };
+  }, [trends, project.metricsHistory]);
 
   // Verificar se há alertas críticos
   const hasCriticalAlerts = useMemo(() => {
@@ -223,16 +280,16 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
         <MetricCard
           title="Estratégias de Teste"
           value={totalStrategies}
-          change="0"
-          trend="neutral"
+          change={strategiesTrend.change}
+          trend={strategiesTrend.trend}
           icon={Target}
           description="Estratégias ativas"
         />
         <MetricCard
           title="Fases de Teste"
           value={activePhases}
-          change="0"
-          trend="neutral"
+          change={phasesTrend.change}
+          trend={phasesTrend.trend}
           icon={Layers}
           description="Fases ativas"
         />
