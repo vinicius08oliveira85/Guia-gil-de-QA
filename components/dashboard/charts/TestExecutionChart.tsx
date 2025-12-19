@@ -151,10 +151,10 @@ export const TestExecutionChart = React.memo<TestExecutionChartProps>(({ project
     return data.reverse(); // Mais antigo primeiro
   }, [project.metricsHistory, metrics]);
 
-  // Cores do tema DaisyUI
-  const passedColor = 'hsl(var(--su))'; // Success - verde
-  const failedColor = 'hsl(var(--er))'; // Error - vermelho
-  const pendingColor = 'hsl(var(--wa))'; // Warning - amarelo/laranja
+  // Cores explícitas para garantir correspondência com a legenda
+  const passedColor = '#22c55e'; // Verde (green-500) - corresponde a bg-success
+  const failedColor = '#ef4444'; // Vermelho (red-500) - corresponde a bg-error
+  const pendingColor = '#f59e0b'; // Amarelo/Laranja (amber-500) - corresponde a bg-warning
 
   return (
     <Card className={className} hoverable>
@@ -171,16 +171,16 @@ export const TestExecutionChart = React.memo<TestExecutionChartProps>(({ project
             >
               <defs>
                 <linearGradient id="passedGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={passedColor} stopOpacity={0.4} />
-                  <stop offset="95%" stopColor={passedColor} stopOpacity={0} />
+                  <stop offset="5%" stopColor={passedColor} stopOpacity={0.6} />
+                  <stop offset="95%" stopColor={passedColor} stopOpacity={0.1} />
                 </linearGradient>
                 <linearGradient id="failedGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={failedColor} stopOpacity={0.4} />
-                  <stop offset="95%" stopColor={failedColor} stopOpacity={0} />
+                  <stop offset="5%" stopColor={failedColor} stopOpacity={0.6} />
+                  <stop offset="95%" stopColor={failedColor} stopOpacity={0.1} />
                 </linearGradient>
                 <linearGradient id="pendingGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={pendingColor} stopOpacity={0.4} />
-                  <stop offset="95%" stopColor={pendingColor} stopOpacity={0} />
+                  <stop offset="5%" stopColor={pendingColor} stopOpacity={0.6} />
+                  <stop offset="95%" stopColor={pendingColor} stopOpacity={0.1} />
                 </linearGradient>
               </defs>
               <CartesianGrid 
