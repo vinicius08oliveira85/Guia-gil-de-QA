@@ -2,6 +2,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
+import { initializePWA } from './utils/pwa';
+
+// Inicializar PWA
+initializePWA();
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
