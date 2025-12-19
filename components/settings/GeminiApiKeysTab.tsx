@@ -6,7 +6,6 @@ import { Spinner } from '../common/Spinner';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import { StatusBadge } from './StatusBadge';
 import { Card } from '../common/Card';
-import { geminiApiKeyManager } from '../../services/ai/geminiApiKeyManager';
 
 export const GeminiApiKeysTab: React.FC = () => {
     const [apiKey, setApiKey] = useState('');
@@ -17,10 +16,15 @@ export const GeminiApiKeysTab: React.FC = () => {
 
     useEffect(() => {
         // Carregar configuração salva
-        const savedConfig = getGeminiConfig();
-        if (savedConfig?.apiKey) {
-            setApiKey(savedConfig.apiKey);
-            setIsConfigured(true);
+        try {
+            const savedConfig = getGeminiConfig();
+            if (savedConfig?.apiKey) {
+                setApiKey(savedConfig.apiKey);
+                setIsConfigured(true);
+            }
+        } catch (error) {
+            // Se houver erro ao carregar configuração, apenas logar e continuar
+            console.warn('Erro ao carregar configuração do Gemini:', error);
         }
     }, []);
 
@@ -42,7 +46,13 @@ export const GeminiApiKeysTab: React.FC = () => {
             saveGeminiConfig(config);
             
             // Recarregar keys no manager
-            geminiApiKeyManager.reloadKeys();
+            try {
+                const { geminiApiKeyManager } = await import('../../services/ai/geminiApiKeyManager');
+                geminiApiKeyManager.reloadKeys();
+            } catch (reloadError) {
+                // Se houver erro ao recarregar, apenas logar mas continuar
+                console.warn('Erro ao recarregar keys no manager:', reloadError);
+            }
             
             setIsConfigured(true);
             setShowConfigModal(false);
@@ -54,15 +64,25 @@ export const GeminiApiKeysTab: React.FC = () => {
         }
     };
 
-    const handleDisconnect = () => {
-        deleteGeminiConfig();
-        setApiKey('');
-        setIsConfigured(false);
-        
-        // Recarregar keys no manager
-        geminiApiKeyManager.reloadKeys();
-        
-        handleSuccess('Chave API do Gemini removida');
+    const handleDisconnect = async () => {
+        try {
+            deleteGeminiConfig();
+            setApiKey('');
+            setIsConfigured(false);
+            
+            // Recarregar keys no manager
+            try {
+                const { geminiApiKeyManager } = await import('../../services/ai/geminiApiKeyManager');
+                geminiApiKeyManager.reloadKeys();
+            } catch (reloadError) {
+                // Se houver erro ao recarregar, apenas logar mas continuar
+                console.warn('Erro ao recarregar keys no manager:', reloadError);
+            }
+            
+            handleSuccess('Chave API do Gemini removida');
+        } catch (error) {
+            handleError(error instanceof Error ? error : new Error('Erro ao remover configuração'), 'Configuração do Gemini');
+        }
     };
 
     return (
@@ -115,7 +135,9 @@ export const GeminiApiKeysTab: React.FC = () => {
                                 Chave API configurada
                             </p>
                             <p className="text-base-content/70 text-xs font-mono break-all">
-                                {apiKey.substring(0, 8)}...{apiKey.substring(apiKey.length - 4)}
+                                {apiKey && apiKey.length > 12 
+                                    ? `${apiKey.substring(0, 8)}...${apiKey.substring(apiKey.length - 4)}`
+                                    : '••••••••'}
                             </p>
                         </div>
                         <div className="flex gap-2 shrink-0">

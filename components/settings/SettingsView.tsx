@@ -4,11 +4,29 @@ import { LoadingSkeleton } from '../common/LoadingSkeleton';
 import { Project } from '../../types';
 import { cn } from '../../utils/cn';
 
-// Lazy load das tabs
-const JiraSettingsTab = React.lazy(() => import('./JiraSettingsTab').then(m => ({ default: m.JiraSettingsTab })));
-const SupabaseSettingsTab = React.lazy(() => import('./SupabaseSettingsTab').then(m => ({ default: m.SupabaseSettingsTab })));
-const PreferencesTab = React.lazy(() => import('./PreferencesTab').then(m => ({ default: m.PreferencesTab })));
-const GeminiApiKeysTab = React.lazy(() => import('./GeminiApiKeysTab').then(m => ({ default: m.GeminiApiKeysTab })));
+// Lazy load das tabs com tratamento de erro
+const lazyLoadTab = (importFn: () => Promise<any>, name: string) => {
+    return React.lazy(() => 
+        importFn().catch((error) => {
+            console.error(`Erro ao carregar ${name}:`, error);
+            // Retornar um componente de fallback em caso de erro
+            return {
+                default: () => (
+                    <div className="p-6">
+                        <div className="alert alert-error">
+                            <span>Erro ao carregar {name}. Por favor, recarregue a página.</span>
+                        </div>
+                    </div>
+                )
+            };
+        })
+    );
+};
+
+const JiraSettingsTab = lazyLoadTab(() => import('./JiraSettingsTab').then(m => ({ default: m.JiraSettingsTab })), 'JiraSettingsTab');
+const SupabaseSettingsTab = lazyLoadTab(() => import('./SupabaseSettingsTab').then(m => ({ default: m.SupabaseSettingsTab })), 'SupabaseSettingsTab');
+const PreferencesTab = lazyLoadTab(() => import('./PreferencesTab').then(m => ({ default: m.PreferencesTab })), 'PreferencesTab');
+const GeminiApiKeysTab = lazyLoadTab(() => import('./GeminiApiKeysTab').then(m => ({ default: m.GeminiApiKeysTab })), 'GeminiApiKeysTab');
 
 interface SettingsViewProps {
     onClose: () => void;

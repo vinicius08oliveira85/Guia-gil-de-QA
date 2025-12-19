@@ -31,12 +31,17 @@ export class GeminiApiKeyManager {
    * Prioridade: localStorage > variáveis de ambiente
    */
   private initializeKeys(): void {
-    // 1. Tentar ler do localStorage primeiro (prioridade)
-    const savedConfig = getGeminiConfig();
-    if (savedConfig?.apiKey) {
-      this.keys = [{ key: savedConfig.apiKey, exhausted: false }];
-      logger.info('API key do Gemini carregada via localStorage', 'GeminiApiKeyManager');
-      return;
+    try {
+      // 1. Tentar ler do localStorage primeiro (prioridade)
+      const savedConfig = getGeminiConfig();
+      if (savedConfig?.apiKey) {
+        this.keys = [{ key: savedConfig.apiKey, exhausted: false }];
+        logger.info('API key do Gemini carregada via localStorage', 'GeminiApiKeyManager');
+        return;
+      }
+    } catch (error) {
+      // Se houver erro ao acessar localStorage, continuar com fallback
+      logger.warn('Erro ao acessar localStorage, usando fallback', 'GeminiApiKeyManager', error);
     }
 
     // 2. Fallback para variáveis de ambiente
