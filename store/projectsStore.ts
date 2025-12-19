@@ -8,8 +8,10 @@ import {
   saveProjectToSupabaseOnly
 } from '../services/dbService';
 import { loadProjectsFromSupabase, isSupabaseAvailable } from '../services/supabaseService';
+import { autoBackupBeforeOperation, createBackup } from '../services/backupService';
 import { migrateTestCases } from '../utils/testCaseMigration';
 import { cleanupTestCasesForProjects } from '../utils/testCaseCleanup';
+import { mergeProjectsList } from '../utils/projectMerge';
 import { createProjectFromTemplate } from '../utils/projectTemplates';
 import { PHASE_NAMES } from '../utils/constants';
 import { addAuditLog } from '../utils/auditLog';
@@ -88,10 +90,31 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
         indexedDBProjects = [];
       }
       
-      // Fase 3: Fazer merge dos dados (Supabase prioriza, IndexedDB complementa)
+      // Fase 3: Fazer merge inteligente dos dados (preservando dados mais recentes)
       let finalProjects: Project[];
       
-      if (supabaseProjects.length > 0) {
+      if (supabaseProjects.length > 0 && indexedDBProjects.length > 0) {
+        // Criar backup antes de fazer merge (proteção contra perda de dados)
+        try {
+          const projectsToBackup = indexedDBProjects.filter(p => 
+            supabaseProjects.some(sp => sp.id === p.id)
+          );
+          
+          if (projectsToBackup.length > 0) {
+            logger.debug(`Criando backups antes de merge para ${projectsToBackup.length} projetos`, 'ProjectsStore');
+            await Promise.all(
+              projectsToBackup.map(project =>
+                createBackup(project, 'MERGE', 'Backup automático antes de merge Supabase/IndexedDB')
+                  .catch(error => {
+                    logger.warn(`Erro ao criar backup antes de merge para ${project.id}`, 'ProjectsStore', error);
+                  })
+              )
+            );
+          }
+        } catch (error) {
+          logger.warn('Erro ao criar backups antes de merge (continuando)', 'ProjectsStore', error);
+        }
+        
         // Migrar TestCases dos projetos do Supabase
         const migratedSupabaseProjects = supabaseProjects.map(project => ({
           ...project,
@@ -101,30 +124,29 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
           }))
         }));
         
-        // Fazer merge: criar um Map com ID como chave, priorizando Supabase
-        const projectsMap = new Map<string, Project>();
-        
-        // Primeiro adicionar projetos do IndexedDB (já migrados)
-        indexedDBProjects.forEach(project => {
-          projectsMap.set(project.id, project);
-        });
-        
-        // Depois sobrescrever/atualizar com projetos do Supabase (prioridade)
-        migratedSupabaseProjects.forEach(project => {
-          projectsMap.set(project.id, project);
-        });
-        
-        finalProjects = Array.from(projectsMap.values());
+        // Fazer merge inteligente preservando dados mais recentes
+        finalProjects = mergeProjectsList(indexedDBProjects, migratedSupabaseProjects);
         
         // Limpar casos de teste de tipos não permitidos
         finalProjects = cleanupTestCasesForProjects(finalProjects);
         
         logger.info(
-          `Projetos carregados: ${finalProjects.length} (${supabaseProjects.length} do Supabase + ${indexedDBProjects.length} do cache local)`,
+          `Projetos carregados com merge inteligente: ${finalProjects.length} (${supabaseProjects.length} do Supabase + ${indexedDBProjects.length} do cache local)`,
           'ProjectsStore'
         );
+      } else if (supabaseProjects.length > 0) {
+        // Apenas Supabase disponível
+        const migratedSupabaseProjects = supabaseProjects.map(project => ({
+          ...project,
+          tasks: project.tasks.map(task => ({
+            ...task,
+            testCases: migrateTestCases(task.testCases || [])
+          }))
+        }));
+        finalProjects = cleanupTestCasesForProjects(migratedSupabaseProjects);
+        logger.info(`Projetos carregados do Supabase: ${finalProjects.length}`, 'ProjectsStore');
       } else {
-        // Se não temos Supabase, usar apenas IndexedDB
+        // Apenas IndexedDB disponível
         finalProjects = indexedDBProjects;
         logger.info(`Projetos carregados do IndexedDB: ${finalProjects.length}`, 'ProjectsStore');
       }
@@ -162,26 +184,35 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
       const state = get();
       const currentProjects = state.projects;
       
-      // Fazer merge: criar um Map com ID como chave, priorizando Supabase
-      const projectsMap = new Map<string, Project>();
+      // Criar backup antes de fazer merge (proteção contra perda de dados)
+      try {
+        const projectsToBackup = currentProjects.filter(p => 
+          migratedSupabaseProjects.some(sp => sp.id === p.id)
+        );
+        
+        if (projectsToBackup.length > 0) {
+          logger.debug(`Criando backups antes de sync para ${projectsToBackup.length} projetos`, 'ProjectsStore');
+          await Promise.all(
+            projectsToBackup.map(project =>
+              createBackup(project, 'SYNC', 'Backup automático antes de sincronização Supabase')
+                .catch(error => {
+                  logger.warn(`Erro ao criar backup antes de sync para ${project.id}`, 'ProjectsStore', error);
+                })
+            )
+          );
+        }
+      } catch (error) {
+        logger.warn('Erro ao criar backups antes de sync (continuando)', 'ProjectsStore', error);
+      }
       
-      // Primeiro adicionar projetos atuais (IndexedDB)
-      currentProjects.forEach(project => {
-        projectsMap.set(project.id, project);
-      });
-      
-      // Depois sobrescrever/atualizar com projetos do Supabase (prioridade)
-      migratedSupabaseProjects.forEach(project => {
-        projectsMap.set(project.id, project);
-      });
-      
-      const mergedProjects = Array.from(projectsMap.values());
+      // Fazer merge inteligente preservando dados mais recentes
+      const mergedProjects = mergeProjectsList(currentProjects, migratedSupabaseProjects);
       
       // Limpar casos de teste de tipos não permitidos
       const cleanedProjects = cleanupTestCasesForProjects(mergedProjects);
       
       set({ projects: cleanedProjects });
-      logger.info(`Projetos sincronizados do Supabase: ${cleanedProjects.length} (${supabaseProjects.length} do Supabase + ${currentProjects.length} do cache local)`, 'ProjectsStore');
+      logger.info(`Projetos sincronizados do Supabase com merge inteligente: ${cleanedProjects.length} (${supabaseProjects.length} do Supabase + ${currentProjects.length} do cache local)`, 'ProjectsStore');
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       // Log mais detalhado para erros CORS ou timeout
@@ -329,6 +360,19 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
       const state = get();
       const project = state.projects.find((p) => p.id === projectId);
       
+      // Criar backup automático antes de deletar
+      if (project) {
+        const backupId = await autoBackupBeforeOperation(
+          projectId,
+          'DELETE',
+          () => state.projects.find((p) => p.id === projectId)
+        );
+        
+        if (backupId) {
+          logger.info(`Backup criado antes de deletar projeto: ${backupId}`, 'ProjectsStore');
+        }
+      }
+      
       await deleteProject(projectId);
       set((state) => ({
         projects: state.projects.filter((p) => p.id !== projectId),
@@ -340,7 +384,10 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
           action: 'DELETE',
           entityType: 'project',
           entityId: projectId,
-          entityName: project.name
+          entityName: project.name,
+          changes: {
+            backupId: { old: undefined, new: 'backup-created' }
+          }
         });
       }
     } catch (error) {
@@ -392,6 +439,17 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
     const project = state.projects.find((p) => p.id === projectId);
     if (!project) {
       throw new Error('Projeto não encontrado');
+    }
+
+    // Criar backup automático antes de deletar tarefa
+    const backupId = await autoBackupBeforeOperation(
+      projectId,
+      'DELETE_TASK',
+      () => state.projects.find((p) => p.id === projectId)
+    );
+    
+    if (backupId) {
+      logger.debug(`Backup criado antes de deletar tarefa: ${backupId}`, 'ProjectsStore');
     }
 
     const updatedProject: Project = {

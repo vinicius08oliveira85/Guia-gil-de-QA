@@ -7,6 +7,7 @@ import {
     loadProjectsFromSupabase, 
     deleteProjectFromSupabase 
 } from './supabaseService';
+import { autoBackupBeforeOperation } from './backupService';
 import { migrateTestCases } from '../utils/testCaseMigration';
 import { logger } from '../utils/logger';
 
@@ -40,7 +41,7 @@ const openDB = (): Promise<IDBDatabase> => {
   });
 };
 
-import { cleanupTestCasesForProjects, cleanupTestCasesForNonTaskTypes } from '../utils/testCaseCleanup';
+import { cleanupTestCasesForProjects, cleanupTestCasesForNonTaskTypesSync } from '../utils/testCaseCleanup';
 
 /**
  * Carrega projetos apenas do IndexedDB (carregamento rápido inicial)
@@ -130,7 +131,8 @@ export const getAllProjects = async (): Promise<Project[]> => {
 
 export const addProject = async (project: Project): Promise<void> => {
   // Limpar BDD e casos de teste de tipos não permitidos antes de salvar
-  const cleanedProject = cleanupTestCasesForNonTaskTypes(project);
+  // Usar versão síncrona para manter compatibilidade (backup já é feito em outro lugar se necessário)
+  const cleanedProject = cleanupTestCasesForNonTaskTypesSync(project);
   
   // Tentar Supabase primeiro se disponível
   if (isSupabaseAvailable()) {
@@ -169,7 +171,8 @@ const networkErrorCooldownMs = 5000; // 5 segundos de cooldown após erro de red
 
 export const updateProject = async (project: Project): Promise<void> => {
   // Limpar BDD e casos de teste de tipos não permitidos antes de salvar
-  const cleanedProject = cleanupTestCasesForNonTaskTypes(project);
+  // Usar versão síncrona para manter compatibilidade (backup já é feito em outro lugar se necessário)
+  const cleanedProject = cleanupTestCasesForNonTaskTypesSync(project);
   
   // Log para rastrear estratégias de teste sendo salvas
   const totalStrategies = cleanedProject.tasks.reduce((sum, task) => {
@@ -299,6 +302,35 @@ export const saveProjectToSupabaseOnly = async (project: Project): Promise<void>
 };
 
 export const deleteProject = async (projectId: string): Promise<void> => {
+    // Criar backup automático antes de deletar
+    // Carregar projeto do IndexedDB para criar backup
+    try {
+        const db = await openDB();
+        const project = await new Promise<Project | null>((resolve, reject) => {
+            const transaction = db.transaction(STORE_NAME, 'readonly');
+            const store = transaction.objectStore(STORE_NAME);
+            const request = store.get(projectId);
+            
+            request.onerror = () => reject(request.error);
+            request.onsuccess = () => resolve(request.result || null);
+        });
+        
+        if (project) {
+            const backupId = await autoBackupBeforeOperation(
+                projectId,
+                'DELETE',
+                () => project
+            );
+            
+            if (backupId) {
+                logger.debug(`Backup criado antes de deletar projeto no dbService: ${backupId}`, 'dbService');
+            }
+        }
+    } catch (error) {
+        logger.warn('Erro ao criar backup antes de deletar (continuando com delete)', 'dbService', error);
+        // Continuar com delete mesmo se backup falhar
+    }
+    
     // Tentar Supabase primeiro se disponível
     if (isSupabaseAvailable()) {
         try {

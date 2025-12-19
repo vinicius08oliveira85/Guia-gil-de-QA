@@ -269,28 +269,20 @@ const callSupabaseProxy = async <T = any>(
 };
 
 /**
- * Otimiza o projeto removendo campos muito grandes se necessário
- * Remove specificationDocument se o payload ainda estiver muito grande após compressão
+ * Otimiza o projeto para upload preservando todos os dados
+ * Usa compressão mais agressiva em vez de remover dados
+ * NÃO remove specificationDocument - preserva todos os dados
  */
 const optimizeProjectForUpload = (project: Project): Project => {
-    const optimized = { ...project };
-    
-    // Se specificationDocument for muito grande (>500KB), remover
-    if (optimized.specificationDocument) {
-        const docSize = new Blob([optimized.specificationDocument]).size;
-        if (docSize > 500 * 1024) { // 500KB
-            logger.warn(`Removendo specificationDocument muito grande (${(docSize / 1024).toFixed(2)}KB) para reduzir tamanho do payload`, 'supabaseService');
-            optimized.specificationDocument = undefined;
-        }
-    }
-    
-    return optimized;
+    // Não remover dados - apenas retornar projeto como está
+    // A compressão será aplicada no payload se necessário
+    return { ...project };
 };
 
 const saveThroughProxy = async (project: Project, retryCount: number = 0): Promise<void> => {
     const userId = await getUserId();
     
-    // Otimizar projeto antes de enviar (remover campos muito grandes)
+    // Preservar todos os dados - não remover campos grandes
     const optimizedProject = optimizeProjectForUpload(project);
     const payload = { project: optimizedProject, userId };
     

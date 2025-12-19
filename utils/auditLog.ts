@@ -10,13 +10,23 @@ export interface AuditLogEntry {
   entityId: string;
   entityName: string;
   changes?: Record<string, { old: any; new: any }>;
+  backupId?: string; // ID do backup criado antes da operação (se aplicável)
+  origin?: 'user' | 'sync' | 'migration' | 'auto-save' | 'system'; // Origem da mudança
+  userId?: string; // ID do usuário que fez a mudança (se disponível)
 }
 
-export const addAuditLog = (entry: Omit<AuditLogEntry, 'id' | 'timestamp'>) => {
+export const addAuditLog = (
+  entry: Omit<AuditLogEntry, 'id' | 'timestamp'> & {
+    backupId?: string;
+    origin?: 'user' | 'sync' | 'migration' | 'auto-save' | 'system';
+    userId?: string;
+  }
+) => {
   const logEntry: AuditLogEntry = {
     ...entry,
     id: `log-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    origin: entry.origin || 'user', // Padrão: 'user' se não especificado
   };
 
   try {
@@ -46,6 +56,31 @@ export const getAuditLogs = (): AuditLogEntry[] => {
 
 export const getAuditLogsByEntity = (entityId: string): AuditLogEntry[] => {
   return getAuditLogs().filter(log => log.entityId === entityId);
+};
+
+/**
+ * Obtém logs de auditoria filtrados por origem
+ */
+export const getAuditLogsByOrigin = (origin: AuditLogEntry['origin']): AuditLogEntry[] => {
+  return getAuditLogs().filter(log => log.origin === origin);
+};
+
+/**
+ * Obtém logs de auditoria que têm backup associado
+ */
+export const getAuditLogsWithBackup = (): AuditLogEntry[] => {
+  return getAuditLogs().filter(log => log.backupId);
+};
+
+/**
+ * Obtém histórico completo de alterações de uma entidade
+ */
+export const getEntityHistory = (entityId: string): AuditLogEntry[] => {
+  const logs = getAuditLogsByEntity(entityId);
+  // Ordenar por timestamp (mais recente primeiro)
+  return logs.sort((a, b) => 
+    new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+  );
 };
 
 export const clearAuditLogs = () => {

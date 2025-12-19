@@ -421,3 +421,27 @@ export interface UserPreferences {
   keyboardShortcuts: KeyboardShortcutPreferences;
   export: ExportPreferences;
 }
+
+/**
+ * Informações sobre um backup de projeto
+ */
+export interface BackupInfo {
+  id: string;
+  projectId: string;
+  projectName: string;
+  createdAt: string;
+  operation: string; // Tipo de operação que gerou o backup (ex: 'DELETE', 'UPDATE', 'MERGE', 'CLEANUP')
+  size: number; // Tamanho do backup em bytes
+  description?: string; // Descrição opcional do backup
+}
+
+/**
+ * Projeto deletado (soft delete)
+ */
+export interface DeletedProject {
+  project: Project;
+  deletedAt: string;
+  deletedBy?: string;
+  canRestore: boolean;
+  backupId?: string; // ID do backup criado antes de deletar
+}

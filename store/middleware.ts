@@ -1,5 +1,8 @@
 import { StateCreator } from 'zustand';
 import { logger } from '../utils/logger';
+import { autoBackupBeforeOperation } from '../services/backupService';
+import { validateProjectIntegrity, validateAndFixProject } from '../utils/dataIntegrityService';
+import { Project } from '../types';
 
 /**
  * Middleware para logging de ações do store
@@ -85,6 +88,87 @@ export const persistMiddleware = <T extends object>(
           logger.warn(`Failed to persist state for ${options.name}`, 'Store', error);
         }
         
+        return result;
+      },
+      get,
+      api
+    );
+  };
+};
+
+/**
+ * Middleware de proteção que intercepta operações destrutivas
+ * Cria backup automático e valida integridade antes de operações críticas
+ */
+export const protectionMiddleware = <T extends object>(
+  config: StateCreator<T>,
+  options: {
+    isDestructiveOperation?: (state: T, newState: T) => boolean;
+    getProjectFromState?: (state: T) => Project | undefined;
+    getProjectId?: (state: T) => string | undefined;
+  } = {}
+): StateCreator<T> => {
+  return (set, get, api) => {
+    return config(
+      (...args) => {
+        const oldState = get();
+        const result = set(...args);
+        const newState = get();
+
+        // Verificar se é operação destrutiva
+        const isDestructive = options.isDestructiveOperation
+          ? options.isDestructiveOperation(oldState, newState)
+          : false;
+
+        if (isDestructive && options.getProjectFromState && options.getProjectId) {
+          const project = options.getProjectFromState(oldState);
+          const projectId = options.getProjectId(oldState);
+
+          if (project && projectId) {
+            // Criar backup antes de operação destrutiva
+            autoBackupBeforeOperation(
+              projectId,
+              'DESTRUCTIVE_OPERATION',
+              () => options.getProjectFromState?.(get())
+            ).catch(error => {
+              logger.warn('Erro ao criar backup automático no middleware', 'protectionMiddleware', error);
+            });
+
+            // Validar integridade do projeto após operação
+            const newProject = options.getProjectFromState(newState);
+            if (newProject) {
+              validateProjectIntegrity(newProject).then(checkResult => {
+                if (!checkResult.isValid && checkResult.issues.some(i => i.severity === 'critical')) {
+                  logger.error(
+                    `Problemas críticos de integridade detectados após operação destrutiva no projeto ${projectId}`,
+                    'protectionMiddleware',
+                    { issues: checkResult.issues }
+                  );
+                  
+                  // Tentar corrigir automaticamente
+                  validateAndFixProject(newProject, projectId).then(fixResult => {
+                    if (fixResult.restoredFromBackup) {
+                      logger.info(
+                        `Projeto ${projectId} restaurado do backup após problemas de integridade`,
+                        'protectionMiddleware'
+                      );
+                    } else if (fixResult.wasFixed) {
+                      logger.info(
+                        `Problemas de integridade corrigidos automaticamente no projeto ${projectId}`,
+                        'protectionMiddleware'
+                      );
+                    }
+                  }).catch(error => {
+                    logger.error('Erro ao tentar corrigir integridade', 'protectionMiddleware', error);
+                  });
+                }
+              }).catch(error => {
+                logger.warn('Erro ao validar integridade no middleware', 'protectionMiddleware', error);
+              });
+            }
+          }
+        }
+
         return result;
       },
       get,
