@@ -1068,6 +1068,10 @@ export const syncJiraProject = async (
         const existingTestCases = existingIndex >= 0 ? (updatedTasks[existingIndex].testCases || []) : [];
         const savedTestCases = savedTestStatuses.get(jiraKey) || [];
         
+        // Contar status não-padrão antes da mesclagem
+        const existingWithStatus = existingTestCases.filter(tc => tc.status !== 'Not Run').length;
+        const savedWithStatus = savedTestCases.filter(tc => tc.status !== 'Not Run').length;
+        
         // Mesclar testCases: priorizar os existentes (mais recentes) sobre os salvos
         // Se há testCases existentes, usar como base e mesclar com salvos (para pegar status de testCases que foram removidos)
         // Se não há existentes mas há salvos, usar os salvos
@@ -1075,11 +1079,25 @@ export const syncJiraProject = async (
         if (existingTestCases.length > 0) {
             // Priorizar existentes (mais recentes), mas mesclar com salvos para pegar testCases removidos
             mergedTestCases = mergeTestCases(existingTestCases, savedTestCases);
-            logger.debug(`Mesclando ${existingTestCases.length} testCases existentes com ${savedTestCases.length} salvos para ${jiraKey}`, 'jiraService');
+            
+            // Contar status não-padrão após mesclagem
+            const finalWithStatus = mergedTestCases.filter(tc => tc.status !== 'Not Run').length;
+            
+            logger.debug(`Mesclando testCases para ${jiraKey}`, 'jiraService', {
+                existentes: existingTestCases.length,
+                existentesComStatus: existingWithStatus,
+                salvos: savedTestCases.length,
+                salvosComStatus: savedWithStatus,
+                resultado: mergedTestCases.length,
+                resultadoComStatus: finalWithStatus,
+                statusPreservados: finalWithStatus >= Math.max(existingWithStatus, savedWithStatus)
+            });
         } else if (savedTestCases.length > 0) {
             // Não há existentes, usar os salvos
             mergedTestCases = savedTestCases;
-            logger.debug(`Usando ${savedTestCases.length} testCases salvos (sem existentes) para ${jiraKey}`, 'jiraService');
+            logger.debug(`Usando ${savedTestCases.length} testCases salvos (sem existentes) para ${jiraKey}`, 'jiraService', {
+                salvosComStatus: savedWithStatus
+            });
         } else {
             // Não há nem existentes nem salvos
             mergedTestCases = [];
@@ -1296,16 +1314,34 @@ export const syncJiraProject = async (
                 const savedTestCasesForTask = savedTestStatuses.get(task.id) || [];
                 const existingTestCasesForTask = oldTask.testCases || [];
                 
+                // Contar status não-padrão antes da mesclagem
+                const existingWithStatus = existingTestCasesForTask.filter(tc => tc.status !== 'Not Run').length;
+                const savedWithStatus = savedTestCasesForTask.filter(tc => tc.status !== 'Not Run').length;
+                
                 // Mesclar testCases: priorizar os existentes (mais recentes) sobre os salvos
                 let finalTestCases: typeof oldTask.testCases;
                 if (existingTestCasesForTask.length > 0) {
                     // Priorizar existentes (mais recentes), mas mesclar com salvos para pegar testCases removidos
                     finalTestCases = mergeTestCases(existingTestCasesForTask, savedTestCasesForTask);
-                    logger.debug(`Mesclando ${existingTestCasesForTask.length} testCases existentes com ${savedTestCasesForTask.length} salvos para ${task.id}`, 'jiraService');
+                    
+                    // Contar status não-padrão após mesclagem
+                    const finalWithStatus = finalTestCases.filter(tc => tc.status !== 'Not Run').length;
+                    
+                    logger.debug(`Mesclando testCases para ${task.id}`, 'jiraService', {
+                        existentes: existingTestCasesForTask.length,
+                        existentesComStatus: existingWithStatus,
+                        salvos: savedTestCasesForTask.length,
+                        salvosComStatus: savedWithStatus,
+                        resultado: finalTestCases.length,
+                        resultadoComStatus: finalWithStatus,
+                        statusPreservados: finalWithStatus >= Math.max(existingWithStatus, savedWithStatus)
+                    });
                 } else if (savedTestCasesForTask.length > 0) {
                     // Não há existentes, usar os salvos
                     finalTestCases = savedTestCasesForTask;
-                    logger.debug(`Usando ${savedTestCasesForTask.length} testCases salvos (sem existentes) para ${task.id}`, 'jiraService');
+                    logger.debug(`Usando ${savedTestCasesForTask.length} testCases salvos (sem existentes) para ${task.id}`, 'jiraService', {
+                        salvosComStatus: savedWithStatus
+                    });
                 } else {
                     // Não há nem existentes nem salvos
                     finalTestCases = [];
@@ -1353,16 +1389,33 @@ export const syncJiraProject = async (
                 const savedTestCasesForTaskNoChanges = savedTestStatuses.get(task.id) || [];
                 const existingTestCasesNoChanges = oldTask.testCases || [];
                 
+                // Contar status não-padrão antes da mesclagem
+                const existingWithStatusNoChanges = existingTestCasesNoChanges.filter(tc => tc.status !== 'Not Run').length;
+                const savedWithStatusNoChanges = savedTestCasesForTaskNoChanges.filter(tc => tc.status !== 'Not Run').length;
+                
                 if (existingTestCasesNoChanges.length > 0 || savedTestCasesForTaskNoChanges.length > 0) {
                     // Priorizar existentes, mas mesclar com salvos
                     const mergedTestCasesNoChanges = existingTestCasesNoChanges.length > 0
                         ? mergeTestCases(existingTestCasesNoChanges, savedTestCasesForTaskNoChanges)
                         : savedTestCasesForTaskNoChanges;
+                    
+                    // Contar status não-padrão após mesclagem
+                    const finalWithStatusNoChanges = mergedTestCasesNoChanges.filter(tc => tc.status !== 'Not Run').length;
+                    
                     updatedTasks[existingIndex] = {
                         ...oldTask,
                         testCases: mergedTestCasesNoChanges
                     };
-                    logger.debug(`Mesclando ${existingTestCasesNoChanges.length} testCases existentes com ${savedTestCasesForTaskNoChanges.length} salvos (sem mudanças no Jira) para ${task.id}`, 'jiraService');
+                    
+                    logger.debug(`Mesclando testCases (sem mudanças no Jira) para ${task.id}`, 'jiraService', {
+                        existentes: existingTestCasesNoChanges.length,
+                        existentesComStatus: existingWithStatusNoChanges,
+                        salvos: savedTestCasesForTaskNoChanges.length,
+                        salvosComStatus: savedWithStatusNoChanges,
+                        resultado: mergedTestCasesNoChanges.length,
+                        resultadoComStatus: finalWithStatusNoChanges,
+                        statusPreservados: finalWithStatusNoChanges >= Math.max(existingWithStatusNoChanges, savedWithStatusNoChanges)
+                    });
                 } else {
                     updatedTasks[existingIndex] = oldTask;
                 }

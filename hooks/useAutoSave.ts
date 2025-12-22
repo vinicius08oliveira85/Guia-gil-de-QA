@@ -51,6 +51,26 @@ export const useAutoSave = ({
       (t.testCases || []).map(tc => ({ taskId: t.id, testCaseId: tc.id, status: tc.status }))
     );
     if (JSON.stringify(oldTestStatuses) !== JSON.stringify(newTestStatuses)) {
+      // Contar quantos status mudaram
+      const changedStatuses = newTestStatuses.filter(newStatus => {
+        const oldStatus = oldTestStatuses.find(
+          os => os.taskId === newStatus.taskId && os.testCaseId === newStatus.testCaseId
+        );
+        return !oldStatus || oldStatus.status !== newStatus.status;
+      });
+      
+      const statusChanges = changedStatuses.filter(s => s.status !== 'Not Run').length;
+      
+      logger.debug(`Mudança crítica detectada: status de testes alterados`, 'useAutoSave', {
+        totalMudancas: changedStatuses.length,
+        mudancasComStatus: statusChanges,
+        exemplo: changedStatuses.slice(0, 3).map(s => ({
+          taskId: s.taskId,
+          testCaseId: s.testCaseId,
+          novoStatus: s.status
+        }))
+      });
+      
       return true;
     }
 

@@ -724,6 +724,9 @@ export const loadTestStatusesByJiraKeys = async (jiraKeys: string[]): Promise<Ma
         // Criar um Set para busca rápida
         const keysSet = new Set(validKeys);
         
+        let totalTestCasesFound = 0;
+        let totalTestCasesWithStatus = 0;
+        
         // Iterar sobre todos os projetos e tarefas
         for (const project of projects) {
             if (!project.tasks || project.tasks.length === 0) {
@@ -739,15 +742,24 @@ export const loadTestStatusesByJiraKeys = async (jiraKeys: string[]): Promise<Ma
                         // Preservar testCases se existirem
                         const testCases = task.testCases || [];
                         if (testCases.length > 0) {
+                            const testCasesWithStatus = testCases.filter(tc => tc.status !== 'Not Run').length;
+                            totalTestCasesFound += testCases.length;
+                            totalTestCasesWithStatus += testCasesWithStatus;
+                            
                             result.set(task.id, testCases);
-                            logger.debug(`Status de testes encontrados para ${task.id}: ${testCases.length} casos`, 'supabaseService');
+                            logger.debug(`Status de testes encontrados para ${task.id}: ${testCases.length} casos (${testCasesWithStatus} com status)`, 'supabaseService');
                         }
                     }
                 }
             }
         }
         
-        logger.info(`Status de testes carregados para ${result.size} chaves Jira de ${validKeys.length} solicitadas`, 'supabaseService');
+        logger.info(`Status de testes carregados para ${result.size} chaves Jira de ${validKeys.length} solicitadas`, 'supabaseService', {
+            chavesEncontradas: result.size,
+            totalTestCases: totalTestCasesFound,
+            testCasesComStatus: totalTestCasesWithStatus,
+            testCasesSemStatus: totalTestCasesFound - totalTestCasesWithStatus
+        });
     } catch (error) {
         logger.warn('Erro ao buscar status de testes do Supabase, continuando sem preservar status', 'supabaseService', error);
         // Retornar Map vazio em caso de erro - não bloquear a importação/sincronização

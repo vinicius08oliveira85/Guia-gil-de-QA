@@ -35,6 +35,23 @@ export const mergeTestCases = (
         }
     }
     
+    /**
+     * Determina qual status usar na mesclagem
+     * Preserva status salvos quando o existente é "Not Run" (padrão)
+     */
+    const determineStatus = (primary: TestCase, secondary: TestCase): TestCase['status'] => {
+        // Se o status prioritário é "Not Run" (padrão) e o secundário tem um status diferente, usar o secundário
+        // Isso preserva o trabalho feito que foi salvo no Supabase
+        if (primary.status === 'Not Run' && secondary.status !== 'Not Run') {
+            logger.debug(`Preservando status salvo "${secondary.status}" para testCase ${primary.id} (existente era "Not Run")`, 'testCaseMerge');
+            return secondary.status;
+        }
+        
+        // Se o status prioritário não é "Not Run", usar o prioritário (mais recente)
+        // Caso contrário, usar o prioritário mesmo que seja "Not Run"
+        return primary.status;
+    };
+    
     // Criar um Set dos IDs dos prioritários para verificar quais são novos
     const primaryIds = new Set(primaryTestCases.map(tc => tc.id).filter(Boolean));
     
@@ -45,6 +62,9 @@ export const mergeTestCases = (
         if (secondary) {
             // TestCase existe tanto nos prioritários quanto nos secundários
             // Priorizar dados dos prioritários (mais recentes), mas usar secundários para preencher campos vazios
+            // IMPORTANTE: Status usa lógica especial para preservar status salvos quando existente é "Not Run"
+            const finalStatus = determineStatus(primaryTestCase, secondary);
+            
             return {
                 ...primaryTestCase, // Priorizar dados prioritários (mais recentes)
                 // Usar secundários apenas se campos prioritários estiverem vazios
@@ -52,8 +72,8 @@ export const mergeTestCases = (
                 steps: primaryTestCase.steps?.length > 0 ? primaryTestCase.steps : secondary.steps,
                 expectedResult: primaryTestCase.expectedResult || secondary.expectedResult,
                 title: primaryTestCase.title || secondary.title,
-                // Status sempre do prioritário (mais recente)
-                status: primaryTestCase.status,
+                // Status: usar lógica especial para preservar status salvos
+                status: finalStatus,
                 // Outros campos: priorizar prioritários, usar secundários como fallback
                 observedResult: primaryTestCase.observedResult || secondary.observedResult,
                 isAutomated: primaryTestCase.isAutomated !== undefined ? primaryTestCase.isAutomated : secondary.isAutomated,
