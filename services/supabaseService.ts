@@ -1,5 +1,5 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { Project } from '../types';
+import { Project, TestCase, JiraTask } from '../types';
 import { logger } from '../utils/logger';
 
 const supabaseProxyUrl = (import.meta.env.VITE_SUPABASE_PROXY_URL || '').trim();
@@ -685,5 +685,74 @@ export const deleteProjectFromSupabase = async (projectId: string): Promise<void
 export const isSupabaseAvailable = (): boolean => {
     // Supabase está disponível se tiver proxy OU SDK direto configurado
     return Boolean(supabaseProxyUrl) || supabase !== null;
+};
+
+/**
+ * Valida se uma string é uma chave Jira válida (formato: PROJ-123)
+ */
+const isValidJiraKey = (key: string): boolean => {
+    return /^[A-Z]+-\d+$/.test(key);
+};
+
+/**
+ * Busca os status dos testes salvos no Supabase por chave Jira
+ * Retorna um Map onde a chave é a chave Jira e o valor são os testCases salvos
+ * 
+ * @param jiraKeys Array de chaves Jira para buscar (ex: ['GDPI-4', 'GDPI-3'])
+ * @returns Map com chave Jira -> testCases salvos
+ */
+export const loadTestStatusesByJiraKeys = async (jiraKeys: string[]): Promise<Map<string, TestCase[]>> => {
+    const result = new Map<string, TestCase[]>();
+    
+    // Filtrar apenas chaves Jira válidas
+    const validKeys = jiraKeys.filter(key => isValidJiraKey(key));
+    
+    if (validKeys.length === 0) {
+        logger.debug('Nenhuma chave Jira válida fornecida para buscar status de testes', 'supabaseService');
+        return result;
+    }
+    
+    try {
+        // Buscar todos os projetos do Supabase
+        const projects = await loadProjectsFromSupabase();
+        
+        if (projects.length === 0) {
+            logger.debug('Nenhum projeto encontrado no Supabase para buscar status de testes', 'supabaseService');
+            return result;
+        }
+        
+        // Criar um Set para busca rápida
+        const keysSet = new Set(validKeys);
+        
+        // Iterar sobre todos os projetos e tarefas
+        for (const project of projects) {
+            if (!project.tasks || project.tasks.length === 0) {
+                continue;
+            }
+            
+            for (const task of project.tasks) {
+                // Verificar se a tarefa tem uma chave Jira válida e está na lista de busca
+                if (task.id && isValidJiraKey(task.id) && keysSet.has(task.id)) {
+                    // Se já existe uma entrada para esta chave, manter a mais recente (último projeto processado)
+                    // ou mesclar se necessário
+                    if (!result.has(task.id) || (task.testCases && task.testCases.length > 0)) {
+                        // Preservar testCases se existirem
+                        const testCases = task.testCases || [];
+                        if (testCases.length > 0) {
+                            result.set(task.id, testCases);
+                            logger.debug(`Status de testes encontrados para ${task.id}: ${testCases.length} casos`, 'supabaseService');
+                        }
+                    }
+                }
+            }
+        }
+        
+        logger.info(`Status de testes carregados para ${result.size} chaves Jira de ${validKeys.length} solicitadas`, 'supabaseService');
+    } catch (error) {
+        logger.warn('Erro ao buscar status de testes do Supabase, continuando sem preservar status', 'supabaseService', error);
+        // Retornar Map vazio em caso de erro - não bloquear a importação/sincronização
+    }
+    
+    return result;
 };
 

@@ -3,6 +3,8 @@ import { parseJiraDescription, parseJiraDescriptionHTML } from '../utils/jiraDes
 import { getCache, setCache, clearCache } from '../utils/apiCache';
 import { getJiraStatusColor } from '../utils/jiraStatusColors';
 import { logger } from '../utils/logger';
+import { loadTestStatusesByJiraKeys } from './supabaseService';
+import { mergeTestCases } from '../utils/testCaseMerge';
 
 export interface JiraConfig {
     url: string;
@@ -766,6 +768,12 @@ export const importJiraProject = async (
     // Buscar TODAS as issues do projeto (sem limite)
     const jiraIssues = await getJiraIssues(config, jiraProjectKey, undefined, onProgress);
 
+    // Buscar status dos testes salvos no Supabase para todas as chaves Jira
+    const jiraKeys = jiraIssues.map(issue => issue.key).filter(Boolean) as string[];
+    const savedTestStatuses = await loadTestStatusesByJiraKeys(jiraKeys);
+    
+    logger.info(`Buscando status de testes para ${jiraKeys.length} chaves Jira`, 'jiraService');
+
     // Mapear issues para tarefas
     const tasks: JiraTask[] = await Promise.all(jiraIssues.map(async (issue, index) => {
         const taskType = mapJiraTypeToTaskType(issue.fields?.issuetype?.name);
@@ -818,8 +826,13 @@ export const importJiraProject = async (
         const jiraComments = await extractJiraComments(config, issue);
         
         const jiraStatusName = issue.fields?.status?.name || '';
+        const jiraKey = issue.key || `jira-${Date.now()}-${Math.random()}`;
+        
+        // Buscar testCases salvos para esta chave Jira
+        const savedTestCases = savedTestStatuses.get(jiraKey) || [];
+        
         const task: JiraTask = {
-            id: issue.key || `jira-${Date.now()}-${Math.random()}`,
+            id: jiraKey,
             title: issue.fields?.summary || 'Sem título',
             description: description || '',
             status: mapJiraStatusToTaskStatus(jiraStatusName),
@@ -829,10 +842,14 @@ export const importJiraProject = async (
             createdAt: issue.fields?.created || new Date().toISOString(),
             completedAt: issue.fields?.resolutiondate,
             tags: issue.fields?.labels || [],
-            testCases: [],
+            testCases: savedTestCases, // Inicializar com testCases salvos (serão mesclados se houver novos)
             bddScenarios: [],
             comments: jiraComments,
         };
+        
+        if (savedTestCases.length > 0) {
+            logger.debug(`Preservando ${savedTestCases.length} testCases salvos para ${jiraKey}`, 'jiraService');
+        }
 
         if (isBug) {
             task.severity = mapJiraSeverity(issue.fields.labels);
@@ -990,6 +1007,12 @@ export const syncJiraProject = async (
     logger.info(`Buscadas ${jiraIssues.length} issues do Jira para projeto ${jiraProjectKey}`, 'jiraService');
     logger.info(`Tarefas existentes no projeto: ${project.tasks.length}`, 'jiraService');
     
+    // Buscar status dos testes salvos no Supabase para todas as chaves Jira
+    const jiraKeys = jiraIssues.map(issue => issue.key).filter(Boolean) as string[];
+    const savedTestStatuses = await loadTestStatusesByJiraKeys(jiraKeys);
+    
+    logger.info(`Buscando status de testes para ${jiraKeys.length} chaves Jira`, 'jiraService');
+    
     // Atualizar tarefas existentes e adicionar novas
     const updatedTasks = [...project.tasks];
     let updatedCount = 0;
@@ -1039,8 +1062,29 @@ export const syncJiraProject = async (
         const mergedComments = mergeComments(existingComments, jiraComments);
         
         const jiraStatusName = issue.fields?.status?.name || '';
+        const jiraKey = issue.key || `jira-${Date.now()}-${Math.random()}`;
+        
+        // Buscar testCases existentes e salvos
+        const existingTestCases = existingIndex >= 0 ? (updatedTasks[existingIndex].testCases || []) : [];
+        const savedTestCases = savedTestStatuses.get(jiraKey) || [];
+        
+        // Mesclar testCases: priorizar os salvos no Supabase, depois os existentes
+        // Se há testCases salvos, mesclar com os existentes (preservando status dos salvos)
+        // Se não há salvos, usar os existentes
+        let mergedTestCases: typeof existingTestCases;
+        if (savedTestCases.length > 0) {
+            // Mesclar salvos com existentes, priorizando os salvos
+            mergedTestCases = mergeTestCases(savedTestCases, existingTestCases);
+            if (mergedTestCases.length !== existingTestCases.length || savedTestCases.length > 0) {
+                logger.debug(`Mesclando ${savedTestCases.length} testCases salvos com ${existingTestCases.length} existentes para ${jiraKey}`, 'jiraService');
+            }
+        } else {
+            // Não há testCases salvos, usar os existentes
+            mergedTestCases = existingTestCases;
+        }
+        
         const task: JiraTask = {
-            id: issue.key || `jira-${Date.now()}-${Math.random()}`,
+            id: jiraKey,
             title: issue.fields?.summary || 'Sem título',
             description: description || '',
             status: mapJiraStatusToTaskStatus(jiraStatusName),
@@ -1050,7 +1094,7 @@ export const syncJiraProject = async (
             createdAt: issue.fields?.created || new Date().toISOString(),
             completedAt: issue.fields?.resolutiondate || undefined, // Atualizar exatamente como está no Jira
             tags: issue.fields?.labels || [],
-            testCases: existingIndex >= 0 ? updatedTasks[existingIndex].testCases : [], // Preservar casos de teste locais
+            testCases: mergedTestCases, // Usar testCases mesclados (salvos + existentes)
             bddScenarios: existingIndex >= 0 ? updatedTasks[existingIndex].bddScenarios : [], // Preservar cenários BDD locais
             comments: mergedComments,
         };
@@ -1246,6 +1290,20 @@ export const syncJiraProject = async (
                     descriptionChanged: oldTask.description !== task.description
                 });
                 
+                // Buscar testCases salvos no Supabase para esta chave
+                const savedTestCasesForTask = savedTestStatuses.get(task.id) || [];
+                
+                // Mesclar testCases: priorizar os salvos no Supabase, depois os existentes
+                let finalTestCases: typeof oldTask.testCases;
+                if (savedTestCasesForTask.length > 0) {
+                    // Mesclar salvos com existentes, priorizando os salvos
+                    finalTestCases = mergeTestCases(savedTestCasesForTask, oldTask.testCases || []);
+                    logger.debug(`Mesclando ${savedTestCasesForTask.length} testCases salvos com ${(oldTask.testCases || []).length} existentes para ${task.id}`, 'jiraService');
+                } else {
+                    // Não há testCases salvos, usar os existentes
+                    finalTestCases = oldTask.testCases || [];
+                }
+                
                 // Fazer merge preservando dados locais e atualizando apenas campos do Jira
                 updatedTasks[existingIndex] = {
                     ...oldTask, // Preservar todos os dados locais primeiro
@@ -1273,7 +1331,7 @@ export const syncJiraProject = async (
                     jiraCustomFields: task.jiraCustomFields,
                     comments: task.comments, // Já faz merge de comentários
                     // Preservar dados locais que não vêm do Jira
-                    testCases: oldTask.testCases || [], // ✅ Preservar status dos testes
+                    testCases: finalTestCases, // ✅ Preservar status dos testes (mesclados com salvos do Supabase)
                     bddScenarios: oldTask.bddScenarios || [], // ✅ Preservar cenários BDD
                     testStrategy: oldTask.testStrategy, // ✅ Preservar estratégia de teste
                     tools: oldTask.tools, // ✅ Preservar ferramentas
