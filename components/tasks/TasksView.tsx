@@ -1028,6 +1028,13 @@ export const TasksView: React.FC<{
     const performSync = useCallback(async (config: JiraConfig, jiraProjectKey: string) => {
         setIsSyncingJira(true);
         try {
+            // Garantir que o projeto atual está salvo no Supabase antes de sincronizar
+            // Isso preserva os status dos testes que foram alterados
+            logger.debug('Garantindo salvamento do projeto antes de sincronizar com Jira', 'TasksView');
+            const { updateProject: saveProject } = useProjectsStore.getState();
+            await saveProject(project, { silent: true });
+            logger.debug('Projeto salvo no Supabase, iniciando sincronização com Jira', 'TasksView');
+            
             // Usar syncJiraProject que atualiza tarefas existentes e adiciona novas
             // Isso garante que bugs e tarefas modificados no Jira sejam atualizados corretamente
             const updatedProject = await syncJiraProject(

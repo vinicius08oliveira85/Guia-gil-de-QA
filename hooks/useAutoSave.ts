@@ -188,5 +188,39 @@ export const useAutoSave = ({
       }
     };
   }, [saveProject]);
+
+  /**
+   * Força o salvamento imediato do projeto e aguarda conclusão
+   * Útil quando precisamos garantir que o projeto está salvo antes de uma operação crítica
+   */
+  const forceSaveAndWait = useCallback(async (projectToSave: Project): Promise<void> => {
+    // Limpar timeout pendente se houver
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+      saveTimeoutRef.current = null;
+    }
+
+    // Aguardar salvamento em progresso se houver
+    let waitCount = 0;
+    while (isSavingRef.current && waitCount < 50) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+      waitCount++;
+    }
+
+    // Forçar salvamento imediato
+    await saveProject(projectToSave);
+    
+    // Aguardar conclusão
+    waitCount = 0;
+    while (isSavingRef.current && waitCount < 50) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+      waitCount++;
+    }
+  }, [saveProject]);
+
+  // Retornar função para forçar salvamento (opcional, para uso externo)
+  return {
+    forceSaveAndWait,
+  };
 };
 

@@ -37,18 +37,33 @@ export const mergeTestCases = (
     
     /**
      * Determina qual status usar na mesclagem
-     * Preserva status salvos quando o existente é "Not Run" (padrão)
+     * Sempre preserva status diferentes de "Not Run" (trabalho já realizado)
+     * Prioriza status executados sobre "Not Run" independente da ordem
      */
     const determineStatus = (primary: TestCase, secondary: TestCase): TestCase['status'] => {
-        // Se o status prioritário é "Not Run" (padrão) e o secundário tem um status diferente, usar o secundário
-        // Isso preserva o trabalho feito que foi salvo no Supabase
-        if (primary.status === 'Not Run' && secondary.status !== 'Not Run') {
-            logger.debug(`Preservando status salvo "${secondary.status}" para testCase ${primary.id} (existente era "Not Run")`, 'testCaseMerge');
+        const primaryHasStatus = primary.status !== 'Not Run';
+        const secondaryHasStatus = secondary.status !== 'Not Run';
+        
+        // Se apenas o primário tem status executado, usar o primário
+        if (primaryHasStatus && !secondaryHasStatus) {
+            logger.debug(`Preservando status primário "${primary.status}" para testCase ${primary.id}`, 'testCaseMerge');
+            return primary.status;
+        }
+        
+        // Se apenas o secundário tem status executado, usar o secundário
+        if (!primaryHasStatus && secondaryHasStatus) {
+            logger.debug(`Preservando status salvo "${secondary.status}" para testCase ${primary.id} (primário era "Not Run")`, 'testCaseMerge');
             return secondary.status;
         }
         
-        // Se o status prioritário não é "Not Run", usar o prioritário (mais recente)
-        // Caso contrário, usar o prioritário mesmo que seja "Not Run"
+        // Se ambos têm status executados, priorizar o primário (mais recente)
+        if (primaryHasStatus && secondaryHasStatus) {
+            logger.debug(`Ambos têm status: primário="${primary.status}", secundário="${secondary.status}". Usando primário para testCase ${primary.id}`, 'testCaseMerge');
+            return primary.status;
+        }
+        
+        // Se ambos são "Not Run", usar o primário
+        logger.debug(`Ambos são "Not Run" para testCase ${primary.id}, usando primário`, 'testCaseMerge');
         return primary.status;
     };
     
