@@ -1383,12 +1383,18 @@ export const syncJiraProject = async (
 
         if (existingIndex >= 0) {
             const oldTask = updatedTasks[existingIndex];
+            
+            // IMPORTANTE: Sempre verificar se o jiraStatus mudou (independente de outras mudanças)
+            // O jiraStatus deve ser sempre atualizado do Jira, mesmo quando não há outras mudanças
+            const jiraStatusChanged = oldTask.jiraStatus !== jiraStatusName;
+            const statusMappedChanged = oldTask.status !== task.status;
+            
             // Verificar se realmente houve mudanças nos campos do Jira antes de atualizar
             const hasChanges = (
                 oldTask.title !== task.title ||
                 oldTask.description !== task.description ||
-                oldTask.status !== task.status ||
-                oldTask.jiraStatus !== task.jiraStatus ||
+                statusMappedChanged ||
+                jiraStatusChanged ||
                 oldTask.priority !== task.priority ||
                 JSON.stringify(oldTask.tags || []) !== JSON.stringify(task.tags || []) ||
                 oldTask.severity !== task.severity ||
@@ -1411,10 +1417,17 @@ export const syncJiraProject = async (
             if (hasChanges) {
                 logger.debug(`Atualizando tarefa ${task.id}`, 'jiraService', {
                     titleChanged: oldTask.title !== task.title,
-                    statusChanged: oldTask.status !== task.status || oldTask.jiraStatus !== task.jiraStatus,
+                    statusChanged: statusMappedChanged || jiraStatusChanged,
+                    jiraStatusChanged: jiraStatusChanged,
+                    jiraStatusOld: oldTask.jiraStatus,
+                    jiraStatusNew: jiraStatusName,
                     priorityChanged: oldTask.priority !== task.priority,
                     descriptionChanged: oldTask.description !== task.description
                 });
+                
+                if (jiraStatusChanged) {
+                    logger.info(`jiraStatus atualizado (com outras mudanças) para ${task.id}: "${oldTask.jiraStatus}" → "${jiraStatusName}"`, 'jiraService');
+                }
                 
                 // Buscar testCases salvos no Supabase para esta chave
                 const savedTestCasesForTask = savedTestStatuses.get(task.id) || [];
@@ -1599,10 +1612,17 @@ export const syncJiraProject = async (
                     
                     const finalWithStatusNoChanges = mergedTestCasesNoChanges.filter(tc => tc.status !== 'Not Run').length;
                     
+                    // IMPORTANTE: Sempre atualizar jiraStatus do Jira, mesmo quando não há outras mudanças
                     updatedTasks[existingIndex] = {
                         ...oldTask,
+                        jiraStatus: jiraStatusName, // Sempre atualizar do Jira
+                        status: jiraStatusChanged ? mapJiraStatusToTaskStatus(jiraStatusName) : oldTask.status, // Atualizar status mapeado se jiraStatus mudou
                         testCases: mergedTestCasesNoChanges
                     };
+                    
+                    if (jiraStatusChanged) {
+                        logger.info(`jiraStatus atualizado (sem outras mudanças) para ${task.id}: "${oldTask.jiraStatus}" → "${jiraStatusName}"`, 'jiraService');
+                    }
                     
                     logger.info(`PROTEÇÃO FINAL aplicada (sem mudanças Jira) para ${task.id}`, 'jiraService', {
                         existentes: existingTestCasesNoChanges.length,
@@ -1622,10 +1642,17 @@ export const syncJiraProject = async (
                     
                     const finalWithStatusNoChanges = mergedTestCasesNoChanges.filter(tc => tc.status !== 'Not Run').length;
                     
+                    // IMPORTANTE: Sempre atualizar jiraStatus do Jira, mesmo quando não há outras mudanças
                     updatedTasks[existingIndex] = {
                         ...oldTask,
+                        jiraStatus: jiraStatusName, // Sempre atualizar do Jira
+                        status: jiraStatusChanged ? mapJiraStatusToTaskStatus(jiraStatusName) : oldTask.status, // Atualizar status mapeado se jiraStatus mudou
                         testCases: mergedTestCasesNoChanges
                     };
+                    
+                    if (jiraStatusChanged) {
+                        logger.info(`jiraStatus atualizado (sem outras mudanças) para ${task.id}: "${oldTask.jiraStatus}" → "${jiraStatusName}"`, 'jiraService');
+                    }
                     
                     logger.debug(`Mesclando testCases (sem mudanças no Jira) para ${task.id}`, 'jiraService', {
                         existentes: existingTestCasesNoChanges.length,
@@ -1640,16 +1667,34 @@ export const syncJiraProject = async (
                     // para garantir que temos os status mais recentes
                     const originalTaskForNoChanges = task.id ? originalTasksMap.get(task.id) : undefined;
                     if (originalTaskForNoChanges) {
+                        // IMPORTANTE: Sempre atualizar jiraStatus do Jira, mesmo quando não há outras mudanças
                         updatedTasks[existingIndex] = {
                             ...oldTask,
+                            jiraStatus: jiraStatusName, // Sempre atualizar do Jira
+                            status: jiraStatusChanged ? mapJiraStatusToTaskStatus(jiraStatusName) : oldTask.status, // Atualizar status mapeado se jiraStatus mudou
                             testCases: originalTaskForNoChanges.testCases || []
                         };
+                        
+                        if (jiraStatusChanged) {
+                            logger.info(`jiraStatus atualizado (sem outras mudanças) para ${task.id}: "${oldTask.jiraStatus}" → "${jiraStatusName}"`, 'jiraService');
+                        }
+                        
                         logger.debug(`Preservando testCases do projeto original (sem mudanças no Jira) para ${task.id}`, 'jiraService', {
                             testCasesCount: (originalTaskForNoChanges.testCases || []).length,
                             testCasesComStatus: (originalTaskForNoChanges.testCases || []).filter(tc => tc.status !== 'Not Run').length
                         });
                     } else {
-                        updatedTasks[existingIndex] = oldTask;
+                        // IMPORTANTE: Sempre atualizar jiraStatus do Jira, mesmo quando não há outras mudanças
+                        updatedTasks[existingIndex] = {
+                            ...oldTask,
+                            jiraStatus: jiraStatusName, // Sempre atualizar do Jira
+                            status: jiraStatusChanged ? mapJiraStatusToTaskStatus(jiraStatusName) : oldTask.status // Atualizar status mapeado se jiraStatus mudou
+                        };
+                        
+                        if (jiraStatusChanged) {
+                            logger.info(`jiraStatus atualizado (sem outras mudanças) para ${task.id}: "${oldTask.jiraStatus}" → "${jiraStatusName}"`, 'jiraService');
+                        }
+                        
                         logger.debug(`Nenhum testCase para mesclar (sem mudanças no Jira) para ${task.id}`, 'jiraService');
                     }
                 }
