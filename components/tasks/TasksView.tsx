@@ -67,6 +67,7 @@ import { GeneralIAAnalysisButton } from './GeneralIAAnalysisButton';
 import { generateGeneralIAAnalysis } from '../../services/ai/generalAnalysisService';
 import { FailedTestsReportModal } from './FailedTestsReportModal';
 import { useProjectMetrics } from '../../hooks/useProjectMetrics';
+import { getTaskStatusCategory } from '../../utils/jiraStatusCategorizer';
 
 export const TasksView: React.FC<{ 
     project: Project, 
@@ -934,9 +935,20 @@ export const TasksView: React.FC<{
 
     const stats = useMemo(() => {
         const total = project.tasks.length;
-        const inProgress = project.tasks.filter(t => t.status === 'In Progress').length;
-        const done = project.tasks.filter(t => t.status === 'Done').length;
-        const bugsOpen = project.tasks.filter(t => t.type === 'Bug' && t.status !== 'Done').length;
+        // Usar categorias do Jira para calcular status
+        const inProgress = project.tasks.filter(t => {
+            const category = getTaskStatusCategory(t);
+            return category === 'Em Andamento';
+        }).length;
+        const done = project.tasks.filter(t => {
+            const category = getTaskStatusCategory(t);
+            return category === 'Concluído';
+        }).length;
+        const bugsOpen = project.tasks.filter(t => {
+            if (t.type !== 'Bug') return false;
+            const category = getTaskStatusCategory(t);
+            return category !== 'Concluído';
+        }).length;
         const totalTests = project.tasks.reduce((acc, t) => acc + (t.testCases?.length || 0), 0);
         const executedTests = project.tasks.reduce((acc, t) => acc + (t.testCases?.filter(tc => tc.status !== 'Not Run').length || 0), 0);
         const automatedTests = project.tasks.reduce((acc, t) => acc + (t.testCases?.filter(tc => tc.isAutomated).length || 0), 0);
