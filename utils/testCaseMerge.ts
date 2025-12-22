@@ -37,29 +37,23 @@ export const mergeTestCases = (
     
     /**
      * Determina qual status usar na mesclagem
-     * Sempre preserva status diferentes de "Not Run" (trabalho já realizado)
-     * Prioriza status executados sobre "Not Run" independente da ordem
+     * REGRA DE OURO: Se o primário tem status diferente de "Not Run", esse status NUNCA é alterado
+     * A única exceção é se o primário tem "Not Run" e o secundário tem um status executado
      */
     const determineStatus = (primary: TestCase, secondary: TestCase): TestCase['status'] => {
         const primaryHasStatus = primary.status !== 'Not Run';
         const secondaryHasStatus = secondary.status !== 'Not Run';
         
-        // Se apenas o primário tem status executado, usar o primário
-        if (primaryHasStatus && !secondaryHasStatus) {
-            logger.debug(`Preservando status primário "${primary.status}" para testCase ${primary.id}`, 'testCaseMerge');
+        // REGRA DE OURO: Se o primário tem status executado, SEMPRE usar o primário (NUNCA sobrescrever)
+        if (primaryHasStatus) {
+            logger.debug(`REGRA DE OURO: Preservando status primário "${primary.status}" para testCase ${primary.id} (nunca sobrescrever)`, 'testCaseMerge');
             return primary.status;
         }
         
-        // Se apenas o secundário tem status executado, usar o secundário
+        // Se o primário é "Not Run" e o secundário tem status executado, usar o secundário
         if (!primaryHasStatus && secondaryHasStatus) {
             logger.debug(`Preservando status salvo "${secondary.status}" para testCase ${primary.id} (primário era "Not Run")`, 'testCaseMerge');
             return secondary.status;
-        }
-        
-        // Se ambos têm status executados, priorizar o primário (mais recente)
-        if (primaryHasStatus && secondaryHasStatus) {
-            logger.debug(`Ambos têm status: primário="${primary.status}", secundário="${secondary.status}". Usando primário para testCase ${primary.id}`, 'testCaseMerge');
-            return primary.status;
         }
         
         // Se ambos são "Not Run", usar o primário
