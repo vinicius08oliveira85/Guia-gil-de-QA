@@ -1030,6 +1030,16 @@ export const syncJiraProject = async (
     const updatedTasks = [...project.tasks];
     let updatedCount = 0;
     let newCount = 0;
+    
+    // Criar Map do projeto original por ID para acesso rápido aos testCases originais
+    // IMPORTANTE: Isso garante que sempre obtemos os status mais recentes do projeto original
+    const originalTasksMap = new Map<string, JiraTask>();
+    project.tasks.forEach(task => {
+        if (task.id) {
+            originalTasksMap.set(task.id, task);
+        }
+    });
+    logger.debug(`Map de tarefas originais criado com ${originalTasksMap.size} tarefas`, 'jiraService');
 
     for (const issue of jiraIssues) {
         const existingIndex = updatedTasks.findIndex(t => t.id === issue.key);
@@ -1078,9 +1088,17 @@ export const syncJiraProject = async (
         const jiraKey = issue.key || `jira-${Date.now()}-${Math.random()}`;
         
         // Buscar testCases existentes e salvos
-        // IMPORTANTE: existingTestCases sempre vêm do projeto atual (updatedTasks é uma cópia do project.tasks)
-        const existingTestCases = existingIndex >= 0 ? (updatedTasks[existingIndex].testCases || []) : [];
+        // IMPORTANTE: existingTestCases sempre vêm do projeto ORIGINAL (não de updatedTasks que pode estar desatualizado)
+        // Usar originalTasksMap para garantir que temos os status mais recentes
+        const originalTask = jiraKey ? originalTasksMap.get(jiraKey) : undefined;
+        const existingTestCases = originalTask?.testCases || [];
         const savedTestCases = savedTestStatuses.get(jiraKey) || [];
+        
+        logger.debug(`Obtendo existingTestCases para ${jiraKey}`, 'jiraService', {
+            temOriginalTask: !!originalTask,
+            existingTestCasesCount: existingTestCases.length,
+            existingTestCasesComStatus: existingTestCases.filter(tc => tc.status !== 'Not Run').length
+        });
         
         // Contar status não-padrão antes da mesclagem
         const existingWithStatus = existingTestCases.filter(tc => tc.status !== 'Not Run').length;
@@ -1361,7 +1379,15 @@ export const syncJiraProject = async (
                 
                 // Buscar testCases salvos no Supabase para esta chave
                 const savedTestCasesForTask = savedTestStatuses.get(task.id) || [];
-                const existingTestCasesForTask = oldTask.testCases || [];
+                // IMPORTANTE: Obter existingTestCasesForTask do projeto ORIGINAL, não de oldTask que pode estar desatualizado
+                const originalTaskForChanges = task.id ? originalTasksMap.get(task.id) : undefined;
+                const existingTestCasesForTask = originalTaskForChanges?.testCases || [];
+                
+                logger.debug(`Obtendo existingTestCasesForTask para ${task.id} (com mudanças)`, 'jiraService', {
+                    temOriginalTask: !!originalTaskForChanges,
+                    existingTestCasesForTaskCount: existingTestCasesForTask.length,
+                    existingTestCasesForTaskComStatus: existingTestCasesForTask.filter(tc => tc.status !== 'Not Run').length
+                });
                 
                 // Contar status não-padrão antes da mesclagem
                 const existingWithStatus = existingTestCasesForTask.filter(tc => tc.status !== 'Not Run').length;
@@ -1491,7 +1517,15 @@ export const syncJiraProject = async (
                 // Preservar tarefa existente se não houve mudanças no Jira
                 // Mas ainda assim mesclar testCases salvos se houver
                 const savedTestCasesForTaskNoChanges = savedTestStatuses.get(task.id) || [];
-                const existingTestCasesNoChanges = oldTask.testCases || [];
+                // IMPORTANTE: Obter existingTestCasesNoChanges do projeto ORIGINAL, não de oldTask que pode estar desatualizado
+                const originalTaskNoChanges = task.id ? originalTasksMap.get(task.id) : undefined;
+                const existingTestCasesNoChanges = originalTaskNoChanges?.testCases || [];
+                
+                logger.debug(`Obtendo existingTestCasesNoChanges para ${task.id} (sem mudanças)`, 'jiraService', {
+                    temOriginalTask: !!originalTaskNoChanges,
+                    existingTestCasesNoChangesCount: existingTestCasesNoChanges.length,
+                    existingTestCasesNoChangesComStatus: existingTestCasesNoChanges.filter(tc => tc.status !== 'Not Run').length
+                });
                 
                 // Contar status não-padrão antes da mesclagem
                 const existingWithStatusNoChanges = existingTestCasesNoChanges.filter(tc => tc.status !== 'Not Run').length;
