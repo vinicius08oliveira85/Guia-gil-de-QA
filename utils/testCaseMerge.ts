@@ -86,12 +86,12 @@ export const mergeTestCases = (
                 // Outros campos: priorizar prioritários, usar secundários como fallback
                 observedResult: primaryTestCase.observedResult || secondary.observedResult,
                 isAutomated: primaryTestCase.isAutomated !== undefined ? primaryTestCase.isAutomated : secondary.isAutomated,
-                toolsUsed: primaryTestCase.toolsUsed?.length > 0 ? primaryTestCase.toolsUsed : secondary.toolsUsed,
+                toolsUsed: (primaryTestCase.toolsUsed && primaryTestCase.toolsUsed.length > 0) ? primaryTestCase.toolsUsed : secondary.toolsUsed,
                 preconditions: primaryTestCase.preconditions || secondary.preconditions,
                 testSuite: primaryTestCase.testSuite || secondary.testSuite,
                 testEnvironment: primaryTestCase.testEnvironment || secondary.testEnvironment,
                 priority: primaryTestCase.priority || secondary.priority,
-                strategies: primaryTestCase.strategies?.length > 0 ? primaryTestCase.strategies : secondary.strategies,
+                strategies: (primaryTestCase.strategies && primaryTestCase.strategies.length > 0) ? primaryTestCase.strategies : secondary.strategies,
                 executedStrategy: primaryTestCase.executedStrategy || secondary.executedStrategy,
             };
         }
