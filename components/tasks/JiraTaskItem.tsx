@@ -18,6 +18,7 @@ import { getTagColor, getTaskVersions } from '../../utils/tagService';
 import { VersionBadges } from './VersionBadge';
 import { updateChecklistItem } from '../../utils/checklistService';
 import { getTaskPhase, getPhaseBadgeStyle, getNextStepForTask } from '../../utils/taskPhaseHelper';
+import { getDisplayStatus } from '../../utils/taskHelpers';
 import { useBeginnerMode } from '../../hooks/useBeginnerMode';
 import { ConfirmDialog } from '../common/ConfirmDialog';
 import { EmptyState } from '../common/EmptyState';
@@ -193,7 +194,7 @@ export const JiraTaskItem: React.FC<{
     }, [task.type]);
     const jiraStatusPalette = project?.settings?.jiraStatuses;
     const currentStatusColor = useMemo(() => {
-        const statusName = task.jiraStatus || task.status;
+        const statusName = getDisplayStatus(task);
         if (!statusName) {
             return undefined;
         }
@@ -1335,8 +1336,8 @@ export const JiraTaskItem: React.FC<{
                                     <select
                                         className="select select-bordered select-sm w-full md:w-48"
                                         aria-label={`Alterar status da tarefa ${task.id}`}
-                                        value={task.jiraStatus || task.status}
-                                        title={task.jiraStatus || task.status}
+                                        value={getDisplayStatus(task)}
+                                        title={getDisplayStatus(task)}
                                         onChange={(e) => {
                                             const selectedValue = e.target.value;
                                             const jiraStatuses = project?.settings?.jiraStatuses || [];

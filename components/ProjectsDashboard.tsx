@@ -9,6 +9,7 @@ import { useIsMobile } from '../hooks/useIsMobile';
 import { Badge } from './common/Badge';
 import { ProgressIndicator } from './common/ProgressIndicator';
 import { ArrowRight, Plus, LayoutGrid, Cloud } from 'lucide-react';
+import { getTaskStatusCategory } from '../utils/jiraStatusCategorizer';
 import { motion } from 'framer-motion';
 
 export const ProjectsDashboard: React.FC<{
@@ -73,7 +74,11 @@ export const ProjectsDashboard: React.FC<{
 
     const calculateProgress = (tasks: JiraTask[]) => {
         if (!tasks || tasks.length === 0) return 0;
-        const completed = tasks.filter(t => t.status === 'Done').length;
+        // Usar categoria do Jira para determinar se está concluído
+        const completed = tasks.filter(t => {
+            const category = getTaskStatusCategory(t);
+            return category === 'Concluído';
+        }).length;
         return completed;
     };
 

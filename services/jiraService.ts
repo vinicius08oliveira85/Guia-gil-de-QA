@@ -1121,8 +1121,19 @@ export const syncJiraProject = async (
         const existingComments = existingIndex >= 0 ? (updatedTasks[existingIndex].comments || []) : [];
         const mergedComments = mergeComments(existingComments, jiraComments);
         
+        // IMPORTANTE: Sempre obter o nome exato do status do Jira
+        // Se não houver status, usar string vazia (mas ainda assim definir jiraStatus para manter consistência)
         const jiraStatusName = issue.fields?.status?.name || '';
         const jiraKey = issue.key || `jira-${Date.now()}-${Math.random()}`;
+        
+        // Log para rastrear quando jiraStatusName está vazio (pode indicar problema)
+        if (!jiraStatusName) {
+            logger.warn(`Status do Jira vazio para issue ${jiraKey}`, 'jiraService', {
+                issueKey: jiraKey,
+                hasStatusField: !!issue.fields?.status,
+                statusField: issue.fields?.status
+            });
+        }
         
         // Buscar testCases existentes e salvos
         // IMPORTANTE: existingTestCases sempre vêm do projeto ORIGINAL (não de updatedTasks que pode estar desatualizado)
@@ -1530,13 +1541,14 @@ export const syncJiraProject = async (
                 }
                 
                 // Fazer merge preservando dados locais e atualizando apenas campos do Jira
+                // IMPORTANTE: Sempre definir jiraStatus com o nome exato do Jira (mesmo que seja string vazia)
                 updatedTasks[existingIndex] = {
                     ...oldTask, // Preservar todos os dados locais primeiro
                     // Atualizar apenas campos importados do Jira
                     title: task.title,
                     description: task.description,
                     status: task.status,
-                    jiraStatus: task.jiraStatus,
+                    jiraStatus: jiraStatusName || task.jiraStatus, // Sempre usar jiraStatusName do Jira, ou manter existente se vazio
                     priority: task.priority,
                     tags: task.tags,
                     severity: task.severity,

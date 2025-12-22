@@ -13,6 +13,8 @@ import { EmptyState } from '../common/EmptyState';
 import { CompassIcon, CheckCircleIcon } from '../common/Icons';
 import { Clipboard, Zap, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { logger } from '../../utils/logger';
+import { getDisplayStatus } from '../../utils/taskHelpers';
+import { categorizeJiraStatus, getTaskStatusCategory, JiraStatusCategory } from '../../utils/jiraStatusCategorizer';
 
 export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) => {
     const metrics = useProjectMetrics(project);
@@ -40,7 +42,10 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
     const maxBugsValue = Math.max(...bugSeverityData.map((d) => d.value), 1);
     const normalizedBugSeverityData = bugSeverityData.map((d) => ({ ...d, value: (d.value / maxBugsValue) * 100 }));
 
-      const statusOrder = ['To Do', 'In Progress', 'Blocked', 'Done'] as const;
+    // Ordem de categorias do Jira para ordenação
+    const categoryOrder: JiraStatusCategory[] = ['Pendente', 'Em Andamento', 'Validado', 'Bloqueado', 'Concluído', 'Outros'];
+    const categoryOrderMap = new Map(categoryOrder.map((cat, idx) => [cat, idx]));
+    
     const priorityRanking: Record<TaskPriority, number> = { Urgente: 0, Alta: 1, Média: 2, Baixa: 3 };
     const periodWindowMs =
         selectedPeriod === 'week'
@@ -65,36 +70,58 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
 
     const totalVisibleTasks = tasksInPeriod.filter((task) => task.type !== 'Bug').length || 1;
 
-    const statusBuckets = useMemo(
-        () =>
-            statusOrder.map((status) => {
-                const list = tasksInPeriod.filter((task) => task.status === status && task.type !== 'Bug');
-                return {
-                    status,
-                    count: list.length,
-                    percentage: Math.round((list.length / totalVisibleTasks) * 100),
-                };
-            }),
-        [tasksInPeriod, totalVisibleTasks]
-    );
+    // Status buckets baseados em categorias do Jira
+    const statusBuckets = useMemo(() => {
+        if (metrics.jiraStatusMetrics) {
+            // Usar métricas do Jira se disponíveis
+            return metrics.jiraStatusMetrics.categoryDistribution
+                .filter(cat => cat.count > 0) // Apenas categorias com tarefas
+                .sort((a, b) => {
+                    const aOrder = categoryOrderMap.get(a.category) ?? 999;
+                    const bOrder = categoryOrderMap.get(b.category) ?? 999;
+                    return aOrder - bOrder;
+                });
+        }
+        
+        // Fallback: usar status mapeados (compatibilidade)
+        const statusOrder = ['To Do', 'In Progress', 'Blocked', 'Done'] as const;
+        return statusOrder.map((status) => {
+            const list = tasksInPeriod.filter((task) => task.status === status && task.type !== 'Bug');
+            return {
+                status,
+                count: list.length,
+                percentage: Math.round((list.length / totalVisibleTasks) * 100),
+                category: categorizeJiraStatus(status) as JiraStatusCategory,
+            };
+        });
+    }, [tasksInPeriod, totalVisibleTasks, metrics.jiraStatusMetrics, categoryOrderMap]);
 
     const highlightTasks = useMemo(() => {
         return tasksInPeriod
             .filter((task) => task.type !== 'Bug')
             .sort((a, b) => {
-                const statusDiff = statusOrder.indexOf(a.status) - statusOrder.indexOf(b.status);
-                if (statusDiff !== 0) {
-                    return statusDiff;
+                // Ordenar por categoria do Jira
+                const aCategory = getTaskStatusCategory(a);
+                const bCategory = getTaskStatusCategory(b);
+                const aCategoryOrder = categoryOrderMap.get(aCategory) ?? 999;
+                const bCategoryOrder = categoryOrderMap.get(bCategory) ?? 999;
+                
+                if (aCategoryOrder !== bCategoryOrder) {
+                    return aCategoryOrder - bCategoryOrder;
                 }
+                
+                // Se mesma categoria, ordenar por prioridade
                 const aPriority = priorityRanking[a.priority || 'Média'] ?? 2;
                 const bPriority = priorityRanking[b.priority || 'Média'] ?? 2;
                 if (aPriority !== bPriority) {
                     return aPriority - bPriority;
                 }
+                
+                // Por último, ordenar por data de criação
                 return (a.createdAt ? new Date(a.createdAt).getTime() : 0) - (b.createdAt ? new Date(b.createdAt).getTime() : 0);
             })
             .slice(0, 4);
-    }, [tasksInPeriod]);
+    }, [tasksInPeriod, categoryOrderMap]);
 
     const missingTestCases = useMemo(
         () => project.tasks.filter((task) => task.type !== 'Bug' && (!task.testCases || task.testCases.length === 0)),
@@ -154,12 +181,23 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
         month: 'Últimos 30 dias',
     };
 
-      const statusColors: Record<(typeof statusOrder)[number], string> = {
-          'To Do': 'bg-neutral',
-          'In Progress': 'bg-warning',
-          Blocked: 'bg-error',
-          Done: 'bg-success',
-      };
+    // Cores para categorias do Jira
+    const categoryColors: Record<JiraStatusCategory, string> = {
+        'Pendente': 'bg-neutral',
+        'Em Andamento': 'bg-warning',
+        'Validado': 'bg-info',
+        'Bloqueado': 'bg-error',
+        'Concluído': 'bg-success',
+        'Outros': 'bg-base-300',
+    };
+    
+    // Função para obter cor baseado em status ou categoria
+    const getStatusColor = (statusOrCategory: string | JiraStatusCategory): string => {
+        const category = typeof statusOrCategory === 'string' 
+            ? categorizeJiraStatus(statusOrCategory) 
+            : statusOrCategory;
+        return categoryColors[category] || 'bg-base-300';
+    };
 
     return (
         <div className="space-y-6">
@@ -356,25 +394,29 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
                                 </Badge>
                             </div>
                             <div className="space-y-4">
-                                {statusBuckets.map((bucket) => (
-                                    <div key={bucket.status}>
-                                        <div className="flex items-center justify-between text-sm text-base-content/70">
-                                            <span>{bucket.status}</span>
-                                            <span className="font-semibold text-base-content">{bucket.count}</span>
+                                {statusBuckets.map((bucket) => {
+                                    const statusLabel = 'category' in bucket ? bucket.category : bucket.status;
+                                    const category = 'category' in bucket ? bucket.category : categorizeJiraStatus(bucket.status);
+                                    return (
+                                        <div key={statusLabel}>
+                                            <div className="flex items-center justify-between text-sm text-base-content/70">
+                                                <span>{statusLabel}</span>
+                                                <span className="font-semibold text-base-content">{bucket.count}</span>
+                                            </div>
+                                            <div className="mt-1 h-2 rounded-full bg-base-300">
+                                                <div
+                                                    className={`h-2 rounded-full ${getStatusColor(category)}`}
+                                                    style={{ width: `${bucket.percentage}%` }}
+                                                    aria-label={`Status ${statusLabel}`}
+                                                    role="progressbar"
+                                                    aria-valuenow={bucket.percentage}
+                                                    aria-valuemin={0}
+                                                    aria-valuemax={100}
+                                                />
+                                            </div>
                                         </div>
-                                        <div className="mt-1 h-2 rounded-full bg-base-300">
-                                            <div
-                                                className={`h-2 rounded-full ${statusColors[bucket.status]}`}
-                                                style={{ width: `${bucket.percentage}%` }}
-                                                aria-label={`Status ${bucket.status}`}
-                                                role="progressbar"
-                                                aria-valuenow={bucket.percentage}
-                                                aria-valuemin={0}
-                                                aria-valuemax={100}
-                                            />
-                                        </div>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         </div>
 
@@ -423,15 +465,17 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
                                                 <span className="truncate">{task.id}</span>
                                                 <Badge
                                                     variant={
-                                                        task.status === 'Done'
-                                                            ? 'success'
-                                                            : task.status === 'In Progress'
-                                                              ? 'warning'
-                                                              : 'default'
+                                                        (() => {
+                                                            const category = getTaskStatusCategory(task);
+                                                            if (category === 'Concluído') return 'success';
+                                                            if (category === 'Em Andamento' || category === 'Validado') return 'warning';
+                                                            if (category === 'Bloqueado') return 'error';
+                                                            return 'default';
+                                                        })()
                                                     }
                                                     size="sm"
                                                 >
-                                                    {task.status}
+                                                    {getDisplayStatus(task)}
                                                 </Badge>
                                             </div>
                                             <p className="mt-1 text-sm font-semibold text-base-content line-clamp-2">{task.title}</p>

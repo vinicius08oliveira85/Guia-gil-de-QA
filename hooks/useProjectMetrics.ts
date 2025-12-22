@@ -1,6 +1,15 @@
 import { useMemo } from 'react';
-import { Project, PhaseName, BugSeverity, PhaseStatus, TestCase } from '../types';
+import { Project, PhaseName, BugSeverity, PhaseStatus, TestCase, JiraTask } from '../types';
 import { PHASE_NAMES } from '../utils/constants';
+import { 
+    categorizeJiraStatus, 
+    getTaskStatusCategory, 
+    countTasksByStatusCategory, 
+    countTasksByJiraStatus,
+    groupTasksByJiraStatus,
+    JiraStatusCategory 
+} from '../utils/jiraStatusCategorizer';
+import { getDisplayStatus } from '../utils/taskHelpers';
 
 const phaseNamesInOrder: PhaseName[] = [...PHASE_NAMES];
 
@@ -21,13 +30,22 @@ export const calculateProjectMetrics = (project: Project) => {
     const tasksWithTestCases = tasks.filter(t => t.type === 'Tarefa' && t.testCases && t.testCases.length > 0).length;
 
     const bugs = tasks.filter(t => t.type === 'Bug');
-    const openBugs = bugs.filter(t => t.status !== 'Done');
+    // Bugs abertos: usar categoria do Jira para determinar se está concluído
+    const openBugs = bugs.filter(t => {
+        const category = getTaskStatusCategory(t);
+        return category !== 'Concluído';
+    });
     
     // --- Phase Logic ---
     const hasDocumentsOrTasks = documents.length > 0 || tasks.length > 0;
     const hasBddScenarios = tasks.some(t => t.bddScenarios && t.bddScenarios.length > 0);
     const hasTestCases = totalTestCases > 0;
-    const allTasksDone = totalTasks > 0 && tasks.filter(t => t.type !== 'Bug' && t.status === 'Done').length === totalTasks;
+    // Verificar se todas as tarefas estão concluídas usando categoria do Jira
+    const allTasksDone = totalTasks > 0 && tasks.filter(t => {
+        if (t.type === 'Bug') return true; // Ignorar bugs na contagem
+        const category = getTaskStatusCategory(t);
+        return category === 'Concluído';
+    }).length === totalTasks;
     const allTestsExecuted = totalTestCases > 0 && executedTestCases === totalTestCases;
     const noOpenBugs = openBugs.length === 0;
 
@@ -114,7 +132,9 @@ export const calculateProjectMetrics = (project: Project) => {
     let completedCount = 0;
     const cumulativeProgress = sortedTasks.map(task => {
         createdCount++;
-        if (task.status === 'Done' && task.completedAt) {
+        // Usar categoria do Jira para determinar se está concluído
+        const category = getTaskStatusCategory(task);
+        if (category === 'Concluído' && task.completedAt) {
             completedCount++;
         }
         return {
@@ -173,7 +193,7 @@ export const calculateProjectMetrics = (project: Project) => {
         );
     }).length;
 
-    // --- Task Status Metrics ---
+    // --- Task Status Metrics (baseado em status mapeado - manter para compatibilidade) ---
     const taskStatus = {
         toDo: tasks.filter(t => t.type !== 'Bug' && t.status === 'To Do').length,
         inProgress: tasks.filter(t => t.type !== 'Bug' && t.status === 'In Progress').length,
@@ -187,6 +207,30 @@ export const calculateProjectMetrics = (project: Project) => {
         { status: 'In Progress', count: taskStatus.inProgress, percentage: totalNonBugTasks > 0 ? Math.round((taskStatus.inProgress / totalNonBugTasks) * 100) : 0 },
         { status: 'Done', count: taskStatus.done, percentage: totalNonBugTasks > 0 ? Math.round((taskStatus.done / totalNonBugTasks) * 100) : 0 },
         { status: 'Blocked', count: taskStatus.blocked, percentage: totalNonBugTasks > 0 ? Math.round((taskStatus.blocked / totalNonBugTasks) * 100) : 0 },
+    ];
+
+    // --- Jira Status Metrics (novo - baseado em status do Jira real) ---
+    const nonBugTasks = tasks.filter(t => t.type !== 'Bug');
+    const statusByCategory = countTasksByStatusCategory(nonBugTasks);
+    const jiraStatusCounts = countTasksByJiraStatus(nonBugTasks);
+    const jiraStatusGrouped = groupTasksByJiraStatus(nonBugTasks);
+    
+    // Criar distribuição de status do Jira
+    const jiraStatusDistribution = Array.from(jiraStatusGrouped.entries()).map(([status, tasksList]) => ({
+        status,
+        count: tasksList.length,
+        percentage: totalNonBugTasks > 0 ? Math.round((tasksList.length / totalNonBugTasks) * 100) : 0,
+        category: categorizeJiraStatus(status)
+    })).sort((a, b) => b.count - a.count); // Ordenar por quantidade (maior primeiro)
+    
+    // Distribuição por categoria
+    const statusCategoryDistribution: Array<{ category: JiraStatusCategory; count: number; percentage: number }> = [
+        { category: 'Concluído', count: statusByCategory['Concluído'], percentage: totalNonBugTasks > 0 ? Math.round((statusByCategory['Concluído'] / totalNonBugTasks) * 100) : 0 },
+        { category: 'Validado', count: statusByCategory['Validado'], percentage: totalNonBugTasks > 0 ? Math.round((statusByCategory['Validado'] / totalNonBugTasks) * 100) : 0 },
+        { category: 'Em Andamento', count: statusByCategory['Em Andamento'], percentage: totalNonBugTasks > 0 ? Math.round((statusByCategory['Em Andamento'] / totalNonBugTasks) * 100) : 0 },
+        { category: 'Pendente', count: statusByCategory['Pendente'], percentage: totalNonBugTasks > 0 ? Math.round((statusByCategory['Pendente'] / totalNonBugTasks) * 100) : 0 },
+        { category: 'Bloqueado', count: statusByCategory['Bloqueado'], percentage: totalNonBugTasks > 0 ? Math.round((statusByCategory['Bloqueado'] / totalNonBugTasks) * 100) : 0 },
+        { category: 'Outros', count: statusByCategory['Outros'], percentage: totalNonBugTasks > 0 ? Math.round((statusByCategory['Outros'] / totalNonBugTasks) * 100) : 0 },
     ];
 
     // --- Test Execution Status Metrics ---
@@ -282,10 +326,17 @@ export const calculateProjectMetrics = (project: Project) => {
             recent: recentDocuments,
             linkedToTasks: documentsLinkedToTasks,
         },
-        // Task status metrics
+        // Task status metrics (mapeado - manter para compatibilidade)
         taskStatus: {
             ...taskStatus,
             distribution: taskStatusDistribution,
+        },
+        // Jira status metrics (novo - status reais do Jira)
+        jiraStatusMetrics: {
+            byCategory: statusByCategory,
+            byStatus: jiraStatusCounts,
+            distribution: jiraStatusDistribution,
+            categoryDistribution: statusCategoryDistribution,
         },
         // Test execution metrics
         testExecution: {
