@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Project } from '../../types';
 import { useProjectMetrics } from '../../hooks/useProjectMetrics';
 import { useMetricsHistory } from '../../hooks/useMetricsHistory';
@@ -10,6 +10,8 @@ import { RecentActivity } from './RecentActivity';
 import { QualityKPIs } from './QualityKPIs';
 import { Card } from '../common/Card';
 import { Badge } from '../common/Badge';
+import { FileExportModal } from '../common/FileExportModal';
+import { DashboardFiltersModal, DashboardFilters } from './DashboardFiltersModal';
 import {
   ClipboardCheck,
   CheckCircle2,
@@ -33,6 +35,8 @@ interface QADashboardProps {
   project: Project;
   /** Callback para atualizar o projeto */
   onUpdateProject?: (project: Project) => void;
+  /** Callback para navegar entre abas */
+  onNavigateToTab?: (tabId: string) => void;
 }
 
 /**
@@ -43,9 +47,52 @@ interface QADashboardProps {
  * <QADashboard project={project} onUpdateProject={handleUpdateProject} />
  * ```
  */
-export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, onUpdateProject }) => {
-  const metrics = useProjectMetrics(project);
-  const { trends } = useMetricsHistory(project, 'week');
+export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, onUpdateProject, onNavigateToTab }) => {
+  // Estados para controlar modais
+  const [showFilters, setShowFilters] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [showNewTestModal, setShowNewTestModal] = useState(false);
+  const [dashboardFilters, setDashboardFilters] = useState<DashboardFilters>({});
+
+  // Aplicar filtros ao projeto
+  const filteredProject = useMemo(() => {
+    if (!dashboardFilters || Object.keys(dashboardFilters).length === 0) {
+      return project;
+    }
+
+    let filteredTasks = [...project.tasks];
+
+    // Filtro por tipo de tarefa
+    if (dashboardFilters.taskType && dashboardFilters.taskType.length > 0) {
+      filteredTasks = filteredTasks.filter(task =>
+        dashboardFilters.taskType!.includes(task.type)
+      );
+    }
+
+    // Filtro por status de teste
+    if (dashboardFilters.testStatus && dashboardFilters.testStatus.length > 0) {
+      filteredTasks = filteredTasks.filter(task => {
+        const testCases = task.testCases || [];
+        return testCases.some(tc =>
+          dashboardFilters.testStatus!.includes(tc.status)
+        );
+      });
+    }
+
+    // Filtro por fase (simplificado - verifica se a tarefa está em alguma fase)
+    if (dashboardFilters.phase && dashboardFilters.phase.length > 0) {
+      // Este filtro pode ser expandido conforme necessário
+      // Por enquanto, mantém todas as tarefas se houver filtro de fase
+    }
+
+    return {
+      ...project,
+      tasks: filteredTasks
+    };
+  }, [project, dashboardFilters]);
+
+  const metrics = useProjectMetrics(filteredProject);
+  const { trends } = useMetricsHistory(filteredProject, dashboardFilters.period || 'week');
 
   // Calcular tendências para os cards de métricas
   const tasksTrend = useMemo(() => {
@@ -79,13 +126,13 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
   // Contar estratégias de teste únicas
   const totalStrategies = useMemo(() => {
     const strategies = new Set<string>();
-    project.tasks?.forEach(task => {
+    filteredProject.tasks?.forEach(task => {
       task.testStrategy?.forEach(strategy => {
         strategies.add(strategy.testType);
       });
     });
     return strategies.size;
-  }, [project.tasks]);
+  }, [filteredProject.tasks]);
 
   // Calcular tendência de estratégias comparando com histórico
   const strategiesTrend = useMemo(() => {
@@ -233,6 +280,7 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
           <div className="flex items-center gap-2 flex-wrap">
             <button
               type="button"
+              onClick={() => setShowFilters(true)}
               className="btn btn-outline btn-sm rounded-full flex items-center gap-1.5"
               aria-label="Filtrar dados do dashboard"
             >
@@ -241,6 +289,7 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
             </button>
             <button
               type="button"
+              onClick={() => setShowExportModal(true)}
               className="btn btn-outline btn-sm rounded-full flex items-center gap-1.5"
               aria-label="Exportar dados do dashboard"
             >
@@ -249,6 +298,14 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
             </button>
             <button
               type="button"
+              onClick={() => {
+                // Navegar para aba de tarefas para criar novo teste
+                if (onNavigateToTab) {
+                  onNavigateToTab('tasks');
+                } else {
+                  setShowNewTestModal(true);
+                }
+              }}
               className="btn btn-primary btn-sm rounded-full flex items-center gap-1.5"
               aria-label="Criar novo teste"
             >
@@ -297,8 +354,8 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
 
       {/* Charts Row */}
       <div className="grid gap-4 lg:grid-cols-2">
-        <TestExecutionChart project={project} />
-        <QualityMetricsChart project={project} />
+        <TestExecutionChart project={filteredProject} />
+        <QualityMetricsChart project={filteredProject} />
       </div>
 
       {/* Test Phase Progress and Quality KPIs */}
@@ -320,16 +377,16 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
                 <RefreshCw className="h-4 w-4" aria-hidden="true" />
               </button>
             </div>
-            <TestPhaseProgress project={project} />
+            <TestPhaseProgress project={filteredProject} />
           </div>
         </Card>
 
-        <QualityKPIs project={project} />
+        <QualityKPIs project={filteredProject} />
       </div>
 
       {/* Recent Activity and Alerts */}
       <div className="grid gap-4 lg:grid-cols-2">
-        <RecentActivity project={project} />
+        <RecentActivity project={filteredProject} />
 
         <Card hoverable>
           <div className="p-6">
@@ -403,6 +460,23 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
           </div>
         </Card>
       </div>
+
+      {/* Modal de Exportação */}
+      <FileExportModal
+        isOpen={showExportModal}
+        onClose={() => setShowExportModal(false)}
+        exportType="project"
+        project={project}
+      />
+
+      {/* Modal de Filtros */}
+      <DashboardFiltersModal
+        isOpen={showFilters}
+        onClose={() => setShowFilters(false)}
+        project={project}
+        filters={dashboardFilters}
+        onFiltersChange={setDashboardFilters}
+      />
     </div>
   );
 });

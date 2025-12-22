@@ -279,7 +279,11 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                         {activeTab === 'dashboard' && (
                             <section id="tab-panel-dashboard" role="tabpanel" aria-labelledby="tab-dashboard">
                             <Suspense fallback={<LoadingSkeleton variant="card" count={3} />}>
-                                <QADashboard project={project} onUpdateProject={onUpdateProject} />
+                                <QADashboard 
+                                    project={project} 
+                                    onUpdateProject={onUpdateProject}
+                                    onNavigateToTab={(tabId) => handleTabClick(tabId)}
+                                />
                             </Suspense>
                             </section>
                         )}

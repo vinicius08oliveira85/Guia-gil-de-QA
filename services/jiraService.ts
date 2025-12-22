@@ -1068,19 +1068,21 @@ export const syncJiraProject = async (
         const existingTestCases = existingIndex >= 0 ? (updatedTasks[existingIndex].testCases || []) : [];
         const savedTestCases = savedTestStatuses.get(jiraKey) || [];
         
-        // Mesclar testCases: priorizar os salvos no Supabase, depois os existentes
-        // Se há testCases salvos, mesclar com os existentes (preservando status dos salvos)
-        // Se não há salvos, usar os existentes
+        // Mesclar testCases: priorizar os existentes (mais recentes) sobre os salvos
+        // Se há testCases existentes, usar como base e mesclar com salvos (para pegar status de testCases que foram removidos)
+        // Se não há existentes mas há salvos, usar os salvos
         let mergedTestCases: typeof existingTestCases;
-        if (savedTestCases.length > 0) {
-            // Mesclar salvos com existentes, priorizando os salvos
-            mergedTestCases = mergeTestCases(savedTestCases, existingTestCases);
-            if (mergedTestCases.length !== existingTestCases.length || savedTestCases.length > 0) {
-                logger.debug(`Mesclando ${savedTestCases.length} testCases salvos com ${existingTestCases.length} existentes para ${jiraKey}`, 'jiraService');
-            }
+        if (existingTestCases.length > 0) {
+            // Priorizar existentes (mais recentes), mas mesclar com salvos para pegar testCases removidos
+            mergedTestCases = mergeTestCases(existingTestCases, savedTestCases);
+            logger.debug(`Mesclando ${existingTestCases.length} testCases existentes com ${savedTestCases.length} salvos para ${jiraKey}`, 'jiraService');
+        } else if (savedTestCases.length > 0) {
+            // Não há existentes, usar os salvos
+            mergedTestCases = savedTestCases;
+            logger.debug(`Usando ${savedTestCases.length} testCases salvos (sem existentes) para ${jiraKey}`, 'jiraService');
         } else {
-            // Não há testCases salvos, usar os existentes
-            mergedTestCases = existingTestCases;
+            // Não há nem existentes nem salvos
+            mergedTestCases = [];
         }
         
         const task: JiraTask = {
@@ -1292,16 +1294,21 @@ export const syncJiraProject = async (
                 
                 // Buscar testCases salvos no Supabase para esta chave
                 const savedTestCasesForTask = savedTestStatuses.get(task.id) || [];
+                const existingTestCasesForTask = oldTask.testCases || [];
                 
-                // Mesclar testCases: priorizar os salvos no Supabase, depois os existentes
+                // Mesclar testCases: priorizar os existentes (mais recentes) sobre os salvos
                 let finalTestCases: typeof oldTask.testCases;
-                if (savedTestCasesForTask.length > 0) {
-                    // Mesclar salvos com existentes, priorizando os salvos
-                    finalTestCases = mergeTestCases(savedTestCasesForTask, oldTask.testCases || []);
-                    logger.debug(`Mesclando ${savedTestCasesForTask.length} testCases salvos com ${(oldTask.testCases || []).length} existentes para ${task.id}`, 'jiraService');
+                if (existingTestCasesForTask.length > 0) {
+                    // Priorizar existentes (mais recentes), mas mesclar com salvos para pegar testCases removidos
+                    finalTestCases = mergeTestCases(existingTestCasesForTask, savedTestCasesForTask);
+                    logger.debug(`Mesclando ${existingTestCasesForTask.length} testCases existentes com ${savedTestCasesForTask.length} salvos para ${task.id}`, 'jiraService');
+                } else if (savedTestCasesForTask.length > 0) {
+                    // Não há existentes, usar os salvos
+                    finalTestCases = savedTestCasesForTask;
+                    logger.debug(`Usando ${savedTestCasesForTask.length} testCases salvos (sem existentes) para ${task.id}`, 'jiraService');
                 } else {
-                    // Não há testCases salvos, usar os existentes
-                    finalTestCases = oldTask.testCases || [];
+                    // Não há nem existentes nem salvos
+                    finalTestCases = [];
                 }
                 
                 // Fazer merge preservando dados locais e atualizando apenas campos do Jira
@@ -1342,7 +1349,23 @@ export const syncJiraProject = async (
                 updatedCount++;
             } else {
                 // Preservar tarefa existente se não houve mudanças no Jira
-                updatedTasks[existingIndex] = oldTask;
+                // Mas ainda assim mesclar testCases salvos se houver
+                const savedTestCasesForTaskNoChanges = savedTestStatuses.get(task.id) || [];
+                const existingTestCasesNoChanges = oldTask.testCases || [];
+                
+                if (existingTestCasesNoChanges.length > 0 || savedTestCasesForTaskNoChanges.length > 0) {
+                    // Priorizar existentes, mas mesclar com salvos
+                    const mergedTestCasesNoChanges = existingTestCasesNoChanges.length > 0
+                        ? mergeTestCases(existingTestCasesNoChanges, savedTestCasesForTaskNoChanges)
+                        : savedTestCasesForTaskNoChanges;
+                    updatedTasks[existingIndex] = {
+                        ...oldTask,
+                        testCases: mergedTestCasesNoChanges
+                    };
+                    logger.debug(`Mesclando ${existingTestCasesNoChanges.length} testCases existentes com ${savedTestCasesForTaskNoChanges.length} salvos (sem mudanças no Jira) para ${task.id}`, 'jiraService');
+                } else {
+                    updatedTasks[existingIndex] = oldTask;
+                }
             }
         } else {
             logger.info(`Nova tarefa encontrada: ${task.id} - ${task.title}`, 'jiraService');

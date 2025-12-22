@@ -2,85 +2,85 @@ import { TestCase } from '../types';
 import { logger } from './logger';
 
 /**
- * Mescla testCases salvos com novos testCases, preservando status dos salvos
+ * Mescla testCases prioritários com testCases secundários
  * 
  * Estratégia de mesclagem:
- * - Se um testCase existe tanto nos salvos quanto nos novos (mesmo ID), usar os dados dos salvos (preservar status)
- * - Se um testCase existe apenas nos novos, adicionar normalmente
- * - Se um testCase existe apenas nos salvos mas não nos novos, preservar (caso o teste tenha sido removido do Jira mas ainda existe localmente)
+ * - Se um testCase existe tanto nos prioritários quanto nos secundários (mesmo ID), usar os dados dos prioritários (preservar status)
+ * - Se um testCase existe apenas nos prioritários, adicionar normalmente
+ * - Se um testCase existe apenas nos secundários mas não nos prioritários, preservar (caso o teste tenha sido removido mas ainda existe nos secundários)
  * 
- * @param savedTestCases TestCases salvos no Supabase (com status preservados)
- * @param newTestCases Novos testCases vindos do Jira ou gerados
+ * @param primaryTestCases TestCases prioritários (geralmente os existentes no projeto - mais recentes)
+ * @param secondaryTestCases TestCases secundários (geralmente os salvos no Supabase)
  * @returns Array mesclado de testCases
  */
 export const mergeTestCases = (
-    savedTestCases: TestCase[],
-    newTestCases: TestCase[]
+    primaryTestCases: TestCase[],
+    secondaryTestCases: TestCase[]
 ): TestCase[] => {
-    // Se não há testCases salvos, retornar os novos
-    if (!savedTestCases || savedTestCases.length === 0) {
-        return newTestCases || [];
+    // Se não há testCases prioritários, retornar os secundários
+    if (!primaryTestCases || primaryTestCases.length === 0) {
+        return secondaryTestCases || [];
     }
     
-    // Se não há novos testCases, retornar os salvos
-    if (!newTestCases || newTestCases.length === 0) {
-        return savedTestCases;
+    // Se não há testCases secundários, retornar os prioritários
+    if (!secondaryTestCases || secondaryTestCases.length === 0) {
+        return primaryTestCases;
     }
     
-    // Criar um Map dos testCases salvos por ID para busca rápida
-    const savedMap = new Map<string, TestCase>();
-    for (const testCase of savedTestCases) {
+    // Criar um Map dos testCases secundários por ID para busca rápida
+    const secondaryMap = new Map<string, TestCase>();
+    for (const testCase of secondaryTestCases) {
         if (testCase.id) {
-            savedMap.set(testCase.id, testCase);
+            secondaryMap.set(testCase.id, testCase);
         }
     }
     
-    // Criar um Set dos IDs dos novos testCases para verificar quais são novos
-    const newIds = new Set(newTestCases.map(tc => tc.id).filter(Boolean));
+    // Criar um Set dos IDs dos prioritários para verificar quais são novos
+    const primaryIds = new Set(primaryTestCases.map(tc => tc.id).filter(Boolean));
     
-    // Mesclar: começar com os novos testCases, mas preservar status dos salvos
-    const merged: TestCase[] = newTestCases.map(newTestCase => {
-        const saved = savedMap.get(newTestCase.id);
+    // Mesclar: começar com os prioritários, mas verificar se há dados nos secundários para preencher lacunas
+    const merged: TestCase[] = primaryTestCases.map(primaryTestCase => {
+        const secondary = secondaryMap.get(primaryTestCase.id);
         
-        if (saved) {
-            // TestCase existe tanto nos salvos quanto nos novos
-            // Preservar todos os dados do salvo (incluindo status, observedResult, etc.)
-            // Mas atualizar com dados novos se necessário (description, steps, expectedResult podem ter mudado)
+        if (secondary) {
+            // TestCase existe tanto nos prioritários quanto nos secundários
+            // Priorizar dados dos prioritários (mais recentes), mas usar secundários para preencher campos vazios
             return {
-                ...saved, // Preservar status e outros dados salvos
-                // Atualizar campos que podem ter mudado no Jira
-                description: newTestCase.description || saved.description,
-                steps: newTestCase.steps || saved.steps,
-                expectedResult: newTestCase.expectedResult || saved.expectedResult,
-                title: newTestCase.title || saved.title,
-                // Preservar campos que não vêm do Jira
-                status: saved.status, // Sempre preservar status salvo
-                observedResult: saved.observedResult,
-                isAutomated: saved.isAutomated,
-                toolsUsed: saved.toolsUsed,
-                preconditions: saved.preconditions,
-                testSuite: saved.testSuite,
-                testEnvironment: saved.testEnvironment,
-                priority: saved.priority,
-                strategies: saved.strategies,
-                executedStrategy: saved.executedStrategy,
+                ...primaryTestCase, // Priorizar dados prioritários (mais recentes)
+                // Usar secundários apenas se campos prioritários estiverem vazios
+                description: primaryTestCase.description || secondary.description,
+                steps: primaryTestCase.steps?.length > 0 ? primaryTestCase.steps : secondary.steps,
+                expectedResult: primaryTestCase.expectedResult || secondary.expectedResult,
+                title: primaryTestCase.title || secondary.title,
+                // Status sempre do prioritário (mais recente)
+                status: primaryTestCase.status,
+                // Outros campos: priorizar prioritários, usar secundários como fallback
+                observedResult: primaryTestCase.observedResult || secondary.observedResult,
+                isAutomated: primaryTestCase.isAutomated !== undefined ? primaryTestCase.isAutomated : secondary.isAutomated,
+                toolsUsed: primaryTestCase.toolsUsed?.length > 0 ? primaryTestCase.toolsUsed : secondary.toolsUsed,
+                preconditions: primaryTestCase.preconditions || secondary.preconditions,
+                testSuite: primaryTestCase.testSuite || secondary.testSuite,
+                testEnvironment: primaryTestCase.testEnvironment || secondary.testEnvironment,
+                priority: primaryTestCase.priority || secondary.priority,
+                strategies: primaryTestCase.strategies?.length > 0 ? primaryTestCase.strategies : secondary.strategies,
+                executedStrategy: primaryTestCase.executedStrategy || secondary.executedStrategy,
             };
         }
         
-        // TestCase é novo, adicionar normalmente
-        return newTestCase;
+        // TestCase existe apenas nos prioritários, adicionar normalmente
+        return primaryTestCase;
     });
     
-    // Adicionar testCases que existem apenas nos salvos (foram removidos do Jira mas ainda existem localmente)
-    for (const savedTestCase of savedTestCases) {
-        if (savedTestCase.id && !newIds.has(savedTestCase.id)) {
-            merged.push(savedTestCase);
-            logger.debug(`Preservando testCase removido do Jira: ${savedTestCase.id}`, 'testCaseMerge');
+    // Adicionar testCases que existem apenas nos secundários (foram removidos mas ainda existem nos secundários)
+    for (const secondaryTestCase of secondaryTestCases) {
+        if (secondaryTestCase.id && !primaryIds.has(secondaryTestCase.id)) {
+            merged.push(secondaryTestCase);
+            logger.debug(`Preservando testCase dos secundários: ${secondaryTestCase.id}`, 'testCaseMerge');
         }
     }
     
     logger.debug(
-        `Mesclados ${savedTestCases.length} testCases salvos com ${newTestCases.length} novos, resultado: ${merged.length} testCases`,
+        `Mesclados ${primaryTestCases.length} testCases prioritários com ${secondaryTestCases.length} secundários, resultado: ${merged.length} testCases`,
         'testCaseMerge'
     );
     

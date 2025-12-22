@@ -72,13 +72,13 @@ export const useSearch = (projects: Project[]) => {
         // Buscar em casos de teste
         (task.testCases || []).forEach(tc => {
           if (
-            tc.description.toLowerCase().includes(query) ||
-            tc.expectedResult.toLowerCase().includes(query)
+            (tc.description || '').toLowerCase().includes(query) ||
+            (tc.expectedResult || '').toLowerCase().includes(query)
           ) {
             results.push({
               type: 'testcase',
               id: tc.id,
-              title: tc.description,
+              title: tc.description || '',
               description: `Tarefa: ${task.title}`,
               projectId: project.id,
               projectName: project.name
