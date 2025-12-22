@@ -1028,22 +1028,42 @@ export const TasksView: React.FC<{
     const performSync = useCallback(async (config: JiraConfig, jiraProjectKey: string) => {
         setIsSyncingJira(true);
         try {
-            // Garantir que o projeto atual está salvo no Supabase antes de sincronizar
-            // Isso preserva os status dos testes que foram alterados
-            logger.debug('Garantindo salvamento do projeto antes de sincronizar com Jira', 'TasksView');
-            const { updateProject: saveProject, getSelectedProject } = useProjectsStore.getState();
-            await saveProject(project, { silent: true });
+            // IMPORTANTE: Buscar o projeto mais recente do store ANTES de qualquer operação
+            // Isso garante que temos os status mais recentes, mesmo que não tenham sido salvos no Supabase
+            const { projects, updateProject: saveProject } = useProjectsStore.getState();
+            const latestProjectFromStore = projects.find(p => p.id === project.id);
+            
+            // Usar o projeto do store se disponível, caso contrário usar o prop
+            let projectToSync = latestProjectFromStore || project;
+            
+            logger.debug('Buscando projeto mais recente do store antes de sincronizar', 'TasksView', {
+                projectId: project.id,
+                temProjetoNoStore: !!latestProjectFromStore,
+                usandoStore: latestProjectFromStore !== undefined
+            });
+            
+            // Tentar salvar no Supabase (mas não bloquear se falhar devido a timeout)
+            try {
+                await saveProject(projectToSync, { silent: true });
+                logger.debug('Projeto salvo no Supabase antes de sincronizar', 'TasksView');
+            } catch (error) {
+                logger.warn('Erro ao salvar projeto no Supabase antes de sincronizar (continuando mesmo assim)', 'TasksView', { error });
+                // Continuar mesmo se o salvamento falhar - usaremos o projeto do store que tem os status mais recentes
+            }
             
             // Aguardar um pequeno delay para garantir que atualizações pendentes sejam processadas
             await new Promise(resolve => setTimeout(resolve, 100));
             
-            // Buscar o projeto mais recente do store (pode ter sido atualizado por outras operações)
-            const latestProjectFromStore = getSelectedProject();
-            const projectToSync = latestProjectFromStore && latestProjectFromStore.id === project.id 
-                ? latestProjectFromStore 
-                : project;
+            // Buscar novamente o projeto mais recente do store após o delay
+            // (pode ter sido atualizado durante o salvamento)
+            const { projects: updatedProjects } = useProjectsStore.getState();
+            const finalProjectFromStore = updatedProjects.find(p => p.id === project.id);
+            if (finalProjectFromStore) {
+                projectToSync = finalProjectFromStore;
+                logger.debug('Usando projeto atualizado do store após delay', 'TasksView');
+            }
             
-            // Log para debug
+            // Log detalhado dos status antes da sincronização
             const projectTestStatuses = projectToSync.tasks.flatMap(t => 
                 (t.testCases || []).filter(tc => tc.status !== 'Not Run').map(tc => ({
                     taskId: t.id,
@@ -1052,10 +1072,11 @@ export const TasksView: React.FC<{
                 }))
             );
             
-            logger.debug('Projeto salvo no Supabase, iniciando sincronização com Jira', 'TasksView', {
+            logger.info('Iniciando sincronização com Jira usando projeto mais recente do store', 'TasksView', {
                 projectId: projectToSync.id,
                 testCasesComStatus: projectTestStatuses.length,
-                statusDetalhes: projectTestStatuses.slice(0, 5) // Primeiros 5 para debug
+                statusDetalhes: projectTestStatuses.slice(0, 10), // Primeiros 10 para debug
+                usandoStore: finalProjectFromStore !== undefined
             });
             
             // Usar syncJiraProject que atualiza tarefas existentes e adiciona novas

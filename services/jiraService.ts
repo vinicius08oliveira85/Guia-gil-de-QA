@@ -5,6 +5,7 @@ import { getJiraStatusColor } from '../utils/jiraStatusColors';
 import { logger } from '../utils/logger';
 import { loadTestStatusesByJiraKeys } from './supabaseService';
 import { mergeTestCases } from '../utils/testCaseMerge';
+import { useProjectsStore } from '../store/projectsStore';
 
 export interface JiraConfig {
     url: string;
@@ -1026,20 +1027,62 @@ export const syncJiraProject = async (
         chavesComTestCases: savedTestStatuses.size
     });
     
+    // IMPORTANTE: Tentar buscar o projeto mais recente do store antes de criar o originalTasksMap
+    // Isso garante que sempre usamos os status mais recentes, mesmo que o projeto passado como parâmetro esteja desatualizado
+    let projectToUse = project;
+    try {
+        const { projects } = useProjectsStore.getState();
+        const latestProjectFromStore = projects.find(p => p.id === project.id);
+        if (latestProjectFromStore) {
+            const statusCountOriginal = project.tasks.flatMap(t => (t.testCases || []).filter(tc => tc.status !== 'Not Run')).length;
+            const statusCountStore = latestProjectFromStore.tasks.flatMap(t => (t.testCases || []).filter(tc => tc.status !== 'Not Run')).length;
+            
+            // Sempre usar o projeto do store se disponível (ele tem os status mais recentes)
+            // Comparar por número de status executados para garantir que estamos usando o mais atualizado
+            if (statusCountStore >= statusCountOriginal) {
+                projectToUse = latestProjectFromStore;
+                logger.info(`Projeto mais recente encontrado no store para ${project.id}`, 'jiraService', {
+                    tasksOriginal: project.tasks.length,
+                    tasksOriginalComStatus: statusCountOriginal,
+                    tasksStore: latestProjectFromStore.tasks.length,
+                    tasksStoreComStatus: statusCountStore,
+                    usandoStore: true
+                });
+            } else {
+                logger.debug(`Projeto do store tem menos status executados, usando projeto passado como parâmetro`, 'jiraService', {
+                    tasksOriginalComStatus: statusCountOriginal,
+                    tasksStoreComStatus: statusCountStore
+                });
+            }
+        }
+    } catch (error) {
+        // Se não conseguir acessar o store, usar o projeto passado como parâmetro
+        logger.debug('Erro ao acessar store, usando projeto passado como parâmetro', 'jiraService', { error });
+    }
+    
     // Atualizar tarefas existentes e adicionar novas
-    const updatedTasks = [...project.tasks];
+    const updatedTasks = [...projectToUse.tasks];
     let updatedCount = 0;
     let newCount = 0;
     
     // Criar Map do projeto original por ID para acesso rápido aos testCases originais
-    // IMPORTANTE: Isso garante que sempre obtemos os status mais recentes do projeto original
+    // IMPORTANTE: Usar projectToUse (que pode ser do store) para garantir que sempre obtemos os status mais recentes
     const originalTasksMap = new Map<string, JiraTask>();
-    project.tasks.forEach(task => {
+    projectToUse.tasks.forEach(task => {
         if (task.id) {
             originalTasksMap.set(task.id, task);
         }
     });
-    logger.debug(`Map de tarefas originais criado com ${originalTasksMap.size} tarefas`, 'jiraService');
+    
+    const totalStatusExecutados = projectToUse.tasks.flatMap(t => 
+        (t.testCases || []).filter(tc => tc.status !== 'Not Run')
+    ).length;
+    
+    logger.info(`Map de tarefas originais criado com ${originalTasksMap.size} tarefas`, 'jiraService', {
+        totalTarefas: originalTasksMap.size,
+        totalStatusExecutados: totalStatusExecutados,
+        usandoStore: projectToUse !== project
+    });
 
     for (const issue of jiraIssues) {
         const existingIndex = updatedTasks.findIndex(t => t.id === issue.key);
