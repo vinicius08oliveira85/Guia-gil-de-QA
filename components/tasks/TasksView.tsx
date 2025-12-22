@@ -1031,15 +1031,39 @@ export const TasksView: React.FC<{
             // Garantir que o projeto atual está salvo no Supabase antes de sincronizar
             // Isso preserva os status dos testes que foram alterados
             logger.debug('Garantindo salvamento do projeto antes de sincronizar com Jira', 'TasksView');
-            const { updateProject: saveProject } = useProjectsStore.getState();
+            const { updateProject: saveProject, getSelectedProject } = useProjectsStore.getState();
             await saveProject(project, { silent: true });
-            logger.debug('Projeto salvo no Supabase, iniciando sincronização com Jira', 'TasksView');
+            
+            // Aguardar um pequeno delay para garantir que atualizações pendentes sejam processadas
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+            // Buscar o projeto mais recente do store (pode ter sido atualizado por outras operações)
+            const latestProjectFromStore = getSelectedProject();
+            const projectToSync = latestProjectFromStore && latestProjectFromStore.id === project.id 
+                ? latestProjectFromStore 
+                : project;
+            
+            // Log para debug
+            const projectTestStatuses = projectToSync.tasks.flatMap(t => 
+                (t.testCases || []).filter(tc => tc.status !== 'Not Run').map(tc => ({
+                    taskId: t.id,
+                    testCaseId: tc.id,
+                    status: tc.status
+                }))
+            );
+            
+            logger.debug('Projeto salvo no Supabase, iniciando sincronização com Jira', 'TasksView', {
+                projectId: projectToSync.id,
+                testCasesComStatus: projectTestStatuses.length,
+                statusDetalhes: projectTestStatuses.slice(0, 5) // Primeiros 5 para debug
+            });
             
             // Usar syncJiraProject que atualiza tarefas existentes e adiciona novas
             // Isso garante que bugs e tarefas modificados no Jira sejam atualizados corretamente
+            // IMPORTANTE: Passar o projeto mais recente para garantir que os status estão atualizados
             const updatedProject = await syncJiraProject(
                 config,
-                project,
+                projectToSync,
                 jiraProjectKey
             );
             

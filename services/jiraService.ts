@@ -1,4 +1,4 @@
-import { Project, JiraTask, Comment } from '../types';
+import { Project, JiraTask, Comment, TestCase } from '../types';
 import { parseJiraDescription, parseJiraDescriptionHTML } from '../utils/jiraDescriptionParser';
 import { getCache, setCache, clearCache } from '../utils/apiCache';
 import { getJiraStatusColor } from '../utils/jiraStatusColors';
@@ -1078,6 +1078,7 @@ export const syncJiraProject = async (
         const jiraKey = issue.key || `jira-${Date.now()}-${Math.random()}`;
         
         // Buscar testCases existentes e salvos
+        // IMPORTANTE: existingTestCases sempre vêm do projeto atual (updatedTasks é uma cópia do project.tasks)
         const existingTestCases = existingIndex >= 0 ? (updatedTasks[existingIndex].testCases || []) : [];
         const savedTestCases = savedTestStatuses.get(jiraKey) || [];
         
@@ -1085,25 +1086,59 @@ export const syncJiraProject = async (
         const existingWithStatus = existingTestCases.filter(tc => tc.status !== 'Not Run').length;
         const savedWithStatus = savedTestCases.filter(tc => tc.status !== 'Not Run').length;
         
-        // Mesclar testCases: priorizar os existentes (mais recentes) sobre os salvos
+        // Criar um Map dos status existentes para validação posterior
+        const existingStatusMap = new Map<string, TestCase['status']>();
+        existingTestCases.forEach(tc => {
+            if (tc.id && tc.status !== 'Not Run') {
+                existingStatusMap.set(tc.id, tc.status);
+            }
+        });
+        
+        // Mesclar testCases: SEMPRE priorizar os existentes quando têm status diferentes de "Not Run"
         // Se há testCases existentes, usar como base e mesclar com salvos (para pegar status de testCases que foram removidos)
         // Se não há existentes mas há salvos, usar os salvos
         let mergedTestCases: typeof existingTestCases;
         if (existingTestCases.length > 0) {
             // Priorizar existentes (mais recentes), mas mesclar com salvos para pegar testCases removidos
+            // A função mergeTestCases já garante que status diferentes de "Not Run" são sempre preservados
             mergedTestCases = mergeTestCases(existingTestCases, savedTestCases);
             
-            // Contar status não-padrão após mesclagem
+            // VALIDAÇÃO CRÍTICA: Garantir que todos os status existentes foram preservados
+            let statusPerdidos = 0;
+            existingStatusMap.forEach((expectedStatus, testCaseId) => {
+                const mergedTestCase = mergedTestCases.find(tc => tc.id === testCaseId);
+                if (!mergedTestCase || mergedTestCase.status !== expectedStatus) {
+                    statusPerdidos++;
+                    logger.warn(`Status perdido para testCase ${testCaseId}: esperado="${expectedStatus}", obtido="${mergedTestCase?.status || 'não encontrado'}"`, 'jiraService');
+                    // CORREÇÃO: Se o status foi perdido, restaurar do existingTestCases original
+                    const originalTestCase = existingTestCases.find(tc => tc.id === testCaseId);
+                    if (originalTestCase) {
+                        const index = mergedTestCases.findIndex(tc => tc.id === testCaseId);
+                        if (index >= 0) {
+                            mergedTestCases[index] = { ...mergedTestCases[index], status: originalTestCase.status };
+                            logger.info(`Status restaurado para testCase ${testCaseId}: "${originalTestCase.status}"`, 'jiraService');
+                        } else {
+                            // Se não foi encontrado, adicionar
+                            mergedTestCases.push(originalTestCase);
+                            logger.info(`TestCase ${testCaseId} restaurado com status "${originalTestCase.status}"`, 'jiraService');
+                        }
+                    }
+                }
+            });
+            
+            // Contar status não-padrão após mesclagem e validação
             const finalWithStatus = mergedTestCases.filter(tc => tc.status !== 'Not Run').length;
             
-            logger.debug(`Mesclando testCases para ${jiraKey}`, 'jiraService', {
+            logger.info(`Mesclagem de testCases concluída para ${jiraKey}`, 'jiraService', {
                 existentes: existingTestCases.length,
                 existentesComStatus: existingWithStatus,
                 salvos: savedTestCases.length,
                 salvosComStatus: savedWithStatus,
                 resultado: mergedTestCases.length,
                 resultadoComStatus: finalWithStatus,
-                statusPreservados: finalWithStatus >= Math.max(existingWithStatus, savedWithStatus)
+                statusPreservados: finalWithStatus >= Math.max(existingWithStatus, savedWithStatus),
+                statusPerdidos: statusPerdidos,
+                statusRestaurados: statusPerdidos > 0 ? statusPerdidos : 0
             });
         } else if (savedTestCases.length > 0) {
             // Não há existentes, usar os salvos
@@ -1114,6 +1149,7 @@ export const syncJiraProject = async (
         } else {
             // Não há nem existentes nem salvos
             mergedTestCases = [];
+            logger.debug(`Nenhum testCase encontrado para ${jiraKey}`, 'jiraService');
         }
         
         const task: JiraTask = {
@@ -1331,6 +1367,14 @@ export const syncJiraProject = async (
                 const existingWithStatus = existingTestCasesForTask.filter(tc => tc.status !== 'Not Run').length;
                 const savedWithStatus = savedTestCasesForTask.filter(tc => tc.status !== 'Not Run').length;
                 
+                // Criar um Map dos status existentes para validação posterior
+                const existingStatusMapForTask = new Map<string, TestCase['status']>();
+                existingTestCasesForTask.forEach(tc => {
+                    if (tc.id && tc.status !== 'Not Run') {
+                        existingStatusMapForTask.set(tc.id, tc.status);
+                    }
+                });
+                
                 // Log detalhado dos status antes da mesclagem
                 const existingStatusDetails = existingTestCasesForTask
                     .filter(tc => tc.status !== 'Not Run')
@@ -1348,7 +1392,7 @@ export const syncJiraProject = async (
                     salvosStatus: savedStatusDetails
                 });
                 
-                // Mesclar testCases: priorizar os existentes (mais recentes) sobre os salvos
+                // Mesclar testCases: SEMPRE priorizar os existentes quando têm status diferentes de "Not Run"
                 // A função mergeTestCases já garante que status diferentes de "Not Run" são preservados
                 let finalTestCases: typeof oldTask.testCases;
                 if (existingTestCasesForTask.length > 0) {
@@ -1356,7 +1400,30 @@ export const syncJiraProject = async (
                     // mergeTestCases garante que status executados são sempre preservados
                     finalTestCases = mergeTestCases(existingTestCasesForTask, savedTestCasesForTask);
                     
-                    // Contar status não-padrão após mesclagem
+                    // VALIDAÇÃO CRÍTICA: Garantir que todos os status existentes foram preservados
+                    let statusPerdidosForTask = 0;
+                    existingStatusMapForTask.forEach((expectedStatus, testCaseId) => {
+                        const mergedTestCase = finalTestCases.find(tc => tc.id === testCaseId);
+                        if (!mergedTestCase || mergedTestCase.status !== expectedStatus) {
+                            statusPerdidosForTask++;
+                            logger.warn(`Status perdido para testCase ${testCaseId} na tarefa ${task.id}: esperado="${expectedStatus}", obtido="${mergedTestCase?.status || 'não encontrado'}"`, 'jiraService');
+                            // CORREÇÃO: Se o status foi perdido, restaurar do existingTestCasesForTask original
+                            const originalTestCase = existingTestCasesForTask.find(tc => tc.id === testCaseId);
+                            if (originalTestCase) {
+                                const index = finalTestCases.findIndex(tc => tc.id === testCaseId);
+                                if (index >= 0) {
+                                    finalTestCases[index] = { ...finalTestCases[index], status: originalTestCase.status };
+                                    logger.info(`Status restaurado para testCase ${testCaseId} na tarefa ${task.id}: "${originalTestCase.status}"`, 'jiraService');
+                                } else {
+                                    // Se não foi encontrado, adicionar
+                                    finalTestCases.push(originalTestCase);
+                                    logger.info(`TestCase ${testCaseId} restaurado na tarefa ${task.id} com status "${originalTestCase.status}"`, 'jiraService');
+                                }
+                            }
+                        }
+                    });
+                    
+                    // Contar status não-padrão após mesclagem e validação
                     const finalWithStatus = finalTestCases.filter(tc => tc.status !== 'Not Run').length;
                     const finalStatusDetails = finalTestCases
                         .filter(tc => tc.status !== 'Not Run')
@@ -1374,14 +1441,23 @@ export const syncJiraProject = async (
                         resultadoComStatus: finalWithStatus,
                         resultadoStatus: finalStatusDetails,
                         statusPreservados: statusPreservados,
-                        statusPerdidos: statusPreservados ? 0 : Math.max(existingWithStatus, savedWithStatus) - finalWithStatus
+                        statusPerdidos: statusPerdidosForTask,
+                        statusRestaurados: statusPerdidosForTask > 0 ? statusPerdidosForTask : 0
                     });
                     
-                    if (!statusPreservados) {
-                        logger.warn(`ATENÇÃO: Alguns status podem ter sido perdidos na mesclagem para ${task.id}`, 'jiraService', {
-                            esperado: Math.max(existingWithStatus, savedWithStatus),
-                            obtido: finalWithStatus
-                        });
+                    if (!statusPreservados || statusPerdidosForTask > 0) {
+                        if (statusPerdidosForTask > 0) {
+                            logger.warn(`ATENÇÃO: ${statusPerdidosForTask} status foram perdidos e restaurados na mesclagem para ${task.id}`, 'jiraService', {
+                                esperado: Math.max(existingWithStatus, savedWithStatus),
+                                obtido: finalWithStatus,
+                                restaurados: statusPerdidosForTask
+                            });
+                        } else {
+                            logger.warn(`ATENÇÃO: Alguns status podem ter sido perdidos na mesclagem para ${task.id}`, 'jiraService', {
+                                esperado: Math.max(existingWithStatus, savedWithStatus),
+                                obtido: finalWithStatus
+                            });
+                        }
                     }
                 } else if (savedTestCasesForTask.length > 0) {
                     // Não há existentes, usar os salvos
@@ -1442,13 +1518,44 @@ export const syncJiraProject = async (
                 const existingWithStatusNoChanges = existingTestCasesNoChanges.filter(tc => tc.status !== 'Not Run').length;
                 const savedWithStatusNoChanges = savedTestCasesForTaskNoChanges.filter(tc => tc.status !== 'Not Run').length;
                 
+                // Criar um Map dos status existentes para validação posterior
+                const existingStatusMapNoChanges = new Map<string, TestCase['status']>();
+                existingTestCasesNoChanges.forEach(tc => {
+                    if (tc.id && tc.status !== 'Not Run') {
+                        existingStatusMapNoChanges.set(tc.id, tc.status);
+                    }
+                });
+                
                 if (existingTestCasesNoChanges.length > 0 || savedTestCasesForTaskNoChanges.length > 0) {
                     // Priorizar existentes, mas mesclar com salvos
-                    const mergedTestCasesNoChanges = existingTestCasesNoChanges.length > 0
+                    let mergedTestCasesNoChanges = existingTestCasesNoChanges.length > 0
                         ? mergeTestCases(existingTestCasesNoChanges, savedTestCasesForTaskNoChanges)
                         : savedTestCasesForTaskNoChanges;
                     
-                    // Contar status não-padrão após mesclagem
+                    // VALIDAÇÃO CRÍTICA: Garantir que todos os status existentes foram preservados
+                    let statusPerdidosNoChanges = 0;
+                    existingStatusMapNoChanges.forEach((expectedStatus, testCaseId) => {
+                        const mergedTestCase = mergedTestCasesNoChanges.find(tc => tc.id === testCaseId);
+                        if (!mergedTestCase || mergedTestCase.status !== expectedStatus) {
+                            statusPerdidosNoChanges++;
+                            logger.warn(`Status perdido para testCase ${testCaseId} na tarefa ${task.id} (sem mudanças Jira): esperado="${expectedStatus}", obtido="${mergedTestCase?.status || 'não encontrado'}"`, 'jiraService');
+                            // CORREÇÃO: Se o status foi perdido, restaurar do existingTestCasesNoChanges original
+                            const originalTestCase = existingTestCasesNoChanges.find(tc => tc.id === testCaseId);
+                            if (originalTestCase) {
+                                const index = mergedTestCasesNoChanges.findIndex(tc => tc.id === testCaseId);
+                                if (index >= 0) {
+                                    mergedTestCasesNoChanges[index] = { ...mergedTestCasesNoChanges[index], status: originalTestCase.status };
+                                    logger.info(`Status restaurado para testCase ${testCaseId} na tarefa ${task.id} (sem mudanças Jira): "${originalTestCase.status}"`, 'jiraService');
+                                } else {
+                                    // Se não foi encontrado, adicionar
+                                    mergedTestCasesNoChanges.push(originalTestCase);
+                                    logger.info(`TestCase ${testCaseId} restaurado na tarefa ${task.id} (sem mudanças Jira) com status "${originalTestCase.status}"`, 'jiraService');
+                                }
+                            }
+                        }
+                    });
+                    
+                    // Contar status não-padrão após mesclagem e validação
                     const finalWithStatusNoChanges = mergedTestCasesNoChanges.filter(tc => tc.status !== 'Not Run').length;
                     const finalStatusDetailsNoChanges = mergedTestCasesNoChanges
                         .filter(tc => tc.status !== 'Not Run')
@@ -1469,14 +1576,24 @@ export const syncJiraProject = async (
                         resultado: mergedTestCasesNoChanges.length,
                         resultadoComStatus: finalWithStatusNoChanges,
                         resultadoStatus: finalStatusDetailsNoChanges,
-                        statusPreservados: statusPreservadosNoChanges
+                        statusPreservados: statusPreservadosNoChanges,
+                        statusPerdidos: statusPerdidosNoChanges,
+                        statusRestaurados: statusPerdidosNoChanges > 0 ? statusPerdidosNoChanges : 0
                     });
                     
-                    if (!statusPreservadosNoChanges) {
-                        logger.warn(`ATENÇÃO: Alguns status podem ter sido perdidos na mesclagem (sem mudanças Jira) para ${task.id}`, 'jiraService', {
-                            esperado: Math.max(existingWithStatusNoChanges, savedWithStatusNoChanges),
-                            obtido: finalWithStatusNoChanges
-                        });
+                    if (!statusPreservadosNoChanges || statusPerdidosNoChanges > 0) {
+                        if (statusPerdidosNoChanges > 0) {
+                            logger.warn(`ATENÇÃO: ${statusPerdidosNoChanges} status foram perdidos e restaurados na mesclagem (sem mudanças Jira) para ${task.id}`, 'jiraService', {
+                                esperado: Math.max(existingWithStatusNoChanges, savedWithStatusNoChanges),
+                                obtido: finalWithStatusNoChanges,
+                                restaurados: statusPerdidosNoChanges
+                            });
+                        } else {
+                            logger.warn(`ATENÇÃO: Alguns status podem ter sido perdidos na mesclagem (sem mudanças Jira) para ${task.id}`, 'jiraService', {
+                                esperado: Math.max(existingWithStatusNoChanges, savedWithStatusNoChanges),
+                                obtido: finalWithStatusNoChanges
+                            });
+                        }
                     }
                 } else {
                     updatedTasks[existingIndex] = oldTask;
