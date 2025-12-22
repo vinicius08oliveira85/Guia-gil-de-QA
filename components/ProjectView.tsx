@@ -21,26 +21,32 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
     const [isPrinting, setIsPrinting] = useState(false);
     const [isSavingToSupabase, setIsSavingToSupabase] = useState(false);
     const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
-    const metrics = useProjectMetrics(project);
+    const { saveProjectToSupabase, getSelectedProject } = useProjectsStore();
+    const supabaseAvailable = isSupabaseAvailable();
+    
+    // IMPORTANTE: Sempre usar o projeto mais recente do store em vez de apenas o prop
+    // Isso garante que temos a versão mais atualizada, especialmente após sincronizações
+    const storeProject = getSelectedProject();
+    const currentProject = storeProject || project; // Fallback para prop se store não tiver
+    
+    const metrics = useProjectMetrics(currentProject);
     const previousPhasesRef = useRef<string>('');
     const isMountedRef = useRef(true);
-    const projectRef = useRef(project);
+    const projectRef = useRef(currentProject);
     const onUpdateProjectRef = useRef(onUpdateProject);
-    const { saveProjectToSupabase } = useProjectsStore();
-    const supabaseAvailable = isSupabaseAvailable();
     
     // Auto-save: monitora mudanças e salva automaticamente
     useAutoSave({
-        project,
+        project: currentProject,
         debounceMs: 300,
         disabled: !supabaseAvailable,
     });
 
-    // Keep refs updated
+    // Keep refs updated - usar currentProject (do store) em vez de apenas project prop
     useEffect(() => {
-        projectRef.current = project;
+        projectRef.current = currentProject;
         onUpdateProjectRef.current = onUpdateProject;
-    }, [project, onUpdateProject]);
+    }, [currentProject, onUpdateProject]);
 
     useEffect(() => {
         isMountedRef.current = true;
@@ -74,7 +80,7 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
         }
 
         const originalTitle = document.title;
-        document.title = `Relatorio_${project.name.replace(/\s/g, '_')}`;
+        document.title = `Relatorio_${currentProject.name.replace(/\s/g, '_')}`;
         const timer = setTimeout(() => {
             window.print();
             setIsPrinting(false);
@@ -82,7 +88,7 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
         }, 300);
 
         return () => clearTimeout(timer);
-    }, [isPrinting, project.name]);
+    }, [isPrinting, currentProject.name]);
     
     const handlePrint = () => {
         setIsPrinting(true);
@@ -97,9 +103,9 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
         setIsSavingToSupabase(true);
         setSaveStatus('saving');
         try {
-            await saveProjectToSupabase(project.id);
+            await saveProjectToSupabase(currentProject.id);
             setSaveStatus('saved');
-            toast.success(`Projeto "${project.name}" salvo no Supabase com sucesso!`);
+            toast.success(`Projeto "${currentProject.name}" salvo no Supabase com sucesso!`);
             // Resetar status após 2 segundos
             setTimeout(() => {
                 if (saveStatus === 'saved') {
@@ -127,7 +133,7 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
             // Quando projeto muda, resetar status para indicar que precisa salvar novamente
             setSaveStatus('idle');
         }
-    }, [project, supabaseAvailable]);
+    }, [currentProject, supabaseAvailable]);
     
     const tabs: Array<{ id: string; label: string; 'data-onboarding'?: string; 'data-tour'?: string }> = [
         { id: 'dashboard', label: 'Dashboard' },
@@ -144,7 +150,7 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
     const getBreadcrumbItems = () => {
         const baseItems = [
             { label: 'Projetos', onClick: onBack },
-            { label: project.name }
+            { label: currentProject.name }
         ];
 
         const tabLabels: Record<string, string> = {
@@ -239,11 +245,11 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                 <SectionHeader
                     as="h1"
                     align="left"
-                    eyebrow={project.settings?.jiraProjectKey ? `Jira: ${project.settings.jiraProjectKey}` : 'Projeto'}
-                    title={<span className="break-words">{project.name}</span>}
+                    eyebrow={currentProject.settings?.jiraProjectKey ? `Jira: ${currentProject.settings.jiraProjectKey}` : 'Projeto'}
+                    title={<span className="break-words">{currentProject.name}</span>}
                     description={
-                        project.description
-                            ? <span className="break-words">{project.description}</span>
+                        currentProject.description
+                            ? <span className="break-words">{currentProject.description}</span>
                             : 'Sem descrição.'
                     }
                     className="max-w-4xl mb-8"
@@ -280,7 +286,7 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                             <section id="tab-panel-dashboard" role="tabpanel" aria-labelledby="tab-dashboard">
                             <Suspense fallback={<LoadingSkeleton variant="card" count={3} />}>
                                 <QADashboard 
-                                    project={project} 
+                                    project={currentProject} 
                                     onUpdateProject={onUpdateProject}
                                     onNavigateToTab={(tabId) => handleTabClick(tabId)}
                                 />
@@ -291,7 +297,7 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                             <section id="tab-panel-tasks" role="tabpanel" aria-labelledby="tab-tasks">
                             <Suspense fallback={<LoadingSkeleton variant="task" count={5} />}>
                                 <TasksView 
-                                    project={project} 
+                                    project={currentProject} 
                                     onUpdateProject={onUpdateProject}
                                     onNavigateToTab={(tabId) => handleTabClick(tabId)}
                                 />
@@ -301,7 +307,7 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                         {activeTab === 'documents' && (
                             <section id="tab-panel-documents" role="tabpanel" aria-labelledby="tab-documents">
                             <Suspense fallback={<LoadingSkeleton variant="card" count={3} />}>
-                                <DocumentsView project={project} onUpdateProject={onUpdateProject} />
+                                <DocumentsView project={currentProject} onUpdateProject={onUpdateProject} />
                             </Suspense>
                             </section>
                         )}
@@ -315,7 +321,7 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                     </PageTransition>
                 </div>
             </div>
-            {isPrinting && <PrintableReport project={project} metrics={metrics} />}
+            {isPrinting && <PrintableReport project={currentProject} metrics={metrics} />}
         </>
     );
 };

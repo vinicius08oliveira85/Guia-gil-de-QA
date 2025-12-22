@@ -1088,7 +1088,84 @@ export const TasksView: React.FC<{
                 jiraProjectKey
             );
             
-            onUpdateProject(updatedProject);
+            // VALIDAÇÃO FINAL: Buscar projeto mais recente do store e comparar status
+            // Isso garante que nenhum status foi perdido durante a sincronização
+            logger.info('Iniciando validação final de status antes de atualizar projeto', 'TasksView', {
+                projectId: project.id,
+                totalStatusNoUpdatedProject: updatedProject.tasks.flatMap(t => (t.testCases || []).filter(tc => tc.status !== 'Not Run')).length
+            });
+            
+            const { projects: finalProjects } = useProjectsStore.getState();
+            const latestProjectAfterSync = finalProjects.find(p => p.id === project.id);
+            
+            if (latestProjectAfterSync) {
+                // Criar mapa de status executados do store (fonte de verdade)
+                const storeStatusMap = new Map<string, TestCase['status']>();
+                latestProjectAfterSync.tasks.forEach(task => {
+                    (task.testCases || []).forEach(tc => {
+                        if (tc.id && tc.status !== 'Not Run') {
+                            storeStatusMap.set(`${task.id}-${tc.id}`, tc.status);
+                        }
+                    });
+                });
+                
+                logger.debug('Mapa de status do store criado para validação final', 'TasksView', {
+                    totalStatusNoStore: storeStatusMap.size,
+                    totalStatusNoUpdatedProject: updatedProject.tasks.flatMap(t => (t.testCases || []).filter(tc => tc.status !== 'Not Run')).length
+                });
+                
+                // Verificar se algum status foi perdido no updatedProject
+                let statusPerdidos = 0;
+                const restoredTasks = updatedProject.tasks.map(task => {
+                    const restoredTestCases = (task.testCases || []).map(tc => {
+                        const storeStatus = storeStatusMap.get(`${task.id}-${tc.id}`);
+                        if (storeStatus && tc.status === 'Not Run') {
+                            // Status foi perdido - restaurar do store
+                            statusPerdidos++;
+                            logger.warn(`Status perdido detectado em TasksView: taskId=${task.id}, testCaseId=${tc.id}. Restaurando status "${storeStatus}" do store`, 'TasksView', {
+                                taskId: task.id,
+                                testCaseId: tc.id,
+                                statusPerdido: 'Not Run',
+                                statusRestaurado: storeStatus
+                            });
+                            return { ...tc, status: storeStatus };
+                        }
+                        return tc;
+                    });
+                    return { ...task, testCases: restoredTestCases };
+                });
+                
+                if (statusPerdidos > 0) {
+                    logger.warn(`VALIDAÇÃO FINAL EM TasksView: ${statusPerdidos} status foram perdidos e restaurados do store antes de atualizar`, 'TasksView', {
+                        statusRestaurados: statusPerdidos,
+                        totalStatusNoStore: storeStatusMap.size,
+                        totalStatusNoUpdatedProject: updatedProject.tasks.flatMap(t => (t.testCases || []).filter(tc => tc.status !== 'Not Run')).length,
+                        totalStatusNoFinalProject: restoredTasks.flatMap(t => (t.testCases || []).filter(tc => tc.status !== 'Not Run')).length
+                    });
+                    
+                    // Usar projeto com status restaurados
+                    const finalProject = { ...updatedProject, tasks: restoredTasks };
+                    logger.info('Chamando onUpdateProject com projeto com status restaurados', 'TasksView', {
+                        statusRestaurados: statusPerdidos
+                    });
+                    onUpdateProject(finalProject);
+                } else {
+                    // Nenhum status perdido - usar updatedProject normalmente
+                    logger.info('VALIDAÇÃO FINAL EM TasksView: Todos os status foram preservados', 'TasksView', {
+                        totalStatusNoStore: storeStatusMap.size,
+                        totalStatusNoUpdatedProject: updatedProject.tasks.flatMap(t => (t.testCases || []).filter(tc => tc.status !== 'Not Run')).length
+                    });
+                    logger.debug('Chamando onUpdateProject com updatedProject (sem perda de status)', 'TasksView');
+                    onUpdateProject(updatedProject);
+                }
+            } else {
+                // Store não tem projeto - usar updatedProject normalmente
+                logger.warn('VALIDAÇÃO FINAL EM TasksView: Projeto não encontrado no store após sincronização, usando updatedProject', 'TasksView', {
+                    projectId: project.id,
+                    totalStatusNoUpdatedProject: updatedProject.tasks.flatMap(t => (t.testCases || []).filter(tc => tc.status !== 'Not Run')).length
+                });
+                onUpdateProject(updatedProject);
+            }
             
             // Contar quantas tarefas foram atualizadas/adicionadas
             const existingTaskIds = new Set(project.tasks.map(t => t.id));

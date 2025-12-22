@@ -328,10 +328,69 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
       const state = get();
       const oldProject = state.projects.find((p) => p.id === project.id);
       
-      await updateProject(project);
+      logger.debug('updateProject chamado no store', 'ProjectsStore', {
+        projectId: project.id,
+        temProjetoAntigo: !!oldProject,
+        silent: options?.silent || false
+      });
+      
+      // PROTEÇÃO: Verificar se há perda de status executados ao substituir projeto
+      let finalProject = project;
+      if (oldProject) {
+        logger.debug('Verificando perda de status executados ao substituir projeto', 'ProjectsStore', {
+          projectId: project.id,
+          totalStatusNoProjetoAntigo: oldProject.tasks.flatMap(t => (t.testCases || []).filter(tc => tc.status !== 'Not Run')).length,
+          totalStatusNoProjetoNovo: project.tasks.flatMap(t => (t.testCases || []).filter(tc => tc.status !== 'Not Run')).length
+        });
+        // Criar mapa de status executados do projeto antigo
+        const oldStatusMap = new Map<string, { taskId: string; testCaseId: string; status: string }>();
+        oldProject.tasks.forEach(task => {
+          (task.testCases || []).forEach(tc => {
+            if (tc.id && tc.status !== 'Not Run') {
+              oldStatusMap.set(`${task.id}-${tc.id}`, {
+                taskId: task.id,
+                testCaseId: tc.id,
+                status: tc.status
+              });
+            }
+          });
+        });
+        
+        // Verificar se algum status foi perdido no novo projeto
+        let statusPerdidos = 0;
+        const restoredTasks = project.tasks.map(task => {
+          const restoredTestCases = (task.testCases || []).map(tc => {
+            const oldStatus = oldStatusMap.get(`${task.id}-${tc.id}`);
+            if (oldStatus && tc.status === 'Not Run') {
+              // Status executado foi perdido - restaurar do projeto antigo
+              statusPerdidos++;
+              logger.warn(`Status perdido detectado em updateProject do store: taskId=${task.id}, testCaseId=${tc.id}. Restaurando status "${oldStatus.status}" do projeto antigo`, 'ProjectsStore');
+              return { ...tc, status: oldStatus.status as typeof tc.status };
+            }
+            return tc;
+          });
+          return { ...task, testCases: restoredTestCases };
+        });
+        
+        if (statusPerdidos > 0) {
+          logger.warn(`PROTEÇÃO EM updateProject: ${statusPerdidos} status foram perdidos e restaurados do projeto antigo`, 'ProjectsStore', {
+            statusRestaurados: statusPerdidos,
+            totalStatusNoProjetoAntigo: oldStatusMap.size,
+            totalStatusNoProjetoNovo: project.tasks.flatMap(t => (t.testCases || []).filter(tc => tc.status !== 'Not Run')).length
+          });
+          finalProject = { ...project, tasks: restoredTasks };
+        } else {
+          logger.debug('PROTEÇÃO EM updateProject: Todos os status foram preservados', 'ProjectsStore', {
+            totalStatusNoProjetoAntigo: oldStatusMap.size,
+            totalStatusNoProjetoNovo: project.tasks.flatMap(t => (t.testCases || []).filter(tc => tc.status !== 'Not Run')).length
+          });
+        }
+      }
+      
+      await updateProject(finalProject);
       set((state) => ({
         projects: state.projects.map((p) => 
-          p.id === project.id ? project : p
+          p.id === finalProject.id ? finalProject : p
         ),
       }));
       
