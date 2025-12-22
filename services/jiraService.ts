@@ -2066,12 +2066,34 @@ export const syncTaskToJira = async (
 
     // Campos customizados
     // Filtrar campos que são apenas informativos e não podem ser atualizados
-    const readOnlyFields = ['project', 'statusCategory', 'statuscategorychangedate', 'aggregatetimespent'];
+    const readOnlyFields = [
+        'project',                    // Campo somente leitura
+        'statusCategory',             // Campo somente leitura
+        'statuscategorychangedate',   // Campo somente leitura
+        'aggregatetimespent',         // Campo calculado
+        'progress',                   // Campo calculado - não pode ser definido
+        'workratio',                  // Campo calculado - não pode ser definido
+        'creator',                    // Campo somente leitura - definido na criação
+        'votes',                      // Campo somente leitura - gerenciado pelo Jira
+        'worklog',                    // Campo não suporta atualização direta
+        'aggregateprogress',          // Campo calculado - não pode ser definido
+        'aggregatetimeestimate',      // Campo calculado - não pode ser definido
+        'timeoriginalestimate',       // Campo somente leitura
+        'timespent',                  // Campo somente leitura - gerenciado via worklog
+        'timeestimate',               // Campo somente leitura
+        'resolution',                 // Campo somente leitura - gerenciado via transição
+        'resolutiondate',            // Campo somente leitura - gerenciado via transição
+        'updated',                    // Campo somente leitura - timestamp automático
+        'created',                    // Campo somente leitura - timestamp automático
+    ];
     
     if (task.jiraCustomFields) {
+        const filteredFields: string[] = [];
         Object.keys(task.jiraCustomFields).forEach((key) => {
             // Pular campos somente leitura
             if (readOnlyFields.includes(key)) {
+                filteredFields.push(key);
+                logger.debug(`Campo somente leitura filtrado: ${key}`, 'jiraService');
                 return;
             }
             
@@ -2100,6 +2122,11 @@ export const syncTaskToJira = async (
                 fieldsToUpdate[key] = value;
             }
         });
+        
+        // Log resumido se algum campo foi filtrado
+        if (filteredFields.length > 0) {
+            logger.debug(`${filteredFields.length} campo(s) somente leitura filtrado(s) para ${issueKey}: ${filteredFields.join(', ')}`, 'jiraService');
+        }
     }
 
     // Só atualizar se houver campos para atualizar
