@@ -1663,8 +1663,70 @@ export const syncJiraProject = async (
 
     logger.info(`Resumo: ${updatedCount} atualizadas, ${newCount} novas, ${updatedTasks.length} total`, 'jiraService');
 
+    // VALIDAÇÃO FINAL: Garantir que os status dos testCases foram preservados
+    const statusAntes = projectToUse.tasks.flatMap(t => 
+        (t.testCases || []).filter(tc => tc.status !== 'Not Run').map(tc => ({ taskId: t.id, testCaseId: tc.id, status: tc.status }))
+    );
+    const statusDepois = updatedTasks.flatMap(t => 
+        (t.testCases || []).filter(tc => tc.status !== 'Not Run').map(tc => ({ taskId: t.id, testCaseId: tc.id, status: tc.status }))
+    );
+    
+    // Criar Map dos status antes para validação
+    const statusMapAntes = new Map<string, TestCase['status']>();
+    statusAntes.forEach(s => {
+        if (s.testCaseId) {
+            statusMapAntes.set(`${s.taskId}-${s.testCaseId}`, s.status);
+        }
+    });
+    
+    // Verificar se algum status foi perdido
+    let statusPerdidos = 0;
+    statusMapAntes.forEach((expectedStatus, key) => {
+        const statusDepoisEncontrado = statusDepois.find(s => s.testCaseId && `${s.taskId}-${s.testCaseId}` === key);
+        if (!statusDepoisEncontrado || statusDepoisEncontrado.status !== expectedStatus) {
+            statusPerdidos++;
+            const [taskId, testCaseId] = key.split('-');
+            logger.error(`STATUS PERDIDO na validação final: taskId=${taskId}, testCaseId=${testCaseId}, esperado="${expectedStatus}", obtido="${statusDepoisEncontrado?.status || 'não encontrado'}"`, 'jiraService');
+            
+            // CORREÇÃO: Restaurar status do projectToUse original
+            const originalTask = projectToUse.tasks.find(t => t.id === taskId);
+            if (originalTask) {
+                const originalTestCase = originalTask.testCases?.find(tc => tc.id === testCaseId);
+                if (originalTestCase && originalTestCase.status !== 'Not Run') {
+                    const updatedTaskIndex = updatedTasks.findIndex(t => t.id === taskId);
+                    if (updatedTaskIndex >= 0) {
+                        const updatedTask = updatedTasks[updatedTaskIndex];
+                        const updatedTestCases = (updatedTask.testCases || []).map(tc => 
+                            tc.id === testCaseId ? { ...tc, status: originalTestCase.status } : tc
+                        );
+                        updatedTasks[updatedTaskIndex] = {
+                            ...updatedTask,
+                            testCases: updatedTestCases
+                        };
+                        logger.info(`Status restaurado na validação final: taskId=${taskId}, testCaseId=${testCaseId}, status="${originalTestCase.status}"`, 'jiraService');
+                    }
+                }
+            }
+        }
+    });
+    
+    if (statusPerdidos > 0) {
+        logger.warn(`VALIDAÇÃO FINAL: ${statusPerdidos} status foram perdidos e restaurados antes de retornar`, 'jiraService', {
+            statusAntes: statusAntes.length,
+            statusDepois: statusDepois.length,
+            statusRestaurados: statusPerdidos
+        });
+    } else {
+        logger.info(`VALIDAÇÃO FINAL: Todos os ${statusAntes.length} status foram preservados`, 'jiraService', {
+            statusAntes: statusAntes.length,
+            statusDepois: statusDepois.length
+        });
+    }
+
+    // IMPORTANTE: Retornar projeto baseado em projectToUse (do store), não no project passado como parâmetro
+    // Isso garante que todos os campos do projeto (não apenas tasks) venham do store com os dados mais recentes
     return {
-        ...project,
+        ...projectToUse,
         tasks: updatedTasks,
     };
 };
