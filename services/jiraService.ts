@@ -1027,37 +1027,31 @@ export const syncJiraProject = async (
         chavesComTestCases: savedTestStatuses.size
     });
     
-    // IMPORTANTE: Tentar buscar o projeto mais recente do store antes de criar o originalTasksMap
-    // Isso garante que sempre usamos os status mais recentes, mesmo que o projeto passado como parâmetro esteja desatualizado
+    // REGRA DE OURO: SEMPRE usar o projeto do store quando disponível, IGNORANDO o projeto passado como parâmetro
+    // O store sempre tem os status mais recentes porque é atualizado imediatamente quando o usuário muda um status
     let projectToUse = project;
     try {
         const { projects } = useProjectsStore.getState();
         const latestProjectFromStore = projects.find(p => p.id === project.id);
         if (latestProjectFromStore) {
-            const statusCountOriginal = project.tasks.flatMap(t => (t.testCases || []).filter(tc => tc.status !== 'Not Run')).length;
+            // SEMPRE usar o projeto do store se disponível - ele é a fonte de verdade
+            projectToUse = latestProjectFromStore;
             const statusCountStore = latestProjectFromStore.tasks.flatMap(t => (t.testCases || []).filter(tc => tc.status !== 'Not Run')).length;
+            const statusCountParam = project.tasks.flatMap(t => (t.testCases || []).filter(tc => tc.status !== 'Not Run')).length;
             
-            // Sempre usar o projeto do store se disponível (ele tem os status mais recentes)
-            // Comparar por número de status executados para garantir que estamos usando o mais atualizado
-            if (statusCountStore >= statusCountOriginal) {
-                projectToUse = latestProjectFromStore;
-                logger.info(`Projeto mais recente encontrado no store para ${project.id}`, 'jiraService', {
-                    tasksOriginal: project.tasks.length,
-                    tasksOriginalComStatus: statusCountOriginal,
-                    tasksStore: latestProjectFromStore.tasks.length,
-                    tasksStoreComStatus: statusCountStore,
-                    usandoStore: true
-                });
-            } else {
-                logger.debug(`Projeto do store tem menos status executados, usando projeto passado como parâmetro`, 'jiraService', {
-                    tasksOriginalComStatus: statusCountOriginal,
-                    tasksStoreComStatus: statusCountStore
-                });
-            }
+            logger.info(`USANDO PROJETO DO STORE (ignorando parâmetro) para ${project.id}`, 'jiraService', {
+                tasksStore: latestProjectFromStore.tasks.length,
+                tasksStoreComStatus: statusCountStore,
+                tasksParam: project.tasks.length,
+                tasksParamComStatus: statusCountParam,
+                diferencaStatus: statusCountStore - statusCountParam
+            });
+        } else {
+            logger.warn(`Projeto ${project.id} não encontrado no store, usando projeto passado como parâmetro`, 'jiraService');
         }
     } catch (error) {
         // Se não conseguir acessar o store, usar o projeto passado como parâmetro
-        logger.debug('Erro ao acessar store, usando projeto passado como parâmetro', 'jiraService', { error });
+        logger.warn('Erro ao acessar store, usando projeto passado como parâmetro', 'jiraService', { error });
     }
     
     // Atualizar tarefas existentes e adicionar novas
@@ -1225,6 +1219,8 @@ export const syncJiraProject = async (
             completedAt: issue.fields?.resolutiondate || undefined, // Atualizar exatamente como está no Jira
             tags: issue.fields?.labels || [],
             testCases: mergedTestCases, // Usar testCases mesclados (salvos + existentes)
+            // NOTA: Este objeto task é usado apenas quando NÃO há tarefa existente (nova tarefa)
+            // Quando há tarefa existente, criamos um novo objeto com finalTestCases ou mergedTestCasesNoChanges
             bddScenarios: existingIndex >= 0 ? updatedTasks[existingIndex].bddScenarios : [], // Preservar cenários BDD locais
             comments: mergedComments,
         };
@@ -1640,8 +1636,22 @@ export const syncJiraProject = async (
                         resultadoComStatus: finalWithStatusNoChanges
                     });
                 } else {
-                    updatedTasks[existingIndex] = oldTask;
-                    logger.debug(`Nenhum testCase para mesclar (sem mudanças no Jira) para ${task.id}`, 'jiraService');
+                    // IMPORTANTE: Mesmo sem testCases para mesclar, usar o projeto original do store
+                    // para garantir que temos os status mais recentes
+                    const originalTaskForNoChanges = task.id ? originalTasksMap.get(task.id) : undefined;
+                    if (originalTaskForNoChanges) {
+                        updatedTasks[existingIndex] = {
+                            ...oldTask,
+                            testCases: originalTaskForNoChanges.testCases || []
+                        };
+                        logger.debug(`Preservando testCases do projeto original (sem mudanças no Jira) para ${task.id}`, 'jiraService', {
+                            testCasesCount: (originalTaskForNoChanges.testCases || []).length,
+                            testCasesComStatus: (originalTaskForNoChanges.testCases || []).filter(tc => tc.status !== 'Not Run').length
+                        });
+                    } else {
+                        updatedTasks[existingIndex] = oldTask;
+                        logger.debug(`Nenhum testCase para mesclar (sem mudanças no Jira) para ${task.id}`, 'jiraService');
+                    }
                 }
             }
         } else {
