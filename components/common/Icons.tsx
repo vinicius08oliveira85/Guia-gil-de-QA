@@ -4,42 +4,35 @@ import { JiraTaskType } from '../../types';
 const ICON_SIZE = 18;
 const CHEVRON_SIZE = 18;
 
+// Ícone oficial do Jira para Epic (losango roxo)
 export const EpicIcon: React.FC<{ className?: string }> = ({ className = '' }) => (
     <svg 
         xmlns="http://www.w3.org/2000/svg" 
         width={ICON_SIZE} 
         height={ICON_SIZE} 
         viewBox="0 0 24 24" 
-        fill="none" 
-        stroke="currentColor" 
-        strokeWidth="2" 
-        strokeLinecap="round" 
-        strokeLinejoin="round" 
-        className={`text-purple-500 dark:text-purple-400 ${className}`}
+        fill="currentColor"
+        className={`text-[#5E4DB2] dark:text-[#7B68EE] ${className}`}
     >
-        <path d="m15.5 7.5 3 3-3 3"/>
-        <path d="M8.5 16.5 5.5 13.5 8.5 10.5"/>
-        <path d="m18.5 10.5-13 0"/>
+        <path d="M12 2L2 7l10 5 10-5-10-5z"/>
     </svg>
 );
 
+// Ícone oficial do Jira para Story (bookmark verde)
 export const StoryIcon: React.FC<{ className?: string }> = ({ className = '' }) => (
     <svg 
         xmlns="http://www.w3.org/2000/svg" 
         width={ICON_SIZE} 
         height={ICON_SIZE} 
         viewBox="0 0 24 24" 
-        fill="none" 
-        stroke="currentColor" 
-        strokeWidth="2" 
-        strokeLinecap="round" 
-        strokeLinejoin="round" 
-        className={`text-green-500 dark:text-green-400 ${className}`}
+        fill="currentColor"
+        className={`text-[#14892C] dark:text-[#4BCE97] ${className}`}
     >
-        <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>
+        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
     </svg>
 );
 
+// Ícone oficial do Jira para Task (círculo azul com checkmark)
 export const TaskIcon: React.FC<{ className?: string }> = ({ className = '' }) => (
     <svg 
         xmlns="http://www.w3.org/2000/svg" 
@@ -48,38 +41,30 @@ export const TaskIcon: React.FC<{ className?: string }> = ({ className = '' }) =
         viewBox="0 0 24 24" 
         fill="none" 
         stroke="currentColor" 
-        strokeWidth="2" 
+        strokeWidth="2.5" 
         strokeLinecap="round" 
         strokeLinejoin="round" 
-        className={`text-blue-500 dark:text-blue-400 ${className}`}
+        className={`text-[#0052CC] dark:text-[#2684FF] ${className}`}
     >
-        <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-        <line x1="9" y1="9" x2="15" y2="15" />
-        <line x1="15" y1="9" x2="9" y2="15" />
+        <circle cx="12" cy="12" r="10"/>
+        <path d="m9 12 2 2 4-4"/>
     </svg>
 );
 
+// Ícone oficial do Jira para Bug (inseto vermelho)
 export const BugIcon: React.FC<{ className?: string }> = ({ className = '' }) => (
     <svg 
         xmlns="http://www.w3.org/2000/svg" 
         width={ICON_SIZE} 
         height={ICON_SIZE} 
         viewBox="0 0 24 24" 
-        fill="none" 
-        stroke="currentColor" 
-        strokeWidth="2" 
-        strokeLinecap="round" 
-        strokeLinejoin="round" 
-        className={`text-red-500 dark:text-red-400 ${className}`}
+        fill="currentColor"
+        className={`text-[#DE350B] dark:text-[#FF5630] ${className}`}
     >
-        <path d="M10 20.5c.5-.5.8-1.2.8-2 0-1.4-1.2-2.5-2.6-2.5-.9 0-1.7.5-2.2 1.3"/>
-        <path d="m14 16.5-4-4"/>
-        <path d="M16 14c-2-2-3-2-4 0"/>
-        <path d="M18 11.5c-1.5-1.5-1.5-2-1-4C17.5 6 18 5 18 5c-1 0-1.5 0-2.5 1-1.5 1.5-2.5 2.5-4 4C10 11.5 9.5 12 9 13c-1.5 1-3 2-3 4 0 1 .5 2.5 2 3.5C9.5 22 11 22 12 22c1.5 0 2.5-1.5 3.5-3 1-1 1-1.5 1.5-3 .5-.5 1-1.5 1-2.5 0-1-.5-1.5-1-2.5-1-1-2-2.5-3.5-4.5"/>
-        <path d="M18 5c-1-1-1-1.5-1-3"/>
-        <path d="m6 5 1-3"/>
-        <path d="M12 5V2"/>
-        <path d="M12 22v-2"/>
+        <path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.87-3.13-7-7-7z"/>
+        <circle cx="9" cy="9" r="1.5" fill="currentColor"/>
+        <circle cx="15" cy="9" r="1.5" fill="currentColor"/>
+        <path d="M12 13c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" fill="currentColor"/>
     </svg>
 );
 type BasicIconProps = { className?: string };
@@ -118,34 +103,35 @@ export const ListIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width={ICO
 export const FilterIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width={ICON_SIZE} height={ICON_SIZE} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>;
 
 export const TaskTypeIcon: React.FC<{ type: JiraTaskType; className?: string }> = React.memo(({ type, className = '' }) => {
+    // Cores oficiais do Jira para tipos de tarefa
     const typeConfig = {
         Epic: {
             icon: EpicIcon,
-            color: 'text-purple-500 dark:text-purple-400',
-            bgColor: 'bg-purple-500/10 dark:bg-purple-500/20',
-            borderColor: 'border-purple-500/20 dark:border-purple-500/30',
-            hoverColor: 'hover:bg-purple-500/20 dark:hover:bg-purple-500/30',
+            color: 'text-[#5E4DB2] dark:text-[#7B68EE]',
+            bgColor: 'bg-[#5E4DB2]/10 dark:bg-[#7B68EE]/20',
+            borderColor: 'border-[#5E4DB2]/20 dark:border-[#7B68EE]/30',
+            hoverColor: 'hover:bg-[#5E4DB2]/20 dark:hover:bg-[#7B68EE]/30',
         },
         História: {
             icon: StoryIcon,
-            color: 'text-green-500 dark:text-green-400',
-            bgColor: 'bg-green-500/10 dark:bg-green-500/20',
-            borderColor: 'border-green-500/20 dark:border-green-500/30',
-            hoverColor: 'hover:bg-green-500/20 dark:hover:bg-green-500/30',
+            color: 'text-[#14892C] dark:text-[#4BCE97]',
+            bgColor: 'bg-[#14892C]/10 dark:bg-[#4BCE97]/20',
+            borderColor: 'border-[#14892C]/20 dark:border-[#4BCE97]/30',
+            hoverColor: 'hover:bg-[#14892C]/20 dark:hover:bg-[#4BCE97]/30',
         },
         Tarefa: {
             icon: TaskIcon,
-            color: 'text-blue-500 dark:text-blue-400',
-            bgColor: 'bg-blue-500/10 dark:bg-blue-500/20',
-            borderColor: 'border-blue-500/20 dark:border-blue-500/30',
-            hoverColor: 'hover:bg-blue-500/20 dark:hover:bg-blue-500/30',
+            color: 'text-[#0052CC] dark:text-[#2684FF]',
+            bgColor: 'bg-[#0052CC]/10 dark:bg-[#2684FF]/20',
+            borderColor: 'border-[#0052CC]/20 dark:border-[#2684FF]/30',
+            hoverColor: 'hover:bg-[#0052CC]/20 dark:hover:bg-[#2684FF]/30',
         },
         Bug: {
             icon: BugIcon,
-            color: 'text-red-500 dark:text-red-400',
-            bgColor: 'bg-red-500/10 dark:bg-red-500/20',
-            borderColor: 'border-red-500/20 dark:border-red-500/30',
-            hoverColor: 'hover:bg-red-500/20 dark:hover:bg-red-500/30',
+            color: 'text-[#DE350B] dark:text-[#FF5630]',
+            bgColor: 'bg-[#DE350B]/10 dark:bg-[#FF5630]/20',
+            borderColor: 'border-[#DE350B]/20 dark:border-[#FF5630]/30',
+            hoverColor: 'hover:bg-[#DE350B]/20 dark:hover:bg-[#FF5630]/30',
         },
     };
 
