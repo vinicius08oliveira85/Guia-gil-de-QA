@@ -198,9 +198,9 @@ export const TasksView: React.FC<{
             const task = project.tasks.find(t => t.id === taskId);
             if (!task) throw new Error("Task not found");
             
-            // BDD só pode ser gerado para tarefas do tipo "Tarefa"
-            if (task.type !== 'Tarefa') {
-                handleError(new Error('BDD só pode ser gerado para tarefas do tipo "Tarefa"'), 'Gerar cenários BDD');
+            // BDD pode ser gerado para tarefas do tipo "Tarefa" ou "Bug"
+            if (task.type !== 'Tarefa' && task.type !== 'Bug') {
+                handleError(new Error('BDD só pode ser gerado para tarefas do tipo "Tarefa" ou "Bug"'), 'Gerar cenários BDD');
                 return;
             }
             
@@ -283,9 +283,9 @@ export const TasksView: React.FC<{
             const task = project.tasks.find(t => t.id === taskId);
             if (!task) throw new Error("Task not found");
             
-            // BDD e casos de teste só podem ser gerados para tarefas do tipo "Tarefa"
-            if (task.type !== 'Tarefa') {
-                handleError(new Error('BDD e casos de teste só podem ser gerados para tarefas do tipo "Tarefa"'), 'Gerar BDD, estratégias e testes');
+            // BDD e casos de teste podem ser gerados para tarefas do tipo "Tarefa" ou "Bug"
+            if (task.type !== 'Tarefa' && task.type !== 'Bug') {
+                handleError(new Error('BDD e casos de teste só podem ser gerados para tarefas do tipo "Tarefa" ou "Bug"'), 'Gerar BDD, estratégias e testes');
                 return;
             }
             

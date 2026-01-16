@@ -151,11 +151,11 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
             { id: 'overview', label: 'Resumo' }
         ];
 
-        if (task.type === 'Tarefa') {
+        if (task.type === 'Tarefa' || task.type === 'Bug') {
             tabs.push({ id: 'bdd', label: 'Cenários BDD', badge: task.bddScenarios?.length || 0 });
         }
 
-        if (task.type === 'Tarefa') {
+        if (task.type === 'Tarefa' || task.type === 'Bug') {
             tabs.push({ id: 'tests', label: 'Testes', badge: task.testCases?.length || 0 });
         }
 
@@ -223,7 +223,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                 </div>
             )}
             
-            {task.type === 'Tarefa' && (task.testCases?.length > 0 || (task.testStrategy?.length ?? 0) > 0) && (
+            {(task.type === 'Tarefa' || task.type === 'Bug') && (task.testCases?.length > 0 || (task.testStrategy?.length ?? 0) > 0) && (
                 <div className="flex justify-end">
                     <button
                         onClick={() => setShowTestReport(true)}
@@ -473,7 +473,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
     );
 
     const renderBddSection = () => {
-        if (task.type !== 'Tarefa') {
+        if (task.type !== 'Tarefa' && task.type !== 'Bug') {
             return null;
         }
 
@@ -509,11 +509,11 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
     };
 
     const renderTestsSection = () => {
-        if (task.type !== 'Tarefa') {
+        if (task.type !== 'Tarefa' && task.type !== 'Bug') {
             return null;
         }
 
-        const canHaveTestCases = task.type === 'Tarefa';
+        const canHaveTestCases = task.type === 'Tarefa' || task.type === 'Bug';
         
         return (
             <div className="space-y-4">
@@ -900,7 +900,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                         })}
                     </div>
 
-                    {task.type === 'Tarefa' && onGenerateAll && (
+                    {(task.type === 'Tarefa' || task.type === 'Bug') && onGenerateAll && (
                         <div className="flex justify-end">
                             <button
                                 type="button"

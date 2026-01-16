@@ -343,13 +343,13 @@ export const JiraTaskItem: React.FC<{
             { id: 'overview', label: 'Resumo' }
         ];
 
-        // Adicionar aba "Cenários BDD" apenas para tipo "Tarefa"
-        if (task.type === 'Tarefa') {
+        // Adicionar aba "Cenários BDD" para tipos "Tarefa" e "Bug"
+        if (task.type === 'Tarefa' || task.type === 'Bug') {
             tabs.push({ id: 'bdd', label: 'Cenários BDD', badge: task.bddScenarios?.length || 0 });
         }
 
-        // Adicionar aba "Testes" apenas para tipo "Tarefa"
-        if (task.type === 'Tarefa') {
+        // Adicionar aba "Testes" para tipos "Tarefa" e "Bug"
+        if (task.type === 'Tarefa' || task.type === 'Bug') {
             tabs.push({ id: 'tests', label: 'Testes', badge: task.testCases?.length || 0 });
         }
 
@@ -438,8 +438,8 @@ export const JiraTaskItem: React.FC<{
                 </div>
             )}
             
-            {/* Botão para Gerar Registro de Testes - apenas para tipo "Tarefa" */}
-            {task.type === 'Tarefa' && (task.testCases?.length > 0 || (task.testStrategy?.length ?? 0) > 0) && (
+            {/* Botão para Gerar Registro de Testes - para tipos "Tarefa" e "Bug" */}
+            {(task.type === 'Tarefa' || task.type === 'Bug') && (task.testCases?.length > 0 || (task.testStrategy?.length ?? 0) > 0) && (
                 <div className="flex justify-end">
                     <button
                         onClick={() => setShowTestReport(true)}
@@ -694,8 +694,8 @@ export const JiraTaskItem: React.FC<{
     );
 
     const renderBddSection = () => {
-        // Retornar null se não for tipo "Tarefa" - não deve ser acessado, mas por segurança
-        if (task.type !== 'Tarefa') {
+        // Retornar null se não for tipo "Tarefa" ou "Bug" - não deve ser acessado, mas por segurança
+        if (task.type !== 'Tarefa' && task.type !== 'Bug') {
             return null;
         }
 
@@ -731,12 +731,12 @@ export const JiraTaskItem: React.FC<{
     };
 
     const renderTestsSection = () => {
-        // Retornar null se não for tipo "Tarefa" - não deve ser acessado, mas por segurança
-        if (task.type !== 'Tarefa') {
+        // Retornar null se não for tipo "Tarefa" ou "Bug" - não deve ser acessado, mas por segurança
+        if (task.type !== 'Tarefa' && task.type !== 'Bug') {
             return null;
         }
 
-        const canHaveTestCases = task.type === 'Tarefa';
+        const canHaveTestCases = task.type === 'Tarefa' || task.type === 'Bug';
         
         return (
             <div className="space-y-4">

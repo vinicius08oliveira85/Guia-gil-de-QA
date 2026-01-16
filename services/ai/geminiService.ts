@@ -119,7 +119,7 @@ export class GeminiService implements AIService {
       - Se 'Detalhado': Forneça passos muito granulares e específicos (8+ passos), incluindo dados de exemplo, validações intermediárias e pré-condições explícitas.
     `;
 
-    const shouldGenerateTestCases = taskType === 'Tarefa' || !taskType;
+    const shouldGenerateTestCases = taskType === 'Tarefa' || taskType === 'Bug' || !taskType;
     const attentionMessage = !shouldGenerateTestCases 
       ? `⚠️ ATENÇÃO: Esta tarefa é do tipo "${taskType}". Para este tipo, gere APENAS estratégias de teste. NÃO gere casos de teste (testCases deve ser um array vazio []).`
       : '';
@@ -203,6 +203,33 @@ export class GeminiService implements AIService {
       Título: ${title}
       Descrição: ${description}
       ${taskType ? `Tipo: ${taskType}` : ''}
+      
+      ${taskType === 'Bug' ? `
+      ════════════════════════════════════════════════════════════════
+      CONTEXTO ESPECÍFICO PARA BUG
+      ════════════════════════════════════════════════════════════════
+      
+      Esta é uma tarefa do tipo "Bug". Ao gerar estratégias e casos de teste, FOQUE em:
+      
+      1. **Testes de Verificação de Correção**: Casos de teste que validam que o bug foi corrigido
+         e que o comportamento esperado agora funciona corretamente.
+      
+      2. **Testes de Regressão**: Casos de teste que verificam se a correção não introduziu novos bugs
+         ou quebrou funcionalidades relacionadas.
+      
+      3. **Testes Relacionados**: Casos de teste que validam funcionalidades similares ou que podem
+         ter sido afetadas pela mesma causa raiz do bug.
+      
+      4. **Cenários BDD**: Devem descrever o comportamento esperado APÓS a correção do bug,
+         focando no comportamento correto que deve ser observado.
+      
+      5. **Estratégias de Teste**: Priorize estratégias como:
+         - Teste de Regressão (crítico para bugs)
+         - Teste de Verificação de Correção
+         - Teste Funcional (para validar o comportamento correto)
+         - Teste de Integração (se o bug afetou integrações)
+         - Teste de Edge Cases (para evitar recorrência)
+      ` : ''}
       
       ${bddContext}
       
@@ -290,7 +317,7 @@ export class GeminiService implements AIService {
           throw new Error("Resposta da IA com estrutura inválida.");
       }
 
-      const shouldGenerateTestCases = taskType === 'Tarefa' || !taskType;
+      const shouldGenerateTestCases = taskType === 'Tarefa' || taskType === 'Bug' || !taskType;
       const testCases: TestCase[] = shouldGenerateTestCases 
         ? (parsedResponse.testCases || []).map((item: any, index: number) => ({
             id: `tc-${Date.now()}-${index}`,
