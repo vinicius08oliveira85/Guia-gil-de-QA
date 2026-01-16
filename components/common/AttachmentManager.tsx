@@ -10,6 +10,8 @@ import {
 } from '../../utils/attachmentService';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import { cn } from '../../utils/cn';
+import { FileViewer } from './FileViewer';
+import { canViewInBrowser, detectFileType } from '../../services/fileViewerService';
 
 interface AttachmentManagerProps {
   task: JiraTask;
@@ -26,6 +28,7 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = ({
 }) => {
   const { handleError, handleSuccess } = useErrorHandler();
   const [uploading, setUploading] = useState(false);
+  const [viewingAttachment, setViewingAttachment] = useState<Attachment | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const attachments = task.attachments || [];
@@ -70,6 +73,16 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = ({
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  const handleView = (attachment: Attachment) => {
+    const fileType = detectFileType(attachment.name, attachment.type);
+    if (canViewInBrowser(fileType)) {
+      setViewingAttachment(attachment);
+    } else {
+      // Para arquivos não suportados, fazer download
+      handleDownload(attachment);
+    }
   };
 
   return (
@@ -127,19 +140,20 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = ({
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                {attachment.type.startsWith('image/') && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const url = getAttachmentUrl(attachment);
-                      window.open(url, '_blank');
-                    }}
-                    className="btn btn-outline btn-sm rounded-full"
-                    title="Visualizar"
-                  >
-                    👁️ Ver
-                  </button>
-                )}
+                {(() => {
+                  const fileType = detectFileType(attachment.name, attachment.type);
+                  const canView = canViewInBrowser(fileType);
+                  return canView ? (
+                    <button
+                      type="button"
+                      onClick={() => handleView(attachment)}
+                      className="btn btn-outline btn-sm rounded-full"
+                      title="Visualizar"
+                    >
+                      👁️ Ver
+                    </button>
+                  ) : null;
+                })()}
                 <button
                   type="button"
                   onClick={() => handleDownload(attachment)}
@@ -166,6 +180,18 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = ({
         <p className="text-center text-base-content/70 py-4">
           Nenhum anexo ainda. Clique acima para adicionar arquivos.
         </p>
+      )}
+
+      {/* Modal de Visualização */}
+      {viewingAttachment && (
+        <FileViewer
+          content={getAttachmentUrl(viewingAttachment)}
+          fileName={viewingAttachment.name}
+          mimeType={viewingAttachment.type}
+          onClose={() => setViewingAttachment(null)}
+          showDownload={true}
+          showViewInNewTab={true}
+        />
       )}
     </div>
   );

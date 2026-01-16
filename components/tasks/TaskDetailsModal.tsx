@@ -26,6 +26,8 @@ import { getJiraConfig } from '../../services/jiraService';
 import { TaskWithChildren } from './JiraTaskItem';
 import { TaskLinksView } from './TaskLinksView';
 import { getTaskDependents } from '../../utils/dependencyService';
+import { FileViewer } from '../common/FileViewer';
+import { canViewInBrowser, detectFileType } from '../../services/fileViewerService';
 
 type DetailSection = 'overview' | 'bdd' | 'tests' | 'planning' | 'collaboration' | 'links';
 type TestSubSection = 'strategy' | 'test-cases';
@@ -209,6 +211,56 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
     const handleCancelBddForm = () => {
         setEditingBddScenario(null);
         setIsCreatingBdd(false);
+    };
+
+    const handleViewJiraAttachment = async (attachment: { id: string; filename: string; url: string; mimeType: string }) => {
+        setLoadingJiraAttachment(true);
+        try {
+            // Fazer fetch do anexo através do proxy do Jira se necessário
+            const jiraConfig = getJiraConfig();
+            if (!jiraConfig) {
+                // Se não há config, tentar abrir diretamente
+                window.open(attachment.url, '_blank');
+                return;
+            }
+
+            // Tentar fazer fetch do anexo
+            const endpoint = `/secure/attachment/${attachment.id}/${encodeURIComponent(attachment.filename)}`;
+            const response = await fetch('/api/jira-proxy', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    url: jiraConfig.url,
+                    email: jiraConfig.email,
+                    apiToken: jiraConfig.apiToken,
+                    endpoint,
+                    method: 'GET',
+                }),
+            });
+
+            if (response.ok) {
+                const blob = await response.blob();
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    setViewingJiraAttachment({
+                        ...attachment,
+                        content: reader.result as string
+                    });
+                    setLoadingJiraAttachment(false);
+                };
+                reader.readAsDataURL(blob);
+            } else {
+                // Se falhar, abrir em nova aba
+                window.open(attachment.url, '_blank');
+                setLoadingJiraAttachment(false);
+            }
+        } catch (error) {
+            // Em caso de erro, abrir em nova aba como fallback
+            window.open(attachment.url, '_blank');
+            setLoadingJiraAttachment(false);
+        }
     };
 
     const renderOverviewSection = () => (
@@ -454,14 +506,64 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                                 <h4 className="text-sm font-semibold text-base-content/70">📎 Anexos do Jira</h4>
                                 <div className="p-3 bg-base-100 border border-base-300 rounded-lg">
                                     <div className="space-y-2">
-                                        {task.jiraAttachments.map((att) => (
-                                            <div key={att.id} className="flex items-center justify-between text-sm">
-                                                <span className="text-base-content">{att.filename}</span>
-                                                <span className="text-base-content/70 text-xs">
-                                                    {(att.size / 1024).toFixed(2)} KB
-                                                </span>
-                                            </div>
-                                        ))}
+                                        {task.jiraAttachments.map((att) => {
+                                            const jiraConfig = getJiraConfig();
+                                            const jiraUrl = jiraConfig?.url;
+                                            const attachmentUrl = jiraUrl ? `${jiraUrl}/secure/attachment/${att.id}/${encodeURIComponent(att.filename)}` : null;
+                                            const fileType = detectFileType(att.filename, '');
+                                            const canView = attachmentUrl && canViewInBrowser(fileType);
+                                            
+                                            return (
+                                                <div key={att.id} className="flex items-center justify-between text-sm p-2 hover:bg-base-200 rounded">
+                                                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                                                        <span className="text-base-content truncate">{att.filename}</span>
+                                                        <span className="text-base-content/70 text-xs whitespace-nowrap">
+                                                            {(att.size / 1024).toFixed(2)} KB
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        {canView && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    if (attachmentUrl) {
+                                                                        handleViewJiraAttachment({
+                                                                            id: att.id,
+                                                                            filename: att.filename,
+                                                                            url: attachmentUrl,
+                                                                            mimeType: fileType === 'pdf' ? 'application/pdf' : 
+                                                                                     fileType === 'image' ? 'image/*' : 
+                                                                                     fileType === 'text' ? 'text/plain' :
+                                                                                     fileType === 'json' ? 'application/json' :
+                                                                                     fileType === 'csv' ? 'text/csv' : 'application/octet-stream'
+                                                                        });
+                                                                    }
+                                                                }}
+                                                                disabled={loadingJiraAttachment}
+                                                                className="btn btn-outline btn-xs rounded-full disabled:opacity-50"
+                                                                title="Visualizar"
+                                                            >
+                                                                {loadingJiraAttachment ? '⏳' : '👁️ Ver'}
+                                                            </button>
+                                                        )}
+                                                        {attachmentUrl && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    if (attachmentUrl) {
+                                                                        window.open(attachmentUrl, '_blank');
+                                                                    }
+                                                                }}
+                                                                className="btn btn-outline btn-xs rounded-full"
+                                                                title="Download"
+                                                            >
+                                                                ⬇️
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
                                     </div>
                                 </div>
                             </div>
@@ -940,6 +1042,18 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                 onClose={() => setShowTestReport(false)}
                 task={task}
             />
+
+            {/* Modal de Visualização de Anexo do Jira */}
+            {viewingJiraAttachment && viewingJiraAttachment.content && (
+                <FileViewer
+                    content={viewingJiraAttachment.content}
+                    fileName={viewingJiraAttachment.filename}
+                    mimeType={viewingJiraAttachment.mimeType}
+                    onClose={() => setViewingJiraAttachment(null)}
+                    showDownload={true}
+                    showViewInNewTab={true}
+                />
+            )}
         </>
     );
 };
