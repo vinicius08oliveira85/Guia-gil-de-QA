@@ -392,8 +392,8 @@ export const JiraTaskItem: React.FC<{
         if (isDetailsOpen && !sectionTabs.find(tab => tab.id === activeSection)) {
             setActiveSection(sectionTabs[0]?.id ?? 'overview');
         }
-        // Se estiver na aba "tests" ou "bdd" e não for tipo "Tarefa", redirecionar para "overview"
-        if ((activeSection === 'tests' || activeSection === 'bdd') && task.type !== 'Tarefa') {
+        // Se estiver na aba "tests" ou "bdd" e não for tipo "Tarefa" ou "Bug", redirecionar para "overview"
+        if ((activeSection === 'tests' || activeSection === 'bdd') && task.type !== 'Tarefa' && task.type !== 'Bug') {
             setActiveSection('overview');
         }
     }, [isDetailsOpen, sectionTabs, activeSection, task.type]);
@@ -1296,7 +1296,7 @@ export const JiraTaskItem: React.FC<{
                                     </div>
                                 )}
 
-                                {task.type === 'Tarefa' && testTypeBadges.length > 0 && (
+                                {(task.type === 'Tarefa' || task.type === 'Bug') && testTypeBadges.length > 0 && (
                                     <div className="mt-2 flex flex-wrap gap-1">
                                         {testTypeBadges.map(badge => (
                                             <TestTypeBadge 
@@ -1506,7 +1506,7 @@ export const JiraTaskItem: React.FC<{
                                             })}
                                         </div>
 
-                                        {task.type === 'Tarefa' && onGenerateAll && (
+                                        {(task.type === 'Tarefa' || task.type === 'Bug') && onGenerateAll && (
                                             <button
                                                 type="button"
                                                 onClick={() => onGenerateAll(task.id)}
