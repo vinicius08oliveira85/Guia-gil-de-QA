@@ -3,8 +3,6 @@ import { Project } from '../../types';
 import { useProjectMetrics } from '../../hooks/useProjectMetrics';
 import { useMetricsHistory } from '../../hooks/useMetricsHistory';
 import { MetricCard } from './MetricCard';
-import { TestExecutionChart } from './charts/TestExecutionChart';
-import { QualityMetricsChart } from './charts/QualityMetricsChart';
 import { TestPhaseProgress } from './TestPhaseProgress';
 import { RecentActivity } from './RecentActivity';
 import { QualityKPIs } from './QualityKPIs';
@@ -350,12 +348,6 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
           icon={Layers}
           description="Fases ativas"
         />
-      </div>
-
-      {/* Charts Row */}
-      <div className="grid gap-4 lg:grid-cols-2">
-        <TestExecutionChart project={filteredProject} />
-        <QualityMetricsChart project={filteredProject} />
       </div>
 
       {/* Test Phase Progress and Quality KPIs */}

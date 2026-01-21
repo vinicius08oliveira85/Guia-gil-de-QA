@@ -892,6 +892,7 @@ export const TasksView: React.FC<{
         }
         setIsTaskFormOpen(false);
         setEditingTask(undefined);
+        setDefaultParentId(undefined);
     };
 
     const handleDeleteTask = useCallback((taskId: string) => {
@@ -1687,17 +1688,28 @@ export const TasksView: React.FC<{
                         )}
                     </div>
 
-                    {isTaskFormOpen && (
-                        <div className="p-4 bg-base-100 rounded-lg border border-base-300">
-                            <TaskForm 
-                                onSave={handleSaveTask} 
-                                onCancel={() => { setIsTaskFormOpen(false); setEditingTask(undefined); }} 
-                                existingTask={editingTask}
-                                epics={epics}
-                                parentId={defaultParentId}
-                            />
-                        </div>
-                    )}
+        <Modal 
+            isOpen={isTaskFormOpen} 
+            onClose={() => { 
+                setIsTaskFormOpen(false); 
+                setEditingTask(undefined); 
+                setDefaultParentId(undefined);
+            }}
+            title={editingTask ? 'Editar Tarefa' : 'Adicionar Tarefa'}
+            size="xl"
+        >
+            <TaskForm 
+                onSave={handleSaveTask} 
+                onCancel={() => { 
+                    setIsTaskFormOpen(false); 
+                    setEditingTask(undefined); 
+                    setDefaultParentId(undefined);
+                }} 
+                existingTask={editingTask}
+                epics={epics}
+                parentId={defaultParentId}
+            />
+        </Modal>
 
         <Modal 
             isOpen={showJiraProjectSelector} 
