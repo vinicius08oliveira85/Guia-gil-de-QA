@@ -15,9 +15,9 @@ interface CleanupResult {
 }
 
 /**
- * Remove casos de teste e cenários BDD de tarefas que não são do tipo "Tarefa"
- * Apenas tarefas do tipo "Tarefa" podem ter casos de teste e cenários BDD
- * Bug, Epic e História não devem ter casos de teste nem cenários BDD
+ * Remove casos de teste e cenários BDD de tarefas que não são do tipo "Tarefa" ou "Bug"
+ * Apenas tarefas do tipo "Tarefa" e "Bug" podem ter casos de teste e cenários BDD
+ * Epic e História não devem ter casos de teste nem cenários BDD
  * 
  * @param project Projeto a ser limpo
  * @param createBackupBeforeCleanup Se true, cria backup antes de limpar (padrão: true)
@@ -56,8 +56,8 @@ export async function cleanupTestCasesForNonTaskTypes(
   }
 
   const cleanedTasks = project.tasks.map((task: JiraTask) => {
-    // Se não for do tipo "Tarefa", remover casos de teste e cenários BDD
-    if (task.type !== 'Tarefa') {
+    // Se não for do tipo "Tarefa" ou "Bug", remover casos de teste e cenários BDD
+    if (task.type !== 'Tarefa' && task.type !== 'Bug') {
       const testCasesCount = task.testCases?.length || 0;
       const bddScenariosCount = task.bddScenarios?.length || 0;
       const needsCleanup = testCasesCount > 0 || bddScenariosCount > 0;
@@ -114,11 +114,15 @@ export async function cleanupTestCasesForNonTaskTypes(
 
 /**
  * Versão síncrona para compatibilidade (sem backup)
+ * Remove casos de teste e cenários BDD de tarefas que não são do tipo "Tarefa" ou "Bug"
+ * Apenas tarefas do tipo "Tarefa" e "Bug" podem ter casos de teste e cenários BDD
+ * Epic e História não devem ter casos de teste nem cenários BDD
+ * 
  * @deprecated Use a versão assíncrona com backup
  */
 export function cleanupTestCasesForNonTaskTypesSync(project: Project): Project {
   const cleanedTasks = project.tasks.map((task: JiraTask) => {
-    if (task.type !== 'Tarefa') {
+    if (task.type !== 'Tarefa' && task.type !== 'Bug') {
       const needsCleanup = (task.testCases && task.testCases.length > 0) || 
                           (task.bddScenarios && task.bddScenarios.length > 0);
       
