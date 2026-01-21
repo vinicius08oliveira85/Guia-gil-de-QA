@@ -22,8 +22,6 @@ import { lazyWithRetry } from './utils/lazyWithRetry';
 // Code splitting - Lazy loading de componentes pesados
 const ProjectView = lazyWithRetry(() => import('./components/ProjectView').then(m => ({ default: m.ProjectView })));
 const ProjectsDashboard = lazyWithRetry(() => import('./components/ProjectsDashboard').then(m => ({ default: m.ProjectsDashboard })));
-// Importação direta temporária para debug da landing page
-import { LandingPage } from './components/landing/LandingPage';
 const AdvancedSearch = lazyWithRetry(() => import('./components/common/AdvancedSearch').then(m => ({ default: m.AdvancedSearch })));
 const ProjectComparisonModal = lazyWithRetry(() => import('./components/common/ProjectComparisonModal').then(m => ({ default: m.ProjectComparisonModal })));
 const OnboardingGuide = lazyWithRetry(() => import('./components/onboarding/OnboardingGuide').then(m => ({ default: m.OnboardingGuide })));
@@ -52,7 +50,6 @@ const App: React.FC = () => {
     const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
     const [showProjectComparison, setShowProjectComparison] = useState(false);
     const [showSettings, setShowSettings] = useState(false);
-    const [forceShowLanding, setForceShowLanding] = useState(true); // Sempre começar na landing page
     const { handleError, handleSuccess } = useErrorHandler();
     const { searchQuery, setSearchQuery, searchResults } = useSearch(projects);
     const supabaseEnabled = isSupabaseAvailable();
@@ -210,48 +207,6 @@ const App: React.FC = () => {
         return projects.find(p => p.id === selectedProjectId);
     }, [projects, selectedProjectId]);
 
-    // Mostrar landing page quando forceShowLanding está ativo
-    // O usuário pode navegar para projetos através do botão "Abrir Meus Projetos"
-    const shouldShowLandingPage = useMemo(() => {
-        return forceShowLanding && !showSettings;
-    }, [forceShowLanding, showSettings]);
-
-    // Sair da landing page quando um projeto é selecionado
-    useEffect(() => {
-        if (selectedProject) {
-            setForceShowLanding(false);
-        }
-    }, [selectedProject]);
-
-    // Listener para eventos da landing page
-    useEffect(() => {
-        const handleShowDashboard = () => {
-            // Quando o usuário clica em "Começar Agora", desativar landing page forçada
-            // Se não houver projetos, criar um projeto inicial
-            setForceShowLanding(false);
-            if (projects.length === 0) {
-                handleCreateProject(
-                    'Meu Primeiro Projeto',
-                    'Bem-vindo ao QA Agile Guide! Este é seu primeiro projeto. Comece adicionando tarefas e casos de teste.'
-                ).catch(() => {
-                    // Erro já é tratado pelo handleCreateProject
-                });
-            }
-        };
-        
-        const handleShowLanding = () => {
-            // Quando o usuário clica em "Ver Landing Page" no dashboard
-            setForceShowLanding(true);
-        };
-        
-        window.addEventListener('show-dashboard', handleShowDashboard);
-        window.addEventListener('show-landing', handleShowLanding);
-        return () => {
-            window.removeEventListener('show-dashboard', handleShowDashboard);
-            window.removeEventListener('show-landing', handleShowLanding);
-        };
-    }, [projects.length, handleCreateProject]);
-
     if (isLoading) {
         return (
             <div className="min-h-screen flex justify-center items-center">
@@ -291,67 +246,10 @@ const App: React.FC = () => {
                         },
                     }}
                 />
-                {!shouldShowLandingPage && (
-                    <Header 
-                        onProjectImported={handleImportJiraProject}
-                        onOpenSettings={() => setShowSettings(true)}
-                    />
-                )}
-                {shouldShowLandingPage && (
-                    <header className="sticky top-0 z-30 border-b border-base-300 bg-base-100/80 backdrop-blur">
-                        <div className="container mx-auto px-4 py-3 flex items-center justify-between gap-3">
-                            <div className="flex items-center gap-3 min-w-0">
-                                <h1 className="text-lg sm:text-xl font-bold text-base-content truncate">
-                                    QA Agile Guide
-                                </h1>
-                                <span className="badge badge-outline badge-sm hidden sm:inline-flex">
-                                    QA ágil
-                                </span>
-                            </div>
-
-                            <nav className="hidden md:flex items-center gap-1" aria-label="Navegação da landing">
-                                <a href="#features-section" className="btn btn-ghost btn-sm rounded-full">
-                                    Funcionalidades
-                                </a>
-                                <a href="#benefits-section" className="btn btn-ghost btn-sm rounded-full">
-                                    Benefícios
-                                </a>
-                                <a href="#cta-section" className="btn btn-ghost btn-sm rounded-full">
-                                    Começar
-                                </a>
-                            </nav>
-
-                            <div className="flex items-center gap-2">
-                                <div className="dropdown dropdown-end md:hidden">
-                                    <button
-                                        type="button"
-                                        tabIndex={0}
-                                        className="btn btn-ghost btn-sm rounded-full"
-                                        aria-label="Abrir menu"
-                                    >
-                                        Menu
-                                    </button>
-                                    <ul
-                                        tabIndex={0}
-                                        className="menu dropdown-content z-[1] mt-2 p-2 shadow bg-base-100 rounded-box w-56 border border-base-300"
-                                    >
-                                        <li><a href="#features-section">Funcionalidades</a></li>
-                                        <li><a href="#benefits-section">Benefícios</a></li>
-                                        <li><a href="#cta-section">Começar</a></li>
-                                    </ul>
-                                </div>
-
-                                <button
-                                    type="button"
-                                    onClick={() => setForceShowLanding(false)}
-                                    className="btn btn-primary btn-sm rounded-full"
-                                >
-                                    Abrir Meus Projetos
-                                </button>
-                            </div>
-                        </div>
-                    </header>
-                )}
+                <Header 
+                    onProjectImported={handleImportJiraProject}
+                    onOpenSettings={() => setShowSettings(true)}
+                />
                 {showSearch && (
                     <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/30 backdrop-blur pt-20 p-4">
                         <div className="w-full max-w-2xl">
@@ -402,8 +300,6 @@ const App: React.FC = () => {
                                 onProjectImported={handleImportJiraProject}
                             />
                         </Suspense>
-                    ) : shouldShowLandingPage ? (
-                        <LandingPage />
                     ) : selectedProject ? (
                         <Suspense fallback={<div className="container mx-auto p-8"><LoadingSkeleton variant="card" count={3} /></div>}>
                             <ProjectView 
@@ -432,11 +328,9 @@ const App: React.FC = () => {
                 <Suspense fallback={null}>
                     <RolafAssistant 
                         currentView={
-                            shouldShowLandingPage 
-                                ? 'landing' 
-                                : selectedProject 
-                                    ? 'project-view' 
-                                    : 'dashboard'
+                            selectedProject 
+                                ? 'project-view' 
+                                : 'dashboard'
                         }
                     />
                 </Suspense>

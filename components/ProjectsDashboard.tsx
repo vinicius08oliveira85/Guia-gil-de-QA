@@ -8,7 +8,7 @@ import { TrashIcon } from './common/Icons';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { Badge } from './common/Badge';
 import { ProgressIndicator } from './common/ProgressIndicator';
-import { ArrowRight, Plus, LayoutGrid, Cloud } from 'lucide-react';
+import { ArrowRight, Plus, Cloud } from 'lucide-react';
 import { getTaskStatusCategory } from '../utils/jiraStatusCategorizer';
 import { motion } from 'framer-motion';
 
@@ -120,7 +120,7 @@ export const ProjectsDashboard: React.FC<{
     return (
         <div className="min-h-[calc(100vh-4rem)] bg-gradient-to-b from-base-100 to-base-200/60">
             <div className="container mx-auto w-full max-w-7xl px-4 py-6 sm:py-8">
-                {/* Header (sem hero, mas com padrão visual da Landing) */}
+                {/* Header */}
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                     <div className="space-y-2">
                         <div className="inline-flex items-center gap-2">
@@ -141,15 +141,6 @@ export const ProjectsDashboard: React.FC<{
                     </div>
 
                     <div className="flex flex-wrap items-center gap-2 justify-start lg:justify-end">
-                        <button
-                            type="button"
-                            onClick={() => window.dispatchEvent(new CustomEvent('show-landing'))}
-                            className="btn btn-ghost btn-sm rounded-full"
-                        >
-                            <LayoutGrid className="w-4 h-4" />
-                            <span>Ver Landing</span>
-                        </button>
-
                         {isMobile ? (
                             <>
                                 <button

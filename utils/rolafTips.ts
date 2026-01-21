@@ -19,7 +19,7 @@ export const QA_TIPS: QATip[] = [
     title: 'O que é QA?',
     content: 'QA (Quality Assurance) é o processo de garantir que o software atenda aos requisitos de qualidade. Envolve planejamento, execução de testes e análise de resultados.',
     priority: 'high',
-    context: ['landing', 'dashboard']
+    context: ['dashboard']
   },
   {
     id: 'tip-002',
