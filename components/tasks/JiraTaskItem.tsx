@@ -1192,12 +1192,24 @@ export const JiraTaskItem: React.FC<{
             typeof status === 'string' ? status === newStatusValue : status.name === newStatusValue
         );
 
-        // Se for status do Jira, mapeia para o status do App (Testes)
-        // Se não for, usa o valor direto se for um dos status padrão
-        const mappedStatus = isJiraStatus ? mapStatus(newStatusValue) : (newStatusValue as 'To Do' | 'In Progress' | 'Done');
-        
-        // Atualiza apenas o status do App (Testes), mantendo o jiraStatus inalterado (só muda via sync)
-        onTaskStatusChange(mappedStatus);
+        if (isJiraStatus) {
+            const mappedStatus = mapStatus(newStatusValue);
+            onTaskStatusChange(mappedStatus);
+            if (project && onUpdateProject) {
+                const updatedTasks = project.tasks.map((t) =>
+                    t.id === task.id ? { ...t, status: mappedStatus, jiraStatus: newStatusValue } : t
+                );
+                onUpdateProject({ ...project, tasks: updatedTasks });
+            }
+        } else {
+            onTaskStatusChange(newStatusValue as 'To Do' | 'In Progress' | 'Done');
+            if (project && onUpdateProject && task.jiraStatus) {
+                const updatedTasks = project.tasks.map((t) =>
+                    t.id === task.id ? { ...t, jiraStatus: undefined } : t
+                );
+                onUpdateProject({ ...project, tasks: updatedTasks });
+            }
+        }
     };
 
     const handleCardClick = (e: React.MouseEvent) => {
@@ -1499,17 +1511,6 @@ export const JiraTaskItem: React.FC<{
                                         )}
                                     </select>
                                 </div>
-
-                                {task.status === 'To Do' && (
-                                    <div className="w-full md:w-auto" onClick={(e) => e.stopPropagation()}>
-                                        <button
-                                            onClick={() => handleChangeStatus('In Progress')}
-                                            className="px-3 py-1 text-sm bg-yellow-500/20 text-yellow-700 dark:text-yellow-400 border border-yellow-500/30 rounded hover:bg-yellow-500/30 w-full"
-                                        >
-                                            Iniciar Teste
-                                        </button>
-                                    </div>
-                                )}
 
                                 <div className="flex flex-wrap gap-2 md:flex-nowrap md:gap-1" onClick={(e) => e.stopPropagation()}>
                                     {task.type === 'Epic' && (
