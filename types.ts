@@ -28,6 +28,22 @@ export type TeamRole = 'Product' | 'QA' | 'Dev';
 
 export type TaskPriority = 'Baixa' | 'Média' | 'Alta' | 'Urgente';
 
+/**
+ * Status de teste independente do Jira
+ * Não é afetado pela sincronização do Jira
+ */
+export type TaskTestStatus = 'testar' | 'testando' | 'pendente' | 'teste_concluido';
+
+/**
+ * Registro de status de teste no Supabase
+ */
+export interface TaskTestStatusRecord {
+  task_key: string;
+  status: TaskTestStatus;
+  updated_at?: string;
+  created_at?: string;
+}
+
 export type STLCPhaseName = 
   | 'Análise de Requisitos'
   | 'Planejamento de Testes'
@@ -104,6 +120,8 @@ export interface JiraTask {
   /** Status padrão do app. "Blocked" pode ser usado por integrações/fluxos avançados. */
   status: 'To Do' | 'In Progress' | 'Done' | 'Blocked';
   jiraStatus?: string; // Status original do Jira (ex: "Em Andamento", "Concluído", etc.)
+  /** Status de teste independente do Jira. Não é afetado pela sincronização do Jira. */
+  testStatus?: TaskTestStatus;
   testCases: TestCase[];
   testStrategy?: TestStrategy[];
   type: JiraTaskType;

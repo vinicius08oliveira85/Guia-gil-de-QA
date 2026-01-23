@@ -1,6 +1,6 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
-import { JiraTask, BddScenario, TestCaseDetailLevel, TeamRole, Project, TestCase } from '../../types';
+import { JiraTask, BddScenario, TestCaseDetailLevel, TeamRole, Project, TestCase, TaskTestStatus } from '../../types';
 import { Spinner } from '../common/Spinner';
 import { TaskTypeIcon, TaskStatusIcon, StartTestIcon, CompleteTestIcon, ToDoTestIcon, PlusIcon, EditIcon, TrashIcon, ChevronDownIcon, RefreshIcon } from '../common/Icons';
 import { BddScenarioForm, BddScenarioItem } from './BddScenario';
@@ -29,6 +29,9 @@ import { getJiraConfig } from '../../services/jiraService';
 import { TestTypeBadge } from '../common/TestTypeBadge';
 import { FileViewer } from '../common/FileViewer';
 import { canViewInBrowser, detectFileType } from '../../services/fileViewerService';
+import { loadTaskTestStatus, saveTaskTestStatus, calculateTaskTestStatus } from '../../services/taskTestStatusService';
+import { useProjectsStore } from '../../store/projectsStore';
+import { logger } from '../../utils/logger';
 
 // Componente para renderizar descrição com formatação rica do Jira
 const DescriptionRenderer: React.FC<{ 
@@ -164,9 +167,12 @@ export const JiraTaskItem: React.FC<{
     const [loadingJiraAttachment, setLoadingJiraAttachment] = useState(false);
     const [activeSection, setActiveSection] = useState<DetailSection>('overview');
     const [activeTestSubSection, setActiveTestSubSection] = useState<TestSubSection>('strategy');
+    const [taskTestStatus, setTaskTestStatus] = useState<TaskTestStatus | null>(task.testStatus || null);
+    const [isLoadingTestStatus, setIsLoadingTestStatus] = useState(false);
     const hasTests = task.testCases && task.testCases.length > 0;
     const hasChildren = task.children && task.children.length > 0;
     const { isBeginnerMode } = useBeginnerMode();
+    const { updateProject } = useProjectsStore();
     const taskPhase = getTaskPhase(task);
     const phaseStyle = getPhaseBadgeStyle(taskPhase);
     const nextStep = getNextStepForTask(task);
@@ -232,6 +238,122 @@ export const JiraTaskItem: React.FC<{
             pending: Math.max(total - executed, 0)
         };
     }, [task.testCases]);
+
+    // Carregar status de teste do Supabase ao montar
+    useEffect(() => {
+        const loadTestStatus = async () => {
+            if (!task.id || taskTestStatus !== null) return; // Já carregado ou não tem ID válido
+            
+            setIsLoadingTestStatus(true);
+            try {
+                const status = await loadTaskTestStatus(task.id);
+                if (status !== null) {
+                    setTaskTestStatus(status);
+                    // Atualizar task no projeto se necessário
+                    if (project && onUpdateProject && task.testStatus !== status) {
+                        const updatedTasks = project.tasks.map(t =>
+                            t.id === task.id ? { ...t, testStatus: status } : t
+                        );
+                        onUpdateProject({ ...project, tasks: updatedTasks });
+                    }
+                } else {
+                    // Se não há status salvo, calcular baseado nos testCases
+                    const calculatedStatus = calculateTaskTestStatus(task);
+                    setTaskTestStatus(calculatedStatus);
+                }
+            } catch (error) {
+                logger.warn('Erro ao carregar status de teste do Supabase', 'JiraTaskItem', error);
+                // Em caso de erro, calcular baseado nos testCases
+                const calculatedStatus = calculateTaskTestStatus(task);
+                setTaskTestStatus(calculatedStatus);
+            } finally {
+                setIsLoadingTestStatus(false);
+            }
+        };
+        
+        loadTestStatus();
+    }, [task.id]); // Apenas ao montar ou quando task.id mudar
+
+    // Recalcular status automaticamente quando testCases mudam
+    useEffect(() => {
+        // Não recalcular se o status foi definido manualmente (testando ou teste_concluido)
+        // Apenas recalcular se houver mudança que force pendente (teste falhou)
+        const calculatedStatus = calculateTaskTestStatus(task);
+        
+        // Se o status calculado é 'pendente' (teste falhou), sempre atualizar
+        // Se o status atual é 'testar' ou null, atualizar para o calculado
+        // Se o status atual é 'testando' ou 'teste_concluido', só atualizar se for 'pendente'
+        const shouldUpdate = 
+            calculatedStatus === 'pendente' || 
+            taskTestStatus === null || 
+            taskTestStatus === 'testar' ||
+            (taskTestStatus === 'testando' && calculatedStatus === 'pendente') ||
+            (taskTestStatus === 'teste_concluido' && calculatedStatus === 'pendente');
+        
+        if (shouldUpdate && calculatedStatus !== taskTestStatus) {
+            setTaskTestStatus(calculatedStatus);
+            // Salvar no Supabase em background
+            if (task.id) {
+                saveTaskTestStatus(task.id, calculatedStatus).catch(error => {
+                    logger.warn('Erro ao salvar status de teste no Supabase', 'JiraTaskItem', error);
+                });
+            }
+            // Atualizar task no projeto
+            if (project && onUpdateProject) {
+                const updatedTasks = project.tasks.map(t =>
+                    t.id === task.id ? { ...t, testStatus: calculatedStatus } : t
+                );
+                onUpdateProject({ ...project, tasks: updatedTasks });
+            }
+        }
+    }, [task.testCases, task.id]); // Recalcular quando testCases mudarem (sem incluir taskTestStatus para evitar loop)
+
+    // Função para atualizar e salvar status
+    const updateTestStatus = useCallback(async (newStatus: TaskTestStatus) => {
+        setTaskTestStatus(newStatus);
+        
+        if (task.id) {
+            try {
+                await saveTaskTestStatus(task.id, newStatus);
+                logger.debug(`Status de teste atualizado para ${task.id}: ${newStatus}`, 'JiraTaskItem');
+            } catch (error) {
+                logger.warn('Erro ao salvar status de teste no Supabase', 'JiraTaskItem', error);
+            }
+        }
+        
+        // Atualizar task no projeto
+        if (project && onUpdateProject) {
+            const updatedTasks = project.tasks.map(t =>
+                t.id === task.id ? { ...t, testStatus: newStatus } : t
+            );
+            onUpdateProject({ ...project, tasks: updatedTasks });
+        }
+    }, [task.id, project, onUpdateProject]);
+
+    // Função para iniciar teste
+    const handleStartTest = useCallback(async () => {
+        await updateTestStatus('testando');
+    }, [updateTestStatus]);
+
+    // Função para concluir teste
+    const handleCompleteTest = useCallback(async () => {
+        const calculatedStatus = calculateTaskTestStatus(task);
+        // Se todos os testes passaram, marcar como concluído, senão pendente
+        const finalStatus = calculatedStatus === 'teste_concluido' ? 'teste_concluido' : 'pendente';
+        await updateTestStatus(finalStatus);
+    }, [task, updateTestStatus]);
+
+    // Cores e estilos para status de teste
+    const testStatusConfig = useMemo(() => {
+        const status = taskTestStatus || calculateTaskTestStatus(task);
+        const configs: Record<TaskTestStatus, { label: string; color: string; bgColor: string; icon: string }> = {
+            testar: { label: 'Testar', color: 'text-orange-700 dark:text-orange-400', bgColor: 'bg-orange-500/20 border-orange-500/30', icon: '📋' },
+            testando: { label: 'Testando', color: 'text-yellow-700 dark:text-yellow-400', bgColor: 'bg-yellow-500/20 border-yellow-500/30', icon: '🔄' },
+            pendente: { label: 'Pendente', color: 'text-red-700 dark:text-red-400', bgColor: 'bg-red-500/20 border-red-500/30', icon: '⚠️' },
+            teste_concluido: { label: 'Teste Concluído', color: 'text-green-700 dark:text-green-400', bgColor: 'bg-green-500/20 border-green-500/30', icon: '✅' }
+        };
+        return configs[status];
+    }, [taskTestStatus, task]);
 
     const testTypeBadges = useMemo(() => {
         const typeMap = new Map<string, { total: number; executed: number; failed: number; hasStrategy: boolean; strategyExecuted: boolean }>();
@@ -1348,6 +1470,12 @@ export const JiraTaskItem: React.FC<{
                                             <TaskStatusIcon status={task.status} />
                                         </div>
                                     )}
+                                    {/* Ícone de status de teste */}
+                                    {taskTestStatus && (
+                                        <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border ${testStatusConfig.bgColor} backdrop-blur-sm transition-all duration-300`} title={testStatusConfig.label}>
+                                            <span className="text-lg" aria-hidden="true">{testStatusConfig.icon}</span>
+                                        </div>
+                                    )}
                                     <TaskTypeIcon type={task.type} />
                                 </div>
                             </div>
@@ -1392,6 +1520,42 @@ export const JiraTaskItem: React.FC<{
                                         </p>
                                     </button>
                                 )}
+
+                                {/* Status de teste e botões */}
+                                <div className="mt-2 flex flex-wrap items-center gap-2">
+                                    {taskTestStatus && (
+                                        <>
+                                            {/* Badge de status de teste */}
+                                            <span className={`badge badge-sm ${testStatusConfig.bgColor} ${testStatusConfig.color} border flex items-center gap-1`}>
+                                                <span aria-hidden="true">{testStatusConfig.icon}</span>
+                                                {testStatusConfig.label}
+                                            </span>
+                                            
+                                            {/* Botões de ação */}
+                                            {taskTestStatus === 'testar' && (
+                                                <button
+                                                    type="button"
+                                                    onClick={handleStartTest}
+                                                    className="btn btn-sm btn-warning"
+                                                    aria-label="Iniciar teste"
+                                                >
+                                                    Iniciar Teste
+                                                </button>
+                                            )}
+                                            
+                                            {taskTestStatus === 'testando' && (
+                                                <button
+                                                    type="button"
+                                                    onClick={handleCompleteTest}
+                                                    className="btn btn-sm btn-success"
+                                                    aria-label="Concluir teste"
+                                                >
+                                                    Concluir Teste
+                                                </button>
+                                            )}
+                                        </>
+                                    )}
+                                </div>
 
                                 <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-base-content/70">
                                     {nextStep && (

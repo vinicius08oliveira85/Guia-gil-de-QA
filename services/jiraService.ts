@@ -1618,6 +1618,9 @@ export const syncJiraProject = async (
                     testStrategy: oldTask.testStrategy, // ✅ Preservar estratégia de teste
                     tools: oldTask.tools, // ✅ Preservar ferramentas
                     testCaseTools: oldTask.testCaseTools, // ✅ Preservar ferramentas de testes
+                    // ✅ CRÍTICO: Preservar testStatus - NUNCA sobrescrever com dados do Jira
+                    // O testStatus é completamente independente do status do Jira
+                    testStatus: oldTask.testStatus, // ✅ Preservar status de teste independente do Jira
                     // Preservar createdAt se já existe (não sobrescrever com data do Jira se já foi criado localmente)
                     createdAt: oldTask.createdAt || task.createdAt,
                 };
@@ -1691,7 +1694,9 @@ export const syncJiraProject = async (
                         jiraStatus: jiraStatusName, // Sempre atualizar do Jira
                         status: jiraStatusChanged ? mapJiraStatusToTaskStatus(jiraStatusName) : oldTask.status, // Atualizar status mapeado se jiraStatus mudou
                         // CORREÇÃO: Usar finalTestCasesNoChangesFromOriginal que vem do originalTasksMap (mais recente)
-                        testCases: finalTestCasesNoChangesFromOriginal
+                        testCases: finalTestCasesNoChangesFromOriginal,
+                        // ✅ CRÍTICO: Preservar testStatus - NUNCA sobrescrever com dados do Jira
+                        testStatus: oldTask.testStatus // ✅ Preservar status de teste independente do Jira
                     };
                     
                     if (jiraStatusChanged) {
@@ -1738,7 +1743,9 @@ export const syncJiraProject = async (
                         jiraStatus: jiraStatusName, // Sempre atualizar do Jira
                         status: jiraStatusChanged ? mapJiraStatusToTaskStatus(jiraStatusName) : oldTask.status, // Atualizar status mapeado se jiraStatus mudou
                         // CORREÇÃO: Usar finalTestCasesNoChangesFromOriginalMerge que vem do originalTasksMap (mais recente)
-                        testCases: finalTestCasesNoChangesFromOriginalMerge
+                        testCases: finalTestCasesNoChangesFromOriginalMerge,
+                        // ✅ CRÍTICO: Preservar testStatus - NUNCA sobrescrever com dados do Jira
+                        testStatus: oldTask.testStatus // ✅ Preservar status de teste independente do Jira
                     };
                     
                     if (jiraStatusChanged) {

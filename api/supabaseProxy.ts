@@ -76,6 +76,56 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     if (req.method === 'GET') {
+      // Verificar se é requisição para task_test_status
+      const table = req.query.table as string;
+      if (table === 'task_test_status') {
+        const taskKey = req.query.task_key as string;
+        const taskKeys = req.query.task_keys as string;
+        
+        if (taskKey) {
+          // Buscar um único registro
+          const { data, error } = await supabase
+            .from('task_test_status')
+            .select('*')
+            .eq('task_key', taskKey)
+            .single();
+
+          if (error && error.code !== 'PGRST116') {
+            throw new Error(error.message);
+          }
+
+          res.status(200).json({
+            success: true,
+            record: data || null
+          });
+          return;
+        } else if (taskKeys) {
+          // Buscar múltiplos registros
+          const keysArray = taskKeys.split(',').filter(Boolean);
+          const { data, error } = await supabase
+            .from('task_test_status')
+            .select('*')
+            .in('task_key', keysArray);
+
+          if (error) {
+            throw new Error(error.message);
+          }
+
+          res.status(200).json({
+            success: true,
+            records: data || []
+          });
+          return;
+        } else {
+          res.status(400).json({
+            success: false,
+            error: 'task_key ou task_keys é obrigatório para task_test_status'
+          });
+          return;
+        }
+      }
+
+      // Requisição padrão para projects
       const { data, error } = await supabase
         .from('projects')
         .select('data')
@@ -94,6 +144,38 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     if (req.method === 'POST') {
+      // Verificar se é requisição para task_test_status
+      const table = req.body?.table as string;
+      if (table === 'task_test_status') {
+        const record = req.body?.record;
+        
+        if (!record || !record.task_key || !record.status) {
+          res.status(400).json({
+            success: false,
+            error: 'record com task_key e status é obrigatório para task_test_status'
+          });
+          return;
+        }
+
+        const { error } = await supabase
+          .from('task_test_status')
+          .upsert({
+            task_key: record.task_key,
+            status: record.status,
+            updated_at: new Date().toISOString()
+          }, {
+            onConflict: 'task_key'
+          });
+
+        if (error) {
+          throw new Error(error.message);
+        }
+
+        res.status(200).json({ success: true });
+        return;
+      }
+
+      // Requisição padrão para projects
       // Verificar se o payload está comprimido (header customizado)
       const isCompressed = req.headers['x-content-compressed'] === 'gzip';
       let project: unknown;
