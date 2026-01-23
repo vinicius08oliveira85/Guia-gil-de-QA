@@ -1212,6 +1212,37 @@ export const JiraTaskItem: React.FC<{
         }
     };
 
+    const handleChangeStatus = (newStatusValue: 'To Do' | 'In Progress' | 'Done' | string) => {
+        const jiraStatuses = project?.settings?.jiraStatuses || [];
+
+        const mapStatus = (jiraStatus: string): 'To Do' | 'In Progress' | 'Done' => {
+            const status = jiraStatus.toLowerCase();
+            if (
+                status.includes('done') ||
+                status.includes('resolved') ||
+                status.includes('closed') ||
+                status.includes('concluído')
+            ) {
+                return 'Done';
+            }
+            if (status.includes('progress') || status.includes('andamento')) {
+                return 'In Progress';
+            }
+            return 'To Do';
+        };
+
+        const isJiraStatus = jiraStatuses.some((status) =>
+            typeof status === 'string' ? status === newStatusValue : status.name === newStatusValue
+        );
+
+        // Se for status do Jira, mapeia para o status do App (Testes)
+        // Se não for, usa o valor direto se for um dos status padrão
+        const mappedStatus = isJiraStatus ? mapStatus(newStatusValue) : (newStatusValue as 'To Do' | 'In Progress' | 'Done');
+        
+        // Atualiza apenas o status do App (Testes), mantendo o jiraStatus inalterado (só muda via sync)
+        onTaskStatusChange(mappedStatus);
+    };
+
     const handleCardClick = (e: React.MouseEvent) => {
         // Não abrir modal se clicar em botões, inputs ou links
         const target = e.target as HTMLElement;
