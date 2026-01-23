@@ -1192,49 +1192,6 @@ export const JiraTaskItem: React.FC<{
             typeof status === 'string' ? status === newStatusValue : status.name === newStatusValue
         );
 
-        if (isJiraStatus) {
-            const mappedStatus = mapStatus(newStatusValue);
-            onTaskStatusChange(mappedStatus);
-            if (project && onUpdateProject) {
-                const updatedTasks = project.tasks.map((t) =>
-                    t.id === task.id ? { ...t, status: mappedStatus, jiraStatus: newStatusValue } : t
-                );
-                onUpdateProject({ ...project, tasks: updatedTasks });
-            }
-        } else {
-            onTaskStatusChange(newStatusValue as 'To Do' | 'In Progress' | 'Done');
-            if (project && onUpdateProject && task.jiraStatus) {
-                const updatedTasks = project.tasks.map((t) =>
-                    t.id === task.id ? { ...t, jiraStatus: undefined } : t
-                );
-                onUpdateProject({ ...project, tasks: updatedTasks });
-            }
-        }
-    };
-
-    const handleChangeStatus = (newStatusValue: 'To Do' | 'In Progress' | 'Done' | string) => {
-        const jiraStatuses = project?.settings?.jiraStatuses || [];
-
-        const mapStatus = (jiraStatus: string): 'To Do' | 'In Progress' | 'Done' => {
-            const status = jiraStatus.toLowerCase();
-            if (
-                status.includes('done') ||
-                status.includes('resolved') ||
-                status.includes('closed') ||
-                status.includes('concluído')
-            ) {
-                return 'Done';
-            }
-            if (status.includes('progress') || status.includes('andamento')) {
-                return 'In Progress';
-            }
-            return 'To Do';
-        };
-
-        const isJiraStatus = jiraStatuses.some((status) =>
-            typeof status === 'string' ? status === newStatusValue : status.name === newStatusValue
-        );
-
         // Se for status do Jira, mapeia para o status do App (Testes)
         // Se não for, usa o valor direto se for um dos status padrão
         const mappedStatus = isJiraStatus ? mapStatus(newStatusValue) : (newStatusValue as 'To Do' | 'In Progress' | 'Done');
