@@ -1562,9 +1562,24 @@ export const syncJiraProject = async (
                 
                 // Fazer merge preservando dados locais e atualizando apenas campos do Jira
                 // IMPORTANTE: Sempre definir jiraStatus com o nome exato do Jira (mesmo que seja string vazia)
-                // CORREÇÃO: Usar originalTasksMap para garantir que temos os testCases mais recentes do store
+                // CORREÇÃO CRÍTICA: SEMPRE usar testCases do originalTasksMap diretamente, sem fallback
+                // Isso garante que os casos de teste NUNCA sejam alterados, mesmo quando o status da tarefa muda
                 const originalTaskForFinal = task.id ? originalTasksMap.get(task.id) : undefined;
-                const finalTestCasesFromOriginal = originalTaskForFinal?.testCases || finalTestCases;
+                
+                // REGRA DE OURO: Se originalTasksMap tem testCases, usar diretamente (sempre preservar)
+                // Apenas usar finalTestCases se originalTasksMap não existir ou não tiver testCases
+                let finalTestCasesFromOriginal: typeof finalTestCases;
+                if (originalTaskForFinal?.testCases && originalTaskForFinal.testCases.length > 0) {
+                    // SEMPRE usar testCases do originalTasksMap se existirem
+                    finalTestCasesFromOriginal = originalTaskForFinal.testCases;
+                    logger.debug(`Usando testCases diretamente do originalTasksMap para ${task.id}: ${finalTestCasesFromOriginal.length} casos`, 'jiraService', {
+                        testCasesComStatus: finalTestCasesFromOriginal.filter(tc => tc.status !== 'Not Run').length
+                    });
+                } else {
+                    // Fallback apenas se originalTasksMap não tiver testCases
+                    finalTestCasesFromOriginal = finalTestCases;
+                    logger.debug(`Fallback: usando finalTestCases mesclados para ${task.id} (originalTasksMap não tem testCases)`, 'jiraService');
+                }
                 
                 // Log para debug: comparar testCases do oldTask vs originalTasksMap
                 if (originalTaskForFinal && oldTask.testCases?.length !== originalTaskForFinal.testCases?.length) {
@@ -1654,9 +1669,21 @@ export const syncJiraProject = async (
                     
                     const finalWithStatusNoChanges = mergedTestCasesNoChanges.filter(tc => tc.status !== 'Not Run').length;
                     
-                    // CORREÇÃO: Usar originalTasksMap para garantir que temos os testCases mais recentes do store
+                    // CORREÇÃO CRÍTICA: SEMPRE usar testCases do originalTasksMap diretamente, sem fallback
+                    // Isso garante que os casos de teste NUNCA sejam alterados, mesmo quando o status da tarefa muda
                     const originalTaskNoChangesFinal = task.id ? originalTasksMap.get(task.id) : undefined;
-                    const finalTestCasesNoChangesFromOriginal = originalTaskNoChangesFinal?.testCases || mergedTestCasesNoChanges;
+                    
+                    // REGRA DE OURO: Se originalTasksMap tem testCases, usar diretamente (sempre preservar)
+                    let finalTestCasesNoChangesFromOriginal: typeof mergedTestCasesNoChanges;
+                    if (originalTaskNoChangesFinal?.testCases && originalTaskNoChangesFinal.testCases.length > 0) {
+                        // SEMPRE usar testCases do originalTasksMap se existirem
+                        finalTestCasesNoChangesFromOriginal = originalTaskNoChangesFinal.testCases;
+                        logger.debug(`Usando testCases diretamente do originalTasksMap (sem mudanças) para ${task.id}: ${finalTestCasesNoChangesFromOriginal.length} casos`, 'jiraService');
+                    } else {
+                        // Fallback apenas se originalTasksMap não tiver testCases
+                        finalTestCasesNoChangesFromOriginal = mergedTestCasesNoChanges;
+                        logger.debug(`Fallback: usando mergedTestCasesNoChanges para ${task.id} (originalTasksMap não tem testCases)`, 'jiraService');
+                    }
                     
                     // IMPORTANTE: Sempre atualizar jiraStatus do Jira, mesmo quando não há outras mudanças
                     updatedTasks[existingIndex] = {
@@ -1689,9 +1716,21 @@ export const syncJiraProject = async (
                     
                     const finalWithStatusNoChanges = mergedTestCasesNoChanges.filter(tc => tc.status !== 'Not Run').length;
                     
-                    // CORREÇÃO: Usar originalTasksMap para garantir que temos os testCases mais recentes do store
+                    // CORREÇÃO CRÍTICA: SEMPRE usar testCases do originalTasksMap diretamente, sem fallback
+                    // Isso garante que os casos de teste NUNCA sejam alterados, mesmo quando o status da tarefa muda
                     const originalTaskNoChangesMerge = task.id ? originalTasksMap.get(task.id) : undefined;
-                    const finalTestCasesNoChangesFromOriginalMerge = originalTaskNoChangesMerge?.testCases || mergedTestCasesNoChanges;
+                    
+                    // REGRA DE OURO: Se originalTasksMap tem testCases, usar diretamente (sempre preservar)
+                    let finalTestCasesNoChangesFromOriginalMerge: typeof mergedTestCasesNoChanges;
+                    if (originalTaskNoChangesMerge?.testCases && originalTaskNoChangesMerge.testCases.length > 0) {
+                        // SEMPRE usar testCases do originalTasksMap se existirem
+                        finalTestCasesNoChangesFromOriginalMerge = originalTaskNoChangesMerge.testCases;
+                        logger.debug(`Usando testCases diretamente do originalTasksMap (merge sem mudanças) para ${task.id}: ${finalTestCasesNoChangesFromOriginalMerge.length} casos`, 'jiraService');
+                    } else {
+                        // Fallback apenas se originalTasksMap não tiver testCases
+                        finalTestCasesNoChangesFromOriginalMerge = mergedTestCasesNoChanges;
+                        logger.debug(`Fallback: usando mergedTestCasesNoChanges (merge) para ${task.id} (originalTasksMap não tem testCases)`, 'jiraService');
+                    }
                     
                     // IMPORTANTE: Sempre atualizar jiraStatus do Jira, mesmo quando não há outras mudanças
                     updatedTasks[existingIndex] = {
