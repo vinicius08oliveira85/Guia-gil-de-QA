@@ -1079,6 +1079,26 @@ export const syncJiraProject = async (
     });
 
     for (const issue of jiraIssues) {
+        // ATUALIZAÇÃO DINÂMICA: Atualizar originalTasksMap com dados mais recentes do store antes de processar cada tarefa
+        // Isso garante que sempre usamos os status mais recentes, mesmo se o store foi atualizado durante a sincronização
+        try {
+            const { projects } = useProjectsStore.getState();
+            const latestProjectFromStore = projects.find(p => p.id === project.id);
+            if (latestProjectFromStore && issue.key) {
+                const latestTask = latestProjectFromStore.tasks.find(t => t.id === issue.key);
+                if (latestTask) {
+                    originalTasksMap.set(issue.key, latestTask);
+                    logger.debug(`Atualizado originalTasksMap para ${issue.key} com dados mais recentes do store`, 'jiraService', {
+                        testCasesCount: latestTask.testCases?.length || 0,
+                        testCasesComStatus: (latestTask.testCases || []).filter(tc => tc.status !== 'Not Run').length
+                    });
+                }
+            }
+        } catch (error) {
+            // Se não conseguir acessar store, continuar com Map existente
+            logger.debug(`Erro ao atualizar originalTasksMap do store para ${issue.key}, usando Map existente`, 'jiraService', { error });
+        }
+        
         const existingIndex = updatedTasks.findIndex(t => t.id === issue.key);
         const taskType = mapJiraTypeToTaskType(issue.fields?.issuetype?.name);
         const isBug = taskType === 'Bug';
@@ -1542,6 +1562,15 @@ export const syncJiraProject = async (
                 
                 // Fazer merge preservando dados locais e atualizando apenas campos do Jira
                 // IMPORTANTE: Sempre definir jiraStatus com o nome exato do Jira (mesmo que seja string vazia)
+                // CORREÇÃO: Usar originalTasksMap para garantir que temos os testCases mais recentes do store
+                const originalTaskForFinal = task.id ? originalTasksMap.get(task.id) : undefined;
+                const finalTestCasesFromOriginal = originalTaskForFinal?.testCases || finalTestCases;
+                
+                // Log para debug: comparar testCases do oldTask vs originalTasksMap
+                if (originalTaskForFinal && oldTask.testCases?.length !== originalTaskForFinal.testCases?.length) {
+                    logger.debug(`Diferença detectada em testCases para ${task.id}: oldTask tem ${oldTask.testCases?.length || 0}, originalTasksMap tem ${originalTaskForFinal.testCases?.length || 0}`, 'jiraService');
+                }
+                
                 updatedTasks[existingIndex] = {
                     ...oldTask, // Preservar todos os dados locais primeiro
                     // Atualizar apenas campos importados do Jira
@@ -1568,7 +1597,8 @@ export const syncJiraProject = async (
                     jiraCustomFields: task.jiraCustomFields,
                     comments: task.comments, // Já faz merge de comentários
                     // Preservar dados locais que não vêm do Jira
-                    testCases: finalTestCases, // ✅ Preservar status dos testes (mesclados com salvos do Supabase)
+                    // CORREÇÃO: Usar finalTestCasesFromOriginal que vem do originalTasksMap (mais recente)
+                    testCases: finalTestCasesFromOriginal, // ✅ Preservar status dos testes (do originalTasksMap, mais recente)
                     bddScenarios: oldTask.bddScenarios || [], // ✅ Preservar cenários BDD
                     testStrategy: oldTask.testStrategy, // ✅ Preservar estratégia de teste
                     tools: oldTask.tools, // ✅ Preservar ferramentas
@@ -1624,12 +1654,17 @@ export const syncJiraProject = async (
                     
                     const finalWithStatusNoChanges = mergedTestCasesNoChanges.filter(tc => tc.status !== 'Not Run').length;
                     
+                    // CORREÇÃO: Usar originalTasksMap para garantir que temos os testCases mais recentes do store
+                    const originalTaskNoChangesFinal = task.id ? originalTasksMap.get(task.id) : undefined;
+                    const finalTestCasesNoChangesFromOriginal = originalTaskNoChangesFinal?.testCases || mergedTestCasesNoChanges;
+                    
                     // IMPORTANTE: Sempre atualizar jiraStatus do Jira, mesmo quando não há outras mudanças
                     updatedTasks[existingIndex] = {
                         ...oldTask,
                         jiraStatus: jiraStatusName, // Sempre atualizar do Jira
                         status: jiraStatusChanged ? mapJiraStatusToTaskStatus(jiraStatusName) : oldTask.status, // Atualizar status mapeado se jiraStatus mudou
-                        testCases: mergedTestCasesNoChanges
+                        // CORREÇÃO: Usar finalTestCasesNoChangesFromOriginal que vem do originalTasksMap (mais recente)
+                        testCases: finalTestCasesNoChangesFromOriginal
                     };
                     
                     if (jiraStatusChanged) {
@@ -1654,12 +1689,17 @@ export const syncJiraProject = async (
                     
                     const finalWithStatusNoChanges = mergedTestCasesNoChanges.filter(tc => tc.status !== 'Not Run').length;
                     
+                    // CORREÇÃO: Usar originalTasksMap para garantir que temos os testCases mais recentes do store
+                    const originalTaskNoChangesMerge = task.id ? originalTasksMap.get(task.id) : undefined;
+                    const finalTestCasesNoChangesFromOriginalMerge = originalTaskNoChangesMerge?.testCases || mergedTestCasesNoChanges;
+                    
                     // IMPORTANTE: Sempre atualizar jiraStatus do Jira, mesmo quando não há outras mudanças
                     updatedTasks[existingIndex] = {
                         ...oldTask,
                         jiraStatus: jiraStatusName, // Sempre atualizar do Jira
                         status: jiraStatusChanged ? mapJiraStatusToTaskStatus(jiraStatusName) : oldTask.status, // Atualizar status mapeado se jiraStatus mudou
-                        testCases: mergedTestCasesNoChanges
+                        // CORREÇÃO: Usar finalTestCasesNoChangesFromOriginalMerge que vem do originalTasksMap (mais recente)
+                        testCases: finalTestCasesNoChangesFromOriginalMerge
                     };
                     
                     if (jiraStatusChanged) {
@@ -1720,13 +1760,20 @@ export const syncJiraProject = async (
 
     logger.info(`Resumo: ${updatedCount} atualizadas, ${newCount} novas, ${updatedTasks.length} total`, 'jiraService');
 
-    // VALIDAÇÃO FINAL: Garantir que os status dos testCases foram preservados
-    const statusAntes = projectToUse.tasks.flatMap(t => 
+    // VALIDAÇÃO FINAL ROBUSTA: Garantir que os status dos testCases foram preservados
+    // Usar originalTasksMap (que foi atualizado dinamicamente) em vez de projectToUse para garantir dados mais recentes
+    const statusAntes = Array.from(originalTasksMap.values()).flatMap(t => 
         (t.testCases || []).filter(tc => tc.status !== 'Not Run').map(tc => ({ taskId: t.id, testCaseId: tc.id, status: tc.status }))
     );
     const statusDepois = updatedTasks.flatMap(t => 
         (t.testCases || []).filter(tc => tc.status !== 'Not Run').map(tc => ({ taskId: t.id, testCaseId: tc.id, status: tc.status }))
     );
+    
+    logger.info(`VALIDAÇÃO FINAL: Comparando status antes e depois da sincronização`, 'jiraService', {
+        statusAntes: statusAntes.length,
+        statusDepois: statusDepois.length,
+        tarefasProcessadas: originalTasksMap.size
+    });
     
     // Criar Map dos status antes para validação
     const statusMapAntes = new Map<string, TestCase['status']>();
@@ -1736,31 +1783,63 @@ export const syncJiraProject = async (
         }
     });
     
-    // Verificar se algum status foi perdido
+    // Verificar se algum status foi perdido e restaurar do originalTasksMap
     let statusPerdidos = 0;
+    let statusRestaurados = 0;
     statusMapAntes.forEach((expectedStatus, key) => {
+        const [taskId, testCaseId] = key.split('-');
         const statusDepoisEncontrado = statusDepois.find(s => s.testCaseId && `${s.taskId}-${s.testCaseId}` === key);
+        
         if (!statusDepoisEncontrado || statusDepoisEncontrado.status !== expectedStatus) {
             statusPerdidos++;
-            const [taskId, testCaseId] = key.split('-');
             logger.error(`STATUS PERDIDO na validação final: taskId=${taskId}, testCaseId=${testCaseId}, esperado="${expectedStatus}", obtido="${statusDepoisEncontrado?.status || 'não encontrado'}"`, 'jiraService');
             
-            // CORREÇÃO: Restaurar status do projectToUse original
-            const originalTask = projectToUse.tasks.find(t => t.id === taskId);
+            // CORREÇÃO ROBUSTA: Restaurar status do originalTasksMap (que tem os dados mais recentes)
+            const originalTask = originalTasksMap.get(taskId);
             if (originalTask) {
                 const originalTestCase = originalTask.testCases?.find(tc => tc.id === testCaseId);
                 if (originalTestCase && originalTestCase.status !== 'Not Run') {
                     const updatedTaskIndex = updatedTasks.findIndex(t => t.id === taskId);
                     if (updatedTaskIndex >= 0) {
                         const updatedTask = updatedTasks[updatedTaskIndex];
-                        const updatedTestCases = (updatedTask.testCases || []).map(tc => 
+                        const restoredTestCases = (updatedTask.testCases || []).map(tc => 
                             tc.id === testCaseId ? { ...tc, status: originalTestCase.status } : tc
                         );
                         updatedTasks[updatedTaskIndex] = {
                             ...updatedTask,
-                            testCases: updatedTestCases
+                            testCases: restoredTestCases
                         };
+                        statusRestaurados++;
                         logger.info(`Status restaurado na validação final: taskId=${taskId}, testCaseId=${testCaseId}, status="${originalTestCase.status}"`, 'jiraService');
+                    }
+                } else {
+                    // Tentar restaurar do store diretamente como último recurso
+                    try {
+                        const { projects } = useProjectsStore.getState();
+                        const latestProjectFromStore = projects.find(p => p.id === project.id);
+                        if (latestProjectFromStore) {
+                            const latestTask = latestProjectFromStore.tasks.find(t => t.id === taskId);
+                            if (latestTask) {
+                                const latestTestCase = latestTask.testCases?.find(tc => tc.id === testCaseId);
+                                if (latestTestCase && latestTestCase.status !== 'Not Run') {
+                                    const updatedTaskIndex = updatedTasks.findIndex(t => t.id === taskId);
+                                    if (updatedTaskIndex >= 0) {
+                                        const updatedTask = updatedTasks[updatedTaskIndex];
+                                        const restoredTestCases = (updatedTask.testCases || []).map(tc => 
+                                            tc.id === testCaseId ? { ...tc, status: latestTestCase.status } : tc
+                                        );
+                                        updatedTasks[updatedTaskIndex] = {
+                                            ...updatedTask,
+                                            testCases: restoredTestCases
+                                        };
+                                        statusRestaurados++;
+                                        logger.info(`Status restaurado do store (último recurso): taskId=${taskId}, testCaseId=${testCaseId}, status="${latestTestCase.status}"`, 'jiraService');
+                                    }
+                                }
+                            }
+                        }
+                    } catch (error) {
+                        logger.error(`Erro ao tentar restaurar status do store: taskId=${taskId}, testCaseId=${testCaseId}`, 'jiraService', { error });
                     }
                 }
             }
@@ -1768,15 +1847,18 @@ export const syncJiraProject = async (
     });
     
     if (statusPerdidos > 0) {
-        logger.warn(`VALIDAÇÃO FINAL: ${statusPerdidos} status foram perdidos e restaurados antes de retornar`, 'jiraService', {
+        logger.warn(`VALIDAÇÃO FINAL: ${statusPerdidos} status foram perdidos, ${statusRestaurados} restaurados antes de retornar`, 'jiraService', {
             statusAntes: statusAntes.length,
             statusDepois: statusDepois.length,
-            statusRestaurados: statusPerdidos
+            statusPerdidos: statusPerdidos,
+            statusRestaurados: statusRestaurados,
+            statusNaoRestaurados: statusPerdidos - statusRestaurados
         });
     } else {
         logger.info(`VALIDAÇÃO FINAL: Todos os ${statusAntes.length} status foram preservados`, 'jiraService', {
             statusAntes: statusAntes.length,
-            statusDepois: statusDepois.length
+            statusDepois: statusDepois.length,
+            tarefasProcessadas: originalTasksMap.size
         });
     }
 
