@@ -45,6 +45,8 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
   error: null,
 
   loadProjects: async () => {
+    // Log para confirmar visualmente se a versão corrigida está rodando
+    logger.info('🔄 Iniciando loadProjects (Versão Corrigida v2)', 'ProjectsStore');
     set({ isLoading: true, error: null });
     try {
       let supabaseProjects: Project[] = [];
