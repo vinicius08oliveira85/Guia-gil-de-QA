@@ -1,88 +1,55 @@
 import React from 'react';
-import { Home } from 'lucide-react';
-import { cn } from '../../utils/cn';
 
-export interface BreadcrumbItem {
+interface BreadcrumbItem {
   label: string;
-  href?: string;
   onClick?: () => void;
+  icon?: string;
 }
 
 interface BreadcrumbsProps {
   items: BreadcrumbItem[];
   className?: string;
-  showHome?: boolean;
-  onHomeClick?: () => void;
 }
 
-/**
- * Componente Breadcrumbs para navegação hierárquica
- * 
- * @example
- * ```tsx
- * <Breadcrumbs 
- *   items={[
- *     { label: 'Projetos', onClick: () => navigate('/') },
- *     { label: 'Meu Projeto', onClick: () => navigate('/project/1') },
- *     { label: 'Tarefas' }
- *   ]}
- * />
- * ```
- */
-export const Breadcrumbs: React.FC<BreadcrumbsProps> = React.memo(({ 
-  items, 
-  className,
-  showHome = true,
-  onHomeClick
-}) => {
+export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ items, className = '' }) => {
   return (
-    <nav 
-      className={cn("breadcrumbs text-sm", className)}
+    <nav
+      className={`flex items-center gap-2 text-sm ${className}`}
       aria-label="Breadcrumb"
     >
-      <ul className="text-base-content/70">
-        {showHome && (
-          <li>
-            <button
-              onClick={onHomeClick}
-              className="btn btn-ghost btn-xs btn-circle"
-              aria-label="Início"
-              type="button"
-            >
-              <Home className="w-4 h-4" />
-            </button>
+      <ol className="flex items-center gap-2" itemScope itemType="https://schema.org/BreadcrumbList">
+        {items.map((item, index) => (
+          <li
+            key={index}
+            className="flex items-center gap-2"
+            itemProp="itemListElement"
+            itemScope
+            itemType="https://schema.org/ListItem"
+          >
+            {index > 0 && (
+              <span className="text-text-tertiary" aria-hidden="true">
+                /
+              </span>
+            )}
+            {item.onClick ? (
+              <button
+                onClick={item.onClick}
+                className="text-text-secondary hover:text-accent transition-colors flex items-center gap-1"
+                itemProp="item"
+              >
+                {item.icon && <span>{item.icon}</span>}
+                <span itemProp="name">{item.label}</span>
+              </button>
+            ) : (
+              <span className="text-text-primary flex items-center gap-1" itemProp="name">
+                {item.icon && <span>{item.icon}</span>}
+                {item.label}
+              </span>
+            )}
+            <meta itemProp="position" content={String(index + 1)} />
           </li>
-        )}
-
-        {items.map((item, index) => {
-          const isLast = index === items.length - 1;
-          const baseClass = cn(
-            "transition-colors",
-            isLast ? "text-base-content font-medium" : "hover:text-base-content"
-          );
-
-          return (
-            <li key={index}>
-              {item.href ? (
-                <a href={item.href} className={baseClass} aria-current={isLast ? 'page' : undefined}>
-                  {item.label}
-                </a>
-              ) : item.onClick ? (
-                <button onClick={item.onClick} className={baseClass} aria-current={isLast ? 'page' : undefined} type="button">
-                  {item.label}
-                </button>
-              ) : (
-                <span className={baseClass} aria-current={isLast ? 'page' : undefined}>
-                  {item.label}
-                </span>
-              )}
-            </li>
-          );
-        })}
-      </ul>
+        ))}
+      </ol>
     </nav>
   );
-});
-
-Breadcrumbs.displayName = 'Breadcrumbs';
-
+};
