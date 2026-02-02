@@ -45,8 +45,6 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
   error: null,
 
   loadProjects: async () => {
-    // Log para confirmar visualmente se a versão corrigida está rodando
-    logger.info('🔄 Iniciando loadProjects (Versão Corrigida v2)', 'ProjectsStore');
     set({ isLoading: true, error: null });
     try {
       let supabaseProjects: Project[] = [];
@@ -120,7 +118,7 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
         // Migrar TestCases dos projetos do Supabase
         const migratedSupabaseProjects = supabaseProjects.map(project => ({
           ...project,
-          tasks: (project.tasks || []).map(task => ({
+          tasks: project.tasks.map(task => ({
             ...task,
             testCases: migrateTestCases(task.testCases || [])
           }))
@@ -140,7 +138,7 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
         // Apenas Supabase disponível
         const migratedSupabaseProjects = supabaseProjects.map(project => ({
           ...project,
-          tasks: (project.tasks || []).map(task => ({
+          tasks: project.tasks.map(task => ({
             ...task,
             testCases: migrateTestCases(task.testCases || [])
           }))
@@ -177,7 +175,7 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
       // Migrar TestCases dos projetos do Supabase (otimizado)
       const migratedSupabaseProjects = supabaseProjects.map(project => ({
         ...project,
-        tasks: (project.tasks || []).map(task => ({
+        tasks: project.tasks.map(task => ({
           ...task,
           testCases: migrateTestCases(task.testCases || [])
         }))
@@ -341,12 +339,12 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
       if (oldProject) {
         logger.debug('Verificando perda de status executados ao substituir projeto', 'ProjectsStore', {
           projectId: project.id,
-          totalStatusNoProjetoAntigo: (oldProject.tasks || []).flatMap(t => (t.testCases || []).filter(tc => tc.status !== 'Not Run')).length,
-          totalStatusNoProjetoNovo: (project.tasks || []).flatMap(t => (t.testCases || []).filter(tc => tc.status !== 'Not Run')).length
+          totalStatusNoProjetoAntigo: oldProject.tasks.flatMap(t => (t.testCases || []).filter(tc => tc.status !== 'Not Run')).length,
+          totalStatusNoProjetoNovo: project.tasks.flatMap(t => (t.testCases || []).filter(tc => tc.status !== 'Not Run')).length
         });
         // Criar mapa de status executados do projeto antigo
         const oldStatusMap = new Map<string, { taskId: string; testCaseId: string; status: string }>();
-        (oldProject.tasks || []).forEach(task => {
+        oldProject.tasks.forEach(task => {
           (task.testCases || []).forEach(tc => {
             if (tc.id && tc.status !== 'Not Run') {
               oldStatusMap.set(`${task.id}-${tc.id}`, {
@@ -360,7 +358,7 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
         
         // Verificar se algum status foi perdido no novo projeto
         let statusPerdidos = 0;
-        const restoredTasks = (project.tasks || []).map(task => {
+        const restoredTasks = project.tasks.map(task => {
           const restoredTestCases = (task.testCases || []).map(tc => {
             const oldStatus = oldStatusMap.get(`${task.id}-${tc.id}`);
             if (oldStatus && tc.status === 'Not Run') {
@@ -378,13 +376,13 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
           logger.warn(`PROTEÇÃO EM updateProject: ${statusPerdidos} status foram perdidos e restaurados do projeto antigo`, 'ProjectsStore', {
             statusRestaurados: statusPerdidos,
             totalStatusNoProjetoAntigo: oldStatusMap.size,
-            totalStatusNoProjetoNovo: (project.tasks || []).flatMap(t => (t.testCases || []).filter(tc => tc.status !== 'Not Run')).length
+            totalStatusNoProjetoNovo: project.tasks.flatMap(t => (t.testCases || []).filter(tc => tc.status !== 'Not Run')).length
           });
           finalProject = { ...project, tasks: restoredTasks };
         } else {
           logger.debug('PROTEÇÃO EM updateProject: Todos os status foram preservados', 'ProjectsStore', {
             totalStatusNoProjetoAntigo: oldStatusMap.size,
-            totalStatusNoProjetoNovo: (project.tasks || []).flatMap(t => (t.testCases || []).filter(tc => tc.status !== 'Not Run')).length
+            totalStatusNoProjetoNovo: project.tasks.flatMap(t => (t.testCases || []).filter(tc => tc.status !== 'Not Run')).length
           });
         }
       }
@@ -472,7 +470,7 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
 
     const updatedProject: Project = {
       ...project,
-      tasks: [...(project.tasks || []), task],
+      tasks: [...project.tasks, task],
     };
 
     await get().updateProject(updatedProject);
@@ -487,7 +485,7 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
 
     const updatedProject: Project = {
       ...project,
-      tasks: (project.tasks || []).map((task) =>
+      tasks: project.tasks.map((task) =>
         task.id === taskId ? { ...task, ...updates } : task
       ),
     };
@@ -515,7 +513,7 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
 
     const updatedProject: Project = {
       ...project,
-      tasks: (project.tasks || []).filter((task) => task.id !== taskId),
+      tasks: project.tasks.filter((task) => task.id !== taskId),
     };
 
     await get().updateProject(updatedProject);
@@ -558,3 +556,4 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
     }
   },
 }));
+

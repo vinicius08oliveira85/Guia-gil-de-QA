@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useProjectsStore } from '../../store/projectsStore';
-import { NavigationMenu } from './NavigationMenu';
 import { NotificationBell } from './NotificationBell';
 import { ExpandableTabs } from './ExpandableTabs';
 import { useTheme } from '../../hooks/useTheme';
@@ -16,7 +14,6 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({ onProjectImported: _onProjectImported, onOpenSettings }) => {
-    const { projects, selectedProjectId, selectProject } = useProjectsStore();
     const { theme, toggleTheme, isOnlyLightSupported } = useTheme();
     const { isBeginnerMode, toggleBeginnerMode } = useBeginnerMode();
     const [notificationUnreadCount, setNotificationUnreadCount] = useState(0);
@@ -107,22 +104,6 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported: _onProjectImp
 
     const activeColor = getActiveColorForTheme(theme);
 
-    const navItems = [
-        {
-            id: 'dashboard',
-            label: 'Dashboard',
-            icon: '📊',
-            onClick: () => selectProject(null),
-        },
-        {
-            id: 'projects',
-            label: 'Projetos',
-            icon: '📁',
-            onClick: () => selectProject(null),
-            badge: projects.length,
-        },
-    ];
-
     return (
         <header
             className="sticky top-0 z-30 border-b border-base-300 bg-base-100/80 backdrop-blur"
@@ -144,11 +125,6 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported: _onProjectImp
                             Gestão de QA ágil, métricas e automação
                         </p>
                     </div>
-                </div>
-
-                {/* Menu de Navegação Principal */}
-                <div className="flex-1 flex justify-center md:justify-start md:px-8">
-                    <NavigationMenu items={navItems} currentPath={selectedProjectId ? 'projects' : 'dashboard'} />
                 </div>
                 <div className="flex flex-wrap items-center justify-end gap-1.5 sm:gap-2 w-full sm:w-auto relative">
                     <div className="relative">
