@@ -212,7 +212,8 @@ export const JiraTaskItem: React.FC<{
             const normalizedTarget = normalizeStatusName(statusName);
             const matched = jiraStatusPalette.find(statusEntry => {
                 const entryName = typeof statusEntry === 'string' ? statusEntry : statusEntry.name;
-                return normalizeStatusName(entryName) === normalizedTarget;
+                // Adicionar verificação para evitar erro se entryName for nulo/undefined
+                return entryName ? normalizeStatusName(entryName) === normalizedTarget : false;
             });
             if (matched) {
                 if (typeof matched === 'string') {
