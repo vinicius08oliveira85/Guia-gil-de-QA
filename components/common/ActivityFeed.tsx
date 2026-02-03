@@ -4,6 +4,7 @@ import { getAuditLogs } from '../../utils/auditLog';
 import { formatRelativeTime } from '../../utils/dateUtils';
 import { Badge } from './Badge';
 import ActivityItem, { EnrichedAuditLog } from './ActivityItem'; // Importa o novo componente e tipo
+import { PlusIcon, EditIcon, TrashIcon, InfoIcon } from './Icons';
 
 interface ActivityFeedProps {
   project: Project;
@@ -13,10 +14,10 @@ interface ActivityFeedProps {
 // Funções puras movidas para fora do componente para evitar re-criação em cada render
 const getActivityIcon = (action: string) => {
   switch (action) {
-    case 'CREATE': return '➕';
-    case 'UPDATE': return '✏️';
-    case 'DELETE': return '🗑️';
-    default: return '📝';
+    case 'CREATE': return <PlusIcon className="w-5 h-5" />;
+    case 'UPDATE': return <EditIcon className="w-5 h-5" />;
+    case 'DELETE': return <TrashIcon className="w-5 h-5" />;
+    default: return <InfoIcon className="w-5 h-5" />;
   }
 };
 
@@ -79,6 +80,8 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({ project, limit = 20 
     return grouped;
   }, [project.id, project.tasks, limit]); // Depende de project.id e project.tasks (via taskMap)
 
+  let globalIndex = 0;
+
   return (
     <div className="space-y-3">
       <h3 className="text-lg font-semibold text-text-primary mb-4">Feed de Atividades</h3>
@@ -89,14 +92,20 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({ project, limit = 20 
               <p className="text-xs font-semibold uppercase tracking-wider text-base-content/60 pt-2">
                 {dateGroup}
               </p>
-              {activitiesInGroup.map((activity) => (
-                <ActivityItem
-                  key={activity.id}
-                  activity={activity}
-                  getActivityIcon={getActivityIcon}
-                  getActivityColor={getActivityColor}
-                />
-              ))}
+              {activitiesInGroup.map((activity) => {
+                const delay = globalIndex * 75; // 75ms de atraso entre cada item
+                globalIndex++;
+                return (
+                  <ActivityItem
+                    key={activity.id}
+                    activity={activity}
+                    getActivityIcon={getActivityIcon}
+                    getActivityColor={getActivityColor}
+                    className="animate-fade-in"
+                    style={{ animationDelay: `${delay}ms` }}
+                  />
+                );
+              })}
             </div>
           ))}
         </div>

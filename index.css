@@ -77,7 +77,7 @@
     }
   }
   .animate-fade-in {
-    animation: fade-in 200ms ease-out;
+    animation: fade-in 200ms ease-out both;
   }
 
   @keyframes shimmer {

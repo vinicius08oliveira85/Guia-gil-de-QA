@@ -11,11 +11,13 @@ export interface EnrichedAuditLog extends AuditLog {
 interface ActivityItemProps {
   activity: EnrichedAuditLog;
   // Funções passadas como props para evitar re-criação no componente pai
-  getActivityIcon: (action: string) => string;
+  getActivityIcon: (action: string) => React.ReactNode;
   getActivityColor: (action: string) => 'default' | 'success' | 'warning' | 'error' | 'info';
+  className?: string;
+  style?: React.CSSProperties;
 }
 
-const ActivityItem: React.FC<ActivityItemProps> = ({ activity, getActivityIcon, getActivityColor }) => {
+const ActivityItem: React.FC<ActivityItemProps> = ({ activity, getActivityIcon, getActivityColor, className, style }) => {
   const actionColor = getActivityColor(activity.action);
 
   // Helper para cor de fundo do ícone baseado na ação
@@ -29,8 +31,22 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ activity, getActivityIcon, 
     }
   };
 
+  // Helper para borda lateral baseada na ação
+  const getBorderColor = (variant: string) => {
+    switch (variant) {
+      case 'success': return 'border-l-success';
+      case 'info': return 'border-l-info';
+      case 'error': return 'border-l-error';
+      case 'warning': return 'border-l-warning';
+      default: return 'border-l-base-300';
+    }
+  };
+
   return (
-    <div className="group relative p-4 bg-surface border border-surface-border rounded-xl hover:shadow-md hover:border-primary/30 transition-all duration-200">
+    <div 
+      className={`group relative p-4 bg-surface border border-surface-border border-l-4 ${getBorderColor(actionColor)} rounded-xl hover:shadow-md hover:border-primary/30 transition-all duration-200 overflow-hidden ${className || ''}`}
+      style={style}
+    >
       <div className="flex items-start gap-4">
         {/* Ícone com container estilizado */}
         <div className={`
@@ -38,9 +54,7 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ activity, getActivityIcon, 
           ${getIconStyles(actionColor)}
           transition-transform duration-200 group-hover:scale-105
         `}>
-          <span className="text-lg leading-none select-none" role="img" aria-label={activity.action}>
-            {getActivityIcon(activity.action)}
-          </span>
+          {getActivityIcon(activity.action)}
         </div>
 
         <div className="flex-1 min-w-0 space-y-1.5">
@@ -66,7 +80,7 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ activity, getActivityIcon, 
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
               </svg>
               <span className="font-medium truncate opacity-90">
-                {activity.taskId} <span className="mx-1 opacity-50">•</span> {activity.taskTitle}
+                <span className="font-mono bg-base-200 px-1.5 py-0.5 rounded text-[10px] tracking-wide mr-1.5">{activity.taskId}</span>{activity.taskTitle}
               </span>
             </div>
           )}
