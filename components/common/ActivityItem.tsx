@@ -65,9 +65,9 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ activity, getActivityIcon, 
                 {activity.entityName}
               </span>
               <Badge variant={actionColor} size="sm" className="flex-shrink-0 shadow-sm">
-              {activity.action}
-            </Badge>
-          </div>
+                {activity.action}
+              </Badge>
+            </div>
             <span className="text-xs text-text-tertiary whitespace-nowrap font-medium">
               {formatRelativeTime(activity.timestamp)}
             </span>
