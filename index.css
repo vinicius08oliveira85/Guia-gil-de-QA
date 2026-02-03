@@ -178,4 +178,27 @@
       margin: 20mm;
     }
   }
+
+  /* Correções de Responsividade e UI/UX */
+  
+  /* Garante touch target mínimo de 44px em mobile para botões pequenos */
+  .btn-sm, .btn-xs {
+    @apply min-h-[44px] sm:min-h-[2rem];
+  }
+
+  .win-icon-button {
+    @apply btn btn-ghost btn-circle min-h-[44px] min-w-[44px] flex items-center justify-center transition-all duration-200;
+  }
+
+  .glass-overlay {
+    @apply bg-base-100/60 backdrop-blur-sm transition-all duration-300;
+  }
+
+  .mica {
+    @apply bg-base-100/80 backdrop-blur-md border border-base-200 shadow-xl rounded-xl;
+  }
+
+  .heading-section {
+    @apply text-lg font-semibold text-base-content mb-4;
+  }
 }

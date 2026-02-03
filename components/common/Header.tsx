@@ -7,6 +7,7 @@ import { getActiveColorForTheme } from '../../utils/expandableTabsColors';
 import { Settings, GraduationCap, Bell, Moon, Sun, Heart, Monitor } from 'lucide-react';
 import { Project } from '../../types';
 import { getUnreadCount } from '../../utils/notificationService';
+import { NavigationMenu } from './NavigationMenu';
 
 interface HeaderProps {
     onProjectImported?: (project: Project) => void;
@@ -101,6 +102,13 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported: _onProjectImp
 
     const activeColor = getActiveColorForTheme(theme);
 
+    // Itens de navegação principais
+    const navItems = [
+        { id: 'dashboard', label: 'Dashboard', icon: '📊', onClick: () => {} },
+        { id: 'projects', label: 'Projetos', icon: '📁', onClick: () => {} },
+        { id: 'glossary', label: 'Glossário', icon: '📚', onClick: () => {} },
+    ];
+
     return (
         <header
             className="sticky top-0 z-30 border-b border-base-300 bg-base-100/80 backdrop-blur"
@@ -124,6 +132,7 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported: _onProjectImp
                     </div>
                 </div>
                 <div className="flex flex-wrap items-center justify-end gap-1.5 sm:gap-2 w-full sm:w-auto relative">
+                    <NavigationMenu items={navItems} />
                     <div className="relative">
                         <ExpandableTabs
                             tabs={tabs}
