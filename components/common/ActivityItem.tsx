@@ -12,10 +12,7 @@ interface ActivityItemProps {
 
 const ActivityItem: React.FC<ActivityItemProps> = ({ activity, getActivityIcon, getActivityColor }) => {
   return (
-    <div
-      key={activity.id} // activity.id deve ser sempre único para logs de auditoria
-      className="p-3 bg-surface border border-surface-border rounded-lg hover:bg-surface-hover transition-colors"
-    >
+    <div className="p-3 bg-surface border border-surface-border rounded-lg hover:bg-surface-hover transition-colors">
       <div className="flex items-start gap-3">
         <div className="text-2xl">{getActivityIcon(activity.action)}</div>
         <div className="flex-1 min-w-0">
