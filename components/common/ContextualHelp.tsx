@@ -9,6 +9,16 @@ interface ContextualHelpProps {
     icon?: React.ReactNode;
 }
 
+const InfoIcon = ({ className }: { className?: string }) => (
+    <svg className={className || "w-4 h-4"} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+);
+
 /**
  * Componente de ajuda contextual que fornece informações úteis
  * baseadas no contexto atual do usuário
@@ -30,11 +40,7 @@ export const ContextualHelp: React.FC<ContextualHelpProps> = ({
                     className="inline-flex items-center gap-1 text-text-secondary hover:text-accent transition-colors"
                     aria-label={title}
                 >
-                    {icon || (
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                    )}
+                    {icon || <InfoIcon />}
                 </button>
             </HelpTooltip>
         );
@@ -45,11 +51,7 @@ export const ContextualHelp: React.FC<ContextualHelpProps> = ({
             <div className="rounded-lg border border-accent/30 bg-accent/10 p-4">
                 <div className="flex items-start gap-3">
                     <div className="flex-shrink-0 mt-0.5">
-                        {icon || (
-                            <svg className="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                        )}
+                        {icon || <InfoIcon className="w-5 h-5 text-accent" />}
                     </div>
                     <div className="flex-1 min-w-0">
                         <h4 className="text-sm font-semibold text-text-primary mb-1">{title}</h4>
@@ -72,11 +74,7 @@ export const ContextualHelp: React.FC<ContextualHelpProps> = ({
                 aria-label={title}
                 aria-expanded={isExpanded}
             >
-                {icon || (
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                )}
+                {icon || <InfoIcon />}
             </button>
             {isExpanded && (
                 <div className="flex-1 rounded-lg border border-surface-border bg-surface p-3 text-sm text-text-secondary">
@@ -117,4 +115,3 @@ export const useContextualHelp = (context: string) => {
 
     return helpContent[context] || { title: 'Ajuda', content: 'Informação não disponível para este contexto.' };
 };
-
