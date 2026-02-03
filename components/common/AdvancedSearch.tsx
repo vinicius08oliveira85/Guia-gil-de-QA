@@ -84,16 +84,21 @@ export const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
           </div>
           
           <div className="space-y-2">
+            <label htmlFor="advanced-search-input" className="sr-only">
+              Buscar por status, tipo, tag, projeto ou texto livre
+            </label>
             <input
+              id="advanced-search-input"
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Buscar... (use: status:, type:, tag:, project:)"
+              aria-describedby="search-operators-description"
               className="input input-bordered w-full"
               autoFocus
             />
             
-            <div className="space-y-1 text-xs text-base-content/70">
+            <div id="search-operators-description" className="space-y-1 text-xs text-base-content/70">
               <div><strong>Operadores disponíveis:</strong></div>
               <div>• <code className="rounded-md bg-base-200 px-1.5 py-0.5 text-base-content">status:done</code> - Filtrar por status</div>
               <div>• <code className="rounded-md bg-base-200 px-1.5 py-0.5 text-base-content">type:bug</code> - Filtrar por tipo</div>
@@ -113,6 +118,7 @@ export const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
                     onResultSelect(result);
                     onClose();
                   }}
+                  aria-label={`Selecionar resultado: ${result.title}, tipo ${result.type}`}
                   className="w-full rounded-2xl border border-base-300 bg-base-100 p-3 text-left transition-colors hover:bg-base-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
                 >
                   <div className="flex items-center justify-between">
