@@ -34,13 +34,13 @@ export const Card = React.memo<CardProps>(({
     ...rest 
 }) => {
     const variantClasses = {
-        default: 'border border-base-300 shadow-sm',
-        elevated: 'border border-base-300 shadow-lg',
-        outlined: 'border-2 border-base-300 shadow-none',
+        default: 'border border-base-200 bg-base-100 shadow-sm',
+        elevated: 'border border-base-200 bg-base-100 shadow-xl shadow-base-300/20',
+        outlined: 'border border-base-300 bg-transparent shadow-none',
     };
 
     const hoverClasses = hoverable 
-        ? 'transition-all duration-300 ease-out hover:-translate-y-0.5 hover:shadow-xl hover:border-primary/30' 
+        ? 'transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-lg hover:shadow-base-300/30 hover:border-primary/20' 
         : '';
 
     return (
@@ -48,7 +48,7 @@ export const Card = React.memo<CardProps>(({
             className={cn(
                 'w-full max-w-full',
                 'bg-base-100 text-base-content',
-                'rounded-[var(--rounded-box)]',
+                'rounded-2xl', // Mais moderno que rounded-box padrão
                 'focus-within:ring-2 focus-within:ring-primary/20 focus-within:ring-offset-0',
                 variantClasses[variant],
                 hoverClasses,

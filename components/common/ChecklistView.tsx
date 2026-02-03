@@ -118,17 +118,17 @@ export const ChecklistView: React.FC<ChecklistViewProps> = ({
           <div
             key={item.id}
             className={cn(
-              "flex items-start gap-3 p-3 rounded-xl border",
+              "group flex items-start gap-3 p-3 rounded-xl border transition-all duration-200",
               item.checked
-                ? 'bg-success/10 border-success/30 shadow-sm'
-                : 'bg-base-100 border-base-300'
+                ? 'bg-base-100/50 border-base-200 opacity-75'
+                : 'bg-base-100 border-base-200 hover:border-primary/30 hover:shadow-sm hover:bg-base-100'
             )}
           >
             <input
               type="checkbox"
               checked={item.checked}
               onChange={() => onToggleItem(item.id)}
-              className="checkbox checkbox-sm mt-1 [--chkfg:theme(colors.base-100)]"
+              className="checkbox checkbox-sm mt-0.5 rounded-md border-base-300 data-[state=checked]:bg-primary data-[state=checked]:border-primary transition-all"
             />
             <div className="flex-1">
               {editingItemId === item.id && onEditItem ? (
@@ -143,11 +143,11 @@ export const ChecklistView: React.FC<ChecklistViewProps> = ({
                 />
               ) : (
                 <div className="flex items-center gap-2">
-                  <span className={`${item.checked ? 'line-through text-base-content/60' : 'text-base-content'}`}>
+                  <span className={`text-sm transition-all duration-200 ${item.checked ? 'line-through text-base-content/50' : 'text-base-content font-medium'}`}>
                     {item.text}
                   </span>
                   {item.required && (
-                    <span className="badge badge-error badge-outline badge-sm">
+                    <span className="badge badge-error badge-soft badge-xs font-semibold uppercase tracking-wider">
                       Obrigatório
                     </span>
                   )}
@@ -155,12 +155,12 @@ export const ChecklistView: React.FC<ChecklistViewProps> = ({
               )}
             </div>
             {(onEditItem || onDeleteItem) && (
-              <div className="flex gap-2">
+              <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                 {onEditItem && !editingItemId && (
                   <button
                     type="button"
                     onClick={() => handleStartEdit(item)}
-                    className="btn btn-ghost btn-sm btn-circle"
+                    className="btn btn-ghost btn-xs btn-square rounded-lg hover:bg-base-200 text-base-content/60"
                   >
                     ✏️
                   </button>
@@ -169,7 +169,7 @@ export const ChecklistView: React.FC<ChecklistViewProps> = ({
                   <button
                     type="button"
                     onClick={() => onDeleteItem(item.id)}
-                    className="btn btn-ghost btn-sm btn-circle text-error"
+                    className="btn btn-ghost btn-xs btn-square rounded-lg hover:bg-error/10 text-error/70 hover:text-error"
                   >
                     ✕
                   </button>
