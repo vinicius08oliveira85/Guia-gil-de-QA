@@ -11,7 +11,8 @@ import {
   MoreVertical,
   ArrowUp,
   ArrowRight,
-  ArrowDown
+  ArrowDown,
+  Copy
 } from 'lucide-react';
 
 // Interface compatível com JiraTask
@@ -82,6 +83,39 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   const priorityConfig = getPriorityColor(task.priority);
   const PriorityIcon = priorityConfig.icon;
 
+  // Estado para o menu de contexto
+  const [contextMenu, setContextMenu] = React.useState<{ x: number; y: number } | null>(null);
+
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // Ajuste simples para evitar que o menu saia da tela
+    let x = e.clientX;
+    let y = e.clientY;
+    if (x + 192 > window.innerWidth) x -= 192; // w-48 = 192px
+    if (y + 160 > window.innerHeight) y -= 160;
+
+    setContextMenu({ x, y });
+  };
+
+  React.useEffect(() => {
+    const closeMenu = () => setContextMenu(null);
+    if (contextMenu) {
+      window.addEventListener('click', closeMenu);
+      window.addEventListener('contextmenu', closeMenu);
+    }
+    return () => {
+      window.removeEventListener('click', closeMenu);
+      window.removeEventListener('contextmenu', closeMenu);
+    };
+  }, [contextMenu]);
+
+  const handleCopyId = () => {
+    navigator.clipboard.writeText(task.id);
+    setContextMenu(null);
+  };
+
   return (
     <div 
       className={`
@@ -93,6 +127,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
         ${compact ? 'text-sm' : ''}
       `}
       onClick={() => onClick?.(task)}
+      onContextMenu={handleContextMenu}
       role="article"
       aria-label={`Tarefa ${task.title}`}
     >
@@ -162,6 +197,47 @@ export const TaskCard: React.FC<TaskCardProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Menu de Contexto (Botão Direito) */}
+      {contextMenu && (
+        <div 
+          className="fixed z-50 w-48 bg-base-100 border border-base-200 rounded-lg shadow-xl py-1 text-sm animate-in fade-in zoom-in-95 duration-100 overflow-hidden"
+          style={{ top: contextMenu.y, left: contextMenu.x }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="px-3 py-2 border-b border-base-200 bg-base-50/50">
+            <p className="font-semibold text-xs text-base-content/70">Ações Rápidas</p>
+          </div>
+          
+          <button 
+            onClick={handleCopyId}
+            className="w-full text-left px-3 py-2 hover:bg-base-200 flex items-center gap-2 transition-colors text-base-content"
+          >
+            <Copy size={14} className="text-base-content/60" />
+            <span>Copiar ID</span>
+          </button>
+
+          {onEdit && (
+            <button 
+              onClick={(e) => { e.stopPropagation(); onEdit(task); setContextMenu(null); }}
+              className="w-full text-left px-3 py-2 hover:bg-base-200 flex items-center gap-2 transition-colors text-base-content"
+            >
+              <Edit2 size={14} className="text-base-content/60" />
+              <span>Editar</span>
+            </button>
+          )}
+
+          {onDelete && (
+            <button 
+              onClick={(e) => { e.stopPropagation(); onDelete(task.id); setContextMenu(null); }}
+              className="w-full text-left px-3 py-2 hover:bg-error/10 text-error flex items-center gap-2 transition-colors"
+            >
+              <Trash2 size={14} />
+              <span>Excluir</span>
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 };
