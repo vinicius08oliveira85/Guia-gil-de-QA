@@ -3,8 +3,13 @@ import { formatRelativeTime } from '../../utils/dateUtils';
 import { Badge } from './Badge';
 import { AuditLog } from '../../types'; // Assumindo que AuditLog está definido em '../../types'
 
+export interface EnrichedAuditLog extends AuditLog {
+  taskTitle?: string;
+  taskId?: string;
+}
+
 interface ActivityItemProps {
-  activity: AuditLog & { taskTitle?: string; taskId?: string };
+  activity: EnrichedAuditLog;
   // Funções passadas como props para evitar re-criação no componente pai
   getActivityIcon: (action: string) => string;
   getActivityColor: (action: string) => 'default' | 'success' | 'warning' | 'error' | 'info';

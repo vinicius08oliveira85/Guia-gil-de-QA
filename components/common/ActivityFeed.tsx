@@ -1,9 +1,9 @@
 import React, { useMemo } from 'react';
-import { Project, AuditLog } from '../../types'; // Assumindo que AuditLog está definido em '../../types'
+import { Project } from '../../types'; // Assumindo que AuditLog está definido em '../../types'
 import { getAuditLogs } from '../../utils/auditLog';
 import { formatRelativeTime } from '../../utils/dateUtils';
 import { Badge } from './Badge';
-import ActivityItem from './ActivityItem'; // Importa o novo componente
+import ActivityItem, { EnrichedAuditLog } from './ActivityItem'; // Importa o novo componente e tipo
 
 interface ActivityFeedProps {
   project: Project;
@@ -35,7 +35,7 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({ project, limit = 20 
     const taskMap = new Map(project.tasks.map(task => [task.id, task]));
 
     const logs = getAuditLogs(); // Assumindo que getAuditLogs é performático ou memoizado externamente
-    const projectLogs: (AuditLog & { taskTitle?: string; taskId?: string })[] = logs
+    const projectLogs: EnrichedAuditLog[] = logs
       .filter(log => log.entityId === project.id || taskMap.has(log.entityId)) // Usa taskMap para lookup rápido
       .slice(0, limit)
       .map(log => {
