@@ -22,21 +22,16 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported: _onProjectImp
     // Atualizar contador de notificações não lidas
     useEffect(() => {
         const updateUnreadCount = () => {
-            setNotificationUnreadCount(getUnreadCount());
+            const count = getUnreadCount();
+            setNotificationUnreadCount(count);
         };
         
         updateUnreadCount();
-        const interval = setInterval(updateUnreadCount, 1000);
-        
-        const handleNotificationCreated = () => {
-            updateUnreadCount();
-        };
-        
-        window.addEventListener('notification-created', handleNotificationCreated);
+        // O polling com setInterval é ineficiente. A atualização via evento é a melhor abordagem.
+        window.addEventListener('notification-created', updateUnreadCount);
         
         return () => {
-            clearInterval(interval);
-            window.removeEventListener('notification-created', handleNotificationCreated);
+            window.removeEventListener('notification-created', updateUnreadCount);
         };
     }, []);
 
@@ -72,34 +67,36 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported: _onProjectImp
     };
 
     // Handler para quando um tab é selecionado
-    const handleTabChange = (index: number | null) => {
-        if (index === null) {
+    const handleTabChange = (id: string | null) => {
+        if (id === null) {
             setShowNotificationDropdown(false);
             return;
         }
 
-        // Mapear índices para ações
-        // Índice 0: Settings
-        // Índice 1: Beginner Mode
-        // Índice 2: Notifications
-        // Índice 3: Theme
-        
-        if (index === 0) {
-            onOpenSettings?.();
-        } else if (index === 1) {
-            toggleBeginnerMode();
-        } else if (index === 2) {
-            setShowNotificationDropdown(true);
-        } else if (index === 3) {
-            toggleTheme();
+        // Usar o ID do tab para uma lógica mais robusta e legível
+        switch (id) {
+            case 'settings':
+                onOpenSettings?.();
+                break;
+            case 'beginner-mode':
+                toggleBeginnerMode();
+                break;
+            case 'notifications':
+                setShowNotificationDropdown(true);
+                break;
+            case 'theme':
+                toggleTheme();
+                break;
+            default:
+                break;
         }
     };
 
     const tabs = [
-        { title: 'Configurações', icon: Settings },
-        { title: isBeginnerMode ? 'Modo Iniciante' : 'Modo Avançado', icon: GraduationCap },
-        { title: 'Notificações', icon: Bell },
-        { title: getThemeTitle(), icon: getThemeIcon() },
+        { id: 'settings', title: 'Configurações', icon: Settings },
+        { id: 'beginner-mode', title: isBeginnerMode ? 'Modo Iniciante' : 'Modo Avançado', icon: GraduationCap },
+        { id: 'notifications', title: 'Notificações', icon: Bell },
+        { id: 'theme', title: getThemeTitle(), icon: getThemeIcon() },
     ];
 
     const activeColor = getActiveColorForTheme(theme);

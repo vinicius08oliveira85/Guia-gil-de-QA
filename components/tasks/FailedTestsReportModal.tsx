@@ -918,78 +918,7 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
           </div>
         )}
 
-        {/* Seção de Análise IA - mantida abaixo do preview */}
-        {aiAnalysisText && (
-          <div className="flex-shrink-0 flex flex-col gap-sm border-t border-base-300 pt-md mt-md">
-            <div className="flex items-center justify-between">
-              <p className="text-xs uppercase tracking-wide text-base-content/70 font-semibold">
-                Análise IA - Relatório para PO
-              </p>
-              <div className="flex gap-xs">
-                <button
-                  type="button"
-                  onClick={handleCopyAIAnalysis}
-                  className={`btn btn-sm btn-ghost ${aiAnalysisCopied ? '!bg-success !text-success-content' : ''}`}
-                >
-                  {aiAnalysisCopied ? (
-                    <>
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                      <span>Copiado!</span>
-                    </>
-                  ) : (
-                    <>
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                      </svg>
-                      <span>Copiar</span>
-                    </>
-                  )}
-                </button>
-                <button
-                  type="button"
-                  onClick={handleSaveAIAnalysis}
-                  className="btn btn-sm btn-ghost"
-                >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v16h16M8 12h8m-8 4h5" />
-                  </svg>
-                  <span>Salvar</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={handleGeneratePDF}
-                  className="btn btn-sm btn-error"
-                >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                  </svg>
-                  <span>PDF</span>
-                </button>
-              </div>
-            </div>
-            <textarea
-              value={aiAnalysisText}
-              readOnly
-              className={`
-                w-full min-h-[200px] max-h-[400px]
-                bg-base-100 border border-base-300 rounded-lg
-                p-card text-sm text-base-content
-                font-mono
-                resize-none
-                overflow-y-auto
-                focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary
-                transition-all duration-200
-              `}
-              onClick={(e) => {
-                (e.target as HTMLTextAreaElement).select();
-              }}
-            />
-          </div>
-        )}
       </div>
     </Modal>
   );
 };
-
