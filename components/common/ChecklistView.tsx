@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ChecklistItem } from '../../types';
 import { getChecklistProgress, canMoveToNextPhase } from '../../utils/checklistService';
 import { cn } from '../../utils/cn';
@@ -22,6 +22,40 @@ export const ChecklistView: React.FC<ChecklistViewProps> = ({
 }) => {
   const progress = getChecklistProgress(checklist);
   const validation = canMoveToNextPhase(checklist);
+  const [editingItemId, setEditingItemId] = useState<string | null>(null);
+  const [editingText, setEditingText] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (editingItemId && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [editingItemId]);
+
+  const handleStartEdit = (item: ChecklistItem) => {
+    setEditingItemId(item.id);
+    setEditingText(item.text);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingItemId(null);
+    setEditingText('');
+  };
+
+  const handleSaveEdit = () => {
+    if (editingItemId && onEditItem && editingText.trim()) {
+      onEditItem(editingItemId, editingText.trim());
+    }
+    handleCancelEdit();
+  };
+
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      handleSaveEdit();
+    } else if (event.key === 'Escape') {
+      handleCancelEdit();
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -97,26 +131,35 @@ export const ChecklistView: React.FC<ChecklistViewProps> = ({
               className="checkbox checkbox-sm mt-1 [--chkfg:theme(colors.base-100)]"
             />
             <div className="flex-1">
-              <div className="flex items-center gap-2">
-                <span className={`${item.checked ? 'line-through text-base-content/60' : 'text-base-content'}`}>
-                  {item.text}
-                </span>
-                {item.required && (
-                  <span className="badge badge-error badge-outline badge-sm">
-                    Obrigatório
+              {editingItemId === item.id && onEditItem ? (
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={editingText}
+                  onChange={(e) => setEditingText(e.target.value)}
+                  onBlur={handleSaveEdit}
+                  onKeyDown={handleKeyDown}
+                  className="input input-sm w-full bg-base-200"
+                />
+              ) : (
+                <div className="flex items-center gap-2">
+                  <span className={`${item.checked ? 'line-through text-base-content/60' : 'text-base-content'}`}>
+                    {item.text}
                   </span>
-                )}
-              </div>
+                  {item.required && (
+                    <span className="badge badge-error badge-outline badge-sm">
+                      Obrigatório
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
             {(onEditItem || onDeleteItem) && (
               <div className="flex gap-2">
-                {onEditItem && (
+                {onEditItem && !editingItemId && (
                   <button
                     type="button"
-                    onClick={() => {
-                      const newText = prompt('Editar item:', item.text);
-                      if (newText) onEditItem(item.id, newText);
-                    }}
+                    onClick={() => handleStartEdit(item)}
                     className="btn btn-ghost btn-xs btn-circle"
                   >
                     ✏️
@@ -145,4 +188,3 @@ export const ChecklistView: React.FC<ChecklistViewProps> = ({
     </div>
   );
 };
-
