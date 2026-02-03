@@ -68,9 +68,9 @@ export const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
     );
   }, [searchQuery, searchResults]);
 
-    return (
-      <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/30 backdrop-blur pt-20 p-4">
-        <div className="w-full max-w-3xl rounded-[var(--rounded-box)] border border-base-300 bg-base-100 shadow-xl">
+  return (
+    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/30 backdrop-blur pt-20 p-4">
+      <div className="w-full max-w-3xl rounded-[var(--rounded-box)] border border-base-300 bg-base-100 shadow-xl">
         <div className="p-4 border-b border-base-300">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-base-content">Busca Avançada</h2>
@@ -156,4 +156,3 @@ export const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
     </div>
   );
 };
-
