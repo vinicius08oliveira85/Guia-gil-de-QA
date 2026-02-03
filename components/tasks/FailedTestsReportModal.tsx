@@ -528,7 +528,7 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Relatório de Testes Reprovados" size="full">
-      <div className="h-full flex flex-col min-h-0 max-h-[90vh]">
+      <div className="h-full flex flex-col min-h-0 max-h-[calc(100dvh-4rem)] sm:max-h-[90vh]">
         {/* Header sticky com estatísticas */}
         <FailedTestsReportHeader
           totalTests={allFailedTests.length}
