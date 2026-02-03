@@ -112,9 +112,9 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported: _onProjectImp
     return (
         <header
             className="sticky top-0 z-30 border-b border-base-300 bg-base-100/80 backdrop-blur"
-            style={{ paddingTop: 'max(0.5rem, env(safe-area-inset-top))' }}
+            style={{ paddingTop: 'env(safe-area-inset-top)' }}
         >
-            <div className="container mx-auto flex flex-wrap items-center justify-between gap-2 sm:gap-3 min-w-0 py-2 px-3 sm:px-4">
+            <div className="container mx-auto flex items-center justify-between gap-2 sm:gap-3 min-w-0 py-2 px-3 sm:px-4">
                 <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                     <img
                         src="/logo@erasebg-transformed.png"
@@ -131,7 +131,7 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported: _onProjectImp
                         </p>
                     </div>
                 </div>
-                <div className="flex flex-wrap items-center justify-end gap-1.5 sm:gap-2 w-full sm:w-auto relative">
+                <div className="flex items-center justify-end gap-1.5 sm:gap-2 relative">
                     <NavigationMenu items={navItems} />
                     <div className="relative">
                         <ExpandableTabs

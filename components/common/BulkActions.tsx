@@ -164,11 +164,11 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
   return (
     <>
       <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50">
-        <div className="bg-accent text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-4">
+        <div className="bg-accent text-white px-4 sm:px-6 py-3 rounded-lg shadow-lg flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
           <span className="font-semibold">
             {selectedTasksArray.length} tarefa{selectedTasksArray.length > 1 ? 's' : ''} selecionada{selectedTasksArray.length > 1 ? 's' : ''}
           </span>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap justify-center gap-2">
             <button
               onClick={() => {
                 setAction('status');
@@ -405,4 +405,3 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
     </>
   );
 };
-

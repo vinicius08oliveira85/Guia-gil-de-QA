@@ -108,7 +108,7 @@ export const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
           </div>
         </div>
         
-        <div className="p-4 max-h-96 overflow-y-auto">
+        <div className="p-4 max-h-[60vh] sm:max-h-96 overflow-y-auto">
           {filteredResults.length > 0 ? (
             <div className="space-y-2">
               {filteredResults.map((result, index) => (

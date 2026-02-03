@@ -160,7 +160,7 @@ export const ChecklistView: React.FC<ChecklistViewProps> = ({
                   <button
                     type="button"
                     onClick={() => handleStartEdit(item)}
-                    className="btn btn-ghost btn-xs btn-circle"
+                    className="btn btn-ghost btn-sm btn-circle"
                   >
                     ✏️
                   </button>
@@ -169,7 +169,7 @@ export const ChecklistView: React.FC<ChecklistViewProps> = ({
                   <button
                     type="button"
                     onClick={() => onDeleteItem(item.id)}
-                    className="btn btn-ghost btn-xs btn-circle text-error"
+                    className="btn btn-ghost btn-sm btn-circle text-error"
                   >
                     ✕
                   </button>

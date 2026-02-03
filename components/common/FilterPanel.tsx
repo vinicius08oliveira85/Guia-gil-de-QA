@@ -159,7 +159,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
                   <motion.button
                     key={type}
                     onClick={() => toggleArrayFilter('requiredTestTypes', type)}
-                    className={`btn btn-xs rounded-full whitespace-nowrap transition-all duration-200 ${
+                    className={`btn btn-sm rounded-full whitespace-nowrap transition-all duration-200 ${
                       isActive 
                         ? 'btn-primary bg-primary text-primary-content shadow-sm' 
                         : 'btn-outline hover:bg-primary/5 hover:border-primary/30'
@@ -189,7 +189,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
                 <motion.button
                   key={result}
                   onClick={() => toggleArrayFilter('testResultStatus', result as any)}
-                  className={`btn btn-xs rounded-full whitespace-nowrap transition-all duration-200 ${
+                  className={`btn btn-sm rounded-full whitespace-nowrap transition-all duration-200 ${
                     isActive 
                       ? 'btn-primary bg-primary text-primary-content shadow-sm' 
                       : 'btn-outline hover:bg-primary/5 hover:border-primary/30'
@@ -208,4 +208,3 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
     </div>
   );
 };
-
