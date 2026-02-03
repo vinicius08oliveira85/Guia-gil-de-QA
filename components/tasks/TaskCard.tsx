@@ -8,7 +8,10 @@ import {
   AlertCircle, 
   User,
   Calendar,
-  MoreVertical
+  MoreVertical,
+  ArrowUp,
+  ArrowRight,
+  ArrowDown
 } from 'lucide-react';
 
 // Interface compatível com JiraTask
@@ -60,73 +63,72 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   // Cores de prioridade
   const getPriorityColor = (priority?: string) => {
     switch (String(priority).toLowerCase()) {
-      case 'high':
       case 'alta':
       case 'crítico':
+      case 'high':
       case 'critical':
-        return 'text-error bg-error/5 border-error/20';
-      case 'medium':
+        return { color: 'text-error', bg: 'bg-error/10', border: 'border-l-error', icon: ArrowUp };
       case 'média':
-        return 'text-warning bg-warning/5 border-warning/20';
-      case 'low':
+      case 'medium':
+        return { color: 'text-warning', bg: 'bg-warning/10', border: 'border-l-warning', icon: ArrowRight };
       case 'baixa':
-        return 'text-info bg-info/5 border-info/20';
+      case 'low':
+        return { color: 'text-info', bg: 'bg-info/10', border: 'border-l-info', icon: ArrowDown };
       default:
-        return 'text-base-content/60 bg-base-200/50 border-base-200';
+        return { color: 'text-base-content/50', bg: 'bg-base-200', border: 'border-l-base-300', icon: Circle };
     }
   };
+
+  const priorityConfig = getPriorityColor(task.priority);
+  const PriorityIcon = priorityConfig.icon;
 
   return (
     <div 
       className={`
-        group relative flex items-center gap-3 px-3 
-        bg-base-100 border border-base-200 rounded-lg 
-        hover:border-primary/40 hover:shadow-sm hover:bg-base-50/50
+        group relative flex flex-col gap-2 p-3
+        bg-base-100 border border-base-200 rounded-xl
+        border-l-[3px] ${priorityConfig.border}
+        hover:shadow-md hover:border-primary/30 hover:-translate-y-0.5
         transition-all duration-200 cursor-pointer
-        ${compact ? 'py-2' : 'py-3'}
+        ${compact ? 'text-sm' : ''}
       `}
       onClick={() => onClick?.(task)}
       role="article"
       aria-label={`Tarefa ${task.title}`}
     >
-      {/* Status Icon */}
-      <div className={`
-        flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center
-        transition-colors duration-200
-        ${statusConfig.bg} ${statusConfig.color}
-      `}>
-        <StatusIcon size={16} strokeWidth={2.5} />
+      {/* Header: ID e Prioridade */}
+      <div className="flex items-center justify-between">
+        <span className="font-mono text-[10px] font-bold text-base-content/50 tracking-wider uppercase">
+          {task.id}
+        </span>
+        {task.priority && (
+          <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium ${priorityConfig.bg} ${priorityConfig.color}`}>
+            <PriorityIcon size={10} strokeWidth={3} />
+            <span>{task.priority}</span>
+          </div>
+        )}
       </div>
 
-      {/* Main Content */}
-      <div className="flex-1 min-w-0 flex flex-col gap-0.5">
-        <div className="flex items-center gap-2">
-          <span className="font-mono text-[10px] font-medium text-base-content/50 tracking-tight">
-            {task.id}
-          </span>
-          {task.priority && (
-            <span className={`
-              text-[10px] px-1.5 py-0.5 rounded-full border font-medium leading-none
-              ${getPriorityColor(task.priority)}
-            `}>
-              {task.priority}
-            </span>
-          )}
+      {/* Body: Título e Status */}
+      <div className="flex items-start gap-2">
+        <div className={`mt-0.5 flex-shrink-0 ${statusConfig.color}`}>
+          <StatusIcon size={16} />
         </div>
-        
-        <h3 className={`
-          font-medium text-base-content truncate leading-tight
-          ${compact ? 'text-sm' : 'text-[15px]'}
-        `}>
+        <h3 className="font-medium text-base-content leading-snug line-clamp-2">
           {task.title}
         </h3>
-        
-        {!compact && (
-          <div className="flex items-center gap-3 mt-1 text-xs text-base-content/60">
+      </div>
+
+      {/* Footer: Meta info e Ações */}
+      {!compact && (
+        <div className="flex items-center justify-between mt-1 pt-2 border-t border-base-100">
+          <div className="flex items-center gap-3 text-xs text-base-content/60">
             {task.assignee && (
               <div className="flex items-center gap-1.5" title={`Responsável: ${task.assignee}`}>
-                <User size={12} />
-                <span className="truncate max-w-[120px]">{task.assignee}</span>
+                <div className="w-5 h-5 rounded-full bg-base-200 flex items-center justify-center text-[9px] font-bold text-base-content/70">
+                  {task.assignee.charAt(0).toUpperCase()}
+                </div>
+                <span className="truncate max-w-[80px]">{task.assignee}</span>
               </div>
             )}
             {task.dueDate && (
@@ -136,36 +138,29 @@ export const TaskCard: React.FC<TaskCardProps> = ({
               </div>
             )}
           </div>
-        )}
-      </div>
 
-      {/* Actions (Hover) */}
-      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity focus-within:opacity-100">
-        {onEdit && (
-          <button 
-            onClick={(e) => { e.stopPropagation(); onEdit(task); }}
-            className="p-2 text-base-content/60 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors"
-            title="Editar tarefa"
-            aria-label="Editar"
-          >
-            <Edit2 size={16} />
-          </button>
-        )}
-        {onDelete && (
-          <button 
-            onClick={(e) => { e.stopPropagation(); onDelete(task.id); }}
-            className="p-2 text-base-content/60 hover:text-error hover:bg-error/10 rounded-lg transition-colors"
-            title="Excluir tarefa"
-            aria-label="Excluir"
-          >
-            <Trash2 size={16} />
-          </button>
-        )}
-        {!onEdit && !onDelete && (
-           <button className="p-2 text-base-content/40 hover:text-base-content hover:bg-base-200 rounded-lg transition-colors">
-             <MoreVertical size={16} />
-           </button>
-        )}
+          {/* Ações visíveis no hover */}
+          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity focus-within:opacity-100">
+            {onEdit && (
+              <button 
+                onClick={(e) => { e.stopPropagation(); onEdit(task); }}
+                className="p-1.5 text-base-content/60 hover:text-primary hover:bg-primary/10 rounded-md transition-colors"
+                title="Editar tarefa"
+              >
+                <Edit2 size={14} />
+              </button>
+            )}
+            {onDelete && (
+              <button 
+                onClick={(e) => { e.stopPropagation(); onDelete(task.id); }}
+                className="p-1.5 text-base-content/60 hover:text-error hover:bg-error/10 rounded-md transition-colors"
+                title="Excluir tarefa"
+              >
+                <Trash2 size={14} />
+              </button>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
