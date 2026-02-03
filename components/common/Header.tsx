@@ -8,15 +8,18 @@ import { Settings, GraduationCap, Bell, Moon, Sun, Heart, Monitor } from 'lucide
 import { Project } from '../../types';
 import { getUnreadCount } from '../../utils/notificationService';
 import { NavigationMenu } from './NavigationMenu';
+import { useProjectsStore } from '../../store/projectsStore';
 
 interface HeaderProps {
     onProjectImported?: (project: Project) => void;
     onOpenSettings?: () => void;
+    onNavigate?: (view: string) => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ onProjectImported: _onProjectImported, onOpenSettings }) => {
+export const Header: React.FC<HeaderProps> = ({ onProjectImported: _onProjectImported, onOpenSettings, onNavigate }) => {
     const { theme, toggleTheme, isOnlyLightSupported } = useTheme();
     const { isBeginnerMode, toggleBeginnerMode } = useBeginnerMode();
+    const { projects, selectProject, selectedProjectId } = useProjectsStore();
     const [notificationUnreadCount, setNotificationUnreadCount] = useState(0);
     const [showNotificationDropdown, setShowNotificationDropdown] = useState(false);
 
@@ -104,9 +107,26 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported: _onProjectImp
 
     // Itens de navegação principais
     const navItems = [
-        { id: 'dashboard', label: 'Dashboard', icon: '📊', onClick: () => {} },
-        { id: 'projects', label: 'Projetos', icon: '📁', onClick: () => {} },
-        { id: 'glossary', label: 'Glossário', icon: '📚', onClick: () => {} },
+        { 
+            id: 'dashboard', 
+            label: 'Dashboard', 
+            icon: '📊', 
+            onClick: () => {
+                selectProject(null);
+                onNavigate?.('dashboard');
+            } 
+        },
+        { 
+            id: 'projects', 
+            label: 'Projetos', 
+            icon: '📁', 
+            onClick: () => {
+                selectProject(null);
+                onNavigate?.('projects');
+            },
+            badge: projects.length
+        },
+        { id: 'glossary', label: 'Glossário', icon: '📚', onClick: () => onNavigate?.('glossary') },
     ];
 
     return (
@@ -132,7 +152,7 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported: _onProjectImp
                     </div>
                 </div>
                 <div className="flex items-center justify-end gap-1.5 sm:gap-2 relative">
-                    <NavigationMenu items={navItems} />
+                    <NavigationMenu items={navItems} currentPath={selectedProjectId ? 'project' : 'dashboard'} />
                     <div className="relative">
                         <ExpandableTabs
                             tabs={tabs}
