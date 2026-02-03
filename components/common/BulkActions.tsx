@@ -41,11 +41,11 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
   
   // Obter tasks selecionadas
   const selectedTasksData = useMemo(() => {
-    return project.tasks.filter(task => selectedTasksArray.includes(task.id));
+    return (project.tasks || []).filter(task => selectedTasksArray.includes(task.id));
   }, [project.tasks, selectedTasksArray]);
 
   const handleBulkStatusChange = () => {
-    const updatedTasks = project.tasks.map(task =>
+    const updatedTasks = (project.tasks || []).map(task =>
       selectedTasksArray.includes(task.id)
         ? { ...task, status: statusValue }
         : task
@@ -62,7 +62,7 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
       return;
     }
 
-    const updatedTasks = project.tasks.map(task => {
+    const updatedTasks = (project.tasks || []).map(task => {
       if (selectedTasksArray.includes(task.id)) {
         const tags = task.tags || [];
         if (!tags.includes(tagValue.trim())) {
@@ -80,7 +80,7 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
   };
 
   const handleBulkAssigneeChange = () => {
-    const updatedTasks = project.tasks.map(task =>
+    const updatedTasks = (project.tasks || []).map(task =>
       selectedTasksArray.includes(task.id)
         ? { ...task, assignee: assigneeValue }
         : task
@@ -126,7 +126,7 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
 
     try {
       // Obter tasks selecionadas
-      const tasksToInclude = project.tasks.filter(task => 
+      const tasksToInclude = (project.tasks || []).filter(task => 
         selectedTasksForProject.has(task.id)
       );
 
