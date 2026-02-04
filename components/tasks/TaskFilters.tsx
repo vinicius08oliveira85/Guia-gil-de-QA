@@ -82,7 +82,7 @@ function FilterDropdown<T extends string>({
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 mt-1 z-50 w-64 bg-base-100 rounded-lg shadow-xl border border-base-200 overflow-hidden animate-in fade-in zoom-in-95 duration-100">
+        <div className="absolute top-full left-0 mt-1 z-[100] w-64 bg-base-100 rounded-lg shadow-xl border border-base-200 overflow-hidden animate-in fade-in zoom-in-95 duration-100">
           <div className="p-2 border-b border-base-200 bg-base-50/50 flex justify-between items-center">
             <span className="text-xs font-semibold text-base-content/70 uppercase tracking-wider">{label}</span>
             {isActive && (
