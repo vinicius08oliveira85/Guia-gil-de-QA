@@ -14,7 +14,13 @@ export const Header: React.FC = () => {
   return (
     <>
       <header className="sticky top-0 flex items-center justify-between p-2 border-b bg-background/80 backdrop-blur-sm z-30">
-        {/* ... Outros elementos do Header, como Logo ... */}
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <img alt="Logo QA Agile Guide" className="h-10 w-auto sm:h-12 flex-shrink-0" src="/logo@erasebg-transformed.png" />
+          <div className="min-w-0">
+            <p className="text-sm sm:text-base font-semibold leading-tight truncate">QA Agile Guide</p>
+            <p className="text-xs text-base-content/60 truncate hidden sm:block">Gestão de QA ágil, métricas e automação</p>
+          </div>
+        </div>
 
         <nav role="navigation" aria-label="Menu principal" className="flex items-center gap-2">
           {/* Mapeamento dos itens de navegação normais */}
@@ -56,10 +62,10 @@ export const Header: React.FC = () => {
       </header>
 
       {/* 4. O componente de Modal é renderizado condicionalmente. */}
-      <SettingsModal
+      {isSettingsOpen && <SettingsModal
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)} // A função de fechar atualiza o estado.
-      />
+      />}
     </>
   );
 };
