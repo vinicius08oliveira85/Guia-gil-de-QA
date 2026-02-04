@@ -4,7 +4,7 @@ import { ExpandableTabs } from './ExpandableTabs';
 import { useTheme } from '../../hooks/useTheme';
 import { useBeginnerMode } from '../../hooks/useBeginnerMode';
 import { getActiveColorForTheme } from '../../utils/expandableTabsColors';
-import { Settings, GraduationCap, Bell, Moon, Sun, Heart, Monitor } from 'lucide-react';
+import { Settings, GraduationCap, Bell, Moon, Sun, Heart, Monitor, User, Globe, LogOut, Sliders } from 'lucide-react';
 import { Project } from '../../types';
 import { getUnreadCount } from '../../utils/notificationService';
 import { NavigationMenu } from './NavigationMenu';
@@ -22,6 +22,7 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported: _onProjectImp
     const { projects, selectProject, selectedProjectId } = useProjectsStore();
     const [notificationUnreadCount, setNotificationUnreadCount] = useState(0);
     const [showNotificationDropdown, setShowNotificationDropdown] = useState(false);
+    const [showSettingsDropdown, setShowSettingsDropdown] = useState(false);
 
     // Atualizar contador de notificações não lidas
     useEffect(() => {
@@ -74,18 +75,21 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported: _onProjectImp
     const handleTabChange = (id: string | null) => {
         if (id === null) {
             setShowNotificationDropdown(false);
+            setShowSettingsDropdown(false);
             return;
         }
 
         // Usar o ID do tab para uma lógica mais robusta e legível
         switch (id) {
             case 'settings':
-                onOpenSettings?.();
+                setShowNotificationDropdown(false);
+                setShowSettingsDropdown((prev) => !prev);
                 break;
             case 'beginner-mode':
                 toggleBeginnerMode();
                 break;
             case 'notifications':
+                setShowSettingsDropdown(false);
                 setShowNotificationDropdown(true);
                 break;
             case 'theme':
@@ -165,6 +169,50 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported: _onProjectImp
                             <span className="absolute -top-1 -right-1 bg-error text-error-content text-[0.65rem] rounded-full w-5 h-5 flex items-center justify-center shadow-sm pointer-events-none z-10">
                                 {notificationUnreadCount > 9 ? '9+' : notificationUnreadCount}
                             </span>
+                        )}
+
+                        {/* Dropdown de Configurações */}
+                        {showSettingsDropdown && (
+                            <>
+                                <div
+                                    className="fixed inset-0 z-40"
+                                    onClick={() => setShowSettingsDropdown(false)}
+                                />
+                                <div className="absolute top-full left-0 mt-2 z-50 w-48 rounded-xl border border-base-300 bg-base-100 shadow-xl p-1 animate-in fade-in zoom-in-95 duration-200">
+                                    <button 
+                                        className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium hover:bg-base-200 transition-colors"
+                                        onClick={() => setShowSettingsDropdown(false)}
+                                    >
+                                        <User size={16} />
+                                        <span>Perfil</span>
+                                    </button>
+                                    <button 
+                                        className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium hover:bg-base-200 transition-colors"
+                                        onClick={() => {
+                                            setShowSettingsDropdown(false);
+                                            onOpenSettings?.();
+                                        }}
+                                    >
+                                        <Sliders size={16} />
+                                        <span>Preferências</span>
+                                    </button>
+                                    <button 
+                                        className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium hover:bg-base-200 transition-colors"
+                                        onClick={() => setShowSettingsDropdown(false)}
+                                    >
+                                        <Globe size={16} />
+                                        <span>Idiomas</span>
+                                    </button>
+                                    <div className="my-1 h-px bg-base-200" />
+                                    <button 
+                                        className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-error hover:bg-error/10 transition-colors"
+                                        onClick={() => setShowSettingsDropdown(false)}
+                                    >
+                                        <LogOut size={16} />
+                                        <span>Sair</span>
+                                    </button>
+                                </div>
+                            </>
                         )}
                     </div>
 
