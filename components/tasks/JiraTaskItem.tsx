@@ -1424,22 +1424,21 @@ export const JiraTaskItem: React.FC<{
                                     <button
                                         type="button"
                                         onClick={handleToggleDetails}
-                                        className="w-full text-left rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
+                                        className="w-full text-left rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 group"
                                         aria-expanded={isDetailsOpen}
                                         aria-controls={detailsRegionId}
                                     >
-                                        <span className="font-mono text-xs text-base-content/60 hover:text-primary transition-colors">{task.id}</span>
-                                        <h3 className="text-sm font-bold text-base-content leading-tight hover:text-primary transition-colors truncate" title={task.title}>
-                                            {task.title}
-                                        </h3>
+                                        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                                            <span className="badge badge-sm text-white border-0 px-2 min-h-0 h-5 text-[10px] shrink-0" style={typeBadgeStyle}>{task.type}</span>
+                                            <span className="font-mono text-xs text-base-content/60 group-hover:text-primary transition-colors shrink-0">{task.id}</span>
+                                            <span className="text-sm font-bold text-base-content leading-tight group-hover:text-primary transition-colors line-clamp-2 break-words">{task.title}</span>
+                                        </div>
                                     </button>
                                 </div>
                             </div>
 
                             {/* Coluna 2: Badges e Métricas (flex-shrink para não quebrar) */}
                             <div className="flex items-center gap-4 flex-shrink-0">
-                                <span className="badge badge-sm text-white border-0" style={typeBadgeStyle}>{task.type}</span>
-                                
                                 {testExecutionSummary.total > 0 && (
                                     <div className="flex items-center gap-2 text-xs font-medium bg-base-200/50 px-2 py-1 rounded-lg">
                                         <span className="flex items-center gap-1 text-success" title="Aprovados"><span className="w-2 h-2 rounded-full bg-success"></span>{testExecutionSummary.passed}</span>
