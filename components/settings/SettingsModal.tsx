@@ -15,6 +15,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
     <Modal
       isOpen={isOpen}
       onClose={onClose}
+      id="settings-panel"
+      containerClassName="z-50"
       title="Configurações"
       ariaLabelledBy="settings-modal-title"
     >

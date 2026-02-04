@@ -1,202 +1,65 @@
-import React, { useState, useEffect } from 'react';
-import { NotificationBell } from './NotificationBell';
-import { ExpandableTabs } from './ExpandableTabs';
-import { useTheme } from '../../hooks/useTheme';
-import { useBeginnerMode } from '../../hooks/useBeginnerMode';
-import { getActiveColorForTheme } from '../../utils/expandableTabsColors';
-import { Settings, GraduationCap, Bell, Moon, Sun, Heart, Monitor } from 'lucide-react';
-import { Project } from '../../types';
-import { getUnreadCount } from '../../utils/notificationService';
-import { NavigationMenu } from './NavigationMenu';
-import { useProjectsStore } from '../../store/projectsStore';
+import React, { useState } from 'react';
+import { SettingsModal } from '../settings/SettingsModal';
 
-interface HeaderProps {
-    onProjectImported?: (project: Project) => void;
-    onOpenSettings?: () => void;
-    onNavigate?: (view: string) => void;
-}
+// Exemplo de itens de navegação que usam a lógica de 'activeTab'
+const navPills = [{ id: 'dashboard', label: 'Dashboard' }];
 
-export const Header: React.FC<HeaderProps> = ({ onProjectImported: _onProjectImported, onOpenSettings, onNavigate }) => {
-    const { theme, toggleTheme, isOnlyLightSupported } = useTheme();
-    const { isBeginnerMode, toggleBeginnerMode } = useBeginnerMode();
-    const { projects, selectProject, selectedProjectId } = useProjectsStore();
-    const [notificationUnreadCount, setNotificationUnreadCount] = useState(0);
-    const [showNotificationDropdown, setShowNotificationDropdown] = useState(false);
+export const Header: React.FC = () => {
+  // Estado antigo que causava o problema para o botão de Configurações
+  const [activeTab, setActiveTab] = useState('dashboard');
 
-    // Atualizar contador de notificações não lidas
-    useEffect(() => {
-        const updateUnreadCount = () => {
-            const count = getUnreadCount();
-            setNotificationUnreadCount(count);
-        };
-        
-        updateUnreadCount();
-        // O polling com setInterval é ineficiente. A atualização via evento é a melhor abordagem.
-        window.addEventListener('notification-created', updateUnreadCount);
-        
-        return () => {
-            window.removeEventListener('notification-created', updateUnreadCount);
-        };
-    }, []);
+  // 1. Estado dedicado para a visibilidade do painel de configurações.
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
-    // Obter ícone do tema baseado no tema atual
-    const getThemeIcon = () => {
-        switch (theme) {
-            case 'dark':
-                return Moon;
-            case 'light':
-                return Sun;
-            case 'leve-saude':
-                return Heart;
-            default:
-                return Monitor;
-        }
-    };
+  return (
+    <>
+      <header className="sticky top-0 flex items-center justify-between p-2 border-b bg-background/80 backdrop-blur-sm z-30">
+        {/* ... Outros elementos do Header, como Logo ... */}
 
-    // Obter título do tema
-    const getThemeTitle = () => {
-        // Temas suportados: light e dark não mostram "(em breve)"
-        const supportedThemes = ['light', 'dark'];
-        const suffix = supportedThemes.includes(theme) ? '' : ' (em breve)';
-        switch (theme) {
-            case 'dark':
-                return `Tema Escuro${suffix}`;
-            case 'light':
-                return 'Tema Claro';
-            case 'leve-saude':
-                return `Leve Saúde${suffix}`;
-            default:
-                return `Tema Automático${suffix}`;
-        }
-    };
+        <nav role="navigation" aria-label="Menu principal" className="flex items-center gap-2">
+          {/* Mapeamento dos itens de navegação normais */}
+          {navPills.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => setActiveTab(item.id)}
+              aria-pressed={activeTab === item.id}
+              className={`px-4 py-2 text-sm font-semibold rounded-full transition-colors ${
+                activeTab === item.id ? 'bg-base-200 text-blue-600' : 'hover:bg-surface-hover'
+              }`}
+            >
+              {item.label}
+            </button>
+          ))}
 
-    // Handler para quando um tab é selecionado
-    const handleTabChange = (id: string | null) => {
-        if (id === null) {
-            setShowNotificationDropdown(false);
-            return;
-        }
+          {/* 2. Separação de Interesses: O botão de Configurações agora é um componente de ação independente. */}
+          <button
+            onClick={() => setIsSettingsOpen(true)} // 3. Altera o estado 'isSettingsOpen'.
+            className={`relative flex items-center rounded-full px-4 py-2 text-sm font-semibold transition-colors duration-300 ${
+              isSettingsOpen ? 'bg-base-200 text-blue-600' : 'hover:bg-surface-hover'
+            }`}
+            aria-label="Configurações"
+            aria-pressed={isSettingsOpen} // Acessibilidade: O estado pressionado reflete se o painel está aberto.
+            aria-controls="settings-panel" // Acessibilidade: Aponta para o ID do painel que ele controla.
+            type="button"
+          >
+            <svg className="lucide lucide-settings" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 0 2l-.15.08a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1 0-2l.15-.08a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+            <span
+              className="overflow-hidden transition-all duration-300"
+              style={{ width: isSettingsOpen ? 'auto' : 0, opacity: isSettingsOpen ? 1 : 0, marginLeft: isSettingsOpen ? '8px' : 0 }}
+            >
+              Configurações
+            </span>
+          </button>
+        </nav>
 
-        // Usar o ID do tab para uma lógica mais robusta e legível
-        switch (id) {
-            case 'settings':
-                onOpenSettings?.();
-                break;
-            case 'beginner-mode':
-                toggleBeginnerMode();
-                break;
-            case 'notifications':
-                setShowNotificationDropdown(true);
-                break;
-            case 'theme':
-                toggleTheme();
-                break;
-            default:
-                break;
-        }
-    };
+        {/* ... Outros elementos do Header ... */}
+      </header>
 
-    const tabs = [
-        { id: 'settings', title: 'Configurações', icon: Settings },
-        { id: 'beginner-mode', title: isBeginnerMode ? 'Modo Iniciante' : 'Modo Avançado', icon: GraduationCap },
-        { id: 'notifications', title: 'Notificações', icon: Bell },
-        { id: 'theme', title: getThemeTitle(), icon: getThemeIcon() },
-    ];
-
-    const activeColor = getActiveColorForTheme(theme);
-
-    // Itens de navegação principais
-    const navItems = [
-        { 
-            id: 'dashboard', 
-            label: 'Dashboard', 
-            icon: '📊', 
-            onClick: () => {
-                selectProject(null);
-                onNavigate?.('dashboard');
-            } 
-        },
-        { 
-            id: 'projects', 
-            label: 'Projetos', 
-            icon: '📁', 
-            onClick: () => {
-                selectProject(null);
-                onNavigate?.('projects');
-            },
-            badge: projects.length
-        },
-        { id: 'glossary', label: 'Glossário', icon: '📚', onClick: () => onNavigate?.('glossary') },
-    ];
-
-    return (
-        <header
-            className="sticky top-0 z-30 border-b border-base-300 bg-base-100/80 backdrop-blur"
-            style={{ paddingTop: 'env(safe-area-inset-top)' }}
-        >
-            <div className="container mx-auto flex items-center justify-between gap-2 sm:gap-3 min-w-0 py-2 px-3 sm:px-4">
-                <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                    <img
-                        src="/logo@erasebg-transformed.png"
-                        alt="Logo QA Agile Guide"
-                        className="h-10 w-auto sm:h-12 flex-shrink-0"
-                        loading="lazy"
-                        decoding="async"
-                        draggable={false}
-                    />
-                    <div className="min-w-0">
-                        <p className="text-sm sm:text-base font-semibold leading-tight truncate">QA Agile Guide</p>
-                        <p className="text-xs text-base-content/60 truncate hidden sm:block">
-                            Gestão de QA ágil, métricas e automação
-                        </p>
-                    </div>
-                </div>
-                <div className="flex items-center justify-end gap-1.5 sm:gap-2 relative">
-                    <NavigationMenu items={navItems} currentPath={selectedProjectId ? 'project' : 'dashboard'} />
-                    <div className="relative">
-                        <ExpandableTabs
-                            tabs={tabs}
-                            activeColor={activeColor}
-                            onChange={handleTabChange}
-                        />
-                        
-                        {/* Badge de notificações não lidas */}
-                        {notificationUnreadCount > 0 && (
-                            <span className="absolute -top-1 -right-1 bg-error text-error-content text-[0.65rem] rounded-full w-5 h-5 flex items-center justify-center shadow-sm pointer-events-none z-10">
-                                {notificationUnreadCount > 9 ? '9+' : notificationUnreadCount}
-                            </span>
-                        )}
-                    </div>
-
-                    {/* Dropdown de notificações */}
-                    {showNotificationDropdown && (
-                        <>
-                            <div
-                                className="fixed inset-0 z-40"
-                                onClick={() => {
-                                    setShowNotificationDropdown(false);
-                                }}
-                            />
-                            <div className="absolute right-0 top-full mt-2 z-50 w-80">
-                                <NotificationBell 
-                                    isOpen={showNotificationDropdown}
-                                    onClose={() => {
-                                        setShowNotificationDropdown(false);
-                                    }}
-                                    showButton={false}
-                                />
-                            </div>
-                        </>
-                    )}
-
-                    {/* Badge para temas ainda não suportados (leve-saude, auto) */}
-                    {isOnlyLightSupported && (
-                        <span className="badge badge-outline badge-sm hidden sm:inline-flex">
-                            Tema em breve
-                        </span>
-                    )}
-                </div>
-            </div>
-        </header>
-    );
+      {/* 4. O componente de Modal é renderizado condicionalmente. */}
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)} // A função de fechar atualiza o estado.
+      />
+    </>
+  );
 };
