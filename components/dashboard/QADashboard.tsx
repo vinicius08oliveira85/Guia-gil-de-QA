@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { Project } from '../../types';
 import { useProjectMetrics } from '../../hooks/useProjectMetrics';
 import { useMetricsHistory } from '../../hooks/useMetricsHistory';
@@ -23,6 +23,7 @@ import {
   Download,
   Filter,
   Plus,
+  Settings,
 } from 'lucide-react';
 
 /**
@@ -35,6 +36,8 @@ interface QADashboardProps {
   onUpdateProject?: (project: Project) => void;
   /** Callback para navegar entre abas */
   onNavigateToTab?: (tabId: string) => void;
+  /** Callback para abrir configurações */
+  onOpenSettings?: () => void;
 }
 
 /**
@@ -45,12 +48,24 @@ interface QADashboardProps {
  * <QADashboard project={project} onUpdateProject={handleUpdateProject} />
  * ```
  */
-export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, onUpdateProject, onNavigateToTab }) => {
+export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, onUpdateProject, onNavigateToTab, onOpenSettings }) => {
   // Estados para controlar modais
   const [showFilters, setShowFilters] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
   const [showNewTestModal, setShowNewTestModal] = useState(false);
   const [dashboardFilters, setDashboardFilters] = useState<DashboardFilters>({});
+
+  // Atalho de teclado para abrir configurações (Ctrl + ,)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === ',') {
+        e.preventDefault();
+        onOpenSettings?.();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onOpenSettings]);
 
   // Aplicar filtros ao projeto
   const filteredProject = useMemo(() => {
@@ -299,6 +314,16 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
             >
               <AlertCircle className="w-4 h-4" aria-hidden="true" />
               <span>Bugs</span>
+            </button>
+            <button
+              type="button"
+              onClick={onOpenSettings}
+              className="btn btn-outline btn-sm rounded-full flex items-center gap-1.5"
+              aria-label="Abrir configurações (Ctrl+,)"
+              title="Configurações (Ctrl+,)"
+            >
+              <Settings className="w-4 h-4" aria-hidden="true" />
+              <span>Config</span>
             </button>
             <button
               type="button"
