@@ -286,7 +286,7 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
               Visão geral de testes, bugs, cobertura e análises do projeto.
             </p>
           </div>
-          <div className="flex items-center gap-2 flex-wrap relative z-50">
+          <div className="flex items-center gap-2 flex-wrap relative z-[60]">
             <button
               type="button"
               onClick={toggleBugFilter}
