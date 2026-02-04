@@ -1399,36 +1399,28 @@ export const JiraTaskItem: React.FC<{
                     <div aria-hidden="true" className="absolute left-0 top-0 h-full w-1" style={typeAccent} />
 
                     <div className="p-3 md:p-4">
-                        <div className="flex flex-col gap-3">
-                            {/* Linha Superior: Seleção, Toggle Subtarefa, Tipo, ID, Título, Expandir */}
-                            <div className="flex items-start gap-3">
-                                {/* Seleção e Toggle Subtarefa */}
-                                <div className="flex items-center gap-2 shrink-0 pt-1">
-                                    {onToggleSelect && (
-                                        <input 
-                                            type="checkbox" 
-                                            checked={isSelected} 
-                                            onChange={(e) => { e.stopPropagation(); onToggleSelect(); }}
-                                            className="checkbox checkbox-sm checkbox-primary"
-                                        />
-                                    )}
-                                    {hasChildren ? (
-                                        <button
-                                            type="button"
-                                            onClick={(e) => { e.stopPropagation(); setIsChildrenOpen(!isChildrenOpen); }}
-                                            className="btn btn-ghost btn-xs btn-circle"
-                                        >
-                                            <ChevronDownIcon className={`w-4 h-4 transition-transform ${isChildrenOpen ? 'rotate-180' : ''}`} />
-                                        </button>
-                                    ) : <div className="w-6" />}
-                                </div>
-
-                                {/* Informações Principais */}
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                            {/* Coluna 1: Controles e Título (ocupa espaço flexível) */}
+                            <div className="flex items-center gap-2 flex-1 min-w-[250px]">
+                                {onToggleSelect && (
+                                    <input 
+                                        type="checkbox" 
+                                        checked={isSelected} 
+                                        onChange={(e) => { e.stopPropagation(); onToggleSelect(); }}
+                                        className="checkbox checkbox-xs sm:checkbox-sm checkbox-primary"
+                                    />
+                                )}
+                                {hasChildren ? (
+                                    <button
+                                        type="button"
+                                        onClick={(e) => { e.stopPropagation(); setIsChildrenOpen(!isChildrenOpen); }}
+                                        className="btn btn-ghost btn-xs btn-circle"
+                                    >
+                                        <ChevronDownIcon className={`w-4 h-4 transition-transform ${isChildrenOpen ? 'rotate-180' : ''}`} />
+                                    </button>
+                                ) : <div className="w-6" />}
+                                
                                 <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2 mb-1 flex-wrap">
-                                        <span className="badge badge-sm text-white border-0" style={typeBadgeStyle}>{task.type}</span>
-                                        <span className="font-mono text-xs text-base-content/60">{task.id}</span>
-                                    </div>
                                     <button
                                         type="button"
                                         onClick={handleToggleDetails}
@@ -1436,103 +1428,58 @@ export const JiraTaskItem: React.FC<{
                                         aria-expanded={isDetailsOpen}
                                         aria-controls={detailsRegionId}
                                     >
-                                        <h3 className="text-sm font-bold text-base-content leading-tight hover:text-primary transition-colors">
+                                        <span className="font-mono text-xs text-base-content/60 hover:text-primary transition-colors">{task.id}</span>
+                                        <h3 className="text-sm font-bold text-base-content leading-tight hover:text-primary transition-colors truncate" title={task.title}>
                                             {task.title}
                                         </h3>
                                     </button>
                                 </div>
-
-                                {/* Botão Expandir Detalhes */}
-                                <button 
-                                    type="button"
-                                    onClick={(e) => { e.stopPropagation(); handleToggleDetails(); }}
-                                    className="btn btn-ghost btn-sm btn-circle shrink-0"
-                                >
-                                    <ChevronDownIcon className={`w-5 h-5 transition-transform ${isDetailsOpen ? 'rotate-180' : ''}`} />
-                                </button>
                             </div>
 
-                            {/* Linha Inferior: Status Teste/Botão, Métricas, Status Jira */}
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pl-8">
-                                <div className="flex flex-wrap items-center gap-4">
-                                    {/* Status de Teste e Botão de Ação */}
-                                    {taskTestStatus && (
-                                        <div className="flex items-center gap-2">
-                                            <span className={`badge badge-md ${testStatusConfig.bgColor} ${testStatusConfig.color} border gap-1.5 pl-1.5 pr-2.5`}>
-                                                <span aria-hidden="true" className="text-sm">{testStatusConfig.icon}</span>
-                                                <span className="font-medium">{testStatusConfig.label}</span>
-                                            </span>
-                                            
-                                            {taskTestStatus === 'testar' && (
-                                                <button
-                                                    type="button"
-                                                    onClick={handleStartTest}
-                                                    className="btn btn-sm btn-primary shadow-sm"
-                                                >
-                                                    <span className="mr-1">▶</span> Iniciar
-                                                </button>
-                                            )}
-                                            {taskTestStatus === 'testando' && (
-                                                <button
-                                                    type="button"
-                                                    onClick={handleCompleteTest}
-                                                    className="btn btn-sm btn-success text-white shadow-sm"
-                                                >
-                                                    <span className="mr-1">✓</span> Concluir
-                                                </button>
-                                            )}
-                                        </div>
-                                    )}
+                            {/* Coluna 2: Badges e Métricas (flex-shrink para não quebrar) */}
+                            <div className="flex items-center gap-4 flex-shrink-0">
+                                <span className="badge badge-sm text-white border-0" style={typeBadgeStyle}>{task.type}</span>
+                                
+                                {testExecutionSummary.total > 0 && (
+                                    <div className="flex items-center gap-2 text-xs font-medium bg-base-200/50 px-2 py-1 rounded-lg">
+                                        <span className="flex items-center gap-1 text-success" title="Aprovados"><span className="w-2 h-2 rounded-full bg-success"></span>{testExecutionSummary.passed}</span>
+                                        <span className="flex items-center gap-1 text-error" title="Reprovados"><span className="w-2 h-2 rounded-full bg-error"></span>{testExecutionSummary.failed}</span>
+                                        <span className="flex items-center gap-1 text-base-content/60" title="Pendentes"><span className="w-2 h-2 rounded-full bg-base-300"></span>{testExecutionSummary.pending}</span>
+                                    </div>
+                                )}
+                            </div>
 
-                                    {/* Métricas de Teste */}
-                                    {testExecutionSummary.total > 0 && (
-                                        <div className="flex items-center gap-3 text-xs font-medium bg-base-200/50 px-2 py-1 rounded-lg">
-                                            <span className="flex items-center gap-1 text-success" title="Aprovados">
-                                                <span className="w-2 h-2 rounded-full bg-success"></span>
-                                                {testExecutionSummary.passed}
-                                            </span>
-                                            <span className="flex items-center gap-1 text-error" title="Reprovados">
-                                                <span className="w-2 h-2 rounded-full bg-error"></span>
-                                                {testExecutionSummary.failed}
-                                            </span>
-                                            <span className="flex items-center gap-1 text-base-content/60" title="Pendentes">
-                                                <span className="w-2 h-2 rounded-full bg-base-300 border border-base-content/20"></span>
-                                                {testExecutionSummary.pending}
-                                            </span>
-                                        </div>
+                            {/* Coluna 3: Status e Ações (flex-shrink para não quebrar) */}
+                            <div className="flex items-center gap-2 flex-shrink-0 ml-auto">
+                                {taskTestStatus && (
+                                    <span className={`badge badge-sm ${testStatusConfig.bgColor} ${testStatusConfig.color} border gap-1`}>
+                                        <span aria-hidden="true" className="text-xs">{testStatusConfig.icon}</span>
+                                        <span className="font-medium">{testStatusConfig.label}</span>
+                                    </span>
+                                )}
+                                <select
+                                    className="select select-bordered select-xs w-full sm:w-auto max-w-[140px] h-7 min-h-0"
+                                    value={getDisplayStatus(task)}
+                                    onChange={(e) => handleChangeStatus(e.target.value)}
+                                    onClick={(e) => e.stopPropagation()}
+                                    style={{ backgroundColor: currentStatusColor, color: statusTextColor, borderColor: currentStatusColor ? `${currentStatusColor}66` : undefined }}
+                                >
+                                    {project?.settings?.jiraStatuses && project.settings.jiraStatuses.length > 0 ? (
+                                        project.settings.jiraStatuses.map((status) => {
+                                            const statusName = typeof status === 'string' ? status : status.name;
+                                            return <option key={statusName} value={statusName}>{statusName}</option>;
+                                        })
+                                    ) : (
+                                        <>
+                                            <option value="To Do">A Fazer</option>
+                                            <option value="In Progress">Em Andamento</option>
+                                            <option value="Done">Concluído</option>
+                                        </>
                                     )}
-                                </div>
-
-                                {/* Status do Jira */}
-                                <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                                    <select
-                                        className="select select-bordered select-sm w-full sm:w-auto max-w-[160px] text-xs h-8 min-h-0"
-                                        value={getDisplayStatus(task)}
-                                        onChange={(e) => handleChangeStatus(e.target.value)}
-                                        style={{
-                                            backgroundColor: currentStatusColor,
-                                            color: statusTextColor,
-                                            borderColor: currentStatusColor ? `${currentStatusColor}66` : undefined,
-                                        }}
-                                    >
-                                        {project?.settings?.jiraStatuses && project.settings.jiraStatuses.length > 0 ? (
-                                            project.settings.jiraStatuses.map((status) => {
-                                                const statusName = typeof status === 'string' ? status : status.name;
-                                                return (
-                                                    <option key={statusName} value={statusName}>
-                                                        {statusName}
-                                                    </option>
-                                                );
-                                            })
-                                        ) : (
-                                            <>
-                                                <option value="To Do">A Fazer</option>
-                                                <option value="In Progress">Em Andamento</option>
-                                                <option value="Done">Concluído</option>
-                                            </>
-                                        )}
-                                    </select>
-                                </div>
+                                </select>
+                                <button type="button" onClick={(e) => { e.stopPropagation(); handleToggleDetails(); }} className="btn btn-ghost btn-xs btn-circle shrink-0">
+                                    <ChevronDownIcon className={`w-4 h-4 transition-transform ${isDetailsOpen ? 'rotate-180' : ''}`} />
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -1550,6 +1497,23 @@ export const JiraTaskItem: React.FC<{
                                 className="overflow-hidden border-t border-base-300 bg-base-50/50"
                             >
                                 <div className="p-4 space-y-4">
+                                    {/* Botões de Ação de Teste (movidos para cá) */}
+                                    {taskTestStatus && (taskTestStatus === 'testar' || taskTestStatus === 'testando') && (
+                                        <div className="flex items-center gap-2 p-3 rounded-lg bg-base-200">
+                                            <p className="text-sm font-medium flex-1">Ações de Teste:</p>
+                                            {taskTestStatus === 'testar' && (
+                                                <button type="button" onClick={handleStartTest} className="btn btn-sm btn-primary shadow-sm">
+                                                    <span className="mr-1">▶</span> Iniciar Teste
+                                                </button>
+                                            )}
+                                            {taskTestStatus === 'testando' && (
+                                                <button type="button" onClick={handleCompleteTest} className="btn btn-sm btn-success text-white shadow-sm">
+                                                    <span className="mr-1">✓</span> Concluir Teste
+                                                </button>
+                                            )}
+                                        </div>
+                                    )}
+
                                     {/* Barra de Ações (movida para dentro do expandir) */}
                                     <div className="flex flex-wrap gap-2 pb-4 border-b border-base-200">
                                         {task.type === 'Epic' && (
