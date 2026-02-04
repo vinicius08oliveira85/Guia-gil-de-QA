@@ -295,14 +295,7 @@ const App: React.FC = () => {
                 )}
 
                 <main id="main-content">
-                    {showSettings ? (
-                        <Suspense fallback={<div className="container mx-auto p-8"><LoadingSkeleton variant="card" count={3} /></div>}>
-                            <SettingsView 
-                                onClose={() => setShowSettings(false)}
-                                onProjectImported={handleImportJiraProject}
-                            />
-                        </Suspense>
-                    ) : selectedProject ? (
+                    {selectedProject ? (
                         <Suspense fallback={<div className="container mx-auto p-8"><LoadingSkeleton variant="card" count={3} /></div>}>
                             <ProjectView 
                                 project={selectedProject} 
@@ -323,6 +316,19 @@ const App: React.FC = () => {
                         </Suspense>
                     )}
                 </main>
+
+                {/* Modal de Configurações - Agora em uma camada isolada e superior */}
+                {showSettings && (
+                    <div className="fixed inset-0 z-[999] bg-base-content/30 backdrop-blur-sm animate-in fade-in-20" aria-modal="true" role="dialog">
+                        <Suspense fallback={<div className="w-full h-full flex items-center justify-center"><Spinner /></div>}>
+                            <SettingsView 
+                                onClose={() => setShowSettings(false)}
+                                onProjectImported={handleImportJiraProject}
+                            />
+                        </Suspense>
+                    </div>
+                )}
+
                 <KeyboardShortcutsHelp />
                 <Suspense fallback={null}>
                     <OnboardingGuide />
