@@ -706,6 +706,23 @@ export const JiraTaskItem: React.FC<{
                 );
             })()}
             
+            {(task.type === 'Tarefa' || task.type === 'Bug') && testTypeBadges.length > 0 && (
+                <div>
+                    <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-1.5">Estratégias de Teste</p>
+                    <div className="flex flex-wrap gap-1">
+                        {testTypeBadges.map(badge => (
+                            <TestTypeBadge 
+                                key={badge.type} 
+                                testType={badge.type} 
+                                status={badge.status}
+                                label={badge.label}
+                                size="sm"
+                            />
+                        ))}
+                    </div>
+                </div>
+            )}
+
             {/* Seção de Campos do Jira */}
             {(() => {
                 const hasJiraFields = task.dueDate || task.timeTracking || task.components || task.fixVersions || 
