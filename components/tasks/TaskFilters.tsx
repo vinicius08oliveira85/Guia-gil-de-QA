@@ -168,7 +168,7 @@ export const TaskFilters: React.FC<TaskFiltersProps> = ({ tasks, onFilterChange,
       tags: {} as Record<string, number>,
     };
 
-    tasks.forEach(task => {
+    (tasks || []).forEach(task => {
       // Types
       counts.types[task.type] = (counts.types[task.type] || 0) + 1;
       

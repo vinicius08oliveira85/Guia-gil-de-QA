@@ -73,7 +73,7 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
       return project;
     }
 
-    let filteredTasks = [...project.tasks];
+    let filteredTasks = [...(project.tasks || [])];
 
     // Filtro por tipo de tarefa
     if (dashboardFilters.taskType && dashboardFilters.taskType.length > 0) {
