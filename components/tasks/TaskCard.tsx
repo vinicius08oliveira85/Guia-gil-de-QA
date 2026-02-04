@@ -1,243 +1,158 @@
-import React from 'react';
-import { 
-  Edit2, 
-  Trash2, 
-  CheckCircle2, 
-  Circle, 
-  Clock, 
-  AlertCircle, 
-  User,
-  Calendar,
-  MoreVertical,
-  ArrowUp,
-  ArrowRight,
-  ArrowDown,
-  Copy
-} from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { ChevronDown, ChevronUp, Play, Check, X, Pause } from 'lucide-react';
+import { Card } from '../common/Card';
+import { Badge } from '../common/Badge';
 
-// Interface compatível com JiraTask
-export interface Task {
+// Assumindo que seus tipos estão definidos em um arquivo como 'types.ts'
+// import { JiraTask } from '../../types';
+
+// Definição de tipos para o exemplo, caso não existam.
+// O ideal é que venham de um arquivo central de tipos.
+interface TestCase {
+  id: string;
+  status: 'Not Run' | 'Passed' | 'Failed' | 'Blocked';
+  description?: string;
+}
+
+interface JiraTask {
   id: string;
   title: string;
-  status: string;
-  priority?: string;
-  assignee?: string;
-  dueDate?: string;
-  type?: string;
-  [key: string]: any; // Flexibilidade para outros campos
+  description: string;
+  type: 'Epic' | 'História' | 'Tarefa' | 'Bug';
+  status: 'To Do' | 'In Progress' | 'Done' | 'Blocked';
+  testCases: TestCase[];
 }
 
 interface TaskCardProps {
-  task: Task;
-  onEdit?: (task: Task) => void;
-  onDelete?: (taskId: string) => void;
-  onClick?: (task: Task) => void;
-  compact?: boolean;
+  task: JiraTask;
+  onStartTest?: (taskId: string) => void;
+  onCompleteTest?: (taskId: string) => void;
 }
 
-export const TaskCard: React.FC<TaskCardProps> = ({ 
-  task, 
-  onEdit, 
-  onDelete, 
-  onClick,
-  compact = false 
-}) => {
-  
-  // Configuração visual baseada no status
-  const getStatusConfig = (status: string) => {
-    const s = String(status).toLowerCase();
-    if (s.includes('concluído') || s.includes('done') || s.includes('finalizado')) {
-      return { icon: CheckCircle2, color: 'text-success', bg: 'bg-success/10', border: 'border-success/20' };
+/**
+ * Card de Tarefa com visualização expansível.
+ * Mostra informações essenciais e expande para detalhes.
+ */
+export const TaskCard: React.FC<TaskCardProps> = ({ task, onStartTest, onCompleteTest }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  // Calcula as métricas dos casos de teste
+  const testMetrics = useMemo(() => {
+    const total = task.testCases?.length || 0;
+    const passed = task.testCases?.filter(tc => tc.status === 'Passed').length || 0;
+    const failed = task.testCases?.filter(tc => tc.status === 'Failed').length || 0;
+    const notRun = task.testCases?.filter(tc => tc.status === 'Not Run').length || 0;
+    const executed = total - notRun;
+    return { total, passed, failed, notRun, executed };
+  }, [task.testCases]);
+
+  // Determina o status geral do teste para a tarefa
+  const testStatus = useMemo(() => {
+    if (!testMetrics.total || testMetrics.total === 0) {
+      return { label: 'Sem Testes', variant: 'neutral', icon: null };
     }
-    if (s.includes('andamento') || s.includes('progress') || s.includes('doing')) {
-      return { icon: Clock, color: 'text-warning', bg: 'bg-warning/10', border: 'border-warning/20' };
+    if (testMetrics.executed === 0) {
+      return { label: 'Testar', variant: 'info', icon: <Play className="w-3 h-3" /> };
     }
-    if (s.includes('bloqueado') || s.includes('blocked') || s.includes('erro')) {
-      return { icon: AlertCircle, color: 'text-error', bg: 'bg-error/10', border: 'border-error/20' };
+    if (testMetrics.executed < testMetrics.total) {
+      return { label: 'Testando', variant: 'warning', icon: <Pause className="w-3 h-3" /> };
     }
-    return { icon: Circle, color: 'text-base-content/60', bg: 'bg-base-200/50', border: 'border-base-200' };
-  };
+    return { label: 'Teste Concluído', variant: 'success', icon: <Check className="w-3 h-3" /> };
+  }, [testMetrics]);
 
-  const statusConfig = getStatusConfig(task.status);
-  const StatusIcon = statusConfig.icon;
-
-  // Cores de prioridade
-  const getPriorityColor = (priority?: string) => {
-    switch (String(priority).toLowerCase()) {
-      case 'alta':
-      case 'crítico':
-      case 'high':
-      case 'critical':
-        return { color: 'text-error', bg: 'bg-error/10', border: 'border-l-error', icon: ArrowUp };
-      case 'média':
-      case 'medium':
-        return { color: 'text-warning', bg: 'bg-warning/10', border: 'border-l-warning', icon: ArrowRight };
-      case 'baixa':
-      case 'low':
-        return { color: 'text-info', bg: 'bg-info/10', border: 'border-l-info', icon: ArrowDown };
-      default:
-        return { color: 'text-base-content/50', bg: 'bg-base-200', border: 'border-l-base-300', icon: Circle };
+  // Mapeia o status do Jira para um badge
+  const jiraStatusBadge = useMemo(() => {
+    switch (task.status) {
+      case 'To Do': return { label: 'Pendente', variant: 'neutral' };
+      case 'In Progress': return { label: 'Em Andamento', variant: 'info' };
+      case 'Done': return { label: 'Concluído', variant: 'success' };
+      default: return { label: task.status, variant: 'error' };
     }
-  };
+  }, [task.status]);
 
-  const priorityConfig = getPriorityColor(task.priority);
-  const PriorityIcon = priorityConfig.icon;
-
-  // Estado para o menu de contexto
-  const [contextMenu, setContextMenu] = React.useState<{ x: number; y: number } | null>(null);
-
-  const handleContextMenu = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    // Ajuste simples para evitar que o menu saia da tela
-    let x = e.clientX;
-    let y = e.clientY;
-    if (x + 192 > window.innerWidth) x -= 192; // w-48 = 192px
-    if (y + 160 > window.innerHeight) y -= 160;
-
-    setContextMenu({ x, y });
-  };
-
-  React.useEffect(() => {
-    const closeMenu = () => setContextMenu(null);
-    if (contextMenu) {
-      window.addEventListener('click', closeMenu);
-      window.addEventListener('contextmenu', closeMenu);
+  // Mapeia o tipo de tarefa para um badge
+  const taskTypeBadge = useMemo(() => {
+    switch (task.type) {
+      case 'Bug': return { label: 'Bug', variant: 'error' };
+      case 'História': return { label: 'História', variant: 'primary' };
+      case 'Tarefa': return { label: 'Tarefa', variant: 'secondary' };
+      default: return { label: task.type, variant: 'accent' };
     }
-    return () => {
-      window.removeEventListener('click', closeMenu);
-      window.removeEventListener('contextmenu', closeMenu);
-    };
-  }, [contextMenu]);
+  }, [task.type]);
 
-  const handleCopyId = () => {
-    navigator.clipboard.writeText(task.id);
-    setContextMenu(null);
-  };
+  const handleToggleExpand = () => setIsExpanded(!isExpanded);
 
   return (
-    <div 
-      className={`
-        group relative flex flex-col gap-2 p-3
-        bg-base-100 border border-base-200 rounded-xl
-        border-l-[3px] ${priorityConfig.border}
-        hover:shadow-md hover:border-primary/30 hover:-translate-y-0.5
-        transition-all duration-200 cursor-pointer
-        ${compact ? 'text-sm' : ''}
-      `}
-      onClick={() => onClick?.(task)}
-      onContextMenu={handleContextMenu}
-      role="article"
-      aria-label={`Tarefa ${task.title}`}
-    >
-      {/* Header: ID e Prioridade */}
-      <div className="flex items-center justify-between">
-        <span className="font-mono text-[10px] font-bold text-base-content/50 tracking-wider uppercase">
-          {task.id}
-        </span>
-        {task.priority && (
-          <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium ${priorityConfig.bg} ${priorityConfig.color}`}>
-            <PriorityIcon size={10} strokeWidth={3} />
-            <span>{task.priority}</span>
+    <Card className="p-4 space-y-3 transition-all duration-300">
+      <div className="flex justify-between items-start">
+        <div className="flex-1 pr-4 cursor-pointer" onClick={handleToggleExpand}>
+          <div className="flex items-center gap-2 mb-2">
+            <Badge variant={taskTypeBadge.variant} size="sm">{taskTypeBadge.label}</Badge>
+            <span className="font-semibold text-base-content">{task.id}</span>
           </div>
-        )}
-      </div>
-
-      {/* Body: Título e Status */}
-      <div className="flex items-start gap-2">
-        <div className={`mt-0.5 flex-shrink-0 ${statusConfig.color}`}>
-          <StatusIcon size={16} />
+          <h3 className="font-bold text-lg text-base-content leading-tight">{task.title}</h3>
         </div>
-        <h3 className="font-medium text-base-content leading-snug line-clamp-2">
-          {task.title}
-        </h3>
+        <button onClick={handleToggleExpand} className="btn btn-ghost btn-sm btn-circle">
+          {isExpanded ? <ChevronUp /> : <ChevronDown />}
+        </button>
       </div>
 
-      {/* Footer: Meta info e Ações */}
-      {!compact && (
-        <div className="flex items-center justify-between mt-1 pt-2 border-t border-base-100">
-          <div className="flex items-center gap-3 text-xs text-base-content/60">
-            {task.assignee && (
-              <div className="flex items-center gap-1.5" title={`Responsável: ${task.assignee}`}>
-                <div className="w-5 h-5 rounded-full bg-base-200 flex items-center justify-center text-[9px] font-bold text-base-content/70">
-                  {task.assignee.charAt(0).toUpperCase()}
-                </div>
-                <span className="truncate max-w-[80px]">{task.assignee}</span>
-              </div>
-            )}
-            {task.dueDate && (
-              <div className="flex items-center gap-1.5" title={`Prazo: ${task.dueDate}`}>
-                <Calendar size={12} />
-                <span>{task.dueDate}</span>
-              </div>
-            )}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="flex items-center gap-4 flex-wrap">
+          <Badge variant={testStatus.variant} size="md" className="flex items-center gap-1.5">
+            {testStatus.icon}
+            <span>{testStatus.label}</span>
+          </Badge>
+          <div className="flex items-center gap-3 text-sm">
+            <span className="flex items-center gap-1 text-success" title="Aprovados">
+              <Check className="w-4 h-4" /> {testMetrics.passed}
+            </span>
+            <span className="flex items-center gap-1 text-error" title="Reprovados">
+              <X className="w-4 h-4" /> {testMetrics.failed}
+            </span>
+            <span className="flex items-center gap-1 text-base-content/60" title="Pendentes">
+              <Pause className="w-4 h-4" /> {testMetrics.notRun}
+            </span>
           </div>
+        </div>
 
-          {/* Ações visíveis no hover */}
-          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity focus-within:opacity-100">
-            {onEdit && (
-              <button 
-                onClick={(e) => { e.stopPropagation(); onEdit(task); }}
-                className="p-1.5 text-base-content/60 hover:text-primary hover:bg-primary/10 rounded-md transition-colors"
-                title="Editar tarefa"
-              >
-                <Edit2 size={14} />
-              </button>
-            )}
-            {onDelete && (
-              <button 
-                onClick={(e) => { e.stopPropagation(); onDelete(task.id); }}
-                className="p-1.5 text-base-content/60 hover:text-error hover:bg-error/10 rounded-md transition-colors"
-                title="Excluir tarefa"
-              >
-                <Trash2 size={14} />
-              </button>
-            )}
-          </div>
+        <div className="flex items-center gap-3">
+          <Badge variant={jiraStatusBadge.variant} size="sm">{jiraStatusBadge.label}</Badge>
+          {testStatus.label !== 'Teste Concluído' && testStatus.label !== 'Sem Testes' && (
+            <button 
+              className="btn btn-primary btn-sm"
+              onClick={() => onStartTest?.(task.id)}
+            >
+              {testStatus.label === 'Testar' ? 'Iniciar Teste' : 'Continuar'}
+            </button>
+          )}
+          {testStatus.label === 'Teste Concluído' && (
+             <button 
+              className="btn btn-secondary btn-sm"
+              onClick={() => onCompleteTest?.(task.id)}
+            >
+              Concluir
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Menu de Contexto (Botão Direito) */}
-      {contextMenu && (
-        <div 
-          className="fixed z-50 w-48 bg-base-100 border border-base-200 rounded-lg shadow-xl py-1 text-sm animate-in fade-in zoom-in-95 duration-100 overflow-hidden"
-          style={{ top: contextMenu.y, left: contextMenu.x }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className="px-3 py-2 border-b border-base-200 bg-base-50/50">
-            <p className="font-semibold text-xs text-base-content/70">Ações Rápidas</p>
-          </div>
+      {isExpanded && (
+        <div className="pt-4 mt-4 border-t border-base-300/20">
+          <h4 className="font-semibold mb-2 text-base-content">Descrição</h4>
+          <p className="text-base-content/80 whitespace-pre-wrap text-sm">
+            {task.description || 'Esta tarefa não possui uma descrição detalhada.'}
+          </p>
           
-          <button 
-            onClick={handleCopyId}
-            className="w-full text-left px-3 py-2 hover:bg-base-200 flex items-center gap-2 transition-colors text-base-content"
-          >
-            <Copy size={14} className="text-base-content/60" />
-            <span>Copiar ID</span>
-          </button>
-
-          {onEdit && (
-            <button 
-              onClick={(e) => { e.stopPropagation(); onEdit(task); setContextMenu(null); }}
-              className="w-full text-left px-3 py-2 hover:bg-base-200 flex items-center gap-2 transition-colors text-base-content"
-            >
-              <Edit2 size={14} className="text-base-content/60" />
-              <span>Editar</span>
-            </button>
-          )}
-
-          {onDelete && (
-            <button 
-              onClick={(e) => { e.stopPropagation(); onDelete(task.id); setContextMenu(null); }}
-              className="w-full text-left px-3 py-2 hover:bg-error/10 text-error flex items-center gap-2 transition-colors"
-            >
-              <Trash2 size={14} />
-              <span>Excluir</span>
-            </button>
-          )}
+          <div className="mt-4">
+             <h4 className="font-semibold mb-2 text-base-content">Casos de Teste ({testMetrics.total})</h4>
+             {/* Você pode renderizar a lista de casos de teste aqui */}
+             <ul className="space-y-1 text-sm list-disc list-inside">
+                {task.testCases.map(tc => <li key={tc.id} className="text-base-content/80">{tc.description} - <strong>{tc.status}</strong></li>)}
+             </ul> 
+          </div>
         </div>
       )}
-    </div>
+    </Card>
   );
 };
