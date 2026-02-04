@@ -246,7 +246,7 @@ const App: React.FC = () => {
                         },
                     }}
                 />
-                <div className="relative z-[100]">
+                <div className="relative z-">
                     <Header 
                         onProjectImported={handleImportJiraProject}
                         onOpenSettings={() => setShowSettings(true)}
@@ -311,6 +311,7 @@ const App: React.FC = () => {
                                 onCreateProject={handleCreateProject}
                                 onDeleteProject={handleDeleteProject}
                                 onComparisonClick={() => setShowProjectComparison(true)}
+                                onSyncSupabase={handleSyncSupabase}
                             />
                         </Suspense>
                     )}
@@ -318,7 +319,7 @@ const App: React.FC = () => {
 
                 {/* Modal de Configurações - Agora em uma camada isolada e superior */}
                 {showSettings && (
-                    <div className="fixed inset-0 z-[999] bg-base-content/30 backdrop-blur-sm animate-in fade-in-20" aria-modal="true" role="dialog">
+                    <div className="fixed inset-0 z- bg-base-content/30 backdrop-blur-sm animate-in fade-in-20" aria-modal="true" role="dialog">
                         <Suspense fallback={<div className="w-full h-full flex items-center justify-center"><Spinner /></div>}>
                             <SettingsView 
                                 onClose={() => setShowSettings(false)}

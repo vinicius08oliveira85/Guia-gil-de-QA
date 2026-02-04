@@ -36,6 +36,8 @@ interface QADashboardProps {
   onUpdateProject?: (project: Project) => void;
   /** Callback para navegar entre abas */
   onNavigateToTab?: (tabId: string) => void;
+  /** Callback para abrir configurações */
+  onOpenSettings?: () => void;
 }
 
 /**
