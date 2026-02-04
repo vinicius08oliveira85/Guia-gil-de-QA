@@ -46,9 +46,9 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClose, onProjectIm
     ];
 
     return (
-        <div className="fixed inset-0 flex flex-col bg-base-100 z-[9999]">
+        <div className="fixed inset-0 flex flex-col bg-base-100 z-[9999] pointer-events-auto">
             {/* Header melhorado */}
-            <div className="sticky top-0 z-50 border-b border-base-300 bg-base-100/95 backdrop-blur-sm">
+            <div className="sticky top-0 z-[10000] border-b border-base-300 bg-base-100/95 backdrop-blur-sm">
                 <div className="container mx-auto px-4 sm:px-6 py-6">
                     <div className="flex flex-col gap-6">
                         {/* Header com título e subtítulo */}
