@@ -121,6 +121,17 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
     };
   }, [trends]);
 
+  // Helper para alternar filtro de bugs
+  const toggleBugFilter = () => {
+    setDashboardFilters(prev => {
+      const isBugOnly = prev.taskType?.length === 1 && prev.taskType[0] === 'Bug';
+      return {
+        ...prev,
+        taskType: isBugOnly ? [] : ['Bug']
+      };
+    });
+  };
+
   // Contar estratégias de teste únicas
   const totalStrategies = useMemo(() => {
     const strategies = new Set<string>();
@@ -276,6 +287,19 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
             </p>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
+            <button
+              type="button"
+              onClick={toggleBugFilter}
+              className={`btn btn-sm rounded-full flex items-center gap-1.5 ${
+                dashboardFilters.taskType?.length === 1 && dashboardFilters.taskType[0] === 'Bug'
+                  ? 'btn-error text-white' 
+                  : 'btn-outline hover:border-error hover:text-error'
+              }`}
+              title="Filtrar apenas Bugs"
+            >
+              <AlertCircle className="w-4 h-4" aria-hidden="true" />
+              <span>Bugs</span>
+            </button>
             <button
               type="button"
               onClick={() => setShowFilters(true)}

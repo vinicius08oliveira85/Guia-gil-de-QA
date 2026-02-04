@@ -1383,7 +1383,8 @@ export const JiraTaskItem: React.FC<{
             <div style={indentationStyle} className="py-1">
                 <div
                     className={[
-                        'relative overflow-hidden rounded-[var(--rounded-box)] border border-base-300 bg-base-100',
+                        'relative overflow-hidden rounded-[var(--rounded-box)] border bg-base-100',
+                        task.type === 'Bug' && !isSelected ? 'border-error/60 shadow-sm shadow-error/5' : 'border-base-300',
                         'transition-all duration-200 ease-in-out',
                         activeTaskId === task.id ? 'ring-2 ring-primary/40 shadow-lg' : '',
                         isSelected ? 'bg-primary/5 border-primary/40 ring-1 ring-primary/30' : '',
