@@ -246,10 +246,12 @@ const App: React.FC = () => {
                         },
                     }}
                 />
-                <Header 
-                    onProjectImported={handleImportJiraProject}
-                    onOpenSettings={() => setShowSettings(true)}
-                />
+                <div className="relative z-[100]">
+                    <Header 
+                        onProjectImported={handleImportJiraProject}
+                        onOpenSettings={() => setShowSettings(true)}
+                    />
+                </div>
                 {showSearch && (
                     <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/30 backdrop-blur pt-20 p-4">
                         <div className="w-full max-w-2xl">
