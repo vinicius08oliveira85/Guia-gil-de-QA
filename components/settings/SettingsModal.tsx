@@ -1,5 +1,5 @@
 import React from 'react';
-import { Modal } from './Modal'; // Componente base de modal existente no projeto
+import Modal from './Modal';
 
 interface SettingsModalProps {
   isOpen: boolean;
