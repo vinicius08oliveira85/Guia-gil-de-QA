@@ -2,26 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { ChevronDown, ChevronUp, Play, Check, X, Pause } from 'lucide-react';
 import { Card } from '../common/Card';
 import { Badge } from '../common/Badge';
-
-// Assumindo que seus tipos estão definidos em um arquivo como 'types.ts'
-// import { JiraTask } from '../../types';
-
-// Definição de tipos para o exemplo, caso não existam.
-// O ideal é que venham de um arquivo central de tipos.
-interface TestCase {
-  id: string;
-  status: 'Not Run' | 'Passed' | 'Failed' | 'Blocked';
-  description?: string;
-}
-
-interface JiraTask {
-  id: string;
-  title: string;
-  description: string;
-  type: 'Epic' | 'História' | 'Tarefa' | 'Bug';
-  status: 'To Do' | 'In Progress' | 'Done' | 'Blocked';
-  testCases: TestCase[];
-}
+import { JiraTask } from '../../types';
 
 interface TaskCardProps {
   task: JiraTask;
