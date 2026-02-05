@@ -538,4 +538,4 @@ export const ProjectsDashboard: React.FC<{
             </div>
         </div>
     );
-}
+};

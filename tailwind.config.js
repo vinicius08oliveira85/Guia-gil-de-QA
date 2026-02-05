@@ -130,6 +130,8 @@ export default {
   },
   plugins: [
     require('daisyui'),
+    require('tailwindcss-animate'),
+    require('tailwind-scrollbar'),
   ],
   daisyui: {
     themes: [
@@ -176,4 +178,3 @@ export default {
     themeRoot: ":root",
   },
 }
-
