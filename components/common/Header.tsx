@@ -7,8 +7,6 @@ import { getActiveColorForTheme } from '../../utils/expandableTabsColors';
 import { Settings, GraduationCap, Bell, Moon, Sun, Heart, Monitor, User, LogOut, Sliders } from 'lucide-react';
 import { Project } from '../../types';
 import { getUnreadCount } from '../../utils/notificationService';
-import { NavigationMenu } from './NavigationMenu';
-import { useProjectsStore } from '../../store/projectsStore';
 
 interface HeaderProps {
     onProjectImported?: (project: Project) => void;
@@ -19,7 +17,6 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({ onProjectImported: _onProjectImported, onOpenSettings, onNavigate }) => {
     const { theme, toggleTheme, isOnlyLightSupported } = useTheme();
     const { isBeginnerMode, toggleBeginnerMode } = useBeginnerMode();
-    const { projects, selectProject, selectedProjectId } = useProjectsStore();
     const [notificationUnreadCount, setNotificationUnreadCount] = useState(0);
     const [showNotificationDropdown, setShowNotificationDropdown] = useState(false);
     const [menuAberto, setMenuAberto] = useState(false);
@@ -102,30 +99,6 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported: _onProjectImp
 
     const activeColor = getActiveColorForTheme(theme);
 
-    // Itens de navegação principais
-    const navItems = [
-        { 
-            id: 'dashboard', 
-            label: 'Dashboard', 
-            icon: '📊', 
-            onClick: () => {
-                selectProject(null);
-                onNavigate?.('dashboard');
-            } 
-        },
-        { 
-            id: 'projects', 
-            label: 'Projetos', 
-            icon: '📁', 
-            onClick: () => {
-                selectProject(null);
-                onNavigate?.('projects');
-            },
-            badge: projects.length
-        },
-        { id: 'glossary', label: 'Glossário', icon: '📚', onClick: () => onNavigate?.('glossary') },
-    ];
-
     return (
         <header
             className="sticky top-0 z-30 border-b border-base-300 bg-base-100/80 backdrop-blur"
@@ -149,7 +122,7 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported: _onProjectImp
                     </div>
                 </div>
                 <div className="flex items-center justify-end gap-1.5 sm:gap-2 relative">
-                    <NavigationMenu items={navItems} currentPath={selectedProjectId ? 'project' : 'dashboard'} />
+                    <nav className="flex items-center gap-2"></nav>
                     
                     {/* Container Relativo para segurar o menu no lugar certo */}
                     <div className="relative">
