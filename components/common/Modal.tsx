@@ -1,12 +1,13 @@
 
 import React, { useEffect } from 'react';
+import { X } from 'lucide-react';
 
 interface ModalProps {
     isOpen: boolean;
     onClose: () => void;
     title: React.ReactNode;
     children: React.ReactNode;
-    size?: 'sm' | 'md' | 'lg' | 'xl' | '5xl' | 'full';
+    size?: 'sm' | 'md' | 'lg' | 'xl' | '5xl' | '6xl' | 'full';
     maxHeight?: string;
 }
 
@@ -71,12 +72,13 @@ export const Modal: React.FC<ModalProps> = ({
         lg: 'w-full max-w-[95vw] md:max-w-2xl',
         xl: 'w-full max-w-[95vw] md:max-w-4xl',
         '5xl': 'w-[90%] max-w-5xl',
+        '6xl': 'w-full max-w-6xl',
         full: 'w-full max-w-[95vw]'
     };
 
     return (
         <div 
-            className="fixed top-0 left-0 w-full h-full z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-opacity duration-200"
+            className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm transition-opacity duration-200"
             onClick={onClose}
             role="dialog"
             aria-modal="true"
@@ -84,16 +86,24 @@ export const Modal: React.FC<ModalProps> = ({
         >
             <div 
                 id="modal-content"
-                className={`${sizeClasses[size]} flex flex-col overflow-hidden animate-fade-in shadow-2xl border border-base-300 bg-base-100 rounded-[var(--rounded-box)]`}
+                className={`${sizeClasses[size]} flex flex-col overflow-hidden animate-fade-in shadow-2xl bg-base-100 rounded-2xl relative`}
                 onClick={(e) => e.stopPropagation()}
                 tabIndex={-1}
                 style={{ 
                     maxHeight: maxHeight || '90vh'
                 }}
             >
+                <button 
+                    onClick={onClose} 
+                    className="absolute top-4 right-4 btn btn-sm btn-circle btn-ghost z-10"
+                    aria-label="Fechar modal"
+                >
+                    <X size={20} />
+                </button>
+
                 {/* Title Bar - Fixed */}
-                <div className="flex items-center justify-between gap-3 px-3 sm:px-5 py-3 sm:py-4 border-b border-base-300 flex-shrink-0">
-                    <div id="modal-title" className="min-w-0 flex-1">
+                <div className="flex items-center justify-between gap-3 px-6 py-4 border-b border-base-300 flex-shrink-0">
+                    <div id="modal-title" className="min-w-0 flex-1 pr-8">
                         {typeof title === 'string' ? (
                             <h2 className="text-lg sm:text-xl font-semibold text-base-content truncate">
                                 {title}
@@ -104,21 +114,10 @@ export const Modal: React.FC<ModalProps> = ({
                             </div>
                         )}
                     </div>
-                    <button 
-                        onClick={onClose} 
-                        className="btn btn-ghost btn-sm flex-shrink-0"
-                        aria-label="Fechar modal"
-                        aria-describedby="modal-title"
-                        type="button"
-                    >
-                        &times;
-                    </button>
                 </div>
                 {/* Content - Scrollable */}
-                <div className="px-3 sm:px-5 py-3 sm:py-4 flex-1 overflow-y-auto flex flex-col min-h-0 overscroll-contain">
-                  <div className="flex-1 min-h-0">
+                <div className="flex-1 overflow-y-auto overscroll-contain">
                     {children}
-                  </div>
                 </div>
             </div>
         </div>

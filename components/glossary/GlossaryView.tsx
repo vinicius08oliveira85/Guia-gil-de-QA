@@ -56,7 +56,7 @@ export const GlossaryView: React.FC = () => {
     };
 
     return (
-        <div className="container mx-auto p-4 sm:p-6 md:p-8">
+        <div className="p-4 sm:p-6 md:p-8">
             {/* Header v0-like */}
             <div className="flex flex-col gap-4 mb-8">
                 <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
