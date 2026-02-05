@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { NotificationBell } from './NotificationBell';
 import { ExpandableTabs } from './ExpandableTabs';
 import { useTheme } from '../../hooks/useTheme';
-import { useBeginnerMode } from '../../hooks/useBeginnerMode';
 import { getActiveColorForTheme } from '../../utils/expandableTabsColors';
-import { Settings, GraduationCap, Bell, Moon, Sun, Heart, Monitor, User, LogOut, Sliders } from 'lucide-react';
+import { Settings, Book, Bell, Moon, Sun, Heart, Monitor, User, LogOut, Sliders } from 'lucide-react';
 import { Project } from '../../types';
 import { getUnreadCount } from '../../utils/notificationService';
+import { Modal } from './Modal';
+import { GlossaryView } from '../glossary/GlossaryView';
 
 interface HeaderProps {
     onProjectImported?: (project: Project) => void;
@@ -16,10 +17,10 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ onProjectImported: _onProjectImported, onOpenSettings, onNavigate }) => {
     const { theme, toggleTheme, isOnlyLightSupported } = useTheme();
-    const { isBeginnerMode, toggleBeginnerMode } = useBeginnerMode();
     const [notificationUnreadCount, setNotificationUnreadCount] = useState(0);
     const [showNotificationDropdown, setShowNotificationDropdown] = useState(false);
     const [menuAberto, setMenuAberto] = useState(false);
+    const [isGlossaryOpen, setIsGlossaryOpen] = useState(false);
 
     // Atualizar contador de notificações não lidas
     useEffect(() => {
@@ -77,8 +78,8 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported: _onProjectImp
 
         // Usar o ID do tab para uma lógica mais robusta e legível
         switch (id) {
-            case 'beginner-mode':
-                toggleBeginnerMode();
+            case 'glossary':
+                setIsGlossaryOpen(true);
                 break;
             case 'notifications':
                 setShowNotificationDropdown(true);
@@ -92,7 +93,7 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported: _onProjectImp
     };
 
     const tabs = [
-        { id: 'beginner-mode', title: isBeginnerMode ? 'Modo Iniciante' : 'Modo Avançado', icon: GraduationCap },
+        { id: 'glossary', title: 'Glossário', icon: Book },
         { id: 'notifications', title: 'Notificações', icon: Bell },
         { id: 'theme', title: getThemeTitle(), icon: getThemeIcon() },
     ];
@@ -193,6 +194,16 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported: _onProjectImp
                             </div>
                         </>
                     )}
+
+                    {/* Modal do Glossário */}
+                    <Modal
+                        isOpen={isGlossaryOpen}
+                        onClose={() => setIsGlossaryOpen(false)}
+                        title="Glossário"
+                        size="lg"
+                    >
+                        <GlossaryView />
+                    </Modal>
 
                     {/* Badge para temas ainda não suportados (leve-saude, auto) */}
                     {isOnlyLightSupported && (
