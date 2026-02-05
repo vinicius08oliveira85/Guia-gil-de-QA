@@ -72,8 +72,9 @@ import { getTaskStatusCategory } from '../../utils/jiraStatusCategorizer';
 export const TasksView: React.FC<{ 
     project: Project, 
     onUpdateProject: (project: Project) => void,
-    onNavigateToTab?: (tabId: string) => void
-}> = ({ project, onUpdateProject, onNavigateToTab }) => {
+    onNavigateToTab?: (tabId: string) => void,
+    onOpenTask?: (task: JiraTask) => void,
+}> = ({ project, onUpdateProject, onNavigateToTab, onOpenTask }) => {
     const [generatingTestsTaskId, setGeneratingTestsTaskId] = useState<string | null>(null);
     const [generatingBddTaskId, setGeneratingBddTaskId] = useState<string | null>(null);
     const [generatingAllTaskId, setGeneratingAllTaskId] = useState<string | null>(null);
@@ -140,7 +141,6 @@ export const TasksView: React.FC<{
         message: string;
     } | null>(null);
     const [showFailedTestsReport, setShowFailedTestsReport] = useState(false);
-    const [modalTask, setModalTask] = useState<JiraTask | null>(null);
     const metrics = useProjectMetrics(project);
 
     // Função helper para adicionar timeout às chamadas de IA
@@ -1293,7 +1293,7 @@ export const TasksView: React.FC<{
                     onDeleteTestCase={handleDeleteTestCase}
                     project={project}
                     onUpdateProject={onUpdateProject}
-                    onOpenModal={setModalTask}
+                    onOpenModal={onOpenTask}
                 >
                     {task.children.length > 0 && renderTaskTree(task.children, level + 1, globalIndex + 1)}
                 </JiraTaskItem>
@@ -1854,58 +1854,6 @@ export const TasksView: React.FC<{
             onClose={() => setShowFailedTestsReport(false)}
             project={project}
         />
-
-        {/* Modal de Detalhes da Tarefa */}
-        {modalTask && (() => {
-            // Encontrar a tarefa completa com children
-            const findTaskWithChildren = (tasks: JiraTask[], taskId: string): TaskWithChildren | null => {
-                for (const t of tasks) {
-                    if (t.id === taskId) {
-                        const children = tasks.filter(child => child.parentId === taskId);
-                        return {
-                            ...t,
-                            children: children.map(child => findTaskWithChildren(tasks, child.id) || { ...child, children: [] })
-                        } as TaskWithChildren;
-                    }
-                }
-                return null;
-            };
-
-            const taskWithChildren = findTaskWithChildren(project.tasks, modalTask.id);
-            if (!taskWithChildren) return null;
-
-            return (
-                <TaskDetailsModal
-                    task={taskWithChildren}
-                    isOpen={!!modalTask}
-                    onClose={() => setModalTask(null)}
-                    onTestCaseStatusChange={(testCaseId, status) => handleTestCaseStatusChange(modalTask.id, testCaseId, status)}
-                    onToggleTestCaseAutomated={(testCaseId, isAutomated) => handleToggleTestCaseAutomated(modalTask.id, testCaseId, isAutomated)}
-                    onExecutedStrategyChange={(testCaseId, strategies) => handleExecutedStrategyChange(modalTask.id, testCaseId, strategies)}
-                    onTaskToolsChange={(tools) => handleTaskToolsChange(modalTask.id, tools)}
-                    onTestCaseToolsChange={(testCaseId, tools) => handleTestCaseToolsChange(modalTask.id, testCaseId, tools)}
-                    onStrategyExecutedChange={(strategyIndex, executed) => handleStrategyExecutedChange(modalTask.id, strategyIndex, executed)}
-                    onStrategyToolsChange={(strategyIndex, tools) => handleStrategyToolsChange(modalTask.id, strategyIndex, tools)}
-                    onGenerateTests={handleGenerateTests}
-                    isGenerating={generatingTestsTaskId === modalTask.id}
-                    onGenerateBddScenarios={handleGenerateBddScenarios}
-                    isGeneratingBdd={generatingBddTaskId === modalTask.id}
-                    onGenerateAll={handleGenerateAll}
-                    isGeneratingAll={generatingAllTaskId === modalTask.id}
-                    onSaveBddScenario={handleSaveBddScenario}
-                    onDeleteBddScenario={handleDeleteBddScenario}
-                    onAddComment={(content) => handleAddComment(modalTask.id, content)}
-                    onEditComment={(commentId, content) => handleEditComment(modalTask.id, commentId, content)}
-                    onDeleteComment={(commentId) => handleDeleteComment(modalTask.id, commentId)}
-                    onEditTestCase={handleOpenTestCaseEditor}
-                    onDeleteTestCase={handleDeleteTestCase}
-                    project={project}
-                    onUpdateProject={onUpdateProject}
-                    onOpenTask={setModalTask}
-                />
-            );
-        })()}
-
         </>
     );
 };

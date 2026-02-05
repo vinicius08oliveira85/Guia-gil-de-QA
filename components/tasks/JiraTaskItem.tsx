@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { Maximize2 } from 'lucide-react';
 import { JiraTask, BddScenario, TestCaseDetailLevel, TeamRole, Project, TestCase, TaskTestStatus } from '../../types';
 import { Spinner } from '../common/Spinner';
 import { TaskTypeIcon, TaskStatusIcon, StartTestIcon, CompleteTestIcon, ToDoTestIcon, PlusIcon, EditIcon, TrashIcon, ChevronDownIcon, RefreshIcon } from '../common/Icons';
@@ -1383,7 +1384,7 @@ export const JiraTaskItem: React.FC<{
             <div style={indentationStyle} className="py-1">
                 <div
                     className={[
-                        'relative overflow-hidden rounded-[var(--rounded-box)] border bg-base-100',
+                        'relative overflow-hidden rounded-[var(--rounded-box)] border bg-base-100 group',
                         task.type === 'Bug' && !isSelected ? 'border-error/60 shadow-sm shadow-error/5' : 'border-base-300',
                         'transition-all duration-200 ease-in-out',
                         activeTaskId === task.id ? 'ring-2 ring-primary/40 shadow-lg' : '',
@@ -1397,6 +1398,20 @@ export const JiraTaskItem: React.FC<{
                     aria-label={onOpenModal ? `Abrir detalhes da tarefa ${task.id}: ${task.title}` : undefined}
                 >
                     <div aria-hidden="true" className="absolute left-0 top-0 h-full w-1" style={typeAccent} />
+
+                    {/* Botão de expansão (Seta) */}
+                    {onOpenModal && (
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation(); // Evita que o clique dispare outros eventos do card
+                                onOpenModal(task);
+                            }}
+                            className="absolute top-2 right-2 p-1.5 rounded-lg bg-primary/10 text-primary opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-primary hover:text-white z-20"
+                            title="Abrir detalhes da tarefa"
+                        >
+                            <Maximize2 size={16} />
+                        </button>
+                    )}
 
                     <div className="p-3 md:p-4">
                         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">

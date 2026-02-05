@@ -1,5 +1,5 @@
 import React, { useState, useEffect, Suspense, useRef } from 'react';
-import { Project } from '../types';
+import { Project, JiraTask } from '../types';
 import { useProjectMetrics } from '../hooks/useProjectMetrics';
 import { TasksView } from './tasks/TasksView';
 import { DocumentsView } from './DocumentsView';
@@ -14,6 +14,7 @@ import { isSupabaseAvailable } from '../services/supabaseService';
 import { useAutoSave } from '../hooks/useAutoSave';
 import toast from 'react-hot-toast';
 import { Spinner } from './common/Spinner';
+import { Modal } from './common/Modal';
 
 export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project: Project) => void; onBack: () => void; }> = ({ project, onUpdateProject, onBack }) => {
     const [activeTab, setActiveTab] = useState('dashboard');
@@ -22,6 +23,8 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
     const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
     const { saveProjectToSupabase, getSelectedProject } = useProjectsStore();
     const supabaseAvailable = isSupabaseAvailable();
+    const [selectedTask, setSelectedTask] = useState<JiraTask | null>(null);
+    const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
     
     // IMPORTANTE: Sempre usar o projeto mais recente do store em vez de apenas o prop
     // Isso garante que temos a versão mais atualizada, especialmente após sincronizações
@@ -142,6 +145,11 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
 
     const handleTabClick = (tabId: string) => {
         setActiveTab(tabId);
+    };
+
+    const handleOpenTask = (task: JiraTask) => {
+        setSelectedTask(task);
+        setIsTaskModalOpen(true);
     };
 
     // Breadcrumbs items baseado na aba ativa
@@ -286,6 +294,7 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                                     project={currentProject} 
                                     onUpdateProject={onUpdateProject}
                                     onNavigateToTab={(tabId) => handleTabClick(tabId)}
+                                    onOpenTask={handleOpenTask}
                                 />
                             </Suspense>
                             </section>
@@ -297,6 +306,7 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                                     project={currentProject} 
                                     onUpdateProject={onUpdateProject}
                                     onNavigateToTab={(tabId) => handleTabClick(tabId)}
+                                    onOpenTask={handleOpenTask}
                                 />
                             </Suspense>
                             </section>
@@ -312,6 +322,56 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                 </div>
             </div>
             {isPrinting && <PrintableReport project={currentProject} metrics={metrics} />}
+
+            <Modal 
+                isOpen={isTaskModalOpen} 
+                onClose={() => setIsTaskModalOpen(false)}
+                title={
+                    <div className="flex items-center gap-2">
+                        <span className="text-primary">#{selectedTask?.id}</span>
+                        <span>{selectedTask?.title}</span>
+                    </div>
+                }
+                size="3xl"
+            >
+                {selectedTask && (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="md:col-span-2 space-y-6">
+                            <section>
+                                <h5 className="text-xs font-bold opacity-50 uppercase mb-2">Descrição da Task</h5>
+                                <p className="bg-base-200/50 p-4 rounded-lg border border-base-300">
+                                    {selectedTask.description || 'Sem descrição.'}
+                                </p>
+                            </section>
+                            
+                            {/* Adicione um resumo dos testes se houver */}
+                            {selectedTask.testCases && (
+                                <section>
+                                    <h5 className="text-xs font-bold opacity-50 uppercase mb-2">Cobertura de Testes</h5>
+                                    <div className="flex gap-2">
+                                        <div className="badge badge-success">{selectedTask.testCases.filter(t => t.status === 'Passed').length} Passou</div>
+                                        <div className="badge badge-error">{selectedTask.testCases.filter(t => t.status === 'Failed').length} Falhou</div>
+                                    </div>
+                                </section>
+                            )}
+                        </div>
+                        
+                        {/* Coluna Lateral */}
+                        <aside className="space-y-4">
+                             <div className="stats stats-vertical shadow bg-base-200/50 w-full">
+                                <div className="stat">
+                                    <div className="stat-title text-xs">Prioridade</div>
+                                    <div className="stat-value text-lg uppercase">{selectedTask.priority || 'Média'}</div>
+                                </div>
+                                <div className="stat">
+                                    <div className="stat-title text-xs">Tipo</div>
+                                    <div className="stat-value text-lg">{selectedTask.type}</div>
+                                </div>
+                            </div>
+                        </aside>
+                    </div>
+                )}
+            </Modal>
         </>
     );
 };
