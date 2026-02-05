@@ -6,7 +6,7 @@ interface ModalProps {
     onClose: () => void;
     title: React.ReactNode;
     children: React.ReactNode;
-    size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
+    size?: 'sm' | 'md' | 'lg' | 'xl' | '5xl' | 'full';
     maxHeight?: string;
 }
 
@@ -66,16 +66,17 @@ export const Modal: React.FC<ModalProps> = ({
     if (!isOpen) return null;
 
     const sizeClasses = {
-        sm: 'max-w-[95vw] md:max-w-md',
-        md: 'max-w-[95vw] md:max-w-lg',
-        lg: 'max-w-[95vw] md:max-w-2xl',
-        xl: 'max-w-[95vw] md:max-w-4xl',
-        full: 'max-w-[95vw]'
+        sm: 'w-full max-w-[95vw] md:max-w-md',
+        md: 'w-full max-w-[95vw] md:max-w-lg',
+        lg: 'w-full max-w-[95vw] md:max-w-2xl',
+        xl: 'w-full max-w-[95vw] md:max-w-4xl',
+        '5xl': 'w-[90%] max-w-5xl',
+        full: 'w-full max-w-[95vw]'
     };
 
     return (
         <div 
-            className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-base-100/60 backdrop-blur-sm transition-opacity duration-200"
+            className="fixed top-0 left-0 w-full h-full z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-opacity duration-200"
             onClick={onClose}
             role="dialog"
             aria-modal="true"
@@ -83,11 +84,11 @@ export const Modal: React.FC<ModalProps> = ({
         >
             <div 
                 id="modal-content"
-                className={`w-full ${sizeClasses[size]} flex flex-col overflow-hidden animate-fade-in shadow-2xl border border-base-300 bg-base-100 rounded-[var(--rounded-box)]`}
+                className={`${sizeClasses[size]} flex flex-col overflow-hidden animate-fade-in shadow-2xl border border-base-300 bg-base-100 rounded-[var(--rounded-box)]`}
                 onClick={(e) => e.stopPropagation()}
                 tabIndex={-1}
                 style={{ 
-                    maxHeight: maxHeight || `calc(100vh - 1rem)`
+                    maxHeight: maxHeight || '90vh'
                 }}
             >
                 {/* Title Bar - Fixed */}

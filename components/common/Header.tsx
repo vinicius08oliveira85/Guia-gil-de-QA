@@ -200,7 +200,7 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported: _onProjectImp
                         isOpen={isGlossaryOpen}
                         onClose={() => setIsGlossaryOpen(false)}
                         title="Glossário"
-                        size="xl"
+                        size="5xl"
                     >
                         <GlossaryView />
                     </Modal>
