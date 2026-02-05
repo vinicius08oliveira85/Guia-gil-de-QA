@@ -3,7 +3,7 @@ import { NotificationBell } from './NotificationBell';
 import { ExpandableTabs } from './ExpandableTabs';
 import { useTheme } from '../../hooks/useTheme';
 import { getActiveColorForTheme } from '../../utils/expandableTabsColors';
-import { Settings, Book, Bell, Moon, Sun, Heart, Monitor, User, LogOut, Sliders } from 'lucide-react';
+import { Settings, BookOpen, Bell, Moon, Sun, Heart, Monitor, User, LogOut, Sliders } from 'lucide-react';
 import { Project } from '../../types';
 import { getUnreadCount } from '../../utils/notificationService';
 import { Modal } from './Modal';
@@ -93,7 +93,7 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported: _onProjectImp
     };
 
     const tabs = [
-        { id: 'glossary', title: 'Glossário', icon: Book },
+        { id: 'glossary', title: 'Glossário', icon: BookOpen },
         { id: 'notifications', title: 'Notificações', icon: Bell },
         { id: 'theme', title: getThemeTitle(), icon: getThemeIcon() },
     ];
@@ -200,7 +200,7 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported: _onProjectImp
                         isOpen={isGlossaryOpen}
                         onClose={() => setIsGlossaryOpen(false)}
                         title="Glossário"
-                        size="lg"
+                        size="xl"
                     >
                         <GlossaryView />
                     </Modal>

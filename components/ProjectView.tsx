@@ -3,7 +3,6 @@ import { Project } from '../types';
 import { useProjectMetrics } from '../hooks/useProjectMetrics';
 import { TasksView } from './tasks/TasksView';
 import { DocumentsView } from './DocumentsView';
-import { GlossaryView } from './glossary/GlossaryView';
 import { PrintableReport } from './PrintableReport';
 import { LoadingSkeleton } from './common/LoadingSkeleton';
 import { QADashboard } from './dashboard/QADashboard';
@@ -139,7 +138,6 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
         { id: 'dashboard', label: 'Dashboard' },
         { id: 'tasks', label: 'Tarefas & Testes', 'data-onboarding': 'tasks-tab', 'data-tour': 'tasks-tab' },
         { id: 'documents', label: 'Documentos' },
-        { id: 'glossary', label: 'Glossário' },
     ];
 
     const handleTabClick = (tabId: string) => {
@@ -156,8 +154,7 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
         const tabLabels: Record<string, string> = {
             dashboard: 'Dashboard',
             tasks: 'Tarefas & Testes',
-            documents: 'Documentos',
-            glossary: 'Glossário'
+            documents: 'Documentos'
         };
 
         if (activeTab !== 'dashboard') {
@@ -308,13 +305,6 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                             <section id="tab-panel-documents" role="tabpanel" aria-labelledby="tab-documents">
                             <Suspense fallback={<LoadingSkeleton variant="card" count={3} />}>
                                 <DocumentsView project={currentProject} onUpdateProject={onUpdateProject} />
-                            </Suspense>
-                            </section>
-                        )}
-                        {activeTab === 'glossary' && (
-                            <section id="tab-panel-glossary" role="tabpanel" aria-labelledby="tab-glossary">
-                            <Suspense fallback={<LoadingSkeleton variant="card" count={2} />}>
-                                <GlossaryView />
                             </Suspense>
                             </section>
                         )}
