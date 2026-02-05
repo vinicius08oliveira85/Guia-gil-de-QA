@@ -5,6 +5,7 @@ import { cn } from "../../utils/cn";
 import { LucideIcon } from "lucide-react";
 
 interface Tab {
+  id: string;
   title: string;
   icon: LucideIcon;
   type?: never;
@@ -22,7 +23,7 @@ interface ExpandableTabsProps {
   tabs: TabItem[];
   className?: string;
   activeColor?: string;
-  onChange?: (index: number | null) => void;
+  onChange?: (id: string | null) => void;
 }
 
 const buttonVariants = {
@@ -74,9 +75,9 @@ export const ExpandableTabs: React.FC<ExpandableTabsProps> = ({
     onChange?.(null);
   });
 
-  const handleSelect = (index: number) => {
+  const handleSelect = (index: number, id: string) => {
     setSelected(index);
-    onChange?.(index);
+    onChange?.(id);
   };
 
   const Separator = () => (
@@ -104,7 +105,7 @@ export const ExpandableTabs: React.FC<ExpandableTabsProps> = ({
             initial={false}
             animate="animate"
             custom={selected === index}
-            onClick={() => handleSelect(index)}
+            onClick={() => handleSelect(index, tab.id)}
             transition={transition}
             className={cn(
               "relative flex items-center rounded-full px-4 py-2 text-sm font-semibold transition-colors duration-300",
@@ -139,4 +140,3 @@ export const ExpandableTabs: React.FC<ExpandableTabsProps> = ({
 };
 
 ExpandableTabs.displayName = 'ExpandableTabs';
-
