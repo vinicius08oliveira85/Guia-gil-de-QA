@@ -7,8 +7,8 @@ interface ModalProps {
     onClose: () => void;
     title: React.ReactNode;
     children: React.ReactNode;
-    size?: 'sm' | 'md' | 'lg' | 'xl' | '5xl' | '6xl' | 'full';
-    maxHeight?: string;
+    footer?: React.ReactNode;
+    size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl' | '6xl' | '7xl';
 }
 
 export const Modal: React.FC<ModalProps> = ({ 
@@ -17,7 +17,7 @@ export const Modal: React.FC<ModalProps> = ({
     title, 
     children, 
     size = 'md',
-    maxHeight = '95vh'
+    footer
 }) => {
     // Fechar com ESC
     useEffect(() => {
@@ -67,18 +67,21 @@ export const Modal: React.FC<ModalProps> = ({
     if (!isOpen) return null;
 
     const sizeClasses = {
-        sm: 'w-full max-w-[95vw] md:max-w-md',
-        md: 'w-full max-w-[95vw] md:max-w-lg',
-        lg: 'w-full max-w-[95vw] md:max-w-2xl',
-        xl: 'w-full max-w-[95vw] md:max-w-4xl',
-        '5xl': 'w-[90%] max-w-5xl',
-        '6xl': 'w-full max-w-6xl',
-        full: 'w-full max-w-[95vw]'
+        sm: 'max-w-sm',
+        md: 'max-w-md',
+        lg: 'max-w-lg',
+        xl: 'max-w-xl',
+        '2xl': 'max-w-2xl',
+        '3xl': 'max-w-3xl',
+        '4xl': 'max-w-4xl',
+        '5xl': 'max-w-5xl',
+        '6xl': 'max-w-6xl',
+        '7xl': 'max-w-7xl',
     };
 
     return (
         <div 
-            className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm transition-opacity duration-200"
+            className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-sm transition-opacity duration-200"
             onClick={onClose}
             role="dialog"
             aria-modal="true"
@@ -86,12 +89,9 @@ export const Modal: React.FC<ModalProps> = ({
         >
             <div 
                 id="modal-content"
-                className={`${sizeClasses[size]} flex flex-col overflow-hidden animate-fade-in shadow-2xl bg-base-100 rounded-2xl relative`}
+                className={`bg-base-100 rounded-2xl shadow-2xl border border-base-300 relative w-full max-h-[90vh] flex flex-col overflow-hidden animate-fade-in ${sizeClasses[size]}`}
                 onClick={(e) => e.stopPropagation()}
                 tabIndex={-1}
-                style={{ 
-                    maxHeight: maxHeight || '90vh'
-                }}
             >
                 <button 
                     onClick={onClose} 
@@ -102,8 +102,8 @@ export const Modal: React.FC<ModalProps> = ({
                 </button>
 
                 {/* Title Bar - Fixed */}
-                <div className="flex items-center justify-between gap-3 px-6 py-4 border-b border-base-300 flex-shrink-0">
-                    <div id="modal-title" className="min-w-0 flex-1 pr-8">
+                <div className="flex items-center justify-between gap-3 p-6 border-b border-base-200 flex-shrink-0">
+                    <div id="modal-title" className="min-w-0 flex-1 pr-8"> {/* pr-8 to avoid overlap with close button */}
                         {typeof title === 'string' ? (
                             <h2 className="text-lg sm:text-xl font-semibold text-base-content truncate">
                                 {title}
@@ -116,9 +116,15 @@ export const Modal: React.FC<ModalProps> = ({
                     </div>
                 </div>
                 {/* Content - Scrollable */}
-                <div className="flex-1 overflow-y-auto overscroll-contain">
+                <div className="flex-1 overflow-y-auto overscroll-contain p-6">
                     {children}
                 </div>
+                {/* Footer - Fixed */}
+                {footer && (
+                    <div className="p-4 border-t border-base-200 bg-base-100/50 flex-shrink-0">
+                        {footer}
+                    </div>
+                )}
             </div>
         </div>
     );

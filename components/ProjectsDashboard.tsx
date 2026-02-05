@@ -209,6 +209,15 @@ export const ProjectsDashboard: React.FC<{
                 onClose={() => setShowMobileActions(false)}
                 title="Ações rápidas"
                 size="sm"
+                footer={
+                    <button
+                        onClick={() => handleMobileAction(() => setIsCreating(true))}
+                        type="button"
+                        className="btn btn-primary w-full"
+                    >
+                        Criar Projeto
+                    </button>
+                }
             >
                 <div className="space-y-2">
                     {quickActions.map(action => (
@@ -216,16 +225,320 @@ export const ProjectsDashboard: React.FC<{
                             key={action.id}
                             onClick={() => handleMobileAction(action.onClick)}
                             type="button"
-                            className="btn btn-outline w-full justify-start gap-3"
+                            className="btn btn-outline w-full justify-start gap-3 text-left"
                         >
-                            <span className="text-lg" aria-hidden="true">{action.icon}</span>
-                            <span>{action.label}</span>
+                            <span className="text-lg flex-shrink-0" aria-hidden="true">{action.icon}</span>
+                            <span className="flex-1 text-base-content">{action.label}</span>
                         </button>
                     ))}
-                    <button
-                        onClick={() => handleMobileAction(() => setIsCreating(true))}
-                        type="button"
-                        className="btn btn-primary w-full"
+                </div>
+            </Modal>
+
+
+            <Modal isOpen={isCreating} onClose={() => {
+                setIsCreating(false);
+                setSelectedTemplate(undefined);
+                setShowTemplates(false);
+            }} title="Criar Novo Projeto" size="xl"
+                footer={
+                    <div className="flex justify-end gap-2">
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setIsCreating(false);
+                                setSelectedTemplate(undefined);
+                                setShowTemplates(false);
+                            }}
+                            className="btn btn-ghost rounded-full"
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            type="button"
+                            onClick={handleCreate}
+                            className="btn btn-primary rounded-full"
+                            disabled={!newName.trim()}
+                        >
+                            {showTemplates ? 'Criar com Template' : 'Criar'}
+                        </button>
+                    </div>
+                }
+            >
+                 <div className="space-y-4">
+                    {!showTemplates ? (
+                        <>
+                            <div>
+                                <button
+                                    onClick={() => setShowTemplates(true)}
+                                    type="button"
+                                    className="w-full rounded-2xl border-2 border-dashed border-base-300 bg-base-100 p-4 text-left transition-colors hover:border-primary/40 hover:bg-base-200/40"
+                                >
+                                    <div className="flex items-start gap-3">
+                                        <span className="text-xl" aria-hidden="true">📋</span>
+                                        <div className="space-y-0.5">
+                                            <p className="font-semibold">Usar Template</p>
+                                            <p className="text-sm text-base-content/70">
+                                                Recomendado para começar mais rápido com um checklist inicial.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </button>
+                            </div>
+
+                            <div className="grid gap-4">
+                                <label className="form-control w-full">
+                                    <div className="label">
+                                        <span className="label-text">Nome do Projeto</span>
+                                    </div>
+                                    <input
+                                        id="proj-name"
+                                        type="text"
+                                        value={newName}
+                                        onChange={e => setNewName(e.target.value)}
+                                        className="input input-bordered w-full"
+                                        placeholder="Ex: E-commerce App"
+                                    />
+                                </label>
+
+                                <label className="form-control w-full">
+                                    <div className="label">
+                                        <span className="label-text">Descrição</span>
+                                    </div>
+                                    <textarea
+                                        id="proj-desc"
+                                        value={newDesc}
+                                        onChange={e => setNewDesc(e.target.value)}
+                                        rows={3}
+                                        className="textarea textarea-bordered w-full"
+                                        placeholder="Breve descrição do projeto..."
+                                    />
+                                </label>
+                            </div>
+                        </>
+                    ) : (
+                        <div className="space-y-4">
+                            <button
+                                type="button"
+                                onClick={() => setShowTemplates(false)}
+                                className="btn btn-ghost btn-sm rounded-full self-start"
+                            >
+                                ← Voltar
+                            </button>
+                            <ProjectTemplateSelector
+                                onSelectTemplate={(templateId) => {
+                                    setSelectedTemplate(templateId);
+                                    setShowTemplates(false);
+                                }}
+                                onClose={() => setShowTemplates(false)}
+                            />
+                            {selectedTemplate && (
+                                <div className="alert alert-success">
+                                    <span>Template selecionado! Preencha os dados abaixo.</span>
+                                </div>
+                            )}
+
+                            <div className="grid gap-4">
+                                <label className="form-control w-full">
+                                    <div className="label">
+                                        <span className="label-text">Nome do Projeto</span>
+                                    </div>
+                                    <input
+                                        id="proj-name-template"
+                                        type="text"
+                                        value={newName}
+                                        onChange={e => setNewName(e.target.value)}
+                                        className="input input-bordered w-full"
+                                    />
+                                </label>
+
+                                <label className="form-control w-full">
+                                    <div className="label">
+                                        <span className="label-text">Descrição</span>
+                                    </div>
+                                    <textarea
+                                        id="proj-desc-template"
+                                        value={newDesc}
+                                        onChange={e => setNewDesc(e.target.value)}
+                                        rows={3}
+                                        className="textarea textarea-bordered w-full"
+                                    />
+                                </label>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </Modal>
+            
+             <ConfirmDialog
+                isOpen={deleteModalState.isOpen}
+                onClose={() => setDeleteModalState({ isOpen: false, project: null })}
+                onConfirm={handleDelete}
+                title={`Excluir "${deleteModalState.project?.name}"`}
+                message="Você tem certeza que deseja excluir este projeto? Todos os dados associados (tarefas, documentos, análises) serão perdidos permanentemente. Esta ação não pode ser desfeita."
+                confirmText="Sim, Excluir"
+                cancelText="Cancelar"
+                variant="danger"
+            />
+
+            <div className="mt-8">
+                {filteredProjects.length > 0 ? (
+                    <motion.div 
+                        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4" 
+                        data-tour="project-list"
+                        initial="hidden"
+                        animate="visible"
+                        variants={{
+                            visible: {
+                                transition: {
+                                    staggerChildren: 0.08,
+                                },
+                            },
+                        }}
+                    >
+                        {filteredProjects.map((p, index) => {
+                            const completedTasks = calculateProgress(p.tasks || []);
+                            const totalTasks = p.tasks?.length || 0;
+                            const tags = p.tags || [];
+                            const progressPercent = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+                            const jiraKey = p.settings?.jiraProjectKey;
+                            const desc = (p.description || '').trim();
+
+                            return (
+                                <motion.div
+                                    key={p.id}
+                                    variants={{
+                                        hidden: { opacity: 0, y: 20, scale: 0.95 },
+                                        visible: { 
+                                            opacity: 1, 
+                                            y: 0, 
+                                            scale: 1,
+                                            transition: {
+                                                duration: 0.3,
+                                                ease: 'easeOut',
+                                            },
+                                        },
+                                    }}
+                                >
+                                    <Card
+                                        variant="elevated"
+                                        hoverable={true}
+                                        onClick={(e) => {
+                                            const target = e.target as HTMLElement;
+                                            if (target.closest('button, a')) {
+                                                return;
+                                            }
+                                            onSelectProject(p.id);
+                                        }}
+                                        role="button"
+                                        tabIndex={0}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter' || e.key === ' ') {
+                                                e.preventDefault();
+                                                onSelectProject(p.id);
+                                            }
+                                        }}
+                                        className="group cursor-pointer relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 flex flex-col h-full overflow-hidden"
+                                    >
+                                        {/* Gradiente sutil no background */}
+                                        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                                        
+                                        <div className="p-5 sm:p-6 flex flex-col gap-3 h-full relative z-10">
+                                            <div className="flex items-start justify-between gap-3">
+                                                <h3 className="text-base sm:text-lg font-semibold leading-snug line-clamp-2 sm:line-clamp-3 pr-10 text-balance group-hover:text-primary transition-colors duration-200">
+                                                    {p.name}
+                                                </h3>
+                                            </div>
+
+                                            <p className="text-sm text-base-content/70 line-clamp-2 min-h-[2.5em]">
+                                                {desc ? desc : (jiraKey ? `Projeto importado do Jira: ${jiraKey}` : 'Sem descrição.')}
+                                            </p>
+
+                                            {tags.length > 0 && (
+                                                <div className="flex flex-wrap gap-1.5">
+                                                    {tags.slice(0, 3).map(tag => (
+                                                        <Badge key={tag} variant="default" size="sm" className="transition-all duration-200 group-hover:bg-primary/10">
+                                                            {tag}
+                                                        </Badge>
+                                                    ))}
+                                                    {tags.length > 3 && (
+                                                        <Badge variant="default" size="sm" className="transition-all duration-200 group-hover:bg-primary/10">
+                                                            +{tags.length - 3}
+                                                        </Badge>
+                                                    )}
+                                                </div>
+                                            )}
+
+                                            <div className="mt-auto pt-4 border-t border-base-300/60 group-hover:border-primary/20 transition-colors duration-200 space-y-2.5">
+                                                <div className="flex items-center justify-between text-xs text-base-content/60">
+                                                    <span className="font-medium">
+                                                        {totalTasks} {totalTasks === 1 ? 'tarefa' : 'tarefas'}
+                                                    </span>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="font-bold text-base-content">{progressPercent}%</span>
+                                                        {jiraKey && (
+                                                            <span className="badge badge-outline badge-sm border-primary/30 text-primary/80 bg-primary/5 group-hover:bg-primary/10 group-hover:border-primary/50 transition-all duration-200">
+                                                                Jira: {jiraKey}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                <div className="relative">
+                                                    <ProgressIndicator
+                                                        value={completedTasks}
+                                                        max={totalTasks}
+                                                        size="sm"
+                                                        color="blue"
+                                                        showPercentage={false}
+                                                    />
+                                                    {/* Gradiente no progress bar */}
+                                                    <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary/90 to-primary/80 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" 
+                                                         style={{ width: `${progressPercent}%`, height: '100%' }} />
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <button
+                                            type="button"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                e.preventDefault();
+                                                openDeleteModal(p, e);
+                                            }}
+                                            className="btn btn-ghost btn-xs btn-circle absolute top-3 right-3 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 text-base-content/60 hover:text-error hover:bg-error/10 transition-all duration-200 active:scale-95 z-20"
+                                            aria-label={`Excluir projeto ${p.name}`}
+                                        >
+                                            <TrashIcon />
+                                        </button>
+                                    </Card>
+                                </motion.div>
+                            );
+                        })}
+                    </motion.div>
+                ) : (
+                    <div className="mt-8 rounded-2xl border border-base-300 bg-base-100 p-10 sm:p-12 text-center shadow-sm">
+                        <div className="mx-auto mb-4 h-14 w-14 rounded-full bg-base-200 flex items-center justify-center text-2xl" aria-hidden="true">
+                            🚀
+                        </div>
+                        <h3 className="text-xl font-semibold">Nenhum projeto ainda</h3>
+                        <p className="mt-2 text-base-content/70 max-w-md mx-auto">
+                            Crie um projeto para organizar tarefas, testes, documentos e métricas em um fluxo único.
+                        </p>
+                        <div className="mt-6">
+                            <button
+                                type="button"
+                                onClick={() => setIsCreating(true)}
+                                className="btn btn-primary rounded-full"
+                            >
+                                Criar Projeto
+                            </button>
+                        </div>
+                    </div>
+                )}
+            </div>
+            </div>
+        </div>
+    );
+}
                     >
                         Criar Projeto
                     </button>

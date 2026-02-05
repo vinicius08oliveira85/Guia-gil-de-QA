@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { glossaryTerms, searchGlossaryTerms, getTermsByCategory, GlossaryTerm } from '../../utils/glossaryTerms';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Modal } from '../common/Modal';
 
 export const GlossaryView: React.FC = () => {
     const [searchQuery, setSearchQuery] = useState('');
@@ -56,7 +57,7 @@ export const GlossaryView: React.FC = () => {
     };
 
     return (
-        <div className="p-4 sm:p-6 md:p-8">
+        <div>
             {/* Header v0-like */}
             <div className="flex flex-col gap-4 mb-8">
                 <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
@@ -195,49 +196,47 @@ export const GlossaryView: React.FC = () => {
             </motion.div>
 
             {/* Modal de detalhes */}
-            {selectedTerm && (
-                <div
-                    className="modal modal-open"
-                    onClick={() => setSelectedTerm(null)}
-                >
-                    <div
-                        className="modal-box max-w-2xl max-h-[80vh] overflow-y-auto"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <div className="flex items-start justify-between mb-4">
-                            <div className="flex-1">
-                                <h2 className="text-2xl font-bold text-base-content mb-2">{selectedTerm.term}</h2>
-                                <span className={`badge badge-outline ${getCategoryColor(selectedTerm.category)}`}>
-                                    {selectedTerm.category}
-                                </span>
-                            </div>
-                            <button
-                                type="button"
-                                onClick={() => setSelectedTerm(null)}
-                                className="btn btn-sm btn-circle btn-ghost"
-                            >
-                                ×
-                            </button>
+            <Modal
+                isOpen={!!selectedTerm}
+                onClose={() => setSelectedTerm(null)}
+                title={
+                    selectedTerm ? (
+                        <div className="flex-1">
+                            <h2 className="text-2xl font-bold text-base-content mb-2">{selectedTerm.term}</h2>
+                            <span className={`badge badge-outline ${getCategoryColor(selectedTerm.category)}`}>
+                                {selectedTerm.category}
+                            </span>
                         </div>
-
-                        <div className="mb-4">
-                            <h3 className="text-sm font-semibold text-base-content/70 mb-2">Definição</h3>
-                            <p className="text-base-content leading-relaxed">{selectedTerm.definition}</p>
-                        </div>
+                    ) : ''
+                }
+                size="6xl"
+                footer={
+                    <div className="flex justify-end">
+                        <button
+                            type="button"
+                            onClick={() => setSelectedTerm(null)}
+                            className="btn btn-primary"
+                        >
+                            Fechar
+                        </button>
+                    </div>
+                }
+            >
+                {selectedTerm && (
+                    <div className="prose max-w-none">
+                        <h3 className="text-sm font-semibold text-base-content/70 mb-2 uppercase tracking-wider">Definição</h3>
+                        <p className="text-base-content leading-relaxed">{selectedTerm.definition}</p>
 
                         {selectedTerm.relatedTerms && selectedTerm.relatedTerms.length > 0 && (
-                            <div>
-                                <h3 className="text-sm font-semibold text-base-content/70 mb-2">Termos Relacionados</h3>
+                            <div className="mt-6">
+                                <h3 className="text-sm font-semibold text-base-content/70 mb-2 uppercase tracking-wider">Termos Relacionados</h3>
                                 <div className="flex flex-wrap gap-2">
                                     {selectedTerm.relatedTerms.map((related, idx) => (
                                         <span
                                             key={idx}
                                             className="badge badge-outline badge-sm text-primary hover:bg-primary/10 cursor-pointer transition-colors"
                                             onClick={() => {
-                                                const relatedTerm = glossaryTerms.find(t => 
-                                                    t.term.toLowerCase().includes(related.toLowerCase()) ||
-                                                    related.toLowerCase().includes(t.term.toLowerCase())
-                                                );
+                                                const relatedTerm = glossaryTerms.find(t => t.term.toLowerCase() === related.toLowerCase());
                                                 if (relatedTerm) setSelectedTerm(relatedTerm);
                                             }}
                                         >
@@ -247,19 +246,9 @@ export const GlossaryView: React.FC = () => {
                                 </div>
                             </div>
                         )}
-
-                        <div className="modal-action">
-                            <button
-                                type="button"
-                                onClick={() => setSelectedTerm(null)}
-                                className="btn btn-primary"
-                            >
-                                Fechar
-                            </button>
-                        </div>
                     </div>
-                </div>
-            )}
+                )}
+            </Modal>
 
             {/* Estatísticas */}
             <motion.div 
