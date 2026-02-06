@@ -118,7 +118,7 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
         // Migrar TestCases dos projetos do Supabase
         const migratedSupabaseProjects = supabaseProjects.map(project => ({
           ...project,
-          tasks: project.tasks.map(task => ({
+          tasks: (project.tasks || []).map(task => ({
             ...task,
             testCases: migrateTestCases(task.testCases || [])
           }))
@@ -138,7 +138,7 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
         // Apenas Supabase disponível
         const migratedSupabaseProjects = supabaseProjects.map(project => ({
           ...project,
-          tasks: project.tasks.map(task => ({
+          tasks: (project.tasks || []).map(task => ({
             ...task,
             testCases: migrateTestCases(task.testCases || [])
           }))
@@ -175,7 +175,7 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
       // Migrar TestCases dos projetos do Supabase (otimizado)
       const migratedSupabaseProjects = supabaseProjects.map(project => ({
         ...project,
-        tasks: project.tasks.map(task => ({
+        tasks: (project.tasks || []).map(task => ({
           ...task,
           testCases: migrateTestCases(task.testCases || [])
         }))
@@ -556,4 +556,3 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
     }
   },
 }));
-
