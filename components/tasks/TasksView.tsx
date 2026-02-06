@@ -4,12 +4,10 @@ import { Project, JiraTask, BddScenario, TestCaseDetailLevel, TestCase, Comment 
 import { getAIService } from '../../services/ai/aiServiceFactory';
 import { Card } from '../common/Card';
 import { Modal } from '../common/Modal';
-import { FilterPanel } from '../common/FilterPanel';
-import { QuickFilters } from '../common/QuickFilters';
 import { TaskForm } from './TaskForm';
 import { TestCaseEditorModal } from './TestCaseEditorModal';
 import { Button } from '../common/Button';
-import { Plus, Filter, RefreshCw, Loader2, Clipboard, Zap, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { Plus, Filter, RefreshCw, Loader2, Clipboard, Zap, CheckCircle2, AlertTriangle, X, Check } from 'lucide-react';
 import { logger } from '../../utils/logger';
 import { useProjectsStore } from '../../store/projectsStore';
 import { ModernIcons } from '../common/ModernIcons';
@@ -51,7 +49,6 @@ const compareTasksById = (a: JiraTask, b: JiraTask) => {
 import { JiraTaskItem, TaskWithChildren } from './JiraTaskItem';
 import { TaskDetailsModal } from './TaskDetailsModal';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
-import { useFilters } from '../../hooks/useFilters';
 import { createBugFromFailedTest } from '../../utils/bugAutoCreation';
 import { getTaskDependents, getReadyTasks } from '../../utils/dependencyService';
 import { notifyTestFailed, notifyBugCreated, notifyCommentAdded, notifyDependencyResolved } from '../../utils/notificationService';
@@ -67,6 +64,28 @@ import { FailedTestsReportModal } from './FailedTestsReportModal';
 import { useProjectMetrics } from '../../hooks/useProjectMetrics';
 import { getTaskStatusCategory } from '../../utils/jiraStatusCategorizer';
 
+// Componente Helper para Chips de Filtro
+const FilterChip = ({ 
+    label, 
+    count, 
+    isActive, 
+    onClick 
+}: { label: string, count: number, isActive: boolean, onClick: () => void }) => (
+    <button
+        onClick={onClick}
+        className={`
+            inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-all border
+            ${isActive 
+                ? 'bg-primary text-primary-content border-primary shadow-sm' 
+                : 'bg-base-100 text-base-content/70 border-base-300 hover:border-primary/50 hover:text-base-content'
+            }
+        `}
+    >
+        {label}
+        <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${isActive ? 'bg-white/20' : 'bg-base-200'}`}>{count}</span>
+    </button>
+);
+
 export const TasksView: React.FC<{ 
     project: Project, 
     onUpdateProject: (project: Project) => void,
@@ -78,25 +97,7 @@ export const TasksView: React.FC<{
     const [syncingTaskId, setSyncingTaskId] = useState<string | null>(null);
     const [selectedTasks, setSelectedTasks] = useState<Set<string>>(new Set());
     const { handleError, handleSuccess } = useErrorHandler();
-    const { filters, filteredTasks, updateFilter, clearFilters, removeFilter, activeFiltersCount } = useFilters(project);
-    const availableTestTypes = useMemo(() => {
-        const types = new Set<string>();
-        project.tasks.forEach(task => {
-            task.testStrategy?.forEach(strategy => {
-                if (strategy?.testType) {
-                    types.add(strategy.testType);
-                }
-            });
-            task.testCases?.forEach(testCase => {
-                testCase.strategies?.forEach(strategyName => {
-                    if (strategyName) {
-                        types.add(strategyName);
-                    }
-                });
-            });
-        });
-        return Array.from(types).sort((a, b) => a.localeCompare(b));
-    }, [project.tasks]);
+    
     const [isTaskFormOpen, setIsTaskFormOpen] = useState(false);
     const [editingTask, setEditingTask] = useState<JiraTask | undefined>(undefined);
     const [testCaseEditorRef, setTestCaseEditorRef] = useState<{ taskId: string; testCase: TestCase } | null>(null);
@@ -105,6 +106,14 @@ export const TasksView: React.FC<{
     const { isBeginnerMode } = useBeginnerMode();
     const [hasSeenWizard, setHasSeenWizard] = useLocalStorage<boolean>('task_creation_wizard_seen', false);
     const [showFilters, setShowFilters] = useState(false);
+    
+    // Novos Estados de Filtro
+    const [searchQuery, setSearchQuery] = useState('');
+    const [statusFilter, setStatusFilter] = useState<string[]>([]);
+    const [priorityFilter, setPriorityFilter] = useState<string[]>([]);
+    const [typeFilter, setTypeFilter] = useState<string[]>([]);
+    const [qualityFilter, setQualityFilter] = useState<string[]>([]);
+
     const [isSyncingJira, setIsSyncingJira] = useState(false);
     const [showJiraProjectSelector, setShowJiraProjectSelector] = useState(false);
     const [availableJiraProjects, setAvailableJiraProjects] = useState<Array<{ key: string; name: string }>>([]);
@@ -136,6 +145,86 @@ export const TasksView: React.FC<{
     const [showFailedTestsReport, setShowFailedTestsReport] = useState(false);
     const [modalTask, setModalTask] = useState<JiraTask | null>(null);
     const metrics = useProjectMetrics(project);
+
+    // Lógica de Filtragem Avançada
+    const filteredTasks = useMemo(() => {
+        return project.tasks.filter(task => {
+            // 1. Busca Textual
+            if (searchQuery) {
+                const query = searchQuery.toLowerCase();
+                const matchesId = task.id.toLowerCase().includes(query);
+                const matchesTitle = task.title.toLowerCase().includes(query);
+                if (!matchesId && !matchesTitle) return false;
+            }
+
+            // 2. Status
+            if (statusFilter.length > 0 && !statusFilter.includes(task.status)) return false;
+
+            // 3. Prioridade
+            if (priorityFilter.length > 0) {
+                const taskPriority = task.priority || 'Sem Prioridade';
+                if (!priorityFilter.includes(taskPriority)) return false;
+            }
+
+            // 4. Tipo
+            if (typeFilter.length > 0 && !typeFilter.includes(task.type)) return false;
+
+            // 5. Qualidade (BDD, Testes, Automação)
+            if (qualityFilter.length > 0) {
+                const hasBDD = task.bddScenarios && task.bddScenarios.length > 0;
+                const hasTestCases = task.testCases && task.testCases.length > 0;
+                const hasAutomated = task.testCases?.some(tc => tc.isAutomated);
+                const hasManual = task.testCases?.some(tc => !tc.isAutomated);
+
+                // Lógica OR dentro da categoria de qualidade
+                const matchesQuality = qualityFilter.some(filter => {
+                    switch (filter) {
+                        case 'with-bdd': return hasBDD;
+                        case 'without-bdd': return !hasBDD;
+                        case 'with-tests': return hasTestCases;
+                        case 'without-tests': return !hasTestCases;
+                        case 'automated': return hasAutomated;
+                        case 'manual': return hasManual;
+                        default: return false;
+                    }
+                });
+                if (!matchesQuality) return false;
+            }
+
+            return true;
+        });
+    }, [project.tasks, searchQuery, statusFilter, priorityFilter, typeFilter, qualityFilter]);
+
+    // Contadores para os filtros
+    const counts = useMemo(() => {
+        const allTasks = project.tasks;
+        return {
+            status: (status: string) => allTasks.filter(t => t.status === status).length,
+            priority: (priority: string) => allTasks.filter(t => (t.priority || 'Sem Prioridade') === priority).length,
+            type: (type: string) => allTasks.filter(t => t.type === type).length,
+            quality: (type: string) => {
+                switch (type) {
+                    case 'with-bdd': return allTasks.filter(t => t.bddScenarios?.length).length;
+                    case 'without-bdd': return allTasks.filter(t => !t.bddScenarios?.length).length;
+                    case 'with-tests': return allTasks.filter(t => t.testCases?.length).length;
+                    case 'without-tests': return allTasks.filter(t => !t.testCases?.length).length;
+                    case 'automated': return allTasks.filter(t => t.testCases?.some(tc => tc.isAutomated)).length;
+                    case 'manual': return allTasks.filter(t => t.testCases?.some(tc => !tc.isAutomated)).length;
+                    default: return 0;
+                }
+            }
+        };
+    }, [project.tasks]);
+
+    const activeFiltersCount = statusFilter.length + priorityFilter.length + typeFilter.length + qualityFilter.length;
+
+    const clearAllFilters = () => {
+        setStatusFilter([]);
+        setPriorityFilter([]);
+        setTypeFilter([]);
+        setQualityFilter([]);
+        setSearchQuery('');
+    };
 
     // Função helper para adicionar timeout às chamadas de IA
     const withTimeout = <T,>(promise: Promise<T>, timeoutMs: number = 60000): Promise<T> => {
@@ -1393,15 +1482,15 @@ export const TasksView: React.FC<{
                             type="search"
                             inputMode="search"
                             autoComplete="off"
-                            value={filters.searchQuery || ''}
-                            onChange={(e) => updateFilter('searchQuery', e.target.value)}
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
                             placeholder="Digite ID, título ou palavra-chave..."
                             className="input input-bordered w-full pl-10 pr-12 py-2.5 bg-base-100 border-base-300 text-base-content placeholder:text-base-content/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                         />
-                        {filters.searchQuery && (
+                        {searchQuery && (
                             <button
                                 type="button"
-                                onClick={() => updateFilter('searchQuery', '')}
+                                onClick={() => setSearchQuery('')}
                                 className="absolute right-2 top-1/2 -translate-y-1/2 text-base-content/60 hover:text-base-content p-2 rounded-full hover:bg-base-200 focus:outline-none focus:ring-2 focus:ring-primary/20"
                                 aria-label="Limpar busca rápida"
                             >
@@ -1606,28 +1695,102 @@ export const TasksView: React.FC<{
                 </motion.div>
             </div>
 
-            {/* Barra de filtros rápidos visíveis */}
-            <QuickFilters
-                filters={filters}
-                activeFiltersCount={activeFiltersCount}
-                onFilterChange={updateFilter}
-                onClearFilters={clearFilters}
-                onRemoveFilter={removeFilter}
-            />
-
-            <div className={`grid gap-6 ${showFilters ? 'lg:grid-cols-[360px_1fr]' : ''}`}>
+            <div className="flex flex-col gap-6">
                 {showFilters && (
-                    <aside className="space-y-4">
-                        <div className="rounded-[var(--rounded-box)] border border-base-300 bg-base-100 p-4">
-                            <FilterPanel
-                                filters={filters}
-                                onFilterChange={updateFilter}
-                                onClearFilters={clearFilters}
-                                availableTestTypes={availableTestTypes}
-                                activeFiltersCount={activeFiltersCount}
-                            />
+                    <motion.div 
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="rounded-xl border border-base-300 bg-base-100 p-5 shadow-sm"
+                    >
+                        <div className="flex items-center justify-between mb-4">
+                            <h4 className="text-sm font-bold text-base-content flex items-center gap-2">
+                                <Filter className="w-4 h-4 text-primary" />
+                                Filtros Ativos
+                            </h4>
+                            {activeFiltersCount > 0 && (
+                                <button 
+                                    onClick={clearAllFilters}
+                                    className="text-xs text-error hover:text-error/80 font-medium flex items-center gap-1"
+                                >
+                                    <X className="w-3 h-3" /> Limpar todos
+                                </button>
+                            )}
                         </div>
-                    </aside>
+
+                        <div className="space-y-5">
+                            {/* Grupo: Status */}
+                            <div>
+                                <p className="text-xs font-semibold text-base-content/60 mb-2 uppercase tracking-wider">Status</p>
+                                <div className="flex flex-wrap gap-2">
+                                    {['To Do', 'In Progress', 'Done'].map(status => (
+                                        <FilterChip
+                                            key={status}
+                                            label={status}
+                                            count={counts.status(status)}
+                                            isActive={statusFilter.includes(status)}
+                                            onClick={() => setStatusFilter(prev => prev.includes(status) ? prev.filter(s => s !== status) : [...prev, status])}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Grupo: Prioridade */}
+                            <div>
+                                <p className="text-xs font-semibold text-base-content/60 mb-2 uppercase tracking-wider">Prioridade</p>
+                                <div className="flex flex-wrap gap-2">
+                                    {['High', 'Medium', 'Low'].map(priority => (
+                                        <FilterChip
+                                            key={priority}
+                                            label={priority === 'High' ? 'Alta' : priority === 'Medium' ? 'Média' : 'Baixa'}
+                                            count={counts.priority(priority)}
+                                            isActive={priorityFilter.includes(priority)}
+                                            onClick={() => setPriorityFilter(prev => prev.includes(priority) ? prev.filter(p => p !== priority) : [...prev, priority])}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Grupo: Tipo */}
+                            <div>
+                                <p className="text-xs font-semibold text-base-content/60 mb-2 uppercase tracking-wider">Tipo de Tarefa</p>
+                                <div className="flex flex-wrap gap-2">
+                                    {['Tarefa', 'Bug', 'Epic', 'História'].map(type => (
+                                        <FilterChip
+                                            key={type}
+                                            label={type}
+                                            count={counts.type(type)}
+                                            isActive={typeFilter.includes(type)}
+                                            onClick={() => setTypeFilter(prev => prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type])}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Grupo: Qualidade */}
+                            <div>
+                                <p className="text-xs font-semibold text-base-content/60 mb-2 uppercase tracking-wider">Estado de Qualidade</p>
+                                <div className="flex flex-wrap gap-2">
+                                    {[
+                                        { id: 'with-bdd', label: 'Com BDD' },
+                                        { id: 'without-bdd', label: 'Sem BDD' },
+                                        { id: 'with-tests', label: 'Com Testes' },
+                                        { id: 'without-tests', label: 'Sem Testes' },
+                                        { id: 'automated', label: 'Automatizados' },
+                                        { id: 'manual', label: 'Manuais' },
+                                    ].map(q => (
+                                        <FilterChip
+                                            key={q.id}
+                                            label={q.label}
+                                            count={counts.quality(q.id)}
+                                            isActive={qualityFilter.includes(q.id)}
+                                            onClick={() => setQualityFilter(prev => prev.includes(q.id) ? prev.filter(i => i !== q.id) : [...prev, q.id])}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </motion.div>
                 )}
 
                 <div className="space-y-4 min-w-0">
