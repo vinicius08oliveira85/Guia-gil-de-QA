@@ -1432,9 +1432,12 @@ export const JiraTaskItem: React.FC<{
                                     <button
                                         type="button"
                                         onClick={(e) => { e.stopPropagation(); setIsChildrenOpen(!isChildrenOpen); }}
-                                        className="btn btn-ghost btn-xs btn-circle"
+                                        className="btn btn-ghost btn-xs flex items-center gap-1 px-1"
                                     >
                                         <ChevronDownIcon className={`w-4 h-4 transition-transform ${isChildrenOpen ? 'rotate-180' : ''}`} />
+                                        <span className="bg-base-300 text-xs px-1.5 py-0.5 rounded-full">
+                                            {task.children.length}
+                                        </span>
                                     </button>
                                 ) : <div className="w-6" />}
                                 
