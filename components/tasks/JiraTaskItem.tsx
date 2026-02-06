@@ -1472,36 +1472,21 @@ export const JiraTaskItem: React.FC<{
                             {/* Coluna 3: Status e Ações (flex-shrink para não quebrar) */}
                             <div className="flex items-center gap-2 flex-shrink-0 ml-auto">
                                 {/* Ações Rápidas de IA */}
-                                {(task.type === 'Tarefa' || task.type === 'Bug') && (
+                                {['tarefa', 'bug', 'task'].includes(task.type.toLowerCase()) && onGenerateAll && (
                                     <div className="flex items-center gap-1 mr-1">
-                                        {onGenerateBddScenarios && (
-                                            <button
-                                                type="button"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    onGenerateBddScenarios(task.id);
-                                                }}
-                                                disabled={isGeneratingBdd || isGeneratingAll}
-                                                className="btn btn-ghost btn-xs text-primary hover:bg-primary/10"
-                                                title="Gerar BDD com IA"
-                                            >
-                                                {isGeneratingBdd ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-                                            </button>
-                                        )}
-                                        {onGenerateTests && (
-                                            <button
-                                                type="button"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    onGenerateTests(task.id, 'Padrão');
-                                                }}
-                                                disabled={isGenerating || isGeneratingAll}
-                                                className="btn btn-ghost btn-xs text-primary hover:bg-primary/10"
-                                                title="Gerar Casos de Teste"
-                                            >
-                                                {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
-                                            </button>
-                                        )}
+                                        <button
+                                            type="button"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                onGenerateAll(task.id, 'Padrão');
+                                            }}
+                                            disabled={isGeneratingAll || isGenerating || isGeneratingBdd}
+                                            className="btn btn-sm btn-ghost text-primary gap-2 hover:bg-primary/10"
+                                            title="Gerar Tudo (BDD e Testes)"
+                                        >
+                                            {isGeneratingAll ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
+                                            Gerar Tudo
+                                        </button>
                                     </div>
                                 )}
                                 {taskTestStatus && (
