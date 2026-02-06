@@ -152,7 +152,7 @@ export const JiraTaskItem: React.FC<{
     activeTaskId?: string | null;
     onFocusTask?: (taskId: string | null) => void;
     onOpenModal?: (task: JiraTask) => void;
-}> = React.memo(({ task, onTestCaseStatusChange, onToggleTestCaseAutomated, onExecutedStrategyChange, onTaskToolsChange, onTestCaseToolsChange, onStrategyExecutedChange, onStrategyToolsChange, onDelete, onGenerateTests, isGenerating, onAddSubtask, onEdit, onGenerateBddScenarios, isGeneratingBdd, onGenerateAll, isGeneratingAll, onSyncToJira, isSyncing, onSaveBddScenario, onDeleteBddScenario, onTaskStatusChange, onAddTestCaseFromTemplate, onAddComment, onEditComment, onDeleteComment, onEditTestCase, onDeleteTestCase, project, onUpdateProject, isSelected, onToggleSelect, children, level, activeTaskId, onFocusTask, onOpenModal }) => {
+}> = React.memo(({ task, onTestCaseStatusChange, onToggleTestCaseAutomated, onExecutedStrategyChange, onTaskToolsChange, onTestCaseToolsChange, onStrategyExecutedChange, onStrategyToolsChange, onDelete, onGenerateTests, isGenerating: isGeneratingTests, onAddSubtask, onEdit, onGenerateBddScenarios, isGeneratingBdd, onGenerateAll, isGeneratingAll, onSyncToJira, isSyncing, onSaveBddScenario, onDeleteBddScenario, onTaskStatusChange, onAddTestCaseFromTemplate, onAddComment, onEditComment, onDeleteComment, onEditTestCase, onDeleteTestCase, project, onUpdateProject, isSelected, onToggleSelect, children, level, activeTaskId, onFocusTask, onOpenModal }) => {
     const reduceMotion = useReducedMotion();
     const [isDetailsOpen, setIsDetailsOpen] = useState(false); // Colapsado por padrão para compactar
     const [isChildrenOpen, setIsChildrenOpen] = useState(false);
@@ -160,6 +160,7 @@ export const JiraTaskItem: React.FC<{
     const [isCreatingBdd, setIsCreatingBdd] = useState(false);
     const [detailLevel, setDetailLevel] = useState<TestCaseDetailLevel>('Padrão');
     const [showDependencies, setShowDependencies] = useState(false);
+    const [isGenerating, setIsGenerating] = useState(false);
     const [showAttachments, setShowAttachments] = useState(false);
     const [showEstimation, setShowEstimation] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -349,6 +350,20 @@ export const JiraTaskItem: React.FC<{
             logger.error('Erro ao concluir teste', 'JiraTaskItem', error);
         }
     }, [task, project, onUpdateProject]);
+
+    const handleGenerateAll = useCallback(async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (!onGenerateAll) return;
+
+        setIsGenerating(true);
+        try {
+            await onGenerateAll(task.id, detailLevel);
+        } catch (error) {
+            logger.error('Erro ao gerar tudo', 'JiraTaskItem', error);
+        } finally {
+            setIsGenerating(false);
+        }
+    }, [onGenerateAll, task.id, detailLevel]);
 
     // Cores e estilos para status de teste
     const testStatusConfig = useMemo(() => {
@@ -1039,7 +1054,7 @@ export const JiraTaskItem: React.FC<{
                             <h3 className="text-lg font-semibold text-base-content">Estratégia de Teste</h3>
                             <span className="text-xs text-base-content/70">{task.testStrategy?.length || 0} item(ns)</span>
                         </div>
-                        {isGenerating && <div className="flex justify-center py-2"><Spinner small /></div>}
+                        {isGeneratingTests && <div className="flex justify-center py-2"><Spinner small /></div>}
                         {(task.testStrategy?.length ?? 0) > 0 ? (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                                 {(task.testStrategy ?? []).map((strategy, i) => {
@@ -1058,7 +1073,7 @@ export const JiraTaskItem: React.FC<{
                                 })}
                             </div>
                         ) : (
-                            !isGenerating && (
+                            !isGeneratingTests && (
                                 <EmptyState
                                     icon="📊"
                                     title="Nenhuma estratégia de teste gerada ainda"
@@ -1081,7 +1096,7 @@ export const JiraTaskItem: React.FC<{
                             <h3 className="text-lg font-semibold text-base-content">Casos de Teste</h3>
                             <span className="text-xs text-base-content/70">{task.testCases?.length || 0} caso(s)</span>
                         </div>
-                        {isGenerating ? (
+                        {isGeneratingTests ? (
                             <div className="space-y-3 mt-4">
                                 <LoadingSkeleton variant="task" count={3} />
                                 <div className="flex flex-col items-center justify-center py-4">
@@ -1476,16 +1491,13 @@ export const JiraTaskItem: React.FC<{
                                     <div className="flex items-center gap-1 mr-1">
                                         <button
                                             type="button"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                onGenerateAll(task.id, 'Padrão');
-                                            }}
-                                            disabled={isGeneratingAll || isGenerating || isGeneratingBdd}
+                                            onClick={handleGenerateAll}
+                                            disabled={isGeneratingAll || isGenerating || isGeneratingBdd || isGeneratingTests}
                                             className="btn btn-sm btn-ghost text-primary gap-2 hover:bg-primary/10"
                                             title="Gerar Tudo (BDD e Testes)"
                                         >
-                                            {isGeneratingAll ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
-                                            Gerar Tudo
+                                            {isGenerating || isGeneratingAll ? <span className="loading loading-spinner loading-xs"></span> : <Zap className="w-4 h-4" />}
+                                            {isGenerating || isGeneratingAll ? 'Gerando...' : 'Gerar Tudo'}
                                         </button>
                                     </div>
                                 )}
@@ -1541,18 +1553,18 @@ export const JiraTaskItem: React.FC<{
                                             <>
                                                 {onGenerateAll && (
                                                     <button
-                                                        onClick={() => onGenerateAll(task.id, detailLevel)}
-                                                        disabled={isGeneratingAll || isGenerating || isGeneratingBdd}
+                                                        onClick={handleGenerateAll}
+                                                        disabled={isGeneratingAll || isGenerating || isGeneratingBdd || isGeneratingTests}
                                                         className="btn btn-sm btn-ghost text-primary gap-2 hover:bg-primary/10"
                                                         title="Gerar BDD, Estratégia e Testes com IA"
                                                     >
-                                                        {isGeneratingAll ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
-                                                        Gerar Tudo
+                                                        {isGenerating || isGeneratingAll ? <span className="loading loading-spinner loading-xs"></span> : <Zap className="w-4 h-4" />}
+                                                        {isGenerating || isGeneratingAll ? 'Gerando...' : 'Gerar Tudo'}
                                                     </button>
                                                 )}
                                                 <button
                                                     onClick={() => onGenerateBddScenarios(task.id)}
-                                                    disabled={isGeneratingBdd || isGeneratingAll}
+                                                    disabled={isGeneratingBdd || isGeneratingAll || isGenerating}
                                                     className="btn btn-sm btn-ghost gap-2"
                                                     title="Gerar apenas cenários BDD"
                                                 >
@@ -1561,11 +1573,11 @@ export const JiraTaskItem: React.FC<{
                                                 </button>
                                                 <button
                                                     onClick={() => onGenerateTests(task.id, detailLevel)}
-                                                    disabled={isGenerating || isGeneratingAll}
+                                                    disabled={isGeneratingTests || isGeneratingAll || isGenerating}
                                                     className="btn btn-sm btn-ghost gap-2"
                                                     title="Gerar apenas casos de teste"
                                                 >
-                                                    {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
+                                                    {isGeneratingTests ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
                                                     Testes
                                                 </button>
                                                 <div className="divider divider-horizontal mx-0 my-1 w-px h-6 bg-base-300 self-center hidden sm:flex"></div>
