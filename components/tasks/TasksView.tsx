@@ -59,8 +59,6 @@ import { BulkActions } from '../common/BulkActions';
 import { TaskCreationWizard } from './TaskCreationWizard';
 import { useBeginnerMode } from '../../hooks/useBeginnerMode';
 import { useLocalStorage } from '../../hooks/useLocalStorage';
-import { useSuggestions } from '../../hooks/useSuggestions';
-import { SuggestionBanner } from '../common/SuggestionBanner';
 import { EmptyState } from '../common/EmptyState';
 import { syncJiraProject, getJiraConfig, getJiraProjects, JiraConfig, syncTaskToJira } from '../../services/jiraService';
 import { GeneralIAAnalysisButton } from './GeneralIAAnalysisButton';
@@ -106,11 +104,7 @@ export const TasksView: React.FC<{
     const [showWizard, setShowWizard] = useState(false);
     const { isBeginnerMode } = useBeginnerMode();
     const [hasSeenWizard, setHasSeenWizard] = useLocalStorage<boolean>('task_creation_wizard_seen', false);
-    const suggestions = useSuggestions(project);
-    const [dismissedSuggestions, setDismissedSuggestions] = useState<Set<string>>(new Set());
-    const currentSuggestion = suggestions.find(s => !dismissedSuggestions.has(s.id)) || null;
     const [showFilters, setShowFilters] = useState(false);
-    const [showSuggestions, setShowSuggestions] = useState(true);
     const [isSyncingJira, setIsSyncingJira] = useState(false);
     const [showJiraProjectSelector, setShowJiraProjectSelector] = useState(false);
     const [availableJiraProjects, setAvailableJiraProjects] = useState<Array<{ key: string; name: string }>>([]);
@@ -1638,35 +1632,6 @@ export const TasksView: React.FC<{
 
                 <div className="space-y-4 min-w-0">
                     <div className="flex flex-col gap-4">
-                        {currentSuggestion && showSuggestions && (
-                            <div className="bg-base-100 rounded-xl border border-base-300 overflow-hidden shadow-lg">
-                                <div className="flex items-center justify-between bg-base-200 px-4 py-3 border-b border-base-300">
-                                    <div className="flex items-center gap-2">
-                                        <div className="p-1.5 bg-primary/10 rounded-lg">
-                                            <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                                            </svg>
-                                        </div>
-                                        <span className="text-sm font-semibold text-base-content">Sugestões inteligentes</span>
-                                    </div>
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowSuggestions(false)}
-                                        className="btn btn-ghost btn-sm text-xs text-base-content/60 hover:text-base-content transition-colors p-1 rounded"
-                                    >
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                        </svg>
-                                    </button>
-                                </div>
-                                <div className="p-4 bg-base-100">
-                                    <SuggestionBanner
-                                        suggestion={currentSuggestion}
-                                        onDismiss={(id) => setDismissedSuggestions((prev) => new Set([...prev, id]))}
-                                    />
-                                </div>
-                            </div>
-                        )}
                         {selectedTasks.size > 0 && (
                             <BulkActions
                                 selectedTasks={selectedTasks}
