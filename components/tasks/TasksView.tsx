@@ -1477,20 +1477,20 @@ export const TasksView: React.FC<{
 
     return (
         <>
-        <Card hoverable={false} className="p-5">
-            <div className="flex flex-col gap-4 mb-6">
-                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-                    <div className="flex-shrink-0">
-                        <h3 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2">Tarefas & Casos de Teste</h3>
-                        <p className="text-base-content/70 text-sm max-w-2xl">Acompanhe o progresso das atividades e resultados de QA.</p>
+        <Card hoverable={false} className="p-4 sm:p-6 lg:p-8">
+            <div className="flex flex-col gap-6 mb-8">
+                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+                    <div className="flex-shrink-0 space-y-2">
+                        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-base-content">Tarefas & Casos de Teste</h1>
+                        <p className="text-base-content/70 text-sm sm:text-base max-w-2xl leading-relaxed">Acompanhe o progresso das atividades e resultados de QA.</p>
                     </div>
-                    <div className="flex items-center gap-2 flex-wrap">
+                    <div className="flex items-center gap-3 flex-wrap w-full lg:w-auto">
                         {/* Botão Principal */}
                         <Button 
                             variant="default"
                             size="sm"
                             onClick={() => openTaskFormForNew()} 
-                            className="btn btn-primary btn-sm rounded-full flex items-center gap-1.5 font-semibold flex-shrink-0"
+                            className="btn btn-primary btn-sm rounded-full flex items-center gap-2 font-semibold flex-shrink-0 min-h-[40px] px-4"
                         >
                             <Plus className="w-4 h-4" />
                             <span>Adicionar Tarefa</span>
@@ -1506,7 +1506,7 @@ export const TasksView: React.FC<{
                         </div>
                         
                         {/* Separador visual */}
-                        <div className="w-px h-5 bg-base-300 flex-shrink-0" />
+                        <div className="w-px h-8 bg-base-300 flex-shrink-0 hidden sm:block" />
                         
                         {/* Botão de Relatório de Testes Reprovados */}
                         {metrics.failedTestCases > 0 && (
@@ -1514,7 +1514,7 @@ export const TasksView: React.FC<{
                                 variant="outline"
                                 size="sm"
                                 onClick={() => setShowFailedTestsReport(true)} 
-                                className="btn btn-error btn-sm rounded-full flex items-center gap-1.5 flex-shrink-0"
+                                className="btn btn-error btn-sm rounded-full flex items-center gap-2 flex-shrink-0 min-h-[40px] px-4"
                             >
                                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -1528,7 +1528,7 @@ export const TasksView: React.FC<{
                             variant="outline"
                             size="sm"
                             onClick={() => setShowFilters(prev => !prev)} 
-                            className="btn btn-outline btn-sm rounded-full flex items-center gap-1.5 flex-shrink-0"
+                            className="btn btn-outline btn-sm rounded-full flex items-center gap-2 flex-shrink-0 min-h-[40px] px-4"
                         >
                             <Filter className="w-4 h-4" />
                             <span>{showFilters ? 'Ocultar Filtros' : `Filtros${activeFiltersCount > 0 ? ` (${activeFiltersCount})` : ''}`}</span>
@@ -1539,7 +1539,7 @@ export const TasksView: React.FC<{
                             size="sm"
                             onClick={handleSyncJira} 
                             disabled={isSyncingJira}
-                            className="btn btn-outline btn-sm rounded-full flex items-center gap-1.5 flex-shrink-0"
+                            className="btn btn-outline btn-sm rounded-full flex items-center gap-2 flex-shrink-0 min-h-[40px] px-4"
                         >
                             {isSyncingJira ? (
                                 <>
@@ -1556,10 +1556,10 @@ export const TasksView: React.FC<{
                     </div>
                 </div>
 
-                <div className="mb-4">
+                <div className="mb-6 lg:mb-8">
                     <label 
                         htmlFor="quick-task-search" 
-                        className="text-sm font-semibold text-base-content mb-2 flex items-center gap-2"
+                        className="text-sm font-medium text-base-content/80 mb-2 flex items-center gap-2"
                     >
                         <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -1576,7 +1576,7 @@ export const TasksView: React.FC<{
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             placeholder="Digite ID, título ou palavra-chave..."
-                            className="input input-bordered w-full pl-10 pr-12 py-2.5 bg-base-100 border-base-300 text-base-content placeholder:text-base-content/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                            className="input input-bordered w-full pl-10 pr-12 py-3 h-auto min-h-[48px] bg-base-100 border-base-300 text-base-content placeholder:text-base-content/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all rounded-xl shadow-sm"
                         />
                         {searchQuery && (
                             <button
@@ -1595,7 +1595,7 @@ export const TasksView: React.FC<{
                 </div>
 
                 <motion.div 
-                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4"
+                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6"
                     initial="hidden"
                     animate="visible"
                     variants={{
@@ -1629,12 +1629,12 @@ export const TasksView: React.FC<{
                         <div className="relative z-10 flex flex-col gap-4">
                             <div className="flex items-start justify-between gap-4">
                                 <div className="min-w-0 flex-1">
-                                    <p className="text-xs font-medium text-base-content/70 mb-2 uppercase tracking-wider">Total de Tarefas</p>
-                                    <p className="text-5xl font-bold tracking-tight text-orange-400 dark:text-orange-300 transition-transform duration-500 group-hover:scale-110" aria-label={`${stats.total} tarefas totais`}>
+                                    <p className="text-xs font-bold text-base-content/60 mb-2 uppercase tracking-wider">Total de Tarefas</p>
+                                    <p className="text-4xl lg:text-5xl font-extrabold tracking-tight text-orange-400 dark:text-orange-300 transition-transform duration-500 group-hover:scale-110" aria-label={`${stats.total} tarefas totais`}>
                                         {stats.total}
                                     </p>
                                 </div>
-                                <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-orange-500/10 group-hover:bg-orange-500/15 flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:rotate-6">
+                                <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-orange-500/10 group-hover:bg-orange-500/20 flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:rotate-6">
                                     <Clipboard className="w-6 h-6 text-orange-400 dark:text-orange-300" />
                                 </div>
                             </div>
@@ -1664,12 +1664,12 @@ export const TasksView: React.FC<{
                         <div className="relative z-10 flex flex-col gap-4">
                             <div className="flex items-start justify-between gap-4">
                                 <div className="min-w-0 flex-1">
-                                    <p className="text-xs font-medium text-base-content/70 mb-2 uppercase tracking-wider">Em Andamento</p>
-                                    <p className="text-5xl font-bold tracking-tight text-blue-400 dark:text-blue-300 transition-transform duration-500 group-hover:scale-110" aria-label={`${stats.inProgress} tarefas em andamento`}>
+                                    <p className="text-xs font-bold text-base-content/60 mb-2 uppercase tracking-wider">Em Andamento</p>
+                                    <p className="text-4xl lg:text-5xl font-extrabold tracking-tight text-blue-400 dark:text-blue-300 transition-transform duration-500 group-hover:scale-110" aria-label={`${stats.inProgress} tarefas em andamento`}>
                                         {stats.inProgress}
                                     </p>
                                 </div>
-                                <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-blue-500/10 group-hover:bg-blue-500/15 flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:rotate-6">
+                                <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-blue-500/10 group-hover:bg-blue-500/20 flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:rotate-6">
                                     <Zap className="w-6 h-6 text-blue-400 dark:text-blue-300" />
                                 </div>
                             </div>
@@ -1699,12 +1699,12 @@ export const TasksView: React.FC<{
                         <div className="relative z-10 flex flex-col gap-4">
                             <div className="flex items-start justify-between gap-4">
                                 <div className="min-w-0 flex-1">
-                                    <p className="text-xs font-medium text-base-content/70 mb-2 uppercase tracking-wider">Concluídas</p>
-                                    <p className="text-5xl font-bold tracking-tight text-emerald-400 dark:text-emerald-300 transition-transform duration-500 group-hover:scale-110" aria-label={`${stats.done} tarefas concluídas`}>
+                                    <p className="text-xs font-bold text-base-content/60 mb-2 uppercase tracking-wider">Concluídas</p>
+                                    <p className="text-4xl lg:text-5xl font-extrabold tracking-tight text-emerald-400 dark:text-emerald-300 transition-transform duration-500 group-hover:scale-110" aria-label={`${stats.done} tarefas concluídas`}>
                                         {stats.done}
                                     </p>
                                 </div>
-                                <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-emerald-500/10 group-hover:bg-emerald-500/15 flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:rotate-6">
+                                <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-emerald-500/10 group-hover:bg-emerald-500/20 flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:rotate-6">
                                     <CheckCircle2 className="w-6 h-6 text-emerald-400 dark:text-emerald-300" />
                                 </div>
                             </div>
@@ -1734,12 +1734,12 @@ export const TasksView: React.FC<{
                         <div className="relative z-10 flex flex-col gap-4">
                             <div className="flex items-start justify-between gap-4">
                                 <div className="min-w-0 flex-1">
-                                    <p className="text-xs font-medium text-base-content/70 mb-2 uppercase tracking-wider">Bugs Abertos</p>
-                                    <p className="text-5xl font-bold tracking-tight text-rose-400 dark:text-rose-300 transition-transform duration-500 group-hover:scale-110" aria-label={`${stats.bugsOpen} bugs abertos`}>
+                                    <p className="text-xs font-bold text-base-content/60 mb-2 uppercase tracking-wider">Bugs Abertos</p>
+                                    <p className="text-4xl lg:text-5xl font-extrabold tracking-tight text-rose-400 dark:text-rose-300 transition-transform duration-500 group-hover:scale-110" aria-label={`${stats.bugsOpen} bugs abertos`}>
                                         {stats.bugsOpen}
                                     </p>
                                 </div>
-                                <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-rose-500/10 group-hover:bg-rose-500/15 flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:rotate-6">
+                                <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-rose-500/10 group-hover:bg-rose-500/20 flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:rotate-6">
                                     <AlertTriangle className="w-6 h-6 text-rose-400 dark:text-rose-300" />
                                 </div>
                             </div>
@@ -1792,7 +1792,7 @@ export const TasksView: React.FC<{
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
                         exit={{ opacity: 0, height: 0 }}
-                        className="rounded-xl border border-base-300 bg-base-100 p-5 shadow-sm"
+                        className="rounded-xl border border-base-300 bg-base-100 p-4 sm:p-6 shadow-sm"
                     >
                         <div className="flex items-center justify-between mb-4">
                             <h4 className="text-sm font-bold text-base-content flex items-center gap-2">
@@ -1887,7 +1887,7 @@ export const TasksView: React.FC<{
                 <div className="space-y-4 min-w-0">
                     <div className="flex flex-col gap-4">
                         {selectedTasks.size > 0 && (
-                            <div className="flex flex-wrap items-center gap-2">
+                            <div className="flex flex-wrap items-center gap-3">
                                 <BulkActions
                                     selectedTasks={selectedTasks}
                                     project={project}
@@ -1900,7 +1900,7 @@ export const TasksView: React.FC<{
                                 />
                                 <button
                                     onClick={() => setIsLinkModalOpen(true)}
-                                    className="btn btn-outline btn-sm gap-2"
+                                    className="btn btn-outline btn-sm gap-2 min-h-[40px] px-4"
                                 >
                                     <LinkIcon className="w-4 h-4" />
                                     Vincular a Projeto
