@@ -1477,26 +1477,93 @@ export const TasksView: React.FC<{
 
     return (
         <>
-        <Card hoverable={false} className="p-4 sm:p-6 lg:p-8">
-            <div className="flex flex-col gap-6 mb-8">
-                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
-                    <div className="flex-shrink-0 space-y-2">
-                        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-base-content">Tarefas & Casos de Teste</h1>
-                        <p className="text-base-content/70 text-sm sm:text-base max-w-2xl leading-relaxed">Acompanhe o progresso das atividades e resultados de QA.</p>
+        <Card hoverable={false} className="p-0 overflow-hidden bg-base-100">
+            <div className="border-b border-base-300 p-4 sm:p-6 lg:p-8 bg-base-100/50">
+                <div className="flex flex-col gap-4">
+                    {/* Top Row: Breadcrumb & Actions */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        {/* Breadcrumb */}
+                        <nav className="flex items-center gap-2 text-xs text-base-content/50 overflow-x-auto no-scrollbar whitespace-nowrap mask-linear-fade">
+                            <span className="hover:text-base-content/80 transition-colors cursor-pointer">Projetos</span>
+                            <span className="opacity-50">/</span>
+                            <span className="font-medium text-base-content/70 hover:text-base-content transition-colors cursor-pointer">{project.name}</span>
+                            <span className="opacity-50">/</span>
+                            <span className="text-base-content font-semibold">Tarefas</span>
+                        </nav>
+
+                        {/* Desktop Actions */}
+                        <div className="hidden sm:flex items-center gap-2">
+                            <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                onClick={() => setShowFilters(prev => !prev)}
+                                className={`btn btn-ghost btn-sm h-9 min-h-0 px-3 text-base-content/70 hover:text-base-content ${showFilters ? 'bg-base-200 text-base-content' : ''}`}
+                                title="Filtros"
+                            >
+                                <Filter className="w-4 h-4" />
+                                <span className="ml-2">Filtros</span>
+                                {activeFiltersCount > 0 && <span className="ml-1 badge badge-xs badge-primary">{activeFiltersCount}</span>}
+                            </Button>
+
+                            <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                onClick={handleSyncJira}
+                                disabled={isSyncingJira}
+                                className="btn btn-ghost btn-sm h-9 min-h-0 px-3 text-base-content/70 hover:text-base-content"
+                                title="Sincronizar com Jira"
+                            >
+                                <RefreshCw className={`w-4 h-4 ${isSyncingJira ? 'animate-spin' : ''}`} />
+                            </Button>
+
+                            <div className="h-4 w-px bg-base-300 mx-1" />
+
+                            <GeneralIAAnalysisButton 
+                                onAnalyze={handleGeneralIAAnalysis}
+                                isAnalyzing={isRunningGeneralAnalysis}
+                                progress={analysisProgress}
+                            />
+
+                            <Button 
+                                variant="primary"
+                                size="sm"
+                                onClick={() => openTaskFormForNew()} 
+                                className="btn btn-primary btn-sm h-9 min-h-0 px-4 rounded-lg font-medium shadow-sm hover:shadow-md transition-all ml-2"
+                            >
+                                <Plus className="w-4 h-4 mr-1.5" />
+                                Adicionar Tarefa
+                            </Button>
+                        </div>
                     </div>
-                    <div className="flex items-center gap-3 flex-wrap w-full lg:w-auto">
-                        {/* Botão Principal */}
-                        <Button 
-                            variant="default"
-                            size="sm"
-                            onClick={() => openTaskFormForNew()} 
-                            className="btn btn-primary btn-sm rounded-full flex items-center gap-2 font-semibold flex-shrink-0 min-h-[40px] px-4"
-                        >
-                            <Plus className="w-4 h-4" />
-                            <span>Adicionar Tarefa</span>
+
+                    {/* Title Row */}
+                    <div className="flex flex-col gap-1">
+                        <div className="flex items-center gap-3 flex-wrap">
+                            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-base-content">
+                                Tarefas & Casos de Teste
+                            </h1>
+                            {extractJiraProjectKey() && (
+                                <span className="badge badge-outline text-xs font-medium opacity-70 h-6">
+                                    Jira: {extractJiraProjectKey()}
+                                </span>
+                            )}
+                        </div>
+                        <p className="text-base-content/60 text-sm max-w-2xl">
+                            Gerencie o ciclo de vida de qualidade do projeto {project.name}.
+                        </p>
+                    </div>
+
+                    {/* Mobile Actions Row */}
+                    <div className="sm:hidden flex items-center gap-2 pt-2 overflow-x-auto no-scrollbar">
+                        <Button variant="primary" size="sm" onClick={() => openTaskFormForNew()} className="btn-primary btn-sm flex-1 whitespace-nowrap">
+                            <Plus className="w-4 h-4 mr-2" /> Nova Tarefa
                         </Button>
-                        
-                        {/* Botão de Análise IA */}
+                        <Button variant="outline" size="sm" onClick={() => setShowFilters(!showFilters)} className="btn-square btn-sm">
+                            <Filter className="w-4 h-4" />
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={handleSyncJira} disabled={isSyncingJira} className="btn-square btn-sm">
+                            <RefreshCw className={`w-4 h-4 ${isSyncingJira ? 'animate-spin' : ''}`} />
+                        </Button>
                         <div className="flex-shrink-0">
                             <GeneralIAAnalysisButton 
                                 onAnalyze={handleGeneralIAAnalysis}
@@ -1504,59 +1571,13 @@ export const TasksView: React.FC<{
                                 progress={analysisProgress}
                             />
                         </div>
-                        
-                        {/* Separador visual */}
-                        <div className="w-px h-8 bg-base-300 flex-shrink-0 hidden sm:block" />
-                        
-                        {/* Botão de Relatório de Testes Reprovados */}
-                        {metrics.failedTestCases > 0 && (
-                            <Button 
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setShowFailedTestsReport(true)} 
-                                className="btn btn-error btn-sm rounded-full flex items-center gap-2 flex-shrink-0 min-h-[40px] px-4"
-                            >
-                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                </svg>
-                                <span>Testes Reprovados ({metrics.failedTestCases})</span>
-                            </Button>
-                        )}
-                        
-                        {/* Botões Secundários */}
-                        <Button 
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setShowFilters(prev => !prev)} 
-                            className="btn btn-outline btn-sm rounded-full flex items-center gap-2 flex-shrink-0 min-h-[40px] px-4"
-                        >
-                            <Filter className="w-4 h-4" />
-                            <span>{showFilters ? 'Ocultar Filtros' : `Filtros${activeFiltersCount > 0 ? ` (${activeFiltersCount})` : ''}`}</span>
-                        </Button>
-                        
-                        <Button 
-                            variant="outline"
-                            size="sm"
-                            onClick={handleSyncJira} 
-                            disabled={isSyncingJira}
-                            className="btn btn-outline btn-sm rounded-full flex items-center gap-2 flex-shrink-0 min-h-[40px] px-4"
-                        >
-                            {isSyncingJira ? (
-                                <>
-                                    <Loader2 className="w-4 h-4 animate-spin" />
-                                    <span>Sincronizando...</span>
-                                </>
-                            ) : (
-                                <>
-                                    <RefreshCw className="w-4 h-4" />
-                                    <span>Atualizar do Jira</span>
-                                </>
-                            )}
-                        </Button>
                     </div>
                 </div>
+            </div>
 
-                <div className="mb-6 lg:mb-8">
+            <div className="p-4 sm:p-6 lg:p-8 pt-6">
+
+                <div className="mb-6">
                     <label 
                         htmlFor="quick-task-search" 
                         className="text-sm font-medium text-base-content/80 mb-2 flex items-center gap-2"
