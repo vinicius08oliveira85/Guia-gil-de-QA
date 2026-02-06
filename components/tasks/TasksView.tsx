@@ -7,7 +7,7 @@ import { Modal } from '../common/Modal';
 import { TaskForm } from './TaskForm';
 import { TestCaseEditorModal } from './TestCaseEditorModal';
 import { Button } from '../common/Button';
-import { Plus, Filter, RefreshCw, Loader2, Clipboard, Zap, CheckCircle2, AlertTriangle, X, Check } from 'lucide-react';
+import { Plus, Filter, RefreshCw, Loader2, Clipboard, Zap, CheckCircle2, AlertTriangle, X, Check, Link as LinkIcon } from 'lucide-react';
 import { logger } from '../../utils/logger';
 import { useProjectsStore } from '../../store/projectsStore';
 import { ModernIcons } from '../common/ModernIcons';
@@ -108,6 +108,8 @@ export const TasksView: React.FC<{
     const [showFilters, setShowFilters] = useState(false);
     
     // Novos Estados de Filtro
+    const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
+    const [selectedTargetProjects, setSelectedTargetProjects] = useState<Set<string>>(new Set());
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState<string[]>([]);
     const [priorityFilter, setPriorityFilter] = useState<string[]>([]);
@@ -145,6 +147,7 @@ export const TasksView: React.FC<{
     const [showFailedTestsReport, setShowFailedTestsReport] = useState(false);
     const [modalTask, setModalTask] = useState<JiraTask | null>(null);
     const metrics = useProjectMetrics(project);
+    const { projects: allProjects, updateProject: updateGlobalProject } = useProjectsStore();
 
     // Lógica de Filtragem Avançada
     const filteredTasks = useMemo(() => {
@@ -239,17 +242,35 @@ export const TasksView: React.FC<{
     // Função helper para delay
     const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
+    // Helper para propagar atualizações de tarefas para outros projetos vinculados
+    const propagateTaskUpdate = useCallback((updatedTask: JiraTask) => {
+        const otherProjects = allProjects.filter(p => p.id !== project.id);
+        otherProjects.forEach(p => {
+            const taskIndex = p.tasks.findIndex(t => t.id === updatedTask.id);
+            if (taskIndex !== -1) {
+                const newTasks = [...p.tasks];
+                // Preservar campos específicos do projeto se necessário, mas o requisito pede sincronização de conteúdo
+                newTasks[taskIndex] = { ...updatedTask }; 
+                updateGlobalProject({ ...p, tasks: newTasks }, { silent: true });
+            }
+        });
+    }, [allProjects, project.id, updateGlobalProject]);
+
     const handleTaskStatusChange = useCallback((taskId: string, status: 'To Do' | 'In Progress' | 'Done') => {
         const task = project.tasks.find(t => t.id === taskId);
         const previousStatus = task?.status;
         
+        const updatedTask = task ? { 
+            ...task, 
+            status,
+            completedAt: status === 'Done' ? new Date().toISOString() : task.completedAt 
+        } : null;
+
+        if (!updatedTask) return;
+
         onUpdateProject({
             ...project,
-            tasks: project.tasks.map(t => t.id === taskId ? { 
-                ...t, 
-                status,
-                completedAt: status === 'Done' ? new Date().toISOString() : t.completedAt 
-            } : t)
+            tasks: project.tasks.map(t => t.id === taskId ? updatedTask : t)
         });
 
         // Se a tarefa foi concluída, verificar se alguma tarefa dependente ficou pronta
@@ -273,6 +294,9 @@ export const TasksView: React.FC<{
                 }
             });
         }
+
+        // Propagar atualização para outros projetos
+        propagateTaskUpdate(updatedTask);
     }, [project, onUpdateProject]);
     
     const handleGenerateBddScenarios = useCallback(async (taskId: string) => {
@@ -292,6 +316,7 @@ export const TasksView: React.FC<{
             const updatedTask = { ...task, bddScenarios: [...(task.bddScenarios || []), ...scenarios] };
             const newTasks = project.tasks.map(t => t.id === taskId ? updatedTask : t);
             onUpdateProject({ ...project, tasks: newTasks });
+            propagateTaskUpdate(updatedTask);
             handleSuccess('Cenários BDD gerados com sucesso!');
         } catch (error) {
             notifyAiError(error, 'Gerar cenários BDD');
@@ -315,6 +340,7 @@ export const TasksView: React.FC<{
         const updatedTask = { ...task, bddScenarios: updatedScenarios };
         const newTasks = project.tasks.map(t => t.id === taskId ? updatedTask : t);
         onUpdateProject({ ...project, tasks: newTasks });
+        propagateTaskUpdate(updatedTask);
 
     }, [project, onUpdateProject]);
 
@@ -326,6 +352,7 @@ export const TasksView: React.FC<{
         const updatedTask = { ...task, bddScenarios: updatedScenarios };
         const newTasks = project.tasks.map(t => t.id === taskId ? updatedTask : t);
         onUpdateProject({ ...project, tasks: newTasks });
+        propagateTaskUpdate(updatedTask);
     }, [project, onUpdateProject]);
 
     const handleGenerateTests = useCallback(async (taskId: string, detailLevel: TestCaseDetailLevel) => {
@@ -352,6 +379,7 @@ export const TasksView: React.FC<{
             const updatedTask = { ...task, testStrategy: strategy, testCases };
             const newTasks = project.tasks.map(t => t.id === updatedTask.id ? updatedTask : t);
             onUpdateProject({ ...project, tasks: newTasks });
+            propagateTaskUpdate(updatedTask);
             handleSuccess('Casos de teste gerados com sucesso!');
         } catch (error) {
             notifyAiError(error, 'Gerar casos de teste');
@@ -394,6 +422,7 @@ export const TasksView: React.FC<{
             
             const newTasks = project.tasks.map(t => t.id === updatedTask.id ? updatedTask : t);
             onUpdateProject({ ...project, tasks: newTasks });
+            propagateTaskUpdate(updatedTask);
             handleSuccess('BDD, estratégias e casos de teste gerados com sucesso!');
         } catch (error) {
             notifyAiError(error, 'Gerar BDD, estratégias e testes');
@@ -451,6 +480,7 @@ export const TasksView: React.FC<{
         }
         
         onUpdateProject({ ...project, tasks: newTasks });
+        propagateTaskUpdate(updatedTask);
         
         setFailModalState({ isOpen: false, taskId: null, testCaseId: null, observedResult: '', createBug: true });
     }, [failModalState, project, onUpdateProject, handleSuccess]);
@@ -464,6 +494,7 @@ export const TasksView: React.FC<{
             const updatedTask = { ...task, testCases: updatedTestCases };
             const newTasks = project.tasks.map(t => t.id === taskId ? updatedTask : t);
             onUpdateProject({ ...project, tasks: newTasks });
+            propagateTaskUpdate(updatedTask);
         } else { // status === 'Failed'
             setFailModalState({
                 isOpen: true,
@@ -476,59 +507,64 @@ export const TasksView: React.FC<{
     }, [project, onUpdateProject]);
 
     const handleToggleTestCaseAutomated = useCallback((taskId: string, testCaseId: string, isAutomated: boolean) => {
+        const task = project.tasks.find(t => t.id === taskId);
+        if (!task) return;
+
+        const originalTestCases = task.testCases || [];
+        const updatedTestCases = originalTestCases.map(tc => 
+            tc.id === testCaseId ? { ...tc, isAutomated } : tc
+        );
+        const updatedTask = { ...task, testCases: updatedTestCases };
+
         onUpdateProject({
             ...project,
-            tasks: project.tasks.map(task => {
-                if (task.id === taskId) {
-                    const originalTestCases = task.testCases || [];
-                    const updatedTestCases = originalTestCases.map(tc => 
-                        tc.id === testCaseId ? { ...tc, isAutomated } : tc
-                    );
-                    return { ...task, testCases: updatedTestCases };
-                }
-                return task;
-            })
+            tasks: project.tasks.map(t => t.id === taskId ? updatedTask : t)
         });
+        propagateTaskUpdate(updatedTask);
     }, [project, onUpdateProject]);
 
     const handleExecutedStrategyChange = useCallback((taskId: string, testCaseId: string, strategies: string[]) => {
+        const task = project.tasks.find(t => t.id === taskId);
+        if (!task) return;
+
+        const originalTestCases = task.testCases || [];
+        const updatedTestCases = originalTestCases.map(tc => 
+            tc.id === testCaseId ? { ...tc, executedStrategy: strategies } : tc
+        );
+        const updatedTask = { ...task, testCases: updatedTestCases };
+
         onUpdateProject({
             ...project,
-            tasks: project.tasks.map(task => {
-                if (task.id === taskId) {
-                    const originalTestCases = task.testCases || [];
-                    const updatedTestCases = originalTestCases.map(tc => 
-                        tc.id === testCaseId ? { ...tc, executedStrategy: strategies } : tc
-                    );
-                    return { ...task, testCases: updatedTestCases };
-                }
-                return task;
-            })
+            tasks: project.tasks.map(t => t.id === taskId ? updatedTask : t)
         });
+        propagateTaskUpdate(updatedTask);
     }, [project, onUpdateProject]);
 
     const handleTaskToolsChange = useCallback((taskId: string, tools: string[]) => {
+        const task = project.tasks.find(t => t.id === taskId);
+        if (!task) return;
+        const updatedTask = { ...task, toolsUsed: tools };
         onUpdateProject({
             ...project,
-            tasks: project.tasks.map(task => 
-                task.id === taskId ? { ...task, toolsUsed: tools } : task
-            )
+            tasks: project.tasks.map(t => t.id === taskId ? updatedTask : t)
         });
+        propagateTaskUpdate(updatedTask);
     }, [project, onUpdateProject]);
 
     const handleTestCaseToolsChange = useCallback((taskId: string, testCaseId: string, tools: string[]) => {
+        const task = project.tasks.find(t => t.id === taskId);
+        if (!task) return;
+
+        const updatedTestCases = (task.testCases || []).map(tc =>
+            tc.id === testCaseId ? { ...tc, toolsUsed: tools } : tc
+        );
+        const updatedTask = { ...task, testCases: updatedTestCases };
+
         onUpdateProject({
             ...project,
-            tasks: project.tasks.map(task => {
-                if (task.id === taskId) {
-                    const updatedTestCases = (task.testCases || []).map(tc =>
-                        tc.id === testCaseId ? { ...tc, toolsUsed: tools } : tc
-                    );
-                    return { ...task, testCases: updatedTestCases };
-                }
-                return task;
-            })
+            tasks: project.tasks.map(t => t.id === taskId ? updatedTask : t)
         });
+        propagateTaskUpdate(updatedTask);
     }, [project, onUpdateProject]);
 
     const handleOpenTestCaseEditor = useCallback((taskId: string, testCase: TestCase) => {
@@ -544,8 +580,10 @@ export const TasksView: React.FC<{
 
         const updatedTasks = project.tasks.map(t => {
             if (t.id !== taskId) return t;
-            const updatedCases = (t.testCases || []).map(tc => tc.id === updatedTestCase.id ? updatedTestCase : tc);
-            return { ...t, testCases: updatedCases };
+            const updatedCases = (t.testCases || []).map(tc => tc.id === updatedTestCase.id ? updatedTestCase : tc); 
+            const updatedTask = { ...t, testCases: updatedCases };
+            propagateTaskUpdate(updatedTask);
+            return updatedTask;
         });
 
         onUpdateProject({ ...project, tasks: updatedTasks });
@@ -566,7 +604,9 @@ export const TasksView: React.FC<{
         const updatedTasks = project.tasks.map(t => {
             if (t.id !== taskId) return t;
             const updatedCases = (t.testCases || []).filter(tc => tc.id !== testCaseId);
-            return { ...t, testCases: updatedCases };
+            const updatedTask = { ...t, testCases: updatedCases };
+            propagateTaskUpdate(updatedTask);
+            return updatedTask;
         });
 
         onUpdateProject({ ...project, tasks: updatedTasks });
@@ -580,65 +620,64 @@ export const TasksView: React.FC<{
     }, [project, onUpdateProject, handleSuccess, handleError]);
 
     const handleStrategyExecutedChange = useCallback((taskId: string, strategyIndex: number, executed: boolean) => {
+        const task = project.tasks.find(t => t.id === taskId);
+        if (!task) return;
+
+        const currentExecuted = task.executedStrategies || [];
+        let newExecuted: number[];
+        let updatedTask: JiraTask;
+        
+        if (executed) {
+            newExecuted = currentExecuted.includes(strategyIndex) 
+                ? currentExecuted 
+                : [...currentExecuted, strategyIndex];
+            updatedTask = { ...task, executedStrategies: newExecuted };
+        } else {
+            newExecuted = currentExecuted.filter(idx => idx !== strategyIndex);
+            const strategyTools = { ...(task.strategyTools || {}) };
+            delete strategyTools[strategyIndex];
+            updatedTask = { 
+                ...task, 
+                executedStrategies: newExecuted,
+                strategyTools: Object.keys(strategyTools).length > 0 ? strategyTools : undefined
+            };
+        }
+
         onUpdateProject({
             ...project,
-            tasks: project.tasks.map(task => {
-                if (task.id === taskId) {
-                    const currentExecuted = task.executedStrategies || [];
-                    let newExecuted: number[];
-                    
-                    if (executed) {
-                        // Adiciona o índice se não estiver presente
-                        newExecuted = currentExecuted.includes(strategyIndex) 
-                            ? currentExecuted 
-                            : [...currentExecuted, strategyIndex];
-                    } else {
-                        // Remove o índice
-                        newExecuted = currentExecuted.filter(idx => idx !== strategyIndex);
-                        // Remove também as ferramentas dessa estratégia
-                        const strategyTools = { ...(task.strategyTools || {}) };
-                        delete strategyTools[strategyIndex];
-                        return { 
-                            ...task, 
-                            executedStrategies: newExecuted,
-                            strategyTools: Object.keys(strategyTools).length > 0 ? strategyTools : undefined
-                        };
-                    }
-                    
-                    return { ...task, executedStrategies: newExecuted };
-                }
-                return task;
-            })
+            tasks: project.tasks.map(t => t.id === taskId ? updatedTask : t)
         });
+        propagateTaskUpdate(updatedTask);
     }, [project, onUpdateProject]);
 
     const handleStrategyToolsChange = useCallback((taskId: string, strategyIndex: number, tools: string[]) => {
+        const task = project.tasks.find(t => t.id === taskId);
+        if (!task) return;
+
+        const currentStrategyTools = task.strategyTools || {};
+        const newStrategyTools = {
+            ...currentStrategyTools,
+            [strategyIndex]: tools.length > 0 ? tools : undefined
+        };
+        // Remove entradas vazias
+        Object.keys(newStrategyTools).forEach((key) => {
+            const index = Number(key);
+            const toolsForIndex = newStrategyTools[index];
+            if (!toolsForIndex || toolsForIndex.length === 0) {
+                delete newStrategyTools[index];
+            }
+        });
+        
+        const updatedTask = { 
+            ...task, 
+            strategyTools: Object.keys(newStrategyTools).length > 0 ? newStrategyTools : undefined
+        };
+
         onUpdateProject({
             ...project,
-            tasks: project.tasks.map(task => {
-                if (task.id === taskId) {
-                    const currentStrategyTools = task.strategyTools || {};
-                    const newStrategyTools = {
-                        ...currentStrategyTools,
-                        [strategyIndex]: tools.length > 0 ? tools : undefined
-                    };
-                    // Remove entradas vazias
-                    Object.keys(newStrategyTools).forEach((key) => {
-                        const index = Number(key);
-                        const toolsForIndex = newStrategyTools[index];
-                        if (!toolsForIndex || toolsForIndex.length === 0) {
-                            delete newStrategyTools[index];
-                        }
-                    });
-                    
-                    return { 
-                        ...task, 
-                        strategyTools: Object.keys(newStrategyTools).length > 0 ? newStrategyTools : undefined
-                    };
-                }
-                return task;
-            })
+            tasks: project.tasks.map(t => t.id === taskId ? updatedTask : t)
         });
+        propagateTaskUpdate(updatedTask);
     }, [project, onUpdateProject]);
 
     const handleAddComment = useCallback((taskId: string, content: string) => {
@@ -663,6 +702,7 @@ export const TasksView: React.FC<{
             tasks: project.tasks.map(t => t.id === taskId ? updatedTask : t)
         });
 
+        propagateTaskUpdate(updatedTask);
         // Notificar sobre o novo comentário
         notifyCommentAdded(updatedTask, project, 'Você');
     }, [project, onUpdateProject]);
@@ -681,6 +721,7 @@ export const TasksView: React.FC<{
             ...project,
             tasks: project.tasks.map(t => t.id === taskId ? updatedTask : t)
         });
+        propagateTaskUpdate(updatedTask);
     }, [project, onUpdateProject]);
 
     const handleDeleteComment = useCallback((taskId: string, commentId: string) => {
@@ -694,6 +735,7 @@ export const TasksView: React.FC<{
             ...project,
             tasks: project.tasks.map(t => t.id === taskId ? updatedTask : t)
         });
+        propagateTaskUpdate(updatedTask);
     }, [project, onUpdateProject]);
 
     const handleGeneralIAAnalysis = useCallback(async () => {
@@ -945,9 +987,10 @@ export const TasksView: React.FC<{
         if (editingTask) {
             // Preservar campos que não vêm do formulário
             const existingTask = project.tasks.find(t => t.id === editingTask.id);
+            let updatedTask: JiraTask | undefined;
             newTasks = project.tasks.map(t => {
                 if (t.id === editingTask.id) {
-                    return { 
+                    updatedTask = { 
                         ...t, 
                         ...taskData,
                         // Preservar campos que não são editados no formulário
@@ -962,9 +1005,13 @@ export const TasksView: React.FC<{
                         createdAt: t.createdAt,
                         completedAt: t.completedAt
                     };
+                    return updatedTask;
                 }
                 return t;
             });
+            if (updatedTask) {
+                propagateTaskUpdate(updatedTask);
+            }
         } else {
             const newTask: JiraTask = { ...taskData, status: 'To Do', testCases: [], bddScenarios: [], createdAt: new Date().toISOString() };
             newTasks = [...project.tasks, newTask];
@@ -1180,6 +1227,31 @@ export const TasksView: React.FC<{
                 projectToSync,
                 jiraProjectKey
             );
+
+            // Proteção contra exclusão: Verificar se tarefas vinculadas foram removidas
+            const currentTaskIds = new Set(projectToSync.tasks.map(t => t.id));
+            const updatedTaskIds = new Set(updatedProject.tasks.map(t => t.id));
+            const missingTaskIds = projectToSync.tasks.filter(t => !updatedTaskIds.has(t.id)).map(t => t.id);
+
+            if (missingTaskIds.length > 0) {
+                // Verificar se estas tarefas existem em outros projetos
+                const otherProjects = allProjects.filter(p => p.id !== project.id);
+                const linkedTaskIds = new Set<string>();
+                
+                otherProjects.forEach(p => {
+                    p.tasks.forEach(t => {
+                        if (missingTaskIds.includes(t.id)) {
+                            linkedTaskIds.add(t.id);
+                        }
+                    });
+                });
+
+                if (linkedTaskIds.size > 0) {
+                    const tasksToRestore = projectToSync.tasks.filter(t => linkedTaskIds.has(t.id));
+                    updatedProject.tasks.push(...tasksToRestore);
+                    logger.info(`Restauradas ${tasksToRestore.length} tarefas vinculadas que seriam excluídas pela sincronização`, 'TasksView');
+                }
+            }
             
             // VALIDAÇÃO FINAL: Buscar projeto mais recente do store e comparar status
             // Isso garante que nenhum status foi perdido durante a sincronização
@@ -1334,6 +1406,28 @@ export const TasksView: React.FC<{
         await performSync(config, selectedJiraProjectKey);
         setSelectedJiraProjectKey('');
     }, [selectedJiraProjectKey, performSync, handleError]);
+
+    const handleLinkTasks = async () => {
+        const tasksToLink = project.tasks.filter(t => selectedTasks.has(t.id));
+        const targetProjects = allProjects.filter(p => selectedTargetProjects.has(p.id));
+
+        for (const targetProject of targetProjects) {
+            const newTasks = [...targetProject.tasks];
+            let changed = false;
+            tasksToLink.forEach(task => {
+                if (!newTasks.find(t => t.id === task.id)) {
+                    newTasks.push(task);
+                    changed = true;
+                }
+            });
+            if (changed) {
+                await updateGlobalProject({ ...targetProject, tasks: newTasks });
+            }
+        }
+        setIsLinkModalOpen(false);
+        setSelectedTargetProjects(new Set());
+        handleSuccess('Tarefas vinculadas com sucesso!');
+    };
 
     const renderTaskTree = useCallback((tasks: TaskWithChildren[], level: number, startIndex: number = 0): React.ReactElement[] => {
         return tasks.map((task, index) => {
@@ -1793,16 +1887,29 @@ export const TasksView: React.FC<{
                 <div className="space-y-4 min-w-0">
                     <div className="flex flex-col gap-4">
                         {selectedTasks.size > 0 && (
-                            <BulkActions
-                                selectedTasks={selectedTasks}
-                                project={project}
-                                onUpdateProject={onUpdateProject}
-                                onClearSelection={() => setSelectedTasks(new Set())}
-                                onProjectCreated={(projectId) => {
-                                    const { selectProject } = useProjectsStore.getState();
-                                    selectProject(projectId);
-                                }}
-                            />
+                            <div className="flex flex-wrap items-center gap-2">
+                                <div className="flex-1 min-w-[300px]">
+                                    <BulkActions
+                                        selectedTasks={selectedTasks}
+                                        project={project}
+                                        onUpdateProject={onUpdateProject}
+                                        onClearSelection={() => setSelectedTasks(new Set())}
+                                        onProjectCreated={(projectId) => {
+                                            const { selectProject } = useProjectsStore.getState();
+                                            selectProject(projectId);
+                                        }}
+                                    />
+                                </div>
+                                <Button 
+                                    variant="outline" 
+                                    size="sm" 
+                                    onClick={() => setIsLinkModalOpen(true)}
+                                    className="btn btn-outline btn-sm gap-2 whitespace-nowrap"
+                                >
+                                    <LinkIcon className="w-4 h-4" />
+                                    Vincular a Projeto
+                                </Button>
+                            </div>
                         )}
                         {(generatingTestsTaskId || generatingBddTaskId) && (
                             <div className="p-4 bg-primary/10 border border-primary/40 rounded-lg text-sm text-base-content flex items-center gap-2">
@@ -1887,6 +1994,49 @@ export const TasksView: React.FC<{
                     </div>
                 </div>
             </Modal>
+
+        <Modal
+            isOpen={isLinkModalOpen}
+            onClose={() => setIsLinkModalOpen(false)}
+            title="Vincular Tarefas a Projetos"
+        >
+            <div className="space-y-4">
+                <p className="text-base-content/70 text-sm">
+                    Selecione os projetos para onde deseja vincular as {selectedTasks.size} tarefa(s) selecionada(s).
+                    As tarefas serão adicionadas aos projetos selecionados e manterão sincronia de conteúdo.
+                </p>
+                <div className="max-h-60 overflow-y-auto border border-base-300 rounded-lg p-2">
+                    {allProjects.filter(p => p.id !== project.id).map(p => (
+                        <label key={p.id} className="flex items-center gap-2 p-2 hover:bg-base-200 rounded cursor-pointer">
+                            <input
+                                type="checkbox"
+                                className="checkbox checkbox-sm checkbox-primary"
+                                checked={selectedTargetProjects.has(p.id)}
+                                onChange={(e) => {
+                                    const newSet = new Set(selectedTargetProjects);
+                                    if (e.target.checked) newSet.add(p.id);
+                                    else newSet.delete(p.id);
+                                    setSelectedTargetProjects(newSet);
+                                }}
+                            />
+                            <span className="text-sm font-medium">{p.name}</span>
+                        </label>
+                    ))}
+                    {allProjects.length <= 1 && (
+                        <p className="text-sm text-base-content/50 text-center py-4">Nenhum outro projeto disponível.</p>
+                    )}
+                </div>
+                <div className="flex justify-end gap-2 pt-2">
+                    <Button variant="ghost" onClick={() => setIsLinkModalOpen(false)}>
+                        Cancelar
+                    </Button>
+                    <Button variant="primary" onClick={handleLinkTasks} disabled={selectedTargetProjects.size === 0}>
+                        Vincular
+                    </Button>
+                </div>
+            </div>
+        </Modal>
+
                     {taskTree.length > 0 ? (
                         <div>
                             {renderTaskTree(taskTree, 0).map((taskElement, index) => (
