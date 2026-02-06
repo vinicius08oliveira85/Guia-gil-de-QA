@@ -331,22 +331,20 @@ export const JiraTaskItem: React.FC<{
         }
     }, [task.id, project, onUpdateProject]);
 
+    // Função para iniciar teste
+    const handleStartTest = useCallback(async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        await updateTestStatus('testando');
+    }, [updateTestStatus]);
+
     // Função para concluir teste
-    const handleCompleteTest = useCallback(async () => {
+    const handleCompleteTest = useCallback(async (e: React.MouseEvent) => {
+        e.stopPropagation();
         try {
             const calculatedStatus = calculateTaskTestStatus(task);
             // Se todos os testes passaram, marcar como concluído, senão pendente
             const finalStatus = calculatedStatus === 'teste_concluido' ? 'teste_concluido' : 'pendente';
-            
-            setTaskTestStatus(finalStatus);
-            if (task.id) await saveTaskTestStatus(task.id, finalStatus);
-
-            if (project && onUpdateProject) {
-                const updatedTasks = project.tasks.map(t =>
-                    t.id === task.id ? { ...t, testStatus: finalStatus } : t
-                );
-                onUpdateProject({ ...project, tasks: updatedTasks });
-            }
+            await updateTestStatus(finalStatus);
         } catch (error) {
             logger.error('Erro ao concluir teste', 'JiraTaskItem', error);
         }
@@ -647,6 +645,24 @@ export const JiraTaskItem: React.FC<{
                     <p className="text-base-content/70 italic">Sem descrição</p>
                 )}
             </div>
+
+            {/* Ações de Teste */}
+            {taskTestStatus && (taskTestStatus === 'testar' || taskTestStatus === 'testando') && (
+                <div className="flex items-center gap-2 p-3 rounded-lg bg-base-200 mt-2">
+                    <p className="text-sm font-medium flex-1">Ações de Teste:</p>
+                    {taskTestStatus === 'testar' && (
+                        <button type="button" onClick={handleStartTest} className="btn btn-sm btn-primary shadow-sm">
+                            <span className="mr-1">▶</span> Iniciar Teste
+                        </button>
+                    )}
+                    {taskTestStatus === 'testando' && (
+                        <button type="button" onClick={handleCompleteTest} className="btn btn-sm btn-success text-white shadow-sm">
+                            <span className="mr-1">✓</span> Concluir Teste
+                        </button>
+                    )}
+                </div>
+            )}
+
             {(task.priority || task.severity || task.owner || task.assignee || nextStep) && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3">
                     {task.owner && (
