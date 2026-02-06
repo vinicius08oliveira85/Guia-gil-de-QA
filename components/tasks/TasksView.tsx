@@ -373,15 +373,12 @@ export const TasksView: React.FC<{
             }
             
             const aiService = getAIService();
-            
-            // Passo 1: Gerar BDD primeiro
-            const bddScenarios = await aiService.generateBddScenarios(task.title, task.description, project);
-            
-            // Passo 2: Gerar estratégias e casos de teste usando os BDD recém-gerados
-            const { strategy, testCases } = await aiService.generateTestCasesForTask(
+                        
+            // Gerar BDD, estratégias e casos de teste em uma única chamada
+            const { strategy, testCases, bddScenarios } = await aiService.generateTestCasesForTask(
                 task.title,
                 task.description,
-                bddScenarios, // Usar os BDD recém-gerados
+                undefined, // BDDs agora são gerados na mesma chamada
                 detailLevel,
                 task.type,
                 project

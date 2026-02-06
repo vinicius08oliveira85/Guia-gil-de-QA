@@ -75,21 +75,6 @@ export class OpenAIService implements AIService {
     project?: Project | null
   ): Promise<string> {
     const documentContext = await getFormattedContext(project || null);
-    const bddContext = bddScenarios && bddScenarios.length > 0
-      ? `
-      ════════════════════════════════════════════════════════════════
-      CENÁRIOS BDD (Gherkin) - BASE PRIMÁRIA PARA TESTES
-      ════════════════════════════════════════════════════════════════
-      IMPORTANTE: Baseie seus testes PRIMARIAMENTE nos seguintes cenários BDD (Gherkin). 
-      Eles representam os requisitos de negócio mais críticos e devem guiar a criação dos casos de teste.
-      
-      ${bddScenarios.map((sc, idx) => `
-      [Cenário ${idx + 1}] ${sc.title}
-      ${sc.gherkin}
-      `).join('\n')}
-      ════════════════════════════════════════════════════════════════
-      `
-      : '';
 
     const detailInstruction = `
       📋 NÍVEL DE DETALHE PARA OS PASSOS DO TESTE: ${detailLevel}
@@ -108,6 +93,8 @@ export class OpenAIService implements AIService {
       ════════════════════════════════════════════════════════════════
       INSTRUÇÕES PARA GERAÇÃO DE CASOS DE TESTE
       ════════════════════════════════════════════════════════════════
+      
+      IMPORTANTE: Os casos de teste devem ser derivados DIRETAMENTE das estratégias de teste definidas anteriormente.
       
       Gere uma lista abrangente e detalhada de casos de teste específicos. Para cada caso de teste, 
       siga rigorosamente a seguinte estrutura:
@@ -211,13 +198,12 @@ export class OpenAIService implements AIService {
          - Teste de Edge Cases (para evitar recorrência)
       ` : ''}
       
-      ${bddContext}
-      
       ${detailInstruction}
 
       ════════════════════════════════════════════════════════════════
       INSTRUÇÕES PARA GERAÇÃO DE ESTRATÉGIAS DE TESTE
       ════════════════════════════════════════════════════════════════
+      PRIMEIRO: Defina a Estratégia de Teste baseada no tipo da tarefa e nos riscos envolvidos.
       
       Gere uma lista abrangente de estratégias de teste recomendadas. Para cada estratégia, forneça:
       
@@ -234,8 +220,25 @@ export class OpenAIService implements AIService {
       4. **tools**: Ferramentas recomendadas para este tipo de teste, separadas por vírgulas. 
          Considere ferramentas modernas e amplamente utilizadas (ex: "Selenium, Cypress, Playwright" 
          para testes web, "Postman, Insomnia" para APIs, "JMeter, K6" para performance).
+      
+      SEGUNDO: Gere os Casos de Teste baseados nessas estratégias.
 
       ${testCasesInstructions}
+
+      ════════════════════════════════════════════════════════════════
+      INSTRUÇÕES PARA GERAÇÃO DE CENÁRIOS BDD
+      ════════════════════════════════════════════════════════════════
+      TERCEIRO: Gere cenários BDD (Behavior-Driven Development) usando a sintaxe Gherkin.
+      Foque em descrever o comportamento do sistema do ponto de vista do usuário.
+      
+      Certifique-se de cobrir:
+      1. Caminho Feliz (Happy Path) - O fluxo padrão de sucesso.
+      2. Cenários Alternativos - Variações de dados ou fluxo.
+      3. Cenários de Exceção/Erro - Como o sistema deve reagir a falhas.
+
+      Para cada cenário, forneça um "title" descritivo e o "gherkin" completo
+      usando as palavras-chave em português (Dado, E, Quando, Então).
+
       
       ════════════════════════════════════════════════════════════════
       BOAS PRÁTICAS E CONSIDERAÇÕES
@@ -256,6 +259,7 @@ export class OpenAIService implements AIService {
       Retorne APENAS um objeto JSON válido com a seguinte estrutura:
       {
         "strategy": [...],
+        "bddScenarios": [...],
         "testCases": ${shouldGenerateTestCases ? '[...]' : '[]'}
       }
       
@@ -276,14 +280,14 @@ export class OpenAIService implements AIService {
     detailLevel: TestCaseDetailLevel = 'Padrão',
     taskType?: JiraTaskType,
     project?: Project | null
-  ): Promise<{ strategy: TestStrategy[]; testCases: TestCase[] }> {
+  ): Promise<{ strategy: TestStrategy[]; testCases: TestCase[]; bddScenarios: BddScenario[] }> {
     const prompt = await this.buildRobustTestGenerationPrompt(title, description, bddScenarios, detailLevel, taskType, project);
 
     try {
       const jsonString = await this.callAPI(prompt, { type: 'json_object' });
       const parsedResponse = JSON.parse(jsonString);
 
-      if (!parsedResponse || !Array.isArray(parsedResponse.strategy) || !Array.isArray(parsedResponse.testCases)) {
+      if (!parsedResponse || !Array.isArray(parsedResponse.strategy) || !Array.isArray(parsedResponse.testCases) || !Array.isArray(parsedResponse.bddScenarios)) {
           logger.error("Resposta da IA com estrutura inválida", 'openaiService', parsedResponse);
           throw new Error("Resposta da IA com estrutura inválida.");
       }
@@ -312,7 +316,13 @@ export class OpenAIService implements AIService {
         tools: item.tools,
       }));
 
-      return { strategy, testCases };
+      const bddScenarios: BddScenario[] = (parsedResponse.bddScenarios || []).map((item: any, index: number) => ({
+        id: `bdd-${Date.now()}-${index}`,
+        title: item.title,
+        gherkin: item.gherkin,
+      }));
+
+      return { strategy, testCases, bddScenarios };
     } catch (error) {
       logger.error("Erro ao gerar casos de teste", 'openaiService', error);
       throw new Error("Failed to communicate with the OpenAI API.");
@@ -472,6 +482,11 @@ export class OpenAIService implements AIService {
     Aja como um especialista em BDD (Behavior-Driven Development). Para a tarefa a seguir, crie cenários de comportamento usando a sintaxe Gherkin (Dado, Quando, Então).
     Foque em descrever o comportamento do sistema do ponto de vista do usuário.
 
+    Certifique-se de cobrir:
+    1. Caminho Feliz (Happy Path) - O fluxo padrão de sucesso.
+    2. Cenários Alternativos - Variações de dados ou fluxo.
+    3. Cenários de Exceção/Erro - Como o sistema deve reagir a falhas.
+
     Título da Tarefa: ${title}
     Descrição: ${description}
 
@@ -532,4 +547,3 @@ export class OpenAIService implements AIService {
     }
   }
 }
-
