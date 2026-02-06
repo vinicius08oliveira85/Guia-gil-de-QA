@@ -5,6 +5,7 @@ import { Spinner } from '../common/Spinner';
 import { TaskTypeIcon, TaskStatusIcon, StartTestIcon, CompleteTestIcon, ToDoTestIcon, PlusIcon, EditIcon, TrashIcon, ChevronDownIcon, RefreshIcon } from '../common/Icons';
 import { BddScenarioForm, BddScenarioItem } from './BddScenario';
 import { TestCaseItem } from './TestCaseItem';
+import { Sparkles, Zap, Wand2, Loader2 } from 'lucide-react';
 import { TestStrategyCard } from './TestStrategyCard';
 import { ToolsSelector } from './ToolsSelector';
 import { TestReportModal } from './TestReportModal';
@@ -330,18 +331,26 @@ export const JiraTaskItem: React.FC<{
         }
     }, [task.id, project, onUpdateProject]);
 
-    // Função para iniciar teste
-    const handleStartTest = useCallback(async () => {
-        await updateTestStatus('testando');
-    }, [updateTestStatus]);
-
     // Função para concluir teste
     const handleCompleteTest = useCallback(async () => {
-        const calculatedStatus = calculateTaskTestStatus(task);
-        // Se todos os testes passaram, marcar como concluído, senão pendente
-        const finalStatus = calculatedStatus === 'teste_concluido' ? 'teste_concluido' : 'pendente';
-        await updateTestStatus(finalStatus);
-    }, [task, updateTestStatus]);
+        try {
+            const calculatedStatus = calculateTaskTestStatus(task);
+            // Se todos os testes passaram, marcar como concluído, senão pendente
+            const finalStatus = calculatedStatus === 'teste_concluido' ? 'teste_concluido' : 'pendente';
+            
+            setTaskTestStatus(finalStatus);
+            if (task.id) await saveTaskTestStatus(task.id, finalStatus);
+
+            if (project && onUpdateProject) {
+                const updatedTasks = project.tasks.map(t =>
+                    t.id === task.id ? { ...t, testStatus: finalStatus } : t
+                );
+                onUpdateProject({ ...project, tasks: updatedTasks });
+            }
+        } catch (error) {
+            logger.error('Erro ao concluir teste', 'JiraTaskItem', error);
+        }
+    }, [task, project, onUpdateProject]);
 
     // Cores e estilos para status de teste
     const testStatusConfig = useMemo(() => {
@@ -962,9 +971,6 @@ export const JiraTaskItem: React.FC<{
             )}
             {isGeneratingBdd && <div className="flex justify-center py-2"><Spinner small /></div>}
             <div className="flex flex-wrap items-center gap-2">
-                <button onClick={() => onGenerateBddScenarios(task.id)} disabled={isGeneratingBdd || isCreatingBdd || !!editingBddScenario} className="btn btn-secondary !text-sm bg-blue-500/20 border-blue-500/30 hover:bg-blue-500/40 disabled:opacity-50 disabled:cursor-not-allowed">
-                    Gerar Cenários com IA
-                </button>
                 <button onClick={() => setIsCreatingBdd(true)} disabled={isGeneratingBdd || isCreatingBdd || !!editingBddScenario} className="btn btn-secondary !text-sm disabled:opacity-50 disabled:cursor-not-allowed">
                     Adicionar Cenário Manualmente
                 </button>
@@ -1125,10 +1131,6 @@ export const JiraTaskItem: React.FC<{
 
                 {!isGenerating && (
                     <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-3">
-                        <button onClick={() => onGenerateTests(task.id, detailLevel)} className="btn btn-primary btn-sm">
-                            {hasTests ? <RefreshIcon /> : <PlusIcon />}
-                            <span>{hasTests ? 'Regerar com IA' : 'Gerar com IA'}</span>
-                        </button>
                         <div className="flex-1">
                             <label htmlFor={`detail-level-${task.id}`} className="block text-sm text-base-content/70 mb-1">Nível de Detalhe</label>
                             <select
@@ -1450,6 +1452,39 @@ export const JiraTaskItem: React.FC<{
 
                             {/* Coluna 3: Status e Ações (flex-shrink para não quebrar) */}
                             <div className="flex items-center gap-2 flex-shrink-0 ml-auto">
+                                {/* Ações Rápidas de IA */}
+                                {(task.type === 'Tarefa' || task.type === 'Bug') && (
+                                    <div className="flex items-center gap-1 mr-1">
+                                        {onGenerateBddScenarios && (
+                                            <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    onGenerateBddScenarios(task.id);
+                                                }}
+                                                disabled={isGeneratingBdd || isGeneratingAll}
+                                                className="btn btn-ghost btn-xs text-primary hover:bg-primary/10"
+                                                title="Gerar BDD com IA"
+                                            >
+                                                {isGeneratingBdd ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                                            </button>
+                                        )}
+                                        {onGenerateTests && (
+                                            <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    onGenerateTests(task.id, 'Padrão');
+                                                }}
+                                                disabled={isGenerating || isGeneratingAll}
+                                                className="btn btn-ghost btn-xs text-primary hover:bg-primary/10"
+                                                title="Gerar Casos de Teste"
+                                            >
+                                                {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
+                                            </button>
+                                        )}
+                                    </div>
+                                )}
                                 {taskTestStatus && (
                                     <span className={`badge badge-sm ${testStatusConfig.bgColor} ${testStatusConfig.color} border gap-1`}>
                                         <span aria-hidden="true" className="text-xs">{testStatusConfig.icon}</span>
@@ -1496,25 +1531,42 @@ export const JiraTaskItem: React.FC<{
                                 className="overflow-hidden border-t border-base-300 bg-base-50/50"
                             >
                                 <div className="p-4 space-y-4">
-                                    {/* Botões de Ação de Teste (movidos para cá) */}
-                                    {taskTestStatus && (taskTestStatus === 'testar' || taskTestStatus === 'testando') && (
-                                        <div className="flex items-center gap-2 p-3 rounded-lg bg-base-200">
-                                            <p className="text-sm font-medium flex-1">Ações de Teste:</p>
-                                            {taskTestStatus === 'testar' && (
-                                                <button type="button" onClick={handleStartTest} className="btn btn-sm btn-primary shadow-sm">
-                                                    <span className="mr-1">▶</span> Iniciar Teste
-                                                </button>
-                                            )}
-                                            {taskTestStatus === 'testando' && (
-                                                <button type="button" onClick={handleCompleteTest} className="btn btn-sm btn-success text-white shadow-sm">
-                                                    <span className="mr-1">✓</span> Concluir Teste
-                                                </button>
-                                            )}
-                                        </div>
-                                    )}
-
                                     {/* Barra de Ações (movida para dentro do expandir) */}
                                     <div className="flex flex-wrap gap-2 pb-4 border-b border-base-200">
+                                        {(task.type === 'Tarefa' || task.type === 'Bug') && (
+                                            <>
+                                                {onGenerateAll && (
+                                                    <button
+                                                        onClick={() => onGenerateAll(task.id, detailLevel)}
+                                                        disabled={isGeneratingAll || isGenerating || isGeneratingBdd}
+                                                        className="btn btn-sm btn-ghost text-primary gap-2 hover:bg-primary/10"
+                                                        title="Gerar BDD, Estratégia e Testes com IA"
+                                                    >
+                                                        {isGeneratingAll ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
+                                                        Gerar Tudo
+                                                    </button>
+                                                )}
+                                                <button
+                                                    onClick={() => onGenerateBddScenarios(task.id)}
+                                                    disabled={isGeneratingBdd || isGeneratingAll}
+                                                    className="btn btn-sm btn-ghost gap-2"
+                                                    title="Gerar apenas cenários BDD"
+                                                >
+                                                    {isGeneratingBdd ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                                                    BDD
+                                                </button>
+                                                <button
+                                                    onClick={() => onGenerateTests(task.id, detailLevel)}
+                                                    disabled={isGenerating || isGeneratingAll}
+                                                    className="btn btn-sm btn-ghost gap-2"
+                                                    title="Gerar apenas casos de teste"
+                                                >
+                                                    {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
+                                                    Testes
+                                                </button>
+                                                <div className="divider divider-horizontal mx-0 my-1 w-px h-6 bg-base-300 self-center hidden sm:flex"></div>
+                                            </>
+                                        )}
                                         {task.type === 'Epic' && (
                                             <button onClick={() => onAddSubtask(task.id)} className="btn btn-sm btn-ghost gap-2">
                                                 <PlusIcon className="w-4 h-4" /> Adicionar Subtarefa
@@ -1560,29 +1612,6 @@ export const JiraTaskItem: React.FC<{
                                                 );
                                             })}
                                         </div>
-
-                                        {(task.type === 'Tarefa' || task.type === 'Bug') && onGenerateAll && (
-                                            <button
-                                                type="button"
-                                                onClick={() => onGenerateAll(task.id)}
-                                                disabled={isGeneratingAll || isGenerating || isGeneratingBdd}
-                                                className="btn btn-primary btn-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                                            >
-                                                {isGeneratingAll ? (
-                                                    <>
-                                                        <Spinner small />
-                                                        <span>Gerando...</span>
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                                                        </svg>
-                                                        <span>Gerar Tudo</span>
-                                                    </>
-                                                )}
-                                            </button>
-                                        )}
                                     </div>
 
                                     <div
