@@ -1887,24 +1887,25 @@ export const TasksView: React.FC<{
                 <div className="space-y-4 min-w-0">
                     <div className="flex flex-col gap-4">
                         {selectedTasks.size > 0 && (
-                            <BulkActions
-                                selectedTasks={selectedTasks}
-                                project={project}
-                                onUpdateProject={onUpdateProject}
-                                onClearSelection={() => setSelectedTasks(new Set())}
-                                onProjectCreated={(projectId) => {
-                                    const { selectProject } = useProjectsStore.getState();
-                                    selectProject(projectId);
-                                }}
-                            >
+                            <div className="flex flex-wrap items-center gap-2">
+                                <BulkActions
+                                    selectedTasks={selectedTasks}
+                                    project={project}
+                                    onUpdateProject={onUpdateProject}
+                                    onClearSelection={() => setSelectedTasks(new Set())}
+                                    onProjectCreated={(projectId) => {
+                                        const { selectProject } = useProjectsStore.getState();
+                                        selectProject(projectId);
+                                    }}
+                                />
                                 <button
                                     onClick={() => setIsLinkModalOpen(true)}
-                                    className="px-3 py-1 bg-white/20 hover:bg-white/30 rounded text-sm flex items-center gap-2 transition-colors"
+                                    className="btn btn-outline btn-sm gap-2"
                                 >
                                     <LinkIcon className="w-4 h-4" />
                                     Vincular a Projeto
                                 </button>
-                            </BulkActions>
+                            </div>
                         )}
                         {(generatingTestsTaskId || generatingBddTaskId) && (
                             <div className="p-4 bg-primary/10 border border-primary/40 rounded-lg text-sm text-base-content flex items-center gap-2">
