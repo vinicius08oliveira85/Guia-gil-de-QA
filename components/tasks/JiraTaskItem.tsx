@@ -129,8 +129,6 @@ export const JiraTaskItem: React.FC<{
     onEdit: (task: JiraTask) => void;
     onGenerateBddScenarios: (taskId: string) => Promise<void>;
     isGeneratingBdd: boolean;
-    onGenerateAll?: (taskId: string, detailLevel?: TestCaseDetailLevel) => Promise<void>;
-    isGeneratingAll?: boolean;
     onSyncToJira?: (taskId: string) => Promise<void>;
     isSyncing?: boolean;
     onSaveBddScenario: (taskId: string, scenario: Omit<BddScenario, 'id'>, scenarioId?: string) => void;
@@ -151,7 +149,7 @@ export const JiraTaskItem: React.FC<{
     activeTaskId?: string | null;
     onFocusTask?: (taskId: string | null) => void;
     onOpenModal?: (task: JiraTask) => void;
-}> = React.memo(({ task, onTestCaseStatusChange, onToggleTestCaseAutomated, onExecutedStrategyChange, onTaskToolsChange, onTestCaseToolsChange, onStrategyExecutedChange, onStrategyToolsChange, onDelete, onGenerateTests, isGenerating, onAddSubtask, onEdit, onGenerateBddScenarios, isGeneratingBdd, onGenerateAll, isGeneratingAll, onSyncToJira, isSyncing, onSaveBddScenario, onDeleteBddScenario, onTaskStatusChange, onAddTestCaseFromTemplate, onAddComment, onEditComment, onDeleteComment, onEditTestCase, onDeleteTestCase, project, onUpdateProject, isSelected, onToggleSelect, children, level, activeTaskId, onFocusTask, onOpenModal }) => {
+}> = React.memo(({ task, onTestCaseStatusChange, onToggleTestCaseAutomated, onExecutedStrategyChange, onTaskToolsChange, onTestCaseToolsChange, onStrategyExecutedChange, onStrategyToolsChange, onDelete, onGenerateTests, isGenerating, onAddSubtask, onEdit, onGenerateBddScenarios, isGeneratingBdd, onSyncToJira, isSyncing, onSaveBddScenario, onDeleteBddScenario, onTaskStatusChange, onAddTestCaseFromTemplate, onAddComment, onEditComment, onDeleteComment, onEditTestCase, onDeleteTestCase, project, onUpdateProject, isSelected, onToggleSelect, children, level, activeTaskId, onFocusTask, onOpenModal }) => {
     const reduceMotion = useReducedMotion();
     const [isDetailsOpen, setIsDetailsOpen] = useState(false); // Colapsado por padrão para compactar
     const [isChildrenOpen, setIsChildrenOpen] = useState(false);
@@ -1560,29 +1558,6 @@ export const JiraTaskItem: React.FC<{
                                                 );
                                             })}
                                         </div>
-
-                                        {(task.type === 'Tarefa' || task.type === 'Bug') && onGenerateAll && (
-                                            <button
-                                                type="button"
-                                                onClick={() => onGenerateAll(task.id)}
-                                                disabled={isGeneratingAll || isGenerating || isGeneratingBdd}
-                                                className="btn btn-primary btn-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                                            >
-                                                {isGeneratingAll ? (
-                                                    <>
-                                                        <Spinner small />
-                                                        <span>Gerando...</span>
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                                                        </svg>
-                                                        <span>Gerar Tudo</span>
-                                                    </>
-                                                )}
-                                            </button>
-                                        )}
                                     </div>
 
                                     <div
