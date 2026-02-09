@@ -112,7 +112,6 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported: _onProjectImp
                     <img
                         src="/Logo_Moderno_Leve-removebg-preview.png"
                         alt="Logo QA Agile Guide"
-                        className="h-12 sm:h-16 md:h-20 lg:h-24 xl:h-28 w-auto flex-shrink-0 transition-all duration-300"
                         loading="lazy"
                         decoding="async"
                         draggable={false}
