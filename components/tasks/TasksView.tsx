@@ -1485,7 +1485,7 @@ export const TasksView: React.FC<{
                         <p className="text-base-content/70 text-sm mt-1">Acompanhe o progresso das atividades e resultados de QA.</p>
                     </div>
                     <div className="flex flex-wrap items-center justify-start md:justify-end gap-2 w-full md:w-auto">
-                        {/* Botão Principal */}
+                        {/* Botão Principal - Adicionar Tarefa */}
                         <Button 
                             variant="default"
                             size="sm"
