@@ -265,7 +265,7 @@ export const SDLCView: React.FC<{ project: Project }> = ({ project }) => {
         <button
           type="button"
           onClick={() => setShowShiftLeft(!showShiftLeft)}
-          className="btn btn-outline btn-sm rounded-full"
+          className="btn btn-outline btn-sm rounded-full hover:bg-base-200"
         >
           {showShiftLeft ? 'Ocultar' : 'Mostrar'} Shift Left
         </button>
