@@ -227,15 +227,29 @@ export const SDLCView: React.FC<{ project: Project }> = ({ project }) => {
   const [showShiftLeft, setShowShiftLeft] = useState(false);
 
   const getPhaseStatus = (phaseId: string): 'completed' | 'current' | 'upcoming' => {
-    // Lógica simplificada baseada nas fases do projeto
-    const phaseOrder = ['planning', 'design', 'development', 'testing', 'deployment', 'maintenance'];
-    const currentPhaseIndex = phaseOrder.findIndex(p => 
-      project.phases?.some(phase => phase.name.toLowerCase().includes(p))
+    if (!project.phases) return 'upcoming';
+
+    // Mapeamento mais robusto entre fases do SDLC e fases do projeto
+    const phaseMapping: Record<string, string[]> = {
+      'planning': ['request', 'analysis', 'planejamento', 'requisitos'],
+      'design': ['design', 'prototipagem'],
+      'development': ['development', 'desenvolvimento', 'code', 'build', 'implementação', 'analysis and code'],
+      'testing': ['testing', 'testes', 'qa', 'homologação', 'test'],
+      'deployment': ['deployment', 'deploy', 'release', 'implantação', 'entrega'],
+      'maintenance': ['maintenance', 'manutenção', 'operate', 'monitor', 'suporte']
+    };
+
+    const keywords = phaseMapping[phaseId] || [];
+    const relevantPhases = project.phases.filter(p => 
+      keywords.some(k => p.name.toLowerCase().includes(k))
     );
-    const phaseIndex = phaseOrder.indexOf(phaseId);
-    
-    if (phaseIndex < currentPhaseIndex) return 'completed';
-    if (phaseIndex === currentPhaseIndex) return 'current';
+
+    if (relevantPhases.length === 0) return 'upcoming';
+
+    if (relevantPhases.some(p => p.status === 'Em Andamento')) return 'current';
+    if (relevantPhases.every(p => p.status === 'Concluído')) return 'completed';
+    if (relevantPhases.some(p => p.status === 'Concluído')) return 'current';
+
     return 'upcoming';
   };
 

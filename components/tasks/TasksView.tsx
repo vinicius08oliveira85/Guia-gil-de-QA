@@ -12,6 +12,23 @@ import { logger } from '../../utils/logger';
 import { useProjectsStore } from '../../store/projectsStore';
 import { ModernIcons } from '../common/ModernIcons';
 import { getFriendlyAIErrorMessage } from '../../utils/aiErrorMapper';
+import { JiraTaskItem, TaskWithChildren } from './JiraTaskItem';
+import { TaskDetailsModal } from './TaskDetailsModal';
+import { useErrorHandler } from '../../hooks/useErrorHandler';
+import { createBugFromFailedTest } from '../../utils/bugAutoCreation';
+import { getTaskDependents, getReadyTasks } from '../../utils/dependencyService';
+import { notifyTestFailed, notifyBugCreated, notifyCommentAdded, notifyDependencyResolved } from '../../utils/notificationService';
+import { BulkActions } from '../common/BulkActions';
+import { TaskCreationWizard } from './TaskCreationWizard';
+import { useBeginnerMode } from '../../hooks/useBeginnerMode';
+import { useLocalStorage } from '../../hooks/useLocalStorage';
+import { EmptyState } from '../common/EmptyState';
+import { syncJiraProject, getJiraConfig, getJiraProjects, JiraConfig, syncTaskToJira } from '../../services/jiraService';
+import { GeneralIAAnalysisButton } from './GeneralIAAnalysisButton';
+import { generateGeneralIAAnalysis } from '../../services/ai/generalAnalysisService';
+import { FailedTestsReportModal } from './FailedTestsReportModal';
+import { useProjectMetrics } from '../../hooks/useProjectMetrics';
+import { getTaskStatusCategory } from '../../utils/jiraStatusCategorizer';
 
 const TASK_ID_REGEX = /^([A-Z]+)-(\d+)/i;
 
@@ -46,23 +63,6 @@ const compareTasksById = (a: JiraTask, b: JiraTask) => {
 
     return a.title.localeCompare(b.title);
 };
-import { JiraTaskItem, TaskWithChildren } from './JiraTaskItem';
-import { TaskDetailsModal } from './TaskDetailsModal';
-import { useErrorHandler } from '../../hooks/useErrorHandler';
-import { createBugFromFailedTest } from '../../utils/bugAutoCreation';
-import { getTaskDependents, getReadyTasks } from '../../utils/dependencyService';
-import { notifyTestFailed, notifyBugCreated, notifyCommentAdded, notifyDependencyResolved } from '../../utils/notificationService';
-import { BulkActions } from '../common/BulkActions';
-import { TaskCreationWizard } from './TaskCreationWizard';
-import { useBeginnerMode } from '../../hooks/useBeginnerMode';
-import { useLocalStorage } from '../../hooks/useLocalStorage';
-import { EmptyState } from '../common/EmptyState';
-import { syncJiraProject, getJiraConfig, getJiraProjects, JiraConfig, syncTaskToJira } from '../../services/jiraService';
-import { GeneralIAAnalysisButton } from './GeneralIAAnalysisButton';
-import { generateGeneralIAAnalysis } from '../../services/ai/generalAnalysisService';
-import { FailedTestsReportModal } from './FailedTestsReportModal';
-import { useProjectMetrics } from '../../hooks/useProjectMetrics';
-import { getTaskStatusCategory } from '../../utils/jiraStatusCategorizer';
 
 // Componente Helper para Chips de Filtro
 const FilterChip = ({ 
