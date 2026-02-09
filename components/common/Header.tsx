@@ -110,9 +110,9 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported: _onProjectImp
             <div className="container mx-auto flex items-center justify-between gap-2 sm:gap-3 min-w-0 py-2 px-3 sm:px-4">
                 <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                     <img
-                        src="/logo@erasebg-transformed.png"
+                        src="/Logo_Moderno_Leve-removebg-preview.png"
                         alt="Logo QA Agile Guide"
-                        className="h-10 w-auto sm:h-12 flex-shrink-0"
+                        className="h-8 sm:h-10 md:h-12 lg:h-14 xl:h-16 w-auto flex-shrink-0 transition-all duration-300"
                         loading="lazy"
                         decoding="async"
                         draggable={false}
