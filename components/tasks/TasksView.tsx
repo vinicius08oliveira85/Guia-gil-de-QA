@@ -1479,18 +1479,18 @@ export const TasksView: React.FC<{
         <>
         <Card hoverable={false} className="p-4 sm:p-6 lg:p-8">
             <div className="flex flex-col gap-6 mb-8">
-                <div className="flex flex-col md:flex-row justify-between items-center gap-4 w-full">
-                    <div className="flex-shrink-0 text-center md:text-left">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
+                    <div className="flex-shrink-0 text-left">
                         <h1 className="text-2xl md:text-3xl font-bold text-base-content">Tarefas & Casos de Teste</h1>
                         <p className="text-base-content/70 text-sm mt-1">Acompanhe o progresso das atividades e resultados de QA.</p>
                     </div>
-                    <div className="flex flex-wrap items-center justify-center md:justify-end gap-2 w-full md:w-auto">
+                    <div className="flex flex-wrap items-center justify-start md:justify-end gap-2 w-full md:w-auto">
                         {/* Botão Principal */}
                         <Button 
                             variant="default"
                             size="sm"
                             onClick={() => openTaskFormForNew()} 
-                            className="btn btn-primary btn-sm rounded-full flex items-center gap-2 font-semibold flex-shrink-0 min-h-[44px] px-4"
+                            className="rounded-full flex items-center gap-2 font-semibold flex-shrink-0 min-h-[44px] px-4"
                         >
                             <Plus className="w-4 h-4" />
                             <span>Adicionar Tarefa</span>
@@ -1515,7 +1515,7 @@ export const TasksView: React.FC<{
                                 variant="outline"
                                 size="sm"
                                 onClick={() => setShowFailedTestsReport(true)} 
-                                className="btn btn-error btn-sm rounded-full flex items-center gap-2 flex-shrink-0 min-h-[44px] px-4"
+                                className="btn btn-error rounded-full flex items-center gap-2 flex-shrink-0 min-h-[44px] px-4"
                             >
                                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -1529,7 +1529,7 @@ export const TasksView: React.FC<{
                             variant="outline"
                             size="sm"
                             onClick={() => setShowFilters(prev => !prev)} 
-                            className="btn btn-outline btn-sm rounded-full flex items-center gap-2 flex-shrink-0 min-h-[44px] px-4"
+                            className="rounded-full flex items-center gap-2 flex-shrink-0 min-h-[44px] px-4"
                         >
                             <Filter className="w-4 h-4" />
                             <span>{showFilters ? 'Ocultar Filtros' : `Filtros${activeFiltersCount > 0 ? ` (${activeFiltersCount})` : ''}`}</span>
@@ -1540,7 +1540,7 @@ export const TasksView: React.FC<{
                             size="sm"
                             onClick={handleSyncJira} 
                             disabled={isSyncingJira}
-                            className="btn btn-outline btn-sm rounded-full flex items-center gap-2 flex-shrink-0 min-h-[44px] px-4"
+                            className="rounded-full flex items-center gap-2 flex-shrink-0 min-h-[44px] px-4"
                         >
                             {isSyncingJira ? (
                                 <>
