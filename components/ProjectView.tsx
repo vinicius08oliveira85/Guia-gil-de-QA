@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Suspense, useRef } from 'react';
+import React, { useState, useEffect, Suspense, useRef, useCallback } from 'react';
 import { Project } from '../types';
 import { useProjectMetrics } from '../hooks/useProjectMetrics';
 import { TasksView } from './tasks/TasksView';
@@ -33,6 +33,33 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
     const isMountedRef = useRef(true);
     const projectRef = useRef(currentProject);
     const onUpdateProjectRef = useRef(onUpdateProject);
+    
+    // Estado e Refs para indicadores de scroll nas abas
+    const tabsRef = useRef<HTMLDivElement>(null);
+    const [canScrollLeft, setCanScrollLeft] = useState(false);
+    const [canScrollRight, setCanScrollRight] = useState(false);
+
+    const checkScroll = useCallback(() => {
+        if (!tabsRef.current) return;
+        const { scrollLeft, scrollWidth, clientWidth } = tabsRef.current;
+        setCanScrollLeft(scrollLeft > 0);
+        // Pequena margem de erro para precisão de float
+        setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1);
+    }, []);
+
+    // Monitorar scroll e resize para atualizar indicadores
+    useEffect(() => {
+        checkScroll();
+        const tabsElement = tabsRef.current;
+        if (tabsElement) {
+            tabsElement.addEventListener('scroll', checkScroll);
+            window.addEventListener('resize', checkScroll);
+            return () => {
+                tabsElement.removeEventListener('scroll', checkScroll);
+                window.removeEventListener('resize', checkScroll);
+            };
+        }
+    }, [checkScroll, activeTab]);
     
     // Auto-save: monitora mudanças e salva automaticamente
     useAutoSave({
@@ -252,9 +279,18 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                     className="max-w-4xl mb-8"
                 />
                 
-                <div className="border-b border-base-300 pb-3">
+                <div className="border-b border-base-300 pb-3 relative">
+                    {/* Indicadores de Scroll para Mobile */}
+                    {canScrollLeft && (
+                        <div className="absolute left-0 top-0 bottom-3 w-8 bg-gradient-to-r from-base-100 to-transparent pointer-events-none z-10" />
+                    )}
+                    {canScrollRight && (
+                        <div className="absolute right-0 top-0 bottom-3 w-8 bg-gradient-to-l from-base-100 to-transparent pointer-events-none z-10" />
+                    )}
+
                     <nav
-                        className="tabs tabs-boxed overflow-x-auto w-full"
+                        ref={tabsRef}
+                        className="tabs tabs-boxed overflow-x-auto w-full flex-nowrap scroll-smooth no-scrollbar"
                         aria-label="Navegação de abas"
                         role="tablist"
                     >
@@ -263,7 +299,7 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                                 key={tab.id}
                                 type="button"
                                 onClick={() => handleTabClick(tab.id)}
-                                className={`tab whitespace-nowrap ${activeTab === tab.id ? 'tab-active' : ''}`}
+                                className={`tab whitespace-nowrap flex-shrink-0 ${activeTab === tab.id ? 'tab-active' : ''}`}
                                 data-onboarding={tab['data-onboarding']}
                                 data-tour={tab['data-tour']}
                                 id={`tab-${tab.id}`}

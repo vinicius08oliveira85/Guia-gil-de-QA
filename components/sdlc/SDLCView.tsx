@@ -259,7 +259,7 @@ export const SDLCView: React.FC<{ project: Project }> = ({ project }) => {
 
       {/* Timeline Visual */}
       <div className="relative">
-        <div className="absolute left-8 top-0 bottom-0 w-1 bg-base-300"></div>
+        <div className="absolute left-6 sm:left-8 top-0 bottom-0 w-1 bg-base-300"></div>
         
         <div className="space-y-8">
           {sdlcPhases.map((phase, index) => {
@@ -273,7 +273,7 @@ export const SDLCView: React.FC<{ project: Project }> = ({ project }) => {
             return (
               <div key={phase.id} className="relative flex items-start gap-6">
                 {/* Indicador de fase */}
-                <div className={`relative z-10 w-16 h-16 rounded-full ${statusColors[status]} flex items-center justify-center text-white font-bold text-sm shadow-lg`}>
+                <div className={`relative z-10 w-12 h-12 sm:w-16 sm:h-16 rounded-full ${statusColors[status]} flex items-center justify-center text-white font-bold text-xs sm:text-sm shadow-lg flex-shrink-0`}>
                   {index + 1}
                 </div>
 
@@ -445,4 +445,3 @@ export const SDLCView: React.FC<{ project: Project }> = ({ project }) => {
     </div>
   );
 };
-
