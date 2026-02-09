@@ -1489,11 +1489,7 @@ export const TasksView: React.FC<{
                         <Button 
                             variant="default"
                             onClick={() => openTaskFormForNew()} 
-<<<<<<< HEAD
-                            className="h-10 px-4 rounded-lg btn btn-primary flex items-center justify-center gap-2 transition-all duration-200 active:scale-95 text-sm font-medium shadow-md hover:shadow-lg flex-shrink-0"
-=======
                             className="rounded-full flex items-center gap-2 font-semibold flex-shrink-0 min-h-[44px] px-4"
->>>>>>> homolog
                         >
                             <Plus className="w-4 h-4" />
                             <span>Adicionar Tarefa</span>
@@ -1517,11 +1513,7 @@ export const TasksView: React.FC<{
                             <Button 
                                 variant="outline"
                                 onClick={() => setShowFailedTestsReport(true)} 
-<<<<<<< HEAD
-                                className="h-10 px-4 rounded-lg btn btn-outline border-error/30 text-error hover:bg-error hover:text-white flex items-center justify-center gap-2 transition-all duration-200 active:scale-95 text-sm font-medium flex-shrink-0"
-=======
                                 className="btn btn-error rounded-full flex items-center gap-2 flex-shrink-0 min-h-[44px] px-4"
->>>>>>> homolog
                             >
                                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -1534,11 +1526,7 @@ export const TasksView: React.FC<{
                         <Button 
                             variant="outline"
                             onClick={() => setShowFilters(prev => !prev)} 
-<<<<<<< HEAD
-                            className="h-10 px-4 rounded-lg btn btn-outline border-base-300 bg-base-100 hover:bg-base-200 hover:border-base-400 text-base-content flex items-center justify-center gap-2 transition-all duration-200 active:scale-95 text-sm font-medium flex-shrink-0"
-=======
                             className="rounded-full flex items-center gap-2 flex-shrink-0 min-h-[44px] px-4"
->>>>>>> homolog
                         >
                             <Filter className="w-4 h-4" />
                             <span>{showFilters ? 'Ocultar Filtros' : `Filtros${activeFiltersCount > 0 ? ` (${activeFiltersCount})` : ''}`}</span>
@@ -1548,11 +1536,7 @@ export const TasksView: React.FC<{
                             variant="outline"
                             onClick={handleSyncJira} 
                             disabled={isSyncingJira}
-<<<<<<< HEAD
-                            className="h-10 px-4 rounded-lg btn btn-outline border-base-300 bg-base-100 hover:bg-base-200 hover:border-base-400 text-base-content flex items-center justify-center gap-2 transition-all duration-200 active:scale-95 text-sm font-medium flex-shrink-0"
-=======
                             className="rounded-full flex items-center gap-2 flex-shrink-0 min-h-[44px] px-4"
->>>>>>> homolog
                         >
                             {isSyncingJira ? (
                                 <>
@@ -1913,11 +1897,7 @@ export const TasksView: React.FC<{
                                 />
                                 <button
                                     onClick={() => setIsLinkModalOpen(true)}
-<<<<<<< HEAD
-                                    className="h-10 px-4 rounded-lg btn btn-outline border-base-300 bg-base-100 hover:bg-base-200 hover:border-base-400 text-base-content flex items-center justify-center gap-2 transition-all duration-200 active:scale-95 text-sm font-medium"
-=======
                                     className="btn btn-outline btn-sm gap-2 min-h-[44px] px-4"
->>>>>>> homolog
                                 >
                                     <LinkIcon className="w-4 h-4" />
                                     Vincular a Projeto
