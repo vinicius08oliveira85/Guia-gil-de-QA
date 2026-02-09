@@ -1490,7 +1490,7 @@ export const TasksView: React.FC<{
                             variant="default"
                             size="sm"
                             onClick={() => openTaskFormForNew()} 
-                            className="rounded-full flex items-center gap-2 font-semibold flex-shrink-0 min-h-[44px] px-4"
+                            className="rounded-full flex items-center gap-1.5 font-semibold flex-shrink-0 min-h-[44px] px-4 shadow-sm transition-all active:scale-95"
                         >
                             <Plus className="w-4 h-4" />
                             <span>Adicionar Tarefa</span>
@@ -1515,7 +1515,7 @@ export const TasksView: React.FC<{
                                 variant="outline"
                                 size="sm"
                                 onClick={() => setShowFailedTestsReport(true)} 
-                                className="btn btn-error rounded-full flex items-center gap-2 flex-shrink-0 min-h-[44px] px-4"
+                                className="rounded-full flex items-center gap-1.5 flex-shrink-0 min-h-[44px] px-4 text-error hover:border-error hover:bg-error/10"
                             >
                                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -1529,7 +1529,7 @@ export const TasksView: React.FC<{
                             variant="outline"
                             size="sm"
                             onClick={() => setShowFilters(prev => !prev)} 
-                            className="rounded-full flex items-center gap-2 flex-shrink-0 min-h-[44px] px-4"
+                            className="rounded-full flex items-center gap-1.5 flex-shrink-0 min-h-[44px] px-4 hover:bg-base-200"
                         >
                             <Filter className="w-4 h-4" />
                             <span>{showFilters ? 'Ocultar Filtros' : `Filtros${activeFiltersCount > 0 ? ` (${activeFiltersCount})` : ''}`}</span>
@@ -1540,7 +1540,7 @@ export const TasksView: React.FC<{
                             size="sm"
                             onClick={handleSyncJira} 
                             disabled={isSyncingJira}
-                            className="rounded-full flex items-center gap-2 flex-shrink-0 min-h-[44px] px-4"
+                            className="rounded-full flex items-center gap-1.5 flex-shrink-0 min-h-[44px] px-4 hover:bg-base-200"
                         >
                             {isSyncingJira ? (
                                 <>
@@ -1901,7 +1901,7 @@ export const TasksView: React.FC<{
                                 />
                                 <button
                                     onClick={() => setIsLinkModalOpen(true)}
-                                    className="btn btn-outline btn-sm gap-2 min-h-[44px] px-4"
+                                    className="btn btn-outline btn-sm rounded-full flex items-center gap-1.5 hover:bg-base-200 min-h-[44px] px-4"
                                 >
                                     <LinkIcon className="w-4 h-4" />
                                     Vincular a Projeto
@@ -1976,7 +1976,7 @@ export const TasksView: React.FC<{
                                 setShowJiraProjectSelector(false);
                                 setSelectedJiraProjectKey('');
                             }}
-                            className="btn btn-ghost"
+                            className="btn btn-outline btn-sm rounded-full flex items-center gap-1.5 hover:bg-base-200"
                         >
                             Cancelar
                         </button>
@@ -1984,7 +1984,7 @@ export const TasksView: React.FC<{
                             type="button"
                             onClick={handleConfirmJiraProject}
                             disabled={!selectedJiraProjectKey || isSyncingJira}
-                            className="btn btn-primary"
+                            className="btn btn-primary btn-sm rounded-full flex items-center gap-1.5 shadow-sm transition-all active:scale-95"
                         >
                             {isSyncingJira ? 'Sincronizando...' : 'Sincronizar'}
                         </button>
@@ -2024,10 +2024,10 @@ export const TasksView: React.FC<{
                     )}
                 </div>
                 <div className="flex justify-end gap-2 pt-2">
-                    <Button variant="ghost" onClick={() => setIsLinkModalOpen(false)}>
+                    <Button variant="outline" size="sm" className="rounded-full flex items-center gap-1.5 hover:bg-base-200" onClick={() => setIsLinkModalOpen(false)}>
                         Cancelar
                     </Button>
-                    <Button variant="primary" onClick={handleLinkTasks} disabled={selectedTargetProjects.size === 0}>
+                    <Button variant="primary" size="sm" className="rounded-full flex items-center gap-1.5 shadow-sm transition-all active:scale-95" onClick={handleLinkTasks} disabled={selectedTargetProjects.size === 0}>
                         Vincular
                     </Button>
                 </div>
@@ -2098,8 +2098,8 @@ export const TasksView: React.FC<{
                     <label htmlFor="create-bug-task" className="ml-2 block text-sm text-base-content">Criar tarefa de Bug automaticamente</label>
                 </div>
                 <div className="flex justify-end gap-3 pt-4">
-                    <button type="button" onClick={() => setFailModalState({ ...failModalState, isOpen: false })} className="btn btn-ghost">Cancelar</button>
-                    <button type="button" onClick={handleConfirmFail} className="btn btn-error">Confirmar Reprovação</button>
+                    <button type="button" onClick={() => setFailModalState({ ...failModalState, isOpen: false })} className="btn btn-outline btn-sm rounded-full flex items-center gap-1.5 hover:bg-base-200">Cancelar</button>
+                    <button type="button" onClick={handleConfirmFail} className="btn btn-error btn-sm rounded-full flex items-center gap-1.5 shadow-sm transition-all active:scale-95">Confirmar Reprovação</button>
                 </div>
             </div>
         </Modal>

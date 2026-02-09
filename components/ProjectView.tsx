@@ -237,7 +237,7 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                         <button 
                             onClick={handleSaveToSupabase}
                             disabled={!supabaseAvailable || isSavingToSupabase}
-                            className="btn btn-primary flex items-center justify-center gap-2 w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="btn btn-primary btn-sm rounded-full flex items-center justify-center gap-1.5 w-full sm:w-auto shadow-sm transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                             title={!supabaseAvailable ? 'Supabase não está configurado. Configure VITE_SUPABASE_PROXY_URL.' : 'Salvar projeto no Supabase manualmente'}
                             type="button"
                         >
@@ -257,7 +257,7 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                         </button>
                         <button 
                             onClick={handlePrint} 
-                            className="btn btn-outline flex items-center justify-center gap-2 w-full sm:w-auto"
+                            className="btn btn-outline btn-sm rounded-full flex items-center justify-center gap-1.5 w-full sm:w-auto hover:bg-base-200"
                             type="button"
                         >
                             <span aria-hidden="true">📄</span>

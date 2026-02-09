@@ -337,7 +337,7 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
             <button
               type="button"
               onClick={() => setShowFilters(true)}
-              className="btn btn-outline btn-sm rounded-full flex items-center gap-1.5"
+              className="btn btn-outline btn-sm rounded-full flex items-center gap-1.5 hover:bg-base-200"
               aria-label="Filtrar dados do dashboard"
             >
               <Filter className="w-4 h-4" aria-hidden="true" />
@@ -346,7 +346,7 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
             <button
               type="button"
               onClick={() => setShowExportModal(true)}
-              className="btn btn-outline btn-sm rounded-full flex items-center gap-1.5"
+              className="btn btn-outline btn-sm rounded-full flex items-center gap-1.5 hover:bg-base-200"
               aria-label="Exportar dados do dashboard"
             >
               <Download className="w-4 h-4" aria-hidden="true" />
@@ -362,7 +362,7 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
                   setShowNewTestModal(true);
                 }
               }}
-              className="btn btn-primary btn-sm rounded-full flex items-center gap-1.5"
+              className="btn btn-primary btn-sm rounded-full flex items-center gap-1.5 shadow-sm transition-all active:scale-95"
               aria-label="Criar novo teste"
             >
               <Plus className="w-4 h-4" aria-hidden="true" />
