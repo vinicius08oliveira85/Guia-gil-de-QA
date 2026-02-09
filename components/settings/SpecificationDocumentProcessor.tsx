@@ -90,7 +90,7 @@ export const SpecificationDocumentProcessor: React.FC<SpecificationDocumentProce
 
   return (
     <Card>
-      <div className="space-y-4">
+      <div className="p-6 space-y-4">
         <div>
           <h3 className="text-lg font-semibold text-text-primary mb-2">
             Documento de Especificação
@@ -114,7 +114,7 @@ export const SpecificationDocumentProcessor: React.FC<SpecificationDocumentProce
               </div>
             )}
             <div className="flex gap-2">
-              <label className="btn btn-secondary cursor-pointer">
+              <label className="btn btn-secondary btn-sm rounded-full cursor-pointer flex items-center gap-1.5">
                 🔄 Reprocessar Documento
                 <input 
                   type="file" 
@@ -126,7 +126,7 @@ export const SpecificationDocumentProcessor: React.FC<SpecificationDocumentProce
               </label>
               <button
                 onClick={handleClear}
-                className="btn btn-secondary hover:bg-red-500/20 hover:border-red-500/30"
+                className="btn btn-outline btn-sm rounded-full flex items-center gap-1.5 hover:bg-red-500/20 hover:border-red-500/30"
                 disabled={isProcessing}
               >
                 🗑️ Remover
@@ -141,7 +141,7 @@ export const SpecificationDocumentProcessor: React.FC<SpecificationDocumentProce
                 Nenhum documento processado. As análises de IA funcionarão normalmente, mas sem o contexto do documento de especificação.
               </span>
             </div>
-            <label className="btn btn-primary cursor-pointer inline-flex items-center gap-2">
+            <label className="btn btn-primary btn-sm rounded-full cursor-pointer inline-flex items-center gap-1.5 shadow-sm transition-all active:scale-95">
               {isProcessing ? (
                 <>
                   <Spinner small />
@@ -169,4 +169,3 @@ export const SpecificationDocumentProcessor: React.FC<SpecificationDocumentProce
     </Card>
   );
 };
-
