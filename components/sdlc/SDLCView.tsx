@@ -227,15 +227,29 @@ export const SDLCView: React.FC<{ project: Project }> = ({ project }) => {
   const [showShiftLeft, setShowShiftLeft] = useState(false);
 
   const getPhaseStatus = (phaseId: string): 'completed' | 'current' | 'upcoming' => {
-    // Lógica simplificada baseada nas fases do projeto
-    const phaseOrder = ['planning', 'design', 'development', 'testing', 'deployment', 'maintenance'];
-    const currentPhaseIndex = phaseOrder.findIndex(p => 
-      project.phases?.some(phase => phase.name.toLowerCase().includes(p))
+    if (!project.phases) return 'upcoming';
+
+    // Mapeamento mais robusto entre fases do SDLC e fases do projeto
+    const phaseMapping: Record<string, string[]> = {
+      'planning': ['request', 'analysis', 'planejamento', 'requisitos'],
+      'design': ['design', 'prototipagem'],
+      'development': ['development', 'desenvolvimento', 'code', 'build', 'implementação', 'analysis and code'],
+      'testing': ['testing', 'testes', 'qa', 'homologação', 'test'],
+      'deployment': ['deployment', 'deploy', 'release', 'implantação', 'entrega'],
+      'maintenance': ['maintenance', 'manutenção', 'operate', 'monitor', 'suporte']
+    };
+
+    const keywords = phaseMapping[phaseId] || [];
+    const relevantPhases = project.phases.filter(p => 
+      keywords.some(k => p.name.toLowerCase().includes(k))
     );
-    const phaseIndex = phaseOrder.indexOf(phaseId);
-    
-    if (phaseIndex < currentPhaseIndex) return 'completed';
-    if (phaseIndex === currentPhaseIndex) return 'current';
+
+    if (relevantPhases.length === 0) return 'upcoming';
+
+    if (relevantPhases.some(p => p.status === 'Em Andamento')) return 'current';
+    if (relevantPhases.every(p => p.status === 'Concluído')) return 'completed';
+    if (relevantPhases.some(p => p.status === 'Concluído')) return 'current';
+
     return 'upcoming';
   };
 
@@ -259,7 +273,7 @@ export const SDLCView: React.FC<{ project: Project }> = ({ project }) => {
 
       {/* Timeline Visual */}
       <div className="relative">
-        <div className="absolute left-8 top-0 bottom-0 w-1 bg-base-300"></div>
+        <div className="absolute left-6 sm:left-8 top-0 bottom-0 w-1 bg-base-300"></div>
         
         <div className="space-y-8">
           {sdlcPhases.map((phase, index) => {
@@ -273,7 +287,7 @@ export const SDLCView: React.FC<{ project: Project }> = ({ project }) => {
             return (
               <div key={phase.id} className="relative flex items-start gap-6">
                 {/* Indicador de fase */}
-                <div className={`relative z-10 w-16 h-16 rounded-full ${statusColors[status]} flex items-center justify-center text-white font-bold text-sm shadow-lg`}>
+                <div className={`relative z-10 w-12 h-12 sm:w-16 sm:h-16 rounded-full ${statusColors[status]} flex items-center justify-center text-white font-bold text-xs sm:text-sm shadow-lg flex-shrink-0`}>
                   {index + 1}
                 </div>
 
@@ -445,4 +459,3 @@ export const SDLCView: React.FC<{ project: Project }> = ({ project }) => {
     </div>
   );
 };
-

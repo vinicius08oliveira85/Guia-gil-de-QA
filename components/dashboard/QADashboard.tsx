@@ -10,6 +10,8 @@ import { Card } from '../common/Card';
 import { Badge } from '../common/Badge';
 import { FileExportModal } from '../common/FileExportModal';
 import { DashboardFiltersModal, DashboardFilters } from './DashboardFiltersModal';
+import { ReopeningRateCard } from '../tasks/ReopeningRateCard';
+import { getQualityAlerts } from '../tasks/qualityMetrics';
 import {
   ClipboardCheck,
   CheckCircle2,
@@ -195,6 +197,22 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
     };
   }, [trends, project.metricsHistory]);
 
+  // Calcular métricas derivadas para qualidade
+  const defectRate = useMemo(() => {
+    if (metrics.totalTestCases === 0) return 0;
+    return Math.round((metrics.failedTestCases / metrics.totalTestCases) * 100);
+  }, [metrics]);
+
+  // Placeholder para Taxa de Reabertura (idealmente viria do histórico de status)
+  const reopeningRate = 0;
+
+  const qualityMetricsObj = useMemo(() => ({
+    coverage: metrics.testCoverage,
+    passRate: metrics.testPassRate,
+    defectRate,
+    reopeningRate
+  }), [metrics, defectRate]);
+
   // Verificar se há alertas críticos
   const hasCriticalAlerts = useMemo(() => {
     return metrics.bugsBySeverity['Crítico'] > 0 || 
@@ -245,6 +263,22 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
       });
     }
 
+    // Integrar alertas da lógica centralizada de qualidade
+    const qualityAlerts = getQualityAlerts(qualityMetricsObj);
+    qualityAlerts.forEach((alertMsg, index) => {
+      // Evitar duplicatas de cobertura se já adicionado acima
+      if (alertMsg.includes('Cobertura') && alertsList.some(a => a.id === 'low-coverage')) return;
+      
+      alertsList.push({
+        id: `quality-auto-${index}`,
+        type: alertMsg.includes('Crítica') || alertMsg.includes('Elevada') ? 'critical' : 'warning',
+        title: 'Alerta de Qualidade',
+        description: alertMsg,
+        priority: alertMsg.includes('Crítica') ? 'High' : 'Medium',
+        time: 'Agora',
+      });
+    });
+
     if (metrics.openVsClosedBugs.open > 10) {
       alertsList.push({
         id: 'many-bugs',
@@ -267,7 +301,7 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
       });
     }
 
-    return alertsList;
+    return alertsList.sort((a, b) => (a.priority === 'High' ? -1 : 1));
   }, [metrics]);
 
   return (
@@ -397,7 +431,10 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
           </div>
         </Card>
 
-        <QualityKPIs project={filteredProject} />
+        <div className="space-y-4">
+          <QualityKPIs project={filteredProject} />
+          <ReopeningRateCard rate={reopeningRate} />
+        </div>
       </div>
 
       {/* Recent Activity and Alerts */}
