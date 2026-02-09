@@ -1483,8 +1483,13 @@ export const TasksView: React.FC<{
                     <div className="flex-shrink-0 space-y-2">
                         <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-base-content">Tarefas & Casos de Teste</h1>
                         <p className="text-base-content/70 text-sm sm:text-base max-w-2xl leading-relaxed">Acompanhe o progresso das atividades e resultados de QA.</p>
+                <div className="flex flex-col md:flex-row justify-between items-center gap-4 w-full">
+                    <div className="flex-shrink-0 text-center md:text-left">
+                        <h1 className="text-2xl md:text-3xl font-bold text-base-content">Tarefas & Casos de Teste</h1>
+                        <p className="text-base-content/70 text-sm mt-1">Acompanhe o progresso das atividades e resultados de QA.</p>
                     </div>
                     <div className="flex items-center gap-3 flex-wrap w-full lg:w-auto">
+                    <div className="flex flex-wrap items-center justify-center md:justify-end gap-2 w-full md:w-auto">
                         {/* Botão Principal */}
                         <Button 
                             variant="default"
@@ -1507,6 +1512,7 @@ export const TasksView: React.FC<{
                         
                         {/* Separador visual */}
                         <div className="w-px h-8 bg-base-300 flex-shrink-0 hidden sm:block" />
+                        <div className="w-px h-8 bg-base-300 flex-shrink-0 hidden md:block" />
                         
                         {/* Botão de Relatório de Testes Reprovados */}
                         {metrics.failedTestCases > 0 && (
