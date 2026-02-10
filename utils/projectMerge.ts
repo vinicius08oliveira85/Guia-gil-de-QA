@@ -152,7 +152,7 @@ const mergeTasks = (
       
       if (taskComparison > 0) {
         // Tarefa local é mais recente
-        tasksMap.set(task.id, localTask);
+        tasksMap.set(remoteTask.id, localTask);
       } else if (taskComparison < 0) {
         // Tarefa remota é mais recente
         tasksMap.set(remoteTask.id, remoteTask);

@@ -71,17 +71,18 @@ export const ProjectTemplateSelector: React.FC<ProjectTemplateSelectorProps> = (
               <span className="text-2xl">{getCategoryIcon(template.category)}</span>
             </div>
             <p className="text-sm text-base-content/70 mb-3">{template.description}</p>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2 min-w-0">
               {template.defaultTasks.slice(0, 3).map((task, idx) => (
                 <span
                   key={idx}
-                  className="badge badge-outline badge-sm"
+                  className="badge badge-outline badge-sm max-w-[calc(100%-0.5rem)] truncate whitespace-nowrap"
+                  title={task.title}
                 >
                   {task.title}
                 </span>
               ))}
               {template.defaultTasks.length > 3 && (
-                <span className="badge badge-outline badge-sm">
+                <span className="badge badge-outline badge-sm whitespace-nowrap">
                   +{template.defaultTasks.length - 3} mais
                 </span>
               )}
