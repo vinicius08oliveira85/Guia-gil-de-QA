@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Project, JiraTask, BddScenario, TestCaseDetailLevel, TestCase, Comment } from '../../types';
 import { getAIService } from '../../services/ai/aiServiceFactory';
@@ -30,6 +30,25 @@ import { FailedTestsReportModal } from './FailedTestsReportModal';
 import { useProjectMetrics } from '../../hooks/useProjectMetrics';
 
 const TASK_ID_REGEX = /^([A-Z]+)-(\d+)/i;
+
+// Função para mapear status do Jira para status interno (mesma lógica de jiraService.ts)
+const mapJiraStatusToTaskStatus = (jiraStatus: string | undefined | null): 'To Do' | 'In Progress' | 'Done' => {
+    if (!jiraStatus) return 'To Do';
+    const status = jiraStatus.toLowerCase();
+    // Verificar status concluído (inglês e português)
+    if (status.includes('done') || status.includes('resolved') || status.includes('closed') || 
+        status.includes('concluído') || status.includes('concluido') || status.includes('finalizado') || 
+        status.includes('resolvido') || status.includes('fechado')) {
+        return 'Done';
+    }
+    // Verificar status em andamento (inglês e português)
+    if (status.includes('progress') || status.includes('in progress') || 
+        status.includes('em andamento') || status.includes('andamento') || 
+        status.includes('em desenvolvimento') || status.includes('desenvolvimento')) {
+        return 'In Progress';
+    }
+    return 'To Do';
+};
 
 const parseTaskId = (taskId: string) => {
     if (!taskId) {
@@ -1060,6 +1079,36 @@ export const TasksView: React.FC<{
 
     const epics = useMemo(() => project.tasks.filter(t => t.type === 'Epic'), [project.tasks]);
 
+    // Corrigir status das tarefas baseado no jiraStatus quando disponível
+    // Isso corrige tarefas que foram importadas antes da correção do mapeamento
+    useEffect(() => {
+        if (!project || !project.tasks) return;
+        
+        const tasksNeedingCorrection = project.tasks.filter(task => {
+            if (!task.jiraStatus) return false;
+            const correctStatus = mapJiraStatusToTaskStatus(task.jiraStatus);
+            return task.status !== correctStatus;
+        });
+        
+        if (tasksNeedingCorrection.length > 0) {
+            const correctedTasks = project.tasks.map(task => {
+                if (!task.jiraStatus) return task;
+                const correctStatus = mapJiraStatusToTaskStatus(task.jiraStatus);
+                if (task.status !== correctStatus) {
+                    return { ...task, status: correctStatus };
+                }
+                return task;
+            });
+            
+            onUpdateProject({
+                ...project,
+                tasks: correctedTasks
+            });
+            
+            logger.info(`Corrigidos ${tasksNeedingCorrection.length} status de tarefas baseado no jiraStatus`, 'TasksView');
+        }
+    }, [project?.tasks, project?.id, onUpdateProject]);
+
     const stats = useMemo(() => {
         if (!project || !project.tasks) {
             return { total: 0, inProgress: 0, done: 0, bugsOpen: 0, totalTests: 0, executedTests: 0, automatedTests: 0 };
@@ -1067,21 +1116,36 @@ export const TasksView: React.FC<{
 
         const total = project.tasks.length;
         
-        const inProgress = project.tasks.filter(
+        // Corrigir status baseado no jiraStatus quando disponível
+        // Isso corrige tarefas que foram importadas antes da correção do mapeamento
+        const tasksWithCorrectedStatus = project.tasks.map(task => {
+            // Se a tarefa tem jiraStatus e o status atual não corresponde ao mapeamento correto, corrigir
+            if (task.jiraStatus) {
+                const correctStatus = mapJiraStatusToTaskStatus(task.jiraStatus);
+                // Só corrigir se o status atual for diferente do correto
+                // Isso preserva mudanças manuais do usuário que não têm jiraStatus
+                if (task.status !== correctStatus) {
+                    return { ...task, status: correctStatus };
+                }
+            }
+            return task;
+        });
+        
+        const inProgress = tasksWithCorrectedStatus.filter(
             task => task.status === 'In Progress'
         ).length;
         
-        const done = project.tasks.filter(
+        const done = tasksWithCorrectedStatus.filter(
             task => task.status === 'Done'
         ).length;
 
-        const bugsOpen = project.tasks.filter(
+        const bugsOpen = tasksWithCorrectedStatus.filter(
             task => task.type === 'Bug' && task.status !== 'Done'
         ).length;
 
-        const totalTests = project.tasks.reduce((acc, t) => acc + (t.testCases?.length || 0), 0);
-        const executedTests = project.tasks.reduce((acc, t) => acc + (t.testCases?.filter(tc => tc.status !== 'Not Run').length || 0), 0);
-        const automatedTests = project.tasks.reduce((acc, t) => acc + (t.testCases?.filter(tc => tc.isAutomated).length || 0), 0);
+        const totalTests = tasksWithCorrectedStatus.reduce((acc, t) => acc + (t.testCases?.length || 0), 0);
+        const executedTests = tasksWithCorrectedStatus.reduce((acc, t) => acc + (t.testCases?.filter(tc => tc.status !== 'Not Run').length || 0), 0);
+        const automatedTests = tasksWithCorrectedStatus.reduce((acc, t) => acc + (t.testCases?.filter(tc => tc.isAutomated).length || 0), 0);
         
         return { total, inProgress, done, bugsOpen, totalTests, executedTests, automatedTests };
     }, [project?.tasks]);
