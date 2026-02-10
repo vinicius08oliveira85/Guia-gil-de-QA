@@ -50,7 +50,7 @@ const MetricRing: React.FC<MetricRingProps> = ({
     onMouseEnter,
     onMouseLeave
 }) => {
-    const radius = 36; // Para viewBox 0-100, radius de 36 deixa espaço para strokeWidth 8
+    const radius = 36; // Para viewBox 0-100
     const circumference = 2 * Math.PI * radius;
     const offset = circumference * (1 - metric.trend / 100);
     
@@ -65,10 +65,12 @@ const MetricRing: React.FC<MetricRingProps> = ({
             aria-valuemax={100}
             aria-label={`${metric.label}: ${metric.value} ${metric.unit}, ${metric.trend}% completo`}
         >
-            {/* Ring container com largura fluida e responsiva */}
-            <div className="relative w-full aspect-square max-w-[110px] mx-auto">
+            {/* AUMENTADO: max-w ajustado para 140px para preencher melhor o card.
+               mx-auto garante centralização.
+            */}
+            <div className="relative w-full aspect-square max-w-[140px] mx-auto">
                 {/* Background ring */}
-                <div className="absolute inset-0 rounded-full border-4 sm:border-[5px] border-base-200" />
+                <div className="absolute inset-0 rounded-full border-[6px] border-base-200" />
                 {/* Progress ring */}
                 <svg 
                     aria-hidden="true"
@@ -84,7 +86,7 @@ const MetricRing: React.FC<MetricRingProps> = ({
                         r={radius}
                         fill="none"
                         stroke={color}
-                        strokeWidth="8"
+                        strokeWidth="10" 
                         strokeDasharray={circumference}
                         strokeDashoffset={offset}
                         strokeLinecap="round"
@@ -93,18 +95,19 @@ const MetricRing: React.FC<MetricRingProps> = ({
                 </svg>
                 {/* Center content */}
                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                    <span className="text-sm sm:text-base md:text-lg font-bold text-base-content leading-tight">
+                    {/* AUMENTADO: Texto maior para legibilidade */}
+                    <span className="text-xl sm:text-2xl font-bold text-base-content leading-none mb-0.5">
                         {metric.value}
                     </span>
-                    <span className="text-[10px] sm:text-xs md:text-sm text-base-content/60 leading-tight">
+                    <span className="text-xs sm:text-sm font-medium text-base-content/60 leading-none">
                         {metric.unit}
                     </span>
                 </div>
             </div>
-            <span className="mt-2 sm:mt-3 text-xs sm:text-sm md:text-base font-medium text-base-content/80 text-center leading-tight">
+            <span className="mt-2 text-sm sm:text-base font-medium text-base-content/80 text-center leading-tight">
                 {metric.label}
             </span>
-            <span className="text-[10px] sm:text-xs text-base-content/50 leading-tight">
+            <span className="text-xs text-base-content/50 leading-tight">
                 {metric.trend}%
             </span>
         </div>
@@ -210,7 +213,7 @@ export const ProjectActivityCard: React.FC<ProjectActivityCardProps> = ({
     return (
         <div
             className={cn(
-                "relative h-full rounded-2xl sm:rounded-3xl px-4 py-3 sm:px-4 sm:py-4 md:px-5 md:py-6",
+                "relative h-full flex flex-col rounded-2xl sm:rounded-3xl px-4 py-4 md:px-5 md:py-6",
                 "bg-base-100",
                 "border border-base-200",
                 "hover:border-primary/30",
@@ -235,15 +238,16 @@ export const ProjectActivityCard: React.FC<ProjectActivityCardProps> = ({
             }}
         >
             {/* Header */}
-            <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
-                <div className="p-1.5 sm:p-2 rounded-full bg-primary/10 flex-shrink-0">
+            <div className="flex items-start gap-2 sm:gap-3 mb-4 sm:mb-6">
+                <div className="p-1.5 sm:p-2 rounded-full bg-primary/10 flex-shrink-0 mt-0.5">
                     <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
-                    <h3 className="text-sm sm:text-base md:text-lg font-semibold text-base-content truncate" title={project.name}>
+                    {/* AUMENTADO: line-clamp-2 permite 2 linhas. min-h ajuda a alinhar cards vizinhos se um tiver titulo curto */}
+                    <h3 className="text-base sm:text-lg font-semibold text-base-content line-clamp-2 min-h-[1.5rem]" title={project.name}>
                         {project.name}
                     </h3>
-                    <p className="text-[10px] sm:text-xs md:text-sm text-base-content/60 truncate">
+                    <p className="text-xs sm:text-sm text-base-content/60 truncate mt-0.5">
                         {project.settings?.jiraProjectKey ? `Jira: ${project.settings.jiraProjectKey}` : 'Projeto QA'}
                     </p>
                 </div>
@@ -263,8 +267,9 @@ export const ProjectActivityCard: React.FC<ProjectActivityCardProps> = ({
                 )}
             </div>
 
-            {/* Metrics Rings - Grid layout */}
-            <div className="grid grid-cols-3 gap-4 items-center justify-items-center mb-4 sm:mb-6">
+            {/* Metrics Rings - Grid layout Ajustado */}
+            {/* gap-2 em mobile, gap-3/4 em desktop para não quebrar layout de 4 colunas */}
+            <div className="grid grid-cols-3 gap-2 sm:gap-4 items-end justify-items-center mb-4 sm:mb-6 flex-1">
                 {metrics.map((metric) => {
                     const color = METRIC_COLORS[metric.label as keyof typeof METRIC_COLORS] || '#007AFF';
                     
@@ -283,7 +288,7 @@ export const ProjectActivityCard: React.FC<ProjectActivityCardProps> = ({
 
             {/* Goals Section */}
             {goals.length > 0 && (
-                <div className="mt-4 sm:mt-6 space-y-3 sm:space-y-4">
+                <div className="mt-auto space-y-3 sm:space-y-4">
                     <div className="h-px bg-gradient-to-r from-transparent via-base-300 to-transparent" />
 
                     <div className="space-y-3 sm:space-y-4">
@@ -299,7 +304,7 @@ export const ProjectActivityCard: React.FC<ProjectActivityCardProps> = ({
                                 <div
                                     key={goal.id}
                                     className={cn(
-                                        "w-full flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg sm:rounded-xl",
+                                        "w-full flex items-center gap-2 sm:gap-3 p-2 sm:p-2.5 rounded-lg",
                                         "bg-base-200/50",
                                         "border border-base-300/50",
                                         "hover:border-primary/30",
