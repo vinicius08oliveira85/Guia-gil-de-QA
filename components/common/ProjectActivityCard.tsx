@@ -130,7 +130,7 @@ export const ProjectActivityCard: React.FC<ProjectActivityCardProps> = ({
     return (
         <div
             className={cn(
-                "relative h-full rounded-3xl p-6",
+                "relative h-full rounded-2xl sm:rounded-3xl p-4 sm:p-6",
                 "bg-base-100",
                 "border border-base-200",
                 "hover:border-primary/30",
@@ -155,15 +155,15 @@ export const ProjectActivityCard: React.FC<ProjectActivityCardProps> = ({
             }}
         >
             {/* Header */}
-            <div className="flex items-center gap-3 mb-6">
-                <div className="p-2 rounded-full bg-primary/10">
-                    <Activity className="w-5 h-5 text-primary" />
+            <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
+                <div className="p-1.5 sm:p-2 rounded-full bg-primary/10 flex-shrink-0">
+                    <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
-                    <h3 className="text-lg font-semibold text-base-content truncate" title={project.name}>
+                    <h3 className="text-base sm:text-lg font-semibold text-base-content truncate" title={project.name}>
                         {project.name}
                     </h3>
-                    <p className="text-sm text-base-content/60 truncate">
+                    <p className="text-xs sm:text-sm text-base-content/60 truncate">
                         {project.settings?.jiraProjectKey ? `Jira: ${project.settings.jiraProjectKey}` : 'Projeto QA'}
                     </p>
                 </div>
@@ -175,7 +175,7 @@ export const ProjectActivityCard: React.FC<ProjectActivityCardProps> = ({
                             e.preventDefault();
                             onDelete();
                         }}
-                        className="btn btn-ghost btn-xs btn-circle opacity-0 hover:opacity-100 group-hover:opacity-100 text-base-content/60 hover:text-error hover:bg-error/10 transition-all"
+                        className="btn btn-ghost btn-xs btn-circle opacity-100 sm:opacity-0 hover:opacity-100 group-hover:opacity-100 text-base-content/60 hover:text-error hover:bg-error/10 transition-all flex-shrink-0"
                         aria-label={`Excluir projeto ${project.name}`}
                     >
                         ×
@@ -184,7 +184,7 @@ export const ProjectActivityCard: React.FC<ProjectActivityCardProps> = ({
             </div>
 
             {/* Metrics Rings */}
-            <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-6">
+            <div className="grid grid-cols-3 gap-1.5 sm:gap-2 md:gap-4 mb-4 sm:mb-6">
                 {metrics.map((metric) => {
                     const radius = 36; // Para viewBox 0-100, radius de 36 deixa espaço para strokeWidth 8
                     const circumference = 2 * Math.PI * radius;
@@ -198,9 +198,9 @@ export const ProjectActivityCard: React.FC<ProjectActivityCardProps> = ({
                             onMouseEnter={() => setIsHovering(metric.label)}
                             onMouseLeave={() => setIsHovering(null)}
                         >
-                            <div className="relative w-20 h-20 sm:w-24 sm:h-24">
+                            <div className="relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24">
                                 {/* Background ring */}
-                                <div className="absolute inset-0 rounded-full border-4 border-base-200" />
+                                <div className="absolute inset-0 rounded-full border-[3px] sm:border-4 border-base-200" />
                                 {/* Progress ring */}
                                 <svg 
                                     className={cn(
@@ -224,18 +224,18 @@ export const ProjectActivityCard: React.FC<ProjectActivityCardProps> = ({
                                 </svg>
                                 {/* Center content */}
                                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                                    <span className="text-lg sm:text-xl font-bold text-base-content">
+                                    <span className="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-base-content leading-tight">
                                         {metric.value}
                                     </span>
-                                    <span className="text-[10px] sm:text-xs text-base-content/60">
+                                    <span className="text-[9px] sm:text-[10px] md:text-xs text-base-content/60 leading-tight">
                                         {metric.unit}
                                     </span>
                                 </div>
                             </div>
-                            <span className="mt-3 text-sm font-medium text-base-content/80 text-center">
+                            <span className="mt-1.5 sm:mt-2 md:mt-3 text-xs sm:text-sm font-medium text-base-content/80 text-center leading-tight">
                                 {metric.label}
                             </span>
-                            <span className="text-xs text-base-content/50">
+                            <span className="text-[10px] sm:text-xs text-base-content/50 leading-tight">
                                 {metric.trend}%
                             </span>
                         </div>
@@ -245,23 +245,23 @@ export const ProjectActivityCard: React.FC<ProjectActivityCardProps> = ({
 
             {/* Goals Section */}
             {goals.length > 0 && (
-                <div className="mt-6 space-y-4">
+                <div className="mt-4 sm:mt-6 space-y-3 sm:space-y-4">
                     <div className="h-px bg-gradient-to-r from-transparent via-base-300 to-transparent" />
 
-                    <div className="space-y-4">
+                    <div className="space-y-3 sm:space-y-4">
                         <div className="flex items-center gap-2">
-                            <Target className="w-4 h-4 text-base-content/60" />
-                            <h4 className="text-sm font-medium text-base-content/80">
+                            <Target className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-base-content/60 flex-shrink-0" />
+                            <h4 className="text-xs sm:text-sm font-medium text-base-content/80">
                                 Tarefas Principais
                             </h4>
                         </div>
 
-                        <div className="space-y-2">
+                        <div className="space-y-1.5 sm:space-y-2">
                             {goals.map((goal) => (
                                 <div
                                     key={goal.id}
                                     className={cn(
-                                        "w-full flex items-center gap-3 p-3 rounded-xl",
+                                        "w-full flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg sm:rounded-xl",
                                         "bg-base-200/50",
                                         "border border-base-300/50",
                                         "hover:border-primary/30",
@@ -270,7 +270,7 @@ export const ProjectActivityCard: React.FC<ProjectActivityCardProps> = ({
                                 >
                                     <CheckCircle2
                                         className={cn(
-                                            "w-5 h-5 flex-shrink-0",
+                                            "w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0",
                                             goal.isCompleted
                                                 ? "text-success"
                                                 : "text-base-content/30"
@@ -278,7 +278,7 @@ export const ProjectActivityCard: React.FC<ProjectActivityCardProps> = ({
                                     />
                                     <span
                                         className={cn(
-                                            "text-sm text-left flex-1",
+                                            "text-xs sm:text-sm text-left flex-1 truncate",
                                             goal.isCompleted
                                                 ? "text-base-content/50 line-through"
                                                 : "text-base-content/80"
@@ -295,15 +295,15 @@ export const ProjectActivityCard: React.FC<ProjectActivityCardProps> = ({
             )}
 
             {/* Footer */}
-            <div className="pt-4 mt-6 border-t border-base-300">
+            <div className="pt-3 sm:pt-4 mt-4 sm:mt-6 border-t border-base-300">
                 <button
                     onClick={handleViewDetails}
-                    className="inline-flex items-center gap-2 text-sm font-medium
+                    className="inline-flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-medium
                       text-primary hover:text-primary-focus
                       transition-colors duration-200"
                 >
                     Ver Detalhes do Projeto
-                    <ArrowUpRight className="w-4 h-4" />
+                    <ArrowUpRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </button>
             </div>
         </div>
