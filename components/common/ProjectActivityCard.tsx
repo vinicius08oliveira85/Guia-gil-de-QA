@@ -157,9 +157,9 @@ export const ProjectActivityCard: React.FC<ProjectActivityCardProps> = ({
             },
             {
                 label: 'Tarefas',
-                value: completedTasks,
-                trend: taskProgressPercent,
-                unit: 'done'
+                value: totalTasks, // Total de tarefas no anel
+                trend: taskProgressPercent, // Porcentagem de concluídas (mostrada abaixo do anel)
+                unit: 'Total' // Texto abaixo do número no anel
             },
             {
                 label: 'Sucesso',
