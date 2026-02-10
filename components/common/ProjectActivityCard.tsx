@@ -31,6 +31,86 @@ const METRIC_COLORS = {
     Sucesso: '#FF9500', // Laranja
 } as const;
 
+interface MetricRingProps {
+    metric: ProjectMetric;
+    color: string;
+    isHovering: boolean;
+    onMouseEnter: () => void;
+    onMouseLeave: () => void;
+}
+
+/**
+ * Componente isolado para renderizar um anel de métrica
+ * Responsivo e acessível
+ */
+const MetricRing: React.FC<MetricRingProps> = ({
+    metric,
+    color,
+    isHovering,
+    onMouseEnter,
+    onMouseLeave
+}) => {
+    const radius = 36; // Para viewBox 0-100, radius de 36 deixa espaço para strokeWidth 8
+    const circumference = 2 * Math.PI * radius;
+    const offset = circumference * (1 - metric.trend / 100);
+    
+    return (
+        <div
+            className="relative flex flex-col items-center flex-1 min-w-0 max-w-[5rem] sm:max-w-[6rem] md:max-w-[7rem]"
+            onMouseEnter={onMouseEnter}
+            onMouseLeave={onMouseLeave}
+            role="progressbar"
+            aria-valuenow={metric.trend}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-label={`${metric.label}: ${metric.value} ${metric.unit}, ${metric.trend}% completo`}
+        >
+            {/* Ring container com largura fluida e responsiva */}
+            <div className="relative w-full aspect-square max-w-[3.5rem] sm:max-w-[4.5rem] md:max-w-[5.5rem] lg:max-w-[6rem]">
+                {/* Background ring */}
+                <div className="absolute inset-0 rounded-full border-[3px] sm:border-4 border-base-200" />
+                {/* Progress ring */}
+                <svg 
+                    aria-hidden="true"
+                    className={cn(
+                        "absolute inset-0 w-full h-full transform -rotate-90 transition-all duration-500",
+                        isHovering && "scale-105"
+                    )}
+                    viewBox="0 0 100 100"
+                >
+                    <circle
+                        cx="50"
+                        cy="50"
+                        r={radius}
+                        fill="none"
+                        stroke={color}
+                        strokeWidth="8"
+                        strokeDasharray={circumference}
+                        strokeDashoffset={offset}
+                        strokeLinecap="round"
+                        className="transition-all duration-500"
+                    />
+                </svg>
+                {/* Center content */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                    <span className="text-[10px] sm:text-xs md:text-sm lg:text-base font-bold text-base-content leading-tight">
+                        {metric.value}
+                    </span>
+                    <span className="text-[8px] sm:text-[9px] md:text-[10px] text-base-content/60 leading-tight">
+                        {metric.unit}
+                    </span>
+                </div>
+            </div>
+            <span className="mt-1.5 sm:mt-2 text-[10px] sm:text-xs md:text-sm font-medium text-base-content/80 text-center leading-tight">
+                {metric.label}
+            </span>
+            <span className="text-[10px] sm:text-xs text-base-content/50 leading-tight">
+                {metric.trend}%
+            </span>
+        </div>
+    );
+};
+
 export const ProjectActivityCard: React.FC<ProjectActivityCardProps> = ({
     project,
     onSelect,
@@ -130,7 +210,7 @@ export const ProjectActivityCard: React.FC<ProjectActivityCardProps> = ({
     return (
         <div
             className={cn(
-                "relative h-full rounded-2xl sm:rounded-3xl p-4 sm:p-6",
+                "relative h-full rounded-2xl sm:rounded-3xl p-3 sm:p-4 md:p-6",
                 "bg-base-100",
                 "border border-base-200",
                 "hover:border-primary/30",
@@ -160,10 +240,10 @@ export const ProjectActivityCard: React.FC<ProjectActivityCardProps> = ({
                     <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
-                    <h3 className="text-base sm:text-lg font-semibold text-base-content truncate" title={project.name}>
+                    <h3 className="text-sm sm:text-base md:text-lg font-semibold text-base-content truncate" title={project.name}>
                         {project.name}
                     </h3>
-                    <p className="text-xs sm:text-sm text-base-content/60 truncate">
+                    <p className="text-[10px] sm:text-xs md:text-sm text-base-content/60 truncate">
                         {project.settings?.jiraProjectKey ? `Jira: ${project.settings.jiraProjectKey}` : 'Projeto QA'}
                     </p>
                 </div>
@@ -183,62 +263,20 @@ export const ProjectActivityCard: React.FC<ProjectActivityCardProps> = ({
                 )}
             </div>
 
-            {/* Metrics Rings */}
-            <div className="grid grid-cols-3 gap-4 sm:gap-6 md:gap-8 lg:gap-10 mb-4 sm:mb-6">
+            {/* Metrics Rings - Flexbox fluido */}
+            <div className="flex items-start justify-between sm:justify-evenly gap-2 sm:gap-3 md:gap-4 mb-4 sm:mb-6">
                 {metrics.map((metric) => {
-                    const radius = 36; // Para viewBox 0-100, radius de 36 deixa espaço para strokeWidth 8
-                    const circumference = 2 * Math.PI * radius;
-                    const offset = circumference * (1 - metric.trend / 100);
                     const color = METRIC_COLORS[metric.label as keyof typeof METRIC_COLORS] || '#007AFF';
                     
                     return (
-                        <div
+                        <MetricRing
                             key={metric.label}
-                            className="relative flex flex-col items-center"
+                            metric={metric}
+                            color={color}
+                            isHovering={isHovering === metric.label}
                             onMouseEnter={() => setIsHovering(metric.label)}
                             onMouseLeave={() => setIsHovering(null)}
-                        >
-                            <div className="relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24">
-                                {/* Background ring */}
-                                <div className="absolute inset-0 rounded-full border-[3px] sm:border-4 border-base-200" />
-                                {/* Progress ring */}
-                                <svg 
-                                    className={cn(
-                                        "absolute inset-0 w-full h-full transform -rotate-90 transition-all duration-500",
-                                        isHovering === metric.label && "scale-105"
-                                    )}
-                                    viewBox="0 0 100 100"
-                                >
-                                    <circle
-                                        cx="50"
-                                        cy="50"
-                                        r={radius}
-                                        fill="none"
-                                        stroke={color}
-                                        strokeWidth="8"
-                                        strokeDasharray={circumference}
-                                        strokeDashoffset={offset}
-                                        strokeLinecap="round"
-                                        className="transition-all duration-500"
-                                    />
-                                </svg>
-                                {/* Center content */}
-                                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                                    <span className="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-base-content leading-tight">
-                                        {metric.value}
-                                    </span>
-                                    <span className="text-[9px] sm:text-[10px] md:text-xs text-base-content/60 leading-tight">
-                                        {metric.unit}
-                                    </span>
-                                </div>
-                            </div>
-                            <span className="mt-1.5 sm:mt-2 md:mt-3 text-xs sm:text-sm font-medium text-base-content/80 text-center leading-tight">
-                                {metric.label}
-                            </span>
-                            <span className="text-[10px] sm:text-xs text-base-content/50 leading-tight">
-                                {metric.trend}%
-                            </span>
-                        </div>
+                        />
                     );
                 })}
             </div>
@@ -309,4 +347,3 @@ export const ProjectActivityCard: React.FC<ProjectActivityCardProps> = ({
         </div>
     );
 };
-
