@@ -56,7 +56,7 @@ const MetricRing: React.FC<MetricRingProps> = ({
     
     return (
         <div
-            className="relative flex flex-col items-center w-full"
+            className="relative flex flex-col items-center w-full min-w-0"
             onMouseEnter={onMouseEnter}
             onMouseLeave={onMouseLeave}
             role="progressbar"
@@ -68,7 +68,7 @@ const MetricRing: React.FC<MetricRingProps> = ({
             {/* AUMENTADO: max-w ajustado para 140px para preencher melhor o card.
                mx-auto garante centralização.
             */}
-            <div className="relative w-full aspect-square max-w-[140px] mx-auto">
+            <div className="relative w-full aspect-square max-w-[96px] sm:max-w-[110px] md:max-w-[130px] lg:max-w-[140px] mx-auto">
                 {/* Background ring */}
                 <div className="absolute inset-0 rounded-full border-[6px] border-base-200" />
                 {/* Progress ring */}
@@ -76,7 +76,7 @@ const MetricRing: React.FC<MetricRingProps> = ({
                     aria-hidden="true"
                     className={cn(
                         "absolute inset-0 w-full h-full transform -rotate-90 transition-all duration-500",
-                        isHovering && "scale-105"
+                        isHovering && "md:scale-105"
                     )}
                     viewBox="0 0 100 100"
                 >
@@ -244,7 +244,7 @@ export const ProjectActivityCard: React.FC<ProjectActivityCardProps> = ({
                 </div>
                 <div className="flex-1 min-w-0">
                     {/* AUMENTADO: line-clamp-2 permite 2 linhas. min-h ajuda a alinhar cards vizinhos se um tiver titulo curto */}
-                    <h3 className="text-base sm:text-lg font-semibold text-base-content line-clamp-2 min-h-[1.5rem]" title={project.name}>
+                    <h3 className="text-base sm:text-lg font-semibold text-base-content line-clamp-3 min-h-[3rem]" title={project.name}>
                         {project.name}
                     </h3>
                     <p className="text-xs sm:text-sm text-base-content/60 truncate mt-0.5">
