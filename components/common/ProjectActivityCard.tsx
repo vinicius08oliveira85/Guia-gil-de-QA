@@ -56,7 +56,7 @@ const MetricRing: React.FC<MetricRingProps> = ({
     
     return (
         <div
-            className="relative flex flex-col items-center flex-1 min-w-0 max-w-[5rem] sm:max-w-[6rem] md:max-w-[7rem]"
+            className="relative flex flex-col items-center w-full"
             onMouseEnter={onMouseEnter}
             onMouseLeave={onMouseLeave}
             role="progressbar"
@@ -66,9 +66,9 @@ const MetricRing: React.FC<MetricRingProps> = ({
             aria-label={`${metric.label}: ${metric.value} ${metric.unit}, ${metric.trend}% completo`}
         >
             {/* Ring container com largura fluida e responsiva */}
-            <div className="relative w-full aspect-square max-w-[3.5rem] sm:max-w-[4.5rem] md:max-w-[5.5rem] lg:max-w-[6rem]">
+            <div className="relative w-full aspect-square max-w-[110px] mx-auto">
                 {/* Background ring */}
-                <div className="absolute inset-0 rounded-full border-[3px] sm:border-4 border-base-200" />
+                <div className="absolute inset-0 rounded-full border-4 sm:border-[5px] border-base-200" />
                 {/* Progress ring */}
                 <svg 
                     aria-hidden="true"
@@ -93,15 +93,15 @@ const MetricRing: React.FC<MetricRingProps> = ({
                 </svg>
                 {/* Center content */}
                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                    <span className="text-[10px] sm:text-xs md:text-sm lg:text-base font-bold text-base-content leading-tight">
+                    <span className="text-sm sm:text-base md:text-lg font-bold text-base-content leading-tight">
                         {metric.value}
                     </span>
-                    <span className="text-[8px] sm:text-[9px] md:text-[10px] text-base-content/60 leading-tight">
+                    <span className="text-[10px] sm:text-xs md:text-sm text-base-content/60 leading-tight">
                         {metric.unit}
                     </span>
                 </div>
             </div>
-            <span className="mt-1.5 sm:mt-2 text-[10px] sm:text-xs md:text-sm font-medium text-base-content/80 text-center leading-tight">
+            <span className="mt-2 sm:mt-3 text-xs sm:text-sm md:text-base font-medium text-base-content/80 text-center leading-tight">
                 {metric.label}
             </span>
             <span className="text-[10px] sm:text-xs text-base-content/50 leading-tight">
@@ -210,7 +210,7 @@ export const ProjectActivityCard: React.FC<ProjectActivityCardProps> = ({
     return (
         <div
             className={cn(
-                "relative h-full rounded-2xl sm:rounded-3xl p-3 sm:p-4 md:p-6",
+                "relative h-full rounded-2xl sm:rounded-3xl px-4 py-3 sm:px-4 sm:py-4 md:px-5 md:py-6",
                 "bg-base-100",
                 "border border-base-200",
                 "hover:border-primary/30",
@@ -263,8 +263,8 @@ export const ProjectActivityCard: React.FC<ProjectActivityCardProps> = ({
                 )}
             </div>
 
-            {/* Metrics Rings - Flexbox fluido */}
-            <div className="flex items-start justify-between sm:justify-evenly gap-2 sm:gap-3 md:gap-4 mb-4 sm:mb-6">
+            {/* Metrics Rings - Grid layout */}
+            <div className="grid grid-cols-3 gap-4 items-center justify-items-center mb-4 sm:mb-6">
                 {metrics.map((metric) => {
                     const color = METRIC_COLORS[metric.label as keyof typeof METRIC_COLORS] || '#007AFF';
                     
