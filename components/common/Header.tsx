@@ -8,6 +8,9 @@ import { Project } from '../../types';
 import { getUnreadCount } from '../../utils/notificationService';
 import { Modal } from './Modal';
 import { GlossaryView } from '../glossary/GlossaryView';
+import { useProjectsStore } from '../../store/projectsStore';
+import { isSupabaseAvailable } from '../../services/supabaseService';
+import toast from 'react-hot-toast';
 
 interface HeaderProps {
     onProjectImported?: (project: Project) => void;
@@ -20,6 +23,9 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported: _onProjectImp
     const [notificationUnreadCount, setNotificationUnreadCount] = useState(0);
     const [showNotificationDropdown, setShowNotificationDropdown] = useState(false);
     const [isGlossaryOpen, setIsGlossaryOpen] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+
+    const { saveProjectToSupabase, getSelectedProject } = useProjectsStore();
 
     // Atualizar contador de notificações não lidas
     useEffect(() => {
@@ -102,6 +108,26 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported: _onProjectImp
 
     const activeColor = getActiveColorForTheme(theme);
 
+    const handleSave = async () => {
+        const selectedProject = getSelectedProject();
+        if (!selectedProject) return;
+
+        if (!isSupabaseAvailable()) {
+            toast.error('Supabase não está configurado. Configure VITE_SUPABASE_PROXY_URL.');
+            return;
+        }
+
+        setIsSaving(true);
+        try {
+            await saveProjectToSupabase(selectedProject.id);
+            toast.success(`Projeto "${selectedProject.name}" salvo com sucesso!`);
+        } catch (error) {
+            toast.error('Erro ao salvar projeto.');
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
     return (
         <header
             className="sticky top-0 z-30 border-b border-base-300 bg-base-100/80 backdrop-blur"
@@ -126,6 +152,18 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported: _onProjectImp
                 </div>
                 <div className="flex items-center justify-end gap-1.5 sm:gap-2 relative">
                     <nav className="flex items-center gap-2"></nav>
+
+                    {getSelectedProject() && (
+                        <button
+                            className="relative flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors duration-300 text-base-content/70 hover:bg-base-200 hover:text-base-content"
+                            aria-label="Salvar"
+                            onClick={handleSave}
+                            disabled={isSaving}
+                        >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21.362 9.354H12V.396a.396.396 0 0 0-.716-.233L2.203 12.424l-.401.562a1.04 1.04 0 0 0 .836 1.659H12v8.959a.396.396 0 0 0 .724.229l9.075-12.476.401-.562a1.04 1.04 0 0 0-.838-1.66Z" fill="#3ECF8E"></path></svg>
+                            <span>{isSaving ? 'Salvando...' : 'Salvar'}</span>
+                        </button>
+                    )}
 
                     <div className="relative">
                         <ExpandableTabs

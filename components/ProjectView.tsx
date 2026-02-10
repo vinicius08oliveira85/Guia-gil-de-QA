@@ -231,39 +231,6 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                             )}
                         </div>
                     )}
-                    
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 ml-auto">
-                        {/* Botão sempre visível, mas desabilitado se Supabase não estiver disponível */}
-                        <button 
-                            onClick={handleSaveToSupabase}
-                            disabled={!supabaseAvailable || isSavingToSupabase}
-                            className="btn btn-primary btn-sm rounded-full flex items-center justify-center gap-1.5 w-full sm:w-auto shadow-sm transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-                            title={!supabaseAvailable ? 'Supabase não está configurado. Configure VITE_SUPABASE_PROXY_URL.' : 'Salvar projeto no Supabase manualmente'}
-                            type="button"
-                        >
-                            {isSavingToSupabase ? (
-                                <>
-                                    <Spinner small />
-                                    <span>Salvando...</span>
-                                </>
-                            ) : (
-                                <>
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M21.362 9.354H12V.396a.396.396 0 0 0-.716-.233L2.203 12.424l-.401.562a1.04 1.04 0 0 0 .836 1.659H12v8.959a.396.396 0 0 0 .724.229l9.075-12.476.401-.562a1.04 1.04 0 0 0-.838-1.66Z" fill="#3ECF8E"/>
-                                    </svg>
-                                    <span>Salvar Agora</span>
-                                </>
-                            )}
-                        </button>
-                        <button 
-                            onClick={handlePrint} 
-                            className="btn btn-outline btn-sm rounded-full flex items-center justify-center gap-1.5 w-full sm:w-auto hover:bg-base-200"
-                            type="button"
-                        >
-                            <span aria-hidden="true">📄</span>
-                            <span>PDF</span>
-                        </button>
-                    </div>
                 </div>
                 
                 <SectionHeader
