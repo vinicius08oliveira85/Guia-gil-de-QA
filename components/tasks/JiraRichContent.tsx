@@ -1,23 +1,40 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { createRoot, Root } from 'react-dom/client';
 import { JiraImage } from '../jira/JiraImage';
+import { JiraContentSanitizer, SanitizationConfig } from '../../utils/jiraContentSanitizer';
 
 interface JiraRichContentProps {
     html: string;
     className?: string;
+    /** Configuração de sanitização */
+    sanitizationConfig?: SanitizationConfig;
 }
 
 /**
  * Componente para renderizar conteúdo rico do Jira (HTML) com interceptação de imagens.
+ * Usa JiraContentSanitizer para processar e sanitizar conteúdo de forma segura.
  * Substitui tags <img> com classe "jira-image" ou URLs do Jira por componentes JiraImage
  * que carregam imagens com autenticação adequada.
  */
-export const JiraRichContent: React.FC<JiraRichContentProps> = ({ html, className = '' }) => {
+export const JiraRichContent: React.FC<JiraRichContentProps> = ({ 
+    html, 
+    className = '',
+    sanitizationConfig = {}
+}) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const imageRootsRef = useRef<Map<HTMLElement, Root>>(new Map());
+    
+    // Sanitizar conteúdo usando o sanitizador
+    const sanitized = JiraContentSanitizer.sanitize(html, {
+        allowImages: true,
+        allowLinks: true,
+        allowFormatting: true,
+        processJiraImages: true,
+        ...sanitizationConfig,
+    });
 
     useEffect(() => {
-        if (!containerRef.current || !html) return;
+        if (!containerRef.current || !sanitized.html) return;
 
         const container = containerRef.current;
         
@@ -93,13 +110,13 @@ export const JiraRichContent: React.FC<JiraRichContentProps> = ({ html, classNam
                 imageRootsRef.current.delete(element);
             });
         };
-    }, [html]);
+    }, [sanitized.html]);
 
     return (
         <div
             ref={containerRef}
             className={`jira-rich-content prose prose-sm max-w-none dark:prose-invert ${className}`}
-            dangerouslySetInnerHTML={{ __html: html }}
+            dangerouslySetInnerHTML={{ __html: sanitized.html }}
         />
     );
 };
