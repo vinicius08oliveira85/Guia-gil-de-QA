@@ -24,7 +24,8 @@ export const ProjectsDashboard: React.FC<{
     onDeleteProject: (id: string) => Promise<void>;
     onComparisonClick?: () => void;
     onSyncSupabase?: () => Promise<void>;
-}> = ({ projects, onSelectProject, onCreateProject, onDeleteProject, onComparisonClick, onSyncSupabase }) => {
+    onOpenSettings?: () => void;
+}> = ({ projects, onSelectProject, onCreateProject, onDeleteProject, onComparisonClick, onSyncSupabase, onOpenSettings }) => {
     const [isCreating, setIsCreating] = useState(false);
     const [showTemplates, setShowTemplates] = useState(false);
     const [showJiraImport, setShowJiraImport] = useState(false);
@@ -38,7 +39,7 @@ export const ProjectsDashboard: React.FC<{
     const [isLoadingJiraProjects, setIsLoadingJiraProjects] = useState(false);
     const [isImportingJira, setIsImportingJira] = useState(false);
     const [importProgress, setImportProgress] = useState<{ current: number; total?: number } | null>(null);
-    const [isJiraConfigured, setIsJiraConfigured] = useState(false);
+    const [jiraConfigStatus, setJiraConfigStatus] = useState<'unknown' | 'configured' | 'missing'>('unknown');
     // Visualização sempre em grade - removido viewMode
     // Ordenação fixa por nome - removido sortBy
     // Filtros removidos - removido selectedTags e showTagFilter
@@ -57,9 +58,9 @@ export const ProjectsDashboard: React.FC<{
         const checkJiraConfig = async () => {
             try {
                 const config = await getJiraConfig();
-                setIsJiraConfigured(!!config);
+                setJiraConfigStatus(config ? 'configured' : 'missing');
             } catch {
-                setIsJiraConfigured(false);
+                setJiraConfigStatus('missing');
             }
         };
         checkJiraConfig();
@@ -71,9 +72,10 @@ export const ProjectsDashboard: React.FC<{
         try {
             const jiraConfig = await getJiraConfig();
             if (!jiraConfig) {
-                handleError(new Error('Jira não está configurado. Configure a conexão com Jira nas Configurações primeiro.'), 'Importar do Jira');
+                setJiraConfigStatus('missing');
                 return;
             }
+            setJiraConfigStatus('configured');
 
             // Verificar cache primeiro (válido por 5 minutos)
             if (useCache) {
@@ -137,9 +139,10 @@ export const ProjectsDashboard: React.FC<{
         try {
             const jiraConfig = await getJiraConfig();
             if (!jiraConfig) {
-                handleError(new Error('Jira não está configurado. Configure a conexão com Jira nas Configurações primeiro.'), 'Importar do Jira');
+                setJiraConfigStatus('missing');
                 return;
             }
+            setJiraConfigStatus('configured');
 
             setIsImportingJira(true);
             setImportProgress({ current: 0 });
@@ -381,7 +384,7 @@ export const ProjectsDashboard: React.FC<{
                 setImportProgress(null);
             }} title="Criar Novo Projeto" size="xl"
                 footer={
-                    <div className="flex justify-end gap-2">
+                    <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
                         <button
                             type="button"
                             onClick={() => {
@@ -392,7 +395,7 @@ export const ProjectsDashboard: React.FC<{
                                 setSelectedJiraProjectKey('');
                                 setImportProgress(null);
                             }}
-                            className="btn btn-ghost rounded-full"
+                            className="btn btn-ghost rounded-full w-full sm:w-auto"
                         >
                             Cancelar
                         </button>
@@ -400,7 +403,7 @@ export const ProjectsDashboard: React.FC<{
                             <button
                                 type="button"
                                 onClick={handleCreate}
-                                className="btn btn-primary rounded-full"
+                                className="btn btn-primary rounded-full w-full sm:w-auto"
                                 disabled={!newName.trim()}
                             >
                                 {showTemplates ? 'Criar com Template' : 'Criar'}
@@ -429,26 +432,28 @@ export const ProjectsDashboard: React.FC<{
                                     </div>
                                 </button>
 
-                                {isJiraConfigured && (
-                                    <button
-                                        onClick={async () => {
-                                            setShowJiraImport(true);
+                                <button
+                                    onClick={async () => {
+                                        setShowJiraImport(true);
+                                        if (jiraConfigStatus === 'configured') {
                                             await loadJiraProjects();
-                                        }}
-                                        type="button"
-                                        className="w-full rounded-2xl border-2 border-dashed border-base-300 bg-base-100 p-4 text-left transition-colors hover:border-primary/40 hover:bg-base-200/40"
-                                    >
-                                        <div className="flex items-start gap-3">
-                                            <span className="text-xl" aria-hidden="true">🔗</span>
-                                            <div className="space-y-0.5">
-                                                <p className="font-semibold">Importar do Jira</p>
-                                                <p className="text-sm text-base-content/70">
-                                                    Importe um projeto existente do Jira com todas as tarefas e casos de teste.
-                                                </p>
-                                            </div>
+                                        } else {
+                                            setJiraConfigStatus('missing');
+                                        }
+                                    }}
+                                    type="button"
+                                    className="w-full rounded-2xl border-2 border-dashed border-base-300 bg-base-100 p-4 text-left transition-colors hover:border-primary/40 hover:bg-base-200/40"
+                                >
+                                    <div className="flex items-start gap-3">
+                                        <span className="text-xl" aria-hidden="true">🔗</span>
+                                        <div className="space-y-0.5">
+                                            <p className="font-semibold">Importar do Jira</p>
+                                            <p className="text-sm text-base-content/70">
+                                                Importe um projeto existente do Jira com todas as tarefas e casos de teste.
+                                            </p>
                                         </div>
-                                    </button>
-                                )}
+                                    </div>
+                                </button>
                             </div>
 
                             <div className="grid gap-4">
@@ -493,28 +498,61 @@ export const ProjectsDashboard: React.FC<{
                             >
                                 ← Voltar
                             </button>
-                            
+
+                            {jiraConfigStatus === 'missing' && (
+                                <div className="alert alert-warning">
+                                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 w-full">
+                                        <div className="min-w-0">
+                                            <p className="font-medium">Necessário a configuração do Jira</p>
+                                            <p className="text-sm opacity-80">
+                                                Configure a integração para listar e importar projetos.
+                                            </p>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            className="btn btn-primary rounded-full w-full sm:w-auto"
+                                            onClick={() => {
+                                                onOpenSettings?.();
+                                                setIsCreating(false);
+                                                setShowJiraImport(false);
+                                                setSelectedJiraProjectKey('');
+                                                setImportProgress(null);
+                                            }}
+                                        >
+                                            Configurar Jira
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
                             {/* Seção de seleção de projeto Jira */}
-                            <section className="w-full max-w-full bg-base-100 text-base-content rounded-2xl border border-base-200 bg-base-100 shadow-sm p-6">
+                            <Card className="p-4 sm:p-6" hoverable={false}>
                                 <div className="space-y-4">
-                                    <div className="flex items-center justify-between">
+                                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                                         <label className="block text-sm font-medium text-base-content">
                                             Selecione o projeto para importar:
                                         </label>
                                         <button
                                             onClick={() => loadJiraProjects(false)}
-                                            className="text-xs text-primary hover:underline flex items-center gap-1"
+                                            className="text-xs text-primary hover:underline inline-flex items-center gap-1 self-start sm:self-auto disabled:opacity-60"
                                             title="Atualizar lista de projetos"
-                                            disabled={isLoadingJiraProjects}
+                                            disabled={isLoadingJiraProjects || jiraConfigStatus !== 'configured'}
+                                            aria-label="Atualizar lista de projetos do Jira"
                                         >
-                                            <RefreshCw className={`h-3 w-3 ${isLoadingJiraProjects ? 'animate-spin' : ''}`} />
+                                            <RefreshCw className={`h-3 w-3 ${isLoadingJiraProjects ? 'animate-spin' : ''}`} aria-hidden="true" />
                                             Atualizar
                                         </button>
                                     </div>
-                                    
-                                    {isLoadingJiraProjects ? (
+
+                                    {jiraConfigStatus !== 'configured' ? (
+                                        <div className="text-center py-8">
+                                            <p className="text-base-content/70 text-sm">
+                                                Configure o Jira para visualizar a lista de projetos.
+                                            </p>
+                                        </div>
+                                    ) : isLoadingJiraProjects ? (
                                         <div className="flex items-center justify-center py-8">
-                                            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                                            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" aria-label="Carregando projetos do Jira"></div>
                                         </div>
                                     ) : jiraProjects.length > 0 ? (
                                         <>
@@ -552,7 +590,7 @@ export const ProjectsDashboard: React.FC<{
                                                 )}
                                             </button>
                                             {isImportingJira && importProgress && (
-                                                <div className="w-full bg-base-200 rounded-full h-2.5">
+                                                <div className="w-full bg-base-200 rounded-full h-2.5" aria-label="Progresso de importação">
                                                     <div 
                                                         className="bg-primary h-2.5 rounded-full transition-all duration-300"
                                                         style={{ 
@@ -572,7 +610,7 @@ export const ProjectsDashboard: React.FC<{
                                         </div>
                                     )}
                                 </div>
-                            </section>
+                            </Card>
                         </div>
                     ) : (
                         <div className="space-y-4">
