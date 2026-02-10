@@ -57,16 +57,32 @@ const App: React.FC = () => {
     // Carregar projetos ao montar
     useEffect(() => {
         loadProjects().catch((error) => {
-            handleError(error, 'Carregar projetos');
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            // Não mostrar erro se for apenas "nenhum projeto encontrado" - isso é normal
+            if (!errorMessage.toLowerCase().includes('nenhum projeto') && 
+                !errorMessage.toLowerCase().includes('no projects')) {
+                logger.error('Erro ao carregar projetos', 'App', { error, errorMessage });
+                handleError(error, 'Carregar projetos');
+            } else {
+                logger.info('Nenhum projeto encontrado ao carregar', 'App');
+            }
         });
     }, [loadProjects, handleError]);
 
     // Tratar erros do store
     useEffect(() => {
         if (storeError) {
+            const errorMessage = storeError instanceof Error ? storeError.message : String(storeError);
+            // Log detalhado do erro do store
+            logger.error('Erro no store de projetos', 'App', { 
+                error: storeError, 
+                errorMessage,
+                projectsCount: projects.length,
+                isLoading 
+            });
             handleError(storeError, 'Store');
         }
-    }, [storeError, handleError]);
+    }, [storeError, handleError, projects.length, isLoading]);
 
     const isMobile = useIsMobile();
 

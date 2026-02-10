@@ -13,28 +13,12 @@
     },
     "api/sync-figma-tokens.ts": {
       "maxDuration": 30
+    },
+    "api/manifest.ts": {
+      "maxDuration": 10
     }
   },
-  "headers": [
-    {
-      "source": "/manifest.json",
-      "headers": [
-        {
-          "key": "Content-Type",
-          "value": "application/manifest+json"
-        },
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=3600"
-        }
-      ]
-    }
-  ],
   "rewrites": [
-    {
-      "source": "/manifest.json",
-      "destination": "/manifest.json"
-    },
     {
       "source": "/(.*)",
       "destination": "/index.html"
