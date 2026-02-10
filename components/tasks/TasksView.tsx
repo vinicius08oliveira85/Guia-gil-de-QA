@@ -152,6 +152,19 @@ export const TasksView: React.FC<{
         createBug: true,
     });
 
+    // Validação inicial do projeto - retornar EmptyState se inválido
+    if (!project || typeof project !== 'object' || !project.tasks || !Array.isArray(project.tasks)) {
+        logger.warn('Projeto inválido ou sem tarefas', 'TasksView', { projectId: project?.id, hasTasks: !!project?.tasks });
+        return (
+            <div className="container mx-auto p-8">
+                <EmptyState 
+                    message="Projeto inválido ou sem tarefas. Por favor, selecione outro projeto ou crie um novo."
+                    icon={<AlertTriangle className="w-12 h-12 text-warning" />}
+                />
+            </div>
+        );
+    }
+
     const notifyAiError = useCallback((error: unknown, context: string) => {
         const friendlyMessage = getFriendlyAIErrorMessage(error);
         handleError(new Error(friendlyMessage), context);
@@ -1083,90 +1096,141 @@ export const TasksView: React.FC<{
     // Isso corrige tarefas que foram importadas antes da correção do mapeamento
     // Usar useRef para evitar loops infinitos e correções múltiplas
     const hasCorrectedStatus = useRef<string | null>(null);
+    const onUpdateProjectRef = useRef(onUpdateProject);
+    
+    // Atualizar ref quando onUpdateProject mudar
+    useEffect(() => {
+        onUpdateProjectRef.current = onUpdateProject;
+    }, [onUpdateProject]);
     
     useEffect(() => {
-        if (!project || !project.tasks) return;
+        if (!project || !project.tasks || !Array.isArray(project.tasks)) return;
+        if (!onUpdateProjectRef.current) return;
         
         // Se já corrigimos este projeto, não corrigir novamente
         if (hasCorrectedStatus.current === project.id) return;
         
-        const tasksNeedingCorrection = project.tasks.filter(task => {
-            if (!task.jiraStatus) return false;
-            const correctStatus = mapJiraStatusToTaskStatus(task.jiraStatus);
-            return task.status !== correctStatus;
-        });
-        
-        if (tasksNeedingCorrection.length > 0) {
-            const correctedTasks = project.tasks.map(task => {
-                if (!task.jiraStatus) return task;
-                const correctStatus = mapJiraStatusToTaskStatus(task.jiraStatus);
-                if (task.status !== correctStatus) {
-                    return { ...task, status: correctStatus };
+        try {
+            const tasksNeedingCorrection = project.tasks.filter(task => {
+                if (!task || !task.jiraStatus) return false;
+                try {
+                    const correctStatus = mapJiraStatusToTaskStatus(task.jiraStatus);
+                    return task.status !== correctStatus;
+                } catch (error) {
+                    logger.warn('Erro ao mapear status do Jira', 'TasksView', { error, taskId: task.id, jiraStatus: task.jiraStatus });
+                    return false;
                 }
-                return task;
             });
             
-            // Marcar que já corrigimos este projeto ANTES de atualizar
-            hasCorrectedStatus.current = project.id;
-            
-            // Atualizar projeto de forma assíncrona para evitar problemas de render
-            Promise.resolve().then(() => {
-                onUpdateProject({
-                    ...project,
-                    tasks: correctedTasks
+            if (tasksNeedingCorrection.length > 0) {
+                const correctedTasks = project.tasks.map(task => {
+                    if (!task || !task.jiraStatus) return task;
+                    try {
+                        const correctStatus = mapJiraStatusToTaskStatus(task.jiraStatus);
+                        if (task.status !== correctStatus) {
+                            return { ...task, status: correctStatus };
+                        }
+                    } catch (error) {
+                        logger.warn('Erro ao corrigir status da tarefa', 'TasksView', { error, taskId: task.id });
+                    }
+                    return task;
                 });
-            });
-            
-            logger.info(`Corrigidos ${tasksNeedingCorrection.length} status de tarefas baseado no jiraStatus`, 'TasksView');
-        } else {
-            // Marcar como corrigido mesmo se não houver correções necessárias
+                
+                // Marcar que já corrigimos este projeto ANTES de atualizar
+                hasCorrectedStatus.current = project.id;
+                
+                // Atualizar projeto de forma assíncrona para evitar problemas de render
+                Promise.resolve().then(() => {
+                    if (onUpdateProjectRef.current && project) {
+                        onUpdateProjectRef.current({
+                            ...project,
+                            tasks: correctedTasks
+                        });
+                    }
+                });
+                
+                logger.info(`Corrigidos ${tasksNeedingCorrection.length} status de tarefas baseado no jiraStatus`, 'TasksView');
+            } else {
+                // Marcar como corrigido mesmo se não houver correções necessárias
+                hasCorrectedStatus.current = project.id;
+            }
+        } catch (error) {
+            logger.error('Erro ao corrigir status das tarefas', 'TasksView', { error, projectId: project?.id });
+            // Marcar como corrigido mesmo em caso de erro para evitar loops
             hasCorrectedStatus.current = project.id;
         }
-    }, [project?.id]); // Apenas quando o projeto muda, remover onUpdateProject das dependências
+    }, [project?.id, project?.tasks]);
 
     const stats = useMemo(() => {
-        if (!project || !project.tasks) {
+        try {
+            // Validação robusta de dados
+            if (!project || !project.tasks || !Array.isArray(project.tasks)) {
+                return { total: 0, pending: 0, inProgress: 0, done: 0, bugsOpen: 0, totalTests: 0, executedTests: 0, automatedTests: 0 };
+            }
+
+            const total = project.tasks.length;
+            
+            // Corrigir status baseado no jiraStatus quando disponível
+            // Isso corrige tarefas que foram importadas antes da correção do mapeamento
+            const tasksWithCorrectedStatus = project.tasks.map(task => {
+                try {
+                    // Validar que task existe e tem propriedades necessárias
+                    if (!task || typeof task !== 'object') {
+                        return null;
+                    }
+                    
+                    // Se a tarefa tem jiraStatus e o status atual não corresponde ao mapeamento correto, corrigir
+                    if (task.jiraStatus) {
+                        const correctStatus = mapJiraStatusToTaskStatus(task.jiraStatus);
+                        // Só corrigir se o status atual for diferente do correto
+                        // Isso preserva mudanças manuais do usuário que não têm jiraStatus
+                        if (task.status !== correctStatus) {
+                            return { ...task, status: correctStatus };
+                        }
+                    }
+                    return task;
+                } catch (taskError) {
+                    logger.warn('Erro ao processar tarefa individual', 'TasksView', { taskError, taskId: task?.id });
+                    return task; // Retornar tarefa original em caso de erro
+                }
+            }).filter((task): task is JiraTask => task !== null); // Filtrar nulls
+            
+            const pending = tasksWithCorrectedStatus.filter(
+                task => task && task.status === 'To Do'
+            ).length;
+            
+            const inProgress = tasksWithCorrectedStatus.filter(
+                task => task && task.status === 'In Progress'
+            ).length;
+            
+            const done = tasksWithCorrectedStatus.filter(
+                task => task && task.status === 'Done'
+            ).length;
+
+            const bugsOpen = tasksWithCorrectedStatus.filter(
+                task => task && task.type === 'Bug' && task.status !== 'Done'
+            ).length;
+
+            const totalTests = tasksWithCorrectedStatus.reduce((acc, t) => {
+                if (!t || !t.testCases) return acc;
+                return acc + (Array.isArray(t.testCases) ? t.testCases.length : 0);
+            }, 0);
+            
+            const executedTests = tasksWithCorrectedStatus.reduce((acc, t) => {
+                if (!t || !t.testCases || !Array.isArray(t.testCases)) return acc;
+                return acc + t.testCases.filter(tc => tc && tc.status !== 'Not Run').length;
+            }, 0);
+            
+            const automatedTests = tasksWithCorrectedStatus.reduce((acc, t) => {
+                if (!t || !t.testCases || !Array.isArray(t.testCases)) return acc;
+                return acc + t.testCases.filter(tc => tc && tc.isAutomated).length;
+            }, 0);
+            
+            return { total, pending, inProgress, done, bugsOpen, totalTests, executedTests, automatedTests };
+        } catch (error) {
+            logger.error('Erro ao calcular stats', 'TasksView', { error, projectId: project?.id });
             return { total: 0, pending: 0, inProgress: 0, done: 0, bugsOpen: 0, totalTests: 0, executedTests: 0, automatedTests: 0 };
         }
-
-        const total = project.tasks.length;
-        
-        // Corrigir status baseado no jiraStatus quando disponível
-        // Isso corrige tarefas que foram importadas antes da correção do mapeamento
-        const tasksWithCorrectedStatus = project.tasks.map(task => {
-            // Se a tarefa tem jiraStatus e o status atual não corresponde ao mapeamento correto, corrigir
-            if (task.jiraStatus) {
-                const correctStatus = mapJiraStatusToTaskStatus(task.jiraStatus);
-                // Só corrigir se o status atual for diferente do correto
-                // Isso preserva mudanças manuais do usuário que não têm jiraStatus
-                if (task.status !== correctStatus) {
-                    return { ...task, status: correctStatus };
-                }
-            }
-            return task;
-        });
-        
-        const pending = tasksWithCorrectedStatus.filter(
-            task => task.status === 'To Do'
-        ).length;
-        
-        const inProgress = tasksWithCorrectedStatus.filter(
-            task => task.status === 'In Progress'
-        ).length;
-        
-        const done = tasksWithCorrectedStatus.filter(
-            task => task.status === 'Done'
-        ).length;
-
-        const bugsOpen = tasksWithCorrectedStatus.filter(
-            task => task.type === 'Bug' && task.status !== 'Done'
-        ).length;
-
-        const totalTests = tasksWithCorrectedStatus.reduce((acc, t) => acc + (t.testCases?.length || 0), 0);
-        const executedTests = tasksWithCorrectedStatus.reduce((acc, t) => acc + (t.testCases?.filter(tc => tc.status !== 'Not Run').length || 0), 0);
-        const automatedTests = tasksWithCorrectedStatus.reduce((acc, t) => acc + (t.testCases?.filter(tc => tc.isAutomated).length || 0), 0);
-        
-        return { total, pending, inProgress, done, bugsOpen, totalTests, executedTests, automatedTests };
     }, [project?.tasks]);
 
     const testExecutionRate = stats.totalTests > 0 ? Math.round((stats.executedTests / stats.totalTests) * 100) : 0;
