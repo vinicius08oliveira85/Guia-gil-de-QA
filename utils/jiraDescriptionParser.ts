@@ -3,6 +3,7 @@
  */
 
 import { sanitizeHTML } from './sanitize';
+import { JiraContentSanitizer } from './jiraContentSanitizer';
 
 interface ADFNode {
     type: string;
@@ -436,6 +437,17 @@ export function parseJiraDescriptionHTML(
         html = processJiraImages(html, jiraUrl, jiraAttachments);
     }
     
-    return html;
+    // Usar sanitizador para garantir segurança adicional
+    // Nota: O sanitizador já foi aplicado anteriormente, mas podemos usar novamente
+    // para garantir que todas as imagens tenham os atributos corretos
+    const sanitized = JiraContentSanitizer.sanitize(html, {
+        allowImages: true,
+        allowLinks: true,
+        allowFormatting: true,
+        processJiraImages: false, // Já processado acima
+        jiraAttachments,
+        jiraUrl,
+    });
+    return sanitized.html;
 }
 
