@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Project, JiraTask, BddScenario, TestCaseDetailLevel, TestCase, Comment } from '../../types';
 import { getAIService } from '../../services/ai/aiServiceFactory';
@@ -7,7 +7,7 @@ import { Modal } from '../common/Modal';
 import { TaskForm } from './TaskForm';
 import { TestCaseEditorModal } from './TestCaseEditorModal';
 import { Button } from '../common/Button';
-import { Plus, Filter, RefreshCw, Loader2, Clipboard, Zap, CheckCircle2, AlertTriangle, X, Check, Link as LinkIcon } from 'lucide-react';
+import { Plus, Filter, RefreshCw, Loader2, Clipboard, Zap, CheckCircle2, AlertTriangle, X, Check, Link as LinkIcon, Clock } from 'lucide-react';
 import { logger } from '../../utils/logger';
 import { useProjectsStore } from '../../store/projectsStore';
 import { ModernIcons } from '../common/ModernIcons';
@@ -1081,8 +1081,14 @@ export const TasksView: React.FC<{
 
     // Corrigir status das tarefas baseado no jiraStatus quando disponível
     // Isso corrige tarefas que foram importadas antes da correção do mapeamento
+    // Usar useRef para evitar loops infinitos e correções múltiplas
+    const hasCorrectedStatus = useRef<string | null>(null);
+    
     useEffect(() => {
         if (!project || !project.tasks) return;
+        
+        // Se já corrigimos este projeto, não corrigir novamente
+        if (hasCorrectedStatus.current === project.id) return;
         
         const tasksNeedingCorrection = project.tasks.filter(task => {
             if (!task.jiraStatus) return false;
@@ -1100,18 +1106,27 @@ export const TasksView: React.FC<{
                 return task;
             });
             
-            onUpdateProject({
-                ...project,
-                tasks: correctedTasks
+            // Marcar que já corrigimos este projeto ANTES de atualizar
+            hasCorrectedStatus.current = project.id;
+            
+            // Atualizar projeto de forma assíncrona para evitar problemas de render
+            Promise.resolve().then(() => {
+                onUpdateProject({
+                    ...project,
+                    tasks: correctedTasks
+                });
             });
             
             logger.info(`Corrigidos ${tasksNeedingCorrection.length} status de tarefas baseado no jiraStatus`, 'TasksView');
+        } else {
+            // Marcar como corrigido mesmo se não houver correções necessárias
+            hasCorrectedStatus.current = project.id;
         }
-    }, [project?.tasks, project?.id, onUpdateProject]);
+    }, [project?.id]); // Apenas quando o projeto muda, remover onUpdateProject das dependências
 
     const stats = useMemo(() => {
         if (!project || !project.tasks) {
-            return { total: 0, inProgress: 0, done: 0, bugsOpen: 0, totalTests: 0, executedTests: 0, automatedTests: 0 };
+            return { total: 0, pending: 0, inProgress: 0, done: 0, bugsOpen: 0, totalTests: 0, executedTests: 0, automatedTests: 0 };
         }
 
         const total = project.tasks.length;
@@ -1131,6 +1146,10 @@ export const TasksView: React.FC<{
             return task;
         });
         
+        const pending = tasksWithCorrectedStatus.filter(
+            task => task.status === 'To Do'
+        ).length;
+        
         const inProgress = tasksWithCorrectedStatus.filter(
             task => task.status === 'In Progress'
         ).length;
@@ -1147,7 +1166,7 @@ export const TasksView: React.FC<{
         const executedTests = tasksWithCorrectedStatus.reduce((acc, t) => acc + (t.testCases?.filter(tc => tc.status !== 'Not Run').length || 0), 0);
         const automatedTests = tasksWithCorrectedStatus.reduce((acc, t) => acc + (t.testCases?.filter(tc => tc.isAutomated).length || 0), 0);
         
-        return { total, inProgress, done, bugsOpen, totalTests, executedTests, automatedTests };
+        return { total, pending, inProgress, done, bugsOpen, totalTests, executedTests, automatedTests };
     }, [project?.tasks]);
 
     const testExecutionRate = stats.totalTests > 0 ? Math.round((stats.executedTests / stats.totalTests) * 100) : 0;
@@ -1663,7 +1682,7 @@ export const TasksView: React.FC<{
                 </div>
 
                 <motion.div 
-                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6"
+                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 lg:gap-6 mb-6"
                     initial="hidden"
                     animate="visible"
                     variants={{
@@ -1704,6 +1723,41 @@ export const TasksView: React.FC<{
                                 </div>
                                 <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-orange-500/10 group-hover:bg-orange-500/20 flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:rotate-6">
                                     <Clipboard className="w-6 h-6 text-orange-400 dark:text-orange-300" />
+                                </div>
+                            </div>
+                        </div>
+                    </motion.div>
+                    
+                    <motion.div 
+                        className="group relative overflow-hidden rounded-2xl p-6 bg-gradient-to-br from-yellow-500/20 via-amber-500/10 to-yellow-500/5 backdrop-blur-xl border border-yellow-500/30 hover:border-yellow-500/50 transition-all duration-500 ease-out hover:scale-[1.02] hover:shadow-2xl hover:shadow-yellow-500/20 cursor-help" 
+                        aria-live="polite"
+                        title={`${stats.pending} tarefas pendentes. Tarefas que ainda não foram iniciadas.`}
+                        variants={{
+                            hidden: { opacity: 0, y: 10 },
+                            visible: { opacity: 1, y: 0 },
+                        }}
+                    >
+                        {/* Glassmorphism overlay */}
+                        <div className="absolute inset-0 bg-base-100/60 dark:bg-base-100/40 backdrop-blur-xl" />
+                        
+                        {/* Animated gradient orb no hover */}
+                        <div className="pointer-events-none absolute -top-12 -right-12 w-32 h-32 rounded-full bg-gradient-to-br from-yellow-500/20 via-amber-500/10 to-yellow-500/5 opacity-0 group-hover:opacity-100 blur-3xl transition-opacity duration-700" />
+                        
+                        {/* Shine effect no hover */}
+                        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out" />
+                        </div>
+                        
+                        <div className="relative z-10 flex flex-col gap-4">
+                            <div className="flex items-start justify-between gap-4">
+                                <div className="min-w-0 flex-1">
+                                    <p className="text-xs font-bold text-base-content/60 mb-2 uppercase tracking-wider">Tarefas Pendentes</p>
+                                    <p className="text-4xl lg:text-5xl font-extrabold tracking-tight text-yellow-400 dark:text-yellow-300 transition-transform duration-500 group-hover:scale-110" aria-label={`${stats.pending} tarefas pendentes`}>
+                                        {stats.pending}
+                                    </p>
+                                </div>
+                                <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-yellow-500/10 group-hover:bg-yellow-500/20 flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:rotate-6">
+                                    <Clock className="w-6 h-6 text-yellow-400 dark:text-yellow-300" />
                                 </div>
                             </div>
                         </div>
