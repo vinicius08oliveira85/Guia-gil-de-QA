@@ -95,11 +95,11 @@ const MetricRing: React.FC<MetricRingProps> = ({
                 </svg>
                 {/* Center content */}
                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                    {/* AUMENTADO: Texto maior para legibilidade */}
-                    <span className="block max-w-full px-1 text-center text-base sm:text-lg md:text-xl font-semibold tabular-nums text-base-content leading-none mb-0.5">
+                    {/* Texto ajustado para melhor espaçamento interno */}
+                    <span className="block max-w-full px-1 text-center text-sm sm:text-base md:text-lg font-semibold tabular-nums text-base-content leading-none mb-0.5">
                         {metric.value}
                     </span>
-                    <span className="block max-w-full px-1 text-center text-[11px] sm:text-xs md:text-sm font-normal text-base-content/60 leading-none">
+                    <span className="block max-w-full px-1 text-center text-[10px] sm:text-[11px] md:text-xs font-normal text-base-content/60 leading-none">
                         {metric.unit}
                     </span>
                 </div>
