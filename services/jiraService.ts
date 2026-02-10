@@ -646,7 +646,8 @@ const extractEpicLink = (fields: any): string | undefined => {
  */
 const getJiraIssueComments = async (
     config: JiraConfig,
-    issueKey: string
+    issueKey: string,
+    jiraAttachments?: Array<{ id: string; filename: string; size: number; created: string; author: string }>
 ): Promise<Comment[]> => {
     try {
         const endpoint = `issue/${issueKey}/comment`;
@@ -657,7 +658,7 @@ const getJiraIssueComments = async (
                     displayName: string;
                     emailAddress?: string;
                 };
-                body: string;
+                body: string | any; // Pode ser string, ADF ou HTML
                 created: string;
                 updated?: string;
             }>;
@@ -670,7 +671,8 @@ const getJiraIssueComments = async (
         return response.comments.map(comment => ({
             id: comment.id,
             author: comment.author?.displayName || 'Desconhecido',
-            content: parseJiraDescription(comment.body) || '',
+            // Usar parseJiraDescriptionHTML para processar imagens e formatação rica
+            content: parseJiraDescriptionHTML(comment.body, config.url, jiraAttachments) || '',
             createdAt: comment.created,
             updatedAt: comment.updated,
             fromJira: true,
@@ -718,7 +720,8 @@ const mergeComments = (existingComments: Comment[], jiraComments: Comment[]): Co
  */
 const extractJiraComments = async (
     config: JiraConfig,
-    issue: JiraIssue
+    issue: JiraIssue,
+    jiraAttachments?: Array<{ id: string; filename: string; size: number; created: string; author: string }>
 ): Promise<Comment[]> => {
     let jiraComments: Comment[] = [];
     
@@ -727,7 +730,8 @@ const extractJiraComments = async (
         jiraComments = issue.renderedFields.comment.comments.map(comment => ({
             id: comment.id,
             author: comment.author?.displayName || 'Desconhecido',
-            content: parseJiraDescription(comment.body) || '',
+            // Usar parseJiraDescriptionHTML para processar imagens e formatação rica
+            content: parseJiraDescriptionHTML(comment.body, config.url, jiraAttachments) || '',
             createdAt: comment.created,
             updatedAt: comment.updated,
             fromJira: true,
@@ -737,14 +741,15 @@ const extractJiraComments = async (
         jiraComments = issue.fields.comment.comments.map((comment: any) => ({
             id: comment.id,
             author: comment.author?.displayName || 'Desconhecido',
-            content: parseJiraDescription(comment.body) || '',
+            // Usar parseJiraDescriptionHTML para processar imagens e formatação rica
+            content: parseJiraDescriptionHTML(comment.body, config.url, jiraAttachments) || '',
             createdAt: comment.created,
             updatedAt: comment.updated,
             fromJira: true,
         }));
     } else {
         // Fallback: buscar comentários separadamente
-        jiraComments = await getJiraIssueComments(config, issue.key);
+        jiraComments = await getJiraIssueComments(config, issue.key, jiraAttachments);
     }
     
     return jiraComments;
@@ -824,7 +829,7 @@ export const importJiraProject = async (
         }
         
         // Buscar comentários do Jira
-        const jiraComments = await extractJiraComments(config, issue);
+        const jiraComments = await extractJiraComments(config, issue, jiraAttachments);
         
         const jiraStatusName = issue.fields?.status?.name || '';
         const jiraKey = issue.key || `jira-${Date.now()}-${Math.random()}`;
@@ -1135,7 +1140,7 @@ export const syncJiraProject = async (
         }
         
         // Buscar comentários do Jira
-        const jiraComments = await extractJiraComments(config, issue);
+        const jiraComments = await extractJiraComments(config, issue, jiraAttachments);
         
         // Fazer merge com comentários existentes
         const existingComments = existingIndex >= 0 ? (updatedTasks[existingIndex].comments || []) : [];
@@ -1981,7 +1986,7 @@ export const addNewJiraTasks = async (
         }
         
         // Buscar comentários do Jira
-        const jiraComments = await extractJiraComments(config, issue);
+        const jiraComments = await extractJiraComments(config, issue, jiraAttachments);
         
         const jiraStatusName = issue.fields?.status?.name || '';
         const task: JiraTask = {

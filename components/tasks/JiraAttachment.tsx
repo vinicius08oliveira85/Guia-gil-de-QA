@@ -1,5 +1,5 @@
 import React from 'react';
-import { FileText, Image as ImageIcon, File, Paperclip, Download, FileCode, FileSpreadsheet } from 'lucide-react';
+import { FileText, Image as ImageIcon, File, Download, FileCode, FileSpreadsheet, FileType } from 'lucide-react';
 import { useJiraImage } from '../../hooks/useJiraImage';
 
 interface JiraAttachmentProps {
@@ -8,6 +8,7 @@ interface JiraAttachmentProps {
     mimeType?: string;
     size?: number;
     thumbnailUrl?: string;
+    id?: string; // ID do anexo no Jira (opcional)
 }
 
 const formatSize = (bytes?: number) => {
@@ -15,23 +16,60 @@ const formatSize = (bytes?: number) => {
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`;
 };
 
 const getFileIcon = (filename: string, mimeType?: string) => {
-    if (mimeType?.includes('pdf') || filename.endsWith('.pdf')) return <FileText className="w-8 h-8 text-red-500" />;
-    if (mimeType?.includes('sheet') || filename.endsWith('.xlsx') || filename.endsWith('.csv')) return <FileSpreadsheet className="w-8 h-8 text-green-500" />;
-    if (mimeType?.includes('code') || filename.endsWith('.ts') || filename.endsWith('.js') || filename.endsWith('.json')) return <FileCode className="w-8 h-8 text-yellow-500" />;
+    const lowerName = filename.toLowerCase();
+    
+    // PDF
+    if (mimeType?.includes('pdf') || lowerName.endsWith('.pdf')) {
+        return <FileText className="w-8 h-8 text-red-500" />;
+    }
+    
+    // Excel/Spreadsheet
+    if (mimeType?.includes('sheet') || mimeType?.includes('excel') || 
+        lowerName.endsWith('.xlsx') || lowerName.endsWith('.xls') || lowerName.endsWith('.csv')) {
+        return <FileSpreadsheet className="w-8 h-8 text-green-500" />;
+    }
+    
+    // Word/Document
+    if (mimeType?.includes('word') || mimeType?.includes('document') ||
+        lowerName.endsWith('.docx') || lowerName.endsWith('.doc')) {
+        return <FileType className="w-8 h-8 text-blue-500" />;
+    }
+    
+    // Code files
+    if (mimeType?.includes('code') || mimeType?.includes('text') ||
+        lowerName.endsWith('.ts') || lowerName.endsWith('.js') || 
+        lowerName.endsWith('.json') || lowerName.endsWith('.xml') ||
+        lowerName.endsWith('.html') || lowerName.endsWith('.css')) {
+        return <FileCode className="w-8 h-8 text-yellow-500" />;
+    }
+    
+    // Zip/Archive
+    if (mimeType?.includes('zip') || mimeType?.includes('archive') ||
+        lowerName.endsWith('.zip') || lowerName.endsWith('.rar') || 
+        lowerName.endsWith('.7z') || lowerName.endsWith('.tar') || 
+        lowerName.endsWith('.gz')) {
+        return <File className="w-8 h-8 text-purple-500" />;
+    }
+    
+    // Default
     return <File className="w-8 h-8 text-base-content/50" />;
 };
 
-export const JiraAttachment: React.FC<JiraAttachmentProps> = ({ url, filename, mimeType, size, thumbnailUrl }) => {
+export const JiraAttachment: React.FC<JiraAttachmentProps> = ({ url, filename, mimeType, size, thumbnailUrl, id }) => {
     // Usa o hook para gerenciar o carregamento da imagem (thumbnail ou full)
     const { objectUrl, loading, error, isImage } = useJiraImage(thumbnailUrl || url, mimeType);
 
-    const handleDownload = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        window.open(url, '_blank');
+    const handleDownload = (e?: React.MouseEvent) => {
+        if (e) {
+            e.stopPropagation();
+        }
+        if (url) {
+            window.open(url, '_blank');
+        }
     };
 
     // Renderização para Imagens
@@ -44,8 +82,15 @@ export const JiraAttachment: React.FC<JiraAttachmentProps> = ({ url, filename, m
                             <ImageIcon className="w-8 h-8 text-base-content/20" />
                         </div>
                     ) : error ? (
-                        <div className="flex h-full w-full items-center justify-center bg-base-300 text-xs text-base-content/50">
-                            Erro
+                        <div className="flex h-full w-full items-center justify-center bg-base-300 text-xs text-base-content/50 flex-col gap-1">
+                            <span>Erro</span>
+                            <button
+                                onClick={handleDownload}
+                                className="btn btn-xs btn-ghost"
+                                title="Abrir no Jira"
+                            >
+                                Abrir
+                            </button>
                         </div>
                     ) : (
                         <img 

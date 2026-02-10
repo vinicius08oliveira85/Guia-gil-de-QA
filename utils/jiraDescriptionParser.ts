@@ -129,8 +129,11 @@ export function parseJiraDescription(description: any): string {
 
 /**
  * Converte um nó ADF para HTML
+ * @param node Nó ADF a converter
+ * @param jiraUrl URL base do Jira (opcional, para construir URLs de imagens)
+ * @param jiraAttachments Array de anexos do Jira (opcional, para mapear imagens)
  */
-function adfNodeToHTML(node: ADFNode): string {
+function adfNodeToHTML(node: ADFNode, jiraUrl?: string, jiraAttachments?: JiraAttachment[]): string {
     if (node.text) {
         let text = escapeHTML(node.text);
         
@@ -159,7 +162,7 @@ function adfNodeToHTML(node: ADFNode): string {
     }
     
     if (node.content && Array.isArray(node.content)) {
-        const content = node.content.map(adfNodeToHTML).join('');
+        const content = node.content.map(child => adfNodeToHTML(child, jiraUrl, jiraAttachments)).join('');
         
         // Tratamento de tipos específicos
         switch (node.type) {
@@ -181,14 +184,46 @@ function adfNodeToHTML(node: ADFNode): string {
                 return '<br />';
             case 'blockquote':
                 return `<blockquote>${content}</blockquote>`;
+            case 'mediaSingle':
+                // Container para mídia única (imagem com layout)
+                return `<div class="jira-media-single">${content}</div>`;
             case 'media':
-                // Imagens e outros media
+                // Imagens e outros media do Jira
+                const mediaId = node.attrs?.id;
                 const mediaType = node.attrs?.type || 'file';
+                const mediaCollection = node.attrs?.collection;
                 const url = node.attrs?.url || node.attrs?.src || '';
-                const alt = node.attrs?.alt || '';
-                if (mediaType === 'file' && url) {
-                    return `<img src="${escapeHTML(url)}" alt="${escapeHTML(alt)}" />`;
+                const alt = node.attrs?.alt || node.attrs?.title || '';
+                
+                // Tentar encontrar anexo pelo ID, collection ou filename
+                let attachment: JiraAttachment | undefined;
+                if (jiraAttachments && jiraUrl) {
+                    if (mediaId) {
+                        // Buscar por ID do anexo
+                        attachment = jiraAttachments.find(att => att.id === String(mediaId));
+                    }
+                    
+                    // Se não encontrou por ID, tentar por filename na URL
+                    if (!attachment && url) {
+                        const filename = url.split('/').pop() || url;
+                        attachment = jiraAttachments.find(att => 
+                            att.filename.toLowerCase() === filename.toLowerCase()
+                        );
+                    }
                 }
+                
+                // Construir URL da imagem
+                let imageUrl = url;
+                if (attachment && jiraUrl) {
+                    const baseUrl = jiraUrl.replace(/\/$/, '');
+                    imageUrl = `${baseUrl}/secure/attachment/${attachment.id}/${encodeURIComponent(attachment.filename)}`;
+                }
+                
+                if (imageUrl && (mediaType === 'file' || mediaType === 'image' || !mediaType)) {
+                    // Adicionar classe especial e atributos para interceptação no frontend
+                    return `<img class="jira-image" src="${escapeHTML(imageUrl)}" alt="${escapeHTML(alt)}" loading="lazy" data-jira-url="${escapeHTML(imageUrl)}" />`;
+                }
+                
                 return content;
             case 'table':
                 return `<table>${content}</table>`;
@@ -252,12 +287,66 @@ function processJiraImages(
     const attachmentMap = new Map<string, JiraAttachment>();
     jiraAttachments.forEach(att => {
         attachmentMap.set(att.filename.toLowerCase(), att);
+        // Também mapear sem extensão para casos onde o nome pode variar
+        const nameWithoutExt = att.filename.toLowerCase().replace(/\.[^.]+$/, '');
+        if (nameWithoutExt !== att.filename.toLowerCase()) {
+            attachmentMap.set(nameWithoutExt, att);
+        }
+    });
+
+    // Processar padrão Markdown do Jira: !imagem.png! ou !imagem.png|width=200!
+    html = html.replace(/!([^!|]+)(?:\|([^!]+))?!/g, (match, filename, params) => {
+        // Remover parâmetros como |width=200
+        const cleanFilename = filename.trim();
+        const attachment = attachmentMap.get(cleanFilename.toLowerCase());
+        
+        if (attachment) {
+            const imageUrl = `${baseUrl}/secure/attachment/${attachment.id}/${encodeURIComponent(attachment.filename)}`;
+            // Extrair width/height dos parâmetros se existirem
+            let width = '';
+            let height = '';
+            if (params) {
+                const widthMatch = params.match(/width=(\d+)/i);
+                const heightMatch = params.match(/height=(\d+)/i);
+                if (widthMatch) width = ` width="${widthMatch[1]}"`;
+                if (heightMatch) height = ` height="${heightMatch[1]}"`;
+            }
+            return `<img class="jira-image" src="${escapeHTML(imageUrl)}" alt="${escapeHTML(cleanFilename)}" loading="lazy" data-jira-url="${escapeHTML(imageUrl)}"${width}${height} />`;
+        }
+        
+        // Se não encontrou, retornar como texto simples
+        return match;
     });
 
     // Processar tags <img> que têm src com apenas nome de arquivo (não URL completa)
-    return html.replace(/<img([^>]*)\ssrc=["']([^"']+)["']([^>]*)>/gi, (match, before, src, after) => {
-        // Se src já é uma URL completa (http/https/data), não processar
-        if (src.startsWith('http://') || src.startsWith('https://') || src.startsWith('data:')) {
+    html = html.replace(/<img([^>]*)\ssrc=["']([^"']+)["']([^>]*)>/gi, (match, before, src, after) => {
+        // Se src já é uma URL completa (http/https/data), adicionar classe e atributos se for do Jira
+        if (src.startsWith('http://') || src.startsWith('https://')) {
+            // Verificar se é URL do Jira
+            if (src.includes('/secure/attachment/') || src.includes(baseUrl)) {
+                // Adicionar classe e atributos se não tiver
+                if (!before.includes('class=') && !after.includes('class=')) {
+                    const hasDataAttr = before.includes('data-jira-url=') || after.includes('data-jira-url=');
+                    const hasLoading = before.includes('loading=') || after.includes('loading=');
+                    let newBefore = before;
+                    let newAfter = after;
+                    
+                    if (!hasDataAttr) {
+                        newBefore += ` data-jira-url="${escapeHTML(src)}"`;
+                    }
+                    if (!hasLoading) {
+                        newBefore += ` loading="lazy"`;
+                    }
+                    if (!before.includes('class=') && !after.includes('class=')) {
+                        newBefore += ` class="jira-image"`;
+                    }
+                    return `<img${newBefore} src="${escapeHTML(src)}"${newAfter}>`;
+                }
+            }
+            return match;
+        }
+        
+        if (src.startsWith('data:')) {
             return match;
         }
 
@@ -268,12 +357,32 @@ function processJiraImages(
         if (attachment) {
             // Construir URL completa do Jira
             const imageUrl = `${baseUrl}/secure/attachment/${attachment.id}/${encodeURIComponent(attachment.filename)}`;
-            return `<img${before} src="${escapeHTML(imageUrl)}"${after}>`;
+            // Adicionar classe e atributos se não tiver
+            const hasClass = before.includes('class=') || after.includes('class=');
+            const hasDataAttr = before.includes('data-jira-url=') || after.includes('data-jira-url=');
+            const hasLoading = before.includes('loading=') || after.includes('loading=');
+            
+            let newBefore = before;
+            let newAfter = after;
+            
+            if (!hasClass) {
+                newBefore += ` class="jira-image"`;
+            }
+            if (!hasDataAttr) {
+                newBefore += ` data-jira-url="${escapeHTML(imageUrl)}"`;
+            }
+            if (!hasLoading) {
+                newBefore += ` loading="lazy"`;
+            }
+            
+            return `<img${newBefore} src="${escapeHTML(imageUrl)}"${newAfter}>`;
         }
 
         // Se não encontrou anexo, retornar original (pode ser uma imagem externa ou não encontrada)
         return match;
     });
+    
+    return html;
 }
 
 /**
@@ -308,11 +417,11 @@ export function parseJiraDescriptionHTML(
     } else if (typeof description === 'object') {
         // Se é um objeto ADF, converter para HTML
         if (description.type === 'doc' && Array.isArray(description.content)) {
-            html = sanitizeHTML(adfNodeToHTML(description));
+            html = sanitizeHTML(adfNodeToHTML(description, jiraUrl, jiraAttachments));
         } else if (Array.isArray(description)) {
-            html = sanitizeHTML(description.map(node => adfNodeToHTML(node)).join(''));
+            html = sanitizeHTML(description.map(node => adfNodeToHTML(node, jiraUrl, jiraAttachments)).join(''));
         } else if (description.type) {
-            html = sanitizeHTML(adfNodeToHTML(description));
+            html = sanitizeHTML(adfNodeToHTML(description, jiraUrl, jiraAttachments));
         } else if (description.content) {
             return parseJiraDescriptionHTML(description.content, jiraUrl, jiraAttachments);
         } else if (description.html) {
