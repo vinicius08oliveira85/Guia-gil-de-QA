@@ -184,7 +184,7 @@ export const ProjectActivityCard: React.FC<ProjectActivityCardProps> = ({
             </div>
 
             {/* Metrics Rings */}
-            <div className="grid grid-cols-3 gap-1.5 sm:gap-2 md:gap-4 mb-4 sm:mb-6">
+            <div className="grid grid-cols-3 gap-3 sm:gap-4 md:gap-6 mb-4 sm:mb-6">
                 {metrics.map((metric) => {
                     const radius = 36; // Para viewBox 0-100, radius de 36 deixa espaço para strokeWidth 8
                     const circumference = 2 * Math.PI * radius;
