@@ -5,7 +5,7 @@ import { Spinner } from '../common/Spinner';
 import { TaskTypeIcon, TaskStatusIcon, StartTestIcon, CompleteTestIcon, ToDoTestIcon, PlusIcon, EditIcon, TrashIcon, ChevronDownIcon, RefreshIcon } from '../common/Icons';
 import { BddScenarioForm, BddScenarioItem } from './BddScenario';
 import { TestCaseItem } from './TestCaseItem';
-import { Sparkles, Zap, Wand2, Loader2 } from 'lucide-react';
+import { Sparkles, Zap, Wand2, Loader2, MoreVertical } from 'lucide-react';
 import { TestStrategyCard } from './TestStrategyCard';
 import { ToolsSelector } from './ToolsSelector';
 import { TestReportModal } from './TestReportModal';
@@ -1523,57 +1523,188 @@ export const JiraTaskItem: React.FC<{
                             >
                                 <div className="p-4 space-y-4">
                                     {/* Barra de Ações (movida para dentro do expandir) */}
-                                    <div className="flex flex-wrap gap-2 pb-4 border-b border-base-200">
-                                        {(task.type === 'Tarefa' || task.type === 'Bug') && (
-                                            <>
-                                                {onGenerateAll && (
-                                                    <button
-                                                        onClick={handleGenerateAll}
-                                                        disabled={isGeneratingAll || isGenerating || isGeneratingBdd || isGeneratingTests}
-                                                        className="btn btn-sm btn-ghost text-primary gap-2 hover:bg-primary/10"
-                                                        title="Gerar BDD, Estratégia e Testes com IA"
-                                                    >
-                                                        {isGenerating || isGeneratingAll ? <span className="loading loading-spinner loading-xs"></span> : <Zap className="w-4 h-4" />}
-                                                        {isGenerating || isGeneratingAll ? 'Gerando...' : 'Gerar Tudo'}
-                                                    </button>
+                                    <div className="flex items-center gap-2 flex-wrap pb-4 border-b border-base-200">
+                                        {/* Ação primária */}
+                                        {(task.type === 'Tarefa' || task.type === 'Bug') && onGenerateAll && (
+                                            <button
+                                                type="button"
+                                                onClick={handleGenerateAll}
+                                                disabled={isGeneratingAll || isGenerating || isGeneratingBdd || isGeneratingTests}
+                                                className="btn btn-primary btn-sm gap-2"
+                                                title="Gerar BDD, Estratégia e Testes com IA"
+                                                aria-label="Gerar tudo com IA (BDD, estratégia e testes)"
+                                            >
+                                                {isGenerating || isGeneratingAll ? (
+                                                    <span className="loading loading-spinner loading-xs" aria-hidden="true"></span>
+                                                ) : (
+                                                    <Zap className="w-4 h-4" aria-hidden="true" />
                                                 )}
-                                                <button
-                                                    onClick={() => onGenerateBddScenarios(task.id)}
-                                                    disabled={isGeneratingBdd || isGeneratingAll || isGenerating}
-                                                    className="btn btn-sm btn-ghost gap-2"
-                                                    title="Gerar apenas cenários BDD"
-                                                >
-                                                    {isGeneratingBdd ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-                                                    BDD
-                                                </button>
-                                                <button
-                                                    onClick={() => onGenerateTests(task.id, detailLevel)}
-                                                    disabled={isGeneratingTests || isGeneratingAll || isGenerating}
-                                                    className="btn btn-sm btn-ghost gap-2"
-                                                    title="Gerar apenas casos de teste"
-                                                >
-                                                    {isGeneratingTests ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
-                                                    Testes
-                                                </button>
-                                                <div className="divider divider-horizontal mx-0 my-1 w-px h-6 bg-base-300 self-center hidden sm:flex"></div>
-                                            </>
+                                                <span className="hidden sm:inline">{isGenerating || isGeneratingAll ? 'Gerando...' : 'Gerar Tudo'}</span>
+                                                <span className="sm:hidden">{isGenerating || isGeneratingAll ? 'Gerando...' : 'Gerar'}</span>
+                                            </button>
                                         )}
+
+                                        {/* Desktop: ações comuns visíveis */}
                                         {task.type === 'Epic' && (
-                                            <button onClick={() => onAddSubtask(task.id)} className="btn btn-sm btn-ghost gap-2">
-                                                <PlusIcon className="w-4 h-4" /> Adicionar Subtarefa
+                                            <button
+                                                type="button"
+                                                onClick={() => onAddSubtask(task.id)}
+                                                className="btn btn-ghost btn-sm gap-2 hidden md:inline-flex"
+                                                aria-label="Adicionar subtarefa"
+                                            >
+                                                <PlusIcon className="w-4 h-4" aria-hidden="true" />
+                                                Adicionar Subtarefa
                                             </button>
                                         )}
-                                        <button onClick={() => onEdit(task)} className="btn btn-sm btn-ghost gap-2">
-                                            <EditIcon className="w-4 h-4" /> Editar
+
+                                        <button
+                                            type="button"
+                                            onClick={() => onEdit(task)}
+                                            className="btn btn-ghost btn-sm gap-2 hidden md:inline-flex"
+                                            aria-label="Editar tarefa"
+                                        >
+                                            <EditIcon className="w-4 h-4" aria-hidden="true" />
+                                            Editar
                                         </button>
+
                                         {onSyncToJira && /^[A-Z]+-\d+$/.test(task.id) && (
-                                            <button onClick={() => onSyncToJira(task.id)} disabled={isSyncing} className="btn btn-sm btn-ghost gap-2">
-                                                {isSyncing ? <Spinner small /> : <RefreshIcon className="w-4 h-4" />} Sincronizar
+                                            <button
+                                                type="button"
+                                                onClick={() => onSyncToJira(task.id)}
+                                                disabled={isSyncing}
+                                                className="btn btn-ghost btn-sm gap-2 hidden md:inline-flex"
+                                                aria-label="Sincronizar tarefa com o Jira"
+                                            >
+                                                {isSyncing ? (
+                                                    <Spinner small />
+                                                ) : (
+                                                    <RefreshIcon className="w-4 h-4" aria-hidden="true" />
+                                                )}
+                                                Sincronizar
                                             </button>
                                         )}
-                                        <button onClick={() => setShowDeleteConfirm(true)} className="btn btn-sm btn-ghost text-error gap-2 ml-auto">
-                                            <TrashIcon className="w-4 h-4" /> Excluir
-                                        </button>
+
+                                        {/* Menu overflow: ações secundárias + destrutiva */}
+                                        <div className="dropdown dropdown-end">
+                                            <button
+                                                type="button"
+                                                tabIndex={0}
+                                                className="btn btn-ghost btn-sm btn-square"
+                                                aria-label="Mais ações"
+                                                aria-haspopup="true"
+                                                onClick={(e) => e.stopPropagation()}
+                                            >
+                                                <MoreVertical className="w-4 h-4" aria-hidden="true" />
+                                            </button>
+                                            <ul
+                                                tabIndex={0}
+                                                className="dropdown-content menu bg-base-100 rounded-box z-10 w-56 p-2 shadow-lg border border-base-300"
+                                                role="menu"
+                                                onClick={(e) => e.stopPropagation()}
+                                            >
+                                                {/* Mobile: ações comuns também ficam no menu */}
+                                                {task.type === 'Epic' && (
+                                                    <li className="md:hidden" role="none">
+                                                        <button
+                                                            type="button"
+                                                            role="menuitem"
+                                                            className="gap-2"
+                                                            onClick={() => onAddSubtask(task.id)}
+                                                        >
+                                                            <PlusIcon className="w-4 h-4" aria-hidden="true" />
+                                                            Adicionar Subtarefa
+                                                        </button>
+                                                    </li>
+                                                )}
+                                                <li className="md:hidden" role="none">
+                                                    <button
+                                                        type="button"
+                                                        role="menuitem"
+                                                        className="gap-2"
+                                                        onClick={() => onEdit(task)}
+                                                    >
+                                                        <EditIcon className="w-4 h-4" aria-hidden="true" />
+                                                        Editar
+                                                    </button>
+                                                </li>
+                                                {onSyncToJira && /^[A-Z]+-\d+$/.test(task.id) && (
+                                                    <li className="md:hidden" role="none">
+                                                        <button
+                                                            type="button"
+                                                            role="menuitem"
+                                                            className="gap-2"
+                                                            onClick={() => onSyncToJira(task.id)}
+                                                            disabled={isSyncing}
+                                                        >
+                                                            {isSyncing ? <Spinner small /> : <RefreshIcon className="w-4 h-4" aria-hidden="true" />}
+                                                            Sincronizar
+                                                        </button>
+                                                    </li>
+                                                )}
+                                                {(task.type === 'Epic' || onSyncToJira) && (
+                                                    <li className="md:hidden" role="none">
+                                                        <div className="divider my-0" />
+                                                    </li>
+                                                )}
+
+                                                {(task.type === 'Tarefa' || task.type === 'Bug') && (
+                                                    <>
+                                                        <li role="none">
+                                                            <button
+                                                                type="button"
+                                                                role="menuitem"
+                                                                className="gap-2"
+                                                                onClick={() => onGenerateBddScenarios(task.id)}
+                                                                disabled={isGeneratingBdd || isGeneratingAll || isGenerating}
+                                                                title="Gerar apenas cenários BDD"
+                                                                aria-label="Gerar apenas cenários BDD"
+                                                            >
+                                                                {isGeneratingBdd ? (
+                                                                    <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
+                                                                ) : (
+                                                                    <Sparkles className="w-4 h-4" aria-hidden="true" />
+                                                                )}
+                                                                BDD
+                                                            </button>
+                                                        </li>
+                                                        <li role="none">
+                                                            <button
+                                                                type="button"
+                                                                role="menuitem"
+                                                                className="gap-2"
+                                                                onClick={() => onGenerateTests(task.id, detailLevel)}
+                                                                disabled={isGeneratingTests || isGeneratingAll || isGenerating}
+                                                                title="Gerar apenas casos de teste"
+                                                                aria-label="Gerar apenas casos de teste"
+                                                            >
+                                                                {isGeneratingTests ? (
+                                                                    <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
+                                                                ) : (
+                                                                    <Wand2 className="w-4 h-4" aria-hidden="true" />
+                                                                )}
+                                                                Testes
+                                                            </button>
+                                                        </li>
+                                                        <li role="none">
+                                                            <div className="divider my-0" />
+                                                        </li>
+                                                    </>
+                                                )}
+
+                                                <li role="none">
+                                                    <button
+                                                        type="button"
+                                                        role="menuitem"
+                                                        onClick={() => setShowDeleteConfirm(true)}
+                                                        className="gap-2 text-error hover:bg-error hover:text-error-content"
+                                                        aria-label="Excluir tarefa"
+                                                    >
+                                                        <TrashIcon className="w-4 h-4" aria-hidden="true" />
+                                                        Excluir
+                                                    </button>
+                                                </li>
+                                            </ul>
+                                        </div>
                                     </div>
 
                                     <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
