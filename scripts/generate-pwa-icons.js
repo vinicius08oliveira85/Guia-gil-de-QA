@@ -17,7 +17,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const logoPath = path.join(__dirname, '../public/logo@erasebg-transformed.png');
+const logoPath = path.join(__dirname, '../public/Logo_Moderno_Leve-removebg-preview.png');
 const iconsDir = path.join(__dirname, '../public/icons');
 const outputPaths = {
   'icon-192x192.png': path.join(iconsDir, 'icon-192x192.png'),
@@ -41,7 +41,7 @@ async function generateIcons() {
   // Verificar se o logo existe
   if (!fs.existsSync(logoPath)) {
     console.error('❌ Logo não encontrado:', logoPath);
-    console.log('\nPor favor, verifique se o arquivo logo@erasebg-transformed.png existe em public/');
+    console.log('\nPor favor, verifique se o arquivo Logo_Moderno_Leve-removebg-preview.png existe em public/');
     process.exit(1);
   }
 

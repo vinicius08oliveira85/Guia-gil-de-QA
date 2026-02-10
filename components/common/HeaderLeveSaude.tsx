@@ -13,7 +13,7 @@ interface HeaderLeveSaudeProps {
  * Header Leve Saúde - Componente de cabeçalho seguindo a identidade visual
  */
 export const HeaderLeveSaude = React.memo<HeaderLeveSaudeProps>(({
-  logoUrl = '/logo@erasebg-transformed.png',
+  logoUrl = '/Logo_Moderno_Leve-removebg-preview.png',
   logoAlt = 'Leve Saúde',
   navItems = [],
   ctaLabel = 'Agendar consulta',
