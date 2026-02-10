@@ -107,8 +107,9 @@ const FilterChip = ({
 export const TasksView: React.FC<{ 
     project: Project, 
     onUpdateProject: (project: Project) => void,
-    onNavigateToTab?: (tabId: string) => void
-}> = ({ project, onUpdateProject, onNavigateToTab }) => {
+    onNavigateToTab?: (tabId: string) => void,
+    initialTaskId?: string
+}> = ({ project, onUpdateProject, onNavigateToTab, initialTaskId }) => {
     const [generatingTestsTaskId, setGeneratingTestsTaskId] = useState<string | null>(null);
     const [generatingBddTaskId, setGeneratingBddTaskId] = useState<string | null>(null);
     const [generatingAllTaskId, setGeneratingAllTaskId] = useState<string | null>(null);
@@ -1102,6 +1103,34 @@ export const TasksView: React.FC<{
     useEffect(() => {
         onUpdateProjectRef.current = onUpdateProject;
     }, [onUpdateProject]);
+
+    // Scroll até a tarefa quando initialTaskId estiver definido
+    useEffect(() => {
+        if (!initialTaskId) return;
+
+        // Aguardar um pouco para garantir que o DOM foi renderizado
+        const timer = setTimeout(() => {
+            const taskElement = document.querySelector(`[data-task-id="${initialTaskId}"]`);
+            if (taskElement) {
+                // Adicionar highlight temporário
+                taskElement.classList.add('ring-2', 'ring-primary/50', 'ring-offset-2');
+                
+                // Fazer scroll até o elemento
+                taskElement.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'center',
+                    inline: 'nearest'
+                });
+
+                // Remover highlight após 3 segundos
+                setTimeout(() => {
+                    taskElement.classList.remove('ring-2', 'ring-primary/50', 'ring-offset-2');
+                }, 3000);
+            }
+        }, 300);
+
+        return () => clearTimeout(timer);
+    }, [initialTaskId]);
     
     useEffect(() => {
         if (!project || !project.tasks || !Array.isArray(project.tasks)) return;
