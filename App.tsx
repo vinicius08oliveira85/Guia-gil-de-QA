@@ -317,6 +317,7 @@ const App: React.FC = () => {
                                 onDeleteProject={handleDeleteProject}
                                 onComparisonClick={() => setShowProjectComparison(true)}
                                 onSyncSupabase={handleSyncSupabase}
+                                onOpenSettings={() => setShowSettings(true)}
                             />
                         </Suspense>
                     )}
