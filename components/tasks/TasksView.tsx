@@ -1933,25 +1933,38 @@ export const TasksView: React.FC<{
                     </motion.div>
                     
                     <motion.div 
-                        className="bg-base-100 rounded-xl p-5 border border-base-300 hover:border-primary/40 hover:shadow-lg col-span-1 md:col-span-2 lg:col-span-4 cursor-help relative overflow-hidden transition-all duration-300"
+                        className="group relative overflow-hidden rounded-2xl p-6 bg-gradient-to-br from-primary/20 via-primary/10 to-primary/5 backdrop-blur-xl border border-primary/30 hover:border-primary/50 transition-all duration-500 ease-out hover:scale-[1.02] hover:shadow-2xl hover:shadow-primary/20 cursor-help col-span-1 md:col-span-2 lg:col-span-5"
+                        aria-live="polite"
                         title={`Taxa de execução de testes: ${testExecutionRate}%. ${stats.executedTests} de ${stats.totalTests} casos foram executados. Taxa de automação: ${automationRate}%.`}
                         variants={{
                             hidden: { opacity: 0, y: 10 },
                             visible: { opacity: 1, y: 0 },
                         }}
                     >
-                        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                        {/* Glassmorphism overlay */}
+                        <div className="absolute inset-0 bg-base-100/60 dark:bg-base-100/40 backdrop-blur-xl" />
+                        
+                        {/* Animated gradient orb no hover */}
+                        <div className="pointer-events-none absolute -top-12 -right-12 w-32 h-32 rounded-full bg-gradient-to-br from-primary/20 via-primary/10 to-primary/5 opacity-0 group-hover:opacity-100 blur-3xl transition-opacity duration-700" />
+                        
+                        {/* Shine effect no hover */}
+                        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out" />
+                        </div>
+                        
                         <div className="relative z-10">
-                            <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center justify-between mb-4">
                                 <div className="flex items-center gap-3">
-                                    <div className="p-2.5 bg-primary/10 rounded-xl">
+                                    <div className="p-2.5 bg-primary/10 rounded-xl group-hover:bg-primary/20 transition-colors duration-500">
                                         <ModernIcons.TestExecution className="text-primary" size={22} />
                                     </div>
                                     <p className="text-base font-semibold text-base-content">Execução de Testes</p>
                                 </div>
-                                <span className="text-2xl font-bold text-primary" aria-label={`${testExecutionRate}% de execução`}>{testExecutionRate}%</span>
+                                <span className="text-2xl lg:text-3xl font-extrabold text-primary transition-transform duration-500 group-hover:scale-110" aria-label={`${testExecutionRate}% de execução`}>
+                                    {testExecutionRate}%
+                                </span>
                             </div>
-                            <div className="w-full bg-base-200/80 rounded-full h-3.5 mb-2 overflow-hidden relative" role="progressbar" aria-valuenow={testExecutionRate} aria-valuemin={0} aria-valuemax={100} aria-label={`Progresso de execução: ${testExecutionRate}%`}>
+                            <div className="w-full bg-base-200/80 rounded-full h-3.5 mb-3 overflow-hidden relative" role="progressbar" aria-valuenow={testExecutionRate} aria-valuemin={0} aria-valuemax={100} aria-label={`Progresso de execução: ${testExecutionRate}%`}>
                                 <div 
                                     className="h-full bg-gradient-to-r from-primary via-primary/90 to-primary/80 rounded-full transition-all duration-700 ease-out relative overflow-hidden"
                                     style={{ width: `${testExecutionRate}%` }}
