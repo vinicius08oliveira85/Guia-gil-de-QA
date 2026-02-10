@@ -55,6 +55,14 @@ export const ProjectsDashboard: React.FC<{
     const { handleError, handleSuccess } = useErrorHandler();
     const { importProject } = useProjectsStore();
 
+    // Função para navegar para uma tarefa específica
+    const handleNavigateToTask = useCallback((projectId: string, taskId: string) => {
+        // Armazenar taskId no sessionStorage para ser lido pelo ProjectView
+        sessionStorage.setItem('taskIdToFocus', taskId);
+        // Selecionar o projeto (isso abrirá o ProjectView)
+        onSelectProject(projectId);
+    }, [onSelectProject]);
+
     // Verificar se Jira está configurado ao montar o componente
     React.useEffect(() => {
         const checkJiraConfig = async () => {
@@ -724,6 +732,7 @@ export const ProjectsDashboard: React.FC<{
                                         onDelete={() => {
                                             setDeleteModalState({ isOpen: true, project: p });
                                         }}
+                                        onNavigateToTask={(taskId) => handleNavigateToTask(p.id, taskId)}
                                         className="group"
                                     />
                                 </motion.div>

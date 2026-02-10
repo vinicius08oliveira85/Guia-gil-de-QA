@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Project, JiraTask } from '../../types';
+import { Project, JiraTask, TaskPriority } from '../../types';
 import { Activity, ArrowUpRight, Target, CheckCircle2 } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import { calculateProjectMetrics } from '../../hooks/useProjectMetrics';
@@ -16,12 +16,14 @@ export interface ProjectGoal {
     id: string;
     title: string;
     isCompleted: boolean;
+    priority?: TaskPriority;
 }
 
 interface ProjectActivityCardProps {
     project: Project;
     onSelect?: () => void;
     onDelete?: () => void;
+    onNavigateToTask?: (taskId: string) => void;
     className?: string;
 }
 
@@ -118,9 +120,21 @@ export const ProjectActivityCard: React.FC<ProjectActivityCardProps> = ({
     project,
     onSelect,
     onDelete,
+    onNavigateToTask,
     className
 }) => {
     const [isHovering, setIsHovering] = useState<string | null>(null);
+
+    // Função helper para retornar classes CSS baseadas na prioridade
+    const getPriorityBgColor = (priority?: TaskPriority): string => {
+        switch (priority) {
+            case 'Urgente': return 'bg-error/10 hover:bg-error/15 border-error/20';
+            case 'Alta': return 'bg-warning/10 hover:bg-warning/15 border-warning/20';
+            case 'Média': return 'bg-info/10 hover:bg-info/15 border-info/20';
+            case 'Baixa': return 'bg-success/10 hover:bg-success/15 border-success/20';
+            default: return 'bg-base-200/50 hover:bg-base-200/70 border-base-300/50';
+        }
+    };
 
     // Calcular métricas do projeto
     const metrics = useMemo(() => {
@@ -209,7 +223,8 @@ export const ProjectActivityCard: React.FC<ProjectActivityCardProps> = ({
         return prioritizedTasks.map((item, index) => ({
             id: item.task.id,
             title: item.task.title,
-            isCompleted: item.isCompleted
+            isCompleted: item.isCompleted,
+            priority: item.task.priority || 'Média' // Adicionar prioridade
         })) as ProjectGoal[];
     }, [project]);
 
@@ -310,13 +325,26 @@ export const ProjectActivityCard: React.FC<ProjectActivityCardProps> = ({
                             {goals.map((goal) => (
                                 <div
                                     key={goal.id}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onNavigateToTask?.(goal.id);
+                                    }}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' || e.key === ' ') {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            onNavigateToTask?.(goal.id);
+                                        }
+                                    }}
                                     className={cn(
                                         "w-full flex items-center gap-2 sm:gap-3 p-2 sm:p-2.5 rounded-lg",
-                                        "bg-base-200/50",
-                                        "border border-base-300/50",
-                                        "hover:border-primary/30",
-                                        "transition-all"
+                                        "border transition-all",
+                                        "cursor-pointer",
+                                        getPriorityBgColor(goal.priority)
                                     )}
+                                    role="button"
+                                    tabIndex={0}
+                                    aria-label={`Navegar para tarefa: ${goal.title}`}
                                 >
                                     <CheckCircle2
                                         className={cn(
