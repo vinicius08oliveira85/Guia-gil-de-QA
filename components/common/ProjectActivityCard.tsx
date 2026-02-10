@@ -70,7 +70,7 @@ const MetricRing: React.FC<MetricRingProps> = ({
             */}
             <div className="relative w-full aspect-square max-w-[96px] sm:max-w-[110px] md:max-w-[130px] lg:max-w-[140px] mx-auto">
                 {/* Background ring */}
-                <div className="absolute inset-0 rounded-full border-[6px] border-base-200" />
+                <div className="absolute inset-0 rounded-full border-[4px] sm:border-[5px] border-base-200" />
                 {/* Progress ring */}
                 <svg 
                     aria-hidden="true"
@@ -86,7 +86,7 @@ const MetricRing: React.FC<MetricRingProps> = ({
                         r={radius}
                         fill="none"
                         stroke={color}
-                        strokeWidth="10" 
+                        strokeWidth="8" 
                         strokeDasharray={circumference}
                         strokeDashoffset={offset}
                         strokeLinecap="round"
@@ -96,10 +96,10 @@ const MetricRing: React.FC<MetricRingProps> = ({
                 {/* Center content */}
                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                     {/* AUMENTADO: Texto maior para legibilidade */}
-                    <span className="text-xl sm:text-2xl font-bold text-base-content leading-none mb-0.5">
+                    <span className="block max-w-full px-1 text-center text-base sm:text-lg md:text-xl font-semibold tabular-nums text-base-content leading-none mb-0.5">
                         {metric.value}
                     </span>
-                    <span className="text-xs sm:text-sm font-medium text-base-content/60 leading-none">
+                    <span className="block max-w-full px-1 text-center text-[11px] sm:text-xs md:text-sm font-normal text-base-content/60 leading-none">
                         {metric.unit}
                     </span>
                 </div>
@@ -269,7 +269,7 @@ export const ProjectActivityCard: React.FC<ProjectActivityCardProps> = ({
 
             {/* Metrics Rings - Grid layout Ajustado */}
             {/* gap-2 em mobile, gap-3/4 em desktop para não quebrar layout de 4 colunas */}
-            <div className="grid grid-cols-3 gap-2 sm:gap-4 items-end justify-items-center mb-4 sm:mb-6 flex-1">
+            <div className="grid grid-cols-3 gap-2 md:gap-4 items-end justify-items-center mb-4 sm:mb-6 flex-1">
                 {metrics.map((metric) => {
                     const color = METRIC_COLORS[metric.label as keyof typeof METRIC_COLORS] || '#007AFF';
                     
