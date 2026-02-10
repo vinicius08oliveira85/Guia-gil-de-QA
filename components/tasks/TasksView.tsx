@@ -28,7 +28,6 @@ import { GeneralIAAnalysisButton } from './GeneralIAAnalysisButton';
 import { generateGeneralIAAnalysis } from '../../services/ai/generalAnalysisService';
 import { FailedTestsReportModal } from './FailedTestsReportModal';
 import { useProjectMetrics } from '../../hooks/useProjectMetrics';
-import { getTaskStatusCategory } from '../../utils/jiraStatusCategorizer';
 
 const TASK_ID_REGEX = /^([A-Z]+)-(\d+)/i;
 
@@ -1062,26 +1061,30 @@ export const TasksView: React.FC<{
     const epics = useMemo(() => project.tasks.filter(t => t.type === 'Epic'), [project.tasks]);
 
     const stats = useMemo(() => {
+        if (!project || !project.tasks) {
+            return { total: 0, inProgress: 0, done: 0, bugsOpen: 0, totalTests: 0, executedTests: 0, automatedTests: 0 };
+        }
+
         const total = project.tasks.length;
-        // Usar categorias do Jira para calcular status
-        const inProgress = project.tasks.filter(t => {
-            const category = getTaskStatusCategory(t);
-            return category === 'Em Andamento';
-        }).length;
-        const done = project.tasks.filter(t => {
-            const category = getTaskStatusCategory(t);
-            return category === 'Concluído';
-        }).length;
-        const bugsOpen = project.tasks.filter(t => {
-            if (t.type !== 'Bug') return false;
-            const category = getTaskStatusCategory(t);
-            return category !== 'Concluído';
-        }).length;
+        
+        const inProgress = project.tasks.filter(
+            task => task.status === 'In Progress'
+        ).length;
+        
+        const done = project.tasks.filter(
+            task => task.status === 'Done'
+        ).length;
+
+        const bugsOpen = project.tasks.filter(
+            task => task.type === 'Bug' && task.status !== 'Done'
+        ).length;
+
         const totalTests = project.tasks.reduce((acc, t) => acc + (t.testCases?.length || 0), 0);
         const executedTests = project.tasks.reduce((acc, t) => acc + (t.testCases?.filter(tc => tc.status !== 'Not Run').length || 0), 0);
         const automatedTests = project.tasks.reduce((acc, t) => acc + (t.testCases?.filter(tc => tc.isAutomated).length || 0), 0);
+        
         return { total, inProgress, done, bugsOpen, totalTests, executedTests, automatedTests };
-    }, [project.tasks]);
+    }, [project?.tasks]);
 
     const testExecutionRate = stats.totalTests > 0 ? Math.round((stats.executedTests / stats.totalTests) * 100) : 0;
     const automationRate = stats.totalTests > 0 ? Math.round((stats.automatedTests / stats.totalTests) * 100) : 0;
