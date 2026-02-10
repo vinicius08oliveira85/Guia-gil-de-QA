@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Comment } from '../../types';
 import { format } from 'date-fns';
 import { logger } from '../../utils/logger';
+import { JiraRichContent } from '../tasks/JiraRichContent';
 
 interface CommentSectionProps {
   comments: Comment[];
@@ -161,7 +162,13 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
                     </span>
                   )}
                 </div>
-                <p className="text-text-primary whitespace-pre-wrap">{comment.content}</p>
+                {comment.content.includes('<') ? (
+                  <div className="text-text-primary">
+                    <JiraRichContent html={comment.content} />
+                  </div>
+                ) : (
+                  <p className="text-text-primary whitespace-pre-wrap">{comment.content}</p>
+                )}
                 {comment.mentions && comment.mentions.length > 0 && (
                   <div className="mt-2 flex flex-wrap gap-1">
                     {comment.mentions.map(mention => (

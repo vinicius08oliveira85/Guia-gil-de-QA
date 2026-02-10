@@ -30,6 +30,8 @@ import { getJiraConfig } from '../../services/jiraService';
 import { TestTypeBadge } from '../common/TestTypeBadge';
 import { FileViewer } from '../common/FileViewer';
 import { canViewInBrowser, detectFileType } from '../../services/fileViewerService';
+import { JiraAttachment } from './JiraAttachment';
+import { JiraRichContent } from './JiraRichContent';
 import { loadTaskTestStatus, saveTaskTestStatus, calculateTaskTestStatus } from '../../services/taskTestStatusService';
 import { useProjectsStore } from '../../store/projectsStore';
 import { logger } from '../../utils/logger';
@@ -80,9 +82,9 @@ const DescriptionRenderer: React.FC<{
     }
     
     return (
-        <div 
-            className="jira-rich-content prose prose-sm max-w-none dark:prose-invert"
-            dangerouslySetInnerHTML={{ __html: htmlContent }}
+        <JiraRichContent 
+            html={htmlContent}
+            className=""
         />
     );
 };
@@ -907,63 +909,36 @@ export const JiraTaskItem: React.FC<{
                             <div className="space-y-3">
                                 <h4 className="text-sm font-semibold text-base-content/70">📎 Anexos do Jira</h4>
                                 <div className="p-3 bg-base-100 border border-base-300 rounded-lg">
-                                    <div className="space-y-2">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
                                         {task.jiraAttachments.map((att) => {
                                             const jiraConfig = getJiraConfig();
                                             const jiraUrl = jiraConfig?.url;
-                                            const attachmentUrl = jiraUrl ? `${jiraUrl}/secure/attachment/${att.id}/${encodeURIComponent(att.filename)}` : null;
+                                            const attachmentUrl = jiraUrl ? `${jiraUrl}/secure/attachment/${att.id}/${encodeURIComponent(att.filename)}` : '';
                                             const fileType = detectFileType(att.filename, '');
-                                            const canView = attachmentUrl && canViewInBrowser(fileType);
+                                            
+                                            // Determinar mimeType baseado no tipo de arquivo
+                                            let mimeType: string | undefined;
+                                            if (fileType === 'pdf') mimeType = 'application/pdf';
+                                            else if (fileType === 'image') {
+                                                const ext = att.filename.toLowerCase().split('.').pop();
+                                                if (ext === 'png') mimeType = 'image/png';
+                                                else if (ext === 'jpg' || ext === 'jpeg') mimeType = 'image/jpeg';
+                                                else if (ext === 'gif') mimeType = 'image/gif';
+                                                else if (ext === 'webp') mimeType = 'image/webp';
+                                                else mimeType = 'image/*';
+                                            } else if (fileType === 'text') mimeType = 'text/plain';
+                                            else if (fileType === 'json') mimeType = 'application/json';
+                                            else if (fileType === 'csv') mimeType = 'text/csv';
                                             
                                             return (
-                                                <div key={att.id} className="flex items-center justify-between text-sm p-2 hover:bg-base-200 rounded">
-                                                    <div className="flex items-center gap-2 flex-1 min-w-0">
-                                                        <span className="text-base-content truncate">{att.filename}</span>
-                                                        <span className="text-base-content/70 text-xs whitespace-nowrap">
-                                                            {(att.size / 1024).toFixed(2)} KB
-                                                        </span>
-                                                    </div>
-                                                    <div className="flex items-center gap-2">
-                                                        {canView && (
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => {
-                                                                    if (attachmentUrl) {
-                                                                        handleViewJiraAttachment({
-                                                                            id: att.id,
-                                                                            filename: att.filename,
-                                                                            url: attachmentUrl,
-                                                                            mimeType: fileType === 'pdf' ? 'application/pdf' : 
-                                                                                     fileType === 'image' ? 'image/*' : 
-                                                                                     fileType === 'text' ? 'text/plain' :
-                                                                                     fileType === 'json' ? 'application/json' :
-                                                                                     fileType === 'csv' ? 'text/csv' : 'application/octet-stream'
-                                                                        });
-                                                                    }
-                                                                }}
-                                                                disabled={loadingJiraAttachment}
-                                                                className="btn btn-outline btn-xs rounded-full disabled:opacity-50"
-                                                                title="Visualizar"
-                                                            >
-                                                                {loadingJiraAttachment ? '⏳' : '👁️ Ver'}
-                                                            </button>
-                                                        )}
-                                                        {attachmentUrl && (
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => {
-                                                                    if (attachmentUrl) {
-                                                                        window.open(attachmentUrl, '_blank');
-                                                                    }
-                                                                }}
-                                                                className="btn btn-outline btn-xs rounded-full"
-                                                                title="Download"
-                                                            >
-                                                                ⬇️
-                                                            </button>
-                                                        )}
-                                                    </div>
-                                                </div>
+                                                <JiraAttachment
+                                                    key={att.id}
+                                                    id={att.id}
+                                                    url={attachmentUrl}
+                                                    filename={att.filename}
+                                                    mimeType={mimeType}
+                                                    size={att.size}
+                                                />
                                             );
                                         })}
                                     </div>
