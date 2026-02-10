@@ -1321,15 +1321,28 @@ export const JiraTaskItem: React.FC<{
 
         const mapStatus = (jiraStatus: string): 'To Do' | 'In Progress' | 'Done' => {
             const status = jiraStatus.toLowerCase();
+            // Verificar status concluído (inglês e português)
             if (
                 status.includes('done') ||
                 status.includes('resolved') ||
                 status.includes('closed') ||
-                status.includes('concluído')
+                status.includes('concluído') ||
+                status.includes('concluido') ||
+                status.includes('finalizado') ||
+                status.includes('resolvido') ||
+                status.includes('fechado')
             ) {
                 return 'Done';
             }
-            if (status.includes('progress') || status.includes('andamento')) {
+            // Verificar status em andamento (inglês e português)
+            if (
+                status.includes('progress') ||
+                status.includes('in progress') ||
+                status.includes('em andamento') ||
+                status.includes('andamento') ||
+                status.includes('em desenvolvimento') ||
+                status.includes('desenvolvimento')
+            ) {
                 return 'In Progress';
             }
             return 'To Do';
