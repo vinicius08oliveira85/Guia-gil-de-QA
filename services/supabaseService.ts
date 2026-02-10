@@ -433,10 +433,23 @@ export const saveProjectToSupabase = async (project: Project): Promise<void> => 
         try {
             lastSaveTime.set(projectId, Date.now());
             
+            // Log detalhado do início do salvamento
+            logger.debug(`Iniciando salvamento do projeto "${project.name}" (${projectId})`, 'supabaseService', {
+                projectId,
+                projectName: project.name,
+                tasksCount: project.tasks?.length || 0,
+                hasProxy: !!supabaseProxyUrl,
+                hasSDK: !!supabase
+            });
+            
             // Priorizar SDK direto (evita limite de 4MB do Vercel)
             if (supabase) {
                 try {
                     await saveThroughSdk(project);
+                    logger.info(`Projeto "${project.name}" salvo com sucesso via SDK`, 'supabaseService', {
+                        projectId,
+                        projectName: project.name
+                    });
                     return;
                 } catch (error) {
                     // Se for erro de rede, não tentar proxy (vai falhar também)
@@ -453,7 +466,16 @@ export const saveProjectToSupabase = async (project: Project): Promise<void> => 
             // Fallback: usar proxy se SDK direto não estiver disponível ou falhou (e não for erro de rede)
             if (supabaseProxyUrl) {
                 try {
+                    logger.debug(`Tentando salvar projeto "${project.name}" via proxy`, 'supabaseService', {
+                        projectId,
+                        projectName: project.name,
+                        proxyUrl: supabaseProxyUrl
+                    });
                     await saveThroughProxy(project);
+                    logger.info(`Projeto "${project.name}" salvo com sucesso via proxy`, 'supabaseService', {
+                        projectId,
+                        projectName: project.name
+                    });
                     return;
                 } catch (error) {
                     // Se for erro de rede, não tentar mais - salvar apenas localmente
@@ -682,6 +704,53 @@ export const deleteProjectFromSupabase = async (projectId: string): Promise<void
  * Verifica se Supabase está configurado e disponível
  * Considera tanto proxy quanto SDK direto (SDK direto usado para salvamento, evita limite 4MB)
  */
+/**
+ * Diagnóstico da configuração do Supabase
+ * Retorna informações detalhadas sobre o status da configuração
+ */
+export const diagnoseSupabaseConfig = (): {
+    isAvailable: boolean;
+    hasProxy: boolean;
+    hasSDK: boolean;
+    isProduction: boolean;
+    status: 'configured' | 'proxy-only' | 'sdk-only' | 'not-configured';
+    details: string;
+} => {
+    const hasProxy = !!supabaseProxyUrl;
+    const hasSDK = !!(supabaseUrl && supabaseAnonKey);
+    const prod = isProduction();
+    
+    let status: 'configured' | 'proxy-only' | 'sdk-only' | 'not-configured';
+    let details = '';
+    
+    if (hasProxy && hasSDK) {
+        status = 'configured';
+        details = 'Supabase configurado com proxy e SDK. Salvamento direto habilitado.';
+    } else if (hasProxy && !hasSDK) {
+        status = 'proxy-only';
+        details = prod 
+            ? 'Apenas proxy configurado. Salvamento direto não disponível em produção sem SDK.'
+            : 'Apenas proxy configurado. Salvamento direto não disponível sem SDK.';
+    } else if (!hasProxy && hasSDK) {
+        status = 'sdk-only';
+        details = prod
+            ? 'Apenas SDK configurado. Leitura pode falhar em produção sem proxy (CORS).'
+            : 'Apenas SDK configurado. Funcionando em desenvolvimento.';
+    } else {
+        status = 'not-configured';
+        details = 'Supabase não configurado. Usando apenas armazenamento local (IndexedDB).';
+    }
+    
+    return {
+        isAvailable: hasProxy || hasSDK,
+        hasProxy,
+        hasSDK,
+        isProduction: prod,
+        status,
+        details
+    };
+};
+
 export const isSupabaseAvailable = (): boolean => {
     // Supabase está disponível se tiver proxy OU SDK direto configurado
     return Boolean(supabaseProxyUrl) || supabase !== null;

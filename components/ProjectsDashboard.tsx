@@ -16,6 +16,8 @@ import { getJiraConfig, getJiraProjects, importJiraProject, JiraProject } from '
 import { useErrorHandler } from '../hooks/useErrorHandler';
 import { logger } from '../utils/logger';
 import { useProjectsStore } from '../store/projectsStore';
+import { EmptyState } from './common/EmptyState';
+import { isSupabaseAvailable } from '../services/supabaseService';
 
 export const ProjectsDashboard: React.FC<{
     projects: Project[];
@@ -729,24 +731,21 @@ export const ProjectsDashboard: React.FC<{
                         })}
                     </motion.div>
                 ) : (
-                    <div className="mt-8 rounded-2xl border border-base-300 bg-base-100 p-10 sm:p-12 text-center shadow-sm">
-                        <div className="mx-auto mb-4 h-14 w-14 rounded-full bg-base-200 flex items-center justify-center text-2xl" aria-hidden="true">
-                            🚀
-                        </div>
-                        <h3 className="text-xl font-semibold">Nenhum projeto ainda</h3>
-                        <p className="mt-2 text-base-content/70 max-w-md mx-auto">
-                            Crie um projeto para organizar tarefas, testes, documentos e métricas em um fluxo único.
-                        </p>
-                        <div className="mt-6">
-                            <button
-                                type="button"
-                                onClick={() => setIsCreating(true)}
-                                className="btn btn-primary rounded-full"
-                            >
-                                Criar Projeto
-                            </button>
-                        </div>
-                    </div>
+                    <EmptyState
+                        icon="🚀"
+                        title="Nenhum projeto ainda"
+                        description="Crie um projeto para organizar tarefas, testes, documentos e métricas em um fluxo único."
+                        action={{
+                            label: "Criar Primeiro Projeto",
+                            onClick: () => setIsCreating(true),
+                            variant: 'primary'
+                        }}
+                        secondaryAction={onSyncSupabase && isSupabaseAvailable() ? {
+                            label: "Carregar do Supabase",
+                            onClick: handleSyncSupabase
+                        } : undefined}
+                        tip="Você pode criar um projeto do zero, usar um template ou importar do Jira se estiver configurado."
+                    />
                 )}
             </div>
             </div>

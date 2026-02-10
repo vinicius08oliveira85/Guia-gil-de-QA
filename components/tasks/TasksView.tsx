@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Project, JiraTask, BddScenario, TestCaseDetailLevel, TestCase, Comment } from '../../types';
 import { getAIService } from '../../services/ai/aiServiceFactory';
@@ -7,7 +7,7 @@ import { Modal } from '../common/Modal';
 import { TaskForm } from './TaskForm';
 import { TestCaseEditorModal } from './TestCaseEditorModal';
 import { Button } from '../common/Button';
-import { Plus, Filter, RefreshCw, Loader2, Clipboard, Zap, CheckCircle2, AlertTriangle, X, Check, Link as LinkIcon } from 'lucide-react';
+import { Plus, Filter, RefreshCw, Loader2, Clipboard, Zap, CheckCircle2, AlertTriangle, X, Check, Link as LinkIcon, Clock } from 'lucide-react';
 import { logger } from '../../utils/logger';
 import { useProjectsStore } from '../../store/projectsStore';
 import { ModernIcons } from '../common/ModernIcons';
@@ -28,9 +28,27 @@ import { GeneralIAAnalysisButton } from './GeneralIAAnalysisButton';
 import { generateGeneralIAAnalysis } from '../../services/ai/generalAnalysisService';
 import { FailedTestsReportModal } from './FailedTestsReportModal';
 import { useProjectMetrics } from '../../hooks/useProjectMetrics';
-import { getTaskStatusCategory } from '../../utils/jiraStatusCategorizer';
 
 const TASK_ID_REGEX = /^([A-Z]+)-(\d+)/i;
+
+// Função para mapear status do Jira para status interno (mesma lógica de jiraService.ts)
+const mapJiraStatusToTaskStatus = (jiraStatus: string | undefined | null): 'To Do' | 'In Progress' | 'Done' => {
+    if (!jiraStatus) return 'To Do';
+    const status = jiraStatus.toLowerCase();
+    // Verificar status concluído (inglês e português)
+    if (status.includes('done') || status.includes('resolved') || status.includes('closed') || 
+        status.includes('concluído') || status.includes('concluido') || status.includes('finalizado') || 
+        status.includes('resolvido') || status.includes('fechado')) {
+        return 'Done';
+    }
+    // Verificar status em andamento (inglês e português)
+    if (status.includes('progress') || status.includes('in progress') || 
+        status.includes('em andamento') || status.includes('andamento') || 
+        status.includes('em desenvolvimento') || status.includes('desenvolvimento')) {
+        return 'In Progress';
+    }
+    return 'To Do';
+};
 
 const parseTaskId = (taskId: string) => {
     if (!taskId) {
@@ -133,6 +151,19 @@ export const TasksView: React.FC<{
         observedResult: '',
         createBug: true,
     });
+
+    // Validação inicial do projeto - retornar EmptyState se inválido
+    if (!project || typeof project !== 'object' || !project.tasks || !Array.isArray(project.tasks)) {
+        logger.warn('Projeto inválido ou sem tarefas', 'TasksView', { projectId: project?.id, hasTasks: !!project?.tasks });
+        return (
+            <div className="container mx-auto p-8">
+                <EmptyState 
+                    message="Projeto inválido ou sem tarefas. Por favor, selecione outro projeto ou crie um novo."
+                    icon={<AlertTriangle className="w-12 h-12 text-warning" />}
+                />
+            </div>
+        );
+    }
 
     const notifyAiError = useCallback((error: unknown, context: string) => {
         const friendlyMessage = getFriendlyAIErrorMessage(error);
@@ -1061,27 +1092,146 @@ export const TasksView: React.FC<{
 
     const epics = useMemo(() => project.tasks.filter(t => t.type === 'Epic'), [project.tasks]);
 
+    // Corrigir status das tarefas baseado no jiraStatus quando disponível
+    // Isso corrige tarefas que foram importadas antes da correção do mapeamento
+    // Usar useRef para evitar loops infinitos e correções múltiplas
+    const hasCorrectedStatus = useRef<string | null>(null);
+    const onUpdateProjectRef = useRef(onUpdateProject);
+    
+    // Atualizar ref quando onUpdateProject mudar
+    useEffect(() => {
+        onUpdateProjectRef.current = onUpdateProject;
+    }, [onUpdateProject]);
+    
+    useEffect(() => {
+        if (!project || !project.tasks || !Array.isArray(project.tasks)) return;
+        if (!onUpdateProjectRef.current) return;
+        
+        // Se já corrigimos este projeto, não corrigir novamente
+        if (hasCorrectedStatus.current === project.id) return;
+        
+        try {
+            const tasksNeedingCorrection = project.tasks.filter(task => {
+                if (!task || !task.jiraStatus) return false;
+                try {
+                    const correctStatus = mapJiraStatusToTaskStatus(task.jiraStatus);
+                    return task.status !== correctStatus;
+                } catch (error) {
+                    logger.warn('Erro ao mapear status do Jira', 'TasksView', { error, taskId: task.id, jiraStatus: task.jiraStatus });
+                    return false;
+                }
+            });
+            
+            if (tasksNeedingCorrection.length > 0) {
+                const correctedTasks = project.tasks.map(task => {
+                    if (!task || !task.jiraStatus) return task;
+                    try {
+                        const correctStatus = mapJiraStatusToTaskStatus(task.jiraStatus);
+                        if (task.status !== correctStatus) {
+                            return { ...task, status: correctStatus };
+                        }
+                    } catch (error) {
+                        logger.warn('Erro ao corrigir status da tarefa', 'TasksView', { error, taskId: task.id });
+                    }
+                    return task;
+                });
+                
+                // Marcar que já corrigimos este projeto ANTES de atualizar
+                hasCorrectedStatus.current = project.id;
+                
+                // Atualizar projeto de forma assíncrona para evitar problemas de render
+                Promise.resolve().then(() => {
+                    if (onUpdateProjectRef.current && project) {
+                        onUpdateProjectRef.current({
+                            ...project,
+                            tasks: correctedTasks
+                        });
+                    }
+                });
+                
+                logger.info(`Corrigidos ${tasksNeedingCorrection.length} status de tarefas baseado no jiraStatus`, 'TasksView');
+            } else {
+                // Marcar como corrigido mesmo se não houver correções necessárias
+                hasCorrectedStatus.current = project.id;
+            }
+        } catch (error) {
+            logger.error('Erro ao corrigir status das tarefas', 'TasksView', { error, projectId: project?.id });
+            // Marcar como corrigido mesmo em caso de erro para evitar loops
+            hasCorrectedStatus.current = project.id;
+        }
+    }, [project?.id, project?.tasks]);
+
     const stats = useMemo(() => {
-        const total = project.tasks.length;
-        // Usar categorias do Jira para calcular status
-        const inProgress = project.tasks.filter(t => {
-            const category = getTaskStatusCategory(t);
-            return category === 'Em Andamento';
-        }).length;
-        const done = project.tasks.filter(t => {
-            const category = getTaskStatusCategory(t);
-            return category === 'Concluído';
-        }).length;
-        const bugsOpen = project.tasks.filter(t => {
-            if (t.type !== 'Bug') return false;
-            const category = getTaskStatusCategory(t);
-            return category !== 'Concluído';
-        }).length;
-        const totalTests = project.tasks.reduce((acc, t) => acc + (t.testCases?.length || 0), 0);
-        const executedTests = project.tasks.reduce((acc, t) => acc + (t.testCases?.filter(tc => tc.status !== 'Not Run').length || 0), 0);
-        const automatedTests = project.tasks.reduce((acc, t) => acc + (t.testCases?.filter(tc => tc.isAutomated).length || 0), 0);
-        return { total, inProgress, done, bugsOpen, totalTests, executedTests, automatedTests };
-    }, [project.tasks]);
+        try {
+            // Validação robusta de dados
+            if (!project || !project.tasks || !Array.isArray(project.tasks)) {
+                return { total: 0, pending: 0, inProgress: 0, done: 0, bugsOpen: 0, totalTests: 0, executedTests: 0, automatedTests: 0 };
+            }
+
+            const total = project.tasks.length;
+            
+            // Corrigir status baseado no jiraStatus quando disponível
+            // Isso corrige tarefas que foram importadas antes da correção do mapeamento
+            const tasksWithCorrectedStatus = project.tasks.map(task => {
+                try {
+                    // Validar que task existe e tem propriedades necessárias
+                    if (!task || typeof task !== 'object') {
+                        return null;
+                    }
+                    
+                    // Se a tarefa tem jiraStatus e o status atual não corresponde ao mapeamento correto, corrigir
+                    if (task.jiraStatus) {
+                        const correctStatus = mapJiraStatusToTaskStatus(task.jiraStatus);
+                        // Só corrigir se o status atual for diferente do correto
+                        // Isso preserva mudanças manuais do usuário que não têm jiraStatus
+                        if (task.status !== correctStatus) {
+                            return { ...task, status: correctStatus };
+                        }
+                    }
+                    return task;
+                } catch (taskError) {
+                    logger.warn('Erro ao processar tarefa individual', 'TasksView', { taskError, taskId: task?.id });
+                    return task; // Retornar tarefa original em caso de erro
+                }
+            }).filter((task): task is JiraTask => task !== null); // Filtrar nulls
+            
+            const pending = tasksWithCorrectedStatus.filter(
+                task => task && task.status === 'To Do'
+            ).length;
+            
+            const inProgress = tasksWithCorrectedStatus.filter(
+                task => task && task.status === 'In Progress'
+            ).length;
+            
+            const done = tasksWithCorrectedStatus.filter(
+                task => task && task.status === 'Done'
+            ).length;
+
+            const bugsOpen = tasksWithCorrectedStatus.filter(
+                task => task && task.type === 'Bug' && task.status !== 'Done'
+            ).length;
+
+            const totalTests = tasksWithCorrectedStatus.reduce((acc, t) => {
+                if (!t || !t.testCases) return acc;
+                return acc + (Array.isArray(t.testCases) ? t.testCases.length : 0);
+            }, 0);
+            
+            const executedTests = tasksWithCorrectedStatus.reduce((acc, t) => {
+                if (!t || !t.testCases || !Array.isArray(t.testCases)) return acc;
+                return acc + t.testCases.filter(tc => tc && tc.status !== 'Not Run').length;
+            }, 0);
+            
+            const automatedTests = tasksWithCorrectedStatus.reduce((acc, t) => {
+                if (!t || !t.testCases || !Array.isArray(t.testCases)) return acc;
+                return acc + t.testCases.filter(tc => tc && tc.isAutomated).length;
+            }, 0);
+            
+            return { total, pending, inProgress, done, bugsOpen, totalTests, executedTests, automatedTests };
+        } catch (error) {
+            logger.error('Erro ao calcular stats', 'TasksView', { error, projectId: project?.id });
+            return { total: 0, pending: 0, inProgress: 0, done: 0, bugsOpen: 0, totalTests: 0, executedTests: 0, automatedTests: 0 };
+        }
+    }, [project?.tasks]);
 
     const testExecutionRate = stats.totalTests > 0 ? Math.round((stats.executedTests / stats.totalTests) * 100) : 0;
     const automationRate = stats.totalTests > 0 ? Math.round((stats.automatedTests / stats.totalTests) * 100) : 0;
@@ -1596,7 +1746,7 @@ export const TasksView: React.FC<{
                 </div>
 
                 <motion.div 
-                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6"
+                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 lg:gap-6 mb-6"
                     initial="hidden"
                     animate="visible"
                     variants={{
@@ -1637,6 +1787,41 @@ export const TasksView: React.FC<{
                                 </div>
                                 <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-orange-500/10 group-hover:bg-orange-500/20 flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:rotate-6">
                                     <Clipboard className="w-6 h-6 text-orange-400 dark:text-orange-300" />
+                                </div>
+                            </div>
+                        </div>
+                    </motion.div>
+                    
+                    <motion.div 
+                        className="group relative overflow-hidden rounded-2xl p-6 bg-gradient-to-br from-yellow-500/20 via-amber-500/10 to-yellow-500/5 backdrop-blur-xl border border-yellow-500/30 hover:border-yellow-500/50 transition-all duration-500 ease-out hover:scale-[1.02] hover:shadow-2xl hover:shadow-yellow-500/20 cursor-help" 
+                        aria-live="polite"
+                        title={`${stats.pending} tarefas pendentes. Tarefas que ainda não foram iniciadas.`}
+                        variants={{
+                            hidden: { opacity: 0, y: 10 },
+                            visible: { opacity: 1, y: 0 },
+                        }}
+                    >
+                        {/* Glassmorphism overlay */}
+                        <div className="absolute inset-0 bg-base-100/60 dark:bg-base-100/40 backdrop-blur-xl" />
+                        
+                        {/* Animated gradient orb no hover */}
+                        <div className="pointer-events-none absolute -top-12 -right-12 w-32 h-32 rounded-full bg-gradient-to-br from-yellow-500/20 via-amber-500/10 to-yellow-500/5 opacity-0 group-hover:opacity-100 blur-3xl transition-opacity duration-700" />
+                        
+                        {/* Shine effect no hover */}
+                        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out" />
+                        </div>
+                        
+                        <div className="relative z-10 flex flex-col gap-4">
+                            <div className="flex items-start justify-between gap-4">
+                                <div className="min-w-0 flex-1">
+                                    <p className="text-xs font-bold text-base-content/60 mb-2 uppercase tracking-wider">Tarefas Pendentes</p>
+                                    <p className="text-4xl lg:text-5xl font-extrabold tracking-tight text-yellow-400 dark:text-yellow-300 transition-transform duration-500 group-hover:scale-110" aria-label={`${stats.pending} tarefas pendentes`}>
+                                        {stats.pending}
+                                    </p>
+                                </div>
+                                <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-yellow-500/10 group-hover:bg-yellow-500/20 flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:rotate-6">
+                                    <Clock className="w-6 h-6 text-yellow-400 dark:text-yellow-300" />
                                 </div>
                             </div>
                         </div>
@@ -1748,25 +1933,38 @@ export const TasksView: React.FC<{
                     </motion.div>
                     
                     <motion.div 
-                        className="bg-base-100 rounded-xl p-5 border border-base-300 hover:border-primary/40 hover:shadow-lg col-span-1 md:col-span-2 lg:col-span-4 cursor-help relative overflow-hidden transition-all duration-300"
+                        className="group relative overflow-hidden rounded-2xl p-6 bg-gradient-to-br from-primary/20 via-primary/10 to-primary/5 backdrop-blur-xl border border-primary/30 hover:border-primary/50 transition-all duration-500 ease-out hover:scale-[1.02] hover:shadow-2xl hover:shadow-primary/20 cursor-help col-span-1 md:col-span-2 lg:col-span-5"
+                        aria-live="polite"
                         title={`Taxa de execução de testes: ${testExecutionRate}%. ${stats.executedTests} de ${stats.totalTests} casos foram executados. Taxa de automação: ${automationRate}%.`}
                         variants={{
                             hidden: { opacity: 0, y: 10 },
                             visible: { opacity: 1, y: 0 },
                         }}
                     >
-                        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                        {/* Glassmorphism overlay */}
+                        <div className="absolute inset-0 bg-base-100/60 dark:bg-base-100/40 backdrop-blur-xl" />
+                        
+                        {/* Animated gradient orb no hover */}
+                        <div className="pointer-events-none absolute -top-12 -right-12 w-32 h-32 rounded-full bg-gradient-to-br from-primary/20 via-primary/10 to-primary/5 opacity-0 group-hover:opacity-100 blur-3xl transition-opacity duration-700" />
+                        
+                        {/* Shine effect no hover */}
+                        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out" />
+                        </div>
+                        
                         <div className="relative z-10">
-                            <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center justify-between mb-4">
                                 <div className="flex items-center gap-3">
-                                    <div className="p-2.5 bg-primary/10 rounded-xl">
+                                    <div className="p-2.5 bg-primary/10 rounded-xl group-hover:bg-primary/20 transition-colors duration-500">
                                         <ModernIcons.TestExecution className="text-primary" size={22} />
                                     </div>
                                     <p className="text-base font-semibold text-base-content">Execução de Testes</p>
                                 </div>
-                                <span className="text-2xl font-bold text-primary" aria-label={`${testExecutionRate}% de execução`}>{testExecutionRate}%</span>
+                                <span className="text-2xl lg:text-3xl font-extrabold text-primary transition-transform duration-500 group-hover:scale-110" aria-label={`${testExecutionRate}% de execução`}>
+                                    {testExecutionRate}%
+                                </span>
                             </div>
-                            <div className="w-full bg-base-200/80 rounded-full h-3.5 mb-2 overflow-hidden relative" role="progressbar" aria-valuenow={testExecutionRate} aria-valuemin={0} aria-valuemax={100} aria-label={`Progresso de execução: ${testExecutionRate}%`}>
+                            <div className="w-full bg-base-200/80 rounded-full h-3.5 mb-3 overflow-hidden relative" role="progressbar" aria-valuenow={testExecutionRate} aria-valuemin={0} aria-valuemax={100} aria-label={`Progresso de execução: ${testExecutionRate}%`}>
                                 <div 
                                     className="h-full bg-gradient-to-r from-primary via-primary/90 to-primary/80 rounded-full transition-all duration-700 ease-out relative overflow-hidden"
                                     style={{ width: `${testExecutionRate}%` }}

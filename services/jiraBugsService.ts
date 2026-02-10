@@ -55,10 +55,28 @@ export const mapJiraBugToTask = (jiraIssue: JiraIssue): JiraTask => {
   // Mapear status do Jira
   const mapStatus = (jiraStatus: string): 'To Do' | 'In Progress' | 'Done' => {
     const lowerStatus = jiraStatus.toLowerCase();
-    if (lowerStatus.includes('done') || lowerStatus.includes('resolvido') || lowerStatus.includes('fechado') || lowerStatus.includes('closed')) {
+    // Verificar status concluído (inglês e português)
+    if (
+      lowerStatus.includes('done') ||
+      lowerStatus.includes('resolved') ||
+      lowerStatus.includes('closed') ||
+      lowerStatus.includes('concluído') ||
+      lowerStatus.includes('concluido') ||
+      lowerStatus.includes('finalizado') ||
+      lowerStatus.includes('resolvido') ||
+      lowerStatus.includes('fechado')
+    ) {
       return 'Done';
     }
-    if (lowerStatus.includes('progress') || lowerStatus.includes('andamento') || lowerStatus.includes('em desenvolvimento')) {
+    // Verificar status em andamento (inglês e português)
+    if (
+      lowerStatus.includes('progress') ||
+      lowerStatus.includes('in progress') ||
+      lowerStatus.includes('em andamento') ||
+      lowerStatus.includes('andamento') ||
+      lowerStatus.includes('em desenvolvimento') ||
+      lowerStatus.includes('desenvolvimento')
+    ) {
       return 'In Progress';
     }
     return 'To Do';

@@ -548,10 +548,16 @@ export const getJiraIssues = async (
 const mapJiraStatusToTaskStatus = (jiraStatus: string | undefined | null): 'To Do' | 'In Progress' | 'Done' => {
     if (!jiraStatus) return 'To Do';
     const status = jiraStatus.toLowerCase();
-    if (status.includes('done') || status.includes('resolved') || status.includes('closed')) {
+    // Verificar status concluído (inglês e português)
+    if (status.includes('done') || status.includes('resolved') || status.includes('closed') || 
+        status.includes('concluído') || status.includes('concluido') || status.includes('finalizado') || 
+        status.includes('resolvido') || status.includes('fechado')) {
         return 'Done';
     }
-    if (status.includes('progress') || status.includes('in progress')) {
+    // Verificar status em andamento (inglês e português)
+    if (status.includes('progress') || status.includes('in progress') || 
+        status.includes('em andamento') || status.includes('andamento') || 
+        status.includes('em desenvolvimento') || status.includes('desenvolvimento')) {
         return 'In Progress';
     }
     return 'To Do';
