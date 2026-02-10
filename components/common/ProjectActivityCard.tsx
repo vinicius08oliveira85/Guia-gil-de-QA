@@ -134,6 +134,13 @@ export const ProjectActivityCard: React.FC<ProjectActivityCardProps> = ({
         // Concluídas: tarefas com status 'Done' (mesma lógica do TasksView)
         const completedTasks = tasks.filter(t => t.status === 'Done').length;
 
+        // Calcular bugs (mesma lógica do TasksView)
+        // Total de bugs: todas as tarefas do tipo 'Bug'
+        const totalBugs = tasks.filter(t => t.type === 'Bug').length;
+        
+        // Bugs concluídos: bugs com status 'Done'
+        const completedBugs = tasks.filter(t => t.type === 'Bug' && t.status === 'Done').length;
+
         // Métricas para os rings
         const testExecutionPercent = projectMetrics.totalTestCases > 0
             ? Math.round((projectMetrics.executedTestCases / projectMetrics.totalTestCases) * 100)
@@ -143,8 +150,9 @@ export const ProjectActivityCard: React.FC<ProjectActivityCardProps> = ({
             ? Math.round((completedTasks / totalTasks) * 100)
             : 0;
 
-        const successRatePercent = projectMetrics.executedTestCases > 0
-            ? Math.round((projectMetrics.passedTestCases / projectMetrics.executedTestCases) * 100)
+        // Porcentagem de bugs concluídos
+        const bugsCompletedPercent = totalBugs > 0
+            ? Math.round((completedBugs / totalBugs) * 100)
             : 0;
 
         return [
@@ -162,9 +170,9 @@ export const ProjectActivityCard: React.FC<ProjectActivityCardProps> = ({
             },
             {
                 label: 'Sucesso',
-                value: successRatePercent,
-                trend: successRatePercent,
-                unit: '%'
+                value: totalBugs, // Total de bugs no anel
+                trend: bugsCompletedPercent, // Porcentagem de bugs concluídos (mostrada abaixo do anel)
+                unit: 'Bugs' // Texto abaixo do número no anel
             }
         ] as ProjectMetric[];
     }, [project]);
