@@ -127,13 +127,12 @@ export const ProjectActivityCard: React.FC<ProjectActivityCardProps> = ({
         const projectMetrics = calculateProjectMetrics(project);
         const tasks = project.tasks || [];
         
-        // Calcular tarefas completadas
-        const totalTasks = tasks.filter(t => t.type === 'Tarefa').length;
-        const completedTasks = tasks.filter(t => {
-            if (t.type !== 'Tarefa') return false;
-            const category = getTaskStatusCategory(t);
-            return category === 'Concluído';
-        }).length;
+        // Usar a mesma lógica do TasksView para consistência
+        // Total: todas as tarefas (independente do tipo)
+        const totalTasks = tasks.length;
+        
+        // Concluídas: tarefas com status 'Done' (mesma lógica do TasksView)
+        const completedTasks = tasks.filter(t => t.status === 'Done').length;
 
         // Métricas para os rings
         const testExecutionPercent = projectMetrics.totalTestCases > 0
