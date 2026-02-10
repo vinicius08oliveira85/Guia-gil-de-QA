@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useCallback } from 'react';
 import { Project, JiraTask } from '../types';
 import { Modal } from './common/Modal';
 import { Card } from './common/Card';
