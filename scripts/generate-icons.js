@@ -15,7 +15,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const logoPath = path.join(__dirname, '../public/logo@erasebg-transformed.png');
+const logoPath = path.join(__dirname, '../public/Logo_Moderno_Leve-removebg-preview.png');
 const iconsDir = path.join(__dirname, '../public/icons');
 
 // Criar diretório de ícones se não existir
