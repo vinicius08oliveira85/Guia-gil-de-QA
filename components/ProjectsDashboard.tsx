@@ -8,10 +8,14 @@ import { TrashIcon } from './common/Icons';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { Badge } from './common/Badge';
 import { ProgressIndicator } from './common/ProgressIndicator';
-import { ArrowRight, Plus, Cloud } from 'lucide-react';
+import { ArrowRight, Plus, Cloud, RefreshCw } from 'lucide-react';
 import { getTaskStatusCategory } from '../utils/jiraStatusCategorizer';
 import { motion } from 'framer-motion';
 import { ProjectActivityCard } from './common/ProjectActivityCard';
+import { getJiraConfig, getJiraProjects, importJiraProject, JiraProject } from '../services/jiraService';
+import { useErrorHandler } from '../hooks/useErrorHandler';
+import { logger } from '../utils/logger';
+import { useProjectsStore } from '../store/projectsStore';
 
 export const ProjectsDashboard: React.FC<{
     projects: Project[];
@@ -23,11 +27,18 @@ export const ProjectsDashboard: React.FC<{
 }> = ({ projects, onSelectProject, onCreateProject, onDeleteProject, onComparisonClick, onSyncSupabase }) => {
     const [isCreating, setIsCreating] = useState(false);
     const [showTemplates, setShowTemplates] = useState(false);
+    const [showJiraImport, setShowJiraImport] = useState(false);
     const [newName, setNewName] = useState('');
     const [newDesc, setNewDesc] = useState('');
     const [selectedTemplate, setSelectedTemplate] = useState<string | undefined>();
     const [isSyncingSupabase, setIsSyncingSupabase] = useState(false);
     const [showMobileActions, setShowMobileActions] = useState(false);
+    const [jiraProjects, setJiraProjects] = useState<JiraProject[]>([]);
+    const [selectedJiraProjectKey, setSelectedJiraProjectKey] = useState('');
+    const [isLoadingJiraProjects, setIsLoadingJiraProjects] = useState(false);
+    const [isImportingJira, setIsImportingJira] = useState(false);
+    const [importProgress, setImportProgress] = useState<{ current: number; total?: number } | null>(null);
+    const [isJiraConfigured, setIsJiraConfigured] = useState(false);
     // Visualização sempre em grade - removido viewMode
     // Ordenação fixa por nome - removido sortBy
     // Filtros removidos - removido selectedTags e showTagFilter
@@ -38,8 +49,133 @@ export const ProjectsDashboard: React.FC<{
         isOpen: false,
         project: null,
     });
+    const { handleError, handleSuccess } = useErrorHandler();
+    const { importProject } = useProjectsStore();
+
+    // Verificar se Jira está configurado ao montar o componente
+    React.useEffect(() => {
+        const checkJiraConfig = async () => {
+            try {
+                const config = await getJiraConfig();
+                setIsJiraConfigured(!!config);
+            } catch {
+                setIsJiraConfigured(false);
+            }
+        };
+        checkJiraConfig();
+    }, []);
 
     // Filtros por tags removidos
+
+    const loadJiraProjects = async (useCache: boolean = true) => {
+        try {
+            const jiraConfig = await getJiraConfig();
+            if (!jiraConfig) {
+                handleError(new Error('Jira não está configurado. Configure a conexão com Jira nas Configurações primeiro.'), 'Importar do Jira');
+                return;
+            }
+
+            // Verificar cache primeiro (válido por 5 minutos)
+            if (useCache) {
+                const cacheKey = `jira_projects_${jiraConfig.url}`;
+                const cached = localStorage.getItem(cacheKey);
+                if (cached) {
+                    try {
+                        const { projects, timestamp } = JSON.parse(cached);
+                        const cacheAge = Date.now() - timestamp;
+                        
+                        if (Array.isArray(projects) && projects.length > 0 && cacheAge < 5 * 60 * 1000) {
+                            logger.debug(`Usando projetos do cache: ${projects.length}`, 'ProjectsDashboard');
+                            setJiraProjects(projects);
+                            return;
+                        } else if (cacheAge >= 5 * 60 * 1000) {
+                            logger.debug('Cache expirado, fazendo nova requisição', 'ProjectsDashboard');
+                            localStorage.removeItem(cacheKey);
+                        }
+                    } catch (e) {
+                        logger.warn('Cache inválido, continuando com requisição', 'ProjectsDashboard', e);
+                        localStorage.removeItem(cacheKey);
+                    }
+                }
+            }
+
+            setIsLoadingJiraProjects(true);
+            logger.info('Carregando projetos do Jira', 'ProjectsDashboard', { url: jiraConfig.url, email: jiraConfig.email });
+            
+            const projects = await getJiraProjects(jiraConfig, useCache);
+            logger.info(`Projetos recebidos do Jira: ${projects.length}`, 'ProjectsDashboard', projects);
+            
+            if (Array.isArray(projects) && projects.length > 0) {
+                setJiraProjects(projects);
+                const cacheKey = `jira_projects_${jiraConfig.url}`;
+                localStorage.setItem(cacheKey, JSON.stringify({
+                    projects,
+                    timestamp: Date.now()
+                }));
+                logger.info(`${projects.length} projetos salvos no cache`, 'ProjectsDashboard');
+            } else {
+                logger.warn('Nenhum projeto encontrado no Jira', 'ProjectsDashboard');
+                setJiraProjects([]);
+                handleError(new Error('Nenhum projeto encontrado no Jira. Verifique se você tem acesso a projetos.'), 'Carregar Projetos');
+            }
+        } catch (error) {
+            logger.error('Erro ao carregar projetos do Jira', 'ProjectsDashboard', error);
+            const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido ao carregar projetos do Jira';
+            handleError(new Error(errorMessage), 'Carregar Projetos');
+            setJiraProjects([]);
+        } finally {
+            setIsLoadingJiraProjects(false);
+        }
+    };
+
+    const handleImportJiraProject = async () => {
+        if (!selectedJiraProjectKey) {
+            handleError(new Error('Selecione um projeto do Jira'), 'Importar do Jira');
+            return;
+        }
+
+        try {
+            const jiraConfig = await getJiraConfig();
+            if (!jiraConfig) {
+                handleError(new Error('Jira não está configurado. Configure a conexão com Jira nas Configurações primeiro.'), 'Importar do Jira');
+                return;
+            }
+
+            setIsImportingJira(true);
+            setImportProgress({ current: 0 });
+
+            logger.info(`Iniciando importação do projeto ${selectedJiraProjectKey}`, 'ProjectsDashboard');
+
+            const importedProject = await importJiraProject(
+                jiraConfig,
+                selectedJiraProjectKey,
+                (current, total) => {
+                    setImportProgress({ current, total });
+                }
+            );
+
+            // Adicionar projeto ao store
+            await importProject(importedProject);
+
+            handleSuccess('Projeto importado do Jira com sucesso!');
+            
+            // Fechar modal e limpar estados
+            setIsCreating(false);
+            setShowJiraImport(false);
+            setSelectedJiraProjectKey('');
+            setImportProgress(null);
+            
+            // Selecionar o projeto importado
+            onSelectProject(importedProject.id);
+        } catch (error) {
+            logger.error('Erro ao importar projeto do Jira', 'ProjectsDashboard', error);
+            const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido ao importar projeto do Jira';
+            handleError(new Error(errorMessage), 'Importar do Jira');
+        } finally {
+            setIsImportingJira(false);
+            setImportProgress(null);
+        }
+    };
 
     const handleCreate = async () => {
         if (newName.trim()) {
@@ -240,6 +376,9 @@ export const ProjectsDashboard: React.FC<{
                 setIsCreating(false);
                 setSelectedTemplate(undefined);
                 setShowTemplates(false);
+                setShowJiraImport(false);
+                setSelectedJiraProjectKey('');
+                setImportProgress(null);
             }} title="Criar Novo Projeto" size="xl"
                 footer={
                     <div className="flex justify-end gap-2">
@@ -249,26 +388,31 @@ export const ProjectsDashboard: React.FC<{
                                 setIsCreating(false);
                                 setSelectedTemplate(undefined);
                                 setShowTemplates(false);
+                                setShowJiraImport(false);
+                                setSelectedJiraProjectKey('');
+                                setImportProgress(null);
                             }}
                             className="btn btn-ghost rounded-full"
                         >
                             Cancelar
                         </button>
-                        <button
-                            type="button"
-                            onClick={handleCreate}
-                            className="btn btn-primary rounded-full"
-                            disabled={!newName.trim()}
-                        >
-                            {showTemplates ? 'Criar com Template' : 'Criar'}
-                        </button>
+                        {!showJiraImport && (
+                            <button
+                                type="button"
+                                onClick={handleCreate}
+                                className="btn btn-primary rounded-full"
+                                disabled={!newName.trim()}
+                            >
+                                {showTemplates ? 'Criar com Template' : 'Criar'}
+                            </button>
+                        )}
                     </div>
                 }
             >
                  <div className="space-y-4">
-                    {!showTemplates ? (
+                    {!showTemplates && !showJiraImport ? (
                         <>
-                            <div>
+                            <div className="space-y-3">
                                 <button
                                     onClick={() => setShowTemplates(true)}
                                     type="button"
@@ -284,6 +428,27 @@ export const ProjectsDashboard: React.FC<{
                                         </div>
                                     </div>
                                 </button>
+
+                                {isJiraConfigured && (
+                                    <button
+                                        onClick={async () => {
+                                            setShowJiraImport(true);
+                                            await loadJiraProjects();
+                                        }}
+                                        type="button"
+                                        className="w-full rounded-2xl border-2 border-dashed border-base-300 bg-base-100 p-4 text-left transition-colors hover:border-primary/40 hover:bg-base-200/40"
+                                    >
+                                        <div className="flex items-start gap-3">
+                                            <span className="text-xl" aria-hidden="true">🔗</span>
+                                            <div className="space-y-0.5">
+                                                <p className="font-semibold">Importar do Jira</p>
+                                                <p className="text-sm text-base-content/70">
+                                                    Importe um projeto existente do Jira com todas as tarefas e casos de teste.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </button>
+                                )}
                             </div>
 
                             <div className="grid gap-4">
@@ -316,6 +481,99 @@ export const ProjectsDashboard: React.FC<{
                                 </label>
                             </div>
                         </>
+                    ) : showJiraImport ? (
+                        <div className="space-y-4">
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setShowJiraImport(false);
+                                    setSelectedJiraProjectKey('');
+                                }}
+                                className="btn btn-ghost btn-sm rounded-full self-start"
+                            >
+                                ← Voltar
+                            </button>
+                            
+                            {/* Seção de seleção de projeto Jira */}
+                            <section className="w-full max-w-full bg-base-100 text-base-content rounded-2xl border border-base-200 bg-base-100 shadow-sm p-6">
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-between">
+                                        <label className="block text-sm font-medium text-base-content">
+                                            Selecione o projeto para importar:
+                                        </label>
+                                        <button
+                                            onClick={() => loadJiraProjects(false)}
+                                            className="text-xs text-primary hover:underline flex items-center gap-1"
+                                            title="Atualizar lista de projetos"
+                                            disabled={isLoadingJiraProjects}
+                                        >
+                                            <RefreshCw className={`h-3 w-3 ${isLoadingJiraProjects ? 'animate-spin' : ''}`} />
+                                            Atualizar
+                                        </button>
+                                    </div>
+                                    
+                                    {isLoadingJiraProjects ? (
+                                        <div className="flex items-center justify-center py-8">
+                                            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                                        </div>
+                                    ) : jiraProjects.length > 0 ? (
+                                        <>
+                                            <select
+                                                value={selectedJiraProjectKey}
+                                                onChange={(e) => setSelectedJiraProjectKey(e.target.value)}
+                                                className="select select-bordered w-full bg-base-100 border-base-300 text-base-content focus:outline-none focus:border-primary"
+                                            >
+                                                <option value="">Selecione um projeto...</option>
+                                                {jiraProjects.map(project => (
+                                                    <option key={project.key} value={project.key}>
+                                                        {project.key} - {project.name}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            <button
+                                                onClick={handleImportJiraProject}
+                                                disabled={!selectedJiraProjectKey || isImportingJira}
+                                                className="btn btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
+                                            >
+                                                {isImportingJira ? (
+                                                    <>
+                                                        {importProgress ? (
+                                                            importProgress.total ? (
+                                                                <>Importando... {importProgress.current} de {importProgress.total}</>
+                                                            ) : (
+                                                                <>Importando... {importProgress.current} tarefas</>
+                                                            )
+                                                        ) : (
+                                                            <>Importando... Isso pode levar alguns minutos para projetos grandes</>
+                                                        )}
+                                                    </>
+                                                ) : (
+                                                    <>Importar Projeto</>
+                                                )}
+                                            </button>
+                                            {isImportingJira && importProgress && (
+                                                <div className="w-full bg-base-200 rounded-full h-2.5">
+                                                    <div 
+                                                        className="bg-primary h-2.5 rounded-full transition-all duration-300"
+                                                        style={{ 
+                                                            width: importProgress.total 
+                                                                ? `${Math.min((importProgress.current / importProgress.total) * 100, 100)}%` 
+                                                                : '50%'
+                                                        }}
+                                                    />
+                                                </div>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <div className="text-center py-8">
+                                            <p className="text-base-content/70 text-sm">
+                                                Nenhum projeto encontrado. Verifique suas permissões no Jira.
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+                            </section>
+                        </div>
                     ) : (
                         <div className="space-y-4">
                             <button
