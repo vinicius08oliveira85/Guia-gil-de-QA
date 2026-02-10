@@ -11,6 +11,7 @@ import { ProgressIndicator } from './common/ProgressIndicator';
 import { ArrowRight, Plus, Cloud } from 'lucide-react';
 import { getTaskStatusCategory } from '../utils/jiraStatusCategorizer';
 import { motion } from 'framer-motion';
+import { ProjectActivityCard } from './common/ProjectActivityCard';
 
 export const ProjectsDashboard: React.FC<{
     projects: Project[];
@@ -383,7 +384,7 @@ export const ProjectsDashboard: React.FC<{
             <div className="mt-8">
                 {filteredProjects.length > 0 ? (
                     <motion.div 
-                        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4" 
+                        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-3 sm:gap-4" 
                         data-tour="project-list"
                         initial="hidden"
                         animate="visible"
@@ -419,97 +420,14 @@ export const ProjectsDashboard: React.FC<{
                                         },
                                     }}
                                 >
-                                    <Card
-                                        variant="elevated"
-                                        hoverable={true}
-                                        onClick={(e) => {
-                                            const target = e.target as HTMLElement;
-                                            if (target.closest('button, a')) {
-                                                return;
-                                            }
-                                            onSelectProject(p.id);
+                                    <ProjectActivityCard
+                                        project={p}
+                                        onSelect={() => onSelectProject(p.id)}
+                                        onDelete={() => {
+                                            setDeleteModalState({ isOpen: true, project: p });
                                         }}
-                                        role="button"
-                                        tabIndex={0}
-                                        onKeyDown={(e) => {
-                                            if (e.key === 'Enter' || e.key === ' ') {
-                                                e.preventDefault();
-                                                onSelectProject(p.id);
-                                            }
-                                        }}
-                                        className="group cursor-pointer relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 flex flex-col h-full overflow-hidden"
-                                    >
-                                        {/* Gradiente sutil no background */}
-                                        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-                                        
-                                        <div className="p-5 sm:p-6 flex flex-col gap-3 h-full relative z-10">
-                                            <div className="flex items-start justify-between gap-3">
-                                                <h3 className="text-base sm:text-lg font-semibold leading-snug line-clamp-2 sm:line-clamp-3 pr-10 text-balance group-hover:text-primary transition-colors duration-200">
-                                                    {p.name}
-                                                </h3>
-                                            </div>
-
-                                            <p className="text-sm text-base-content/70 line-clamp-2 min-h-[2.5em]">
-                                                {desc ? desc : (jiraKey ? `Projeto importado do Jira: ${jiraKey}` : 'Sem descrição.')}
-                                            </p>
-
-                                            {tags.length > 0 && (
-                                                <div className="flex flex-wrap gap-1.5">
-                                                    {tags.slice(0, 3).map(tag => (
-                                                        <Badge key={tag} variant="default" size="sm" className="transition-all duration-200 group-hover:bg-primary/10">
-                                                            {tag}
-                                                        </Badge>
-                                                    ))}
-                                                    {tags.length > 3 && (
-                                                        <Badge variant="default" size="sm" className="transition-all duration-200 group-hover:bg-primary/10">
-                                                            +{tags.length - 3}
-                                                        </Badge>
-                                                    )}
-                                                </div>
-                                            )}
-
-                                            <div className="mt-auto pt-4 border-t border-base-300/60 group-hover:border-primary/20 transition-colors duration-200 space-y-2.5">
-                                                <div className="flex items-center justify-between text-xs text-base-content/60">
-                                                    <span className="font-medium">
-                                                        {totalTasks} {totalTasks === 1 ? 'tarefa' : 'tarefas'}
-                                                    </span>
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="font-bold text-base-content">{progressPercent}%</span>
-                                                        {jiraKey && (
-                                                            <span className="badge badge-outline badge-sm border-primary/30 text-primary/80 bg-primary/5 group-hover:bg-primary/10 group-hover:border-primary/50 transition-all duration-200">
-                                                                Jira: {jiraKey}
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                                <div className="relative">
-                                                    <ProgressIndicator
-                                                        value={completedTasks}
-                                                        max={totalTasks}
-                                                        size="sm"
-                                                        color="blue"
-                                                        showPercentage={false}
-                                                    />
-                                                    {/* Gradiente no progress bar */}
-                                                    <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary/90 to-primary/80 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" 
-                                                         style={{ width: `${progressPercent}%`, height: '100%' }} />
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <button
-                                            type="button"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                e.preventDefault();
-                                                openDeleteModal(p, e);
-                                            }}
-                                            className="btn btn-ghost btn-xs btn-circle absolute top-3 right-3 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 text-base-content/60 hover:text-error hover:bg-error/10 transition-all duration-200 active:scale-95 z-20"
-                                            aria-label={`Excluir projeto ${p.name}`}
-                                        >
-                                            <TrashIcon />
-                                        </button>
-                                    </Card>
+                                        className="group"
+                                    />
                                 </motion.div>
                             );
                         })}
