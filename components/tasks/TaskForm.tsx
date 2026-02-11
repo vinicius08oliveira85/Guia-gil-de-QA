@@ -8,7 +8,6 @@ import { RichTextEditor } from '../common/RichTextEditor';
 import { HelpTooltip } from '../common/HelpTooltip';
 import { Input } from '../common/Input';
 import { helpContent } from '../../utils/helpContent';
-import { useBeginnerMode } from '../../hooks/useBeginnerMode';
 import { getTaskExample, taskExamples } from '../../utils/taskExamples';
 
 export const TaskForm: React.FC<{
@@ -19,7 +18,6 @@ export const TaskForm: React.FC<{
     parentId?: string;
 }> = ({ onSave, onCancel, existingTask, epics, parentId }) => {
     const { handleWarning } = useErrorHandler();
-    const { isBeginnerMode } = useBeginnerMode();
     const [taskData, setTaskData] = useState({
         id: existingTask?.id || '',
         title: existingTask?.title || '',
@@ -87,10 +85,7 @@ export const TaskForm: React.FC<{
             errors.title = 'Título muito curto. Seja mais descritivo. Exemplo: "Implementar login com email"';
         }
 
-        // Validar Descrição (opcional, mas recomendada)
-        if (isBeginnerMode && (!taskData.description || taskData.description.trim() === '')) {
-            errors.description = '💡 Dica: Adicione uma descrição detalhada para ajudar a entender o que precisa ser feito.';
-        }
+        // Validar Descrição (opcional)
 
         setValidationErrors(errors);
         return Object.keys(errors).length === 0;
@@ -140,22 +135,20 @@ export const TaskForm: React.FC<{
 
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
-            {isBeginnerMode && (
+            {hasExample && !existingTask && (
                 <div className="mb-4 p-4 bg-accent/10 border border-accent/30 rounded-lg">
                     <div className="flex items-start justify-between gap-4">
                         <p className="text-sm text-text-primary">
-                            💡 <strong>Modo Iniciante Ativado:</strong> Passe o mouse sobre os ícones de ajuda (ℹ️) para ver explicações detalhadas de cada campo.
+                            💡 <strong>Dica:</strong> Use o botão abaixo para preencher o formulário com um exemplo.
                         </p>
-                        {hasExample && !existingTask && (
-                            <button
-                                type="button"
-                                onClick={handleLoadExample}
-                                className="btn btn-secondary text-xs whitespace-nowrap flex-shrink-0"
-                                title="Preencher formulário com um exemplo"
-                            >
-                                📝 Usar Exemplo
-                            </button>
-                        )}
+                        <button
+                            type="button"
+                            onClick={handleLoadExample}
+                            className="btn btn-secondary text-xs whitespace-nowrap flex-shrink-0"
+                            title="Preencher formulário com um exemplo"
+                        >
+                            📝 Usar Exemplo
+                        </button>
                     </div>
                 </div>
             )}
@@ -185,7 +178,7 @@ export const TaskForm: React.FC<{
                                 setValidationErrors({ ...validationErrors, id: '' });
                             }
                         }}
-                        placeholder={isBeginnerMode ? "Ex: PROJ-001, LOGIN-001" : ""}
+                        placeholder=""
                         error={validationErrors.id}
                         success={taskData.id.length >= 3 && !validationErrors.id}
                         required
@@ -211,7 +204,7 @@ export const TaskForm: React.FC<{
                                 setValidationErrors({ ...validationErrors, title: '' });
                             }
                         }}
-                        placeholder={isBeginnerMode ? "Ex: Implementar login com email" : ""}
+                        placeholder=""
                         error={validationErrors.title}
                         success={taskData.title.length >= 5 && !validationErrors.title}
                         required 
@@ -316,11 +309,6 @@ export const TaskForm: React.FC<{
                         content={helpContent.task.fields.description.content}
                     />
                 </label>
-                {isBeginnerMode && (
-                    <p className="text-xs text-text-secondary mb-2">
-                        💡 Inclua: contexto, requisitos, critérios de aceite e exemplos.
-                    </p>
-                )}
                 <RichTextEditor
                     value={taskData.description}
                     onChange={(value) => {
@@ -329,7 +317,7 @@ export const TaskForm: React.FC<{
                             setValidationErrors({ ...validationErrors, description: '' });
                         }
                     }}
-                    placeholder={isBeginnerMode ? "Ex: Implementar login...\n\nContexto: Usuários precisam acessar o sistema...\n\nRequisitos:\n- Campo de email\n- Campo de senha\n..." : "Digite a descrição da tarefa..."}
+                    placeholder="Digite a descrição da tarefa..."
                     taskId={taskData.id || undefined}
                 />
                 {validationErrors.description && (
@@ -344,11 +332,6 @@ export const TaskForm: React.FC<{
                         content={helpContent.task.fields.tags.content}
                     />
                 </label>
-                {isBeginnerMode && (
-                    <p className="text-xs text-text-secondary mb-2">
-                        💡 Exemplos: "login", "pagamento", "mobile", "api"
-                    </p>
-                )}
                 <TagInput
                     tags={taskData.tags || []}
                     onChange={(tags) => setTaskData({ ...taskData, tags })}

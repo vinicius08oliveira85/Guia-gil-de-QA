@@ -1,6 +1,5 @@
 import React from 'react';
 import { HelpTooltip } from './HelpTooltip';
-import { useBeginnerMode } from '../../hooks/useBeginnerMode';
 import { Button } from './Button';
 import { motion } from 'framer-motion';
 
@@ -39,7 +38,6 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   helpText,
   illustration
 }) => {
-  const { isBeginnerMode } = useBeginnerMode();
 
   return (
     <motion.div 
@@ -106,22 +104,6 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
         </motion.div>
       )}
 
-      {/* Múltiplas dicas (modo iniciante) */}
-      {isBeginnerMode && tips && tips.length > 0 && (
-        <motion.div 
-          className="bg-primary/10 border border-primary/30 rounded-xl p-4 mb-6 max-w-md text-left"
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.4 }}
-        >
-          <p className="text-sm font-semibold text-primary mb-2">💡 Dicas:</p>
-          <ul className="text-sm text-base-content/70 space-y-1 list-disc list-inside">
-            {tips.map((tipItem, index) => (
-              <li key={index}>{tipItem}</li>
-            ))}
-          </ul>
-        </motion.div>
-      )}
 
       {/* Texto de ajuda */}
       {helpText && (

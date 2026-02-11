@@ -175,9 +175,9 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
         }
     }, [currentProject.id]);
     
-    const tabs: Array<{ id: string; label: string; 'data-onboarding'?: string; 'data-tour'?: string }> = [
+    const tabs: Array<{ id: string; label: string }> = [
         { id: 'dashboard', label: 'Dashboard' },
-        { id: 'tasks', label: 'Tarefas & Testes', 'data-onboarding': 'tasks-tab', 'data-tour': 'tasks-tab' },
+        { id: 'tasks', label: 'Tarefas & Testes' },
         { id: 'documents', label: 'Documentos' },
     ];
 
@@ -281,8 +281,6 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                                 type="button"
                                 onClick={() => handleTabClick(tab.id)}
                                 className={`tab whitespace-nowrap flex-shrink-0 ${activeTab === tab.id ? 'tab-active' : ''}`}
-                                data-onboarding={tab['data-onboarding']}
-                                data-tour={tab['data-tour']}
                                 id={`tab-${tab.id}`}
                                 role="tab"
                                 aria-selected={activeTab === tab.id}

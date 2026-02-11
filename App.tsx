@@ -12,21 +12,18 @@ import { useSearch, SearchResult } from './hooks/useSearch';
 import { useKeyboardShortcuts, SHORTCUTS } from './hooks/useKeyboardShortcuts';
 import { KeyboardShortcutsHelp } from './components/common/KeyboardShortcutsHelp';
 import { LoadingSkeleton } from './components/common/LoadingSkeleton';
-import { loadProjectsFromSupabase, isSupabaseAvailable } from './services/supabaseService';
 import { getExportPreferences } from './utils/preferencesService';
 import { startExportScheduler } from './utils/exportScheduler';
 import { useIsMobile } from './hooks/useIsMobile';
 import { useTheme } from './hooks/useTheme';
 import { lazyWithRetry } from './utils/lazyWithRetry';
+import { logger } from './utils/logger';
 
 // Code splitting - Lazy loading de componentes pesados
 const ProjectView = lazyWithRetry(() => import('./components/ProjectView').then(m => ({ default: m.ProjectView })));
 const ProjectsDashboard = lazyWithRetry(() => import('./components/ProjectsDashboard').then(m => ({ default: m.ProjectsDashboard })));
 const AdvancedSearch = lazyWithRetry(() => import('./components/common/AdvancedSearch').then(m => ({ default: m.AdvancedSearch })));
-const ProjectComparisonModal = lazyWithRetry(() => import('./components/common/ProjectComparisonModal').then(m => ({ default: m.ProjectComparisonModal })));
-const OnboardingGuide = lazyWithRetry(() => import('./components/onboarding/OnboardingGuide').then(m => ({ default: m.OnboardingGuide })));
 const SettingsView = lazyWithRetry(() => import('./components/settings/SettingsView').then(m => ({ default: m.SettingsView })));
-const RolafAssistant = lazyWithRetry(() => import('./components/rolaf/RolafAssistant').then(m => ({ default: m.RolafAssistant })));
 
 const App: React.FC = () => {
     // Tema global (fase atual: DaisyUI light fixo; outras opções permanecem no toggle para futuro)
@@ -48,11 +45,9 @@ const App: React.FC = () => {
     // Estado local de UI
     const [showSearch, setShowSearch] = useState(false);
     const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
-    const [showProjectComparison, setShowProjectComparison] = useState(false);
     const [showSettings, setShowSettings] = useState(false);
     const { handleError, handleSuccess } = useErrorHandler();
     const { searchQuery, setSearchQuery, searchResults } = useSearch(projects);
-    const supabaseEnabled = isSupabaseAvailable();
 
     // Carregar projetos ao montar
     useEffect(() => {
@@ -159,31 +154,6 @@ const App: React.FC = () => {
         }
     }, [deleteProject, handleError, handleSuccess]);
 
-    const handleSyncSupabase = useCallback(async () => {
-        if (!supabaseEnabled) {
-            handleError(new Error('Supabase não está configurado'), 'Sincronizar projetos');
-            return;
-        }
-        try {
-            const remoteProjects = await loadProjectsFromSupabase();
-            // Atualizar store com projetos do Supabase
-            // Nota: Isso pode ser melhorado criando uma ação específica no store
-            for (const project of remoteProjects) {
-                try {
-                    await updateProject(project);
-                } catch {
-                    // Projeto não existe, criar
-                    await createProject(project.name, project.description);
-                }
-            }
-            await loadProjects(); // Recarregar do store
-            handleSuccess(remoteProjects.length
-                ? `${remoteProjects.length} projeto(s) sincronizado(s) do Supabase`
-                : 'Nenhum projeto encontrado no Supabase');
-        } catch (error) {
-            handleError(error, 'Sincronizar projetos do Supabase');
-        }
-    }, [supabaseEnabled, handleError, handleSuccess, updateProject, createProject, loadProjects]);
 
     const handleImportJiraProject = useCallback(async (project: Project) => {
         try {
@@ -222,6 +192,8 @@ const App: React.FC = () => {
         if (!selectedProjectId) return undefined;
         return projects.find(p => p.id === selectedProjectId);
     }, [projects, selectedProjectId]);
+
+    const isDashboard = !selectedProject && !showSettings;
 
     if (isLoading) {
         return (
@@ -265,6 +237,8 @@ const App: React.FC = () => {
                 <Header 
                     onProjectImported={handleImportJiraProject}
                     onOpenSettings={() => setShowSettings(true)}
+                    onOpenCreateModal={() => window.dispatchEvent(new CustomEvent('open-create-project-modal'))}
+                    showDashboardActions={isDashboard}
                 />
                 {showSearch && (
                     <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/30 backdrop-blur pt-20 p-4">
@@ -294,19 +268,6 @@ const App: React.FC = () => {
                     </Suspense>
                 )}
 
-                {showProjectComparison && (
-                    <Suspense fallback={<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur"><Spinner /></div>}>
-                        <ProjectComparisonModal
-                            isOpen={showProjectComparison}
-                            onClose={() => setShowProjectComparison(false)}
-                            projects={projects}
-                            onProjectSelect={(projectId) => {
-                                selectProject(projectId);
-                                setShowProjectComparison(false);
-                            }}
-                        />
-                    </Suspense>
-                )}
 
                 <main id="main-content">
                     {showSettings ? (
@@ -331,26 +292,12 @@ const App: React.FC = () => {
                                 onSelectProject={selectProject} 
                                 onCreateProject={handleCreateProject}
                                 onDeleteProject={handleDeleteProject}
-                                onComparisonClick={() => setShowProjectComparison(true)}
-                                onSyncSupabase={handleSyncSupabase}
                                 onOpenSettings={() => setShowSettings(true)}
                             />
                         </Suspense>
                     )}
                 </main>
                 <KeyboardShortcutsHelp />
-                <Suspense fallback={null}>
-                    <OnboardingGuide />
-                </Suspense>
-                <Suspense fallback={null}>
-                    <RolafAssistant 
-                        currentView={
-                            selectedProject 
-                                ? 'project-view' 
-                                : 'dashboard'
-                        }
-                    />
-                </Suspense>
             </div>
         </ErrorBoundary>
     );
