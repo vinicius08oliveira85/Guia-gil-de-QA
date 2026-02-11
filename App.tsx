@@ -193,6 +193,8 @@ const App: React.FC = () => {
         return projects.find(p => p.id === selectedProjectId);
     }, [projects, selectedProjectId]);
 
+    const isDashboard = !selectedProject && !showSettings;
+
     if (isLoading) {
         return (
             <div className="min-h-screen flex justify-center items-center">
@@ -236,6 +238,7 @@ const App: React.FC = () => {
                     onProjectImported={handleImportJiraProject}
                     onOpenSettings={() => setShowSettings(true)}
                     onOpenCreateModal={() => window.dispatchEvent(new CustomEvent('open-create-project-modal'))}
+                    showDashboardActions={isDashboard}
                 />
                 {showSearch && (
                     <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/30 backdrop-blur pt-20 p-4">

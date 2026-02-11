@@ -17,9 +17,10 @@ interface HeaderProps {
     onOpenSettings?: () => void;
     onNavigate?: (view: string) => void;
     onOpenCreateModal?: () => void;
+    showDashboardActions?: boolean;
 }
 
-export const Header: React.FC<HeaderProps> = ({ onProjectImported: _onProjectImported, onOpenSettings, onNavigate, onOpenCreateModal }) => {
+export const Header: React.FC<HeaderProps> = ({ onProjectImported: _onProjectImported, onOpenSettings, onNavigate, onOpenCreateModal, showDashboardActions }) => {
     const { theme, toggleTheme, isOnlyLightSupported } = useTheme();
     const [notificationUnreadCount, setNotificationUnreadCount] = useState(0);
     const [showNotificationDropdown, setShowNotificationDropdown] = useState(false);
@@ -172,7 +173,7 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported: _onProjectImp
                 <div className="flex items-center justify-end gap-1.5 sm:gap-2 relative">
                     <nav className="flex items-center gap-2"></nav>
 
-                    {onOpenCreateModal && (
+                    {showDashboardActions && onOpenCreateModal && (
                         <button
                             className="relative flex items-center gap-1.5 sm:gap-2 rounded-full px-3 sm:px-4 py-2 text-sm font-semibold transition-colors duration-300 bg-primary text-primary-content hover:bg-primary/90"
                             aria-label="Criar novo projeto"
@@ -183,16 +184,18 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported: _onProjectImp
                         </button>
                     )}
 
-                    <button
-                        className="relative flex items-center gap-1.5 sm:gap-2 rounded-full px-3 sm:px-4 py-2 text-sm font-semibold transition-colors duration-300 text-base-content/70 hover:bg-base-200 hover:text-base-content disabled:opacity-50 disabled:cursor-not-allowed"
-                        aria-label="Sincronizar projetos do Supabase"
-                        onClick={handleSyncSupabase}
-                        disabled={isSyncingSupabase || !isSupabaseAvailable()}
-                        title={!isSupabaseAvailable() ? 'Supabase não está configurado. Configure VITE_SUPABASE_PROXY_URL.' : 'Sincronizar projetos do Supabase'}
-                    >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0"><path d="M21.362 9.354H12V.396a.396.396 0 0 0-.716-.233L2.203 12.424l-.401.562a1.04 1.04 0 0 0 .836 1.659H12v8.959a.396.396 0 0 0 .724.229l9.075-12.476.401-.562a1.04 1.04 0 0 0-.838-1.66Z" fill="#3ECF8E"></path></svg>
-                        <span className="hidden sm:inline">{isSyncingSupabase ? 'Sincronizando...' : 'Sync'}</span>
-                    </button>
+                    {showDashboardActions && (
+                        <button
+                            className="relative flex items-center gap-1.5 sm:gap-2 rounded-full px-3 sm:px-4 py-2 text-sm font-semibold transition-colors duration-300 text-base-content/70 hover:bg-base-200 hover:text-base-content disabled:opacity-50 disabled:cursor-not-allowed"
+                            aria-label="Sincronizar projetos do Supabase"
+                            onClick={handleSyncSupabase}
+                            disabled={isSyncingSupabase || !isSupabaseAvailable()}
+                            title={!isSupabaseAvailable() ? 'Supabase não está configurado. Configure VITE_SUPABASE_PROXY_URL.' : 'Sincronizar projetos do Supabase'}
+                        >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0"><path d="M21.362 9.354H12V.396a.396.396 0 0 0-.716-.233L2.203 12.424l-.401.562a1.04 1.04 0 0 0 .836 1.659H12v8.959a.396.396 0 0 0 .724.229l9.075-12.476.401-.562a1.04 1.04 0 0 0-.838-1.66Z" fill="#3ECF8E"></path></svg>
+                            <span className="hidden sm:inline">{isSyncingSupabase ? 'Sincronizando...' : 'Sync'}</span>
+                        </button>
+                    )}
 
                     {getSelectedProject() && (
                         <button
