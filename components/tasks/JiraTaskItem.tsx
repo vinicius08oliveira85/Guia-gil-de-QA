@@ -1471,16 +1471,16 @@ export const JiraTaskItem: React.FC<{
                             </div>
 
                             {/* Coluna 2: Métricas em círculos grandes */}
-                            <div className="flex items-center gap-1.5 flex-shrink-0 whitespace-nowrap">
+                            <div className="flex items-center gap-1 flex-shrink-0 whitespace-nowrap">
                                 {testExecutionSummary.total > 0 && (
                                     <>
-                                        <div className="w-6 h-6 rounded-full bg-success flex items-center justify-center text-white text-[10px] font-semibold" title="Aprovados">
+                                        <div className="w-5 h-5 rounded-full bg-success flex items-center justify-center text-white text-[9px] font-semibold" title="Aprovados">
                                             {testExecutionSummary.passed}
                                         </div>
-                                        <div className="w-6 h-6 rounded-full bg-error flex items-center justify-center text-white text-[10px] font-semibold" title="Reprovados">
+                                        <div className="w-5 h-5 rounded-full bg-error flex items-center justify-center text-white text-[9px] font-semibold" title="Reprovados">
                                             {testExecutionSummary.failed}
                                         </div>
-                                        <div className="w-6 h-6 rounded-full bg-orange-500 flex items-center justify-center text-white text-[10px] font-semibold" title="Pendentes">
+                                        <div className="w-5 h-5 rounded-full flex items-center justify-center text-white text-[9px] font-semibold" style={{ backgroundColor: '#d4a017' }} title="Pendentes">
                                             {testExecutionSummary.pending}
                                         </div>
                                     </>
