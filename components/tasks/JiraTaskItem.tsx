@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, useCallback } from 'react';
+import React, { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { JiraTask, BddScenario, TestCaseDetailLevel, TeamRole, Project, TestCase, TaskTestStatus } from '../../types';
 import { Spinner } from '../common/Spinner';
@@ -157,6 +157,25 @@ export const JiraTaskItem: React.FC<{
     const reduceMotion = useReducedMotion();
     const [isDetailsOpen, setIsDetailsOpen] = useState(false); // Colapsado por padrão para compactar
     const [isChildrenOpen, setIsChildrenOpen] = useState(false);
+    const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
+    const statusDropdownRef = useRef<HTMLDivElement>(null);
+
+    // Fechar dropdown ao clicar fora
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (statusDropdownRef.current && !statusDropdownRef.current.contains(event.target as Node)) {
+                setIsStatusDropdownOpen(false);
+            }
+        };
+
+        if (isStatusDropdownOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [isStatusDropdownOpen]);
     const [editingBddScenario, setEditingBddScenario] = useState<BddScenario | null>(null);
     const [isCreatingBdd, setIsCreatingBdd] = useState(false);
     const [detailLevel, setDetailLevel] = useState<TestCaseDetailLevel>('Padrão');
@@ -374,7 +393,7 @@ export const JiraTaskItem: React.FC<{
         const status = taskTestStatus || calculateTaskTestStatus(task, project?.tasks || []);
         const configs: Record<TaskTestStatus, { label: string; color: string; bgColor: string; icon: string }> = {
             testar: { label: 'Testar', color: 'text-orange-700 dark:text-orange-400', bgColor: 'bg-orange-500/20 border-orange-500/30', icon: '📋' },
-            testando: { label: 'Testando', color: 'text-yellow-700 dark:text-yellow-400', bgColor: 'bg-yellow-500/20 border-yellow-500/30', icon: '🔄' },
+            testando: { label: 'Testando', color: 'text-blue-700 dark:text-blue-400', bgColor: 'bg-blue-500/20 border-blue-500/30', icon: '🔄' },
             pendente: { label: 'Pendente', color: 'text-red-700 dark:text-red-400', bgColor: 'bg-red-500/20 border-red-500/30', icon: '⚠️' },
             teste_concluido: { label: 'Teste Concluído', color: 'text-green-700 dark:text-green-400', bgColor: 'bg-green-500/20 border-green-500/30', icon: '✅' }
         };
@@ -1398,7 +1417,7 @@ export const JiraTaskItem: React.FC<{
 
     return (
         <div className="relative" data-task-id={task.id}>
-            <div style={indentationStyle} className="py-1">
+            <div style={indentationStyle} className="py-0.5">
                 <div
                     className={[
                         'relative overflow-hidden rounded-[var(--rounded-box)] border bg-base-100',
@@ -1414,18 +1433,21 @@ export const JiraTaskItem: React.FC<{
                     tabIndex={onOpenModal ? 0 : undefined}
                     aria-label={onOpenModal ? `Abrir detalhes da tarefa ${task.id}: ${task.title}` : undefined}
                 >
-                    <div aria-hidden="true" className="absolute left-0 top-0 h-full w-1" style={typeAccent} />
+                    <div aria-hidden="true" className="absolute left-0 top-0 h-full w-2" style={typeAccent} />
 
-                    <div className="p-3 md:p-4">
-                        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                    <div className="p-2 md:p-3">
+                        <div className="flex items-center gap-2 md:gap-3 overflow-x-auto scrollbar-thin scrollbar-thumb-base-300 scrollbar-track-transparent">
                             {/* Coluna 1: Controles e Título (ocupa espaço flexível) */}
-                            <div className="flex items-center gap-2 flex-1 min-w-[250px]">
+                            <div className="flex items-center gap-2 flex-1 min-w-[200px] flex-shrink-0">
                                 {onToggleSelect && (
                                     <input 
-                                        type="checkbox" 
+                                        type="radio" 
                                         checked={isSelected} 
                                         onChange={(e) => { e.stopPropagation(); onToggleSelect(); }}
-                                        className="checkbox checkbox-xs sm:checkbox-sm checkbox-primary"
+                                        className="w-5 h-5 border-2 border-orange-500 rounded-full appearance-none checked:bg-orange-500 checked:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/50 cursor-pointer"
+                                        style={{
+                                            backgroundImage: isSelected ? 'radial-gradient(circle, white 30%, transparent 30%)' : 'none'
+                                        }}
                                     />
                                 )}
                                 {hasChildren ? (
@@ -1441,77 +1463,140 @@ export const JiraTaskItem: React.FC<{
                                     </button>
                                 ) : <div className="w-6" />}
                                 
-                                <div className="flex-1 min-w-0">
-                                    <button
-                                        type="button"
-                                        onClick={handleToggleDetails}
-                                        className="w-full text-left rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 group"
-                                        aria-expanded={isDetailsOpen}
-                                        aria-controls={detailsRegionId}
-                                    >
-                                        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                                            <span className="badge badge-sm text-white border-0 px-2 min-h-0 h-5 text-[10px] shrink-0" style={typeBadgeStyle}>{task.type}</span>
-                                            <span className="font-mono text-xs text-base-content/60 group-hover:text-primary transition-colors shrink-0">{task.id}</span>
-                                            <span className="text-sm font-bold text-base-content leading-tight group-hover:text-primary transition-colors line-clamp-2 break-words">{task.title}</span>
-                                        </div>
-                                    </button>
+                                <div className="flex-1 min-w-0 flex items-center gap-2">
+                                    <span className="badge badge-sm text-white border-0 px-2 min-h-0 h-5 text-[10px] shrink-0" style={typeBadgeStyle}>{task.type}</span>
+                                    <span className="font-mono text-xs text-base-content/60 shrink-0">{task.id}</span>
+                                    <span className="text-sm font-medium text-base-content leading-tight truncate flex-1">{task.title}</span>
                                 </div>
                             </div>
 
-                            {/* Coluna 2: Badges e Métricas (flex-shrink para não quebrar) */}
-                            <div className="flex items-center gap-4 flex-shrink-0">
+                            {/* Coluna 2: Métricas em círculos grandes */}
+                            <div className="flex items-center gap-1 flex-shrink-0 whitespace-nowrap">
                                 {testExecutionSummary.total > 0 && (
-                                    <div className="flex items-center gap-2 text-xs font-medium bg-base-200/50 px-2 py-1 rounded-lg">
-                                        <span className="flex items-center gap-1 text-success" title="Aprovados"><span className="w-2 h-2 rounded-full bg-success"></span>{testExecutionSummary.passed}</span>
-                                        <span className="flex items-center gap-1 text-error" title="Reprovados"><span className="w-2 h-2 rounded-full bg-error"></span>{testExecutionSummary.failed}</span>
-                                        <span className="flex items-center gap-1 text-base-content/60" title="Pendentes"><span className="w-2 h-2 rounded-full bg-base-300"></span>{testExecutionSummary.pending}</span>
-                                    </div>
+                                    <>
+                                        <div className="w-5 h-5 rounded-full bg-success flex items-center justify-center text-white text-[9px] font-semibold" title="Aprovados">
+                                            {testExecutionSummary.passed}
+                                        </div>
+                                        <div className="w-5 h-5 rounded-full bg-error flex items-center justify-center text-white text-[9px] font-semibold" title="Reprovados">
+                                            {testExecutionSummary.failed}
+                                        </div>
+                                        <div className="w-5 h-5 rounded-full flex items-center justify-center text-white text-[9px] font-semibold" style={{ backgroundColor: '#d4a017' }} title="Pendentes">
+                                            {testExecutionSummary.pending}
+                                        </div>
+                                    </>
                                 )}
                             </div>
 
                             {/* Coluna 3: Status e Ações (flex-shrink para não quebrar) */}
-                            <div className="flex items-center gap-2 flex-shrink-0 ml-auto">
+                            <div className="flex items-center gap-2 flex-shrink-0 ml-auto whitespace-nowrap">
                                 {/* Ações Rápidas de IA */}
                                 {['tarefa', 'bug', 'task'].includes(task.type.toLowerCase()) && onGenerateAll && (
-                                    <div className="flex items-center gap-1 mr-1">
-                                        <button
-                                            type="button"
-                                            onClick={handleGenerateAll}
-                                            disabled={isGeneratingAll || isGenerating || isGeneratingBdd || isGeneratingTests}
-                                            className="btn btn-sm btn-ghost text-primary gap-2 hover:bg-primary/10"
-                                            title="Gerar Tudo (BDD e Testes)"
-                                        >
-                                            {isGenerating || isGeneratingAll ? <span className="loading loading-spinner loading-xs"></span> : <Zap className="w-4 h-4" />}
-                                            {isGenerating || isGeneratingAll ? 'Gerando...' : 'Gerar Tudo'}
-                                        </button>
-                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={handleGenerateAll}
+                                        disabled={isGeneratingAll || isGenerating || isGeneratingBdd || isGeneratingTests}
+                                        className="btn btn-xs bg-orange-500 hover:bg-orange-600 text-white border-0 gap-1.5 flex-shrink-0 h-7"
+                                        title="Gerar Tudo (BDD e Testes)"
+                                    >
+                                        {isGenerating || isGeneratingAll ? <span className="loading loading-spinner loading-xs"></span> : <Zap className="w-3 h-3" />}
+                                        <span className="text-xs">{isGenerating || isGeneratingAll ? 'Gerando...' : 'Gerar Tudo'}</span>
+                                    </button>
                                 )}
                                 {taskTestStatus && (
-                                    <span className={`badge badge-sm ${testStatusConfig.bgColor} ${testStatusConfig.color} border gap-1`}>
+                                    <span className={`badge badge-xs ${testStatusConfig.bgColor} ${testStatusConfig.color} border gap-1 flex-shrink-0 h-7 px-2`}>
                                         <span aria-hidden="true" className="text-xs">{testStatusConfig.icon}</span>
-                                        <span className="font-medium">{testStatusConfig.label}</span>
+                                        <span className="font-medium text-[10px]">{testStatusConfig.label}</span>
                                     </span>
                                 )}
-                                <select
-                                    className="select select-bordered select-xs w-full sm:w-auto max-w-[140px] h-7 min-h-0"
-                                    value={getDisplayStatus(task)}
-                                    onChange={(e) => handleChangeStatus(e.target.value)}
-                                    onClick={(e) => e.stopPropagation()}
-                                    style={{ backgroundColor: currentStatusColor, color: statusTextColor, borderColor: currentStatusColor ? `${currentStatusColor}66` : undefined }}
-                                >
-                                    {project?.settings?.jiraStatuses && project.settings.jiraStatuses.length > 0 ? (
-                                        project.settings.jiraStatuses.map((status) => {
-                                            const statusName = typeof status === 'string' ? status : status.name;
-                                            return <option key={statusName} value={statusName}>{statusName}</option>;
-                                        })
-                                    ) : (
-                                        <>
-                                            <option value="To Do">A Fazer</option>
-                                            <option value="In Progress">Em Andamento</option>
-                                            <option value="Done">Concluído</option>
-                                        </>
+                                <div className="relative flex-shrink-0" ref={statusDropdownRef}>
+                                    <button
+                                        type="button"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setIsStatusDropdownOpen(!isStatusDropdownOpen);
+                                        }}
+                                        className="btn btn-xs rounded-full text-white border-0 flex-shrink-0 h-7 px-3 text-xs"
+                                        style={{ backgroundColor: currentStatusColor || '#6b7280', color: statusTextColor || '#ffffff' }}
+                                    >
+                                        {getDisplayStatus(task)}
+                                        <ChevronDownIcon className={`w-3 h-3 ml-1 transition-transform ${isStatusDropdownOpen ? 'rotate-180' : ''}`} />
+                                    </button>
+                                    {isStatusDropdownOpen && (
+                                        <div className="absolute right-0 mt-1 z-50 w-48 bg-base-100 border border-base-300 rounded-lg shadow-lg overflow-hidden">
+                                            {project?.settings?.jiraStatuses && project.settings.jiraStatuses.length > 0 ? (
+                                                project.settings.jiraStatuses.map((status) => {
+                                                    const statusName = typeof status === 'string' ? status : status.name;
+                                                    const statusColor = typeof status === 'string' 
+                                                        ? getJiraStatusColor(statusName)
+                                                        : (status.color ? ensureJiraHexColor(status.color, status.name) : getJiraStatusColor(statusName));
+                                                    const isSelected = getDisplayStatus(task) === statusName;
+                                                    return (
+                                                        <button
+                                                            key={statusName}
+                                                            type="button"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleChangeStatus(statusName);
+                                                                setIsStatusDropdownOpen(false);
+                                                            }}
+                                                            className={`w-full flex items-center gap-2 px-3 py-2 text-left text-sm hover:bg-base-200 transition-colors ${
+                                                                isSelected ? 'bg-base-200 font-semibold' : ''
+                                                            }`}
+                                                            style={isSelected ? { 
+                                                                borderLeft: `3px solid ${statusColor || '#6b7280'}` 
+                                                            } : {}}
+                                                        >
+                                                            <div 
+                                                                className="w-3 h-3 rounded-full flex-shrink-0"
+                                                                style={{ backgroundColor: statusColor || '#6b7280' }}
+                                                            />
+                                                            <span>{statusName}</span>
+                                                        </button>
+                                                    );
+                                                })
+                                            ) : (
+                                                <>
+                                                    <button
+                                                        type="button"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleChangeStatus('To Do');
+                                                            setIsStatusDropdownOpen(false);
+                                                        }}
+                                                        className="w-full flex items-center gap-2 px-3 py-2 text-left text-sm hover:bg-base-200 transition-colors"
+                                                    >
+                                                        <div className="w-3 h-3 rounded-full bg-gray-400" />
+                                                        <span>A Fazer</span>
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleChangeStatus('In Progress');
+                                                            setIsStatusDropdownOpen(false);
+                                                        }}
+                                                        className="w-full flex items-center gap-2 px-3 py-2 text-left text-sm hover:bg-base-200 transition-colors"
+                                                    >
+                                                        <div className="w-3 h-3 rounded-full bg-blue-500" />
+                                                        <span>Em Andamento</span>
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleChangeStatus('Done');
+                                                            setIsStatusDropdownOpen(false);
+                                                        }}
+                                                        className="w-full flex items-center gap-2 px-3 py-2 text-left text-sm hover:bg-base-200 transition-colors"
+                                                    >
+                                                        <div className="w-3 h-3 rounded-full bg-green-500" />
+                                                        <span>Concluído</span>
+                                                    </button>
+                                                </>
+                                            )}
+                                        </div>
                                     )}
-                                </select>
+                                </div>
                                 <button type="button" onClick={(e) => { e.stopPropagation(); handleToggleDetails(); }} className="btn btn-ghost btn-xs btn-circle shrink-0">
                                     <ChevronDownIcon className={`w-4 h-4 transition-transform ${isDetailsOpen ? 'rotate-180' : ''}`} />
                                 </button>
