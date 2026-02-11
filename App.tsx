@@ -18,6 +18,7 @@ import { useIsMobile } from './hooks/useIsMobile';
 import { useTheme } from './hooks/useTheme';
 import { lazyWithRetry } from './utils/lazyWithRetry';
 import { logger } from './utils/logger';
+import { useRouterSync } from './hooks/useRouterSync';
 
 // Code splitting - Lazy loading de componentes pesados
 const ProjectView = lazyWithRetry(() => import('./components/ProjectView').then(m => ({ default: m.ProjectView })));
@@ -48,6 +49,14 @@ const App: React.FC = () => {
     const [showSettings, setShowSettings] = useState(false);
     const { handleError, handleSuccess } = useErrorHandler();
     const { searchQuery, setSearchQuery, searchResults } = useSearch(projects);
+
+    useRouterSync({
+        selectedProjectId,
+        projects,
+        showSettings,
+        setShowSettings,
+        selectProject,
+    });
 
     // Carregar projetos ao montar
     useEffect(() => {
