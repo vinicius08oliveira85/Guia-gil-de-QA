@@ -18,9 +18,10 @@ interface HeaderProps {
     onNavigate?: (view: string) => void;
     onOpenCreateModal?: () => void;
     showDashboardActions?: boolean;
+    onLogoClick?: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ onProjectImported: _onProjectImported, onOpenSettings, onNavigate, onOpenCreateModal, showDashboardActions }) => {
+export const Header: React.FC<HeaderProps> = ({ onProjectImported: _onProjectImported, onOpenSettings, onNavigate, onOpenCreateModal, showDashboardActions, onLogoClick }) => {
     const { theme, toggleTheme, isOnlyLightSupported } = useTheme();
     const [notificationUnreadCount, setNotificationUnreadCount] = useState(0);
     const [showNotificationDropdown, setShowNotificationDropdown] = useState(false);
@@ -154,22 +155,46 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported: _onProjectImp
             style={{ paddingTop: 'env(safe-area-inset-top)' }}
         >
             <div className="container mx-auto flex items-center justify-between gap-2 sm:gap-3 min-w-0 py-2 px-3 sm:px-4">
-                <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                    <img
-                        src="/Logo_Moderno_Leve-removebg-preview.png"
-                        alt="Logo QA Agile Guide"
-                        className="h-14 w-auto sm:h-16 flex-shrink-0"
-                        loading="lazy"
-                        decoding="async"
-                        draggable={false}
-                    />
-                    <div className="min-w-0">
-                        <p className="text-sm sm:text-base font-semibold leading-tight truncate">QA Agile Guide</p>
-                        <p className="text-xs text-base-content/60 truncate hidden sm:block">
-                            Gestão de QA ágil, métricas e automação
-                        </p>
+                {onLogoClick ? (
+                    <button
+                        type="button"
+                        onClick={onLogoClick}
+                        className="flex items-center gap-2 sm:gap-3 min-w-0 bg-transparent border-none p-0 cursor-pointer hover:opacity-80 transition-opacity"
+                        aria-label="Voltar para Meus Projetos"
+                    >
+                        <img
+                            src="/Logo_Moderno_Leve-removebg-preview.png"
+                            alt="Logo QA Agile Guide"
+                            className="h-14 w-auto sm:h-16 flex-shrink-0"
+                            loading="lazy"
+                            decoding="async"
+                            draggable={false}
+                        />
+                        <div className="min-w-0">
+                            <p className="text-sm sm:text-base font-semibold leading-tight truncate">QA Agile Guide</p>
+                            <p className="text-xs text-base-content/60 truncate hidden sm:block">
+                                Gestão de QA ágil, métricas e automação
+                            </p>
+                        </div>
+                    </button>
+                ) : (
+                    <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                        <img
+                            src="/Logo_Moderno_Leve-removebg-preview.png"
+                            alt="Logo QA Agile Guide"
+                            className="h-14 w-auto sm:h-16 flex-shrink-0"
+                            loading="lazy"
+                            decoding="async"
+                            draggable={false}
+                        />
+                        <div className="min-w-0">
+                            <p className="text-sm sm:text-base font-semibold leading-tight truncate">QA Agile Guide</p>
+                            <p className="text-xs text-base-content/60 truncate hidden sm:block">
+                                Gestão de QA ágil, métricas e automação
+                            </p>
+                        </div>
                     </div>
-                </div>
+                )}
                 <div className="flex items-center justify-end gap-1.5 sm:gap-2 relative">
                     <nav className="flex items-center gap-2"></nav>
 

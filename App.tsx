@@ -204,6 +204,11 @@ const App: React.FC = () => {
 
     const isDashboard = !selectedProject && !showSettings;
 
+    const handleGoToDashboard = useCallback(() => {
+        selectProject(null);
+        setShowSettings(false);
+    }, [selectProject]);
+
     if (isLoading) {
         return (
             <div className="min-h-screen flex justify-center items-center">
@@ -248,6 +253,7 @@ const App: React.FC = () => {
                     onOpenSettings={() => setShowSettings(true)}
                     onOpenCreateModal={() => window.dispatchEvent(new CustomEvent('open-create-project-modal'))}
                     showDashboardActions={isDashboard}
+                    onLogoClick={handleGoToDashboard}
                 />
                 {showSearch && (
                     <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/30 backdrop-blur pt-20 p-4">
