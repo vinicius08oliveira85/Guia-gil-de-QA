@@ -3,7 +3,7 @@ import { NotificationBell } from './NotificationBell';
 import { ExpandableTabs } from './ExpandableTabs';
 import { useTheme } from '../../hooks/useTheme';
 import { getActiveColorForTheme } from '../../utils/expandableTabsColors';
-import { BookOpen, Bell, Moon, Sun, Heart, Monitor, Sliders } from 'lucide-react';
+import { BookOpen, Bell, Moon, Sun, Heart, Monitor, Sliders, Cloud, Plus } from 'lucide-react';
 import { Project } from '../../types';
 import { getUnreadCount } from '../../utils/notificationService';
 import { Modal } from './Modal';
@@ -16,16 +16,20 @@ interface HeaderProps {
     onProjectImported?: (project: Project) => void;
     onOpenSettings?: () => void;
     onNavigate?: (view: string) => void;
+    onOpenCreateModal?: () => void;
+    showDashboardActions?: boolean;
+    onLogoClick?: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ onProjectImported: _onProjectImported, onOpenSettings, onNavigate }) => {
+export const Header: React.FC<HeaderProps> = ({ onProjectImported: _onProjectImported, onOpenSettings, onNavigate, onOpenCreateModal, showDashboardActions, onLogoClick }) => {
     const { theme, toggleTheme, isOnlyLightSupported } = useTheme();
     const [notificationUnreadCount, setNotificationUnreadCount] = useState(0);
     const [showNotificationDropdown, setShowNotificationDropdown] = useState(false);
     const [isGlossaryOpen, setIsGlossaryOpen] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const [isSyncingSupabase, setIsSyncingSupabase] = useState(false);
 
-    const { saveProjectToSupabase, getSelectedProject } = useProjectsStore();
+    const { saveProjectToSupabase, getSelectedProject, syncProjectsFromSupabase } = useProjectsStore();
 
     // Atualizar contador de notificações não lidas
     useEffect(() => {
@@ -128,30 +132,95 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported: _onProjectImp
         }
     };
 
+    const handleSyncSupabase = async () => {
+        if (!isSupabaseAvailable()) {
+            toast.error('Supabase não está configurado. Configure VITE_SUPABASE_PROXY_URL.');
+            return;
+        }
+
+        setIsSyncingSupabase(true);
+        try {
+            await syncProjectsFromSupabase();
+            toast.success('Projetos sincronizados do Supabase com sucesso!');
+        } catch (error) {
+            toast.error('Erro ao sincronizar projetos do Supabase.');
+        } finally {
+            setIsSyncingSupabase(false);
+        }
+    };
+
     return (
         <header
             className="sticky top-0 z-30 border-b border-base-300 bg-base-100/80 backdrop-blur"
             style={{ paddingTop: 'env(safe-area-inset-top)' }}
         >
             <div className="container mx-auto flex items-center justify-between gap-2 sm:gap-3 min-w-0 py-2 px-3 sm:px-4">
-                <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                    <img
-                        src="/Logo_Moderno_Leve-removebg-preview.png"
-                        alt="Logo QA Agile Guide"
-                        className="h-14 w-auto sm:h-16 flex-shrink-0"
-                        loading="lazy"
-                        decoding="async"
-                        draggable={false}
-                    />
-                    <div className="min-w-0">
-                        <p className="text-sm sm:text-base font-semibold leading-tight truncate">QA Agile Guide</p>
-                        <p className="text-xs text-base-content/60 truncate hidden sm:block">
-                            Gestão de QA ágil, métricas e automação
-                        </p>
+                {onLogoClick ? (
+                    <button
+                        type="button"
+                        onClick={onLogoClick}
+                        className="flex items-center gap-2 sm:gap-3 min-w-0 bg-transparent border-none p-0 cursor-pointer hover:opacity-80 transition-opacity"
+                        aria-label="Voltar para Meus Projetos"
+                    >
+                        <img
+                            src="/Logo_Moderno_Leve-removebg-preview.png"
+                            alt="Logo QA Agile Guide"
+                            className="h-14 w-auto sm:h-16 flex-shrink-0"
+                            loading="lazy"
+                            decoding="async"
+                            draggable={false}
+                        />
+                        <div className="min-w-0">
+                            <p className="text-sm sm:text-base font-semibold leading-tight truncate">QA Agile Guide</p>
+                            <p className="text-xs text-base-content/60 truncate hidden sm:block">
+                                Gestão de QA ágil, métricas e automação
+                            </p>
+                        </div>
+                    </button>
+                ) : (
+                    <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                        <img
+                            src="/Logo_Moderno_Leve-removebg-preview.png"
+                            alt="Logo QA Agile Guide"
+                            className="h-14 w-auto sm:h-16 flex-shrink-0"
+                            loading="lazy"
+                            decoding="async"
+                            draggable={false}
+                        />
+                        <div className="min-w-0">
+                            <p className="text-sm sm:text-base font-semibold leading-tight truncate">QA Agile Guide</p>
+                            <p className="text-xs text-base-content/60 truncate hidden sm:block">
+                                Gestão de QA ágil, métricas e automação
+                            </p>
+                        </div>
                     </div>
-                </div>
+                )}
                 <div className="flex items-center justify-end gap-1.5 sm:gap-2 relative">
                     <nav className="flex items-center gap-2"></nav>
+
+                    {showDashboardActions && onOpenCreateModal && (
+                        <button
+                            className="relative flex items-center gap-1.5 sm:gap-2 rounded-full px-3 sm:px-4 py-2 text-sm font-semibold transition-colors duration-300 bg-primary text-primary-content hover:bg-primary/90"
+                            aria-label="Criar novo projeto"
+                            onClick={onOpenCreateModal}
+                        >
+                            <Plus className="w-4 h-4 flex-shrink-0" />
+                            <span className="hidden sm:inline">Novo</span>
+                        </button>
+                    )}
+
+                    {showDashboardActions && (
+                        <button
+                            className="relative flex items-center gap-1.5 sm:gap-2 rounded-full px-3 sm:px-4 py-2 text-sm font-semibold transition-colors duration-300 text-base-content/70 hover:bg-base-200 hover:text-base-content disabled:opacity-50 disabled:cursor-not-allowed"
+                            aria-label="Sincronizar projetos do Supabase"
+                            onClick={handleSyncSupabase}
+                            disabled={isSyncingSupabase || !isSupabaseAvailable()}
+                            title={!isSupabaseAvailable() ? 'Supabase não está configurado. Configure VITE_SUPABASE_PROXY_URL.' : 'Sincronizar projetos do Supabase'}
+                        >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0"><path d="M21.362 9.354H12V.396a.396.396 0 0 0-.716-.233L2.203 12.424l-.401.562a1.04 1.04 0 0 0 .836 1.659H12v8.959a.396.396 0 0 0 .724.229l9.075-12.476.401-.562a1.04 1.04 0 0 0-.838-1.66Z" fill="#3ECF8E"></path></svg>
+                            <span className="hidden sm:inline">{isSyncingSupabase ? 'Sincronizando...' : 'Sync'}</span>
+                        </button>
+                    )}
 
                     {getSelectedProject() && (
                         <button

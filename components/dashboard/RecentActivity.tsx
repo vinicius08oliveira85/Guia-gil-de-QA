@@ -5,6 +5,7 @@ import { CheckCircle2, XCircle, Clock, FileText, AlertTriangle } from 'lucide-re
 import { Project } from '../../types';
 import { useProjectMetrics } from '../../hooks/useProjectMetrics';
 import { formatDistanceToNow } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 /**
  * Props do componente RecentActivity

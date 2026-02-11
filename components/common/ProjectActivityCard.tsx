@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Project, JiraTask } from '../../types';
+import { Project, JiraTask, TaskPriority } from '../../types';
 import { Activity, ArrowUpRight, Target, CheckCircle2 } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import { calculateProjectMetrics } from '../../hooks/useProjectMetrics';
@@ -16,12 +16,14 @@ export interface ProjectGoal {
     id: string;
     title: string;
     isCompleted: boolean;
+    priority?: TaskPriority;
 }
 
 interface ProjectActivityCardProps {
     project: Project;
     onSelect?: () => void;
     onDelete?: () => void;
+    onNavigateToTask?: (taskId: string) => void;
     className?: string;
 }
 
@@ -118,22 +120,40 @@ export const ProjectActivityCard: React.FC<ProjectActivityCardProps> = ({
     project,
     onSelect,
     onDelete,
+    onNavigateToTask,
     className
 }) => {
     const [isHovering, setIsHovering] = useState<string | null>(null);
+
+    // Função helper para retornar classes CSS baseadas na prioridade
+    const getPriorityBgColor = (priority?: TaskPriority): string => {
+        switch (priority) {
+            case 'Urgente': return 'bg-error/10 hover:bg-error/15 border-error/20';
+            case 'Alta': return 'bg-warning/10 hover:bg-warning/15 border-warning/20';
+            case 'Média': return 'bg-info/10 hover:bg-info/15 border-info/20';
+            case 'Baixa': return 'bg-success/10 hover:bg-success/15 border-success/20';
+            default: return 'bg-base-200/50 hover:bg-base-200/70 border-base-300/50';
+        }
+    };
 
     // Calcular métricas do projeto
     const metrics = useMemo(() => {
         const projectMetrics = calculateProjectMetrics(project);
         const tasks = project.tasks || [];
         
-        // Calcular tarefas completadas
-        const totalTasks = tasks.filter(t => t.type === 'Tarefa').length;
-        const completedTasks = tasks.filter(t => {
-            if (t.type !== 'Tarefa') return false;
-            const category = getTaskStatusCategory(t);
-            return category === 'Concluído';
-        }).length;
+        // Usar a mesma lógica do TasksView para consistência
+        // Total: todas as tarefas (independente do tipo)
+        const totalTasks = tasks.length;
+        
+        // Concluídas: tarefas com status 'Done' (mesma lógica do TasksView)
+        const completedTasks = tasks.filter(t => t.status === 'Done').length;
+
+        // Calcular bugs (mesma lógica do TasksView)
+        // Total de bugs: todas as tarefas do tipo 'Bug'
+        const totalBugs = tasks.filter(t => t.type === 'Bug').length;
+        
+        // Bugs concluídos: bugs com status 'Done'
+        const completedBugs = tasks.filter(t => t.type === 'Bug' && t.status === 'Done').length;
 
         // Métricas para os rings
         const testExecutionPercent = projectMetrics.totalTestCases > 0
@@ -144,8 +164,9 @@ export const ProjectActivityCard: React.FC<ProjectActivityCardProps> = ({
             ? Math.round((completedTasks / totalTasks) * 100)
             : 0;
 
-        const successRatePercent = projectMetrics.executedTestCases > 0
-            ? Math.round((projectMetrics.passedTestCases / projectMetrics.executedTestCases) * 100)
+        // Porcentagem de bugs concluídos
+        const bugsCompletedPercent = totalBugs > 0
+            ? Math.round((completedBugs / totalBugs) * 100)
             : 0;
 
         return [
@@ -157,15 +178,15 @@ export const ProjectActivityCard: React.FC<ProjectActivityCardProps> = ({
             },
             {
                 label: 'Tarefas',
-                value: completedTasks,
-                trend: taskProgressPercent,
-                unit: 'done'
+                value: totalTasks, // Total de tarefas no anel
+                trend: taskProgressPercent, // Porcentagem de concluídas (mostrada abaixo do anel)
+                unit: 'Total' // Texto abaixo do número no anel
             },
             {
                 label: 'Sucesso',
-                value: successRatePercent,
-                trend: successRatePercent,
-                unit: '%'
+                value: totalBugs, // Total de bugs no anel
+                trend: bugsCompletedPercent, // Porcentagem de bugs concluídos (mostrada abaixo do anel)
+                unit: 'Bugs' // Texto abaixo do número no anel
             }
         ] as ProjectMetric[];
     }, [project]);
@@ -202,7 +223,8 @@ export const ProjectActivityCard: React.FC<ProjectActivityCardProps> = ({
         return prioritizedTasks.map((item, index) => ({
             id: item.task.id,
             title: item.task.title,
-            isCompleted: item.isCompleted
+            isCompleted: item.isCompleted,
+            priority: item.task.priority || 'Média' // Adicionar prioridade
         })) as ProjectGoal[];
     }, [project]);
 
@@ -303,13 +325,26 @@ export const ProjectActivityCard: React.FC<ProjectActivityCardProps> = ({
                             {goals.map((goal) => (
                                 <div
                                     key={goal.id}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onNavigateToTask?.(goal.id);
+                                    }}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' || e.key === ' ') {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            onNavigateToTask?.(goal.id);
+                                        }
+                                    }}
                                     className={cn(
                                         "w-full flex items-center gap-2 sm:gap-3 p-2 sm:p-2.5 rounded-lg",
-                                        "bg-base-200/50",
-                                        "border border-base-300/50",
-                                        "hover:border-primary/30",
-                                        "transition-all"
+                                        "border transition-all",
+                                        "cursor-pointer",
+                                        getPriorityBgColor(goal.priority)
                                     )}
+                                    role="button"
+                                    tabIndex={0}
+                                    aria-label={`Navegar para tarefa: ${goal.title}`}
                                 >
                                     <CheckCircle2
                                         className={cn(

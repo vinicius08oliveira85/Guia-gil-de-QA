@@ -17,6 +17,7 @@ import { Spinner } from './common/Spinner';
 
 export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project: Project) => void; onBack: () => void; }> = ({ project, onUpdateProject, onBack }) => {
     const [activeTab, setActiveTab] = useState('dashboard');
+    const [initialTaskId, setInitialTaskId] = useState<string | undefined>(undefined);
     const [isPrinting, setIsPrinting] = useState(false);
     const [isSavingToSupabase, setIsSavingToSupabase] = useState(false);
     const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
@@ -160,10 +161,23 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
             setSaveStatus('idle');
         }
     }, [currentProject, supabaseAvailable]);
+
+    // Verificar taskIdToFocus na montagem e ao mudar de projeto
+    useEffect(() => {
+        const taskIdToFocus = sessionStorage.getItem('taskIdToFocus');
+        if (taskIdToFocus) {
+            // Limpar o sessionStorage
+            sessionStorage.removeItem('taskIdToFocus');
+            // Navegar para a aba de tarefas
+            setActiveTab('tasks');
+            // Passar o taskId para o TasksView
+            setInitialTaskId(taskIdToFocus);
+        }
+    }, [currentProject.id]);
     
-    const tabs: Array<{ id: string; label: string; 'data-onboarding'?: string; 'data-tour'?: string }> = [
+    const tabs: Array<{ id: string; label: string }> = [
         { id: 'dashboard', label: 'Dashboard' },
-        { id: 'tasks', label: 'Tarefas & Testes', 'data-onboarding': 'tasks-tab', 'data-tour': 'tasks-tab' },
+        { id: 'tasks', label: 'Tarefas & Testes' },
         { id: 'documents', label: 'Documentos' },
     ];
 
@@ -267,8 +281,6 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                                 type="button"
                                 onClick={() => handleTabClick(tab.id)}
                                 className={`tab whitespace-nowrap flex-shrink-0 ${activeTab === tab.id ? 'tab-active' : ''}`}
-                                data-onboarding={tab['data-onboarding']}
-                                data-tour={tab['data-tour']}
                                 id={`tab-${tab.id}`}
                                 role="tab"
                                 aria-selected={activeTab === tab.id}
@@ -300,6 +312,7 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                                     project={currentProject} 
                                     onUpdateProject={onUpdateProject}
                                     onNavigateToTab={(tabId) => handleTabClick(tabId)}
+                                    initialTaskId={initialTaskId}
                                 />
                             </Suspense>
                             </section>
