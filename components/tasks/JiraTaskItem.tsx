@@ -34,6 +34,7 @@ import { JiraRichContent } from './JiraRichContent';
 import { loadTaskTestStatus, saveTaskTestStatus, calculateTaskTestStatus } from '../../services/taskTestStatusService';
 import { useProjectsStore } from '../../store/projectsStore';
 import { logger } from '../../utils/logger';
+import { TaskSectionMenubar } from './TaskSectionMenubar';
 
 // Componente para renderizar descrição com formatação rica do Jira
 const DescriptionRenderer: React.FC<{ 
@@ -1587,32 +1588,12 @@ export const JiraTaskItem: React.FC<{
                                     </div>
 
                                     <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-                                        <div className="tabs tabs-boxed bg-base-200 p-1 w-full md:w-fit overflow-x-auto" role="tablist" aria-label="Seções da tarefa">
-                                            {sectionTabs.map((tab) => {
-                                                const isActive = tab.id === activeSection;
-                                                const tabId = `task-${safeDomId}-tab-${tab.id}`;
-                                                const panelId = `task-${safeDomId}-panel-${tab.id}`;
-                                                return (
-                                                    <button
-                                                        key={tab.id}
-                                                        type="button"
-                                                        id={tabId}
-                                                        role="tab"
-                                                        aria-selected={isActive}
-                                                        aria-controls={panelId}
-                                                        className={`tab ${isActive ? 'tab-active' : ''}`}
-                                                        onClick={() => setActiveSection(tab.id)}
-                                                    >
-                                                        <span>{tab.label}</span>
-                                                        {typeof tab.badge === 'number' && tab.badge > 0 ? (
-                                                            <span className="badge badge-primary badge-sm ml-2">
-                                                                {tab.badge}
-                                                            </span>
-                                                        ) : null}
-                                                    </button>
-                                                );
-                                            })}
-                                        </div>
+                                        <TaskSectionMenubar
+                                            tabs={sectionTabs}
+                                            activeTab={activeSection}
+                                            onTabChange={setActiveSection}
+                                            safeDomId={safeDomId}
+                                        />
                                     </div>
 
                                     <div

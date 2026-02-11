@@ -29,6 +29,7 @@ import { FileViewer } from '../common/FileViewer';
 import { canViewInBrowser, detectFileType } from '../../services/fileViewerService';
 import { JiraAttachment } from './JiraAttachment';
 import { JiraRichContent } from './JiraRichContent';
+import { TaskSectionMenubar } from './TaskSectionMenubar';
 
 type DetailSection = 'overview' | 'bdd' | 'tests' | 'planning' | 'collaboration' | 'links';
 type TestSubSection = 'strategy' | 'test-cases';
@@ -943,32 +944,12 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                 maxHeight="95vh"
             >
                 <div className="flex flex-col gap-4">
-                    <div className="tabs tabs-boxed bg-base-200 p-1 w-full overflow-x-auto" role="tablist" aria-label="Seções da tarefa">
-                        {sectionTabs.map((tab) => {
-                            const isActive = tab.id === activeSection;
-                            const tabId = `task-${safeDomId}-tab-${tab.id}`;
-                            const panelId = `task-${safeDomId}-panel-${tab.id}`;
-                            return (
-                                <button
-                                    key={tab.id}
-                                    type="button"
-                                    id={tabId}
-                                    role="tab"
-                                    aria-selected={isActive}
-                                    aria-controls={panelId}
-                                    className={`tab ${isActive ? 'tab-active' : ''}`}
-                                    onClick={() => setActiveSection(tab.id)}
-                                >
-                                    <span>{tab.label}</span>
-                                    {typeof tab.badge === 'number' && tab.badge > 0 ? (
-                                        <span className="badge badge-primary badge-sm ml-2">
-                                            {tab.badge}
-                                        </span>
-                                    ) : null}
-                                </button>
-                            );
-                        })}
-                    </div>
+                    <TaskSectionMenubar
+                        tabs={sectionTabs}
+                        activeTab={activeSection}
+                        onTabChange={setActiveSection}
+                        safeDomId={safeDomId}
+                    />
 
                     {(task.type === 'Tarefa' || task.type === 'Bug') && onGenerateAll && (
                         <div className="flex justify-end">
