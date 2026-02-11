@@ -1435,7 +1435,7 @@ export const JiraTaskItem: React.FC<{
                 >
                     <div aria-hidden="true" className="absolute left-0 top-0 h-full w-2" style={typeAccent} />
 
-                    <div className="p-2 sm:p-2 md:p-3">
+                    <div className="p-3 sm:p-2 md:p-3">
                         <div className="flex flex-wrap sm:flex-nowrap items-start sm:items-center gap-1.5 sm:gap-2 md:gap-3">
                             {/* Linha 1 (Mobile): Controles e Título */}
                             <div className="flex items-center gap-1.5 sm:gap-2 w-full sm:flex-1 sm:min-w-0 flex-shrink-0">
@@ -1497,7 +1497,7 @@ export const JiraTaskItem: React.FC<{
                                         type="button"
                                         onClick={handleGenerateAll}
                                         disabled={isGeneratingAll || isGenerating || isGeneratingBdd || isGeneratingTests}
-                                        className="btn btn-xs bg-orange-500 hover:bg-orange-600 text-white border-0 gap-0.5 sm:gap-1.5 flex-shrink-0 h-5 sm:h-7 px-1 sm:px-2"
+                                        className="btn btn-xs bg-orange-500 hover:bg-orange-600 text-white border-0 gap-0.5 sm:gap-1.5 flex-shrink-0 h-4 sm:h-7 px-1 sm:px-2"
                                         title="Gerar Tudo (BDD e Testes)"
                                         aria-label={isGenerating || isGeneratingAll ? 'Gerando tudo' : 'Gerar Tudo (BDD e Testes)'}
                                     >
@@ -1506,7 +1506,7 @@ export const JiraTaskItem: React.FC<{
                                     </button>
                                 )}
                                 {taskTestStatus && (
-                                    <span className={`badge badge-xs ${testStatusConfig.bgColor} ${testStatusConfig.color} border gap-0.5 sm:gap-1 flex-shrink-0 h-5 sm:h-7 px-1 sm:px-2`}>
+                                    <span className={`badge badge-xs ${testStatusConfig.bgColor} ${testStatusConfig.color} border gap-0.5 sm:gap-1 flex-shrink-0 h-4 sm:h-7 px-1 sm:px-2`}>
                                         <span aria-hidden="true" className="text-[8px] sm:text-xs">{testStatusConfig.icon}</span>
                                         <span className="font-medium text-[8px] sm:text-[10px] truncate">{testStatusConfig.label}</span>
                                     </span>
@@ -1518,7 +1518,7 @@ export const JiraTaskItem: React.FC<{
                                             e.stopPropagation();
                                             setIsStatusDropdownOpen(!isStatusDropdownOpen);
                                         }}
-                                        className="btn btn-xs rounded-full text-white border-0 flex-shrink-0 h-5 sm:h-7 px-1.5 sm:px-3 text-[9px] sm:text-xs"
+                                        className="btn btn-xs rounded-full text-white border-0 flex-shrink-0 h-4 sm:h-7 px-1.5 sm:px-3 text-[9px] sm:text-xs"
                                         style={{ backgroundColor: currentStatusColor || '#6b7280', color: statusTextColor || '#ffffff' }}
                                         aria-haspopup="true"
                                         aria-expanded={isStatusDropdownOpen}
