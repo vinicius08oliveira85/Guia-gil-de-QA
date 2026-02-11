@@ -20,7 +20,6 @@ import { VersionBadges } from './VersionBadge';
 import { updateChecklistItem } from '../../utils/checklistService';
 import { getTaskPhase, getPhaseBadgeStyle, getNextStepForTask } from '../../utils/taskPhaseHelper';
 import { getDisplayStatus } from '../../utils/taskHelpers';
-import { useBeginnerMode } from '../../hooks/useBeginnerMode';
 import { ConfirmDialog } from '../common/ConfirmDialog';
 import { EmptyState } from '../common/EmptyState';
 import { LoadingSkeleton } from '../common/LoadingSkeleton';
@@ -175,7 +174,6 @@ export const JiraTaskItem: React.FC<{
     const [isLoadingTestStatus, setIsLoadingTestStatus] = useState(false);
     const hasTests = task.testCases && task.testCases.length > 0;
     const hasChildren = task.children && task.children.length > 0;
-    const { isBeginnerMode } = useBeginnerMode();
     const { updateProject } = useProjectsStore();
     const taskPhase = getTaskPhase(task);
     const phaseStyle = getPhaseBadgeStyle(taskPhase);
@@ -1101,11 +1099,6 @@ export const JiraTaskItem: React.FC<{
                                     icon="🧪"
                                     title="Nenhum caso de teste ainda"
                                     description="Comece gerando casos de teste com IA ou adicione manualmente."
-                                    tips={isBeginnerMode ? [
-                                        "Use a IA para gerar casos de teste automaticamente",
-                                        "Ou adicione manualmente usando templates",
-                                        "Cada caso de teste deve ter passos claros e resultado esperado"
-                                    ] : undefined}
                                     action={{
                                         label: "Gerar com IA",
                                         onClick: () => onGenerateTests(task.id, detailLevel)

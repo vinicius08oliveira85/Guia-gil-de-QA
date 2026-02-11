@@ -19,8 +19,6 @@ import { createBugFromFailedTest } from '../../utils/bugAutoCreation';
 import { getTaskDependents, getReadyTasks } from '../../utils/dependencyService';
 import { notifyTestFailed, notifyBugCreated, notifyCommentAdded, notifyDependencyResolved } from '../../utils/notificationService';
 import { BulkActions } from '../common/BulkActions';
-import { TaskCreationWizard } from './TaskCreationWizard';
-import { useBeginnerMode } from '../../hooks/useBeginnerMode';
 import { useLocalStorage } from '../../hooks/useLocalStorage';
 import { EmptyState } from '../common/EmptyState';
 import { syncJiraProject, getJiraConfig, getJiraProjects, JiraConfig, syncTaskToJira } from '../../services/jiraService';
@@ -121,9 +119,6 @@ export const TasksView: React.FC<{
     const [editingTask, setEditingTask] = useState<JiraTask | undefined>(undefined);
     const [testCaseEditorRef, setTestCaseEditorRef] = useState<{ taskId: string; testCase: TestCase } | null>(null);
     const [defaultParentId, setDefaultParentId] = useState<string | undefined>(undefined);
-    const [showWizard, setShowWizard] = useState(false);
-    const { isBeginnerMode } = useBeginnerMode();
-    const [hasSeenWizard, setHasSeenWizard] = useLocalStorage<boolean>('task_creation_wizard_seen', false);
     const [showFilters, setShowFilters] = useState(false);
     
     // Novos Estados de Filtro
@@ -1074,22 +1069,11 @@ export const TasksView: React.FC<{
     };
     
     const openTaskFormForNew = (parentId?: string) => {
-        // Se é modo iniciante, não viu o wizard ainda, e não tem tarefas, mostrar wizard
-        if (isBeginnerMode && !hasSeenWizard && project.tasks.length === 0) {
-            setShowWizard(true);
-            return;
-        }
         setEditingTask(undefined);
         setDefaultParentId(parentId);
         setIsTaskFormOpen(true);
     };
 
-    const handleWizardStart = () => {
-        setHasSeenWizard(true);
-        setDefaultParentId(undefined);
-        setEditingTask(undefined);
-        setIsTaskFormOpen(true);
-    };
 
     const epics = useMemo(() => project.tasks.filter(t => t.type === 'Epic'), [project.tasks]);
 
@@ -2272,11 +2256,6 @@ export const TasksView: React.FC<{
                                 onClick: () => openTaskFormForNew(),
                                 variant: 'primary'
                             }}
-                            tip={isBeginnerMode ? "Clique em 'Adicionar Tarefa' para ver um guia passo a passo!" : undefined}
-                            helpContent={isBeginnerMode ? {
-                                title: 'Criar sua primeira tarefa',
-                                content: 'Tarefas representam funcionalidades ou bugs que precisam ser testados. Use o wizard para aprender passo a passo como criar tarefas corretamente.'
-                            } : undefined}
                         />
                     )}
                 </div>
@@ -2326,11 +2305,6 @@ export const TasksView: React.FC<{
             />
         )}
 
-        <TaskCreationWizard
-            isOpen={showWizard}
-            onClose={() => setShowWizard(false)}
-            onStart={handleWizardStart}
-        />
 
         {/* Modal de Relatório de Testes Reprovados */}
         <FailedTestsReportModal

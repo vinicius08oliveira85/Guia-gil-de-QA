@@ -177,11 +177,9 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported: _onProjectImp
                             className="relative flex items-center gap-1.5 sm:gap-2 rounded-full px-3 sm:px-4 py-2 text-sm font-semibold transition-colors duration-300 bg-primary text-primary-content hover:bg-primary/90"
                             aria-label="Criar novo projeto"
                             onClick={onOpenCreateModal}
-                            data-onboarding="create-project"
-                            data-tour="create-project"
                         >
                             <Plus className="w-4 h-4 flex-shrink-0" />
-                            <span className="hidden sm:inline">+ Novo</span>
+                            <span className="hidden sm:inline">Novo</span>
                         </button>
                     )}
 

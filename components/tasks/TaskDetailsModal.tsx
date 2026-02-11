@@ -18,7 +18,6 @@ import { getTagColor, getTaskVersions } from '../../utils/tagService';
 import { VersionBadges } from './VersionBadge';
 import { updateChecklistItem } from '../../utils/checklistService';
 import { getNextStepForTask } from '../../utils/taskPhaseHelper';
-import { useBeginnerMode } from '../../hooks/useBeginnerMode';
 import { EmptyState } from '../common/EmptyState';
 import { LoadingSkeleton } from '../common/LoadingSkeleton';
 import { parseJiraDescriptionHTML } from '../../utils/jiraDescriptionParser';
@@ -145,7 +144,6 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
     const [showTestReport, setShowTestReport] = useState(false);
     const [activeSection, setActiveSection] = useState<DetailSection>('overview');
     const [activeTestSubSection, setActiveTestSubSection] = useState<TestSubSection>('strategy');
-    const { isBeginnerMode } = useBeginnerMode();
     const nextStep = getNextStepForTask(task);
     const hasTests = task.testCases && task.testCases.length > 0;
     const safeDomId = useMemo(() => task.id.replace(/[^a-zA-Z0-9_-]/g, '_'), [task.id]);
@@ -697,11 +695,6 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                                     icon="🧪"
                                     title="Nenhum caso de teste ainda"
                                     description="Comece gerando casos de teste com IA ou adicione manualmente."
-                                    tips={isBeginnerMode ? [
-                                        "Use a IA para gerar casos de teste automaticamente",
-                                        "Ou adicione manualmente usando templates",
-                                        "Cada caso de teste deve ter passos claros e resultado esperado"
-                                    ] : undefined}
                                     action={{
                                         label: "Gerar com IA",
                                         onClick: () => onGenerateTests(task.id, detailLevel)

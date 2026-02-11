@@ -17,14 +17,13 @@ import { startExportScheduler } from './utils/exportScheduler';
 import { useIsMobile } from './hooks/useIsMobile';
 import { useTheme } from './hooks/useTheme';
 import { lazyWithRetry } from './utils/lazyWithRetry';
+import { logger } from './utils/logger';
 
 // Code splitting - Lazy loading de componentes pesados
 const ProjectView = lazyWithRetry(() => import('./components/ProjectView').then(m => ({ default: m.ProjectView })));
 const ProjectsDashboard = lazyWithRetry(() => import('./components/ProjectsDashboard').then(m => ({ default: m.ProjectsDashboard })));
 const AdvancedSearch = lazyWithRetry(() => import('./components/common/AdvancedSearch').then(m => ({ default: m.AdvancedSearch })));
-const OnboardingGuide = lazyWithRetry(() => import('./components/onboarding/OnboardingGuide').then(m => ({ default: m.OnboardingGuide })));
 const SettingsView = lazyWithRetry(() => import('./components/settings/SettingsView').then(m => ({ default: m.SettingsView })));
-const RolafAssistant = lazyWithRetry(() => import('./components/rolaf/RolafAssistant').then(m => ({ default: m.RolafAssistant })));
 
 const App: React.FC = () => {
     // Tema global (fase atual: DaisyUI light fixo; outras opções permanecem no toggle para futuro)
@@ -296,18 +295,6 @@ const App: React.FC = () => {
                     )}
                 </main>
                 <KeyboardShortcutsHelp />
-                <Suspense fallback={null}>
-                    <OnboardingGuide />
-                </Suspense>
-                <Suspense fallback={null}>
-                    <RolafAssistant 
-                        currentView={
-                            selectedProject 
-                                ? 'project-view' 
-                                : 'dashboard'
-                        }
-                    />
-                </Suspense>
             </div>
         </ErrorBoundary>
     );
