@@ -1471,16 +1471,16 @@ export const JiraTaskItem: React.FC<{
                             </div>
 
                             {/* Coluna 2: Métricas em círculos grandes */}
-                            <div className="flex items-center gap-2 flex-shrink-0 whitespace-nowrap">
+                            <div className="flex items-center gap-1.5 flex-shrink-0 whitespace-nowrap">
                                 {testExecutionSummary.total > 0 && (
                                     <>
-                                        <div className="w-8 h-8 rounded-full bg-success flex items-center justify-center text-white text-xs font-semibold" title="Aprovados">
+                                        <div className="w-6 h-6 rounded-full bg-success flex items-center justify-center text-white text-[10px] font-semibold" title="Aprovados">
                                             {testExecutionSummary.passed}
                                         </div>
-                                        <div className="w-8 h-8 rounded-full bg-error flex items-center justify-center text-white text-xs font-semibold" title="Reprovados">
+                                        <div className="w-6 h-6 rounded-full bg-error flex items-center justify-center text-white text-[10px] font-semibold" title="Reprovados">
                                             {testExecutionSummary.failed}
                                         </div>
-                                        <div className="w-8 h-8 rounded-full bg-base-300 flex items-center justify-center text-white text-xs font-semibold" title="Pendentes">
+                                        <div className="w-6 h-6 rounded-full bg-orange-500 flex items-center justify-center text-white text-[10px] font-semibold" title="Pendentes">
                                             {testExecutionSummary.pending}
                                         </div>
                                     </>
@@ -1495,17 +1495,17 @@ export const JiraTaskItem: React.FC<{
                                         type="button"
                                         onClick={handleGenerateAll}
                                         disabled={isGeneratingAll || isGenerating || isGeneratingBdd || isGeneratingTests}
-                                        className="btn btn-sm bg-orange-500 hover:bg-orange-600 text-white border-0 gap-2 flex-shrink-0"
+                                        className="btn btn-xs bg-orange-500 hover:bg-orange-600 text-white border-0 gap-1.5 flex-shrink-0 h-7"
                                         title="Gerar Tudo (BDD e Testes)"
                                     >
-                                        {isGenerating || isGeneratingAll ? <span className="loading loading-spinner loading-xs"></span> : <Zap className="w-4 h-4" />}
-                                        {isGenerating || isGeneratingAll ? 'Gerando...' : 'Gerar Tudo'}
+                                        {isGenerating || isGeneratingAll ? <span className="loading loading-spinner loading-xs"></span> : <Zap className="w-3 h-3" />}
+                                        <span className="text-xs">{isGenerating || isGeneratingAll ? 'Gerando...' : 'Gerar Tudo'}</span>
                                     </button>
                                 )}
                                 {taskTestStatus && (
-                                    <span className={`badge badge-sm ${testStatusConfig.bgColor} ${testStatusConfig.color} border gap-1 flex-shrink-0`}>
+                                    <span className={`badge badge-xs ${testStatusConfig.bgColor} ${testStatusConfig.color} border gap-1 flex-shrink-0 h-7 px-2`}>
                                         <span aria-hidden="true" className="text-xs">{testStatusConfig.icon}</span>
-                                        <span className="font-medium text-xs">{testStatusConfig.label}</span>
+                                        <span className="font-medium text-[10px]">{testStatusConfig.label}</span>
                                     </span>
                                 )}
                                 <div className="relative flex-shrink-0" ref={statusDropdownRef}>
@@ -1515,11 +1515,11 @@ export const JiraTaskItem: React.FC<{
                                             e.stopPropagation();
                                             setIsStatusDropdownOpen(!isStatusDropdownOpen);
                                         }}
-                                        className="btn btn-sm rounded-full text-white border-0 flex-shrink-0"
+                                        className="btn btn-xs rounded-full text-white border-0 flex-shrink-0 h-7 px-3 text-xs"
                                         style={{ backgroundColor: currentStatusColor || '#6b7280', color: statusTextColor || '#ffffff' }}
                                     >
                                         {getDisplayStatus(task)}
-                                        <ChevronDownIcon className={`w-4 h-4 ml-1 transition-transform ${isStatusDropdownOpen ? 'rotate-180' : ''}`} />
+                                        <ChevronDownIcon className={`w-3 h-3 ml-1 transition-transform ${isStatusDropdownOpen ? 'rotate-180' : ''}`} />
                                     </button>
                                     {isStatusDropdownOpen && (
                                         <div className="absolute right-0 mt-1 z-50 w-48 bg-base-100 border border-base-300 rounded-lg shadow-lg overflow-hidden">
