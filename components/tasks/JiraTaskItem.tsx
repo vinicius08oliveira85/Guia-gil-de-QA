@@ -278,21 +278,25 @@ export const JiraTaskItem: React.FC<{
 
     // Recalcular status automaticamente quando testCases mudam
     useEffect(() => {
-        // Não recalcular se o status foi definido manualmente (testando ou teste_concluido)
-        // Apenas recalcular se houver mudança que force pendente (teste falhou)
+        // Recalcular status quando testCases mudarem
         const calculatedStatus = calculateTaskTestStatus(task);
         
-        // Se o status calculado é 'pendente' (teste falhou), sempre atualizar
-        // Se o status atual é 'testar' ou null, atualizar para o calculado
-        // Se o status atual é 'testando' ou 'teste_concluido', só atualizar se for 'pendente'
+        // Atualizar se:
+        // 1. Status calculado é diferente do atual
+        // 2. Status atual é null (primeira vez)
+        // 3. Status calculado é 'teste_concluido' (todos os testes executados) - sempre atualizar
+        // 4. Status calculado é 'pendente' (teste falhou) - sempre atualizar
+        // 5. Status atual é 'testar' - atualizar para qualquer status calculado
         const shouldUpdate = 
-            calculatedStatus === 'pendente' || 
-            taskTestStatus === null || 
-            taskTestStatus === 'testar' ||
-            (taskTestStatus === 'testando' && calculatedStatus === 'pendente') ||
-            (taskTestStatus === 'teste_concluido' && calculatedStatus === 'pendente');
+            calculatedStatus !== taskTestStatus && (
+                taskTestStatus === null || 
+                calculatedStatus === 'teste_concluido' ||
+                calculatedStatus === 'pendente' ||
+                taskTestStatus === 'testar' ||
+                (taskTestStatus === 'testando' && calculatedStatus === 'teste_concluido')
+            );
         
-        if (shouldUpdate && calculatedStatus !== taskTestStatus) {
+        if (shouldUpdate) {
             setTaskTestStatus(calculatedStatus);
             // Salvar no Supabase em background
             if (task.id) {

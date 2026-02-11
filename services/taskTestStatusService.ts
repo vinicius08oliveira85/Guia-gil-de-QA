@@ -292,11 +292,12 @@ const loadMultipleThroughSdk = async (taskKeys: string[]): Promise<Map<string, T
  * Calcula o status de teste baseado nos testCases da task
  * 
  * Regras:
- * 1. Se algum testCase.status === 'Failed' → 'pendente' (vermelho)
- * 2. Se todos os testCases estão 'Passed' e há pelo menos 1 testCase → 'teste_concluido' (verde)
- * 3. Se há testCases mas nenhum foi executado → 'testar' (laranja)
- * 4. Se há testCases sendo executados (alguns Passed mas não todos) → 'testando' (amarelo)
- * 5. Se não há testCases → 'testar' (laranja)
+ * 1. Se não há testCases → 'testar' (laranja)
+ * 2. Se todos os testCases foram executados (nenhum 'Not Run') → 'teste_concluido' (verde) - independente de terem passado ou falhado
+ * 3. Se há testCases mas pelo menos um ainda está 'Not Run':
+ *    - Se algum teste falhou → 'pendente' (vermelho)
+ *    - Se há testes sendo executados (alguns Passed mas não todos) → 'testando' (amarelo)
+ *    - Se nenhum foi executado → 'testar' (laranja)
  */
 export const calculateTaskTestStatus = (task: JiraTask): TaskTestStatus => {
     const testCases = task.testCases || [];
@@ -306,32 +307,28 @@ export const calculateTaskTestStatus = (task: JiraTask): TaskTestStatus => {
         return 'testar';
     }
     
+    // Verificar se todos os testes foram executados (nenhum 'Not Run')
+    const allTestsExecuted = testCases.every(tc => tc.status !== 'Not Run');
+    
+    if (allTestsExecuted) {
+        // Todos foram executados → 'teste_concluido' (independente de terem passado ou falhado)
+        return 'teste_concluido';
+    }
+    
+    // Ainda há testes pendentes ('Not Run')
     // Verificar se algum teste falhou
     const hasFailed = testCases.some(tc => tc.status === 'Failed');
     if (hasFailed) {
         return 'pendente';
     }
     
-    // Verificar se todos os testes passaram
-    const allPassed = testCases.every(tc => tc.status === 'Passed');
-    if (allPassed && testCases.length > 0) {
-        return 'teste_concluido';
-    }
-    
     // Verificar se há testes sendo executados (alguns Passed mas não todos)
     const hasPassed = testCases.some(tc => tc.status === 'Passed');
-    const hasNotRun = testCases.some(tc => tc.status === 'Not Run');
-    
-    if (hasPassed && !allPassed) {
+    if (hasPassed) {
         return 'testando';
     }
     
-    // Se todos estão 'Not Run', retornar 'testar'
-    if (hasNotRun && !hasPassed) {
-        return 'testar';
-    }
-    
-    // Fallback: se há testes mas não se encaixa em nenhuma categoria acima
+    // Se nenhum foi executado, retornar 'testar'
     return 'testar';
 };
 
