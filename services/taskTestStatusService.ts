@@ -289,17 +289,64 @@ const loadMultipleThroughSdk = async (taskKeys: string[]): Promise<Map<string, T
 };
 
 /**
- * Calcula o status de teste baseado nos testCases da task
+ * Calcula o status de teste baseado nos testCases da task ou nas subtarefas (para Epic/História)
  * 
- * Regras:
+ * Regras para Epic/História:
+ * - Se não há subtarefas → 'testar'
+ * - Se todas as subtarefas estão 'teste_concluido' → 'teste_concluido'
+ * - Se alguma subtarefa está 'pendente' → 'pendente'
+ * - Se alguma subtarefa está 'testando' → 'testando'
+ * - Caso contrário → 'testar'
+ * 
+ * Regras para Tarefa/Bug:
  * 1. Se não há testCases → 'testar' (laranja)
  * 2. Se todos os testCases foram executados (nenhum 'Not Run') → 'teste_concluido' (verde) - independente de terem passado ou falhado
  * 3. Se há testCases mas pelo menos um ainda está 'Not Run':
  *    - Se algum teste falhou → 'pendente' (vermelho)
  *    - Se há testes sendo executados (alguns Passed mas não todos) → 'testando' (amarelo)
  *    - Se nenhum foi executado → 'testar' (laranja)
+ * 
+ * @param task - Tarefa para calcular o status
+ * @param allTasks - Lista completa de tarefas do projeto (necessária para encontrar subtarefas de Epic/História)
  */
-export const calculateTaskTestStatus = (task: JiraTask): TaskTestStatus => {
+export const calculateTaskTestStatus = (task: JiraTask, allTasks: JiraTask[] = []): TaskTestStatus => {
+    // Para Epic e História, verificar status das subtarefas
+    if (task.type === 'Epic' || task.type === 'História') {
+        const subtasks = allTasks.filter(t => t.parentId === task.id);
+        
+        // Se não há subtarefas, retornar 'pendente' (conforme requisito)
+        if (subtasks.length === 0) {
+            return 'pendente';
+        }
+        
+        // Calcular status de cada subtarefa recursivamente
+        const subtaskStatuses = subtasks.map(subtask => 
+            calculateTaskTestStatus(subtask, allTasks)
+        );
+        
+        // Se todas as subtarefas estão 'teste_concluido', retornar 'teste_concluido'
+        const allSubtasksCompleted = subtaskStatuses.every(status => status === 'teste_concluido');
+        if (allSubtasksCompleted) {
+            return 'teste_concluido';
+        }
+        
+        // Se alguma subtarefa está 'pendente' (falhou), retornar 'pendente'
+        const hasPendingSubtask = subtaskStatuses.some(status => status === 'pendente');
+        if (hasPendingSubtask) {
+            return 'pendente';
+        }
+        
+        // Se alguma subtarefa está 'testando', retornar 'testando'
+        const hasTestingSubtask = subtaskStatuses.some(status => status === 'testando');
+        if (hasTestingSubtask) {
+            return 'testando';
+        }
+        
+        // Caso contrário, retornar 'testar'
+        return 'testar';
+    }
+    
+    // Para Tarefa e Bug, usar lógica baseada em testCases
     const testCases = task.testCases || [];
     
     // Se não há testCases, retornar 'testar'

@@ -259,14 +259,14 @@ export const JiraTaskItem: React.FC<{
                         onUpdateProject({ ...project, tasks: updatedTasks });
                     }
                 } else {
-                    // Se não há status salvo, calcular baseado nos testCases
-                    const calculatedStatus = calculateTaskTestStatus(task);
+                    // Se não há status salvo, calcular baseado nos testCases ou subtarefas
+                    const calculatedStatus = calculateTaskTestStatus(task, project?.tasks || []);
                     setTaskTestStatus(calculatedStatus);
                 }
             } catch (error) {
                 logger.warn('Erro ao carregar status de teste do Supabase', 'JiraTaskItem', error);
-                // Em caso de erro, calcular baseado nos testCases
-                const calculatedStatus = calculateTaskTestStatus(task);
+                // Em caso de erro, calcular baseado nos testCases ou subtarefas
+                const calculatedStatus = calculateTaskTestStatus(task, project?.tasks || []);
                 setTaskTestStatus(calculatedStatus);
             } finally {
                 setIsLoadingTestStatus(false);
@@ -279,7 +279,7 @@ export const JiraTaskItem: React.FC<{
     // Recalcular status automaticamente quando testCases mudam
     useEffect(() => {
         // Recalcular status quando testCases mudarem
-        const calculatedStatus = calculateTaskTestStatus(task);
+        const calculatedStatus = calculateTaskTestStatus(task, project?.tasks || []);
         
         // Atualizar se:
         // 1. Status calculado é diferente do atual
@@ -312,7 +312,7 @@ export const JiraTaskItem: React.FC<{
                 onUpdateProject({ ...project, tasks: updatedTasks });
             }
         }
-    }, [task.testCases, task.id]); // Recalcular quando testCases mudarem (sem incluir taskTestStatus para evitar loop)
+    }, [task.testCases, task.id, project?.tasks]); // Recalcular quando testCases ou tasks do projeto mudarem (sem incluir taskTestStatus para evitar loop)
 
     // Função para atualizar e salvar status
     const updateTestStatus = useCallback(async (newStatus: TaskTestStatus) => {
@@ -346,7 +346,7 @@ export const JiraTaskItem: React.FC<{
     const handleCompleteTest = useCallback(async (e: React.MouseEvent) => {
         e.stopPropagation();
         try {
-            const calculatedStatus = calculateTaskTestStatus(task);
+            const calculatedStatus = calculateTaskTestStatus(task, project?.tasks || []);
             // Se todos os testes passaram, marcar como concluído, senão pendente
             const finalStatus = calculatedStatus === 'teste_concluido' ? 'teste_concluido' : 'pendente';
             await updateTestStatus(finalStatus);
@@ -371,7 +371,7 @@ export const JiraTaskItem: React.FC<{
 
     // Cores e estilos para status de teste
     const testStatusConfig = useMemo(() => {
-        const status = taskTestStatus || calculateTaskTestStatus(task);
+        const status = taskTestStatus || calculateTaskTestStatus(task, project?.tasks || []);
         const configs: Record<TaskTestStatus, { label: string; color: string; bgColor: string; icon: string }> = {
             testar: { label: 'Testar', color: 'text-orange-700 dark:text-orange-400', bgColor: 'bg-orange-500/20 border-orange-500/30', icon: '📋' },
             testando: { label: 'Testando', color: 'text-yellow-700 dark:text-yellow-400', bgColor: 'bg-yellow-500/20 border-yellow-500/30', icon: '🔄' },
@@ -379,7 +379,7 @@ export const JiraTaskItem: React.FC<{
             teste_concluido: { label: 'Teste Concluído', color: 'text-green-700 dark:text-green-400', bgColor: 'bg-green-500/20 border-green-500/30', icon: '✅' }
         };
         return configs[status];
-    }, [taskTestStatus, task]);
+    }, [taskTestStatus, task, project?.tasks]);
 
     const testTypeBadges = useMemo(() => {
         const typeMap = new Map<string, { total: number; executed: number; failed: number; hasStrategy: boolean; strategyExecuted: boolean }>();
