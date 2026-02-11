@@ -136,15 +136,19 @@ export const TaskForm: React.FC<{
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
             {hasExample && !existingTask && (
-                            <button
-                                type="button"
-                                onClick={handleLoadExample}
-                                className="btn btn-secondary text-xs whitespace-nowrap flex-shrink-0"
-                                title="Preencher formulário com um exemplo"
-                            >
-                                📝 Usar Exemplo
-                            </button>
-                        )}
+                <div className="mb-4 p-4 bg-accent/10 border border-accent/30 rounded-lg">
+                    <div className="flex items-start justify-between gap-4">
+                        <p className="text-sm text-text-primary">
+                            💡 <strong>Dica:</strong> Use o botão abaixo para preencher o formulário com um exemplo.
+                        </p>
+                        <button
+                            type="button"
+                            onClick={handleLoadExample}
+                            className="btn btn-secondary text-xs whitespace-nowrap flex-shrink-0"
+                            title="Preencher formulário com um exemplo"
+                        >
+                            📝 Usar Exemplo
+                        </button>
                     </div>
                 </div>
             )}
