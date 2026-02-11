@@ -8,7 +8,7 @@ import { TrashIcon } from './common/Icons';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { Badge } from './common/Badge';
 import { ProgressIndicator } from './common/ProgressIndicator';
-import { ArrowRight, Plus, Cloud, RefreshCw } from 'lucide-react';
+import { Plus, RefreshCw } from 'lucide-react';
 import { getTaskStatusCategory } from '../utils/jiraStatusCategorizer';
 import { motion } from 'framer-motion';
 import { ProjectActivityCard } from './common/ProjectActivityCard';
@@ -24,18 +24,14 @@ export const ProjectsDashboard: React.FC<{
     onSelectProject: (id: string) => void;
     onCreateProject: (name: string, description: string, templateId?: string) => Promise<void>;
     onDeleteProject: (id: string) => Promise<void>;
-    onComparisonClick?: () => void;
-    onSyncSupabase?: () => Promise<void>;
     onOpenSettings?: () => void;
-}> = ({ projects, onSelectProject, onCreateProject, onDeleteProject, onComparisonClick, onSyncSupabase, onOpenSettings }) => {
+}> = ({ projects, onSelectProject, onCreateProject, onDeleteProject, onOpenSettings }) => {
     const [isCreating, setIsCreating] = useState(false);
     const [showTemplates, setShowTemplates] = useState(false);
     const [showJiraImport, setShowJiraImport] = useState(false);
     const [newName, setNewName] = useState('');
     const [newDesc, setNewDesc] = useState('');
     const [selectedTemplate, setSelectedTemplate] = useState<string | undefined>();
-    const [isSyncingSupabase, setIsSyncingSupabase] = useState(false);
-    const [showMobileActions, setShowMobileActions] = useState(false);
     const [jiraProjects, setJiraProjects] = useState<JiraProject[]>([]);
     const [selectedJiraProjectKey, setSelectedJiraProjectKey] = useState('');
     const [isLoadingJiraProjects, setIsLoadingJiraProjects] = useState(false);
@@ -74,6 +70,15 @@ export const ProjectsDashboard: React.FC<{
             }
         };
         checkJiraConfig();
+    }, []);
+
+    // Escutar eventos para abrir modal de criação
+    React.useEffect(() => {
+        const handleOpenModal = () => setIsCreating(true);
+        window.addEventListener('open-create-project-modal', handleOpenModal);
+        return () => {
+            window.removeEventListener('open-create-project-modal', handleOpenModal);
+        };
     }, []);
 
     // Filtros por tags removidos
@@ -212,15 +217,6 @@ export const ProjectsDashboard: React.FC<{
         setDeleteModalState({ isOpen: true, project });
     };
 
-    const handleSyncSupabase = async () => {
-        if (!onSyncSupabase) return;
-        setIsSyncingSupabase(true);
-        try {
-            await onSyncSupabase();
-        } finally {
-            setIsSyncingSupabase(false);
-        }
-    };
 
     const calculateProgress = (tasks: JiraTask[]) => {
         if (!tasks || tasks.length === 0) return 0;
@@ -237,35 +233,6 @@ export const ProjectsDashboard: React.FC<{
         return [...projects].sort((a, b) => a.name.localeCompare(b.name));
     }, [projects]);
 
-    // Quick actions simplificadas - apenas Comparar e Sync Supabase
-    const quickActions = useMemo(() => {
-        const actions: Array<{ id: string; label: string; icon: string; onClick: () => void | Promise<void> }> = [];
-
-        if (onComparisonClick && projects.length > 1) {
-            actions.push({
-                id: 'compare',
-                label: 'Comparar Projetos',
-                icon: '📊',
-                onClick: onComparisonClick
-            });
-        }
-
-        if (onSyncSupabase) {
-            actions.push({
-                id: 'supabase',
-                label: 'Carregar do Supabase',
-                icon: '☁️',
-                onClick: handleSyncSupabase
-            });
-        }
-
-        return actions;
-    }, [handleSyncSupabase, onComparisonClick, onSyncSupabase, projects.length]);
-
-    const handleMobileAction = (action: () => void | Promise<void>) => {
-        setShowMobileActions(false);
-        setTimeout(() => action(), 150);
-    };
 
     return (
         <div className="min-h-[calc(100vh-4rem)] bg-gradient-to-b from-base-100 to-base-200/60">
@@ -291,98 +258,10 @@ export const ProjectsDashboard: React.FC<{
                     </div>
 
                     <div className="flex flex-wrap items-center gap-2 justify-start lg:justify-end">
-                        {isMobile ? (
-                            <>
-                                <button
-                                    type="button"
-                                    onClick={() => setIsCreating(true)}
-                                    className="btn btn-primary btn-sm rounded-full"
-                                    data-onboarding="create-project"
-                                >
-                                    <Plus className="w-4 h-4" />
-                                    <span>Novo</span>
-                                </button>
-
-                                {quickActions.length > 0 && (
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowMobileActions(true)}
-                                        className="btn btn-outline btn-sm rounded-full"
-                                        aria-label="Abrir ações rápidas"
-                                        aria-expanded={showMobileActions}
-                                    >
-                                        Ações
-                                        <ArrowRight className="w-4 h-4" />
-                                    </button>
-                                )}
-                            </>
-                        ) : (
-                            <>
-                                <button
-                                    type="button"
-                                    onClick={() => setIsCreating(true)}
-                                    className="btn btn-primary btn-sm rounded-full"
-                                    data-onboarding="create-project"
-                                    data-tour="create-project"
-                                >
-                                    <Plus className="w-4 h-4" />
-                                    <span>Novo Projeto</span>
-                                </button>
-
-                                {onComparisonClick && projects.length > 1 && (
-                                    <button
-                                        type="button"
-                                        onClick={onComparisonClick}
-                                        className="btn btn-outline btn-sm rounded-full"
-                                    >
-                                        Comparar
-                                    </button>
-                                )}
-
-                                <button
-                                    type="button"
-                                    onClick={handleSyncSupabase}
-                                    className={`btn btn-outline btn-sm rounded-full ${isSyncingSupabase ? 'loading' : ''}`}
-                                    disabled={isSyncingSupabase || !onSyncSupabase}
-                                    title={!onSyncSupabase ? 'Supabase não está configurado. Configure VITE_SUPABASE_PROXY_URL.' : 'Sincronizar projetos do Supabase'}
-                                >
-                                    <Cloud className="w-4 h-4" />
-                                    <span>{isSyncingSupabase ? 'Sincronizando…' : 'Sync Supabase'}</span>
-                                </button>
-                            </>
-                        )}
+                        {/* Botões movidos para o Header */}
                     </div>
                 </div>
 
-            <Modal
-                isOpen={showMobileActions}
-                onClose={() => setShowMobileActions(false)}
-                title="Ações rápidas"
-                size="sm"
-                footer={
-                    <button
-                        onClick={() => handleMobileAction(() => setIsCreating(true))}
-                        type="button"
-                        className="btn btn-primary w-full"
-                    >
-                        Criar Projeto
-                    </button>
-                }
-            >
-                <div className="space-y-2">
-                    {quickActions.map(action => (
-                        <button
-                            key={action.id}
-                            onClick={() => handleMobileAction(action.onClick)}
-                            type="button"
-                            className="btn btn-outline w-full justify-start gap-3 text-left"
-                        >
-                            <span className="text-lg flex-shrink-0" aria-hidden="true">{action.icon}</span>
-                            <span className="flex-1 text-base-content">{action.label}</span>
-                        </button>
-                    ))}
-                </div>
-            </Modal>
 
 
             <Modal isOpen={isCreating} onClose={() => {
@@ -749,10 +628,6 @@ export const ProjectsDashboard: React.FC<{
                             onClick: () => setIsCreating(true),
                             variant: 'primary'
                         }}
-                        secondaryAction={onSyncSupabase && isSupabaseAvailable() ? {
-                            label: "Carregar do Supabase",
-                            onClick: handleSyncSupabase
-                        } : undefined}
                         tip="Você pode criar um projeto do zero, usar um template ou importar do Jira se estiver configurado."
                     />
                 )}
