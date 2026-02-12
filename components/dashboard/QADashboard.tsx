@@ -273,7 +273,7 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
           <div className="flex-shrink-0">
             <div className="flex items-center gap-2 mb-2">
               <ClipboardCheck className="h-6 w-6 text-primary" aria-hidden="true" />
-              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-base-content">
+              <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-base-content">
                 Dashboard de QA
               </h2>
             </div>

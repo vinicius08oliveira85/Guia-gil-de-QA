@@ -91,9 +91,9 @@ export const SpecificationDocumentProcessor: React.FC<SpecificationDocumentProce
 
   return (
     <section className={cardClass} aria-labelledby="spec-doc-heading">
-      <h1 id="spec-doc-heading" className="text-xl font-bold mb-4 text-slate-800 dark:text-white">
+      <h2 id="spec-doc-heading" className="text-2xl md:text-3xl font-bold tracking-tight text-base-content mb-2">
         Documento de Especificação
-      </h1>
+      </h2>
 
       {isProcessed ? (
         <>

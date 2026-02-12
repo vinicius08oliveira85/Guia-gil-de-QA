@@ -12,6 +12,8 @@ export interface SectionHeaderProps {
   align?: SectionHeaderAlign;
   as?: SectionHeaderHeading;
   className?: string;
+  /** Reduz título, margens e descrição para alinhar ao padrão das abas (ex.: ProjectView). */
+  compact?: boolean;
 }
 
 /**
@@ -26,6 +28,7 @@ export const SectionHeader = React.memo<SectionHeaderProps>(({
   align = 'center',
   as = 'h2',
   className,
+  compact = false,
 }) => {
   const reduceMotion = useReducedMotion();
   const isCenter = align === 'center';
@@ -45,21 +48,28 @@ export const SectionHeader = React.memo<SectionHeaderProps>(({
     >
       {eyebrow && (
         <div className={cn(isCenter ? 'flex justify-center' : 'flex justify-start')}>
-          <span className="badge badge-outline px-4 py-3 border-primary/30 text-primary bg-primary/10">
+          <span className={cn(
+            'badge badge-outline border-primary/30 text-primary bg-primary/10',
+            compact ? 'px-3 py-1.5 text-xs' : 'px-4 py-3'
+          )}>
             {eyebrow}
           </span>
         </div>
       )}
 
       <Heading className={cn(
-        'mt-4 text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-base-content',
-        eyebrow ? '' : 'mt-0'
+        'font-bold tracking-tight text-base-content',
+        compact ? 'text-2xl md:text-3xl' : 'text-3xl sm:text-4xl md:text-5xl',
+        eyebrow ? (compact ? 'mt-2' : 'mt-4') : 'mt-0'
       )}>
         {title}
       </Heading>
 
       {description && (
-        <p className="mt-4 text-lg sm:text-xl text-base-content/70 leading-relaxed">
+        <p className={cn(
+          'text-base-content/70 leading-relaxed',
+          compact ? 'mt-2 text-sm' : 'mt-4 text-lg sm:text-xl'
+        )}>
           {description}
         </p>
       )}

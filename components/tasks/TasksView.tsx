@@ -1415,7 +1415,7 @@ export const TasksView: React.FC<{
             <div className="flex flex-col gap-6 mb-8">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
                     <div className="flex-shrink-0 text-left">
-                        <h1 className="text-2xl md:text-3xl font-bold text-base-content">Tarefas & Casos de Teste</h1>
+                        <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-base-content">Tarefas & Casos de Teste</h2>
                         <p className="text-base-content/70 text-sm mt-1">Acompanhe o progresso das atividades e resultados de QA.</p>
                     </div>
                     <div className="flex flex-wrap items-center justify-start md:justify-end gap-2 w-full md:w-auto">
