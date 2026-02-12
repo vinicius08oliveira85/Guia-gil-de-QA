@@ -1437,7 +1437,7 @@ export const JiraTaskItem: React.FC<{
             <div style={indentationStyle} className="py-0.5">
                 <div
                     className={[
-                        'flex items-center bg-base-100 dark:bg-base-200 border rounded-lg task-card-shadow transition-all duration-200',
+                        'flex flex-wrap items-center gap-x-2 gap-y-2 sm:gap-y-0 px-3 py-2 sm:px-4 sm:py-2.5 bg-base-100 dark:bg-base-200 border rounded-lg task-card-shadow transition-all duration-200',
                         isStatusDropdownOpen ? 'relative z-10' : '',
                         borderL4Class,
                         task.type === 'Bug' && !isSelected ? 'border border-error/10' : 'border-base-300',
@@ -1445,14 +1445,13 @@ export const JiraTaskItem: React.FC<{
                         isSelected ? 'bg-primary/5 border-primary/40 ring-1 ring-primary/30' : '',
                         onOpenModal ? 'cursor-pointer hover:translate-x-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2' : '',
                     ].join(' ')}
-                    style={{ padding: '0.625rem 1rem' }}
                     onClick={onOpenModal ? handleCardClick : undefined}
                     onKeyDown={onOpenModal ? handleCardKeyDown : undefined}
                     role={onOpenModal ? 'button' : undefined}
                     tabIndex={onOpenModal ? 0 : undefined}
                     aria-label={onOpenModal ? `Abrir detalhes da tarefa ${task.id}: ${task.title}` : undefined}
                 >
-                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-1 min-w-0 order-1 w-full sm:w-auto">
                         {onToggleSelect && (
                             <input
                                 type="radio"
@@ -1480,18 +1479,18 @@ export const JiraTaskItem: React.FC<{
                         <span className="text-sm font-semibold text-base-content truncate min-w-0 flex-1">{task.title}</span>
                     </div>
 
-                    <div className="flex items-center gap-2 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap sm:flex-nowrap flex-shrink-0 w-full sm:w-auto sm:ml-auto order-2" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center gap-1" role="group" aria-label="Métricas de teste">
-                            <div className="w-5 h-5 rounded-full bg-success flex items-center justify-center text-[10px] text-white font-bold" title="Aprovados" aria-label={`${testExecutionSummary.passed} aprovados`}>{testExecutionSummary.passed}</div>
-                            <div className="w-5 h-5 rounded-full bg-error flex items-center justify-center text-[10px] text-white font-bold" title="Reprovados" aria-label={`${testExecutionSummary.failed} reprovados`}>{testExecutionSummary.failed}</div>
-                            <div className="w-5 h-5 rounded-full bg-amber-500 flex items-center justify-center text-[10px] text-white font-bold" title="Pendentes" aria-label={`${testExecutionSummary.pending} pendentes`}>{testExecutionSummary.pending}</div>
+                            <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-success flex items-center justify-center text-[9px] sm:text-[10px] text-white font-bold" title="Aprovados" aria-label={`${testExecutionSummary.passed} aprovados`}>{testExecutionSummary.passed}</div>
+                            <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-error flex items-center justify-center text-[9px] sm:text-[10px] text-white font-bold" title="Reprovados" aria-label={`${testExecutionSummary.failed} reprovados`}>{testExecutionSummary.failed}</div>
+                            <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-amber-500 flex items-center justify-center text-[9px] sm:text-[10px] text-white font-bold" title="Pendentes" aria-label={`${testExecutionSummary.pending} pendentes`}>{testExecutionSummary.pending}</div>
                         </div>
                         {['tarefa', 'bug', 'task'].includes(taskTypeNorm) && onGenerateAll && (
                             <button
                                 type="button"
                                 onClick={(e) => { e.stopPropagation(); handleGenerateAll(e); }}
                                 disabled={isGeneratingAll || isGenerating || isGeneratingBdd || isGeneratingTests}
-                                className="rounded-full px-4 py-1.5 text-xs font-bold flex items-center gap-1.5 bg-orange-500 hover:bg-orange-600 text-white transition-colors shrink-0"
+                                className="rounded-full px-3 py-1 sm:px-4 sm:py-1.5 text-[10px] sm:text-xs font-bold flex items-center gap-1.5 bg-orange-500 hover:bg-orange-600 text-white transition-colors shrink-0"
                                 title="Gerar Tudo (BDD e Testes)"
                                 aria-label={isGenerating || isGeneratingAll ? 'Gerando tudo' : 'Gerar Tudo (BDD e Testes)'}
                             >
@@ -1508,7 +1507,7 @@ export const JiraTaskItem: React.FC<{
                                 else if (taskTestStatus === 'teste_concluido') updateTestStatus('pendente');
                                 else updateTestStatus('testar');
                             }}
-                            className={`rounded-full px-4 py-1.5 text-xs font-bold border flex items-center gap-1.5 shrink-0 transition-colors ${
+                            className={`rounded-full px-3 py-1 sm:px-4 sm:py-1.5 text-[10px] sm:text-xs font-bold border flex items-center gap-1.5 shrink-0 transition-colors ${
                                 taskTestStatus === 'testando'
                                     ? 'bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-900/50 hover:bg-blue-100 dark:hover:bg-blue-900/40'
                                     : taskTestStatus === 'teste_concluido'
@@ -1526,13 +1525,13 @@ export const JiraTaskItem: React.FC<{
                             <button
                                 type="button"
                                 onClick={(e) => { e.stopPropagation(); setIsStatusDropdownOpen(!isStatusDropdownOpen); }}
-                                className="rounded-full px-4 py-1.5 text-xs font-bold min-w-[120px] justify-between flex items-center gap-2 bg-emerald-600 dark:bg-emerald-700 text-white border-0 shrink-0"
+                                className="rounded-full px-3 py-1 sm:px-4 sm:py-1.5 text-[10px] sm:text-xs font-bold min-w-0 sm:min-w-[120px] justify-between flex items-center gap-2 bg-emerald-600 dark:bg-emerald-700 text-white border-0 shrink-0"
                                 style={currentStatusColor ? { backgroundColor: currentStatusColor, color: statusTextColor || '#fff' } : undefined}
                                 aria-haspopup="true"
                                 aria-expanded={isStatusDropdownOpen}
                                 aria-label={`Status: ${getDisplayStatus(task)}. Clique para mudar.`}
                             >
-                                <span className="truncate">{getDisplayStatus(task)}</span>
+                                <span className="truncate max-w-[5rem] sm:max-w-none min-w-0">{getDisplayStatus(task)}</span>
                                 <ChevronDown className={`w-4 h-4 flex-shrink-0 transition-transform ${isStatusDropdownOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
                             </button>
                                     {isStatusDropdownOpen && (
