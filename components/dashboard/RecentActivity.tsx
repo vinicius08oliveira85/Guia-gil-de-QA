@@ -1,6 +1,4 @@
 import React, { useMemo } from 'react';
-import { Card } from '../common/Card';
-import { Badge } from '../common/Badge';
 import { CheckCircle2, XCircle, Clock, FileText, AlertTriangle } from 'lucide-react';
 import { Project } from '../../types';
 import { useProjectMetrics } from '../../hooks/useProjectMetrics';
@@ -113,45 +111,48 @@ export const RecentActivity = React.memo<RecentActivityProps>(({ project, classN
       });
     }
 
-    return activitiesList.slice(0, 5); // Limitar a 5 atividades
+    return activitiesList.slice(0, 6); // Até 6 para preencher grid 3 colunas
   }, [tasks, metrics]);
 
   return (
-    <Card className={className} hoverable>
-      <div className="p-6">
-        <div className="mb-4">
-          <h3 className="text-lg font-semibold text-base-content">Atividades Recentes</h3>
-          <p className="text-sm text-base-content/70">Últimas atualizações e execuções</p>
-        </div>
-        <div className="space-y-4">
+    <div
+      className={className}
+      role="region"
+      aria-label="Atividades recentes"
+    >
+      <div className="bg-base-100 rounded-2xl shadow-sm border border-base-300 p-6">
+        <h3 className="font-bold text-lg text-base-content mb-4">Atividades Recentes</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {activities.map((activity) => {
             const Icon = activity.icon;
+            const iconBg =
+              activity.type === 'pass'
+                ? 'bg-success/20 text-success'
+                : activity.type === 'fail' || activity.type === 'warning'
+                  ? 'bg-error/20 text-error'
+                  : 'bg-base-200 text-base-content/60';
             return (
-              <div 
-                key={activity.id} 
-                className="flex gap-3 pb-4 border-b border-base-300 last:border-0 last:pb-0"
-              >
-                <div className={`p-2 h-fit rounded-lg bg-base-200 ${activity.iconColor}`}>
-                  <Icon className="h-4 w-4" aria-hidden="true" />
+              <div key={activity.id} className="flex gap-3 items-start">
+                <div
+                  className={`rounded-full w-8 h-8 flex items-center justify-center shrink-0 mt-0.5 ${iconBg}`}
+                >
+                  <Icon className="w-4 h-4" aria-hidden="true" />
                 </div>
-                <div className="flex-1 space-y-1">
-                  <p className="text-sm font-medium leading-none text-base-content">
-                    {activity.title}
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-bold text-base-content">{activity.title}</p>
+                  <p className="text-xs text-base-content/70 line-clamp-1 mt-0.5">
+                    {activity.description}
                   </p>
-                  <p className="text-xs text-base-content/70">{activity.description}</p>
-                  <div className="flex items-center gap-2 mt-2">
-                    <Badge variant="outline" size="sm" className="text-xs font-normal">
-                      Sistema
-                    </Badge>
-                    <span className="text-xs text-base-content/60">{activity.time}</span>
-                  </div>
+                  <span className="text-[10px] text-base-content/60 mt-1 block">
+                    {activity.time}
+                  </span>
                 </div>
               </div>
             );
           })}
         </div>
       </div>
-    </Card>
+    </div>
   );
 });
 
