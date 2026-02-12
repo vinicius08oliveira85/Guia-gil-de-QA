@@ -1437,8 +1437,8 @@ export const JiraTaskItem: React.FC<{
 
                     <div className="p-3 sm:p-2 md:p-3">
                         <div className="flex flex-wrap sm:flex-nowrap items-start sm:items-center gap-1.5 sm:gap-2 md:gap-3">
-                            {/* Linha 1 (Mobile): Controles e Título */}
-                            <div className="flex items-center gap-1.5 sm:gap-2 w-full sm:flex-1 sm:min-w-0 flex-shrink-0">
+                            {/* Linha 1: Controles e Título (mesma sequência web; mobile = uma linha compacta) */}
+                            <div className="flex items-center gap-1.5 sm:gap-2 w-full sm:flex-1 sm:min-w-0 flex-shrink-0 order-1">
                                 {onToggleSelect && (
                                     <input 
                                         type="radio" 
@@ -1465,15 +1465,17 @@ export const JiraTaskItem: React.FC<{
                                     </button>
                                 ) : <div className="w-4 sm:w-6 shrink-0" />}
                                 
-                                <div className="flex-1 min-w-0 flex items-center gap-1.5 sm:gap-2 flex-wrap sm:flex-nowrap">
+                                <div className="flex-1 min-w-0 flex items-center gap-1.5 sm:gap-2 flex-nowrap">
                                     <span className="badge badge-sm text-white border-0 px-1.5 sm:px-2 min-h-0 h-4 sm:h-5 text-[9px] sm:text-[10px] shrink-0" style={typeBadgeStyle}>{task.type}</span>
                                     <span className="font-mono text-[10px] sm:text-xs text-base-content/60 shrink-0">{task.id}</span>
-                                    <span className="text-xs sm:text-sm font-medium text-base-content leading-tight line-clamp-2 sm:truncate flex-1 min-w-0">{task.title}</span>
+                                    <span className="text-xs sm:text-sm font-medium text-base-content leading-tight truncate flex-1 min-w-0">{task.title}</span>
                                 </div>
                             </div>
 
-                            {/* Linha 1 (Desktop) / Linha 2 (Mobile): Métricas */}
-                            <div className="flex items-center gap-1 flex-shrink-0 whitespace-nowrap order-3 sm:order-2">
+                            {/* Linha 2 (mobile): wrapper métricas + ações na mesma linha; desktop: sm:contents mantém ordem */}
+                            <div className="flex w-full flex-row flex-wrap items-center gap-1 sm:gap-2 order-2 sm:contents">
+                            {/* Métricas (web: após título) */}
+                            <div className="flex items-center gap-1 flex-shrink-0 whitespace-nowrap sm:order-2">
                                 {testExecutionSummary.total > 0 && (
                                     <>
                                         <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-success flex items-center justify-center text-white text-[8px] sm:text-[9px] font-semibold" title="Aprovados" aria-label={`${testExecutionSummary.passed} testes aprovados`}>
@@ -1489,8 +1491,8 @@ export const JiraTaskItem: React.FC<{
                                 )}
                             </div>
 
-                            {/* Linha 2 (Mobile): Status e Ações */}
-                            <div className="flex items-center gap-0.5 sm:gap-2 flex-shrink-0 w-full sm:w-auto sm:ml-auto whitespace-nowrap flex-wrap sm:flex-nowrap order-2 sm:order-3 max-w-full">
+                            {/* Ações (Gerar Tudo, Teste Concluído, status, expandir) */}
+                            <div className="flex items-center gap-0.5 sm:gap-2 flex-shrink-0 w-full sm:w-auto sm:ml-auto whitespace-nowrap flex-wrap sm:flex-nowrap sm:order-3 max-w-full">
                                 {/* Ações Rápidas de IA */}
                                 {['tarefa', 'bug', 'task'].includes(task.type.toLowerCase()) && onGenerateAll && (
                                     <button
@@ -1615,6 +1617,7 @@ export const JiraTaskItem: React.FC<{
                                 >
                                     <ChevronDownIcon className={`w-3 h-3 sm:w-4 sm:h-4 transition-transform ${isDetailsOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
                                 </button>
+                            </div>
                             </div>
                         </div>
                     </div>

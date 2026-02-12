@@ -28,7 +28,8 @@ export default async function handler(
     res.setHeader('Cache-Control', 'public, max-age=3600');
     res.setHeader('Access-Control-Allow-Origin', '*');
     
-    return res.status(200).json(manifest);
+    res.status(200).json(manifest);
+    return;
   } catch (error) {
     console.error('Erro ao carregar manifest.json:', error);
     
@@ -46,7 +47,8 @@ export default async function handler(
     
     res.setHeader('Content-Type', 'application/manifest+json');
     res.setHeader('Cache-Control', 'no-cache');
-    return res.status(200).json(fallbackManifest);
+    res.status(200).json(fallbackManifest);
+    return;
   }
 }
 
