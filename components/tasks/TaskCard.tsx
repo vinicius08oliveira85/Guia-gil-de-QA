@@ -83,74 +83,85 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onStartTest, onComplet
   const handleToggleExpand = () => setIsExpanded(!isExpanded);
 
   return (
-    <Card className="p-3 sm:p-4 space-y-2 sm:space-y-3 transition-all duration-300">
-      {/* Mobile: Layout compacto em 2 linhas */}
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 sm:gap-0">
-        {/* Linha 1 Mobile: Badge + ID | Status Jira + Botão Expandir */}
-        <div className="flex items-center justify-between w-full sm:w-auto sm:flex-1 sm:pr-4">
-          <div className="flex items-center gap-2 flex-1 min-w-0">
-            <Badge variant={taskTypeBadge.variant} size="sm" className="shrink-0">{taskTypeBadge.label}</Badge>
-            <span className="font-semibold text-base-content text-sm sm:text-base shrink-0">{task.id}</span>
-          </div>
-          <div className="flex items-center gap-2 sm:hidden">
-            <Badge variant={jiraStatusBadge.variant} size="sm">{jiraStatusBadge.label}</Badge>
-            <button onClick={handleToggleExpand} className="btn btn-ghost btn-sm btn-circle shrink-0" aria-label={isExpanded ? "Recolher detalhes" : "Expandir detalhes"}>
-              {isExpanded ? <ChevronUp /> : <ChevronDown />}
-            </button>
-          </div>
+    <Card className="p-2 sm:p-4 transition-all duration-300">
+      {/* Linha 1 Mobile: Badge Tipo + ID + Título Truncado | Status Jira + Botão */}
+      <div className="flex items-center gap-1.5 sm:gap-2 h-6 sm:h-auto overflow-hidden">
+        <div className="flex items-center gap-1 sm:gap-2 flex-1 min-w-0 overflow-hidden">
+          <Badge variant={taskTypeBadge.variant} size="sm" className="shrink-0 text-[10px] sm:!text-sm px-1 sm:px-2 py-0 sm:py-1">
+            {taskTypeBadge.label}
+          </Badge>
+          <span className="font-semibold text-base-content text-[10px] sm:text-base shrink-0">
+            {task.id}
+          </span>
+          <h3 
+            className="font-bold text-xs sm:text-lg text-base-content truncate flex-1 min-w-0 cursor-pointer" 
+            onClick={handleToggleExpand}
+            title={task.title}
+          >
+            {task.title}
+          </h3>
         </div>
-        
-        {/* Título - quebra natural, máximo 2 linhas em mobile */}
-        <div className="w-full sm:flex-1 sm:pr-4 cursor-pointer" onClick={handleToggleExpand}>
-          <h3 className="font-bold text-base sm:text-lg text-base-content leading-tight line-clamp-2 sm:line-clamp-none">{task.title}</h3>
+        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+          <Badge variant={jiraStatusBadge.variant} size="sm" className="text-[10px] sm:!text-sm px-1 sm:px-2 py-0 sm:py-1 hidden sm:inline-flex">
+            {jiraStatusBadge.label}
+          </Badge>
+          <button 
+            onClick={handleToggleExpand} 
+            className="btn btn-ghost btn-xs sm:btn-sm btn-circle shrink-0 h-5 w-5 sm:!h-auto sm:!w-auto min-h-0 sm:!min-h-0" 
+            aria-label={isExpanded ? "Recolher detalhes" : "Expandir detalhes"}
+          >
+            {isExpanded ? <ChevronUp className="w-3 h-3 sm:!w-4 sm:!h-4" /> : <ChevronDown className="w-3 h-3 sm:!w-4 sm:!h-4" />}
+          </button>
         </div>
-        
-        {/* Botão expandir - apenas desktop */}
-        <button onClick={handleToggleExpand} className="hidden sm:flex btn btn-ghost btn-sm btn-circle shrink-0" aria-label={isExpanded ? "Recolher detalhes" : "Expandir detalhes"}>
-          {isExpanded ? <ChevronUp /> : <ChevronDown />}
-        </button>
       </div>
 
       {/* Linha 2 Mobile: Status Teste + Métricas + Ações */}
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-4">
-        {/* Mobile: Status teste + Métricas em linha única */}
-        <div className="flex items-center gap-2 sm:gap-4 flex-wrap sm:flex-nowrap w-full sm:w-auto">
-          <Badge variant={testStatus.variant} size="sm" className="flex items-center gap-1 sm:gap-1.5 shrink-0">
-            {testStatus.icon}
-            <span className="text-xs sm:text-sm">{testStatus.label}</span>
+      <div className="flex items-center gap-1 sm:gap-4 h-6 sm:h-auto overflow-hidden">
+        <div className="flex items-center gap-1 sm:gap-4 flex-1 min-w-0">
+          <Badge variant={testStatus.variant} size="sm" className="flex items-center gap-0.5 sm:gap-1.5 shrink-0 text-[10px] sm:!text-sm px-1 sm:px-2 py-0 sm:py-1">
+            {testStatus.icon && (
+              <span className="w-2.5 h-2.5 sm:w-3 sm:h-3 flex items-center justify-center [&>svg]:w-2.5 [&>svg]:h-2.5 sm:[&>svg]:w-3 sm:[&>svg]:h-3">
+                {testStatus.icon}
+              </span>
+            )}
+            <span className="text-[10px] sm:text-sm truncate max-w-[60px] sm:max-w-none">{testStatus.label}</span>
           </Badge>
-          <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm flex-1 sm:flex-initial">
-            <span className="flex items-center gap-1 text-success shrink-0" title="Aprovados">
-              <Check className="w-3 h-3 sm:w-4 sm:h-4" /> {testMetrics.passed}
+          <div className="flex items-center gap-1 sm:gap-3 text-[10px] sm:text-sm shrink-0">
+            <span className="flex items-center gap-0.5 text-success" title="Aprovados">
+              <Check className="w-2.5 h-2.5 sm:w-4 sm:h-4" /> 
+              <span>{testMetrics.passed}</span>
             </span>
-            <span className="flex items-center gap-1 text-error shrink-0" title="Reprovados">
-              <X className="w-3 h-3 sm:w-4 sm:h-4" /> {testMetrics.failed}
+            <span className="flex items-center gap-0.5 text-error" title="Reprovados">
+              <X className="w-2.5 h-2.5 sm:w-4 sm:h-4" /> 
+              <span>{testMetrics.failed}</span>
             </span>
-            <span className="flex items-center gap-1 text-base-content/60 shrink-0" title="Pendentes">
-              <Pause className="w-3 h-3 sm:w-4 sm:h-4" /> {testMetrics.notRun}
+            <span className="flex items-center gap-0.5 text-base-content/60" title="Pendentes">
+              <Pause className="w-2.5 h-2.5 sm:w-4 sm:h-4" /> 
+              <span>{testMetrics.notRun}</span>
             </span>
           </div>
         </div>
 
-        {/* Mobile: Status Jira e botões | Desktop: Apenas botões */}
-        <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto justify-end sm:justify-start">
-          <Badge variant={jiraStatusBadge.variant} size="sm" className="hidden sm:inline-flex">{jiraStatusBadge.label}</Badge>
+        <div className="flex items-center gap-1 sm:gap-3 shrink-0">
+          <Badge variant={jiraStatusBadge.variant} size="sm" className="text-[10px] sm:!text-sm px-1 sm:px-2 py-0 sm:py-1 inline-flex sm:hidden">
+            {jiraStatusBadge.label}
+          </Badge>
           {testStatus.label !== 'Teste Concluído' && testStatus.label !== 'Sem Testes' && (
             <button 
-              className="btn btn-primary btn-xs sm:btn-sm flex-1 sm:flex-initial min-w-[100px] sm:min-w-0"
+              className="btn btn-primary btn-xs sm:btn-sm shrink-0 h-5 sm:!h-auto px-1.5 sm:!px-3 text-[10px] sm:!text-sm min-h-0 sm:!min-h-0"
               onClick={() => onStartTest?.(task.id)}
               aria-label={testStatus.label === 'Testar' ? 'Iniciar teste' : 'Continuar teste'}
             >
-              <span className="truncate">{testStatus.label === 'Testar' ? 'Iniciar' : 'Continuar'}</span>
+              <span className="truncate max-w-[50px] sm:max-w-none">{testStatus.label === 'Testar' ? 'Iniciar' : 'Continuar'}</span>
             </button>
           )}
           {testStatus.label === 'Teste Concluído' && (
             <button 
-              className="btn btn-secondary btn-xs sm:btn-sm flex-1 sm:flex-initial min-w-[100px] sm:min-w-0"
+              className="btn btn-secondary btn-xs sm:btn-sm shrink-0 h-5 sm:!h-auto px-1.5 sm:!px-3 text-[10px] sm:!text-sm min-h-0 sm:!min-h-0"
               onClick={() => onCompleteTest?.(task.id)}
               aria-label="Concluir tarefa"
             >
-              <span className="truncate">Concluir</span>
+              <span className="truncate max-w-[50px] sm:max-w-none">Concluir</span>
             </button>
           )}
         </div>
