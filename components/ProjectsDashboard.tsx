@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useCallback } from 'react';
-import { Project, JiraTask } from '../types';
+import { Project } from '../types';
 import { Modal } from './common/Modal';
 import { Card } from './common/Card';
 import { ConfirmDialog } from './common/ConfirmDialog';
@@ -9,9 +9,8 @@ import { useIsMobile } from '../hooks/useIsMobile';
 import { Badge } from './common/Badge';
 import { ProgressIndicator } from './common/ProgressIndicator';
 import { Plus, RefreshCw } from 'lucide-react';
-import { getTaskStatusCategory } from '../utils/jiraStatusCategorizer';
-import { motion } from 'framer-motion';
-import { ProjectActivityCard } from './common/ProjectActivityCard';
+import { ProjectCard } from './common/ProjectCard';
+import { ConsolidatedMetrics } from './common/ConsolidatedMetrics';
 import { getJiraConfig, getJiraProjects, importJiraProject, JiraProject } from '../services/jiraService';
 import { useErrorHandler } from '../hooks/useErrorHandler';
 import { logger } from '../utils/logger';
@@ -218,16 +217,6 @@ export const ProjectsDashboard: React.FC<{
     };
 
 
-    const calculateProgress = (tasks: JiraTask[]) => {
-        if (!tasks || tasks.length === 0) return 0;
-        // Usar categoria do Jira para determinar se está concluído
-        const completed = tasks.filter(t => {
-            const category = getTaskStatusCategory(t);
-            return category === 'Concluído';
-        }).length;
-        return completed;
-    };
-
     // Projetos ordenados por nome (fixo)
     const filteredProjects = useMemo(() => {
         return [...projects].sort((a, b) => a.name.localeCompare(b.name));
@@ -262,7 +251,7 @@ export const ProjectsDashboard: React.FC<{
                     </div>
                 </div>
 
-
+                {projects.length > 0 && <ConsolidatedMetrics projects={projects} />}
 
             <Modal isOpen={isCreating} onClose={() => {
                 setIsCreating(false);
@@ -568,55 +557,16 @@ export const ProjectsDashboard: React.FC<{
 
             <div className="mt-8">
                 {filteredProjects.length > 0 ? (
-                    <motion.div 
-                        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-3 sm:gap-4" 
-                        initial="hidden"
-                        animate="visible"
-                        variants={{
-                            visible: {
-                                transition: {
-                                    staggerChildren: 0.08,
-                                },
-                            },
-                        }}
-                    >
-                        {filteredProjects.map((p, index) => {
-                            const completedTasks = calculateProgress(p.tasks || []);
-                            const totalTasks = p.tasks?.length || 0;
-                            const tags = p.tags || [];
-                            const progressPercent = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
-                            const jiraKey = p.settings?.jiraProjectKey;
-                            const desc = (p.description || '').trim();
-
-                            return (
-                                <motion.div
-                                    key={p.id}
-                                    variants={{
-                                        hidden: { opacity: 0, y: 20, scale: 0.95 },
-                                        visible: { 
-                                            opacity: 1, 
-                                            y: 0, 
-                                            scale: 1,
-                                            transition: {
-                                                duration: 0.3,
-                                                ease: 'easeOut',
-                                            },
-                                        },
-                                    }}
-                                >
-                                    <ProjectActivityCard
-                                        project={p}
-                                        onSelect={() => onSelectProject(p.id)}
-                                        onDelete={() => {
-                                            setDeleteModalState({ isOpen: true, project: p });
-                                        }}
-                                        onNavigateToTask={(taskId) => handleNavigateToTask(p.id, taskId)}
-                                        className="group"
-                                    />
-                                </motion.div>
-                            );
-                        })}
-                    </motion.div>
+                    <div className="space-y-4">
+                        {filteredProjects.map((p) => (
+                            <ProjectCard
+                                key={p.id}
+                                project={p}
+                                onSelect={() => onSelectProject(p.id)}
+                                onDelete={() => setDeleteModalState({ isOpen: true, project: p })}
+                            />
+                        ))}
+                    </div>
                 ) : (
                     <EmptyState
                         icon="🚀"
