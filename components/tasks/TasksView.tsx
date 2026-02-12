@@ -1032,6 +1032,7 @@ export const TasksView: React.FC<{
                 }
                 return t;
             });
+            onUpdateProject({ ...project, tasks: newTasks });
             if (updatedTask) {
                 propagateTaskUpdate(updatedTask);
             }
