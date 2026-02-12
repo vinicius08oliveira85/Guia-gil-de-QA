@@ -1438,6 +1438,7 @@ export const JiraTaskItem: React.FC<{
                 <div
                     className={[
                         'flex items-center bg-base-100 dark:bg-base-200 border rounded-lg task-card-shadow transition-all duration-200',
+                        isStatusDropdownOpen ? 'relative z-10' : '',
                         borderL4Class,
                         task.type === 'Bug' && !isSelected ? 'border border-error/10' : 'border-base-300',
                         activeTaskId === task.id ? 'ring-2 ring-primary/40 shadow-lg' : '',
@@ -1632,7 +1633,7 @@ export const JiraTaskItem: React.FC<{
                                 animate={reduceMotion ? { opacity: 1 } : { opacity: 1, height: 'auto' }}
                                 exit={reduceMotion ? { opacity: 0 } : { opacity: 0, height: 0 }}
                                 transition={{ duration: reduceMotion ? 0 : 0.2 }}
-                                className="overflow-hidden border-t border-base-300 bg-base-50/50"
+                                className="overflow-visible border-t border-base-300 bg-base-50/50"
                             >
                                 <div className="p-4 space-y-4">
                                     {/* Barra de Ações (movida para dentro do expandir) */}
@@ -1697,8 +1698,8 @@ export const JiraTaskItem: React.FC<{
                                             </button>
                                         )}
 
-                                        {/* Menu overflow: ações secundárias + destrutiva */}
-                                        <div className="dropdown dropdown-end">
+                                        {/* Menu overflow: ações secundárias + destrutiva (abre à direita do botão) */}
+                                        <div className="dropdown dropdown-start">
                                             <button
                                                 type="button"
                                                 tabIndex={0}
@@ -1711,7 +1712,7 @@ export const JiraTaskItem: React.FC<{
                                             </button>
                                             <ul
                                                 tabIndex={0}
-                                                className="dropdown-content menu bg-base-100 rounded-box z-10 w-56 p-2 shadow-lg border border-base-300"
+                                                className="dropdown-content menu bg-base-100 rounded-box z-50 w-56 max-h-[min(70vh,24rem)] overflow-y-auto p-2 shadow-lg border border-base-300"
                                                 role="menu"
                                                 onClick={(e) => e.stopPropagation()}
                                             >
