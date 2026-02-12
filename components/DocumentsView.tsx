@@ -2,24 +2,20 @@ import React, { useState, useMemo } from 'react';
 import { Project, ProjectDocument } from '../types';
 import type { JiraTask } from '../types';
 import { analyzeDocumentContent, generateTaskFromDocument } from '../services/geminiService';
-import { Card } from './common/Card';
 import { Modal } from './common/Modal';
-import { Spinner } from './common/Spinner';
-import { TrashIcon } from './common/Icons';
 import { useErrorHandler } from '../hooks/useErrorHandler';
 import { sanitizeHTML } from '../utils/sanitize';
 import { Badge } from './common/Badge';
 import { EmptyState } from './common/EmptyState';
-import { Tooltip } from './common/Tooltip';
-import { CopyButton } from './common/CopyButton';
 import { createDocumentFromFile, convertDocumentFileToProjectDocument } from '../utils/documentService';
 import { SolusSchemaModal } from './solus/SolusSchemaModal';
 import { SpecificationDocumentProcessor } from './settings/SpecificationDocumentProcessor';
 import { FileImportModal } from './common/FileImportModal';
 import { FileViewer } from './common/FileViewer';
 import { viewFileInNewTab } from '../services/fileViewerService';
-import { motion } from 'framer-motion';
-import { ModernIcons } from './common/ModernIcons';
+import { DocumentStatsCards } from './documents/DocumentStatsCards';
+import { DocumentCard } from './documents/DocumentCard';
+import { Search, Upload, FileDown } from 'lucide-react';
 
 interface DocumentWithMetadata extends ProjectDocument {
     uploadedAt?: string;
@@ -41,7 +37,6 @@ export const DocumentsView: React.FC<{ project: Project; onUpdateProject: (proje
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState<string | 'all'>('all');
     const [selectedDoc, setSelectedDoc] = useState<DocumentWithMetadata | null>(null);
-    const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
     const [showPreview, setShowPreview] = useState(false);
     const [editingDoc, setEditingDoc] = useState<DocumentWithMetadata | null>(null);
     const [isSolusSchemaOpen, setIsSolusSchemaOpen] = useState(false);
@@ -298,406 +293,76 @@ export const DocumentsView: React.FC<{ project: Project; onUpdateProject: (proje
                 onUpdateProject={onUpdateProject} 
             />
             
-        <Card className="p-5 border border-base-300">
-            {/* Header v0-like */}
-            <div className="flex flex-col gap-4 mb-6">
-                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-                    <div className="flex-shrink-0">
-                        <h3 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2">Documentos do Projeto</h3>
-                        <p className="text-base-content/70 text-sm max-w-2xl">
-                            Gerencie e analise documentos do projeto. {stats.total} documento{stats.total !== 1 ? 's' : ''} • {formatFileSize(stats.totalSize)}
+        <section className="space-y-6" aria-labelledby="documents-section-heading">
+            <div className="flex flex-col gap-1">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div>
+                        <h2 id="documents-section-heading" className="text-2xl font-bold text-slate-800 dark:text-white">Documentos do Projeto</h2>
+                        <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
+                            Gerencie e analise documentos do projeto. <span className="font-medium">{stats.total} documento{stats.total !== 1 ? 's' : ''} • {formatFileSize(stats.totalSize)}</span>
                         </p>
                     </div>
                     <div className="flex items-center gap-2 flex-wrap">
-                        <button
-                            type="button"
-                            onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
-                            className="btn btn-outline btn-sm rounded-full flex items-center gap-1.5"
-                            aria-label={`Alternar para visualização em ${viewMode === 'grid' ? 'lista' : 'grade'}`}
-                        >
-                            {viewMode === 'grid' ? (
-                                <>
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                                    </svg>
-                                    <span>Lista</span>
-                                </>
-                            ) : (
-                                <>
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-                                    </svg>
-                                    <span>Grade</span>
-                                </>
-                            )}
-                        </button>
                         {shouldShowSolusButton && (
-                            <button
-                                type="button"
-                                onClick={() => setIsSolusSchemaOpen(true)}
-                                className="btn btn-outline btn-sm rounded-full whitespace-nowrap flex items-center gap-1.5"
-                                aria-label="Abrir Esquema da API Solus"
-                            >
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                                </svg>
-                                <span>Esquema API</span>
+                            <button type="button" onClick={() => setIsSolusSchemaOpen(true)} className="px-4 py-2.5 rounded-[12px] text-xs font-semibold border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center gap-1.5" aria-label="Abrir Esquema da API Solus">
+                                <FileDown className="w-4 h-4" aria-hidden /> Esquema API
                             </button>
                         )}
-                        <div className="w-px h-5 bg-base-300 flex-shrink-0" />
-                        <button
-                            type="button"
-                            onClick={() => setIsImportModalOpen(true)}
-                            className="btn btn-outline btn-sm rounded-full flex items-center gap-1.5"
-                            aria-label="Importar documentos"
-                        >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                            </svg>
-                            <span>Importar</span>
+                        <button type="button" onClick={() => setIsImportModalOpen(true)} className="px-4 py-2.5 rounded-[12px] text-xs font-semibold border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center gap-1.5" aria-label="Importar documentos">
+                            <FileDown className="w-4 h-4" aria-hidden /> Importar
                         </button>
-                        <label className="btn btn-primary btn-sm rounded-full cursor-pointer flex items-center gap-1.5 font-semibold">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                            </svg>
-                            <span>Carregar</span>
-                            <input 
-                                type="file" 
-                                accept=".txt,.md,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar,.json,.csv,.xml,.jpg,.jpeg,.png,.gif,.webp,.svg" 
-                                onChange={handleFileUpload} 
-                                className="hidden" 
-                            />
+                        <label className="px-4 py-2.5 rounded-[12px] text-xs font-semibold bg-brand-orange text-white shadow-md shadow-brand-orange/20 flex items-center gap-1.5 cursor-pointer">
+                            <Upload className="w-4 h-4" aria-hidden /> Carregar
+                            <input type="file" accept=".txt,.md,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar,.json,.csv,.xml,.jpg,.jpeg,.png,.gif,.webp,.svg" onChange={handleFileUpload} className="hidden" />
                         </label>
                     </div>
                 </div>
             </div>
-
-                {/* Estatísticas */}
-                {stats.total > 0 && (
-                    <motion.div 
-                        className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6"
-                        initial="hidden"
-                        animate="visible"
-                        variants={{
-                            visible: {
-                                transition: {
-                                    staggerChildren: 0.1,
-                                },
-                            },
-                        }}
-                    >
-                        {DOCUMENT_CATEGORIES.map(cat => (
-                            <motion.div 
-                                key={cat.id} 
-                                className="p-5 bg-base-100 border border-base-300 rounded-xl text-center hover:border-primary/40 transition-all duration-300 hover:shadow-lg relative overflow-hidden group"
-                                variants={{
-                                    hidden: { opacity: 0, y: 10 },
-                                    visible: { opacity: 1, y: 0 },
-                                }}
-                            >
-                                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-                                <div className="relative z-10">
-                                    <div className="text-3xl font-bold text-primary mb-1">
-                                        {stats.categoryCounts[cat.id] || 0}
-                                    </div>
-                                    <div className="text-xs font-medium text-base-content/70 uppercase tracking-wider">{cat.label}</div>
-                                </div>
-                            </motion.div>
-                        ))}
-                    </motion.div>
-                )}
-
-                {/* Filtros e Busca */}
-                {stats.total > 0 && (
-                    <div className="flex flex-col sm:flex-row gap-4 mb-6">
-                        <div className="flex-1">
-                            <input
-                                type="text"
-                                placeholder="🔍 Buscar documentos..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="input input-bordered w-full bg-base-100 border-base-300 text-base-content placeholder:text-base-content/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                            />
-                        </div>
-                        <div className="flex gap-2 flex-wrap">
-                            <button
-                                type="button"
-                                onClick={() => setSelectedCategory('all')}
-                                className={`btn btn-sm rounded-full transition-colors ${
-                                    selectedCategory === 'all'
-                                        ? 'btn-primary'
-                                        : 'btn-outline'
-                                }`}
-                            >
-                                Todas ({stats.total})
-                            </button>
-                            {DOCUMENT_CATEGORIES.map(cat => (
-                                <button
-                                    key={cat.id}
-                                    type="button"
-                                    onClick={() => setSelectedCategory(cat.id)}
-                                    className={`btn btn-sm rounded-full transition-colors ${
-                                        selectedCategory === cat.id
-                                            ? 'btn-primary'
-                                            : 'btn-outline'
-                                    }`}
-                                >
-                                    {cat.label} ({stats.categoryCounts[cat.id] || 0})
-                                </button>
-                            ))}
-                        </div>
+            <DocumentStatsCards categoryCounts={stats.categoryCounts} />
+            {stats.total > 0 && (
+                <div className="flex flex-wrap items-center gap-4">
+                    <div className="relative flex-1 min-w-[300px]">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" aria-hidden />
+                        <input type="text" placeholder="Buscar documentos..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-10 pr-4 py-2.5 bg-slate-100 dark:bg-slate-800 border-none rounded-[12px] focus:ring-2 focus:ring-primary/50 text-sm transition-all dark:text-white placeholder:text-slate-500" aria-label="Buscar documentos" />
                     </div>
-                )}
-
-                {/* Lista de Documentos */}
-                {filteredDocuments.length > 0 ? (
-                    viewMode === 'grid' ? (
-                        <motion.div 
-                            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
-                            initial="hidden"
-                            animate="visible"
-                            variants={{
-                                visible: {
-                                    transition: {
-                                        staggerChildren: 0.08,
-                                    },
-                                },
-                            }}
-                        >
-                            {filteredDocuments.map(doc => {
-                                const category = DOCUMENT_CATEGORIES.find(c => c.id === doc.category);
-                                const hasAnalysis = !!doc.analysis;
-                                
-                                return (
-                                    <motion.div
-                                        key={doc.name}
-                                        className="p-5 bg-base-100 border border-base-300 rounded-xl hover:border-primary/40 transition-all duration-300 hover:shadow-lg relative overflow-hidden group"
-                                        variants={{
-                                            hidden: { opacity: 0, y: 10 },
-                                            visible: { opacity: 1, y: 0 },
-                                        }}
-                                    >
-                                        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-                                        <div className="relative z-10">
-                                        <div className="flex items-start justify-between mb-3">
-                                            <div className="flex-1 min-w-0">
-                                                <h4 className="text-base-content font-semibold truncate mb-2" title={doc.name}>
-                                                    {doc.name}
-                                                </h4>
-                                                <div className="flex items-center gap-2 flex-wrap">
-                                                    {category && (
-                                                        <Badge variant="info" size="sm">
-                                                            {category.label}
-                                                        </Badge>
-                                                    )}
-                                                    {hasAnalysis && (
-                                                        <Badge variant="success" size="sm">
-                                                            ✓ Analisado
-                                                        </Badge>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div className="text-xs text-base-content/70 mb-3 space-y-1">
-                                            <div>📏 {formatFileSize(doc.size || 0)}</div>
-                                            {doc.content && !doc.content.startsWith('data:') && (
-                                                <div>📄 {doc.content.split('\n').length} linhas</div>
-                                            )}
-                                            {doc.content && doc.content.startsWith('data:image/') && (
-                                                <div>🖼️ Imagem</div>
-                                            )}
-                                            {doc.content && doc.content.startsWith('data:application/') && (
-                                                <div>📎 Arquivo binário</div>
-                                            )}
-                                            {doc.tags && doc.tags.length > 0 && (
-                                                <div className="flex flex-wrap gap-1 mt-2">
-                                                    {doc.tags.slice(0, 3).map((tag, idx) => (
-                                                        <span key={idx} className="badge badge-outline badge-sm text-primary">
-                                                            #{tag}
-                                                        </span>
-                                                    ))}
-                                                    {doc.tags.length > 3 && (
-                                                        <span className="text-base-content/60">+{doc.tags.length - 3}</span>
-                                                    )}
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        <div className="flex flex-wrap gap-2 mt-4">
-                                            <Tooltip content="Visualizar em nova aba">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleViewDocument(doc)}
-                                                    className="btn btn-outline btn-xs rounded-full"
-                                                >
-                                                    👁️ Ver
-                                                </button>
-                                            </Tooltip>
-                                            <Tooltip content="Visualizar inline">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => {
-                                                        setViewingDocument(doc);
-                                                    }}
-                                                    className="btn btn-outline btn-xs rounded-full"
-                                                >
-                                                    📄 Preview
-                                                </button>
-                                            </Tooltip>
-                                            <Tooltip content="Analisar com IA">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleAnalyze(doc)}
-                                                    disabled={!!loadingStates[doc.name]}
-                                                    className="btn btn-outline btn-xs rounded-full bg-info/10 border-info/30 hover:bg-info/20"
-                                                >
-                                                    {loadingStates[doc.name] === 'analyze' ? <Spinner small/> : '🤖 Analisar'}
-                                                </button>
-                                            </Tooltip>
-                                            <Tooltip content="Gerar tarefa">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleGenerateTask(doc)}
-                                                    disabled={!!loadingStates[doc.name]}
-                                                    className="btn btn-outline btn-xs rounded-full bg-secondary/10 border-secondary/30 hover:bg-secondary/20"
-                                                >
-                                                    {loadingStates[doc.name] === 'generate' ? <Spinner small/> : '📝 Gerar'}
-                                                </button>
-                                            </Tooltip>
-                                            <Tooltip content="Editar">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleEdit(doc)}
-                                                    className="btn btn-outline btn-xs rounded-full"
-                                                >
-                                                    ✏️ Editar
-                                                </button>
-                                            </Tooltip>
-                                            <Tooltip content="Copiar conteúdo">
-                                                <CopyButton text={doc.content} />
-                                            </Tooltip>
-                                            <Tooltip content="Excluir">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleDelete(doc.name)}
-                                                    className="btn btn-outline btn-xs rounded-full hover:bg-error/10 hover:border-error/30"
-                                                >
-                                                    🗑️
-                                                </button>
-                                            </Tooltip>
-                                        </div>
-                                        </div>
-                                    </motion.div>
-                                );
-                            })}
-                        </motion.div>
-                    ) : (
-                <ul className="space-y-3">
-                            {filteredDocuments.map(doc => {
-                                const category = DOCUMENT_CATEGORIES.find(c => c.id === doc.category);
-                                const hasAnalysis = !!doc.analysis;
-                                
-                                return (
-                                    <li
-                                        key={doc.name}
-                                        className="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-base-100 border border-base-300 p-5 rounded-xl hover:border-primary/30 transition-all gap-4"
-                                    >
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex items-center gap-2 mb-2">
-                                                <h4 className="text-base-content font-semibold truncate" title={doc.name}>
-                                                    {doc.name}
-                                                </h4>
-                                                {category && (
-                                                    <Badge variant="info" size="sm">
-                                                        {category.label}
-                                                    </Badge>
-                                                )}
-                                                {hasAnalysis && (
-                                                    <Badge variant="success" size="sm">
-                                                        ✓ Analisado
-                                                    </Badge>
-                                                )}
-                                            </div>
-                                            <div className="flex items-center gap-4 text-xs text-base-content/70 flex-wrap">
-                                                <span>📏 {formatFileSize(doc.size || 0)}</span>
-                                                <span>📄 {doc.content.split('\n').length} linhas</span>
-                                                {doc.tags && doc.tags.length > 0 && (
-                                                    <div className="flex flex-wrap gap-1">
-                                                        {doc.tags.slice(0, 5).map((tag, idx) => (
-                                                            <span key={idx} className="badge badge-outline badge-sm text-primary">
-                                                                #{tag}
-                                                            </span>
-                                                        ))}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center gap-2 flex-shrink-0">
-                                            <Tooltip content="Visualizar">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => {
-                                                        setSelectedDoc(doc);
-                                                        setShowPreview(true);
-                                                    }}
-                                                    className="btn btn-outline btn-sm rounded-full"
-                                                >
-                                                    👁️ Ver
-                                                </button>
-                                            </Tooltip>
-                                            <Tooltip content="Analisar">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleAnalyze(doc)}
-                                                    disabled={!!loadingStates[doc.name]}
-                                                    className="btn btn-outline btn-sm rounded-full bg-info/10 border-info/30 hover:bg-info/20"
-                                                >
-                                                    {loadingStates[doc.name] === 'analyze' ? <Spinner small/> : '🤖 Analisar'}
-                                                </button>
-                                            </Tooltip>
-                                            <Tooltip content="Gerar Tarefa">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleGenerateTask(doc)}
-                                                    disabled={!!loadingStates[doc.name]}
-                                                    className="btn btn-outline btn-sm rounded-full bg-secondary/10 border-secondary/30 hover:bg-secondary/20"
-                                                >
-                                                    {loadingStates[doc.name] === 'generate' ? <Spinner small/> : '📝 Gerar'}
-                                                </button>
-                                            </Tooltip>
-                                            <Tooltip content="Editar">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleEdit(doc)}
-                                                    className="btn btn-outline btn-sm rounded-full"
-                                                >
-                                                    ✏️
-                                </button>
-                                            </Tooltip>
-                                            <Tooltip content="Excluir">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleDelete(doc.name)}
-                                                    className="btn btn-ghost btn-sm rounded-full hover:bg-error/10 hover:text-error"
-                                                >
-                                                    <TrashIcon/>
-                                </button>
-                                            </Tooltip>
-                            </div>
-                        </li>
-                                );
-                            })}
-                </ul>
-                    )
-                ) : (
-                    <EmptyState
-                        title={searchQuery || selectedCategory !== 'all' ? 'Nenhum documento encontrado' : 'Nenhum documento carregado'}
-                        description={searchQuery || selectedCategory !== 'all' ? 'Tente ajustar os filtros de busca' : 'Comece carregando seu primeiro documento'}
-                        icon="📄"
-                    />
+                    <div className="flex gap-2 flex-wrap">
+                        <button type="button" onClick={() => setSelectedCategory('all')} className={`px-4 py-2 rounded-full text-xs font-semibold transition-colors ${selectedCategory === 'all' ? 'bg-brand-orange text-white shadow-md shadow-brand-orange/20' : 'border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800'}`} aria-pressed={selectedCategory === 'all'} aria-label={`Filtrar: todas, ${stats.total} documento(s)`}>Todas ({stats.total})</button>
+                        {DOCUMENT_CATEGORIES.map(cat => {
+                            const label = cat.label.replace(/^[^\s]+\s/, '');
+                            return (
+                                <button key={cat.id} type="button" onClick={() => setSelectedCategory(cat.id)} className={`px-4 py-2 rounded-full text-xs font-semibold transition-colors ${selectedCategory === cat.id ? 'bg-brand-orange text-white shadow-md shadow-brand-orange/20' : 'border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800'}`} aria-pressed={selectedCategory === cat.id} aria-label={`Filtrar por ${label}, ${stats.categoryCounts[cat.id] || 0} documento(s)`}>{label} ({stats.categoryCounts[cat.id] || 0})</button>
+                            );
+                        })}
+                    </div>
+                </div>
             )}
-        </Card>
+
+            {/* Lista de Documentos */}
+            {filteredDocuments.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {filteredDocuments.map(doc => (
+                        <DocumentCard
+                            key={doc.name}
+                            doc={doc}
+                            onView={() => handleViewDocument(doc)}
+                            onPreview={() => setViewingDocument(doc)}
+                            onAnalyze={() => handleAnalyze(doc)}
+                            onGenerate={() => handleGenerateTask(doc)}
+                            onEdit={() => handleEdit(doc)}
+                            onRemove={() => handleDelete(doc.name)}
+                            loadingState={loadingStates[doc.name] ?? null}
+                            formatFileSize={formatFileSize}
+                        />
+                    ))}
+                </div>
+            ) : (
+                <EmptyState
+                    title={searchQuery || selectedCategory !== 'all' ? 'Nenhum documento encontrado' : 'Nenhum documento carregado'}
+                    description={searchQuery || selectedCategory !== 'all' ? 'Tente ajustar os filtros de busca' : 'Comece carregando seu primeiro documento'}
+                    icon="📄"
+                />
+            )}
+        </section>
 
             {/* Modal de Preview */}
             {showPreview && selectedDoc && (
