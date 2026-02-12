@@ -207,9 +207,9 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
 
     return (
         <>
-            <div className="container mx-auto w-full max-w-7xl px-4 py-8 sm:py-10 non-printable">
+            <div className="container mx-auto w-full max-w-7xl px-4 py-4 sm:py-6 non-printable">
                 {/* Breadcrumbs */}
-                <div className="mb-4">
+                <div className="mb-2">
                     <Breadcrumbs 
                         items={getBreadcrumbItems()}
                         onHomeClick={onBack}
@@ -217,7 +217,7 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                     />
                 </div>
 
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-6">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
                     {/* Indicador de status de salvamento */}
                     {supabaseAvailable && (
                         <div className="flex items-center gap-2 text-sm">
@@ -257,7 +257,8 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                             ? <span className="break-words">{currentProject.description}</span>
                             : 'Sem descrição.'
                     }
-                    className="max-w-4xl mb-8"
+                    className="max-w-4xl mb-4"
+                    compact
                 />
                 
                 <div className="border-b border-base-300 pb-3 relative">

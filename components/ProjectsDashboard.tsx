@@ -225,12 +225,12 @@ export const ProjectsDashboard: React.FC<{
 
     return (
         <div className="min-h-[calc(100vh-4rem)] bg-gradient-to-b from-base-100 to-base-200/60">
-            <div className="container mx-auto w-full max-w-7xl px-4 py-6 sm:py-8">
+            <div className="container mx-auto w-full max-w-7xl px-4 py-4 sm:py-6">
                 {/* Header */}
-                <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-                    <div className="space-y-2">
+                <div className="flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between">
+                    <div className="space-y-1.5">
                         <div className="inline-flex items-center gap-2">
-                            <span className="badge badge-outline badge-sm sm:badge-md border-primary/30 text-primary bg-primary/10">
+                            <span className="badge badge-outline badge-sm border-primary/30 text-primary bg-primary/10">
                                 Workspace
                             </span>
                             <span className="text-sm text-base-content/60 hidden sm:inline">
@@ -238,10 +238,10 @@ export const ProjectsDashboard: React.FC<{
                             </span>
                         </div>
 
-                        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
+                        <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-base-content">
                             Meus Projetos
                         </h1>
-                        <p className="text-base-content/70 max-w-2xl">
+                        <p className="text-sm text-base-content/70 max-w-2xl">
                             Crie, organize e acompanhe o QA por projeto — templates, métricas e integrações opcionais quando fizer sentido.
                         </p>
                     </div>

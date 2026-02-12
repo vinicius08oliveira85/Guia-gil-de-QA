@@ -297,7 +297,7 @@ export const DocumentsView: React.FC<{ project: Project; onUpdateProject: (proje
             <div className="flex flex-col gap-1">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
-                        <h2 id="documents-section-heading" className="text-2xl font-bold text-slate-800 dark:text-white">Documentos do Projeto</h2>
+                        <h2 id="documents-section-heading" className="text-2xl md:text-3xl font-bold tracking-tight text-base-content">Documentos do Projeto</h2>
                         <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
                             Gerencie e analise documentos do projeto. <span className="font-medium">{stats.total} documento{stats.total !== 1 ? 's' : ''} • {formatFileSize(stats.totalSize)}</span>
                         </p>
