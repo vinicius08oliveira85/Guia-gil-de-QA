@@ -94,14 +94,11 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
   const metrics = useProjectMetrics(filteredProject);
   const { trends } = useMetricsHistory(filteredProject, dashboardFilters.period || 'week');
 
-  // Calcular tendências para os cards de métricas
   const tasksTrend = useMemo(() => {
     if (!trends) return { change: '0%', trend: 'neutral' as const };
-    // Usar executedTests como proxy para tendência de tarefas (mais tarefas = mais testes executados)
     const current = trends.executedTests?.current || 0;
     const previous = trends.executedTests?.previous || 0;
     if (previous === 0) return { change: '0%', trend: 'neutral' as const };
-    
     const changePercent = Math.round(((current - previous) / previous) * 100);
     return {
       change: changePercent > 0 ? `+${changePercent}%` : changePercent < 0 ? `${changePercent}%` : '0%',
@@ -111,11 +108,9 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
 
   const testCasesTrend = useMemo(() => {
     if (!trends) return { change: '0%', trend: 'neutral' as const };
-    // Calcular mudança baseada em executedTests que reflete melhor o crescimento
     const current = trends.executedTests?.current || 0;
     const previous = trends.executedTests?.previous || 0;
     if (previous === 0) return { change: '0%', trend: 'neutral' as const };
-    
     const changePercent = Math.round(((current - previous) / previous) * 100);
     return {
       change: changePercent > 0 ? `+${changePercent}%` : changePercent < 0 ? `${changePercent}%` : '0%',
@@ -123,18 +118,13 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
     };
   }, [trends]);
 
-  // Helper para alternar filtro de bugs
   const toggleBugFilter = () => {
     setDashboardFilters(prev => {
       const isBugOnly = prev.taskType?.length === 1 && prev.taskType[0] === 'Bug';
-      return {
-        ...prev,
-        taskType: isBugOnly ? [] : ['Bug']
-      };
+      return { ...prev, taskType: isBugOnly ? [] : ['Bug'] };
     });
   };
 
-  // Contar estratégias de teste únicas
   const totalStrategies = useMemo(() => {
     const strategies = new Set<string>();
     filteredProject.tasks?.forEach(task => {
@@ -145,81 +135,59 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
     return strategies.size;
   }, [filteredProject.tasks]);
 
-  // Calcular tendência de estratégias comparando com histórico
   const strategiesTrend = useMemo(() => {
     if (!trends || !project.metricsHistory || project.metricsHistory.length < 2) {
       return { change: '0%', trend: 'neutral' as const };
     }
-    
-    // Estimar estratégias anteriores baseado em crescimento de testes
-    // Se mais testes foram executados, provavelmente mais estratégias foram usadas
     const current = trends.executedTests?.current || 0;
     const previous = trends.executedTests?.previous || 0;
     if (previous === 0) return { change: '0%', trend: 'neutral' as const };
-    
     const changePercent = Math.round(((current - previous) / previous) * 100);
-    // Se a mudança for muito pequena, considerar neutral
-    if (Math.abs(changePercent) < 5) {
-      return { change: '0%', trend: 'neutral' as const };
-    }
-    
+    if (Math.abs(changePercent) < 5) return { change: '0%', trend: 'neutral' as const };
     return {
       change: changePercent > 0 ? `+${changePercent}%` : `${changePercent}%`,
       trend: changePercent > 0 ? 'up' as const : 'down' as const,
     };
   }, [trends, project.metricsHistory]);
 
-  // Contar fases ativas
   const activePhases = useMemo(() => {
     return metrics.newPhases?.filter(p => p.status === 'Em Andamento' || p.status === 'Concluído').length || 0;
   }, [metrics.newPhases]);
 
-  // Calcular tendência de fases baseado em progresso do projeto
   const phasesTrend = useMemo(() => {
     if (!trends || !project.metricsHistory || project.metricsHistory.length < 2) {
       return { change: '0%', trend: 'neutral' as const };
     }
-    
-    // Usar passRate como indicador de progresso nas fases
     const current = trends.passRate?.current || 0;
     const previous = trends.passRate?.previous || 0;
     if (previous === 0) return { change: '0%', trend: 'neutral' as const };
-    
     const changePercent = Math.round(((current - previous) / previous) * 100);
-    // Se a mudança for muito pequena, considerar neutral
-    if (Math.abs(changePercent) < 5) {
-      return { change: '0%', trend: 'neutral' as const };
-    }
-    
+    if (Math.abs(changePercent) < 5) return { change: '0%', trend: 'neutral' as const };
     return {
       change: changePercent > 0 ? `+${changePercent}%` : `${changePercent}%`,
       trend: changePercent > 0 ? 'up' as const : 'down' as const,
     };
   }, [trends, project.metricsHistory]);
 
-  // Calcular métricas derivadas para qualidade
   const defectRate = useMemo(() => {
     if (metrics.totalTestCases === 0) return 0;
     return Math.round((metrics.failedTestCases / metrics.totalTestCases) * 100);
   }, [metrics]);
 
-  // Placeholder para Taxa de Reabertura (idealmente viria do histórico de status)
   const reopeningRate = 0;
 
   const qualityMetricsObj = useMemo(() => ({
     coverage: metrics.testCoverage,
     passRate: metrics.testPassRate,
     defectRate,
-    reopeningRate
+    reopeningRate,
   }), [metrics, defectRate]);
 
-  // Verificar se há alertas críticos
   const hasCriticalAlerts = useMemo(() => {
-    return metrics.bugsBySeverity['Crítico'] > 0 || 
-           (metrics.failedTestCases > 0 && metrics.testPassRate < 50);
+    return metrics.bugsBySeverity['Crítico'] > 0 ||
+      (metrics.failedTestCases > 0 && metrics.testPassRate < 50);
   }, [metrics]);
 
-  // Gerar alertas baseados nas métricas
   const alerts = useMemo(() => {
     const alertsList: Array<{
       id: string;
@@ -240,7 +208,6 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
         time: 'Agora',
       });
     }
-
     if (metrics.failedTestCases > 0 && metrics.testPassRate < 50) {
       alertsList.push({
         id: 'low-pass-rate',
@@ -251,7 +218,6 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
         time: 'Agora',
       });
     }
-
     if (metrics.testCoverage < 80) {
       alertsList.push({
         id: 'low-coverage',
@@ -262,13 +228,9 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
         time: 'Agora',
       });
     }
-
-    // Integrar alertas da lógica centralizada de qualidade
     const qualityAlerts = getQualityAlerts(qualityMetricsObj);
     qualityAlerts.forEach((alertMsg, index) => {
-      // Evitar duplicatas de cobertura se já adicionado acima
       if (alertMsg.includes('Cobertura') && alertsList.some(a => a.id === 'low-coverage')) return;
-      
       alertsList.push({
         id: `quality-auto-${index}`,
         type: alertMsg.includes('Crítica') || alertMsg.includes('Elevada') ? 'critical' : 'warning',
@@ -278,7 +240,6 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
         time: 'Agora',
       });
     });
-
     if (metrics.openVsClosedBugs.open > 10) {
       alertsList.push({
         id: 'many-bugs',
@@ -289,7 +250,6 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
         time: 'Agora',
       });
     }
-
     if (alertsList.length === 0) {
       alertsList.push({
         id: 'all-good',
@@ -300,9 +260,8 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
         time: 'Agora',
       });
     }
-
     return alertsList.sort((a, b) => (a.priority === 'High' ? -1 : 1));
-  }, [metrics]);
+  }, [metrics, qualityMetricsObj]);
 
   return (
     <div className="space-y-6" role="main" aria-label="Dashboard de QA">
@@ -372,23 +331,21 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
         </div>
       </div>
 
-      {/* Overview Metrics - 4 Cards */}
+      {/* Grid: 4 MetricCards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <MetricCard
           title="Total de Tarefas"
-          value={metrics.totalTasks}
+          value={filteredProject.tasks?.length ?? 0}
           change={tasksTrend.change}
           trend={tasksTrend.trend}
           icon={ListChecks}
-          description="Tarefas ativas do projeto"
         />
         <MetricCard
           title="Casos de Teste"
-          value={metrics.totalTestCases}
+          value={metrics.totalTestCases ?? 0}
           change={testCasesTrend.change}
           trend={testCasesTrend.trend}
           icon={FileText}
-          description="Total de casos de teste"
         />
         <MetricCard
           title="Estratégias de Teste"
@@ -396,7 +353,6 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
           change={strategiesTrend.change}
           trend={strategiesTrend.trend}
           icon={Target}
-          description="Estratégias ativas"
         />
         <MetricCard
           title="Fases de Teste"
@@ -404,112 +360,48 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
           change={phasesTrend.change}
           trend={phasesTrend.trend}
           icon={Layers}
-          description="Fases ativas"
         />
       </div>
 
-      {/* Test Phase Progress and Quality KPIs */}
-      <div className="grid gap-4 lg:grid-cols-3">
-        <Card className="lg:col-span-2" hoverable>
-          <div className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h3 className="text-lg font-semibold text-base-content">Progresso das Fases</h3>
-                <p className="text-sm text-base-content/70">
-                  Status atual das fases de teste do projeto
-                </p>
-              </div>
-              <button
-                type="button"
-                className="btn btn-ghost btn-sm btn-circle"
-                aria-label="Atualizar progresso das fases"
-              >
-                <RefreshCw className="h-4 w-4" aria-hidden="true" />
-              </button>
-            </div>
-            <TestPhaseProgress project={filteredProject} />
-          </div>
+      {/* Progresso das Fases + Quality KPIs + ReopeningRate */}
+      <div className="grid gap-4 lg:grid-cols-2 mt-6">
+        <Card className="p-4">
+          <TestPhaseProgress project={filteredProject} />
         </Card>
-
         <div className="space-y-4">
           <QualityKPIs project={filteredProject} />
           <ReopeningRateCard rate={reopeningRate} />
         </div>
       </div>
 
-      {/* Recent Activity and Alerts */}
-      <div className="grid gap-4 lg:grid-cols-2">
+      {/* Recent Activity + Alertas */}
+      <div className="grid gap-4 lg:grid-cols-2 mt-6">
         <RecentActivity project={filteredProject} />
-
-        <Card hoverable>
-          <div className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h3 className="text-lg font-semibold text-base-content">Alertas e Notificações</h3>
-                <p className="text-sm text-base-content/70">Atualizações importantes e problemas</p>
+        <Card className="p-4">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-base-content flex items-center gap-2">
+              <AlertCircle className="w-5 h-5" aria-hidden="true" />
+              Alertas
+            </h3>
+            {hasCriticalAlerts && (
+              <Badge variant="error" size="sm">Crítico</Badge>
+            )}
+          </div>
+          <div className="space-y-3" role="list" aria-label="Alertas de qualidade">
+            {alerts.slice(0, 5).map((alert) => (
+              <div
+                key={alert.id}
+                className={`rounded-xl border px-3 py-2 ${
+                  alert.type === 'critical' ? 'border-error/30 bg-error/5' :
+                  alert.type === 'warning' ? 'border-warning/30 bg-warning/5' :
+                  'border-base-300 bg-base-100'
+                }`}
+                role="listitem"
+              >
+                <p className="text-sm font-medium text-base-content">{alert.title}</p>
+                <p className="text-xs text-base-content/70 mt-0.5">{alert.description}</p>
               </div>
-              {hasCriticalAlerts && (
-                <Badge variant="error" size="sm">
-                  {alerts.filter(a => a.type === 'critical').length} Crítico(s)
-                </Badge>
-              )}
-            </div>
-            <div className="space-y-4">
-              {alerts.map((alert) => {
-                const alertColors = {
-                  critical: 'bg-error/10 border-error/20',
-                  warning: 'bg-warning/10 border-warning/20',
-                  info: 'bg-info/10 border-info/20',
-                  success: 'bg-success/10 border-success/20',
-                };
-
-                const iconColors = {
-                  critical: 'text-error',
-                  warning: 'text-warning',
-                  info: 'text-info',
-                  success: 'text-success',
-                };
-
-                const Icon = alert.type === 'critical' || alert.type === 'warning' 
-                  ? AlertCircle 
-                  : alert.type === 'success'
-                  ? CheckCircle2
-                  : Activity;
-
-                return (
-                  <div
-                    key={alert.id}
-                    className={`flex gap-3 p-3 rounded-lg border ${alertColors[alert.type]}`}
-                  >
-                    <Icon className={`h-5 w-5 ${iconColors[alert.type]} shrink-0 mt-0.5`} aria-hidden="true" />
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-base-content">{alert.title}</p>
-                      <p className="text-xs text-base-content/70 mt-1">{alert.description}</p>
-                      <div className="flex items-center gap-2 mt-2">
-                        <Badge
-                          variant={
-                            alert.priority === 'High' 
-                              ? 'error' 
-                              : alert.priority === 'Medium' 
-                              ? 'warning' 
-                              : 'info'
-                          }
-                          size="sm"
-                          className="text-xs"
-                        >
-                          {alert.priority === 'High' 
-                            ? 'Alta Prioridade' 
-                            : alert.priority === 'Medium' 
-                            ? 'Média Prioridade' 
-                            : 'Baixa Prioridade'}
-                        </Badge>
-                        <span className="text-xs text-base-content/60">{alert.time}</span>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+            ))}
           </div>
         </Card>
       </div>

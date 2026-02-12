@@ -7,10 +7,9 @@ import { Modal } from '../common/Modal';
 import { TaskForm } from './TaskForm';
 import { TestCaseEditorModal } from './TestCaseEditorModal';
 import { Button } from '../common/Button';
-import { Plus, Filter, RefreshCw, Loader2, Clipboard, Zap, CheckCircle2, AlertTriangle, X, Check, Link as LinkIcon, Clock } from 'lucide-react';
+import { Plus, Filter, RefreshCw, Loader2, Zap, AlertTriangle, X, Check, Link as LinkIcon, Clock, ClipboardList, CheckCircle } from 'lucide-react';
 import { logger } from '../../utils/logger';
 import { useProjectsStore } from '../../store/projectsStore';
-import { ModernIcons } from '../common/ModernIcons';
 import { getFriendlyAIErrorMessage } from '../../utils/aiErrorMapper';
 import { JiraTaskItem, TaskWithChildren } from './JiraTaskItem';
 import { TaskDetailsModal } from './TaskDetailsModal';
@@ -26,6 +25,7 @@ import { GeneralIAAnalysisButton } from './GeneralIAAnalysisButton';
 import { generateGeneralIAAnalysis } from '../../services/ai/generalAnalysisService';
 import { FailedTestsReportModal } from './FailedTestsReportModal';
 import { useProjectMetrics } from '../../hooks/useProjectMetrics';
+import { GlassIndicatorCards } from '../dashboard/GlassIndicatorCards';
 
 const TASK_ID_REGEX = /^([A-Z]+)-(\d+)/i;
 
@@ -1249,6 +1249,65 @@ export const TasksView: React.FC<{
     const testExecutionRate = stats.totalTests > 0 ? Math.round((stats.executedTests / stats.totalTests) * 100) : 0;
     const automationRate = stats.totalTests > 0 ? Math.round((stats.automatedTests / stats.totalTests) * 100) : 0;
 
+    const indicatorItems = useMemo(
+        () => [
+            {
+                label: 'Total de Tarefas',
+                value: stats.total,
+                modifier: '+0%',
+                icon: ClipboardList,
+                colorTheme: 'orange' as const,
+            },
+            {
+                label: 'Tarefas Pendentes',
+                value: stats.pending,
+                modifier: '-',
+                icon: Clock,
+                colorTheme: 'yellow' as const,
+            },
+            {
+                label: 'Em Andamento',
+                value: stats.inProgress,
+                modifier: 'active',
+                icon: Zap,
+                colorTheme: 'blue' as const,
+            },
+            {
+                label: 'Concluídas',
+                value: stats.done,
+                modifier: stats.total > 0 ? `${Math.round((stats.done / stats.total) * 100)}%` : '0%',
+                icon: CheckCircle,
+                colorTheme: 'emerald' as const,
+            },
+            {
+                label: 'Bugs Abertos',
+                value: stats.bugsOpen,
+                modifier: (metrics.bugsBySeverity?.['Crítico'] ?? 0) > 0 ? 'Critical' : 'Abertos',
+                icon: AlertTriangle,
+                colorTheme: 'red' as const,
+            },
+        ],
+        [
+            stats.total,
+            stats.pending,
+            stats.inProgress,
+            stats.done,
+            stats.bugsOpen,
+            metrics.bugsBySeverity,
+        ]
+    );
+
+    const executionProps = useMemo(
+        () => ({
+            executedTestCases: stats.executedTests,
+            totalTestCases: stats.totalTests,
+            automationRatio: automationRate,
+            projectName: project?.name ?? 'Projeto',
+            automationTrend: '+5.2% esta semana',
+        }),
+        [stats.executedTests, stats.totalTests, automationRate, project?.name]
+    );
+
     const taskTree = useMemo(() => {
         const tasks = [...filteredTasks].sort(compareTasksById);
         const taskMap = new Map(tasks.map(t => [t.id, { ...t, children: [] as TaskWithChildren[] }]));
@@ -1743,243 +1802,13 @@ export const TasksView: React.FC<{
                     </p>
                 </div>
 
-                <motion.div 
-                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 lg:gap-6 mb-6"
-                    initial="hidden"
-                    animate="visible"
-                    variants={{
-                        visible: {
-                            transition: {
-                                staggerChildren: 0.1,
-                            },
-                        },
-                    }}
+                <motion.div
+                    className="mb-6"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
                 >
-                    <motion.div 
-                        className="group relative overflow-hidden rounded-2xl p-6 bg-gradient-to-br from-orange-500/20 via-amber-500/10 to-orange-500/5 backdrop-blur-xl border border-orange-500/30 hover:border-orange-500/50 transition-all duration-500 ease-out hover:scale-[1.02] hover:shadow-2xl hover:shadow-orange-500/20 cursor-help" 
-                        aria-live="polite"
-                        title={`Total de ${stats.total} tarefas no projeto. Inclui todas as tarefas independente do status.`}
-                        variants={{
-                            hidden: { opacity: 0, y: 10 },
-                            visible: { opacity: 1, y: 0 },
-                        }}
-                    >
-                        {/* Glassmorphism overlay */}
-                        <div className="absolute inset-0 bg-base-100/60 dark:bg-base-100/40 backdrop-blur-xl" />
-                        
-                        {/* Animated gradient orb no hover */}
-                        <div className="pointer-events-none absolute -top-12 -right-12 w-32 h-32 rounded-full bg-gradient-to-br from-orange-500/20 via-amber-500/10 to-orange-500/5 opacity-0 group-hover:opacity-100 blur-3xl transition-opacity duration-700" />
-                        
-                        {/* Shine effect no hover */}
-                        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out" />
-                        </div>
-                        
-                        <div className="relative z-10 flex flex-col gap-4">
-                            <div className="flex items-start justify-between gap-4">
-                                <div className="min-w-0 flex-1">
-                                    <p className="text-xs font-bold text-base-content/60 mb-2 uppercase tracking-wider">Total de Tarefas</p>
-                                    <p className="text-4xl lg:text-5xl font-extrabold tracking-tight text-orange-400 dark:text-orange-300 transition-transform duration-500 group-hover:scale-110" aria-label={`${stats.total} tarefas totais`}>
-                                        {stats.total}
-                                    </p>
-                                </div>
-                                <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-orange-500/10 group-hover:bg-orange-500/20 flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:rotate-6">
-                                    <Clipboard className="w-6 h-6 text-orange-400 dark:text-orange-300" />
-                                </div>
-                            </div>
-                        </div>
-                    </motion.div>
-                    
-                    <motion.div 
-                        className="group relative overflow-hidden rounded-2xl p-6 bg-gradient-to-br from-yellow-500/20 via-amber-500/10 to-yellow-500/5 backdrop-blur-xl border border-yellow-500/30 hover:border-yellow-500/50 transition-all duration-500 ease-out hover:scale-[1.02] hover:shadow-2xl hover:shadow-yellow-500/20 cursor-help" 
-                        aria-live="polite"
-                        title={`${stats.pending} tarefas pendentes. Tarefas que ainda não foram iniciadas.`}
-                        variants={{
-                            hidden: { opacity: 0, y: 10 },
-                            visible: { opacity: 1, y: 0 },
-                        }}
-                    >
-                        {/* Glassmorphism overlay */}
-                        <div className="absolute inset-0 bg-base-100/60 dark:bg-base-100/40 backdrop-blur-xl" />
-                        
-                        {/* Animated gradient orb no hover */}
-                        <div className="pointer-events-none absolute -top-12 -right-12 w-32 h-32 rounded-full bg-gradient-to-br from-yellow-500/20 via-amber-500/10 to-yellow-500/5 opacity-0 group-hover:opacity-100 blur-3xl transition-opacity duration-700" />
-                        
-                        {/* Shine effect no hover */}
-                        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out" />
-                        </div>
-                        
-                        <div className="relative z-10 flex flex-col gap-4">
-                            <div className="flex items-start justify-between gap-4">
-                                <div className="min-w-0 flex-1">
-                                    <p className="text-xs font-bold text-base-content/60 mb-2 uppercase tracking-wider">Tarefas Pendentes</p>
-                                    <p className="text-4xl lg:text-5xl font-extrabold tracking-tight text-yellow-400 dark:text-yellow-300 transition-transform duration-500 group-hover:scale-110" aria-label={`${stats.pending} tarefas pendentes`}>
-                                        {stats.pending}
-                                    </p>
-                                </div>
-                                <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-yellow-500/10 group-hover:bg-yellow-500/20 flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:rotate-6">
-                                    <Clock className="w-6 h-6 text-yellow-400 dark:text-yellow-300" />
-                                </div>
-                            </div>
-                        </div>
-                    </motion.div>
-                    
-                    <motion.div 
-                        className="group relative overflow-hidden rounded-2xl p-6 bg-gradient-to-br from-blue-500/20 via-cyan-500/10 to-blue-500/5 backdrop-blur-xl border border-blue-500/30 hover:border-blue-500/50 transition-all duration-500 ease-out hover:scale-[1.02] hover:shadow-2xl hover:shadow-blue-500/20 cursor-help" 
-                        aria-live="polite"
-                        title={`${stats.inProgress} tarefas em andamento. Tarefas que estão sendo trabalhadas atualmente.`}
-                        variants={{
-                            hidden: { opacity: 0, y: 10 },
-                            visible: { opacity: 1, y: 0 },
-                        }}
-                    >
-                        {/* Glassmorphism overlay */}
-                        <div className="absolute inset-0 bg-base-100/60 dark:bg-base-100/40 backdrop-blur-xl" />
-                        
-                        {/* Animated gradient orb no hover */}
-                        <div className="pointer-events-none absolute -top-12 -right-12 w-32 h-32 rounded-full bg-gradient-to-br from-blue-500/20 via-cyan-500/10 to-blue-500/5 opacity-0 group-hover:opacity-100 blur-3xl transition-opacity duration-700" />
-                        
-                        {/* Shine effect no hover */}
-                        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out" />
-                        </div>
-                        
-                        <div className="relative z-10 flex flex-col gap-4">
-                            <div className="flex items-start justify-between gap-4">
-                                <div className="min-w-0 flex-1">
-                                    <p className="text-xs font-bold text-base-content/60 mb-2 uppercase tracking-wider">Em Andamento</p>
-                                    <p className="text-4xl lg:text-5xl font-extrabold tracking-tight text-blue-400 dark:text-blue-300 transition-transform duration-500 group-hover:scale-110" aria-label={`${stats.inProgress} tarefas em andamento`}>
-                                        {stats.inProgress}
-                                    </p>
-                                </div>
-                                <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-blue-500/10 group-hover:bg-blue-500/20 flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:rotate-6">
-                                    <Zap className="w-6 h-6 text-blue-400 dark:text-blue-300" />
-                                </div>
-                            </div>
-                        </div>
-                    </motion.div>
-                    
-                    <motion.div 
-                        className="group relative overflow-hidden rounded-2xl p-6 bg-gradient-to-br from-emerald-500/20 via-green-500/10 to-emerald-500/5 backdrop-blur-xl border border-emerald-500/30 hover:border-emerald-500/50 transition-all duration-500 ease-out hover:scale-[1.02] hover:shadow-2xl hover:shadow-emerald-500/20 cursor-help" 
-                        aria-live="polite"
-                        title={`${stats.done} tarefas concluídas. Tarefas finalizadas e validadas.`}
-                        variants={{
-                            hidden: { opacity: 0, y: 10 },
-                            visible: { opacity: 1, y: 0 },
-                        }}
-                    >
-                        {/* Glassmorphism overlay */}
-                        <div className="absolute inset-0 bg-base-100/60 dark:bg-base-100/40 backdrop-blur-xl" />
-                        
-                        {/* Animated gradient orb no hover */}
-                        <div className="pointer-events-none absolute -top-12 -right-12 w-32 h-32 rounded-full bg-gradient-to-br from-emerald-500/20 via-green-500/10 to-emerald-500/5 opacity-0 group-hover:opacity-100 blur-3xl transition-opacity duration-700" />
-                        
-                        {/* Shine effect no hover */}
-                        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out" />
-                        </div>
-                        
-                        <div className="relative z-10 flex flex-col gap-4">
-                            <div className="flex items-start justify-between gap-4">
-                                <div className="min-w-0 flex-1">
-                                    <p className="text-xs font-bold text-base-content/60 mb-2 uppercase tracking-wider">Concluídas</p>
-                                    <p className="text-4xl lg:text-5xl font-extrabold tracking-tight text-emerald-400 dark:text-emerald-300 transition-transform duration-500 group-hover:scale-110" aria-label={`${stats.done} tarefas concluídas`}>
-                                        {stats.done}
-                                    </p>
-                                </div>
-                                <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-emerald-500/10 group-hover:bg-emerald-500/20 flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:rotate-6">
-                                    <CheckCircle2 className="w-6 h-6 text-emerald-400 dark:text-emerald-300" />
-                                </div>
-                            </div>
-                        </div>
-                    </motion.div>
-                    
-                    <motion.div 
-                        className="group relative overflow-hidden rounded-2xl p-6 bg-gradient-to-br from-rose-500/20 via-red-500/10 to-rose-500/5 backdrop-blur-xl border border-rose-500/30 hover:border-rose-500/50 transition-all duration-500 ease-out hover:scale-[1.02] hover:shadow-2xl hover:shadow-rose-500/20 cursor-help" 
-                        aria-live="polite"
-                        title={`${stats.bugsOpen} bugs abertos. Problemas identificados que ainda precisam ser resolvidos.`}
-                        variants={{
-                            hidden: { opacity: 0, y: 10 },
-                            visible: { opacity: 1, y: 0 },
-                        }}
-                    >
-                        {/* Glassmorphism overlay */}
-                        <div className="absolute inset-0 bg-base-100/60 dark:bg-base-100/40 backdrop-blur-xl" />
-                        
-                        {/* Animated gradient orb no hover */}
-                        <div className="pointer-events-none absolute -top-12 -right-12 w-32 h-32 rounded-full bg-gradient-to-br from-rose-500/20 via-red-500/10 to-rose-500/5 opacity-0 group-hover:opacity-100 blur-3xl transition-opacity duration-700" />
-                        
-                        {/* Shine effect no hover */}
-                        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out" />
-                        </div>
-                        
-                        <div className="relative z-10 flex flex-col gap-4">
-                            <div className="flex items-start justify-between gap-4">
-                                <div className="min-w-0 flex-1">
-                                    <p className="text-xs font-bold text-base-content/60 mb-2 uppercase tracking-wider">Bugs Abertos</p>
-                                    <p className="text-4xl lg:text-5xl font-extrabold tracking-tight text-rose-400 dark:text-rose-300 transition-transform duration-500 group-hover:scale-110" aria-label={`${stats.bugsOpen} bugs abertos`}>
-                                        {stats.bugsOpen}
-                                    </p>
-                                </div>
-                                <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-rose-500/10 group-hover:bg-rose-500/20 flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:rotate-6">
-                                    <AlertTriangle className="w-6 h-6 text-rose-400 dark:text-rose-300" />
-                                </div>
-                            </div>
-                        </div>
-                    </motion.div>
-                    
-                    <motion.div 
-                        className="group relative overflow-hidden rounded-2xl p-6 bg-gradient-to-br from-primary/20 via-primary/10 to-primary/5 backdrop-blur-xl border border-primary/30 hover:border-primary/50 transition-all duration-500 ease-out hover:scale-[1.02] hover:shadow-2xl hover:shadow-primary/20 cursor-help col-span-1 md:col-span-2 lg:col-span-5"
-                        aria-live="polite"
-                        title={`Taxa de execução de testes: ${testExecutionRate}%. ${stats.executedTests} de ${stats.totalTests} casos foram executados. Taxa de automação: ${automationRate}%.`}
-                        variants={{
-                            hidden: { opacity: 0, y: 10 },
-                            visible: { opacity: 1, y: 0 },
-                        }}
-                    >
-                        {/* Glassmorphism overlay */}
-                        <div className="absolute inset-0 bg-base-100/60 dark:bg-base-100/40 backdrop-blur-xl" />
-                        
-                        {/* Animated gradient orb no hover */}
-                        <div className="pointer-events-none absolute -top-12 -right-12 w-32 h-32 rounded-full bg-gradient-to-br from-primary/20 via-primary/10 to-primary/5 opacity-0 group-hover:opacity-100 blur-3xl transition-opacity duration-700" />
-                        
-                        {/* Shine effect no hover */}
-                        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out" />
-                        </div>
-                        
-                        <div className="relative z-10">
-                            <div className="flex items-center justify-between mb-4">
-                                <div className="flex items-center gap-3">
-                                    <div className="p-2.5 bg-primary/10 rounded-xl group-hover:bg-primary/20 transition-colors duration-500">
-                                        <ModernIcons.TestExecution className="text-primary" size={22} />
-                                    </div>
-                                    <p className="text-base font-semibold text-base-content">Execução de Testes</p>
-                                </div>
-                                <span className="text-2xl lg:text-3xl font-extrabold text-primary transition-transform duration-500 group-hover:scale-110" aria-label={`${testExecutionRate}% de execução`}>
-                                    {testExecutionRate}%
-                                </span>
-                            </div>
-                            <div className="w-full bg-base-200/80 rounded-full h-3.5 mb-3 overflow-hidden relative" role="progressbar" aria-valuenow={testExecutionRate} aria-valuemin={0} aria-valuemax={100} aria-label={`Progresso de execução: ${testExecutionRate}%`}>
-                                <div 
-                                    className="h-full bg-gradient-to-r from-primary via-primary/90 to-primary/80 rounded-full transition-all duration-700 ease-out relative overflow-hidden"
-                                    style={{ width: `${testExecutionRate}%` }}
-                                >
-                                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-pulse" />
-                                </div>
-                            </div>
-                            <div className="flex items-center justify-between text-sm text-base-content/70">
-                                <p aria-label={`${stats.executedTests} de ${stats.totalTests} casos executados`} className="font-medium">
-                                    {stats.executedTests}/{stats.totalTests} casos executados
-                                </p>
-                                <p className="font-medium">
-                                    Automação <span className="font-bold text-primary" aria-label={`${automationRate}% de automação`}>{automationRate}%</span>
-                                </p>
-                            </div>
-                        </div>
-                    </motion.div>
+                    <GlassIndicatorCards items={indicatorItems} execution={executionProps} />
                 </motion.div>
             </div>
 
