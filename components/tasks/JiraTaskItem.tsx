@@ -1499,7 +1499,7 @@ export const JiraTaskItem: React.FC<{
                                         type="button"
                                         onClick={handleGenerateAll}
                                         disabled={isGeneratingAll || isGenerating || isGeneratingBdd || isGeneratingTests}
-                                        className="btn btn-xs bg-orange-500 hover:bg-orange-600 text-white border-0 gap-0.5 sm:gap-1.5 flex-shrink-0 h-4 min-h-4 max-h-4 sm:min-h-0 sm:max-h-none sm:h-7 px-1 sm:px-2"
+                                        className="btn btn-xs bg-orange-500 hover:bg-orange-600 text-white border-0 gap-0.5 sm:gap-1.5 flex items-center flex-shrink-0 h-4 min-h-4 max-h-4 sm:min-h-0 sm:max-h-none sm:h-7 px-1 sm:px-2 leading-none sm:leading-normal"
                                         title="Gerar Tudo (BDD e Testes)"
                                         aria-label={isGenerating || isGeneratingAll ? 'Gerando tudo' : 'Gerar Tudo (BDD e Testes)'}
                                     >
@@ -1508,7 +1508,7 @@ export const JiraTaskItem: React.FC<{
                                     </button>
                                 )}
                                 {taskTestStatus && (
-                                    <span className={`badge badge-xs ${testStatusConfig.bgColor} ${testStatusConfig.color} border gap-0.5 sm:gap-1 flex-shrink-0 h-4 sm:h-7 px-1 sm:px-2`}>
+                                    <span className={`badge badge-xs inline-flex items-center ${testStatusConfig.bgColor} ${testStatusConfig.color} border gap-0.5 sm:gap-1 flex-shrink-0 h-4 sm:h-7 px-1 sm:px-2`}>
                                         <span aria-hidden="true" className="text-[8px] sm:text-xs">{testStatusConfig.icon}</span>
                                         <span className="font-medium text-[8px] sm:text-[10px] truncate">{testStatusConfig.label}</span>
                                     </span>
@@ -1520,7 +1520,7 @@ export const JiraTaskItem: React.FC<{
                                             e.stopPropagation();
                                             setIsStatusDropdownOpen(!isStatusDropdownOpen);
                                         }}
-                                        className="btn btn-xs rounded-full text-white border-0 flex-shrink-0 h-4 min-h-4 max-h-4 sm:min-h-0 sm:max-h-none sm:h-7 px-1 sm:px-3 text-[8px] sm:text-xs"
+                                        className="btn btn-xs rounded-full text-white border-0 flex items-center flex-shrink-0 h-4 min-h-4 max-h-4 sm:min-h-0 sm:max-h-none sm:h-7 px-1 sm:px-3 text-[8px] sm:text-xs leading-none sm:leading-normal"
                                         style={{ backgroundColor: currentStatusColor || '#6b7280', color: statusTextColor || '#ffffff' }}
                                         aria-haspopup="true"
                                         aria-expanded={isStatusDropdownOpen}
