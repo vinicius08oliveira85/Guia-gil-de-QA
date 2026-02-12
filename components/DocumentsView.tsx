@@ -304,15 +304,15 @@ export const DocumentsView: React.FC<{ project: Project; onUpdateProject: (proje
                     </div>
                     <div className="flex items-center gap-2 flex-wrap">
                         {shouldShowSolusButton && (
-                            <button type="button" onClick={() => setIsSolusSchemaOpen(true)} className="px-4 py-2.5 rounded-[12px] text-xs font-semibold border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center gap-1.5" aria-label="Abrir Esquema da API Solus">
-                                <FileDown className="w-4 h-4" aria-hidden /> Esquema API
+                            <button type="button" onClick={() => setIsSolusSchemaOpen(true)} className="rounded-full px-3 py-1.5 text-xs font-semibold transition-colors duration-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-1.5 text-base-content/70 hover:text-base-content" aria-label="Abrir Esquema da API Solus">
+                                <FileDown className="w-3.5 h-3.5" aria-hidden /> Esquema API
                             </button>
                         )}
-                        <button type="button" onClick={() => setIsImportModalOpen(true)} className="px-4 py-2.5 rounded-[12px] text-xs font-semibold border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center gap-1.5" aria-label="Importar documentos">
-                            <FileDown className="w-4 h-4" aria-hidden /> Importar
+                        <button type="button" onClick={() => setIsImportModalOpen(true)} className="rounded-full px-3 py-1.5 text-xs font-semibold transition-colors duration-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-1.5 text-base-content/70 hover:text-base-content" aria-label="Importar documentos">
+                            <FileDown className="w-3.5 h-3.5" aria-hidden /> Importar
                         </button>
-                        <label className="px-4 py-2.5 rounded-[12px] text-xs font-semibold bg-brand-orange text-white shadow-md shadow-brand-orange/20 flex items-center gap-1.5 cursor-pointer">
-                            <Upload className="w-4 h-4" aria-hidden /> Carregar
+                        <label className="rounded-full px-3 py-1.5 text-xs font-semibold transition-colors duration-300 bg-brand-orange text-white shadow-md shadow-brand-orange/20 flex items-center gap-1.5 cursor-pointer hover:opacity-90">
+                            <Upload className="w-3.5 h-3.5" aria-hidden /> Carregar
                             <input type="file" accept=".txt,.md,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar,.json,.csv,.xml,.jpg,.jpeg,.png,.gif,.webp,.svg" onChange={handleFileUpload} className="hidden" />
                         </label>
                     </div>
@@ -326,11 +326,11 @@ export const DocumentsView: React.FC<{ project: Project; onUpdateProject: (proje
                         <input type="text" placeholder="Buscar documentos..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-10 pr-4 py-2.5 bg-slate-100 dark:bg-slate-800 border-none rounded-[12px] focus:ring-2 focus:ring-primary/50 text-sm transition-all dark:text-white placeholder:text-slate-500" aria-label="Buscar documentos" />
                     </div>
                     <div className="flex gap-2 flex-wrap">
-                        <button type="button" onClick={() => setSelectedCategory('all')} className={`px-4 py-2 rounded-full text-xs font-semibold transition-colors ${selectedCategory === 'all' ? 'bg-brand-orange text-white shadow-md shadow-brand-orange/20' : 'border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800'}`} aria-pressed={selectedCategory === 'all'} aria-label={`Filtrar: todas, ${stats.total} documento(s)`}>Todas ({stats.total})</button>
+                        <button type="button" onClick={() => setSelectedCategory('all')} className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors duration-300 ${selectedCategory === 'all' ? 'bg-brand-orange text-white shadow-md shadow-brand-orange/20' : 'border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-base-content/70 hover:text-base-content'}`} aria-pressed={selectedCategory === 'all'} aria-label={`Filtrar: todas, ${stats.total} documento(s)`}>Todas ({stats.total})</button>
                         {DOCUMENT_CATEGORIES.map(cat => {
                             const label = cat.label.replace(/^[^\s]+\s/, '');
                             return (
-                                <button key={cat.id} type="button" onClick={() => setSelectedCategory(cat.id)} className={`px-4 py-2 rounded-full text-xs font-semibold transition-colors ${selectedCategory === cat.id ? 'bg-brand-orange text-white shadow-md shadow-brand-orange/20' : 'border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800'}`} aria-pressed={selectedCategory === cat.id} aria-label={`Filtrar por ${label}, ${stats.categoryCounts[cat.id] || 0} documento(s)`}>{label} ({stats.categoryCounts[cat.id] || 0})</button>
+                                <button key={cat.id} type="button" onClick={() => setSelectedCategory(cat.id)} className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors duration-300 ${selectedCategory === cat.id ? 'bg-brand-orange text-white shadow-md shadow-brand-orange/20' : 'border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-base-content/70 hover:text-base-content'}`} aria-pressed={selectedCategory === cat.id} aria-label={`Filtrar por ${label}, ${stats.categoryCounts[cat.id] || 0} documento(s)`}>{label} ({stats.categoryCounts[cat.id] || 0})</button>
                             );
                         })}
                     </div>
