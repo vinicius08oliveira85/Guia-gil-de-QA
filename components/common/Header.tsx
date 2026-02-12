@@ -3,12 +3,13 @@ import { NotificationBell } from './NotificationBell';
 import { ExpandableTabs } from './ExpandableTabs';
 import { useTheme } from '../../hooks/useTheme';
 import { getActiveColorForTheme } from '../../utils/expandableTabsColors';
-import { BookOpen, Bell, Moon, Sun, Heart, Monitor, Sliders, Cloud, Plus } from 'lucide-react';
+import { BookOpen, Bell, Moon, Sun, Heart, Monitor, Sliders, Cloud, Plus, Loader2 } from 'lucide-react';
 import { Project } from '../../types';
 import { getUnreadCount } from '../../utils/notificationService';
 import { Modal } from './Modal';
 import { GlossaryView } from '../glossary/GlossaryView';
 import { useProjectsStore } from '../../store/projectsStore';
+import { useJiraSync } from '../../hooks/useJiraSync';
 import { isSupabaseAvailable } from '../../services/supabaseService';
 import toast from 'react-hot-toast';
 
@@ -29,7 +30,18 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported: _onProjectImp
     const [isSaving, setIsSaving] = useState(false);
     const [isSyncingSupabase, setIsSyncingSupabase] = useState(false);
 
-    const { saveProjectToSupabase, getSelectedProject, syncProjectsFromSupabase } = useProjectsStore();
+    const { saveProjectToSupabase, getSelectedProject, syncProjectsFromSupabase, updateProject } = useProjectsStore();
+    const selectedProject = getSelectedProject();
+    const {
+        handleSyncJira,
+        isSyncingJira,
+        showJiraProjectSelector,
+        setShowJiraProjectSelector,
+        availableJiraProjects,
+        selectedJiraProjectKey,
+        setSelectedJiraProjectKey,
+        handleConfirmJiraProject,
+    } = useJiraSync(selectedProject ?? null, updateProject);
 
     // Atualizar contador de notificações não lidas
     useEffect(() => {
@@ -222,16 +234,37 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported: _onProjectImp
                         </button>
                     )}
 
-                    {getSelectedProject() && (
-                        <button
-                            className="relative flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors duration-300 text-base-content/70 hover:bg-base-200 hover:text-base-content"
-                            aria-label="Salvar"
-                            onClick={handleSave}
-                            disabled={isSaving}
-                        >
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21.362 9.354H12V.396a.396.396 0 0 0-.716-.233L2.203 12.424l-.401.562a1.04 1.04 0 0 0 .836 1.659H12v8.959a.396.396 0 0 0 .724.229l9.075-12.476.401-.562a1.04 1.04 0 0 0-.838-1.66Z" fill="#3ECF8E"></path></svg>
-                            <span>{isSaving ? 'Salvando...' : 'Salvar'}</span>
-                        </button>
+                    {selectedProject && (
+                        <>
+                            <button
+                                type="button"
+                                className="relative flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors duration-300 text-base-content/70 hover:bg-base-200 hover:text-base-content disabled:opacity-50 disabled:cursor-not-allowed"
+                                aria-label="Sincronizar com Jira"
+                                title="Atualizar tarefas do Jira"
+                                onClick={handleSyncJira}
+                                disabled={isSyncingJira}
+                            >
+                                {isSyncingJira ? (
+                                    <Loader2 className="w-4 h-4 flex-shrink-0 animate-spin" aria-hidden />
+                                ) : (
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0" aria-hidden>
+                                        <path d="M11.571 11.571h5.715v5.715h-5.715z" fill="#0052CC" />
+                                        <path d="M11.571 0h5.715v11.571h-5.715z" fill="#2684FF" />
+                                        <path d="M0 11.571h11.571v11.571H0z" fill="#0052CC" />
+                                    </svg>
+                                )}
+                                <span>Jira</span>
+                            </button>
+                            <button
+                                className="relative flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors duration-300 text-base-content/70 hover:bg-base-200 hover:text-base-content"
+                                aria-label="Salvar"
+                                onClick={handleSave}
+                                disabled={isSaving}
+                            >
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21.362 9.354H12V.396a.396.396 0 0 0-.716-.233L2.203 12.424l-.401.562a1.04 1.04 0 0 0 .836 1.659H12v8.959a.396.396 0 0 0 .724.229l9.075-12.476.401-.562a1.04 1.04 0 0 0-.838-1.66Z" fill="#3ECF8E"></path></svg>
+                                <span>{isSaving ? 'Salvando...' : 'Salvar'}</span>
+                            </button>
+                        </>
                     )}
 
                     <div className="relative">
@@ -278,6 +311,59 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported: _onProjectImp
                         size="6xl"
                     >
                         <GlossaryView />
+                    </Modal>
+
+                    {/* Modal Selecionar Projeto do Jira */}
+                    <Modal
+                        isOpen={showJiraProjectSelector}
+                        onClose={() => {
+                            setShowJiraProjectSelector(false);
+                            setSelectedJiraProjectKey('');
+                        }}
+                        title="Selecionar Projeto do Jira"
+                    >
+                        <div className="space-y-4">
+                            <p className="text-base-content/70 text-sm">
+                                Selecione o projeto do Jira para sincronizar apenas as novas tarefas:
+                            </p>
+                            <div>
+                                <label className="block text-sm font-medium text-base-content mb-2">
+                                    Projeto
+                                </label>
+                                <select
+                                    value={selectedJiraProjectKey}
+                                    onChange={(e) => setSelectedJiraProjectKey(e.target.value)}
+                                    className="select select-bordered w-full"
+                                >
+                                    <option value="">Selecione um projeto...</option>
+                                    {availableJiraProjects.map((proj) => (
+                                        <option key={proj.key} value={proj.key}>
+                                            {proj.name} ({proj.key})
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="flex justify-end gap-2">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setShowJiraProjectSelector(false);
+                                        setSelectedJiraProjectKey('');
+                                    }}
+                                    className="btn btn-outline btn-sm rounded-full flex items-center gap-1.5 hover:bg-base-200"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={handleConfirmJiraProject}
+                                    disabled={!selectedJiraProjectKey || isSyncingJira}
+                                    className="btn btn-primary btn-sm rounded-full flex items-center gap-1.5 shadow-sm transition-all active:scale-95"
+                                >
+                                    {isSyncingJira ? 'Sincronizando...' : 'Sincronizar'}
+                                </button>
+                            </div>
+                        </div>
                     </Modal>
 
                     {/* Badge para temas ainda não suportados (leve-saude, auto) */}

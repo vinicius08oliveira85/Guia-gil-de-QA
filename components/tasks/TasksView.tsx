@@ -7,7 +7,7 @@ import { Modal } from '../common/Modal';
 import { TaskForm } from './TaskForm';
 import { TestCaseEditorModal } from './TestCaseEditorModal';
 import { Button } from '../common/Button';
-import { Plus, Filter, RefreshCw, Loader2, Zap, AlertTriangle, X, Check, Link as LinkIcon, Clock, ClipboardList, CheckCircle } from 'lucide-react';
+import { Plus, Filter, Zap, AlertTriangle, X, Check, Link as LinkIcon, Clock, ClipboardList, CheckCircle } from 'lucide-react';
 import { logger } from '../../utils/logger';
 import { useProjectsStore } from '../../store/projectsStore';
 import { getFriendlyAIErrorMessage } from '../../utils/aiErrorMapper';
@@ -20,7 +20,7 @@ import { notifyTestFailed, notifyBugCreated, notifyCommentAdded, notifyDependenc
 import { BulkActions } from '../common/BulkActions';
 import { useLocalStorage } from '../../hooks/useLocalStorage';
 import { EmptyState } from '../common/EmptyState';
-import { syncJiraProject, getJiraConfig, getJiraProjects, JiraConfig, syncTaskToJira } from '../../services/jiraService';
+import { getJiraConfig, syncTaskToJira } from '../../services/jiraService';
 import { GeneralIAAnalysisButton } from './GeneralIAAnalysisButton';
 import { generateGeneralIAAnalysis } from '../../services/ai/generalAnalysisService';
 import { FailedTestsReportModal } from './FailedTestsReportModal';
@@ -130,10 +130,6 @@ export const TasksView: React.FC<{
     const [typeFilter, setTypeFilter] = useState<string[]>([]);
     const [qualityFilter, setQualityFilter] = useState<string[]>([]);
 
-    const [isSyncingJira, setIsSyncingJira] = useState(false);
-    const [showJiraProjectSelector, setShowJiraProjectSelector] = useState(false);
-    const [availableJiraProjects, setAvailableJiraProjects] = useState<Array<{ key: string; name: string }>>([]);
-    const [selectedJiraProjectKey, setSelectedJiraProjectKey] = useState<string>('');
     const [failModalState, setFailModalState] = useState<{
         isOpen: boolean;
         taskId: string | null;
@@ -1345,290 +1341,6 @@ export const TasksView: React.FC<{
         });
     };
 
-    // Extrair chave do projeto Jira a partir dos IDs das tarefas (ex: "GDPI-10" -> "GDPI")
-    const extractJiraProjectKey = useCallback((): string | null => {
-        if (project.tasks.length === 0) return null;
-        
-        // Tentar extrair a chave do primeiro ID de tarefa que parece ser do Jira (formato: KEY-123)
-        const firstTaskId = project.tasks[0].id;
-        const match = firstTaskId.match(/^([A-Z]+)-\d+/);
-        if (match && match[1]) {
-            return match[1];
-        }
-        return null;
-    }, [project.tasks]);
-
-    const handleSyncJira = useCallback(async () => {
-        const config = getJiraConfig();
-        if (!config) {
-            handleError(new Error('Jira não configurado. Configure a conexão com Jira nas Configurações primeiro.'), 'Sincronizar com Jira');
-            return;
-        }
-
-        // Tentar extrair a chave do projeto dos IDs das tarefas
-        let jiraProjectKey = extractJiraProjectKey();
-        
-        // Se não conseguir extrair, mostrar seletor de projetos
-        if (!jiraProjectKey) {
-            try {
-                setIsSyncingJira(true);
-                const projects = await getJiraProjects(config);
-                setAvailableJiraProjects(projects.map(p => ({ key: p.key, name: p.name })));
-                setShowJiraProjectSelector(true);
-            } catch (error) {
-                handleError(error instanceof Error ? error : new Error('Erro ao buscar projetos do Jira'), 'Sincronizar com Jira');
-            } finally {
-                setIsSyncingJira(false);
-            }
-            return;
-        }
-
-        // Sincronizar com a chave extraída
-        await performSync(config, jiraProjectKey);
-    }, [extractJiraProjectKey, handleError]);
-
-    const performSync = useCallback(async (config: JiraConfig, jiraProjectKey: string) => {
-        setIsSyncingJira(true);
-        try {
-            // IMPORTANTE: Buscar o projeto mais recente do store ANTES de qualquer operação
-            // Isso garante que temos os status mais recentes, mesmo que não tenham sido salvos no Supabase
-            const { projects, updateProject: saveProject } = useProjectsStore.getState();
-            const latestProjectFromStore = projects.find(p => p.id === project.id);
-            
-            // Usar o projeto do store se disponível, caso contrário usar o prop
-            let projectToSync = latestProjectFromStore || project;
-            
-            logger.debug('Buscando projeto mais recente do store antes de sincronizar', 'TasksView', {
-                projectId: project.id,
-                temProjetoNoStore: !!latestProjectFromStore,
-                usandoStore: latestProjectFromStore !== undefined
-            });
-            
-            // Tentar salvar no Supabase (mas não bloquear se falhar devido a timeout)
-            try {
-                await saveProject(projectToSync, { silent: true });
-                logger.debug('Projeto salvo no Supabase antes de sincronizar', 'TasksView');
-            } catch (error) {
-                logger.warn('Erro ao salvar projeto no Supabase antes de sincronizar (continuando mesmo assim)', 'TasksView', { error });
-                // Continuar mesmo se o salvamento falhar - usaremos o projeto do store que tem os status mais recentes
-            }
-            
-            // Aguardar um pequeno delay para garantir que atualizações pendentes sejam processadas
-            await new Promise(resolve => setTimeout(resolve, 100));
-            
-            // Buscar novamente o projeto mais recente do store após o delay
-            // (pode ter sido atualizado durante o salvamento)
-            const { projects: updatedProjects } = useProjectsStore.getState();
-            const finalProjectFromStore = updatedProjects.find(p => p.id === project.id);
-            if (finalProjectFromStore) {
-                projectToSync = finalProjectFromStore;
-                logger.debug('Usando projeto atualizado do store após delay', 'TasksView');
-            }
-            
-            // Log detalhado dos status antes da sincronização
-            const projectTestStatuses = projectToSync.tasks.flatMap(t => 
-                (t.testCases || []).filter(tc => tc.status !== 'Not Run').map(tc => ({
-                    taskId: t.id,
-                    testCaseId: tc.id,
-                    status: tc.status
-                }))
-            );
-            
-            logger.info('Iniciando sincronização com Jira usando projeto mais recente do store', 'TasksView', {
-                projectId: projectToSync.id,
-                testCasesComStatus: projectTestStatuses.length,
-                statusDetalhes: projectTestStatuses.slice(0, 10), // Primeiros 10 para debug
-                usandoStore: finalProjectFromStore !== undefined
-            });
-            
-            // Usar syncJiraProject que atualiza tarefas existentes e adiciona novas
-            // Isso garante que bugs e tarefas modificados no Jira sejam atualizados corretamente
-            // IMPORTANTE: Passar o projeto mais recente para garantir que os status estão atualizados
-            const updatedProject = await syncJiraProject(
-                config,
-                projectToSync,
-                jiraProjectKey
-            );
-
-            // Proteção contra exclusão: Verificar se tarefas vinculadas foram removidas
-            const currentTaskIds = new Set(projectToSync.tasks.map(t => t.id));
-            const updatedTaskIds = new Set(updatedProject.tasks.map(t => t.id));
-            const missingTaskIds = projectToSync.tasks.filter(t => !updatedTaskIds.has(t.id)).map(t => t.id);
-
-            if (missingTaskIds.length > 0) {
-                // Verificar se estas tarefas existem em outros projetos
-                const otherProjects = allProjects.filter(p => p.id !== project.id);
-                const linkedTaskIds = new Set<string>();
-                
-                otherProjects.forEach(p => {
-                    p.tasks.forEach(t => {
-                        if (missingTaskIds.includes(t.id)) {
-                            linkedTaskIds.add(t.id);
-                        }
-                    });
-                });
-
-                if (linkedTaskIds.size > 0) {
-                    const tasksToRestore = projectToSync.tasks.filter(t => linkedTaskIds.has(t.id));
-                    updatedProject.tasks.push(...tasksToRestore);
-                    logger.info(`Restauradas ${tasksToRestore.length} tarefas vinculadas que seriam excluídas pela sincronização`, 'TasksView');
-                }
-            }
-            
-            // VALIDAÇÃO FINAL: Buscar projeto mais recente do store e comparar status
-            // Isso garante que nenhum status foi perdido durante a sincronização
-            logger.info('Iniciando validação final de status antes de atualizar projeto', 'TasksView', {
-                projectId: project.id,
-                totalStatusNoUpdatedProject: updatedProject.tasks.flatMap(t => (t.testCases || []).filter(tc => tc.status !== 'Not Run')).length
-            });
-            
-            const { projects: finalProjects } = useProjectsStore.getState();
-            const latestProjectAfterSync = finalProjects.find(p => p.id === project.id);
-            
-            if (latestProjectAfterSync) {
-                // Criar mapa de status executados do store (fonte de verdade)
-                const storeStatusMap = new Map<string, TestCase['status']>();
-                latestProjectAfterSync.tasks.forEach(task => {
-                    (task.testCases || []).forEach(tc => {
-                        if (tc.id && tc.status !== 'Not Run') {
-                            storeStatusMap.set(`${task.id}-${tc.id}`, tc.status);
-                        }
-                    });
-                });
-                
-                logger.debug('Mapa de status do store criado para validação final', 'TasksView', {
-                    totalStatusNoStore: storeStatusMap.size,
-                    totalStatusNoUpdatedProject: updatedProject.tasks.flatMap(t => (t.testCases || []).filter(tc => tc.status !== 'Not Run')).length
-                });
-                
-                // Verificar se algum status foi perdido no updatedProject
-                let statusPerdidos = 0;
-                const restoredTasks = updatedProject.tasks.map(task => {
-                    const restoredTestCases = (task.testCases || []).map(tc => {
-                        const storeStatus = storeStatusMap.get(`${task.id}-${tc.id}`);
-                        if (storeStatus && tc.status === 'Not Run') {
-                            // Status foi perdido - restaurar do store
-                            statusPerdidos++;
-                            logger.warn(`Status perdido detectado em TasksView: taskId=${task.id}, testCaseId=${tc.id}. Restaurando status "${storeStatus}" do store`, 'TasksView', {
-                                taskId: task.id,
-                                testCaseId: tc.id,
-                                statusPerdido: 'Not Run',
-                                statusRestaurado: storeStatus
-                            });
-                            return { ...tc, status: storeStatus };
-                        }
-                        return tc;
-                    });
-                    return { ...task, testCases: restoredTestCases };
-                });
-                
-                if (statusPerdidos > 0) {
-                    logger.warn(`VALIDAÇÃO FINAL EM TasksView: ${statusPerdidos} status foram perdidos e restaurados do store antes de atualizar`, 'TasksView', {
-                        statusRestaurados: statusPerdidos,
-                        totalStatusNoStore: storeStatusMap.size,
-                        totalStatusNoUpdatedProject: updatedProject.tasks.flatMap(t => (t.testCases || []).filter(tc => tc.status !== 'Not Run')).length,
-                        totalStatusNoFinalProject: restoredTasks.flatMap(t => (t.testCases || []).filter(tc => tc.status !== 'Not Run')).length
-                    });
-                    
-                    // Usar projeto com status restaurados
-                    const finalProject = { ...updatedProject, tasks: restoredTasks };
-                    logger.info('Chamando onUpdateProject com projeto com status restaurados', 'TasksView', {
-                        statusRestaurados: statusPerdidos
-                    });
-                    onUpdateProject(finalProject);
-                } else {
-                    // Nenhum status perdido - usar updatedProject normalmente
-                    logger.info('VALIDAÇÃO FINAL EM TasksView: Todos os status foram preservados', 'TasksView', {
-                        totalStatusNoStore: storeStatusMap.size,
-                        totalStatusNoUpdatedProject: updatedProject.tasks.flatMap(t => (t.testCases || []).filter(tc => tc.status !== 'Not Run')).length
-                    });
-                    logger.debug('Chamando onUpdateProject com updatedProject (sem perda de status)', 'TasksView');
-                    onUpdateProject(updatedProject);
-                }
-            } else {
-                // Store não tem projeto - usar updatedProject normalmente
-                logger.warn('VALIDAÇÃO FINAL EM TasksView: Projeto não encontrado no store após sincronização, usando updatedProject', 'TasksView', {
-                    projectId: project.id,
-                    totalStatusNoUpdatedProject: updatedProject.tasks.flatMap(t => (t.testCases || []).filter(tc => tc.status !== 'Not Run')).length
-                });
-                onUpdateProject(updatedProject);
-            }
-            
-            // Contar quantas tarefas foram atualizadas/adicionadas
-            const existingTaskIds = new Set(project.tasks.map(t => t.id));
-            const newTasks = updatedProject.tasks.filter(t => !existingTaskIds.has(t.id));
-            const updatedTasks = updatedProject.tasks.filter(t => {
-                if (existingTaskIds.has(t.id)) {
-                    const oldTask = project.tasks.find(ot => ot.id === t.id);
-                    if (!oldTask) return false;
-                    
-                    // Comparar mais campos para detectar mudanças
-                    const hasChanges = (
-                        oldTask.title !== t.title ||
-                        oldTask.description !== t.description ||
-                        oldTask.status !== t.status ||
-                        oldTask.jiraStatus !== t.jiraStatus ||
-                        oldTask.priority !== t.priority ||
-                        oldTask.severity !== t.severity ||
-                        JSON.stringify(oldTask.tags || []) !== JSON.stringify(t.tags || []) ||
-                        oldTask.completedAt !== t.completedAt ||
-                        oldTask.dueDate !== t.dueDate ||
-                        oldTask.parentId !== t.parentId ||
-                        oldTask.epicKey !== t.epicKey
-                    );
-                    
-                    if (hasChanges) {
-                        logger.debug(`Tarefa ${t.id} foi atualizada`, 'TasksView', {
-                            title: { old: oldTask.title, new: t.title },
-                            status: { old: oldTask.status, new: t.status },
-                            jiraStatus: { old: oldTask.jiraStatus, new: t.jiraStatus },
-                            priority: { old: oldTask.priority, new: t.priority }
-                        });
-                    }
-                    
-                    return hasChanges;
-                }
-                return false;
-            });
-            
-            // Montar mensagem de sucesso com informações detalhadas
-            const messages: string[] = [];
-            if (newTasks.length > 0) {
-                messages.push(`${newTasks.length} nova(s) tarefa(s) adicionada(s)`);
-            }
-            if (updatedTasks.length > 0) {
-                messages.push(`${updatedTasks.length} tarefa(s) atualizada(s)`);
-            }
-            
-            if (messages.length > 0) {
-                handleSuccess(`Sincronização concluída: ${messages.join(' e ')} do Jira!`);
-            } else {
-                handleSuccess('Sincronização concluída. Nenhuma alteração encontrada no Jira.');
-            }
-        } catch (error) {
-            handleError(error instanceof Error ? error : new Error('Erro ao sincronizar com Jira'), 'Sincronizar com Jira');
-        } finally {
-            setIsSyncingJira(false);
-        }
-    }, [project, onUpdateProject, handleSuccess, handleError]);
-
-    const handleConfirmJiraProject = useCallback(async () => {
-        if (!selectedJiraProjectKey) {
-            handleError(new Error('Selecione um projeto do Jira'), 'Sincronizar com Jira');
-            return;
-        }
-
-        const config = getJiraConfig();
-        if (!config) {
-            handleError(new Error('Jira não configurado'), 'Sincronizar com Jira');
-            return;
-        }
-
-        setShowJiraProjectSelector(false);
-        await performSync(config, selectedJiraProjectKey);
-        setSelectedJiraProjectKey('');
-    }, [selectedJiraProjectKey, performSync, handleError]);
-
     const handleLinkTasks = async () => {
         const tasksToLink = project.tasks.filter(t => selectedTasks.has(t.id));
         const targetProjects = allProjects.filter(p => selectedTargetProjects.has(p.id));
@@ -1740,26 +1452,6 @@ export const TasksView: React.FC<{
                         >
                             <Filter className="w-4 h-4" />
                             <span>{showFilters ? 'Ocultar Filtros' : `Filtros${activeFiltersCount > 0 ? ` (${activeFiltersCount})` : ''}`}</span>
-                        </Button>
-                        
-                        <Button 
-                            variant="outline"
-                            size="sm"
-                            onClick={handleSyncJira} 
-                            disabled={isSyncingJira}
-                            className="rounded-full flex items-center gap-1.5 flex-shrink-0 min-h-[44px] px-4 hover:bg-base-200"
-                        >
-                            {isSyncingJira ? (
-                                <>
-                                    <Loader2 className="w-4 h-4 animate-spin" />
-                                    <span>Sincronizando...</span>
-                                </>
-                            ) : (
-                                <>
-                                    <RefreshCw className="w-4 h-4" />
-                                    <span>Atualizar do Jira</span>
-                                </>
-                            )}
                         </Button>
                     </div>
                 </div>
@@ -1964,58 +1656,6 @@ export const TasksView: React.FC<{
                 parentId={defaultParentId}
             />
         </Modal>
-
-        <Modal 
-            isOpen={showJiraProjectSelector} 
-            onClose={() => {
-                setShowJiraProjectSelector(false);
-                setSelectedJiraProjectKey('');
-            }}
-            title="Selecionar Projeto do Jira"
-        >
-                <div className="space-y-4">
-                    <p className="text-base-content/70 text-sm">
-                        Selecione o projeto do Jira para sincronizar apenas as novas tarefas:
-                    </p>
-                    <div>
-                        <label className="block text-sm font-medium text-base-content mb-2">
-                            Projeto
-                        </label>
-                        <select
-                            value={selectedJiraProjectKey}
-                            onChange={(e) => setSelectedJiraProjectKey(e.target.value)}
-                            className="select select-bordered w-full"
-                        >
-                            <option value="">Selecione um projeto...</option>
-                            {availableJiraProjects.map(proj => (
-                                <option key={proj.key} value={proj.key}>
-                                    {proj.name} ({proj.key})
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-                    <div className="flex justify-end gap-2">
-                        <button
-                            type="button"
-                            onClick={() => {
-                                setShowJiraProjectSelector(false);
-                                setSelectedJiraProjectKey('');
-                            }}
-                            className="btn btn-outline btn-sm rounded-full flex items-center gap-1.5 hover:bg-base-200"
-                        >
-                            Cancelar
-                        </button>
-                        <button
-                            type="button"
-                            onClick={handleConfirmJiraProject}
-                            disabled={!selectedJiraProjectKey || isSyncingJira}
-                            className="btn btn-primary btn-sm rounded-full flex items-center gap-1.5 shadow-sm transition-all active:scale-95"
-                        >
-                            {isSyncingJira ? 'Sincronizando...' : 'Sincronizar'}
-                        </button>
-                    </div>
-                </div>
-            </Modal>
 
         <Modal
             isOpen={isLinkModalOpen}
