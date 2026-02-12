@@ -19,10 +19,26 @@ interface CriticalAlertsProps {
 }
 
 const alertStyles: Record<DashboardAlert['type'], { border: string; title: string; desc: string }> = {
-  critical: { border: 'border-l-4 border-l-error bg-error/10', title: 'text-error', desc: 'text-base-content/80' },
-  warning: { border: 'border-l-4 border-l-warning bg-warning/10', title: 'text-warning', desc: 'text-base-content/80' },
-  info: { border: 'border-l-4 border-l-info bg-info/10', title: 'text-info', desc: 'text-base-content/80' },
-  success: { border: 'border-l-4 border-l-success bg-success/10', title: 'text-success', desc: 'text-base-content/80' },
+  critical: {
+    border: 'border-l-4 border-l-error bg-error/10',
+    title: 'text-red-800 dark:text-red-400',
+    desc: 'text-red-700/90 dark:text-red-500/90',
+  },
+  warning: {
+    border: 'border-l-4 border-l-warning bg-warning/10',
+    title: 'text-orange-800 dark:text-orange-400',
+    desc: 'text-orange-700/90 dark:text-orange-500/90',
+  },
+  info: {
+    border: 'border-l-4 border-l-info bg-info/10',
+    title: 'text-blue-800 dark:text-blue-400',
+    desc: 'text-blue-700/90 dark:text-blue-500/90',
+  },
+  success: {
+    border: 'border-l-4 border-l-success bg-success/10',
+    title: 'text-green-800 dark:text-green-400',
+    desc: 'text-green-700/90 dark:text-green-500/90',
+  },
 };
 
 /**
@@ -38,7 +54,7 @@ export const CriticalAlerts = React.memo<CriticalAlertsProps>(({
     : alerts;
 
   const hasCritical = items.some(a => a.type === 'critical');
-  const titleColor = hasCritical ? 'text-error' : 'text-warning';
+  const titleColor = hasCritical ? 'text-red-800 dark:text-red-400' : 'text-orange-800 dark:text-orange-400';
 
   return (
     <div
@@ -49,7 +65,7 @@ export const CriticalAlerts = React.memo<CriticalAlertsProps>(({
     >
       <div className="flex items-center gap-2 mb-4">
         <AlertCircle className={cn('w-5 h-5', titleColor)} aria-hidden="true" />
-        <h3 className={cn('font-bold text-lg text-base-content', titleColor)}>
+        <h3 className={cn('font-bold text-lg', titleColor)}>
           Alertas Críticos
         </h3>
       </div>

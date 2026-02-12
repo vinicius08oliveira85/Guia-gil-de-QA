@@ -44,8 +44,14 @@ export const DashboardQualityKPIs = React.memo<DashboardQualityKPIsProps>(({ met
   const defectBarPercent = Math.min(100, metrics.defectRate * 5);
 
   return (
-    <section className={cn('space-y-6', className)}>
-      <h4 className="text-sm font-bold text-base-content/60 uppercase tracking-widest mb-4">
+    <section
+      className={cn('space-y-6', className)}
+      aria-labelledby="kpis-quality-heading"
+    >
+      <h4
+        id="kpis-quality-heading"
+        className="text-sm font-bold text-base-content/60 uppercase tracking-widest mb-4"
+      >
         KPIs de Qualidade
       </h4>
       <div className="space-y-6">

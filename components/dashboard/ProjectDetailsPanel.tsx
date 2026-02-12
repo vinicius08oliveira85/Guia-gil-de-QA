@@ -13,7 +13,7 @@ interface ProjectDetailsPanelProps {
 }
 
 /**
- * Painel "Detalhes do Projeto": header + área scrollável com Fases do Projeto e KPIs de Qualidade.
+ * Painel "Detalhes do Projeto": header + área scrollável (Fases) + bloco fixo (KPIs).
  */
 export const ProjectDetailsPanel = React.memo<ProjectDetailsPanelProps>(({
   phases,
@@ -41,11 +41,13 @@ export const ProjectDetailsPanel = React.memo<ProjectDetailsPanelProps>(({
           <MoreVertical className="w-5 h-5" aria-hidden="true" />
         </button>
       </div>
-      <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-10">
+      <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar p-6">
         <ProjectPhasesList
           phases={phases}
           currentPhaseProgress={currentPhaseProgress}
         />
+      </div>
+      <div className="shrink-0 border-t border-base-300 p-6">
         <DashboardQualityKPIs metrics={kpiMetrics} />
       </div>
     </div>
