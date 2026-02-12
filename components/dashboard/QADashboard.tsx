@@ -2,20 +2,29 @@ import React, { useMemo, useState } from 'react';
 import { Project } from '../../types';
 import { useProjectMetrics } from '../../hooks/useProjectMetrics';
 import { useMetricsHistory } from '../../hooks/useMetricsHistory';
-import { GlassIndicatorCards } from './GlassIndicatorCards';
+import { MetricCard } from './MetricCard';
+import { TestPhaseProgress } from './TestPhaseProgress';
+import { RecentActivity } from './RecentActivity';
+import { QualityKPIs } from './QualityKPIs';
+import { Card } from '../common/Card';
+import { Badge } from '../common/Badge';
 import { FileExportModal } from '../common/FileExportModal';
 import { DashboardFiltersModal, DashboardFilters } from './DashboardFiltersModal';
+import { ReopeningRateCard } from '../tasks/ReopeningRateCard';
+import { getQualityAlerts } from '../tasks/qualityMetrics';
 import {
   ClipboardCheck,
+  CheckCircle2,
   AlertCircle,
+  Activity,
+  ListChecks,
+  FileText,
+  Target,
+  Layers,
+  RefreshCw,
   Download,
   Filter,
   Plus,
-  ClipboardList,
-  Clock,
-  Zap,
-  CheckCircle,
-  AlertTriangle,
 } from 'lucide-react';
 
 /**
@@ -85,99 +94,174 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
   const metrics = useProjectMetrics(filteredProject);
   const { trends } = useMetricsHistory(filteredProject, dashboardFilters.period || 'week');
 
-  // Tendência para Total de Tarefas (modificador no card)
   const tasksTrend = useMemo(() => {
-    if (!trends) return '0%';
-    const current = trends.executedTests?.current ?? 0;
-    const previous = trends.executedTests?.previous ?? 0;
-    if (previous === 0) return '0%';
+    if (!trends) return { change: '0%', trend: 'neutral' as const };
+    const current = trends.executedTests?.current || 0;
+    const previous = trends.executedTests?.previous || 0;
+    if (previous === 0) return { change: '0%', trend: 'neutral' as const };
     const changePercent = Math.round(((current - previous) / previous) * 100);
-    return changePercent > 0 ? `+${changePercent}%` : changePercent < 0 ? `${changePercent}%` : '0%';
+    return {
+      change: changePercent > 0 ? `+${changePercent}%` : changePercent < 0 ? `${changePercent}%` : '0%',
+      trend: changePercent > 0 ? 'up' as const : changePercent < 0 ? 'down' as const : 'neutral' as const,
+    };
   }, [trends]);
 
-  // Helper para alternar filtro de bugs
+  const testCasesTrend = useMemo(() => {
+    if (!trends) return { change: '0%', trend: 'neutral' as const };
+    const current = trends.executedTests?.current || 0;
+    const previous = trends.executedTests?.previous || 0;
+    if (previous === 0) return { change: '0%', trend: 'neutral' as const };
+    const changePercent = Math.round(((current - previous) / previous) * 100);
+    return {
+      change: changePercent > 0 ? `+${changePercent}%` : changePercent < 0 ? `${changePercent}%` : '0%',
+      trend: changePercent > 0 ? 'up' as const : changePercent < 0 ? 'down' as const : 'neutral' as const,
+    };
+  }, [trends]);
+
   const toggleBugFilter = () => {
     setDashboardFilters(prev => {
       const isBugOnly = prev.taskType?.length === 1 && prev.taskType[0] === 'Bug';
-      return {
-        ...prev,
-        taskType: isBugOnly ? [] : ['Bug']
-      };
+      return { ...prev, taskType: isBugOnly ? [] : ['Bug'] };
     });
   };
 
-  const totalTasksCount = filteredProject.tasks?.length ?? 0;
-  const taskStatus = metrics.taskStatus ?? { toDo: 0, inProgress: 0, done: 0, blocked: 0 };
-  const totalNonBug = taskStatus.toDo + taskStatus.inProgress + taskStatus.done + taskStatus.blocked;
-  const concludedPercent = totalNonBug > 0 ? Math.round((taskStatus.done / totalNonBug) * 100) : 0;
-  const openBugs = metrics.openVsClosedBugs?.open ?? 0;
-  const hasCriticalBugs = (metrics.bugsBySeverity?.['Crítico'] ?? 0) > 0;
+  const totalStrategies = useMemo(() => {
+    const strategies = new Set<string>();
+    filteredProject.tasks?.forEach(task => {
+      task.testStrategy?.forEach(strategy => {
+        strategies.add(strategy.testType);
+      });
+    });
+    return strategies.size;
+  }, [filteredProject.tasks]);
 
-  const indicatorItems = useMemo(
-    () => [
-      {
-        label: 'Total de Tarefas',
-        value: totalTasksCount,
-        modifier: tasksTrend,
-        icon: ClipboardList,
-        colorTheme: 'orange' as const,
-      },
-      {
-        label: 'Tarefas Pendentes',
-        value: taskStatus.toDo,
-        modifier: '-',
-        icon: Clock,
-        colorTheme: 'yellow' as const,
-      },
-      {
-        label: 'Em Andamento',
-        value: taskStatus.inProgress,
-        modifier: 'active',
-        icon: Zap,
-        colorTheme: 'blue' as const,
-      },
-      {
-        label: 'Concluídas',
-        value: taskStatus.done,
-        modifier: `${concludedPercent}%`,
-        icon: CheckCircle,
-        colorTheme: 'emerald' as const,
-      },
-      {
-        label: 'Bugs Abertos',
-        value: openBugs,
-        modifier: hasCriticalBugs ? 'Critical' : 'Abertos',
-        icon: AlertTriangle,
-        colorTheme: 'red' as const,
-      },
-    ],
-    [
-      totalTasksCount,
-      tasksTrend,
-      taskStatus.toDo,
-      taskStatus.inProgress,
-      taskStatus.done,
-      concludedPercent,
-      openBugs,
-      hasCriticalBugs,
-    ]
-  );
+  const strategiesTrend = useMemo(() => {
+    if (!trends || !project.metricsHistory || project.metricsHistory.length < 2) {
+      return { change: '0%', trend: 'neutral' as const };
+    }
+    const current = trends.executedTests?.current || 0;
+    const previous = trends.executedTests?.previous || 0;
+    if (previous === 0) return { change: '0%', trend: 'neutral' as const };
+    const changePercent = Math.round(((current - previous) / previous) * 100);
+    if (Math.abs(changePercent) < 5) return { change: '0%', trend: 'neutral' as const };
+    return {
+      change: changePercent > 0 ? `+${changePercent}%` : `${changePercent}%`,
+      trend: changePercent > 0 ? 'up' as const : 'down' as const,
+    };
+  }, [trends, project.metricsHistory]);
 
-  const executionProps = useMemo(
-    () => ({
-      executedTestCases: metrics.executedTestCases ?? 0,
-      totalTestCases: metrics.totalTestCases ?? 0,
-      automationRatio: metrics.automationRatio ?? 0,
-      projectName: filteredProject.name || 'Projeto',
-      automationTrend: '+5.2% esta semana',
-    }),
-    [
-      metrics.executedTestCases,
-      metrics.totalTestCases,
-      metrics.automationRatio,
-      filteredProject.name,
-    ]
-  );
+  const activePhases = useMemo(() => {
+    return metrics.newPhases?.filter(p => p.status === 'Em Andamento' || p.status === 'Concluído').length || 0;
+  }, [metrics.newPhases]);
+
+  const phasesTrend = useMemo(() => {
+    if (!trends || !project.metricsHistory || project.metricsHistory.length < 2) {
+      return { change: '0%', trend: 'neutral' as const };
+    }
+    const current = trends.passRate?.current || 0;
+    const previous = trends.passRate?.previous || 0;
+    if (previous === 0) return { change: '0%', trend: 'neutral' as const };
+    const changePercent = Math.round(((current - previous) / previous) * 100);
+    if (Math.abs(changePercent) < 5) return { change: '0%', trend: 'neutral' as const };
+    return {
+      change: changePercent > 0 ? `+${changePercent}%` : `${changePercent}%`,
+      trend: changePercent > 0 ? 'up' as const : 'down' as const,
+    };
+  }, [trends, project.metricsHistory]);
+
+  const defectRate = useMemo(() => {
+    if (metrics.totalTestCases === 0) return 0;
+    return Math.round((metrics.failedTestCases / metrics.totalTestCases) * 100);
+  }, [metrics]);
+
+  const reopeningRate = 0;
+
+  const qualityMetricsObj = useMemo(() => ({
+    coverage: metrics.testCoverage,
+    passRate: metrics.testPassRate,
+    defectRate,
+    reopeningRate,
+  }), [metrics, defectRate]);
+
+  const hasCriticalAlerts = useMemo(() => {
+    return metrics.bugsBySeverity['Crítico'] > 0 ||
+      (metrics.failedTestCases > 0 && metrics.testPassRate < 50);
+  }, [metrics]);
+
+  const alerts = useMemo(() => {
+    const alertsList: Array<{
+      id: string;
+      type: 'critical' | 'warning' | 'info' | 'success';
+      title: string;
+      description: string;
+      priority: 'High' | 'Medium' | 'Low';
+      time: string;
+    }> = [];
+
+    if (metrics.bugsBySeverity['Crítico'] > 0) {
+      alertsList.push({
+        id: 'critical-bug',
+        type: 'critical',
+        title: 'Bug Crítico no Projeto',
+        description: `${metrics.bugsBySeverity['Crítico']} bug(s) crítico(s) aberto(s) requerem atenção imediata`,
+        priority: 'High',
+        time: 'Agora',
+      });
+    }
+    if (metrics.failedTestCases > 0 && metrics.testPassRate < 50) {
+      alertsList.push({
+        id: 'low-pass-rate',
+        type: 'critical',
+        title: 'Taxa de Aprovação Baixa',
+        description: `Taxa de aprovação de ${metrics.testPassRate}% está abaixo do esperado`,
+        priority: 'High',
+        time: 'Agora',
+      });
+    }
+    if (metrics.testCoverage < 80) {
+      alertsList.push({
+        id: 'low-coverage',
+        type: 'warning',
+        title: 'Cobertura de Testes Abaixo do Limiar',
+        description: `Cobertura de ${metrics.testCoverage}% está abaixo do recomendado (80%)`,
+        priority: 'Medium',
+        time: 'Agora',
+      });
+    }
+    const qualityAlerts = getQualityAlerts(qualityMetricsObj);
+    qualityAlerts.forEach((alertMsg, index) => {
+      if (alertMsg.includes('Cobertura') && alertsList.some(a => a.id === 'low-coverage')) return;
+      alertsList.push({
+        id: `quality-auto-${index}`,
+        type: alertMsg.includes('Crítica') || alertMsg.includes('Elevada') ? 'critical' : 'warning',
+        title: 'Alerta de Qualidade',
+        description: alertMsg,
+        priority: alertMsg.includes('Crítica') ? 'High' : 'Medium',
+        time: 'Agora',
+      });
+    });
+    if (metrics.openVsClosedBugs.open > 10) {
+      alertsList.push({
+        id: 'many-bugs',
+        type: 'warning',
+        title: 'Muitos Bugs Abertos',
+        description: `${metrics.openVsClosedBugs.open} bugs abertos podem impactar a qualidade`,
+        priority: 'Medium',
+        time: 'Agora',
+      });
+    }
+    if (alertsList.length === 0) {
+      alertsList.push({
+        id: 'all-good',
+        type: 'success',
+        title: 'Tudo Funcionando Bem',
+        description: 'Nenhum alerta crítico. O projeto está em bom estado.',
+        priority: 'Low',
+        time: 'Agora',
+      });
+    }
+    return alertsList.sort((a, b) => (a.priority === 'High' ? -1 : 1));
+  }, [metrics, qualityMetricsObj]);
 
   return (
     <div className="space-y-6" role="main" aria-label="Dashboard de QA">
@@ -247,8 +331,80 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
         </div>
       </div>
 
-      {/* Indicadores QA (glass): Total, Pendentes, Em Andamento, Concluídas, Bugs, Execução, Automatizados */}
-      <GlassIndicatorCards items={indicatorItems} execution={executionProps} />
+      {/* Grid: 4 MetricCards */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <MetricCard
+          title="Total de Tarefas"
+          value={filteredProject.tasks?.length ?? 0}
+          change={tasksTrend.change}
+          trend={tasksTrend.trend}
+          icon={ListChecks}
+        />
+        <MetricCard
+          title="Casos de Teste"
+          value={metrics.totalTestCases ?? 0}
+          change={testCasesTrend.change}
+          trend={testCasesTrend.trend}
+          icon={FileText}
+        />
+        <MetricCard
+          title="Estratégias de Teste"
+          value={totalStrategies}
+          change={strategiesTrend.change}
+          trend={strategiesTrend.trend}
+          icon={Target}
+        />
+        <MetricCard
+          title="Fases de Teste"
+          value={activePhases}
+          change={phasesTrend.change}
+          trend={phasesTrend.trend}
+          icon={Layers}
+        />
+      </div>
+
+      {/* Progresso das Fases + Quality KPIs + ReopeningRate */}
+      <div className="grid gap-4 lg:grid-cols-2 mt-6">
+        <Card className="p-4">
+          <TestPhaseProgress project={filteredProject} />
+        </Card>
+        <div className="space-y-4">
+          <QualityKPIs project={filteredProject} />
+          <ReopeningRateCard rate={reopeningRate} />
+        </div>
+      </div>
+
+      {/* Recent Activity + Alertas */}
+      <div className="grid gap-4 lg:grid-cols-2 mt-6">
+        <RecentActivity project={filteredProject} />
+        <Card className="p-4">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-base-content flex items-center gap-2">
+              <AlertCircle className="w-5 h-5" aria-hidden="true" />
+              Alertas
+            </h3>
+            {hasCriticalAlerts && (
+              <Badge variant="error" size="sm">Crítico</Badge>
+            )}
+          </div>
+          <div className="space-y-3" role="list" aria-label="Alertas de qualidade">
+            {alerts.slice(0, 5).map((alert) => (
+              <div
+                key={alert.id}
+                className={`rounded-xl border px-3 py-2 ${
+                  alert.type === 'critical' ? 'border-error/30 bg-error/5' :
+                  alert.type === 'warning' ? 'border-warning/30 bg-warning/5' :
+                  'border-base-300 bg-base-100'
+                }`}
+                role="listitem"
+              >
+                <p className="text-sm font-medium text-base-content">{alert.title}</p>
+                <p className="text-xs text-base-content/70 mt-0.5">{alert.description}</p>
+              </div>
+            ))}
+          </div>
+        </Card>
+      </div>
 
       {/* Modal de Exportação */}
       <FileExportModal
