@@ -1435,16 +1435,17 @@ export const JiraTaskItem: React.FC<{
                 >
                     <div aria-hidden="true" className="absolute left-0 top-0 h-full w-2" style={typeAccent} />
 
-                    <div className="p-3 sm:p-2 md:p-3">
-                        <div className="flex flex-wrap sm:flex-nowrap items-start sm:items-center gap-1.5 sm:gap-2 md:gap-3">
-                            {/* Linha 1 (Mobile): Controles e Título */}
-                            <div className="flex items-center gap-1.5 sm:gap-2 w-full sm:flex-1 sm:min-w-0 flex-shrink-0">
+                    <div className="p-2 sm:p-2 md:p-3">
+                        {/* Linha 1 Mobile: Badge Tipo + ID + Título | Métricas + Status */}
+                        <div className="flex items-center gap-1 sm:gap-2 md:gap-3 h-6 sm:h-auto overflow-hidden mb-0 sm:mb-2">
+                            {/* Controles e Info Principal */}
+                            <div className="flex items-center gap-1 sm:gap-2 flex-1 min-w-0 overflow-hidden">
                                 {onToggleSelect && (
                                     <input 
                                         type="radio" 
                                         checked={isSelected} 
                                         onChange={(e) => { e.stopPropagation(); onToggleSelect(); }}
-                                        className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-orange-500 rounded-full appearance-none checked:bg-orange-500 checked:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/50 cursor-pointer shrink-0"
+                                        className="w-3 h-3 sm:w-5 sm:h-5 border-2 border-orange-500 rounded-full appearance-none checked:bg-orange-500 checked:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/50 cursor-pointer shrink-0"
                                         style={{
                                             backgroundImage: isSelected ? 'radial-gradient(circle, white 30%, transparent 30%)' : 'none'
                                         }}
@@ -1455,61 +1456,41 @@ export const JiraTaskItem: React.FC<{
                                     <button
                                         type="button"
                                         onClick={(e) => { e.stopPropagation(); setIsChildrenOpen(!isChildrenOpen); }}
-                                        className="btn btn-ghost btn-xs flex items-center gap-0.5 sm:gap-1 px-0.5 sm:px-1 shrink-0"
+                                        className="btn btn-ghost btn-xs flex items-center gap-0.5 sm:gap-1 px-0.5 sm:px-1 shrink-0 h-4 sm:h-auto"
                                         aria-label={isChildrenOpen ? `Colapsar ${task.children.length} subtarefas de ${task.id}` : `Expandir ${task.children.length} subtarefas de ${task.id}`}
                                     >
-                                        <ChevronDownIcon className={`w-3.5 h-3.5 sm:w-4 sm:h-4 transition-transform ${isChildrenOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
-                                        <span className="bg-base-300 text-[10px] sm:text-xs px-1 sm:px-1.5 py-0.5 rounded-full" aria-label={`${task.children.length} subtarefas`}>
+                                        <ChevronDownIcon className={`w-2.5 h-2.5 sm:w-4 sm:h-4 transition-transform ${isChildrenOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
+                                        <span className="bg-base-300 text-[8px] sm:text-xs px-0.5 sm:px-1.5 py-0.5 rounded-full" aria-label={`${task.children.length} subtarefas`}>
                                             {task.children.length}
                                         </span>
                                     </button>
-                                ) : <div className="w-4 sm:w-6 shrink-0" />}
+                                ) : <div className="w-3 sm:w-6 shrink-0" />}
                                 
-                                <div className="flex-1 min-w-0 flex items-center gap-1.5 sm:gap-2 flex-wrap sm:flex-nowrap">
-                                    <span className="badge badge-sm text-white border-0 px-1.5 sm:px-2 min-h-0 h-4 sm:h-5 text-[9px] sm:text-[10px] shrink-0" style={typeBadgeStyle}>{task.type}</span>
-                                    <span className="font-mono text-[10px] sm:text-xs text-base-content/60 shrink-0">{task.id}</span>
-                                    <span className="text-xs sm:text-sm font-medium text-base-content leading-tight line-clamp-2 sm:truncate flex-1 min-w-0">{task.title}</span>
-                                </div>
+                                <span className="badge badge-sm text-white border-0 px-1 sm:px-2 min-h-0 h-4 sm:h-5 text-[8px] sm:text-[10px] shrink-0" style={typeBadgeStyle}>{task.type}</span>
+                                <span className="font-mono text-[8px] sm:text-xs text-base-content/60 shrink-0">{task.id}</span>
+                                <h3 
+                                    className="text-[10px] sm:text-sm font-medium text-base-content truncate flex-1 min-w-0 cursor-pointer" 
+                                    onClick={onOpenModal ? handleCardClick : undefined}
+                                    title={task.title}
+                                >
+                                    {task.title}
+                                </h3>
                             </div>
 
-                            {/* Linha 1 (Desktop) / Linha 2 (Mobile): Métricas */}
-                            <div className="flex items-center gap-1 flex-shrink-0 whitespace-nowrap order-3 sm:order-2">
+                            {/* Métricas + Status à direita na linha 1 */}
+                            <div className="flex items-center gap-1 sm:gap-2 shrink-0">
                                 {testExecutionSummary.total > 0 && (
                                     <>
-                                        <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-success flex items-center justify-center text-white text-[8px] sm:text-[9px] font-semibold" title="Aprovados" aria-label={`${testExecutionSummary.passed} testes aprovados`}>
+                                        <div className="w-3 h-3 sm:w-5 sm:h-5 rounded-full bg-success flex items-center justify-center text-white text-[7px] sm:text-[9px] font-semibold" title="Aprovados" aria-label={`${testExecutionSummary.passed} testes aprovados`}>
                                             {testExecutionSummary.passed}
                                         </div>
-                                        <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-error flex items-center justify-center text-white text-[8px] sm:text-[9px] font-semibold" title="Reprovados" aria-label={`${testExecutionSummary.failed} testes reprovados`}>
+                                        <div className="w-3 h-3 sm:w-5 sm:h-5 rounded-full bg-error flex items-center justify-center text-white text-[7px] sm:text-[9px] font-semibold" title="Reprovados" aria-label={`${testExecutionSummary.failed} testes reprovados`}>
                                             {testExecutionSummary.failed}
                                         </div>
-                                        <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center text-white text-[8px] sm:text-[9px] font-semibold" style={{ backgroundColor: '#d4a017' }} title="Pendentes" aria-label={`${testExecutionSummary.pending} testes pendentes`}>
+                                        <div className="w-3 h-3 sm:w-5 sm:h-5 rounded-full flex items-center justify-center text-white text-[7px] sm:text-[9px] font-semibold" style={{ backgroundColor: '#d4a017' }} title="Pendentes" aria-label={`${testExecutionSummary.pending} testes pendentes`}>
                                             {testExecutionSummary.pending}
                                         </div>
                                     </>
-                                )}
-                            </div>
-
-                            {/* Linha 2 (Mobile): Status e Ações */}
-                            <div className="flex items-center gap-0.5 sm:gap-2 flex-shrink-0 w-full sm:w-auto sm:ml-auto whitespace-nowrap flex-wrap sm:flex-nowrap order-2 sm:order-3 max-w-full">
-                                {/* Ações Rápidas de IA */}
-                                {['tarefa', 'bug', 'task'].includes(task.type.toLowerCase()) && onGenerateAll && (
-                                    <button
-                                        type="button"
-                                        onClick={handleGenerateAll}
-                                        disabled={isGeneratingAll || isGenerating || isGeneratingBdd || isGeneratingTests}
-                                        className="btn btn-xs bg-orange-500 hover:bg-orange-600 text-white border-0 gap-0.5 sm:gap-1.5 flex-shrink-0 h-4 sm:h-7 px-1 sm:px-2"
-                                        title="Gerar Tudo (BDD e Testes)"
-                                        aria-label={isGenerating || isGeneratingAll ? 'Gerando tudo' : 'Gerar Tudo (BDD e Testes)'}
-                                    >
-                                        {isGenerating || isGeneratingAll ? <span className="loading loading-spinner loading-xs"></span> : <Zap className="w-2 h-2 sm:w-3 sm:h-3" aria-hidden="true" />}
-                                        <span className="text-[9px] sm:text-xs truncate">{isGenerating || isGeneratingAll ? 'Gerando...' : 'Gerar Tudo'}</span>
-                                    </button>
-                                )}
-                                {taskTestStatus && (
-                                    <span className={`badge badge-xs ${testStatusConfig.bgColor} ${testStatusConfig.color} border gap-0.5 sm:gap-1 flex-shrink-0 h-4 sm:h-7 px-1 sm:px-2`}>
-                                        <span aria-hidden="true" className="text-[8px] sm:text-xs">{testStatusConfig.icon}</span>
-                                        <span className="font-medium text-[8px] sm:text-[10px] truncate">{testStatusConfig.label}</span>
-                                    </span>
                                 )}
                                 <div className="relative flex-shrink-0" ref={statusDropdownRef}>
                                     <button
@@ -1518,13 +1499,13 @@ export const JiraTaskItem: React.FC<{
                                             e.stopPropagation();
                                             setIsStatusDropdownOpen(!isStatusDropdownOpen);
                                         }}
-                                        className="btn btn-xs rounded-full text-white border-0 flex-shrink-0 h-4 sm:h-7 px-1.5 sm:px-3 text-[9px] sm:text-xs"
+                                        className="btn btn-xs rounded-full text-white border-0 flex-shrink-0 h-4 sm:h-7 px-1 sm:px-3 text-[8px] sm:text-xs"
                                         style={{ backgroundColor: currentStatusColor || '#6b7280', color: statusTextColor || '#ffffff' }}
                                         aria-haspopup="true"
                                         aria-expanded={isStatusDropdownOpen}
                                         aria-label={`Status atual: ${getDisplayStatus(task)}. Clique para mudar.`}
                                     >
-                                        <span className="truncate max-w-[60px] sm:max-w-none">{getDisplayStatus(task)}</span>
+                                        <span className="truncate max-w-[50px] sm:max-w-none">{getDisplayStatus(task)}</span>
                                         <ChevronDownIcon className={`w-2 h-2 sm:w-3 sm:h-3 ml-0.5 sm:ml-1 transition-transform flex-shrink-0 ${isStatusDropdownOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
                                     </button>
                                     {isStatusDropdownOpen && (
@@ -1603,19 +1584,38 @@ export const JiraTaskItem: React.FC<{
                                         </div>
                                     )}
                                 </div>
-                                <button 
-                                    type="button" 
-                                    onClick={(e) => { e.stopPropagation(); handleToggleDetails(); }} 
-                                    className="btn btn-ghost btn-xs btn-circle shrink-0 h-5 w-5 sm:h-auto sm:w-auto flex items-center justify-center"
-                                    style={{ 
-                                        minHeight: '44px', 
-                                        minWidth: '44px'
-                                    }}
-                                    aria-label={isDetailsOpen ? `Colapsar detalhes da tarefa ${task.id}` : `Expandir detalhes da tarefa ${task.id}`}
-                                >
-                                    <ChevronDownIcon className={`w-3 h-3 sm:w-4 sm:h-4 transition-transform ${isDetailsOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
-                                </button>
                             </div>
+                        </div>
+
+                        {/* Linha 2 Mobile: Gerar Tudo + Badge Status Teste + Botão Expandir */}
+                        <div className="flex items-center gap-1 sm:gap-2 h-6 sm:h-auto overflow-hidden">
+                            {['tarefa', 'bug', 'task'].includes(task.type.toLowerCase()) && onGenerateAll && (
+                                <button
+                                    type="button"
+                                    onClick={handleGenerateAll}
+                                    disabled={isGeneratingAll || isGenerating || isGeneratingBdd || isGeneratingTests}
+                                    className="btn btn-xs bg-orange-500 hover:bg-orange-600 text-white border-0 gap-0.5 sm:gap-1.5 flex-shrink-0 h-4 sm:h-7 px-1 sm:px-2"
+                                    title="Gerar Tudo (BDD e Testes)"
+                                    aria-label={isGenerating || isGeneratingAll ? 'Gerando tudo' : 'Gerar Tudo (BDD e Testes)'}
+                                >
+                                    {isGenerating || isGeneratingAll ? <span className="loading loading-spinner loading-xs"></span> : <Zap className="w-2 h-2 sm:w-3 sm:h-3" aria-hidden="true" />}
+                                    <span className="text-[8px] sm:text-xs truncate max-w-[60px] sm:max-w-none">{isGenerating || isGeneratingAll ? 'Gerando...' : 'Gerar Tudo'}</span>
+                                </button>
+                            )}
+                            {taskTestStatus && (
+                                <span className={`badge badge-xs ${testStatusConfig.bgColor} ${testStatusConfig.color} border gap-0.5 sm:gap-1 flex-shrink-0 h-4 sm:h-7 px-1 sm:px-2`}>
+                                    <span aria-hidden="true" className="text-[7px] sm:text-xs">{testStatusConfig.icon}</span>
+                                    <span className="font-medium text-[8px] sm:text-[10px] truncate max-w-[50px] sm:max-w-none">{testStatusConfig.label}</span>
+                                </span>
+                            )}
+                            <button 
+                                type="button" 
+                                onClick={(e) => { e.stopPropagation(); handleToggleDetails(); }} 
+                                className="btn btn-ghost btn-xs btn-circle shrink-0 h-4 w-4 sm:h-auto sm:w-auto flex items-center justify-center ml-auto sm:ml-0"
+                                aria-label={isDetailsOpen ? `Colapsar detalhes da tarefa ${task.id}` : `Expandir detalhes da tarefa ${task.id}`}
+                            >
+                                <ChevronDownIcon className={`w-2.5 h-2.5 sm:w-4 sm:h-4 transition-transform ${isDetailsOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
+                            </button>
                         </div>
                     </div>
 
