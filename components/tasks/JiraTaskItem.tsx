@@ -1437,8 +1437,8 @@ export const JiraTaskItem: React.FC<{
 
                     <div className="p-3 sm:p-2 md:p-3">
                         <div className="flex flex-wrap sm:flex-nowrap items-start sm:items-center gap-1.5 sm:gap-2 md:gap-3">
-                            {/* Linha 1 (Mobile): Controles e Título */}
-                            <div className="flex items-center gap-1.5 sm:gap-2 w-full sm:flex-1 sm:min-w-0 flex-shrink-0">
+                            {/* Linha 1: Controles e Título (mesma sequência web; mobile = uma linha compacta) */}
+                            <div className="flex items-center gap-1.5 sm:gap-2 w-full sm:flex-1 sm:min-w-0 flex-shrink-0 order-1">
                                 {onToggleSelect && (
                                     <input 
                                         type="radio" 
@@ -1465,15 +1465,17 @@ export const JiraTaskItem: React.FC<{
                                     </button>
                                 ) : <div className="w-4 sm:w-6 shrink-0" />}
                                 
-                                <div className="flex-1 min-w-0 flex items-center gap-1.5 sm:gap-2 flex-wrap sm:flex-nowrap">
+                                <div className="flex-1 min-w-0 flex items-center gap-1.5 sm:gap-2 flex-nowrap">
                                     <span className="badge badge-sm text-white border-0 px-1.5 sm:px-2 min-h-0 h-4 sm:h-5 text-[9px] sm:text-[10px] shrink-0" style={typeBadgeStyle}>{task.type}</span>
                                     <span className="font-mono text-[10px] sm:text-xs text-base-content/60 shrink-0">{task.id}</span>
-                                    <span className="text-xs sm:text-sm font-medium text-base-content leading-tight line-clamp-2 sm:truncate flex-1 min-w-0">{task.title}</span>
+                                    <span className="text-xs sm:text-sm font-medium text-base-content leading-tight truncate flex-1 min-w-0">{task.title}</span>
                                 </div>
                             </div>
 
-                            {/* Linha 1 (Desktop) / Linha 2 (Mobile): Métricas */}
-                            <div className="flex items-center gap-1 flex-shrink-0 whitespace-nowrap order-3 sm:order-2">
+                            {/* Linha 2 (mobile): wrapper métricas + ações na mesma linha; desktop: sm:contents mantém ordem */}
+                            <div className="flex w-full flex-row flex-wrap items-center gap-1 sm:gap-2 order-2 sm:contents">
+                            {/* Métricas (web: após título) */}
+                            <div className="flex items-center gap-1 flex-shrink-0 whitespace-nowrap sm:order-2">
                                 {testExecutionSummary.total > 0 && (
                                     <>
                                         <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-success flex items-center justify-center text-white text-[8px] sm:text-[9px] font-semibold" title="Aprovados" aria-label={`${testExecutionSummary.passed} testes aprovados`}>
@@ -1489,24 +1491,24 @@ export const JiraTaskItem: React.FC<{
                                 )}
                             </div>
 
-                            {/* Linha 2 (Mobile): Status e Ações */}
-                            <div className="flex items-center gap-0.5 sm:gap-2 flex-shrink-0 w-full sm:w-auto sm:ml-auto whitespace-nowrap flex-wrap sm:flex-nowrap order-2 sm:order-3 max-w-full">
+                            {/* Ações (Gerar Tudo, Teste Concluído, status, expandir) */}
+                            <div className="flex items-center gap-0.5 sm:gap-2 flex-shrink-0 w-full sm:w-auto sm:ml-auto whitespace-nowrap flex-wrap sm:flex-nowrap sm:order-3 max-w-full">
                                 {/* Ações Rápidas de IA */}
                                 {['tarefa', 'bug', 'task'].includes(task.type.toLowerCase()) && onGenerateAll && (
                                     <button
                                         type="button"
                                         onClick={handleGenerateAll}
                                         disabled={isGeneratingAll || isGenerating || isGeneratingBdd || isGeneratingTests}
-                                        className="btn btn-xs bg-orange-500 hover:bg-orange-600 text-white border-0 gap-0.5 sm:gap-1.5 flex-shrink-0 h-4 sm:h-7 px-1 sm:px-2"
+                                        className="btn btn-xs bg-orange-500 hover:bg-orange-600 text-white border-0 gap-0.5 sm:gap-1.5 flex items-center flex-shrink-0 h-4 min-h-4 max-h-4 sm:min-h-0 sm:max-h-none sm:h-7 px-1 sm:px-2 leading-none sm:leading-normal"
                                         title="Gerar Tudo (BDD e Testes)"
                                         aria-label={isGenerating || isGeneratingAll ? 'Gerando tudo' : 'Gerar Tudo (BDD e Testes)'}
                                     >
                                         {isGenerating || isGeneratingAll ? <span className="loading loading-spinner loading-xs"></span> : <Zap className="w-2 h-2 sm:w-3 sm:h-3" aria-hidden="true" />}
-                                        <span className="text-[9px] sm:text-xs truncate">{isGenerating || isGeneratingAll ? 'Gerando...' : 'Gerar Tudo'}</span>
+                                        <span className="text-[8px] sm:text-xs truncate">{isGenerating || isGeneratingAll ? 'Gerando...' : 'Gerar Tudo'}</span>
                                     </button>
                                 )}
                                 {taskTestStatus && (
-                                    <span className={`badge badge-xs ${testStatusConfig.bgColor} ${testStatusConfig.color} border gap-0.5 sm:gap-1 flex-shrink-0 h-4 sm:h-7 px-1 sm:px-2`}>
+                                    <span className={`badge badge-xs inline-flex items-center ${testStatusConfig.bgColor} ${testStatusConfig.color} border gap-0.5 sm:gap-1 flex-shrink-0 h-4 sm:h-7 px-1 sm:px-2`}>
                                         <span aria-hidden="true" className="text-[8px] sm:text-xs">{testStatusConfig.icon}</span>
                                         <span className="font-medium text-[8px] sm:text-[10px] truncate">{testStatusConfig.label}</span>
                                     </span>
@@ -1518,7 +1520,7 @@ export const JiraTaskItem: React.FC<{
                                             e.stopPropagation();
                                             setIsStatusDropdownOpen(!isStatusDropdownOpen);
                                         }}
-                                        className="btn btn-xs rounded-full text-white border-0 flex-shrink-0 h-4 sm:h-7 px-1.5 sm:px-3 text-[9px] sm:text-xs"
+                                        className="btn btn-xs rounded-full text-white border-0 flex items-center flex-shrink-0 h-4 min-h-4 max-h-4 sm:min-h-0 sm:max-h-none sm:h-7 px-1 sm:px-3 text-[8px] sm:text-xs leading-none sm:leading-normal"
                                         style={{ backgroundColor: currentStatusColor || '#6b7280', color: statusTextColor || '#ffffff' }}
                                         aria-haspopup="true"
                                         aria-expanded={isStatusDropdownOpen}
@@ -1615,6 +1617,7 @@ export const JiraTaskItem: React.FC<{
                                 >
                                     <ChevronDownIcon className={`w-3 h-3 sm:w-4 sm:h-4 transition-transform ${isDetailsOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
                                 </button>
+                            </div>
                             </div>
                         </div>
                     </div>
