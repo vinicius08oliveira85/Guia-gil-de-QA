@@ -88,7 +88,7 @@ function SmallIndicatorCard({ item }: { item: SmallIndicatorItem }) {
       />
       <div className="flex justify-between items-start mb-4">
         <span
-          className={`text-[10px] uppercase tracking-widest font-extrabold ${config.labelColor}`}
+          className={`text-xs font-semibold uppercase tracking-wide ${config.labelColor}`}
         >
           {item.label}
         </span>
@@ -97,10 +97,10 @@ function SmallIndicatorCard({ item }: { item: SmallIndicatorItem }) {
         </div>
       </div>
       <div className="flex items-baseline gap-2">
-        <span className={`text-4xl font-extrabold ${config.valueColor}`}>
+        <span className={`text-3xl font-bold ${config.valueColor}`}>
           {item.value}
         </span>
-        <span className="text-xs text-slate-400 dark:text-slate-500 font-mono">
+        <span className="text-xs text-base-content/60 font-normal">
           {item.modifier}
         </span>
       </div>
@@ -159,14 +159,14 @@ export function ExecutionAutomationCard({
                 <h3 className="text-xl font-bold text-base-content">
                   Execução de Testes
                 </h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">
+                <p className="text-sm text-base-content/70 font-medium">
                   {projectName}
                 </p>
               </div>
             </div>
             <div className="text-right">
               <span
-                className="text-3xl font-black text-orange-600 dark:text-orange-500 animate-pulse-subtle"
+                className="text-2xl font-bold text-orange-600 dark:text-orange-500 animate-pulse-subtle"
                 aria-label={`${executionPercent}% de execução`}
               >
                 {executionPercent}%
@@ -175,7 +175,7 @@ export function ExecutionAutomationCard({
           </div>
           <div className="space-y-3">
             <div
-              className="h-4 w-full bg-slate-200/50 dark:bg-slate-800/50 rounded-full overflow-hidden border border-slate-200/20 dark:border-slate-700/30"
+              className="h-4 w-full bg-base-200/80 dark:bg-base-300/80 rounded-full overflow-hidden border border-base-300 dark:border-base-300"
               role="progressbar"
               aria-valuenow={executionPercent}
               aria-valuemin={0}
@@ -187,7 +187,7 @@ export function ExecutionAutomationCard({
                 style={{ width: `${executionPercent}%` }}
               />
             </div>
-            <div className="flex justify-between text-xs font-mono text-slate-500 dark:text-slate-400 uppercase tracking-tighter">
+            <div className="flex justify-between text-xs font-medium text-base-content/70 uppercase tracking-wide">
               <span>
                 {executedTestCases} casos executados
               </span>
@@ -195,17 +195,17 @@ export function ExecutionAutomationCard({
             </div>
           </div>
           {executionTrend != null && executionTrend !== '' && (
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <p className="text-xs text-base-content/60">
               {executionTrend}
             </p>
           )}
         </div>
-        <div className="lg:col-span-4 flex justify-center lg:justify-end items-center border-t lg:border-t-0 lg:border-l border-slate-200/50 dark:border-slate-700/30 pt-8 lg:pt-0 lg:pl-8">
+        <div className="lg:col-span-4 flex justify-center lg:justify-end items-center border-t lg:border-t-0 lg:border-l border-base-300 pt-8 lg:pt-0 lg:pl-8">
           <div className="flex items-center gap-6">
             <div className="relative w-24 h-24 flex items-center justify-center">
               <svg className="w-full h-full -rotate-90" aria-hidden>
                 <circle
-                  className="text-slate-200 dark:text-slate-800"
+                  className="text-base-200 dark:text-base-300"
                   cx="48"
                   cy="48"
                   fill="transparent"
@@ -226,22 +226,22 @@ export function ExecutionAutomationCard({
                 />
               </svg>
               <span
-                className="absolute text-lg font-extrabold text-base-content"
+                className="absolute text-lg font-bold text-base-content"
                 aria-label={`${automationRatio}% automatizados`}
               >
                 {automationRatio}%
               </span>
             </div>
             <div>
-              <span className="text-[10px] uppercase font-bold tracking-widest text-slate-500 dark:text-slate-400 block mb-1">
+              <span className="text-xs font-semibold uppercase tracking-wide text-base-content/70 block mb-1">
                 Automação
               </span>
-              <span className="text-2xl font-black text-slate-800 dark:text-white">
+              <span className="text-xl font-bold text-base-content">
                 Automatizados
               </span>
               <div className="flex items-center gap-1 mt-1">
-                <TrendingUp className="w-4 h-4 text-emerald-500 shrink-0" aria-hidden />
-                <span className="text-[10px] text-emerald-500 font-bold">
+                <TrendingUp className="w-4 h-4 text-success shrink-0" aria-hidden />
+                <span className="text-xs text-success font-medium">
                   {automationTrend}
                 </span>
               </div>
