@@ -83,55 +83,74 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onStartTest, onComplet
   const handleToggleExpand = () => setIsExpanded(!isExpanded);
 
   return (
-    <Card className="p-4 space-y-3 transition-all duration-300">
-      <div className="flex justify-between items-start">
-        <div className="flex-1 pr-4 cursor-pointer" onClick={handleToggleExpand}>
-          <div className="flex items-center gap-2 mb-2">
-            <Badge variant={taskTypeBadge.variant} size="sm">{taskTypeBadge.label}</Badge>
-            <span className="font-semibold text-base-content">{task.id}</span>
+    <Card className="p-3 sm:p-4 space-y-2 sm:space-y-3 transition-all duration-300">
+      {/* Mobile: Layout compacto em 2 linhas */}
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 sm:gap-0">
+        {/* Linha 1 Mobile: Badge + ID | Status Jira + Botão Expandir */}
+        <div className="flex items-center justify-between w-full sm:w-auto sm:flex-1 sm:pr-4">
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <Badge variant={taskTypeBadge.variant} size="sm" className="shrink-0">{taskTypeBadge.label}</Badge>
+            <span className="font-semibold text-base-content text-sm sm:text-base shrink-0">{task.id}</span>
           </div>
-          <h3 className="font-bold text-lg text-base-content leading-tight">{task.title}</h3>
+          <div className="flex items-center gap-2 sm:hidden">
+            <Badge variant={jiraStatusBadge.variant} size="sm">{jiraStatusBadge.label}</Badge>
+            <button onClick={handleToggleExpand} className="btn btn-ghost btn-sm btn-circle shrink-0" aria-label={isExpanded ? "Recolher detalhes" : "Expandir detalhes"}>
+              {isExpanded ? <ChevronUp /> : <ChevronDown />}
+            </button>
+          </div>
         </div>
-        <button onClick={handleToggleExpand} className="btn btn-ghost btn-sm btn-circle">
+        
+        {/* Título - quebra natural, máximo 2 linhas em mobile */}
+        <div className="w-full sm:flex-1 sm:pr-4 cursor-pointer" onClick={handleToggleExpand}>
+          <h3 className="font-bold text-base sm:text-lg text-base-content leading-tight line-clamp-2 sm:line-clamp-none">{task.title}</h3>
+        </div>
+        
+        {/* Botão expandir - apenas desktop */}
+        <button onClick={handleToggleExpand} className="hidden sm:flex btn btn-ghost btn-sm btn-circle shrink-0" aria-label={isExpanded ? "Recolher detalhes" : "Expandir detalhes"}>
           {isExpanded ? <ChevronUp /> : <ChevronDown />}
         </button>
       </div>
 
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div className="flex items-center gap-4 flex-wrap">
-          <Badge variant={testStatus.variant} size="md" className="flex items-center gap-1.5">
+      {/* Linha 2 Mobile: Status Teste + Métricas + Ações */}
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-4">
+        {/* Mobile: Status teste + Métricas em linha única */}
+        <div className="flex items-center gap-2 sm:gap-4 flex-wrap sm:flex-nowrap w-full sm:w-auto">
+          <Badge variant={testStatus.variant} size="sm" className="flex items-center gap-1 sm:gap-1.5 shrink-0">
             {testStatus.icon}
-            <span>{testStatus.label}</span>
+            <span className="text-xs sm:text-sm">{testStatus.label}</span>
           </Badge>
-          <div className="flex items-center gap-3 text-sm">
-            <span className="flex items-center gap-1 text-success" title="Aprovados">
-              <Check className="w-4 h-4" /> {testMetrics.passed}
+          <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm flex-1 sm:flex-initial">
+            <span className="flex items-center gap-1 text-success shrink-0" title="Aprovados">
+              <Check className="w-3 h-3 sm:w-4 sm:h-4" /> {testMetrics.passed}
             </span>
-            <span className="flex items-center gap-1 text-error" title="Reprovados">
-              <X className="w-4 h-4" /> {testMetrics.failed}
+            <span className="flex items-center gap-1 text-error shrink-0" title="Reprovados">
+              <X className="w-3 h-3 sm:w-4 sm:h-4" /> {testMetrics.failed}
             </span>
-            <span className="flex items-center gap-1 text-base-content/60" title="Pendentes">
-              <Pause className="w-4 h-4" /> {testMetrics.notRun}
+            <span className="flex items-center gap-1 text-base-content/60 shrink-0" title="Pendentes">
+              <Pause className="w-3 h-3 sm:w-4 sm:h-4" /> {testMetrics.notRun}
             </span>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <Badge variant={jiraStatusBadge.variant} size="sm">{jiraStatusBadge.label}</Badge>
+        {/* Mobile: Status Jira e botões | Desktop: Apenas botões */}
+        <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto justify-end sm:justify-start">
+          <Badge variant={jiraStatusBadge.variant} size="sm" className="hidden sm:inline-flex">{jiraStatusBadge.label}</Badge>
           {testStatus.label !== 'Teste Concluído' && testStatus.label !== 'Sem Testes' && (
             <button 
-              className="btn btn-primary btn-sm"
+              className="btn btn-primary btn-xs sm:btn-sm flex-1 sm:flex-initial min-w-[100px] sm:min-w-0"
               onClick={() => onStartTest?.(task.id)}
+              aria-label={testStatus.label === 'Testar' ? 'Iniciar teste' : 'Continuar teste'}
             >
-              {testStatus.label === 'Testar' ? 'Iniciar Teste' : 'Continuar'}
+              <span className="truncate">{testStatus.label === 'Testar' ? 'Iniciar' : 'Continuar'}</span>
             </button>
           )}
           {testStatus.label === 'Teste Concluído' && (
-             <button 
-              className="btn btn-secondary btn-sm"
+            <button 
+              className="btn btn-secondary btn-xs sm:btn-sm flex-1 sm:flex-initial min-w-[100px] sm:min-w-0"
               onClick={() => onCompleteTest?.(task.id)}
+              aria-label="Concluir tarefa"
             >
-              Concluir
+              <span className="truncate">Concluir</span>
             </button>
           )}
         </div>
