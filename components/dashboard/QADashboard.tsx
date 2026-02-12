@@ -285,48 +285,48 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
             <button
               type="button"
               onClick={toggleBugFilter}
-              className={`btn btn-sm rounded-full flex items-center gap-1.5 ${
+              className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors duration-300 flex items-center gap-1.5 border ${
                 dashboardFilters.taskType?.length === 1 && dashboardFilters.taskType[0] === 'Bug'
-                  ? 'btn-error text-white' 
-                  : 'btn-outline hover:border-error hover:text-error'
+                  ? 'bg-error text-error-content border-error'
+                  : 'text-base-content/70 hover:bg-base-200 hover:text-base-content border-base-300 hover:border-error/50 hover:text-error'
               }`}
               title="Filtrar apenas Bugs"
+              aria-label="Filtrar apenas Bugs"
             >
-              <AlertCircle className="w-4 h-4" aria-hidden="true" />
+              <AlertCircle className="w-3.5 h-3.5" aria-hidden="true" />
               <span>Bugs</span>
             </button>
             <button
               type="button"
               onClick={() => setShowFilters(true)}
-              className="btn btn-outline btn-sm rounded-full flex items-center gap-1.5 hover:bg-base-200"
+              className="rounded-full px-3 py-1.5 text-xs font-semibold text-base-content/70 hover:bg-base-200 hover:text-base-content transition-colors duration-300 flex items-center gap-1.5"
               aria-label="Filtrar dados do dashboard"
             >
-              <Filter className="w-4 h-4" aria-hidden="true" />
+              <Filter className="w-3.5 h-3.5" aria-hidden="true" />
               <span>Filtrar</span>
             </button>
             <button
               type="button"
               onClick={() => setShowExportModal(true)}
-              className="btn btn-outline btn-sm rounded-full flex items-center gap-1.5 hover:bg-base-200"
+              className="rounded-full px-3 py-1.5 text-xs font-semibold text-base-content/70 hover:bg-base-200 hover:text-base-content transition-colors duration-300 flex items-center gap-1.5"
               aria-label="Exportar dados do dashboard"
             >
-              <Download className="w-4 h-4" aria-hidden="true" />
+              <Download className="w-3.5 h-3.5" aria-hidden="true" />
               <span>Exportar</span>
             </button>
             <button
               type="button"
               onClick={() => {
-                // Navegar para aba de tarefas para criar novo teste
                 if (onNavigateToTab) {
                   onNavigateToTab('tasks');
                 } else {
                   setShowNewTestModal(true);
                 }
               }}
-              className="btn btn-primary btn-sm rounded-full flex items-center gap-1.5 shadow-sm transition-all active:scale-95"
+              className="rounded-full px-3 py-1.5 text-xs font-semibold bg-primary text-primary-content hover:bg-primary/90 transition-colors duration-300 flex items-center gap-1.5"
               aria-label="Criar novo teste"
             >
-              <Plus className="w-4 h-4" aria-hidden="true" />
+              <Plus className="w-3.5 h-3.5" aria-hidden="true" />
               <span>Novo Teste</span>
             </button>
           </div>

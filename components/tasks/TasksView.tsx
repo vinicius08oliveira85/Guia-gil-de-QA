@@ -1424,9 +1424,9 @@ export const TasksView: React.FC<{
                             variant="default"
                             size="sm"
                             onClick={() => openTaskFormForNew()} 
-                            className="rounded-full flex items-center gap-1.5 font-semibold flex-shrink-0 min-h-[44px] px-4 shadow-sm transition-all active:scale-95"
+                            className="rounded-full px-3 py-1.5 text-xs min-h-0 flex items-center gap-1.5 font-semibold flex-shrink-0 shadow-sm transition-all active:scale-95"
                         >
-                            <Plus className="w-4 h-4" />
+                            <Plus className="w-3.5 h-3.5" />
                             <span>Adicionar Tarefa</span>
                         </Button>
                         
@@ -1448,9 +1448,9 @@ export const TasksView: React.FC<{
                             variant="outline"
                             size="sm"
                             onClick={() => setShowFilters(prev => !prev)} 
-                            className="rounded-full flex items-center gap-1.5 flex-shrink-0 min-h-[44px] px-4 hover:bg-base-200"
+                            className="rounded-full px-3 py-1.5 text-xs min-h-0 flex items-center gap-1.5 flex-shrink-0 hover:bg-base-200"
                         >
-                            <Filter className="w-4 h-4" />
+                            <Filter className="w-3.5 h-3.5" />
                             <span>{showFilters ? 'Ocultar Filtros' : `Filtros${activeFiltersCount > 0 ? ` (${activeFiltersCount})` : ''}`}</span>
                         </Button>
                     </div>
