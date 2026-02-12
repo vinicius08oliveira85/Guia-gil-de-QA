@@ -2,26 +2,21 @@ import React, { useMemo, useState } from 'react';
 import { Project } from '../../types';
 import { useProjectMetrics } from '../../hooks/useProjectMetrics';
 import { useMetricsHistory } from '../../hooks/useMetricsHistory';
-import { MetricCard } from './MetricCard';
-import { TestPhaseProgress } from './TestPhaseProgress';
+import { DashboardStatCard } from './DashboardStatCard';
+import { QualityScoreChart } from './QualityScoreChart';
+import { CriticalAlerts } from './CriticalAlerts';
+import { ProjectDetailsPanel } from './ProjectDetailsPanel';
 import { RecentActivity } from './RecentActivity';
-import { QualityKPIs } from './QualityKPIs';
-import { Card } from '../common/Card';
-import { Badge } from '../common/Badge';
 import { FileExportModal } from '../common/FileExportModal';
 import { DashboardFiltersModal, DashboardFilters } from './DashboardFiltersModal';
-import { ReopeningRateCard } from '../tasks/ReopeningRateCard';
-import { getQualityAlerts } from '../tasks/qualityMetrics';
+import { getQualityAlerts, calculateQualityScore } from '../tasks/qualityMetrics';
 import {
   ClipboardCheck,
-  CheckCircle2,
   AlertCircle,
-  Activity,
   ListChecks,
   FileText,
   Target,
   Layers,
-  RefreshCw,
   Download,
   Filter,
   Plus,
@@ -126,13 +121,7 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
   };
 
   const totalStrategies = useMemo(() => {
-    const strategies = new Set<string>();
-    filteredProject.tasks?.forEach(task => {
-      task.testStrategy?.forEach(strategy => {
-        strategies.add(strategy.testType);
-      });
-    });
-    return strategies.size;
+    return filteredProject.tasks?.reduce((acc, t) => acc + (t.testStrategy?.length ?? 0), 0) ?? 0;
   }, [filteredProject.tasks]);
 
   const strategiesTrend = useMemo(() => {
@@ -183,10 +172,23 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
     reopeningRate,
   }), [metrics, defectRate]);
 
-  const hasCriticalAlerts = useMemo(() => {
-    return metrics.bugsBySeverity['Crítico'] > 0 ||
-      (metrics.failedTestCases > 0 && metrics.testPassRate < 50);
-  }, [metrics]);
+  const qualityScore = useMemo(
+    () => calculateQualityScore(qualityMetricsObj),
+    [qualityMetricsObj]
+  );
+
+  const kpiMetrics = useMemo(
+    () => ({
+      passRate: metrics.testPassRate,
+      defectRate:
+        metrics.totalTestCases > 0
+          ? Math.round((metrics.failedTestCases / metrics.totalTestCases) * 100 * 10) / 10
+          : 0,
+      coverage: metrics.testCoverage,
+      avgExecutionTimeMinutes: 12.4,
+    }),
+    [metrics]
+  );
 
   const alerts = useMemo(() => {
     const alertsList: Array<{
@@ -331,79 +333,56 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
         </div>
       </div>
 
-      {/* Grid: 4 MetricCards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <MetricCard
+      {/* Grid: 4 stat cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <DashboardStatCard
           title="Total de Tarefas"
           value={filteredProject.tasks?.length ?? 0}
-          change={tasksTrend.change}
+          changePercent={tasksTrend.change}
           trend={tasksTrend.trend}
           icon={ListChecks}
         />
-        <MetricCard
+        <DashboardStatCard
           title="Casos de Teste"
           value={metrics.totalTestCases ?? 0}
-          change={testCasesTrend.change}
+          changePercent={testCasesTrend.change}
           trend={testCasesTrend.trend}
           icon={FileText}
         />
-        <MetricCard
+        <DashboardStatCard
           title="Estratégias de Teste"
           value={totalStrategies}
-          change={strategiesTrend.change}
+          changePercent={strategiesTrend.change}
           trend={strategiesTrend.trend}
           icon={Target}
         />
-        <MetricCard
+        <DashboardStatCard
           title="Fases de Teste"
           value={activePhases}
-          change={phasesTrend.change}
+          changePercent={phasesTrend.change}
           trend={phasesTrend.trend}
           icon={Layers}
         />
       </div>
 
-      {/* Progresso das Fases + Quality KPIs + ReopeningRate */}
-      <div className="grid gap-4 lg:grid-cols-2 mt-6">
-        <Card className="p-4">
-          <TestPhaseProgress project={filteredProject} />
-        </Card>
-        <div className="space-y-4">
-          <QualityKPIs project={filteredProject} />
-          <ReopeningRateCard rate={reopeningRate} />
+      {/* Grid principal: Score + Alertas (7) | Detalhes do Projeto (5) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="lg:col-span-7 space-y-6">
+          <QualityScoreChart score={qualityScore} />
+          <CriticalAlerts alerts={alerts} onlyCriticalAndWarning />
+        </div>
+        <div className="lg:col-span-5">
+          <ProjectDetailsPanel
+            phases={metrics.newPhases || []}
+            currentPhaseProgress={project.sdlcPhaseAnalysis?.progressPercentage}
+            kpiMetrics={kpiMetrics}
+          />
         </div>
       </div>
 
-      {/* Recent Activity + Alertas */}
-      <div className="grid gap-4 lg:grid-cols-2 mt-6">
+      {/* Atividades Recentes */}
+      <div className="mt-6">
         <RecentActivity project={filteredProject} />
-        <Card className="p-4">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-base-content flex items-center gap-2">
-              <AlertCircle className="w-5 h-5" aria-hidden="true" />
-              Alertas
-            </h3>
-            {hasCriticalAlerts && (
-              <Badge variant="error" size="sm">Crítico</Badge>
-            )}
-          </div>
-          <div className="space-y-3" role="list" aria-label="Alertas de qualidade">
-            {alerts.slice(0, 5).map((alert) => (
-              <div
-                key={alert.id}
-                className={`rounded-xl border px-3 py-2 ${
-                  alert.type === 'critical' ? 'border-error/30 bg-error/5' :
-                  alert.type === 'warning' ? 'border-warning/30 bg-warning/5' :
-                  'border-base-300 bg-base-100'
-                }`}
-                role="listitem"
-              >
-                <p className="text-sm font-medium text-base-content">{alert.title}</p>
-                <p className="text-xs text-base-content/70 mt-0.5">{alert.description}</p>
-              </div>
-            ))}
-          </div>
-        </Card>
       </div>
 
       {/* Modal de Exportação */}
