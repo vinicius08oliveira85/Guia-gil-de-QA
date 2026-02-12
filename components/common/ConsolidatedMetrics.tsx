@@ -40,7 +40,7 @@ export const ConsolidatedMetrics = React.memo<ConsolidatedMetricsProps>(({ proje
         <BarChart3 className="w-5 h-5 text-primary" aria-hidden="true" />
         <h2
           id="consolidated-metrics-heading"
-          className="font-bold text-lg uppercase tracking-tight text-base-content"
+          className="text-sm font-bold text-base-content/60 uppercase tracking-widest"
         >
           Consolidado de Métricas
         </h2>
@@ -55,9 +55,9 @@ export const ConsolidatedMetrics = React.memo<ConsolidatedMetricsProps>(({ proje
             <ClipboardCheck className="w-8 h-8" aria-hidden="true" />
           </div>
           <div className="min-w-0">
-            <p className="text-xs font-bold text-success uppercase tracking-widest">Testes Totais</p>
-            <p className="text-3xl font-bold text-base-content">{consolidated.totalTestsExecuted}</p>
-            <p className="text-xs text-base-content/60">Executados em todos os projetos</p>
+            <p className="text-xs font-semibold text-base-content/70 uppercase tracking-widest">Testes Totais</p>
+            <p className="text-2xl font-bold tracking-tight text-base-content">{consolidated.totalTestsExecuted}</p>
+            <p className="text-sm text-base-content/70">Executados em todos os projetos</p>
           </div>
         </div>
         <div
@@ -69,9 +69,9 @@ export const ConsolidatedMetrics = React.memo<ConsolidatedMetricsProps>(({ proje
             <ListChecks className="w-8 h-8" aria-hidden="true" />
           </div>
           <div className="min-w-0">
-            <p className="text-xs font-bold text-secondary uppercase tracking-widest">Tarefas Totais</p>
-            <p className="text-3xl font-bold text-base-content">{consolidated.totalTasks}</p>
-            <p className="text-xs text-base-content/60">Mapeadas globalmente</p>
+            <p className="text-xs font-semibold text-base-content/70 uppercase tracking-widest">Tarefas Totais</p>
+            <p className="text-2xl font-bold tracking-tight text-base-content">{consolidated.totalTasks}</p>
+            <p className="text-sm text-base-content/70">Mapeadas globalmente</p>
           </div>
         </div>
         <div
@@ -83,9 +83,9 @@ export const ConsolidatedMetrics = React.memo<ConsolidatedMetricsProps>(({ proje
             <Bug className="w-8 h-8" aria-hidden="true" />
           </div>
           <div className="min-w-0">
-            <p className="text-xs font-bold text-primary uppercase tracking-widest">Bugs Ativos</p>
-            <p className="text-3xl font-bold text-base-content">{consolidated.openBugs}</p>
-            <p className="text-xs text-base-content/60">Aguardando correção</p>
+            <p className="text-xs font-semibold text-base-content/70 uppercase tracking-widest">Bugs Ativos</p>
+            <p className="text-2xl font-bold tracking-tight text-base-content">{consolidated.openBugs}</p>
+            <p className="text-sm text-base-content/70">Aguardando correção</p>
           </div>
         </div>
       </div>
