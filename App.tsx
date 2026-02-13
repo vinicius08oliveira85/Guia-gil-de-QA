@@ -119,21 +119,23 @@ const App: React.FC = () => {
 
     // Ref para rastrear último projeto atualizado e evitar toasts repetidos
     const lastUpdatedProjectRef = React.useRef<{ id: string; timestamp: number } | null>(null);
-    const updateDebounceMs = 2000; // 2 segundos de debounce para toasts
+    const updateDebounceMs = 5000; // 5 segundos: só mostra um toast por janela
 
     const handleUpdateProject = useCallback(async (updatedProject: Project) => {
+        const now = Date.now();
+        const lastUpdate = lastUpdatedProjectRef.current;
+        const shouldShowToast =
+            !lastUpdate ||
+            lastUpdate.id !== updatedProject.id ||
+            now - lastUpdate.timestamp > updateDebounceMs;
+
+        if (shouldShowToast) {
+            lastUpdatedProjectRef.current = { id: updatedProject.id, timestamp: now };
+        }
+
         try {
             await updateProject(updatedProject);
-            
-            // Mostrar toast apenas se não foi atualizado recentemente (evita spam)
-            const now = Date.now();
-            const lastUpdate = lastUpdatedProjectRef.current;
-            const shouldShowToast = !lastUpdate || 
-                lastUpdate.id !== updatedProject.id || 
-                (now - lastUpdate.timestamp) > updateDebounceMs;
-            
             if (shouldShowToast) {
-                lastUpdatedProjectRef.current = { id: updatedProject.id, timestamp: now };
                 handleSuccess('Projeto atualizado com sucesso!');
             }
         } catch (error) {
