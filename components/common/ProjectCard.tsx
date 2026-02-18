@@ -55,6 +55,7 @@ export interface ProjectCardProps {
   project: Project;
   onSelect?: () => void;
   onDelete?: () => void;
+  onTaskClick?: (taskId: string) => void;
   icon?: LucideIcon;
   className?: string;
 }
@@ -66,6 +67,7 @@ export const ProjectCard = React.memo<ProjectCardProps>(({
   project,
   onSelect,
   onDelete,
+  onTaskClick,
   icon: Icon = Layout,
   className,
 }) => {
@@ -103,7 +105,7 @@ export const ProjectCard = React.memo<ProjectCardProps>(({
 
   const handleClick = (e: React.MouseEvent) => {
     const target = e.target as HTMLElement;
-    if (target.closest('a')) return;
+    if (target.closest('a') || target.closest('[data-task-activity]')) return;
     onSelect?.();
   };
 
@@ -169,13 +171,27 @@ export const ProjectCard = React.memo<ProjectCardProps>(({
         <div className="hidden lg:flex flex-col gap-2 max-w-xs flex-grow ml-8">
           {recentActivity.length > 0 ? (
             recentActivity.map(item => (
-              <div
+              <button
                 key={item.id}
-                className="bg-primary/5 border border-primary/10 rounded-lg px-3 py-1.5 flex items-center gap-2"
+                type="button"
+                data-task-activity
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onTaskClick?.(item.id);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onTaskClick?.(item.id);
+                  }
+                }}
+                className="w-full text-left bg-primary/5 border border-primary/10 rounded-lg px-3 py-1.5 flex items-center gap-2 cursor-pointer hover:bg-primary/10 transition-colors"
+                aria-label={`Ir para a tarefa: ${item.title}`}
               >
                 <CheckCircle2 className="w-4 h-4 text-primary flex-shrink-0" aria-hidden="true" />
                 <span className="text-[11px] text-base-content truncate">{item.title}</span>
-              </div>
+              </button>
             ))
           ) : (
             <span className="text-[11px] text-base-content/60">Nenhuma tarefa concluída</span>
