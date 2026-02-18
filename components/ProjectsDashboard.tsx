@@ -564,6 +564,7 @@ export const ProjectsDashboard: React.FC<{
                                 project={p}
                                 onSelect={() => onSelectProject(p.id)}
                                 onDelete={() => setDeleteModalState({ isOpen: true, project: p })}
+                                onTaskClick={(taskId) => handleNavigateToTask(p.id, taskId)}
                             />
                         ))}
                     </div>
