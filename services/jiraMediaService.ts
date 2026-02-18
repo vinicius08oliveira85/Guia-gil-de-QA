@@ -35,6 +35,7 @@ export interface MediaResolutionConfig {
  */
 export class JiraMediaService {
     private static instance: JiraMediaService;
+    private static hasWarnedNoJiraConfig = false;
     private urlCache: Map<string, string> = new Map();
 
     private constructor() {}
@@ -103,7 +104,10 @@ export class JiraMediaService {
         const jiraConfig = jiraUrl ? { url: jiraUrl } : getJiraConfig();
         
         if (!jiraConfig?.url) {
-            logger.warn('Jira config não encontrada para resolver URL de mídia', 'JiraMediaService');
+            if (!JiraMediaService.hasWarnedNoJiraConfig) {
+                JiraMediaService.hasWarnedNoJiraConfig = true;
+                logger.warn('Jira config não encontrada para resolver URL de mídia', 'JiraMediaService');
+            }
             return '';
         }
 
