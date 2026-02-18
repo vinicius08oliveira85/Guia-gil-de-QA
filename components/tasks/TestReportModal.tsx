@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { Download, Copy, Check } from 'lucide-react';
 import { Modal } from '../common/Modal';
 import { JiraTask } from '../../types';
 import { generateTestReport, TestReportFormat } from '../../utils/testReportGenerator';
@@ -105,130 +106,147 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Registro de Testes Realizados" size="xl">
-      <div className="h-full flex flex-col min-h-0 space-y-md">
-        {/* Texto descritivo e botões - linha compacta */}
-        <div className="flex-shrink-0 space-y-sm">
+      <div className="h-full flex flex-col min-h-0 space-y-5">
+        {/* Cabeçalho: subtítulo + botões de ação */}
+        <div className="flex-shrink-0 space-y-4">
           <p className="text-sm text-base-content/70">
             Copie o registro abaixo para colar em outras plataformas
           </p>
-          <div className="flex flex-wrap items-center justify-end gap-md pb-2 border-b border-base-300">
-          <button
-            type="button"
-            onClick={handleDownload}
-            className="btn btn-secondary btn-md flex items-center gap-2"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v16h16M8 12h8m-8 4h5" />
-            </svg>
-            <span>Baixar .{format === 'markdown' ? 'md' : 'txt'}</span>
-          </button>
-          <button
-            type="button"
-            onClick={handleCopy}
-            className={`
-              btn btn-primary btn-md
-              flex items-center gap-2
-              ${copied ? '!bg-green-500 hover:!bg-green-600' : ''}
-            `}
-          >
-            {copied ? (
-              <>
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                <span>Copiado!</span>
-              </>
-            ) : (
-              <>
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                </svg>
-                <span>Copiar</span>
-              </>
-            )}
-          </button>
-        </div>
-        </div>
-
-        {/* Formato do relatório - grid 2 colunas */}
-        <div className="flex-shrink-0 flex flex-col gap-sm">
-          <p className="text-xs uppercase tracking-wide text-base-content/70 font-semibold">Formato do relatório</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-md">
-            {formatOptions.map((option) => (
-              <button
-                key={option.value}
-                type="button"
-                onClick={() => setFormat(option.value)}
-                className={`
-                  border rounded-lg p-card text-left transition-all duration-200
-                  ${format === option.value
-                    ? 'border-primary bg-primary/10 text-base-content shadow-md ring-2 ring-primary/20'
-                    : 'border-base-300 text-base-content/70 hover:text-base-content hover:border-primary/30 hover:bg-base-200'}
-                `}
-              >
-                <p className="font-medium">{option.label}</p>
-                <p className="text-sm text-base-content/70">{option.description}</p>
-              </button>
-            ))}
+          <div className="flex flex-wrap items-center justify-end gap-3">
+            <button
+              type="button"
+              onClick={handleDownload}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-base-300 bg-base-100 text-base-content font-medium hover:bg-base-200 transition-colors"
+              aria-label={`Baixar relatório em .${format === 'markdown' ? 'md' : 'txt'}`}
+            >
+              <Download className="w-4 h-4" aria-hidden />
+              <span>Baixar .{format === 'markdown' ? 'md' : 'txt'}</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleCopy}
+              className={`
+                flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-colors shadow-md
+                ${copied
+                  ? 'bg-success text-success-content hover:opacity-90'
+                  : 'bg-brand-orange text-white hover:bg-orange-600 shadow-brand-orange/20'}
+              `}
+              aria-label={copied ? 'Copiado' : 'Copiar relatório'}
+            >
+              {copied ? (
+                <>
+                  <Check className="w-4 h-4" aria-hidden />
+                  <span>Copiado!</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="w-4 h-4" aria-hidden />
+                  <span>Copiar</span>
+                </>
+              )}
+            </button>
           </div>
         </div>
 
-        {/* Resumo visual - compacto */}
-        <div className="flex-shrink-0 space-y-sm">
-          <div className="flex flex-wrap items-center justify-between gap-sm">
-            <p className="text-xs uppercase tracking-wide text-base-content/70 font-semibold">Resumo visual</p>
-            <div className="flex gap-md text-xs text-base-content/70">
-              <div className="flex items-center gap-xs">
-                <span className="w-2 h-2 rounded-full bg-success"></span>
+        {/* Formato do relatório - cards selecionáveis (v0 style) */}
+        <div className="flex-shrink-0 flex flex-col gap-3">
+          <p className="text-sm font-semibold text-base-content">Formato do relatório</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {formatOptions.map((option) => {
+              const isSelected = format === option.value;
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => setFormat(option.value)}
+                  role="button"
+                  aria-pressed={isSelected}
+                  aria-label={`${option.label}: ${option.description}`}
+                  className={`
+                    flex items-start gap-2 p-4 rounded-xl text-left transition-all duration-200
+                    ${isSelected
+                      ? 'border-2 border-brand-orange bg-orange-50 dark:bg-orange-950/20 ring-2 ring-brand-orange/20 text-base-content'
+                      : 'border border-base-300 text-base-content/70 hover:text-base-content hover:border-base-content/20 hover:bg-base-200/50'}
+                  `}
+                >
+                  <div
+                    className={`
+                      w-5 h-5 rounded-full border-2 flex items-center justify-center mt-0.5 flex-shrink-0
+                      ${isSelected ? 'border-brand-orange bg-white dark:bg-base-100' : 'border-base-300 bg-base-100'}
+                    `}
+                  >
+                    {isSelected && (
+                      <div className="w-2.5 h-2.5 rounded-full bg-brand-orange" aria-hidden />
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-medium">{option.label}</p>
+                    <p className="text-sm text-base-content/70 mt-1">{option.description}</p>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Resumo visual */}
+        <div className="flex-shrink-0 space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-sm font-semibold text-base-content">Resumo visual</p>
+            <div className="flex gap-4 text-sm text-base-content/70">
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-3 rounded-full bg-success" aria-hidden />
                 <span>Aprovado</span>
               </div>
-              <div className="flex items-center gap-xs">
-                <span className="w-2 h-2 rounded-full bg-error"></span>
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-3 rounded-full bg-error" aria-hidden />
                 <span>Reprovado</span>
               </div>
             </div>
           </div>
           {executedTestCases.length > 0 ? (
-            <ul className="space-y-sm max-h-32 overflow-y-auto">
-              {executedTestCases.map((testCase, index) => {
-                const statusData = getStatusBadge(testCase.status);
-                return (
-                  <li
-                    key={`${testCase.id}-${index}`}
-                    className="flex flex-col gap-sm rounded-xl border border-base-300 bg-base-100 p-card"
-                  >
-                    <div className="flex items-start justify-between gap-md">
-                      <div>
-                        <p className="text-sm font-medium text-base-content">
-                          {testCase.description || `Teste ${index + 1}`}
-                        </p>
-                        {testCase.executedStrategy && (
-                          <p className="text-xs text-base-content/70">
-                            {Array.isArray(testCase.executedStrategy)
-                              ? testCase.executedStrategy.join(', ')
-                              : testCase.executedStrategy}
+            <div className="rounded-xl border border-base-300 overflow-hidden bg-base-100">
+              <div className="max-h-32 overflow-y-auto divide-y divide-base-200">
+                {executedTestCases.map((testCase, index) => {
+                  const statusData = getStatusBadge(testCase.status);
+                  return (
+                    <div
+                      key={`${testCase.id}-${index}`}
+                      className="p-4 hover:bg-base-200/50 transition-colors"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-medium text-base-content">
+                            {testCase.description || `Teste ${index + 1}`}
                           </p>
-                        )}
+                          {testCase.executedStrategy && (
+                            <p className="text-xs text-base-content/70 mt-1">
+                              {Array.isArray(testCase.executedStrategy)
+                                ? testCase.executedStrategy.join(', ')
+                                : testCase.executedStrategy}
+                            </p>
+                          )}
+                        </div>
+                        <Badge variant={statusData.variant} size="sm">
+                          {statusData.label}
+                        </Badge>
                       </div>
-                      <Badge variant={statusData.variant} size="sm">
-                        {statusData.label}
-                      </Badge>
+                      {testCase.toolsUsed && testCase.toolsUsed.length > 0 && (
+                        <p className="text-xs text-base-content/70 mt-2">
+                          Ferramentas: {testCase.toolsUsed.join(', ')}
+                        </p>
+                      )}
+                      {testCase.observedResult && testCase.observedResult.trim() && (
+                        <div className="mt-2">
+                          <p className="text-xs font-medium text-base-content/70 mb-0.5">Resultado Encontrado:</p>
+                          <p className="text-xs text-error whitespace-pre-wrap">{testCase.observedResult}</p>
+                        </div>
+                      )}
                     </div>
-                    {testCase.toolsUsed && testCase.toolsUsed.length > 0 && (
-                      <p className="text-xs text-base-content/70">
-                        Ferramentas: {testCase.toolsUsed.join(', ')}
-                      </p>
-                    )}
-                    {testCase.observedResult && testCase.observedResult.trim() && (
-                      <div className="mt-1">
-                        <p className="text-xs font-medium text-base-content/70 mb-0.5">Resultado Encontrado:</p>
-                        <p className="text-xs text-error whitespace-pre-wrap">{testCase.observedResult}</p>
-                      </div>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
+                  );
+                })}
+              </div>
+            </div>
           ) : (
             <p className="text-sm text-base-content/70">Nenhum teste executado até o momento.</p>
           )}
@@ -239,27 +257,21 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({
           <textarea
             value={reportText}
             readOnly
-            className={`
-              w-full flex-1 min-h-[200px]
-              bg-base-100 border border-base-300 rounded-lg
-              p-card text-sm text-base-content
-              font-mono
-              resize-none
-              focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary
-              transition-all duration-200
-            `}
+            className="w-full flex-1 min-h-[200px] px-4 py-3 rounded-xl border border-base-300 bg-base-100 dark:bg-base-200/50 text-sm text-base-content font-mono resize-none focus:outline-none focus:ring-2 focus:ring-brand-orange/30 focus:border-brand-orange/50 transition-all duration-200"
             onClick={(e) => {
               (e.target as HTMLTextAreaElement).select();
             }}
+            aria-label="Conteúdo do relatório de testes"
           />
         </div>
 
-        {/* Botão Fechar */}
-        <div className="flex-shrink-0 flex justify-end gap-md pt-2 border-t border-base-300">
+        {/* Rodapé */}
+        <div className="flex-shrink-0 pt-4 border-t border-base-200 flex justify-end">
           <button
             type="button"
             onClick={onClose}
-            className="btn btn-secondary btn-md"
+            className="px-4 py-2.5 rounded-xl border border-base-300 bg-base-100 text-base-content font-medium hover:bg-base-200 transition-colors"
+            aria-label="Fechar modal"
           >
             Fechar
           </button>

@@ -308,9 +308,6 @@ export const DocumentsView: React.FC<{ project: Project; onUpdateProject: (proje
                                 <FileDown className="w-3.5 h-3.5" aria-hidden /> Esquema API
                             </button>
                         )}
-                        <button type="button" onClick={() => setIsImportModalOpen(true)} className="rounded-full px-3 py-1.5 text-xs font-semibold transition-colors duration-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-1.5 text-base-content/70 hover:text-base-content" aria-label="Importar documentos">
-                            <FileDown className="w-3.5 h-3.5" aria-hidden /> Importar
-                        </button>
                         <label className="rounded-full px-3 py-1.5 text-xs font-semibold transition-colors duration-300 bg-brand-orange text-white shadow-md shadow-brand-orange/20 flex items-center gap-1.5 cursor-pointer hover:opacity-90">
                             <Upload className="w-3.5 h-3.5" aria-hidden /> Carregar
                             <input type="file" accept=".txt,.md,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar,.json,.csv,.xml,.jpg,.jpeg,.png,.gif,.webp,.svg" onChange={handleFileUpload} className="hidden" />
