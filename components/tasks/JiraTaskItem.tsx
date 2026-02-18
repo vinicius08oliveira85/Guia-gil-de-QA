@@ -34,6 +34,7 @@ import { JiraRichContent } from './JiraRichContent';
 import { loadTaskTestStatus, saveTaskTestStatus, calculateTaskTestStatus } from '../../services/taskTestStatusService';
 import { useProjectsStore } from '../../store/projectsStore';
 import { logger } from '../../utils/logger';
+import { Button } from '../common/Button';
 
 // Componente para renderizar descrição com formatação rica do Jira
 const DescriptionRenderer: React.FC<{ 
@@ -665,7 +666,7 @@ export const JiraTaskItem: React.FC<{
     const iconButtonSmallClass = 'btn btn-ghost btn-circle btn-sm min-h-[44px] min-w-[44px] h-11 w-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30';
 
     const renderOverviewSection = () => (
-        <div className="space-y-4">
+        <div className="space-y-3">
             {project && onUpdateProject && (
                 <div>
                     <QuickActions
@@ -679,15 +680,18 @@ export const JiraTaskItem: React.FC<{
             {/* Botão para Gerar Registro de Testes - para tipos "Tarefa" e "Bug" */}
             {(task.type === 'Tarefa' || task.type === 'Bug') && (task.testCases?.length > 0 || (task.testStrategy?.length ?? 0) > 0) && (
                 <div className="flex justify-end">
-                    <button
+                    <Button
+                        variant="brandOutline"
+                        size="panel"
                         onClick={() => setShowTestReport(true)}
-                        className="btn btn-outline btn-sm flex items-center gap-2"
+                        aria-label="Gerar registro de testes"
+                        className="hover:border-brand-orange/50"
                     >
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden>
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
-                        <span>Gerar Registro de Testes</span>
-                    </button>
+                        Gerar Registro de Testes
+                    </Button>
                 </div>
             )}
             <div className="text-base-content/80">
@@ -703,15 +707,15 @@ export const JiraTaskItem: React.FC<{
 
             {/* Ações de Teste */}
             {taskTestStatus && (taskTestStatus === 'testar' || taskTestStatus === 'testando') && (
-                <div className="flex items-center gap-2 p-3 rounded-lg bg-base-200 mt-2">
+                <div className="flex items-center gap-2 p-2.5 rounded-xl bg-base-200 border border-base-300 mt-1.5">
                     <p className="text-sm font-medium flex-1">Ações de Teste:</p>
                     {taskTestStatus === 'testar' && (
-                        <button type="button" onClick={handleStartTest} className="btn btn-sm btn-primary shadow-sm">
+                        <Button type="button" variant="brand" size="panelSm" onClick={handleStartTest}>
                             <span className="mr-1">▶</span> Iniciar Teste
-                        </button>
+                        </Button>
                     )}
                     {taskTestStatus === 'testando' && (
-                        <button type="button" onClick={handleCompleteTest} className="btn btn-sm btn-success text-white shadow-sm">
+                        <button type="button" onClick={handleCompleteTest} className="btn btn-sm btn-success text-white shadow-sm rounded-xl">
                             <span className="mr-1">✓</span> Concluir Teste
                         </button>
                     )}
@@ -719,34 +723,34 @@ export const JiraTaskItem: React.FC<{
             )}
 
             {(task.priority || task.severity || task.owner || task.assignee || nextStep) && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-2">
                     {task.owner && (
-                        <div className="p-3 bg-base-100 border border-base-300 rounded-lg">
+                        <div className="p-2.5 bg-base-100 border border-base-300 rounded-xl">
                             <p className="text-[11px] uppercase text-base-content/60 tracking-wide">Owner</p>
                             <p className="text-sm font-semibold text-base-content">{task.owner}</p>
                         </div>
                     )}
                     {task.assignee && (
-                        <div className="p-3 bg-base-100 border border-base-300 rounded-lg">
+                        <div className="p-2.5 bg-base-100 border border-base-300 rounded-xl">
                             <p className="text-[11px] uppercase text-base-content/60 tracking-wide">Responsável</p>
                             <p className="text-sm font-semibold text-base-content">{task.assignee}</p>
                         </div>
                     )}
                     {task.priority && (
-                        <div className="p-3 bg-base-100 border border-base-300 rounded-lg">
+                        <div className="p-2.5 bg-base-100 border border-base-300 rounded-xl">
                             <p className="text-[11px] uppercase text-base-content/60 tracking-wide">Prioridade</p>
                             <p className="text-sm font-semibold text-base-content">{task.priority}</p>
                         </div>
                     )}
                     {task.severity && (
-                        <div className="p-3 bg-base-100 border border-base-300 rounded-lg">
+                        <div className="p-2.5 bg-base-100 border border-base-300 rounded-xl">
                             <p className="text-[11px] uppercase text-base-content/60 tracking-wide">Severidade</p>
                             <p className="text-sm font-semibold text-base-content">{task.severity}</p>
                         </div>
                     )}
                       {nextStep && (
-                          <div className="p-3 bg-primary/10 border border-primary/30 rounded-lg">
-                              <p className="text-[0.65rem] uppercase text-primary tracking-wide">Próximo passo</p>
+                          <div className="p-2.5 bg-orange-50 dark:bg-orange-950/20 border border-brand-orange/30 rounded-xl">
+                              <p className="text-[0.65rem] uppercase text-brand-orange tracking-wide">Próximo passo</p>
                               <p className="text-[0.82rem] font-semibold text-base-content line-clamp-2">{nextStep}</p>
                           </div>
                       )}
@@ -760,14 +764,14 @@ export const JiraTaskItem: React.FC<{
                     <div className="space-y-2">
                         {versions.length > 0 && (
                             <div>
-                                <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-1.5">Versão do Projeto</p>
+                                <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-1">Versão do Projeto</p>
                                 <VersionBadges versions={versions} size="md" />
                             </div>
                         )}
                         {otherTags.length > 0 && (
                             <div>
                                 {versions.length > 0 && (
-                                    <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-1.5">Tags</p>
+                                    <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-1">Tags</p>
                                 )}
                                 <div className="flex flex-wrap gap-2">
                                     {otherTags.map(tag => (
@@ -788,7 +792,7 @@ export const JiraTaskItem: React.FC<{
             
             {(task.type === 'Tarefa' || task.type === 'Bug') && testTypeBadges.length > 0 && (
                 <div>
-                    <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-1.5">Estratégias de Teste</p>
+                    <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-1">Estratégias de Teste</p>
                     <div className="flex flex-wrap gap-1">
                         {testTypeBadges.map(badge => (
                             <TestTypeBadge 
@@ -814,7 +818,7 @@ export const JiraTaskItem: React.FC<{
                 }
 
                 return (
-                    <div className="mt-6 space-y-4">
+                    <div className="mt-4 space-y-3">
                         <h3 className="text-lg font-semibold text-base-content flex items-center gap-2">
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -824,11 +828,11 @@ export const JiraTaskItem: React.FC<{
                         
                         {/* Informações Básicas */}
                         {(task.reporter || task.dueDate || task.environment) && (
-                            <div className="space-y-3">
+                            <div className="space-y-2">
                                 <h4 className="text-sm font-semibold text-base-content/70">📋 Informações Básicas</h4>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                     {task.reporter && (
-                                        <div className="p-3 bg-base-100 border border-base-300 rounded-lg">
+                                        <div className="p-2.5 bg-base-100 border border-base-300 rounded-xl">
                                             <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-1">Reporter</p>
                                             <p className="text-sm font-semibold text-base-content">{task.reporter.displayName}</p>
                                             {task.reporter.emailAddress && (
@@ -837,7 +841,7 @@ export const JiraTaskItem: React.FC<{
                                         </div>
                                     )}
                                     {task.dueDate && (
-                                        <div className="p-3 bg-base-100 border border-base-300 rounded-lg">
+                                        <div className="p-2.5 bg-base-100 border border-base-300 rounded-xl">
                                             <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-1">Due Date</p>
                                             <p className="text-sm font-semibold text-base-content">
                                                 {new Date(task.dueDate).toLocaleDateString('pt-BR')}
@@ -845,7 +849,7 @@ export const JiraTaskItem: React.FC<{
                                         </div>
                                     )}
                                     {task.environment && (
-                                        <div className="p-3 bg-base-100 border border-base-300 rounded-lg sm:col-span-2">
+                                        <div className="p-2.5 bg-base-100 border border-base-300 rounded-xl sm:col-span-2">
                                             <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-1">Environment</p>
                                             <p className="text-sm text-base-content">{task.environment}</p>
                                         </div>
@@ -856,23 +860,23 @@ export const JiraTaskItem: React.FC<{
 
                         {/* Time Tracking */}
                         {task.timeTracking && (
-                            <div className="space-y-3">
+                            <div className="space-y-2">
                                 <h4 className="text-sm font-semibold text-base-content/70">⏱️ Time Tracking</h4>
-                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                                     {task.timeTracking.originalEstimate && (
-                                        <div className="p-3 bg-base-100 border border-base-300 rounded-lg">
+                                        <div className="p-2.5 bg-base-100 border border-base-300 rounded-xl">
                                             <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-1">Original Estimate</p>
                                             <p className="text-sm font-semibold text-base-content">{task.timeTracking.originalEstimate}</p>
                                         </div>
                                     )}
                                     {task.timeTracking.remainingEstimate && (
-                                        <div className="p-3 bg-base-100 border border-base-300 rounded-lg">
+                                        <div className="p-2.5 bg-base-100 border border-base-300 rounded-xl">
                                             <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-1">Remaining Estimate</p>
                                             <p className="text-sm font-semibold text-base-content">{task.timeTracking.remainingEstimate}</p>
                                         </div>
                                     )}
                                     {task.timeTracking.timeSpent && (
-                                        <div className="p-3 bg-base-100 border border-base-300 rounded-lg">
+                                        <div className="p-2.5 bg-base-100 border border-base-300 rounded-xl">
                                             <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-1">Time Spent</p>
                                             <p className="text-sm font-semibold text-base-content">{task.timeTracking.timeSpent}</p>
                                         </div>
@@ -883,11 +887,11 @@ export const JiraTaskItem: React.FC<{
 
                         {/* Organização */}
                         {(task.components || task.fixVersions) && (
-                            <div className="space-y-3">
+                            <div className="space-y-2">
                                 <h4 className="text-sm font-semibold text-base-content/70">🧩 Organização</h4>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                     {task.components && task.components.length > 0 && (
-                                        <div className="p-3 bg-base-100 border border-base-300 rounded-lg">
+                                        <div className="p-2.5 bg-base-100 border border-base-300 rounded-xl">
                                             <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-2">Components</p>
                                             <div className="flex flex-wrap gap-2">
                                                 {task.components.map((comp) => (
@@ -899,7 +903,7 @@ export const JiraTaskItem: React.FC<{
                                         </div>
                                     )}
                                     {task.fixVersions && task.fixVersions.length > 0 && (
-                                        <div className="p-3 bg-base-100 border border-base-300 rounded-lg">
+                                        <div className="p-2.5 bg-base-100 border border-base-300 rounded-xl">
                                             <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-2">Fix Versions</p>
                                             <div className="flex flex-wrap gap-2">
                                                 {task.fixVersions.map((version) => (
@@ -916,10 +920,10 @@ export const JiraTaskItem: React.FC<{
 
                         {/* Relacionamentos */}
                         {(task.issueLinks || task.watchers) && (
-                            <div className="space-y-3">
+                            <div className="space-y-2">
                                 <h4 className="text-sm font-semibold text-base-content/70">🔗 Relacionamentos</h4>
                                 {task.issueLinks && task.issueLinks.length > 0 && (
-                                    <div className="p-3 bg-base-100 border border-base-300 rounded-lg">
+                                    <div className="p-2.5 bg-base-100 border border-base-300 rounded-xl">
                                         <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-2">Issue Links</p>
                                         <div className="space-y-1">
                                             {task.issueLinks.map((link) => (
@@ -931,7 +935,7 @@ export const JiraTaskItem: React.FC<{
                                     </div>
                                 )}
                                 {task.watchers && (
-                                    <div className="p-3 bg-base-100 border border-base-300 rounded-lg">
+                                    <div className="p-2.5 bg-base-100 border border-base-300 rounded-xl">
                                         <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-1">Watchers</p>
                                         <p className="text-sm font-semibold text-base-content">
                                             {task.watchers.watchCount} observador(es)
@@ -944,10 +948,10 @@ export const JiraTaskItem: React.FC<{
 
                         {/* Anexos do Jira */}
                         {task.jiraAttachments && task.jiraAttachments.length > 0 && (
-                            <div className="space-y-3">
+                            <div className="space-y-2">
                                 <h4 className="text-sm font-semibold text-base-content/70">📎 Anexos do Jira</h4>
-                                <div className="p-3 bg-base-100 border border-base-300 rounded-lg">
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                                <div className="p-2.5 bg-base-100 border border-base-300 rounded-xl">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
                                         {task.jiraAttachments.map((att) => {
                                             const jiraConfig = getJiraConfig();
                                             const jiraUrl = jiraConfig?.url;
@@ -996,12 +1000,12 @@ export const JiraTaskItem: React.FC<{
         }
 
         return (
-        <div className="space-y-4">
+        <div className="space-y-3">
             <div className="flex items-center justify-between gap-2">
                 <h3 className="text-lg font-semibold text-base-content">Cenários BDD (Gherkin)</h3>
                 <span className="text-xs text-base-content/70">{task.bddScenarios?.length || 0} cenário(s)</span>
             </div>
-            <div className="space-y-3">
+            <div className="space-y-2">
                 {(task.bddScenarios || []).map(sc => (
                     editingBddScenario?.id === sc.id ? (
                         <BddScenarioForm key={sc.id} existingScenario={sc} onSave={handleSaveScenario} onCancel={handleCancelBddForm} />
@@ -1032,15 +1036,15 @@ export const JiraTaskItem: React.FC<{
         const canHaveTestCases = task.type === 'Tarefa' || task.type === 'Bug';
         
         return (
-            <div className="space-y-4">
+            <div className="space-y-3">
                 {/* Sub-abas de Testes */}
-                <div className="tabs tabs-boxed bg-base-200 w-fit" role="tablist" aria-label="Sub-abas de testes">
+                <div className="flex flex-wrap gap-1.5 p-1 bg-base-200 rounded-xl w-fit" role="tablist" aria-label="Sub-abas de testes">
                     <button
                         type="button"
                         role="tab"
                         aria-selected={activeTestSubSection === 'strategy'}
                         onClick={() => setActiveTestSubSection('strategy')}
-                        className={`tab ${activeTestSubSection === 'strategy' ? 'tab-active' : ''}`}
+                        className={`px-2 py-1 text-xs rounded-xl font-medium transition-colors sm:px-3 sm:py-1.5 sm:text-sm ${activeTestSubSection === 'strategy' ? 'bg-brand-orange text-white shadow-md shadow-brand-orange/20' : 'text-base-content/70 hover:text-base-content hover:bg-base-200'}`}
                     >
                         Estratégia
                     </button>
@@ -1049,11 +1053,11 @@ export const JiraTaskItem: React.FC<{
                         role="tab"
                         aria-selected={activeTestSubSection === 'test-cases'}
                         onClick={() => setActiveTestSubSection('test-cases')}
-                        className={`tab ${activeTestSubSection === 'test-cases' ? 'tab-active' : ''}`}
+                        className={`px-2 py-1 text-xs rounded-xl font-medium transition-colors flex items-center gap-1 sm:px-3 sm:py-1.5 sm:text-sm ${activeTestSubSection === 'test-cases' ? 'bg-brand-orange text-white shadow-md shadow-brand-orange/20' : 'text-base-content/70 hover:text-base-content hover:bg-base-200'}`}
                     >
                         Casos de teste
                         {task.testCases?.length ? (
-                            <span className="badge badge-primary badge-sm ml-2">
+                            <span className={`ml-1 px-1.5 py-0.5 rounded-md text-xs font-medium ${activeTestSubSection === 'test-cases' ? 'bg-white/20' : 'bg-base-300 text-base-content'}`}>
                                 {task.testCases.length}
                             </span>
                         ) : null}
@@ -1069,7 +1073,7 @@ export const JiraTaskItem: React.FC<{
                         </div>
                         {isGeneratingTests && <div className="flex justify-center py-2"><Spinner small /></div>}
                         {(task.testStrategy?.length ?? 0) > 0 ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
                                 {(task.testStrategy ?? []).map((strategy, i) => {
                                     if (!strategy) return null;
                                     return (
@@ -1110,16 +1114,16 @@ export const JiraTaskItem: React.FC<{
                             <span className="text-xs text-base-content/70">{task.testCases?.length || 0} caso(s)</span>
                         </div>
                         {isGeneratingTests ? (
-                            <div className="space-y-3 mt-4">
+                            <div className="space-y-2 mt-3">
                                 <LoadingSkeleton variant="task" count={3} />
-                                <div className="flex flex-col items-center justify-center py-4">
+                                <div className="flex flex-col items-center justify-center py-3">
                                     <Spinner small />
                                     <p className="mt-2 text-sm text-base-content/70">Gerando casos de teste com IA...</p>
                                     <p className="mt-1 text-xs text-base-content/70">⏱️ Isso pode levar 10-30 segundos</p>
                                 </div>
                             </div>
                         ) : (task.testCases || []).length > 0 ? (
-                            <div className="space-y-3 mt-4">
+                            <div className="space-y-2 mt-3">
                                 {task.testCases.map(tc => (
                                     <TestCaseItem 
                                         key={tc.id} 
@@ -1134,7 +1138,7 @@ export const JiraTaskItem: React.FC<{
                                 ))}
                             </div>
                         ) : (
-                            <div className="mt-4">
+                            <div className="mt-3">
                                 <EmptyState
                                     icon="🧪"
                                     title="Nenhum caso de teste ainda"
@@ -1158,7 +1162,7 @@ export const JiraTaskItem: React.FC<{
 
                 {/* Ferramentas Utilizadas na Task */}
                 {onTaskToolsChange && (
-                    <div className="mt-4 p-3 bg-base-100 rounded-[var(--rounded-box)] border border-base-300">
+                    <div className="mt-3 p-2.5 bg-base-100 rounded-[var(--rounded-box)] border border-base-300">
                         <ToolsSelector
                             selectedTools={task.toolsUsed || []}
                             onToolsChange={onTaskToolsChange}
@@ -1197,7 +1201,7 @@ export const JiraTaskItem: React.FC<{
         }
 
         return (
-            <div className="space-y-4">
+            <div className="space-y-3">
                 <div>
                     <div className="flex items-center justify-between mb-3">
                         <h3 className="text-lg font-semibold text-base-content">Dependências</h3>
@@ -1264,7 +1268,7 @@ export const JiraTaskItem: React.FC<{
                         />
                     )}
                     {!showEstimation && task.estimatedHours && (
-                        <div className="p-3 bg-base-100 border border-base-300 rounded-lg">
+                        <div className="p-2.5 bg-base-100 border border-base-300 rounded-xl">
                             <div className="flex items-center justify-between">
                                 <span className="text-base-content/70">Estimado:</span>
                                 <span className="font-semibold text-base-content">{task.estimatedHours}h</span>
@@ -1437,7 +1441,7 @@ export const JiraTaskItem: React.FC<{
             <div style={indentationStyle} className="py-0.5">
                 <div
                     className={[
-                        'flex flex-wrap items-center gap-x-2 gap-y-2 sm:gap-y-0 px-3 py-2 sm:px-4 sm:py-2.5 bg-base-100 dark:bg-base-200 border rounded-lg task-card-shadow transition-all duration-200',
+                        'flex flex-wrap items-center gap-x-2 gap-y-2 sm:gap-y-0 px-3 py-2 sm:px-4 sm:py-2.5 bg-base-100 dark:bg-base-200 border rounded-xl task-card-shadow transition-all duration-200',
                         isStatusDropdownOpen ? 'relative z-10' : '',
                         borderL4Class,
                         task.type === 'Bug' && !isSelected ? 'border border-error/10' : 'border-base-300',
@@ -1535,7 +1539,7 @@ export const JiraTaskItem: React.FC<{
                                 <ChevronDown className={`w-4 h-4 flex-shrink-0 transition-transform ${isStatusDropdownOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
                             </button>
                                     {isStatusDropdownOpen && (
-                                        <div className="absolute right-0 mt-1 z-50 w-40 sm:w-48 max-w-[calc(100vw-2rem)] bg-base-100 border border-base-300 rounded-lg shadow-lg overflow-hidden">
+                                        <div className="absolute right-0 mt-1 z-50 w-40 sm:w-48 max-w-[calc(100vw-2rem)] bg-base-100 border border-base-300 rounded-xl shadow-lg overflow-hidden">
                                             {project?.settings?.jiraStatuses && project.settings.jiraStatuses.length > 0 ? (
                                                 project.settings.jiraStatuses.map((status) => {
                                                     const statusName = typeof status === 'string' ? status : status.name;
@@ -1632,18 +1636,19 @@ export const JiraTaskItem: React.FC<{
                                 animate={reduceMotion ? { opacity: 1 } : { opacity: 1, height: 'auto' }}
                                 exit={reduceMotion ? { opacity: 0 } : { opacity: 0, height: 0 }}
                                 transition={{ duration: reduceMotion ? 0 : 0.2 }}
-                                className="overflow-visible border-t border-base-300 bg-base-50/50"
+                                className="overflow-visible border-t border-base-300 bg-base-100 rounded-b-2xl shadow-inner"
                             >
                                 <div className="p-4 space-y-4">
                                     {/* Barra de Ações (movida para dentro do expandir) */}
-                                    <div className="flex items-center gap-2 flex-wrap pb-4 border-b border-base-200">
+                                    <div className="flex items-center gap-1.5 flex-wrap pb-3 border-b border-base-200">
                                         {/* Ação primária */}
                                         {(task.type === 'Tarefa' || task.type === 'Bug') && onGenerateAll && (
-                                            <button
+                                            <Button
                                                 type="button"
+                                                variant="brand"
+                                                size="panel"
                                                 onClick={handleGenerateAll}
                                                 disabled={isGeneratingAll || isGenerating || isGeneratingBdd || isGeneratingTests}
-                                                className="btn btn-primary btn-sm gap-2"
                                                 title="Gerar BDD, Estratégia e Testes com IA"
                                                 aria-label="Gerar tudo com IA (BDD, estratégia e testes)"
                                             >
@@ -1654,7 +1659,7 @@ export const JiraTaskItem: React.FC<{
                                                 )}
                                                 <span className="hidden sm:inline">{isGenerating || isGeneratingAll ? 'Gerando...' : 'Gerar Tudo'}</span>
                                                 <span className="sm:hidden">{isGenerating || isGeneratingAll ? 'Gerando...' : 'Gerar'}</span>
-                                            </button>
+                                            </Button>
                                         )}
 
                                         {/* Desktop: ações comuns visíveis */}
@@ -1662,7 +1667,7 @@ export const JiraTaskItem: React.FC<{
                                             <button
                                                 type="button"
                                                 onClick={() => onAddSubtask(task.id)}
-                                                className="btn btn-ghost btn-sm gap-2 hidden md:inline-flex"
+                                                className="btn btn-ghost btn-sm gap-2 hidden md:inline-flex rounded-xl"
                                                 aria-label="Adicionar subtarefa"
                                             >
                                                 <PlusIcon className="w-4 h-4" aria-hidden="true" />
@@ -1673,7 +1678,7 @@ export const JiraTaskItem: React.FC<{
                                         <button
                                             type="button"
                                             onClick={() => onEdit(task)}
-                                            className="btn btn-ghost btn-sm gap-2 hidden md:inline-flex"
+                                            className="btn btn-ghost btn-sm gap-2 hidden md:inline-flex rounded-xl"
                                             aria-label="Editar tarefa"
                                         >
                                             <EditIcon className="w-4 h-4" aria-hidden="true" />
@@ -1685,7 +1690,7 @@ export const JiraTaskItem: React.FC<{
                                                 type="button"
                                                 onClick={() => onSyncToJira(task.id)}
                                                 disabled={isSyncing}
-                                                className="btn btn-ghost btn-sm gap-2 hidden md:inline-flex"
+                                                className="btn btn-ghost btn-sm gap-2 hidden md:inline-flex rounded-xl"
                                                 aria-label="Sincronizar tarefa com o Jira"
                                             >
                                                 {isSyncing ? (
@@ -1702,7 +1707,7 @@ export const JiraTaskItem: React.FC<{
                                             <button
                                                 type="button"
                                                 tabIndex={0}
-                                                className="btn btn-ghost btn-sm btn-square"
+                                                className="btn btn-ghost btn-sm btn-square rounded-xl"
                                                 aria-label="Mais ações"
                                                 aria-haspopup="true"
                                                 onClick={(e) => e.stopPropagation()}
@@ -1711,7 +1716,7 @@ export const JiraTaskItem: React.FC<{
                                             </button>
                                             <ul
                                                 tabIndex={0}
-                                                className="dropdown-content menu bg-base-100 rounded-box z-50 w-56 max-h-[min(70vh,24rem)] overflow-y-auto p-2 shadow-lg border border-base-300"
+                                                className="dropdown-content menu bg-base-100 rounded-xl z-50 w-56 max-h-[min(70vh,24rem)] overflow-y-auto p-2 shadow-lg border border-base-300"
                                                 role="menu"
                                                 onClick={(e) => e.stopPropagation()}
                                             >
@@ -1820,8 +1825,8 @@ export const JiraTaskItem: React.FC<{
                                         </div>
                                     </div>
 
-                                    <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-                                        <div className="tabs tabs-boxed bg-base-200 p-1 w-full md:w-fit overflow-x-auto" role="tablist" aria-label="Seções da tarefa">
+                                    <div className="flex flex-col gap-1.5 md:flex-row md:items-center md:justify-between">
+                                        <div className="flex flex-wrap gap-1.5 p-1 bg-base-200 rounded-xl w-full md:w-fit overflow-x-auto" role="tablist" aria-label="Seções da tarefa">
                                             {sectionTabs.map((tab) => {
                                                 const isActive = tab.id === activeSection;
                                                 const tabId = `task-${safeDomId}-tab-${tab.id}`;
@@ -1834,12 +1839,12 @@ export const JiraTaskItem: React.FC<{
                                                         role="tab"
                                                         aria-selected={isActive}
                                                         aria-controls={panelId}
-                                                        className={`tab ${isActive ? 'tab-active' : ''}`}
+                                                        className={`px-2 py-1 text-xs rounded-xl font-medium transition-colors sm:px-3 sm:py-1.5 sm:text-sm ${isActive ? 'bg-brand-orange text-white shadow-md shadow-brand-orange/20' : 'text-base-content/70 hover:text-base-content hover:bg-base-200'}`}
                                                         onClick={() => setActiveSection(tab.id)}
                                                     >
                                                         <span>{tab.label}</span>
                                                         {typeof tab.badge === 'number' && tab.badge > 0 ? (
-                                                            <span className="badge badge-primary badge-sm ml-2">
+                                                            <span className={`ml-2 px-1.5 py-0.5 rounded-md text-xs font-medium ${isActive ? 'bg-white/20' : 'bg-base-300 text-base-content'}`}>
                                                                 {tab.badge}
                                                             </span>
                                                         ) : null}
@@ -1853,7 +1858,7 @@ export const JiraTaskItem: React.FC<{
                                         id={`task-${safeDomId}-panel-${activeSection}`}
                                         role="tabpanel"
                                         aria-labelledby={`task-${safeDomId}-tab-${activeSection}`}
-                                        className="mt-4"
+                                        className="mt-3"
                                     >
                                         {renderSectionContent()}
                                     </div>

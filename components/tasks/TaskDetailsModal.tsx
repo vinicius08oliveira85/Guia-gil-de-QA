@@ -29,6 +29,7 @@ import { FileViewer } from '../common/FileViewer';
 import { canViewInBrowser, detectFileType } from '../../services/fileViewerService';
 import { JiraAttachment } from './JiraAttachment';
 import { JiraRichContent } from './JiraRichContent';
+import { Button } from '../common/Button';
 
 type DetailSection = 'overview' | 'bdd' | 'tests' | 'planning' | 'collaboration' | 'links';
 type TestSubSection = 'strategy' | 'test-cases';
@@ -301,32 +302,32 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
             {(task.priority || task.severity || task.owner || task.assignee || nextStep) && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3">
                     {task.owner && (
-                        <div className="p-3 bg-base-100 border border-base-300 rounded-lg">
+                        <div className="p-3 bg-base-100 border border-base-300 rounded-xl">
                             <p className="text-[11px] uppercase text-base-content/60 tracking-wide">Owner</p>
                             <p className="text-sm font-semibold text-base-content">{task.owner}</p>
                         </div>
                     )}
                     {task.assignee && (
-                        <div className="p-3 bg-base-100 border border-base-300 rounded-lg">
+                        <div className="p-3 bg-base-100 border border-base-300 rounded-xl">
                             <p className="text-[11px] uppercase text-base-content/60 tracking-wide">Responsável</p>
                             <p className="text-sm font-semibold text-base-content">{task.assignee}</p>
                         </div>
                     )}
                     {task.priority && (
-                        <div className="p-3 bg-base-100 border border-base-300 rounded-lg">
+                        <div className="p-3 bg-base-100 border border-base-300 rounded-xl">
                             <p className="text-[11px] uppercase text-base-content/60 tracking-wide">Prioridade</p>
                             <p className="text-sm font-semibold text-base-content">{task.priority}</p>
                         </div>
                     )}
                     {task.severity && (
-                        <div className="p-3 bg-base-100 border border-base-300 rounded-lg">
+                        <div className="p-3 bg-base-100 border border-base-300 rounded-xl">
                             <p className="text-[11px] uppercase text-base-content/60 tracking-wide">Severidade</p>
                             <p className="text-sm font-semibold text-base-content">{task.severity}</p>
                         </div>
                     )}
                     {nextStep && (
-                        <div className="p-3 bg-primary/10 border border-primary/30 rounded-lg">
-                            <p className="text-[0.65rem] uppercase text-primary tracking-wide">Próximo passo</p>
+                        <div className="p-3 bg-orange-50 dark:bg-orange-950/20 border border-brand-orange/30 rounded-xl">
+                            <p className="text-[0.65rem] uppercase text-brand-orange tracking-wide">Próximo passo</p>
                             <p className="text-[0.82rem] font-semibold text-base-content line-clamp-2">{nextStep}</p>
                         </div>
                     )}
@@ -390,7 +391,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                                 <h4 className="text-sm font-semibold text-base-content/70">📋 Informações Básicas</h4>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     {task.reporter && (
-                                        <div className="p-3 bg-base-100 border border-base-300 rounded-lg">
+                                        <div className="p-3 bg-base-100 border border-base-300 rounded-xl">
                                             <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-1">Reporter</p>
                                             <p className="text-sm font-semibold text-base-content">{task.reporter.displayName}</p>
                                             {task.reporter.emailAddress && (
@@ -399,7 +400,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                                         </div>
                                     )}
                                     {task.dueDate && (
-                                        <div className="p-3 bg-base-100 border border-base-300 rounded-lg">
+                                        <div className="p-3 bg-base-100 border border-base-300 rounded-xl">
                                             <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-1">Due Date</p>
                                             <p className="text-sm font-semibold text-base-content">
                                                 {new Date(task.dueDate).toLocaleDateString('pt-BR')}
@@ -407,7 +408,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                                         </div>
                                     )}
                                     {task.environment && (
-                                        <div className="p-3 bg-base-100 border border-base-300 rounded-lg sm:col-span-2">
+                                        <div className="p-3 bg-base-100 border border-base-300 rounded-xl sm:col-span-2">
                                             <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-1">Environment</p>
                                             <p className="text-sm text-base-content">{task.environment}</p>
                                         </div>
@@ -421,19 +422,19 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                                 <h4 className="text-sm font-semibold text-base-content/70">⏱️ Time Tracking</h4>
                                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                     {task.timeTracking.originalEstimate && (
-                                        <div className="p-3 bg-base-100 border border-base-300 rounded-lg">
+                                        <div className="p-3 bg-base-100 border border-base-300 rounded-xl">
                                             <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-1">Original Estimate</p>
                                             <p className="text-sm font-semibold text-base-content">{task.timeTracking.originalEstimate}</p>
                                         </div>
                                     )}
                                     {task.timeTracking.remainingEstimate && (
-                                        <div className="p-3 bg-base-100 border border-base-300 rounded-lg">
+                                        <div className="p-3 bg-base-100 border border-base-300 rounded-xl">
                                             <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-1">Remaining Estimate</p>
                                             <p className="text-sm font-semibold text-base-content">{task.timeTracking.remainingEstimate}</p>
                                         </div>
                                     )}
                                     {task.timeTracking.timeSpent && (
-                                        <div className="p-3 bg-base-100 border border-base-300 rounded-lg">
+                                        <div className="p-3 bg-base-100 border border-base-300 rounded-xl">
                                             <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-1">Time Spent</p>
                                             <p className="text-sm font-semibold text-base-content">{task.timeTracking.timeSpent}</p>
                                         </div>
@@ -447,7 +448,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                                 <h4 className="text-sm font-semibold text-base-content/70">🧩 Organização</h4>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     {task.components && task.components.length > 0 && (
-                                        <div className="p-3 bg-base-100 border border-base-300 rounded-lg">
+                                        <div className="p-3 bg-base-100 border border-base-300 rounded-xl">
                                             <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-2">Components</p>
                                             <div className="flex flex-wrap gap-2">
                                                 {task.components.map((comp) => (
@@ -459,7 +460,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                                         </div>
                                     )}
                                     {task.fixVersions && task.fixVersions.length > 0 && (
-                                        <div className="p-3 bg-base-100 border border-base-300 rounded-lg">
+                                        <div className="p-3 bg-base-100 border border-base-300 rounded-xl">
                                             <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-2">Fix Versions</p>
                                             <div className="flex flex-wrap gap-2">
                                                 {task.fixVersions.map((version) => (
@@ -478,7 +479,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                             <div className="space-y-3">
                                 <h4 className="text-sm font-semibold text-base-content/70">🔗 Relacionamentos</h4>
                                 {task.issueLinks && task.issueLinks.length > 0 && (
-                                    <div className="p-3 bg-base-100 border border-base-300 rounded-lg">
+                                    <div className="p-3 bg-base-100 border border-base-300 rounded-xl">
                                         <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-2">Issue Links</p>
                                         <div className="space-y-1">
                                             {task.issueLinks.map((link) => (
@@ -490,7 +491,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                                     </div>
                                 )}
                                 {task.watchers && (
-                                    <div className="p-3 bg-base-100 border border-base-300 rounded-lg">
+                                    <div className="p-3 bg-base-100 border border-base-300 rounded-xl">
                                         <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-1">Watchers</p>
                                         <p className="text-sm font-semibold text-base-content">
                                             {task.watchers.watchCount} observador(es)
@@ -504,7 +505,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                         {task.jiraAttachments && task.jiraAttachments.length > 0 && (
                             <div className="space-y-3">
                                 <h4 className="text-sm font-semibold text-base-content/70">📎 Anexos do Jira</h4>
-                                <div className="p-3 bg-base-100 border border-base-300 rounded-lg">
+                                <div className="p-3 bg-base-100 border border-base-300 rounded-xl">
                                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
                                         {task.jiraAttachments.map((att) => {
                                             const jiraConfig = getJiraConfig();
@@ -592,13 +593,13 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
         
         return (
             <div className="space-y-4">
-                <div className="tabs tabs-boxed bg-base-200 w-fit" role="tablist" aria-label="Sub-abas de testes">
+                <div className="flex flex-wrap gap-2 p-1.5 bg-base-200 rounded-xl w-fit" role="tablist" aria-label="Sub-abas de testes">
                     <button
                         type="button"
                         role="tab"
                         aria-selected={activeTestSubSection === 'strategy'}
                         onClick={() => setActiveTestSubSection('strategy')}
-                        className={`tab ${activeTestSubSection === 'strategy' ? 'tab-active' : ''}`}
+                        className={`px-2 py-1 text-xs rounded-xl font-medium transition-colors sm:px-3 sm:py-1.5 sm:text-sm ${activeTestSubSection === 'strategy' ? 'bg-brand-orange text-white shadow-md shadow-brand-orange/20' : 'text-base-content/70 hover:text-base-content hover:bg-base-200'}`}
                     >
                         Estratégia
                     </button>
@@ -607,11 +608,11 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                         role="tab"
                         aria-selected={activeTestSubSection === 'test-cases'}
                         onClick={() => setActiveTestSubSection('test-cases')}
-                        className={`tab ${activeTestSubSection === 'test-cases' ? 'tab-active' : ''}`}
+                        className={`px-2 py-1 text-xs rounded-xl font-medium transition-colors flex items-center gap-1 sm:px-3 sm:py-1.5 sm:text-sm ${activeTestSubSection === 'test-cases' ? 'bg-brand-orange text-white shadow-md shadow-brand-orange/20' : 'text-base-content/70 hover:text-base-content hover:bg-base-200'}`}
                     >
                         Casos de teste
                         {task.testCases?.length ? (
-                            <span className="badge badge-primary badge-sm ml-2">
+                            <span className={`ml-1 px-1.5 py-0.5 rounded-md text-xs font-medium ${activeTestSubSection === 'test-cases' ? 'bg-white/20' : 'bg-base-300 text-base-content'}`}>
                                 {task.testCases.length}
                             </span>
                         ) : null}
@@ -724,10 +725,10 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
 
                 {!isGenerating && (
                     <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-3">
-                        <button onClick={() => onGenerateTests(task.id, detailLevel)} className="btn btn-primary btn-sm">
+                        <Button variant="brand" size="panelSm" onClick={() => onGenerateTests(task.id, detailLevel)}>
                             {hasTests ? <RefreshIcon /> : <PlusIcon />}
-                            <span>{hasTests ? 'Regerar com IA' : 'Gerar com IA'}</span>
-                        </button>
+                            {hasTests ? 'Regerar com IA' : 'Gerar com IA'}
+                        </Button>
                         <div className="flex-1">
                             <label htmlFor={`detail-level-${task.id}`} className="block text-sm text-base-content/70 mb-1">Nível de Detalhe</label>
                             <select
@@ -822,7 +823,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                         />
                     )}
                     {!showEstimation && task.estimatedHours && (
-                        <div className="p-3 bg-base-100 border border-base-300 rounded-lg">
+                        <div className="p-3 bg-base-100 border border-base-300 rounded-xl">
                             <div className="flex items-center justify-between">
                                 <span className="text-base-content/70">Estimado:</span>
                                 <span className="font-semibold text-base-content">{task.estimatedHours}h</span>
@@ -943,7 +944,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                 maxHeight="95vh"
             >
                 <div className="flex flex-col gap-4">
-                    <div className="tabs tabs-boxed bg-base-200 p-1 w-full overflow-x-auto" role="tablist" aria-label="Seções da tarefa">
+                    <div className="flex flex-wrap gap-2 p-1.5 bg-base-200 rounded-xl w-full overflow-x-auto" role="tablist" aria-label="Seções da tarefa">
                         {sectionTabs.map((tab) => {
                             const isActive = tab.id === activeSection;
                             const tabId = `task-${safeDomId}-tab-${tab.id}`;
@@ -956,12 +957,12 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                                     role="tab"
                                     aria-selected={isActive}
                                     aria-controls={panelId}
-                                    className={`tab ${isActive ? 'tab-active' : ''}`}
+                                    className={`px-2 py-1 text-xs rounded-xl font-medium transition-colors sm:px-3 sm:py-1.5 sm:text-sm ${isActive ? 'bg-brand-orange text-white shadow-md shadow-brand-orange/20' : 'text-base-content/70 hover:text-base-content hover:bg-base-200'}`}
                                     onClick={() => setActiveSection(tab.id)}
                                 >
                                     <span>{tab.label}</span>
                                     {typeof tab.badge === 'number' && tab.badge > 0 ? (
-                                        <span className="badge badge-primary badge-sm ml-2">
+                                        <span className={`ml-2 px-1.5 py-0.5 rounded-md text-xs font-medium ${isActive ? 'bg-white/20' : 'bg-base-300 text-base-content'}`}>
                                             {tab.badge}
                                         </span>
                                     ) : null}
@@ -972,26 +973,27 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
 
                     {(task.type === 'Tarefa' || task.type === 'Bug') && onGenerateAll && (
                         <div className="flex justify-end">
-                            <button
+                            <Button
                                 type="button"
+                                variant="brand"
+                                size="panel"
                                 onClick={() => onGenerateAll(task.id)}
                                 disabled={isGeneratingAll || isGenerating || isGeneratingBdd}
-                                className="btn btn-primary btn-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {isGeneratingAll ? (
                                     <>
                                         <Spinner small />
-                                        <span>Gerando...</span>
+                                        Gerando...
                                     </>
                                 ) : (
                                     <>
                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                                         </svg>
-                                        <span>Gerar Tudo</span>
+                                        Gerar Tudo
                                     </>
                                 )}
-                            </button>
+                            </Button>
                         </div>
                     )}
 
