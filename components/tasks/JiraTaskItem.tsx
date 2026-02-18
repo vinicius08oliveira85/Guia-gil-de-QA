@@ -187,7 +187,7 @@ export const JiraTaskItem: React.FC<{
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [showTestReport, setShowTestReport] = useState(false);
     const [viewingJiraAttachment, setViewingJiraAttachment] = useState<{ id: string; filename: string; url: string; mimeType: string; content?: string } | null>(null);
-    const [loadingJiraAttachment, setLoadingJiraAttachment] = useState(false);
+    const [loadingJiraAttachmentId, setLoadingJiraAttachmentId] = useState<string | null>(null);
     const [activeSection, setActiveSection] = useState<DetailSection>('overview');
     const [activeTestSubSection, setActiveTestSubSection] = useState<TestSubSection>('strategy');
     const [taskTestStatus, setTaskTestStatus] = useState<TaskTestStatus | null>(task.testStatus || null);
@@ -610,13 +610,14 @@ export const JiraTaskItem: React.FC<{
     };
 
     const handleViewJiraAttachment = async (attachment: { id: string; filename: string; url: string; mimeType: string }) => {
-        setLoadingJiraAttachment(true);
+        setLoadingJiraAttachmentId(attachment.id);
         try {
             // Fazer fetch do anexo através do proxy do Jira se necessário
             const jiraConfig = getJiraConfig();
             if (!jiraConfig) {
                 // Se não há config, tentar abrir diretamente
                 window.open(attachment.url, '_blank');
+                setLoadingJiraAttachmentId(null);
                 return;
             }
 
@@ -644,18 +645,18 @@ export const JiraTaskItem: React.FC<{
                         ...attachment,
                         content: reader.result as string
                     });
-                    setLoadingJiraAttachment(false);
+                    setLoadingJiraAttachmentId(null);
                 };
                 reader.readAsDataURL(blob);
             } else {
                 // Se falhar, abrir em nova aba
                 window.open(attachment.url, '_blank');
-                setLoadingJiraAttachment(false);
+                setLoadingJiraAttachmentId(null);
             }
         } catch (error) {
             // Em caso de erro, abrir em nova aba como fallback
             window.open(attachment.url, '_blank');
-            setLoadingJiraAttachment(false);
+            setLoadingJiraAttachmentId(null);
         }
     };
     
@@ -980,6 +981,8 @@ export const JiraTaskItem: React.FC<{
                                                     filename={att.filename}
                                                     mimeType={mimeType}
                                                     size={att.size}
+                                                    onView={handleViewJiraAttachment}
+                                                    isLoading={loadingJiraAttachmentId === att.id}
                                                 />
                                             );
                                         })}
@@ -1616,10 +1619,17 @@ export const JiraTaskItem: React.FC<{
                                 </div>
                         <button
                             type="button"
-                            onClick={(e) => { e.stopPropagation(); handleToggleDetails(); }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (onOpenModal) {
+                                onOpenModal(task);
+                              } else {
+                                handleToggleDetails();
+                              }
+                            }}
                             className="btn btn-ghost btn-sm btn-circle shrink-0 text-base-content/60 hover:text-base-content"
-                            aria-label={isDetailsOpen ? `Colapsar detalhes da tarefa ${task.id}` : `Expandir detalhes da tarefa ${task.id}`}
-                            aria-expanded={isDetailsOpen}
+                            aria-label={onOpenModal ? `Abrir detalhes da tarefa ${task.id} em modal` : (isDetailsOpen ? `Colapsar detalhes da tarefa ${task.id}` : `Expandir detalhes da tarefa ${task.id}`)}
+                            aria-expanded={onOpenModal ? undefined : isDetailsOpen}
                         >
                             <ChevronDown className={`w-4 h-4 transition-transform ${isDetailsOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
                         </button>
