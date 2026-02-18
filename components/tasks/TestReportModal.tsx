@@ -5,6 +5,7 @@ import { JiraTask } from '../../types';
 import { generateTestReport, TestReportFormat } from '../../utils/testReportGenerator';
 import { downloadFile } from '../../utils/exportService';
 import { Badge } from '../common/Badge';
+import { Button } from '../common/Button';
 import { logger } from '../../utils/logger';
 
 interface TestReportModalProps {
@@ -113,15 +114,16 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({
             Copie o registro abaixo para colar em outras plataformas
           </p>
           <div className="flex flex-wrap items-center justify-end gap-3">
-            <button
+            <Button
               type="button"
+              variant="brandOutline"
+              size="panel"
               onClick={handleDownload}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-base-300 bg-base-100 text-base-content font-medium hover:bg-base-200 transition-colors"
               aria-label={`Baixar relatório em .${format === 'markdown' ? 'md' : 'txt'}`}
             >
               <Download className="w-4 h-4" aria-hidden />
-              <span>Baixar .{format === 'markdown' ? 'md' : 'txt'}</span>
-            </button>
+              Baixar .{format === 'markdown' ? 'md' : 'txt'}
+            </Button>
             <button
               type="button"
               onClick={handleCopy}
@@ -267,14 +269,9 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({
 
         {/* Rodapé */}
         <div className="flex-shrink-0 pt-4 border-t border-base-200 flex justify-end">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-2.5 rounded-xl border border-base-300 bg-base-100 text-base-content font-medium hover:bg-base-200 transition-colors"
-            aria-label="Fechar modal"
-          >
+          <Button type="button" variant="brandOutline" size="panel" onClick={onClose} aria-label="Fechar modal">
             Fechar
-          </button>
+          </Button>
         </div>
       </div>
     </Modal>
