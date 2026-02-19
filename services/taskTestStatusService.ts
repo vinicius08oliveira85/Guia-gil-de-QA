@@ -300,7 +300,8 @@ const loadMultipleThroughSdk = async (taskKeys: string[]): Promise<Map<string, T
  * 
  * Regras para Tarefa/Bug:
  * 1. Se não há testCases → 'testar' (laranja)
- * 2. Se todos os testCases foram executados (nenhum 'Not Run') → 'teste_concluido' (verde) - independente de terem passado ou falhado
+ * 2. Se todos os testCases foram executados (nenhum 'Not Run') e nenhum está 'Failed' → 'teste_concluido' (verde).
+ *    Se todos foram executados mas algum está 'Failed' → 'pendente' (vermelho).
  * 3. Se há testCases mas pelo menos um ainda está 'Not Run':
  *    - Se algum teste falhou → 'pendente' (vermelho)
  *    - Se há testes sendo executados (alguns Passed mas não todos) → 'testando' (amarelo)
@@ -358,7 +359,10 @@ export const calculateTaskTestStatus = (task: JiraTask, allTasks: JiraTask[] = [
     const allTestsExecuted = testCases.every(tc => tc.status !== 'Not Run');
     
     if (allTestsExecuted) {
-        // Todos foram executados → 'teste_concluido' (independente de terem passado ou falhado)
+        const hasFailed = testCases.some(tc => tc.status === 'Failed');
+        if (hasFailed) {
+            return 'pendente';
+        }
         return 'teste_concluido';
     }
     
