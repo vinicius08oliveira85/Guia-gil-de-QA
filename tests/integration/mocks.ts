@@ -133,9 +133,11 @@ export function createDbMocks() {
     saveProjectToSupabaseOnly: vi.fn((project: Project) => mockSupabase.saveProject(project)),
   };
 
-  // Mock do supabaseService
+  // Mock do supabaseService (retorno: { projects, loadFailed })
   const supabaseServiceMocks = {
-    loadProjectsFromSupabase: vi.fn(() => mockSupabase.loadProjects()),
+    loadProjectsFromSupabase: vi.fn(() =>
+      mockSupabase.loadProjects().then(projects => ({ projects, loadFailed: false }))
+    ),
     saveProjectToSupabase: vi.fn((project: Project) => mockSupabase.saveProject(project)),
     deleteProjectFromSupabase: vi.fn((projectId: string) => mockSupabase.deleteProject(projectId)),
     isSupabaseAvailable: vi.fn(() => true),

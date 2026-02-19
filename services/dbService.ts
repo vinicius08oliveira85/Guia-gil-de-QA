@@ -82,8 +82,8 @@ export const getAllProjects = async (): Promise<Project[]> => {
   // Se Supabase está disponível, fazer merge com IndexedDB
   if (isSupabaseAvailable()) {
     try {
-      const supabaseProjects = await loadProjectsFromSupabase();
-      
+      const { projects: supabaseProjects } = await loadProjectsFromSupabase();
+
       // Migrar TestCases dos projetos do Supabase (otimizado)
       const migratedSupabaseProjects = supabaseProjects.map(project => ({
         ...project,

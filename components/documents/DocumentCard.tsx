@@ -40,7 +40,7 @@ export interface DocumentCardProps {
 }
 
 const actionBtnClass =
-  'flex flex-col items-center gap-1.5 group p-0 border-0 bg-transparent cursor-pointer rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50';
+  'flex flex-col items-center gap-1.5 group p-0 border-0 bg-transparent cursor-pointer rounded-lg text-base-content/70 hover:text-base-content transition-colors duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50';
 
 export const DocumentCard: React.FC<DocumentCardProps> = ({
   doc,
@@ -88,16 +88,16 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
         <p className="text-xs text-slate-500 dark:text-slate-400">{metaText}</p>
         <div className="grid grid-cols-6 gap-2 pt-4 border-t border-slate-50 dark:border-slate-700">
           <button type="button" className={actionBtnClass} onClick={onView} aria-label="Ver documento">
-            <div className="p-2 rounded-lg bg-slate-50 dark:bg-slate-700/50 group-hover:bg-slate-100 dark:group-hover:bg-slate-700 transition-colors">
-              <Eye className="w-[18px] h-[18px] text-slate-600 dark:text-slate-400" aria-hidden />
+            <div className="p-2 rounded-lg transition-colors duration-300 group-hover:bg-base-200">
+              <Eye className="w-[18px] h-[18px] text-current" aria-hidden />
             </div>
-            <span className="text-[10px] font-medium text-slate-500">Ver</span>
+            <span className="text-[10px] font-medium text-inherit">Ver</span>
           </button>
           <button type="button" className={actionBtnClass} onClick={onPreview} aria-label="Abrir preview">
-            <div className="p-2 rounded-lg bg-slate-50 dark:bg-slate-700/50 group-hover:bg-slate-100 dark:group-hover:bg-slate-700 transition-colors">
-              <ExternalLink className="w-[18px] h-[18px] text-slate-600 dark:text-slate-400" aria-hidden />
+            <div className="p-2 rounded-lg transition-colors duration-300 group-hover:bg-base-200">
+              <ExternalLink className="w-[18px] h-[18px] text-current" aria-hidden />
             </div>
-            <span className="text-[10px] font-medium text-slate-500">Preview</span>
+            <span className="text-[10px] font-medium text-inherit">Preview</span>
           </button>
           <button
             type="button"
@@ -106,14 +106,14 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
             disabled={loadingState === 'analyze'}
             aria-label="Analisar com IA"
           >
-            <div className="p-2 rounded-lg bg-slate-50 dark:bg-slate-700/50 group-hover:bg-slate-100 dark:group-hover:bg-slate-700 transition-colors">
+            <div className="p-2 rounded-lg transition-colors duration-300 group-hover:bg-base-200">
               {loadingState === 'analyze' ? (
                 <Spinner small />
               ) : (
-                <Bot className="w-[18px] h-[18px] text-slate-600 dark:text-slate-400" aria-hidden />
+                <Bot className="w-[18px] h-[18px] text-current" aria-hidden />
               )}
             </div>
-            <span className="text-[10px] font-medium text-slate-500">Analisar</span>
+            <span className="text-[10px] font-medium text-inherit">Analisar</span>
           </button>
           <button
             type="button"
@@ -122,26 +122,26 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
             disabled={loadingState === 'generate'}
             aria-label="Gerar tarefa"
           >
-            <div className="p-2 rounded-lg bg-slate-50 dark:bg-slate-700/50 group-hover:bg-slate-100 dark:group-hover:bg-slate-700 transition-colors">
+            <div className="p-2 rounded-lg transition-colors duration-300 group-hover:bg-base-200">
               {loadingState === 'generate' ? (
                 <Spinner small />
               ) : (
-                <Wand2 className="w-[18px] h-[18px] text-slate-600 dark:text-slate-400" aria-hidden />
+                <Wand2 className="w-[18px] h-[18px] text-current" aria-hidden />
               )}
             </div>
-            <span className="text-[10px] font-medium text-slate-500">Gerar</span>
+            <span className="text-[10px] font-medium text-inherit">Gerar</span>
           </button>
           <button type="button" className={actionBtnClass} onClick={onEdit} aria-label="Editar documento">
-            <div className="p-2 rounded-lg bg-slate-50 dark:bg-slate-700/50 group-hover:bg-slate-100 dark:group-hover:bg-slate-700 transition-colors">
-              <Pencil className="w-[18px] h-[18px] text-slate-600 dark:text-slate-400" aria-hidden />
+            <div className="p-2 rounded-lg transition-colors duration-300 group-hover:bg-base-200">
+              <Pencil className="w-[18px] h-[18px] text-current" aria-hidden />
             </div>
-            <span className="text-[10px] font-medium text-slate-500">Editar</span>
+            <span className="text-[10px] font-medium text-inherit">Editar</span>
           </button>
           <button type="button" className={actionBtnClass} onClick={onRemove} aria-label="Remover documento">
-            <div className="p-2 rounded-lg bg-slate-50 dark:bg-slate-700/50 group-hover:bg-slate-100 dark:group-hover:bg-slate-700 transition-colors">
-              <Trash2 className="w-[18px] h-[18px] text-slate-600 dark:text-slate-400" aria-hidden />
+            <div className="p-2 rounded-lg transition-colors duration-300 group-hover:bg-base-200">
+              <Trash2 className="w-[18px] h-[18px] text-current" aria-hidden />
             </div>
-            <span className="text-[10px] font-medium text-slate-500">Remover</span>
+            <span className="text-[10px] font-medium text-inherit">Remover</span>
           </button>
         </div>
       </div>

@@ -13,7 +13,7 @@ import { useErrorHandler } from '../../hooks/useErrorHandler';
 import { cn } from '../../utils/cn';
 import { TaskTypeIcon } from '../common/Icons';
 import { EmptyState } from '../common/EmptyState';
-import { getDisplayStatus } from '../../utils/taskHelpers';
+import { getDisplayStatusLabel } from '../../utils/taskHelpers';
 
 interface TaskLinksViewProps {
   task: JiraTask;
@@ -183,7 +183,7 @@ export const TaskLinksView: React.FC<TaskLinksViewProps> = ({
               )}>
                 <span>{statusIcon}</span>
                 <span>
-                  {getDisplayStatus(relatedTask)}
+                  {getDisplayStatusLabel(relatedTask, project)}
                 </span>
               </span>
               {relatedTask.priority && (

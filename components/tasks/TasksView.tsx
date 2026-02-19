@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Project, JiraTask, BddScenario, TestCaseDetailLevel, TestCase, Comment } from '../../types';
+import { Project, JiraTask, BddScenario, TestCaseDetailLevel, TestCase, Comment, TaskTestStatus } from '../../types';
 import { getAIService } from '../../services/ai/aiServiceFactory';
 import { Card } from '../common/Card';
 import { Modal } from '../common/Modal';
@@ -26,6 +26,8 @@ import { generateGeneralIAAnalysis } from '../../services/ai/generalAnalysisServ
 import { FailedTestsReportModal } from './FailedTestsReportModal';
 import { useProjectMetrics } from '../../hooks/useProjectMetrics';
 import { GlassIndicatorCards } from '../dashboard/GlassIndicatorCards';
+import { getDisplayStatus } from '../../utils/taskHelpers';
+import { calculateTaskTestStatus } from '../../services/taskTestStatusService';
 
 const TASK_ID_REGEX = /^([A-Z]+)-(\d+)/i;
 
@@ -47,6 +49,78 @@ const mapJiraStatusToTaskStatus = (jiraStatus: string | undefined | null): 'To D
     }
     return 'To Do';
 };
+
+/** Opções de status no filtro: todos os status do Jira quando existirem; senão os 3 em português. */
+const getStatusFilterOptions = (project: Project): string[] => {
+    const jiraStatuses = project?.settings?.jiraStatuses;
+    if (jiraStatuses && jiraStatuses.length > 0) {
+        return jiraStatuses.map(s => typeof s === 'string' ? s : s.name);
+    }
+    return ['A Fazer', 'Em Andamento', 'Concluído'];
+};
+
+/** Mapeamento do rótulo em português (fallback) para categoria interna. */
+const PT_STATUS_TO_CATEGORY: Record<string, 'To Do' | 'In Progress' | 'Done'> = {
+    'A Fazer': 'To Do',
+    'Em Andamento': 'In Progress',
+    'Concluído': 'Done',
+};
+
+/** Verifica se a tarefa corresponde ao nome de status (do Jira ou rótulo em português). */
+const taskMatchesStatusName = (task: JiraTask, statusName: string, project: Project): boolean => {
+    const display = getDisplayStatus(task);
+    if (display === statusName) return true;
+    const jiraStatuses = project?.settings?.jiraStatuses;
+    if (jiraStatuses && jiraStatuses.length > 0) {
+        const category = mapJiraStatusToTaskStatus(statusName);
+        return !task.jiraStatus && task.status === category;
+    }
+    const category = PT_STATUS_TO_CATEGORY[statusName];
+    return category !== undefined && task.status === category;
+};
+
+/** Mapeia nome de prioridade (Jira) para TaskPriority. Mesma lógica do jiraService. */
+const mapJiraPriorityToTaskPriority = (jiraPriority: string | undefined | null): 'Baixa' | 'Média' | 'Alta' | 'Urgente' => {
+    if (!jiraPriority) return 'Média';
+    const p = jiraPriority.toLowerCase();
+    if (p.includes('highest') || p.includes('urgent')) return 'Urgente';
+    if (p.includes('high')) return 'Alta';
+    if (p.includes('low') || p.includes('lowest')) return 'Baixa';
+    return 'Média';
+};
+
+/** Opções de prioridade no filtro: nomes do Jira quando existirem; senão Baixa/Média/Alta/Urgente. */
+const getPriorityFilterOptions = (project: Project): string[] => {
+    const jiraPriorities = project?.settings?.jiraPriorities;
+    if (jiraPriorities && jiraPriorities.length > 0) {
+        return jiraPriorities.map(p => typeof p === 'string' ? p : p.name);
+    }
+    return ['Baixa', 'Média', 'Alta', 'Urgente'];
+};
+
+/** Verifica se a tarefa corresponde ao nome de prioridade (do Jira ou rótulo em PT). */
+const taskMatchesPriorityName = (task: JiraTask, priorityName: string, project: Project): boolean => {
+    if (task.jiraPriority === priorityName) return true;
+    const jiraPriorities = project?.settings?.jiraPriorities;
+    if (jiraPriorities && jiraPriorities.length > 0) {
+        const category = mapJiraPriorityToTaskPriority(priorityName);
+        return !task.jiraPriority && (task.priority || 'Média') === category;
+    }
+    return (task.priority || 'Sem Prioridade') === priorityName;
+};
+
+/** Status de teste efetivo da tarefa (persistido ou calculado). Alinhado à badge do card. */
+const getEffectiveTestStatus = (task: JiraTask, allTasks: JiraTask[]): TaskTestStatus => {
+    return task.testStatus ?? calculateTaskTestStatus(task, allTasks);
+};
+
+/** Opções do filtro Status de Teste: valor + rótulo igual à badge. */
+const TEST_STATUS_FILTER_OPTIONS: { value: TaskTestStatus; label: string }[] = [
+    { value: 'testar', label: 'Testar' },
+    { value: 'testando', label: 'Testando' },
+    { value: 'pendente', label: 'Pendente' },
+    { value: 'teste_concluido', label: 'Teste Concluído' },
+];
 
 const parseTaskId = (taskId: string) => {
     if (!taskId) {
@@ -119,7 +193,7 @@ export const TasksView: React.FC<{
     const [editingTask, setEditingTask] = useState<JiraTask | undefined>(undefined);
     const [testCaseEditorRef, setTestCaseEditorRef] = useState<{ taskId: string; testCase: TestCase } | null>(null);
     const [defaultParentId, setDefaultParentId] = useState<string | undefined>(undefined);
-    const [showFilters, setShowFilters] = useState(false);
+    const [isFiltersModalOpen, setIsFiltersModalOpen] = useState(false);
     
     // Novos Estados de Filtro
     const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
@@ -128,6 +202,7 @@ export const TasksView: React.FC<{
     const [statusFilter, setStatusFilter] = useState<string[]>([]);
     const [priorityFilter, setPriorityFilter] = useState<string[]>([]);
     const [typeFilter, setTypeFilter] = useState<string[]>([]);
+    const [testStatusFilter, setTestStatusFilter] = useState<TaskTestStatus[]>([]);
     const [qualityFilter, setQualityFilter] = useState<string[]>([]);
 
     const [failModalState, setFailModalState] = useState<{
@@ -183,19 +258,19 @@ export const TasksView: React.FC<{
                 if (!matchesId && !matchesTitle) return false;
             }
 
-            // 2. Status
-            if (statusFilter.length > 0 && !statusFilter.includes(task.status)) return false;
+            // 2. Status (por nome do Jira ou rótulo em português)
+            if (statusFilter.length > 0 && !statusFilter.some(name => taskMatchesStatusName(task, name, project))) return false;
 
-            // 3. Prioridade
-            if (priorityFilter.length > 0) {
-                const taskPriority = task.priority || 'Sem Prioridade';
-                if (!priorityFilter.includes(taskPriority)) return false;
-            }
+            // 3. Prioridade (por nome do Jira ou rótulo em PT)
+            if (priorityFilter.length > 0 && !priorityFilter.some(name => taskMatchesPriorityName(task, name, project))) return false;
 
             // 4. Tipo
             if (typeFilter.length > 0 && !typeFilter.includes(task.type)) return false;
 
-            // 5. Qualidade (BDD, Testes, Automação)
+            // 5. Status de Teste (badge do card)
+            if (testStatusFilter.length > 0 && !testStatusFilter.includes(getEffectiveTestStatus(task, project.tasks))) return false;
+
+            // 6. Qualidade (BDD, Testes, Automação)
             if (qualityFilter.length > 0) {
                 const hasBDD = task.bddScenarios && task.bddScenarios.length > 0;
                 const hasTestCases = task.testCases && task.testCases.length > 0;
@@ -219,15 +294,16 @@ export const TasksView: React.FC<{
 
             return true;
         });
-    }, [project.tasks, searchQuery, statusFilter, priorityFilter, typeFilter, qualityFilter]);
+    }, [project, project.tasks, searchQuery, statusFilter, priorityFilter, typeFilter, testStatusFilter, qualityFilter]);
 
     // Contadores para os filtros
     const counts = useMemo(() => {
         const allTasks = project.tasks;
         return {
-            status: (status: string) => allTasks.filter(t => t.status === status).length,
-            priority: (priority: string) => allTasks.filter(t => (t.priority || 'Sem Prioridade') === priority).length,
+            status: (statusName: string) => allTasks.filter(t => taskMatchesStatusName(t, statusName, project)).length,
+            priority: (priorityName: string) => allTasks.filter(t => taskMatchesPriorityName(t, priorityName, project)).length,
             type: (type: string) => allTasks.filter(t => t.type === type).length,
+            testStatus: (status: TaskTestStatus) => allTasks.filter(t => getEffectiveTestStatus(t, allTasks) === status).length,
             quality: (type: string) => {
                 switch (type) {
                     case 'with-bdd': return allTasks.filter(t => t.bddScenarios?.length).length;
@@ -240,14 +316,15 @@ export const TasksView: React.FC<{
                 }
             }
         };
-    }, [project.tasks]);
+    }, [project.tasks, project.settings?.jiraStatuses, project.settings?.jiraPriorities]);
 
-    const activeFiltersCount = statusFilter.length + priorityFilter.length + typeFilter.length + qualityFilter.length;
+    const activeFiltersCount = statusFilter.length + priorityFilter.length + typeFilter.length + testStatusFilter.length + qualityFilter.length;
 
     const clearAllFilters = () => {
         setStatusFilter([]);
         setPriorityFilter([]);
         setTypeFilter([]);
+        setTestStatusFilter([]);
         setQualityFilter([]);
         setSearchQuery('');
     };
@@ -1448,11 +1525,11 @@ export const TasksView: React.FC<{
                         <Button 
                             variant="outline"
                             size="sm"
-                            onClick={() => setShowFilters(prev => !prev)} 
+                            onClick={() => setIsFiltersModalOpen(true)} 
                             className="rounded-full px-3 py-1.5 text-xs min-h-0 flex items-center gap-1.5 flex-shrink-0 hover:bg-base-200"
                         >
                             <Filter className="w-3.5 h-3.5" />
-                            <span>{showFilters ? 'Ocultar Filtros' : `Filtros${activeFiltersCount > 0 ? ` (${activeFiltersCount})` : ''}`}</span>
+                            <span>{`Filtros${activeFiltersCount > 0 ? ` (${activeFiltersCount})` : ''}`}</span>
                         </Button>
                     </div>
                 </div>
@@ -1506,56 +1583,50 @@ export const TasksView: React.FC<{
             </div>
 
             <div className="flex flex-col gap-6">
-                {showFilters && (
-                    <motion.div 
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="rounded-xl border border-base-300 bg-base-100 p-4 sm:p-6 shadow-sm"
-                    >
-                        <div className="flex items-center justify-between mb-4">
-                            <h4 className="text-sm font-bold text-base-content flex items-center gap-2">
-                                <Filter className="w-4 h-4 text-primary" />
-                                Filtros Ativos
-                            </h4>
-                            {activeFiltersCount > 0 && (
-                                <button 
-                                    onClick={clearAllFilters}
-                                    className="text-xs text-error hover:text-error/80 font-medium flex items-center gap-1"
-                                >
-                                    <X className="w-3 h-3" /> Limpar todos
-                                </button>
-                            )}
+                <Modal
+                    isOpen={isFiltersModalOpen}
+                    onClose={() => setIsFiltersModalOpen(false)}
+                    title="Filtros"
+                >
+                    {activeFiltersCount > 0 && (
+                        <div className="flex justify-end mb-4">
+                            <button
+                                type="button"
+                                onClick={() => { clearAllFilters(); setIsFiltersModalOpen(false); }}
+                                className="text-xs text-error hover:text-error/80 font-medium flex items-center gap-1"
+                            >
+                                <X className="w-3 h-3" /> Limpar todos
+                            </button>
                         </div>
-
-                        <div className="space-y-5">
-                            {/* Grupo: Status */}
+                    )}
+                    <div className="space-y-5">
+                            {/* Grupo: Status — todos os status do Jira quando existirem; senão A Fazer / Em Andamento / Concluído */}
                             <div>
                                 <p className="text-xs font-semibold text-base-content/60 mb-2 uppercase tracking-wider">Status</p>
                                 <div className="flex flex-wrap gap-2">
-                                    {['To Do', 'In Progress', 'Done'].map(status => (
+                                    {getStatusFilterOptions(project).map(statusName => (
                                         <FilterChip
-                                            key={status}
-                                            label={status}
-                                            count={counts.status(status)}
-                                            isActive={statusFilter.includes(status)}
-                                            onClick={() => setStatusFilter(prev => prev.includes(status) ? prev.filter(s => s !== status) : [...prev, status])}
+                                            key={statusName}
+                                            label={statusName}
+                                            count={counts.status(statusName)}
+                                            isActive={statusFilter.includes(statusName)}
+                                            onClick={() => setStatusFilter(prev => prev.includes(statusName) ? prev.filter(s => s !== statusName) : [...prev, statusName])}
                                         />
                                     ))}
                                 </div>
                             </div>
 
-                            {/* Grupo: Prioridade */}
+                            {/* Grupo: Prioridade — nomes do Jira quando existirem; senão Baixa/Média/Alta/Urgente */}
                             <div>
                                 <p className="text-xs font-semibold text-base-content/60 mb-2 uppercase tracking-wider">Prioridade</p>
                                 <div className="flex flex-wrap gap-2">
-                                    {['High', 'Medium', 'Low'].map(priority => (
+                                    {getPriorityFilterOptions(project).map(priorityName => (
                                         <FilterChip
-                                            key={priority}
-                                            label={priority === 'High' ? 'Alta' : priority === 'Medium' ? 'Média' : 'Baixa'}
-                                            count={counts.priority(priority)}
-                                            isActive={priorityFilter.includes(priority)}
-                                            onClick={() => setPriorityFilter(prev => prev.includes(priority) ? prev.filter(p => p !== priority) : [...prev, priority])}
+                                            key={priorityName}
+                                            label={priorityName}
+                                            count={counts.priority(priorityName)}
+                                            isActive={priorityFilter.includes(priorityName)}
+                                            onClick={() => setPriorityFilter(prev => prev.includes(priorityName) ? prev.filter(p => p !== priorityName) : [...prev, priorityName])}
                                         />
                                     ))}
                                 </div>
@@ -1572,6 +1643,22 @@ export const TasksView: React.FC<{
                                             count={counts.type(type)}
                                             isActive={typeFilter.includes(type)}
                                             onClick={() => setTypeFilter(prev => prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type])}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Grupo: Status de Teste — alinhado à badge do card */}
+                            <div>
+                                <p className="text-xs font-semibold text-base-content/60 mb-2 uppercase tracking-wider">Status de Teste</p>
+                                <div className="flex flex-wrap gap-2">
+                                    {TEST_STATUS_FILTER_OPTIONS.map(({ value, label }) => (
+                                        <FilterChip
+                                            key={value}
+                                            label={label}
+                                            count={counts.testStatus(value)}
+                                            isActive={testStatusFilter.includes(value)}
+                                            onClick={() => setTestStatusFilter(prev => prev.includes(value) ? prev.filter(s => s !== value) : [...prev, value])}
                                         />
                                     ))}
                                 </div>
@@ -1599,9 +1686,8 @@ export const TasksView: React.FC<{
                                     ))}
                                 </div>
                             </div>
-                        </div>
-                    </motion.div>
-                )}
+                    </div>
+                </Modal>
 
                 <div className="space-y-4 min-w-0">
                     <div className="flex flex-col gap-4">

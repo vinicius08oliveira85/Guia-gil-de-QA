@@ -22,7 +22,9 @@ interface ProjectsState {
   selectedProjectId: string | null;
   isLoading: boolean;
   error: Error | null;
-  
+  /** true quando a última tentativa de carregar do Supabase falhou (proxy/DB indisponível) */
+  supabaseLoadFailed: boolean;
+
   // Actions
   loadProjects: () => Promise<void>;
   syncProjectsFromSupabase: () => Promise<void>;
@@ -43,35 +45,25 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
   selectedProjectId: null,
   isLoading: false,
   error: null,
+  supabaseLoadFailed: false,
 
   loadProjects: async () => {
-    set({ isLoading: true, error: null });
+    set({ isLoading: true, error: null, supabaseLoadFailed: false });
     try {
       let supabaseProjects: Project[] = [];
+      let supabaseLoadFailed = false;
       let indexedDBProjects: Project[] = [];
-      
+
       // Fase 1: Tentar carregar do Supabase primeiro (se disponível)
       if (isSupabaseAvailable()) {
-        try {
-          logger.debug('Carregando projetos do Supabase primeiro...', 'ProjectsStore');
-          supabaseProjects = await loadProjectsFromSupabase();
-          
-          if (supabaseProjects.length > 0) {
-            logger.info(`Projetos carregados do Supabase: ${supabaseProjects.length}`, 'ProjectsStore');
-          } else {
-            logger.debug('Nenhum projeto encontrado no Supabase', 'ProjectsStore');
-          }
-        } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : String(error);
-          // Log mais detalhado para erros CORS ou timeout
-          if (errorMessage.includes('CORS') || errorMessage.includes('cors')) {
-            logger.warn('Erro CORS ao carregar do Supabase. Usando IndexedDB como fallback.', 'ProjectsStore', error);
-          } else if (errorMessage.includes('Timeout') || errorMessage.includes('timeout')) {
-            logger.warn('Timeout ao carregar do Supabase. Usando IndexedDB como fallback.', 'ProjectsStore', error);
-          } else {
-            logger.warn('Erro ao carregar do Supabase. Usando IndexedDB como fallback.', 'ProjectsStore', error);
-          }
-          // Continuar para fallback IndexedDB
+        logger.debug('Carregando projetos do Supabase primeiro...', 'ProjectsStore');
+        const result = await loadProjectsFromSupabase();
+        supabaseProjects = result.projects;
+        supabaseLoadFailed = result.loadFailed;
+        if (supabaseProjects.length > 0) {
+          logger.info(`Projetos carregados do Supabase: ${supabaseProjects.length}`, 'ProjectsStore');
+        } else {
+          logger.debug('Nenhum projeto encontrado no Supabase', 'ProjectsStore');
         }
       }
       
@@ -150,14 +142,15 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
         finalProjects = indexedDBProjects;
         logger.info(`Projetos carregados do IndexedDB: ${finalProjects.length}`, 'ProjectsStore');
       }
-      
-      set({ projects: finalProjects, isLoading: false });
+
+      set({ projects: finalProjects, isLoading: false, supabaseLoadFailed });
     } catch (error) {
       const errorObj = error instanceof Error ? error : new Error('Erro ao carregar projetos');
       logger.error('Erro ao carregar projetos', 'ProjectsStore', errorObj);
-      set({ 
+      set({
         error: errorObj,
-        isLoading: false 
+        isLoading: false,
+        supabaseLoadFailed: false,
       });
     }
   },
@@ -165,7 +158,7 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
   syncProjectsFromSupabase: async () => {
     try {
       logger.debug('Sincronizando projetos do Supabase em background...', 'ProjectsStore');
-      const supabaseProjects = await loadProjectsFromSupabase();
+      const { projects: supabaseProjects } = await loadProjectsFromSupabase();
       
       if (supabaseProjects.length === 0) {
         logger.debug('Nenhum projeto encontrado no Supabase', 'ProjectsStore');

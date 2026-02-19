@@ -17,7 +17,7 @@ vi.mock('../../services/dbService', () => ({
 }));
 
 vi.mock('../../services/supabaseService', () => ({
-  loadProjectsFromSupabase: vi.fn(),
+  loadProjectsFromSupabase: vi.fn(() => Promise.resolve({ projects: [], loadFailed: false })),
   isSupabaseAvailable: vi.fn(() => true),
   getUserId: vi.fn(() => Promise.resolve('anon-shared')),
 }));
