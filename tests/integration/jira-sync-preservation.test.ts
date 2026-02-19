@@ -87,7 +87,7 @@ describe('Preservação de Dados após Sincronização Jira', () => {
       await updateProject(testProject);
 
       // Verificar preservação
-      const projects = await loadProjectsFromSupabase();
+      const { projects } = await loadProjectsFromSupabase();
       const savedProject = projects.find(p => p.id === testProject.id);
 
       expect(savedProject).toBeDefined();
@@ -151,7 +151,7 @@ describe('Preservação de Dados após Sincronização Jira', () => {
       await updateProject(testProject);
 
       // Verificar que todos os status foram preservados
-      const projects = await loadProjectsFromSupabase();
+      const { projects } = await loadProjectsFromSupabase();
       const savedProject = projects.find(p => p.id === testProject.id);
 
       expect(savedProject?.tasks[0].testCases).toHaveLength(3);
@@ -198,7 +198,7 @@ describe('Preservação de Dados após Sincronização Jira', () => {
       await updateProject(testProject);
 
       // Verificar preservação
-      const projects = await loadProjectsFromSupabase();
+      const { projects } = await loadProjectsFromSupabase();
       const savedProject = projects.find(p => p.id === testProject.id);
 
       expect(savedProject?.tasks[0].testStrategy).toHaveLength(1);
@@ -244,7 +244,7 @@ describe('Preservação de Dados após Sincronização Jira', () => {
       await updateProject(testProject);
 
       // Verificar preservação
-      const projects = await loadProjectsFromSupabase();
+      const { projects } = await loadProjectsFromSupabase();
       const savedProject = projects.find(p => p.id === testProject.id);
 
       expect(savedProject?.tasks[0].bddScenarios).toHaveLength(1);
@@ -314,7 +314,7 @@ describe('Preservação de Dados após Sincronização Jira', () => {
       await updateProject(testProject);
 
       // Verificar preservação completa
-      const projects = await loadProjectsFromSupabase();
+      const { projects } = await loadProjectsFromSupabase();
       const savedProject = projects.find(p => p.id === testProject.id);
 
       // Campos atualizados do Jira
@@ -393,7 +393,7 @@ describe('Preservação de Dados após Sincronização Jira', () => {
       await updateProject(testProject);
 
       // Verificar preservação de ambas
-      const projects = await loadProjectsFromSupabase();
+      const { projects } = await loadProjectsFromSupabase();
       const savedProject = projects.find(p => p.id === testProject.id);
 
       expect(savedProject?.tasks).toHaveLength(2);

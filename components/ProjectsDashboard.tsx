@@ -48,7 +48,7 @@ export const ProjectsDashboard: React.FC<{
         project: null,
     });
     const { handleError, handleSuccess } = useErrorHandler();
-    const { importProject } = useProjectsStore();
+    const { importProject, supabaseLoadFailed } = useProjectsStore();
 
     // Função para navegar para uma tarefa específica
     const handleNavigateToTask = useCallback((projectId: string, taskId: string) => {
@@ -569,17 +569,24 @@ export const ProjectsDashboard: React.FC<{
                         ))}
                     </div>
                 ) : (
-                    <EmptyState
-                        icon="🚀"
-                        title="Nenhum projeto ainda"
-                        description="Crie um projeto para organizar tarefas, testes, documentos e métricas em um fluxo único."
-                        action={{
-                            label: "Criar Primeiro Projeto",
-                            onClick: () => setIsCreating(true),
-                            variant: 'primary'
-                        }}
-                        tip="Você pode criar um projeto do zero, usar um template ou importar do Jira se estiver configurado."
-                    />
+                    <>
+                        {supabaseLoadFailed && (
+                            <div className="mb-4 p-3 rounded-lg bg-warning/10 text-warning-content border border-warning/30 text-sm" role="alert">
+                                Sincronização com a nuvem indisponível no momento. Se você já tinha projetos, tente novamente em instantes ou verifique a conexão.
+                            </div>
+                        )}
+                        <EmptyState
+                            icon="🚀"
+                            title="Nenhum projeto ainda"
+                            description="Crie um projeto para organizar tarefas, testes, documentos e métricas em um fluxo único."
+                            action={{
+                                label: "Criar Primeiro Projeto",
+                                onClick: () => setIsCreating(true),
+                                variant: 'primary'
+                            }}
+                            tip="Você pode criar um projeto do zero, usar um template ou importar do Jira se estiver configurado."
+                        />
+                    </>
                 )}
             </div>
             </div>

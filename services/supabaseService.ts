@@ -550,30 +550,62 @@ export const saveProjectToSupabase = async (project: Project): Promise<void> => 
  * Nunca lança erro - retorna array vazio se falhar
  * Timeout de 10 segundos (limite do Vercel)
  */
-export const loadProjectsFromSupabase = async (): Promise<Project[]> => {
+export type LoadProjectsResult = { projects: Project[]; loadFailed: boolean };
+
+export const loadProjectsFromSupabase = async (): Promise<LoadProjectsResult> => {
     if (supabaseProxyUrl) {
-        try {
+        const attempt = async (): Promise<LoadProjectsResult> => {
             const userId = await getUserId();
             const response = await callSupabaseProxy<{ projects?: Project[] }>('GET', {
                 query: { userId }
-            }, requestTimeoutMs); // Timeout de 5 segundos
+            }, requestTimeoutMs);
             const projects = response.projects ?? [];
             if (projects.length === 0) {
                 logger.info('Nenhum projeto encontrado no Supabase (proxy)', 'supabaseService');
             } else {
                 logger.info(`${projects.length} projetos carregados do Supabase via proxy`, 'supabaseService');
             }
-            return projects;
+            return { projects, loadFailed: false };
+        };
+        try {
+            return await attempt();
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : String(error);
+            const isSchemaCacheOrPaused =
+                errorMessage.includes('schema cache') ||
+                errorMessage.includes('paused') ||
+                errorMessage.includes('Retrying');
             if (isCorsError(error)) {
                 logger.error('Erro CORS ao carregar do Supabase. Configure VITE_SUPABASE_PROXY_URL', 'supabaseService', error);
             } else if (errorMessage.includes('Timeout')) {
                 logger.warn('Timeout ao carregar projetos do Supabase (proxy). Usando cache local', 'supabaseService', error);
+            } else if (isSchemaCacheOrPaused) {
+                logger.warn(
+                    'Supabase indisponível (schema cache/pausado). Verifique no dashboard se o projeto está ativo: https://supabase.com/dashboard',
+                    'supabaseService',
+                    error
+                );
             } else {
                 logger.warn('Erro ao carregar projetos via proxy Supabase', 'supabaseService', error);
             }
-            return [];
+            // Retry único após 2s em caso de 500/schema cache (Supabase pode estar acordando)
+            if (isSchemaCacheOrPaused || errorMessage.includes('500')) {
+                try {
+                    await new Promise(r => setTimeout(r, 2000));
+                    return await attempt();
+                } catch (retryError) {
+                    const retryMsg = retryError instanceof Error ? retryError.message : String(retryError);
+                    if (retryMsg.includes('schema cache') || retryMsg.includes('paused')) {
+                        logger.warn(
+                            'Supabase ainda indisponível após retry. Verifique se o projeto está ativo em https://supabase.com/dashboard',
+                            'supabaseService',
+                            retryError
+                        );
+                    }
+                    return { projects: [], loadFailed: true };
+                }
+            }
+            return { projects: [], loadFailed: true };
         }
     }
 
@@ -582,52 +614,42 @@ export const loadProjectsFromSupabase = async (): Promise<Project[]> => {
         if (isProduction()) {
             logger.warn('Supabase não disponível em produção sem proxy. Configure VITE_SUPABASE_PROXY_URL.', 'supabaseService');
         }
-        return [];
+        return { projects: [], loadFailed: false };
     }
-    
+
     try {
-        // Timeout para SDK também (10 segundos)
-        // Buscar projetos com user_id que corresponde ao padrão anon-% (compatível com RLS)
         const userId = await getUserId();
         const queryPromise = supabase
             .from('projects')
             .select('data')
             .or(`user_id.eq.${userId},user_id.like.anon-%`)
             .order('updated_at', { ascending: false });
-        
         const timeoutPromise = createTimeoutPromise<{ data: null; error: { message: string } }>(requestTimeoutMs, 'Timeout: requisição ao Supabase excedeu 5s');
-        
-        const result = await Promise.race([
-            queryPromise,
-            timeoutPromise
-        ]);
-        
+        const result = await Promise.race([queryPromise, timeoutPromise]);
         const { data, error } = result;
-        
+
         if (error) {
             if (isCorsError(error)) {
                 logger.error('Erro CORS ao carregar via SDK. Use proxy em produção', 'supabaseService', error);
             } else {
                 logger.warn('Erro ao carregar projetos do Supabase', 'supabaseService', error);
             }
-            return [];
+            return { projects: [], loadFailed: true };
         }
-        
         if (!data || data.length === 0) {
             logger.info('Nenhum projeto encontrado no Supabase', 'supabaseService');
-            return [];
+            return { projects: [], loadFailed: false };
         }
-        
         const projects = data.map(row => row.data as Project);
         logger.info(`${projects.length} projetos carregados do Supabase via SDK`, 'supabaseService');
-        return projects;
+        return { projects, loadFailed: false };
     } catch (error) {
         if (isCorsError(error)) {
             logger.error('Erro CORS ao carregar do Supabase. Use proxy', 'supabaseService', error);
         } else {
             logger.warn('Erro ao carregar do Supabase (usando cache local)', 'supabaseService', error);
         }
-        return [];
+        return { projects: [], loadFailed: true };
     }
 };
 
@@ -783,8 +805,8 @@ export const loadTestStatusesByJiraKeys = async (jiraKeys: string[]): Promise<Ma
     
     try {
         // Buscar todos os projetos do Supabase
-        const projects = await loadProjectsFromSupabase();
-        
+        const { projects } = await loadProjectsFromSupabase();
+
         if (projects.length === 0) {
             logger.debug('Nenhum projeto encontrado no Supabase para buscar status de testes', 'supabaseService');
             return result;

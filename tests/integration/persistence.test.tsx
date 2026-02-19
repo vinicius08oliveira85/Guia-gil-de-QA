@@ -42,7 +42,9 @@ describe('Testes de Persistência de Dados', () => {
       .mockImplementation((projectId: string) => mocks.mockIndexedDB.deleteProject(projectId));
     
     vi.mocked(require('../../services/supabaseService').loadProjectsFromSupabase)
-      .mockImplementation(() => mocks.mockSupabase.loadProjects());
+      .mockImplementation(() =>
+        mocks.mockSupabase.loadProjects().then(projects => ({ projects, loadFailed: false }))
+      );
   });
 
   describe('2.1 Persistência IndexedDB', () => {

@@ -47,8 +47,8 @@ export const verifySupabaseStructure = async (): Promise<VerificationResult[]> =
     logger.info('Iniciando verificação da estrutura do Supabase...', 'verifySupabase');
     
     // Carregar todos os projetos do Supabase
-    const projects = await loadProjectsFromSupabase();
-    
+    const { projects } = await loadProjectsFromSupabase();
+
     if (projects.length === 0) {
       logger.warn('Nenhum projeto encontrado no Supabase', 'verifySupabase');
       return results;

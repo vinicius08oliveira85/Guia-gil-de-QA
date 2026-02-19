@@ -59,7 +59,7 @@ describe('Fluxo de Salvamento de Casos de Teste', () => {
       await updateProject(testProject);
 
       // Verificar persistência
-      const projects = await loadProjectsFromSupabase();
+      const { projects } = await loadProjectsFromSupabase();
       const savedProject = projects.find(p => p.id === testProject.id);
 
       expect(savedProject).toBeDefined();
@@ -97,7 +97,7 @@ describe('Fluxo de Salvamento de Casos de Teste', () => {
       testProject.tasks = [updatedTask];
       await updateProject(testProject);
 
-      const projects = await loadProjectsFromSupabase();
+      const { projects } = await loadProjectsFromSupabase();
       const savedProject = projects.find(p => p.id === testProject.id);
       const savedTestCase = savedProject?.tasks[0].testCases[0];
 
@@ -154,7 +154,7 @@ describe('Fluxo de Salvamento de Casos de Teste', () => {
       await updateProject(testProject);
 
       // Verificar atualização
-      const projects = await loadProjectsFromSupabase();
+      const { projects } = await loadProjectsFromSupabase();
       const savedProject = projects.find(p => p.id === testProject.id);
       const savedTestCase = savedProject?.tasks[0].testCases.find(tc => tc.id === 'tc-edit-001');
 
@@ -203,7 +203,7 @@ describe('Fluxo de Salvamento de Casos de Teste', () => {
       await updateProject(testProject);
 
       // Verificar que ambos os casos foram preservados
-      const projects = await loadProjectsFromSupabase();
+      const { projects } = await loadProjectsFromSupabase();
       const savedProject = projects.find(p => p.id === testProject.id);
 
       expect(savedProject?.tasks[0].testCases).toHaveLength(2);
@@ -256,7 +256,7 @@ describe('Fluxo de Salvamento de Casos de Teste', () => {
       await updateProject(testProject);
 
       // Verificar última versão persistida
-      const projects = await loadProjectsFromSupabase();
+      const { projects } = await loadProjectsFromSupabase();
       const savedProject = projects.find(p => p.id === testProject.id);
       const savedTestCase = savedProject?.tasks[0].testCases[0];
 
@@ -280,7 +280,7 @@ describe('Fluxo de Salvamento de Casos de Teste', () => {
       await updateProject(testProject);
 
       // Recarregar do Supabase
-      const reloadedProjects = await loadProjectsFromSupabase();
+      const { projects: reloadedProjects } = await loadProjectsFromSupabase();
       const reloadedProject = reloadedProjects.find(p => p.id === testProject.id);
 
       expect(reloadedProject).toBeDefined();
@@ -322,7 +322,7 @@ describe('Fluxo de Salvamento de Casos de Teste', () => {
       testProject.tasks = [testTask];
       await updateProject(testProject);
 
-      const projects = await loadProjectsFromSupabase();
+      const { projects } = await loadProjectsFromSupabase();
       const savedProject = projects.find(p => p.id === testProject.id);
       const savedTestCase = savedProject?.tasks[0].testCases[0];
 
