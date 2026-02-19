@@ -197,11 +197,15 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
     ]);
 
     useEffect(() => {
-        if (isOpen && !sectionTabs.find(tab => tab.id === activeSection)) {
-            setActiveSection(sectionTabs[0]?.id ?? 'overview');
+        if (!isOpen) return;
+        const currentTabExists = sectionTabs.some(tab => tab.id === activeSection);
+        if (!currentTabExists) {
+            const next = sectionTabs[0]?.id ?? 'overview';
+            if (next !== activeSection) setActiveSection(next);
+            return;
         }
-        if ((activeSection === 'tests' || activeSection === 'bdd') && task.type !== 'Tarefa') {
-            setActiveSection('overview');
+        if ((activeSection === 'tests' || activeSection === 'bdd') && task.type !== 'Tarefa' && task.type !== 'Bug') {
+            if (activeSection !== 'overview') setActiveSection('overview');
         }
     }, [isOpen, sectionTabs, activeSection, task.type]);
 
@@ -962,7 +966,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                                     aria-selected={isActive}
                                     aria-controls={panelId}
                                     className={`px-2 py-1 text-xs rounded-xl font-medium transition-colors sm:px-3 sm:py-1.5 sm:text-sm ${isActive ? 'bg-brand-orange text-white shadow-md shadow-brand-orange/20' : 'text-base-content/70 hover:text-base-content hover:bg-base-200'}`}
-                                    onClick={() => setActiveSection(tab.id)}
+                                    onClick={(e) => { e.stopPropagation(); setActiveSection(tab.id); }}
                                 >
                                     <span>{tab.label}</span>
                                     {typeof tab.badge === 'number' && tab.badge > 0 ? (
