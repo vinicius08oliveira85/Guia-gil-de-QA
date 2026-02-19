@@ -1,6 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { Modal } from '../common/Modal';
 import { Project } from '../../types';
+import { X } from 'lucide-react';
 
 export interface DashboardFilters {
   period?: 'week' | 'month' | 'quarter' | 'all';
@@ -17,19 +18,51 @@ interface DashboardFiltersModalProps {
   onFiltersChange: (filters: DashboardFilters) => void;
 }
 
+const FilterChip = ({
+  label,
+  count,
+  isActive,
+  onClick,
+  showCount = true,
+}: {
+  label: string;
+  count: number;
+  isActive: boolean;
+  onClick: () => void;
+  showCount?: boolean;
+}) => (
+  <button
+    type="button"
+    onClick={onClick}
+    className={`
+      inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-all border
+      ${isActive
+        ? 'bg-primary text-primary-content border-primary shadow-sm'
+        : 'bg-base-100 text-base-content/70 border-base-300 hover:border-primary/50 hover:text-base-content'
+      }
+    `}
+  >
+    {label}
+    {showCount && (
+      <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${isActive ? 'bg-white/20' : 'bg-base-200'}`}>
+        {count}
+      </span>
+    )}
+  </button>
+);
+
 /**
- * Modal de filtros para o Dashboard
+ * Modal de filtros para o Dashboard — mesmo padrão visual do modal de filtros da aba de tarefas.
  */
 export const DashboardFiltersModal: React.FC<DashboardFiltersModalProps> = ({
   isOpen,
   onClose,
   project,
   filters,
-  onFiltersChange
+  onFiltersChange,
 }) => {
-  const [localFilters, setLocalFilters] = useState<DashboardFilters>(filters);
+  const tasks = project.tasks || [];
 
-  // Obter fases únicas do projeto
   const availablePhases = useMemo(() => {
     const phases = new Set<string>();
     project.phases?.forEach(phase => {
@@ -38,122 +71,110 @@ export const DashboardFiltersModal: React.FC<DashboardFiltersModalProps> = ({
     return Array.from(phases).sort();
   }, [project.phases]);
 
-  const handleFilterChange = (key: keyof DashboardFilters, value: any) => {
-    const newFilters = { ...localFilters, [key]: value };
-    setLocalFilters(newFilters);
-  };
+  const counts = useMemo(() => ({
+    type: (type: string) => tasks.filter(t => t.type === type).length,
+    testStatus: (status: string) =>
+      tasks.filter(t => (t.testCases || []).some(tc => tc.status === status)).length,
+  }), [tasks]);
 
   const handleToggleArrayFilter = (key: 'taskType' | 'testStatus' | 'phase', value: string) => {
-    const current = localFilters[key] || [];
+    const current = (filters[key] as string[] | undefined) || [];
     const newValue = current.includes(value)
       ? current.filter(v => v !== value)
       : [...current, value];
-    handleFilterChange(key, newValue);
+    onFiltersChange({ ...filters, [key]: newValue });
   };
 
-  const handleApply = () => {
-    onFiltersChange(localFilters);
-    onClose();
+  const handlePeriodChange = (value: 'week' | 'month' | 'quarter' | 'all') => {
+    onFiltersChange({ ...filters, period: value });
   };
 
   const handleClear = () => {
-    const clearedFilters: DashboardFilters = {};
-    setLocalFilters(clearedFilters);
-    onFiltersChange(clearedFilters);
+    onFiltersChange({});
+    onClose();
   };
 
-  const activeFiltersCount = useMemo(() => {
-    let count = 0;
-    if (localFilters.period && localFilters.period !== 'all') count++;
-    if (localFilters.taskType && localFilters.taskType.length > 0) count++;
-    if (localFilters.testStatus && localFilters.testStatus.length > 0) count++;
-    if (localFilters.phase && localFilters.phase.length > 0) count++;
-    return count;
-  }, [localFilters]);
+  const activeFiltersCount =
+    (filters.period && filters.period !== 'all' ? 1 : 0) +
+    (filters.taskType?.length ?? 0) +
+    (filters.testStatus?.length ?? 0) +
+    (filters.phase?.length ?? 0);
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title="Filtros do Dashboard"
-      size="lg"
-    >
-      <div className="space-y-6">
+    <Modal isOpen={isOpen} onClose={onClose} title="Filtros" size="lg">
+      {activeFiltersCount > 0 && (
+        <div className="flex justify-end mb-4">
+          <button
+            type="button"
+            onClick={handleClear}
+            className="text-xs text-error hover:text-error/80 font-medium flex items-center gap-1"
+          >
+            <X className="w-3 h-3" /> Limpar todos
+          </button>
+        </div>
+      )}
+      <div className="space-y-5">
         {/* Período */}
         <div>
-          <label className="block text-sm font-semibold text-base-content mb-2">
+          <p className="text-xs font-semibold text-base-content/60 mb-2 uppercase tracking-wider">
             Período
-          </label>
+          </p>
           <div className="flex flex-wrap gap-2">
             {[
-              { value: 'all', label: 'Todos' },
-              { value: 'week', label: 'Última Semana' },
-              { value: 'month', label: 'Último Mês' },
-              { value: 'quarter', label: 'Último Trimestre' }
+              { value: 'all' as const, label: 'Todos' },
+              { value: 'week' as const, label: 'Última Semana' },
+              { value: 'month' as const, label: 'Último Mês' },
+              { value: 'quarter' as const, label: 'Último Trimestre' },
             ].map(option => (
-              <button
+              <FilterChip
                 key={option.value}
-                type="button"
-                onClick={() => handleFilterChange('period', option.value)}
-                className={`btn btn-sm ${
-                  localFilters.period === option.value
-                    ? 'btn-primary'
-                    : 'btn-outline'
-                }`}
-              >
-                {option.label}
-              </button>
+                label={option.label}
+                count={0}
+                showCount={false}
+                isActive={(filters.period ?? 'all') === option.value}
+                onClick={() => handlePeriodChange(option.value)}
+              />
             ))}
           </div>
         </div>
 
         {/* Tipo de Tarefa */}
         <div>
-          <label className="block text-sm font-semibold text-base-content mb-2">
+          <p className="text-xs font-semibold text-base-content/60 mb-2 uppercase tracking-wider">
             Tipo de Tarefa
-          </label>
+          </p>
           <div className="flex flex-wrap gap-2">
-            {['Epic', 'História', 'Tarefa', 'Bug'].map(type => (
-              <button
+            {['Tarefa', 'Bug', 'Epic', 'História'].map(type => (
+              <FilterChip
                 key={type}
-                type="button"
+                label={type}
+                count={counts.type(type)}
+                isActive={filters.taskType?.includes(type as any) ?? false}
                 onClick={() => handleToggleArrayFilter('taskType', type)}
-                className={`btn btn-sm ${
-                  localFilters.taskType?.includes(type)
-                    ? 'btn-primary'
-                    : 'btn-outline'
-                }`}
-              >
-                {type}
-              </button>
+              />
             ))}
           </div>
         </div>
 
-        {/* Status de Teste */}
+        {/* Status de Teste (caso de teste) */}
         <div>
-          <label className="block text-sm font-semibold text-base-content mb-2">
+          <p className="text-xs font-semibold text-base-content/60 mb-2 uppercase tracking-wider">
             Status de Teste
-          </label>
+          </p>
           <div className="flex flex-wrap gap-2">
             {[
               { value: 'Not Run', label: 'Não Executado' },
               { value: 'Passed', label: 'Aprovado' },
               { value: 'Failed', label: 'Reprovado' },
-              { value: 'Blocked', label: 'Bloqueado' }
+              { value: 'Blocked', label: 'Bloqueado' },
             ].map(option => (
-              <button
+              <FilterChip
                 key={option.value}
-                type="button"
+                label={option.label}
+                count={counts.testStatus(option.value)}
+                isActive={filters.testStatus?.includes(option.value as any) ?? false}
                 onClick={() => handleToggleArrayFilter('testStatus', option.value)}
-                className={`btn btn-sm ${
-                  localFilters.testStatus?.includes(option.value as any)
-                    ? 'btn-primary'
-                    : 'btn-outline'
-                }`}
-              >
-                {option.label}
-              </button>
+              />
             ))}
           </div>
         </div>
@@ -161,56 +182,22 @@ export const DashboardFiltersModal: React.FC<DashboardFiltersModalProps> = ({
         {/* Fase */}
         {availablePhases.length > 0 && (
           <div>
-            <label className="block text-sm font-semibold text-base-content mb-2">
+            <p className="text-xs font-semibold text-base-content/60 mb-2 uppercase tracking-wider">
               Fase
-            </label>
+            </p>
             <div className="flex flex-wrap gap-2">
               {availablePhases.map(phase => (
-                <button
+                <FilterChip
                   key={phase}
-                  type="button"
+                  label={phase}
+                  count={0}
+                  isActive={filters.phase?.includes(phase) ?? false}
                   onClick={() => handleToggleArrayFilter('phase', phase)}
-                  className={`btn btn-sm ${
-                    localFilters.phase?.includes(phase)
-                      ? 'btn-primary'
-                      : 'btn-outline'
-                  }`}
-                >
-                  {phase}
-                </button>
+                />
               ))}
             </div>
           </div>
         )}
-
-        {/* Ações */}
-        <div className="flex items-center justify-between pt-4 border-t border-base-300">
-          <div className="text-sm text-base-content/70">
-            {activeFiltersCount > 0 ? (
-              <span>{activeFiltersCount} filtro(s) ativo(s)</span>
-            ) : (
-              <span>Nenhum filtro aplicado</span>
-            )}
-          </div>
-          <div className="flex gap-2">
-            {activeFiltersCount > 0 && (
-              <button
-                type="button"
-                onClick={handleClear}
-                className="btn btn-ghost btn-sm"
-              >
-                Limpar
-              </button>
-            )}
-            <button
-              type="button"
-              onClick={handleApply}
-              className="btn btn-primary btn-sm"
-            >
-              Aplicar Filtros
-            </button>
-          </div>
-        </div>
       </div>
     </Modal>
   );

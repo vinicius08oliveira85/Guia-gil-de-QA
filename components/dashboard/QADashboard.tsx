@@ -89,6 +89,12 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
   const metrics = useProjectMetrics(filteredProject);
   const { trends } = useMetricsHistory(filteredProject, dashboardFilters.period || 'week');
 
+  const activeFiltersCount =
+    (dashboardFilters.period && dashboardFilters.period !== 'all' ? 1 : 0) +
+    (dashboardFilters.taskType?.length ?? 0) +
+    (dashboardFilters.testStatus?.length ?? 0) +
+    (dashboardFilters.phase?.length ?? 0);
+
   const tasksTrend = useMemo(() => {
     if (!trends) return { change: '0%', trend: 'neutral' as const };
     const current = trends.executedTests?.current || 0;
@@ -303,7 +309,7 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
               aria-label="Filtrar dados do dashboard"
             >
               <Filter className="w-3.5 h-3.5" aria-hidden="true" />
-              <span>Filtrar</span>
+              <span>{`Filtrar${activeFiltersCount > 0 ? ` (${activeFiltersCount})` : ''}`}</span>
             </button>
             <button
               type="button"
@@ -313,21 +319,6 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
             >
               <Download className="w-3.5 h-3.5" aria-hidden="true" />
               <span>Exportar</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                if (onNavigateToTab) {
-                  onNavigateToTab('tasks');
-                } else {
-                  setShowNewTestModal(true);
-                }
-              }}
-              className="rounded-full px-3 py-1.5 text-xs font-semibold bg-primary text-primary-content hover:bg-primary/90 transition-colors duration-300 flex items-center gap-1.5"
-              aria-label="Criar novo teste"
-            >
-              <Plus className="w-3.5 h-3.5" aria-hidden="true" />
-              <span>Novo Teste</span>
             </button>
           </div>
         </div>

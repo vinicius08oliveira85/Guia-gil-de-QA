@@ -193,7 +193,7 @@ export const TasksView: React.FC<{
     const [editingTask, setEditingTask] = useState<JiraTask | undefined>(undefined);
     const [testCaseEditorRef, setTestCaseEditorRef] = useState<{ taskId: string; testCase: TestCase } | null>(null);
     const [defaultParentId, setDefaultParentId] = useState<string | undefined>(undefined);
-    const [showFilters, setShowFilters] = useState(false);
+    const [isFiltersModalOpen, setIsFiltersModalOpen] = useState(false);
     
     // Novos Estados de Filtro
     const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
@@ -1525,11 +1525,11 @@ export const TasksView: React.FC<{
                         <Button 
                             variant="outline"
                             size="sm"
-                            onClick={() => setShowFilters(prev => !prev)} 
+                            onClick={() => setIsFiltersModalOpen(true)} 
                             className="rounded-full px-3 py-1.5 text-xs min-h-0 flex items-center gap-1.5 flex-shrink-0 hover:bg-base-200"
                         >
                             <Filter className="w-3.5 h-3.5" />
-                            <span>{showFilters ? 'Ocultar Filtros' : `Filtros${activeFiltersCount > 0 ? ` (${activeFiltersCount})` : ''}`}</span>
+                            <span>{`Filtros${activeFiltersCount > 0 ? ` (${activeFiltersCount})` : ''}`}</span>
                         </Button>
                     </div>
                 </div>
@@ -1583,29 +1583,23 @@ export const TasksView: React.FC<{
             </div>
 
             <div className="flex flex-col gap-6">
-                {showFilters && (
-                    <motion.div 
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="rounded-xl border border-base-300 bg-base-100 p-4 sm:p-6 shadow-sm"
-                    >
-                        <div className="flex items-center justify-between mb-4">
-                            <h4 className="text-sm font-bold text-base-content flex items-center gap-2">
-                                <Filter className="w-4 h-4 text-primary" />
-                                Filtros Ativos
-                            </h4>
-                            {activeFiltersCount > 0 && (
-                                <button 
-                                    onClick={clearAllFilters}
-                                    className="text-xs text-error hover:text-error/80 font-medium flex items-center gap-1"
-                                >
-                                    <X className="w-3 h-3" /> Limpar todos
-                                </button>
-                            )}
+                <Modal
+                    isOpen={isFiltersModalOpen}
+                    onClose={() => setIsFiltersModalOpen(false)}
+                    title="Filtros"
+                >
+                    {activeFiltersCount > 0 && (
+                        <div className="flex justify-end mb-4">
+                            <button
+                                type="button"
+                                onClick={() => { clearAllFilters(); setIsFiltersModalOpen(false); }}
+                                className="text-xs text-error hover:text-error/80 font-medium flex items-center gap-1"
+                            >
+                                <X className="w-3 h-3" /> Limpar todos
+                            </button>
                         </div>
-
-                        <div className="space-y-5">
+                    )}
+                    <div className="space-y-5">
                             {/* Grupo: Status — todos os status do Jira quando existirem; senão A Fazer / Em Andamento / Concluído */}
                             <div>
                                 <p className="text-xs font-semibold text-base-content/60 mb-2 uppercase tracking-wider">Status</p>
@@ -1692,9 +1686,8 @@ export const TasksView: React.FC<{
                                     ))}
                                 </div>
                             </div>
-                        </div>
-                    </motion.div>
-                )}
+                    </div>
+                </Modal>
 
                 <div className="space-y-4 min-w-0">
                     <div className="flex flex-col gap-4">
