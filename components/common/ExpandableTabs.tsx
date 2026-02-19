@@ -26,6 +26,8 @@ interface ExpandableTabsProps {
   onChange?: (id: string | null) => void;
   /** Conteúdo opcional renderizado antes das abas, dentro do mesmo container pill. */
   leadingContent?: React.ReactNode;
+  /** Chamado quando o usuário clica fora do container (para recolher leadingContent expansível, etc.). */
+  onOutsideClick?: () => void;
 }
 
 const buttonVariants = {
@@ -69,6 +71,7 @@ export const ExpandableTabs: React.FC<ExpandableTabsProps> = ({
   activeColor = "text-primary",
   onChange,
   leadingContent,
+  onOutsideClick,
 }) => {
   const [selected, setSelected] = React.useState<number | null>(null);
   const outsideClickRef = React.useRef<HTMLDivElement>(null);
@@ -76,6 +79,7 @@ export const ExpandableTabs: React.FC<ExpandableTabsProps> = ({
   useOnClickOutside(outsideClickRef, () => {
     setSelected(null);
     onChange?.(null);
+    onOutsideClick?.();
   });
 
   const handleSelect = (index: number, id: string) => {
