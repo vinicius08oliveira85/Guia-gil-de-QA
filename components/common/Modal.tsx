@@ -9,7 +9,7 @@ interface ModalProps {
     title: React.ReactNode;
     children: React.ReactNode;
     footer?: React.ReactNode;
-    size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl' | '6xl' | '7xl';
+    size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl' | '6xl' | '7xl' | 'full';
 }
 
 export const Modal: React.FC<ModalProps> = ({ 
@@ -54,11 +54,12 @@ export const Modal: React.FC<ModalProps> = ({
         sm: 'max-w-sm', md: 'max-w-md', lg: 'max-w-lg', xl: 'max-w-xl',
         '2xl': 'max-w-2xl', '3xl': 'max-w-3xl', '4xl': 'max-w-4xl',
         '5xl': 'max-w-5xl', '6xl': 'max-w-6xl', '7xl': 'max-w-7xl',
+        full: 'max-w-none w-full h-screen max-h-full',
     };
 
     const modalLayout = (
         <div 
-            className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-sm transition-opacity duration-200"
+            className={`fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm transition-opacity duration-200 ${size === 'full' ? 'p-0' : 'p-4 sm:p-6'}`}
             onClick={onClose}
             role="dialog"
             aria-modal="true"
@@ -66,7 +67,7 @@ export const Modal: React.FC<ModalProps> = ({
         >
             <div 
                 id="modal-content"
-                className={`bg-base-100 rounded-2xl shadow-2xl border border-base-300 relative w-full max-h-[90vh] flex flex-col overflow-hidden ${sizeClasses[size]} duration-300 ease-out animate-in fade-in zoom-in-95 slide-in-from-bottom-8`}
+                className={`bg-base-100 shadow-2xl border border-base-300 relative w-full flex flex-col overflow-hidden ${size === 'full' ? 'rounded-none max-h-full' : 'rounded-2xl max-h-[90vh]'} ${sizeClasses[size]} duration-300 ease-out animate-in fade-in zoom-in-95 slide-in-from-bottom-8`}
                 onClick={(e) => e.stopPropagation()}
                 tabIndex={-1}
             >

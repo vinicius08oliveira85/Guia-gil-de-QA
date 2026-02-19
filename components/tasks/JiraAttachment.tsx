@@ -10,6 +10,8 @@ interface JiraAttachmentProps {
     size?: number;
     thumbnailUrl?: string;
     id: string; // ID do anexo no Jira (obrigatório)
+    onView?: (attachment: { id: string; filename: string; url: string; mimeType?: string }) => void;
+    isLoading?: boolean;
 }
 
 export const JiraAttachment: React.FC<JiraAttachmentProps> = ({ 
@@ -17,11 +19,17 @@ export const JiraAttachment: React.FC<JiraAttachmentProps> = ({
     filename, 
     mimeType, 
     size, 
-    id 
+    id,
+    onView,
+    isLoading = false,
 }) => {
     const handleDownload = (e?: React.MouseEvent) => {
         if (e) {
             e.stopPropagation();
+        }
+        if (onView) {
+            onView({ id, filename, url, mimeType });
+            return;
         }
         if (url) {
             window.open(url, '_blank');
@@ -35,8 +43,13 @@ export const JiraAttachment: React.FC<JiraAttachmentProps> = ({
     return (
         <div 
             onClick={handleDownload}
-            className="group relative rounded-lg border border-base-300 bg-base-100 p-2 hover:bg-base-200 transition-colors cursor-pointer"
+            className={`group relative rounded-lg border border-base-300 bg-base-100 p-2 transition-colors cursor-pointer ${isLoading ? 'opacity-70 pointer-events-none' : 'hover:bg-base-200'}`}
         >
+            {isLoading && (
+                <div className="absolute inset-0 flex items-center justify-center bg-base-100/70 rounded-lg">
+                    <span className="loading loading-spinner loading-sm" aria-label="Carregando anexo" />
+                </div>
+            )}
             <FilePreview
                 attachmentId={id}
                 filename={filename}

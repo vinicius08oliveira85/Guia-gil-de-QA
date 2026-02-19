@@ -143,6 +143,8 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
     const [showAttachments, setShowAttachments] = useState(false);
     const [showEstimation, setShowEstimation] = useState(false);
     const [showTestReport, setShowTestReport] = useState(false);
+    const [viewingJiraAttachment, setViewingJiraAttachment] = useState<{ id: string; filename: string; url: string; mimeType: string; content?: string } | null>(null);
+    const [loadingJiraAttachmentId, setLoadingJiraAttachmentId] = useState<string | null>(null);
     const [activeSection, setActiveSection] = useState<DetailSection>('overview');
     const [activeTestSubSection, setActiveTestSubSection] = useState<TestSubSection>('strategy');
     const nextStep = getNextStepForTask(task);
@@ -195,11 +197,15 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
     ]);
 
     useEffect(() => {
-        if (isOpen && !sectionTabs.find(tab => tab.id === activeSection)) {
-            setActiveSection(sectionTabs[0]?.id ?? 'overview');
+        if (!isOpen) return;
+        const currentTabExists = sectionTabs.some(tab => tab.id === activeSection);
+        if (!currentTabExists) {
+            const next = sectionTabs[0]?.id ?? 'overview';
+            if (next !== activeSection) setActiveSection(next);
+            return;
         }
-        if ((activeSection === 'tests' || activeSection === 'bdd') && task.type !== 'Tarefa') {
-            setActiveSection('overview');
+        if ((activeSection === 'tests' || activeSection === 'bdd') && task.type !== 'Tarefa' && task.type !== 'Bug') {
+            if (activeSection !== 'overview') setActiveSection('overview');
         }
     }, [isOpen, sectionTabs, activeSection, task.type]);
 
@@ -215,13 +221,14 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
     };
 
     const handleViewJiraAttachment = async (attachment: { id: string; filename: string; url: string; mimeType: string }) => {
-        setLoadingJiraAttachment(true);
+        setLoadingJiraAttachmentId(attachment.id);
         try {
             // Fazer fetch do anexo através do proxy do Jira se necessário
             const jiraConfig = getJiraConfig();
             if (!jiraConfig) {
                 // Se não há config, tentar abrir diretamente
                 window.open(attachment.url, '_blank');
+                setLoadingJiraAttachmentId(null);
                 return;
             }
 
@@ -249,18 +256,18 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                         ...attachment,
                         content: reader.result as string
                     });
-                    setLoadingJiraAttachment(false);
+                    setLoadingJiraAttachmentId(null);
                 };
                 reader.readAsDataURL(blob);
             } else {
                 // Se falhar, abrir em nova aba
                 window.open(attachment.url, '_blank');
-                setLoadingJiraAttachment(false);
+                setLoadingJiraAttachmentId(null);
             }
         } catch (error) {
             // Em caso de erro, abrir em nova aba como fallback
             window.open(attachment.url, '_blank');
-            setLoadingJiraAttachment(false);
+            setLoadingJiraAttachmentId(null);
         }
     };
 
@@ -535,6 +542,8 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                                                     filename={att.filename}
                                                     mimeType={mimeType}
                                                     size={att.size}
+                                                    onView={handleViewJiraAttachment}
+                                                    isLoading={loadingJiraAttachmentId === att.id}
                                                 />
                                             );
                                         })}
@@ -940,8 +949,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                 isOpen={isOpen}
                 onClose={onClose}
                 title={modalTitle}
-                size="xl"
-                maxHeight="95vh"
+                size="full"
             >
                 <div className="flex flex-col gap-4">
                     <div className="flex flex-wrap gap-2 p-1.5 bg-base-200 rounded-xl w-full overflow-x-auto" role="tablist" aria-label="Seções da tarefa">
@@ -958,7 +966,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                                     aria-selected={isActive}
                                     aria-controls={panelId}
                                     className={`px-2 py-1 text-xs rounded-xl font-medium transition-colors sm:px-3 sm:py-1.5 sm:text-sm ${isActive ? 'bg-brand-orange text-white shadow-md shadow-brand-orange/20' : 'text-base-content/70 hover:text-base-content hover:bg-base-200'}`}
-                                    onClick={() => setActiveSection(tab.id)}
+                                    onClick={(e) => { e.stopPropagation(); setActiveSection(tab.id); }}
                                 >
                                     <span>{tab.label}</span>
                                     {typeof tab.badge === 'number' && tab.badge > 0 ? (

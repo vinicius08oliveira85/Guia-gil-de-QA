@@ -1800,11 +1800,11 @@ export const TasksView: React.FC<{
             };
 
             const taskWithChildren = findTaskWithChildren(project.tasks, modalTask.id);
-            if (!taskWithChildren) return null;
+            const taskForModal: TaskWithChildren = taskWithChildren ?? { ...modalTask, children: [] };
 
             return (
                 <TaskDetailsModal
-                    task={taskWithChildren}
+                    task={taskForModal}
                     isOpen={!!modalTask}
                     onClose={() => setModalTask(null)}
                     onTestCaseStatusChange={(testCaseId, status) => handleTestCaseStatusChange(modalTask.id, testCaseId, status)}
