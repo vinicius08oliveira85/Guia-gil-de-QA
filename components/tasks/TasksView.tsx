@@ -28,6 +28,7 @@ import { useProjectMetrics } from '../../hooks/useProjectMetrics';
 import { GlassIndicatorCards } from '../dashboard/GlassIndicatorCards';
 import { getDisplayStatus } from '../../utils/taskHelpers';
 import { calculateTaskTestStatus } from '../../services/taskTestStatusService';
+import { normalizeExecutedStrategy } from '../../utils/testCaseMigration';
 
 const TASK_ID_REGEX = /^([A-Z]+)-(\d+)/i;
 
@@ -723,22 +724,49 @@ export const TasksView: React.FC<{
         const task = project.tasks.find(t => t.id === taskId);
         if (!task) return;
 
+        const strategy = task.testStrategy?.[strategyIndex];
+        const testType = strategy?.testType;
+
         const currentExecuted = task.executedStrategies || [];
         let newExecuted: number[];
-        let updatedTask: JiraTask;
-        
+        let updatedTestCases = task.testCases || [];
+
         if (executed) {
-            newExecuted = currentExecuted.includes(strategyIndex) 
-                ? currentExecuted 
+            newExecuted = currentExecuted.includes(strategyIndex)
+                ? currentExecuted
                 : [...currentExecuted, strategyIndex];
-            updatedTask = { ...task, executedStrategies: newExecuted };
         } else {
             newExecuted = currentExecuted.filter(idx => idx !== strategyIndex);
+        }
+
+        if (testType) {
+            updatedTestCases = (task.testCases || []).map(testCase => {
+                const hasStrategy = (testCase.strategies || []).includes(testType);
+                if (!hasStrategy) return testCase;
+
+                const current = normalizeExecutedStrategy(testCase.executedStrategy);
+                if (executed) {
+                    if (current.includes(testType)) return testCase;
+                    return { ...testCase, executedStrategy: [...current, testType] };
+                }
+                const newExecutedStrategy = current.filter(s => s !== testType);
+                return {
+                    ...testCase,
+                    executedStrategy: newExecutedStrategy.length > 0 ? newExecutedStrategy : undefined
+                };
+            });
+        }
+
+        let updatedTask: JiraTask;
+        if (executed) {
+            updatedTask = { ...task, executedStrategies: newExecuted, testCases: updatedTestCases };
+        } else {
             const strategyTools = { ...(task.strategyTools || {}) };
             delete strategyTools[strategyIndex];
-            updatedTask = { 
-                ...task, 
+            updatedTask = {
+                ...task,
                 executedStrategies: newExecuted,
+                testCases: updatedTestCases,
                 strategyTools: Object.keys(strategyTools).length > 0 ? strategyTools : undefined
             };
         }
