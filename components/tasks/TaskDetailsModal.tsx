@@ -22,6 +22,7 @@ import { EmptyState } from '../common/EmptyState';
 import { LoadingSkeleton } from '../common/LoadingSkeleton';
 import { parseJiraDescriptionHTML } from '../../utils/jiraDescriptionParser';
 import { getJiraConfig } from '../../services/jiraService';
+import { fetchJiraAttachmentAsDataUrl } from '../../utils/jiraAttachmentFetch';
 import { TaskWithChildren } from './JiraTaskItem';
 import { TaskLinksView } from './TaskLinksView';
 import { getTaskDependents } from '../../utils/dependencyService';
@@ -1048,6 +1049,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                     url={viewingJiraAttachment.url}
                     fileName={viewingJiraAttachment.filename}
                     onClose={() => setViewingJiraAttachment(null)}
+                    fetchImage={() => fetchJiraAttachmentAsDataUrl(viewingJiraAttachment)}
                 />
             )}
         </>

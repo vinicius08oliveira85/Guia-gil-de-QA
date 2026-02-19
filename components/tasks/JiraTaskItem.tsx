@@ -26,6 +26,7 @@ import { LoadingSkeleton } from '../common/LoadingSkeleton';
 import { ensureJiraHexColor, getJiraStatusColor, getJiraStatusTextColor } from '../../utils/jiraStatusColors';
 import { parseJiraDescriptionHTML } from '../../utils/jiraDescriptionParser';
 import { getJiraConfig } from '../../services/jiraService';
+import { fetchJiraAttachmentAsDataUrl } from '../../utils/jiraAttachmentFetch';
 import { TestTypeBadge } from '../common/TestTypeBadge';
 import { FileViewer } from '../common/FileViewer';
 import { ImageModal } from '../common/ImageModal';
@@ -1931,6 +1932,7 @@ export const JiraTaskItem: React.FC<{
                     url={viewingJiraAttachment.url}
                     fileName={viewingJiraAttachment.filename}
                     onClose={() => setViewingJiraAttachment(null)}
+                    fetchImage={() => fetchJiraAttachmentAsDataUrl(viewingJiraAttachment)}
                 />
             )}
         </div>
