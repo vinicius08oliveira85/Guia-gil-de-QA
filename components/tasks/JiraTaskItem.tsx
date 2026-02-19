@@ -1498,11 +1498,13 @@ export const JiraTaskItem: React.FC<{
                     </div>
 
                     <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap sm:flex-nowrap flex-shrink-0 w-full sm:w-auto sm:ml-auto order-2" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex items-center gap-1" role="group" aria-label="Métricas de teste">
-                            <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-success flex items-center justify-center text-[9px] sm:text-[10px] text-white font-bold" title="Aprovados" aria-label={`${testExecutionSummary.passed} aprovados`}>{testExecutionSummary.passed}</div>
-                            <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-error flex items-center justify-center text-[9px] sm:text-[10px] text-white font-bold" title="Reprovados" aria-label={`${testExecutionSummary.failed} reprovados`}>{testExecutionSummary.failed}</div>
-                            <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-amber-500 flex items-center justify-center text-[9px] sm:text-[10px] text-white font-bold" title="Pendentes" aria-label={`${testExecutionSummary.pending} pendentes`}>{testExecutionSummary.pending}</div>
-                        </div>
+                        {(task.type === 'Tarefa' || task.type === 'Bug') && (
+                            <div className="flex items-center gap-1" role="group" aria-label="Métricas de teste">
+                                <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-success flex items-center justify-center text-[9px] sm:text-[10px] text-white font-bold" title="Aprovados" aria-label={`${testExecutionSummary.passed} aprovados`}>{testExecutionSummary.passed}</div>
+                                <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-error flex items-center justify-center text-[9px] sm:text-[10px] text-white font-bold" title="Reprovados" aria-label={`${testExecutionSummary.failed} reprovados`}>{testExecutionSummary.failed}</div>
+                                <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-amber-500 flex items-center justify-center text-[9px] sm:text-[10px] text-white font-bold" title="Pendentes" aria-label={`${testExecutionSummary.pending} pendentes`}>{testExecutionSummary.pending}</div>
+                            </div>
+                        )}
                         {['tarefa', 'bug', 'task'].includes(taskTypeNorm) && onGenerateAll && (
                             <button
                                 type="button"
