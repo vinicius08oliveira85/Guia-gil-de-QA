@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { NotificationBell } from './NotificationBell';
 import { ExpandableTabs } from './ExpandableTabs';
+import { ExpansibleButton } from './ExpansibleButton';
 import { useTheme } from '../../hooks/useTheme';
 import { getActiveColorForTheme } from '../../utils/expandableTabsColors';
 import { BookOpen, Bell, Moon, Sun, Heart, Monitor, Sliders, Cloud, Plus, Loader2 } from 'lucide-react';
@@ -29,6 +30,7 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported: _onProjectImp
     const [isGlossaryOpen, setIsGlossaryOpen] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [isSyncingSupabase, setIsSyncingSupabase] = useState(false);
+    const [expandedButton, setExpandedButton] = useState<'jira' | 'salvar' | 'novo' | 'sync' | null>(null);
 
     const { saveProjectToSupabase, getSelectedProject, syncProjectsFromSupabase, updateProject } = useProjectsStore();
     const selectedProject = getSelectedProject();
@@ -116,7 +118,7 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported: _onProjectImp
     };
 
     const tabs = [
-        { id: 'settings', title: 'Preferências', icon: Sliders },
+        { id: 'settings', title: 'Configurações', icon: Sliders },
         { id: 'glossary', title: 'Glossário', icon: BookOpen },
         { id: 'notifications', title: 'Notificações', icon: Bell },
         { id: 'theme', title: getThemeTitle(), icon: getThemeIcon() },
@@ -215,67 +217,77 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported: _onProjectImp
                             tabs={tabs}
                             activeColor={activeColor}
                             onChange={handleTabChange}
+                            onOutsideClick={() => setExpandedButton(null)}
                             leadingContent={
                                 selectedProject ? (
                                     <>
-                                        <button
-                                            type="button"
-                                            className="relative flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors duration-300 text-base-content/70 hover:bg-base-200 hover:text-base-content disabled:opacity-50 disabled:cursor-not-allowed"
-                                            aria-label="Sincronizar com Jira"
-                                            title="Atualizar tarefas do Jira"
-                                            onClick={handleSyncJira}
-                                            disabled={isSyncingJira}
-                                        >
-                                            {isSyncingJira ? (
+                                        <ExpansibleButton
+                                            icon={isSyncingJira ? (
                                                 <Loader2 className="w-3.5 h-3.5 flex-shrink-0 animate-spin" aria-hidden />
                                             ) : (
                                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0" aria-hidden>
-                                                    <path d="M11.571 11.571h5.715v5.715h-5.715z" fill="#0052CC" />
-                                                    <path d="M11.571 0h5.715v11.571h-5.715z" fill="#2684FF" />
-                                                    <path d="M0 11.571h11.571v11.571H0z" fill="#0052CC" />
+                                                    <defs>
+                                                        <linearGradient id="jiraGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                                            <stop offset="0%" stopColor="#2684FF" />
+                                                            <stop offset="100%" stopColor="#0052CC" />
+                                                        </linearGradient>
+                                                    </defs>
+                                                    <path d="M2 13 L2 20 L9 20 L9 17 L5 17 L5 13 Z" fill="#0052CC" opacity="0.2" transform="translate(1 1)" />
+                                                    <path d="M2 13 L2 20 L9 20 L9 17 L5 17 L5 13 Z" fill="url(#jiraGradient)" />
+                                                    <path d="M6 9 L6 16 L13 16 L13 13 L9 13 L9 9 Z" fill="#0052CC" opacity="0.2" transform="translate(1 1)" />
+                                                    <path d="M6 9 L6 16 L13 16 L13 13 L9 13 L9 9 Z" fill="url(#jiraGradient)" />
+                                                    <path d="M10 5 L10 12 L17 12 L17 9 L13 9 L13 5 Z" fill="#0052CC" opacity="0.2" transform="translate(1 1)" />
+                                                    <path d="M10 5 L10 12 L17 12 L17 9 L13 9 L13 5 Z" fill="url(#jiraGradient)" />
                                                 </svg>
                                             )}
-                                            <span>Jira</span>
-                                        </button>
-                                        <button
-                                            type="button"
-                                            className="relative flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors duration-300 text-base-content/70 hover:bg-base-200 hover:text-base-content disabled:opacity-50 disabled:cursor-not-allowed"
-                                            aria-label="Salvar"
+                                            label={isSyncingJira ? 'Sincronizando...' : 'Jira'}
+                                            onClick={handleSyncJira}
+                                            disabled={isSyncingJira}
+                                            ariaLabel="Sincronizar com Jira"
+                                            isExpanded={expandedButton === 'jira'}
+                                            onExpandedChange={(expanded) => setExpandedButton(expanded ? 'jira' : null)}
+                                        />
+                                        <ExpansibleButton
+                                            icon={
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0" aria-hidden>
+                                                    <path d="M21.362 9.354H12V.396a.396.396 0 0 0-.716-.233L2.203 12.424l-.401.562a1.04 1.04 0 0 0 .836 1.659H12v8.959a.396.396 0 0 0 .724.229l9.075-12.476.401-.562a1.04 1.04 0 0 0-.838-1.66Z" fill="#3ECF8E" />
+                                                </svg>
+                                            }
+                                            label={isSaving ? 'Salvando...' : 'Salvar'}
                                             onClick={handleSave}
                                             disabled={isSaving}
-                                        >
-                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0" aria-hidden>
-                                                <path d="M21.362 9.354H12V.396a.396.396 0 0 0-.716-.233L2.203 12.424l-.401.562a1.04 1.04 0 0 0 .836 1.659H12v8.959a.396.396 0 0 0 .724.229l9.075-12.476.401-.562a1.04 1.04 0 0 0-.838-1.66Z" fill="#3ECF8E" />
-                                            </svg>
-                                            <span>{isSaving ? 'Salvando...' : 'Salvar'}</span>
-                                        </button>
+                                            ariaLabel="Salvar"
+                                            isExpanded={expandedButton === 'salvar'}
+                                            onExpandedChange={(expanded) => setExpandedButton(expanded ? 'salvar' : null)}
+                                        />
                                     </>
                                 ) : showDashboardActions ? (
                                     <>
                                         {onOpenCreateModal && (
-                                            <button
-                                                type="button"
-                                                className="relative flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors duration-300 bg-primary text-primary-content hover:bg-primary/90"
-                                                aria-label="Criar novo projeto"
+                                            <ExpansibleButton
+                                                icon={<Plus className="w-3.5 h-3.5 flex-shrink-0" aria-hidden />}
+                                                label="Novo"
                                                 onClick={onOpenCreateModal}
-                                            >
-                                                <Plus className="w-3.5 h-3.5 flex-shrink-0" aria-hidden />
-                                                <span>Novo</span>
-                                            </button>
+                                                ariaLabel="Criar novo projeto"
+                                                isExpanded={expandedButton === 'novo'}
+                                                onExpandedChange={(expanded) => setExpandedButton(expanded ? 'novo' : null)}
+                                                className="bg-primary text-primary-content hover:bg-primary/90"
+                                            />
                                         )}
-                                        <button
-                                            type="button"
-                                            className="relative flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors duration-300 text-base-content/70 hover:bg-base-200 hover:text-base-content disabled:opacity-50 disabled:cursor-not-allowed"
-                                            aria-label="Sincronizar projetos do Supabase"
+                                        <ExpansibleButton
+                                            icon={
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0" aria-hidden>
+                                                    <path d="M21.362 9.354H12V.396a.396.396 0 0 0-.716-.233L2.203 12.424l-.401.562a1.04 1.04 0 0 0 .836 1.659H12v8.959a.396.396 0 0 0 .724.229l9.075-12.476.401-.562a1.04 1.04 0 0 0-.838-1.66Z" fill="#3ECF8E" />
+                                                </svg>
+                                            }
+                                            label={isSyncingSupabase ? 'Sincronizando...' : 'Sync'}
                                             onClick={handleSyncSupabase}
                                             disabled={isSyncingSupabase || !isSupabaseAvailable()}
-                                            title={!isSupabaseAvailable() ? 'Supabase não está configurado. Configure VITE_SUPABASE_PROXY_URL.' : 'Sincronizar projetos do Supabase'}
-                                        >
-                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0" aria-hidden>
-                                                <path d="M21.362 9.354H12V.396a.396.396 0 0 0-.716-.233L2.203 12.424l-.401.562a1.04 1.04 0 0 0 .836 1.659H12v8.959a.396.396 0 0 0 .724.229l9.075-12.476.401-.562a1.04 1.04 0 0 0-.838-1.66Z" fill="#3ECF8E" />
-                                            </svg>
-                                            <span>{isSyncingSupabase ? 'Sincronizando...' : 'Sync'}</span>
-                                        </button>
+                                            ariaLabel="Sincronizar projetos do Supabase"
+                                            title={!isSupabaseAvailable() ? 'Supabase não está configurado. Configure VITE_SUPABASE_PROXY_URL.' : undefined}
+                                            isExpanded={expandedButton === 'sync'}
+                                            onExpandedChange={(expanded) => setExpandedButton(expanded ? 'sync' : null)}
+                                        />
                                     </>
                                 ) : undefined
                             }
