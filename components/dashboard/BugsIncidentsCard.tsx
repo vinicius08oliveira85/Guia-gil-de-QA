@@ -20,7 +20,7 @@ export const BugsIncidentsCard: React.FC<BugsIncidentsCardProps> = React.memo(({
   totalBugs,
   recentlyResolved,
 }) => {
-  const { syncBugs, isLoading, hasJiraConfig } = useJiraBugs(project);
+  const { syncBugs, isLoading, error, hasJiraConfig } = useJiraBugs(project);
 
   const severityConfigDaisy: Array<{ severity: BugSeverity; label: string; badgeClass: string }> = [
     { severity: 'Crítico', label: 'Crítico', badgeClass: 'badge-error' },
@@ -56,6 +56,12 @@ export const BugsIncidentsCard: React.FC<BugsIncidentsCardProps> = React.memo(({
           </button>
         )}
       </div>
+
+      {error && (
+        <div className="alert alert-error text-sm py-2 px-3" role="alert">
+          Não foi possível carregar os dados do Jira. {error.message}
+        </div>
+      )}
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {severityConfigDaisy.map(({ severity, label, badgeClass }) => (

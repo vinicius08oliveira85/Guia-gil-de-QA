@@ -1,6 +1,6 @@
 import React from 'react';
 import { JiraTask, Project } from '../../types';
-import { getBlockedTasks, getReadyTasks } from '../../utils/dependencyService';
+import { getBlockedTasks } from '../../utils/dependencyService';
 import { calculateTaskEstimation } from '../../utils/estimationService';
 
 interface QuickActionsProps {
@@ -15,9 +15,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
   onUpdateProject
 }) => {
   const blockedTasks = getBlockedTasks(project);
-  const readyTasks = getReadyTasks(project);
   const isBlocked = blockedTasks.some(t => t.id === task.id);
-  const isReady = readyTasks.some(t => t.id === task.id);
   const estimation = calculateTaskEstimation(task);
 
   const handleQuickStatusChange = (newStatus: 'To Do' | 'In Progress' | 'Done') => {
@@ -25,12 +23,6 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
       t.id === task.id ? { ...t, status: newStatus } : t
     );
     onUpdateProject({ ...project, tasks: updatedTasks });
-  };
-
-  const handleMarkAsReady = () => {
-    if (task.status === 'To Do') {
-      handleQuickStatusChange('In Progress');
-    }
   };
 
   const handleComplete = () => {
@@ -49,15 +41,6 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
   return (
     <div className="flex flex-wrap gap-2 p-3 bg-surface border border-surface-border rounded-lg">
       {/* Status rápido */}
-      {task.status === 'To Do' && isReady && (
-        <button
-          onClick={handleMarkAsReady}
-          className="px-3 py-1 text-sm bg-yellow-500/20 text-yellow-700 dark:text-yellow-400 border border-yellow-500/30 rounded hover:bg-yellow-500/30"
-        >
-          Iniciar Teste
-        </button>
-      )}
-
       {task.status === 'In Progress' && (
         <button
           onClick={handleComplete}

@@ -108,19 +108,6 @@ export const QualityMetricsChart = React.memo<QualityMetricsChartProps>(({ proje
     }).filter(item => item.phase); // Remover fases vazias
   }, [project.phases, project.tasks, metrics.totalTestCases]);
 
-  // Se não houver dados suficientes, usar dados de exemplo baseados nas métricas gerais
-  const finalData = useMemo(() => {
-    if (chartData.length === 0) {
-      return [
-        { phase: 'Unit', coverage: metrics.testCoverage, quality: metrics.testPassRate },
-        { phase: 'Integration', coverage: Math.max(0, metrics.testCoverage - 10), quality: Math.max(0, metrics.testPassRate - 5) },
-        { phase: 'System', coverage: Math.max(0, metrics.testCoverage - 15), quality: Math.max(0, metrics.testPassRate - 10) },
-        { phase: 'UAT', coverage: Math.max(0, metrics.testCoverage - 20), quality: Math.max(0, metrics.testPassRate - 5) },
-      ];
-    }
-    return chartData;
-  }, [chartData, metrics]);
-
   // Cores explícitas e distintas para melhor visualização
   // Primary (azul) para Cobertura
   const coverageColor = '#3b82f6'; // Blue-500
@@ -135,9 +122,15 @@ export const QualityMetricsChart = React.memo<QualityMetricsChartProps>(({ proje
           <p className="text-sm text-base-content/70">Cobertura e qualidade por fase de teste</p>
         </div>
         <div className="h-[300px]">
+          {chartData.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full text-base-content/60 text-sm" role="status" aria-label="Sem dados por fase">
+              <p className="font-medium">Sem dados por fase</p>
+              <p className="mt-1">Adicione fases e tarefas ao projeto para visualizar as métricas.</p>
+            </div>
+          ) : (
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
-              data={finalData}
+              data={chartData}
               margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
               barGap={8}
               barCategoryGap="20%"
@@ -213,6 +206,7 @@ export const QualityMetricsChart = React.memo<QualityMetricsChartProps>(({ proje
               />
             </BarChart>
           </ResponsiveContainer>
+          )}
         </div>
       </div>
     </Card>

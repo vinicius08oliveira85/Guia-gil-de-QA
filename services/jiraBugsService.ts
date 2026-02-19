@@ -186,7 +186,7 @@ export const syncBugsFromJira = async (
     return { updatedBugs, newBugs };
   } catch (error) {
     logger.error('Erro ao sincronizar bugs do Jira', 'JiraBugsService', error);
-    return { updatedBugs: [], newBugs: [] };
+    throw error;
   }
 };
 

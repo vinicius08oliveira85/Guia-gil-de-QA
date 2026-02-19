@@ -57,14 +57,14 @@ export const SupabaseSettingsTab: React.FC = () => {
         return [
             {
                 name: 'SUPABASE_URL',
-                configured: true, // Não podemos verificar no frontend
-                description: 'Configurada no Vercel (backend). URL do projeto Supabase',
+                configured: true,
+                description: 'Configurada no Vercel (backend). URL do projeto Supabase. Não verificável no navegador.',
                 required: true
             },
             {
                 name: 'SUPABASE_SERVICE_ROLE_KEY',
-                configured: true, // Não podemos verificar no frontend
-                description: 'Configurada no Vercel (backend). Chave de serviço do Supabase',
+                configured: true,
+                description: 'Configurada no Vercel (backend). Chave de serviço do Supabase. Não verificável no navegador.',
                 required: true
             }
         ];
@@ -174,9 +174,12 @@ export const SupabaseSettingsTab: React.FC = () => {
                                 </div>
 
                                 <div>
-                                    <h4 className="text-sm font-semibold text-base-content mb-3">
+                                    <h4 className="text-sm font-semibold text-base-content mb-1">
                                         Variáveis do Backend (Vercel - Serverless Functions)
                                     </h4>
+                                    <p className="text-xs text-base-content/60 mb-3">
+                                        Configuradas no servidor. O status não é verificável no navegador.
+                                    </p>
                                     <div className="space-y-2">
                                         {backendVariables.map((variable) => (
                                             <div

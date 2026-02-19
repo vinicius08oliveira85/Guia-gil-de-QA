@@ -8,7 +8,6 @@ import { RichTextEditor } from '../common/RichTextEditor';
 import { HelpTooltip } from '../common/HelpTooltip';
 import { Input } from '../common/Input';
 import { helpContent } from '../../utils/helpContent';
-import { getTaskExample, taskExamples } from '../../utils/taskExamples';
 
 export const TaskForm: React.FC<{
     onSave: (task: Omit<JiraTask, 'testCases' | 'status' | 'testStrategy' | 'bddScenarios' | 'createdAt' | 'completedAt'>) => void;
@@ -114,44 +113,8 @@ export const TaskForm: React.FC<{
         setValidationErrors({});
     };
 
-    const handleLoadExample = () => {
-        const example = getTaskExample(taskData.type);
-        if (example) {
-            setTaskData({
-                ...taskData,
-                id: example.id,
-                title: example.title,
-                description: example.description,
-                priority: example.priority,
-                owner: example.owner,
-                assignee: example.assignee,
-                severity: example.severity || taskData.severity,
-                tags: example.tags || []
-            });
-        }
-    };
-
-    const hasExample = taskExamples[taskData.type] && taskExamples[taskData.type].length > 0;
-
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
-            {hasExample && !existingTask && (
-                <div className="mb-4 p-4 bg-accent/10 border border-accent/30 rounded-lg">
-                    <div className="flex items-start justify-between gap-4">
-                        <p className="text-sm text-text-primary">
-                            💡 <strong>Dica:</strong> Use o botão abaixo para preencher o formulário com um exemplo.
-                        </p>
-                        <button
-                            type="button"
-                            onClick={handleLoadExample}
-                            className="btn btn-secondary text-xs whitespace-nowrap flex-shrink-0"
-                            title="Preencher formulário com um exemplo"
-                        >
-                            📝 Usar Exemplo
-                        </button>
-                    </div>
-                </div>
-            )}
             <motion.div 
                 className="grid grid-cols-1 md:grid-cols-2 gap-4"
                 initial={{ opacity: 0, y: 10 }}
