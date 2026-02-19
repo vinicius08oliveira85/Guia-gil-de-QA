@@ -19,7 +19,7 @@ import { getTagColor, getTaskVersions } from '../../utils/tagService';
 import { VersionBadges } from './VersionBadge';
 import { updateChecklistItem } from '../../utils/checklistService';
 import { getTaskPhase, getPhaseBadgeStyle, getNextStepForTask } from '../../utils/taskPhaseHelper';
-import { getDisplayStatus } from '../../utils/taskHelpers';
+import { getDisplayStatus, getDisplayStatusLabel } from '../../utils/taskHelpers';
 import { ConfirmDialog } from '../common/ConfirmDialog';
 import { EmptyState } from '../common/EmptyState';
 import { LoadingSkeleton } from '../common/LoadingSkeleton';
@@ -245,7 +245,7 @@ export const JiraTaskItem: React.FC<{
 
     const jiraStatusPalette = project?.settings?.jiraStatuses;
     const currentStatusColor = useMemo(() => {
-        const statusName = getDisplayStatus(task);
+        const statusName = getDisplayStatusLabel(task, project);
         if (!statusName) {
             return undefined;
         }
@@ -1459,7 +1459,7 @@ export const JiraTaskItem: React.FC<{
                         'flex flex-wrap items-center gap-x-2 gap-y-2 sm:gap-y-0 px-3 py-2 sm:px-4 sm:py-2.5 bg-base-100 dark:bg-base-200 border rounded-xl task-card-shadow transition-all duration-200',
                         isStatusDropdownOpen ? 'relative z-10' : '',
                         borderL4Class,
-                        task.type === 'Bug' && !isSelected ? 'border border-error/10' : 'border-base-300',
+                        'border-base-300',
                         activeTaskId === task.id ? 'ring-2 ring-primary/40 shadow-lg' : '',
                         isSelected ? 'bg-primary/5 border-primary/40 ring-1 ring-primary/30' : '',
                         onOpenModal ? 'cursor-pointer hover:translate-x-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2' : '',
@@ -1481,7 +1481,6 @@ export const JiraTaskItem: React.FC<{
                                 aria-label={isSelected ? `Tarefa ${task.id} selecionada` : `Selecionar tarefa ${task.id}`}
                             />
                         )}
-                        <div className="w-5 h-5 rounded-full border-2 flex-shrink-0 bg-transparent" style={{ borderColor: currentStatusColor || '#d1d5db' }} aria-hidden="true" title={getDisplayStatus(task) || 'Status'} />
                         {hasChildren ? (
                             <button
                                 type="button"
@@ -1548,9 +1547,9 @@ export const JiraTaskItem: React.FC<{
                                 style={currentStatusColor ? { backgroundColor: currentStatusColor, color: statusTextColor || '#fff' } : undefined}
                                 aria-haspopup="true"
                                 aria-expanded={isStatusDropdownOpen}
-                                aria-label={`Status: ${getDisplayStatus(task)}. Clique para mudar.`}
+                                aria-label={`Status: ${getDisplayStatusLabel(task, project)}. Clique para mudar.`}
                             >
-                                <span className="truncate max-w-[5rem] sm:max-w-none min-w-0">{getDisplayStatus(task)}</span>
+                                <span className="truncate max-w-[5rem] sm:max-w-none min-w-0">{getDisplayStatusLabel(task, project)}</span>
                                 <ChevronDown className={`w-4 h-4 flex-shrink-0 transition-transform ${isStatusDropdownOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
                             </button>
                                     {isStatusDropdownOpen && (
@@ -1561,7 +1560,7 @@ export const JiraTaskItem: React.FC<{
                                                     const statusColor = typeof status === 'string' 
                                                         ? getJiraStatusColor(statusName)
                                                         : (status.color ? ensureJiraHexColor(status.color, status.name) : getJiraStatusColor(statusName));
-                                                    const isSelected = getDisplayStatus(task) === statusName;
+                                                    const isSelected = getDisplayStatusLabel(task, project) === statusName;
                                                     return (
                                                         <button
                                                             key={statusName}

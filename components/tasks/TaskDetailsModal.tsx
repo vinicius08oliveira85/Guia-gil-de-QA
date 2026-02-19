@@ -15,6 +15,7 @@ import { ChecklistView } from '../common/ChecklistView';
 import { EstimationInput } from '../common/EstimationInput';
 import { QuickActions } from '../common/QuickActions';
 import { getTagColor, getTaskVersions } from '../../utils/tagService';
+import { getDisplayPriorityLabel } from '../../utils/taskHelpers';
 import { VersionBadges } from './VersionBadge';
 import { updateChecklistItem } from '../../utils/checklistService';
 import { getNextStepForTask } from '../../utils/taskPhaseHelper';
@@ -332,10 +333,10 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                             <p className="text-sm font-semibold text-base-content">{task.assignee}</p>
                         </div>
                     )}
-                    {task.priority && (
+                    {(task.priority || task.jiraPriority) && (
                         <div className="p-3 bg-base-100 border border-base-300 rounded-xl">
                             <p className="text-[11px] uppercase text-base-content/60 tracking-wide">Prioridade</p>
-                            <p className="text-sm font-semibold text-base-content">{task.priority}</p>
+                            <p className="text-sm font-semibold text-base-content">{getDisplayPriorityLabel(task, project)}</p>
                         </div>
                     )}
                     {task.severity && (

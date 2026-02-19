@@ -130,6 +130,8 @@ export interface JiraTask {
   bddScenarios?: BddScenario[];
   severity?: BugSeverity;
   priority?: TaskPriority;
+  /** Nome original da prioridade no Jira (ex: "High", "Highest", "Medium"). */
+  jiraPriority?: string;
   createdAt?: string; // ISO string
   completedAt?: string; // ISO string
   owner?: TeamRole;
@@ -366,6 +368,7 @@ export interface ProjectSettings {
   notifications?: NotificationSettings;
   defaultTags?: string[];
   jiraStatuses?: Array<{ name: string; color: string } | string>; // Lista de status disponíveis no Jira com suas cores
+  jiraPriorities?: Array<{ name: string } | string>; // Lista de prioridades disponíveis no Jira
   jiraProjectKey?: string; // Chave do projeto Jira associado
 }
 

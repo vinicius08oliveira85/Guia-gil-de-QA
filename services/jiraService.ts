@@ -361,6 +361,37 @@ export const getJiraStatuses = async (config: JiraConfig, projectKey: string): P
     }
 };
 
+/** Lista de prioridades do Jira (GET /rest/api/3/priority). */
+export const getJiraPriorities = async (config: JiraConfig): Promise<Array<{ name: string }>> => {
+    const cacheKey = `jira_priorities_${config.url}`;
+    const cached = getCache<Array<{ name: string }>>(cacheKey);
+    if (cached?.length) {
+        logger.debug('Usando prioridades do Jira do cache', 'jiraService');
+        return cached;
+    }
+    try {
+        const response = await jiraApiCall<Array<{ id?: string; name?: string }>>(
+            config,
+            'priority',
+            { timeout: 10000 }
+        );
+        if (!Array.isArray(response)) {
+            logger.warn('Resposta de prioridades não é array', 'jiraService', response);
+            return [];
+        }
+        const priorities = response
+            .filter((p): p is { id?: string; name: string } => !!p?.name)
+            .map(p => ({ name: p.name }));
+        if (priorities.length > 0) {
+            setCache(cacheKey, priorities, 10 * 60 * 1000);
+        }
+        return priorities;
+    } catch (error) {
+        logger.error('Erro ao buscar prioridades do Jira', 'jiraService', error);
+        return [];
+    }
+};
+
 export const getJiraIssues = async (
     config: JiraConfig,
     projectKey: string,
@@ -774,8 +805,9 @@ export const importJiraProject = async (
         throw new Error(`Projeto ${jiraProjectKey} não encontrado no Jira`);
     }
 
-    // Buscar status do Jira
+    // Buscar status e prioridades do Jira
     const jiraStatuses = await getJiraStatuses(config, jiraProjectKey);
+    const jiraPriorities = await getJiraPriorities(config);
 
     // Buscar TODAS as issues do projeto (sem limite)
     const jiraIssues = await getJiraIssues(config, jiraProjectKey, undefined, onProgress);
@@ -851,6 +883,7 @@ export const importJiraProject = async (
             jiraStatus: jiraStatusName, // Armazenar status original do Jira
             type: taskType,
             priority: mapJiraPriorityToTaskPriority(issue.fields?.priority?.name),
+            jiraPriority: issue.fields?.priority?.name,
             createdAt: issue.fields?.created || new Date().toISOString(),
             completedAt: issue.fields?.resolutiondate,
             tags: issue.fields?.labels || [],
@@ -1001,6 +1034,7 @@ export const importJiraProject = async (
         tags: [],
         settings: {
             jiraStatuses: jiraStatuses,
+            jiraPriorities: jiraPriorities?.length ? jiraPriorities : undefined,
             jiraProjectKey: jiraProjectKey,
         },
     };
@@ -1257,6 +1291,7 @@ export const syncJiraProject = async (
             jiraStatus: jiraStatusName, // Sempre atualizar status original do Jira
             type: taskType,
             priority: mapJiraPriorityToTaskPriority(issue.fields?.priority?.name),
+            jiraPriority: issue.fields?.priority?.name,
             createdAt: issue.fields?.created || new Date().toISOString(),
             completedAt: issue.fields?.resolutiondate || undefined, // Atualizar exatamente como está no Jira
             tags: issue.fields?.labels || [],
@@ -1933,10 +1968,14 @@ export const addNewJiraTasks = async (
     jiraProjectKey: string,
     onProgress?: (current: number, total?: number) => void
 ): Promise<{ project: Project; newTasksCount: number; updatedStatusCount: number }> => {
-    // Buscar status do Jira se não estiverem no projeto
+    // Buscar status e prioridades do Jira se não estiverem no projeto
     let jiraStatuses = project.settings?.jiraStatuses;
     if (!jiraStatuses || jiraStatuses.length === 0) {
         jiraStatuses = await getJiraStatuses(config, jiraProjectKey);
+    }
+    let jiraPriorities = project.settings?.jiraPriorities;
+    if (!jiraPriorities || jiraPriorities.length === 0) {
+        jiraPriorities = await getJiraPriorities(config);
     }
 
     // Buscar TODAS as issues do Jira
@@ -2003,6 +2042,7 @@ export const addNewJiraTasks = async (
             jiraStatus: jiraStatusName, // Armazenar status original do Jira
             type: taskType,
             priority: mapJiraPriorityToTaskPriority(issue.fields?.priority?.name),
+            jiraPriority: issue.fields?.priority?.name,
             createdAt: issue.fields?.created || new Date().toISOString(),
             completedAt: issue.fields?.resolutiondate,
             tags: issue.fields?.labels || [],
@@ -2135,6 +2175,7 @@ export const addNewJiraTasks = async (
             settings: {
                 ...project.settings,
                 jiraStatuses: jiraStatuses,
+                jiraPriorities: jiraPriorities?.length ? jiraPriorities : project.settings?.jiraPriorities,
                 jiraProjectKey: jiraProjectKey,
             },
         },

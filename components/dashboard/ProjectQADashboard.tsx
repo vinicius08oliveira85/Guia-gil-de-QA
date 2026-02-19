@@ -13,7 +13,7 @@ import { EmptyState } from '../common/EmptyState';
 import { CompassIcon, CheckCircleIcon } from '../common/Icons';
 import { Clipboard, Zap, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { logger } from '../../utils/logger';
-import { getDisplayStatus } from '../../utils/taskHelpers';
+import { getDisplayStatusLabel } from '../../utils/taskHelpers';
 import { categorizeJiraStatus, getTaskStatusCategory, JiraStatusCategory } from '../../utils/jiraStatusCategorizer';
 
 export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) => {
@@ -475,7 +475,7 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
                                                     }
                                                     size="sm"
                                                 >
-                                                    {getDisplayStatus(task)}
+                                                    {getDisplayStatusLabel(task, project)}
                                                 </Badge>
                                             </div>
                                             <p className="mt-1 text-sm font-semibold text-base-content line-clamp-2">{task.title}</p>
