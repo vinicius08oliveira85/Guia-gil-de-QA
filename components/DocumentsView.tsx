@@ -304,11 +304,11 @@ export const DocumentsView: React.FC<{ project: Project; onUpdateProject: (proje
                     </div>
                     <div className="flex items-center gap-2 flex-wrap">
                         {shouldShowSolusButton && (
-                            <button type="button" onClick={() => setIsSolusSchemaOpen(true)} className="rounded-full px-3 py-1.5 text-xs font-semibold transition-colors duration-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-1.5 text-base-content/70 hover:text-base-content" aria-label="Abrir Esquema da API Solus">
+                            <button type="button" onClick={() => setIsSolusSchemaOpen(true)} className="rounded-full px-3 py-1.5 text-xs font-semibold text-base-content/70 hover:bg-base-200 hover:text-base-content transition-colors duration-300 flex items-center gap-1.5" aria-label="Abrir Esquema da API Solus">
                                 <FileDown className="w-3.5 h-3.5" aria-hidden /> Esquema API
                             </button>
                         )}
-                        <label className="rounded-full px-3 py-1.5 text-xs font-semibold transition-colors duration-300 bg-brand-orange text-white shadow-md shadow-brand-orange/20 flex items-center gap-1.5 cursor-pointer hover:opacity-90">
+                        <label className="rounded-full px-3 py-1.5 text-xs font-semibold bg-primary text-primary-content hover:bg-primary/90 transition-colors duration-300 flex items-center gap-1.5 cursor-pointer">
                             <Upload className="w-3.5 h-3.5" aria-hidden /> Carregar
                             <input type="file" accept=".txt,.md,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar,.json,.csv,.xml,.jpg,.jpeg,.png,.gif,.webp,.svg" onChange={handleFileUpload} className="hidden" />
                         </label>
@@ -323,11 +323,12 @@ export const DocumentsView: React.FC<{ project: Project; onUpdateProject: (proje
                         <input type="text" placeholder="Buscar documentos..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-10 pr-4 py-2.5 bg-slate-100 dark:bg-slate-800 border-none rounded-[12px] focus:ring-2 focus:ring-primary/50 text-sm transition-all dark:text-white placeholder:text-slate-500" aria-label="Buscar documentos" />
                     </div>
                     <div className="flex gap-2 flex-wrap">
-                        <button type="button" onClick={() => setSelectedCategory('all')} className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors duration-300 ${selectedCategory === 'all' ? 'bg-brand-orange text-white shadow-md shadow-brand-orange/20' : 'border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-base-content/70 hover:text-base-content'}`} aria-pressed={selectedCategory === 'all'} aria-label={`Filtrar: todas, ${stats.total} documento(s)`}>Todas ({stats.total})</button>
+                        <button type="button" onClick={() => setSelectedCategory('all')} className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors duration-300 flex items-center gap-1.5 ${selectedCategory === 'all' ? 'bg-primary text-primary-content hover:bg-primary/90' : 'text-base-content/70 hover:bg-base-200 hover:text-base-content'}`} aria-pressed={selectedCategory === 'all'} aria-label={`Filtrar: todas, ${stats.total} documento(s)`}>Todas ({stats.total})</button>
                         {DOCUMENT_CATEGORIES.map(cat => {
                             const label = cat.label.replace(/^[^\s]+\s/, '');
+                            const isSelected = selectedCategory === cat.id;
                             return (
-                                <button key={cat.id} type="button" onClick={() => setSelectedCategory(cat.id)} className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors duration-300 ${selectedCategory === cat.id ? 'bg-brand-orange text-white shadow-md shadow-brand-orange/20' : 'border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-base-content/70 hover:text-base-content'}`} aria-pressed={selectedCategory === cat.id} aria-label={`Filtrar por ${label}, ${stats.categoryCounts[cat.id] || 0} documento(s)`}>{label} ({stats.categoryCounts[cat.id] || 0})</button>
+                                <button key={cat.id} type="button" onClick={() => setSelectedCategory(cat.id)} className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors duration-300 flex items-center gap-1.5 ${isSelected ? 'bg-primary text-primary-content hover:bg-primary/90' : 'text-base-content/70 hover:bg-base-200 hover:text-base-content'}`} aria-pressed={isSelected} aria-label={`Filtrar por ${label}, ${stats.categoryCounts[cat.id] || 0} documento(s)`}>{label} ({stats.categoryCounts[cat.id] || 0})</button>
                             );
                         })}
                     </div>
