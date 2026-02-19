@@ -26,6 +26,7 @@ import { TaskWithChildren } from './JiraTaskItem';
 import { TaskLinksView } from './TaskLinksView';
 import { getTaskDependents } from '../../utils/dependencyService';
 import { FileViewer } from '../common/FileViewer';
+import { ImageModal } from '../common/ImageModal';
 import { canViewInBrowser, detectFileType } from '../../services/fileViewerService';
 import { JiraAttachment } from './JiraAttachment';
 import { JiraRichContent } from './JiraRichContent';
@@ -221,13 +222,17 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
     };
 
     const handleViewJiraAttachment = async (attachment: { id: string; filename: string; url: string; mimeType: string }) => {
+        const isImage = detectFileType(attachment.filename, attachment.mimeType) === 'image';
         setLoadingJiraAttachmentId(attachment.id);
         try {
             // Fazer fetch do anexo através do proxy do Jira se necessário
             const jiraConfig = getJiraConfig();
             if (!jiraConfig) {
-                // Se não há config, tentar abrir diretamente
-                window.open(attachment.url, '_blank');
+                if (isImage) {
+                    setViewingJiraAttachment({ ...attachment });
+                } else {
+                    window.open(attachment.url, '_blank');
+                }
                 setLoadingJiraAttachmentId(null);
                 return;
             }
@@ -260,13 +265,19 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                 };
                 reader.readAsDataURL(blob);
             } else {
-                // Se falhar, abrir em nova aba
-                window.open(attachment.url, '_blank');
+                if (isImage) {
+                    setViewingJiraAttachment({ ...attachment });
+                } else {
+                    window.open(attachment.url, '_blank');
+                }
                 setLoadingJiraAttachmentId(null);
             }
         } catch (error) {
-            // Em caso de erro, abrir em nova aba como fallback
-            window.open(attachment.url, '_blank');
+            if (isImage) {
+                setViewingJiraAttachment({ ...attachment });
+            } else {
+                window.open(attachment.url, '_blank');
+            }
             setLoadingJiraAttachmentId(null);
         }
     };
@@ -1030,6 +1041,13 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                     onClose={() => setViewingJiraAttachment(null)}
                     showDownload={true}
                     showViewInNewTab={true}
+                />
+            )}
+            {viewingJiraAttachment && !viewingJiraAttachment.content && detectFileType(viewingJiraAttachment.filename, viewingJiraAttachment.mimeType) === 'image' && (
+                <ImageModal
+                    url={viewingJiraAttachment.url}
+                    fileName={viewingJiraAttachment.filename}
+                    onClose={() => setViewingJiraAttachment(null)}
                 />
             )}
         </>
