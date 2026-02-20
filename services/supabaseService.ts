@@ -150,6 +150,20 @@ const isPayloadTooLargeError = (error: unknown): boolean => {
 };
 
 /**
+ * Verifica se o erro é 403 (Forbidden), ex.: RLS bloqueando acesso direto com anon key
+ */
+const isForbiddenError = (error: unknown): boolean => {
+    if (error instanceof Error) {
+        const message = error.message.toLowerCase();
+        return message.includes('403') ||
+               message.includes('forbidden') ||
+               message.includes('row-level security') ||
+               message.includes('violates row-level security');
+    }
+    return false;
+};
+
+/**
  * Comprime dados usando CompressionStream (API nativa do browser)
  * Retorna o payload comprimido em base64
  */
@@ -183,7 +197,7 @@ const compressData = async (data: unknown): Promise<string> => {
             }
         }
         
-        // Combinar chunks e converter para base64
+        // Combinar chunks e converter para base64 (em blocos para evitar stack overflow)
         const totalLength = chunks.reduce((acc, chunk) => acc + chunk.length, 0);
         const combined = new Uint8Array(totalLength);
         let offset = 0;
@@ -191,14 +205,18 @@ const compressData = async (data: unknown): Promise<string> => {
             combined.set(chunk, offset);
             offset += chunk.length;
         }
-        
-        // Converter para base64
-        const base64 = btoa(String.fromCharCode(...combined));
-        return base64;
+
+        // Construir string binária em chunks; spread de Uint8Array grande estoura a call stack
+        const CHUNK_SIZE = 8192;
+        let binary = '';
+        for (let i = 0; i < combined.length; i += CHUNK_SIZE) {
+            const chunk = combined.subarray(i, Math.min(i + CHUNK_SIZE, combined.length));
+            binary += String.fromCharCode.apply(null, chunk as unknown as number[]);
+        }
+        return btoa(binary);
     } catch (error) {
         logger.warn('Erro ao comprimir dados, enviando sem compressão', 'supabaseService', error);
-        // Fallback: retornar dados sem compressão
-        return JSON.stringify(data);
+        throw error;
     }
 };
 
@@ -457,9 +475,12 @@ export const saveProjectToSupabase = async (project: Project): Promise<void> => 
                         logger.warn('Erro de rede ao salvar via SDK Supabase. Salvando apenas localmente.', 'supabaseService', error);
                         throw error; // Não tentar proxy se for erro de rede
                     }
-                    
-                    logger.debug('Erro ao salvar via SDK Supabase, tentando proxy como fallback', 'supabaseService', error);
-                    // Continuar para tentar proxy como fallback apenas se não for erro de rede
+                    if (isForbiddenError(error)) {
+                        logger.debug('Acesso direto negado (403), salvando via proxy', 'supabaseService');
+                    } else {
+                        logger.debug('Erro ao salvar via SDK Supabase, tentando proxy como fallback', 'supabaseService', error);
+                    }
+                    // Continuar para tentar proxy como fallback
                 }
             }
 

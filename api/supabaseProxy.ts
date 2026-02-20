@@ -35,7 +35,7 @@ const MAX_PAYLOAD_SIZE = 4 * 1024 * 1024; // 4MB em bytes
 const allowCors = (res: VercelResponse) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,DELETE,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-content-compressed');
 };
 
 /**
@@ -193,11 +193,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           requestUserId = decompressedData.userId;
         } catch (error) {
           console.error('[SupabaseProxy] Erro ao descomprimir payload:', error);
-          res.status(400).json({ 
-            success: false, 
-            error: 'Erro ao descomprimir payload comprimido' 
-          });
-          return;
+          // Fallback: body pode ser JSON não comprimido (ex.: cliente antigo ou bug)
+          try {
+            const bodyString = typeof req.body === 'string' ? req.body : JSON.stringify(req.body);
+            const parsed = JSON.parse(bodyString) as { project?: unknown; userId?: string };
+            if (parsed?.project) {
+              project = parsed.project;
+              requestUserId = parsed.userId;
+            } else {
+              res.status(400).json({ success: false, error: 'Erro ao descomprimir payload comprimido' });
+              return;
+            }
+          } catch {
+            res.status(400).json({ success: false, error: 'Erro ao descomprimir payload comprimido' });
+            return;
+          }
         }
       } else {
         // Body normal (JSON)
