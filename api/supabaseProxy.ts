@@ -144,6 +144,78 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     if (req.method === 'POST') {
+      const { storagePath } = req.body;
+
+      // Novo fluxo: Se storagePath for fornecido, buscar do Storage
+      if (storagePath) {
+        console.log(`[SupabaseProxy] Recebido pedido para processar arquivo do Storage: ${storagePath}`);
+        let projectFromStorage: any;
+        try {
+          // 1. Baixar o arquivo do Supabase Storage
+          const { data: blob, error: downloadError } = await supabase.storage
+            .from('qa-agile-guide-uploads')
+            .download(storagePath);
+
+          if (downloadError) {
+            console.error(`[SupabaseProxy] Erro ao baixar do Storage: ${downloadError.message}`);
+            throw new Error(`Erro ao baixar arquivo do Storage: ${downloadError.message}`);
+          }
+
+          // 2. Converter o Blob para JSON
+          const projectJson = await blob.text();
+          projectFromStorage = JSON.parse(projectJson);
+
+          if (!projectFromStorage || !projectFromStorage.id) {
+            throw new Error('Arquivo do Storage é inválido ou não contém um projeto.');
+          }
+
+          console.log(`[SupabaseProxy] Projeto "${projectFromStorage.name}" extraído do Storage com sucesso.`);
+
+          // 3. Inserir o projeto no banco de dados (mesma lógica do upsert)
+          const { error: upsertError } = await supabase
+            .from('projects')
+            .upsert({
+              id: projectFromStorage.id,
+              user_id: req.body.userId || userId,
+              name: projectFromStorage.name,
+              description: projectFromStorage.description,
+              data: projectFromStorage,
+              updated_at: new Date().toISOString()
+            }, {
+              onConflict: 'id'
+            });
+
+          if (upsertError) {
+            console.error(`[SupabaseProxy] Erro ao fazer upsert do projeto do Storage: ${upsertError.message}`);
+            throw new Error(`Erro ao salvar projeto do Storage no banco de dados: ${upsertError.message}`);
+          }
+
+          res.status(200).json({ success: true, message: 'Projeto salvo com sucesso via Storage.' });
+        
+        } catch (error) {
+          console.error('[SupabaseProxy] Erro no fluxo de salvamento via Storage:', error);
+          res.status(500).json({
+            success: false,
+            error: error instanceof Error ? error.message : 'Erro interno ao processar arquivo do Storage.'
+          });
+        } finally {
+          // 4. Limpar o arquivo do Storage após o processamento
+          console.log(`[SupabaseProxy] Deletando arquivo do Storage: ${storagePath}`);
+          const { error: removeError } = await supabase.storage
+            .from('qa-agile-guide-uploads')
+            .remove([storagePath]);
+          
+          if (removeError) {
+            // Apenas logar o erro, não enviar resposta ao cliente pois a operação principal pode ter funcionado
+            console.error(`[SupabaseProxy] Falha ao deletar arquivo do Storage: ${removeError.message}. Limpeza manual pode ser necessária.`);
+          } else {
+            console.log(`[SupabaseProxy] Arquivo ${storagePath} deletado do Storage com sucesso.`);
+          }
+        }
+        return; // Finaliza o fluxo de storage
+      }
+
+
       // Verificar se é requisição para task_test_status
       const table = req.body?.table as string;
       if (table === 'task_test_status') {
