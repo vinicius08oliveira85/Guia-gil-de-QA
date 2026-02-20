@@ -450,7 +450,8 @@ export const saveProjectToSupabase = async (project: Project): Promise<void> => 
     const savePromise = (async () => {
         try {
             lastSaveTime.set(projectId, Date.now());
-            
+            let sdkAlreadyFailedWith403 = false;
+
             // Log detalhado do início do salvamento
             logger.debug(`Iniciando salvamento do projeto "${project.name}" (${projectId})`, 'supabaseService', {
                 projectId,
@@ -476,6 +477,7 @@ export const saveProjectToSupabase = async (project: Project): Promise<void> => 
                         throw error; // Não tentar proxy se for erro de rede
                     }
                     if (isForbiddenError(error)) {
+                        sdkAlreadyFailedWith403 = true;
                         logger.debug('Acesso direto negado (403), salvando via proxy', 'supabaseService');
                     } else {
                         logger.debug('Erro ao salvar via SDK Supabase, tentando proxy como fallback', 'supabaseService', error);
@@ -507,24 +509,21 @@ export const saveProjectToSupabase = async (project: Project): Promise<void> => 
                     
                     // Tratamento específico para erro 413 (Payload Too Large)
                     if (isPayloadTooLargeError(error)) {
-                        logger.debug('Erro 413: Payload muito grande para salvar via proxy. Tentando SDK direto...', 'supabaseService', error);
-                        // Se SDK não foi tentado ainda, tentar agora
-                        if (supabase) {
-                            try {
-                                await saveThroughSdk(project);
-                                return;
-                            } catch (sdkError) {
-                                logger.warn('Erro ao salvar via SDK após falha do proxy', 'supabaseService', sdkError);
-                                throw new Error(
-                                    `O projeto "${project.name}" é muito grande para ser salvo via proxy (limite 4MB) ` +
-                                    `e falhou ao salvar direto no Supabase. O projeto foi salvo apenas localmente.`
-                                );
-                            }
-                        } else {
+                        // Não retentar SDK se já falhou com 403 nesta mesma operação
+                        if (sdkAlreadyFailedWith403 || !supabase) {
                             throw new Error(
-                                `O projeto "${project.name}" é muito grande para ser salvo via proxy (limite 4MB). ` +
-                                `Configure VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY para salvamento direto. ` +
-                                `O projeto foi salvo apenas localmente.`
+                                `O projeto "${project.name}" é muito grande para o proxy (limite 4MB) e o salvamento direto não está disponível. O projeto foi salvo apenas localmente.`
+                            );
+                        }
+                        logger.debug('Erro 413: Payload muito grande para salvar via proxy. Tentando SDK direto...', 'supabaseService', error);
+                        try {
+                            await saveThroughSdk(project);
+                            return;
+                        } catch (sdkError) {
+                            logger.warn('Erro ao salvar via SDK após falha do proxy', 'supabaseService', sdkError);
+                            throw new Error(
+                                `O projeto "${project.name}" é muito grande para ser salvo via proxy (limite 4MB) ` +
+                                `e falhou ao salvar direto no Supabase. O projeto foi salvo apenas localmente.`
                             );
                         }
                     }
