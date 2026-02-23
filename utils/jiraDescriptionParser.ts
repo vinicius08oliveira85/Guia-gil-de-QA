@@ -2,8 +2,17 @@
  * Utilitário para converter descrições do Jira (ADF - Atlassian Document Format) para texto/HTML
  */
 
+import { marked } from 'marked';
 import { sanitizeHTML } from './sanitize';
 import { JiraContentSanitizer } from './jiraContentSanitizer';
+
+/** Converte texto simples (markdown-like) em HTML sanitizado, estilo Jira (parágrafos, listas, negrito). */
+function plainTextToHtml(text: string): string {
+    const trimmed = text.trim();
+    if (!trimmed) return '';
+    const rawHtml = marked(trimmed, { gfm: true, breaks: true }) as string;
+    return sanitizeHTML(rawHtml);
+}
 
 interface ADFNode {
     type: string;
@@ -412,8 +421,8 @@ export function parseJiraDescriptionHTML(
         if (description.includes('<')) {
             html = sanitizeHTML(description);
         } else {
-            // String simples sem HTML, retornar como parágrafo
-            html = sanitizeHTML(`<p>${description.trim()}</p>`);
+            // String simples: tratar como markdown (parágrafos, listas, negrito) e sanitizar
+            html = plainTextToHtml(description);
         }
     } else if (typeof description === 'object') {
         // Se é um objeto ADF, converter para HTML
@@ -428,7 +437,7 @@ export function parseJiraDescriptionHTML(
         } else if (description.html) {
             return parseJiraDescriptionHTML(description.html, jiraUrl, jiraAttachments);
         } else if (description.text) {
-            html = sanitizeHTML(`<p>${description.text}</p>`);
+            html = plainTextToHtml(description.text);
         }
     }
     

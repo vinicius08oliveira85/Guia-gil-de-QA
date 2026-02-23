@@ -115,7 +115,7 @@ export const JiraRichContent: React.FC<JiraRichContentProps> = ({
     return (
         <div
             ref={containerRef}
-            className={`jira-rich-content prose prose-sm max-w-none dark:prose-invert ${className}`}
+            className={`jira-rich-content prose prose-sm max-w-none dark:prose-invert prose-p:mb-3 prose-ul:my-2 prose-ol:my-2 prose-li:my-0.5 ${className}`}
             dangerouslySetInnerHTML={{ __html: sanitized.html }}
         />
     );
