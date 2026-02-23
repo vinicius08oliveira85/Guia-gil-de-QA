@@ -125,12 +125,30 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
       }
 
-      // Requisição padrão para projects
-      const { data, error } = await supabase
+      // Requisição padrão para projects (com timeout para evitar 504 do Vercel)
+      const SUPABASE_QUERY_TIMEOUT_MS = 15000;
+      const queryPromise = supabase
         .from('projects')
         .select('data')
         .or(`user_id.eq.${userId},user_id.like.anon-%`)
         .order('updated_at', { ascending: false });
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(
+          () => reject(new Error('Supabase demorou para responder; tente novamente.')),
+          SUPABASE_QUERY_TIMEOUT_MS
+        )
+      );
+      let result: { data: Array<{ data: unknown }> | null; error: { message: string } | null };
+      try {
+        result = await Promise.race([queryPromise, timeoutPromise]);
+      } catch (raceError) {
+        if (raceError instanceof Error && raceError.message.includes('Supabase demorou')) {
+          res.status(503).json({ success: false, error: raceError.message });
+          return;
+        }
+        throw raceError;
+      }
+      const { data, error } = result;
 
       if (error) {
         throw new Error(error.message);

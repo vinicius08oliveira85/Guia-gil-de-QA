@@ -570,7 +570,7 @@ export const saveProjectToSupabase = async (project: Project): Promise<void> => 
  * Nunca lança erro - retorna array vazio se falhar
  * Timeout de 10 segundos (limite do Vercel)
  */
-export type LoadProjectsResult = { projects: Project[]; loadFailed: boolean };
+export type LoadProjectsResult = { projects: Project[]; loadFailed: boolean; errorMessage?: string };
 
 export const loadProjectsFromSupabase = async (): Promise<LoadProjectsResult> => {
     if (supabaseProxyUrl) {
@@ -626,10 +626,10 @@ export const loadProjectsFromSupabase = async (): Promise<LoadProjectsResult> =>
                             retryError
                         );
                     }
-                    return { projects: [], loadFailed: true };
+                    return { projects: [], loadFailed: true, errorMessage: retryMsg };
                 }
             }
-            return { projects: [], loadFailed: true };
+            return { projects: [], loadFailed: true, errorMessage };
         }
     }
 
@@ -653,12 +653,13 @@ export const loadProjectsFromSupabase = async (): Promise<LoadProjectsResult> =>
         const { data, error } = result;
 
         if (error) {
+            const errMsg = error?.message ?? String(error);
             if (isCorsError(error)) {
                 logger.error('Erro CORS ao carregar via SDK. Use proxy em produção', 'supabaseService', error);
             } else {
                 logger.warn('Erro ao carregar projetos do Supabase', 'supabaseService', error);
             }
-            return { projects: [], loadFailed: true };
+            return { projects: [], loadFailed: true, errorMessage: errMsg };
         }
         if (!data || data.length === 0) {
             logger.info('Nenhum projeto encontrado no Supabase', 'supabaseService');
@@ -668,12 +669,13 @@ export const loadProjectsFromSupabase = async (): Promise<LoadProjectsResult> =>
         logger.info(`${projects.length} projetos carregados do Supabase via SDK`, 'supabaseService');
         return { projects, loadFailed: false };
     } catch (error) {
+        const errMsg = error instanceof Error ? error.message : String(error);
         if (isCorsError(error)) {
             logger.error('Erro CORS ao carregar do Supabase. Use proxy', 'supabaseService', error);
         } else {
             logger.warn('Erro ao carregar do Supabase (usando cache local)', 'supabaseService', error);
         }
-        return { projects: [], loadFailed: true };
+        return { projects: [], loadFailed: true, errorMessage: errMsg };
     }
 };
 

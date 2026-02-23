@@ -182,6 +182,12 @@ Para que a tela **Meus Projetos** carregue e exiba os projetos existentes no Sup
 
 Sem `VITE_SUPABASE_PROXY_URL` no build, o app em produção não usa o Supabase e exibe apenas projetos do cache local (IndexedDB). Sem as variáveis do servidor, o proxy retorna erro e a tela pode mostrar "Sincronização com a nuvem indisponível"; use o botão "Tentar novamente" na tela ou verifique as variáveis no painel do Vercel (ou equivalente).
 
+**Checklist para homolog / preview no Vercel:**
+
+- No projeto Vercel, em **Settings → Environment Variables**, defina para o ambiente **Preview** (ou o que servir a URL de homolog): `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` (ou os fallbacks usados em `api/supabaseProxy.ts`). Faça redeploy após alterar variáveis.
+- Se a tela exibir a mensagem **"Supabase não configurado. Defina SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY."**, confira se essas variáveis estão preenchidas para o ambiente do deploy e redeploy.
+- Se aparecer **timeout ou 504**: verifique no [Supabase Dashboard](https://supabase.com/dashboard) se o projeto está ativo (não pausado). Projetos free pausam após inatividade; reative e aguarde alguns segundos antes de tentar novamente (use o botão "Tentar novamente" na tela).
+
 ## Escolhendo o Provedor de IA
 
 O aplicativo suporta múltiplos provedores de IA e escolhe automaticamente baseado nas variáveis de ambiente configuradas:

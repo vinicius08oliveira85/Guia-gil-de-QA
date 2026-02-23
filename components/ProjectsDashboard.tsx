@@ -48,7 +48,7 @@ export const ProjectsDashboard: React.FC<{
         project: null,
     });
     const { handleError, handleSuccess } = useErrorHandler();
-    const { importProject, supabaseLoadFailed, loadProjects, isLoading } = useProjectsStore();
+    const { importProject, supabaseLoadFailed, supabaseLoadError, loadProjects, isLoading } = useProjectsStore();
 
     // Função para navegar para uma tarefa específica
     const handleNavigateToTask = useCallback((projectId: string, taskId: string) => {
@@ -572,7 +572,12 @@ export const ProjectsDashboard: React.FC<{
                     <>
                         {supabaseLoadFailed && (
                             <div className="mb-4 p-3 rounded-lg bg-warning/10 text-warning-content border border-warning/30 text-sm flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between" role="alert">
-                                <span>Sincronização com a nuvem indisponível no momento. Se você já tinha projetos, tente novamente ou verifique a conexão.</span>
+                                <div className="flex flex-col gap-1 min-w-0">
+                                    <span>Sincronização com a nuvem indisponível no momento. Se você já tinha projetos, tente novamente ou verifique a conexão.</span>
+                                    {supabaseLoadError && (
+                                        <span className="text-xs opacity-90 break-words">{supabaseLoadError}</span>
+                                    )}
+                                </div>
                                 <button
                                     type="button"
                                     onClick={() => loadProjects()}
