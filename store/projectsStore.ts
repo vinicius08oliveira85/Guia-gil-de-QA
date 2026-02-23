@@ -24,6 +24,8 @@ interface ProjectsState {
   error: Error | null;
   /** true quando a última tentativa de carregar do Supabase falhou (proxy/DB indisponível) */
   supabaseLoadFailed: boolean;
+  /** Mensagem de erro retornada pelo proxy/Supabase (ex.: "Supabase não configurado") */
+  supabaseLoadError: string | null;
 
   // Actions
   loadProjects: () => Promise<void>;
@@ -46,12 +48,14 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
   isLoading: false,
   error: null,
   supabaseLoadFailed: false,
+  supabaseLoadError: null,
 
   loadProjects: async () => {
-    set({ isLoading: true, error: null, supabaseLoadFailed: false });
+    set({ isLoading: true, error: null, supabaseLoadFailed: false, supabaseLoadError: null });
     try {
       let supabaseProjects: Project[] = [];
       let supabaseLoadFailed = false;
+      let supabaseLoadError: string | null = null;
       let indexedDBProjects: Project[] = [];
 
       // Fase 1: Tentar carregar do Supabase primeiro (se disponível)
@@ -60,6 +64,7 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
         const result = await loadProjectsFromSupabase();
         supabaseProjects = result.projects;
         supabaseLoadFailed = result.loadFailed;
+        supabaseLoadError = result.errorMessage ?? null;
         if (supabaseProjects.length > 0) {
           logger.info(`Projetos carregados do Supabase: ${supabaseProjects.length}`, 'ProjectsStore');
         } else {
@@ -143,7 +148,7 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
         logger.info(`Projetos carregados do IndexedDB: ${finalProjects.length}`, 'ProjectsStore');
       }
 
-      set({ projects: finalProjects, isLoading: false, supabaseLoadFailed });
+      set({ projects: finalProjects, isLoading: false, supabaseLoadFailed, supabaseLoadError });
     } catch (error) {
       const errorObj = error instanceof Error ? error : new Error('Erro ao carregar projetos');
       logger.error('Erro ao carregar projetos', 'ProjectsStore', errorObj);
@@ -151,6 +156,7 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
         error: errorObj,
         isLoading: false,
         supabaseLoadFailed: false,
+        supabaseLoadError: null,
       });
     }
   },

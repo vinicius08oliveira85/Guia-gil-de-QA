@@ -35,7 +35,7 @@ const pendingSaves = new Map<string, Project>(); // Fila de salvamentos pendente
 const saveDebounceMs = 300; // Debounce de 300ms entre salvamentos do mesmo projeto (reduzido para ser mais responsivo)
 const maxRetries = 3; // Máximo de 3 tentativas
 const retryDelays = [1000, 2000, 4000]; // Backoff exponencial: 1s, 2s, 4s
-const requestTimeoutMs = 5000; // Timeout de 5 segundos para requisições
+const requestTimeoutMs = 8000; // Timeout de 8 segundos (evita timeout em redes lentas; fallback usa cache local)
 
 // Inicializar cliente Supabase direto se variáveis estiverem disponíveis
 // Usado para salvamento direto (evita limite de 4MB do Vercel)
@@ -570,7 +570,7 @@ export const saveProjectToSupabase = async (project: Project): Promise<void> => 
  * Nunca lança erro - retorna array vazio se falhar
  * Timeout de 10 segundos (limite do Vercel)
  */
-export type LoadProjectsResult = { projects: Project[]; loadFailed: boolean };
+export type LoadProjectsResult = { projects: Project[]; loadFailed: boolean; errorMessage?: string };
 
 export const loadProjectsFromSupabase = async (): Promise<LoadProjectsResult> => {
     if (supabaseProxyUrl) {
@@ -608,9 +608,13 @@ export const loadProjectsFromSupabase = async (): Promise<LoadProjectsResult> =>
             } else {
                 logger.warn('Erro ao carregar projetos via proxy Supabase', 'supabaseService', error);
             }
-            // Retry único após 2s em caso de 500/schema cache (Supabase pode estar acordando)
-            if (isSchemaCacheOrPaused || errorMessage.includes('500')) {
+            const isTimeout = errorMessage.includes('Timeout');
+            // Retry único após 2s em caso de 500/schema cache ou timeout (Supabase/rede pode estar lento)
+            if (isSchemaCacheOrPaused || errorMessage.includes('500') || isTimeout) {
                 try {
+                    if (isTimeout) {
+                        logger.debug('Retry em 2s após timeout ao carregar projetos do Supabase', 'supabaseService');
+                    }
                     await new Promise(r => setTimeout(r, 2000));
                     return await attempt();
                 } catch (retryError) {
@@ -622,10 +626,10 @@ export const loadProjectsFromSupabase = async (): Promise<LoadProjectsResult> =>
                             retryError
                         );
                     }
-                    return { projects: [], loadFailed: true };
+                    return { projects: [], loadFailed: true, errorMessage: retryMsg };
                 }
             }
-            return { projects: [], loadFailed: true };
+            return { projects: [], loadFailed: true, errorMessage };
         }
     }
 
@@ -649,12 +653,13 @@ export const loadProjectsFromSupabase = async (): Promise<LoadProjectsResult> =>
         const { data, error } = result;
 
         if (error) {
+            const errMsg = error?.message ?? String(error);
             if (isCorsError(error)) {
                 logger.error('Erro CORS ao carregar via SDK. Use proxy em produção', 'supabaseService', error);
             } else {
                 logger.warn('Erro ao carregar projetos do Supabase', 'supabaseService', error);
             }
-            return { projects: [], loadFailed: true };
+            return { projects: [], loadFailed: true, errorMessage: errMsg };
         }
         if (!data || data.length === 0) {
             logger.info('Nenhum projeto encontrado no Supabase', 'supabaseService');
@@ -664,12 +669,13 @@ export const loadProjectsFromSupabase = async (): Promise<LoadProjectsResult> =>
         logger.info(`${projects.length} projetos carregados do Supabase via SDK`, 'supabaseService');
         return { projects, loadFailed: false };
     } catch (error) {
+        const errMsg = error instanceof Error ? error.message : String(error);
         if (isCorsError(error)) {
             logger.error('Erro CORS ao carregar do Supabase. Use proxy', 'supabaseService', error);
         } else {
             logger.warn('Erro ao carregar do Supabase (usando cache local)', 'supabaseService', error);
         }
-        return { projects: [], loadFailed: true };
+        return { projects: [], loadFailed: true, errorMessage: errMsg };
     }
 };
 

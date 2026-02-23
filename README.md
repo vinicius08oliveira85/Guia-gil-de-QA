@@ -167,6 +167,27 @@ Para mais detalhes, consulte a [documentação completa do Figma MCP](docs/MCP_F
 
 O aplicativo utiliza IndexedDB para armazenamento local no navegador. Todos os dados são salvos localmente e não são enviados para servidores externos (exceto chamadas às APIs de IA - OpenAI ou Gemini - para funcionalidades de geração de conteúdo).
 
+### Carregar projetos do Supabase em produção
+
+Para que a tela **Meus Projetos** carregue e exiba os projetos existentes no Supabase (por exemplo em deploy no Vercel), é necessário configurar:
+
+**No build do front-end (variáveis embutidas no cliente):**
+
+- `VITE_SUPABASE_PROXY_URL` – URL do proxy que o app usa para falar com o Supabase. Em deploy na mesma origem use `/api/supabaseProxy` (no Vercel, a API route `api/supabaseProxy.ts` será chamada nesse path).
+
+**No ambiente da API (serverless / proxy, ex.: Vercel):**
+
+- `SUPABASE_URL` ou `VITE_SUPABASE_URL` – URL do projeto no Supabase (ex.: `https://xxxxx.supabase.co`).
+- `SUPABASE_SERVICE_ROLE_KEY` ou `SUPABASE_ANON_KEY` (ou `VITE_SUPABASE_ANON_KEY`) – Chave para o proxy autenticar no Supabase. Service role permite acesso total; anon key respeita RLS.
+
+Sem `VITE_SUPABASE_PROXY_URL` no build, o app em produção não usa o Supabase e exibe apenas projetos do cache local (IndexedDB). Sem as variáveis do servidor, o proxy retorna erro e a tela pode mostrar "Sincronização com a nuvem indisponível"; use o botão "Tentar novamente" na tela ou verifique as variáveis no painel do Vercel (ou equivalente).
+
+**Checklist para homolog / preview no Vercel:**
+
+- No projeto Vercel, em **Settings → Environment Variables**, defina para o ambiente **Preview** (ou o que servir a URL de homolog): `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` (ou os fallbacks usados em `api/supabaseProxy.ts`). Faça redeploy após alterar variáveis.
+- Se a tela exibir a mensagem **"Supabase não configurado. Defina SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY."**, confira se essas variáveis estão preenchidas para o ambiente do deploy e redeploy.
+- Se aparecer **timeout ou 504**: verifique no [Supabase Dashboard](https://supabase.com/dashboard) se o projeto está ativo (não pausado). Projetos free pausam após inatividade; reative e aguarde alguns segundos antes de tentar novamente (use o botão "Tentar novamente" na tela).
+
 ## Escolhendo o Provedor de IA
 
 O aplicativo suporta múltiplos provedores de IA e escolhe automaticamente baseado nas variáveis de ambiente configuradas:

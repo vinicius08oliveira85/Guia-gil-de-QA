@@ -33,7 +33,7 @@ import { canViewInBrowser, detectFileType } from '../../services/fileViewerServi
 import { JiraAttachment } from './JiraAttachment';
 import { JiraRichContent } from './JiraRichContent';
 import { Button } from '../common/Button';
-import { BarChart3, Sparkles, Wrench } from 'lucide-react';
+import { BarChart3, ClipboardList, Sparkles, Wrench } from 'lucide-react';
 
 type DetailSection = 'overview' | 'bdd' | 'tests' | 'planning' | 'collaboration' | 'links';
 type TestSubSection = 'strategy' | 'test-cases';
@@ -684,12 +684,17 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
 
                 {activeTestSubSection === 'test-cases' && canHaveTestCases && (
                     <div>
-                        <div className="flex items-center justify-between gap-2">
-                            <h3 className="text-lg font-semibold text-base-content">Casos de Teste</h3>
-                            <span className="text-xs text-base-content/70">{task.testCases?.length || 0} caso(s)</span>
-                        </div>
+                        <header className="flex items-center gap-3 mb-4">
+                            <div className="p-1.5 bg-primary/10 rounded-lg">
+                                <ClipboardList className="w-5 h-5 text-primary" aria-hidden />
+                            </div>
+                            <h2 className="text-lg font-bold text-base-content">Casos de Teste</h2>
+                            <span className="text-xs font-medium text-base-content/70 bg-base-200 px-3 py-1 rounded-full">
+                                {task.testCases?.length || 0} caso(s)
+                            </span>
+                        </header>
                         {isGenerating ? (
-                            <div className="space-y-3 mt-4">
+                            <div className="space-y-3">
                                 <LoadingSkeleton variant="task" count={3} />
                                 <div className="flex flex-col items-center justify-center py-4">
                                     <Spinner small />
@@ -698,7 +703,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                                 </div>
                             </div>
                         ) : (task.testCases || []).length > 0 ? (
-                            <div className="space-y-3 mt-4">
+                            <div className="space-y-3">
                                 {task.testCases.map(tc => (
                                     <TestCaseItem 
                                         key={tc.id} 
@@ -713,7 +718,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                                 ))}
                             </div>
                         ) : (
-                            <div className="mt-4">
+                            <div>
                                 <EmptyState
                                     icon="🧪"
                                     title="Nenhum caso de teste ainda"
