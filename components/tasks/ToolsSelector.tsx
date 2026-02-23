@@ -44,10 +44,12 @@ export const ToolsSelector: React.FC<ToolsSelectorProps> = ({
 
   return (
     <div className={`space-y-3 ${compact ? 'space-y-2' : ''}`}>
-      <label className={`block font-semibold text-base-content/70 ${compact ? 'text-xs' : 'text-sm'}`}>
-        {label}
-      </label>
-      
+      {label ? (
+        <label className={`block font-semibold text-base-content/70 ${compact ? 'text-xs' : 'text-sm'}`}>
+          {label}
+        </label>
+      ) : null}
+
       {/* Ferramentas Sugeridas */}
       <div className="flex flex-wrap gap-2">
         {SUGGESTED_TOOLS.map(tool => {

@@ -1,5 +1,5 @@
-
 import React from 'react';
+import { CheckCircle2, Circle, ListChecks } from 'lucide-react';
 import { TestStrategy } from '../../types';
 import { ToolsSelector } from './ToolsSelector';
 
@@ -12,15 +12,14 @@ interface TestStrategyCardProps {
     onToolsChange?: (index: number, tools: string[]) => void;
 }
 
-export const TestStrategyCard: React.FC<TestStrategyCardProps> = ({ 
-    strategy, 
+export const TestStrategyCard: React.FC<TestStrategyCardProps> = ({
+    strategy,
     strategyIndex,
     isExecuted = false,
     onToggleExecuted,
     toolsUsed = [],
     onToolsChange
 }) => {
-    // Validação de segurança
     if (!strategy || !strategy.testType) {
         return null;
     }
@@ -38,71 +37,79 @@ export const TestStrategyCard: React.FC<TestStrategyCardProps> = ({
     };
 
     return (
-        <div className={`
-            bg-base-100 p-4 rounded-xl border border-base-300
-            ${isExecuted ? 'border-primary/30 bg-primary/5' : ''}
-            transition-all
-        `}>
-            <div className="flex items-start justify-between mb-2">
-                <div className="flex-1">
-                    <h4 className="font-bold text-primary">{strategy.testType}</h4>
-                    <p className="text-sm text-base-content/70 mt-1">{strategy.description}</p>
+        <div className="bg-base-100 rounded-2xl shadow-sm border border-base-300 overflow-hidden flex flex-col transition-shadow hover:shadow-md">
+            <div className="p-5 flex-grow">
+                <div className="flex justify-between items-start mb-3">
+                    <h2 className="text-base font-bold text-brand-orange leading-tight flex-1 pr-2">
+                        {strategy.testType}
+                    </h2>
+                    {onToggleExecuted && (
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                            <span className="text-[10px] font-semibold text-base-content/60 uppercase tracking-wider">
+                                {isExecuted ? 'Concluir Teste' : 'Iniciar Teste'}
+                            </span>
+                            <label className="relative inline-flex items-center cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    checked={isExecuted}
+                                    onChange={handleToggleExecuted}
+                                    className="sr-only peer"
+                                />
+                                <div className="w-9 h-5 rounded-full bg-amber-500 peer-checked:bg-green-500 transition-colors peer peer-focus:ring-2 peer-focus:ring-primary/20 peer-focus:outline-none after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-full" />
+                            </label>
+                        </div>
+                    )}
                 </div>
-                {onToggleExecuted && (
-                    <label className="relative inline-flex items-center cursor-pointer ml-4">
-                        <input
-                            type="checkbox"
-                            checked={isExecuted}
-                            onChange={handleToggleExecuted}
-                            className="sr-only peer"
-                        />
-                        <div className={`
-                            w-11 h-6 rounded-full transition-colors
-                            ${isExecuted 
-                                ? 'bg-green-500 peer-checked:bg-green-500' 
-                                : 'bg-yellow-500 peer-checked:bg-yellow-500'
-                            }
-                            peer peer-focus:ring-2 peer-focus:ring-primary/20
-                            peer-checked:after:translate-x-full
-                            after:content-[''] after:absolute after:top-0.5 after:left-[2px]
-                            after:bg-white after:border after:rounded-full
-                            after:h-5 after:w-5 after:transition-all
-                        `}></div>
-                        <span className="ml-3 text-sm font-medium text-base-content">
-                            {isExecuted ? 'Concluir Teste' : 'Iniciar Teste'}
-                        </span>
-                    </label>
+
+                <p className="text-xs text-base-content/70 mb-4 leading-relaxed">
+                    {strategy.description}
+                </p>
+
+                {strategy.howToExecute && strategy.howToExecute.length > 0 && (
+                    <div className="mb-4">
+                        <h3 className="text-[10px] font-bold text-base-content/60 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                            <ListChecks className="w-3.5 h-3.5" aria-hidden />
+                            Como Executar:
+                        </h3>
+                        <ul className="space-y-1.5">
+                            {strategy.howToExecute.map((step, i) => (
+                                <li key={i} className="flex items-start gap-2 text-xs text-base-content/80">
+                                    {isExecuted ? (
+                                        <CheckCircle2 className="w-4 h-4 text-green-500 dark:text-green-400 flex-shrink-0 mt-0.5" aria-hidden />
+                                    ) : (
+                                        <Circle className="w-4 h-4 text-base-content/40 flex-shrink-0 mt-0.5" aria-hidden />
+                                    )}
+                                    <span>{step}</span>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                )}
+
+                {strategy.tools && (
+                    <div>
+                        <h3 className="text-[10px] font-bold text-base-content/60 uppercase tracking-widest mb-1">
+                            Ferramentas Sugeridas:
+                        </h3>
+                        <p className="text-xs text-base-content/70 italic">{strategy.tools}</p>
+                    </div>
                 )}
             </div>
 
-            {strategy.howToExecute && strategy.howToExecute.length > 0 && (
-                <div className="mt-3">
-                    <h5 className="font-semibold text-base-content/70">Como Executar:</h5>
-                    <ul className="space-y-2 mt-2">
-                        {strategy.howToExecute.map((step, i) => (
-                            <li key={i} className="flex items-start text-sm text-base-content">
-                                <svg className="w-4 h-4 mr-2.5 mt-0.5 text-primary flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7"></path></svg>
-                                <span>{step}</span>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-            )}
-
-            {strategy.tools && (
-                <div className="mt-3">
-                    <h5 className="font-semibold text-base-content/70">Ferramentas Sugeridas:</h5>
-                    <p className="text-sm text-base-content mt-1">{strategy.tools}</p>
-                </div>
-            )}
-
-            {/* Ferramentas Utilizadas (apenas se estratégia foi executada) */}
-            {isExecuted && onToolsChange && (
-                <div className="mt-4 p-3 bg-base-200 rounded-lg border border-base-300">
+            {onToolsChange && (
+                <div className="bg-base-200/50 dark:bg-base-300/30 px-5 py-4 rounded-b-2xl border-t border-base-200">
+                    <p className="text-[10px] font-bold text-base-content/60 uppercase mb-3">
+                        Ferramentas Utilizadas
+                    </p>
+                    {toolsUsed.length === 0 && (
+                        <p className="text-xs text-base-content/60 italic mb-3">
+                            Nenhuma ferramenta adicionada ainda.
+                        </p>
+                    )}
                     <ToolsSelector
                         selectedTools={toolsUsed}
                         onToolsChange={handleToolsChange}
-                        label="Ferramentas Utilizadas"
+                        label=""
                         compact={true}
                     />
                 </div>

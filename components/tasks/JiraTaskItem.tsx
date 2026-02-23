@@ -5,7 +5,7 @@ import { Spinner } from '../common/Spinner';
 import { TaskTypeIcon, TaskStatusIcon, StartTestIcon, CompleteTestIcon, ToDoTestIcon, PlusIcon, EditIcon, TrashIcon, RefreshIcon } from '../common/Icons';
 import { BddScenarioForm, BddScenarioItem } from './BddScenario';
 import { TestCaseItem } from './TestCaseItem';
-import { Sparkles, Zap, Wand2, Loader2, MoreVertical, ChevronDown, ClipboardList } from 'lucide-react';
+import { BarChart3, Sparkles, Wrench, Zap, Wand2, Loader2, MoreVertical, ChevronDown, ClipboardList } from 'lucide-react';
 import { TestStrategyCard } from './TestStrategyCard';
 import { ToolsSelector } from './ToolsSelector';
 import { TestReportModal } from './TestReportModal';
@@ -1103,13 +1103,18 @@ export const JiraTaskItem: React.FC<{
                 {/* Conteúdo da sub-aba "Estratégia de Teste" */}
                 {activeTestSubSection === 'strategy' && (
                     <div>
-                        <div className="flex items-center justify-between gap-2">
-                            <h3 className="text-lg font-semibold text-base-content">Estratégia de Teste</h3>
-                            <span className="text-xs text-base-content/70">{task.testStrategy?.length || 0} item(ns)</span>
-                        </div>
+                        <header className="flex items-center gap-3 mb-4">
+                            <div className="p-1.5 bg-primary/10 rounded-lg">
+                                <BarChart3 className="w-5 h-5 text-primary" aria-hidden />
+                            </div>
+                            <h2 className="text-lg font-bold text-base-content">Estratégia de Teste</h2>
+                            <span className="text-xs font-medium text-base-content/70 bg-base-200 px-3 py-1 rounded-full">
+                                {task.testStrategy?.length || 0} item(ns)
+                            </span>
+                        </header>
                         {isGeneratingTests && <div className="flex justify-center py-2"><Spinner small /></div>}
                         {(task.testStrategy?.length ?? 0) > 0 ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+                            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
                                 {(task.testStrategy ?? []).map((strategy, i) => {
                                     if (!strategy) return null;
                                     return (
@@ -1196,35 +1201,61 @@ export const JiraTaskItem: React.FC<{
                     </div>
                 )}
 
-                {/* Ferramentas Utilizadas na Task */}
-                {onTaskToolsChange && (
-                    <div className="mt-3 p-2.5 bg-base-100 rounded-[var(--rounded-box)] border border-base-300">
-                        <ToolsSelector
-                            selectedTools={task.toolsUsed || []}
-                            onToolsChange={onTaskToolsChange}
-                            label="Ferramentas Utilizadas (Geral)"
-                            compact={false}
-                        />
-                    </div>
-                )}
-
-                {!isGenerating && (
-                    <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-3">
-                        <div className="flex-1">
-                            <label htmlFor={`detail-level-${task.id}`} className="block text-sm text-base-content/70 mb-1">Nível de Detalhe</label>
-                            <select
-                                id={`detail-level-${task.id}`}
-                                value={detailLevel}
-                                onChange={(e) => setDetailLevel(e.target.value as TestCaseDetailLevel)}
-                                className="select select-bordered select-sm w-full"
-                            >
-                                <option value="Padrão">Padrão</option>
-                                <option value="Resumido">Resumido</option>
-                                <option value="Detalhado">Detalhado</option>
-                            </select>
+                {/* Ferramentas (Geral) + Nível de Detalhe + Regerar com IA */}
+                <section className="mt-6 bg-base-100 border border-base-300 rounded-2xl shadow-sm overflow-hidden">
+                    <div className="p-5 flex flex-col lg:flex-row lg:items-center gap-6">
+                        <div className="flex-grow">
+                            {onTaskToolsChange && (
+                                <>
+                                    <h3 className="text-xs font-bold text-base-content mb-3 flex items-center gap-2">
+                                        <Wrench className="w-5 h-5 text-primary" aria-hidden />
+                                        Ferramentas Utilizadas (Geral)
+                                    </h3>
+                                    <ToolsSelector
+                                        selectedTools={task.toolsUsed || []}
+                                        onToolsChange={onTaskToolsChange}
+                                        label=""
+                                        compact={false}
+                                    />
+                                </>
+                            )}
+                            {!onTaskToolsChange && <div className="h-0" />}
+                        </div>
+                        <div className="lg:w-80 flex flex-col gap-4 border-t lg:border-t-0 lg:border-l border-base-200 pt-5 lg:pt-0 lg:pl-6">
+                            <div>
+                                <label htmlFor={`detail-level-${task.id}`} className="block text-sm font-medium text-base-content/70 mb-1">
+                                    Nível de Detalhe
+                                </label>
+                                <select
+                                    id={`detail-level-${task.id}`}
+                                    value={detailLevel}
+                                    onChange={(e) => setDetailLevel(e.target.value as TestCaseDetailLevel)}
+                                    className="select select-bordered select-sm w-full bg-base-100 border-base-300 text-base-content text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                                >
+                                    <option value="Padrão">Padrão</option>
+                                    <option value="Resumido">Resumido</option>
+                                    <option value="Detalhado">Detalhado</option>
+                                </select>
+                            </div>
+                            {!isGeneratingTests && (
+                                <button
+                                    type="button"
+                                    onClick={() => onGenerateTests(task.id, detailLevel)}
+                                    className="btn btn-primary btn-sm w-full rounded-xl flex items-center justify-center gap-2"
+                                >
+                                    <Sparkles className="w-4 h-4" aria-hidden />
+                                    {(task.testCases?.length ?? 0) > 0 ? 'Regerar com IA' : 'Gerar com IA'}
+                                </button>
+                            )}
+                            {isGeneratingTests && (
+                                <div className="flex items-center justify-center gap-2 py-2">
+                                    <Spinner small />
+                                    <span className="text-sm text-base-content/70">Gerando...</span>
+                                </div>
+                            )}
                         </div>
                     </div>
-                )}
+                </section>
             </div>
         );
     };
