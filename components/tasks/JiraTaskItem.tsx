@@ -1009,36 +1009,57 @@ export const JiraTaskItem: React.FC<{
     );
 
     const renderBddSection = () => {
-        // Retornar null se não for tipo "Tarefa" ou "Bug" - não deve ser acessado, mas por segurança
         if (task.type !== 'Tarefa' && task.type !== 'Bug') {
             return null;
         }
 
+        const bddCount = task.bddScenarios?.length || 0;
+        const actionsDisabled = isGeneratingBdd || isCreatingBdd || !!editingBddScenario;
+
         return (
-        <div className="space-y-3">
-            <div className="flex items-center justify-between gap-2">
-                <h3 className="text-lg font-semibold text-base-content">Cenários BDD (Gherkin)</h3>
-                <span className="text-xs text-base-content/70">{task.bddScenarios?.length || 0} cenário(s)</span>
+            <div className="space-y-4">
+                <header className="mb-4">
+                    <h2 className="text-xl font-bold text-base-content">Cenários de Teste BDD</h2>
+                    <p className="text-sm text-base-content/70 mt-1">Gerencie e visualize seus critérios de aceite em formato Gherkin.</p>
+                    <span className="text-xs text-base-content/60 mt-1 block">{bddCount} cenário(s)</span>
+                </header>
+
+                <div className="space-y-4">
+                    {(task.bddScenarios || []).map(sc => (
+                        editingBddScenario?.id === sc.id ? (
+                            <BddScenarioForm key={sc.id} existingScenario={sc} onSave={handleSaveScenario} onCancel={handleCancelBddForm} />
+                        ) : (
+                            <BddScenarioItem key={sc.id} scenario={sc} onEdit={() => setEditingBddScenario(sc)} onDelete={() => onDeleteBddScenario(task.id, sc.id)} />
+                        )
+                    ))}
+                </div>
+                {isCreatingBdd && !editingBddScenario && (
+                    <BddScenarioForm onSave={handleSaveScenario} onCancel={handleCancelBddForm} />
+                )}
+                {isGeneratingBdd && <div className="flex justify-center py-2"><Spinner small /></div>}
+
+                <div className="flex flex-wrap items-center justify-center gap-4 px-5 py-3 bg-base-100/90 dark:bg-base-200/90 backdrop-blur-md rounded-full border border-base-300 shadow-lg w-fit mx-auto">
+                    <button
+                        type="button"
+                        onClick={() => onGenerateBddScenarios(task.id)}
+                        disabled={actionsDisabled}
+                        className="flex items-center gap-2 bg-blue-500/20 hover:bg-blue-500/30 dark:bg-blue-900/40 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 border border-blue-500/30 px-5 py-2.5 rounded-full font-semibold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        <Sparkles className="w-4 h-4" aria-hidden />
+                        Gerar Cenários com IA
+                    </button>
+                    <div className="h-6 w-px bg-base-300 flex-shrink-0" aria-hidden />
+                    <button
+                        type="button"
+                        onClick={() => setIsCreatingBdd(true)}
+                        disabled={actionsDisabled}
+                        className="flex items-center gap-2 bg-primary hover:opacity-90 text-primary-content px-5 py-2.5 rounded-full font-semibold text-sm shadow-lg shadow-primary/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        <PlusIcon className="w-4 h-4" aria-hidden />
+                        Adicionar Cenário Manualmente
+                    </button>
+                </div>
             </div>
-            <div className="space-y-2">
-                {(task.bddScenarios || []).map(sc => (
-                    editingBddScenario?.id === sc.id ? (
-                        <BddScenarioForm key={sc.id} existingScenario={sc} onSave={handleSaveScenario} onCancel={handleCancelBddForm} />
-                    ) : (
-                        <BddScenarioItem key={sc.id} scenario={sc} onEdit={() => setEditingBddScenario(sc)} onDelete={() => onDeleteBddScenario(task.id, sc.id)} />
-                    )
-                ))}
-            </div>
-            {isCreatingBdd && !editingBddScenario && (
-                <BddScenarioForm onSave={handleSaveScenario} onCancel={handleCancelBddForm} />
-            )}
-            {isGeneratingBdd && <div className="flex justify-center py-2"><Spinner small /></div>}
-            <div className="flex flex-wrap items-center gap-2">
-                <button onClick={() => setIsCreatingBdd(true)} disabled={isGeneratingBdd || isCreatingBdd || !!editingBddScenario} className="btn btn-secondary !text-sm disabled:opacity-50 disabled:cursor-not-allowed">
-                    Adicionar Cenário Manualmente
-                </button>
-            </div>
-        </div>
         );
     };
 

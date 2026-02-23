@@ -33,6 +33,7 @@ import { canViewInBrowser, detectFileType } from '../../services/fileViewerServi
 import { JiraAttachment } from './JiraAttachment';
 import { JiraRichContent } from './JiraRichContent';
 import { Button } from '../common/Button';
+import { Sparkles } from 'lucide-react';
 
 type DetailSection = 'overview' | 'bdd' | 'tests' | 'planning' | 'collaboration' | 'links';
 type TestSubSection = 'strategy' | 'test-cases';
@@ -284,289 +285,264 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
         }
     };
 
+    const hasJiraSidebarFields = /^[A-Z]+-\d+$/.test(task.id) && (
+        task.dueDate || task.timeTracking || task.components || task.fixVersions ||
+        task.environment || task.reporter || task.watchers || task.issueLinks
+    );
+
     const renderOverviewSection = () => (
-        <div className="space-y-4">
-            {project && onUpdateProject && (
-                <div>
-                    <QuickActions
-                        task={task}
-                        project={project}
-                        onUpdateProject={onUpdateProject}
-                    />
-                </div>
-            )}
-            
-            {(task.type === 'Tarefa' || task.type === 'Bug') && (task.testCases?.length > 0 || (task.testStrategy?.length ?? 0) > 0) && (
-                <div className="flex justify-end">
-                    <button
-                        onClick={() => setShowTestReport(true)}
-                        className="btn btn-outline btn-sm flex items-center gap-2"
-                    >
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
-                        <span>Gerar Registro de Testes</span>
-                    </button>
-                </div>
-            )}
-            <div className="text-base-content/80">
-                {task.description ? (
-                    <DescriptionRenderer 
-                        description={task.description} 
-                        jiraAttachments={task.jiraAttachments}
-                    />
-                ) : (
-                    <p className="text-base-content/70 italic">Sem descrição</p>
-                )}
-            </div>
-            {(task.priority || task.severity || task.owner || task.assignee || nextStep) && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                    {task.owner && (
-                        <div className="p-3 bg-base-100 border border-base-300 rounded-xl">
-                            <p className="text-[11px] uppercase text-base-content/60 tracking-wide">Owner</p>
-                            <p className="text-sm font-semibold text-base-content">{task.owner}</p>
-                        </div>
-                    )}
-                    {task.assignee && (
-                        <div className="p-3 bg-base-100 border border-base-300 rounded-xl">
-                            <p className="text-[11px] uppercase text-base-content/60 tracking-wide">Responsável</p>
-                            <p className="text-sm font-semibold text-base-content">{task.assignee}</p>
-                        </div>
-                    )}
-                    {(task.priority || task.jiraPriority) && (
-                        <div className="p-3 bg-base-100 border border-base-300 rounded-xl">
-                            <p className="text-[11px] uppercase text-base-content/60 tracking-wide">Prioridade</p>
-                            <p className="text-sm font-semibold text-base-content">{getDisplayPriorityLabel(task, project)}</p>
-                        </div>
-                    )}
-                    {task.severity && (
-                        <div className="p-3 bg-base-100 border border-base-300 rounded-xl">
-                            <p className="text-[11px] uppercase text-base-content/60 tracking-wide">Severidade</p>
-                            <p className="text-sm font-semibold text-base-content">{task.severity}</p>
-                        </div>
-                    )}
-                    {nextStep && (
-                        <div className="p-3 bg-orange-50 dark:bg-orange-950/20 border border-brand-orange/30 rounded-xl">
-                            <p className="text-[0.65rem] uppercase text-brand-orange tracking-wide">Próximo passo</p>
-                            <p className="text-[0.82rem] font-semibold text-base-content line-clamp-2">{nextStep}</p>
-                        </div>
-                    )}
-                </div>
-            )}
-            {(() => {
-                const versions = getTaskVersions(task);
-                const otherTags = task.tags?.filter(tag => !/^V\d+/i.test(tag.trim())) || [];
-                
-                return (versions.length > 0 || otherTags.length > 0) && (
-                    <div className="space-y-2">
-                        {versions.length > 0 && (
-                            <div>
-                                <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-1.5">Versão do Projeto</p>
-                                <VersionBadges versions={versions} size="md" />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            {/* Coluna principal */}
+            <div className="lg:col-span-2 space-y-3">
+                {/* Cartões de resumo no topo */}
+                {(task.priority || task.severity || task.owner || task.assignee || nextStep) && (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                        {task.owner && (
+                            <div className="p-3 bg-base-100 border border-base-300 rounded-xl shadow-sm">
+                                <p className="text-[10px] uppercase tracking-wider font-bold text-base-content/60 block mb-1">Owner</p>
+                                <p className="text-sm font-medium text-base-content">{task.owner}</p>
                             </div>
                         )}
-                        {otherTags.length > 0 && (
-                            <div>
-                                {versions.length > 0 && (
-                                    <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-1.5">Tags</p>
-                                )}
-                                <div className="flex flex-wrap gap-2">
-                                    {otherTags.map(tag => (
-                                        <span
-                                            key={tag}
-                                            className="text-xs px-2 py-0.5 rounded-full text-white"
-                                            style={{ backgroundColor: getTagColor(tag) }}
-                                        >
-                                            {tag}
-                                        </span>
-                                    ))}
-                                </div>
+                        {task.assignee && (
+                            <div className="p-3 bg-base-100 border border-base-300 rounded-xl shadow-sm">
+                                <p className="text-[10px] uppercase tracking-wider font-bold text-base-content/60 block mb-1">Responsável</p>
+                                <p className="text-sm font-medium text-base-content">{task.assignee}</p>
+                            </div>
+                        )}
+                        {(task.priority || task.jiraPriority) && (
+                            <div className="p-3 bg-base-100 border border-base-300 rounded-xl shadow-sm">
+                                <p className="text-[10px] uppercase tracking-wider font-bold text-base-content/60 block mb-1">Prioridade</p>
+                                <p className="text-sm font-medium text-base-content">{getDisplayPriorityLabel(task, project)}</p>
+                            </div>
+                        )}
+                        {task.severity && (
+                            <div className="p-3 bg-base-100 border border-base-300 rounded-xl shadow-sm">
+                                <p className="text-[10px] uppercase tracking-wider font-bold text-base-content/60 block mb-1">Severidade</p>
+                                <p className="text-sm font-medium text-base-content">{task.severity}</p>
+                            </div>
+                        )}
+                        {nextStep && (
+                            <div className="p-3 bg-orange-50 dark:bg-orange-950/20 border border-brand-orange/30 rounded-xl shadow-sm">
+                                <p className="text-[10px] uppercase tracking-wider font-bold text-brand-orange block mb-1">Próximo passo</p>
+                                <p className="text-[0.82rem] font-medium text-base-content line-clamp-2">{nextStep}</p>
                             </div>
                         )}
                     </div>
-                );
-            })()}
-            
-            {/* Seção de Campos do Jira */}
-            {(() => {
-                const hasJiraFields = task.dueDate || task.timeTracking || task.components || task.fixVersions || 
-                    task.environment || task.reporter || task.watchers || task.issueLinks || 
-                    task.jiraAttachments;
-                
-                if (!hasJiraFields || !/^[A-Z]+-\d+$/.test(task.id)) {
-                    return null;
-                }
+                )}
 
-                return (
-                    <div className="mt-6 space-y-4">
-                        <h3 className="text-lg font-semibold text-base-content flex items-center gap-2">
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {(task.type === 'Tarefa' || task.type === 'Bug') && (task.testCases?.length > 0 || (task.testStrategy?.length ?? 0) > 0) && (
+                    <div className="flex justify-end">
+                        <button
+                            onClick={() => setShowTestReport(true)}
+                            className="btn btn-outline btn-sm flex items-center gap-2"
+                        >
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            <span>Gerar Registro de Testes</span>
+                        </button>
+                    </div>
+                )}
+
+                <section className="space-y-2">
+                    <h3 className="text-sm font-bold text-base-content/70 uppercase tracking-wide">Descrição</h3>
+                    <div className="text-base-content/80">
+                        {task.description ? (
+                            <DescriptionRenderer
+                                description={task.description}
+                                jiraAttachments={task.jiraAttachments}
+                            />
+                        ) : (
+                            <p className="text-base-content/70 italic">Sem descrição</p>
+                        )}
+                    </div>
+                </section>
+
+                {(() => {
+                    const versions = getTaskVersions(task);
+                    const otherTags = task.tags?.filter(tag => !/^V\d+/i.test(tag.trim())) || [];
+                    return (versions.length > 0 || otherTags.length > 0) && (
+                        <div className="space-y-2">
+                            {versions.length > 0 && (
+                                <div>
+                                    <p className="text-[10px] uppercase tracking-wider font-bold text-base-content/60 mb-1.5">Versão do Projeto</p>
+                                    <VersionBadges versions={versions} size="md" />
+                                </div>
+                            )}
+                            {otherTags.length > 0 && (
+                                <div>
+                                    {versions.length > 0 && (
+                                        <p className="text-[10px] uppercase tracking-wider font-bold text-base-content/60 mb-1.5">Tags</p>
+                                    )}
+                                    <div className="flex flex-wrap gap-2">
+                                        {otherTags.map(tag => (
+                                            <span
+                                                key={tag}
+                                                className="text-xs px-2 py-0.5 rounded-full text-white"
+                                                style={{ backgroundColor: getTagColor(tag) }}
+                                            >
+                                                {tag}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    );
+                })()}
+
+                {task.jiraAttachments && task.jiraAttachments.length > 0 && (
+                    <section className="space-y-2">
+                        <h3 className="text-sm font-bold text-base-content/70 uppercase tracking-wide">Anexos do Jira</h3>
+                        <div className="p-3 bg-base-100 border border-base-300 rounded-xl">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                                {task.jiraAttachments.map((att) => {
+                                    const jiraConfig = getJiraConfig();
+                                    const jiraUrl = jiraConfig?.url;
+                                    const attachmentUrl = jiraUrl ? `${jiraUrl}/secure/attachment/${att.id}/${encodeURIComponent(att.filename)}` : '';
+                                    const fileType = detectFileType(att.filename, '');
+                                    let mimeType: string | undefined;
+                                    if (fileType === 'pdf') mimeType = 'application/pdf';
+                                    else if (fileType === 'image') {
+                                        const ext = att.filename.toLowerCase().split('.').pop();
+                                        if (ext === 'png') mimeType = 'image/png';
+                                        else if (ext === 'jpg' || ext === 'jpeg') mimeType = 'image/jpeg';
+                                        else if (ext === 'gif') mimeType = 'image/gif';
+                                        else if (ext === 'webp') mimeType = 'image/webp';
+                                        else mimeType = 'image/*';
+                                    } else if (fileType === 'text') mimeType = 'text/plain';
+                                    else if (fileType === 'json') mimeType = 'application/json';
+                                    else if (fileType === 'csv') mimeType = 'text/csv';
+                                    return (
+                                        <JiraAttachment
+                                            key={att.id}
+                                            id={att.id}
+                                            url={attachmentUrl}
+                                            filename={att.filename}
+                                            mimeType={mimeType}
+                                            size={att.size}
+                                            onView={handleViewJiraAttachment}
+                                            isLoading={loadingJiraAttachmentId === att.id}
+                                        />
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    </section>
+                )}
+            </div>
+
+            {/* Sidebar: Campos do Jira + Ações Rápidas */}
+            <aside className="space-y-4">
+                {hasJiraSidebarFields && (
+                    <div className="bg-base-100 border border-base-300 rounded-2xl overflow-hidden shadow-sm">
+                        <div className="p-4 border-b border-base-200 flex items-center gap-2">
+                            <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                             </svg>
-                            Campos do Jira
-                        </h3>
-                        
-                        {(task.reporter || task.dueDate || task.environment) && (
-                            <div className="space-y-3">
-                                <h4 className="text-sm font-semibold text-base-content/70">📋 Informações Básicas</h4>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                    {task.reporter && (
-                                        <div className="p-3 bg-base-100 border border-base-300 rounded-xl">
-                                            <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-1">Reporter</p>
-                                            <p className="text-sm font-semibold text-base-content">{task.reporter.displayName}</p>
-                                            {task.reporter.emailAddress && (
-                                                <p className="text-xs text-base-content/70 mt-1">{task.reporter.emailAddress}</p>
-                                            )}
-                                        </div>
-                                    )}
-                                    {task.dueDate && (
-                                        <div className="p-3 bg-base-100 border border-base-300 rounded-xl">
-                                            <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-1">Due Date</p>
-                                            <p className="text-sm font-semibold text-base-content">
+                            <h2 className="font-bold text-base-content">Campos do Jira</h2>
+                        </div>
+                        <div className="p-4 space-y-3">
+                            {(task.reporter || task.dueDate || task.environment) && (
+                                <div>
+                                    <p className="text-[10px] font-bold uppercase tracking-widest text-base-content/60 mb-2">Informações Básicas</p>
+                                    <div className="space-y-2">
+                                        {task.reporter && (
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-8 h-8 rounded-full bg-base-200 flex items-center justify-center font-bold text-base-content/80 text-sm flex-shrink-0">
+                                                    {task.reporter.displayName.slice(0, 2).toUpperCase()}
+                                                </div>
+                                                <div className="min-w-0">
+                                                    <p className="text-sm font-semibold text-base-content truncate">{task.reporter.displayName}</p>
+                                                    {task.reporter.emailAddress && (
+                                                        <p className="text-[11px] text-base-content/60 truncate">{task.reporter.emailAddress}</p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
+                                        {task.dueDate && (
+                                            <p className="text-sm text-base-content">
+                                                <span className="text-[10px] uppercase font-bold text-base-content/60">Due Date: </span>
                                                 {new Date(task.dueDate).toLocaleDateString('pt-BR')}
                                             </p>
-                                        </div>
-                                    )}
-                                    {task.environment && (
-                                        <div className="p-3 bg-base-100 border border-base-300 rounded-xl sm:col-span-2">
-                                            <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-1">Environment</p>
-                                            <p className="text-sm text-base-content">{task.environment}</p>
-                                        </div>
-                                    )}
+                                        )}
+                                        {task.environment && (
+                                            <p className="text-sm text-base-content">
+                                                <span className="text-[10px] uppercase font-bold text-base-content/60">Environment: </span>
+                                                {task.environment}
+                                            </p>
+                                        )}
+                                    </div>
                                 </div>
-                            </div>
-                        )}
+                            )}
 
-                        {task.timeTracking && (
-                            <div className="space-y-3">
-                                <h4 className="text-sm font-semibold text-base-content/70">⏱️ Time Tracking</h4>
-                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                                    {task.timeTracking.originalEstimate && (
-                                        <div className="p-3 bg-base-100 border border-base-300 rounded-xl">
-                                            <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-1">Original Estimate</p>
-                                            <p className="text-sm font-semibold text-base-content">{task.timeTracking.originalEstimate}</p>
-                                        </div>
-                                    )}
-                                    {task.timeTracking.remainingEstimate && (
-                                        <div className="p-3 bg-base-100 border border-base-300 rounded-xl">
-                                            <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-1">Remaining Estimate</p>
-                                            <p className="text-sm font-semibold text-base-content">{task.timeTracking.remainingEstimate}</p>
-                                        </div>
-                                    )}
-                                    {task.timeTracking.timeSpent && (
-                                        <div className="p-3 bg-base-100 border border-base-300 rounded-xl">
-                                            <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-1">Time Spent</p>
-                                            <p className="text-sm font-semibold text-base-content">{task.timeTracking.timeSpent}</p>
-                                        </div>
-                                    )}
+                            {task.timeTracking && (task.timeTracking.originalEstimate || task.timeTracking.remainingEstimate || task.timeTracking.timeSpent) && (
+                                <div>
+                                    <p className="text-[10px] font-bold uppercase tracking-widest text-base-content/60 mb-2">Time Tracking</p>
+                                    <div className="space-y-1 text-[11px] text-base-content/70">
+                                        {task.timeTracking.originalEstimate && <p>Estimado: {task.timeTracking.originalEstimate}</p>}
+                                        {task.timeTracking.remainingEstimate && <p>Restando: {task.timeTracking.remainingEstimate}</p>}
+                                        {task.timeTracking.timeSpent && <p>Gasto: {task.timeTracking.timeSpent}</p>}
+                                    </div>
                                 </div>
-                            </div>
-                        )}
+                            )}
 
-                        {(task.components || task.fixVersions) && (
-                            <div className="space-y-3">
-                                <h4 className="text-sm font-semibold text-base-content/70">🧩 Organização</h4>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                    {task.components && task.components.length > 0 && (
-                                        <div className="p-3 bg-base-100 border border-base-300 rounded-xl">
-                                            <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-2">Components</p>
-                                            <div className="flex flex-wrap gap-2">
-                                                {task.components.map((comp) => (
-                                                    <span key={comp.id} className="text-xs px-2 py-1 bg-blue-500/20 text-blue-700 dark:text-blue-400 rounded">
-                                                        {comp.name}
-                                                    </span>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-                                    {task.fixVersions && task.fixVersions.length > 0 && (
-                                        <div className="p-3 bg-base-100 border border-base-300 rounded-xl">
-                                            <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-2">Fix Versions</p>
-                                            <div className="flex flex-wrap gap-2">
-                                                {task.fixVersions.map((version) => (
-                                                    <span key={version.id} className="text-xs px-2 py-1 bg-green-500/20 text-green-700 dark:text-green-400 rounded">
-                                                        {version.name}
-                                                    </span>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        )}
-
-                        {(task.issueLinks || task.watchers) && (
-                            <div className="space-y-3">
-                                <h4 className="text-sm font-semibold text-base-content/70">🔗 Relacionamentos</h4>
-                                {task.issueLinks && task.issueLinks.length > 0 && (
-                                    <div className="p-3 bg-base-100 border border-base-300 rounded-xl">
-                                        <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-2">Issue Links</p>
-                                        <div className="space-y-1">
+                            {(task.issueLinks?.length || task.watchers) && (
+                                <div>
+                                    <p className="text-[10px] font-bold uppercase tracking-widest text-base-content/60 mb-2">Relacionamentos</p>
+                                    {task.issueLinks && task.issueLinks.length > 0 && (
+                                        <div className="space-y-1 mb-2">
                                             {task.issueLinks.map((link) => (
                                                 <div key={link.id} className="text-sm text-base-content">
                                                     <span className="text-base-content/70">{link.type}</span> {link.relatedKey}
                                                 </div>
                                             ))}
                                         </div>
-                                    </div>
-                                )}
-                                {task.watchers && (
-                                    <div className="p-3 bg-base-100 border border-base-300 rounded-xl">
-                                        <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-1">Watchers</p>
-                                        <p className="text-sm font-semibold text-base-content">
-                                            {task.watchers.watchCount} observador(es)
-                                            {task.watchers.isWatching && ' • Você está observando'}
-                                        </p>
-                                    </div>
-                                )}
-                            </div>
-                        )}
+                                    )}
+                                    {task.watchers && (
+                                        <div className="p-2 bg-primary/10 rounded-lg border border-primary/20">
+                                            <p className="text-[10px] uppercase font-bold text-primary/90">Observadores</p>
+                                            <p className="text-xs font-medium text-base-content mt-0.5">
+                                                {task.watchers.watchCount} observador(es)
+                                                {task.watchers.isWatching && ' • Você está observando'}
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
 
-                        {task.jiraAttachments && task.jiraAttachments.length > 0 && (
-                            <div className="space-y-3">
-                                <h4 className="text-sm font-semibold text-base-content/70">📎 Anexos do Jira</h4>
-                                <div className="p-3 bg-base-100 border border-base-300 rounded-xl">
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-                                        {task.jiraAttachments.map((att) => {
-                                            const jiraConfig = getJiraConfig();
-                                            const jiraUrl = jiraConfig?.url;
-                                            const attachmentUrl = jiraUrl ? `${jiraUrl}/secure/attachment/${att.id}/${encodeURIComponent(att.filename)}` : '';
-                                            const fileType = detectFileType(att.filename, '');
-                                            
-                                            // Determinar mimeType baseado no tipo de arquivo
-                                            let mimeType: string | undefined;
-                                            if (fileType === 'pdf') mimeType = 'application/pdf';
-                                            else if (fileType === 'image') {
-                                                const ext = att.filename.toLowerCase().split('.').pop();
-                                                if (ext === 'png') mimeType = 'image/png';
-                                                else if (ext === 'jpg' || ext === 'jpeg') mimeType = 'image/jpeg';
-                                                else if (ext === 'gif') mimeType = 'image/gif';
-                                                else if (ext === 'webp') mimeType = 'image/webp';
-                                                else mimeType = 'image/*';
-                                            } else if (fileType === 'text') mimeType = 'text/plain';
-                                            else if (fileType === 'json') mimeType = 'application/json';
-                                            else if (fileType === 'csv') mimeType = 'text/csv';
-                                            
-                                            return (
-                                                <JiraAttachment
-                                                    key={att.id}
-                                                    id={att.id}
-                                                    url={attachmentUrl}
-                                                    filename={att.filename}
-                                                    mimeType={mimeType}
-                                                    size={att.size}
-                                                    onView={handleViewJiraAttachment}
-                                                    isLoading={loadingJiraAttachmentId === att.id}
-                                                />
-                                            );
-                                        })}
+                            {(task.components?.length || task.fixVersions?.length) && (
+                                <div>
+                                    <p className="text-[10px] font-bold uppercase tracking-widest text-base-content/60 mb-2">Organização</p>
+                                    <div className="flex flex-wrap gap-1.5">
+                                        {task.components?.map((comp) => (
+                                            <span key={comp.id} className="text-xs px-2 py-0.5 bg-blue-500/20 text-blue-700 dark:text-blue-400 rounded">
+                                                {comp.name}
+                                            </span>
+                                        ))}
+                                        {task.fixVersions?.map((version) => (
+                                            <span key={version.id} className="text-xs px-2 py-0.5 bg-green-500/20 text-green-700 dark:text-green-400 rounded">
+                                                {version.name}
+                                            </span>
+                                        ))}
                                     </div>
                                 </div>
-                            </div>
-                        )}
+                            )}
+                        </div>
                     </div>
-                );
-            })()}
+                )}
+
+                {project && onUpdateProject && (
+                    <div className="bg-base-200 rounded-2xl p-4 border border-base-300">
+                        <h4 className="font-bold text-base-content mb-3">Ações Rápidas</h4>
+                        <QuickActions
+                            task={task}
+                            project={project}
+                            onUpdateProject={onUpdateProject}
+                        />
+                    </div>
+                )}
+            </aside>
         </div>
     );
 
@@ -575,13 +551,18 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
             return null;
         }
 
+        const bddCount = task.bddScenarios?.length || 0;
+        const actionsDisabled = isGeneratingBdd || isCreatingBdd || !!editingBddScenario;
+
         return (
             <div className="space-y-4">
-                <div className="flex items-center justify-between gap-2">
-                    <h3 className="text-lg font-semibold text-base-content">Cenários BDD (Gherkin)</h3>
-                    <span className="text-xs text-base-content/70">{task.bddScenarios?.length || 0} cenário(s)</span>
-                </div>
-                <div className="space-y-3">
+                <header className="mb-4">
+                    <h2 className="text-xl font-bold text-base-content">Cenários de Teste BDD</h2>
+                    <p className="text-sm text-base-content/70 mt-1">Gerencie e visualize seus critérios de aceite em formato Gherkin.</p>
+                    <span className="text-xs text-base-content/60 mt-1 block">{bddCount} cenário(s)</span>
+                </header>
+
+                <div className="space-y-4">
                     {(task.bddScenarios || []).map(sc => (
                         editingBddScenario?.id === sc.id ? (
                             <BddScenarioForm key={sc.id} existingScenario={sc} onSave={handleSaveScenario} onCancel={handleCancelBddForm} />
@@ -594,11 +575,25 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                     <BddScenarioForm onSave={handleSaveScenario} onCancel={handleCancelBddForm} />
                 )}
                 {isGeneratingBdd && <div className="flex justify-center py-2"><Spinner small /></div>}
-                <div className="flex flex-wrap items-center gap-2">
-                    <button onClick={() => onGenerateBddScenarios(task.id)} disabled={isGeneratingBdd || isCreatingBdd || !!editingBddScenario} className="btn btn-secondary !text-sm bg-blue-500/20 border-blue-500/30 hover:bg-blue-500/40 disabled:opacity-50 disabled:cursor-not-allowed">
+
+                <div className="flex flex-wrap items-center justify-center gap-4 px-5 py-3 bg-base-100/90 dark:bg-base-200/90 backdrop-blur-md rounded-full border border-base-300 shadow-lg w-fit mx-auto">
+                    <button
+                        type="button"
+                        onClick={() => onGenerateBddScenarios(task.id)}
+                        disabled={actionsDisabled}
+                        className="flex items-center gap-2 bg-blue-500/20 hover:bg-blue-500/30 dark:bg-blue-900/40 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 border border-blue-500/30 px-5 py-2.5 rounded-full font-semibold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        <Sparkles className="w-4 h-4" aria-hidden />
                         Gerar Cenários com IA
                     </button>
-                    <button onClick={() => setIsCreatingBdd(true)} disabled={isGeneratingBdd || isCreatingBdd || !!editingBddScenario} className="btn btn-secondary !text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                    <div className="h-6 w-px bg-base-300 flex-shrink-0" aria-hidden />
+                    <button
+                        type="button"
+                        onClick={() => setIsCreatingBdd(true)}
+                        disabled={actionsDisabled}
+                        className="flex items-center gap-2 bg-primary hover:opacity-90 text-primary-content px-5 py-2.5 rounded-full font-semibold text-sm shadow-lg shadow-primary/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        <PlusIcon className="w-4 h-4" aria-hidden />
                         Adicionar Cenário Manualmente
                     </button>
                 </div>
