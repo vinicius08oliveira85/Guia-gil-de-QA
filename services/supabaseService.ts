@@ -608,9 +608,13 @@ export const loadProjectsFromSupabase = async (): Promise<LoadProjectsResult> =>
             } else {
                 logger.warn('Erro ao carregar projetos via proxy Supabase', 'supabaseService', error);
             }
-            // Retry único após 2s em caso de 500/schema cache (Supabase pode estar acordando)
-            if (isSchemaCacheOrPaused || errorMessage.includes('500')) {
+            const isTimeout = errorMessage.includes('Timeout');
+            // Retry único após 2s em caso de 500/schema cache ou timeout (Supabase/rede pode estar lento)
+            if (isSchemaCacheOrPaused || errorMessage.includes('500') || isTimeout) {
                 try {
+                    if (isTimeout) {
+                        logger.debug('Retry em 2s após timeout ao carregar projetos do Supabase', 'supabaseService');
+                    }
                     await new Promise(r => setTimeout(r, 2000));
                     return await attempt();
                 } catch (retryError) {
