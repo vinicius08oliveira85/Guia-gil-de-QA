@@ -113,197 +113,171 @@ export const TaskForm: React.FC<{
         setValidationErrors({});
     };
 
+    const labelClass = 'flex items-center gap-1.5 text-xs font-medium text-base-content/70 mb-1';
+    const selectClass = 'select select-bordered select-sm w-full bg-base-100 border-base-300 text-base-content text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary rounded-xl';
+
     return (
-        <form onSubmit={handleSubmit} className="space-y-4">
-            <motion.div 
-                className="grid grid-cols-1 md:grid-cols-2 gap-4"
-                initial={{ opacity: 0, y: 10 }}
+        <form onSubmit={handleSubmit} className="space-y-3">
+            <motion.div
+                className="rounded-2xl border border-base-300 bg-base-100/50 p-4 space-y-3"
+                initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
+                transition={{ duration: 0.25 }}
             >
-                <div>
-                    <Input
-                        label={
-                            <span className="flex items-center gap-2">
-                                ID da Tarefa (ex: PROJ-123)
-                                <HelpTooltip 
-                                    title={helpContent.task.fields.id.title}
-                                    content={helpContent.task.fields.id.content}
-                                />
-                            </span>
-                        }
-                        type="text"
-                        id="id"
-                        value={taskData.id}
-                        onChange={(e) => {
-                            setTaskData({ ...taskData, id: e.target.value });
-                            if (validationErrors.id) {
-                                setValidationErrors({ ...validationErrors, id: '' });
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="sm:col-span-2 md:col-span-1">
+                        <Input
+                            label={
+                                <span className="flex items-center gap-1.5 text-xs font-medium text-base-content/70">
+                                    ID da Tarefa (ex: PROJ-123)
+                                    <HelpTooltip title={helpContent.task.fields.id.title} content={helpContent.task.fields.id.content} />
+                                </span>
                             }
-                        }}
-                        placeholder=""
-                        error={validationErrors.id}
-                        success={taskData.id.length >= 3 && !validationErrors.id}
-                        required
-                    />
-                </div>
-                <div>
-                    <Input
-                        label={
-                            <span className="flex items-center gap-2">
-                                Título
-                                <HelpTooltip 
-                                    title={helpContent.task.fields.title.title}
-                                    content={helpContent.task.fields.title.content}
-                                />
-                            </span>
-                        }
-                        type="text"
-                        id="title"
-                        value={taskData.title}
-                        onChange={(e) => {
-                            setTaskData({ ...taskData, title: e.target.value });
-                            if (validationErrors.title) {
-                                setValidationErrors({ ...validationErrors, title: '' });
-                            }
-                        }}
-                        placeholder=""
-                        error={validationErrors.title}
-                        success={taskData.title.length >= 5 && !validationErrors.title}
-                        required 
-                    />
-                </div>
-                <div>
-                    <label htmlFor="type" className="flex items-center gap-2 text-sm font-medium text-text-secondary mb-1">
-                        Tipo
-                        <HelpTooltip 
-                            title={helpContent.task.fields.type.title}
-                            content={helpContent.task.fields.type.content}
+                            type="text"
+                            id="id"
+                            value={taskData.id}
+                            onChange={(e) => {
+                                setTaskData({ ...taskData, id: e.target.value });
+                                if (validationErrors.id) setValidationErrors({ ...validationErrors, id: '' });
+                            }}
+                            placeholder="PROJ-123"
+                            error={validationErrors.id}
+                            success={taskData.id.length >= 3 && !validationErrors.id}
+                            required
+                            className="input-sm rounded-xl border-base-300"
                         />
-                    </label>
-                    <select id="type" value={taskData.type} onChange={e => setTaskData({ ...taskData, type: e.target.value as JiraTaskType, parentId: e.target.value === 'Epic' ? '' : taskData.parentId })}>
-                        <option value="Epic">Epic</option>
-                        <option value="História">História</option>
-                        <option value="Tarefa">Tarefa</option>
-                        <option value="Bug">Bug</option>
-                    </select>
-                </div>
-                <div>
-                    <label htmlFor="priority" className="flex items-center gap-2 text-sm font-medium text-text-secondary mb-1">
-                        Prioridade
-                        <HelpTooltip 
-                            title={helpContent.task.fields.priority.title}
-                            content={helpContent.task.fields.priority.content}
-                        />
-                    </label>
-                    <select id="priority" value={taskData.priority} onChange={e => setTaskData({ ...taskData, priority: e.target.value as TaskPriority })}>
-                        <option value="Baixa">Baixa</option>
-                        <option value="Média">Média</option>
-                        <option value="Alta">Alta</option>
-                        <option value="Urgente">Urgente</option>
-                    </select>
-                </div>
-                {taskData.type === 'Bug' && (
-                     <div>
-                        <label htmlFor="severity" className="flex items-center gap-2 text-sm font-medium text-text-secondary mb-1">
-                            Severidade
-                            <HelpTooltip 
-                                title={helpContent.task.fields.severity.title}
-                                content={helpContent.task.fields.severity.content}
-                            />
-                        </label>
-                        <select id="severity" value={taskData.severity} onChange={e => setTaskData({ ...taskData, severity: e.target.value as BugSeverity })}>
-                            <option value="Crítico">Crítico</option>
-                            <option value="Alto">Alto</option>
-                            <option value="Médio">Médio</option>
-                            <option value="Baixo">Baixo</option>
-                        </select>
                     </div>
-                )}
-                {taskData.type !== 'Epic' && (
+                    <div className="sm:col-span-2 md:col-span-1">
+                        <Input
+                            label={
+                                <span className="flex items-center gap-1.5 text-xs font-medium text-base-content/70">
+                                    Título
+                                    <HelpTooltip title={helpContent.task.fields.title.title} content={helpContent.task.fields.title.content} />
+                                </span>
+                            }
+                            type="text"
+                            id="title"
+                            value={taskData.title}
+                            onChange={(e) => {
+                                setTaskData({ ...taskData, title: e.target.value });
+                                if (validationErrors.title) setValidationErrors({ ...validationErrors, title: '' });
+                            }}
+                            placeholder=""
+                            error={validationErrors.title}
+                            success={taskData.title.length >= 5 && !validationErrors.title}
+                            required
+                            className="input-sm rounded-xl border-base-300"
+                        />
+                    </div>
                     <div>
-                        <label htmlFor="parentId" className="flex items-center gap-2 text-sm font-medium text-text-secondary mb-1">
-                            Vincular ao Epic (Opcional)
-                            <HelpTooltip 
-                                title={helpContent.task.fields.parentId.title}
-                                content={helpContent.task.fields.parentId.content}
-                            />
+                        <label htmlFor="type" className={labelClass}>
+                            Tipo
+                            <HelpTooltip title={helpContent.task.fields.type.title} content={helpContent.task.fields.type.content} />
                         </label>
-                        <select id="parentId" value={taskData.parentId} onChange={e => setTaskData({ ...taskData, parentId: e.target.value })}>
-                            <option value="">Nenhum</option>
-                            {epics.map(epic => <option key={epic.id} value={epic.id}>{epic.id}: {epic.title}</option>)}
+                        <select id="type" value={taskData.type} onChange={e => setTaskData({ ...taskData, type: e.target.value as JiraTaskType, parentId: e.target.value === 'Epic' ? '' : taskData.parentId })} className={selectClass}>
+                            <option value="Epic">Epic</option>
+                            <option value="História">História</option>
+                            <option value="Tarefa">Tarefa</option>
+                            <option value="Bug">Bug</option>
                         </select>
                     </div>
-                )}
-                 <div>
-                    <label htmlFor="owner" className="flex items-center gap-2 text-sm font-medium text-text-secondary mb-1">
-                        Dono (Owner)
-                        <HelpTooltip 
-                            title={helpContent.task.fields.owner.title}
-                            content={helpContent.task.fields.owner.content}
-                        />
-                    </label>
-                    <select id="owner" value={taskData.owner} onChange={e => setTaskData({ ...taskData, owner: e.target.value as TeamRole })}>
-                        <option value="Product">Produto</option>
-                        <option value="QA">QA</option>
-                        <option value="Dev">Desenvolvimento</option>
-                    </select>
-                </div>
-                <div>
-                    <label htmlFor="assignee" className="flex items-center gap-2 text-sm font-medium text-text-secondary mb-1">
-                        Responsável (Assignee)
-                        <HelpTooltip 
-                            title={helpContent.task.fields.assignee.title}
-                            content={helpContent.task.fields.assignee.content}
-                        />
-                    </label>
-                    <select id="assignee" value={taskData.assignee} onChange={e => setTaskData({ ...taskData, assignee: e.target.value as TeamRole })}>
-                        <option value="Product">Produto</option>
-                        <option value="QA">QA</option>
-                        <option value="Dev">Desenvolvimento</option>
-                    </select>
+                    <div>
+                        <label htmlFor="priority" className={labelClass}>
+                            Prioridade
+                            <HelpTooltip title={helpContent.task.fields.priority.title} content={helpContent.task.fields.priority.content} />
+                        </label>
+                        <select id="priority" value={taskData.priority} onChange={e => setTaskData({ ...taskData, priority: e.target.value as TaskPriority })} className={selectClass}>
+                            <option value="Baixa">Baixa</option>
+                            <option value="Média">Média</option>
+                            <option value="Alta">Alta</option>
+                            <option value="Urgente">Urgente</option>
+                        </select>
+                    </div>
+                    {taskData.type === 'Bug' && (
+                        <div>
+                            <label htmlFor="severity" className={labelClass}>
+                                Severidade
+                                <HelpTooltip title={helpContent.task.fields.severity.title} content={helpContent.task.fields.severity.content} />
+                            </label>
+                            <select id="severity" value={taskData.severity} onChange={e => setTaskData({ ...taskData, severity: e.target.value as BugSeverity })} className={selectClass}>
+                                <option value="Crítico">Crítico</option>
+                                <option value="Alto">Alto</option>
+                                <option value="Médio">Médio</option>
+                                <option value="Baixo">Baixo</option>
+                            </select>
+                        </div>
+                    )}
+                    {taskData.type !== 'Epic' && (
+                        <div className={taskData.type === 'Bug' ? '' : 'sm:col-span-2'}>
+                            <label htmlFor="parentId" className={labelClass}>
+                                Vincular ao Epic (Opcional)
+                                <HelpTooltip title={helpContent.task.fields.parentId.title} content={helpContent.task.fields.parentId.content} />
+                            </label>
+                            <select id="parentId" value={taskData.parentId} onChange={e => setTaskData({ ...taskData, parentId: e.target.value })} className={selectClass}>
+                                <option value="">Nenhum</option>
+                                {epics.map(epic => <option key={epic.id} value={epic.id}>{epic.id}: {epic.title}</option>)}
+                            </select>
+                        </div>
+                    )}
+                    <div>
+                        <label htmlFor="owner" className={labelClass}>
+                            Dono (Owner)
+                            <HelpTooltip title={helpContent.task.fields.owner.title} content={helpContent.task.fields.owner.content} />
+                        </label>
+                        <select id="owner" value={taskData.owner} onChange={e => setTaskData({ ...taskData, owner: e.target.value as TeamRole })} className={selectClass}>
+                            <option value="Product">Produto</option>
+                            <option value="QA">QA</option>
+                            <option value="Dev">Desenvolvimento</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label htmlFor="assignee" className={labelClass}>
+                            Responsável (Assignee)
+                            <HelpTooltip title={helpContent.task.fields.assignee.title} content={helpContent.task.fields.assignee.content} />
+                        </label>
+                        <select id="assignee" value={taskData.assignee} onChange={e => setTaskData({ ...taskData, assignee: e.target.value as TeamRole })} className={selectClass}>
+                            <option value="Product">Produto</option>
+                            <option value="QA">QA</option>
+                            <option value="Dev">Desenvolvimento</option>
+                        </select>
+                    </div>
                 </div>
             </motion.div>
-            <div>
-                <label className="flex items-center gap-2 text-sm font-medium text-text-secondary mb-1">
+
+            <div className="rounded-2xl border border-base-300 bg-base-100/50 p-4 space-y-2">
+                <label className={labelClass}>
                     Descrição
-                    <HelpTooltip 
-                        title={helpContent.task.fields.description.title}
-                        content={helpContent.task.fields.description.content}
-                    />
+                    <HelpTooltip title={helpContent.task.fields.description.title} content={helpContent.task.fields.description.content} />
                 </label>
                 <RichTextEditor
                     value={taskData.description}
                     onChange={(value) => {
                         setTaskData({ ...taskData, description: value });
-                        if (validationErrors.description) {
-                            setValidationErrors({ ...validationErrors, description: '' });
-                        }
+                        if (validationErrors.description) setValidationErrors({ ...validationErrors, description: '' });
                     }}
                     placeholder="Digite a descrição da tarefa..."
                     taskId={taskData.id || undefined}
                 />
                 {validationErrors.description && (
-                    <p className="text-xs text-yellow-400 mt-1">{validationErrors.description}</p>
+                    <p className="text-xs text-error mt-1" role="alert">{validationErrors.description}</p>
                 )}
             </div>
-            <div>
-                <label className="flex items-center gap-2 text-sm font-medium text-text-secondary mb-1">
+
+            <div className="rounded-2xl border border-base-300 bg-base-100/50 p-4 space-y-2">
+                <label className={labelClass}>
                     Tags
-                    <HelpTooltip 
-                        title={helpContent.task.fields.tags.title}
-                        content={helpContent.task.fields.tags.content}
-                    />
+                    <HelpTooltip title={helpContent.task.fields.tags.title} content={helpContent.task.fields.tags.content} />
                 </label>
-                <TagInput
-                    tags={taskData.tags || []}
-                    onChange={(tags) => setTaskData({ ...taskData, tags })}
-                    allowNewTags={true}
-                />
+                <TagInput tags={taskData.tags || []} onChange={(tags) => setTaskData({ ...taskData, tags })} allowNewTags={true} />
             </div>
-            <div className="flex justify-end gap-3 mt-4">
-                <button type="button" onClick={onCancel} className="btn btn-secondary">Cancelar</button>
-                <button type="submit" className="btn btn-primary">Salvar Tarefa</button>
+
+            <div className="flex flex-wrap justify-end gap-2 pt-1">
+                <button type="button" onClick={onCancel} className="btn btn-ghost btn-sm rounded-xl border border-base-300 text-base-content hover:bg-base-200">
+                    Cancelar
+                </button>
+                <button type="submit" className="btn btn-primary btn-sm rounded-xl shadow-md shadow-primary/20">
+                    Salvar Tarefa
+                </button>
             </div>
         </form>
     );
