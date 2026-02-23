@@ -13,10 +13,10 @@ export default async function handler(
   }
 
   try {
-    // Em produção no Vercel, os arquivos públicos estão em dist/public
-    // Em desenvolvimento local, estão em public
+    // Em produção no Vercel, o Vite copia public/ para a raiz de dist/
+    // Em desenvolvimento local, estão em public/
     const publicPath = process.env.VERCEL 
-      ? path.join(process.cwd(), 'dist', 'public', 'manifest.json')
+      ? path.join(process.cwd(), 'dist', 'manifest.json')
       : path.join(process.cwd(), 'public', 'manifest.json');
     
     // Tentar ler o arquivo

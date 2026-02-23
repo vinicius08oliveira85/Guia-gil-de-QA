@@ -35,7 +35,7 @@ const pendingSaves = new Map<string, Project>(); // Fila de salvamentos pendente
 const saveDebounceMs = 300; // Debounce de 300ms entre salvamentos do mesmo projeto (reduzido para ser mais responsivo)
 const maxRetries = 3; // Máximo de 3 tentativas
 const retryDelays = [1000, 2000, 4000]; // Backoff exponencial: 1s, 2s, 4s
-const requestTimeoutMs = 5000; // Timeout de 5 segundos para requisições
+const requestTimeoutMs = 8000; // Timeout de 8 segundos (evita timeout em redes lentas; fallback usa cache local)
 
 // Inicializar cliente Supabase direto se variáveis estiverem disponíveis
 // Usado para salvamento direto (evita limite de 4MB do Vercel)
