@@ -275,6 +275,71 @@ interface JiraAttachment {
 }
 
 /**
+ * Extrai texto plano do conteúdo HTML (remove tags).
+ */
+function getTextContent(inner: string): string {
+    return inner.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+}
+
+/**
+ * Converte sequências de <p> que parecem lista numerada ou com marcadores em <ol>/<ul>+<li>.
+ * Assim descrições vindas do Jira como parágrafos "1. ..." "2. ..." passam a exibir marcadores.
+ */
+function normalizeListParagraphs(html: string): string {
+    const pRegex = /<p[^>]*>([\s\S]*?)<\/p>/gi;
+    const matches: { full: string; inner: string; index: number }[] = [];
+    let m: RegExpExecArray | null;
+    while ((m = pRegex.exec(html)) !== null) {
+        matches.push({ full: m[0], inner: m[1], index: m.index });
+    }
+    if (matches.length === 0) return html;
+
+    const numberedPattern = /^\s*\d+\.\s/;
+    const bulletPattern = /^\s*[-*•]\s/;
+
+    let result = '';
+    let lastEnd = 0;
+    let i = 0;
+
+    while (i < matches.length) {
+        result += html.slice(lastEnd, matches[i].index);
+        const inner = matches[i].inner;
+        const text = getTextContent(inner);
+
+        if (numberedPattern.test(text)) {
+            const items: string[] = [];
+            while (i < matches.length && numberedPattern.test(getTextContent(matches[i].inner))) {
+                const itemInner = matches[i].inner.replace(/^\s*\d+\.\s/, '').trim();
+                items.push(itemInner);
+                i++;
+            }
+            result += '<ol>' + items.map((x) => '<li>' + x + '</li>').join('') + '</ol>';
+            lastEnd = matches[i - 1].index + matches[i - 1].full.length;
+            continue;
+        }
+
+        if (bulletPattern.test(text)) {
+            const items: string[] = [];
+            while (i < matches.length && bulletPattern.test(getTextContent(matches[i].inner))) {
+                const itemInner = matches[i].inner.replace(/^\s*[-*•]\s/, '').trim();
+                items.push(itemInner);
+                i++;
+            }
+            result += '<ul>' + items.map((x) => '<li>' + x + '</li>').join('') + '</ul>';
+            lastEnd = matches[i - 1].index + matches[i - 1].full.length;
+            continue;
+        }
+
+        result += matches[i].full;
+        lastEnd = matches[i].index + matches[i].full.length;
+        i++;
+    }
+
+    result += html.slice(lastEnd);
+    return result;
+}
+
+/**
  * Processa imagens no HTML do Jira, convertendo nomes de arquivo para URLs completas
  * @param html HTML sanitizado do Jira
  * @param jiraUrl URL base do Jira (ex: https://jira.example.com)
@@ -417,9 +482,10 @@ export function parseJiraDescriptionHTML(
     
     // Se já é uma string HTML renderizada
     if (typeof description === 'string') {
-        // Se contém HTML, preservar e sanitizar
+        // Se contém HTML, preservar e sanitizar; normalizar parágrafos que são listas
         if (description.includes('<')) {
             html = sanitizeHTML(description);
+            html = normalizeListParagraphs(html);
         } else {
             // String simples: tratar como markdown (parágrafos, listas, negrito) e sanitizar
             html = plainTextToHtml(description);
