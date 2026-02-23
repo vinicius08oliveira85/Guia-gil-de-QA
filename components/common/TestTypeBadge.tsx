@@ -9,16 +9,12 @@ import {
     Shield,
     Globe,
     Circle,
-    Clock,
-    XCircle,
     TestTube,
     GitBranch,
     Gauge,
     FileCheck,
     Eye,
-    Lock,
     Network,
-    RefreshCw
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
 
@@ -38,6 +34,8 @@ interface TestTypeBadgeProps {
     className?: string;
     /** Label adicional (ex: contador) */
     label?: string;
+    /** Estilo: solid (cores vivas, padrão para pills selecionáveis) ou pastel (cores suaves, para lista de testes executados) */
+    variantStyle?: 'solid' | 'pastel';
 }
 
 /**
@@ -86,56 +84,105 @@ const testTypeIconMap: { [key: string]: React.ComponentType<{ className?: string
     'Teste de Design': Circle,
 };
 
-/**
- * Configuração de cores e ícones por status
- */
-const statusConfig = {
-    pending: {
-        bg: 'bg-slate-100 dark:bg-slate-900',
-        text: 'text-slate-700 dark:text-slate-300',
-        icon: 'text-slate-500 dark:text-slate-400',
-        border: 'border-slate-200 dark:border-slate-800',
-        iconComponent: Circle,
-    },
-    partial: {
-        bg: 'bg-amber-50 dark:bg-amber-950/30',
-        text: 'text-amber-900 dark:text-amber-200',
-        icon: 'text-amber-600 dark:text-amber-400',
-        border: 'border-amber-200 dark:border-amber-800',
-        iconComponent: Clock,
-    },
-    done: {
-        bg: 'bg-emerald-50 dark:bg-emerald-950/30',
-        text: 'text-emerald-900 dark:text-emerald-200',
-        icon: 'text-emerald-600 dark:text-emerald-400',
-        border: 'border-emerald-200 dark:border-emerald-800',
-        iconComponent: CheckCircle2,
-    },
-    failed: {
-        bg: 'bg-red-50 dark:bg-red-950/30',
-        text: 'text-red-900 dark:text-red-200',
-        icon: 'text-red-600 dark:text-red-400',
-        border: 'border-red-200 dark:border-red-800',
-        iconComponent: XCircle,
-    },
-    planned: {
-        bg: 'bg-blue-50 dark:bg-blue-950/30',
-        text: 'text-blue-900 dark:text-blue-200',
-        icon: 'text-blue-600 dark:text-blue-400',
-        border: 'border-blue-200 dark:border-blue-800',
-        iconComponent: Circle,
-    },
+/** Variante pill por categoria (Referência completa / v0): error=vermelho, warning=laranja, info=azul, success=verde, default=cinza outline */
+type TestTypeVariant = 'error' | 'warning' | 'info' | 'success' | 'default';
+const testTypeVariantMap: Record<string, TestTypeVariant> = {
+    'Teste de Segurança': 'error',
+    'Teste de Autenticação': 'error',
+    'Análise de Vulnerabilidades': 'error',
+    'Teste de Penetração': 'error',
+    'Teste de Performance': 'warning',
+    'Teste de Desempenho': 'warning',
+    'Teste de Performance Mobile': 'warning',
+    'Teste de Carga': 'warning',
+    'Teste de Stress': 'warning',
+    'Teste de Capacidade': 'warning',
+    'Teste Funcional': 'info',
+    'Teste de Integração': 'info',
+    'Teste de Regressão': 'info',
+    'Teste de Regressão Automatizado': 'info',
+    'Regressão': 'info',
+    'Unitário': 'info',
+    'Integração': 'info',
+    'API': 'info',
+    'Teste de Contrato': 'info',
+    'Teste E2E': 'info',
+    'Teste E2E Automatizado': 'info',
+    'Sistema': 'info',
+    'Smoke Test': 'info',
+    'Sanity Test': 'info',
+    'Teste de Validação': 'success',
+    'Validação de User Stories': 'success',
+    'Aceitação': 'success',
+    'Definição de Critérios de Aceitação': 'success',
+    'Teste de Usabilidade': 'success',
+    'Usabilidade': 'success',
+    'Teste de Acessibilidade': 'success',
+    'Teste de Compatibilidade': 'default',
+    'Teste de Compatibilidade de Navegadores': 'default',
+    'Teste de Dispositivos': 'default',
+    'Teste de Gestos': 'default',
+    'Teste Exploratório': 'default',
+    'Teste Caixa Branca': 'default',
+    'Análise de Requisitos': 'default',
+    'Análise de Casos de Uso': 'default',
+    'Teste de Design': 'default',
+};
+
+function getTestTypeVariant(testType: string): TestTypeVariant {
+    return testTypeVariantMap[testType] ?? 'default';
+}
+
+/** Cores pill sólido (topo – pills selecionáveis): fundo sólido + texto branco */
+const pillVariantClassesSolid: Record<TestTypeVariant, string> = {
+    error: 'bg-red-600 text-white',
+    warning: 'bg-amber-500 text-white',
+    info: 'bg-blue-600 text-white',
+    success: 'bg-green-600 text-white',
+    default: 'bg-gray-200 text-gray-800',
+};
+const pillIconClassesSolid: Record<TestTypeVariant, string> = {
+    error: 'text-white',
+    warning: 'text-white',
+    info: 'text-white',
+    success: 'text-white',
+    default: 'text-gray-600',
+};
+
+/** Cores pill Soft/Pastel (lista de baixo – testes executados): fundo claro + texto escuro */
+const pillVariantClassesPastel: Record<TestTypeVariant, string> = {
+    error: 'bg-red-100 text-red-800 dark:bg-red-950/40 dark:text-red-200',
+    warning: 'bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-200',
+    info: 'bg-blue-100 text-blue-800 dark:bg-blue-950/40 dark:text-blue-200',
+    success: 'bg-green-100 text-green-800 dark:bg-green-950/40 dark:text-green-200',
+    default: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200',
+};
+const pillIconClassesPastel: Record<TestTypeVariant, string> = {
+    error: 'text-red-700 dark:text-red-300',
+    warning: 'text-amber-700 dark:text-amber-300',
+    info: 'text-blue-700 dark:text-blue-300',
+    success: 'text-green-700 dark:text-green-300',
+    default: 'text-gray-600 dark:text-gray-400',
+};
+
+/** Sombra na cor da variante quando selecionado (em vez de borda/ring) */
+const pillSelectedShadowClasses: Record<TestTypeVariant, string> = {
+    error: 'shadow-[0_0_14px_2px_rgba(220,38,38,0.4)]',
+    warning: 'shadow-[0_0_14px_2px_rgba(245,158,11,0.4)]',
+    info: 'shadow-[0_0_14px_2px_rgba(37,99,235,0.4)]',
+    success: 'shadow-[0_0_14px_2px_rgba(22,163,74,0.4)]',
+    default: 'shadow-[0_0_14px_2px_rgba(156,163,175,0.4)]',
 };
 
 /**
  * Componente Badge específico para tipos de teste
- * Design moderno inspirado no v0 com ícones e cores baseadas em status
- * 
+ * Estilo Referência completa (v0): pill por categoria, cores sólidas, ícone + texto uppercase bold
+ *
  * @example
  * ```tsx
  * <TestTypeBadge testType="Teste Funcional" />
- * <TestTypeBadge testType="Teste de Usabilidade" status="done" size="sm" label="5/5" />
- * <TestTypeBadge testType="Teste de Performance" label="Planejado" />
+ * <TestTypeBadge testType="Teste de Usabilidade" size="sm" label="5/5" />
+ * <TestTypeBadge testType="Teste de Regressão" selected />
  * ```
  */
 export const TestTypeBadge = React.memo<TestTypeBadgeProps>(({
@@ -144,71 +191,56 @@ export const TestTypeBadge = React.memo<TestTypeBadgeProps>(({
     selected = false,
     size = 'md',
     className = '',
-    label
+    label,
+    variantStyle = 'solid',
 }) => {
-    // Determinar status baseado no label se não fornecido
-    let actualStatus: 'pending' | 'partial' | 'done' | 'failed' | 'planned' = status || 'pending';
-    
-    // Se label é "Planejado", usar status "planned"
-    if (label === 'Planejado' || label === '—') {
-        actualStatus = 'planned';
-    } else if (!status && label) {
-        // Tentar inferir status do label (ex: "0/6" = pending, "5/8" = partial, "6/6" = done)
-        const match = label.match(/(\d+)\/(\d+)/);
-        if (match) {
-            const executed = parseInt(match[1], 10);
-            const total = parseInt(match[2], 10);
-            if (executed === 0) {
-                actualStatus = 'pending';
-            } else if (executed === total) {
-                actualStatus = 'done';
-            } else {
-                actualStatus = 'partial';
-            }
-        }
-    }
-    
-    // Obter ícone do tipo de teste
+    const variant = getTestTypeVariant(testType);
     const TestTypeIcon = testTypeIconMap[testType] || Circle;
-    
-    // Obter configuração do status (ignorada quando selected)
-    const config = statusConfig[actualStatus];
-    
-    // Estilo quando selecionado: destaque primary
-    const selectedClasses = selected
-        ? 'bg-primary/15 dark:bg-primary/20 text-primary border-primary/40'
-        : '';
-    const iconClasses = selected ? 'text-primary' : config.icon;
-    
-    // Classes de tamanho
+    const pillVariantClasses = variantStyle === 'pastel' ? pillVariantClassesPastel : pillVariantClassesSolid;
+    const pillIconClasses = variantStyle === 'pastel' ? pillIconClassesPastel : pillIconClassesSolid;
+
     const sizeClasses = {
         sm: 'text-xs px-2.5 py-1',
         md: 'text-sm px-3 py-1.5',
         lg: 'text-base px-4 py-2',
     };
-    
     const iconSizes = {
         sm: 'h-3 w-3',
         md: 'h-3.5 w-3.5',
         lg: 'h-4 w-4',
     };
-    
+
+    const actualStatus = (() => {
+        if (status) return status;
+        if (label === 'Planejado' || label === '—') return 'planned' as const;
+        const match = label?.match(/(\d+)\/(\d+)/);
+        if (match) {
+            const executed = parseInt(match[1], 10);
+            const total = parseInt(match[2], 10);
+            if (executed === 0) return 'pending';
+            if (executed === total) return 'done';
+            return 'partial';
+        }
+        return 'pending';
+    })();
+
     return (
         <span
             className={cn(
-                'inline-flex items-center gap-2 rounded-full border font-medium transition-all',
-                'hover:scale-105 hover:shadow-sm',
-                selected ? selectedClasses : cn(config.bg, config.text, config.border),
+                'inline-flex items-center gap-2 rounded-full font-bold uppercase tracking-wider transition-all',
+                'hover:scale-105 hover:shadow-sm whitespace-nowrap shrink-0',
+                pillVariantClasses[variant],
                 sizeClasses[size],
+                selected && pillSelectedShadowClasses[variant],
                 className
             )}
-            aria-label={`Tipo de teste: ${testType}${selected ? ', Selecionado' : ''}${!selected && actualStatus ? `, Status: ${actualStatus}` : ''}${label ? `, ${label}` : ''}`}
+            aria-label={`Tipo de teste: ${testType}${selected ? ', Selecionado' : ''}${label ? `, ${label}` : ''}${!selected && actualStatus ? `, Status: ${actualStatus}` : ''}`}
             role="status"
         >
-            <TestTypeIcon className={cn(iconSizes[size], iconClasses)} aria-hidden="true" />
+            <TestTypeIcon className={cn(iconSizes[size], pillIconClasses[variant])} aria-hidden="true" />
             <span className="truncate">{testType}</span>
             {label && (
-                <span className={cn('ml-1 font-semibold shrink-0', iconClasses)}>
+                <span className={cn('ml-1 font-semibold shrink-0', pillIconClasses[variant])}>
                     {label}
                 </span>
             )}

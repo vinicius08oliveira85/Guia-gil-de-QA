@@ -12,6 +12,8 @@ interface BadgeProps {
   variant?: 'default' | 'success' | 'warning' | 'error' | 'info';
   /** Tamanho do badge */
   size?: 'sm' | 'md' | 'lg';
+  /** Aparência: default (DaisyUI) ou pill (arredondada, cores sólidas estilo v0) */
+  appearance?: 'default' | 'pill';
   /** Classes CSS adicionais */
   className?: string;
   /** Se true, exibe ícone de fechar e permite remoção */
@@ -34,10 +36,25 @@ export const Badge = React.memo<BadgeProps>(({
   children,
   variant = 'default',
   size = 'md',
+  appearance = 'default',
   className = '',
   dismissible = false,
   onDismiss
 }) => {
+  // Pill (v0): fundo sólido + texto em contraste, apenas Tailwind
+  const pillVariantClasses = {
+    error: 'bg-red-600 text-white',
+    warning: 'bg-amber-500 text-white',
+    info: 'bg-blue-600 text-white',
+    success: 'bg-green-600 text-white',
+    default: 'bg-gray-200 text-gray-800 border border-gray-300'
+  };
+  const pillSizeClasses = {
+    sm: 'px-2.5 py-0.5 text-xs',
+    md: 'px-3 py-1 text-xs',
+    lg: 'px-3 py-1.5 text-sm'
+  };
+
   // Classes base para variantes (mantém compatibilidade com DaisyUI)
   const variantClasses = {
     default: 'badge-outline',
@@ -61,6 +78,15 @@ export const Badge = React.memo<BadgeProps>(({
     warning: 'bg-yellow-50 border border-yellow-500 text-yellow-700',
     error: 'bg-pink-50 border border-red-500 text-red-700',
     info: 'bg-blue-50 border border-blue-500 text-blue-700'
+  };
+
+  // Dismissible + pill: cores sólidas do pill
+  const dismissiblePillStyles = {
+    default: 'bg-gray-200 text-gray-800 border border-gray-300',
+    success: 'bg-green-600 text-white',
+    warning: 'bg-amber-500 text-white',
+    error: 'bg-red-600 text-white',
+    info: 'bg-blue-600 text-white'
   };
 
   // Tamanhos do ícone de fechar
@@ -94,14 +120,13 @@ export const Badge = React.memo<BadgeProps>(({
 
   // Se for dismissible, usa estilos customizados
   if (dismissible) {
+    const dismissStyles = appearance === 'pill' ? dismissiblePillStyles[variant] : dismissibleVariantStyles[variant];
     return (
       <span
         className={cn(
-          'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-medium whitespace-nowrap',
+          'inline-flex items-center gap-1.5 rounded-full font-bold uppercase tracking-wider whitespace-nowrap',
           'transition-colors hover:opacity-80',
-          dismissibleVariantStyles[variant],
-          size === 'sm' && 'text-xs px-2 py-0.5',
-          size === 'lg' && 'text-sm px-3 py-1.5',
+          appearance === 'pill' ? cn(pillSizeClasses[size], dismissStyles) : cn('px-2.5 py-1 font-medium', dismissStyles, size === 'sm' && 'text-xs px-2 py-0.5', size === 'lg' && 'text-sm px-3 py-1.5'),
           className
         )}
         aria-label={label}
@@ -129,7 +154,25 @@ export const Badge = React.memo<BadgeProps>(({
     );
   }
 
-  // Badge não-dismissible mantém comportamento original
+  // Pill: apenas Tailwind, formato arredondado e cores sólidas (v0)
+  if (appearance === 'pill') {
+    return (
+      <span
+        className={cn(
+          'inline-flex items-center rounded-full font-bold uppercase tracking-wider whitespace-nowrap shrink-0',
+          pillSizeClasses[size],
+          pillVariantClasses[variant],
+          className
+        )}
+        aria-label={label}
+        role="status"
+      >
+        {children}
+      </span>
+    );
+  }
+
+  // Badge não-dismissible mantém comportamento original (DaisyUI)
   return (
     <span
       className={cn(

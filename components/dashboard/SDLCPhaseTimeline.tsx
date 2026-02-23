@@ -7,6 +7,7 @@ import { Card } from '../common/Card';
 import { InfoIcon } from '../common/Icons';
 import { phaseIcons, phaseDisplayNames } from '../../utils/sdlcPhaseIcons';
 import { PHASE_NAMES } from '../../utils/constants';
+import { getPriorityVariant } from '../../utils/taskHelpers';
 import { Badge } from '../common/Badge';
 
 interface SDLCPhaseTimelineProps {
@@ -116,16 +117,7 @@ export const SDLCPhaseTimeline: React.FC<SDLCPhaseTimelineProps> = React.memo(({
                   <span>✅</span> Próximos Passos
                 </h4>
                 <div className="space-y-3">
-                  {phaseAnalysis.nextSteps.map((step, index) => {
-                    const getPriorityVariant = (priority: string): 'default' | 'success' | 'warning' | 'error' | 'info' => {
-                      if (priority === 'Crítica') return 'error';
-                      if (priority === 'Alta') return 'warning';
-                      if (priority === 'Média') return 'info';
-                      if (priority === 'Baixa') return 'success';
-                      return 'default';
-                    };
-                    
-                    return (
+                  {phaseAnalysis.nextSteps.map((step, index) => (
                       <div
                         key={index}
                         className="flex items-start gap-3 p-4 rounded-lg bg-base-100 border border-base-300 hover:bg-base-200 transition-colors"
@@ -136,15 +128,14 @@ export const SDLCPhaseTimeline: React.FC<SDLCPhaseTimelineProps> = React.memo(({
                         <div className="flex-1 space-y-2 min-w-0">
                           <div className="flex items-start justify-between gap-3">
                             <h4 className="font-medium text-base-content leading-relaxed">{step.step}</h4>
-                            <Badge variant={getPriorityVariant(step.priority)} size="sm" className="shrink-0">
+                            <Badge appearance="pill" variant={getPriorityVariant(step.priority)} size="sm" className="shrink-0">
                               {step.priority}
                             </Badge>
                           </div>
                           <p className="text-sm text-base-content/70 leading-relaxed">{step.description}</p>
                         </div>
                       </div>
-                    );
-                  })}
+                  ))}
                 </div>
               </Card>
             )}

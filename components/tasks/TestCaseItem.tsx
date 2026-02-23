@@ -2,17 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { TestCase } from '../../types';
 import { CheckIcon, ChevronDownIcon, EditIcon, ListIcon, TrashIcon } from '../common/Icons';
 import { normalizeExecutedStrategy } from '../../utils/testCaseMigration';
+import { getPriorityVariant } from '../../utils/taskHelpers';
 import { ToolsSelector } from './ToolsSelector';
 import { TestTypeBadge } from '../common/TestTypeBadge';
 import { Badge } from '../common/Badge';
-
-const getPriorityVariant = (priority: string): 'default' | 'success' | 'warning' | 'error' | 'info' => {
-    if (priority === 'Urgente' || priority === 'Crítica') return 'error';
-    if (priority === 'Alta') return 'warning';
-    if (priority === 'Média') return 'info';
-    if (priority === 'Baixa') return 'success';
-    return 'default';
-};
 
 export const TestCaseItem: React.FC<{ 
     testCase: TestCase; 
@@ -132,7 +125,7 @@ export const TestCaseItem: React.FC<{
                         {statusLabel[testCase.status]}
                     </span>
                     {testCase.priority && (
-                        <Badge variant={getPriorityVariant(testCase.priority)} size="sm" className="text-xs font-bold uppercase tracking-wider">
+                        <Badge appearance="pill" variant={getPriorityVariant(testCase.priority)} size="sm" className="shrink-0">
                             {testCase.priority}
                         </Badge>
                     )}
@@ -185,7 +178,7 @@ export const TestCaseItem: React.FC<{
                 {showExecutedStrategySummary && (
                     <div className="mt-1.5 flex flex-wrap gap-1.5">
                         {selectedStrategies.map((strategy, idx) => (
-                            <span key={idx} className="badge badge-outline badge-sm">{strategy}</span>
+                            <TestTypeBadge key={idx} testType={strategy} size="sm" variantStyle="pastel" />
                         ))}
                     </div>
                 )}

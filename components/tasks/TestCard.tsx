@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { TestCase, JiraTask } from '../../types';
+import { getPriorityVariant } from '../../utils/taskHelpers';
 import { Badge } from '../common/Badge';
 
 interface TestCardProps {
@@ -26,21 +27,6 @@ export const TestCard: React.FC<TestCardProps> = ({
     setIsExpanded(!isExpanded);
     if (onExpand) {
       onExpand();
-    }
-  };
-
-  const getPriorityColor = (priority?: string): string => {
-    switch (priority) {
-      case 'Urgente':
-        return 'text-error';
-      case 'Alta':
-        return 'text-warning';
-      case 'Média':
-        return 'text-info';
-      case 'Baixa':
-        return 'text-success';
-      default:
-        return 'text-base-content/50';
     }
   };
 
@@ -125,12 +111,13 @@ export const TestCard: React.FC<TestCardProps> = ({
                 </p>
               </div>
 
-              {/* Badge de prioridade */}
+              {/* Badge de prioridade (pill v0) */}
               {testCase.priority && (
-                <Badge 
-                  variant="default" 
-                  size="sm" 
-                  className={`${getPriorityColor(testCase.priority)} flex-shrink-0`}
+                <Badge
+                  appearance="pill"
+                  variant={getPriorityVariant(testCase.priority)}
+                  size="sm"
+                  className="flex-shrink-0"
                 >
                   {testCase.priority}
                 </Badge>
