@@ -89,7 +89,12 @@ export const TestCaseItem: React.FC<{
             <div className="flex flex-wrap items-center justify-between gap-1.5">
                 <div className="flex flex-wrap items-center gap-1.5">
                     {recommendedStrategies.map((strategy) => (
-                        <TestTypeBadge key={strategy} testType={strategy} size="sm" />
+                        <TestTypeBadge
+                            key={strategy}
+                            testType={strategy}
+                            size="sm"
+                            selected={selectedStrategies.includes(strategy)}
+                        />
                     ))}
                 </div>
                 <div className="flex items-center gap-2">
@@ -142,7 +147,7 @@ export const TestCaseItem: React.FC<{
             <div className="bg-base-100 border border-base-300 rounded-lg p-3 shadow-sm">
                 {recommendedStrategies.length > 0 && (
                     <>
-                        <p className="text-xs font-semibold text-base-content/70 uppercase tracking-wider mb-2">
+                        <p className="text-[10px] font-bold text-base-content/70 uppercase tracking-widest mb-2">
                             Selecione os testes executados
                         </p>
                         <div className="flex flex-wrap gap-1.5 mb-2">
@@ -153,7 +158,7 @@ export const TestCaseItem: React.FC<{
                                         key={strategy}
                                         type="button"
                                         onClick={() => handleStrategyToggle(strategy)}
-                                        className={`btn btn-sm rounded-xl flex items-center gap-1.5 transition-all ${
+                                        className={`btn btn-xs rounded-xl flex items-center gap-1.5 transition-all ${
                                             isSelected ? 'btn-primary' : 'btn-outline border-base-300 bg-base-100'
                                         }`}
                                     >
@@ -166,7 +171,7 @@ export const TestCaseItem: React.FC<{
                     </>
                 )}
                 <div className="space-y-1">
-                    <label className="block text-sm font-medium text-base-content/70">Ou descreva outro teste executado</label>
+                    <label className="block text-xs font-medium text-base-content/70">Ou descreva outro teste executado</label>
                     <input
                         type="text"
                         value={customStrategyDraft}
@@ -190,7 +195,7 @@ export const TestCaseItem: React.FC<{
             {onToolsChange && (
                 <div className="bg-base-100 border border-base-300 rounded-lg overflow-hidden shadow-sm">
                     <div className="px-3 py-1.5 border-b border-base-200 bg-base-200/50">
-                        <h3 className="text-xs font-semibold text-base-content/70 uppercase tracking-wider">Ferramentas (caso de teste)</h3>
+                        <h3 className="text-[10px] font-bold text-base-content/70 uppercase tracking-widest">Ferramentas (caso de teste)</h3>
                     </div>
                     <div className="p-2.5">
                         <ToolsSelector
@@ -213,7 +218,7 @@ export const TestCaseItem: React.FC<{
                 >
                     <div className="flex items-center gap-2 min-w-0">
                         <ListIcon className="w-4 h-4 text-base-content/70 flex-shrink-0" />
-                        <span className="text-sm font-semibold text-base-content">Detalhes do caso de teste</span>
+                        <span className="text-xs font-semibold text-base-content">Detalhes do caso de teste</span>
                     </div>
                     <ChevronDownIcon className={`w-4 h-4 text-base-content/70 flex-shrink-0 transition-transform ${detailsOpen ? 'rotate-180' : ''}`} />
                 </button>
@@ -221,31 +226,31 @@ export const TestCaseItem: React.FC<{
                     <div className="px-3 pb-3 pt-0 space-y-3 border-t border-base-200">
                         {testCase.preconditions && (
                             <div>
-                                <h3 className="text-xs font-bold text-base-content/70 uppercase tracking-wider mb-1">Pré-condições</h3>
-                                <p className="text-sm text-base-content bg-base-200/50 p-2.5 rounded border-l-4 border-primary">{testCase.preconditions}</p>
+                                <h3 className="text-[10px] font-bold text-base-content/70 uppercase tracking-widest mb-1">Pré-condições</h3>
+                                <p className="text-xs text-base-content bg-base-200/50 p-2.5 rounded border-l-4 border-primary">{testCase.preconditions}</p>
                             </div>
                         )}
                         <div>
-                            <h3 className="text-xs font-bold text-base-content/70 uppercase tracking-wider mb-1">Passos</h3>
+                            <h3 className="text-[10px] font-bold text-base-content/70 uppercase tracking-widest mb-1">Passos</h3>
                             <ol className="space-y-1.5">
                                 {testCase.steps.map((step, i) => (
                                     <li key={i} className="flex items-start gap-2">
                                         <span className="flex-shrink-0 w-5 h-5 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center mt-0.5">
                                             {i + 1}
                                         </span>
-                                        <span className="text-sm text-base-content min-w-0">{step}</span>
+                                        <span className="text-xs text-base-content min-w-0">{step}</span>
                                     </li>
                                 ))}
                             </ol>
                         </div>
                         <div>
-                            <h3 className="text-xs font-bold text-base-content/70 uppercase tracking-wider mb-1">Resultado esperado</h3>
-                            <p className="text-sm text-base-content bg-base-200/50 p-2.5 rounded">{testCase.expectedResult}</p>
+                            <h3 className="text-[10px] font-bold text-base-content/70 uppercase tracking-widest mb-1">Resultado esperado</h3>
+                            <p className="text-xs text-base-content bg-base-200/50 p-2.5 rounded">{testCase.expectedResult}</p>
                         </div>
                         {testCase.status === 'Failed' && testCase.observedResult && (
-                            <div className="alert alert-error text-sm">
+                            <div className="alert alert-error text-xs">
                                 <div>
-                                    <p className="text-xs font-bold uppercase">Resultado encontrado</p>
+                                    <p className="text-[10px] font-bold uppercase tracking-widest">Resultado encontrado</p>
                                     <p>{testCase.observedResult}</p>
                                 </div>
                             </div>
@@ -254,13 +259,13 @@ export const TestCaseItem: React.FC<{
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 border-t border-base-200">
                                 {testCase.testSuite && (
                                     <div className="space-y-1">
-                                        <label className="text-xs font-bold text-base-content/70 uppercase tracking-wider">Suíte de teste</label>
+                                        <label className="text-[10px] font-bold text-base-content/70 uppercase tracking-widest">Suíte de teste</label>
                                         <div className="p-2 bg-base-200 rounded text-xs border border-base-300 text-base-content">{testCase.testSuite}</div>
                                     </div>
                                 )}
                                 {testCase.testEnvironment && (
                                     <div className="space-y-1">
-                                        <label className="text-xs font-bold text-base-content/70 uppercase tracking-wider">Ambiente de teste</label>
+                                        <label className="text-[10px] font-bold text-base-content/70 uppercase tracking-widest">Ambiente de teste</label>
                                         <div className="p-2 bg-base-200 rounded text-xs border border-base-300 text-base-content">{testCase.testEnvironment}</div>
                                     </div>
                                 )}
@@ -276,10 +281,10 @@ export const TestCaseItem: React.FC<{
                     {statusLabel[testCase.status]}
                 </span>
                 <div className="flex flex-wrap items-center gap-2">
-                    <button type="button" onClick={() => onStatusChange('Passed')} className="btn btn-success btn-sm rounded-xl">
+                    <button type="button" onClick={() => onStatusChange('Passed')} className="btn btn-success btn-xs rounded-xl">
                         Aprovar
                     </button>
-                    <button type="button" onClick={() => onStatusChange('Failed')} className="btn btn-error btn-sm rounded-xl">
+                    <button type="button" onClick={() => onStatusChange('Failed')} className="btn btn-error btn-xs rounded-xl">
                         Reprovar
                     </button>
                 </div>

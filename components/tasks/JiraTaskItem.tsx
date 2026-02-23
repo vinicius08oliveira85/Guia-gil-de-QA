@@ -1150,12 +1150,17 @@ export const JiraTaskItem: React.FC<{
                 {/* Conteúdo da sub-aba "Casos de Teste" */}
                 {activeTestSubSection === 'test-cases' && canHaveTestCases && (
                     <div>
-                        <div className="flex items-center justify-between gap-2">
-                            <h3 className="text-lg font-semibold text-base-content">Casos de Teste</h3>
-                            <span className="text-xs text-base-content/70">{task.testCases?.length || 0} caso(s)</span>
-                        </div>
+                        <header className="flex items-center gap-3 mb-4">
+                            <div className="p-1.5 bg-primary/10 rounded-lg">
+                                <ClipboardList className="w-5 h-5 text-primary" aria-hidden />
+                            </div>
+                            <h2 className="text-lg font-bold text-base-content">Casos de Teste</h2>
+                            <span className="text-xs font-medium text-base-content/70 bg-base-200 px-3 py-1 rounded-full">
+                                {task.testCases?.length || 0} caso(s)
+                            </span>
+                        </header>
                         {isGeneratingTests ? (
-                            <div className="space-y-2 mt-3">
+                            <div className="space-y-2">
                                 <LoadingSkeleton variant="task" count={3} />
                                 <div className="flex flex-col items-center justify-center py-3">
                                     <Spinner small />
@@ -1164,7 +1169,7 @@ export const JiraTaskItem: React.FC<{
                                 </div>
                             </div>
                         ) : (task.testCases || []).length > 0 ? (
-                            <div className="space-y-2 mt-3">
+                            <div className="space-y-2">
                                 {task.testCases.map(tc => (
                                     <TestCaseItem 
                                         key={tc.id} 
@@ -1179,7 +1184,7 @@ export const JiraTaskItem: React.FC<{
                                 ))}
                             </div>
                         ) : (
-                            <div className="mt-3">
+                            <div>
                                 <EmptyState
                                     icon="🧪"
                                     title="Nenhum caso de teste ainda"

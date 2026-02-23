@@ -30,6 +30,8 @@ interface TestTypeBadgeProps {
     testType: string;
     /** Status opcional do teste (para indicar progresso) */
     status?: 'pending' | 'partial' | 'done' | 'failed' | 'planned';
+    /** Quando true, exibe estilo de destaque (selecionado) */
+    selected?: boolean;
     /** Tamanho do badge */
     size?: 'sm' | 'md' | 'lg';
     /** Classes CSS adicionais */
@@ -139,6 +141,7 @@ const statusConfig = {
 export const TestTypeBadge = React.memo<TestTypeBadgeProps>(({
     testType,
     status,
+    selected = false,
     size = 'md',
     className = '',
     label
@@ -168,9 +171,14 @@ export const TestTypeBadge = React.memo<TestTypeBadgeProps>(({
     // Obter ícone do tipo de teste
     const TestTypeIcon = testTypeIconMap[testType] || Circle;
     
-    // Obter configuração do status
+    // Obter configuração do status (ignorada quando selected)
     const config = statusConfig[actualStatus];
-    const StatusIcon = config.iconComponent;
+    
+    // Estilo quando selecionado: destaque primary
+    const selectedClasses = selected
+        ? 'bg-primary/15 dark:bg-primary/20 text-primary border-primary/40'
+        : '';
+    const iconClasses = selected ? 'text-primary' : config.icon;
     
     // Classes de tamanho
     const sizeClasses = {
@@ -190,19 +198,17 @@ export const TestTypeBadge = React.memo<TestTypeBadgeProps>(({
             className={cn(
                 'inline-flex items-center gap-2 rounded-full border font-medium transition-all',
                 'hover:scale-105 hover:shadow-sm',
-                config.bg,
-                config.text,
-                config.border,
+                selected ? selectedClasses : cn(config.bg, config.text, config.border),
                 sizeClasses[size],
                 className
             )}
-            aria-label={`Tipo de teste: ${testType}${actualStatus ? `, Status: ${actualStatus}` : ''}${label ? `, ${label}` : ''}`}
+            aria-label={`Tipo de teste: ${testType}${selected ? ', Selecionado' : ''}${!selected && actualStatus ? `, Status: ${actualStatus}` : ''}${label ? `, ${label}` : ''}`}
             role="status"
         >
-            <TestTypeIcon className={cn(iconSizes[size], config.icon)} aria-hidden="true" />
+            <TestTypeIcon className={cn(iconSizes[size], iconClasses)} aria-hidden="true" />
             <span className="truncate">{testType}</span>
             {label && (
-                <span className={cn('ml-1 font-semibold shrink-0', config.icon)}>
+                <span className={cn('ml-1 font-semibold shrink-0', iconClasses)}>
                     {label}
                 </span>
             )}
