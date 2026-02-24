@@ -70,10 +70,7 @@ describe('useProjectsStore', () => {
     it('deve criar projeto sem template', async () => {
       vi.mocked(dbService.addProject).mockResolvedValue(undefined);
 
-      const created = await useProjectsStore.getState().createProject(
-        'Novo Projeto',
-        'Descrição'
-      );
+      const created = await useProjectsStore.getState().createProject('Novo Projeto', 'Descrição');
 
       expect(created.name).toBe('Novo Projeto');
       expect(created.description).toBe('Descrição');
@@ -83,11 +80,9 @@ describe('useProjectsStore', () => {
     it('deve criar projeto com template', async () => {
       vi.mocked(dbService.addProject).mockResolvedValue(undefined);
 
-      const created = await useProjectsStore.getState().createProject(
-        'Projeto Template',
-        'Descrição',
-        'web-app'
-      );
+      const created = await useProjectsStore
+        .getState()
+        .createProject('Projeto Template', 'Descrição', 'web-app');
 
       expect(created.name).toBe('Projeto Template');
       expect(dbService.addProject).toHaveBeenCalled();
@@ -127,7 +122,7 @@ describe('useProjectsStore', () => {
         phases: [],
       };
 
-      useProjectsStore.setState({ 
+      useProjectsStore.setState({
         projects: [project],
         selectedProjectId: 'proj-1',
       });
@@ -180,4 +175,3 @@ describe('useProjectsStore', () => {
     });
   });
 });
-

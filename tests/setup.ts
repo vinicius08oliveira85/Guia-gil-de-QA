@@ -12,11 +12,11 @@ type IndexedDbStoreSpec = {
 };
 
 const clearIndexedDbStore = async (spec: IndexedDbStoreSpec): Promise<void> => {
-  await new Promise<void>((resolve) => {
+  await new Promise<void>(resolve => {
     try {
       const request = indexedDB.open(spec.dbName, spec.dbVersion);
 
-      request.onupgradeneeded = (event) => {
+      request.onupgradeneeded = event => {
         const db = (event.target as IDBOpenDBRequest).result;
         try {
           spec.ensureStore(db);
@@ -63,7 +63,7 @@ afterEach(async () => {
       dbName: DB_NAME,
       dbVersion: DB_VERSION,
       storeName: STORE_NAME,
-      ensureStore: (db) => {
+      ensureStore: db => {
         if (!db.objectStoreNames.contains(STORE_NAME)) {
           db.createObjectStore(STORE_NAME, { keyPath: 'id' });
         }
@@ -73,7 +73,7 @@ afterEach(async () => {
       dbName: 'jira-media-cache',
       dbVersion: 1,
       storeName: 'images',
-      ensureStore: (db) => {
+      ensureStore: db => {
         if (!db.objectStoreNames.contains('images')) {
           db.createObjectStore('images', { keyPath: 'url' });
         }
@@ -143,4 +143,3 @@ if (typeof (globalThis as { DOMMatrix?: unknown }).DOMMatrix === 'undefined') {
   (globalThis as { DOMMatrix?: unknown }).DOMMatrix = MockDOMMatrix;
   (globalThis as { DOMMatrixReadOnly?: unknown }).DOMMatrixReadOnly = MockDOMMatrix;
 }
-

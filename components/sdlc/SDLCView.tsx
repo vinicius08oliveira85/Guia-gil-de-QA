@@ -25,29 +25,29 @@ const sdlcPhases: SDLCPhase[] = [
       'Definição de requisitos',
       'Estimativas de esforço',
       'Planejamento de sprints',
-      'Definição de critérios de aceitação'
+      'Definição de critérios de aceitação',
     ],
     deliverables: [
       'Documento de requisitos',
       'Plano de projeto',
       'Backlog priorizado',
-      'Definição de Done'
+      'Definição de Done',
     ],
     qaActivities: [
       'Revisão de requisitos',
       'Identificação de riscos',
       'Planejamento de testes',
       'Definição de estratégia de teste',
-      'Criação de casos de teste iniciais'
+      'Criação de casos de teste iniciais',
     ],
     devopsActivities: [
       'Setup de repositório',
       'Configuração de CI/CD básico',
       'Definição de ambientes',
-      'Setup de monitoramento'
+      'Setup de monitoramento',
     ],
     duration: '1-2 semanas',
-    dependencies: []
+    dependencies: [],
   },
   {
     id: 'design',
@@ -58,29 +58,29 @@ const sdlcPhases: SDLCPhase[] = [
       'Design de UI/UX',
       'Especificações técnicas',
       'Protótipos',
-      'Revisões de design'
+      'Revisões de design',
     ],
     deliverables: [
       'Documentação de arquitetura',
       'Mockups e protótipos',
       'Especificações técnicas',
-      'Design system'
+      'Design system',
     ],
     qaActivities: [
       'Revisão de design',
       'Validação de usabilidade',
       'Testes de protótipos',
       'Definição de critérios de teste',
-      'Preparação de dados de teste'
+      'Preparação de dados de teste',
     ],
     devopsActivities: [
       'Setup de infraestrutura',
       'Configuração de ambientes',
       'Pipeline de deploy',
-      'Configuração de containers'
+      'Configuração de containers',
     ],
     duration: '2-3 semanas',
-    dependencies: ['planning']
+    dependencies: ['planning'],
   },
   {
     id: 'development',
@@ -91,13 +91,13 @@ const sdlcPhases: SDLCPhase[] = [
       'Code reviews',
       'Refatoração',
       'Integração contínua',
-      'Testes unitários'
+      'Testes unitários',
     ],
     deliverables: [
       'Código fonte',
       'Features implementadas',
       'Testes automatizados',
-      'Documentação técnica'
+      'Documentação técnica',
     ],
     qaActivities: [
       'Testes de unidade (Shift Left)',
@@ -105,17 +105,17 @@ const sdlcPhases: SDLCPhase[] = [
       'Testes de API',
       'Revisão de código',
       'Testes exploratórios',
-      'Validação de features'
+      'Validação de features',
     ],
     devopsActivities: [
       'Builds automatizados',
       'Deploy contínuo',
       'Monitoramento de aplicação',
       'Gestão de configuração',
-      'Backup e recovery'
+      'Backup e recovery',
     ],
     duration: '4-8 semanas',
-    dependencies: ['design']
+    dependencies: ['design'],
   },
   {
     id: 'testing',
@@ -126,13 +126,13 @@ const sdlcPhases: SDLCPhase[] = [
       'Testes de regressão',
       'Testes de performance',
       'Testes de segurança',
-      'Testes de acessibilidade'
+      'Testes de acessibilidade',
     ],
     deliverables: [
       'Relatórios de teste',
       'Bugs reportados',
       'Métricas de qualidade',
-      'Evidências de teste'
+      'Evidências de teste',
     ],
     qaActivities: [
       'Execução de casos de teste',
@@ -140,17 +140,17 @@ const sdlcPhases: SDLCPhase[] = [
       'Testes de regressão',
       'Testes de performance',
       'Testes de segurança',
-      'Validação de bugs corrigidos'
+      'Validação de bugs corrigidos',
     ],
     devopsActivities: [
       'Testes em ambientes',
       'Deploy automatizado',
       'Smoke tests',
       'Health checks',
-      'Rollback automático'
+      'Rollback automático',
     ],
     duration: '2-4 semanas',
-    dependencies: ['development']
+    dependencies: ['development'],
   },
   {
     id: 'deployment',
@@ -161,30 +161,30 @@ const sdlcPhases: SDLCPhase[] = [
       'Deploy em produção',
       'Smoke tests pós-deploy',
       'Monitoramento',
-      'Validação de produção'
+      'Validação de produção',
     ],
     deliverables: [
       'Release notes',
       'Documentação de deploy',
       'Rollback plan',
-      'Métricas pós-deploy'
+      'Métricas pós-deploy',
     ],
     qaActivities: [
       'Validação em produção',
       'Smoke tests',
       'Testes de sanidade',
       'Monitoramento de bugs',
-      'Validação de métricas'
+      'Validação de métricas',
     ],
     devopsActivities: [
       'Deploy automatizado',
       'Blue-green deployment',
       'Canary releases',
       'Monitoramento 24/7',
-      'Alertas e notificações'
+      'Alertas e notificações',
     ],
     duration: '1 semana',
-    dependencies: ['testing']
+    dependencies: ['testing'],
   },
   {
     id: 'maintenance',
@@ -195,31 +195,26 @@ const sdlcPhases: SDLCPhase[] = [
       'Correção de bugs',
       'Melhorias incrementais',
       'Otimizações',
-      'Atualizações de segurança'
+      'Atualizações de segurança',
     ],
-    deliverables: [
-      'Hotfixes',
-      'Patches',
-      'Melhorias',
-      'Relatórios de suporte'
-    ],
+    deliverables: ['Hotfixes', 'Patches', 'Melhorias', 'Relatórios de suporte'],
     qaActivities: [
       'Testes de hotfix',
       'Validação de correções',
       'Testes de regressão',
       'Monitoramento contínuo',
-      'Análise de feedback'
+      'Análise de feedback',
     ],
     devopsActivities: [
       'Deploy de hotfixes',
       'Monitoramento contínuo',
       'Otimização de performance',
       'Gestão de capacidade',
-      'Disaster recovery'
+      'Disaster recovery',
     ],
     duration: 'Contínuo',
-    dependencies: ['deployment']
-  }
+    dependencies: ['deployment'],
+  },
 ];
 
 export const SDLCView: React.FC<{ project: Project }> = ({ project }) => {
@@ -231,16 +226,23 @@ export const SDLCView: React.FC<{ project: Project }> = ({ project }) => {
 
     // Mapeamento mais robusto entre fases do SDLC e fases do projeto
     const phaseMapping: Record<string, string[]> = {
-      'planning': ['request', 'analysis', 'planejamento', 'requisitos'],
-      'design': ['design', 'prototipagem'],
-      'development': ['development', 'desenvolvimento', 'code', 'build', 'implementação', 'analysis and code'],
-      'testing': ['testing', 'testes', 'qa', 'homologação', 'test'],
-      'deployment': ['deployment', 'deploy', 'release', 'implantação', 'entrega'],
-      'maintenance': ['maintenance', 'manutenção', 'operate', 'monitor', 'suporte']
+      planning: ['request', 'analysis', 'planejamento', 'requisitos'],
+      design: ['design', 'prototipagem'],
+      development: [
+        'development',
+        'desenvolvimento',
+        'code',
+        'build',
+        'implementação',
+        'analysis and code',
+      ],
+      testing: ['testing', 'testes', 'qa', 'homologação', 'test'],
+      deployment: ['deployment', 'deploy', 'release', 'implantação', 'entrega'],
+      maintenance: ['maintenance', 'manutenção', 'operate', 'monitor', 'suporte'],
     };
 
     const keywords = phaseMapping[phaseId] || [];
-    const relevantPhases = project.phases.filter(p => 
+    const relevantPhases = project.phases.filter(p =>
       keywords.some(k => p.name.toLowerCase().includes(k))
     );
 
@@ -257,7 +259,9 @@ export const SDLCView: React.FC<{ project: Project }> = ({ project }) => {
     <div className="space-y-6">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2">Ciclo de Vida do Projeto (SDLC & DevOps)</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2">
+            Ciclo de Vida do Projeto (SDLC & DevOps)
+          </h2>
           <p className="text-base-content/70 max-w-2xl">
             Visualize o ciclo de vida completo do projeto integrando práticas de QA e DevOps
           </p>
@@ -274,20 +278,22 @@ export const SDLCView: React.FC<{ project: Project }> = ({ project }) => {
       {/* Timeline Visual */}
       <div className="relative">
         <div className="absolute left-6 sm:left-8 top-0 bottom-0 w-1 bg-base-300"></div>
-        
+
         <div className="space-y-8">
           {sdlcPhases.map((phase, index) => {
             const status = getPhaseStatus(phase.id);
             const statusColors = {
               completed: 'bg-green-500',
               current: 'bg-blue-500 animate-pulse',
-              upcoming: 'bg-gray-500'
+              upcoming: 'bg-gray-500',
             };
 
             return (
               <div key={phase.id} className="relative flex items-start gap-6">
                 {/* Indicador de fase */}
-                <div className={`relative z-10 w-12 h-12 sm:w-16 sm:h-16 rounded-full ${statusColors[status]} flex items-center justify-center text-white font-bold text-xs sm:text-sm shadow-lg flex-shrink-0`}>
+                <div
+                  className={`relative z-10 w-12 h-12 sm:w-16 sm:h-16 rounded-full ${statusColors[status]} flex items-center justify-center text-white font-bold text-xs sm:text-sm shadow-lg flex-shrink-0`}
+                >
                   {index + 1}
                 </div>
 
@@ -299,8 +305,20 @@ export const SDLCView: React.FC<{ project: Project }> = ({ project }) => {
                         <h3 className="text-xl font-bold text-base-content mb-2">{phase.name}</h3>
                         <p className="text-base-content/70 mb-3">{phase.description}</p>
                         <div className="flex items-center gap-3 text-sm">
-                          <Badge variant={status === 'completed' ? 'success' : status === 'current' ? 'info' : 'default'}>
-                            {status === 'completed' ? '✅ Concluída' : status === 'current' ? '🔄 Atual' : '⏳ Próxima'}
+                          <Badge
+                            variant={
+                              status === 'completed'
+                                ? 'success'
+                                : status === 'current'
+                                  ? 'info'
+                                  : 'default'
+                            }
+                          >
+                            {status === 'completed'
+                              ? '✅ Concluída'
+                              : status === 'current'
+                                ? '🔄 Atual'
+                                : '⏳ Próxima'}
                           </Badge>
                           <span className="text-base-content/70">⏱️ {phase.duration}</span>
                         </div>
@@ -317,7 +335,9 @@ export const SDLCView: React.FC<{ project: Project }> = ({ project }) => {
                     {/* Grid de atividades */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
                       <div>
-                        <h4 className="text-sm font-semibold text-base-content/70 mb-2">📋 Atividades</h4>
+                        <h4 className="text-sm font-semibold text-base-content/70 mb-2">
+                          📋 Atividades
+                        </h4>
                         <ul className="space-y-1 text-sm text-base-content/70">
                           {phase.activities.slice(0, 3).map((activity, idx) => (
                             <li key={idx} className="flex items-start">
@@ -326,7 +346,9 @@ export const SDLCView: React.FC<{ project: Project }> = ({ project }) => {
                             </li>
                           ))}
                           {phase.activities.length > 3 && (
-                            <li className="text-accent text-xs">+{phase.activities.length - 3} mais...</li>
+                            <li className="text-accent text-xs">
+                              +{phase.activities.length - 3} mais...
+                            </li>
                           )}
                         </ul>
                       </div>
@@ -334,7 +356,9 @@ export const SDLCView: React.FC<{ project: Project }> = ({ project }) => {
                       {showShiftLeft && (
                         <>
                           <div>
-                            <h4 className="text-sm font-semibold text-base-content/70 mb-2">🧪 QA (Shift Left)</h4>
+                            <h4 className="text-sm font-semibold text-base-content/70 mb-2">
+                              🧪 QA (Shift Left)
+                            </h4>
                             <ul className="space-y-1 text-sm text-base-content/70">
                               {phase.qaActivities.slice(0, 3).map((activity, idx) => (
                                 <li key={idx} className="flex items-start">
@@ -343,13 +367,17 @@ export const SDLCView: React.FC<{ project: Project }> = ({ project }) => {
                                 </li>
                               ))}
                               {phase.qaActivities.length > 3 && (
-                                <li className="text-accent text-xs">+{phase.qaActivities.length - 3} mais...</li>
+                                <li className="text-accent text-xs">
+                                  +{phase.qaActivities.length - 3} mais...
+                                </li>
                               )}
                             </ul>
                           </div>
 
                           <div>
-                            <h4 className="text-sm font-semibold text-base-content/70 mb-2">🚀 DevOps</h4>
+                            <h4 className="text-sm font-semibold text-base-content/70 mb-2">
+                              🚀 DevOps
+                            </h4>
                             <ul className="space-y-1 text-sm text-base-content/70">
                               {phase.devopsActivities.slice(0, 3).map((activity, idx) => (
                                 <li key={idx} className="flex items-start">
@@ -358,7 +386,9 @@ export const SDLCView: React.FC<{ project: Project }> = ({ project }) => {
                                 </li>
                               ))}
                               {phase.devopsActivities.length > 3 && (
-                                <li className="text-accent text-xs">+{phase.devopsActivities.length - 3} mais...</li>
+                                <li className="text-accent text-xs">
+                                  +{phase.devopsActivities.length - 3} mais...
+                                </li>
                               )}
                             </ul>
                           </div>
@@ -384,13 +414,19 @@ export const SDLCView: React.FC<{ project: Project }> = ({ project }) => {
         >
           <div className="space-y-4">
             <div>
-              <h4 className="text-xs font-semibold text-base-content/70 mb-1.5 uppercase tracking-wide">Descrição</h4>
-              <p className="text-sm text-base-content leading-relaxed">{selectedPhase.description}</p>
+              <h4 className="text-xs font-semibold text-base-content/70 mb-1.5 uppercase tracking-wide">
+                Descrição
+              </h4>
+              <p className="text-sm text-base-content leading-relaxed">
+                {selectedPhase.description}
+              </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <h4 className="text-xs font-semibold text-base-content/70 mb-2 uppercase tracking-wide">📋 Atividades Principais</h4>
+                <h4 className="text-xs font-semibold text-base-content/70 mb-2 uppercase tracking-wide">
+                  📋 Atividades Principais
+                </h4>
                 <ul className="space-y-1.5">
                   {selectedPhase.activities.map((activity, idx) => (
                     <li key={idx} className="flex items-start text-base-content text-sm">
@@ -402,7 +438,9 @@ export const SDLCView: React.FC<{ project: Project }> = ({ project }) => {
               </div>
 
               <div>
-                <h4 className="text-xs font-semibold text-base-content/70 mb-2 uppercase tracking-wide">📦 Entregas</h4>
+                <h4 className="text-xs font-semibold text-base-content/70 mb-2 uppercase tracking-wide">
+                  📦 Entregas
+                </h4>
                 <ul className="space-y-1.5">
                   {selectedPhase.deliverables.map((deliverable, idx) => (
                     <li key={idx} className="flex items-start text-base-content text-sm">
@@ -416,7 +454,9 @@ export const SDLCView: React.FC<{ project: Project }> = ({ project }) => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <h4 className="text-xs font-semibold text-base-content/70 mb-2 uppercase tracking-wide">🧪 Atividades de QA</h4>
+                <h4 className="text-xs font-semibold text-base-content/70 mb-2 uppercase tracking-wide">
+                  🧪 Atividades de QA
+                </h4>
                 <ul className="space-y-1.5">
                   {selectedPhase.qaActivities.map((activity, idx) => (
                     <li key={idx} className="flex items-start text-base-content text-sm">
@@ -428,7 +468,9 @@ export const SDLCView: React.FC<{ project: Project }> = ({ project }) => {
               </div>
 
               <div>
-                <h4 className="text-xs font-semibold text-base-content/70 mb-2 uppercase tracking-wide">🚀 Atividades de DevOps</h4>
+                <h4 className="text-xs font-semibold text-base-content/70 mb-2 uppercase tracking-wide">
+                  🚀 Atividades de DevOps
+                </h4>
                 <ul className="space-y-1.5">
                   {selectedPhase.devopsActivities.map((activity, idx) => (
                     <li key={idx} className="flex items-start text-base-content text-sm">
@@ -442,12 +484,16 @@ export const SDLCView: React.FC<{ project: Project }> = ({ project }) => {
 
             {selectedPhase.dependencies.length > 0 && (
               <div>
-                <h4 className="text-xs font-semibold text-base-content/70 mb-2 uppercase tracking-wide">Dependências</h4>
+                <h4 className="text-xs font-semibold text-base-content/70 mb-2 uppercase tracking-wide">
+                  Dependências
+                </h4>
                 <div className="flex flex-wrap gap-2">
                   {selectedPhase.dependencies.map(depId => {
                     const dep = sdlcPhases.find(p => p.id === depId);
                     return dep ? (
-                      <Badge key={depId} variant="info" size="sm">{dep.name}</Badge>
+                      <Badge key={depId} variant="info" size="sm">
+                        {dep.name}
+                      </Badge>
                     ) : null;
                   })}
                 </div>

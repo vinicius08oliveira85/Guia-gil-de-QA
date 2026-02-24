@@ -9,6 +9,7 @@ Esta arquitetura foi projetada para abstrair a lógica de tratamento de anexos e
 ### 1. Serviço de Mídia (`services/jiraMediaService.ts`)
 
 **Responsabilidades:**
+
 - Detecção automática de tipos de mídia (imagem, PDF, documento, etc)
 - Resolução segura de URLs de anexos do Jira
 - Gerenciamento de cache de URLs
@@ -17,6 +18,7 @@ Esta arquitetura foi projetada para abstrair a lógica de tratamento de anexos e
 **Padrão:** Singleton para garantir uma única instância
 
 **Uso:**
+
 ```typescript
 import { jiraMediaService } from '../services/jiraMediaService';
 
@@ -27,29 +29,29 @@ const mediaInfo = jiraMediaService.getMediaInfo(attachment, jiraUrl);
 ### 2. Hook de Mídia (`hooks/useJiraMedia.ts`)
 
 **Responsabilidades:**
+
 - Abstrair lógica de carregamento de mídia com autenticação
 - Gerenciar estado de loading, erro e sucesso
 - Usar proxy do Jira quando necessário
 - Limpar recursos (blob URLs) automaticamente
 
 **Uso:**
+
 ```typescript
-const { objectUrl, loading, error, mediaInfo } = useJiraMedia(
-    attachmentId,
-    filename,
-    size
-);
+const { objectUrl, loading, error, mediaInfo } = useJiraMedia(attachmentId, filename, size);
 ```
 
 ### 3. Componente Polimórfico (`components/common/FilePreview.tsx`)
 
 **Responsabilidades:**
+
 - Decidir automaticamente como renderizar baseado no tipo de mídia
 - Renderizar preview de imagens ou ícones para outros tipos
 - Gerenciar estados de loading e erro
 - Preparado para extensão com novos tipos de visualizadores
 
 **Uso:**
+
 ```typescript
 <FilePreview
     attachmentId={id}
@@ -62,29 +64,33 @@ const { objectUrl, loading, error, mediaInfo } = useJiraMedia(
 ### 4. Sanitizador de Conteúdo (`utils/jiraContentSanitizer.ts`)
 
 **Responsabilidades:**
+
 - Sanitizar HTML do Jira de forma segura
 - Processar imagens embutidas (Markdown e ADF)
 - Extrair URLs de imagens
 - Prevenir XSS e conteúdo malicioso
 
 **Uso:**
+
 ```typescript
 const sanitized = JiraContentSanitizer.sanitize(html, {
-    allowImages: true,
-    processJiraImages: true,
-    jiraAttachments,
-    jiraUrl,
+  allowImages: true,
+  processJiraImages: true,
+  jiraAttachments,
+  jiraUrl,
 });
 ```
 
 ### 5. Visualizador de Mídia (`components/common/MediaViewer.tsx`)
 
 **Responsabilidades:**
+
 - Modal para visualização de mídia em tela cheia
 - Preparado para suportar diferentes visualizadores (PDF, documentos, etc)
 - Gerenciar ações (download, abrir externo)
 
 **Uso:**
+
 ```typescript
 <MediaViewer
     attachmentId={id}
@@ -114,11 +120,13 @@ UI (exibe preview ou ícone)
 ### Adicionar Novo Tipo de Visualizador
 
 1. **Adicionar tipo em `jiraMediaService.ts`:**
+
 ```typescript
 export type MediaType = 'image' | 'pdf' | 'video' | 'audio' | ...;
 ```
 
 2. **Atualizar detecção:**
+
 ```typescript
 detectMediaType(filename: string, mimeType?: string): MediaType {
     // Adicionar lógica para novo tipo
@@ -126,6 +134,7 @@ detectMediaType(filename: string, mimeType?: string): MediaType {
 ```
 
 3. **Criar componente de preview:**
+
 ```typescript
 export const VideoPreview: React.FC<VideoPreviewProps> = ({ ... }) => {
     // Implementar preview de vídeo
@@ -133,6 +142,7 @@ export const VideoPreview: React.FC<VideoPreviewProps> = ({ ... }) => {
 ```
 
 4. **Atualizar FilePreview:**
+
 ```typescript
 if (mediaType === 'video') {
     return <VideoPreview {...props} />;
@@ -165,18 +175,21 @@ if (mediaType === 'video') {
 Para testar a arquitetura:
 
 1. **Teste de Detecção de Tipo:**
+
 ```typescript
 const type = jiraMediaService.detectMediaType('document.pdf');
 expect(type).toBe('pdf');
 ```
 
 2. **Teste de Sanitização:**
+
 ```typescript
 const sanitized = JiraContentSanitizer.sanitize('<script>alert("xss")</script>');
 expect(sanitized.html).not.toContain('<script>');
 ```
 
 3. **Teste de Hook:**
+
 ```typescript
 const { result } = renderHook(() => useJiraMedia(id, filename));
 expect(result.current.loading).toBe(true);
@@ -187,19 +200,21 @@ expect(result.current.loading).toBe(true);
 ### 1. Cache Persistente de Imagens (`services/imageCacheService.ts`)
 
 **Responsabilidades:**
+
 - Armazenar blobs de imagens em IndexedDB
 - Gerenciar quota e limpeza automática (LRU)
 - Cache com metadata (timestamp, tamanho, MIME type)
 - Limpeza automática de entradas expiradas
 
 **Uso:**
+
 ```typescript
 import { imageCacheService } from '../services/imageCacheService';
 
 // Obter do cache
 const cached = await imageCacheService.get(url);
 if (cached.fromCache) {
-    // Usar blob do cache
+  // Usar blob do cache
 }
 
 // Salvar no cache
@@ -210,6 +225,7 @@ const stats = await imageCacheService.getStats();
 ```
 
 **Configuração:**
+
 - Tamanho máximo: 100MB (padrão)
 - Idade máxima: 7 dias (padrão)
 - Máximo de entradas: 1000 (padrão)
@@ -217,29 +233,32 @@ const stats = await imageCacheService.getStats();
 ### 2. Suporte a Thumbnails
 
 **Implementação:**
+
 - `jiraMediaService.getThumbnailUrl()` - Obtém URL de thumbnail do Jira
 - `jiraMediaService.hasThumbnail()` - Verifica disponibilidade
 - `useJiraMedia` carrega thumbnail primeiro, depois imagem completa
 - `FilePreview` exibe thumbnail inicialmente, carrega imagem completa ao hover/clique
 
 **Uso:**
+
 ```typescript
 const thumbnailUrl = jiraMediaService.getThumbnailUrl(
-    attachmentId,
-    filename,
-    jiraUrl,
-    200, // width
-    200  // height
+  attachmentId,
+  filename,
+  jiraUrl,
+  200, // width
+  200 // height
 );
 
 const { thumbnailUrl, loadingThumbnail } = useJiraMedia(id, filename, size, {
-    includeThumbnail: true,
+  includeThumbnail: true,
 });
 ```
 
 ### 3. PDF Viewer (`components/common/PDFViewer.tsx`)
 
 **Funcionalidades:**
+
 - Visualização de PDFs com `react-pdf`
 - Navegação de páginas (anterior/próxima)
 - Controles de zoom (50% - 300%)
@@ -248,6 +267,7 @@ const { thumbnailUrl, loadingThumbnail } = useJiraMedia(id, filename, size, {
 - Renderização de texto e anotações
 
 **Uso:**
+
 ```typescript
 <PDFViewer
     url={pdfUrl}
@@ -258,12 +278,14 @@ const { thumbnailUrl, loadingThumbnail } = useJiraMedia(id, filename, size, {
 ```
 
 **Integração:**
+
 - Integrado em `MediaViewer` para visualização em modal
 - Suporta PDFs do Jira via proxy autenticado
 
 ### 4. Video Viewer (`components/common/VideoViewer.tsx`)
 
 **Funcionalidades:**
+
 - Player de vídeo com controles customizados
 - Play/Pause
 - Controle de volume e mute
@@ -271,6 +293,7 @@ const { thumbnailUrl, loadingThumbnail } = useJiraMedia(id, filename, size, {
 - Download e abrir externo
 
 **Uso:**
+
 ```typescript
 <VideoViewer
     url={videoUrl}
@@ -284,6 +307,7 @@ const { thumbnailUrl, loadingThumbnail } = useJiraMedia(id, filename, size, {
 ### 5. Audio Viewer (`components/common/AudioViewer.tsx`)
 
 **Funcionalidades:**
+
 - Player de áudio completo
 - Play/Pause
 - Barra de progresso com seek
@@ -292,6 +316,7 @@ const { thumbnailUrl, loadingThumbnail } = useJiraMedia(id, filename, size, {
 - Download e abrir externo
 
 **Uso:**
+
 ```typescript
 <AudioViewer
     url={audioUrl}
@@ -305,6 +330,7 @@ const { thumbnailUrl, loadingThumbnail } = useJiraMedia(id, filename, size, {
 ### 6. Testes Unitários
 
 **Cobertura:**
+
 - ✅ `tests/services/jiraMediaService.test.ts` - Detecção de tipos, resolução de URLs, cache
 - ✅ `tests/hooks/useJiraMedia.test.ts` - Carregamento, estados, cleanup
 - ✅ `tests/utils/jiraContentSanitizer.test.ts` - Sanitização, processamento de imagens, XSS
@@ -312,6 +338,7 @@ const { thumbnailUrl, loadingThumbnail } = useJiraMedia(id, filename, size, {
 - ✅ `tests/components/common/MediaViewer.test.tsx` - Modal, renderização de tipos, ações
 
 **Executar testes:**
+
 ```bash
 npm test
 npm run test:coverage
@@ -358,4 +385,3 @@ UI (exibe preview ou visualizador completo)
 - [ ] Implementar cache offline com Service Worker
 - [ ] Adicionar métricas de performance do cache
 - [ ] Criar testes de integração end-to-end
-

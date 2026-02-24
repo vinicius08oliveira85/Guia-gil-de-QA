@@ -70,7 +70,8 @@ export const Footer: React.FC = () => {
             >
               <h3 className="text-2xl font-bold text-base-content mb-4">QA Agile Guide</h3>
               <p className="text-base-content/70 mb-6 max-w-sm">
-                Plataforma para organizar QA ágil com templates, métricas, relatórios e integrações opcionais.
+                Plataforma para organizar QA ágil com templates, métricas, relatórios e integrações
+                opcionais.
               </p>
               {/* Social links */}
               <div className="flex gap-4" aria-label="Links sociais">
@@ -146,4 +147,3 @@ export const Footer: React.FC = () => {
     </footer>
   );
 };
-

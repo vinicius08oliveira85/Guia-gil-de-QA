@@ -64,8 +64,9 @@ export const HeroSection: React.FC = () => {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="text-lg sm:text-xl md:text-2xl text-base-content/70 mb-8 max-w-3xl mx-auto leading-relaxed"
           >
-            Centralize projetos, tarefas, casos de teste e evidências. Acompanhe progresso e riscos em dashboards
-            e gere relatórios com consistência — com Jira e Supabase como integrações opcionais.
+            Centralize projetos, tarefas, casos de teste e evidências. Acompanhe progresso e riscos
+            em dashboards e gere relatórios com consistência — com Jira e Supabase como integrações
+            opcionais.
           </motion.p>
 
           {/* CTAs */}
@@ -139,4 +140,3 @@ export const HeroSection: React.FC = () => {
     </section>
   );
 };
-

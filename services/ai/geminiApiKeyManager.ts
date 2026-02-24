@@ -62,7 +62,7 @@ export class GeminiApiKeyManager {
   reloadKeys(): void {
     const previousKeyCount = this.keys.length;
     this.initializeKeys();
-    
+
     if (this.keys.length !== previousKeyCount) {
       logger.info(
         `API keys recarregadas: ${previousKeyCount} -> ${this.keys.length}`,
@@ -110,11 +110,9 @@ export class GeminiApiKeyManager {
       currentKey.exhausted = true;
       currentKey.exhaustedAt = Date.now();
 
-      logger.warn(
-        'API key do Gemini marcada como esgotada',
-        'GeminiApiKeyManager',
-        { keyIndex: this.currentKeyIndex }
-      );
+      logger.warn('API key do Gemini marcada como esgotada', 'GeminiApiKeyManager', {
+        keyIndex: this.currentKeyIndex,
+      });
     }
   }
 
@@ -128,7 +126,7 @@ export class GeminiApiKeyManager {
     for (const keyStatus of this.keys) {
       if (keyStatus.exhausted && keyStatus.exhaustedAt) {
         const timeSinceExhausted = now - keyStatus.exhaustedAt;
-        
+
         // Resetar se passou mais de 24 horas
         if (timeSinceExhausted >= this.resetIntervalMs) {
           keyStatus.exhausted = false;
@@ -230,4 +228,3 @@ export class GeminiApiKeyManager {
  * Instância global do gerenciador de API keys
  */
 export const geminiApiKeyManager = new GeminiApiKeyManager();
-

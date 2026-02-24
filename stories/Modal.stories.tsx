@@ -25,7 +25,13 @@ const meta: Meta<typeof Modal> = {
 export default meta;
 type Story = StoryObj<typeof Modal>;
 
-const ModalWrapper = ({ size = 'md', children }: { size?: 'sm' | 'md' | 'lg' | 'xl' | 'full'; children: React.ReactNode }) => {
+const ModalWrapper = ({
+  size = 'md',
+  children,
+}: {
+  size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
+  children: React.ReactNode;
+}) => {
   const [isOpen, setIsOpen] = useState(true);
   return (
     <>
@@ -40,9 +46,7 @@ const ModalWrapper = ({ size = 'md', children }: { size?: 'sm' | 'md' | 'lg' | '
 export const Default: Story = {
   render: () => (
     <ModalWrapper>
-      <p className="text-text-secondary">
-        Este é um modal padrão com conteúdo simples.
-      </p>
+      <p className="text-text-secondary">Este é um modal padrão com conteúdo simples.</p>
     </ModalWrapper>
   ),
 };
@@ -50,9 +54,7 @@ export const Default: Story = {
 export const Small: Story = {
   render: () => (
     <ModalWrapper size="sm">
-      <p className="text-text-secondary">
-        Modal pequeno ideal para confirmações rápidas.
-      </p>
+      <p className="text-text-secondary">Modal pequeno ideal para confirmações rápidas.</p>
     </ModalWrapper>
   ),
 };
@@ -60,9 +62,7 @@ export const Small: Story = {
 export const Medium: Story = {
   render: () => (
     <ModalWrapper size="md">
-      <p className="text-text-secondary mb-4">
-        Modal médio com conteúdo padrão.
-      </p>
+      <p className="text-text-secondary mb-4">Modal médio com conteúdo padrão.</p>
       <div className="flex gap-2">
         <ButtonLeve variant="primary">Confirmar</ButtonLeve>
         <ButtonLeve variant="secondary">Cancelar</ButtonLeve>
@@ -80,9 +80,7 @@ export const Large: Story = {
           Este modal é ideal para conteúdo mais extenso, formulários ou visualizações detalhadas.
         </p>
         <div className="card-surface p-4">
-          <p className="text-text-secondary">
-            Conteúdo adicional em um card dentro do modal.
-          </p>
+          <p className="text-text-secondary">Conteúdo adicional em um card dentro do modal.</p>
         </div>
       </div>
     </ModalWrapper>
@@ -95,19 +93,11 @@ export const WithForm: Story = {
       <form className="space-y-4">
         <div>
           <label className="block text-sm font-medium mb-2">Nome</label>
-          <input
-            type="text"
-            className="input-field w-full"
-            placeholder="Digite seu nome"
-          />
+          <input type="text" className="input-field w-full" placeholder="Digite seu nome" />
         </div>
         <div>
           <label className="block text-sm font-medium mb-2">Email</label>
-          <input
-            type="email"
-            className="input-field w-full"
-            placeholder="Digite seu email"
-          />
+          <input type="email" className="input-field w-full" placeholder="Digite seu email" />
         </div>
         <div className="flex gap-2 justify-end">
           <ButtonLeve variant="secondary">Cancelar</ButtonLeve>
@@ -117,4 +107,3 @@ export const WithForm: Story = {
     </ModalWrapper>
   ),
 };
-

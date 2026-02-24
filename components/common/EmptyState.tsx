@@ -36,20 +36,19 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   tips,
   helpContent,
   helpText,
-  illustration
+  illustration,
 }) => {
-
   return (
-    <motion.div 
-      className="flex flex-col items-center justify-center py-16 px-4 text-center" 
-      role="status" 
+    <motion.div
+      className="flex flex-col items-center justify-center py-16 px-4 text-center"
+      role="status"
       aria-live="polite"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
     >
       {/* Ícone ou ilustração */}
-      <motion.div 
+      <motion.div
         className="mb-6"
         aria-hidden="true"
         initial={{ scale: 0.8, opacity: 0 }}
@@ -66,21 +65,21 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
       </motion.div>
 
       {/* Título */}
-      <motion.div 
+      <motion.div
         className="flex items-center gap-2 mb-3"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2 }}
       >
-        <h3 className="text-xl sm:text-2xl font-semibold tracking-tight text-base-content">{title}</h3>
-        {helpContent && (
-          <HelpTooltip title={helpContent.title} content={helpContent.content} />
-        )}
+        <h3 className="text-xl sm:text-2xl font-semibold tracking-tight text-base-content">
+          {title}
+        </h3>
+        {helpContent && <HelpTooltip title={helpContent.title} content={helpContent.content} />}
       </motion.div>
 
       {/* Descrição */}
       {description && (
-        <motion.p 
+        <motion.p
           className="text-base-content/70 max-w-md mb-6"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -92,7 +91,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
 
       {/* Dica única */}
       {tip && (
-        <motion.div 
+        <motion.div
           className="bg-primary/10 border border-primary/30 rounded-xl p-4 mb-6 max-w-md"
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -104,10 +103,9 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
         </motion.div>
       )}
 
-
       {/* Texto de ajuda */}
       {helpText && (
-        <motion.p 
+        <motion.p
           className="text-xs text-base-content/70 max-w-md mb-6"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -118,7 +116,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
       )}
 
       {/* Ações */}
-      <motion.div 
+      <motion.div
         className="flex gap-3 flex-wrap justify-center"
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -148,4 +146,3 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
     </motion.div>
   );
 };
-

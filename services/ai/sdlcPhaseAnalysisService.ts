@@ -1,4 +1,4 @@
-import { Type } from "@google/genai";
+import { Type } from '@google/genai';
 import { Project, SDLCPhaseAnalysis, PhaseName } from '../../types';
 import { calculateProjectMetrics } from '../../hooks/useProjectMetrics';
 import { getFormattedContext } from './documentContextService';
@@ -7,7 +7,10 @@ import { logger } from '../../utils/logger';
 
 const CACHE_TTL_MS = 1000 * 60 * 10; // 10 minutos
 
-const analysisCache = new Map<string, { snapshotHash: string; expiresAt: number; analysis: SDLCPhaseAnalysis }>();
+const analysisCache = new Map<
+  string,
+  { snapshotHash: string; expiresAt: number; analysis: SDLCPhaseAnalysis }
+>();
 
 const hashString = (value: string): string => {
   let hash = 0;
@@ -24,7 +27,7 @@ const createPhaseSnapshot = (project: Project): string => {
   const rawCurrentPhase = metrics.currentPhase;
   const currentPhase = rawCurrentPhase === 'Concluído' ? 'Monitor' : rawCurrentPhase;
   const currentPhaseData = project.phases.find(p => p.name === currentPhase);
-  
+
   const snapshot = {
     projectId: project.id,
     currentPhase,
@@ -47,7 +50,7 @@ const createPhaseSnapshot = (project: Project): string => {
       status: p.status,
     })),
   };
-  
+
   return JSON.stringify(snapshot);
 };
 
@@ -56,12 +59,24 @@ const sdlcPhaseAnalysisSchema = {
   properties: {
     currentPhase: {
       type: Type.STRING,
-      enum: ['Request', 'Analysis', 'Design', 'Analysis and Code', 'Build', 'Test', 'Release', 'Deploy', 'Operate', 'Monitor'],
-      description: "Fase atual do SDLC detectada"
+      enum: [
+        'Request',
+        'Analysis',
+        'Design',
+        'Analysis and Code',
+        'Build',
+        'Test',
+        'Release',
+        'Deploy',
+        'Operate',
+        'Monitor',
+      ],
+      description: 'Fase atual do SDLC detectada',
     },
     explanation: {
       type: Type.STRING,
-      description: "Explicação detalhada de por que o projeto está nesta fase, baseado nas métricas e status"
+      description:
+        'Explicação detalhada de por que o projeto está nesta fase, baseado nas métricas e status',
     },
     nextSteps: {
       type: Type.ARRAY,
@@ -77,7 +92,7 @@ const sdlcPhaseAnalysisSchema = {
         },
         required: ['step', 'description', 'priority'],
       },
-      description: "Próximos passos recomendados para avançar na fase atual ou para a próxima fase"
+      description: 'Próximos passos recomendados para avançar na fase atual ou para a próxima fase',
     },
     blockers: {
       type: Type.ARRAY,
@@ -94,11 +109,11 @@ const sdlcPhaseAnalysisSchema = {
         },
         required: ['blocker', 'description', 'impact', 'suggestion'],
       },
-      description: "Bloqueios ou problemas identificados que impedem o progresso"
+      description: 'Bloqueios ou problemas identificados que impedem o progresso',
     },
     progressPercentage: {
       type: Type.NUMBER,
-      description: "Percentual de conclusão da fase atual (0-100)"
+      description: 'Percentual de conclusão da fase atual (0-100)',
     },
   },
   required: ['currentPhase', 'explanation', 'nextSteps', 'blockers', 'progressPercentage'],
@@ -111,67 +126,72 @@ function calculatePhaseProgress(project: Project, currentPhase: PhaseName): numb
   const metrics = calculateProjectMetrics(project);
   const totalTasks = project.tasks.filter(t => t.type === 'Tarefa').length;
   const doneTasks = project.tasks.filter(t => t.type !== 'Bug' && t.status === 'Done').length;
-  
+
   switch (currentPhase) {
-    case 'Request':
-      // Progresso baseado em documentos ou tarefas criados
+    case 'Request': // Progresso baseado em documentos ou tarefas criados
     {
       const hasContent = project.documents.length > 0 || project.tasks.length > 0;
       return hasContent ? 100 : 0;
     }
-      
-    case 'Analysis':
-      // Progresso baseado em cenários BDD
+
+    case 'Analysis': // Progresso baseado em cenários BDD
     {
-      const tasksWithBdd = project.tasks.filter(t => t.bddScenarios && t.bddScenarios.length > 0).length;
+      const tasksWithBdd = project.tasks.filter(
+        t => t.bddScenarios && t.bddScenarios.length > 0
+      ).length;
       return totalTasks > 0 ? Math.round((tasksWithBdd / totalTasks) * 100) : 0;
     }
-      
-    case 'Design':
-      // Progresso baseado em casos de teste criados
+
+    case 'Design': // Progresso baseado em casos de teste criados
     {
       const totalTestCases = metrics.totalTestCases;
       const expectedTestCases = totalTestCases > 0 ? totalTestCases : 1;
       return Math.min(100, Math.round((totalTestCases / expectedTestCases) * 100));
     }
-      
+
     case 'Analysis and Code':
       // Progresso baseado em tarefas concluídas
       return totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0;
-      
+
     case 'Build':
       // Similar a Analysis and Code
       return totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0;
-      
+
     case 'Test':
       // Progresso baseado em testes executados
-      return metrics.totalTestCases > 0 
-        ? Math.round((metrics.executedTestCases / metrics.totalTestCases) * 100) 
+      return metrics.totalTestCases > 0
+        ? Math.round((metrics.executedTestCases / metrics.totalTestCases) * 100)
         : 0;
-        
-    case 'Release':
-      // Progresso baseado em testes executados e bugs resolvidos
+
+    case 'Release': // Progresso baseado em testes executados e bugs resolvidos
     {
-      const testProgress = metrics.totalTestCases > 0 
-        ? (metrics.executedTestCases / metrics.totalTestCases) * 50 
-        : 0;
-      const bugProgress = metrics.openVsClosedBugs.open === 0 ? 50 : 
-        Math.max(0, 50 - (metrics.openVsClosedBugs.open * 10));
+      const testProgress =
+        metrics.totalTestCases > 0 ? (metrics.executedTestCases / metrics.totalTestCases) * 50 : 0;
+      const bugProgress =
+        metrics.openVsClosedBugs.open === 0
+          ? 50
+          : Math.max(0, 50 - metrics.openVsClosedBugs.open * 10);
       return Math.min(100, Math.round(testProgress + bugProgress));
     }
-      
+
     case 'Deploy':
       // Similar a Release
-      return metrics.openVsClosedBugs.open === 0 && metrics.executedTestCases === metrics.totalTestCases ? 100 : 0;
-      
+      return metrics.openVsClosedBugs.open === 0 &&
+        metrics.executedTestCases === metrics.totalTestCases
+        ? 100
+        : 0;
+
     case 'Operate':
       // Similar a Deploy
-      return metrics.openVsClosedBugs.open === 0 && metrics.executedTestCases === metrics.totalTestCases ? 100 : 0;
-      
+      return metrics.openVsClosedBugs.open === 0 &&
+        metrics.executedTestCases === metrics.totalTestCases
+        ? 100
+        : 0;
+
     case 'Monitor':
       // Fase manual, sempre 0 até ser marcada manualmente
       return 0;
-      
+
     default:
       return 0;
   }
@@ -184,60 +204,64 @@ export async function generateSDLCPhaseAnalysis(project: Project): Promise<SDLCP
   const snapshot = createPhaseSnapshot(project);
   const snapshotHash = hashString(snapshot);
   const cacheKey = `sdlc-phase-analysis:${project.id}`;
-  
+
   // Verificar cache
   const cached = analysisCache.get(cacheKey);
   if (cached && cached.snapshotHash === snapshotHash && cached.expiresAt > Date.now()) {
     return cached.analysis;
   }
-  
+
   const metrics = calculateProjectMetrics(project);
   const rawCurrentPhase = metrics.currentPhase;
   const currentPhase = (rawCurrentPhase === 'Concluído' ? 'Monitor' : rawCurrentPhase) as PhaseName;
   const progressPercentage = calculatePhaseProgress(project, currentPhase);
-  
+
   const phaseDescriptions: Record<PhaseName, string> = {
-    'Request': 'Solicitação da demanda pelo time de atendimento ou produto.',
-    'Analysis': 'Análise do time de produto e levantamento dos requisitos.',
-    'Design': 'Design pelo time de UX/UI com base nas necessidades levantadas.',
+    Request: 'Solicitação da demanda pelo time de atendimento ou produto.',
+    Analysis: 'Análise do time de produto e levantamento dos requisitos.',
+    Design: 'Design pelo time de UX/UI com base nas necessidades levantadas.',
     'Analysis and Code': 'Análise e codificação pelo time de desenvolvimento.',
-    'Build': 'Código fonte compilado e construído em um pacote executável.',
-    'Test': 'Etapa onde o software é testado para garantir seu correto funcionamento.',
-    'Release': 'Preparo para o software ser instalado em ambiente produtivo.',
-    'Deploy': 'O software é implantado em ambiente produtivo para os usuários finais.',
-    'Operate': 'Software em execução, monitorado pela equipe de operações.',
-    'Monitor': 'Coleta de métricas e logs para avaliar o desempenho e a saúde da aplicação.'
+    Build: 'Código fonte compilado e construído em um pacote executável.',
+    Test: 'Etapa onde o software é testado para garantir seu correto funcionamento.',
+    Release: 'Preparo para o software ser instalado em ambiente produtivo.',
+    Deploy: 'O software é implantado em ambiente produtivo para os usuários finais.',
+    Operate: 'Software em execução, monitorado pela equipe de operações.',
+    Monitor: 'Coleta de métricas e logs para avaliar o desempenho e a saúde da aplicação.',
   };
-  
+
   const documentContext = await getFormattedContext(project);
   const prompt = `${documentContext}
 Você é um especialista sênior em QA e gestão de projetos de software seguindo metodologias ágeis e DevOps.
 Analise o estado atual do projeto e forneça uma análise didática sobre a fase SDLC atual.
 
 CONTEXTO DO PROJETO:
-${JSON.stringify({
-  faseAtual: currentPhase,
-  descricaoFase: phaseDescriptions[currentPhase],
-  statusFase: project.phases.find(p => p.name === currentPhase)?.status || 'Não Iniciado',
-  progresso: `${progressPercentage}%`,
-  metricas: {
-    totalTarefas: metrics.totalTasks,
-    totalCasosDeTeste: metrics.totalTestCases,
-    casosExecutados: metrics.executedTestCases,
-    casosAprovados: metrics.passedTestCases,
-    casosFalhados: metrics.failedTestCases,
-    taxaSucesso: `${metrics.testPassRate}%`,
-    coberturaTestes: `${metrics.testCoverage}%`,
-    bugsAbertos: metrics.openVsClosedBugs.open,
-    bugsPorSeveridade: metrics.bugsBySeverity,
-    totalDocumentos: project.documents.length,
-    temCenariosBDD: project.tasks.some(t => t.bddScenarios && t.bddScenarios.length > 0),
+${JSON.stringify(
+  {
+    faseAtual: currentPhase,
+    descricaoFase: phaseDescriptions[currentPhase],
+    statusFase: project.phases.find(p => p.name === currentPhase)?.status || 'Não Iniciado',
+    progresso: `${progressPercentage}%`,
+    metricas: {
+      totalTarefas: metrics.totalTasks,
+      totalCasosDeTeste: metrics.totalTestCases,
+      casosExecutados: metrics.executedTestCases,
+      casosAprovados: metrics.passedTestCases,
+      casosFalhados: metrics.failedTestCases,
+      taxaSucesso: `${metrics.testPassRate}%`,
+      coberturaTestes: `${metrics.testCoverage}%`,
+      bugsAbertos: metrics.openVsClosedBugs.open,
+      bugsPorSeveridade: metrics.bugsBySeverity,
+      totalDocumentos: project.documents.length,
+      temCenariosBDD: project.tasks.some(t => t.bddScenarios && t.bddScenarios.length > 0),
+    },
+    fases: project.phases.map(p => ({
+      nome: p.name,
+      status: p.status,
+    })),
   },
-  fases: project.phases.map(p => ({
-    nome: p.name,
-    status: p.status,
-  })),
-}, null, 2)}
+  null,
+  2
+)}
 
 INSTRUÇÕES:
 1. EXPLICAÇÃO (explanation):
@@ -271,33 +295,33 @@ INSTRUÇÕES:
 
 Respeite o schema JSON fornecido.
   `;
-  
+
   try {
     const response = await callGeminiWithRetry({
-      model: "gemini-2.5-flash",
+      model: 'gemini-2.5-flash',
       contents: prompt,
       config: {
-        responseMimeType: "application/json",
+        responseMimeType: 'application/json',
         responseSchema: sdlcPhaseAnalysisSchema,
       },
     });
-    
+
     const parsedResponse = JSON.parse(response.text.trim());
-    
+
     const analysis: SDLCPhaseAnalysis = {
       ...parsedResponse,
       progressPercentage, // Usar o valor calculado, não o da IA
       generatedAt: new Date().toISOString(),
       isOutdated: false,
     };
-    
+
     // Salvar no cache
     analysisCache.set(cacheKey, {
       snapshotHash,
       expiresAt: Date.now() + CACHE_TTL_MS,
       analysis,
     });
-    
+
     return analysis;
   } catch (error) {
     logger.error('Erro ao gerar análise de fase SDLC', 'sdlcPhaseAnalysisService', error);
@@ -310,14 +334,14 @@ Respeite o schema JSON fornecido.
  */
 export function markSDLCPhaseAnalysisAsOutdated(project: Project): Project {
   const updatedProject = { ...project };
-  
+
   const currentSnapshot = createPhaseSnapshot(project);
-  
+
   if (project.sdlcPhaseAnalysis) {
     const cacheKey = `sdlc-phase-analysis:${project.id}`;
     const cached = analysisCache.get(cacheKey);
     const currentHash = hashString(currentSnapshot);
-    
+
     if (!cached || cached.snapshotHash !== currentHash) {
       updatedProject.sdlcPhaseAnalysis = {
         ...project.sdlcPhaseAnalysis,
@@ -325,7 +349,6 @@ export function markSDLCPhaseAnalysisAsOutdated(project: Project): Project {
       };
     }
   }
-  
+
   return updatedProject;
 }
-

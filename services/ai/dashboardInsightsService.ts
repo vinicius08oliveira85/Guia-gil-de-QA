@@ -1,4 +1,4 @@
-import { Type } from "@google/genai";
+import { Type } from '@google/genai';
 import { Project, DashboardInsightsAnalysis, SDLCPhaseAnalysis } from '../../types';
 import { calculateProjectMetrics } from '../../hooks/useProjectMetrics';
 import { getCurrentAndPreviousPeriodMetrics } from '../metricsHistoryService';
@@ -9,7 +9,10 @@ import { logger } from '../../utils/logger';
 
 const CACHE_TTL_MS = 1000 * 60 * 10; // 10 minutos
 
-const analysisCache = new Map<string, { snapshotHash: string; expiresAt: number; analysis: DashboardInsightsAnalysis }>();
+const analysisCache = new Map<
+  string,
+  { snapshotHash: string; expiresAt: number; analysis: DashboardInsightsAnalysis }
+>();
 
 const hashString = (value: string): string => {
   let hash = 0;
@@ -24,7 +27,7 @@ const hashString = (value: string): string => {
 const createMetricsSnapshot = (project: Project): string => {
   const metrics = calculateProjectMetrics(project);
   const periodMetrics = getCurrentAndPreviousPeriodMetrics(project, 'week');
-  
+
   const snapshot = {
     projectId: project.id,
     metrics: {
@@ -45,19 +48,22 @@ const createMetricsSnapshot = (project: Project): string => {
       reexecutedTests: metrics.quickAnalysis.reexecutedTests,
       recentlyResolvedBugs: metrics.quickAnalysis.recentlyResolvedBugs,
     },
-    trends: periodMetrics.current && periodMetrics.previous ? {
-      passRate: {
-        current: periodMetrics.current.testPassRate,
-        previous: periodMetrics.previous.testPassRate,
-      },
-      totalBugs: {
-        current: periodMetrics.current.totalBugs,
-        previous: periodMetrics.previous.totalBugs,
-      },
-    } : null,
+    trends:
+      periodMetrics.current && periodMetrics.previous
+        ? {
+            passRate: {
+              current: periodMetrics.current.testPassRate,
+              previous: periodMetrics.previous.testPassRate,
+            },
+            totalBugs: {
+              current: periodMetrics.current.totalBugs,
+              previous: periodMetrics.previous.totalBugs,
+            },
+          }
+        : null,
     history: project.metricsHistory?.slice(0, 7) || [], // Últimos 7 dias
   };
-  
+
   return JSON.stringify(snapshot);
 };
 
@@ -66,12 +72,12 @@ const insightsAnalysisSchema = {
   properties: {
     qualityScore: {
       type: Type.NUMBER,
-      description: "Score de qualidade geral do projeto (0-100)"
+      description: 'Score de qualidade geral do projeto (0-100)',
     },
     qualityLevel: {
       type: Type.STRING,
       enum: ['Excelente', 'Bom', 'Regular', 'Ruim', 'Crítico'],
-      description: "Nível de qualidade geral"
+      description: 'Nível de qualidade geral',
     },
     insights: {
       type: Type.ARRAY,
@@ -173,71 +179,87 @@ const insightsAnalysisSchema = {
       required: ['testPassRate', 'bugResolution', 'coverage'],
     },
   },
-  required: ['qualityScore', 'qualityLevel', 'insights', 'predictions', 'recommendations', 'metricEnhancements'],
+  required: [
+    'qualityScore',
+    'qualityLevel',
+    'insights',
+    'predictions',
+    'recommendations',
+    'metricEnhancements',
+  ],
 };
 
 /**
  * Gera análise de insights do dashboard com IA
  */
-export async function generateDashboardInsightsAnalysis(project: Project): Promise<DashboardInsightsAnalysis> {
+export async function generateDashboardInsightsAnalysis(
+  project: Project
+): Promise<DashboardInsightsAnalysis> {
   const snapshot = createMetricsSnapshot(project);
   const snapshotHash = hashString(snapshot);
   const cacheKey = `dashboard-insights:${project.id}`;
-  
+
   // Verificar cache
   const cached = analysisCache.get(cacheKey);
   if (cached && cached.snapshotHash === snapshotHash && cached.expiresAt > Date.now()) {
     return cached.analysis;
   }
-  
+
   const metrics = calculateProjectMetrics(project);
   const periodMetrics = getCurrentAndPreviousPeriodMetrics(project, 'week');
   const tasksAndTestsData = prepareTasksAndTestsData(project);
-  
+
   const documentContext = await getFormattedContext(project);
   const prompt = `${documentContext}
 Você é um especialista sênior em QA e análise de métricas de qualidade de software.
 Analise as métricas do dashboard fornecidas e gere insights acionáveis, previsões e recomendações.
 
 CONTEXTO E MÉTRICAS:
-${JSON.stringify({
-  metricas: {
-    totalTestCases: metrics.totalTestCases,
-    passedTestCases: metrics.passedTestCases,
-    failedTestCases: metrics.failedTestCases,
-    blockedTestCases: metrics.blockedTestCases,
-    notRunTestCases: metrics.notRunTestCases,
-    executedTestCases: metrics.executedTestCases,
-    testPassRate: metrics.testPassRate,
-    automationRatio: metrics.automationRatio,
-    testCoverage: metrics.testCoverage,
-    totalBugs: metrics.openVsClosedBugs.open + metrics.openVsClosedBugs.closed,
-    openBugs: metrics.openVsClosedBugs.open,
-    bugsBySeverity: metrics.bugsBySeverity,
-    averageFailuresPerDay: metrics.quickAnalysis.averageFailuresPerDay,
-    topProblematicTasks: metrics.quickAnalysis.topProblematicTasks,
-    reexecutedTests: metrics.quickAnalysis.reexecutedTests,
-    recentlyResolvedBugs: metrics.quickAnalysis.recentlyResolvedBugs,
-  },
-  tarefasETestes: {
-    resumo: tasksAndTestsData.summary,
-    tarefasSemTestes: tasksAndTestsData.tasksWithoutTests.length,
-    tarefasSemBdd: tasksAndTestsData.tasksWithoutBdd.length,
-    tarefasProblematicas: tasksAndTestsData.problematicTasks,
-    detalhesTarefas: tasksAndTestsData.tasks.slice(0, 20), // Limitar a 20 tarefas para não exceder tokens
-  },
-  tendencias: periodMetrics.current && periodMetrics.previous ? {
-    passRate: {
-      atual: periodMetrics.current.testPassRate,
-      anterior: periodMetrics.previous.testPassRate,
+${JSON.stringify(
+  {
+    metricas: {
+      totalTestCases: metrics.totalTestCases,
+      passedTestCases: metrics.passedTestCases,
+      failedTestCases: metrics.failedTestCases,
+      blockedTestCases: metrics.blockedTestCases,
+      notRunTestCases: metrics.notRunTestCases,
+      executedTestCases: metrics.executedTestCases,
+      testPassRate: metrics.testPassRate,
+      automationRatio: metrics.automationRatio,
+      testCoverage: metrics.testCoverage,
+      totalBugs: metrics.openVsClosedBugs.open + metrics.openVsClosedBugs.closed,
+      openBugs: metrics.openVsClosedBugs.open,
+      bugsBySeverity: metrics.bugsBySeverity,
+      averageFailuresPerDay: metrics.quickAnalysis.averageFailuresPerDay,
+      topProblematicTasks: metrics.quickAnalysis.topProblematicTasks,
+      reexecutedTests: metrics.quickAnalysis.reexecutedTests,
+      recentlyResolvedBugs: metrics.quickAnalysis.recentlyResolvedBugs,
     },
-    totalBugs: {
-      atual: periodMetrics.current.totalBugs,
-      anterior: periodMetrics.previous.totalBugs,
+    tarefasETestes: {
+      resumo: tasksAndTestsData.summary,
+      tarefasSemTestes: tasksAndTestsData.tasksWithoutTests.length,
+      tarefasSemBdd: tasksAndTestsData.tasksWithoutBdd.length,
+      tarefasProblematicas: tasksAndTestsData.problematicTasks,
+      detalhesTarefas: tasksAndTestsData.tasks.slice(0, 20), // Limitar a 20 tarefas para não exceder tokens
     },
-  } : null,
-  historico: project.metricsHistory?.slice(0, 7) || [],
-}, null, 2)}
+    tendencias:
+      periodMetrics.current && periodMetrics.previous
+        ? {
+            passRate: {
+              atual: periodMetrics.current.testPassRate,
+              anterior: periodMetrics.previous.testPassRate,
+            },
+            totalBugs: {
+              atual: periodMetrics.current.totalBugs,
+              anterior: periodMetrics.previous.totalBugs,
+            },
+          }
+        : null,
+    historico: project.metricsHistory?.slice(0, 7) || [],
+  },
+  null,
+  2
+)}
 
 INSTRUÇÕES:
 Como um QA sênior experiente, analise profundamente os dados fornecidos de Tarefas, Testes e Documentos para gerar indicadores completos do Dashboard.
@@ -277,35 +299,39 @@ Como um QA sênior experiente, analise profundamente os dados fornecidos de Tare
 
 Respeite o schema JSON fornecido.
   `;
-  
+
   try {
     const response = await callGeminiWithRetry({
-      model: "gemini-2.5-flash",
+      model: 'gemini-2.5-flash',
       contents: prompt,
       config: {
-        responseMimeType: "application/json",
+        responseMimeType: 'application/json',
         responseSchema: insightsAnalysisSchema,
       },
     });
-    
+
     const parsedResponse = JSON.parse(response.text.trim());
-    
+
     const analysis: DashboardInsightsAnalysis = {
       ...parsedResponse,
       generatedAt: new Date().toISOString(),
       isOutdated: false,
     };
-    
+
     // Salvar no cache
     analysisCache.set(cacheKey, {
       snapshotHash,
       expiresAt: Date.now() + CACHE_TTL_MS,
       analysis,
     });
-    
+
     return analysis;
   } catch (error) {
-    logger.error('Erro ao gerar análise de insights do dashboard', 'dashboardInsightsService', error);
+    logger.error(
+      'Erro ao gerar análise de insights do dashboard',
+      'dashboardInsightsService',
+      error
+    );
     throw error;
   }
 }
@@ -320,18 +346,19 @@ function prepareTasksAndTestsData(project: Project) {
     type: task.type,
     status: task.status,
     priority: task.priority,
-    testCases: task.testCases?.map(tc => ({
-      title: tc.title,
-      status: tc.status,
-      isAutomated: tc.isAutomated || false,
-    })) || [],
+    testCases:
+      task.testCases?.map(tc => ({
+        title: tc.title,
+        status: tc.status,
+        isAutomated: tc.isAutomated || false,
+      })) || [],
     bddScenarios: task.bddScenarios?.length || 0,
     hasBddScenarios: (task.bddScenarios?.length || 0) > 0,
   }));
 
   const tasksWithoutTests = tasks.filter(t => t.testCases.length === 0 && t.type !== 'Bug');
   const tasksWithoutBdd = tasks.filter(t => !t.hasBddScenarios && t.type !== 'Bug');
-  
+
   const problematicTasks = tasks
     .filter(t => {
       const failedTests = t.testCases.filter(tc => tc.status === 'Failed').length;
@@ -357,11 +384,11 @@ function prepareTasksAndTestsData(project: Project) {
       tasksWithBdd: tasks.filter(t => t.hasBddScenarios).length,
       totalTestCases: tasks.reduce((sum, t) => sum + t.testCases.length, 0),
       automatedTestCases: tasks.reduce(
-        (sum, t) => sum + t.testCases.filter((tc) => tc.isAutomated).length,
+        (sum, t) => sum + t.testCases.filter(tc => tc.isAutomated).length,
         0
       ),
       failedTestCases: tasks.reduce(
-        (sum, t) => sum + t.testCases.filter((tc) => tc.status === 'Failed').length,
+        (sum, t) => sum + t.testCases.filter(tc => tc.status === 'Failed').length,
         0
       ),
     },
@@ -391,14 +418,14 @@ export async function generateCompleteDashboardAnalysis(
  */
 export function markDashboardInsightsAsOutdated(project: Project): Project {
   const updatedProject = { ...project };
-  
+
   const currentSnapshot = createMetricsSnapshot(project);
-  
+
   if (project.dashboardInsightsAnalysis) {
     const cacheKey = `dashboard-insights:${project.id}`;
     const cached = analysisCache.get(cacheKey);
     const currentHash = hashString(currentSnapshot);
-    
+
     if (!cached || cached.snapshotHash !== currentHash) {
       updatedProject.dashboardInsightsAnalysis = {
         ...project.dashboardInsightsAnalysis,
@@ -406,7 +433,6 @@ export function markDashboardInsightsAsOutdated(project: Project): Project {
       };
     }
   }
-  
+
   return updatedProject;
 }
-

@@ -30,10 +30,14 @@ export const NavigationMenu: React.FC<NavigationMenuProps> = ({ items, currentPa
           <span className="text-xl">☰</span>
         </button>
         {isOpen && (
-          <div className="fixed inset-0 z-50 glass-overlay animate-fade-in" style={{ animationDuration: '300ms' }} onClick={() => setIsOpen(false)}>
+          <div
+            className="fixed inset-0 z-50 glass-overlay animate-fade-in"
+            style={{ animationDuration: '300ms' }}
+            onClick={() => setIsOpen(false)}
+          >
             <nav
               className="mica w-80 h-full p-6 overflow-y-auto animate-slide-in-from-left"
-              onClick={(e) => e.stopPropagation()}
+              onClick={e => e.stopPropagation()}
               role="navigation"
               aria-label="Menu principal"
             >
@@ -48,7 +52,7 @@ export const NavigationMenu: React.FC<NavigationMenuProps> = ({ items, currentPa
                 </button>
               </div>
               <ul className="space-y-2">
-                {items.map((item) => (
+                {items.map(item => (
                   <li key={item.id}>
                     <button
                       onClick={() => {
@@ -86,7 +90,7 @@ export const NavigationMenu: React.FC<NavigationMenuProps> = ({ items, currentPa
 
   return (
     <nav className="flex items-center gap-2" role="navigation" aria-label="Menu principal">
-      {items.map((item) => (
+      {items.map(item => (
         <button
           key={item.id}
           onClick={item.onClick}

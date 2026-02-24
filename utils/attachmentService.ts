@@ -3,12 +3,10 @@ import { Attachment, Project } from '../types';
 // Simulação de armazenamento (em produção, seria um serviço de upload real)
 const ATTACHMENTS_STORAGE_KEY = 'qa_attachments';
 
-export const createAttachment = (
-  file: File,
-  _taskId: string
-): Promise<Attachment> => {
+export const createAttachment = (file: File, _taskId: string): Promise<Attachment> => {
   return new Promise((resolve, reject) => {
-    if (file.size > 10 * 1024 * 1024) { // 10MB limit
+    if (file.size > 10 * 1024 * 1024) {
+      // 10MB limit
       reject(new Error('Arquivo muito grande. Tamanho máximo: 10MB'));
       return;
     }
@@ -16,7 +14,7 @@ export const createAttachment = (
     const reader = new FileReader();
     reader.onload = () => {
       const base64 = reader.result as string;
-      
+
       // Em produção, você faria upload para um serviço real (S3, Cloudinary, etc.)
       // Por enquanto, armazenamos como base64 no localStorage
       const attachment: Attachment = {
@@ -25,7 +23,7 @@ export const createAttachment = (
         type: file.type,
         size: file.size,
         url: base64, // Em produção seria uma URL real
-        uploadedAt: new Date().toISOString()
+        uploadedAt: new Date().toISOString(),
       };
 
       // Armazenar no localStorage (simulação)
@@ -52,7 +50,7 @@ export const addAttachmentToTask = (
       const attachments = task.attachments || [];
       return {
         ...task,
-        attachments: [...attachments, attachment]
+        attachments: [...attachments, attachment],
       };
     }
     return task;
@@ -91,7 +89,7 @@ export const formatFileSize = (bytes: number): string => {
   const k = 1024;
   const sizes = ['Bytes', 'KB', 'MB', 'GB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+  return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
 };
 
 export const getFileIcon = (type: string): string => {
@@ -103,4 +101,3 @@ export const getFileIcon = (type: string): string => {
   if (type.includes('zip') || type.includes('rar')) return '📦';
   return '📎';
 };
-

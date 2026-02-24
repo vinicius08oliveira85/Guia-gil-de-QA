@@ -1,7 +1,7 @@
 /**
  * Script para verificar a estrutura dos dados no Supabase
  * Verifica como Casos de Teste, Estratégias de Teste e Cenários BDD estão sendo salvos
- * 
+ *
  * Execute este script no console do navegador ou como parte de um teste
  */
 
@@ -45,7 +45,7 @@ export const verifySupabaseStructure = async (): Promise<VerificationResult[]> =
 
   try {
     logger.info('Iniciando verificação da estrutura do Supabase...', 'verifySupabase');
-    
+
     // Carregar todos os projetos do Supabase
     const { projects } = await loadProjectsFromSupabase();
 
@@ -68,7 +68,7 @@ export const verifySupabaseStructure = async (): Promise<VerificationResult[]> =
         totalTestStrategies: 0,
         totalBddScenarios: 0,
         taskDetails: [],
-        issues: []
+        issues: [],
       };
 
       if (!project.tasks || project.tasks.length === 0) {
@@ -89,7 +89,7 @@ export const verifySupabaseStructure = async (): Promise<VerificationResult[]> =
           testCases: task.testCases || [],
           testStrategy: task.testStrategy || [],
           bddScenarios: task.bddScenarios || [],
-          hasTestData: false
+          hasTestData: false,
         };
 
         // Verificar se tem dados de teste
@@ -160,11 +160,12 @@ export const verifySupabaseStructure = async (): Promise<VerificationResult[]> =
       const tasksThatShouldHaveTests = project.tasks.filter(
         task => task.type === 'Tarefa' || task.type === 'Bug'
       );
-      
+
       const tasksWithoutTests = tasksThatShouldHaveTests.filter(
-        task => (!task.testCases || task.testCases.length === 0) &&
-                (!task.testStrategy || task.testStrategy.length === 0) &&
-                (!task.bddScenarios || task.bddScenarios.length === 0)
+        task =>
+          (!task.testCases || task.testCases.length === 0) &&
+          (!task.testStrategy || task.testStrategy.length === 0) &&
+          (!task.bddScenarios || task.bddScenarios.length === 0)
       );
 
       if (tasksWithoutTests.length > 0) {
@@ -186,8 +187,8 @@ export const verifySupabaseStructure = async (): Promise<VerificationResult[]> =
 
     logger.info(
       `Verificação concluída: ${totalProjects} projeto(s), ${totalTasks} tarefa(s), ` +
-      `${totalTestCases} caso(s) de teste, ${totalStrategies} estratégia(s), ${totalBdd} cenário(s) BDD. ` +
-      `${totalIssues} problema(s) encontrado(s).`,
+        `${totalTestCases} caso(s) de teste, ${totalStrategies} estratégia(s), ${totalBdd} cenário(s) BDD. ` +
+        `${totalIssues} problema(s) encontrado(s).`,
       'verifySupabase'
     );
 
@@ -203,7 +204,7 @@ export const verifySupabaseStructure = async (): Promise<VerificationResult[]> =
  */
 export const generateVerificationReport = (results: VerificationResult[]): string => {
   let report = '# Relatório de Verificação - Estrutura Supabase\n\n';
-  
+
   report += `## Resumo Geral\n\n`;
   report += `- **Total de Projetos**: ${results.length}\n`;
   report += `- **Total de Tarefas**: ${results.reduce((sum, r) => sum + r.totalTasks, 0)}\n`;
@@ -250,7 +251,9 @@ export const generateVerificationReport = (results: VerificationResult[]): strin
 /**
  * Verifica se os dados estão relacionados corretamente às tarefas
  */
-export const verifyTaskRelations = (results: VerificationResult[]): {
+export const verifyTaskRelations = (
+  results: VerificationResult[]
+): {
   isValid: boolean;
   issues: string[];
 } => {
@@ -259,10 +262,12 @@ export const verifyTaskRelations = (results: VerificationResult[]): {
   for (const result of results) {
     // Verificar se cada tarefa tem seus próprios dados
     const taskIds = new Set<string>();
-    
+
     for (const taskDetail of result.taskDetails) {
       if (taskIds.has(taskDetail.taskId)) {
-        issues.push(`Tarefa duplicada encontrada: ${taskDetail.taskId} no projeto ${result.projectName}`);
+        issues.push(
+          `Tarefa duplicada encontrada: ${taskDetail.taskId} no projeto ${result.projectName}`
+        );
       }
       taskIds.add(taskDetail.taskId);
 
@@ -292,7 +297,6 @@ export const verifyTaskRelations = (results: VerificationResult[]): {
 
   return {
     isValid: issues.length === 0,
-    issues
+    issues,
   };
 };
-

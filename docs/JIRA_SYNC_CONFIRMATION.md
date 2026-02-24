@@ -33,26 +33,27 @@ if (hasChanges) {
 
 ```typescript
 updatedTasks[existingIndex] = {
-    ...oldTask, // ✅ Preservar TODOS os dados locais primeiro
-    // Atualizar APENAS campos importados do Jira
-    title: task.title,              // ✅ Só atualiza se mudou
-    description: task.description,   // ✅ Só atualiza se mudou
-    status: task.status,             // ✅ Só atualiza se mudou
-    jiraStatus: jiraStatusName,     // ✅ Só atualiza se mudou
-    priority: task.priority,         // ✅ Só atualiza se mudou
-    // ... outros campos do Jira
-    
-    // ✅ Preservar dados locais que NÃO vêm do Jira
-    testCases: finalTestCases,           // ✅ NUNCA resetado
-    bddScenarios: oldTask.bddScenarios,  // ✅ NUNCA resetado
-    testStrategy: oldTask.testStrategy,  // ✅ NUNCA resetado
-    tools: oldTask.tools,                // ✅ NUNCA resetado
-    testCaseTools: oldTask.testCaseTools, // ✅ NUNCA resetado
-    createdAt: oldTask.createdAt || task.createdAt, // ✅ Preservado
+  ...oldTask, // ✅ Preservar TODOS os dados locais primeiro
+  // Atualizar APENAS campos importados do Jira
+  title: task.title, // ✅ Só atualiza se mudou
+  description: task.description, // ✅ Só atualiza se mudou
+  status: task.status, // ✅ Só atualiza se mudou
+  jiraStatus: jiraStatusName, // ✅ Só atualiza se mudou
+  priority: task.priority, // ✅ Só atualiza se mudou
+  // ... outros campos do Jira
+
+  // ✅ Preservar dados locais que NÃO vêm do Jira
+  testCases: finalTestCases, // ✅ NUNCA resetado
+  bddScenarios: oldTask.bddScenarios, // ✅ NUNCA resetado
+  testStrategy: oldTask.testStrategy, // ✅ NUNCA resetado
+  tools: oldTask.tools, // ✅ NUNCA resetado
+  testCaseTools: oldTask.testCaseTools, // ✅ NUNCA resetado
+  createdAt: oldTask.createdAt || task.createdAt, // ✅ Preservado
 };
 ```
 
-**Confirmação:** 
+**Confirmação:**
+
 - Usa spread operator `...oldTask` para preservar todos os dados locais
 - Atualiza **apenas** os campos que vieram do Jira e que mudaram
 - Dados criados no App (testCases, bddScenarios, testStrategy) são **sempre preservados**
@@ -65,7 +66,8 @@ updatedTasks[existingIndex] = {
 const existingIndex = updatedTasks.findIndex(t => t.id === issue.key);
 ```
 
-**Confirmação:** 
+**Confirmação:**
+
 - Usa `task.id` (que é a chave Jira, ex: "GDPI-4") como identificador único
 - Busca tarefa existente comparando `t.id === issue.key`
 - A chave primária é sempre a tarefa (não há outra chave)
@@ -89,19 +91,20 @@ createdAt: oldTask.createdAt || task.createdAt, // ✅ Preservar data de criaç�
 ```typescript
 // PROTEÇÃO FINAL: Se há status executados nos existentes, usar diretamente sem mesclar
 if (existingTestCasesForTask.length > 0 && existingWithStatus > 0) {
-    // Começar com os existentes (que têm status preservados)
-    finalTestCases = [...existingTestCasesForTask];
-    
-    // Apenas adicionar testCases salvos que não existem nos existentes
-    for (const savedTestCase of savedTestCasesForTask) {
-        if (savedTestCase.id && !existingIdsForTask.has(savedTestCase.id)) {
-            finalTestCases.push(savedTestCase); // ✅ Incremental - só adiciona novos
-        }
+  // Começar com os existentes (que têm status preservados)
+  finalTestCases = [...existingTestCasesForTask];
+
+  // Apenas adicionar testCases salvos que não existem nos existentes
+  for (const savedTestCase of savedTestCasesForTask) {
+    if (savedTestCase.id && !existingIdsForTask.has(savedTestCase.id)) {
+      finalTestCases.push(savedTestCase); // ✅ Incremental - só adiciona novos
     }
+  }
 }
 ```
 
 **Confirmação:**
+
 - **Casos de Teste**: Nunca são resetados. Se já existem com status executados, são preservados. Apenas novos casos são adicionados.
 - **Cenários BDD**: Sempre preservados do `oldTask.bddScenarios`
 - **Estratégias**: Sempre preservadas do `oldTask.testStrategy`
@@ -159,6 +162,7 @@ if (existingTestCasesForTask.length > 0 && existingWithStatus > 0) {
 ## Exemplo Prático
 
 ### Estado Inicial:
+
 ```typescript
 {
   id: "GDPI-4",
@@ -177,6 +181,7 @@ if (existingTestCasesForTask.length > 0 && existingWithStatus > 0) {
 ```
 
 ### Após Sincronização (Jira mudou título):
+
 ```typescript
 {
   id: "GDPI-4",                    // ✅ Chave primária mantida
@@ -204,4 +209,3 @@ if (existingTestCasesForTask.length > 0 && existingWithStatus > 0) {
 4. ✅ Não reseta nenhum item feito dentro do App (proteção completa)
 
 A implementação é **segura, incremental e preserva todos os dados locais**.
-

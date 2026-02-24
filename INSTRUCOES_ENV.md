@@ -16,6 +16,7 @@
 ## ✅ Pronto!
 
 Agora você pode executar:
+
 ```bash
 npm run tokens:sync
 ```
@@ -23,14 +24,15 @@ npm run tokens:sync
 ## 📝 Exemplo Completo
 
 Se sua URL do Figma é:
+
 ```
 https://www.figma.com/file/abc123xyz456/QA-Agile-Design
 ```
 
 Seu `.env` deve ter:
+
 ```env
 VITE_FIGMA_API_TOKEN=YOUR_FIGMA_TOKEN_HERE
 FIGMA_FILE_KEY=abc123xyz456
 STORYBOOK_FIGMA_URL=https://www.figma.com/file/abc123xyz456/QA-Agile-Design
 ```
-

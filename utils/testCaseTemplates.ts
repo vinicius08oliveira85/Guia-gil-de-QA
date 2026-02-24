@@ -4,7 +4,15 @@ export interface TestCaseTemplate {
   id: string;
   name: string;
   description: string;
-  category: 'Functional' | 'Integration' | 'Performance' | 'Security' | 'Usability' | 'Regression' | 'Smoke' | 'E2E';
+  category:
+    | 'Functional'
+    | 'Integration'
+    | 'Performance'
+    | 'Security'
+    | 'Usability'
+    | 'Regression'
+    | 'Smoke'
+    | 'E2E';
   testCase: Omit<TestCase, 'id' | 'status'>;
   tags: string[];
 }
@@ -22,12 +30,12 @@ export const TEST_CASE_TEMPLATES: TestCaseTemplate[] = [
         'Acessar a página de login',
         'Inserir email válido',
         'Inserir senha válida',
-        'Clicar em "Entrar"'
+        'Clicar em "Entrar"',
       ],
       expectedResult: 'Usuário é autenticado e redirecionado para o dashboard',
       strategies: ['Teste Funcional', 'Teste de Usabilidade'],
-      isAutomated: true
-    }
+      isAutomated: true,
+    },
   },
   {
     id: 'form-validation',
@@ -40,12 +48,12 @@ export const TEST_CASE_TEMPLATES: TestCaseTemplate[] = [
       steps: [
         'Acessar o formulário',
         'Tentar submeter sem preencher campos obrigatórios',
-        'Verificar mensagens de erro'
+        'Verificar mensagens de erro',
       ],
       expectedResult: 'Mensagens de erro são exibidas para campos obrigatórios não preenchidos',
       strategies: ['Teste Funcional', 'Teste de Validação'],
-      isAutomated: true
-    }
+      isAutomated: true,
+    },
   },
   {
     id: 'api-contract',
@@ -59,12 +67,12 @@ export const TEST_CASE_TEMPLATES: TestCaseTemplate[] = [
         'Fazer requisição GET para endpoint',
         'Validar status code 200',
         'Validar estrutura do JSON de resposta',
-        'Validar tipos de dados dos campos'
+        'Validar tipos de dados dos campos',
       ],
       expectedResult: 'API retorna resposta válida conforme contrato definido',
       strategies: ['Teste de Integração', 'Teste de Contrato'],
-      isAutomated: true
-    }
+      isAutomated: true,
+    },
   },
   {
     id: 'performance-load',
@@ -78,12 +86,12 @@ export const TEST_CASE_TEMPLATES: TestCaseTemplate[] = [
         'Configurar teste de carga com 100 usuários simultâneos',
         'Executar requisições por 5 minutos',
         'Monitorar tempo de resposta',
-        'Verificar taxa de erro'
+        'Verificar taxa de erro',
       ],
       expectedResult: 'Sistema mantém tempo de resposta abaixo de 2s e taxa de erro abaixo de 1%',
       strategies: ['Teste de Performance', 'Teste de Carga'],
-      isAutomated: true
-    }
+      isAutomated: true,
+    },
   },
   {
     id: 'security-auth',
@@ -96,12 +104,12 @@ export const TEST_CASE_TEMPLATES: TestCaseTemplate[] = [
       steps: [
         'Tentar fazer login com senha incorreta 5 vezes',
         'Verificar bloqueio de conta',
-        'Tentar fazer login após bloqueio'
+        'Tentar fazer login após bloqueio',
       ],
       expectedResult: 'Conta é bloqueada após 5 tentativas falhadas',
       strategies: ['Teste de Segurança', 'Teste de Autenticação'],
-      isAutomated: true
-    }
+      isAutomated: true,
+    },
   },
   {
     id: 'e2e-user-journey',
@@ -117,12 +125,12 @@ export const TEST_CASE_TEMPLATES: TestCaseTemplate[] = [
         'Navegar para funcionalidade principal',
         'Executar ação principal',
         'Verificar resultado',
-        'Fazer logout'
+        'Fazer logout',
       ],
       expectedResult: 'Jornada completa é executada sem erros',
       strategies: ['Teste E2E', 'Teste de Regressão'],
-      isAutomated: true
-    }
+      isAutomated: true,
+    },
   },
   {
     id: 'regression-smoke',
@@ -135,12 +143,12 @@ export const TEST_CASE_TEMPLATES: TestCaseTemplate[] = [
       steps: [
         'Verificar se aplicação carrega',
         'Verificar login funciona',
-        'Verificar funcionalidade principal acessível'
+        'Verificar funcionalidade principal acessível',
       ],
       expectedResult: 'Funcionalidades críticas estão operacionais',
       strategies: ['Teste de Regressão', 'Smoke Test'],
-      isAutomated: true
-    }
+      isAutomated: true,
+    },
   },
   {
     id: 'usability-accessibility',
@@ -154,13 +162,13 @@ export const TEST_CASE_TEMPLATES: TestCaseTemplate[] = [
         'Navegar usando apenas teclado',
         'Verificar contraste de cores',
         'Verificar labels de campos',
-        'Testar com leitor de tela'
+        'Testar com leitor de tela',
       ],
       expectedResult: 'Interface é acessível e utilizável',
       strategies: ['Teste de Usabilidade', 'Teste de Acessibilidade'],
-      isAutomated: false
-    }
-  }
+      isAutomated: false,
+    },
+  },
 ];
 
 export const getTemplatesByCategory = (category: TestCaseTemplate['category']) => {
@@ -176,11 +184,10 @@ export const createTestCaseFromTemplate = (templateId: string): TestCase => {
   if (!template) {
     throw new Error(`Template ${templateId} não encontrado`);
   }
-  
+
   return {
     id: `tc-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
     ...template.testCase,
-    status: 'Not Run'
+    status: 'Not Run',
   };
 };
-

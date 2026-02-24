@@ -26,11 +26,13 @@ export const FilterBuilder: React.FC<FilterBuilderProps> = ({
   selectedValues,
   onToggle,
   onClear,
-  icon
+  icon,
 }) => {
   const hasActiveFilters = selectedValues.length > 0;
 
-  const getColorForValue = (value: string): 'default' | 'error' | 'warning' | 'info' | 'success' => {
+  const getColorForValue = (
+    value: string
+  ): 'default' | 'error' | 'warning' | 'info' | 'success' => {
     const option = options.find(opt => opt.value === value);
     return option?.color || 'default';
   };
@@ -49,9 +51,7 @@ export const FilterBuilder: React.FC<FilterBuilderProps> = ({
             {title}
           </p>
           {hasActiveFilters && (
-            <span className="badge badge-sm badge-primary">
-              {selectedValues.length}
-            </span>
+            <span className="badge badge-sm badge-primary">{selectedValues.length}</span>
           )}
         </div>
         {hasActiveFilters && onClear && (
@@ -65,9 +65,9 @@ export const FilterBuilder: React.FC<FilterBuilderProps> = ({
           </button>
         )}
       </div>
-      
+
       <div className="flex flex-wrap gap-xs">
-        {options.map((option) => {
+        {options.map(option => {
           const isActive = selectedValues.includes(option.value);
           return (
             <FilterChip
@@ -76,14 +76,18 @@ export const FilterBuilder: React.FC<FilterBuilderProps> = ({
               value={option.value}
               isActive={isActive}
               onToggle={() => onToggle(option.value)}
-              onRemove={onClear ? () => {
-                const newValues = selectedValues.filter(v => v !== option.value);
-                if (newValues.length === 0 && onClear) {
-                  onClear();
-                } else {
-                  onToggle(option.value);
-                }
-              } : undefined}
+              onRemove={
+                onClear
+                  ? () => {
+                      const newValues = selectedValues.filter(v => v !== option.value);
+                      if (newValues.length === 0 && onClear) {
+                        onClear();
+                      } else {
+                        onToggle(option.value);
+                      }
+                    }
+                  : undefined
+              }
               color={option.color || getColorForValue(option.value)}
               icon={option.icon || getIconForValue(option.value)}
             />
@@ -93,4 +97,3 @@ export const FilterBuilder: React.FC<FilterBuilderProps> = ({
     </div>
   );
 };
-

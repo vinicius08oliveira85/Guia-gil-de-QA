@@ -16,8 +16,8 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({ items, classNa
 
   useEffect(() => {
     const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
+      entries => {
+        entries.forEach(entry => {
           if (entry.isIntersecting) {
             setActiveId(entry.target.id);
           }
@@ -26,7 +26,7 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({ items, classNa
       { rootMargin: '-20% 0px -80% 0px' }
     );
 
-    items.forEach((item) => {
+    items.forEach(item => {
       const element = document.getElementById(item.id);
       if (element) observer.observe(element);
     });
@@ -37,17 +37,14 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({ items, classNa
   if (items.length === 0) return null;
 
   return (
-    <nav
-      className={`mica p-4 rounded-lg sticky top-24 ${className}`}
-      aria-label="Sumário"
-    >
+    <nav className={`mica p-4 rounded-lg sticky top-24 ${className}`} aria-label="Sumário">
       <h3 className="text-sm font-semibold text-text-primary mb-3">Sumário</h3>
       <ol className="space-y-1 text-sm">
-        {items.map((item) => (
+        {items.map(item => (
           <li key={item.id} style={{ paddingLeft: `${(item.level - 1) * 1}rem` }}>
             <a
               href={`#${item.id}`}
-              onClick={(e) => {
+              onClick={e => {
                 e.preventDefault();
                 document.getElementById(item.id)?.scrollIntoView({ behavior: 'smooth' });
               }}

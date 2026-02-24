@@ -113,4 +113,3 @@ test: adiciona testes para useErrorHandler
 ## Dúvidas?
 
 Abra uma issue ou entre em contato!
-

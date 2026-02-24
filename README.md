@@ -36,45 +36,50 @@ Aplicativo completo para gestão de projetos de QA seguindo metodologias ágeis 
 ## Instalação e Execução Local
 
 1. Clone o repositório:
+
    ```bash
    git clone https://github.com/vinicius08oliveira85/Guia-gil-de-QA.git
    cd Guia-gil-de-QA
    ```
 
 2. Instale as dependências:
+
    ```bash
    npm install
    ```
 
 3. Configure a variável de ambiente para IA:
-   
+
    **Opção 1: OpenAI (Recomendado)**
-   
+
    Crie um arquivo `.env.local` na raiz do projeto e adicione:
+
    ```
    VITE_OPENAI_API_KEY=sua_chave_openai_aqui
    ```
-   
+
    **Opção 2: Google Gemini**
-   
+
    ```
    VITE_GEMINI_API_KEY=sua_chave_gemini_aqui
    ```
 
 Nota: Apenas uma chave do Gemini é suportada; não há fallback. Remova variáveis antigas de fallback, se existirem.
-   
-   **Nota**: Se ambas as chaves estiverem configuradas, o aplicativo usará OpenAI por padrão.
-   
-   Ou configure diretamente no sistema:
-   ```bash
-   # Para OpenAI
-   export VITE_OPENAI_API_KEY=sua_chave_openai_aqui
-   
-   # Para Gemini
-   export VITE_GEMINI_API_KEY=sua_chave_gemini_aqui
-   ```
+
+**Nota**: Se ambas as chaves estiverem configuradas, o aplicativo usará OpenAI por padrão.
+
+Ou configure diretamente no sistema:
+
+```bash
+# Para OpenAI
+export VITE_OPENAI_API_KEY=sua_chave_openai_aqui
+
+# Para Gemini
+export VITE_GEMINI_API_KEY=sua_chave_gemini_aqui
+```
 
 4. Execute o aplicativo:
+
    ```bash
    npm run dev
    ```
@@ -149,6 +154,7 @@ O projeto suporta integração com Figma através do MCP (Model Context Protocol
 3. O assistente gerará código React baseado no design
 
 **Exemplo:**
+
 ```
 Implemente este design do Figma: https://www.figma.com/file/xxxxx/Design?node-id=12345
 ```
@@ -196,6 +202,7 @@ O aplicativo suporta múltiplos provedores de IA e escolhe automaticamente basea
 2. **Google Gemini**: Se apenas `VITE_GEMINI_API_KEY` estiver configurada
 
 Você pode obter chaves de API em:
+
 - **OpenAI**: https://platform.openai.com/api-keys
 - **Google Gemini**: https://makersuite.google.com/app/apikey
 

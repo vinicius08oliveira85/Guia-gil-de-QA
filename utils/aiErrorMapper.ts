@@ -5,11 +5,15 @@ type AIError = Partial<GeminiAppError> | (Error & { code?: string; status?: numb
 const fallbackMessage = 'Não foi possível completar a ação com a IA. Tente novamente em instantes.';
 
 const codeToMessage: Record<string, string> = {
-  GEMINI_QUOTA_EXCEEDED: 'Limite de uso do Gemini atingido. Aguarde alguns minutos e tente novamente ou configure uma nova API key em Configurações > API Keys.',
-  GEMINI_TEMP_UNAVAILABLE: 'Serviço do Gemini indisponível no momento. Tente novamente em alguns minutos.',
-  GEMINI_KEYS_INVALID: 'API key do Gemini inválida ou sem permissão. Atualize as credenciais em Configurações > API Keys.',
+  GEMINI_QUOTA_EXCEEDED:
+    'Limite de uso do Gemini atingido. Aguarde alguns minutos e tente novamente ou configure uma nova API key em Configurações > API Keys.',
+  GEMINI_TEMP_UNAVAILABLE:
+    'Serviço do Gemini indisponível no momento. Tente novamente em alguns minutos.',
+  GEMINI_KEYS_INVALID:
+    'API key do Gemini inválida ou sem permissão. Atualize as credenciais em Configurações > API Keys.',
   GEMINI_NO_KEY: 'Nenhuma API key do Gemini configurada. Adicione uma em Configurações > API Keys.',
-  GEMINI_NETWORK_ERROR: 'Não foi possível comunicar com a API do Gemini. Verifique sua conexão e tente novamente.',
+  GEMINI_NETWORK_ERROR:
+    'Não foi possível comunicar com a API do Gemini. Verifique sua conexão e tente novamente.',
 };
 
 export const getFriendlyAIErrorMessage = (error: unknown): string => {
@@ -43,4 +47,3 @@ export const getFriendlyAIErrorMessage = (error: unknown): string => {
 
   return fallbackMessage;
 };
-

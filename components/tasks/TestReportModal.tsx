@@ -14,11 +14,7 @@ interface TestReportModalProps {
   task: JiraTask;
 }
 
-export const TestReportModal: React.FC<TestReportModalProps> = ({
-  isOpen,
-  onClose,
-  task
-}) => {
+export const TestReportModal: React.FC<TestReportModalProps> = ({ isOpen, onClose, task }) => {
   const [reportText, setReportText] = useState('');
   const [copied, setCopied] = useState(false);
   const [format, setFormat] = useState<TestReportFormat>('text');
@@ -85,23 +81,27 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({
     }
     const extension = format === 'markdown' ? 'md' : 'txt';
     const mimeType = format === 'markdown' ? 'text/markdown' : 'text/plain';
-    downloadFile(
-      reportText,
-      `${task.id}-registro-testes.${extension}`,
-      mimeType
-    );
+    downloadFile(reportText, `${task.id}-registro-testes.${extension}`, mimeType);
   };
 
   const formatOptions: Array<{ label: string; value: TestReportFormat; description: string }> = [
-    { label: 'Texto estruturado', value: 'text', description: 'Formato ideal para colar em campos comuns.' },
-    { label: 'Markdown', value: 'markdown', description: 'Melhor para docs e wikis com formatação.' }
+    {
+      label: 'Texto estruturado',
+      value: 'text',
+      description: 'Formato ideal para colar em campos comuns.',
+    },
+    {
+      label: 'Markdown',
+      value: 'markdown',
+      description: 'Melhor para docs e wikis com formatação.',
+    },
   ];
 
   const getStatusBadge = (status: string) => {
     const isApproved = status === 'Passed';
     return {
       label: isApproved ? 'Aprovado' : 'Reprovado',
-      variant: isApproved ? 'success' : 'error'
+      variant: isApproved ? 'success' : 'error',
     } as const;
   };
 
@@ -129,9 +129,11 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({
               onClick={handleCopy}
               className={`
                 flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-colors shadow-md
-                ${copied
-                  ? 'bg-success text-success-content hover:opacity-90'
-                  : 'bg-brand-orange text-white hover:bg-brand-orange-selected-hover shadow-brand-orange/20'}
+                ${
+                  copied
+                    ? 'bg-success text-success-content hover:opacity-90'
+                    : 'bg-brand-orange text-white hover:bg-brand-orange-selected-hover shadow-brand-orange/20'
+                }
               `}
               aria-label={copied ? 'Copiado' : 'Copiar relatório'}
             >
@@ -154,7 +156,7 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({
         <div className="flex-shrink-0 flex flex-col gap-3">
           <p className="text-sm font-semibold text-base-content">Formato do relatório</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {formatOptions.map((option) => {
+            {formatOptions.map(option => {
               const isSelected = format === option.value;
               return (
                 <button
@@ -166,9 +168,11 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({
                   aria-label={`${option.label}: ${option.description}`}
                   className={`
                     flex items-start gap-2 p-4 rounded-xl text-left transition-all duration-200
-                    ${isSelected
-                      ? 'border-2 border-brand-orange bg-orange-50 dark:bg-orange-950/20 ring-2 ring-brand-orange/20 text-base-content'
-                      : 'border border-base-300 text-base-content/70 hover:text-base-content hover:border-base-content/20 hover:bg-base-200/50'}
+                    ${
+                      isSelected
+                        ? 'border-2 border-brand-orange bg-orange-50 dark:bg-orange-950/20 ring-2 ring-brand-orange/20 text-base-content'
+                        : 'border border-base-300 text-base-content/70 hover:text-base-content hover:border-base-content/20 hover:bg-base-200/50'
+                    }
                   `}
                 >
                   <div
@@ -240,8 +244,12 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({
                       )}
                       {testCase.observedResult && testCase.observedResult.trim() && (
                         <div className="mt-2">
-                          <p className="text-xs font-medium text-base-content/70 mb-0.5">Resultado Encontrado:</p>
-                          <p className="text-xs text-error whitespace-pre-wrap">{testCase.observedResult}</p>
+                          <p className="text-xs font-medium text-base-content/70 mb-0.5">
+                            Resultado Encontrado:
+                          </p>
+                          <p className="text-xs text-error whitespace-pre-wrap">
+                            {testCase.observedResult}
+                          </p>
                         </div>
                       )}
                     </div>
@@ -260,7 +268,7 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({
             value={reportText}
             readOnly
             className="w-full flex-1 min-h-[200px] px-4 py-3 rounded-xl border border-base-300 bg-base-100 dark:bg-base-200/50 text-sm text-base-content font-mono resize-none focus:outline-none focus:ring-2 focus:ring-brand-orange/30 focus:border-brand-orange/50 transition-all duration-200"
-            onClick={(e) => {
+            onClick={e => {
               (e.target as HTMLTextAreaElement).select();
             }}
             aria-label="Conteúdo do relatório de testes"
@@ -269,7 +277,13 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({
 
         {/* Rodapé */}
         <div className="flex-shrink-0 pt-4 border-t border-base-200 flex justify-end">
-          <Button type="button" variant="brandOutline" size="panel" onClick={onClose} aria-label="Fechar modal">
+          <Button
+            type="button"
+            variant="brandOutline"
+            size="panel"
+            onClick={onClose}
+            aria-label="Fechar modal"
+          >
             Fechar
           </Button>
         </div>
@@ -277,4 +291,3 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({
     </Modal>
   );
 };
-

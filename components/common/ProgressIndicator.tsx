@@ -15,10 +15,10 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
   label,
   color = 'blue',
   showPercentage = true,
-  size = 'md'
+  size = 'md',
 }) => {
   const percentage = max > 0 ? Math.min(100, Math.max(0, (value / max) * 100)) : 0;
-  
+
   const colorClasses = {
     green: 'bg-success',
     blue: 'bg-primary',
@@ -39,11 +39,15 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
         <div className="flex items-center justify-between mb-1">
           <span className="text-xs font-medium text-base-content/70">{label}</span>
           {showPercentage && (
-            <span className="text-xs font-semibold text-base-content">{Math.round(percentage)}%</span>
+            <span className="text-xs font-semibold text-base-content">
+              {Math.round(percentage)}%
+            </span>
           )}
         </div>
       )}
-      <div className={`w-full bg-base-300/60 rounded-full overflow-hidden ${sizeClasses[size]} relative`}>
+      <div
+        className={`w-full bg-base-300/60 rounded-full overflow-hidden ${sizeClasses[size]} relative`}
+      >
         <div
           className={`${colorClasses[color]} bg-gradient-to-r ${color === 'blue' ? 'from-primary via-primary/90 to-primary/80' : color === 'green' ? 'from-success via-success/90 to-success/80' : ''} transition-all duration-500 ease-out relative`}
           style={{ width: `${percentage}%`, height: '100%' }}
@@ -53,9 +57,10 @@ export const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
         </div>
       </div>
       {!label && showPercentage && (
-        <div className="text-xs text-base-content/60 mt-1 text-right">{Math.round(percentage)}%</div>
+        <div className="text-xs text-base-content/60 mt-1 text-right">
+          {Math.round(percentage)}%
+        </div>
       )}
     </div>
   );
 };
-

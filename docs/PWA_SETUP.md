@@ -30,6 +30,7 @@ Os ícones são necessários para que o PWA funcione corretamente. Você precisa
 ### Ferramentas para gerar ícones:
 
 #### Opção 1: RealFaviconGenerator (Recomendado)
+
 1. Acesse: https://realfavicongenerator.net/
 2. Faça upload do logo (`public/logo@erasebg-transformed.png`)
 3. Configure as opções:
@@ -39,12 +40,14 @@ Os ícones são necessários para que o PWA funcione corretamente. Você precisa
 5. Extraia os ícones para `public/icons/`
 
 #### Opção 2: PWA Builder Image Generator
+
 1. Acesse: https://www.pwabuilder.com/imageGenerator
 2. Faça upload do logo
 3. Baixe os ícones gerados
 4. Coloque em `public/icons/`
 
 #### Opção 3: Maskable.app
+
 1. Acesse: https://maskable.app/
 2. Faça upload do logo
 3. Ajuste o padding (recomendado: 10%)
@@ -52,7 +55,9 @@ Os ícones são necessários para que o PWA funcione corretamente. Você precisa
 5. Coloque em `public/icons/`
 
 #### Opção 4: Manual (usando imagem existente)
+
 Se o logo já estiver no tamanho correto, você pode:
+
 1. Copiar `logo@erasebg-transformed.png` para `public/icons/icon-192x192.png`
 2. Redimensionar para 512x512 e salvar como `icon-512x512.png`
 3. Criar versões maskable com padding usando um editor de imagens
@@ -60,6 +65,7 @@ Se o logo já estiver no tamanho correto, você pode:
 ### Nota sobre ícones maskable
 
 Ícones maskable são necessários para Android. Eles devem ter:
+
 - Padding de ~10% ao redor do conteúdo principal
 - Conteúdo importante no centro (safe zone)
 - Formato PNG com transparência
@@ -80,7 +86,7 @@ Se o logo já estiver no tamanho correto, você pode:
 - ✅ **Offline**: Funciona offline com cache de assets
 - ✅ **Atualização automática**: Atualiza quando há nova versão
 - ✅ **Modo standalone**: Abre sem barra de endereço (parece app nativo)
-- ✅ **Cache inteligente**: 
+- ✅ **Cache inteligente**:
   - Assets estáticos: Cache First
   - APIs: Network First
   - Imagens: Cache First
@@ -88,6 +94,7 @@ Se o logo já estiver no tamanho correto, você pode:
 ### Service Worker
 
 O service worker é gerado automaticamente pelo `vite-plugin-pwa` e:
+
 - Cacheia assets estáticos
 - Permite funcionamento offline
 - Atualiza automaticamente quando há nova versão
@@ -136,10 +143,11 @@ Componente para facilitar instalação do app:
 import { InstallPWAButton } from './components/common/InstallPWAButton';
 
 // No seu componente
-<InstallPWAButton variant="primary" size="md" />
+<InstallPWAButton variant="primary" size="md" />;
 ```
 
 O botão:
+
 - Aparece automaticamente quando o app pode ser instalado
 - Desaparece após instalação
 - Mostra estado de carregamento durante instalação
@@ -147,12 +155,12 @@ O botão:
 ### Utilitários PWA
 
 ```tsx
-import { 
-  isAppInstalled, 
-  canInstallApp, 
+import {
+  isAppInstalled,
+  canInstallApp,
   installApp,
   checkForUpdates,
-  forceUpdate 
+  forceUpdate,
 } from './utils/pwa';
 
 // Verificar se está instalado
@@ -225,4 +233,3 @@ if (hasUpdate) {
 - [Service Workers](https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API)
 - [vite-plugin-pwa](https://vite-pwa-org.netlify.app/)
 - [PWA Checklist](https://web.dev/pwa-checklist/)
-

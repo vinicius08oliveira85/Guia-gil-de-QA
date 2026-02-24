@@ -40,48 +40,47 @@ function KpiRow({ label, value, barPercent, barColor }: KpiRowProps) {
 /**
  * Bloco "KPIs de Qualidade": Taxa de Aprovação, Taxa de Defeitos, Cobertura, Tempo Médio Execução.
  */
-export const DashboardQualityKPIs = React.memo<DashboardQualityKPIsProps>(({ metrics, className }) => {
-  const defectBarPercent = Math.min(100, metrics.defectRate * 5);
+export const DashboardQualityKPIs = React.memo<DashboardQualityKPIsProps>(
+  ({ metrics, className }) => {
+    const defectBarPercent = Math.min(100, metrics.defectRate * 5);
 
-  return (
-    <section
-      className={cn('space-y-6', className)}
-      aria-labelledby="kpis-quality-heading"
-    >
-      <h4
-        id="kpis-quality-heading"
-        className="text-sm font-bold text-base-content/60 uppercase tracking-widest mb-4"
-      >
-        KPIs de Qualidade
-      </h4>
-      <div className="space-y-6">
-        <KpiRow
-          label="Taxa de Aprovação"
-          value={`${metrics.passRate}%`}
-          barPercent={metrics.passRate}
-          barColor="bg-success"
-        />
-        <KpiRow
-          label="Taxa de Defeitos"
-          value={`${metrics.defectRate}%`}
-          barPercent={defectBarPercent}
-          barColor="bg-error"
-        />
-        <KpiRow
-          label="Cobertura"
-          value={`${metrics.coverage}%`}
-          barPercent={metrics.coverage}
-          barColor="bg-primary"
-        />
-        <KpiRow
-          label="Tempo Médio Execução"
-          value={`${metrics.avgExecutionTimeMinutes}m`}
-          barPercent={65}
-          barColor="bg-primary"
-        />
-      </div>
-    </section>
-  );
-});
+    return (
+      <section className={cn('space-y-6', className)} aria-labelledby="kpis-quality-heading">
+        <h4
+          id="kpis-quality-heading"
+          className="text-sm font-bold text-base-content/60 uppercase tracking-widest mb-4"
+        >
+          KPIs de Qualidade
+        </h4>
+        <div className="space-y-6">
+          <KpiRow
+            label="Taxa de Aprovação"
+            value={`${metrics.passRate}%`}
+            barPercent={metrics.passRate}
+            barColor="bg-success"
+          />
+          <KpiRow
+            label="Taxa de Defeitos"
+            value={`${metrics.defectRate}%`}
+            barPercent={defectBarPercent}
+            barColor="bg-error"
+          />
+          <KpiRow
+            label="Cobertura"
+            value={`${metrics.coverage}%`}
+            barPercent={metrics.coverage}
+            barColor="bg-primary"
+          />
+          <KpiRow
+            label="Tempo Médio Execução"
+            value={`${metrics.avgExecutionTimeMinutes}m`}
+            barPercent={65}
+            barColor="bg-primary"
+          />
+        </div>
+      </section>
+    );
+  }
+);
 
 DashboardQualityKPIs.displayName = 'DashboardQualityKPIs';

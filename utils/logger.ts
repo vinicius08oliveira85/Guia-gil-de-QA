@@ -45,12 +45,13 @@ class Logger {
    * Log de erro
    */
   error(message: string, context?: string, error?: unknown): void {
-    const errorData = error instanceof Error 
-      ? { message: error.message, stack: error.stack, name: error.name }
-      : error;
-    
+    const errorData =
+      error instanceof Error
+        ? { message: error.message, stack: error.stack, name: error.name }
+        : error;
+
     this.log('error', message, context, errorData);
-    
+
     // Em produção, enviar para serviço de monitoramento (ex: Sentry)
     if (this.isProduction && error instanceof Error) {
       // TODO: Integrar com Sentry ou similar
@@ -77,10 +78,14 @@ class Logger {
     };
 
     // Log estruturado
-    const logMethod = level === 'error' ? console.error 
-      : level === 'warn' ? console.warn 
-      : level === 'info' ? console.info 
-      : console.debug;
+    const logMethod =
+      level === 'error'
+        ? console.error
+        : level === 'warn'
+          ? console.warn
+          : level === 'info'
+            ? console.info
+            : console.debug;
 
     const prefix = context ? `[${context}]` : '';
     logMethod(`${prefix} ${message}`, data ? { data, timestamp: entry.timestamp } : entry);
@@ -88,4 +93,3 @@ class Logger {
 }
 
 export const logger = new Logger();
-

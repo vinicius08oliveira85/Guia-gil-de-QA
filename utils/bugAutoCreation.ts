@@ -9,7 +9,7 @@ export interface BugCreationRules {
 const DEFAULT_RULES: BugCreationRules = {
   criticalTestTags: ['crítico', 'autenticação', 'segurança', 'pagamento'],
   highSeverityTags: ['crítico', 'segurança'],
-  defaultSeverity: 'Médio'
+  defaultSeverity: 'Médio',
 };
 
 export const determineBugSeverity = (
@@ -19,7 +19,7 @@ export const determineBugSeverity = (
 ): BugSeverity => {
   // Verificar tags do caso de teste
   const testTags = testCase.strategies || [];
-  const hasCriticalTag = testTags.some(tag => 
+  const hasCriticalTag = testTags.some(tag =>
     rules.criticalTestTags?.some(ct => tag.toLowerCase().includes(ct.toLowerCase()))
   );
 
@@ -57,7 +57,7 @@ export const createBugFromFailedTest = (
   rules?: BugCreationRules
 ): JiraTask => {
   const severity = determineBugSeverity(testCase, task, rules);
-  
+
   const bugDescription = `Este bug foi gerado automaticamente devido à falha do caso de teste.
 
 **Tarefa Original:** ${task.id} - ${task.title}
@@ -96,8 +96,7 @@ ${testCase.strategies?.join(', ') || 'N/A'}
       ...(task.tags || []),
       'bug-automático',
       'teste-falhado',
-      ...(testCase.strategies || []).map(s => s.toLowerCase().replace(/\s+/g, '-'))
-    ].filter((tag, index, self) => self.indexOf(tag) === index)
+      ...(testCase.strategies || []).map(s => s.toLowerCase().replace(/\s+/g, '-')),
+    ].filter((tag, index, self) => self.indexOf(tag) === index),
   };
 };
-

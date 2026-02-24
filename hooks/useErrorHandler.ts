@@ -12,13 +12,13 @@ export interface AppError extends Error {
 
 /**
  * Hook para tratamento centralizado de erros e notificações
- * 
+ *
  * @returns Objeto com funções para lidar com erros, sucessos, avisos e informações
- * 
+ *
  * @example
  * ```tsx
  * const { handleError, handleSuccess } = useErrorHandler();
- * 
+ *
  * try {
  *   await someOperation();
  *   handleSuccess('Operação concluída!');
@@ -30,7 +30,7 @@ export interface AppError extends Error {
 export const useErrorHandler = () => {
   /**
    * Trata erros e exibe notificação
-   * 
+   *
    * @param error - Erro a ser tratado (Error, string ou unknown)
    * @param context - Contexto onde o erro ocorreu (opcional)
    * @returns Objeto com mensagem e código do erro
@@ -62,7 +62,7 @@ export const useErrorHandler = () => {
 
   /**
    * Exibe notificação de sucesso
-   * 
+   *
    * @param message - Mensagem de sucesso
    */
   const handleSuccess = useCallback((message: string) => {
@@ -75,7 +75,7 @@ export const useErrorHandler = () => {
 
   /**
    * Exibe notificação de aviso
-   * 
+   *
    * @param message - Mensagem de aviso
    */
   const handleWarning = useCallback((message: string) => {
@@ -89,7 +89,7 @@ export const useErrorHandler = () => {
 
   /**
    * Exibe notificação informativa
-   * 
+   *
    * @param message - Mensagem informativa
    */
   const handleInfo = useCallback((message: string) => {
@@ -108,4 +108,3 @@ export const useErrorHandler = () => {
     handleInfo,
   };
 };
-

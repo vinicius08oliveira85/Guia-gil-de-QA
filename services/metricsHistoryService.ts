@@ -5,16 +5,17 @@ import { Project, MetricsSnapshot } from '../types';
  */
 export const saveMetricsSnapshot = (project: Project, snapshot: MetricsSnapshot): Project => {
   const history = project.metricsHistory || [];
-  
+
   // Verificar se já existe snapshot para o mesmo dia (usar apenas data, sem hora)
   const snapshotDate = new Date(snapshot.date).toISOString().split('T')[0];
   const existingIndex = history.findIndex(
     s => new Date(s.date).toISOString().split('T')[0] === snapshotDate
   );
 
-  const updatedHistory = existingIndex >= 0
-    ? history.map((s, idx) => idx === existingIndex ? snapshot : s)
-    : [...history, snapshot];
+  const updatedHistory =
+    existingIndex >= 0
+      ? history.map((s, idx) => (idx === existingIndex ? snapshot : s))
+      : [...history, snapshot];
 
   // Manter apenas últimos 90 dias de histórico
   const sortedHistory = updatedHistory
@@ -122,21 +123,25 @@ export const getCurrentAndPreviousPeriodMetrics = (
     previousPeriodEnd.setDate(now.getDate() - 30);
   }
 
-  const currentPeriodSnapshots = history.filter(
-    s => new Date(s.date) >= currentPeriodStart
-  );
+  const currentPeriodSnapshots = history.filter(s => new Date(s.date) >= currentPeriodStart);
   const previousPeriodSnapshots = history.filter(
     s => new Date(s.date) >= previousPeriodStart && new Date(s.date) < previousPeriodEnd
   );
 
   // Pegar o snapshot mais recente de cada período
-  const current = currentPeriodSnapshots.length > 0
-    ? currentPeriodSnapshots.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0]
-    : undefined;
+  const current =
+    currentPeriodSnapshots.length > 0
+      ? currentPeriodSnapshots.sort(
+          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+        )[0]
+      : undefined;
 
-  const previous = previousPeriodSnapshots.length > 0
-    ? previousPeriodSnapshots.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0]
-    : undefined;
+  const previous =
+    previousPeriodSnapshots.length > 0
+      ? previousPeriodSnapshots.sort(
+          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+        )[0]
+      : undefined;
 
   return { current, previous };
 };
@@ -170,4 +175,3 @@ export const createMetricsSnapshot = (
     automationRatio,
   };
 };
-

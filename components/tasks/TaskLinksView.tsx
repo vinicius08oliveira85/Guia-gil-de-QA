@@ -1,13 +1,13 @@
 import React, { useState, useMemo } from 'react';
 import { Project, JiraTask } from '../../types';
-import { 
-  getTaskDependencies, 
-  getTaskDependents, 
-  canAddDependency, 
-  addDependency, 
+import {
+  getTaskDependencies,
+  getTaskDependents,
+  canAddDependency,
+  addDependency,
   removeDependency,
   getBlockedTasks,
-  getReadyTasks
+  getReadyTasks,
 } from '../../utils/dependencyService';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import { cn } from '../../utils/cn';
@@ -70,11 +70,8 @@ export const TaskLinksView: React.FC<TaskLinksViewProps> = ({
 
   const dependencies = useMemo(() => getTaskDependencies(task.id, project), [task.id, project]);
   const dependents = useMemo(() => getTaskDependents(task.id, project), [task.id, project]);
-  const availableTasks = useMemo(() => 
-    project.tasks.filter(t => 
-      t.id !== task.id && 
-      !(task.dependencies || []).includes(t.id)
-    ), 
+  const availableTasks = useMemo(
+    () => project.tasks.filter(t => t.id !== task.id && !(task.dependencies || []).includes(t.id)),
     [project.tasks, task]
   );
   const blockedTasks = useMemo(() => getBlockedTasks(project), [project]);
@@ -132,10 +129,10 @@ export const TaskLinksView: React.FC<TaskLinksViewProps> = ({
       <div
         key={relatedTask.id}
         className={cn(
-          "group relative p-4 rounded-xl border-2 transition-all duration-200",
-          "hover:shadow-lg hover:scale-[1.02] cursor-pointer",
+          'group relative p-4 rounded-xl border-2 transition-all duration-200',
+          'hover:shadow-lg hover:scale-[1.02] cursor-pointer',
           statusColor,
-          isHovered && "ring-2 ring-primary/50"
+          isHovered && 'ring-2 ring-primary/50'
         )}
         onClick={() => handleTaskClick(relatedTask)}
         onMouseEnter={() => setHoveredCardId(relatedTask.id)}
@@ -143,7 +140,7 @@ export const TaskLinksView: React.FC<TaskLinksViewProps> = ({
         role="button"
         tabIndex={0}
         aria-label={`Abrir tarefa ${relatedTask.id}: ${relatedTask.title}`}
-        onKeyDown={(e) => {
+        onKeyDown={e => {
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
             handleTaskClick(relatedTask);
@@ -151,7 +148,7 @@ export const TaskLinksView: React.FC<TaskLinksViewProps> = ({
         }}
       >
         {/* Barra lateral colorida por tipo */}
-        <div 
+        <div
           className="absolute left-0 top-0 bottom-0 w-1 rounded-l-xl"
           style={{ backgroundColor: typeColor }}
           aria-hidden="true"
@@ -161,30 +158,34 @@ export const TaskLinksView: React.FC<TaskLinksViewProps> = ({
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-2">
               <TaskTypeIcon type={relatedTask.type} />
-              <span className="font-mono text-sm font-semibold text-base-content">{relatedTask.id}</span>
-              <span 
+              <span className="font-mono text-sm font-semibold text-base-content">
+                {relatedTask.id}
+              </span>
+              <span
                 className="badge badge-sm text-white border-0"
                 style={{ backgroundColor: typeColor }}
               >
                 {relatedTask.type}
               </span>
             </div>
-            
+
             <h4 className="font-semibold text-base-content mb-2 line-clamp-2">
               {relatedTask.title}
             </h4>
 
             <div className="flex items-center gap-3 text-sm">
-              <span className={cn(
-                "flex items-center gap-1 font-medium",
-                relatedTask.status === 'Done' ? 'text-success' :
-                relatedTask.status === 'In Progress' ? 'text-warning' :
-                'text-base-content/70'
-              )}>
+              <span
+                className={cn(
+                  'flex items-center gap-1 font-medium',
+                  relatedTask.status === 'Done'
+                    ? 'text-success'
+                    : relatedTask.status === 'In Progress'
+                      ? 'text-warning'
+                      : 'text-base-content/70'
+                )}
+              >
                 <span>{statusIcon}</span>
-                <span>
-                  {getDisplayStatusLabel(relatedTask, project)}
-                </span>
+                <span>{getDisplayStatusLabel(relatedTask, project)}</span>
               </span>
               {relatedTask.priority && (
                 <span className="badge badge-sm badge-outline">{relatedTask.priority}</span>
@@ -196,13 +197,13 @@ export const TaskLinksView: React.FC<TaskLinksViewProps> = ({
           {isDependency && (
             <button
               type="button"
-              onClick={(e) => {
+              onClick={e => {
                 e.stopPropagation();
                 handleRemoveDependency(relatedTask.id);
               }}
               className={cn(
-                "btn btn-ghost btn-sm btn-circle text-error opacity-0 group-hover:opacity-100 transition-opacity",
-                "hover:bg-error/20 focus-visible:opacity-100"
+                'btn btn-ghost btn-sm btn-circle text-error opacity-0 group-hover:opacity-100 transition-opacity',
+                'hover:bg-error/20 focus-visible:opacity-100'
               )}
               title="Remover dependência"
               aria-label={`Remover dependência ${relatedTask.id}`}
@@ -219,14 +220,18 @@ export const TaskLinksView: React.FC<TaskLinksViewProps> = ({
     <div className="space-y-6">
       {/* Status da tarefa */}
       {(isBlocked || isReady) && (
-        <div className={cn(
-          "p-4 rounded-xl border-2",
-          isBlocked ? "border-warning/40 bg-warning/10" : "border-success/40 bg-success/10"
-        )}>
+        <div
+          className={cn(
+            'p-4 rounded-xl border-2',
+            isBlocked ? 'border-warning/40 bg-warning/10' : 'border-success/40 bg-success/10'
+          )}
+        >
           {isBlocked && (
             <div className="flex items-center gap-2 text-warning">
               <span className="text-xl">⚠️</span>
-              <span className="font-semibold">Esta tarefa está bloqueada por dependências não concluídas</span>
+              <span className="font-semibold">
+                Esta tarefa está bloqueada por dependências não concluídas
+              </span>
             </div>
           )}
           {isReady && !isBlocked && (
@@ -262,7 +267,7 @@ export const TaskLinksView: React.FC<TaskLinksViewProps> = ({
             <div className="flex gap-2">
               <select
                 value={selectedTaskId}
-                onChange={(e) => setSelectedTaskId(e.target.value)}
+                onChange={e => setSelectedTaskId(e.target.value)}
                 className="select select-bordered flex-1 bg-base-100 border-base-300 text-base-content"
               >
                 <option value="">Selecione uma tarefa...</option>
@@ -299,12 +304,12 @@ export const TaskLinksView: React.FC<TaskLinksViewProps> = ({
             {dependencies.map((dep, index) => {
               const depTask = project.tasks.find(t => t.id === dep.id);
               if (!depTask) return null;
-              
+
               return (
                 <div key={dep.id} className="relative">
                   {/* Linha conectora vertical (exceto no último item) */}
                   {index < dependencies.length - 1 && (
-                    <div 
+                    <div
                       className="absolute left-2 top-full w-0.5 h-3 bg-base-300/50 -z-10"
                       style={{ marginTop: '0.75rem' }}
                       aria-hidden="true"
@@ -312,7 +317,7 @@ export const TaskLinksView: React.FC<TaskLinksViewProps> = ({
                   )}
                   {/* Seta apontando para baixo */}
                   {index < dependencies.length - 1 && (
-                    <div 
+                    <div
                       className="absolute left-1.5 top-full text-base-300/50 -z-10"
                       style={{ marginTop: '1rem', fontSize: '0.5rem' }}
                       aria-hidden="true"
@@ -363,12 +368,12 @@ export const TaskLinksView: React.FC<TaskLinksViewProps> = ({
             {dependents.map((dep, index) => {
               const depTask = project.tasks.find(t => t.id === dep.id);
               if (!depTask) return null;
-              
+
               return (
                 <div key={dep.id} className="relative">
                   {/* Linha conectora vertical (exceto no último item) */}
                   {index < dependents.length - 1 && (
-                    <div 
+                    <div
                       className="absolute left-2 top-full w-0.5 h-3 bg-base-300/50 -z-10"
                       style={{ marginTop: '0.75rem' }}
                       aria-hidden="true"
@@ -376,7 +381,7 @@ export const TaskLinksView: React.FC<TaskLinksViewProps> = ({
                   )}
                   {/* Seta apontando para baixo */}
                   {index < dependents.length - 1 && (
-                    <div 
+                    <div
                       className="absolute left-1.5 top-full text-base-300/50 -z-10"
                       style={{ marginTop: '1rem', fontSize: '0.5rem' }}
                       aria-hidden="true"
@@ -400,4 +405,3 @@ export const TaskLinksView: React.FC<TaskLinksViewProps> = ({
     </div>
   );
 };
-

@@ -31,9 +31,7 @@ export function generateTestReport(
   const format: TestReportFormat = options.format ?? 'text';
   const lines: string[] = [];
   const allTestCases = task.testCases || [];
-  const executedTestCases = allTestCases.filter(
-    tc => tc.status !== 'Not Run'
-  );
+  const executedTestCases = allTestCases.filter(tc => tc.status !== 'Not Run');
 
   // Cabeçalho
   lines.push(`TASK: ${task.id}`);
@@ -48,36 +46,44 @@ export function generateTestReport(
     lines.push('');
 
     // Coletar estratégias únicas dos casos executados
-    const strategyMap = new Map<string, {
-      testType: string;
-      description: string;
-      tools: Set<string>;
-    }>();
+    const strategyMap = new Map<
+      string,
+      {
+        testType: string;
+        description: string;
+        tools: Set<string>;
+      }
+    >();
 
     executedTestCases.forEach(testCase => {
       const executedStrategies = normalizeExecutedStrategy(testCase.executedStrategy);
-      
+
       executedStrategies.forEach(strategyName => {
         if (!strategyMap.has(strategyName)) {
           // Buscar estratégia em task.testStrategy pelo testType
           const strategyIndex = task.testStrategy?.findIndex(s => s.testType === strategyName);
-          const strategy = strategyIndex !== undefined && strategyIndex >= 0 
-            ? task.testStrategy![strategyIndex] 
-            : undefined;
-          
+          const strategy =
+            strategyIndex !== undefined && strategyIndex >= 0
+              ? task.testStrategy![strategyIndex]
+              : undefined;
+
           // Coletar ferramentas: priorizar task.strategyTools[índice], depois testCase.toolsUsed, depois strategy.tools
           const toolsSet = new Set<string>();
-          
+
           // 1. Prioridade: Ferramentas da estratégia em task.strategyTools
-          if (strategyIndex !== undefined && strategyIndex >= 0 && task.strategyTools?.[strategyIndex]) {
+          if (
+            strategyIndex !== undefined &&
+            strategyIndex >= 0 &&
+            task.strategyTools?.[strategyIndex]
+          ) {
             task.strategyTools[strategyIndex].forEach(tool => toolsSet.add(tool));
           }
-          
+
           // 2. Ferramentas do testCase
           if (testCase.toolsUsed && testCase.toolsUsed.length > 0) {
             testCase.toolsUsed.forEach(tool => toolsSet.add(tool));
           }
-          
+
           // 3. Ferramentas sugeridas da estratégia (se não houver outras)
           if (toolsSet.size === 0 && strategy?.tools) {
             strategy.tools.split(',').forEach(tool => {
@@ -89,18 +95,22 @@ export function generateTestReport(
           strategyMap.set(strategyName, {
             testType: strategyName,
             description: strategy?.description || strategyName,
-            tools: toolsSet
+            tools: toolsSet,
           });
         } else {
           // Adicionar ferramentas deste caso de teste à estratégia existente
           const existing = strategyMap.get(strategyName)!;
-          
+
           // Buscar índice da estratégia para verificar task.strategyTools
           const strategyIndex = task.testStrategy?.findIndex(s => s.testType === strategyName);
-          if (strategyIndex !== undefined && strategyIndex >= 0 && task.strategyTools?.[strategyIndex]) {
+          if (
+            strategyIndex !== undefined &&
+            strategyIndex >= 0 &&
+            task.strategyTools?.[strategyIndex]
+          ) {
             task.strategyTools[strategyIndex].forEach(tool => existing.tools.add(tool));
           }
-          
+
           if (testCase.toolsUsed && testCase.toolsUsed.length > 0) {
             testCase.toolsUsed.forEach(tool => existing.tools.add(tool));
           }
@@ -109,7 +119,7 @@ export function generateTestReport(
     });
 
     // Ordenar estratégias e formatar
-    const sortedStrategies = Array.from(strategyMap.values()).sort((a, b) => 
+    const sortedStrategies = Array.from(strategyMap.values()).sort((a, b) =>
       a.testType.localeCompare(b.testType)
     );
 
@@ -142,7 +152,7 @@ export function generateTestReport(
       const statusEmoji = testCase.status === 'Passed' ? '✅' : '❌';
       const statusLabel = testCase.status === 'Passed' ? 'Aprovado' : 'Reprovado';
       const description = testCase.description || `Teste ${index + 1}`;
-      
+
       // Obter testType do executedStrategy (primeiro se houver múltiplos)
       const executedStrategies = normalizeExecutedStrategy(testCase.executedStrategy);
       const testType = executedStrategies.length > 0 ? executedStrategies[0] : 'Não especificado';
@@ -150,18 +160,20 @@ export function generateTestReport(
       lines.push(`${index + 1}. ${description} - Status: ${statusEmoji} ${statusLabel}`);
       lines.push('');
       lines.push(`   Testes Executados: ${testType}`);
-      
+
       // Adicionar Resultado Encontrado se existir
       if (testCase.observedResult && testCase.observedResult.trim()) {
         if (format === 'markdown') {
           lines.push('');
-          lines.push(`   **Resultado Encontrado:** <span style="color: red;">${testCase.observedResult}</span>`);
+          lines.push(
+            `   **Resultado Encontrado:** <span style="color: red;">${testCase.observedResult}</span>`
+          );
         } else {
           lines.push('');
           lines.push(`   RESULTADO ENCONTRADO: ${testCase.observedResult}`);
         }
       }
-      
+
       lines.push('');
       lines.push('');
     });
@@ -184,4 +196,3 @@ export function generateTestReport(
 
   return lines.join('\n');
 }
-

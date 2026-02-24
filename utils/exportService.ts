@@ -2,7 +2,17 @@ import { Project, JiraTask } from '../types';
 import { format } from 'date-fns';
 import * as XLSX from 'xlsx';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
-import { Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableRow, TableCell, WidthType } from 'docx';
+import {
+  Document,
+  Packer,
+  Paragraph,
+  TextRun,
+  HeadingLevel,
+  Table,
+  TableRow,
+  TableCell,
+  WidthType,
+} from 'docx';
 import { saveAs } from 'file-saver';
 
 export const exportProjectToJSON = (project: Project): string => {
@@ -16,14 +26,24 @@ export const exportProjectToJSON = (project: Project): string => {
       tasks: project.tasks,
       phases: project.phases,
       shiftLeftAnalysis: project.shiftLeftAnalysis,
-      testPyramidAnalysis: project.testPyramidAnalysis
-    }
+      testPyramidAnalysis: project.testPyramidAnalysis,
+    },
   };
   return JSON.stringify(exportData, null, 2);
 };
 
 export const exportProjectToCSV = (project: Project): string => {
-  const headers = ['ID', 'Título', 'Tipo', 'Status', 'Casos de Teste', 'Casos Executados', 'Casos Passados', 'Casos Falhados', 'Bugs Abertos'];
+  const headers = [
+    'ID',
+    'Título',
+    'Tipo',
+    'Status',
+    'Casos de Teste',
+    'Casos Executados',
+    'Casos Passados',
+    'Casos Falhados',
+    'Bugs Abertos',
+  ];
   const rows: string[] = [headers.join(',')];
 
   project.tasks.forEach(task => {
@@ -42,7 +62,7 @@ export const exportProjectToCSV = (project: Project): string => {
       executed.toString(),
       passed.toString(),
       failed.toString(),
-      bugs.toString()
+      bugs.toString(),
     ];
     rows.push(row.join(','));
   });
@@ -51,7 +71,15 @@ export const exportProjectToCSV = (project: Project): string => {
 };
 
 export const exportTestCasesToCSV = (tasks: JiraTask[]): string => {
-  const headers = ['Tarefa ID', 'Tarefa Título', 'Caso de Teste ID', 'Descrição', 'Status', 'Automatizado', 'Estratégias'];
+  const headers = [
+    'Tarefa ID',
+    'Tarefa Título',
+    'Caso de Teste ID',
+    'Descrição',
+    'Status',
+    'Automatizado',
+    'Estratégias',
+  ];
   const rows: string[] = [headers.join(',')];
 
   tasks.forEach(task => {
@@ -63,7 +91,7 @@ export const exportTestCasesToCSV = (tasks: JiraTask[]): string => {
         `"${tc.description.replace(/"/g, '""')}"`,
         tc.status,
         tc.isAutomated ? 'Sim' : 'Não',
-        `"${(tc.strategies || []).join('; ')}"`
+        `"${(tc.strategies || []).join('; ')}"`,
       ];
       rows.push(row.join(','));
     });
@@ -77,7 +105,7 @@ export const generateProjectReport = (project: Project): string => {
   const testCases = tasks.flatMap(t => t.testCases || []);
   const bugs = tasks.filter(t => t.type === 'Bug');
   const openBugs = bugs.filter(t => t.status !== 'Done');
-  
+
   const totalTestCases = testCases.length;
   const executedTestCases = testCases.filter(tc => tc.status !== 'Not Run').length;
   const passedTestCases = testCases.filter(tc => tc.status === 'Passed').length;
@@ -103,21 +131,33 @@ export const generateProjectReport = (project: Project): string => {
 
 ## 📋 Status das Fases
 
-${project.phases.map(phase => `
+${project.phases
+  .map(
+    phase => `
 ### ${phase.name}
 - **Status:** ${phase.status}
 ${phase.summary ? `- **Resumo:** ${phase.summary}` : ''}
 ${phase.testTypes && phase.testTypes.length > 0 ? `- **Tipos de Teste:** ${phase.testTypes.join(', ')}` : ''}
-`).join('\n')}
+`
+  )
+  .join('\n')}
 
 ## 🐛 Bugs Abertos
 
-${openBugs.length > 0 ? openBugs.map(bug => `
+${
+  openBugs.length > 0
+    ? openBugs
+        .map(
+          bug => `
 - **${bug.id}:** ${bug.title}
   - Severidade: ${bug.severity || 'N/A'}
   - Prioridade: ${bug.priority || 'N/A'}
   - Status: ${bug.status}
-`).join('\n') : 'Nenhum bug aberto.'}
+`
+        )
+        .join('\n')
+    : 'Nenhum bug aberto.'
+}
 
 ## ✅ Tarefas por Status
 
@@ -176,7 +216,7 @@ export const exportProjectToExcel = async (project: Project): Promise<void> => {
       ['Data de Exportação', format(new Date(), 'dd/MM/yyyy HH:mm')],
       ['Total de Tarefas', project.tasks.filter(t => t.type !== 'Bug').length],
       ['Total de Bugs', project.tasks.filter(t => t.type === 'Bug').length],
-      ['Total de Casos de Teste', project.tasks.flatMap(t => t.testCases || []).length]
+      ['Total de Casos de Teste', project.tasks.flatMap(t => t.testCases || []).length],
     ];
     const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
     XLSX.utils.book_append_sheet(workbook, summarySheet, 'Resumo');
@@ -185,18 +225,18 @@ export const exportProjectToExcel = async (project: Project): Promise<void> => {
     const tasksData = project.tasks.map(task => {
       const testCases = task.testCases || [];
       return {
-        'ID': task.id,
-        'Título': task.title,
-        'Tipo': task.type,
-        'Status': task.status,
-        'Prioridade': task.priority || '',
-        'Responsável': task.assignee || '',
-        'Descrição': task.description || '',
+        ID: task.id,
+        Título: task.title,
+        Tipo: task.type,
+        Status: task.status,
+        Prioridade: task.priority || '',
+        Responsável: task.assignee || '',
+        Descrição: task.description || '',
         'Casos de Teste': testCases.length,
         'Casos Executados': testCases.filter(tc => tc.status !== 'Not Run').length,
         'Casos Passados': testCases.filter(tc => tc.status === 'Passed').length,
         'Casos Falhados': testCases.filter(tc => tc.status === 'Failed').length,
-        'Tags': task.tags?.join(', ') || ''
+        Tags: task.tags?.join(', ') || '',
       };
     });
     const tasksSheet = XLSX.utils.json_to_sheet(tasksData);
@@ -210,12 +250,12 @@ export const exportProjectToExcel = async (project: Project): Promise<void> => {
           'Tarefa ID': task.id,
           'Tarefa Título': task.title,
           'Caso de Teste ID': tc.id,
-          'Descrição': tc.description,
-          'Status': tc.status,
-          'Automatizado': tc.isAutomated ? 'Sim' : 'Não',
+          Descrição: tc.description,
+          Status: tc.status,
+          Automatizado: tc.isAutomated ? 'Sim' : 'Não',
           'Resultado Esperado': tc.expectedResult || '',
           'Resultado Observado': tc.observedResult || '',
-          'Prioridade': tc.priority || ''
+          Prioridade: tc.priority || '',
         });
       });
     });
@@ -226,11 +266,15 @@ export const exportProjectToExcel = async (project: Project): Promise<void> => {
 
     // Gerar arquivo
     const excelBuffer = XLSX.write(workbook, { type: 'array', bookType: 'xlsx' });
-    const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const blob = new Blob([excelBuffer], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    });
     const fileName = `${project.name}_${format(new Date(), 'yyyy-MM-dd')}.xlsx`;
     saveAs(blob, fileName);
   } catch (error) {
-    throw new Error(`Erro ao exportar para Excel: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+    throw new Error(
+      `Erro ao exportar para Excel: ${error instanceof Error ? error.message : 'Erro desconhecido'}`
+    );
   }
 };
 
@@ -253,7 +297,7 @@ export const exportProjectToPDF = async (project: Project): Promise<void> => {
       y: yPosition,
       size: 20,
       font: boldFont,
-      color: rgb(0, 0, 0)
+      color: rgb(0, 0, 0),
     });
     yPosition -= 30;
 
@@ -263,7 +307,7 @@ export const exportProjectToPDF = async (project: Project): Promise<void> => {
         x: margin,
         y: yPosition,
         size: 12,
-        font: boldFont
+        font: boldFont,
       });
       yPosition -= 20;
       const descLines = project.description.split('\n');
@@ -276,7 +320,7 @@ export const exportProjectToPDF = async (project: Project): Promise<void> => {
           x: margin,
           y: yPosition,
           size: 10,
-          font: font
+          font: font,
         });
         yPosition -= 15;
       });
@@ -287,12 +331,12 @@ export const exportProjectToPDF = async (project: Project): Promise<void> => {
     const tasks = project.tasks || [];
     const testCases = tasks.flatMap(t => t.testCases || []);
     const bugs = tasks.filter(t => t.type === 'Bug');
-    
+
     page.drawText('Resumo Executivo', {
       x: margin,
       y: yPosition,
       size: 14,
-      font: boldFont
+      font: boldFont,
     });
     yPosition -= 25;
 
@@ -302,7 +346,7 @@ export const exportProjectToPDF = async (project: Project): Promise<void> => {
       `Total de Casos de Teste: ${testCases.length}`,
       `Casos Executados: ${testCases.filter(tc => tc.status !== 'Not Run').length}`,
       `Casos Passados: ${testCases.filter(tc => tc.status === 'Passed').length}`,
-      `Casos Falhados: ${testCases.filter(tc => tc.status === 'Failed').length}`
+      `Casos Falhados: ${testCases.filter(tc => tc.status === 'Failed').length}`,
     ];
 
     summary.forEach(line => {
@@ -314,7 +358,7 @@ export const exportProjectToPDF = async (project: Project): Promise<void> => {
         x: margin + 10,
         y: yPosition,
         size: 10,
-        font: font
+        font: font,
       });
       yPosition -= 15;
     });
@@ -330,7 +374,7 @@ export const exportProjectToPDF = async (project: Project): Promise<void> => {
       x: margin,
       y: yPosition,
       size: 14,
-      font: boldFont
+      font: boldFont,
     });
     yPosition -= 25;
 
@@ -343,7 +387,7 @@ export const exportProjectToPDF = async (project: Project): Promise<void> => {
         x: margin + 10,
         y: yPosition,
         size: 10,
-        font: font
+        font: font,
       });
       yPosition -= 15;
     });
@@ -353,7 +397,9 @@ export const exportProjectToPDF = async (project: Project): Promise<void> => {
     const fileName = `${project.name}_${format(new Date(), 'yyyy-MM-dd')}.pdf`;
     saveAs(blob, fileName);
   } catch (error) {
-    throw new Error(`Erro ao exportar para PDF: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+    throw new Error(
+      `Erro ao exportar para PDF: ${error instanceof Error ? error.message : 'Erro desconhecido'}`
+    );
   }
 };
 
@@ -369,23 +415,23 @@ export const exportProjectToWord = async (project: Project): Promise<void> => {
     const children: (Paragraph | Table)[] = [
       new Paragraph({
         text: project.name,
-        heading: HeadingLevel.TITLE
+        heading: HeadingLevel.TITLE,
       }),
       new Paragraph({
-        text: `Data de Exportação: ${format(new Date(), 'dd/MM/yyyy HH:mm')}`
+        text: `Data de Exportação: ${format(new Date(), 'dd/MM/yyyy HH:mm')}`,
       }),
       new Paragraph({ text: '' }),
       new Paragraph({
         text: 'Descrição',
-        heading: HeadingLevel.HEADING_1
+        heading: HeadingLevel.HEADING_1,
       }),
       new Paragraph({
-        text: project.description || 'Sem descrição'
+        text: project.description || 'Sem descrição',
       }),
       new Paragraph({ text: '' }),
       new Paragraph({
         text: 'Resumo Executivo',
-        heading: HeadingLevel.HEADING_1
+        heading: HeadingLevel.HEADING_1,
       }),
       new Paragraph({
         children: [
@@ -395,18 +441,24 @@ export const exportProjectToWord = async (project: Project): Promise<void> => {
           new TextRun({ text: '\n' }),
           new TextRun({ text: `Total de Casos de Teste: ${testCases.length}` }),
           new TextRun({ text: '\n' }),
-          new TextRun({ text: `Casos Executados: ${testCases.filter(tc => tc.status !== 'Not Run').length}` }),
+          new TextRun({
+            text: `Casos Executados: ${testCases.filter(tc => tc.status !== 'Not Run').length}`,
+          }),
           new TextRun({ text: '\n' }),
-          new TextRun({ text: `Casos Passados: ${testCases.filter(tc => tc.status === 'Passed').length}` }),
+          new TextRun({
+            text: `Casos Passados: ${testCases.filter(tc => tc.status === 'Passed').length}`,
+          }),
           new TextRun({ text: '\n' }),
-          new TextRun({ text: `Casos Falhados: ${testCases.filter(tc => tc.status === 'Failed').length}` })
-        ]
+          new TextRun({
+            text: `Casos Falhados: ${testCases.filter(tc => tc.status === 'Failed').length}`,
+          }),
+        ],
       }),
       new Paragraph({ text: '' }),
       new Paragraph({
         text: 'Tarefas',
-        heading: HeadingLevel.HEADING_1
-      })
+        heading: HeadingLevel.HEADING_1,
+      }),
     ];
 
     // Tabela de tarefas
@@ -418,8 +470,8 @@ export const exportProjectToWord = async (project: Project): Promise<void> => {
           new TableCell({ children: [new Paragraph(task.title)] }),
           new TableCell({ children: [new Paragraph(task.type)] }),
           new TableCell({ children: [new Paragraph(task.status)] }),
-          new TableCell({ children: [new Paragraph(String(testCases.length))] })
-        ]
+          new TableCell({ children: [new Paragraph(String(testCases.length))] }),
+        ],
       });
     });
 
@@ -434,26 +486,30 @@ export const exportProjectToWord = async (project: Project): Promise<void> => {
                 new TableCell({ children: [new Paragraph('Título')] }),
                 new TableCell({ children: [new Paragraph('Tipo')] }),
                 new TableCell({ children: [new Paragraph('Status')] }),
-                new TableCell({ children: [new Paragraph('Casos de Teste')] })
-              ]
+                new TableCell({ children: [new Paragraph('Casos de Teste')] }),
+              ],
             }),
-            ...taskRows
-          ]
+            ...taskRows,
+          ],
         })
       );
     }
 
     const doc = new Document({
-      sections: [{
-        children: children
-      }]
+      sections: [
+        {
+          children: children,
+        },
+      ],
     });
 
     const blob = await Packer.toBlob(doc);
     const fileName = `${project.name}_${format(new Date(), 'yyyy-MM-dd')}.docx`;
     saveAs(blob, fileName);
   } catch (error) {
-    throw new Error(`Erro ao exportar para Word: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+    throw new Error(
+      `Erro ao exportar para Word: ${error instanceof Error ? error.message : 'Erro desconhecido'}`
+    );
   }
 };
 
@@ -466,27 +522,29 @@ export const exportTasksToExcel = async (tasks: JiraTask[]): Promise<void> => {
     const tasksData = tasks.map(task => {
       const testCases = task.testCases || [];
       return {
-        'ID': task.id,
-        'Título': task.title,
-        'Tipo': task.type,
-        'Status': task.status,
-        'Prioridade': task.priority || '',
-        'Responsável': task.assignee || '',
-        'Descrição': task.description || '',
+        ID: task.id,
+        Título: task.title,
+        Tipo: task.type,
+        Status: task.status,
+        Prioridade: task.priority || '',
+        Responsável: task.assignee || '',
+        Descrição: task.description || '',
         'Casos de Teste': testCases.length,
-        'Tags': task.tags?.join(', ') || ''
+        Tags: task.tags?.join(', ') || '',
       };
     });
     const sheet = XLSX.utils.json_to_sheet(tasksData);
     XLSX.utils.book_append_sheet(workbook, sheet, 'Tarefas');
 
     const excelBuffer = XLSX.write(workbook, { type: 'array', bookType: 'xlsx' });
-    const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const blob = new Blob([excelBuffer], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    });
     const fileName = `Tarefas_${format(new Date(), 'yyyy-MM-dd')}.xlsx`;
     saveAs(blob, fileName);
   } catch (error) {
-    throw new Error(`Erro ao exportar tarefas para Excel: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+    throw new Error(
+      `Erro ao exportar tarefas para Excel: ${error instanceof Error ? error.message : 'Erro desconhecido'}`
+    );
   }
 };
-
-

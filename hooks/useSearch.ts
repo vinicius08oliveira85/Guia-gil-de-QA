@@ -34,7 +34,7 @@ export const useSearch = (projects: Project[]) => {
           title: project.name || '',
           description: project.description || '',
           projectId: project.id,
-          projectName: project.name
+          projectName: project.name,
         });
       }
 
@@ -50,7 +50,7 @@ export const useSearch = (projects: Project[]) => {
             title: doc.name || '',
             description: (doc.content || '').substring(0, 100),
             projectId: project.id,
-            projectName: project.name
+            projectName: project.name,
           });
         }
       });
@@ -68,7 +68,7 @@ export const useSearch = (projects: Project[]) => {
             title: task.title || '',
             description: (task.description || '').substring(0, 100),
             projectId: project.id,
-            projectName: project.name
+            projectName: project.name,
           });
         }
 
@@ -84,7 +84,7 @@ export const useSearch = (projects: Project[]) => {
               title: tc.description || '',
               description: `Tarefa: ${task.title || ''}`,
               projectId: project.id,
-              projectName: project.name
+              projectName: project.name,
             });
           }
         });
@@ -98,7 +98,6 @@ export const useSearch = (projects: Project[]) => {
     searchQuery,
     setSearchQuery,
     searchResults,
-    hasResults: searchResults.length > 0
+    hasResults: searchResults.length > 0,
   };
 };
-

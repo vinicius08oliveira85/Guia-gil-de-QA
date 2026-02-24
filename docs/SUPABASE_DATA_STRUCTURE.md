@@ -47,16 +47,16 @@ Cada tarefa (`JiraTask`) contém os dados de teste relacionados:
   description: string;
   type: 'Epic' | 'História' | 'Tarefa' | 'Bug';
   status: 'To Do' | 'In Progress' | 'Done' | 'Blocked';
-  
+
   // ✅ CASOS DE TESTE - Relacionados à tarefa
   testCases: TestCase[];         // Array de casos de teste
-  
+
   // ✅ ESTRATÉGIAS DE TESTE - Relacionadas à tarefa
   testStrategy?: TestStrategy[]; // Array de estratégias de teste
-  
+
   // ✅ CENÁRIOS BDD - Relacionados à tarefa
   bddScenarios?: BddScenario[]; // Array de cenários BDD
-  
+
   // Outros campos...
 }
 ```
@@ -67,17 +67,17 @@ Cada caso de teste está relacionado a uma tarefa específica:
 
 ```typescript
 interface TestCase {
-  id: string;                    // ID único do caso de teste
-  title?: string;                // Título opcional
-  description: string;           // Descrição do caso de teste
-  steps: string[];                // Passos de execução
-  expectedResult: string;        // Resultado esperado
+  id: string; // ID único do caso de teste
+  title?: string; // Título opcional
+  description: string; // Descrição do caso de teste
+  steps: string[]; // Passos de execução
+  expectedResult: string; // Resultado esperado
   status: 'Not Run' | 'Passed' | 'Failed' | 'Blocked';
-  strategies?: string[];          // Estratégias aplicadas
+  strategies?: string[]; // Estratégias aplicadas
   executedStrategy?: string | string[];
   isAutomated?: boolean;
   observedResult?: string;
-  toolsUsed?: string[];           // Ferramentas utilizadas
+  toolsUsed?: string[]; // Ferramentas utilizadas
   preconditions?: string;
   testSuite?: string;
   testEnvironment?: string;
@@ -86,6 +86,7 @@ interface TestCase {
 ```
 
 **Localização no JSON:**
+
 ```json
 {
   "data": {
@@ -112,14 +113,15 @@ Cada estratégia está relacionada a uma tarefa específica:
 
 ```typescript
 interface TestStrategy {
-  testType: string;               // Tipo de teste (ex: "Funcional", "Integração")
-  description: string;            // Descrição da estratégia
-  howToExecute: string[];         // Como executar
-  tools: string;                   // Ferramentas necessárias
+  testType: string; // Tipo de teste (ex: "Funcional", "Integração")
+  description: string; // Descrição da estratégia
+  howToExecute: string[]; // Como executar
+  tools: string; // Ferramentas necessárias
 }
 ```
 
 **Localização no JSON:**
+
 ```json
 {
   "data": {
@@ -146,13 +148,14 @@ Cada cenário BDD está relacionado a uma tarefa específica:
 
 ```typescript
 interface BddScenario {
-  id: string;                    // ID único do cenário
-  title: string;                 // Título do cenário
-  gherkin: string;                // Código Gherkin completo
+  id: string; // ID único do cenário
+  title: string; // Título do cenário
+  gherkin: string; // Código Gherkin completo
 }
 ```
 
 **Localização no JSON:**
+
 ```json
 {
   "data": {
@@ -186,7 +189,7 @@ projects.data.tasks[taskIndex].bddScenarios[]
 
 ```sql
 -- Buscar todos os casos de teste de um projeto
-SELECT 
+SELECT
   id,
   name,
   jsonb_array_elements(data->'tasks') AS task
@@ -194,7 +197,7 @@ FROM projects
 WHERE id = 'projeto-id';
 
 -- Buscar casos de teste de uma tarefa específica
-SELECT 
+SELECT
   jsonb_array_elements(data->'tasks'->'testCases') AS test_case
 FROM projects
 WHERE data->'tasks' @> '[{"id": "GDPI-4"}]'::jsonb;
@@ -290,10 +293,12 @@ Ver implementação em: `services/jiraService.ts` (linhas 1571-1573)
 Use o script `scripts/verify-supabase-structure.ts` para verificar se os dados estão sendo salvos corretamente:
 
 ```typescript
-import { verifySupabaseStructure, generateVerificationReport } from '../scripts/verify-supabase-structure';
+import {
+  verifySupabaseStructure,
+  generateVerificationReport,
+} from '../scripts/verify-supabase-structure';
 
 const results = await verifySupabaseStructure();
 const report = generateVerificationReport(results);
 console.log(report);
 ```
-

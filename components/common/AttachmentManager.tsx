@@ -1,12 +1,12 @@
 import React, { useRef, useState } from 'react';
 import { Attachment, JiraTask, Project } from '../../types';
-import { 
-  createAttachment, 
-  addAttachmentToTask, 
+import {
+  createAttachment,
+  addAttachmentToTask,
   removeAttachmentFromTask,
   formatFileSize,
   getFileIcon,
-  getAttachmentUrl
+  getAttachmentUrl,
 } from '../../utils/attachmentService';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import { cn } from '../../utils/cn';
@@ -24,7 +24,7 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = ({
   task,
   project,
   onUpdateProject,
-  onClose
+  onClose,
 }) => {
   const { handleError, handleSuccess } = useErrorHandler();
   const [uploading, setUploading] = useState(false);
@@ -43,7 +43,7 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = ({
       const updatedProject = addAttachmentToTask(task.id, attachment, project);
       onUpdateProject(updatedProject);
       handleSuccess(`Arquivo "${file.name}" anexado com sucesso`);
-      
+
       // Limpar input
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
@@ -90,14 +90,18 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = ({
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-base-content">Anexos ({attachments.length})</h3>
         {onClose && (
-          <button type="button" onClick={onClose} className="btn btn-ghost btn-sm btn-circle">✕</button>
+          <button type="button" onClick={onClose} className="btn btn-ghost btn-sm btn-circle">
+            ✕
+          </button>
         )}
       </div>
 
       {/* Upload */}
-      <div className={cn(
-        "border-2 border-dashed border-base-300 rounded-xl p-4 hover:border-primary/40 hover:bg-primary/5 transition-all"
-      )}>
+      <div
+        className={cn(
+          'border-2 border-dashed border-base-300 rounded-xl p-4 hover:border-primary/40 hover:bg-primary/5 transition-all'
+        )}
+      >
         <input
           ref={fileInputRef}
           type="file"
@@ -116,9 +120,7 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = ({
           <span className="text-base-content font-semibold">
             {uploading ? 'Enviando...' : 'Clique para anexar arquivo'}
           </span>
-          <span className="text-sm text-base-content/70 mt-1">
-            Tamanho máximo: 10MB
-          </span>
+          <span className="text-sm text-base-content/70 mt-1">Tamanho máximo: 10MB</span>
         </label>
       </div>
 
@@ -135,7 +137,8 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = ({
                 <div className="flex-1 min-w-0">
                   <div className="font-semibold text-base-content truncate">{attachment.name}</div>
                   <div className="text-sm text-base-content/70">
-                    {formatFileSize(attachment.size)} • {new Date(attachment.uploadedAt).toLocaleDateString('pt-BR')}
+                    {formatFileSize(attachment.size)} •{' '}
+                    {new Date(attachment.uploadedAt).toLocaleDateString('pt-BR')}
                   </div>
                 </div>
               </div>
@@ -196,4 +199,3 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = ({
     </div>
   );
 };
-

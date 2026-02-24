@@ -26,12 +26,14 @@ O GitHub Actions executa automaticamente a sincronização de tokens.
 #### Como Usar
 
 **Sincronização Manual:**
+
 1. Vá em: `Actions` → `Sync Figma Tokens`
 2. Clique em `Run workflow`
 3. Aguarde a execução
 4. Os tokens serão atualizados automaticamente no repositório
 
 **Sincronização Automática:**
+
 - O workflow executa automaticamente todos os dias
 - Ou quando você atualiza o arquivo de tokens
 
@@ -55,6 +57,7 @@ Use a API route do Vercel para sincronizar tokens.
 #### Como Usar
 
 **Via cURL:**
+
 ```bash
 curl -X POST https://seu-projeto.vercel.app/api/sync-figma-tokens \
   -H "Content-Type: application/json" \
@@ -63,6 +66,7 @@ curl -X POST https://seu-projeto.vercel.app/api/sync-figma-tokens \
 ```
 
 **Via Interface Web:**
+
 - Crie uma página simples que chama a API
 - Ou use o Vercel Dashboard para testar
 
@@ -93,6 +97,7 @@ Se você já tem tokens no `tokens/design-tokens.json`, eles serão usados autom
 ### Build Command
 
 O Vercel já está configurado para:
+
 ```json
 {
   "buildCommand": "npm run tokens:build && vite build"
@@ -131,4 +136,3 @@ STORYBOOK_FIGMA_URL=https://www.figma.com/make/seu_file_key/...
 - [GitHub Actions Documentation](https://docs.github.com/en/actions)
 - [Vercel Environment Variables](https://vercel.com/docs/concepts/projects/environment-variables)
 - [Vercel Serverless Functions](https://vercel.com/docs/concepts/functions/serverless-functions)
-

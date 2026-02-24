@@ -18,7 +18,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
   icon,
   children,
   isExpanded,
-  onToggle
+  onToggle,
 }) => {
   const contentId = `filter-section-${id}`;
 
@@ -37,10 +37,10 @@ const FilterSection: React.FC<FilterSectionProps> = ({
           </div>
           <span className="text-sm font-semibold text-base-content">{title}</span>
         </div>
-        <motion.svg 
+        <motion.svg
           className="w-4 h-4 text-base-content/60"
-          fill="none" 
-          stroke="currentColor" 
+          fill="none"
+          stroke="currentColor"
           viewBox="0 0 24 24"
           animate={{ rotate: isExpanded ? 180 : 0 }}
           transition={{ duration: 0.2, ease: 'easeInOut' }}
@@ -58,9 +58,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({
             transition={{ duration: 0.2, ease: 'easeInOut' }}
             className="overflow-hidden"
           >
-            <div className="p-4 bg-base-100 border-t border-base-300/50">
-              {children}
-            </div>
+            <div className="p-4 bg-base-100 border-t border-base-300/50">{children}</div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -81,12 +79,9 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
   onFilterChange,
   onClearFilters,
   availableTestTypes,
-  activeFiltersCount
+  activeFiltersCount,
 }) => {
-  const toggleArrayFilter = <K extends keyof FilterOptions>(
-    key: K,
-    value: any
-  ) => {
+  const toggleArrayFilter = <K extends keyof FilterOptions>(key: K, value: any) => {
     const current = (filters[key] as any[]) || [];
     if (current.includes(value)) {
       onFilterChange(key, current.filter(v => v !== value) as any);
@@ -120,7 +115,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
           </div>
           Filtros rápidos
           {activeFiltersCount > 0 && (
-            <motion.span 
+            <motion.span
               className="badge badge-primary badge-sm rounded-full px-2"
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
@@ -136,7 +131,12 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
             className="btn btn-ghost btn-sm text-xs hover:bg-error/10 hover:text-error transition-colors"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
             Limpar todos
           </button>
@@ -160,8 +160,8 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
                     key={type}
                     onClick={() => toggleArrayFilter('requiredTestTypes', type)}
                     className={`btn btn-sm rounded-full whitespace-nowrap transition-all duration-200 ${
-                      isActive 
-                        ? 'btn-primary bg-primary text-primary-content shadow-sm' 
+                      isActive
+                        ? 'btn-primary bg-primary text-primary-content shadow-sm'
                         : 'btn-outline hover:bg-primary/5 hover:border-primary/30'
                     }`}
                     whileHover={{ scale: 1.05 }}
@@ -190,8 +190,8 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
                   key={result}
                   onClick={() => toggleArrayFilter('testResultStatus', result as any)}
                   className={`btn btn-sm rounded-full whitespace-nowrap transition-all duration-200 ${
-                    isActive 
-                      ? 'btn-primary bg-primary text-primary-content shadow-sm' 
+                    isActive
+                      ? 'btn-primary bg-primary text-primary-content shadow-sm'
                       : 'btn-outline hover:bg-primary/5 hover:border-primary/30'
                   }`}
                   whileHover={{ scale: 1.05 }}
@@ -203,7 +203,6 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
             })}
           </div>
         </FilterSection>
-
       </div>
     </div>
   );

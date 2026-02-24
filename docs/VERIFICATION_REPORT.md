@@ -34,6 +34,7 @@ projects.data.tasks[].bddScenarios[]
 4. `updateProject` salva projeto completo no Supabase (campo `data` JSONB)
 
 **Arquivos envolvidos:**
+
 - `components/tasks/TestCaseEditorModal.tsx` - Modal de edição
 - `components/tasks/TasksView.tsx` - `handleSaveTestCase` (linha 458)
 - `services/dbService.ts` - `updateProject` (linha 172)
@@ -53,7 +54,7 @@ updatedTasks[existingIndex] = {
   description: task.description,
   status: task.status,
   // ... outros campos do Jira
-  
+
   // ✅ Preservar dados locais que não vêm do Jira
   testCases: finalTestCases, // ✅ Preservar status dos testes (mesclados com salvos do Supabase)
   bddScenarios: oldTask.bddScenarios || [], // ✅ Preservar cenários BDD
@@ -63,6 +64,7 @@ updatedTasks[existingIndex] = {
 ```
 
 **Mecanismo de Preservação:**
+
 1. ✅ Casos de teste são mesclados com dados salvos do Supabase (`finalTestCases`)
 2. ✅ Cenários BDD são preservados do `oldTask.bddScenarios`
 3. ✅ Estratégias são preservadas do `oldTask.testStrategy`
@@ -96,13 +98,13 @@ CREATE TABLE projects (
       id: string;
       title: string;
       type: 'Tarefa' | 'Bug' | 'Epic' | 'História';
-      
+
       // ✅ CASOS DE TESTE - Relacionados à tarefa
       testCases: TestCase[];
-      
+
       // ✅ ESTRATÉGIAS DE TESTE - Relacionadas à tarefa
       testStrategy?: TestStrategy[];
-      
+
       // ✅ CENÁRIOS BDD - Relacionados à tarefa
       bddScenarios?: BddScenario[];
     }
@@ -188,6 +190,7 @@ CREATE TABLE projects (
 ### 1. Tamanho do Payload
 
 O projeto inteiro é salvo como um único JSON. Projetos muito grandes (>4MB) podem ter problemas com o proxy do Vercel. O sistema já implementa:
+
 - Compressão automática para payloads >1MB
 - Fallback para SDK direto quando proxy falha
 - Limite de 4MB no proxy
@@ -199,6 +202,7 @@ Toda atualização salva o projeto completo. Não há atualizações parciais. I
 ### 3. Performance
 
 Para projetos com muitas tarefas e casos de teste, o carregamento pode ser mais lento. O sistema implementa:
+
 - Carregamento em duas fases (IndexedDB primeiro, Supabase depois)
 - Debounce de salvamento (300ms)
 - Cooldown após erros de rede
@@ -223,4 +227,3 @@ Para projetos com muitas tarefas e casos de teste, o carregamento pode ser mais 
 - ✅ Cada tarefa mantém seus próprios dados (sem mistura)
 
 A implementação atual está correta e seguindo as melhores práticas para armazenamento de dados hierárquicos no Supabase.
-

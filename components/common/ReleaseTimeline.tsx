@@ -1,7 +1,7 @@
-import React, { useEffect, useRef, useState } from "react";
-import { ArrowUpRight, LucideIcon } from "lucide-react";
-import { Button } from "./Button";
-import { cn } from "../../utils/cn";
+import React, { useEffect, useRef, useState } from 'react';
+import { ArrowUpRight, LucideIcon } from 'lucide-react';
+import { Button } from './Button';
+import { cn } from '../../utils/cn';
 
 export type TimeLine_01Entry = {
   icon: LucideIcon;
@@ -25,7 +25,7 @@ export interface TimeLine_01Props {
 
 /**
  * Componente Timeline interativo que expande o card ativo no viewport
- * 
+ *
  * @example
  * ```tsx
  * <ReleaseTimeline
@@ -35,8 +35,8 @@ export interface TimeLine_01Props {
  * ```
  */
 export const ReleaseTimeline: React.FC<TimeLine_01Props> = ({
-  title = "Dashboard Metrics",
-  description = "Visão geral das métricas e status do projeto",
+  title = 'Dashboard Metrics',
+  description = 'Visão geral das métricas e status do projeto',
   entries = [],
   className,
 }) => {
@@ -98,15 +98,13 @@ export const ReleaseTimeline: React.FC<TimeLine_01Props> = ({
   }
 
   return (
-    <section className={cn("py-8", className)}>
+    <section className={cn('py-8', className)}>
       <div className="container">
         <div className="mx-auto max-w-3xl">
           <h1 className="mb-4 text-3xl font-bold tracking-tight text-base-content md:text-5xl">
             {title}
           </h1>
-          <p className="mb-6 text-base text-base-content/70 md:text-lg">
-            {description}
-          </p>
+          <p className="mb-6 text-base text-base-content/70 md:text-lg">{description}</p>
         </div>
 
         <div className="mx-auto mt-16 max-w-3xl space-y-16 md:mt-24 md:space-y-24">
@@ -118,34 +116,30 @@ export const ReleaseTimeline: React.FC<TimeLine_01Props> = ({
               <div
                 key={index}
                 className="relative flex flex-col gap-4 md:flex-row md:gap-16"
-                ref={(el) => setItemRef(el, index)}
-                aria-current={isActive ? "true" : "false"}
+                ref={el => setItemRef(el, index)}
+                aria-current={isActive ? 'true' : 'false'}
               >
                 {/* Sticky meta column */}
                 <div className="top-8 flex h-min w-64 shrink-0 items-center gap-4 md:sticky">
                   <div className="flex items-center gap-3">
                     <div
                       className={cn(
-                        "p-2 rounded-lg transition-colors duration-300",
-                        isActive ? "bg-primary/10 text-primary" : "bg-base-200 text-base-content/60"
+                        'p-2 rounded-lg transition-colors duration-300',
+                        isActive ? 'bg-primary/10 text-primary' : 'bg-base-200 text-base-content/60'
                       )}
                     >
                       <Icon className="h-4 w-4" />
                     </div>
                     <div className="flex flex-col">
-                      <span className="text-sm font-medium text-base-content">
-                        {entry.title}
-                      </span>
-                      <span className="text-xs text-base-content/70">
-                        {entry.subtitle}
-                      </span>
+                      <span className="text-sm font-medium text-base-content">{entry.title}</span>
+                      <span className="text-xs text-base-content/70">{entry.subtitle}</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Invisible sentinel near the card title to measure proximity to viewport center */}
                 <div
-                  ref={(el) => setSentinelRef(el, index)}
+                  ref={el => setSentinelRef(el, index)}
                   aria-hidden
                   className="absolute -top-24 left-0 h-12 w-12 opacity-0"
                 />
@@ -153,8 +147,8 @@ export const ReleaseTimeline: React.FC<TimeLine_01Props> = ({
                 {/* Content column */}
                 <article
                   className={cn(
-                    "flex flex-col rounded-2xl border p-4 transition-all duration-300 bg-base-100",
-                    isActive ? "border-primary/30 shadow-lg" : "border-base-300 shadow-sm"
+                    'flex flex-col rounded-2xl border p-4 transition-all duration-300 bg-base-100',
+                    isActive ? 'border-primary/30 shadow-lg' : 'border-base-300 shadow-sm'
                   )}
                 >
                   {entry.image && (
@@ -171,27 +165,23 @@ export const ReleaseTimeline: React.FC<TimeLine_01Props> = ({
                     <div className="space-y-2">
                       <h2
                         className={cn(
-                          "text-xl font-semibold tracking-tight",
-                          isActive ? "text-base-content" : "text-base-content/80"
+                          'text-xl font-semibold tracking-tight',
+                          isActive ? 'text-base-content' : 'text-base-content/80'
                         )}
                       >
                         {entry.title}
                       </h2>
 
                       {/* Improved description with better spacing */}
-                      <p className="text-base-content/70">
-                        {entry.description}
-                      </p>
+                      <p className="text-base-content/70">{entry.description}</p>
                     </div>
 
                     {/* Enhanced expandable content */}
                     <div
                       aria-hidden={!isActive}
                       className={cn(
-                        "grid transition-all duration-500 ease-out",
-                        isActive
-                          ? "grid-rows-[1fr] opacity-100"
-                          : "grid-rows-[0fr] opacity-0"
+                        'grid transition-all duration-500 ease-out',
+                        isActive ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
                       )}
                     >
                       <div className="overflow-hidden">
@@ -220,11 +210,7 @@ export const ReleaseTimeline: React.FC<TimeLine_01Props> = ({
                                 className="group rounded-full font-normal transition-all duration-200"
                                 asChild
                               >
-                                <a
-                                  href={entry.button.url}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                >
+                                <a href={entry.button.url} target="_blank" rel="noreferrer">
                                   {entry.button.text}
                                   <ArrowUpRight className="ml-1.5 h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                                 </a>
@@ -246,4 +232,3 @@ export const ReleaseTimeline: React.FC<TimeLine_01Props> = ({
 };
 
 ReleaseTimeline.displayName = 'ReleaseTimeline';
-

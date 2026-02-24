@@ -9,7 +9,7 @@ const JIRA_COLOR_MAP: Record<string, string> = {
   purple: '#6554c0',
   red: '#ae2a19',
   brown: '#7f5f01',
-  orange: '#c25100'
+  orange: '#c25100',
 };
 
 export interface JiraStatusCategoryInfo {
@@ -64,7 +64,7 @@ export const getJiraStatusColor = (
         'in-progress': '#0052cc',
         indeterminate: '#0052cc',
         'to-do': '#42526e',
-        new: '#42526e'
+        new: '#42526e',
       };
       const mapped = keyColorMap[statusCategory.key.toLowerCase()];
       if (mapped) {
@@ -90,7 +90,7 @@ export const getJiraStatusColor = (
       'homologado',
       'homologada',
       'ok',
-      'complete'
+      'complete',
     ])
   ) {
     return '#00875a';
@@ -108,7 +108,7 @@ export const getJiraStatusColor = (
       'doing',
       'implementando',
       'em teste',
-      'homologando'
+      'homologando',
     ])
   ) {
     return '#0052cc';
@@ -128,7 +128,7 @@ export const getJiraStatusColor = (
       'triagem',
       'triage',
       'backlog',
-      'planejamento'
+      'planejamento',
     ])
   ) {
     return '#42526e';
@@ -150,7 +150,10 @@ export const getJiraStatusTextColor = (backgroundColor: string): string => {
   return brightness > 150 ? '#0f172a' : '#ffffff';
 };
 
-export const ensureJiraHexColor = (color: string | undefined, fallbackStatus?: string): string | undefined => {
+export const ensureJiraHexColor = (
+  color: string | undefined,
+  fallbackStatus?: string
+): string | undefined => {
   if (color) {
     return normalizeHexColor(color);
   }

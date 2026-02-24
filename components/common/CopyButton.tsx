@@ -10,7 +10,7 @@ interface CopyButtonProps {
 export const CopyButton: React.FC<CopyButtonProps> = ({
   text,
   label = 'Copiar',
-  className = ''
+  className = '',
 }) => {
   const [copied, setCopied] = useState(false);
   const { handleSuccess } = useErrorHandler();
@@ -46,4 +46,3 @@ export const CopyButton: React.FC<CopyButtonProps> = ({
     </button>
   );
 };
-

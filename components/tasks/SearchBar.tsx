@@ -14,7 +14,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   value,
   onChange,
   placeholder = 'Buscar testes...',
-  className = ''
+  className = '',
 }) => {
   return (
     <div className={`relative ${className}`}>
@@ -36,7 +36,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
       <input
         type="text"
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={e => onChange(e.target.value)}
         placeholder={placeholder}
         className={`
           w-full pl-lg pr-sm py-xs
@@ -55,12 +55,21 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           className="absolute inset-y-0 right-0 flex items-center pr-sm hover:bg-base-200 rounded-r-lg transition-colors"
           aria-label="Limpar busca"
         >
-          <svg className="w-4 h-4 text-base-content/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          <svg
+            className="w-4 h-4 text-base-content/50"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M6 18L18 6M6 6l12 12"
+            />
           </svg>
         </button>
       )}
     </div>
   );
 };
-

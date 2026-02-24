@@ -1,5 +1,16 @@
-import { Type } from "@google/genai";
-import { TestCase, TestStrategy, PhaseName, ShiftLeftAnalysis, BddScenario, JiraTask, TestPyramidAnalysis, TestCaseDetailLevel, JiraTaskType, Project } from '../../types';
+import { Type } from '@google/genai';
+import {
+  TestCase,
+  TestStrategy,
+  PhaseName,
+  ShiftLeftAnalysis,
+  BddScenario,
+  JiraTask,
+  TestPyramidAnalysis,
+  TestCaseDetailLevel,
+  JiraTaskType,
+  Project,
+} from '../../types';
 import { marked } from 'marked';
 import { sanitizeHTML } from '../../utils/sanitize';
 import { AIService } from './aiServiceInterface';
@@ -12,36 +23,53 @@ const testCaseGenerationSchema = {
   properties: {
     strategy: {
       type: Type.ARRAY,
-      description: "Uma lista de estratégias de teste recomendadas para a tarefa.",
+      description: 'Uma lista de estratégias de teste recomendadas para a tarefa.',
       items: {
         type: Type.OBJECT,
         properties: {
-          testType: { type: Type.STRING, description: "O nome do tipo de teste (ex: Teste Funcional, Teste de Integração, Teste de Caixa Branca)." },
-          description: { type: Type.STRING, description: "Uma breve explicação do propósito deste teste no contexto da tarefa." },
+          testType: {
+            type: Type.STRING,
+            description:
+              'O nome do tipo de teste (ex: Teste Funcional, Teste de Integração, Teste de Caixa Branca).',
+          },
+          description: {
+            type: Type.STRING,
+            description: 'Uma breve explicação do propósito deste teste no contexto da tarefa.',
+          },
           howToExecute: {
             type: Type.ARRAY,
-            description: "Um array de strings, onde cada string é um passo curto e acionável para executar o teste.",
-            items: { type: Type.STRING }
+            description:
+              'Um array de strings, onde cada string é um passo curto e acionável para executar o teste.',
+            items: { type: Type.STRING },
           },
-          tools: { type: Type.STRING, description: "Ferramentas recomendadas para este tipo de teste, separadas por vírgula (ex: Selenium, Postman, JMeter)." }
+          tools: {
+            type: Type.STRING,
+            description:
+              'Ferramentas recomendadas para este tipo de teste, separadas por vírgula (ex: Selenium, Postman, JMeter).',
+          },
         },
-        required: ['testType', 'description', 'howToExecute', 'tools']
-      }
+        required: ['testType', 'description', 'howToExecute', 'tools'],
+      },
     },
     bddScenarios: {
       type: Type.ARRAY,
-      description: "Uma lista de cenários BDD (Behavior-Driven Development) usando a sintaxe Gherkin.",
+      description:
+        'Uma lista de cenários BDD (Behavior-Driven Development) usando a sintaxe Gherkin.',
       items: {
         type: Type.OBJECT,
         properties: {
           title: {
             type: Type.STRING,
-            description: "Um título descritivo para o cenário."
+            description: 'Um título descritivo para o cenário.',
           },
-          gherkin: { type: Type.STRING, description: "Uma string contendo o cenário completo formatado com a sintaxe Gherkin, usando as palavras-chave em português (Dado, E, Quando, Então)." }
+          gherkin: {
+            type: Type.STRING,
+            description:
+              'Uma string contendo o cenário completo formatado com a sintaxe Gherkin, usando as palavras-chave em português (Dado, E, Quando, Então).',
+          },
         },
-        required: ['title', 'gherkin']
-      }
+        required: ['title', 'gherkin'],
+      },
     },
     testCases: {
       type: Type.ARRAY,
@@ -66,35 +94,41 @@ const testCaseGenerationSchema = {
           strategies: {
             type: Type.ARRAY,
             items: { type: Type.STRING },
-            description: 'A list of test types from the generated strategy list that apply to this specific test case (e.g., ["Teste Funcional", "Teste de Usabilidade"]).',
+            description:
+              'A list of test types from the generated strategy list that apply to this specific test case (e.g., ["Teste Funcional", "Teste de Usabilidade"]).',
           },
           isAutomated: {
             type: Type.BOOLEAN,
-            description: 'True se este caso de teste for um bom candidato para automação (ex: regressivo, repetitivo, baseado em dados), caso contrário, false.'
+            description:
+              'True se este caso de teste for um bom candidato para automação (ex: regressivo, repetitivo, baseado em dados), caso contrário, false.',
           },
           preconditions: {
             type: Type.STRING,
-            description: 'Précondições necessárias para executar este teste (ex: dados que devem existir, estados do sistema, configurações). Deixe vazio se não houver précondições específicas.'
+            description:
+              'Précondições necessárias para executar este teste (ex: dados que devem existir, estados do sistema, configurações). Deixe vazio se não houver précondições específicas.',
           },
           testSuite: {
             type: Type.STRING,
-            description: 'Nome da suite de teste à qual este caso pertence (ex: Login, Cadastro, Pagamento). Baseie-se no contexto da tarefa e funcionalidade testada.'
+            description:
+              'Nome da suite de teste à qual este caso pertence (ex: Login, Cadastro, Pagamento). Baseie-se no contexto da tarefa e funcionalidade testada.',
           },
           testEnvironment: {
             type: Type.STRING,
-            description: 'Ambiente(s) de teste onde este caso deve ser executado (ex: Chrome, Firefox, Safari, Mobile, API). Pode incluir múltiplos ambientes separados por "/" (ex: "Chrome / Firefox").'
+            description:
+              'Ambiente(s) de teste onde este caso deve ser executado (ex: Chrome, Firefox, Safari, Mobile, API). Pode incluir múltiplos ambientes separados por "/" (ex: "Chrome / Firefox").',
           },
           priority: {
             type: Type.STRING,
             enum: ['Baixa', 'Média', 'Alta', 'Urgente'],
-            description: 'Prioridade do caso de teste baseada em criticidade da funcionalidade, impacto no negócio, frequência de uso e risco de falha.'
-          }
+            description:
+              'Prioridade do caso de teste baseada em criticidade da funcionalidade, impacto no negócio, frequência de uso e risco de falha.',
+          },
         },
         required: ['description', 'steps', 'expectedResult', 'strategies', 'isAutomated'],
       },
-    }
+    },
   },
-  required: ['strategy', 'bddScenarios', 'testCases']
+  required: ['strategy', 'bddScenarios', 'testCases'],
 };
 
 export class GeminiService implements AIService {
@@ -120,11 +154,12 @@ export class GeminiService implements AIService {
     `;
 
     const shouldGenerateTestCases = taskType === 'Tarefa' || taskType === 'Bug' || !taskType;
-    const attentionMessage = !shouldGenerateTestCases 
+    const attentionMessage = !shouldGenerateTestCases
       ? `⚠️ ATENÇÃO: Esta tarefa é do tipo "${taskType}". Para este tipo, gere APENAS estratégias de teste. NÃO gere casos de teste (testCases deve ser um array vazio []).`
       : '';
 
-    const testCasesInstructions = shouldGenerateTestCases ? `
+    const testCasesInstructions = shouldGenerateTestCases
+      ? `
       ════════════════════════════════════════════════════════════════
       INSTRUÇÕES PARA GERAÇÃO DE CASOS DE TESTE
       ════════════════════════════════════════════════════════════════
@@ -187,7 +222,8 @@ export class GeminiService implements AIService {
          
          Considere: criticidade da funcionalidade, impacto no negócio, frequência de uso, 
          complexidade do teste e risco de falha.
-      ` : '';
+      `
+      : '';
 
     return `${documentContext}
       Você é um QA Sênior com mais de 10 anos de experiência em garantia de qualidade de software, 
@@ -206,7 +242,9 @@ export class GeminiService implements AIService {
       Descrição: ${description}
       ${taskType ? `Tipo: ${taskType}` : ''}
       
-      ${taskType === 'Bug' ? `
+      ${
+        taskType === 'Bug'
+          ? `
       ════════════════════════════════════════════════════════════════
       CONTEXTO ESPECÍFICO PARA BUG
       ════════════════════════════════════════════════════════════════
@@ -231,7 +269,9 @@ export class GeminiService implements AIService {
          - Teste Funcional (para validar o comportamento correto)
          - Teste de Integração (se o bug afetou integrações)
          - Teste de Edge Cases (para evitar recorrência)
-      ` : ''}
+      `
+          : ''
+      }
       
       ${detailInstruction}
 
@@ -309,21 +349,28 @@ export class GeminiService implements AIService {
   }
 
   async generateTestCasesForTask(
-    title: string, 
-    description: string, 
+    title: string,
+    description: string,
     bddScenarios?: BddScenario[],
     detailLevel: TestCaseDetailLevel = 'Padrão',
     taskType?: JiraTaskType,
     project?: Project | null
   ): Promise<{ strategy: TestStrategy[]; testCases: TestCase[]; bddScenarios: BddScenario[] }> {
-    const prompt = await this.buildRobustTestGenerationPrompt(title, description, bddScenarios, detailLevel, taskType, project);
+    const prompt = await this.buildRobustTestGenerationPrompt(
+      title,
+      description,
+      bddScenarios,
+      detailLevel,
+      taskType,
+      project
+    );
 
     try {
       const response = await callGeminiWithRetry({
-        model: "gemini-2.5-flash",
+        model: 'gemini-2.5-flash',
         contents: prompt,
         config: {
-          responseMimeType: "application/json",
+          responseMimeType: 'application/json',
           responseSchema: testCaseGenerationSchema,
         },
       });
@@ -331,13 +378,18 @@ export class GeminiService implements AIService {
       const jsonString = response.text.trim();
       const parsedResponse = JSON.parse(jsonString);
 
-      if (!parsedResponse || !Array.isArray(parsedResponse.strategy) || !Array.isArray(parsedResponse.testCases) || !Array.isArray(parsedResponse.bddScenarios)) {
-          logger.error("Resposta da IA com estrutura inválida", 'geminiService', parsedResponse);
-          throw new Error("Resposta da IA com estrutura inválida.");
+      if (
+        !parsedResponse ||
+        !Array.isArray(parsedResponse.strategy) ||
+        !Array.isArray(parsedResponse.testCases) ||
+        !Array.isArray(parsedResponse.bddScenarios)
+      ) {
+        logger.error('Resposta da IA com estrutura inválida', 'geminiService', parsedResponse);
+        throw new Error('Resposta da IA com estrutura inválida.');
       }
 
       const shouldGenerateTestCases = taskType === 'Tarefa' || taskType === 'Bug' || !taskType;
-      const testCases: TestCase[] = shouldGenerateTestCases 
+      const testCases: TestCase[] = shouldGenerateTestCases
         ? (parsedResponse.testCases || []).map((item: any, index: number) => ({
             id: `tc-${Date.now()}-${index}`,
             description: item.description,
@@ -352,7 +404,7 @@ export class GeminiService implements AIService {
             priority: item.priority || undefined,
           }))
         : [];
-      
+
       const strategy: TestStrategy[] = parsedResponse.strategy.map((item: any) => ({
         testType: item.testType,
         description: item.description,
@@ -360,15 +412,17 @@ export class GeminiService implements AIService {
         tools: item.tools,
       }));
 
-      const bddScenarios: BddScenario[] = (parsedResponse.bddScenarios || []).map((item: any, index: number) => ({
-        id: `bdd-${Date.now()}-${index}`,
-        title: item.title,
-        gherkin: item.gherkin,
-      }));
+      const bddScenarios: BddScenario[] = (parsedResponse.bddScenarios || []).map(
+        (item: any, index: number) => ({
+          id: `bdd-${Date.now()}-${index}`,
+          title: item.title,
+          gherkin: item.gherkin,
+        })
+      );
 
       return { strategy, testCases, bddScenarios };
     } catch (error) {
-      logger.error("Erro ao gerar casos de teste", 'geminiService', error);
+      logger.error('Erro ao gerar casos de teste', 'geminiService', error);
       // Preservar erro original do callGeminiWithRetry que contém informações detalhadas (status, code, message)
       throw error;
     }
@@ -398,22 +452,32 @@ export class GeminiService implements AIService {
     `;
 
     try {
-        const response = await callGeminiWithRetry({
-            model: "gemini-2.5-flash",
-            contents: prompt,
-        });
+      const response = await callGeminiWithRetry({
+        model: 'gemini-2.5-flash',
+        contents: prompt,
+      });
 
-        const markdownText = response.text;
-        const html = marked(markdownText) as string;
-        return sanitizeHTML(html);
+      const markdownText = response.text;
+      const html = marked(markdownText) as string;
+      return sanitizeHTML(html);
     } catch (error) {
-        logger.error("Erro ao analisar documento", 'geminiService', error);
-        // Preservar erro original do callGeminiWithRetry que contém informações detalhadas (status, code, message)
-        throw error;
+      logger.error('Erro ao analisar documento', 'geminiService', error);
+      // Preservar erro original do callGeminiWithRetry que contém informações detalhadas (status, code, message)
+      throw error;
     }
   }
 
-  async generateTaskFromDocument(documentContent: string, project?: Project | null): Promise<{ task: Omit<JiraTask, 'id' | 'status' | 'parentId' | 'bddScenarios' | 'createdAt' | 'completedAt'>, strategy: TestStrategy[], testCases: TestCase[] }> {
+  async generateTaskFromDocument(
+    documentContent: string,
+    project?: Project | null
+  ): Promise<{
+    task: Omit<
+      JiraTask,
+      'id' | 'status' | 'parentId' | 'bddScenarios' | 'createdAt' | 'completedAt'
+    >;
+    strategy: TestStrategy[];
+    testCases: TestCase[];
+  }> {
     const documentContext = await getFormattedContext(project || null);
     const prompt = `${documentContext}
     Aja como um Product Owner e um Analista de QA Sênior. A partir do documento de requisitos fornecido, gere um objeto JSON estruturado.
@@ -436,64 +500,70 @@ export class GeminiService implements AIService {
     `;
 
     const taskFromDocSchema = {
-        type: Type.OBJECT,
-        properties: {
-            taskDetails: {
-                type: Type.OBJECT,
-                properties: {
-                    title: { type: Type.STRING },
-                    description: { type: Type.STRING },
-                    type: { type: Type.STRING, enum: ['História'] }
-                },
-                required: ['title', 'description', 'type']
-            },
-            ...testCaseGenerationSchema.properties
+      type: Type.OBJECT,
+      properties: {
+        taskDetails: {
+          type: Type.OBJECT,
+          properties: {
+            title: { type: Type.STRING },
+            description: { type: Type.STRING },
+            type: { type: Type.STRING, enum: ['História'] },
+          },
+          required: ['title', 'description', 'type'],
         },
-        required: ['taskDetails', 'strategy', 'testCases']
+        ...testCaseGenerationSchema.properties,
+      },
+      required: ['taskDetails', 'strategy', 'testCases'],
     };
 
     try {
-        const response = await callGeminiWithRetry({
-            model: "gemini-2.5-flash",
-            contents: prompt,
-            config: {
-                responseMimeType: "application/json",
-                responseSchema: taskFromDocSchema,
-            },
-        });
+      const response = await callGeminiWithRetry({
+        model: 'gemini-2.5-flash',
+        contents: prompt,
+        config: {
+          responseMimeType: 'application/json',
+          responseSchema: taskFromDocSchema,
+        },
+      });
 
-        const parsedResponse = JSON.parse(response.text.trim());
-        
-        // Histórias não devem ter casos de teste, apenas estratégias
-        const testCases: TestCase[] = [];
-        
-        const strategy: TestStrategy[] = parsedResponse.strategy.map((item: any) => ({
-          ...item,
-          howToExecute: item.howToExecute,
-        }));
+      const parsedResponse = JSON.parse(response.text.trim());
 
-        return {
-            task: { 
-                ...parsedResponse.taskDetails, 
-                testCases: [], 
-                testStrategy: [],
-                owner: 'Product',
-                assignee: 'QA',
-            },
-            strategy,
-            testCases,
-        };
+      // Histórias não devem ter casos de teste, apenas estratégias
+      const testCases: TestCase[] = [];
 
+      const strategy: TestStrategy[] = parsedResponse.strategy.map((item: any) => ({
+        ...item,
+        howToExecute: item.howToExecute,
+      }));
+
+      return {
+        task: {
+          ...parsedResponse.taskDetails,
+          testCases: [],
+          testStrategy: [],
+          owner: 'Product',
+          assignee: 'QA',
+        },
+        strategy,
+        testCases,
+      };
     } catch (error) {
-        logger.error("Erro ao gerar tarefa a partir do documento", 'geminiService', error);
-        // Preservar erro original do callGeminiWithRetry que contém informações detalhadas (status, code, message)
-        throw error;
+      logger.error('Erro ao gerar tarefa a partir do documento', 'geminiService', error);
+      // Preservar erro original do callGeminiWithRetry que contém informações detalhadas (status, code, message)
+      throw error;
     }
   }
 
-  async generateProjectLifecyclePlan(projectName: string, projectDescription: string, tasks: JiraTask[], project?: Project | null): Promise<{ [key in PhaseName]?: { summary: string, testTypes: string[] } }> {
+  async generateProjectLifecyclePlan(
+    projectName: string,
+    projectDescription: string,
+    tasks: JiraTask[],
+    project?: Project | null
+  ): Promise<{ [key in PhaseName]?: { summary: string; testTypes: string[] } }> {
     const documentContext = await getFormattedContext(project || null);
-    const taskSummaries = tasks.map(t => `- ${t.title}: ${t.description.substring(0, 100)}...`).join('\n');
+    const taskSummaries = tasks
+      .map(t => `- ${t.title}: ${t.description.substring(0, 100)}...`)
+      .join('\n');
     const prompt = `${documentContext}
     Aja como um gerente de QA sênior e gerente de projetos experiente. Para o projeto de software a seguir, forneça um plano de ciclo de vida em formato JSON.
 
@@ -513,9 +583,9 @@ export class GeminiService implements AIService {
       type: Type.OBJECT,
       properties: {
         summary: { type: Type.STRING },
-        testTypes: { type: Type.ARRAY, items: { type: Type.STRING } }
+        testTypes: { type: Type.ARRAY, items: { type: Type.STRING } },
       },
-      required: ['summary', 'testTypes']
+      required: ['summary', 'testTypes'],
     };
 
     const lifecycleResponseSchema = {
@@ -535,25 +605,32 @@ export class GeminiService implements AIService {
     };
 
     try {
-        const response = await callGeminiWithRetry({
-            model: "gemini-2.5-flash",
-            contents: prompt,
-            config: {
-                responseMimeType: "application/json",
-                responseSchema: lifecycleResponseSchema,
-            },
-        });
-        return JSON.parse(response.text.trim());
+      const response = await callGeminiWithRetry({
+        model: 'gemini-2.5-flash',
+        contents: prompt,
+        config: {
+          responseMimeType: 'application/json',
+          responseSchema: lifecycleResponseSchema,
+        },
+      });
+      return JSON.parse(response.text.trim());
     } catch (error) {
-        logger.error("Erro ao gerar plano de ciclo de vida do projeto", 'geminiService', error);
-        // Preservar erro original do callGeminiWithRetry que contém informações detalhadas (status, code, message)
-        throw error;
+      logger.error('Erro ao gerar plano de ciclo de vida do projeto', 'geminiService', error);
+      // Preservar erro original do callGeminiWithRetry que contém informações detalhadas (status, code, message)
+      throw error;
     }
   }
 
-  async generateShiftLeftAnalysis(projectName: string, projectDescription: string, tasks: JiraTask[], project?: Project | null): Promise<ShiftLeftAnalysis> {
+  async generateShiftLeftAnalysis(
+    projectName: string,
+    projectDescription: string,
+    tasks: JiraTask[],
+    project?: Project | null
+  ): Promise<ShiftLeftAnalysis> {
     const documentContext = await getFormattedContext(project || null);
-    const taskSummaries = tasks.map(t => `- ${t.title}: ${t.description.substring(0, 100)}...`).join('\n');
+    const taskSummaries = tasks
+      .map(t => `- ${t.title}: ${t.description.substring(0, 100)}...`)
+      .join('\n');
     const prompt = `${documentContext}
     Aja como um especialista em "Shift Left Testing". Para o projeto a seguir, forneça recomendações práticas e acionáveis para introduzir atividades de qualidade e teste o mais cedo possível no ciclo de vida.
 
@@ -571,42 +648,46 @@ export class GeminiService implements AIService {
     `;
 
     const shiftLeftSchema = {
-        type: Type.OBJECT,
-        properties: {
-            recommendations: {
-                type: Type.ARRAY,
-                items: {
-                    type: Type.OBJECT,
-                    properties: {
-                        phase: { type: Type.STRING, enum: ['Analysis', 'Design', 'Analysis and Code'] },
-                        recommendation: { type: Type.STRING }
-                    },
-                    required: ['phase', 'recommendation']
-                }
-            }
+      type: Type.OBJECT,
+      properties: {
+        recommendations: {
+          type: Type.ARRAY,
+          items: {
+            type: Type.OBJECT,
+            properties: {
+              phase: { type: Type.STRING, enum: ['Analysis', 'Design', 'Analysis and Code'] },
+              recommendation: { type: Type.STRING },
+            },
+            required: ['phase', 'recommendation'],
+          },
         },
-        required: ['recommendations']
+      },
+      required: ['recommendations'],
     };
 
     try {
-        const response = await callGeminiWithRetry({
-            model: "gemini-2.5-flash",
-            contents: prompt,
-            config: {
-                responseMimeType: "application/json",
-                responseSchema: shiftLeftSchema,
-            },
-        });
-        const parsedResponse = JSON.parse(response.text.trim());
-        return parsedResponse;
+      const response = await callGeminiWithRetry({
+        model: 'gemini-2.5-flash',
+        contents: prompt,
+        config: {
+          responseMimeType: 'application/json',
+          responseSchema: shiftLeftSchema,
+        },
+      });
+      const parsedResponse = JSON.parse(response.text.trim());
+      return parsedResponse;
     } catch (error) {
-        logger.error("Erro ao gerar análise Shift Left", 'geminiService', error);
-        // Preservar erro original do callGeminiWithRetry que contém informações detalhadas (status, code, message)
-        throw error;
+      logger.error('Erro ao gerar análise Shift Left', 'geminiService', error);
+      // Preservar erro original do callGeminiWithRetry que contém informações detalhadas (status, code, message)
+      throw error;
     }
   }
 
-  async generateBddScenarios(title: string, description: string, project?: Project | null): Promise<BddScenario[]> {
+  async generateBddScenarios(
+    title: string,
+    description: string,
+    project?: Project | null
+  ): Promise<BddScenario[]> {
     const documentContext = await getFormattedContext(project || null);
     const prompt = `${documentContext}
     Aja como um especialista em BDD (Behavior-Driven Development). Para a tarefa a seguir, crie cenários de comportamento usando a sintaxe Gherkin (Dado, Quando, Então).
@@ -627,50 +708,55 @@ export class GeminiService implements AIService {
     `;
 
     const bddSchema = {
-        type: Type.OBJECT,
-        properties: {
-            scenarios: {
-                type: Type.ARRAY,
-                items: {
-                    type: Type.OBJECT,
-                    properties: {
-                        title: { type: Type.STRING },
-                        gherkin: { type: Type.STRING }
-                    },
-                    required: ['title', 'gherkin']
-                }
-            }
+      type: Type.OBJECT,
+      properties: {
+        scenarios: {
+          type: Type.ARRAY,
+          items: {
+            type: Type.OBJECT,
+            properties: {
+              title: { type: Type.STRING },
+              gherkin: { type: Type.STRING },
+            },
+            required: ['title', 'gherkin'],
+          },
         },
-        required: ['scenarios']
+      },
+      required: ['scenarios'],
     };
 
     try {
-        const response = await callGeminiWithRetry({
-            model: "gemini-2.5-flash",
-            contents: prompt,
-            config: {
-                responseMimeType: "application/json",
-                responseSchema: bddSchema,
-            },
-        });
-        const parsedResponse = JSON.parse(response.text.trim());
-        
-        if (!parsedResponse || !Array.isArray(parsedResponse.scenarios)) {
-            throw new Error("Resposta da IA com estrutura inválida para cenários BDD.");
-        }
+      const response = await callGeminiWithRetry({
+        model: 'gemini-2.5-flash',
+        contents: prompt,
+        config: {
+          responseMimeType: 'application/json',
+          responseSchema: bddSchema,
+        },
+      });
+      const parsedResponse = JSON.parse(response.text.trim());
 
-        return parsedResponse.scenarios.map((sc: any, index: number) => ({
-            ...sc,
-            id: `bdd-${Date.now()}-${index}`,
-        }));
+      if (!parsedResponse || !Array.isArray(parsedResponse.scenarios)) {
+        throw new Error('Resposta da IA com estrutura inválida para cenários BDD.');
+      }
+
+      return parsedResponse.scenarios.map((sc: any, index: number) => ({
+        ...sc,
+        id: `bdd-${Date.now()}-${index}`,
+      }));
     } catch (error) {
-        logger.error("Erro ao gerar cenários BDD", 'geminiService', error);
-        // Preservar erro original do callGeminiWithRetry que contém informações detalhadas (status, code, message)
-        throw error;
+      logger.error('Erro ao gerar cenários BDD', 'geminiService', error);
+      // Preservar erro original do callGeminiWithRetry que contém informações detalhadas (status, code, message)
+      throw error;
     }
   }
 
-  async generateTestPyramidAnalysis(projectName: string, projectDescription: string, tasks: JiraTask[], project?: Project | null): Promise<TestPyramidAnalysis> {
+  async generateTestPyramidAnalysis(
+    projectName: string,
+    projectDescription: string,
+    tasks: JiraTask[],
+    project?: Project | null
+  ): Promise<TestPyramidAnalysis> {
     const documentContext = await getFormattedContext(project || null);
     const taskSummaries = tasks.map(t => `- ${t.id} ${t.title}`).join('\n');
     const prompt = `${documentContext}
@@ -690,39 +776,39 @@ export class GeminiService implements AIService {
     `;
 
     const pyramidSchema = {
-        type: Type.OBJECT,
-        properties: {
-            distribution: {
-                type: Type.ARRAY,
-                items: {
-                    type: Type.OBJECT,
-                    properties: {
-                        level: { type: Type.STRING, enum: ['Unitário', 'Integração', 'E2E'] },
-                        effort: { type: Type.STRING },
-                        examples: { type: Type.ARRAY, items: { type: Type.STRING } }
-                    },
-                    required: ['level', 'effort', 'examples']
-                }
-            }
+      type: Type.OBJECT,
+      properties: {
+        distribution: {
+          type: Type.ARRAY,
+          items: {
+            type: Type.OBJECT,
+            properties: {
+              level: { type: Type.STRING, enum: ['Unitário', 'Integração', 'E2E'] },
+              effort: { type: Type.STRING },
+              examples: { type: Type.ARRAY, items: { type: Type.STRING } },
+            },
+            required: ['level', 'effort', 'examples'],
+          },
         },
-        required: ['distribution']
+      },
+      required: ['distribution'],
     };
 
-     try {
-        const response = await callGeminiWithRetry({
-            model: "gemini-2.5-flash",
-            contents: prompt,
-            config: {
-                responseMimeType: "application/json",
-                responseSchema: pyramidSchema,
-            },
-        });
-        const parsedResponse = JSON.parse(response.text.trim());
-        return parsedResponse;
+    try {
+      const response = await callGeminiWithRetry({
+        model: 'gemini-2.5-flash',
+        contents: prompt,
+        config: {
+          responseMimeType: 'application/json',
+          responseSchema: pyramidSchema,
+        },
+      });
+      const parsedResponse = JSON.parse(response.text.trim());
+      return parsedResponse;
     } catch (error) {
-        logger.error("Erro ao gerar análise Test Pyramid", 'geminiService', error);
-        // Preservar erro original do callGeminiWithRetry que contém informações detalhadas (status, code, message)
-        throw error;
+      logger.error('Erro ao gerar análise Test Pyramid', 'geminiService', error);
+      // Preservar erro original do callGeminiWithRetry que contém informações detalhadas (status, code, message)
+      throw error;
     }
   }
 }

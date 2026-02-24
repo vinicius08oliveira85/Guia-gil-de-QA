@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { getNotifications, getUnreadCount, markAsRead, markAllAsRead, deleteNotification, Notification } from '../../utils/notificationService';
+import {
+  getNotifications,
+  getUnreadCount,
+  markAsRead,
+  markAllAsRead,
+  deleteNotification,
+  Notification,
+} from '../../utils/notificationService';
 
 interface NotificationBellProps {
   onClick?: () => void;
@@ -8,19 +15,19 @@ interface NotificationBellProps {
   showButton?: boolean;
 }
 
-export const NotificationBell: React.FC<NotificationBellProps> = ({ 
-  onClick, 
+export const NotificationBell: React.FC<NotificationBellProps> = ({
+  onClick,
   isOpen: externalIsOpen,
   onClose,
-  showButton = true 
+  showButton = true,
 }) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [internalIsOpen, setInternalIsOpen] = useState(false);
-  
+
   // Usar isOpen externo se fornecido, senão usar estado interno
   const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen;
-  
+
   const setIsOpen = (value: boolean) => {
     if (externalIsOpen === undefined) {
       setInternalIsOpen(value);
@@ -66,18 +73,25 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
 
   const getNotificationIcon = (type: Notification['type']) => {
     switch (type) {
-      case 'bug_created': return '🐛';
-      case 'test_failed': return '❌';
-      case 'deadline': return '⏰';
-      case 'task_assigned': return '📋';
-      case 'comment_added': return '💬';
-      case 'task_completed': return '✅';
-      default: return '🔔';
+      case 'bug_created':
+        return '🐛';
+      case 'test_failed':
+        return '❌';
+      case 'deadline':
+        return '⏰';
+      case 'task_assigned':
+        return '📋';
+      case 'comment_added':
+        return '💬';
+      case 'task_completed':
+        return '✅';
+      default:
+        return '🔔';
     }
   };
 
   return (
-      <div className="relative">
+    <div className="relative">
       {showButton && (
         <button
           onClick={() => {
@@ -98,21 +112,18 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
       )}
 
       {isOpen && (
-          <>
-            {showButton && (
-              <div
-                className="fixed inset-0 z-40"
-                onClick={() => setIsOpen(false)}
-              />
-            )}
-            <div className={`${showButton ? 'absolute right-0 mt-3' : 'relative'} w-80 bg-base-100 border border-base-300 rounded-[var(--rounded-box)] shadow-2xl z-50 max-h-96 overflow-hidden flex flex-col`}>
-              <div className="p-4 border-b border-base-300 flex items-center justify-between">
+        <>
+          {showButton && <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />}
+          <div
+            className={`${showButton ? 'absolute right-0 mt-3' : 'relative'} w-80 bg-base-100 border border-base-300 rounded-[var(--rounded-box)] shadow-2xl z-50 max-h-96 overflow-hidden flex flex-col`}
+          >
+            <div className="p-4 border-b border-base-300 flex items-center justify-between">
               <h3 className="font-semibold text-base-content">Notificações</h3>
               {unreadCount > 0 && (
                 <button
                   onClick={handleMarkAllAsRead}
-                    className="btn btn-ghost btn-xs rounded-full"
-                    type="button"
+                  className="btn btn-ghost btn-xs rounded-full"
+                  type="button"
                 >
                   Marcar todas como lidas
                 </button>
@@ -149,7 +160,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
                         </p>
                       </div>
                       <button
-                        onClick={(e) => {
+                        onClick={e => {
                           e.stopPropagation();
                           handleDelete(notification.id);
                         }}
@@ -162,9 +173,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
                   </div>
                 ))
               ) : (
-                <div className="p-8 text-center text-base-content/60">
-                  Nenhuma notificação
-                </div>
+                <div className="p-8 text-center text-base-content/60">Nenhuma notificação</div>
               )}
             </div>
           </div>
@@ -173,4 +182,3 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
     </div>
   );
 };
-

@@ -55,7 +55,7 @@ export async function generateFailedTestsAnalysisForPO(
         environment: ft.testCase.testEnvironment || 'Não especificado',
         suite: ft.testCase.testSuite || 'Não especificado',
         strategies: executedStrategies,
-        toolsUsed: ft.testCase.toolsUsed || []
+        toolsUsed: ft.testCase.toolsUsed || [],
       };
     });
 
@@ -63,7 +63,7 @@ export async function generateFailedTestsAnalysisForPO(
       name: project.name,
       description: project.description || '',
       totalFailedTests: failedTests.length,
-      affectedTasks: Array.from(new Set(failedTests.map(ft => ft.task.id))).length
+      affectedTasks: Array.from(new Set(failedTests.map(ft => ft.task.id))).length,
     };
 
     const prompt = `Você é um QA Sênior experiente e precisa apresentar um relatório profissional de análise de bugs encontrados para o Product Owner (PO).
@@ -148,16 +148,24 @@ IMPORTANTE:
     try {
       const response = await callGeminiWithRetry({
         model: 'gemini-2.0-flash-exp',
-        contents: prompt
+        contents: prompt,
       });
-      
+
       return response.text.trim();
     } catch (error) {
-      logger.warn('Erro ao gerar análise com IA. Usando análise estruturada manual.', 'failedTestsAnalysisService', error);
+      logger.warn(
+        'Erro ao gerar análise com IA. Usando análise estruturada manual.',
+        'failedTestsAnalysisService',
+        error
+      );
       return generateManualAnalysis(project, failedTests);
     }
   } catch (error) {
-    logger.error('Erro ao gerar análise IA de testes reprovados', 'failedTestsAnalysisService', error);
+    logger.error(
+      'Erro ao gerar análise IA de testes reprovados',
+      'failedTestsAnalysisService',
+      error
+    );
     // Fallback para análise manual
     return generateManualAnalysis(project, failedTests);
   }
@@ -166,24 +174,25 @@ IMPORTANTE:
 /**
  * Gera análise manual estruturada quando IA não está disponível
  */
-function generateManualAnalysis(
-  project: Project,
-  failedTests: FailedTestWithTask[]
-): string {
+function generateManualAnalysis(project: Project, failedTests: FailedTestWithTask[]): string {
   const lines: string[] = [];
-  
+
   lines.push('RELATÓRIO DE BUGS ENCONTRADOS - ANÁLISE QA SÊNIOR');
   lines.push('==================================================');
   lines.push('');
   lines.push('');
-  
+
   // Resumo Executivo
   lines.push('RESUMO EXECUTIVO');
   lines.push('----------------');
-  lines.push(`Durante a execução dos testes do projeto "${project.name}", foram identificados ${failedTests.length} teste(s) reprovado(s).`);
-  lines.push(`Estes testes afetam ${Array.from(new Set(failedTests.map(ft => ft.task.id))).length} tarefa(s) do projeto.`);
+  lines.push(
+    `Durante a execução dos testes do projeto "${project.name}", foram identificados ${failedTests.length} teste(s) reprovado(s).`
+  );
+  lines.push(
+    `Estes testes afetam ${Array.from(new Set(failedTests.map(ft => ft.task.id))).length} tarefa(s) do projeto.`
+  );
   lines.push('');
-  
+
   // Agrupar por tarefa para análise
   const bugsByTask = new Map<string, FailedTestWithTask[]>();
   failedTests.forEach(ft => {
@@ -193,72 +202,92 @@ function generateManualAnalysis(
     }
     bugsByTask.get(taskId)!.push(ft);
   });
-  
-  lines.push(`Análise consolidada: Os bugs estão distribuídos em ${bugsByTask.size} tarefa(s) diferentes.`);
-  
+
+  lines.push(
+    `Análise consolidada: Os bugs estão distribuídos em ${bugsByTask.size} tarefa(s) diferentes.`
+  );
+
   // Identificar padrões básicos
   const severities = failedTests.map(ft => determineSeverity(ft.testCase));
   const criticalCount = severities.filter(s => s === 'Crítico').length;
   const highCount = severities.filter(s => s === 'Alto').length;
-  
+
   if (criticalCount > 0 || highCount > 0) {
-    lines.push(`Identificados ${criticalCount} bug(s) crítico(s) e ${highCount} bug(s) de alta severidade que requerem atenção imediata.`);
+    lines.push(
+      `Identificados ${criticalCount} bug(s) crítico(s) e ${highCount} bug(s) de alta severidade que requerem atenção imediata.`
+    );
   }
-  
+
   lines.push('');
-  lines.push('Recomenda-se priorizar a correção dos bugs críticos e de alta severidade antes do próximo release.');
+  lines.push(
+    'Recomenda-se priorizar a correção dos bugs críticos e de alta severidade antes do próximo release.'
+  );
   lines.push('');
   lines.push('');
-  
+
   // Análise dos Bugs (agrupada)
   lines.push('ANÁLISE DOS BUGS');
   lines.push('----------------');
   lines.push('');
-  
+
   // Agrupar por tarefa
   bugsByTask.forEach((bugs, taskId) => {
     const task = bugs[0].task;
     const severitiesInGroup = bugs.map(ft => determineSeverity(ft.testCase));
-    const maxSeverity = severitiesInGroup.includes('Crítico') ? 'Crítico' :
-                        severitiesInGroup.includes('Alto') ? 'Alto' :
-                        severitiesInGroup.includes('Médio') ? 'Médio' : 'Baixo';
-    
+    const maxSeverity = severitiesInGroup.includes('Crítico')
+      ? 'Crítico'
+      : severitiesInGroup.includes('Alto')
+        ? 'Alto'
+        : severitiesInGroup.includes('Médio')
+          ? 'Médio'
+          : 'Baixo';
+
     lines.push(`Grupo: ${task.title || taskId}`);
     lines.push(`- Quantidade: ${bugs.length} bug(s)`);
     lines.push(`- Severidade: ${maxSeverity}`);
     lines.push(`- Tarefa: ${taskId}`);
-    lines.push(`- Impacto no Negócio: ${bugs.length > 1 ? 'Múltiplos bugs afetam esta funcionalidade' : 'Bug isolado que pode impactar a funcionalidade'}`);
+    lines.push(
+      `- Impacto no Negócio: ${bugs.length > 1 ? 'Múltiplos bugs afetam esta funcionalidade' : 'Bug isolado que pode impactar a funcionalidade'}`
+    );
     lines.push('');
-    
+
     if (bugs.some(ft => ft.testCase.observedResult)) {
       const observedResults = bugs
         .map(ft => ft.testCase.observedResult)
         .filter(r => r && r.trim())
         .join('; ');
       if (observedResults) {
-        lines.push(`- Resultado Observado: ${observedResults.substring(0, 200)}${observedResults.length > 200 ? '...' : ''}`);
+        lines.push(
+          `- Resultado Observado: ${observedResults.substring(0, 200)}${observedResults.length > 200 ? '...' : ''}`
+        );
         lines.push('');
       }
     }
-    
-    lines.push(`- Recomendação: ${maxSeverity === 'Crítico' || maxSeverity === 'Alto' ? 'Correção urgente antes do release' : 'Incluir na próxima sprint'}`);
+
+    lines.push(
+      `- Recomendação: ${maxSeverity === 'Crítico' || maxSeverity === 'Alto' ? 'Correção urgente antes do release' : 'Incluir na próxima sprint'}`
+    );
     lines.push('');
     lines.push('');
   });
-  
+
   // Priorização
   lines.push('PRIORIZAÇÃO');
   lines.push('-----------');
-  lines.push('Recomenda-se priorizar a correção dos bugs de acordo com a severidade e impacto no negócio.');
+  lines.push(
+    'Recomenda-se priorizar a correção dos bugs de acordo com a severidade e impacto no negócio.'
+  );
   if (criticalCount > 0) {
     lines.push(`Bugs críticos (${criticalCount}) devem ser corrigidos imediatamente.`);
   }
   if (highCount > 0) {
-    lines.push(`Bugs de alta severidade (${highCount}) devem ser corrigidos antes do próximo release.`);
+    lines.push(
+      `Bugs de alta severidade (${highCount}) devem ser corrigidos antes do próximo release.`
+    );
   }
   lines.push('');
   lines.push('');
-  
+
   // Próximos Passos
   lines.push('PRÓXIMOS PASSOS');
   lines.push('---------------');
@@ -267,7 +296,7 @@ function generateManualAnalysis(
   lines.push('3. Atribuir bugs ao time de desenvolvimento');
   lines.push('4. Acompanhar correção e validação dos bugs');
   lines.push('');
-  
+
   return lines.join('\n');
 }
 
@@ -276,10 +305,9 @@ function generateManualAnalysis(
  */
 function determineSeverity(testCase: TestCase): 'Crítico' | 'Alto' | 'Médio' | 'Baixo' {
   const priority = testCase.priority;
-  
+
   if (priority === 'Urgente') return 'Crítico';
   if (priority === 'Alta') return 'Alto';
   if (priority === 'Média') return 'Médio';
   return 'Baixo';
 }
-

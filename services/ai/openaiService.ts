@@ -1,5 +1,16 @@
 import OpenAI from 'openai';
-import { TestCase, TestStrategy, PhaseName, ShiftLeftAnalysis, BddScenario, JiraTask, TestPyramidAnalysis, TestCaseDetailLevel, JiraTaskType, Project } from '../../types';
+import {
+  TestCase,
+  TestStrategy,
+  PhaseName,
+  ShiftLeftAnalysis,
+  BddScenario,
+  JiraTask,
+  TestPyramidAnalysis,
+  TestCaseDetailLevel,
+  JiraTaskType,
+  Project,
+} from '../../types';
 import { marked } from 'marked';
 import { sanitizeHTML } from '../../utils/sanitize';
 import { AIService } from './aiServiceInterface';
@@ -20,18 +31,23 @@ let openai: OpenAI | null = null;
 if (API_KEY) {
   openai = new OpenAI({
     apiKey: API_KEY,
-    dangerouslyAllowBrowser: true // Necessário para uso no browser
+    dangerouslyAllowBrowser: true, // Necessário para uso no browser
   });
 } else {
   // Só mostrar aviso se não houver nenhuma chave de IA configurada
   if (!hasAnyAIKey()) {
-    logger.warn("OPENAI_API_KEY environment variable not set. Some features may not work.", 'openaiService');
+    logger.warn(
+      'OPENAI_API_KEY environment variable not set. Some features may not work.',
+      'openaiService'
+    );
   }
 }
 
 const getOpenAI = () => {
   if (!openai) {
-    throw new Error("OPENAI_API_KEY não configurada. Por favor, configure a variável de ambiente VITE_OPENAI_API_KEY.");
+    throw new Error(
+      'OPENAI_API_KEY não configurada. Por favor, configure a variável de ambiente VITE_OPENAI_API_KEY.'
+    );
   }
   return openai;
 };
@@ -39,18 +55,19 @@ const getOpenAI = () => {
 export class OpenAIService implements AIService {
   private async callAPI(prompt: string, responseFormat?: { type: 'json_object' }): Promise<string> {
     const client = getOpenAI();
-    
+
     const response = await client.chat.completions.create({
-      model: "gpt-4o-mini", // ou "gpt-4" para melhor qualidade
+      model: 'gpt-4o-mini', // ou "gpt-4" para melhor qualidade
       messages: [
         {
-          role: "system",
-          content: "Você é um especialista em garantia de qualidade de software (QA) e análise de projetos. Sempre responda em português brasileiro."
+          role: 'system',
+          content:
+            'Você é um especialista em garantia de qualidade de software (QA) e análise de projetos. Sempre responda em português brasileiro.',
         },
         {
-          role: "user",
-          content: prompt
-        }
+          role: 'user',
+          content: prompt,
+        },
       ],
       response_format: responseFormat,
       temperature: 0.7,
@@ -58,7 +75,7 @@ export class OpenAIService implements AIService {
 
     const content = response.choices[0]?.message?.content;
     if (!content) {
-      throw new Error("Resposta vazia da API OpenAI");
+      throw new Error('Resposta vazia da API OpenAI');
     }
     return content;
   }
@@ -85,11 +102,12 @@ export class OpenAIService implements AIService {
     `;
 
     const shouldGenerateTestCases = taskType === 'Tarefa' || taskType === 'Bug' || !taskType;
-    const attentionMessage = !shouldGenerateTestCases 
+    const attentionMessage = !shouldGenerateTestCases
       ? `⚠️ ATENÇÃO: Esta tarefa é do tipo "${taskType}". Para este tipo, gere APENAS estratégias de teste. NÃO gere casos de teste (testCases deve ser um array vazio []).`
       : '';
 
-    const testCasesInstructions = shouldGenerateTestCases ? `
+    const testCasesInstructions = shouldGenerateTestCases
+      ? `
       ════════════════════════════════════════════════════════════════
       INSTRUÇÕES PARA GERAÇÃO DE CASOS DE TESTE
       ════════════════════════════════════════════════════════════════
@@ -152,7 +170,8 @@ export class OpenAIService implements AIService {
          
          Considere: criticidade da funcionalidade, impacto no negócio, frequência de uso, 
          complexidade do teste e risco de falha.
-      ` : '';
+      `
+      : '';
 
     return `${documentContext}
       Você é um QA Sênior com mais de 10 anos de experiência em garantia de qualidade de software, 
@@ -171,7 +190,9 @@ export class OpenAIService implements AIService {
       Descrição: ${description}
       ${taskType ? `Tipo: ${taskType}` : ''}
       
-      ${taskType === 'Bug' ? `
+      ${
+        taskType === 'Bug'
+          ? `
       ════════════════════════════════════════════════════════════════
       CONTEXTO ESPECÍFICO PARA BUG
       ════════════════════════════════════════════════════════════════
@@ -196,7 +217,9 @@ export class OpenAIService implements AIService {
          - Teste Funcional (para validar o comportamento correto)
          - Teste de Integração (se o bug afetou integrações)
          - Teste de Edge Cases (para evitar recorrência)
-      ` : ''}
+      `
+          : ''
+      }
       
       ${detailInstruction}
 
@@ -274,26 +297,38 @@ export class OpenAIService implements AIService {
   }
 
   async generateTestCasesForTask(
-    title: string, 
-    description: string, 
+    title: string,
+    description: string,
     bddScenarios?: BddScenario[],
     detailLevel: TestCaseDetailLevel = 'Padrão',
     taskType?: JiraTaskType,
     project?: Project | null
   ): Promise<{ strategy: TestStrategy[]; testCases: TestCase[]; bddScenarios: BddScenario[] }> {
-    const prompt = await this.buildRobustTestGenerationPrompt(title, description, bddScenarios, detailLevel, taskType, project);
+    const prompt = await this.buildRobustTestGenerationPrompt(
+      title,
+      description,
+      bddScenarios,
+      detailLevel,
+      taskType,
+      project
+    );
 
     try {
       const jsonString = await this.callAPI(prompt, { type: 'json_object' });
       const parsedResponse = JSON.parse(jsonString);
 
-      if (!parsedResponse || !Array.isArray(parsedResponse.strategy) || !Array.isArray(parsedResponse.testCases) || !Array.isArray(parsedResponse.bddScenarios)) {
-          logger.error("Resposta da IA com estrutura inválida", 'openaiService', parsedResponse);
-          throw new Error("Resposta da IA com estrutura inválida.");
+      if (
+        !parsedResponse ||
+        !Array.isArray(parsedResponse.strategy) ||
+        !Array.isArray(parsedResponse.testCases) ||
+        !Array.isArray(parsedResponse.bddScenarios)
+      ) {
+        logger.error('Resposta da IA com estrutura inválida', 'openaiService', parsedResponse);
+        throw new Error('Resposta da IA com estrutura inválida.');
       }
 
       const shouldGenerateTestCases = taskType === 'Tarefa' || taskType === 'Bug' || !taskType;
-      const testCases: TestCase[] = shouldGenerateTestCases 
+      const testCases: TestCase[] = shouldGenerateTestCases
         ? (parsedResponse.testCases || []).map((item: any, index: number) => ({
             id: `tc-${Date.now()}-${index}`,
             description: item.description,
@@ -308,7 +343,7 @@ export class OpenAIService implements AIService {
             priority: item.priority || undefined,
           }))
         : [];
-      
+
       const strategy: TestStrategy[] = parsedResponse.strategy.map((item: any) => ({
         testType: item.testType,
         description: item.description,
@@ -316,16 +351,18 @@ export class OpenAIService implements AIService {
         tools: item.tools,
       }));
 
-      const bddScenarios: BddScenario[] = (parsedResponse.bddScenarios || []).map((item: any, index: number) => ({
-        id: `bdd-${Date.now()}-${index}`,
-        title: item.title,
-        gherkin: item.gherkin,
-      }));
+      const bddScenarios: BddScenario[] = (parsedResponse.bddScenarios || []).map(
+        (item: any, index: number) => ({
+          id: `bdd-${Date.now()}-${index}`,
+          title: item.title,
+          gherkin: item.gherkin,
+        })
+      );
 
       return { strategy, testCases, bddScenarios };
     } catch (error) {
-      logger.error("Erro ao gerar casos de teste", 'openaiService', error);
-      throw new Error("Failed to communicate with the OpenAI API.");
+      logger.error('Erro ao gerar casos de teste', 'openaiService', error);
+      throw new Error('Failed to communicate with the OpenAI API.');
     }
   }
 
@@ -353,16 +390,26 @@ export class OpenAIService implements AIService {
     `;
 
     try {
-        const markdownText = await this.callAPI(prompt);
-        const html = marked(markdownText) as string;
-        return sanitizeHTML(html);
+      const markdownText = await this.callAPI(prompt);
+      const html = marked(markdownText) as string;
+      return sanitizeHTML(html);
     } catch (error) {
-        logger.error("Erro ao analisar documento", 'openaiService', error);
-        throw new Error("Failed to communicate with the OpenAI API for document analysis.");
+      logger.error('Erro ao analisar documento', 'openaiService', error);
+      throw new Error('Failed to communicate with the OpenAI API for document analysis.');
     }
   }
 
-  async generateTaskFromDocument(documentContent: string, project?: Project | null): Promise<{ task: Omit<JiraTask, 'id' | 'status' | 'parentId' | 'bddScenarios' | 'createdAt' | 'completedAt'>, strategy: TestStrategy[], testCases: TestCase[] }> {
+  async generateTaskFromDocument(
+    documentContent: string,
+    project?: Project | null
+  ): Promise<{
+    task: Omit<
+      JiraTask,
+      'id' | 'status' | 'parentId' | 'bddScenarios' | 'createdAt' | 'completedAt'
+    >;
+    strategy: TestStrategy[];
+    testCases: TestCase[];
+  }> {
     const documentContext = await getFormattedContext(project || null);
     const prompt = `${documentContext}
     Aja como um Product Owner e um Analista de QA Sênior. A partir do documento de requisitos fornecido, gere um objeto JSON estruturado.
@@ -387,38 +434,44 @@ export class OpenAIService implements AIService {
     `;
 
     try {
-        const jsonString = await this.callAPI(prompt, { type: 'json_object' });
-        const parsedResponse = JSON.parse(jsonString);
-        
-        // Histórias não devem ter casos de teste, apenas estratégias
-        const testCases: TestCase[] = [];
-        
-        const strategy: TestStrategy[] = parsedResponse.strategy.map((item: any) => ({
-          ...item,
-          howToExecute: item.howToExecute,
-        }));
+      const jsonString = await this.callAPI(prompt, { type: 'json_object' });
+      const parsedResponse = JSON.parse(jsonString);
 
-        return {
-            task: { 
-                ...parsedResponse.taskDetails, 
-                testCases: [], 
-                testStrategy: [],
-                owner: 'Product',
-                assignee: 'QA',
-            },
-            strategy,
-            testCases,
-        };
+      // Histórias não devem ter casos de teste, apenas estratégias
+      const testCases: TestCase[] = [];
 
+      const strategy: TestStrategy[] = parsedResponse.strategy.map((item: any) => ({
+        ...item,
+        howToExecute: item.howToExecute,
+      }));
+
+      return {
+        task: {
+          ...parsedResponse.taskDetails,
+          testCases: [],
+          testStrategy: [],
+          owner: 'Product',
+          assignee: 'QA',
+        },
+        strategy,
+        testCases,
+      };
     } catch (error) {
-        logger.error("Erro ao gerar tarefa a partir do documento", 'openaiService', error);
-        throw new Error("Failed to generate task from document.");
+      logger.error('Erro ao gerar tarefa a partir do documento', 'openaiService', error);
+      throw new Error('Failed to generate task from document.');
     }
   }
 
-  async generateProjectLifecyclePlan(projectName: string, projectDescription: string, tasks: JiraTask[], project?: Project | null): Promise<{ [key in PhaseName]?: { summary: string, testTypes: string[] } }> {
+  async generateProjectLifecyclePlan(
+    projectName: string,
+    projectDescription: string,
+    tasks: JiraTask[],
+    project?: Project | null
+  ): Promise<{ [key in PhaseName]?: { summary: string; testTypes: string[] } }> {
     const documentContext = await getFormattedContext(project || null);
-    const taskSummaries = tasks.map(t => `- ${t.title}: ${t.description.substring(0, 100)}...`).join('\n');
+    const taskSummaries = tasks
+      .map(t => `- ${t.title}: ${t.description.substring(0, 100)}...`)
+      .join('\n');
     const prompt = `${documentContext}
     Aja como um gerente de QA sênior e gerente de projetos experiente. Para o projeto de software a seguir, forneça um plano de ciclo de vida em formato JSON.
 
@@ -437,17 +490,24 @@ export class OpenAIService implements AIService {
     `;
 
     try {
-        const jsonString = await this.callAPI(prompt, { type: 'json_object' });
-        return JSON.parse(jsonString);
+      const jsonString = await this.callAPI(prompt, { type: 'json_object' });
+      return JSON.parse(jsonString);
     } catch (error) {
-        logger.error("Erro ao gerar plano de ciclo de vida do projeto", 'openaiService', error);
-        throw new Error("Failed to communicate with the OpenAI API for project planning.");
+      logger.error('Erro ao gerar plano de ciclo de vida do projeto', 'openaiService', error);
+      throw new Error('Failed to communicate with the OpenAI API for project planning.');
     }
   }
 
-  async generateShiftLeftAnalysis(projectName: string, projectDescription: string, tasks: JiraTask[], project?: Project | null): Promise<ShiftLeftAnalysis> {
+  async generateShiftLeftAnalysis(
+    projectName: string,
+    projectDescription: string,
+    tasks: JiraTask[],
+    project?: Project | null
+  ): Promise<ShiftLeftAnalysis> {
     const documentContext = await getFormattedContext(project || null);
-    const taskSummaries = tasks.map(t => `- ${t.title}: ${t.description.substring(0, 100)}...`).join('\n');
+    const taskSummaries = tasks
+      .map(t => `- ${t.title}: ${t.description.substring(0, 100)}...`)
+      .join('\n');
     const prompt = `${documentContext}
     Aja como um especialista em "Shift Left Testing". Para o projeto a seguir, forneça recomendações práticas e acionáveis para introduzir atividades de qualidade e teste o mais cedo possível no ciclo de vida.
 
@@ -467,16 +527,20 @@ export class OpenAIService implements AIService {
     `;
 
     try {
-        const jsonString = await this.callAPI(prompt, { type: 'json_object' });
-        const parsedResponse = JSON.parse(jsonString);
-        return parsedResponse;
+      const jsonString = await this.callAPI(prompt, { type: 'json_object' });
+      const parsedResponse = JSON.parse(jsonString);
+      return parsedResponse;
     } catch (error) {
-        logger.error("Erro ao gerar análise Shift Left", 'openaiService', error);
-        throw new Error("Failed to communicate with the OpenAI API for Shift Left analysis.");
+      logger.error('Erro ao gerar análise Shift Left', 'openaiService', error);
+      throw new Error('Failed to communicate with the OpenAI API for Shift Left analysis.');
     }
   }
 
-  async generateBddScenarios(title: string, description: string, project?: Project | null): Promise<BddScenario[]> {
+  async generateBddScenarios(
+    title: string,
+    description: string,
+    project?: Project | null
+  ): Promise<BddScenario[]> {
     const documentContext = await getFormattedContext(project || null);
     const prompt = `${documentContext}
     Aja como um especialista em BDD (Behavior-Driven Development). Para a tarefa a seguir, crie cenários de comportamento usando a sintaxe Gherkin (Dado, Quando, Então).
@@ -499,24 +563,29 @@ export class OpenAIService implements AIService {
     `;
 
     try {
-        const jsonString = await this.callAPI(prompt, { type: 'json_object' });
-        const parsedResponse = JSON.parse(jsonString);
-        
-        if (!parsedResponse || !Array.isArray(parsedResponse.scenarios)) {
-            throw new Error("Resposta da IA com estrutura inválida para cenários BDD.");
-        }
+      const jsonString = await this.callAPI(prompt, { type: 'json_object' });
+      const parsedResponse = JSON.parse(jsonString);
 
-        return parsedResponse.scenarios.map((sc: any, index: number) => ({
-            ...sc,
-            id: `bdd-${Date.now()}-${index}`,
-        }));
+      if (!parsedResponse || !Array.isArray(parsedResponse.scenarios)) {
+        throw new Error('Resposta da IA com estrutura inválida para cenários BDD.');
+      }
+
+      return parsedResponse.scenarios.map((sc: any, index: number) => ({
+        ...sc,
+        id: `bdd-${Date.now()}-${index}`,
+      }));
     } catch (error) {
-        logger.error("Erro ao gerar cenários BDD", 'openaiService', error);
-        throw new Error("Falha ao comunicar com a API OpenAI para gerar cenários BDD.");
+      logger.error('Erro ao gerar cenários BDD', 'openaiService', error);
+      throw new Error('Falha ao comunicar com a API OpenAI para gerar cenários BDD.');
     }
   }
 
-  async generateTestPyramidAnalysis(projectName: string, projectDescription: string, tasks: JiraTask[], project?: Project | null): Promise<TestPyramidAnalysis> {
+  async generateTestPyramidAnalysis(
+    projectName: string,
+    projectDescription: string,
+    tasks: JiraTask[],
+    project?: Project | null
+  ): Promise<TestPyramidAnalysis> {
     const documentContext = await getFormattedContext(project || null);
     const taskSummaries = tasks.map(t => `- ${t.id} ${t.title}`).join('\n');
     const prompt = `${documentContext}
@@ -537,13 +606,13 @@ export class OpenAIService implements AIService {
     IMPORTANTE: Retorne APENAS um objeto JSON válido, sem markdown, sem código, sem explicações adicionais.
     `;
 
-     try {
-        const jsonString = await this.callAPI(prompt, { type: 'json_object' });
-        const parsedResponse = JSON.parse(jsonString);
-        return parsedResponse;
+    try {
+      const jsonString = await this.callAPI(prompt, { type: 'json_object' });
+      const parsedResponse = JSON.parse(jsonString);
+      return parsedResponse;
     } catch (error) {
-        logger.error("Erro ao gerar análise Test Pyramid", 'openaiService', error);
-        throw new Error("Failed to communicate with the OpenAI API for Test Pyramid analysis.");
+      logger.error('Erro ao gerar análise Test Pyramid', 'openaiService', error);
+      throw new Error('Failed to communicate with the OpenAI API for Test Pyramid analysis.');
     }
   }
 }

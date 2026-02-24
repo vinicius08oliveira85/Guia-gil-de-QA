@@ -34,7 +34,8 @@ const openBackupDB = (): Promise<IDBDatabase> => {
     const request = indexedDB.open(`${DB_NAME}_backups`, DB_VERSION);
 
     request.onerror = () => {
-      const error = request.error || new Error('Erro desconhecido ao abrir banco de dados de backups');
+      const error =
+        request.error || new Error('Erro desconhecido ao abrir banco de dados de backups');
       logger.error('Erro ao abrir banco de dados de backups', 'backupService', error);
       reject(error);
     };
@@ -44,9 +45,9 @@ const openBackupDB = (): Promise<IDBDatabase> => {
       resolve(backupDb);
     };
 
-    request.onupgradeneeded = (event) => {
+    request.onupgradeneeded = event => {
       const dbInstance = (event.target as IDBOpenDBRequest).result;
-      
+
       // Criar object store de backups se não existir
       if (!dbInstance.objectStoreNames.contains(BACKUP_STORE_NAME)) {
         const store = dbInstance.createObjectStore(BACKUP_STORE_NAME, { keyPath: 'id' });
@@ -95,11 +96,11 @@ export const createBackup = async (
       operation,
       size,
       description,
-      project: { ...project } // Deep copy do projeto
+      project: { ...project }, // Deep copy do projeto
     };
 
     const db = await openBackupDB();
-    
+
     await new Promise<void>((resolve, reject) => {
       const transaction = db.transaction(BACKUP_STORE_NAME, 'readwrite');
       const store = transaction.objectStore(BACKUP_STORE_NAME);
@@ -120,8 +121,8 @@ export const createBackup = async (
       entityName: project.name,
       changes: {
         backupId: { old: undefined, new: backupId },
-        operation: { old: undefined, new: operation }
-      }
+        operation: { old: undefined, new: operation },
+      },
     });
 
     logger.info(
@@ -142,10 +143,7 @@ export const createBackup = async (
  * @param backupId ID do backup a ser restaurado ou 'latest' para o mais recente
  * @returns Projeto restaurado
  */
-export const restoreBackup = async (
-  projectId: string,
-  backupId: string
-): Promise<Project> => {
+export const restoreBackup = async (projectId: string, backupId: string): Promise<Project> => {
   try {
     // Se backupId for 'latest', obter o backup mais recente
     let targetBackupId = backupId;
@@ -158,7 +156,7 @@ export const restoreBackup = async (
     }
 
     const db = await openBackupDB();
-    
+
     const backup = await new Promise<BackupEntry>((resolve, reject) => {
       const transaction = db.transaction(BACKUP_STORE_NAME, 'readonly');
       const store = transaction.objectStore(BACKUP_STORE_NAME);
@@ -187,8 +185,8 @@ export const restoreBackup = async (
       entityName: backup.projectName,
       changes: {
         restoredFromBackup: { old: undefined, new: backupId },
-        restoredAt: { old: undefined, new: new Date().toISOString() }
-      }
+        restoredAt: { old: undefined, new: new Date().toISOString() },
+      },
     });
 
     logger.info(
@@ -211,7 +209,7 @@ export const restoreBackup = async (
 export const listBackups = async (projectId: string): Promise<BackupInfo[]> => {
   try {
     const db = await openBackupDB();
-    
+
     const backups = await new Promise<BackupEntry[]>((resolve, reject) => {
       const transaction = db.transaction(BACKUP_STORE_NAME, 'readonly');
       const store = transaction.objectStore(BACKUP_STORE_NAME);
@@ -255,7 +253,7 @@ export const getLatestBackup = async (projectId: string): Promise<BackupInfo | n
 const cleanupOldBackups = async (projectId: string): Promise<void> => {
   try {
     const backups = await listBackups(projectId);
-    
+
     if (backups.length <= MAX_BACKUPS_PER_PROJECT) {
       return; // Não precisa limpar
     }
@@ -266,7 +264,7 @@ const cleanupOldBackups = async (projectId: string): Promise<void> => {
 
     await Promise.all(
       backupsToDelete.map(
-        (backup) =>
+        backup =>
           new Promise<void>((resolve, reject) => {
             const transaction = db.transaction(BACKUP_STORE_NAME, 'readwrite');
             const store = transaction.objectStore(BACKUP_STORE_NAME);
@@ -316,18 +314,11 @@ export const autoBackupBeforeOperation = async (
       `Backup automático antes de ${operation}`
     );
 
-    logger.debug(
-      `Backup automático criado antes de ${operation}: ${backupId}`,
-      'backupService'
-    );
+    logger.debug(`Backup automático criado antes de ${operation}: ${backupId}`, 'backupService');
 
     return backupId;
   } catch (error) {
-    logger.warn(
-      `Erro ao criar backup automático antes de ${operation}`,
-      'backupService',
-      error
-    );
+    logger.warn(`Erro ao criar backup automático antes de ${operation}`, 'backupService', error);
     // Não lançar erro - backup automático não deve bloquear operações
     return null;
   }
@@ -340,7 +331,7 @@ export const autoBackupBeforeOperation = async (
 export const deleteBackup = async (backupId: string): Promise<void> => {
   try {
     const db = await openBackupDB();
-    
+
     await new Promise<void>((resolve, reject) => {
       const transaction = db.transaction(BACKUP_STORE_NAME, 'readwrite');
       const store = transaction.objectStore(BACKUP_STORE_NAME);
@@ -360,20 +351,22 @@ export const deleteBackup = async (backupId: string): Promise<void> => {
 /**
  * Obtém estatísticas de backups
  */
-export const getBackupStats = async (projectId: string): Promise<{
+export const getBackupStats = async (
+  projectId: string
+): Promise<{
   total: number;
   totalSize: number; // Tamanho total em bytes
   oldestBackup: BackupInfo | null;
   newestBackup: BackupInfo | null;
 }> => {
   const backups = await listBackups(projectId);
-  
+
   if (backups.length === 0) {
     return {
       total: 0,
       totalSize: 0,
       oldestBackup: null,
-      newestBackup: null
+      newestBackup: null,
     };
   }
 
@@ -385,7 +378,6 @@ export const getBackupStats = async (projectId: string): Promise<{
     total: backups.length,
     totalSize,
     oldestBackup,
-    newestBackup
+    newestBackup,
   };
 };
-

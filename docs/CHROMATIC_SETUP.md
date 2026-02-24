@@ -39,6 +39,7 @@ Se você quiser habilitar visual testing com Chromatic:
 ## ✅ Sem Configuração
 
 Se você **não configurar** o token:
+
 - ✅ O projeto continua funcionando normalmente
 - ✅ O workflow do Chromatic será pulado (não falhará)
 - ✅ Você verá uma mensagem: "Chromatic token not configured. Skipping visual testing."
@@ -47,4 +48,3 @@ Se você **não configurar** o token:
 
 - [Chromatic Documentation](https://www.chromatic.com/docs)
 - [GitHub Actions Integration](https://www.chromatic.com/docs/github-actions)
-

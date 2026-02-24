@@ -8,11 +8,11 @@ export function normalizeExecutedStrategy(executedStrategy?: string | string[]):
   if (!executedStrategy) {
     return [];
   }
-  
+
   if (Array.isArray(executedStrategy)) {
     return executedStrategy.filter(s => s && s.trim() !== '');
   }
-  
+
   // Se for string (formato antigo), converte para array
   return executedStrategy.trim() !== '' ? [executedStrategy] : [];
 }
@@ -32,7 +32,7 @@ export function migrateTestCase(testCase: TestCase): TestCase {
   if (needsMigration(testCase)) {
     return {
       ...testCase,
-      executedStrategy: normalizeExecutedStrategy(testCase.executedStrategy)
+      executedStrategy: normalizeExecutedStrategy(testCase.executedStrategy),
     };
   }
   return testCase;
@@ -50,4 +50,3 @@ export function migrateTestCases(testCases: TestCase[]): TestCase[] {
   }
   return testCases.map(migrateTestCase);
 }
-

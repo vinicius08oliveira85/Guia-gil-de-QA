@@ -3,7 +3,14 @@ import { getNotificationPreferences } from './preferencesService';
 
 export interface Notification {
   id: string;
-  type: 'bug_created' | 'test_failed' | 'deadline' | 'task_assigned' | 'comment_added' | 'task_completed' | 'dependency_resolved';
+  type:
+    | 'bug_created'
+    | 'test_failed'
+    | 'deadline'
+    | 'task_assigned'
+    | 'comment_added'
+    | 'task_completed'
+    | 'dependency_resolved';
   title: string;
   message: string;
   projectId: string;
@@ -37,7 +44,9 @@ const shouldCreateNotification = (type: Notification['type']): boolean => {
   }
 };
 
-export const createNotification = (notification: Omit<Notification, 'id' | 'read' | 'createdAt'>): Notification | null => {
+export const createNotification = (
+  notification: Omit<Notification, 'id' | 'read' | 'createdAt'>
+): Notification | null => {
   // Check preferences before creating notification
   if (!shouldCreateNotification(notification.type)) {
     return null;
@@ -47,7 +56,7 @@ export const createNotification = (notification: Omit<Notification, 'id' | 'read
     ...notification,
     id: `notif-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
     read: false,
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
   };
 
   const notifications = getNotifications();
@@ -59,10 +68,10 @@ export const createNotification = (notification: Omit<Notification, 'id' | 'read
   }
 
   localStorage.setItem(STORAGE_KEY, JSON.stringify(notifications));
-  
+
   // Disparar evento customizado para notificar componentes
   window.dispatchEvent(new CustomEvent('notification-created', { detail: newNotification }));
-  
+
   return newNotification;
 };
 
@@ -81,9 +90,7 @@ export const getUnreadCount = (): number => {
 
 export const markAsRead = (notificationId: string) => {
   const notifications = getNotifications();
-  const updated = notifications.map(n =>
-    n.id === notificationId ? { ...n, read: true } : n
-  );
+  const updated = notifications.map(n => (n.id === notificationId ? { ...n, read: true } : n));
   localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
 };
 
@@ -108,7 +115,7 @@ export const notifyBugCreated = (bug: JiraTask, project: Project) => {
     projectId: project.id,
     projectName: project.name,
     entityId: bug.id,
-    entityType: 'bug'
+    entityType: 'bug',
   });
 };
 
@@ -120,7 +127,7 @@ export const notifyTestFailed = (testCase: TestCase, task: JiraTask, project: Pr
     projectId: project.id,
     projectName: project.name,
     entityId: task.id,
-    entityType: 'testcase'
+    entityType: 'testcase',
   });
 };
 
@@ -132,7 +139,7 @@ export const notifyTaskAssigned = (task: JiraTask, project: Project, _assignee: 
     projectId: project.id,
     projectName: project.name,
     entityId: task.id,
-    entityType: 'task'
+    entityType: 'task',
   });
 };
 
@@ -144,11 +151,15 @@ export const notifyCommentAdded = (task: JiraTask, project: Project, author: str
     projectId: project.id,
     projectName: project.name,
     entityId: task.id,
-    entityType: 'task'
+    entityType: 'task',
   });
 };
 
-export const notifyDependencyResolved = (task: JiraTask, project: Project, dependentTask: JiraTask) => {
+export const notifyDependencyResolved = (
+  task: JiraTask,
+  project: Project,
+  dependentTask: JiraTask
+) => {
   return createNotification({
     type: 'dependency_resolved',
     title: 'Dependência Resolvida',
@@ -156,7 +167,6 @@ export const notifyDependencyResolved = (task: JiraTask, project: Project, depen
     projectId: project.id,
     projectName: project.name,
     entityId: dependentTask.id,
-    entityType: 'task'
+    entityType: 'task',
   });
 };
-

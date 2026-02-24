@@ -12,4 +12,3 @@ describe('getFriendlyAIErrorMessage', () => {
     expect(message).toMatch(/indisponível/i);
   });
 });
-

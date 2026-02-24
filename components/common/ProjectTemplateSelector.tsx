@@ -9,24 +9,25 @@ interface ProjectTemplateSelectorProps {
 
 export const ProjectTemplateSelector: React.FC<ProjectTemplateSelectorProps> = ({
   onSelectTemplate,
-  onClose
+  onClose,
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const categories = ['all', ...Array.from(new Set(PROJECT_TEMPLATES.map(t => t.category)))];
 
-  const filteredTemplates = selectedCategory === 'all'
-    ? PROJECT_TEMPLATES
-    : PROJECT_TEMPLATES.filter(t => t.category === selectedCategory);
+  const filteredTemplates =
+    selectedCategory === 'all'
+      ? PROJECT_TEMPLATES
+      : PROJECT_TEMPLATES.filter(t => t.category === selectedCategory);
 
   const getCategoryIcon = (category: string) => {
     const icons: Record<string, string> = {
-      'Web': '🌐',
-      'Mobile': '📱',
-      'API': '🔌',
-      'E2E': '🔄',
-      'Performance': '⚡',
-      'Segurança': '🔒',
-      'Geral': '📦'
+      Web: '🌐',
+      Mobile: '📱',
+      API: '🔌',
+      E2E: '🔄',
+      Performance: '⚡',
+      Segurança: '🔒',
+      Geral: '📦',
     };
     return icons[category] || '📋';
   };
@@ -93,4 +94,3 @@ export const ProjectTemplateSelector: React.FC<ProjectTemplateSelectorProps> = (
     </div>
   );
 };
-

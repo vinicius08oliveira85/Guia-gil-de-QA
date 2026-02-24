@@ -36,15 +36,18 @@ const FilterChip = ({
     onClick={onClick}
     className={`
       inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-all border
-      ${isActive
-        ? 'bg-primary text-primary-content border-primary shadow-sm'
-        : 'bg-base-100 text-base-content/70 border-base-300 hover:border-primary/50 hover:text-base-content'
+      ${
+        isActive
+          ? 'bg-primary text-primary-content border-primary shadow-sm'
+          : 'bg-base-100 text-base-content/70 border-base-300 hover:border-primary/50 hover:text-base-content'
       }
     `}
   >
     {label}
     {showCount && (
-      <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${isActive ? 'bg-white/20' : 'bg-base-200'}`}>
+      <span
+        className={`px-1.5 py-0.5 rounded-full text-[10px] ${isActive ? 'bg-white/20' : 'bg-base-200'}`}
+      >
         {count}
       </span>
     )}
@@ -71,11 +74,14 @@ export const DashboardFiltersModal: React.FC<DashboardFiltersModalProps> = ({
     return Array.from(phases).sort();
   }, [project.phases]);
 
-  const counts = useMemo(() => ({
-    type: (type: string) => tasks.filter(t => t.type === type).length,
-    testStatus: (status: string) =>
-      tasks.filter(t => (t.testCases || []).some(tc => tc.status === status)).length,
-  }), [tasks]);
+  const counts = useMemo(
+    () => ({
+      type: (type: string) => tasks.filter(t => t.type === type).length,
+      testStatus: (status: string) =>
+        tasks.filter(t => (t.testCases || []).some(tc => tc.status === status)).length,
+    }),
+    [tasks]
+  );
 
   const handleToggleArrayFilter = (key: 'taskType' | 'testStatus' | 'phase', value: string) => {
     const current = (filters[key] as string[] | undefined) || [];
@@ -202,4 +208,3 @@ export const DashboardFiltersModal: React.FC<DashboardFiltersModalProps> = ({
     </Modal>
   );
 };
-

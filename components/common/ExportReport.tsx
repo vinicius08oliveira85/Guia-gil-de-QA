@@ -14,7 +14,7 @@ const convertToCSV = (data: any): string => {
       task.title,
       task.type,
       task.status,
-      task.priority
+      task.priority,
     ]);
     return [headers, ...rows].map(row => row.join(',')).join('\n');
   }
@@ -24,7 +24,7 @@ const convertToCSV = (data: any): string => {
 const convertToMarkdown = (data: any, project: Project): string => {
   let md = `# Relatório: ${project.name}\n\n`;
   md += `**Data:** ${formatDate(new Date())}\n\n`;
-  
+
   if (data.metrics) {
     md += `## Métricas\n\n`;
     md += `- Fase Atual: ${data.metrics.currentPhase}\n`;
@@ -32,7 +32,7 @@ const convertToMarkdown = (data: any, project: Project): string => {
     md += `- Casos de Teste: ${data.metrics.totalTestCases}\n`;
     md += `- Cobertura: ${data.metrics.testCoverage}%\n\n`;
   }
-  
+
   if (data.tasks) {
     md += `## Tarefas\n\n`;
     data.tasks.forEach((task: any) => {
@@ -42,7 +42,7 @@ const convertToMarkdown = (data: any, project: Project): string => {
       md += `- Prioridade: ${task.priority}\n\n`;
     });
   }
-  
+
   return md;
 };
 
@@ -52,25 +52,25 @@ interface ExportReportProps {
 }
 
 export const ExportReport: React.FC<ExportReportProps> = ({ project, onClose }) => {
-    const exportPrefs = getExportPreferences();
-    const [format, setFormat] = useState<'json' | 'csv' | 'markdown'>(exportPrefs.defaultFormat);
-    const [includeMetrics, setIncludeMetrics] = useState(exportPrefs.defaultIncludeMetrics);
-    const [includeTasks, setIncludeTasks] = useState(exportPrefs.defaultIncludeTasks);
-    const [includeTestCases, setIncludeTestCases] = useState(exportPrefs.defaultIncludeTestCases);
-    const metrics = useProjectMetrics(project);
-    const { handleSuccess, handleError } = useErrorHandler();
+  const exportPrefs = getExportPreferences();
+  const [format, setFormat] = useState<'json' | 'csv' | 'markdown'>(exportPrefs.defaultFormat);
+  const [includeMetrics, setIncludeMetrics] = useState(exportPrefs.defaultIncludeMetrics);
+  const [includeTasks, setIncludeTasks] = useState(exportPrefs.defaultIncludeTasks);
+  const [includeTestCases, setIncludeTestCases] = useState(exportPrefs.defaultIncludeTestCases);
+  const metrics = useProjectMetrics(project);
+  const { handleSuccess, handleError } = useErrorHandler();
 
-    useEffect(() => {
-        const handlePreferencesUpdate = () => {
-            const updatedPrefs = getExportPreferences();
-            setFormat(updatedPrefs.defaultFormat);
-            setIncludeMetrics(updatedPrefs.defaultIncludeMetrics);
-            setIncludeTasks(updatedPrefs.defaultIncludeTasks);
-            setIncludeTestCases(updatedPrefs.defaultIncludeTestCases);
-        };
-        window.addEventListener('preferences-updated', handlePreferencesUpdate);
-        return () => window.removeEventListener('preferences-updated', handlePreferencesUpdate);
-    }, []);
+  useEffect(() => {
+    const handlePreferencesUpdate = () => {
+      const updatedPrefs = getExportPreferences();
+      setFormat(updatedPrefs.defaultFormat);
+      setIncludeMetrics(updatedPrefs.defaultIncludeMetrics);
+      setIncludeTasks(updatedPrefs.defaultIncludeTasks);
+      setIncludeTestCases(updatedPrefs.defaultIncludeTestCases);
+    };
+    window.addEventListener('preferences-updated', handlePreferencesUpdate);
+    return () => window.removeEventListener('preferences-updated', handlePreferencesUpdate);
+  }, []);
 
   const handleExport = async () => {
     try {
@@ -79,8 +79,8 @@ export const ExportReport: React.FC<ExportReportProps> = ({ project, onClose }) 
           name: project.name,
           description: project.description,
           createdAt: project.createdAt,
-          updatedAt: project.updatedAt
-        }
+          updatedAt: project.updatedAt,
+        },
       };
 
       if (includeMetrics) {
@@ -92,7 +92,7 @@ export const ExportReport: React.FC<ExportReportProps> = ({ project, onClose }) 
           testPassRate: metrics.testPassRate,
           automationRatio: metrics.automationRatio,
           bugsBySeverity: metrics.bugsBySeverity,
-          openVsClosedBugs: metrics.openVsClosedBugs
+          openVsClosedBugs: metrics.openVsClosedBugs,
         };
       }
 
@@ -106,7 +106,7 @@ export const ExportReport: React.FC<ExportReportProps> = ({ project, onClose }) 
           priority: task.priority,
           tags: task.tags,
           estimatedHours: task.estimatedHours,
-          actualHours: task.actualHours
+          actualHours: task.actualHours,
         }));
       }
 
@@ -115,13 +115,13 @@ export const ExportReport: React.FC<ExportReportProps> = ({ project, onClose }) 
           task.testCases.map(tc => ({
             taskId: task.id,
             taskTitle: task.title,
-            ...tc
+            ...tc,
           }))
         );
       }
 
       const fileName = `${project.name}_report_${formatDate(new Date()).replace(/\//g, '-')}`;
-      
+
       if (format === 'json') {
         const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
@@ -159,9 +159,7 @@ export const ExportReport: React.FC<ExportReportProps> = ({ project, onClose }) 
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-text-secondary mb-2">
-          Formato
-        </label>
+        <label className="block text-sm font-medium text-text-secondary mb-2">Formato</label>
         <div className="flex gap-2">
           {(['json', 'csv', 'markdown'] as const).map(fmt => (
             <button
@@ -180,14 +178,12 @@ export const ExportReport: React.FC<ExportReportProps> = ({ project, onClose }) 
       </div>
 
       <div className="space-y-2">
-        <label className="block text-sm font-medium text-text-secondary mb-2">
-          Incluir
-        </label>
+        <label className="block text-sm font-medium text-text-secondary mb-2">Incluir</label>
         <label className="flex items-center gap-2 cursor-pointer">
           <input
             type="checkbox"
             checked={includeMetrics}
-            onChange={(e) => setIncludeMetrics(e.target.checked)}
+            onChange={e => setIncludeMetrics(e.target.checked)}
             className="w-4 h-4 rounded border-surface-border text-accent"
           />
           <span className="text-text-primary">Métricas</span>
@@ -196,7 +192,7 @@ export const ExportReport: React.FC<ExportReportProps> = ({ project, onClose }) 
           <input
             type="checkbox"
             checked={includeTasks}
-            onChange={(e) => setIncludeTasks(e.target.checked)}
+            onChange={e => setIncludeTasks(e.target.checked)}
             className="w-4 h-4 rounded border-surface-border text-accent"
           />
           <span className="text-text-primary">Tarefas</span>
@@ -205,7 +201,7 @@ export const ExportReport: React.FC<ExportReportProps> = ({ project, onClose }) 
           <input
             type="checkbox"
             checked={includeTestCases}
-            onChange={(e) => setIncludeTestCases(e.target.checked)}
+            onChange={e => setIncludeTestCases(e.target.checked)}
             className="w-4 h-4 rounded border-surface-border text-accent"
           />
           <span className="text-text-primary">Casos de Teste</span>
@@ -223,4 +219,3 @@ export const ExportReport: React.FC<ExportReportProps> = ({ project, onClose }) 
     </div>
   );
 };
-

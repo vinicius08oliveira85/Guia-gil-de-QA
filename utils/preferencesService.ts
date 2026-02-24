@@ -1,4 +1,9 @@
-import { UserPreferences, NotificationPreferences, KeyboardShortcutPreferences, ExportPreferences } from '../types';
+import {
+  UserPreferences,
+  NotificationPreferences,
+  KeyboardShortcutPreferences,
+  ExportPreferences,
+} from '../types';
 import { logger } from './logger';
 
 const STORAGE_KEY = 'qa_user_preferences';
@@ -103,11 +108,12 @@ export const updateNotificationPreferences = (prefs: Partial<NotificationPrefere
   savePreferences({ notifications: prefs });
 };
 
-export const updateKeyboardShortcutPreferences = (prefs: Partial<KeyboardShortcutPreferences>): void => {
+export const updateKeyboardShortcutPreferences = (
+  prefs: Partial<KeyboardShortcutPreferences>
+): void => {
   savePreferences({ keyboardShortcuts: prefs });
 };
 
 export const updateExportPreferences = (prefs: Partial<ExportPreferences>): void => {
   savePreferences({ export: prefs });
 };
-

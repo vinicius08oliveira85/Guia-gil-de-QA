@@ -8,89 +8,99 @@ import { useErrorHandler } from './useErrorHandler';
  * Simplifica o uso do store em componentes
  */
 export const useProject = (projectId: string | null) => {
-  const { 
-    projects, 
+  const {
+    projects,
     getSelectedProject,
     updateProject: updateProjectInStore,
     addTaskToProject: addTaskInStore,
     updateTaskInProject: updateTaskInStore,
     deleteTaskFromProject: deleteTaskInStore,
   } = useProjectsStore();
-  
+
   const { handleError, handleSuccess } = useErrorHandler();
-  
-  const project = projectId 
-    ? projects.find(p => p.id === projectId) 
-    : getSelectedProject();
+
+  const project = projectId ? projects.find(p => p.id === projectId) : getSelectedProject();
 
   /**
    * Atualiza o projeto atual
    * Nota: Toasts de sucesso são controlados no nível do componente que chama esta função
    */
-  const updateProject = useCallback(async (updatedProject: Project) => {
-    if (!project) {
-      handleError(new Error('Projeto não encontrado'), 'useProject');
-      return;
-    }
-    
-    try {
-      await updateProjectInStore(updatedProject);
-      // Toast removido - deve ser controlado no nível do componente
-    } catch (error) {
-      handleError(error, 'Atualizar projeto');
-    }
-  }, [project, updateProjectInStore, handleError]);
+  const updateProject = useCallback(
+    async (updatedProject: Project) => {
+      if (!project) {
+        handleError(new Error('Projeto não encontrado'), 'useProject');
+        return;
+      }
+
+      try {
+        await updateProjectInStore(updatedProject);
+        // Toast removido - deve ser controlado no nível do componente
+      } catch (error) {
+        handleError(error, 'Atualizar projeto');
+      }
+    },
+    [project, updateProjectInStore, handleError]
+  );
 
   /**
    * Adiciona uma tarefa ao projeto
    */
-  const addTask = useCallback(async (task: JiraTask) => {
-    if (!project) {
-      handleError(new Error('Projeto não encontrado'), 'useProject');
-      return;
-    }
-    
-    try {
-      await addTaskInStore(project.id, task);
-      handleSuccess('Tarefa adicionada com sucesso!');
-    } catch (error) {
-      handleError(error, 'Adicionar tarefa');
-    }
-  }, [project, addTaskInStore, handleError, handleSuccess]);
+  const addTask = useCallback(
+    async (task: JiraTask) => {
+      if (!project) {
+        handleError(new Error('Projeto não encontrado'), 'useProject');
+        return;
+      }
+
+      try {
+        await addTaskInStore(project.id, task);
+        handleSuccess('Tarefa adicionada com sucesso!');
+      } catch (error) {
+        handleError(error, 'Adicionar tarefa');
+      }
+    },
+    [project, addTaskInStore, handleError, handleSuccess]
+  );
 
   /**
    * Atualiza uma tarefa do projeto
    */
-  const updateTask = useCallback(async (taskId: string, updates: Partial<JiraTask>) => {
-    if (!project) {
-      handleError(new Error('Projeto não encontrado'), 'useProject');
-      return;
-    }
-    
-    try {
-      await updateTaskInStore(project.id, taskId, updates);
-      handleSuccess('Tarefa atualizada com sucesso!');
-    } catch (error) {
-      handleError(error, 'Atualizar tarefa');
-    }
-  }, [project, updateTaskInStore, handleError, handleSuccess]);
+  const updateTask = useCallback(
+    async (taskId: string, updates: Partial<JiraTask>) => {
+      if (!project) {
+        handleError(new Error('Projeto não encontrado'), 'useProject');
+        return;
+      }
+
+      try {
+        await updateTaskInStore(project.id, taskId, updates);
+        handleSuccess('Tarefa atualizada com sucesso!');
+      } catch (error) {
+        handleError(error, 'Atualizar tarefa');
+      }
+    },
+    [project, updateTaskInStore, handleError, handleSuccess]
+  );
 
   /**
    * Remove uma tarefa do projeto
    */
-  const deleteTask = useCallback(async (taskId: string) => {
-    if (!project) {
-      handleError(new Error('Projeto não encontrado'), 'useProject');
-      return;
-    }
-    
-    try {
-      await deleteTaskInStore(project.id, taskId);
-      handleSuccess('Tarefa removida com sucesso!');
-    } catch (error) {
-      handleError(error, 'Remover tarefa');
-    }
-  }, [project, deleteTaskInStore, handleError, handleSuccess]);
+  const deleteTask = useCallback(
+    async (taskId: string) => {
+      if (!project) {
+        handleError(new Error('Projeto não encontrado'), 'useProject');
+        return;
+      }
+
+      try {
+        await deleteTaskInStore(project.id, taskId);
+        handleSuccess('Tarefa removida com sucesso!');
+      } catch (error) {
+        handleError(error, 'Remover tarefa');
+      }
+    },
+    [project, deleteTaskInStore, handleError, handleSuccess]
+  );
 
   return {
     project,
@@ -101,4 +111,3 @@ export const useProject = (projectId: string | null) => {
     isLoading: !project && projects.length > 0,
   };
 };
-

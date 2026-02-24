@@ -17,7 +17,7 @@ interface RecentActivityProps {
 
 /**
  * Componente que exibe atividades recentes do projeto
- * 
+ *
  * @example
  * ```tsx
  * <RecentActivity project={project} />
@@ -55,19 +55,21 @@ export const RecentActivity = React.memo<RecentActivityProps>(({ project, classN
         activitiesList.push({
           id: `test-${tc.id}`,
           type: tc.status === 'Passed' ? 'pass' : tc.status === 'Failed' ? 'fail' : 'pending',
-          title: tc.status === 'Passed' 
-            ? 'Caso de Teste Aprovado' 
-            : tc.status === 'Failed' 
-            ? 'Caso de Teste Falhou' 
-            : 'Caso de Teste Executado',
+          title:
+            tc.status === 'Passed'
+              ? 'Caso de Teste Aprovado'
+              : tc.status === 'Failed'
+                ? 'Caso de Teste Falhou'
+                : 'Caso de Teste Executado',
           description: `${task.title}: ${tc.description?.substring(0, 50)}${tc.description && tc.description.length > 50 ? '...' : ''}`,
           time: formatDistanceToNow(new Date(), { addSuffix: true }),
           icon: tc.status === 'Passed' ? CheckCircle2 : tc.status === 'Failed' ? XCircle : Clock,
-          iconColor: tc.status === 'Passed' 
-            ? 'text-success' 
-            : tc.status === 'Failed' 
-            ? 'text-error' 
-            : 'text-warning',
+          iconColor:
+            tc.status === 'Passed'
+              ? 'text-success'
+              : tc.status === 'Failed'
+                ? 'text-error'
+                : 'text-warning',
         });
       }
     });
@@ -115,15 +117,11 @@ export const RecentActivity = React.memo<RecentActivityProps>(({ project, classN
   }, [tasks, metrics]);
 
   return (
-    <div
-      className={className}
-      role="region"
-      aria-label="Atividades recentes"
-    >
+    <div className={className} role="region" aria-label="Atividades recentes">
       <div className="bg-base-100 rounded-2xl shadow-sm border border-base-300 p-6">
         <h3 className="font-bold text-lg text-base-content mb-4">Atividades Recentes</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {activities.map((activity) => {
+          {activities.map(activity => {
             const Icon = activity.icon;
             const iconBg =
               activity.type === 'pass'
@@ -157,4 +155,3 @@ export const RecentActivity = React.memo<RecentActivityProps>(({ project, classN
 });
 
 RecentActivity.displayName = 'RecentActivity';
-

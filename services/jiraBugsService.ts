@@ -12,10 +12,10 @@ export const fetchBugsFromJira = async (
 ): Promise<JiraIssue[]> => {
   try {
     logger.debug(`Buscando bugs do projeto ${projectKey}`, 'JiraBugsService');
-    
+
     // Buscar todas as issues e filtrar apenas bugs
     const allIssues = await getJiraIssues(config, projectKey, maxResults * 2); // Buscar mais para garantir que temos bugs suficientes
-    
+
     // Filtrar apenas bugs não resolvidos
     const bugs = allIssues.filter(issue => {
       const isBug = issue.fields?.issuetype?.name?.toLowerCase()?.includes('bug') === true;
@@ -38,15 +38,28 @@ export const mapJiraBugToTask = (jiraIssue: JiraIssue): JiraTask => {
   // Mapear severidade do Jira para nosso tipo
   const mapSeverity = (priority?: string): BugSeverity => {
     if (!priority) return 'Médio';
-    
+
     const lowerPriority = priority.toLowerCase();
-    if (lowerPriority.includes('crítico') || lowerPriority.includes('critical') || lowerPriority.includes('bloqueador') || lowerPriority.includes('blocker')) {
+    if (
+      lowerPriority.includes('crítico') ||
+      lowerPriority.includes('critical') ||
+      lowerPriority.includes('bloqueador') ||
+      lowerPriority.includes('blocker')
+    ) {
       return 'Crítico';
     }
-    if (lowerPriority.includes('alto') || lowerPriority.includes('high') || lowerPriority.includes('major')) {
+    if (
+      lowerPriority.includes('alto') ||
+      lowerPriority.includes('high') ||
+      lowerPriority.includes('major')
+    ) {
       return 'Alto';
     }
-    if (lowerPriority.includes('baixo') || lowerPriority.includes('low') || lowerPriority.includes('minor')) {
+    if (
+      lowerPriority.includes('baixo') ||
+      lowerPriority.includes('low') ||
+      lowerPriority.includes('minor')
+    ) {
       return 'Baixo';
     }
     return 'Médio';
@@ -94,19 +107,30 @@ export const mapJiraBugToTask = (jiraIssue: JiraIssue): JiraTask => {
     testCases: [],
     type: 'Bug',
     severity,
-    priority: severity === 'Crítico' ? 'Urgente' : severity === 'Alto' ? 'Alta' : severity === 'Médio' ? 'Média' : 'Baixa',
+    priority:
+      severity === 'Crítico'
+        ? 'Urgente'
+        : severity === 'Alto'
+          ? 'Alta'
+          : severity === 'Médio'
+            ? 'Média'
+            : 'Baixa',
     createdAt: jiraIssue.fields.created,
     completedAt: jiraIssue.fields.resolutiondate,
     tags: jiraIssue.fields.labels || [],
     environment: jiraIssue.fields.environment,
-    reporter: jiraIssue.fields.reporter ? {
-      displayName: jiraIssue.fields.reporter.displayName,
-      emailAddress: jiraIssue.fields.reporter.emailAddress,
-    } : undefined,
-    watchers: jiraIssue.fields.watches ? {
-      watchCount: jiraIssue.fields.watches.watchCount,
-      isWatching: jiraIssue.fields.watches.isWatching,
-    } : undefined,
+    reporter: jiraIssue.fields.reporter
+      ? {
+          displayName: jiraIssue.fields.reporter.displayName,
+          emailAddress: jiraIssue.fields.reporter.emailAddress,
+        }
+      : undefined,
+    watchers: jiraIssue.fields.watches
+      ? {
+          watchCount: jiraIssue.fields.watches.watchCount,
+          isWatching: jiraIssue.fields.watches.isWatching,
+        }
+      : undefined,
     components: jiraIssue.fields.components,
     fixVersions: jiraIssue.fields.fixVersions,
     dueDate: jiraIssue.fields.duedate,
@@ -162,7 +186,7 @@ export const syncBugsFromJira = async (
 
     mappedBugs.forEach(bug => {
       const existingBug = existingBugsMap.get(bug.id);
-      
+
       if (existingBug) {
         // Bug existe - atualizar preservando apenas comentários (bugs não devem ter testCases nem bddScenarios)
         const updatedBug: JiraTask = {
@@ -182,11 +206,10 @@ export const syncBugsFromJira = async (
       `Sincronizados ${updatedBugs.length} bugs atualizados e ${newBugs.length} novos bugs do Jira`,
       'JiraBugsService'
     );
-    
+
     return { updatedBugs, newBugs };
   } catch (error) {
     logger.error('Erro ao sincronizar bugs do Jira', 'JiraBugsService', error);
     throw error;
   }
 };
-

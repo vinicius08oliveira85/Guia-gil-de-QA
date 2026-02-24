@@ -3,11 +3,13 @@
 ## 🎉 O Que Já Foi Feito
 
 ### ✅ Arquivo .env Configurado
+
 - ⚠️ Token do Figma deve ser configurado no arquivo `.env`
 - ⚠️ File Key deve ser extraído da URL do arquivo Figma
 - ⚠️ URL do Storybook deve ser configurada
 
 ### ✅ Estrutura Completa Criada
+
 - ✅ Design Tokens System
 - ✅ Serviço Figma API
 - ✅ Storybook configurado
@@ -26,11 +28,13 @@
    - Durante a instalação, marque a opção "Add to PATH"
 
 2. **Após instalar, reinicie o terminal e execute:**
+
    ```bash
    npm install
    ```
 
 3. **Depois, sincronize os tokens:**
+
    ```bash
    npm run tokens:sync
    npm run tokens:build
@@ -51,14 +55,13 @@ STORYBOOK_FIGMA_URL=https://www.figma.com/file/YOUR_FILE_KEY_HERE/Your-Design-Na
 
 ## 🚀 Comandos Disponíveis (Após npm install)
 
-| Comando | Descrição |
-|---------|-----------|
-| `npm run tokens:sync` | Sincroniza tokens do Figma |
+| Comando                | Descrição                  |
+| ---------------------- | -------------------------- |
+| `npm run tokens:sync`  | Sincroniza tokens do Figma |
 | `npm run tokens:build` | Gera CSS e Tailwind config |
-| `npm run storybook` | Inicia Storybook |
-| `npm run setup:figma` | Verifica configuração |
+| `npm run storybook`    | Inicia Storybook           |
+| `npm run setup:figma`  | Verifica configuração      |
 
 ## ✨ Tudo Pronto!
 
 Quando o Node.js estiver instalado, basta executar `npm install` e começar a usar!
-

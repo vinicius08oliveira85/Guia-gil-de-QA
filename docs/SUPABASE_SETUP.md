@@ -3,6 +3,7 @@
 ## Por que usar Supabase?
 
 Para projetos com **mais de 10.000 issues**, recomenda-se usar Supabase para:
+
 - **Performance**: Armazenamento mais eficiente que IndexedDB
 - **Persistência**: Dados não são perdidos ao limpar cache do navegador
 - **Sincronização**: Acesso aos dados de múltiplos dispositivos
@@ -39,9 +40,11 @@ VITE_SUPABASE_PROXY_URL=/api/supabaseProxy
 ### 3. Criar Tabelas no Supabase
 
 **Recomendado (versão mais segura - SEM operações destrutivas):**
+
 - Execute o script **`docs/SUPABASE_FINAL.sql`** - versão final sem DROP, não mostra avisos
 
 **Alternativas:**
+
 - **`docs/SUPABASE_SIMPLE.sql`** - versão simplificada (pode mostrar aviso de operação destrutiva)
 - **`docs/SUPABASE_MIGRATION_SAFE.sql`** - versão segura com verificações (execute o script COMPLETO)
 
@@ -100,15 +103,15 @@ Se a tabela já existir mas as políticas RLS não permitirem acesso anônimo, v
 
 O repositório já está preparado com:
 
-1. **Function `api/supabaseProxy.ts`**  
-   - Recebe requisições do frontend e fala com o Supabase usando a `SUPABASE_SERVICE_ROLE_KEY`.  
+1. **Function `api/supabaseProxy.ts`**
+   - Recebe requisições do frontend e fala com o Supabase usando a `SUPABASE_SERVICE_ROLE_KEY`.
    - Evita erros de CORS e mantém a chave sensível apenas no backend.
 
-2. **Serviço `services/supabaseService.ts`**  
-   - O frontend chama somente o proxy (`fetch('/api/supabaseProxy', ...)`).  
+2. **Serviço `services/supabaseService.ts`**
+   - O frontend chama somente o proxy (`fetch('/api/supabaseProxy', ...)`).
    - Existe fallback automático para o SDK direto caso você esteja desenvolvendo localmente sem proxy.
 
-3. **Integração com `dbService.ts`**  
+3. **Integração com `dbService.ts`**
    - Salvar, carregar e excluir projetos já verificam se o Supabase está disponível e caem para IndexedDB quando necessário.
 
 Portanto, basta configurar as variáveis de ambiente e executar `npm run build`. Se quiser adaptar para outro backend, use os arquivos acima como referência.
@@ -158,6 +161,6 @@ Para projetos compartilhados, você pode habilitar autenticação:
 ## Suporte
 
 Se precisar de ajuda com a configuração do Supabase, consulte:
+
 - [Documentação do Supabase](https://supabase.com/docs)
 - [Guia de RLS (Row Level Security)](https://supabase.com/docs/guides/auth/row-level-security)
-

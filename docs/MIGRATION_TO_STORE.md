@@ -21,13 +21,8 @@ const handleCreateProject = async (name: string) => {
 // App.tsx
 import { useProjectsStore } from '../store/projectsStore';
 
-const { 
-  projects, 
-  selectedProjectId, 
-  loadProjects, 
-  createProject,
-  selectProject 
-} = useProjectsStore();
+const { projects, selectedProjectId, loadProjects, createProject, selectProject } =
+  useProjectsStore();
 
 // Carregar projetos ao montar
 useEffect(() => {
@@ -53,13 +48,7 @@ const handleCreateProject = async (name: string) => {
 import { useProjectsStore } from '../store/projectsStore';
 
 export const MyComponent = () => {
-  const { 
-    projects, 
-    isLoading, 
-    error,
-    loadProjects,
-    createProject 
-  } = useProjectsStore();
+  const { projects, isLoading, error, loadProjects, createProject } = useProjectsStore();
 
   useEffect(() => {
     if (projects.length === 0) {
@@ -87,4 +76,3 @@ export const MyComponent = () => {
   );
 };
 ```
-

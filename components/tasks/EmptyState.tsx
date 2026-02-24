@@ -14,7 +14,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   title = 'Nenhum teste encontrado',
   message = 'Não há testes reprovados que correspondam aos filtros aplicados.',
   suggestions = [],
-  icon
+  icon,
 }) => {
   return (
     <div className="flex flex-col items-center justify-center py-xl px-md text-center">
@@ -34,13 +34,9 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
         </svg>
       )}
 
-      <h3 className="text-lg font-semibold text-base-content mb-xs">
-        {title}
-      </h3>
+      <h3 className="text-lg font-semibold text-base-content mb-xs">{title}</h3>
 
-      <p className="text-sm text-base-content/70 mb-md max-w-md">
-        {message}
-      </p>
+      <p className="text-sm text-base-content/70 mb-md max-w-md">{message}</p>
 
       {suggestions.length > 0 && (
         <div className="space-y-xs">
@@ -60,4 +56,3 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
     </div>
   );
 };
-

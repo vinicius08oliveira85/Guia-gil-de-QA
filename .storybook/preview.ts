@@ -30,9 +30,8 @@ const preview: Preview = {
     },
   },
   decorators: [
-    (Story) => React.createElement('div', { style: { padding: '2rem' } }, React.createElement(Story)),
+    Story => React.createElement('div', { style: { padding: '2rem' } }, React.createElement(Story)),
   ],
 };
 
 export default preview;
-

@@ -17,7 +17,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
   onAddComment,
   onEditComment,
   onDeleteComment,
-  currentUser = 'Você'
+  currentUser = 'Você',
 }) => {
   const [newComment, setNewComment] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -72,13 +72,15 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
 
   return (
     <div className="space-y-4">
-      <h4 className="text-lg font-semibold text-text-primary">💬 Comentários ({comments.length})</h4>
-      
+      <h4 className="text-lg font-semibold text-text-primary">
+        💬 Comentários ({comments.length})
+      </h4>
+
       {/* Formulário de novo comentário */}
       <div className="space-y-2">
         <textarea
           value={newComment}
-          onChange={(e) => setNewComment(e.target.value)}
+          onChange={e => setNewComment(e.target.value)}
           placeholder="Adicionar comentário..."
           rows={3}
           className="w-full px-3 py-2 bg-surface border border-surface-border rounded-md text-text-primary placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-accent"
@@ -95,29 +97,20 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
       {/* Lista de comentários */}
       <div className="space-y-3">
         {comments.map(comment => (
-          <div
-            key={comment.id}
-            className="p-3 bg-black/20 rounded-md border border-surface-border"
-          >
+          <div key={comment.id} className="p-3 bg-black/20 rounded-md border border-surface-border">
             {editingId === comment.id ? (
               <div className="space-y-2">
                 <textarea
                   value={editContent}
-                  onChange={(e) => setEditContent(e.target.value)}
+                  onChange={e => setEditContent(e.target.value)}
                   rows={3}
                   className="w-full px-3 py-2 bg-surface border border-surface-border rounded-md text-text-primary"
                 />
                 <div className="flex gap-2">
-                  <button
-                    onClick={handleSaveEdit}
-                    className="btn btn-primary text-sm"
-                  >
+                  <button onClick={handleSaveEdit} className="btn btn-primary text-sm">
                     Salvar
                   </button>
-                  <button
-                    onClick={handleCancelEdit}
-                    className="btn btn-secondary text-sm"
-                  >
+                  <button onClick={handleCancelEdit} className="btn btn-secondary text-sm">
                     Cancelar
                   </button>
                 </div>
@@ -136,30 +129,30 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
                       {formatCommentDate(comment.createdAt)}
                     </span>
                   </div>
-                  {comment.author === currentUser && !comment.fromJira && (onEditComment || onDeleteComment) && (
-                    <div className="flex gap-2">
-                      {onEditComment && (
-                        <button
-                          onClick={() => handleStartEdit(comment)}
-                          className="text-sm text-text-secondary hover:text-text-primary"
-                        >
-                          Editar
-                        </button>
-                      )}
-                      {onDeleteComment && (
-                        <button
-                          onClick={() => onDeleteComment(comment.id)}
-                          className="text-sm text-red-700 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300"
-                        >
-                          Excluir
-                        </button>
-                      )}
-                    </div>
-                  )}
+                  {comment.author === currentUser &&
+                    !comment.fromJira &&
+                    (onEditComment || onDeleteComment) && (
+                      <div className="flex gap-2">
+                        {onEditComment && (
+                          <button
+                            onClick={() => handleStartEdit(comment)}
+                            className="text-sm text-text-secondary hover:text-text-primary"
+                          >
+                            Editar
+                          </button>
+                        )}
+                        {onDeleteComment && (
+                          <button
+                            onClick={() => onDeleteComment(comment.id)}
+                            className="text-sm text-red-700 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300"
+                          >
+                            Excluir
+                          </button>
+                        )}
+                      </div>
+                    )}
                   {comment.fromJira && (
-                    <span className="text-xs text-text-secondary italic">
-                      Sincronizado do Jira
-                    </span>
+                    <span className="text-xs text-text-secondary italic">Sincronizado do Jira</span>
                   )}
                 </div>
                 {comment.content.includes('<') ? (
@@ -195,4 +188,3 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
     </div>
   );
 };
-

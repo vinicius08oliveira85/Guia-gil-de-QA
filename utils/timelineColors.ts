@@ -11,8 +11,7 @@ export const getActiveCardClasses = (theme: Theme): string => {
       return 'border-surface-border bg-surface shadow-lg';
     case 'leve-saude':
       return 'border-surface-border bg-surface shadow-lg';
-    case 'auto':
-    {
+    case 'auto': {
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
       return prefersDark
         ? 'border-surface-border bg-surface shadow-lg'
@@ -50,12 +49,9 @@ export const getActiveIconClasses = (theme: Theme): string => {
       return 'bg-accent text-white';
     case 'leve-saude':
       return 'bg-leve-accent text-white';
-    case 'auto':
-    {
+    case 'auto': {
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      return prefersDark
-        ? 'bg-accent text-white'
-        : 'bg-accent text-white';
+      return prefersDark ? 'bg-accent text-white' : 'bg-accent text-white';
     }
     default:
       return 'bg-accent text-white';
@@ -73,7 +69,8 @@ export const getInactiveIconClasses = (_theme: Theme): string => {
  * Retorna classes CSS para o texto do título baseado no tema e estado
  */
 export const getTitleClasses = (_theme: Theme, isActive: boolean): string => {
-  const baseClasses = 'text-md font-medium leading-tight tracking-tight md:text-lg transition-colors duration-200';
+  const baseClasses =
+    'text-md font-medium leading-tight tracking-tight md:text-lg transition-colors duration-200';
   if (isActive) {
     return `${baseClasses} text-text-primary`;
   }
@@ -108,4 +105,3 @@ export const getItemsContainerClasses = (theme: Theme): string => {
       return 'rounded-lg border border-surface-border bg-surface/70 p-4';
   }
 };
-

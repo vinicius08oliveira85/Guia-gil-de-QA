@@ -5,7 +5,7 @@ import {
   exportProjectToCSV,
   exportTestCasesToCSV,
   generateProjectReport,
-  downloadFile
+  downloadFile,
 } from '../../utils/exportService';
 
 interface ExportMenuProps {
@@ -86,4 +86,3 @@ export const ExportMenu: React.FC<ExportMenuProps> = ({ project, onClose }) => {
     </div>
   );
 };
-

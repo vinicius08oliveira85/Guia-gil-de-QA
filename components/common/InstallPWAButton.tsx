@@ -10,11 +10,7 @@ export const InstallPWAButton: React.FC<{
   className?: string;
   variant?: 'primary' | 'secondary' | 'ghost';
   size?: 'sm' | 'md' | 'lg';
-}> = ({ 
-  className = '', 
-  variant = 'primary',
-  size = 'md'
-}) => {
+}> = ({ className = '', variant = 'primary', size = 'md' }) => {
   const [canInstall, setCanInstall] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
   const [isInstalling, setIsInstalling] = useState(false);
@@ -72,13 +68,13 @@ export const InstallPWAButton: React.FC<{
   const variantClasses = {
     primary: 'btn-primary',
     secondary: 'btn-secondary',
-    ghost: 'btn-ghost'
+    ghost: 'btn-ghost',
   };
 
   const sizeClasses = {
     sm: 'btn-sm',
     md: 'btn-md',
-    lg: 'btn-lg'
+    lg: 'btn-lg',
   };
 
   return (
@@ -116,4 +112,3 @@ export const InstallPWAButton: React.FC<{
     </button>
   );
 };
-

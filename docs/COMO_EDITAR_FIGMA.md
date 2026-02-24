@@ -19,6 +19,7 @@ Guia completo para editar layouts, botões, fontes e outros elementos no Figma e
 ### Seu Arquivo Atual
 
 **URL do Figma:**
+
 ```
 https://www.figma.com/make/BnNDG2oJPvckiNda3H4MLt/Botão-Atraente-para-Elementos
 ```
@@ -43,6 +44,7 @@ https://www.figma.com/make/BnNDG2oJPvckiNda3H4MLt/Botão-Atraente-para-Elementos
    - Escolha o tipo: **Color**
 
 2. **Organizar por Categoria:**
+
    ```
    color/
      accent/
@@ -75,11 +77,13 @@ https://www.figma.com/make/BnNDG2oJPvckiNda3H4MLt/Botão-Atraente-para-Elementos
 ### Convenções de Nomenclatura
 
 Para sincronização automática, use esta estrutura:
+
 ```
 color/[categoria]/[nome]
 ```
 
 Exemplos:
+
 - `color/accent/primary`
 - `color/semantic/success`
 - `color/background/base`
@@ -104,6 +108,7 @@ Exemplos:
 ### 2. Usar Variáveis para Tamanhos
 
 1. Crie variáveis de tamanho:
+
    ```
    typography/
      fontSize/
@@ -132,6 +137,7 @@ Exemplos:
 ### 1. Usar Variáveis de Espaçamento
 
 1. Crie variáveis:
+
    ```
    spacing/
      xs (6px)
@@ -243,6 +249,7 @@ radius/[tamanho]
 ```
 
 **Exemplos:**
+
 - ✅ `color/accent/primary`
 - ✅ `spacing/md`
 - ✅ `typography/fontSize/body`
@@ -377,4 +384,3 @@ radius/[tamanho]
 ---
 
 **Última atualização**: 03/12/2025
-

@@ -5,6 +5,7 @@ Este documento descreve como usar a integração do projeto com Figma para sincr
 ## Visão Geral
 
 A integração com Figma permite:
+
 - ✅ Sincronização automática de design tokens do Figma para o código
 - ✅ Exportação de componentes visuais
 - ✅ Visual testing com Storybook e Chromatic
@@ -42,6 +43,7 @@ Edite `.figma/config.json` e adicione o file key do seu arquivo Figma:
 ```
 
 O file key pode ser obtido da URL do Figma:
+
 ```
 https://www.figma.com/file/{FILE_KEY}/Nome-do-Arquivo
 ```
@@ -71,6 +73,7 @@ npm run tokens:build
 ```
 
 Isso irá:
+
 - Gerar `tokens/generated/tokens.css` com variáveis CSS
 - Gerar `tokens/generated/tailwind-tokens.js` para Tailwind
 
@@ -124,6 +127,7 @@ Para que a sincronização funcione corretamente, use estas convenções no Figm
 ### Executar Testes
 
 Os testes são executados automaticamente via GitHub Actions em:
+
 - Push para `main` ou `develop`
 - Pull requests
 
@@ -189,4 +193,3 @@ npm install
 - [Style Dictionary](https://amzn.github.io/style-dictionary/)
 - [Storybook Documentation](https://storybook.js.org/)
 - [Chromatic Documentation](https://www.chromatic.com/docs/)
-

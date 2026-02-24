@@ -13,6 +13,7 @@
 ### 1. Aguardar Deploy no Vercel
 
 O Vercel fará deploy automaticamente após o push. Aguarde alguns minutos e verifique:
+
 - Acesse: https://seu-projeto.vercel.app
 - Verifique se está em HTTPS (obrigatório para PWA)
 
@@ -57,17 +58,20 @@ O Vercel fará deploy automaticamente após o push. Aguarde alguns minutos e ver
 ### Problemas Comuns
 
 **App não aparece como instalável:**
+
 - Verifique se está em HTTPS
 - Limpe cache do navegador
 - Verifique console para erros
 - Verifique se os ícones existem
 
 **Service Worker não registra:**
+
 - Verifique console do navegador
 - Limpe service workers antigos em DevTools > Application > Service Workers
 - Verifique se o build foi feito corretamente
 
 **App não funciona offline:**
+
 - Aguarde primeiro carregamento completo
 - Verifique se os assets estão sendo cacheados
 - Teste em modo avião após primeiro uso
@@ -89,6 +93,7 @@ O Vercel fará deploy automaticamente após o push. Aguarde alguns minutos e ver
 ## 🎯 Resultado Esperado
 
 Após o deploy:
+
 - ✅ Usuários podem instalar o app no Android
 - ✅ App aparece na tela inicial
 - ✅ Funciona offline (com cache)
@@ -104,6 +109,7 @@ Após o deploy:
 ## 🆘 Suporte
 
 Se encontrar problemas:
+
 1. Verifique a documentação em `docs/PWA_SETUP.md`
 2. Execute audit Lighthouse para identificar problemas
 3. Verifique console do navegador para erros
@@ -114,4 +120,3 @@ Se encontrar problemas:
 **Status: PRONTO PARA PRODUÇÃO! 🚀**
 
 O PWA está implementado e pronto para uso. Após o deploy no Vercel, os usuários poderão instalar o app no Android.
-

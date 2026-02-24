@@ -73,4 +73,3 @@ describe('callGeminiWithRetry', () => {
     expect(geminiApiKeyManager.markCurrentKeyAsExhausted).not.toHaveBeenCalled();
   });
 });
-

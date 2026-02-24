@@ -50,7 +50,10 @@ export const BenefitsSection: React.FC = () => {
   const reduceMotion = useReducedMotion();
 
   return (
-    <section id="benefits-section" className="py-20 md:py-32 bg-gradient-to-b from-base-100 to-base-200 scroll-mt-24">
+    <section
+      id="benefits-section"
+      className="py-20 md:py-32 bg-gradient-to-b from-base-100 to-base-200 scroll-mt-24"
+    >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <SectionHeader
           eyebrow="Impacto no dia a dia"
@@ -73,7 +76,9 @@ export const BenefitsSection: React.FC = () => {
                 className={`flex flex-col ${isEven ? 'md:flex-row' : 'md:flex-row-reverse'} items-center gap-8 md:gap-12 lg:gap-16`}
               >
                 {/* Conteúdo de texto */}
-                <div className={`flex-1 ${isEven ? 'md:text-left' : 'md:text-right'} text-center md:text-left`}>
+                <div
+                  className={`flex-1 ${isEven ? 'md:text-left' : 'md:text-right'} text-center md:text-left`}
+                >
                   <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-6">
                     <benefit.icon className={`w-5 h-5 ${benefit.color}`} />
                     <span className={`font-semibold ${benefit.color}`}>{benefit.highlight}</span>
@@ -87,7 +92,10 @@ export const BenefitsSection: React.FC = () => {
                     {benefit.description}
                   </p>
 
-                  <a href="#features-section" className="btn btn-ghost text-primary hover:bg-primary/10 group">
+                  <a
+                    href="#features-section"
+                    className="btn btn-ghost text-primary hover:bg-primary/10 group"
+                  >
                     Ver como funciona
                     <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                   </a>
@@ -101,7 +109,9 @@ export const BenefitsSection: React.FC = () => {
                     {/* Placeholder visual - pode ser substituído por imagem real */}
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div className="text-center">
-                        <benefit.icon className={`w-24 h-24 md:w-32 md:h-32 ${benefit.color} opacity-20 mx-auto mb-4`} />
+                        <benefit.icon
+                          className={`w-24 h-24 md:w-32 md:h-32 ${benefit.color} opacity-20 mx-auto mb-4`}
+                        />
                         <div className="w-32 h-32 md:w-48 md:h-48 bg-base-300/50 rounded-full mx-auto blur-2xl" />
                       </div>
                     </div>
@@ -139,7 +149,9 @@ export const BenefitsSection: React.FC = () => {
               className="text-center p-6 rounded-2xl bg-base-200 border border-base-300 hover:border-primary/30 transition-all duration-300"
             >
               <stat.icon className="w-8 h-8 text-primary mx-auto mb-3" />
-              <div className="text-3xl md:text-4xl font-bold text-base-content mb-2">{stat.value}</div>
+              <div className="text-3xl md:text-4xl font-bold text-base-content mb-2">
+                {stat.value}
+              </div>
               <div className="text-sm text-base-content/70">{stat.label}</div>
             </motion.div>
           ))}
@@ -148,4 +160,3 @@ export const BenefitsSection: React.FC = () => {
     </section>
   );
 };
-

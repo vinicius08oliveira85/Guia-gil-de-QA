@@ -16,10 +16,7 @@ interface ActionMenuProps {
 /**
  * Menu de ações adicionais (3 pontos)
  */
-export const ActionMenu: React.FC<ActionMenuProps> = ({
-  items,
-  trigger
-}) => {
+export const ActionMenu: React.FC<ActionMenuProps> = ({ items, trigger }) => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -47,16 +44,19 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
       aria-expanded={isOpen}
     >
       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
+        />
       </svg>
     </button>
   );
 
   return (
     <div className="relative" ref={menuRef}>
-      <div onClick={() => setIsOpen(!isOpen)}>
-        {trigger || defaultTrigger}
-      </div>
+      <div onClick={() => setIsOpen(!isOpen)}>{trigger || defaultTrigger}</div>
 
       {isOpen && (
         <div className="absolute right-0 mt-xs z-50 w-48 bg-base-100 border border-base-300 rounded-lg shadow-lg overflow-hidden">
@@ -85,4 +85,3 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({
     </div>
   );
 };
-

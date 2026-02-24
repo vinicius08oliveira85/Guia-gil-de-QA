@@ -9,11 +9,7 @@ interface QuickActionsProps {
   onUpdateProject: (project: Project) => void;
 }
 
-export const QuickActions: React.FC<QuickActionsProps> = ({
-  task,
-  project,
-  onUpdateProject
-}) => {
+export const QuickActions: React.FC<QuickActionsProps> = ({ task, project, onUpdateProject }) => {
   const blockedTasks = getBlockedTasks(project);
   const isBlocked = blockedTasks.some(t => t.id === task.id);
   const estimation = calculateTaskEstimation(task);
@@ -29,7 +25,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
     if (task.status !== 'Done') {
       handleQuickStatusChange('Done');
       const updatedTasks = project.tasks.map(t =>
-        t.id === task.id 
+        t.id === task.id
           ? { ...t, status: 'Done' as const, completedAt: new Date().toISOString() }
           : t
       );
@@ -39,15 +35,21 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
 
   const statusOptions: Array<'To Do' | 'In Progress' | 'Done'> = ['To Do', 'In Progress', 'Done'];
   const currentStatus = task.status === 'Blocked' ? undefined : task.status;
-  const hasOtherActions = task.status === 'In Progress' || isBlocked || !!estimation || (task.tags != null && task.tags.length > 0);
+  const hasOtherActions =
+    task.status === 'In Progress' ||
+    isBlocked ||
+    !!estimation ||
+    (task.tags != null && task.tags.length > 0);
 
   return (
     <div className="flex flex-col gap-3 p-3 bg-surface border border-surface-border rounded-lg">
       {/* Mudar status - sempre visível */}
       <div>
-        <p className="text-[10px] uppercase tracking-wider font-bold text-base-content/60 mb-1.5">Mudar status</p>
+        <p className="text-[10px] uppercase tracking-wider font-bold text-base-content/60 mb-1.5">
+          Mudar status
+        </p>
         <div className="flex flex-wrap gap-1.5">
-          {statusOptions.map((status) => {
+          {statusOptions.map(status => {
             const isActive = currentStatus === status;
             return (
               <button
@@ -60,7 +62,11 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
                     : 'bg-base-200 text-base-content/80 hover:bg-base-300 hover:text-base-content'
                 }`}
               >
-                {status === 'To Do' ? 'A fazer' : status === 'In Progress' ? 'Em progresso' : 'Concluído'}
+                {status === 'To Do'
+                  ? 'A fazer'
+                  : status === 'In Progress'
+                    ? 'Em progresso'
+                    : 'Concluído'}
               </button>
             );
           })}
@@ -91,9 +97,13 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
           {estimation.actualHours > 0 && (
             <>
               <span className="text-text-secondary">• Real:</span>
-              <span className={`font-semibold ${
-                estimation.actualHours <= estimation.estimatedHours ? 'text-green-700 dark:text-green-400' : 'text-orange-700 dark:text-orange-400'
-              }`}>
+              <span
+                className={`font-semibold ${
+                  estimation.actualHours <= estimation.estimatedHours
+                    ? 'text-green-700 dark:text-green-400'
+                    : 'text-orange-700 dark:text-orange-400'
+                }`}
+              >
                 {estimation.actualHours}h
               </span>
             </>
@@ -124,4 +134,3 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
     </div>
   );
 };
-

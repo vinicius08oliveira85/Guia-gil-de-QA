@@ -1,0 +1,353 @@
+
+> qa-agile-guide@0.0.0 lint
+> eslint . --ext ts,tsx --report-unused-disable-directives tests/services/taskTestStatusService.test.ts
+
+
+/app/components/ProjectView.tsx
+   26:10  warning  'isSavingToSupabase' is assigned a value but never used    @typescript-eslint/no-unused-vars
+  124:9   warning  'handlePrint' is assigned a value but never used           @typescript-eslint/no-unused-vars
+  128:9   warning  'handleSaveToSupabase' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/app/components/ProjectsDashboard.tsx
+    7:10  warning  'TrashIcon' is defined but never used                 @typescript-eslint/no-unused-vars
+    9:10  warning  'Badge' is defined but never used                     @typescript-eslint/no-unused-vars
+   10:10  warning  'ProgressIndicator' is defined but never used         @typescript-eslint/no-unused-vars
+   11:10  warning  'Plus' is defined but never used                      @typescript-eslint/no-unused-vars
+   24:10  warning  'isSupabaseAvailable' is defined but never used       @typescript-eslint/no-unused-vars
+   54:9   warning  'isMobile' is assigned a value but never used         @typescript-eslint/no-unused-vars
+  241:9   warning  'openDeleteModal' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/app/components/common/ActivityFeed.tsx
+  4:10  warning  'formatRelativeTime' is defined but never used  @typescript-eslint/no-unused-vars
+  5:10  warning  'Badge' is defined but never used               @typescript-eslint/no-unused-vars
+
+/app/components/common/AdvancedSearch.tsx
+  39:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  46:25  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  50:24  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  56:28  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/app/components/common/BulkActions.tsx
+  235:65  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  273:67  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/app/components/common/ChangeHistory.tsx
+  97:82  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/app/components/common/EmptyState.tsx
+  36:3  warning  'tips' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/app/components/common/ExportReport.tsx
+   8:29  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  12:40  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  24:34  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  38:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  77:19  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/app/components/common/FileImportModal.tsx
+  45:67  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  58:36  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/app/components/common/FilePreview.tsx
+   50:3  warning  'mimeType' is defined but never used. Allowed unused args must match /^_/u      @typescript-eslint/no-unused-vars
+   71:9  warning  'finalUrl' is assigned a value but never used                                   @typescript-eslint/no-unused-vars
+  195:8  warning  'attachmentId' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  196:9  warning  'finalUrl' is assigned a value but never used                                   @typescript-eslint/no-unused-vars
+
+/app/components/common/FilterPanel.tsx
+   84:76  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   85:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   87:63  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   89:50  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  187:77  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  191:82  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/app/components/common/Header.tsx
+  15:3  warning  'Cloud' is defined but never used                                             @typescript-eslint/no-unused-vars
+  40:3  warning  'onNavigate' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/app/components/common/MediaViewer.tsx
+  1:17  warning  'useState' is defined but never used    @typescript-eslint/no-unused-vars
+  2:23  warning  'PDFPreview' is defined but never used  @typescript-eslint/no-unused-vars
+
+/app/components/common/PDFViewer.tsx
+   1:27  warning  'useEffect' is defined but never used                                       @typescript-eslint/no-unused-vars
+  37:3   warning  'filename' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/app/components/common/ProjectActivityCard.tsx
+    2:19  warning  'JiraTask' is defined but never used                                     @typescript-eslint/no-unused-vars
+  224:40  warning  'index' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/app/components/common/TaskTimeline.tsx
+   16:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   22:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   22:25  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   25:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  108:61  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/app/components/common/VideoViewer.tsx
+  26:3  warning  'mimeType' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/app/components/dashboard/DashboardFiltersModal.tsx
+  158:62  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  181:72  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/app/components/dashboard/GlassIndicatorCards.tsx
+  3:3  warning  'ClipboardList' is defined but never used  @typescript-eslint/no-unused-vars
+  4:3  warning  'Clock' is defined but never used          @typescript-eslint/no-unused-vars
+  5:3  warning  'Zap' is defined but never used            @typescript-eslint/no-unused-vars
+  6:3  warning  'CheckCircle' is defined but never used    @typescript-eslint/no-unused-vars
+  7:3  warning  'AlertTriangle' is defined but never used  @typescript-eslint/no-unused-vars
+
+/app/components/dashboard/ProjectPhasesList.tsx
+  34:11  warning  'activeIndex' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/app/components/dashboard/ProjectQADashboard.tsx
+  13:10  warning  'Clipboard' is defined but never used  @typescript-eslint/no-unused-vars
+
+/app/components/dashboard/QADashboard.tsx
+   22:3   warning  'Plus' is defined but never used                                                   @typescript-eslint/no-unused-vars
+   46:15  warning  'onUpdateProject' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+   46:32  warning  'onNavigateToTab' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+   50:12  warning  'showNewTestModal' is assigned a value but never used                              @typescript-eslint/no-unused-vars
+   50:30  warning  'setShowNewTestModal' is assigned a value but never used                           @typescript-eslint/no-unused-vars
+  293:34  warning  'b' is defined but never used. Allowed unused args must match /^_/u                @typescript-eslint/no-unused-vars
+
+/app/components/dashboard/RecentActivity.tsx
+  46:14  warning  'a' is defined but never used. Allowed unused args must match /^_/u      @typescript-eslint/no-unused-vars
+  46:17  warning  'b' is defined but never used. Allowed unused args must match /^_/u      @typescript-eslint/no-unused-vars
+  52:34  warning  'index' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/app/components/dashboard/StatCard.tsx
+  34:7  warning  'accentGlow' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/app/components/jira/JiraContent.tsx
+  11:11  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  12:11  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/app/components/jira/JiraImage.tsx
+  36:10  warning  'isInView' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/app/components/settings/JiraSettingsTab.tsx
+  20:10  warning  'cn' is defined but never used  @typescript-eslint/no-unused-vars
+
+/app/components/settings/SettingsModal.tsx
+  7:46  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/app/components/settings/SettingsView.tsx
+  8:46  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/app/components/tasks/FailedTestsReportModal.tsx
+    9:10  warning  'Badge' is defined but never used                                        @typescript-eslint/no-unused-vars
+   62:23  warning  'setShowFilters' is assigned a value but never used                      @typescript-eslint/no-unused-vars
+  412:9   warning  'someFilteredSelected' is assigned a value but never used                @typescript-eslint/no-unused-vars
+  581:21  warning  'selectedTests' is assigned a value but never used                       @typescript-eslint/no-unused-vars
+  788:51  warning  'index' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/app/components/tasks/FilterChip.tsx
+  18:3  warning  'value' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/app/components/tasks/JiraRichTextRenderer.tsx
+    5:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   58:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   69:41  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   69:59  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   74:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   85:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  108:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/app/components/tasks/JiraTaskItem.tsx
+   14:3   warning  'TaskTypeIcon' is defined but never used                   @typescript-eslint/no-unused-vars
+   15:3   warning  'TaskStatusIcon' is defined but never used                 @typescript-eslint/no-unused-vars
+   16:3   warning  'StartTestIcon' is defined but never used                  @typescript-eslint/no-unused-vars
+   17:3   warning  'CompleteTestIcon' is defined but never used               @typescript-eslint/no-unused-vars
+   18:3   warning  'ToDoTestIcon' is defined but never used                   @typescript-eslint/no-unused-vars
+   50:10  warning  'getDisplayStatus' is defined but never used               @typescript-eslint/no-unused-vars
+   65:10  warning  'canViewInBrowser' is defined but never used               @typescript-eslint/no-unused-vars
+   79:25  warning  Unexpected any. Specify a different type                   @typescript-eslint/no-explicit-any
+  149:7   warning  'TeamRoleBadge' is assigned a value but never used         @typescript-eslint/no-unused-vars
+  291:12  warning  'isLoadingTestStatus' is assigned a value but never used   @typescript-eslint/no-unused-vars
+  294:13  warning  'updateProject' is assigned a value but never used         @typescript-eslint/no-unused-vars
+  296:11  warning  'phaseStyle' is assigned a value but never used            @typescript-eslint/no-unused-vars
+  309:11  warning  'typeAccent' is assigned a value but never used            @typescript-eslint/no-unused-vars
+  317:11  warning  'typeBadgeStyle' is assigned a value but never used        @typescript-eslint/no-unused-vars
+  535:11  warning  'testStatusConfig' is assigned a value but never used      @typescript-eslint/no-unused-vars
+  858:11  warning  'iconButtonClass' is assigned a value but never used       @typescript-eslint/no-unused-vars
+  860:11  warning  'iconButtonSmallClass' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/app/components/tasks/StatsSummary.tsx
+  2:10  warning  'TestCase' is defined but never used  @typescript-eslint/no-unused-vars
+
+/app/components/tasks/TaskDetailsModal.tsx
+    5:20  warning  'RefreshIcon' is defined but never used                                            @typescript-eslint/no-unused-vars
+   32:10  warning  'canViewInBrowser' is defined but never used                                       @typescript-eslint/no-unused-vars
+   43:25  warning  Unexpected any. Specify a different type                                           @typescript-eslint/no-explicit-any
+  140:3   warning  'onGenerateAll' is defined but never used. Allowed unused args must match /^_/u    @typescript-eslint/no-unused-vars
+  141:3   warning  'isGeneratingAll' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/app/components/tasks/TaskForm.tsx
+  108:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/app/components/tasks/TasksView.tsx
+    25:3   warning  'Check' is defined but never used                            @typescript-eslint/no-unused-vars
+    46:10  warning  'useLocalStorage' is defined but never used                  @typescript-eslint/no-unused-vars
+   159:7   warning  'getEffectiveTestStatus' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  1265:11  warning  'processedCount' is assigned a value but never used          @typescript-eslint/no-unused-vars
+  1700:9   warning  'testExecutionRate' is assigned a value but never used       @typescript-eslint/no-unused-vars
+
+/app/components/timeline/TimelineView.tsx
+  17:54  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/app/hooks/useAriaLive.ts
+  1:10  warning  'useEffect' is defined but never used           @typescript-eslint/no-unused-vars
+  4:9   warning  'regionRef' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/app/hooks/useJiraSync.ts
+  83:15  warning  'currentTaskIds' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/app/hooks/useProjectMetrics.ts
+   2:66  warning  'JiraTask' is defined but never used          @typescript-eslint/no-unused-vars
+  12:10  warning  'getDisplayStatus' is defined but never used  @typescript-eslint/no-unused-vars
+
+/app/scripts/setup-figma-integration.js
+  8:24  warning  'writeFileSync' is defined but never used  @typescript-eslint/no-unused-vars
+
+/app/scripts/sync-figma-tokens.js
+  13:8  warning  'axios' is defined but never used  @typescript-eslint/no-unused-vars
+
+/app/scripts/verify-supabase-structure.ts
+   9:10  warning  'Project' is defined but never used          @typescript-eslint/no-unused-vars
+   9:19  warning  'JiraTask' is defined but never used         @typescript-eslint/no-unused-vars
+  44:9   warning  'issues' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/app/services/ai/failedTestsAnalysisService.ts
+   3:10  warning  'getAIService' is defined but never used         @typescript-eslint/no-unused-vars
+  23:11  warning  'FailedTestsAnalysis' is defined but never used  @typescript-eslint/no-unused-vars
+
+/app/services/ai/geminiService.ts
+  393:55  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  408:75  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  416:16  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  534:75  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  743:48  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/app/services/ai/generalAnalysisService.ts
+  640:47  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  647:47  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/app/services/ai/openaiService.ts
+  332:55  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  347:75  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  355:16  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  443:75  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  573:48  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/app/services/backupService.ts
+  226:15  warning  'project' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+/app/services/documentProcessingService.ts
+  87:13  warning  'specificationDocument' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/app/services/fileImportService.ts
+  140:45  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  330:45  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/app/services/jiraService.ts
+     2:10  warning  'parseJiraDescription' is defined but never used                       @typescript-eslint/no-unused-vars
+   105:20  warning  Unexpected any. Specify a different type                               @typescript-eslint/no-explicit-any
+   149:38  warning  Unexpected any. Specify a different type                               @typescript-eslint/no-explicit-any
+   689:34  warning  Unexpected any. Specify a different type                               @typescript-eslint/no-explicit-any
+   752:24  warning  Unexpected any. Specify a different type                               @typescript-eslint/no-explicit-any
+   841:64  warning  Unexpected any. Specify a different type                               @typescript-eslint/no-explicit-any
+   899:61  warning  Unexpected any. Specify a different type                               @typescript-eslint/no-explicit-any
+  1014:62  warning  Unexpected any. Specify a different type                               @typescript-eslint/no-explicit-any
+  1021:67  warning  Unexpected any. Specify a different type                               @typescript-eslint/no-explicit-any
+  1046:62  warning  Unexpected any. Specify a different type                               @typescript-eslint/no-explicit-any
+  1055:66  warning  Unexpected any. Specify a different type                               @typescript-eslint/no-explicit-any
+  1090:44  warning  Unexpected any. Specify a different type                               @typescript-eslint/no-explicit-any
+  1162:41  warning  'key' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  1285:59  warning  Unexpected any. Specify a different type                               @typescript-eslint/no-explicit-any
+  1503:60  warning  Unexpected any. Specify a different type                               @typescript-eslint/no-explicit-any
+  1514:65  warning  Unexpected any. Specify a different type                               @typescript-eslint/no-explicit-any
+  1555:60  warning  Unexpected any. Specify a different type                               @typescript-eslint/no-explicit-any
+  1568:64  warning  Unexpected any. Specify a different type                               @typescript-eslint/no-explicit-any
+  1606:42  warning  Unexpected any. Specify a different type                               @typescript-eslint/no-explicit-any
+  2327:61  warning  Unexpected any. Specify a different type                               @typescript-eslint/no-explicit-any
+  2417:62  warning  Unexpected any. Specify a different type                               @typescript-eslint/no-explicit-any
+  2424:67  warning  Unexpected any. Specify a different type                               @typescript-eslint/no-explicit-any
+  2449:62  warning  Unexpected any. Specify a different type                               @typescript-eslint/no-explicit-any
+  2458:66  warning  Unexpected any. Specify a different type                               @typescript-eslint/no-explicit-any
+  2493:44  warning  Unexpected any. Specify a different type                               @typescript-eslint/no-explicit-any
+  2537:36  warning  Unexpected any. Specify a different type                               @typescript-eslint/no-explicit-any
+  2562:42  warning  Unexpected any. Specify a different type                               @typescript-eslint/no-explicit-any
+
+/app/services/supabaseService.ts
+    2:29  warning  'JiraTask' is defined but never used      @typescript-eslint/no-unused-vars
+  242:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/app/services/taskTestStatusService.ts
+  90:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/app/tests/hooks/useJiraMedia.test.ts
+  26:32  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  26:64  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/app/tests/integration/edge-cases.test.tsx
+  125:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/app/tests/integration/mocks.ts
+  157:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  162:20  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/app/types.ts
+  176:39  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/app/utils/auditLog.ts
+  12:35  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  12:45  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/app/utils/dataIntegrityService.ts
+  10:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  11:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  24:33  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/app/utils/exportService.ts
+  246:26  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/app/utils/failedTestsPDFGenerator.ts
+    56:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+    57:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+    92:13  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   134:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   135:9   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   136:13  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   189:9   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   190:13  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   312:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   317:9   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   318:13  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   353:89  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   371:9   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   372:13  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   408:82  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  1748:57  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  1785:46  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/app/utils/jiraDescriptionParser.ts
+   21:26  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   22:56  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   62:51  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  490:16  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/app/utils/jiraFieldMapper.ts
+  85:71  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  86:34  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/app/utils/lazyWithRetry.ts
+   4:34  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  14:61  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/app/utils/pwa.ts
+  32:28  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+✖ 215 problems (0 errors, 215 warnings)

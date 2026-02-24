@@ -13,6 +13,7 @@ Settings → Secrets and variables → Actions → New repository secret
 ```
 
 Adicione:
+
 - `FIGMA_API_TOKEN` = `seu_token_do_figma_aqui`
 - `FIGMA_FILE_KEY` = `seu_file_key_aqui`
 
@@ -23,6 +24,7 @@ Settings → Environment Variables
 ```
 
 Adicione:
+
 - `VITE_FIGMA_API_TOKEN` = `seu_token_do_figma_aqui`
 - `FIGMA_FILE_KEY` = `seu_file_key_aqui`
 
@@ -41,4 +43,3 @@ Adicione:
 ## 📚 Documentação Completa
 
 Veja `docs/USO_SEM_NODE_LOCAL.md` para detalhes.
-

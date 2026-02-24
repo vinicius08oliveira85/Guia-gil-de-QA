@@ -71,7 +71,7 @@ export class RateLimiter {
     }
 
     this.cleanup();
-    
+
     if (this.requests.length < this.maxRequests) {
       return 0;
     }
@@ -98,13 +98,11 @@ export class RateLimiter {
 
     while (this.queue.length > 0) {
       const timeUntilNext = this.getTimeUntilNextSlot();
-      
+
       if (timeUntilNext > 0) {
-        logger.debug(
-          `Rate limit atingido, aguardando ${timeUntilNext}ms`,
-          'RateLimiter',
-          { queueLength: this.queue.length }
-        );
+        logger.debug(`Rate limit atingido, aguardando ${timeUntilNext}ms`, 'RateLimiter', {
+          queueLength: this.queue.length,
+        });
         await new Promise(resolve => setTimeout(resolve, timeUntilNext));
       }
 
@@ -113,7 +111,7 @@ export class RateLimiter {
         // Verificar delay mínimo
         const now = Date.now();
         const timeSinceLastRequest = now - this.lastRequestTime;
-        
+
         if (timeSinceLastRequest < this.minDelayMs) {
           const delayNeeded = this.minDelayMs - timeSinceLastRequest;
           await new Promise(resolve => setTimeout(resolve, delayNeeded));
@@ -139,9 +137,9 @@ export class RateLimiter {
   /**
    * Aguarda até que uma requisição possa ser feita
    * Registra a requisição quando permitida
-   * 
+   *
    * IMPORTANTE: Após usar acquire(), deve-se chamar release() quando a requisição terminar
-   * 
+   *
    * @returns Promise que resolve quando a requisição pode ser feita
    */
   async acquire(): Promise<void> {
@@ -151,14 +149,13 @@ export class RateLimiter {
     // Verificar delay mínimo desde a última requisição
     const now = Date.now();
     const timeSinceLastRequest = now - this.lastRequestTime;
-    
+
     if (timeSinceLastRequest < this.minDelayMs) {
       const delayNeeded = this.minDelayMs - timeSinceLastRequest;
-      logger.debug(
-        `Aplicando delay mínimo de ${delayNeeded}ms entre requisições`,
-        'RateLimiter',
-        { delayNeeded, minDelayMs: this.minDelayMs }
-      );
+      logger.debug(`Aplicando delay mínimo de ${delayNeeded}ms entre requisições`, 'RateLimiter', {
+        delayNeeded,
+        minDelayMs: this.minDelayMs,
+      });
       await new Promise(resolve => setTimeout(resolve, delayNeeded));
     }
 
@@ -237,4 +234,3 @@ export const geminiRateLimiter = new RateLimiter({
   windowMs: 60000, // 1 minuto
   minDelayMs: 2000, // 2 segundos de delay mínimo entre requisições
 });
-

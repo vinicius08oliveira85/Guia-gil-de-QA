@@ -8,6 +8,7 @@
 ## Objetivo
 
 Modernizar a interface do QA Agile Guide seguindo padrões **v0-like** (shadcn/ui vibe), com foco em:
+
 - **Hierarquia tipográfica** consistente
 - **Ritmo de espaçamento** padronizado
 - **CTAs claros** e bem posicionados
@@ -21,6 +22,7 @@ Modernizar a interface do QA Agile Guide seguindo padrões **v0-like** (shadcn/u
 ### 1. Landing Page (Commits: `5d86989`, `ecec3f5`)
 
 #### Componentes Criados/Modificados:
+
 - ✅ `components/common/SectionHeader.tsx` - Padrão reutilizável de cabeçalho de seção
 - ✅ `components/landing/HeroSection.tsx` - Copy técnico, CTAs alinhados ao fluxo real
 - ✅ `components/landing/FeaturesSection.tsx` - Features curadas, grid consistente
@@ -30,6 +32,7 @@ Modernizar a interface do QA Agile Guide seguindo padrões **v0-like** (shadcn/u
 - ✅ `App.tsx` - Header da Landing com navegação por seções
 
 #### Melhorias Aplicadas:
+
 - **Copy técnico B2B**: removidas promessas "marketing", foco em capacidades reais
 - **Animações sutis**: respeitam `prefers-reduced-motion`
 - **Hierarquia visual**: `SectionHeader` padronizado em todas as seções
@@ -40,10 +43,12 @@ Modernizar a interface do QA Agile Guide seguindo padrões **v0-like** (shadcn/u
 ### 2. Tela "Meus Projetos" (Commit: `dbac221`)
 
 #### Componentes Modificados:
+
 - ✅ `components/ProjectsDashboard.tsx` - Modernização completa
 - ✅ `components/common/ProgressIndicator.tsx` - Migração para tokens DaisyUI
 
 #### Melhorias Aplicadas:
+
 - **Header mais denso**: hierarquia clara (badge Workspace + título + descrição)
 - **Ações inline**: todas visíveis, com hierarquia (primário/outline/ghost) e estado loading no Sync
 - **Cards modernos**:
@@ -58,6 +63,7 @@ Modernizar a interface do QA Agile Guide seguindo padrões **v0-like** (shadcn/u
 ### 3. Navegação Interna (Commit: `e906d89`)
 
 #### Componentes Modificados:
+
 - ✅ `components/common/ExpandableTabs.tsx` - Tokens DaisyUI, radius pill
 - ✅ `components/common/NotificationBell.tsx` - Dropdown/estados com DaisyUI
 - ✅ `components/common/Breadcrumbs.tsx` - Componente DaisyUI breadcrumbs
@@ -67,21 +73,25 @@ Modernizar a interface do QA Agile Guide seguindo padrões **v0-like** (shadcn/u
 ## Padrões Estabelecidos
 
 ### Hierarquia Tipográfica
+
 - **H1**: `text-2xl sm:text-3xl font-bold tracking-tight`
 - **H2**: `text-3xl sm:text-4xl md:text-5xl font-bold`
 - **Supporting text**: `text-base-content/70 max-w-2xl` ou `max-w-3xl`
 
 ### Espaçamento (Ritmo v0)
+
 - **Seções**: `py-20 md:py-32`
 - **Cards**: `p-5` ou `p-6`
 - **Gaps**: `gap-4` (grid), `gap-2` (botões inline)
 
 ### CTAs
+
 - **Primário**: `btn btn-primary rounded-full` (com ícone quando aplicável)
 - **Secundário**: `btn btn-outline rounded-full`
 - **Ghost**: `btn btn-ghost rounded-full`
 
 ### Cards
+
 - **Base**: `bg-base-100 border border-base-300 rounded-[var(--rounded-box)]`
 - **Hover**: `hover:-translate-y-0.5 hover:shadow-xl hover:border-primary/30`
 - **Padding**: `p-5` ou `p-6`
@@ -91,6 +101,7 @@ Modernizar a interface do QA Agile Guide seguindo padrões **v0-like** (shadcn/u
 ## Arquivos Modificados (Resumo)
 
 ### Landing
+
 - `components/common/SectionHeader.tsx` (novo)
 - `components/landing/HeroSection.tsx`
 - `components/landing/FeaturesSection.tsx`
@@ -100,15 +111,18 @@ Modernizar a interface do QA Agile Guide seguindo padrões **v0-like** (shadcn/u
 - `App.tsx`
 
 ### Projetos
+
 - `components/ProjectsDashboard.tsx`
 - `components/common/ProgressIndicator.tsx`
 
 ### Navegação
+
 - `components/common/ExpandableTabs.tsx`
 - `components/common/NotificationBell.tsx`
 - `components/common/Breadcrumbs.tsx`
 
 ### Outros
+
 - `components/ProjectView.tsx` (header padronizado com `SectionHeader`)
 
 ---
@@ -116,16 +130,19 @@ Modernizar a interface do QA Agile Guide seguindo padrões **v0-like** (shadcn/u
 ## Próximos Passos Sugeridos
 
 ### Curto Prazo (Polish)
+
 1. **Micro-ajustes de spacing** na tela Meus Projetos (se necessário após revisão visual)
 2. **Padronizar tabs internas** (`TasksView`, `DocumentsView`) com mesmo padrão visual
 3. **Revisar modais** de outras telas para consistência
 
 ### Médio Prazo (Features)
+
 1. **Busca rápida** na tela de projetos (se necessário)
 2. **Filtros rápidos** (chips: Recentes / Com Jira / Sem descrição)
 3. **Ordenação** (se necessário, mantendo simplicidade)
 
 ### Longo Prazo (Arquitetura)
+
 1. **Design System** documentado (componentes + tokens)
 2. **Storybook** para componentes comuns
 3. **Dark mode** (estrutura já preparada no `tailwind.config.js`)
@@ -169,4 +186,3 @@ npm run type-check
 
 **Última atualização**: 12/12/2025  
 **Próxima revisão**: Quando necessário (após feedback visual ou novas features)
-

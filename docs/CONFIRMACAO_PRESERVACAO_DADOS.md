@@ -10,18 +10,19 @@
 
 ```typescript
 updatedTasks[existingIndex] = {
-    ...oldTask, // Preservar todos os dados locais primeiro
-    // Atualizar apenas campos importados do Jira
-    title: task.title,
-    description: task.description,
-    // ... outros campos do Jira
-    
-    // ✅ PRESERVAÇÃO GARANTIDA
-    testStrategy: oldTask.testStrategy, // ✅ Preservar estratégia de teste
+  ...oldTask, // Preservar todos os dados locais primeiro
+  // Atualizar apenas campos importados do Jira
+  title: task.title,
+  description: task.description,
+  // ... outros campos do Jira
+
+  // ✅ PRESERVAÇÃO GARANTIDA
+  testStrategy: oldTask.testStrategy, // ✅ Preservar estratégia de teste
 };
 ```
 
-**Confirmação:** 
+**Confirmação:**
+
 - ✅ As estratégias são **SEMPRE preservadas** do `oldTask.testStrategy`
 - ✅ **NUNCA são apagadas** ou resetadas
 - ✅ Mesmo que a tarefa tenha mudanças no Jira (título, descrição, status, etc.), as estratégias permanecem intactas
@@ -34,18 +35,19 @@ updatedTasks[existingIndex] = {
 
 ```typescript
 updatedTasks[existingIndex] = {
-    ...oldTask, // Preservar todos os dados locais primeiro
-    // Atualizar apenas campos importados do Jira
-    title: task.title,
-    description: task.description,
-    // ... outros campos do Jira
-    
-    // ✅ PRESERVAÇÃO GARANTIDA
-    bddScenarios: oldTask.bddScenarios || [], // ✅ Preservar cenários BDD
+  ...oldTask, // Preservar todos os dados locais primeiro
+  // Atualizar apenas campos importados do Jira
+  title: task.title,
+  description: task.description,
+  // ... outros campos do Jira
+
+  // ✅ PRESERVAÇÃO GARANTIDA
+  bddScenarios: oldTask.bddScenarios || [], // ✅ Preservar cenários BDD
 };
 ```
 
 **Confirmação:**
+
 - ✅ Os cenários BDD são **SEMPRE preservados** do `oldTask.bddScenarios`
 - ✅ **NUNCA são apagados** ou resetados
 - ✅ Mesmo que a tarefa tenha mudanças no Jira, os cenários permanecem intactos
@@ -60,31 +62,32 @@ updatedTasks[existingIndex] = {
 ```typescript
 // PROTEÇÃO ESPECIAL para casos de teste com status executados
 if (existingTestCasesForTask.length > 0 && existingWithStatus > 0) {
-    // PROTEÇÃO FINAL: Se há status executados nos existentes, usar diretamente sem mesclar
-    finalTestCases = [...existingTestCasesForTask]; // ✅ Preservar todos os existentes
-    
-    // Apenas adicionar testCases salvos que não existem nos existentes
-    for (const savedTestCase of savedTestCasesForTask) {
-        if (savedTestCase.id && !existingIdsForTask.has(savedTestCase.id)) {
-            finalTestCases.push(savedTestCase); // ✅ Incremental - só adiciona novos
-        }
+  // PROTEÇÃO FINAL: Se há status executados nos existentes, usar diretamente sem mesclar
+  finalTestCases = [...existingTestCasesForTask]; // ✅ Preservar todos os existentes
+
+  // Apenas adicionar testCases salvos que não existem nos existentes
+  for (const savedTestCase of savedTestCasesForTask) {
+    if (savedTestCase.id && !existingIdsForTask.has(savedTestCase.id)) {
+      finalTestCases.push(savedTestCase); // ✅ Incremental - só adiciona novos
     }
+  }
 }
 
 // Aplicar preservação
 updatedTasks[existingIndex] = {
-    ...oldTask, // Preservar todos os dados locais primeiro
-    // Atualizar apenas campos importados do Jira
-    title: task.title,
-    description: task.description,
-    // ... outros campos do Jira
-    
-    // ✅ PRESERVAÇÃO GARANTIDA
-    testCases: finalTestCases, // ✅ Preservar status dos testes (mesclados com salvos do Supabase)
+  ...oldTask, // Preservar todos os dados locais primeiro
+  // Atualizar apenas campos importados do Jira
+  title: task.title,
+  description: task.description,
+  // ... outros campos do Jira
+
+  // ✅ PRESERVAÇÃO GARANTIDA
+  testCases: finalTestCases, // ✅ Preservar status dos testes (mesclados com salvos do Supabase)
 };
 ```
 
 **Confirmação:**
+
 - ✅ Os casos de teste são **SEMPRE preservados**
 - ✅ **NUNCA são apagados** ou resetados
 - ✅ Se há casos com status executados (Passed, Failed, Blocked), são preservados **diretamente sem mesclar**
@@ -92,6 +95,7 @@ updatedTasks[existingIndex] = {
 - ✅ Status dos testes são **NUNCA perdidos**
 
 **Proteção Especial:**
+
 - Se há casos de teste com status executados, eles são preservados **diretamente** (linha 1495)
 - Apenas casos novos são adicionados (linhas 1498-1502)
 - Nunca remove ou substitui casos existentes
@@ -111,17 +115,18 @@ updatedTasks[existingIndex] = {
 
 ```typescript
 updatedTasks[existingIndex] = {
-    ...oldTask, // ✅ Preservar TODOS os dados locais primeiro
-    // Isso inclui TUDO que foi feito no modal:
-    // - testCases editados
-    // - bddScenarios criados
-    // - testStrategy definida
-    // - tools utilizadas
-    // - etc.
+  ...oldTask, // ✅ Preservar TODOS os dados locais primeiro
+  // Isso inclui TUDO que foi feito no modal:
+  // - testCases editados
+  // - bddScenarios criados
+  // - testStrategy definida
+  // - tools utilizadas
+  // - etc.
 };
 ```
 
 **Confirmação:**
+
 - ✅ Dados editados no modal são **preservados** porque estão em `oldTask`
 - ✅ O modal não é afetado porque os dados permanecem no projeto
 - ✅ Se o modal estiver aberto durante a sincronização, os dados não são perdidos
@@ -138,7 +143,7 @@ updatedTasks[existingIndex] = {
   id: "GDPI-4",
   title: "Implementar Login", // ← Será atualizado no Jira
   description: "Descrição original", // ← Será atualizado no Jira
-  
+
   // ✅ DADOS CRIADOS/EDITADOS NO APP:
   testCases: [
     { id: "tc-1", description: "Teste 1", status: "Passed" }, // ✅ Editado no modal
@@ -160,7 +165,7 @@ updatedTasks[existingIndex] = {
   id: "GDPI-4", // ✅ Chave primária mantida
   title: "Implementar Login v2", // ✅ Atualizado do Jira
   description: "Nova descrição do Jira", // ✅ Atualizado do Jira
-  
+
   // ✅ TODOS OS DADOS DO APP PRESERVADOS:
   testCases: [
     { id: "tc-1", description: "Teste 1", status: "Passed" }, // ✅ PRESERVADO (não apagado)
@@ -203,8 +208,8 @@ testStrategy: oldTask.testStrategy,   // ✅ Preservado
 
 ```typescript
 if (existingTestCasesForTask.length > 0 && existingWithStatus > 0) {
-    finalTestCases = [...existingTestCasesForTask]; // ✅ Preservar diretamente
-    // Apenas adicionar novos (incremental)
+  finalTestCases = [...existingTestCasesForTask]; // ✅ Preservar diretamente
+  // Apenas adicionar novos (incremental)
 }
 ```
 
@@ -215,7 +220,7 @@ if (existingTestCasesForTask.length > 0 && existingWithStatus > 0) {
 ```typescript
 const latestProjectFromStore = projects.find(p => p.id === project.id);
 if (latestProjectFromStore) {
-    projectToUse = latestProjectFromStore; // ✅ Usar dados mais recentes
+  projectToUse = latestProjectFromStore; // ✅ Usar dados mais recentes
 }
 ```
 
@@ -260,4 +265,3 @@ if (latestProjectFromStore) {
 4. ✅ **Modal de Testes** - Dados preservados porque estão no projeto (linha 1546)
 
 **Nenhum dado criado ou editado no App é perdido ou apagado durante a sincronização com o Jira, mesmo que a tarefa tenha alterações.**
-

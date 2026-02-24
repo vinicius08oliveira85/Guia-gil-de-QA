@@ -14,7 +14,11 @@ export interface DocumentStatsCardsProps {
 
 export const DocumentStatsCards: React.FC<DocumentStatsCardsProps> = ({ categoryCounts }) => {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" role="list" aria-label="Contagem de documentos por categoria">
+    <div
+      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+      role="list"
+      aria-label="Contagem de documentos por categoria"
+    >
       {CATEGORIES.map(({ id, label, bgClass, icon: Icon }) => (
         <div
           key={id}

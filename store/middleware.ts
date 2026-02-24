@@ -14,18 +14,14 @@ export const loggerMiddleware = <T extends object>(
 ): StateCreator<T> => {
   return (set, get, api) => {
     const storeName = name || 'Store';
-    
+
     return config(
       (...args) => {
         const result = set(...args);
         const newState = get();
-        
-        logger.debug(
-          `[${storeName}] State updated`,
-          'Store',
-          { state: newState }
-        );
-        
+
+        logger.debug(`[${storeName}] State updated`, 'Store', { state: newState });
+
         return result;
       },
       get,
@@ -47,7 +43,7 @@ export const persistMiddleware = <T extends object>(
   }
 ): StateCreator<T> => {
   const storageKey = `store_${options.name}`;
-  
+
   return (set, get, api) => {
     // Carregar estado inicial do localStorage
     try {
@@ -60,34 +56,34 @@ export const persistMiddleware = <T extends object>(
     } catch (error) {
       logger.warn(`Failed to load persisted state for ${options.name}`, 'Store', error);
     }
-    
+
     return config(
       (...args) => {
         const result = set(...args);
         const newState = get();
-        
+
         // Filtrar o que deve ser persistido
         let stateToPersist: Partial<T> = newState;
-        
+
         if (options.include) {
           stateToPersist = {} as Partial<T>;
-          options.include.forEach((key) => {
+          options.include.forEach(key => {
             stateToPersist[key] = newState[key];
           });
         } else if (options.exclude) {
           stateToPersist = { ...newState };
-          options.exclude.forEach((key) => {
+          options.exclude.forEach(key => {
             delete stateToPersist[key];
           });
         }
-        
+
         // Salvar no localStorage
         try {
           localStorage.setItem(storageKey, JSON.stringify(stateToPersist));
         } catch (error) {
           logger.warn(`Failed to persist state for ${options.name}`, 'Store', error);
         }
-        
+
         return result;
       },
       get,
@@ -126,12 +122,14 @@ export const protectionMiddleware = <T extends object>(
 
           if (project && projectId) {
             // Criar backup antes de operação destrutiva
-            autoBackupBeforeOperation(
-              projectId,
-              'DESTRUCTIVE_OPERATION',
-              () => options.getProjectFromState?.(get())
+            autoBackupBeforeOperation(projectId, 'DESTRUCTIVE_OPERATION', () =>
+              options.getProjectFromState?.(get())
             ).catch((error: unknown) => {
-              logger.warn('Erro ao criar backup automático no middleware', 'protectionMiddleware', error);
+              logger.warn(
+                'Erro ao criar backup automático no middleware',
+                'protectionMiddleware',
+                error
+              );
             });
 
             // Validar integridade do projeto após operação
@@ -139,32 +137,45 @@ export const protectionMiddleware = <T extends object>(
             if (newProject) {
               try {
                 const checkResult = validateProjectIntegrity(newProject);
-                if (!checkResult.isValid && checkResult.issues.some(issue => issue.severity === 'critical')) {
+                if (
+                  !checkResult.isValid &&
+                  checkResult.issues.some(issue => issue.severity === 'critical')
+                ) {
                   logger.error(
                     `Problemas críticos de integridade detectados após operação destrutiva no projeto ${projectId}`,
                     'protectionMiddleware',
                     { issues: checkResult.issues }
                   );
-                  
+
                   // Tentar corrigir automaticamente
-                  validateAndFixProject(newProject, projectId).then(fixResult => {
-                    if (fixResult.restoredFromBackup) {
-                      logger.info(
-                        `Projeto ${projectId} restaurado do backup após problemas de integridade`,
-                        'protectionMiddleware'
+                  validateAndFixProject(newProject, projectId)
+                    .then(fixResult => {
+                      if (fixResult.restoredFromBackup) {
+                        logger.info(
+                          `Projeto ${projectId} restaurado do backup após problemas de integridade`,
+                          'protectionMiddleware'
+                        );
+                      } else if (fixResult.wasFixed) {
+                        logger.info(
+                          `Problemas de integridade corrigidos automaticamente no projeto ${projectId}`,
+                          'protectionMiddleware'
+                        );
+                      }
+                    })
+                    .catch((error: unknown) => {
+                      logger.error(
+                        'Erro ao tentar corrigir integridade',
+                        'protectionMiddleware',
+                        error
                       );
-                    } else if (fixResult.wasFixed) {
-                      logger.info(
-                        `Problemas de integridade corrigidos automaticamente no projeto ${projectId}`,
-                        'protectionMiddleware'
-                      );
-                    }
-                  }).catch((error: unknown) => {
-                    logger.error('Erro ao tentar corrigir integridade', 'protectionMiddleware', error);
-                  });
+                    });
                 }
               } catch (error: unknown) {
-                logger.warn('Erro ao validar integridade no middleware', 'protectionMiddleware', error);
+                logger.warn(
+                  'Erro ao validar integridade no middleware',
+                  'protectionMiddleware',
+                  error
+                );
               }
             }
           }
@@ -177,4 +188,3 @@ export const protectionMiddleware = <T extends object>(
     );
   };
 };
-

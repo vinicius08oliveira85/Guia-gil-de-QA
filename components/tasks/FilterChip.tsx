@@ -20,14 +20,24 @@ export const FilterChip: React.FC<FilterChipProps> = ({
   onToggle,
   onRemove,
   color = 'default',
-  icon
+  icon,
 }) => {
   const colorClasses = {
-    default: isActive ? 'bg-primary text-primary-content border-primary' : 'bg-base-200 text-base-content border-base-300',
-    error: isActive ? 'bg-error text-error-content border-error' : 'bg-error/10 text-error border-error/30',
-    warning: isActive ? 'bg-warning text-warning-content border-warning' : 'bg-warning/10 text-warning border-warning/30',
-    info: isActive ? 'bg-info text-info-content border-info' : 'bg-info/10 text-info border-info/30',
-    success: isActive ? 'bg-success text-success-content border-success' : 'bg-success/10 text-success border-success/30'
+    default: isActive
+      ? 'bg-primary text-primary-content border-primary'
+      : 'bg-base-200 text-base-content border-base-300',
+    error: isActive
+      ? 'bg-error text-error-content border-error'
+      : 'bg-error/10 text-error border-error/30',
+    warning: isActive
+      ? 'bg-warning text-warning-content border-warning'
+      : 'bg-warning/10 text-warning border-warning/30',
+    info: isActive
+      ? 'bg-info text-info-content border-info'
+      : 'bg-info/10 text-info border-info/30',
+    success: isActive
+      ? 'bg-success text-success-content border-success'
+      : 'bg-success/10 text-success border-success/30',
   };
 
   return (
@@ -49,7 +59,7 @@ export const FilterChip: React.FC<FilterChipProps> = ({
       {onRemove && isActive && (
         <button
           type="button"
-          onClick={(e) => {
+          onClick={e => {
             e.stopPropagation();
             onRemove();
           }}
@@ -57,11 +67,15 @@ export const FilterChip: React.FC<FilterChipProps> = ({
           aria-label={`Remover filtro ${label}`}
         >
           <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M6 18L18 6M6 6l12 12"
+            />
           </svg>
         </button>
       )}
     </button>
   );
 };
-

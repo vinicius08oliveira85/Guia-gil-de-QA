@@ -1,4 +1,5 @@
 # Análise de UI/UX - Guia Gil de QA
+
 ## Relatório Completo de Análise
 
 **Data da Análise:** Janeiro 2025  
@@ -10,6 +11,7 @@
 ## 1. PONTOS FORTES DA UI/UX ATUAL
 
 ### 1.1 Sistema de Design Consistente
+
 **✅ Implementação Excelente**
 
 - **Design System Windows 12 Inspired**: O projeto possui um sistema de design bem estruturado com variáveis CSS customizadas (`index.css`), criando uma identidade visual coesa
@@ -18,11 +20,13 @@
 - **Componentes Reutilizáveis**: Componentes como `Card`, `Modal`, `Badge` seguem padrões consistentes
 
 **Evidências:**
+
 - `index.css` linhas 93-173: Variáveis CSS bem organizadas
 - `components/common/Card.tsx`: Componente reutilizável com estilos consistentes
 - `index.css` linhas 312-334: Sistema de tipografia hierárquica
 
 ### 1.2 Responsividade Parcial
+
 **✅ Boa Base Implementada**
 
 - **Breakpoints Definidos**: Sistema de breakpoints em `index.css` com media queries para mobile (768px, 640px, 380px)
@@ -31,11 +35,13 @@
 - **Layout Adaptativo**: Componentes como `ProjectsDashboard` e `ProjectView` têm versões mobile e desktop
 
 **Evidências:**
+
 - `index.css` linhas 1423-1692: Media queries bem estruturadas
 - `hooks/useIsMobile.ts`: Hook funcional para detecção de mobile
 - `components/ProjectsDashboard.tsx` linhas 181-245: Layout condicional mobile/desktop
 
 ### 1.3 Acessibilidade Básica
+
 **✅ Fundamentos Presentes**
 
 - **Skip Link**: Link de navegação rápida implementado (`App.tsx` linha 187-189)
@@ -45,12 +51,14 @@
 - **Roles Semânticos**: Uso adequado de `role="tablist"`, `role="tab"`, `role="tabpanel"` em navegação por abas
 
 **Evidências:**
+
 - `App.tsx` linha 187: Skip link implementado
 - `components/ProjectView.tsx` linhas 126-163: Navegação por abas com ARIA
 - `components/common/SearchBar.tsx` linhas 24-53: Navegação por teclado na busca
 - `components/common/Modal.tsx` linhas 22-40: Fechamento com ESC e gerenciamento de foco
 
 ### 1.4 Feedback Interativo
+
 **✅ Boa Implementação**
 
 - **Estados de Hover**: Botões têm estados hover bem definidos com transições suaves
@@ -59,11 +67,13 @@
 - **Transições**: Transições suaves em elementos interativos (`transition: all var(--transition-fast)`)
 
 **Evidências:**
+
 - `index.css` linhas 757-780: Estados hover, active e focus em botões
 - `index.css` linhas 710-727: Estados interativos em `win-icon-button`
 - `index.css` linhas 641-645: Hover effect em cards
 
 ### 1.5 Sistema de Onboarding
+
 **✅ Funcionalidade Completa**
 
 - **Onboarding Guide**: Sistema de onboarding implementado com múltiplos passos (`components/onboarding/OnboardingGuide.tsx`)
@@ -72,11 +82,13 @@
 - **Wizard de Criação**: Wizard passo a passo para criação de tarefas (`components/tasks/TaskCreationWizard.tsx`)
 
 **Evidências:**
+
 - `components/onboarding/OnboardingGuide.tsx`: Sistema completo de onboarding
 - `components/common/Header.tsx` linhas 56-64: Botão de modo iniciante
 - `utils/helpContent.ts`: Conteúdo de ajuda extenso
 
 ### 1.6 Navegação e Busca
+
 **✅ Funcionalidades Avançadas**
 
 - **Busca Global**: Sistema de busca global com atalho Ctrl+K (`components/common/SearchBar.tsx`)
@@ -85,6 +97,7 @@
 - **Busca Avançada**: Funcionalidade de busca avançada disponível
 
 **Evidências:**
+
 - `components/common/SearchBar.tsx`: Busca com navegação por teclado
 - `components/ProjectView.tsx` linhas 125-164: Navegação por abas responsiva
 - `App.tsx` linhas 157-169: Sistema de atalhos de teclado
@@ -96,12 +109,14 @@
 ### 2.1 HIERARQUIA VISUAL E LAYOUT
 
 #### Problema 1.1: Falta de Breadcrumbs
+
 **Prioridade: MÉDIA**
 
 **Descrição:**
 Não há breadcrumbs visíveis para indicar a localização atual do usuário na hierarquia do site. Quando o usuário está em uma tarefa específica dentro de um projeto, não há indicação clara do caminho: Projetos > Nome do Projeto > Tarefa.
 
 **Evidência:**
+
 - `components/ProjectView.tsx` linha 95-100: Apenas botão "Voltar" sem breadcrumbs
 - `components/tasks/TasksView.tsx`: Não há indicação de hierarquia ao visualizar tarefas
 
@@ -111,12 +126,14 @@ Usuários podem se perder na navegação, especialmente em projetos grandes com 
 ---
 
 #### Problema 1.2: Espaçamento Inconsistente em Cards
+
 **Prioridade: BAIXA**
 
 **Descrição:**
 Alguns cards têm padding variável dependendo do tamanho da tela, mas não há uma regra clara de espaçamento vertical entre seções.
 
 **Evidência:**
+
 - `components/common/Card.tsx`: Padding fixo, mas espaçamento entre cards pode variar
 - `components/ProjectsDashboard.tsx` linha 476: Grid com gap fixo, mas pode não ser suficiente em mobile
 
@@ -128,12 +145,14 @@ Layout pode parecer desorganizado em algumas telas.
 ### 2.2 NAVEGAÇÃO
 
 #### Problema 2.1: Menu de Navegação Principal Limitado
+
 **Prioridade: ALTA**
 
 **Descrição:**
 O header (`components/common/Header.tsx`) contém apenas botões de configuração, modo iniciante, notificações e tema. Não há um menu de navegação principal que permita acesso rápido a seções importantes como Dashboard, Projetos, Glossário, etc.
 
 **Evidência:**
+
 - `components/common/Header.tsx` linhas 47-77: Apenas botões de utilidade, sem menu de navegação
 - Não há navegação persistente entre diferentes seções do app
 
@@ -143,12 +162,14 @@ Usuários precisam navegar através de projetos para acessar funcionalidades, di
 ---
 
 #### Problema 2.2: Navegação por Abas sem Indicador de Posição
+
 **Prioridade: MÉDIA**
 
 **Descrição:**
 As abas em `ProjectView` não têm um indicador visual claro de qual aba está ativa além da classe `tab-pill--active`. Em mobile, quando as abas são scrolláveis, não fica claro que há mais abas disponíveis.
 
 **Evidência:**
+
 - `components/ProjectView.tsx` linhas 142-163: Abas mobile com scroll horizontal, mas sem indicador de "mais conteúdo"
 - Falta de scroll snap visual ou indicador de posição
 
@@ -158,12 +179,14 @@ Usuários podem não perceber que há mais abas disponíveis em dispositivos mó
 ---
 
 #### Problema 2.3: Falta de Navegação Rápida (Quick Links)
+
 **Prioridade: MÉDIA**
 
 **Descrição:**
 Não há uma barra de navegação rápida ou menu lateral que permita acesso rápido a funcionalidades comuns sem precisar navegar através de projetos.
 
 **Evidência:**
+
 - `App.tsx`: Estrutura principal não inclui menu lateral ou barra de navegação
 - Acesso a funcionalidades depende de ter um projeto selecionado
 
@@ -175,12 +198,14 @@ Fluxo de trabalho pode ser mais lento para usuários experientes.
 ### 2.3 RESPONSIVIDADE
 
 #### Problema 3.1: Header Não Otimizado para Mobile
+
 **Prioridade: ALTA**
 
 **Descrição:**
 O header em mobile pode ficar sobrecarregado com muitos botões. Em telas pequenas, os botões podem ficar muito próximos ou sobrepostos.
 
 **Evidência:**
+
 - `components/common/Header.tsx` linhas 25-78: Layout flex que pode quebrar em telas muito pequenas
 - Botões de ícone têm tamanho mínimo de 42px (desktop) e 36px (mobile), mas em telas muito pequenas podem ser problemáticos
 
@@ -190,12 +215,14 @@ Usuabilidade comprometida em dispositivos móveis pequenos.
 ---
 
 #### Problema 3.2: Modais Podem Ser Muito Grandes em Mobile
+
 **Prioridade: MÉDIA**
 
 **Descrição:**
 Modais podem ocupar quase toda a tela em dispositivos móveis, dificultando a visualização do contexto.
 
 **Evidência:**
+
 - `components/common/Modal.tsx` linhas 44-50: Tamanhos fixos que podem ser grandes demais em mobile
 - `maxHeight: '90vh'` pode ser muito em telas pequenas
 
@@ -205,12 +232,14 @@ Experiência em mobile pode ser claustrofóbica.
 ---
 
 #### Problema 3.3: Grid de Projetos Pode Ficar Apertado em Tablet
+
 **Prioridade: BAIXA**
 
 **Descrição:**
 O grid de projetos usa `grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5`, mas não há breakpoint específico para tablets (768px-1024px), onde 2 colunas podem ser muito ou pouco dependendo do tamanho.
 
 **Evidência:**
+
 - `components/ProjectsDashboard.tsx` linha 476: Grid sem breakpoint intermediário para tablets
 
 **Impacto:**
@@ -221,12 +250,14 @@ Layout pode não ser ideal em tablets.
 ### 2.4 ACESSIBILIDADE
 
 #### Problema 4.1: Contraste de Cores Pode Ser Insuficiente
+
 **Prioridade: ALTA**
 
 **Descrição:**
 Algumas combinações de cores podem não atender aos padrões WCAG AA para contraste. Especialmente texto secundário (`--text-secondary: #A6B3D5`) sobre fundo escuro pode ter contraste insuficiente.
 
 **Evidência:**
+
 - `index.css` linhas 125-128: Cores de texto definidas, mas não há validação de contraste
 - `--text-secondary: #A6B3D5` sobre `--bg-color: #050917` pode ter contraste < 4.5:1
 
@@ -236,12 +267,14 @@ Usuários com deficiência visual podem ter dificuldade para ler o conteúdo.
 ---
 
 #### Problema 4.2: Falta de Anúncios para Leitores de Tela
+
 **Prioridade: MÉDIA**
 
 **Descrição:**
 Quando ações são executadas (criar projeto, salvar tarefa, etc.), não há anúncios para leitores de tela usando `aria-live` regions.
 
 **Evidência:**
+
 - `App.tsx`: Usa `react-hot-toast` para notificações, mas não há `aria-live` regions
 - Ações importantes não anunciam mudanças para leitores de tela
 
@@ -251,12 +284,14 @@ Usuários de leitores de tela podem não perceber quando ações são concluída
 ---
 
 #### Problema 4.3: Falta de Labels em Alguns Inputs
+
 **Prioridade: MÉDIA**
 
 **Descrição:**
 Alguns inputs podem não ter labels associados adequadamente, dependendo apenas de placeholders.
 
 **Evidência:**
+
 - `components/common/SearchBar.tsx` linha 75: Input sem label, apenas placeholder
 - Alguns formulários podem ter inputs sem labels explícitos
 
@@ -266,12 +301,14 @@ Leitores de tela podem não identificar corretamente o propósito dos campos.
 ---
 
 #### Problema 4.4: Navegação por Teclado Incompleta em Alguns Componentes
+
 **Prioridade: MÉDIA**
 
 **Descrição:**
 Nem todos os componentes interativos são totalmente navegáveis por teclado. Por exemplo, cards clicáveis podem não ter `tabIndex` adequado.
 
 **Evidência:**
+
 - `components/ProjectsDashboard.tsx` linhas 483-501: Cards têm `tabIndex={0}` e `onKeyDown`, mas pode não estar em todos os cards clicáveis
 - Alguns botões podem não ter estados de foco visíveis
 
@@ -283,12 +320,14 @@ Usuários que dependem de navegação por teclado podem ter dificuldade para ace
 ### 2.5 FEEDBACK INTERATIVO
 
 #### Problema 5.1: Falta de Estados de Loading em Algumas Ações
+
 **Prioridade: MÉDIA**
 
 **Descrição:**
 Nem todas as ações assíncronas mostram feedback visual de carregamento. Usuários podem não saber se uma ação está sendo processada.
 
 **Evidência:**
+
 - `components/ProjectsDashboard.tsx`: Algumas ações podem não ter indicadores de loading
 - `components/ProjectView.tsx`: Ações de exportação podem não mostrar feedback imediato
 
@@ -298,12 +337,14 @@ Usuários podem clicar múltiplas vezes ou pensar que a aplicação travou.
 ---
 
 #### Problema 5.2: Feedback de Erro Pode Ser Melhorado
+
 **Prioridade: BAIXA**
 
 **Descrição:**
 Erros são mostrados via toast notifications, mas podem não ser suficientemente visíveis ou informativos em alguns casos.
 
 **Evidência:**
+
 - `App.tsx` linhas 190-214: Configuração de toasts, mas pode não ser suficiente para erros críticos
 - Falta de mensagens de erro inline em formulários
 
@@ -315,12 +356,14 @@ Usuários podem não perceber ou entender erros.
 ### 2.6 CONSISTÊNCIA DE DESIGN
 
 #### Problema 6.1: Uso Inconsistente de Ícones
+
 **Prioridade: BAIXA**
 
 **Descrição:**
 Alguns componentes usam emojis como ícones, outros usam SVGs. Não há um sistema unificado de ícones.
 
 **Evidência:**
+
 - `components/common/Header.tsx` linhas 54, 63, 75: Uso de emojis
 - `components/ProjectView.tsx` linhas 106, 113: Uso de SVGs inline
 - `components/common/Icons.tsx`: Sistema de ícones SVG, mas não usado consistentemente
@@ -331,12 +374,14 @@ Interface pode parecer inconsistente visualmente.
 ---
 
 #### Problema 6.2: Tamanhos de Botão Variáveis
+
 **Prioridade: BAIXA**
 
 **Descrição:**
 Diferentes tipos de botões têm tamanhos mínimos diferentes, o que pode causar inconsistência visual.
 
 **Evidência:**
+
 - `index.css` linha 735: `.btn` tem `min-height: 42px`
 - `index.css` linha 686: `.win-icon-button` tem `min-width: 42px; min-height: 42px`
 - Mas em mobile esses valores mudam, criando inconsistência
@@ -349,12 +394,14 @@ Interface pode parecer desorganizada.
 ### 2.7 ORGANIZAÇÃO DO CONTEÚDO
 
 #### Problema 7.1: Falta de Sumário ou Índice em Páginas Longas
+
 **Prioridade: MÉDIA**
 
 **Descrição:**
 Páginas com muito conteúdo (como a trilha do projeto) não têm um sumário ou índice que permita navegação rápida para seções específicas.
 
 **Evidência:**
+
 - `components/trail/ProjectTrail.tsx`: Página pode ter muito conteúdo sem sumário
 - `components/glossary/GlossaryView.tsx`: Glossário pode ser longo sem índice
 
@@ -364,12 +411,14 @@ Usuários podem ter dificuldade para encontrar informações específicas em pá
 ---
 
 #### Problema 7.2: Conteúdo Pode Ser Muito Denso
+
 **Prioridade: BAIXA**
 
 **Descrição:**
 Algumas seções podem ter muito conteúdo sem divisões claras ou acordeões para organizar melhor.
 
 **Evidência:**
+
 - Cards podem ter muitas informações sem hierarquia visual clara
 - Falta de acordeões ou seções colapsáveis em algumas áreas
 
@@ -381,12 +430,14 @@ Conteúdo pode ser difícil de escanear e entender rapidamente.
 ### 2.8 ONBOARDING / INTRODUÇÃO
 
 #### Problema 8.1: Onboarding Não É Persistente
+
 **Prioridade: MÉDIA**
 
 **Descrição:**
 O onboarding só aparece na primeira visita. Usuários que queiram revisar as instruções não têm uma forma fácil de acessá-las novamente.
 
 **Evidência:**
+
 - `components/onboarding/OnboardingGuide.tsx` linhas 137-142: Onboarding só aparece se `hasCompletedOnboarding` é false
 - Não há botão no header ou menu para reabrir o onboarding
 
@@ -396,12 +447,14 @@ Usuários podem esquecer funcionalidades importantes.
 ---
 
 #### Problema 8.2: Falta de Tour Contextual
+
 **Prioridade: BAIXA**
 
 **Descrição:**
 O onboarding é um modal genérico. Não há tours contextuais que apareçam quando o usuário acessa uma funcionalidade pela primeira vez.
 
 **Evidência:**
+
 - `components/onboarding/OnboardingGuide.tsx`: Onboarding genérico, não contextual
 - Falta de sistema de tooltips contextuais que aparecem na primeira interação
 
@@ -454,6 +507,7 @@ Onboarding pode não ser tão efetivo quanto poderia ser.
 **Solução:** Criar componente de navegação com menu hambúrguer em mobile e menu horizontal em desktop.
 
 **Arquivos a Modificar:**
+
 - `components/common/Header.tsx` - Adicionar menu de navegação
 - `components/common/NavigationMenu.tsx` - Novo componente (criar)
 
@@ -496,7 +550,7 @@ export const NavigationMenu: React.FC<NavigationMenuProps> = ({ items, currentPa
           <div className="fixed inset-0 z-50 glass-overlay" onClick={() => setIsOpen(false)}>
             <nav
               className="mica w-80 h-full p-6 overflow-y-auto"
-              onClick={(e) => e.stopPropagation()}
+              onClick={e => e.stopPropagation()}
               role="navigation"
               aria-label="Menu principal"
             >
@@ -511,7 +565,7 @@ export const NavigationMenu: React.FC<NavigationMenuProps> = ({ items, currentPa
                 </button>
               </div>
               <ul className="space-y-2">
-                {items.map((item) => (
+                {items.map(item => (
                   <li key={item.id}>
                     <button
                       onClick={() => {
@@ -548,7 +602,7 @@ export const NavigationMenu: React.FC<NavigationMenuProps> = ({ items, currentPa
 
   return (
     <nav className="flex items-center gap-2" role="navigation" aria-label="Menu principal">
-      {items.map((item) => (
+      {items.map(item => (
         <button
           key={item.id}
           onClick={item.onClick}
@@ -597,7 +651,7 @@ const navItems = [
 ];
 
 // No JSX, adicionar antes dos botões de utilidade:
-<NavigationMenu items={navItems} currentPath={selectedProjectId ? 'project' : 'dashboard'} />
+<NavigationMenu items={navItems} currentPath={selectedProjectId ? 'project' : 'dashboard'} />;
 ```
 
 ---
@@ -609,6 +663,7 @@ const navItems = [
 **Solução:** Agrupar botões em menu dropdown em mobile, manter layout horizontal em desktop.
 
 **Arquivos a Modificar:**
+
 - `components/common/Header.tsx`
 
 **Implementação:**
@@ -619,58 +674,58 @@ const [showMobileMenu, setShowMobileMenu] = useState(false);
 const isMobile = useIsMobile();
 
 // Modificar a seção de botões (linhas 47-77):
-{isMobile ? (
-  <>
-    <button
-      onClick={() => setShowMobileMenu(!showMobileMenu)}
-      className="win-icon-button"
-      aria-label="Menu"
-      aria-expanded={showMobileMenu}
-    >
-      <span className="text-xl">⋯</span>
-    </button>
-    {showMobileMenu && (
-      <div className="absolute top-full right-0 mt-2 mica rounded-lg shadow-xl p-2 min-w-[200px] z-50">
-        <button
-          onClick={() => {
-            setShowSettings(true);
-            setShowMobileMenu(false);
-          }}
-          className="w-full text-left px-4 py-2 rounded hover:bg-surface-hover flex items-center gap-2"
-        >
-          <span>⚙️</span> Configurações
-        </button>
-        <button
-          onClick={() => {
-            toggleBeginnerMode();
-            setShowMobileMenu(false);
-          }}
-          className="w-full text-left px-4 py-2 rounded hover:bg-surface-hover flex items-center gap-2"
-        >
-          <span>{isBeginnerMode ? '🎓' : '📚'}</span>
-          {isBeginnerMode ? 'Desativar Modo Iniciante' : 'Ativar Modo Iniciante'}
-        </button>
-        <button
-          onClick={() => {
-            toggleTheme();
-            setShowMobileMenu(false);
-          }}
-          className="w-full text-left px-4 py-2 rounded hover:bg-surface-hover flex items-center gap-2"
-        >
-          <span>{theme === 'dark' ? '🌙' : theme === 'light' ? '☀️' : '💻'}</span>
-          Tema
-        </button>
-        <div className="border-t border-surface-border my-2"></div>
-        <NotificationBell />
-      </div>
-    )}
-  </>
-) : (
-  // Manter layout atual para desktop
-  <div className="flex items-center gap-1.5 sm:gap-3">
-    {/* Botões existentes */}
-  </div>
-)}
+{
+  isMobile ? (
+    <>
+      <button
+        onClick={() => setShowMobileMenu(!showMobileMenu)}
+        className="win-icon-button"
+        aria-label="Menu"
+        aria-expanded={showMobileMenu}
+      >
+        <span className="text-xl">⋯</span>
+      </button>
+      {showMobileMenu && (
+        <div className="absolute top-full right-0 mt-2 mica rounded-lg shadow-xl p-2 min-w-[200px] z-50">
+          <button
+            onClick={() => {
+              setShowSettings(true);
+              setShowMobileMenu(false);
+            }}
+            className="w-full text-left px-4 py-2 rounded hover:bg-surface-hover flex items-center gap-2"
+          >
+            <span>⚙️</span> Configurações
+          </button>
+          <button
+            onClick={() => {
+              toggleBeginnerMode();
+              setShowMobileMenu(false);
+            }}
+            className="w-full text-left px-4 py-2 rounded hover:bg-surface-hover flex items-center gap-2"
+          >
+            <span>{isBeginnerMode ? '🎓' : '📚'}</span>
+            {isBeginnerMode ? 'Desativar Modo Iniciante' : 'Ativar Modo Iniciante'}
+          </button>
+          <button
+            onClick={() => {
+              toggleTheme();
+              setShowMobileMenu(false);
+            }}
+            className="w-full text-left px-4 py-2 rounded hover:bg-surface-hover flex items-center gap-2"
+          >
+            <span>{theme === 'dark' ? '🌙' : theme === 'light' ? '☀️' : '💻'}</span>
+            Tema
+          </button>
+          <div className="border-t border-surface-border my-2"></div>
+          <NotificationBell />
+        </div>
+      )}
+    </>
+  ) : (
+    // Manter layout atual para desktop
+    <div className="flex items-center gap-1.5 sm:gap-3">{/* Botões existentes */}</div>
+  );
+}
 ```
 
 ---
@@ -682,6 +737,7 @@ const isMobile = useIsMobile();
 **Solução:** Ajustar cores para garantir contraste mínimo de 4.5:1 para texto normal e 3:1 para texto grande.
 
 **Arquivos a Modificar:**
+
 - `index.css`
 
 **Implementação:**
@@ -693,10 +749,10 @@ const isMobile = useIsMobile();
 :root {
   /* Verificar contraste: #A6B3D5 sobre #050917 = ~3.2:1 (insuficiente) */
   /* Ajustar para garantir 4.5:1 */
-  --text-secondary: #C5D1F0; /* Mais claro para melhor contraste */
-  
+  --text-secondary: #c5d1f0; /* Mais claro para melhor contraste */
+
   /* Verificar outros contrastes */
-  --text-tertiary: #9AA8C7; /* Ajustar se necessário */
+  --text-tertiary: #9aa8c7; /* Ajustar se necessário */
 }
 
 /* Adicionar classe utilitária para texto de alto contraste */
@@ -714,7 +770,7 @@ a {
 
 a:hover,
 a:focus-visible {
-  color: #5A94FF;
+  color: #5a94ff;
   text-decoration-thickness: 2px;
 }
 
@@ -730,6 +786,7 @@ a:focus-visible {
 
 **Ferramenta de Validação:**
 Usar ferramentas como:
+
 - WebAIM Contrast Checker: https://webaim.org/resources/contrastchecker/
 - Lighthouse (Chrome DevTools) - Audit de Acessibilidade
 
@@ -744,6 +801,7 @@ Usar ferramentas como:
 **Solução:** Criar componente de breadcrumbs reutilizável.
 
 **Arquivos a Modificar:**
+
 - `components/common/Breadcrumbs.tsx` - Novo componente (criar)
 - `components/ProjectView.tsx` - Adicionar breadcrumbs
 - `components/tasks/TasksView.tsx` - Adicionar breadcrumbs quando visualizando tarefa
@@ -767,11 +825,12 @@ interface BreadcrumbsProps {
 
 export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ items, className = '' }) => {
   return (
-    <nav
-      className={`flex items-center gap-2 text-sm ${className}`}
-      aria-label="Breadcrumb"
-    >
-      <ol className="flex items-center gap-2" itemScope itemType="https://schema.org/BreadcrumbList">
+    <nav className={`flex items-center gap-2 text-sm ${className}`} aria-label="Breadcrumb">
+      <ol
+        className="flex items-center gap-2"
+        itemScope
+        itemType="https://schema.org/BreadcrumbList"
+      >
         {items.map((item, index) => (
           <li
             key={index}
@@ -828,7 +887,7 @@ import { Breadcrumbs } from './common/Breadcrumbs';
     },
   ]}
   className="mb-4"
-/>
+/>;
 ```
 
 ---
@@ -840,6 +899,7 @@ import { Breadcrumbs } from './common/Breadcrumbs';
 **Solução:** Adicionar indicadores visuais de scroll e melhorar navegação.
 
 **Arquivos a Modificar:**
+
 - `components/ProjectView.tsx`
 
 **Implementação:**
@@ -887,7 +947,7 @@ useEffect(() => {
   >
     {/* Abas existentes */}
   </div>
-</div>
+</div>;
 ```
 
 ---
@@ -899,21 +959,16 @@ useEffect(() => {
 **Solução:** Adicionar região `aria-live` para anunciar mudanças.
 
 **Arquivos a Modificar:**
+
 - `App.tsx`
 
 **Implementação:**
 
 ```tsx
 // App.tsx - Adicionar após linha 186
-<div
-  id="aria-live-region"
-  role="status"
-  aria-live="polite"
-  aria-atomic="true"
-  className="sr-only"
->
+<div id="aria-live-region" role="status" aria-live="polite" aria-atomic="true" className="sr-only">
   {/* Conteúdo será anunciado via JavaScript */}
-</div>
+</div>;
 
 // Criar hook para anunciar mudanças
 // hooks/useAriaLive.ts
@@ -956,6 +1011,7 @@ announce('Alterações salvas', 'polite');
 **Solução:** Adicionar labels visíveis ou ocultos para todos os inputs.
 
 **Arquivos a Modificar:**
+
 - `components/common/SearchBar.tsx`
 
 **Implementação:**
@@ -971,7 +1027,7 @@ announce('Alterações salvas', 'polite');
     ref={inputRef}
     type="text"
     value={searchQuery}
-    onChange={(e) => {
+    onChange={e => {
       onSearchChange(e.target.value);
       setIsOpen(true);
       setSelectedIndex(0);
@@ -998,6 +1054,7 @@ announce('Alterações salvas', 'polite');
 **Solução:** Adicionar indicadores de loading consistentes.
 
 **Arquivos a Modificar:**
+
 - `components/ProjectsDashboard.tsx`
 - `components/common/LoadingButton.tsx` - Novo componente (criar)
 
@@ -1049,7 +1106,7 @@ export const LoadingButton: React.FC<LoadingButtonProps> = ({
   className="btn btn-primary"
 >
   Criar Projeto
-</LoadingButton>
+</LoadingButton>;
 ```
 
 ---
@@ -1061,6 +1118,7 @@ export const LoadingButton: React.FC<LoadingButtonProps> = ({
 **Solução:** Criar componente de sumário/índice.
 
 **Arquivos a Modificar:**
+
 - `components/common/TableOfContents.tsx` - Novo componente (criar)
 - `components/trail/ProjectTrail.tsx` - Adicionar sumário
 
@@ -1086,8 +1144,8 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({ items, classNa
 
   useEffect(() => {
     const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
+      entries => {
+        entries.forEach(entry => {
           if (entry.isIntersecting) {
             setActiveId(entry.target.id);
           }
@@ -1096,7 +1154,7 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({ items, classNa
       { rootMargin: '-20% 0px -80% 0px' }
     );
 
-    items.forEach((item) => {
+    items.forEach(item => {
       const element = document.getElementById(item.id);
       if (element) observer.observe(element);
     });
@@ -1107,17 +1165,14 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({ items, classNa
   if (items.length === 0) return null;
 
   return (
-    <nav
-      className={`mica p-4 rounded-lg sticky top-24 ${className}`}
-      aria-label="Sumário"
-    >
+    <nav className={`mica p-4 rounded-lg sticky top-24 ${className}`} aria-label="Sumário">
       <h3 className="text-sm font-semibold text-text-primary mb-3">Sumário</h3>
       <ol className="space-y-1 text-sm">
-        {items.map((item) => (
+        {items.map(item => (
           <li key={item.id} style={{ paddingLeft: `${(item.level - 1) * 1}rem` }}>
             <a
               href={`#${item.id}`}
-              onClick={(e) => {
+              onClick={e => {
                 e.preventDefault();
                 document.getElementById(item.id)?.scrollIntoView({ behavior: 'smooth' });
               }}
@@ -1146,6 +1201,7 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({ items, classNa
 **Solução:** Adicionar botão no header para reabrir onboarding.
 
 **Arquivos a Modificar:**
+
 - `components/common/Header.tsx`
 - `components/onboarding/OnboardingGuide.tsx`
 
@@ -1196,6 +1252,7 @@ const [showOnboarding, setShowOnboarding] = useState(false);
 **Solução:** Criar sistema unificado de ícones usando o componente `Icons` existente.
 
 **Arquivos a Modificar:**
+
 - `components/common/Header.tsx` - Substituir emojis por ícones SVG
 - Documentar uso preferencial de `Icons` component
 
@@ -1206,6 +1263,7 @@ const [showOnboarding, setShowOnboarding] = useState(false);
 **Solução:** Adicionar mensagens de erro inline em formulários além de toasts.
 
 **Arquivos a Modificar:**
+
 - `components/tasks/TaskForm.tsx` - Adicionar mensagens de erro inline
 - Criar componente `ErrorMessage.tsx`
 
@@ -1223,6 +1281,7 @@ const [showOnboarding, setShowOnboarding] = useState(false);
 ```
 
 **Menu de Navegação (Nav):**
+
 - 📊 Dashboard
 - 📁 Projetos (3)
 - 📚 Glossário
@@ -1290,6 +1349,7 @@ Menu Hambúrguer (ao clicar):
 ## 6. RESUMO EXECUTIVO
 
 ### Pontos Fortes Principais
+
 1. ✅ Sistema de design consistente e bem estruturado
 2. ✅ Responsividade parcial com boa base
 3. ✅ Acessibilidade básica implementada
@@ -1298,11 +1358,13 @@ Menu Hambúrguer (ao clicar):
 6. ✅ Navegação e busca avançadas
 
 ### Problemas Críticos a Resolver
+
 1. 🔴 Adicionar menu de navegação principal
 2. 🔴 Otimizar header para mobile
 3. 🔴 Melhorar contraste de cores (WCAG AA)
 
 ### Melhorias Recomendadas (Prioridade Média)
+
 1. 🟡 Adicionar breadcrumbs
 2. 🟡 Melhorar navegação por abas
 3. 🟡 Adicionar anúncios para leitores de tela
@@ -1310,6 +1372,7 @@ Menu Hambúrguer (ao clicar):
 5. 🟡 Tornar onboarding persistente
 
 ### Próximos Passos
+
 1. Implementar recomendações de prioridade alta
 2. Validar contraste com ferramentas (Lighthouse, WebAIM)
 3. Testar em dispositivos reais (mobile, tablet)
@@ -1319,4 +1382,3 @@ Menu Hambúrguer (ao clicar):
 ---
 
 **Fim do Relatório**
-

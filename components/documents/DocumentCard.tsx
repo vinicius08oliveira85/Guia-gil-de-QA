@@ -59,9 +59,10 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
 
   const isTextContent = doc.content && !doc.content.startsWith('data:');
   const lineCount = isTextContent ? doc.content.split('\n').length : 0;
-  const metaText = doc.size != null
-    ? `${formatFileSize(doc.size)}${isTextContent ? ` • ${lineCount} linhas` : ' • Arquivo binário'}`
-    : '';
+  const metaText =
+    doc.size != null
+      ? `${formatFileSize(doc.size)}${isTextContent ? ` • ${lineCount} linhas` : ' • Arquivo binário'}`
+      : '';
 
   return (
     <article
@@ -78,22 +79,30 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
             {doc.name}
           </h3>
           <div className="flex gap-2 mt-2">
-            <span
-              className={`px-2 py-0.5 text-[10px] font-bold rounded uppercase ${badgeClass}`}
-            >
+            <span className={`px-2 py-0.5 text-[10px] font-bold rounded uppercase ${badgeClass}`}>
               {categoryLabel}
             </span>
           </div>
         </div>
         <p className="text-xs text-slate-500 dark:text-slate-400">{metaText}</p>
         <div className="grid grid-cols-6 gap-2 pt-4 border-t border-slate-50 dark:border-slate-700">
-          <button type="button" className={actionBtnClass} onClick={onView} aria-label="Ver documento">
+          <button
+            type="button"
+            className={actionBtnClass}
+            onClick={onView}
+            aria-label="Ver documento"
+          >
             <div className="p-2 rounded-lg transition-colors duration-300 group-hover:bg-base-200">
               <Eye className="w-[18px] h-[18px] text-current" aria-hidden />
             </div>
             <span className="text-[10px] font-medium text-inherit">Ver</span>
           </button>
-          <button type="button" className={actionBtnClass} onClick={onPreview} aria-label="Abrir preview">
+          <button
+            type="button"
+            className={actionBtnClass}
+            onClick={onPreview}
+            aria-label="Abrir preview"
+          >
             <div className="p-2 rounded-lg transition-colors duration-300 group-hover:bg-base-200">
               <ExternalLink className="w-[18px] h-[18px] text-current" aria-hidden />
             </div>
@@ -131,13 +140,23 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
             </div>
             <span className="text-[10px] font-medium text-inherit">Gerar</span>
           </button>
-          <button type="button" className={actionBtnClass} onClick={onEdit} aria-label="Editar documento">
+          <button
+            type="button"
+            className={actionBtnClass}
+            onClick={onEdit}
+            aria-label="Editar documento"
+          >
             <div className="p-2 rounded-lg transition-colors duration-300 group-hover:bg-base-200">
               <Pencil className="w-[18px] h-[18px] text-current" aria-hidden />
             </div>
             <span className="text-[10px] font-medium text-inherit">Editar</span>
           </button>
-          <button type="button" className={actionBtnClass} onClick={onRemove} aria-label="Remover documento">
+          <button
+            type="button"
+            className={actionBtnClass}
+            onClick={onRemove}
+            aria-label="Remover documento"
+          >
             <div className="p-2 rounded-lg transition-colors duration-300 group-hover:bg-base-200">
               <Trash2 className="w-[18px] h-[18px] text-current" aria-hidden />
             </div>

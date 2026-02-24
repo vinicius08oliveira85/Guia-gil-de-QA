@@ -1,5 +1,12 @@
-import { Type } from "@google/genai";
-import { Project, GeneralIAAnalysis, TaskIAAnalysis, TestIAAnalysis, JiraTask, TestCase } from '../../types';
+import { Type } from '@google/genai';
+import {
+  Project,
+  GeneralIAAnalysis,
+  TaskIAAnalysis,
+  TestIAAnalysis,
+  JiraTask,
+  TestCase,
+} from '../../types';
 import { getFormattedContext } from './documentContextService';
 import { callGeminiWithRetry } from './geminiApiWrapper';
 import { logger } from '../../utils/logger';
@@ -61,7 +68,10 @@ interface ProjectMetrics {
   };
 }
 
-const generalAnalysisCache = new Map<string, { snapshotHash: string; expiresAt: number; analysis: GeneralIAAnalysis }>();
+const generalAnalysisCache = new Map<
+  string,
+  { snapshotHash: string; expiresAt: number; analysis: GeneralIAAnalysis }
+>();
 
 const normalizeText = (value?: string, maxLength: number = TEXT_SNIPPET_LENGTH): string => {
   if (!value) return '';
@@ -147,7 +157,7 @@ const calculateTaskSnapshot = (task: JiraTask): TaskSnapshot => {
     dependencies: task.dependencies?.length || 0,
     riskSignals,
     riskScore,
-    riskLevel: getRiskLevelFromScore(riskScore)
+    riskLevel: getRiskLevelFromScore(riskScore),
   };
 };
 
@@ -175,7 +185,7 @@ const calculateTestSnapshot = (task: JiraTask, testCase: TestCase): TestSnapshot
     status: testCase.status,
     stepsCount: testCase.steps?.length || 0,
     isAutomated: testCase.isAutomated || false,
-    issues
+    issues,
   };
 };
 
@@ -200,15 +210,15 @@ const buildProjectMetrics = (tasks: TaskSnapshot[], tests: TestSnapshot[]): Proj
       withoutStrategy: tasks.filter(t => !t.hasTestStrategy).length,
       withFailedTests: tasks.filter(t => t.testsFailed > 0).length,
       withPendingTests: tasks.filter(t => t.testsNotRun > 0).length,
-      highRisk: tasks.filter(t => t.riskLevel === 'Crítico' || t.riskLevel === 'Alto').length
+      highRisk: tasks.filter(t => t.riskLevel === 'Crítico' || t.riskLevel === 'Alto').length,
     },
     tests: {
       total: tests.length,
       byStatus: testsByStatus,
       missingSteps: tests.filter(t => t.stepsCount === 0).length,
       missingExpectedResult: tests.filter(t => !t.expectedResult).length,
-      automated: tests.filter(t => t.isAutomated).length
-    }
+      automated: tests.filter(t => t.isAutomated).length,
+    },
   };
 };
 
@@ -255,9 +265,7 @@ const selectPriorityTasks = (tasks: TaskSnapshot[]): TaskSnapshot[] => {
     return tasks;
   }
 
-  return [...tasks]
-    .sort((a, b) => b.riskScore - a.riskScore)
-    .slice(0, MAX_AI_TASKS);
+  return [...tasks].sort((a, b) => b.riskScore - a.riskScore).slice(0, MAX_AI_TASKS);
 };
 
 const selectPriorityTests = (tests: TestSnapshot[]): TestSnapshot[] => {
@@ -282,24 +290,31 @@ const selectPriorityTests = (tests: TestSnapshot[]): TestSnapshot[] => {
 const buildTaskHeuristicAnalysis = (snapshot: TaskSnapshot): TaskIAAnalysis => {
   const missingItems: string[] = [];
   if (!snapshot.hasDescription) missingItems.push('Adicionar descrição detalhada da tarefa.');
-  if (snapshot.testCasesTotal === 0) missingItems.push('Criar casos de teste funcionais e negativos.');
+  if (snapshot.testCasesTotal === 0)
+    missingItems.push('Criar casos de teste funcionais e negativos.');
   if (snapshot.testsNotRun > 0) missingItems.push('Executar casos de teste pendentes.');
-  if (!snapshot.hasTestStrategy) missingItems.push('Documentar estratégia de testes alinhada ao risco.');
+  if (!snapshot.hasTestStrategy)
+    missingItems.push('Documentar estratégia de testes alinhada ao risco.');
 
-  const bddSuggestions = snapshot.bddScenarios > 0
-    ? []
-    : [`Criar ao menos um cenário BDD cobrindo o fluxo principal de "${snapshot.title}".`];
+  const bddSuggestions =
+    snapshot.bddScenarios > 0
+      ? []
+      : [`Criar ao menos um cenário BDD cobrindo o fluxo principal de "${snapshot.title}".`];
 
   const detectedProblems = [
     ...snapshot.riskSignals,
     snapshot.testsFailed > 0 ? `${snapshot.testsFailed} teste(s) falhando.` : '',
-    snapshot.testsNotRun > 0 ? `${snapshot.testsNotRun} teste(s) não executados.` : ''
+    snapshot.testsNotRun > 0 ? `${snapshot.testsNotRun} teste(s) não executados.` : '',
   ].filter(Boolean);
 
   const qaImprovements = [
-    snapshot.testsFailed > 0 ? 'Investigue as falhas registradas e ajuste critérios de aceite.' : '',
+    snapshot.testsFailed > 0
+      ? 'Investigue as falhas registradas e ajuste critérios de aceite.'
+      : '',
     snapshot.testsNotRun > 0 ? 'Inclua os testes pendentes no próximo ciclo de execução.' : '',
-    !snapshot.hasTestStrategy ? 'Descreva ferramentas e técnicas planejadas na estratégia de testes.' : ''
+    !snapshot.hasTestStrategy
+      ? 'Descreva ferramentas e técnicas planejadas na estratégia de testes.'
+      : '',
   ].filter(Boolean);
 
   if (qaImprovements.length === 0) {
@@ -318,14 +333,15 @@ const buildTaskHeuristicAnalysis = (snapshot: TaskSnapshot): TaskIAAnalysis => {
     bddSuggestions,
     qaImprovements,
     generatedAt: new Date().toISOString(),
-    isOutdated: false
+    isOutdated: false,
   };
 };
 
 const buildTestHeuristicAnalysis = (snapshot: TestSnapshot): TestIAAnalysis => {
-  const detectedProblems = snapshot.issues.length > 0
-    ? snapshot.issues
-    : ['Nenhum problema crítico detectado automaticamente.'];
+  const detectedProblems =
+    snapshot.issues.length > 0
+      ? snapshot.issues
+      : ['Nenhum problema crítico detectado automaticamente.'];
 
   const suggestions: string[] = [];
   if (snapshot.status !== 'Passed') {
@@ -351,7 +367,7 @@ const buildTestHeuristicAnalysis = (snapshot: TestSnapshot): TestIAAnalysis => {
     detectedProblems,
     suggestions,
     generatedAt: new Date().toISOString(),
-    isOutdated: false
+    isOutdated: false,
   };
 };
 
@@ -370,7 +386,7 @@ const setCachedAnalysis = (key: string, hash: string, analysis: GeneralIAAnalysi
   generalAnalysisCache.set(key, {
     snapshotHash: hash,
     expiresAt: Date.now() + CACHE_TTL_MS,
-    analysis
+    analysis,
   });
 };
 
@@ -385,12 +401,14 @@ const generalAnalysisSchema = {
   properties: {
     summary: {
       type: Type.STRING,
-      description: "Um resumo geral consolidado de todas as tarefas e testes do projeto, destacando pontos principais, status geral e recomendações estratégicas."
+      description:
+        'Um resumo geral consolidado de todas as tarefas e testes do projeto, destacando pontos principais, status geral e recomendações estratégicas.',
     },
     detectedProblems: {
       type: Type.ARRAY,
       items: { type: Type.STRING },
-      description: "Lista de problemas críticos detectados em todo o projeto (ex: falta de testes, tarefas sem descrição, riscos de qualidade)."
+      description:
+        'Lista de problemas críticos detectados em todo o projeto (ex: falta de testes, tarefas sem descrição, riscos de qualidade).',
     },
     riskCalculation: {
       type: Type.OBJECT,
@@ -398,58 +416,64 @@ const generalAnalysisSchema = {
         overallRisk: {
           type: Type.STRING,
           enum: ['Baixo', 'Médio', 'Alto', 'Crítico'],
-          description: "Nível de risco geral do projeto baseado em todas as análises."
+          description: 'Nível de risco geral do projeto baseado em todas as análises.',
         },
         riskScore: {
           type: Type.NUMBER,
-          description: "Score de risco numérico de 0 a 100, onde 0 é sem risco e 100 é risco crítico."
+          description:
+            'Score de risco numérico de 0 a 100, onde 0 é sem risco e 100 é risco crítico.',
         },
         riskFactors: {
           type: Type.ARRAY,
           items: {
             type: Type.OBJECT,
             properties: {
-              factor: { type: Type.STRING, description: "Nome do fator de risco identificado." },
+              factor: { type: Type.STRING, description: 'Nome do fator de risco identificado.' },
               impact: {
                 type: Type.STRING,
                 enum: ['Baixo', 'Médio', 'Alto'],
-                description: "Impacto deste fator no projeto."
+                description: 'Impacto deste fator no projeto.',
               },
-              description: { type: Type.STRING, description: "Descrição detalhada do fator de risco." }
+              description: {
+                type: Type.STRING,
+                description: 'Descrição detalhada do fator de risco.',
+              },
             },
-            required: ['factor', 'impact', 'description']
+            required: ['factor', 'impact', 'description'],
           },
-          description: "Lista de fatores de risco identificados no projeto."
-        }
+          description: 'Lista de fatores de risco identificados no projeto.',
+        },
       },
-      required: ['overallRisk', 'riskScore', 'riskFactors']
+      required: ['overallRisk', 'riskScore', 'riskFactors'],
     },
     missingItems: {
       type: Type.ARRAY,
       items: { type: Type.STRING },
-      description: "Lista de itens faltantes ou incompletos no projeto (ex: testes não criados, documentação ausente, cenários BDD faltantes)."
+      description:
+        'Lista de itens faltantes ou incompletos no projeto (ex: testes não criados, documentação ausente, cenários BDD faltantes).',
     },
     bddSuggestions: {
       type: Type.ARRAY,
       items: {
         type: Type.OBJECT,
         properties: {
-          taskId: { type: Type.STRING, description: "ID da tarefa que precisa de cenários BDD." },
-          taskTitle: { type: Type.STRING, description: "Título da tarefa." },
+          taskId: { type: Type.STRING, description: 'ID da tarefa que precisa de cenários BDD.' },
+          taskTitle: { type: Type.STRING, description: 'Título da tarefa.' },
           scenarios: {
             type: Type.ARRAY,
             items: { type: Type.STRING },
-            description: "Lista de cenários BDD sugeridos em formato Gherkin."
-          }
+            description: 'Lista de cenários BDD sugeridos em formato Gherkin.',
+          },
         },
-        required: ['taskId', 'taskTitle', 'scenarios']
+        required: ['taskId', 'taskTitle', 'scenarios'],
       },
-      description: "Sugestões de cenários BDD para tarefas que ainda não os possuem ou precisam de mais."
+      description:
+        'Sugestões de cenários BDD para tarefas que ainda não os possuem ou precisam de mais.',
     },
     qaImprovements: {
       type: Type.ARRAY,
       items: { type: Type.STRING },
-      description: "Lista de melhorias de QA recomendadas para o projeto como um todo."
+      description: 'Lista de melhorias de QA recomendadas para o projeto como um todo.',
     },
     taskAnalyses: {
       type: Type.ARRAY,
@@ -457,40 +481,49 @@ const generalAnalysisSchema = {
         type: Type.OBJECT,
         properties: {
           taskId: { type: Type.STRING },
-          summary: { type: Type.STRING, description: "Resumo da análise da tarefa." },
+          summary: { type: Type.STRING, description: 'Resumo da análise da tarefa.' },
           detectedProblems: {
             type: Type.ARRAY,
             items: { type: Type.STRING },
-            description: "Problemas específicos detectados nesta tarefa."
+            description: 'Problemas específicos detectados nesta tarefa.',
           },
           riskLevel: {
             type: Type.STRING,
             enum: ['Baixo', 'Médio', 'Alto', 'Crítico'],
-            description: "Nível de risco desta tarefa específica."
+            description: 'Nível de risco desta tarefa específica.',
           },
           riskScore: {
             type: Type.NUMBER,
-            description: "Score de risco de 0 a 100 para esta tarefa."
+            description: 'Score de risco de 0 a 100 para esta tarefa.',
           },
           missingItems: {
             type: Type.ARRAY,
             items: { type: Type.STRING },
-            description: "Itens faltantes específicos desta tarefa."
+            description: 'Itens faltantes específicos desta tarefa.',
           },
           bddSuggestions: {
             type: Type.ARRAY,
             items: { type: Type.STRING },
-            description: "Sugestões de cenários BDD para esta tarefa."
+            description: 'Sugestões de cenários BDD para esta tarefa.',
           },
           qaImprovements: {
             type: Type.ARRAY,
             items: { type: Type.STRING },
-            description: "Melhorias de QA específicas para esta tarefa."
-          }
+            description: 'Melhorias de QA específicas para esta tarefa.',
+          },
         },
-        required: ['taskId', 'summary', 'detectedProblems', 'riskLevel', 'riskScore', 'missingItems', 'bddSuggestions', 'qaImprovements']
+        required: [
+          'taskId',
+          'summary',
+          'detectedProblems',
+          'riskLevel',
+          'riskScore',
+          'missingItems',
+          'bddSuggestions',
+          'qaImprovements',
+        ],
       },
-      description: "Análises individuais detalhadas para cada tarefa do projeto."
+      description: 'Análises individuais detalhadas para cada tarefa do projeto.',
     },
     testAnalyses: {
       type: Type.ARRAY,
@@ -499,25 +532,37 @@ const generalAnalysisSchema = {
         properties: {
           testId: { type: Type.STRING },
           taskId: { type: Type.STRING },
-          summary: { type: Type.STRING, description: "Resumo da análise do teste." },
-          coverage: { type: Type.STRING, description: "Avaliação da cobertura e qualidade do teste." },
+          summary: { type: Type.STRING, description: 'Resumo da análise do teste.' },
+          coverage: {
+            type: Type.STRING,
+            description: 'Avaliação da cobertura e qualidade do teste.',
+          },
           detectedProblems: {
             type: Type.ARRAY,
             items: { type: Type.STRING },
-            description: "Problemas detectados neste teste específico."
+            description: 'Problemas detectados neste teste específico.',
           },
           suggestions: {
             type: Type.ARRAY,
             items: { type: Type.STRING },
-            description: "Sugestões de melhoria para este teste."
-          }
+            description: 'Sugestões de melhoria para este teste.',
+          },
         },
-        required: ['testId', 'taskId', 'summary', 'coverage', 'detectedProblems', 'suggestions']
+        required: ['testId', 'taskId', 'summary', 'coverage', 'detectedProblems', 'suggestions'],
       },
-      description: "Análises individuais detalhadas para cada teste do projeto."
-    }
+      description: 'Análises individuais detalhadas para cada teste do projeto.',
+    },
   },
-  required: ['summary', 'detectedProblems', 'riskCalculation', 'missingItems', 'bddSuggestions', 'qaImprovements', 'taskAnalyses', 'testAnalyses']
+  required: [
+    'summary',
+    'detectedProblems',
+    'riskCalculation',
+    'missingItems',
+    'bddSuggestions',
+    'qaImprovements',
+    'taskAnalyses',
+    'testAnalyses',
+  ],
 };
 
 /**
@@ -540,12 +585,12 @@ export async function generateGeneralIAAnalysis(project: Project): Promise<Gener
         id: project.id,
         name: project.name,
         description: normalizeText(project.description, 400),
-        tags: project.tags || []
+        tags: project.tags || [],
       },
       metrics,
       qualitySignals,
       priorityTasks,
-      priorityTests
+      priorityTests,
     };
 
     const snapshotString = JSON.stringify(snapshotPayload);
@@ -582,10 +627,10 @@ OBSERVAÇÕES IMPORTANTES:
     `;
 
     const response = await callGeminiWithRetry({
-      model: "gemini-2.5-flash",
+      model: 'gemini-2.5-flash',
       contents: prompt,
       config: {
-        responseMimeType: "application/json",
+        responseMimeType: 'application/json',
         responseSchema: generalAnalysisSchema,
       },
     });
@@ -593,11 +638,17 @@ OBSERVAÇÕES IMPORTANTES:
     const parsedResponse = JSON.parse(response.text.trim());
 
     const aiTaskAnalysesMap = new Map<string, any>(
-      (parsedResponse.taskAnalyses || []).map((analysis: TaskIAAnalysis) => [analysis.taskId, analysis])
+      (parsedResponse.taskAnalyses || []).map((analysis: TaskIAAnalysis) => [
+        analysis.taskId,
+        analysis,
+      ])
     );
 
     const aiTestAnalysesMap = new Map<string, any>(
-      (parsedResponse.testAnalyses || []).map((analysis: TestIAAnalysis) => [analysis.testId, analysis])
+      (parsedResponse.testAnalyses || []).map((analysis: TestIAAnalysis) => [
+        analysis.testId,
+        analysis,
+      ])
     );
 
     const finalTaskAnalyses: TaskIAAnalysis[] = taskSnapshots.map(snapshot => {
@@ -608,12 +659,13 @@ OBSERVAÇÕES IMPORTANTES:
           summary: aiAnalysis.summary || 'Análise da tarefa.',
           detectedProblems: aiAnalysis.detectedProblems || [],
           riskLevel: aiAnalysis.riskLevel || snapshot.riskLevel,
-          riskScore: typeof aiAnalysis.riskScore === 'number' ? aiAnalysis.riskScore : snapshot.riskScore,
+          riskScore:
+            typeof aiAnalysis.riskScore === 'number' ? aiAnalysis.riskScore : snapshot.riskScore,
           missingItems: aiAnalysis.missingItems || [],
           bddSuggestions: aiAnalysis.bddSuggestions || [],
           qaImprovements: aiAnalysis.qaImprovements || [],
           generatedAt: new Date().toISOString(),
-          isOutdated: false
+          isOutdated: false,
         };
       }
 
@@ -631,7 +683,7 @@ OBSERVAÇÕES IMPORTANTES:
           detectedProblems: aiAnalysis.detectedProblems || [],
           suggestions: aiAnalysis.suggestions || [],
           generatedAt: new Date().toISOString(),
-          isOutdated: false
+          isOutdated: false,
         };
       }
 
@@ -644,9 +696,10 @@ OBSERVAÇÕES IMPORTANTES:
       summary: parsedResponse.summary || 'Análise geral do projeto.',
       detectedProblems: parsedResponse.detectedProblems || [],
       riskCalculation: {
-        overallRisk: parsedResponse.riskCalculation?.overallRisk || getRiskLevelFromScore(fallbackRiskScore),
+        overallRisk:
+          parsedResponse.riskCalculation?.overallRisk || getRiskLevelFromScore(fallbackRiskScore),
         riskScore: parsedResponse.riskCalculation?.riskScore ?? fallbackRiskScore,
-        riskFactors: parsedResponse.riskCalculation?.riskFactors || []
+        riskFactors: parsedResponse.riskCalculation?.riskFactors || [],
       },
       missingItems: parsedResponse.missingItems || [],
       bddSuggestions: parsedResponse.bddSuggestions || [],
@@ -654,15 +707,16 @@ OBSERVAÇÕES IMPORTANTES:
       taskAnalyses: finalTaskAnalyses,
       testAnalyses: finalTestAnalyses,
       generatedAt: new Date().toISOString(),
-      isOutdated: false
+      isOutdated: false,
     };
 
     setCachedAnalysis(cacheKey, snapshotHash, analysis);
 
     return analysis;
   } catch (error) {
-    logger.error("Erro ao gerar análise geral de IA", 'generalAnalysisService', error);
-    throw new Error("Falha ao gerar análise geral de IA. Verifique a configuração da API e tente novamente.");
+    logger.error('Erro ao gerar análise geral de IA', 'generalAnalysisService', error);
+    throw new Error(
+      'Falha ao gerar análise geral de IA. Verifique a configuração da API e tente novamente.'
+    );
   }
 }
-

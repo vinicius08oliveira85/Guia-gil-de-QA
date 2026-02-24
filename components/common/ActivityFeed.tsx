@@ -14,19 +14,27 @@ interface ActivityFeedProps {
 // Funções puras movidas para fora do componente para evitar re-criação em cada render
 const getActivityIcon = (action: string) => {
   switch (action) {
-    case 'CREATE': return <PlusIcon className="w-5 h-5" />;
-    case 'UPDATE': return <EditIcon className="w-5 h-5" />;
-    case 'DELETE': return <TrashIcon className="w-5 h-5" />;
-    default: return <InfoIcon className="w-5 h-5" />;
+    case 'CREATE':
+      return <PlusIcon className="w-5 h-5" />;
+    case 'UPDATE':
+      return <EditIcon className="w-5 h-5" />;
+    case 'DELETE':
+      return <TrashIcon className="w-5 h-5" />;
+    default:
+      return <InfoIcon className="w-5 h-5" />;
   }
 };
 
 const getActivityColor = (action: string): 'default' | 'success' | 'warning' | 'error' | 'info' => {
   switch (action) {
-    case 'CREATE': return 'success';
-    case 'UPDATE': return 'info';
-    case 'DELETE': return 'error';
-    default: return 'default';
+    case 'CREATE':
+      return 'success';
+    case 'UPDATE':
+      return 'info';
+    case 'DELETE':
+      return 'error';
+    default:
+      return 'default';
   }
 };
 
@@ -44,9 +52,13 @@ const getRelativeDateGroup = (date: Date): string => {
 
   if (activityDate.getTime() === today.getTime()) return 'Hoje';
   if (activityDate.getTime() === yesterday.getTime()) return 'Ontem';
-  
+
   // Para outras datas, formata de forma legível
-  return activityDate.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+  return activityDate.toLocaleDateString('pt-BR', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+  });
 };
 
 export const ActivityFeed: React.FC<ActivityFeedProps> = ({ project, limit = 20 }) => {
@@ -63,19 +75,22 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({ project, limit = 20 
         return {
           ...log,
           taskTitle: task?.title,
-          taskId: task?.id
+          taskId: task?.id,
         };
       });
 
     // Agrupa os logs por data
-    const grouped = enrichedLogs.reduce((acc, activity) => {
-      const groupKey = getRelativeDateGroup(new Date(activity.timestamp));
-      if (!acc[groupKey]) {
-        acc[groupKey] = [];
-      }
-      acc[groupKey].push(activity);
-      return acc;
-    }, {} as Record<string, EnrichedAuditLog[]>);
+    const grouped = enrichedLogs.reduce(
+      (acc, activity) => {
+        const groupKey = getRelativeDateGroup(new Date(activity.timestamp));
+        if (!acc[groupKey]) {
+          acc[groupKey] = [];
+        }
+        acc[groupKey].push(activity);
+        return acc;
+      },
+      {} as Record<string, EnrichedAuditLog[]>
+    );
 
     return grouped;
   }, [project.id, project.tasks, limit]); // Depende de project.id e project.tasks (via taskMap)
@@ -92,7 +107,7 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({ project, limit = 20 
               <p className="text-xs font-semibold uppercase tracking-wider text-base-content/60 pt-2">
                 {dateGroup}
               </p>
-              {activitiesInGroup.map((activity) => {
+              {activitiesInGroup.map(activity => {
                 const delay = globalIndex * 75; // 75ms de atraso entre cada item
                 globalIndex++;
                 return (
@@ -110,9 +125,7 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({ project, limit = 20 
           ))}
         </div>
       ) : (
-        <div className="text-center py-8 text-text-secondary">
-          Nenhuma atividade recente
-        </div>
+        <div className="text-center py-8 text-text-secondary">Nenhuma atividade recente</div>
       )}
     </div>
   );

@@ -70,8 +70,9 @@ describe('Testes de Navegação', () => {
       });
 
       // Clicar no primeiro projeto
-      const projectCard = screen.getByText(projects[0].name).closest('div[role="button"]') || 
-                          screen.getByText(projects[0].name);
+      const projectCard =
+        screen.getByText(projects[0].name).closest('div[role="button"]') ||
+        screen.getByText(projects[0].name);
       await userEvent.click(projectCard);
 
       // Verificar que ProjectView foi renderizado
@@ -266,7 +267,7 @@ describe('Testes de Navegação', () => {
 
       // Simular projeto sendo removido durante navegação
       store.projects = [];
-      
+
       // Verificar que app não quebra
       await waitFor(() => {
         // App deve lidar graciosamente com projeto ausente
@@ -296,4 +297,3 @@ describe('Testes de Navegação', () => {
     });
   });
 });
-

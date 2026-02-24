@@ -29,7 +29,11 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onStartTest, onComplet
   }, [task.testCases]);
 
   // Determina o status geral do teste para a tarefa
-  const testStatus = useMemo<{ label: string; variant: BadgeVariant; icon: React.ReactNode | null }>(() => {
+  const testStatus = useMemo<{
+    label: string;
+    variant: BadgeVariant;
+    icon: React.ReactNode | null;
+  }>(() => {
     if (!testMetrics.total || testMetrics.total === 0) {
       return { label: 'Sem Testes', variant: 'neutral', icon: null };
     }
@@ -45,20 +49,28 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onStartTest, onComplet
   // Mapeia o status do Jira para um badge
   const jiraStatusBadge = useMemo<{ label: string; variant: BadgeVariant }>(() => {
     switch (task.status) {
-      case 'To Do': return { label: 'Pendente', variant: 'neutral' };
-      case 'In Progress': return { label: 'Em Andamento', variant: 'info' };
-      case 'Done': return { label: 'Concluído', variant: 'success' };
-      default: return { label: task.status, variant: 'error' };
+      case 'To Do':
+        return { label: 'Pendente', variant: 'neutral' };
+      case 'In Progress':
+        return { label: 'Em Andamento', variant: 'info' };
+      case 'Done':
+        return { label: 'Concluído', variant: 'success' };
+      default:
+        return { label: task.status, variant: 'error' };
     }
   }, [task.status]);
 
   // Mapeia o tipo de tarefa para um badge
   const taskTypeBadge = useMemo<{ label: string; variant: BadgeVariant }>(() => {
     switch (task.type) {
-      case 'Bug': return { label: 'Bug', variant: 'error' };
-      case 'História': return { label: 'História', variant: 'primary' };
-      case 'Tarefa': return { label: 'Tarefa', variant: 'secondary' };
-      default: return { label: task.type, variant: 'accent' };
+      case 'Bug':
+        return { label: 'Bug', variant: 'error' };
+      case 'História':
+        return { label: 'História', variant: 'primary' };
+      case 'Tarefa':
+        return { label: 'Tarefa', variant: 'secondary' };
+      default:
+        return { label: task.type, variant: 'accent' };
     }
   }, [task.type]);
 
@@ -69,7 +81,9 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onStartTest, onComplet
       <div className="flex justify-between items-start">
         <div className="flex-1 pr-4 cursor-pointer" onClick={handleToggleExpand}>
           <div className="flex items-center gap-2 mb-2">
-            <Badge variant={taskTypeBadge.variant} size="sm">{taskTypeBadge.label}</Badge>
+            <Badge variant={taskTypeBadge.variant} size="sm">
+              {taskTypeBadge.label}
+            </Badge>
             <span className="font-semibold text-base-content">{task.id}</span>
           </div>
           <h3 className="font-bold text-lg text-base-content leading-tight">{task.title}</h3>
@@ -99,20 +113,16 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onStartTest, onComplet
         </div>
 
         <div className="flex items-center gap-3">
-          <Badge variant={jiraStatusBadge.variant} size="sm">{jiraStatusBadge.label}</Badge>
+          <Badge variant={jiraStatusBadge.variant} size="sm">
+            {jiraStatusBadge.label}
+          </Badge>
           {testStatus.label !== 'Teste Concluído' && testStatus.label !== 'Sem Testes' && (
-            <button 
-              className="btn btn-primary btn-sm"
-              onClick={() => onStartTest?.(task.id)}
-            >
+            <button className="btn btn-primary btn-sm" onClick={() => onStartTest?.(task.id)}>
               {testStatus.label === 'Testar' ? 'Iniciar Teste' : 'Continuar'}
             </button>
           )}
           {testStatus.label === 'Teste Concluído' && (
-             <button 
-              className="btn btn-secondary btn-sm"
-              onClick={() => onCompleteTest?.(task.id)}
-            >
+            <button className="btn btn-secondary btn-sm" onClick={() => onCompleteTest?.(task.id)}>
               Concluir
             </button>
           )}
@@ -125,13 +135,19 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onStartTest, onComplet
           <p className="text-base-content/80 whitespace-pre-wrap text-sm">
             {task.description || 'Esta tarefa não possui uma descrição detalhada.'}
           </p>
-          
+
           <div className="mt-4">
-             <h4 className="font-semibold mb-2 text-base-content">Casos de Teste ({testMetrics.total})</h4>
-             {/* Você pode renderizar a lista de casos de teste aqui */}
-             <ul className="space-y-1 text-sm list-disc list-inside">
-                {task.testCases.map(tc => <li key={tc.id} className="text-base-content/80">{tc.description} - <strong>{tc.status}</strong></li>)}
-             </ul> 
+            <h4 className="font-semibold mb-2 text-base-content">
+              Casos de Teste ({testMetrics.total})
+            </h4>
+            {/* Você pode renderizar a lista de casos de teste aqui */}
+            <ul className="space-y-1 text-sm list-disc list-inside">
+              {task.testCases.map(tc => (
+                <li key={tc.id} className="text-base-content/80">
+                  {tc.description} - <strong>{tc.status}</strong>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
       )}

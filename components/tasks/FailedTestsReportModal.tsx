@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Modal } from '../common/Modal';
 import { Project, JiraTask, TestCase } from '../../types';
-import { generateFailedTestsReport, FailedTestsReportFormat } from '../../utils/failedTestsReportGenerator';
+import {
+  generateFailedTestsReport,
+  FailedTestsReportFormat,
+} from '../../utils/failedTestsReportGenerator';
 import { downloadFile } from '../../utils/exportService';
 import { Badge } from '../common/Badge';
 import { logger } from '../../utils/logger';
@@ -33,7 +36,7 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
   isOpen,
   onClose,
   project,
-  initialTaskId
+  initialTaskId,
 }) => {
   const [reportText, setReportText] = useState('');
   const [copied, setCopied] = useState(false);
@@ -49,7 +52,7 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
   }>({
     priorities: [],
     environments: [],
-    suites: []
+    suites: [],
   });
   const [aiAnalysisText, setAiAnalysisText] = useState('');
   const [isGeneratingAnalysis, setIsGeneratingAnalysis] = useState(false);
@@ -63,46 +66,46 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
   // Coletar todos os testes reprovados
   const allFailedTests = useMemo((): FailedTestWithTask[] => {
     const failedTests: FailedTestWithTask[] = [];
-    const tasks = scope === 'task' && selectedTaskId
-      ? project.tasks.filter(t => t.id === selectedTaskId)
-      : project.tasks;
-    
+    const tasks =
+      scope === 'task' && selectedTaskId
+        ? project.tasks.filter(t => t.id === selectedTaskId)
+        : project.tasks;
+
     tasks.forEach(task => {
-      const failedTestCases = (task.testCases || []).filter(
-        tc => tc.status === 'Failed'
-      );
-      
+      const failedTestCases = (task.testCases || []).filter(tc => tc.status === 'Failed');
+
       failedTestCases.forEach(testCase => {
         failedTests.push({ testCase, task });
       });
     });
-    
+
     return failedTests;
   }, [project, scope, selectedTaskId]);
 
   // Aplicar filtros e busca
   const filteredTests = useMemo(() => {
     let filtered = allFailedTests;
-    
+
     // Aplicar filtros
     if (filters.priorities.length > 0) {
-      filtered = filtered.filter(ft => 
-        ft.testCase.priority && filters.priorities.includes(ft.testCase.priority)
+      filtered = filtered.filter(
+        ft => ft.testCase.priority && filters.priorities.includes(ft.testCase.priority)
       );
     }
-    
+
     if (filters.environments.length > 0) {
-      filtered = filtered.filter(ft => 
-        ft.testCase.testEnvironment && filters.environments.includes(ft.testCase.testEnvironment)
+      filtered = filtered.filter(
+        ft =>
+          ft.testCase.testEnvironment && filters.environments.includes(ft.testCase.testEnvironment)
       );
     }
-    
+
     if (filters.suites.length > 0) {
-      filtered = filtered.filter(ft => 
-        ft.testCase.testSuite && filters.suites.includes(ft.testCase.testSuite)
+      filtered = filtered.filter(
+        ft => ft.testCase.testSuite && filters.suites.includes(ft.testCase.testSuite)
       );
     }
-    
+
     // Aplicar busca
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
@@ -111,14 +114,16 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
         const taskTitle = (ft.task.title || '').toLowerCase();
         const taskId = (ft.task.id || '').toLowerCase();
         const observedResult = (ft.testCase.observedResult || '').toLowerCase();
-        
-        return description.includes(query) ||
-               taskTitle.includes(query) ||
-               taskId.includes(query) ||
-               observedResult.includes(query);
+
+        return (
+          description.includes(query) ||
+          taskTitle.includes(query) ||
+          taskId.includes(query) ||
+          observedResult.includes(query)
+        );
       });
     }
-    
+
     return filtered;
   }, [allFailedTests, filters, searchQuery]);
 
@@ -192,7 +197,7 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
       ...prev,
       priorities: prev.priorities.includes(priority)
         ? prev.priorities.filter(p => p !== priority)
-        : [...prev.priorities, priority]
+        : [...prev.priorities, priority],
     }));
   };
 
@@ -202,7 +207,7 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
       ...prev,
       environments: prev.environments.includes(env)
         ? prev.environments.filter(e => e !== env)
-        : [...prev.environments, env]
+        : [...prev.environments, env],
     }));
   };
 
@@ -212,7 +217,7 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
       ...prev,
       suites: prev.suites.includes(suite)
         ? prev.suites.filter(s => s !== suite)
-        : [...prev.suites, suite]
+        : [...prev.suites, suite],
     }));
   };
 
@@ -225,24 +230,18 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
     const now = new Date();
     setGenerationDate(now);
 
-    const selectedIds = selectedTestIds.size > 0
-      ? Array.from(selectedTestIds)
-      : undefined;
+    const selectedIds = selectedTestIds.size > 0 ? Array.from(selectedTestIds) : undefined;
 
-    const report = generateFailedTestsReport(
-      project,
-      now,
-      {
-        format,
-        selectedTestIds: selectedIds,
-        filters: {
-          taskId: scope === 'task' ? selectedTaskId : undefined,
-          priorities: filters.priorities.length > 0 ? filters.priorities : undefined,
-          environments: filters.environments.length > 0 ? filters.environments : undefined,
-          suites: filters.suites.length > 0 ? filters.suites : undefined
-        }
-      }
-    );
+    const report = generateFailedTestsReport(project, now, {
+      format,
+      selectedTestIds: selectedIds,
+      filters: {
+        taskId: scope === 'task' ? selectedTaskId : undefined,
+        priorities: filters.priorities.length > 0 ? filters.priorities : undefined,
+        environments: filters.environments.length > 0 ? filters.environments : undefined,
+        suites: filters.suites.length > 0 ? filters.suites : undefined,
+      },
+    });
 
     setReportText(report);
     setCopied(false);
@@ -269,9 +268,10 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
 
   // Gerar análise IA
   const handleGenerateAIAnalysis = async () => {
-    const testsToAnalyze = selectedTestIds.size > 0
-      ? filteredTests.filter(ft => selectedTestIds.has(ft.testCase.id))
-      : filteredTests;
+    const testsToAnalyze =
+      selectedTestIds.size > 0
+        ? filteredTests.filter(ft => selectedTestIds.has(ft.testCase.id))
+        : filteredTests;
 
     if (testsToAnalyze.length === 0) {
       toast.error('Selecione pelo menos um teste reprovado para análise');
@@ -306,19 +306,21 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
 
   // Salvar análise IA
   const handleSaveAIAnalysis = () => {
-    const fileName = scope === 'task' && selectedTaskId
-      ? `${selectedTaskId}-analise-bugs.txt`
-      : `${project.id}-analise-bugs.txt`;
-    
+    const fileName =
+      scope === 'task' && selectedTaskId
+        ? `${selectedTaskId}-analise-bugs.txt`
+        : `${project.id}-analise-bugs.txt`;
+
     downloadFile(aiAnalysisText, fileName, 'text/plain');
     toast.success('Análise salva!');
   };
 
   // Gerar PDF da análise IA
   const handleGeneratePDF = async () => {
-    const testsToInclude = selectedTestIds.size > 0
-      ? filteredTests.filter(ft => selectedTestIds.has(ft.testCase.id))
-      : filteredTests;
+    const testsToInclude =
+      selectedTestIds.size > 0
+        ? filteredTests.filter(ft => selectedTestIds.has(ft.testCase.id))
+        : filteredTests;
 
     if (testsToInclude.length === 0) {
       toast.error('Selecione pelo menos um teste reprovado para gerar PDF');
@@ -337,12 +339,12 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
             expectedResult: ft.testCase.expectedResult,
             observedResult: ft.testCase.observedResult,
             priority: ft.testCase.priority,
-            testEnvironment: ft.testCase.testEnvironment
+            testEnvironment: ft.testCase.testEnvironment,
           },
           task: {
             id: ft.task.id,
-            title: ft.task.title || ''
-          }
+            title: ft.task.title || '',
+          },
         })),
         generationDate || new Date()
       );
@@ -380,20 +382,33 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
   const handleDownload = () => {
     const extension = format === 'markdown' ? 'md' : 'txt';
     const mimeType = format === 'markdown' ? 'text/markdown' : 'text/plain';
-    const fileName = scope === 'task' && selectedTaskId
-      ? `${selectedTaskId}-testes-reprovados.${extension}`
-      : `${project.id}-testes-reprovados.${extension}`;
-    
+    const fileName =
+      scope === 'task' && selectedTaskId
+        ? `${selectedTaskId}-testes-reprovados.${extension}`
+        : `${project.id}-testes-reprovados.${extension}`;
+
     downloadFile(reportText, fileName, mimeType);
   };
 
-  const formatOptions: Array<{ label: string; value: FailedTestsReportFormat; description: string }> = [
-    { label: 'Texto estruturado', value: 'text', description: 'Formato ideal para colar em campos comuns.' },
-    { label: 'Markdown', value: 'markdown', description: 'Melhor para docs e wikis com formatação.' }
+  const formatOptions: Array<{
+    label: string;
+    value: FailedTestsReportFormat;
+    description: string;
+  }> = [
+    {
+      label: 'Texto estruturado',
+      value: 'text',
+      description: 'Formato ideal para colar em campos comuns.',
+    },
+    {
+      label: 'Markdown',
+      value: 'markdown',
+      description: 'Melhor para docs e wikis com formatação.',
+    },
   ];
 
-  const allFilteredSelected = filteredTests.length > 0 && 
-    filteredTests.every(ft => selectedTestIds.has(ft.testCase.id));
+  const allFilteredSelected =
+    filteredTests.length > 0 && filteredTests.every(ft => selectedTestIds.has(ft.testCase.id));
   const someFilteredSelected = filteredTests.some(ft => selectedTestIds.has(ft.testCase.id));
 
   // Estatísticas para o header
@@ -435,12 +450,12 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
       if (focusedTestIndex !== null && testListRef.current) {
         if (e.key === 'ArrowDown') {
           e.preventDefault();
-          setFocusedTestIndex(prev => 
+          setFocusedTestIndex(prev =>
             prev !== null && prev < filteredTests.length - 1 ? prev + 1 : prev
           );
         } else if (e.key === 'ArrowUp') {
           e.preventDefault();
-          setFocusedTestIndex(prev => prev !== null && prev > 0 ? prev - 1 : null);
+          setFocusedTestIndex(prev => (prev !== null && prev > 0 ? prev - 1 : null));
         } else if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
           if (focusedTestIndex !== null && filteredTests[focusedTestIndex]) {
@@ -475,30 +490,36 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
     setSearchQuery('');
   };
 
-  const hasActiveFilters = filters.priorities.length > 0 || 
-                          filters.environments.length > 0 || 
-                          filters.suites.length > 0 ||
-                          searchQuery.trim().length > 0;
+  const hasActiveFilters =
+    filters.priorities.length > 0 ||
+    filters.environments.length > 0 ||
+    filters.suites.length > 0 ||
+    searchQuery.trim().length > 0;
 
   // Preparar opções de filtros com cores
   const priorityOptions = availablePriorities.map(priority => ({
     value: priority,
     label: priority,
-    color: priority === 'Urgente' ? 'error' as const : 
-           priority === 'Alta' ? 'warning' as const :
-           priority === 'Média' ? 'info' as const : 'success' as const
+    color:
+      priority === 'Urgente'
+        ? ('error' as const)
+        : priority === 'Alta'
+          ? ('warning' as const)
+          : priority === 'Média'
+            ? ('info' as const)
+            : ('success' as const),
   }));
 
   const environmentOptions = availableEnvironments.map(env => ({
     value: env,
     label: env,
-    color: 'default' as const
+    color: 'default' as const,
   }));
 
   const suiteOptions = availableSuites.map(suite => ({
     value: suite,
     label: suite,
-    color: 'default' as const
+    color: 'default' as const,
   }));
 
   // Menu de ações adicionais
@@ -507,23 +528,33 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
       label: 'Exportar como PDF',
       icon: (
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+          />
         </svg>
       ),
-      onClick: handleGeneratePDF
+      onClick: handleGeneratePDF,
     },
     {
       label: 'Exportar como CSV',
       icon: (
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v16h16M8 12h8m-8 4h5" />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M4 4v16h16M8 12h8m-8 4h5"
+          />
         </svg>
       ),
       onClick: () => {
         // TODO: Implementar exportação CSV
         toast('Exportação CSV em desenvolvimento', { icon: 'ℹ️' });
-      }
-    }
+      },
+    },
   ];
 
   return (
@@ -557,9 +588,10 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
                   filters: {
                     taskId: scope === 'task' ? selectedTaskId : undefined,
                     priorities: filters.priorities.length > 0 ? filters.priorities : undefined,
-                    environments: filters.environments.length > 0 ? filters.environments : undefined,
-                    suites: filters.suites.length > 0 ? filters.suites : undefined
-                  }
+                    environments:
+                      filters.environments.length > 0 ? filters.environments : undefined,
+                    suites: filters.suites.length > 0 ? filters.suites : undefined,
+                  },
                 }
               );
               navigator.clipboard.writeText(selectedReport).then(() => {
@@ -574,10 +606,14 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
         {/* Layout principal - Grid responsivo */}
         <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-3 gap-md overflow-hidden">
           {/* Painel esquerdo: Filtros e Escopo */}
-          <div className={`${showFilters ? 'flex' : 'hidden'} lg:flex flex-col gap-md overflow-y-auto border-r border-base-300 pr-md`}>
+          <div
+            className={`${showFilters ? 'flex' : 'hidden'} lg:flex flex-col gap-md overflow-y-auto border-r border-base-300 pr-md`}
+          >
             {/* Seletor de escopo */}
             <div className="flex-shrink-0 flex flex-col gap-sm">
-              <p className="text-xs uppercase tracking-wide text-base-content/70 font-semibold">Escopo</p>
+              <p className="text-xs uppercase tracking-wide text-base-content/70 font-semibold">
+                Escopo
+              </p>
               <div className="flex gap-md">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
@@ -610,10 +646,12 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
             {/* Seletor de tarefa */}
             {scope === 'task' && (
               <div className="flex-shrink-0 flex flex-col gap-sm">
-                <p className="text-xs uppercase tracking-wide text-base-content/70 font-semibold">Tarefa</p>
+                <p className="text-xs uppercase tracking-wide text-base-content/70 font-semibold">
+                  Tarefa
+                </p>
                 <select
                   value={selectedTaskId || ''}
-                  onChange={(e) => setSelectedTaskId(e.target.value || undefined)}
+                  onChange={e => setSelectedTaskId(e.target.value || undefined)}
                   className="select select-bordered select-sm w-full"
                 >
                   <option value="">Selecione uma tarefa</option>
@@ -640,7 +678,12 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
               {hasActiveFilters && (
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-semibold text-base-content/70">
-                    Filtros Ativos ({filters.priorities.length + filters.environments.length + filters.suites.length + (searchQuery.trim() ? 1 : 0)})
+                    Filtros Ativos (
+                    {filters.priorities.length +
+                      filters.environments.length +
+                      filters.suites.length +
+                      (searchQuery.trim() ? 1 : 0)}
+                    )
                   </span>
                   <button
                     type="button"
@@ -661,7 +704,12 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
                   onClear={() => setFilters(prev => ({ ...prev, priorities: [] }))}
                   icon={
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M13 10V3L4 14h7v7l9-11h-7z"
+                      />
                     </svg>
                   }
                 />
@@ -676,7 +724,12 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
                   onClear={() => setFilters(prev => ({ ...prev, environments: [] }))}
                   icon={
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                      />
                     </svg>
                   }
                 />
@@ -691,7 +744,12 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
                   onClear={() => setFilters(prev => ({ ...prev, suites: [] }))}
                   icon={
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                      />
                     </svg>
                   }
                 />
@@ -707,7 +765,7 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
                 Formato
               </p>
               <div className="flex gap-xs">
-                {formatOptions.map((option) => (
+                {formatOptions.map(option => (
                   <button
                     key={option.value}
                     type="button"
@@ -744,7 +802,7 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
                   suggestions={[
                     'Tente remover alguns filtros',
                     'Verifique se há testes reprovados no escopo selecionado',
-                    'Use a busca para encontrar testes específicos'
+                    'Use a busca para encontrar testes específicos',
                   ]}
                 />
               )}
@@ -766,8 +824,18 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
                     </>
                   ) : (
                     <>
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+                        />
                       </svg>
                       <span>Análise IA</span>
                     </>
@@ -782,7 +850,12 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
                   className="btn btn-ghost btn-md flex items-center gap-2"
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v16h16M8 12h8m-8 4h5" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 4v16h16M8 12h8m-8 4h5"
+                    />
                   </svg>
                   <span>Baixar</span>
                 </button>
@@ -793,15 +866,35 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
                 >
                   {copied ? (
                     <>
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M5 13l4 4L19 7"
+                        />
                       </svg>
                       <span>Copiado!</span>
                     </>
                   ) : (
                     <>
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                        />
                       </svg>
                       <span>Copiar</span>
                     </>
@@ -813,7 +906,9 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
           </div>
 
           {/* Painel direito: Preview do relatório */}
-          <div className={`${showPreview ? 'flex' : 'hidden'} lg:flex flex-col gap-md overflow-hidden border-l border-base-300 pl-md`}>
+          <div
+            className={`${showPreview ? 'flex' : 'hidden'} lg:flex flex-col gap-md overflow-hidden border-l border-base-300 pl-md`}
+          >
             <div className="flex items-center justify-between flex-shrink-0">
               <p className="text-xs uppercase tracking-wide text-base-content/70 font-semibold">
                 Preview do Relatório
@@ -826,23 +921,28 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   {showPreview ? (
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
                   ) : (
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
                   )}
                 </svg>
               </button>
             </div>
             <div className="flex-1 min-h-0">
-              <ReportPreview
-                reportText={reportText}
-                format={format}
-                onFormatChange={setFormat}
-              />
+              <ReportPreview reportText={reportText} format={format} onFormatChange={setFormat} />
             </div>
           </div>
         </div>
-
 
         {/* Seção de Análise IA */}
         {aiAnalysisText && (
@@ -862,15 +962,35 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
                 >
                   {aiAnalysisCopied ? (
                     <>
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M5 13l4 4L19 7"
+                        />
                       </svg>
                       <span>Copiado!</span>
                     </>
                   ) : (
                     <>
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                        />
                       </svg>
                       <span>Copiar</span>
                     </>
@@ -882,17 +1002,23 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
                   className="btn btn-sm btn-ghost"
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v16h16M8 12h8m-8 4h5" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 4v16h16M8 12h8m-8 4h5"
+                    />
                   </svg>
                   <span>Salvar</span>
                 </button>
-                <button
-                  type="button"
-                  onClick={handleGeneratePDF}
-                  className="btn btn-sm btn-error"
-                >
+                <button type="button" onClick={handleGeneratePDF} className="btn btn-sm btn-error">
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+                    />
                   </svg>
                   <span>Gerar PDF</span>
                 </button>
@@ -911,13 +1037,12 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
                 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary
                 transition-all duration-200
               `}
-              onClick={(e) => {
+              onClick={e => {
                 (e.target as HTMLTextAreaElement).select();
               }}
             />
           </div>
         )}
-
       </div>
     </Modal>
   );

@@ -1,9 +1,14 @@
+import { logger } from '../../utils/logger';
 import { describe, it, expect } from 'vitest';
 import { calculateTaskTestStatus } from '../../services/taskTestStatusService';
 import { JiraTask } from '../../types';
 
 describe('taskTestStatusService', () => {
-  const createMockTask = (id: string, type: 'Epic' | 'História' | 'Tarefa' | 'Bug', parentId?: string): JiraTask => ({
+  const createMockTask = (
+    id: string,
+    type: 'Epic' | 'História' | 'Tarefa' | 'Bug',
+    parentId?: string
+  ): JiraTask => ({
     id,
     type,
     parentId,
@@ -11,7 +16,7 @@ describe('taskTestStatusService', () => {
     description: '',
     status: 'To Do',
     testCases: [],
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
   });
 
   describe('calculateTaskTestStatus', () => {
@@ -25,8 +30,26 @@ describe('taskTestStatusService', () => {
       const t1 = createMockTask('T1', 'Tarefa', 'E1');
       const t2 = createMockTask('T2', 'Tarefa', 'E1');
 
-      t1.testCases = [{ id: 'tc1', description: 'desc', expectedResult: 'exp', status: 'Passed', createdAt: '', updatedAt: '' }];
-      t2.testCases = [{ id: 'tc2', description: 'desc', expectedResult: 'exp', status: 'Passed', createdAt: '', updatedAt: '' }];
+      t1.testCases = [
+        {
+          id: 'tc1',
+          description: 'desc',
+          expectedResult: 'exp',
+          status: 'Passed',
+          createdAt: '',
+          updatedAt: '',
+        },
+      ];
+      t2.testCases = [
+        {
+          id: 'tc2',
+          description: 'desc',
+          expectedResult: 'exp',
+          status: 'Passed',
+          createdAt: '',
+          updatedAt: '',
+        },
+      ];
 
       const allTasks = [epic, t1, t2];
       expect(calculateTaskTestStatus(epic, allTasks)).toBe('teste_concluido');
@@ -42,7 +65,16 @@ describe('taskTestStatusService', () => {
       // If we don't provide allTasks but provide map, it should still work
       expect(calculateTaskTestStatus(epic, [], tasksByParent)).toBe('testar'); // t1 has no tests
 
-      t1.testCases = [{ id: 'tc1', description: 'desc', expectedResult: 'exp', status: 'Passed', createdAt: '', updatedAt: '' }];
+      t1.testCases = [
+        {
+          id: 'tc1',
+          description: 'desc',
+          expectedResult: 'exp',
+          status: 'Passed',
+          createdAt: '',
+          updatedAt: '',
+        },
+      ];
       expect(calculateTaskTestStatus(epic, [], tasksByParent)).toBe('teste_concluido');
     });
 
@@ -70,7 +102,7 @@ describe('taskTestStatusService', () => {
         // Measure without map
         const startNoMap = performance.now();
         for (let i = 0; i < 10; i++) {
-            calculateTaskTestStatus(epic, allTasks);
+          calculateTaskTestStatus(epic, allTasks);
         }
         const endNoMap = performance.now();
         const timeNoMap = endNoMap - startNoMap;
@@ -78,15 +110,15 @@ describe('taskTestStatusService', () => {
         // Measure with map
         const startWithMap = performance.now();
         for (let i = 0; i < 10; i++) {
-            calculateTaskTestStatus(epic, allTasks, tasksByParent);
+          calculateTaskTestStatus(epic, allTasks, tasksByParent);
         }
         const endWithMap = performance.now();
         const timeWithMap = endWithMap - startWithMap;
 
-        console.log(`Benchmark (1000 tasks, 10 iterations):`);
-        console.log(`Without map: ${timeNoMap.toFixed(4)}ms`);
-        console.log(`With map: ${timeWithMap.toFixed(4)}ms`);
-        console.log(`Speedup: ${(timeNoMap / timeWithMap).toFixed(2)}x`);
+        logger.debug(`Benchmark (1000 tasks, 10 iterations):`);
+        logger.debug(`Without map: ${timeNoMap.toFixed(4)}ms`);
+        logger.debug(`With map: ${timeWithMap.toFixed(4)}ms`);
+        logger.debug(`Speedup: ${(timeNoMap / timeWithMap).toFixed(2)}x`);
 
         expect(timeWithMap).toBeLessThan(timeNoMap);
       });

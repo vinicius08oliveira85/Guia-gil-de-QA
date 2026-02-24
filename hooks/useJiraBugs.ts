@@ -36,12 +36,12 @@ export const useJiraBugs = (project: Project) => {
       if (updatedBugs.length > 0 || newBugs.length > 0) {
         // Criar um Map de tarefas existentes para atualização eficiente
         const tasksMap = new Map(project.tasks.map(t => [t.id, t]));
-        
+
         // Atualizar bugs existentes
         updatedBugs.forEach(bug => {
           tasksMap.set(bug.id, bug);
         });
-        
+
         // Adicionar novos bugs
         newBugs.forEach(bug => {
           tasksMap.set(bug.id, bug);
@@ -53,7 +53,7 @@ export const useJiraBugs = (project: Project) => {
         };
 
         await updateProject(updatedProject);
-        
+
         const messages: string[] = [];
         if (updatedBugs.length > 0) {
           messages.push(`${updatedBugs.length} bug(s) atualizado(s)`);
@@ -93,4 +93,3 @@ export const useJiraBugs = (project: Project) => {
     hasJiraConfig: !!getJiraConfig() && !!projectKey,
   };
 };
-

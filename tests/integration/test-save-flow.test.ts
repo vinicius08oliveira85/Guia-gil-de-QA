@@ -18,7 +18,7 @@ describe('Fluxo de Salvamento de Casos de Teste', () => {
       description: 'Teste de fluxo de salvamento',
       tasks: [],
       documents: [],
-      phases: []
+      phases: [],
     };
 
     testTask = {
@@ -27,7 +27,7 @@ describe('Fluxo de Salvamento de Casos de Teste', () => {
       description: 'Descrição da tarefa',
       type: 'Tarefa',
       status: 'To Do',
-      testCases: []
+      testCases: [],
     };
 
     testProject.tasks = [testTask];
@@ -43,13 +43,13 @@ describe('Fluxo de Salvamento de Casos de Teste', () => {
         expectedResult: 'Formulário preenchido com sucesso',
         status: 'Not Run',
         preconditions: 'Usuário logado',
-        priority: 'Alta'
+        priority: 'Alta',
       };
 
       // Simular handleSaveTestCase do TasksView
       const updatedTask = {
         ...testTask,
-        testCases: [...testTask.testCases, newTestCase]
+        testCases: [...testTask.testCases, newTestCase],
       };
 
       testProject.tasks = [updatedTask];
@@ -85,12 +85,12 @@ describe('Fluxo de Salvamento de Casos de Teste', () => {
         preconditions: 'Pré-condições do teste',
         testSuite: 'Suite de Testes',
         testEnvironment: 'Ambiente de Teste',
-        priority: 'Urgente'
+        priority: 'Urgente',
       };
 
       const updatedTask = {
         ...testTask,
-        testCases: [completeTestCase]
+        testCases: [completeTestCase],
       };
 
       testProject.tasks = [updatedTask];
@@ -125,7 +125,7 @@ describe('Fluxo de Salvamento de Casos de Teste', () => {
         description: 'Caso de teste original',
         steps: ['Passo original'],
         expectedResult: 'Resultado original',
-        status: 'Not Run'
+        status: 'Not Run',
       };
 
       testTask.testCases = [originalTestCase];
@@ -139,14 +139,14 @@ describe('Fluxo de Salvamento de Casos de Teste', () => {
         steps: ['Passo atualizado 1', 'Passo atualizado 2'],
         expectedResult: 'Resultado atualizado',
         status: 'Passed',
-        observedResult: 'Resultado observado após execução'
+        observedResult: 'Resultado observado após execução',
       };
 
       const updatedTask = {
         ...testTask,
-        testCases: testTask.testCases.map(tc => 
+        testCases: testTask.testCases.map(tc =>
           tc.id === updatedTestCase.id ? updatedTestCase : tc
-        )
+        ),
       };
 
       testProject.tasks = [updatedTask];
@@ -170,7 +170,7 @@ describe('Fluxo de Salvamento de Casos de Teste', () => {
         description: 'Caso de teste 1',
         steps: ['Passo 1'],
         expectedResult: 'Resultado 1',
-        status: 'Passed'
+        status: 'Passed',
       };
 
       const testCase2: TestCase = {
@@ -178,7 +178,7 @@ describe('Fluxo de Salvamento de Casos de Teste', () => {
         description: 'Caso de teste 2',
         steps: ['Passo 2'],
         expectedResult: 'Resultado 2',
-        status: 'Failed'
+        status: 'Failed',
       };
 
       testTask.testCases = [testCase1, testCase2];
@@ -188,14 +188,14 @@ describe('Fluxo de Salvamento de Casos de Teste', () => {
       // Editar apenas o primeiro caso
       const updatedTestCase1: TestCase = {
         ...testCase1,
-        status: 'Blocked'
+        status: 'Blocked',
       };
 
       const updatedTask = {
         ...testTask,
-        testCases: testTask.testCases.map(tc => 
+        testCases: testTask.testCases.map(tc =>
           tc.id === updatedTestCase1.id ? updatedTestCase1 : tc
-        )
+        ),
       };
 
       testProject.tasks = [updatedTask];
@@ -206,7 +206,7 @@ describe('Fluxo de Salvamento de Casos de Teste', () => {
       const savedProject = projects.find(p => p.id === testProject.id);
 
       expect(savedProject?.tasks[0].testCases).toHaveLength(2);
-      
+
       const saved1 = savedProject?.tasks[0].testCases.find(tc => tc.id === 'tc-multi-1');
       const saved2 = savedProject?.tasks[0].testCases.find(tc => tc.id === 'tc-multi-2');
 
@@ -223,7 +223,7 @@ describe('Fluxo de Salvamento de Casos de Teste', () => {
         description: 'Versão inicial',
         steps: ['Passo 1'],
         expectedResult: 'Resultado inicial',
-        status: 'Not Run'
+        status: 'Not Run',
       };
 
       testTask.testCases = [currentTestCase];
@@ -236,7 +236,7 @@ describe('Fluxo de Salvamento de Casos de Teste', () => {
       currentTestCase = {
         ...currentTestCase,
         status: 'Passed',
-        observedResult: 'Resultado observado'
+        observedResult: 'Resultado observado',
       };
 
       testTask.testCases = [currentTestCase];
@@ -247,7 +247,7 @@ describe('Fluxo de Salvamento de Casos de Teste', () => {
       currentTestCase = {
         ...currentTestCase,
         status: 'Failed',
-        observedResult: 'Falha observada'
+        observedResult: 'Falha observada',
       };
 
       testTask.testCases = [currentTestCase];
@@ -271,7 +271,7 @@ describe('Fluxo de Salvamento de Casos de Teste', () => {
         expectedResult: 'Resultado esperado',
         status: 'Passed',
         toolsUsed: ['Postman'],
-        priority: 'Alta'
+        priority: 'Alta',
       };
 
       testTask.testCases = [testCase];
@@ -297,7 +297,7 @@ describe('Fluxo de Salvamento de Casos de Teste', () => {
         description: 'Caso sem ID',
         steps: ['Passo 1'],
         expectedResult: 'Resultado',
-        status: 'Not Run' as const
+        status: 'Not Run' as const,
       };
 
       // TypeScript deve impedir isso, mas testamos a validação
@@ -314,7 +314,7 @@ describe('Fluxo de Salvamento de Casos de Teste', () => {
         expectedResult: 'Resultado',
         status: 'Not Run',
         strategies: [],
-        toolsUsed: []
+        toolsUsed: [],
       };
 
       testTask.testCases = [testCase];
@@ -331,4 +331,3 @@ describe('Fluxo de Salvamento de Casos de Teste', () => {
     });
   });
 });
-

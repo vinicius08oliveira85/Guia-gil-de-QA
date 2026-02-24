@@ -9,15 +9,19 @@ export async function processDocxFile(file: File): Promise<string> {
   try {
     const arrayBuffer = await file.arrayBuffer();
     const result = await mammoth.extractRawText({ arrayBuffer });
-    
+
     if (result.messages.length > 0) {
-      logger.warn('Avisos ao processar documento', 'documentProcessingService', { messages: result.messages });
+      logger.warn('Avisos ao processar documento', 'documentProcessingService', {
+        messages: result.messages,
+      });
     }
-    
+
     return result.value;
   } catch (error) {
     logger.error('Erro ao processar arquivo .docx', 'documentProcessingService', error);
-    throw new Error('Falha ao processar arquivo .docx. Verifique se o arquivo está no formato correto.');
+    throw new Error(
+      'Falha ao processar arquivo .docx. Verifique se o arquivo está no formato correto.'
+    );
   }
 }
 
@@ -31,7 +35,7 @@ export function saveProcessedDocument(project: Project, content: string): Projec
   try {
     const updatedProject: Project = {
       ...project,
-      specificationDocument: content
+      specificationDocument: content,
     };
     logger.info(`Documento de especificação processado e salvo no projeto ${project.id}`);
     return updatedProject;
@@ -62,9 +66,11 @@ export function loadProcessedDocument(project: Project): string | null {
  */
 export function isDocumentProcessed(project: Project): boolean {
   try {
-    return project.specificationDocument !== undefined && 
-           project.specificationDocument !== null &&
-           project.specificationDocument.trim().length > 0;
+    return (
+      project.specificationDocument !== undefined &&
+      project.specificationDocument !== null &&
+      project.specificationDocument.trim().length > 0
+    );
   } catch (error) {
     logger.error('Erro ao verificar status do documento', 'documentProcessingService', error);
     return false;
@@ -93,9 +99,11 @@ export function clearProcessedDocument(project: Project): Project {
  * @param file Arquivo .docx a ser processado
  * @returns Objeto com o projeto atualizado e o conteúdo processado
  */
-export async function processAndSaveDocument(project: Project, file: File): Promise<{ project: Project; content: string }> {
+export async function processAndSaveDocument(
+  project: Project,
+  file: File
+): Promise<{ project: Project; content: string }> {
   const processedContent = await processDocxFile(file);
   const updatedProject = saveProcessedDocument(project, processedContent);
   return { project: updatedProject, content: processedContent };
 }
-

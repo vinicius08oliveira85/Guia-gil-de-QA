@@ -9,7 +9,7 @@ interface PageTransitionProps {
 
 /**
  * Componente para animações de transição de página
- * 
+ *
  * @example
  * ```tsx
  * <PageTransition key={activeTab}>
@@ -17,10 +17,10 @@ interface PageTransitionProps {
  * </PageTransition>
  * ```
  */
-export const PageTransition: React.FC<PageTransitionProps> = ({ 
-  children, 
+export const PageTransition: React.FC<PageTransitionProps> = ({
+  children,
   key,
-  className = '' 
+  className = '',
 }) => {
   return (
     <AnimatePresence mode="wait">
@@ -29,9 +29,9 @@ export const PageTransition: React.FC<PageTransitionProps> = ({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -20 }}
-        transition={{ 
+        transition={{
           duration: 0.3,
-          ease: [0.4, 0, 0.2, 1]
+          ease: [0.4, 0, 0.2, 1],
         }}
         className={className}
       >
@@ -55,9 +55,9 @@ export const ListTransition: React.FC<{
       variants={{
         visible: {
           transition: {
-            staggerChildren: 0.05
-          }
-        }
+            staggerChildren: 0.05,
+          },
+        },
       }}
       className={className}
     >
@@ -77,7 +77,7 @@ export const ListItem: React.FC<{
     <motion.div
       variants={{
         hidden: { opacity: 0, y: 10 },
-        visible: { opacity: 1, y: 0 }
+        visible: { opacity: 1, y: 0 },
       }}
       transition={{ duration: 0.3 }}
       className={className}
@@ -86,4 +86,3 @@ export const ListItem: React.FC<{
     </motion.div>
   );
 };
-

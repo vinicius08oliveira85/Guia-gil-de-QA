@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useMemo, useEffect, Suspense } from 'react';
 import { Toaster } from 'react-hot-toast';
 import { Project } from './types';
@@ -21,303 +20,354 @@ import { logger } from './utils/logger';
 import { useRouterSync } from './hooks/useRouterSync';
 
 // Code splitting - Lazy loading de componentes pesados
-const ProjectView = lazyWithRetry(() => import('./components/ProjectView').then(m => ({ default: m.ProjectView })));
-const ProjectsDashboard = lazyWithRetry(() => import('./components/ProjectsDashboard').then(m => ({ default: m.ProjectsDashboard })));
-const AdvancedSearch = lazyWithRetry(() => import('./components/common/AdvancedSearch').then(m => ({ default: m.AdvancedSearch })));
-const SettingsView = lazyWithRetry(() => import('./components/settings/SettingsView').then(m => ({ default: m.SettingsView })));
+const ProjectView = lazyWithRetry(() =>
+  import('./components/ProjectView').then(m => ({ default: m.ProjectView }))
+);
+const ProjectsDashboard = lazyWithRetry(() =>
+  import('./components/ProjectsDashboard').then(m => ({ default: m.ProjectsDashboard }))
+);
+const AdvancedSearch = lazyWithRetry(() =>
+  import('./components/common/AdvancedSearch').then(m => ({ default: m.AdvancedSearch }))
+);
+const SettingsView = lazyWithRetry(() =>
+  import('./components/settings/SettingsView').then(m => ({ default: m.SettingsView }))
+);
 
 const App: React.FC = () => {
-    // Tema global (fase atual: DaisyUI light fixo; outras opções permanecem no toggle para futuro)
-    useTheme();
+  // Tema global (fase atual: DaisyUI light fixo; outras opções permanecem no toggle para futuro)
+  useTheme();
 
-    // Estado global do store
-    const {
-        projects,
-        selectedProjectId,
-        isLoading,
-        error: storeError,
-        loadProjects,
-        createProject,
-        updateProject,
-        deleteProject,
-        selectProject,
-    } = useProjectsStore();
+  // Estado global do store
+  const {
+    projects,
+    selectedProjectId,
+    isLoading,
+    error: storeError,
+    loadProjects,
+    createProject,
+    updateProject,
+    deleteProject,
+    selectProject,
+  } = useProjectsStore();
 
-    // Estado local de UI
-    const [showSearch, setShowSearch] = useState(false);
-    const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
-    const [showSettings, setShowSettings] = useState(false);
-    const { handleError, handleSuccess } = useErrorHandler();
-    const { searchQuery, setSearchQuery, searchResults } = useSearch(projects);
+  // Estado local de UI
+  const [showSearch, setShowSearch] = useState(false);
+  const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const { handleError, handleSuccess } = useErrorHandler();
+  const { searchQuery, setSearchQuery, searchResults } = useSearch(projects);
 
-    useRouterSync({
-        selectedProjectId,
-        projects,
-        showSettings,
-        setShowSettings,
-        selectProject,
+  useRouterSync({
+    selectedProjectId,
+    projects,
+    showSettings,
+    setShowSettings,
+    selectProject,
+  });
+
+  // Carregar projetos ao montar
+  useEffect(() => {
+    loadProjects().catch(error => {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      // Não mostrar erro se for apenas "nenhum projeto encontrado" - isso é normal
+      if (
+        !errorMessage.toLowerCase().includes('nenhum projeto') &&
+        !errorMessage.toLowerCase().includes('no projects')
+      ) {
+        logger.error('Erro ao carregar projetos', 'App', { error, errorMessage });
+        handleError(error, 'Carregar projetos');
+      } else {
+        logger.info('Nenhum projeto encontrado ao carregar', 'App');
+      }
     });
+  }, [loadProjects, handleError]);
 
-    // Carregar projetos ao montar
-    useEffect(() => {
-        loadProjects().catch((error) => {
-            const errorMessage = error instanceof Error ? error.message : String(error);
-            // Não mostrar erro se for apenas "nenhum projeto encontrado" - isso é normal
-            if (!errorMessage.toLowerCase().includes('nenhum projeto') && 
-                !errorMessage.toLowerCase().includes('no projects')) {
-                logger.error('Erro ao carregar projetos', 'App', { error, errorMessage });
-                handleError(error, 'Carregar projetos');
-            } else {
-                logger.info('Nenhum projeto encontrado ao carregar', 'App');
-            }
-        });
-    }, [loadProjects, handleError]);
+  // Tratar erros do store
+  useEffect(() => {
+    if (storeError) {
+      const errorMessage = storeError instanceof Error ? storeError.message : String(storeError);
+      // Log detalhado do erro do store
+      logger.error('Erro no store de projetos', 'App', {
+        error: storeError,
+        errorMessage,
+        projectsCount: projects.length,
+        isLoading,
+      });
+      handleError(storeError, 'Store');
+    }
+  }, [storeError, handleError, projects.length, isLoading]);
 
-    // Tratar erros do store
-    useEffect(() => {
-        if (storeError) {
-            const errorMessage = storeError instanceof Error ? storeError.message : String(storeError);
-            // Log detalhado do erro do store
-            logger.error('Erro no store de projetos', 'App', { 
-                error: storeError, 
-                errorMessage,
-                projectsCount: projects.length,
-                isLoading 
-            });
-            handleError(storeError, 'Store');
-        }
-    }, [storeError, handleError, projects.length, isLoading]);
+  const isMobile = useIsMobile();
 
-    const isMobile = useIsMobile();
-
-    // Initialize export scheduler on app load
-    useEffect(() => {
-        const exportPrefs = getExportPreferences();
-        if (exportPrefs.schedule?.enabled) {
-            startExportScheduler(exportPrefs.schedule);
-        }
-        
-        // Listen for preference updates
-        const handlePreferencesUpdate = () => {
-            const updatedPrefs = getExportPreferences();
-            if (updatedPrefs.schedule?.enabled) {
-                startExportScheduler(updatedPrefs.schedule);
-            }
-        };
-        window.addEventListener('preferences-updated', handlePreferencesUpdate);
-        return () => window.removeEventListener('preferences-updated', handlePreferencesUpdate);
-    }, []);
-
-    const handleCreateProject = useCallback(async (name: string, description: string, templateId?: string) => {
-        try {
-            await createProject(name, description, templateId);
-            handleSuccess('Projeto criado com sucesso!');
-        } catch (error) {
-            handleError(error, 'Criar projeto');
-        }
-    }, [createProject, handleError, handleSuccess]);
-
-    // Ref para rastrear último projeto atualizado e evitar toasts repetidos
-    const lastUpdatedProjectRef = React.useRef<{ id: string; timestamp: number } | null>(null);
-    const updateDebounceMs = 5000; // 5 segundos: só mostra um toast por janela
-
-    const handleUpdateProject = useCallback(async (updatedProject: Project) => {
-        const now = Date.now();
-        const lastUpdate = lastUpdatedProjectRef.current;
-        const shouldShowToast =
-            !lastUpdate ||
-            lastUpdate.id !== updatedProject.id ||
-            now - lastUpdate.timestamp > updateDebounceMs;
-
-        if (shouldShowToast) {
-            lastUpdatedProjectRef.current = { id: updatedProject.id, timestamp: now };
-        }
-
-        try {
-            await updateProject(updatedProject);
-            if (shouldShowToast) {
-                handleSuccess('Projeto atualizado com sucesso!');
-            }
-        } catch (error) {
-            // Verificar se é erro de rede - não mostrar toast de erro se for
-            const errorMessage = error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
-            const isNetworkErr = errorMessage.includes('timeout') || 
-                                errorMessage.includes('connection reset') ||
-                                errorMessage.includes('err_timed_out') ||
-                                errorMessage.includes('err_connection_reset') ||
-                                errorMessage.includes('err_name_not_resolved') ||
-                                errorMessage.includes('failed to fetch') ||
-                                errorMessage.includes('network');
-            
-            if (!isNetworkErr) {
-                handleError(error, 'Atualizar projeto');
-            }
-            // Erros de rede são silenciosos - projeto já está salvo localmente
-        }
-    }, [updateProject, handleError, handleSuccess]);
-    
-    const handleDeleteProject = useCallback(async (projectId: string) => {
-        try {
-            await deleteProject(projectId);
-            handleSuccess('Projeto deletado com sucesso!');
-        } catch (error) {
-            handleError(error, 'Deletar projeto');
-        }
-    }, [deleteProject, handleError, handleSuccess]);
-
-
-    const handleImportJiraProject = useCallback(async (project: Project) => {
-        try {
-            const { importProject } = useProjectsStore.getState();
-            await importProject(project);
-            selectProject(project.id);
-            handleSuccess(`Projeto "${project.name}" importado do Jira com sucesso!`);
-        } catch (error) {
-            handleError(error, 'Importar projeto do Jira');
-        }
-    }, [selectProject, handleError, handleSuccess]);
-
-    const handleSearchSelect = useCallback((result: SearchResult) => {
-        if (result.type === 'project' || result.projectId) {
-            selectProject(result.projectId || result.id);
-            setShowSearch(false);
-            setSearchQuery('');
-        }
-    }, [selectProject]);
-
-    useKeyboardShortcuts([
-        {
-            ...SHORTCUTS.SEARCH,
-            action: () => setShowSearch(true)
-        },
-        {
-            ...SHORTCUTS.ESCAPE,
-            action: () => {
-                setShowSearch(false);
-                setSearchQuery('');
-            }
-        }
-    ]);
-
-    const selectedProject = useMemo(() => {
-        if (!selectedProjectId) return undefined;
-        return projects.find(p => p.id === selectedProjectId);
-    }, [projects, selectedProjectId]);
-
-    const isDashboard = !selectedProject && !showSettings;
-
-    const handleGoToDashboard = useCallback(() => {
-        selectProject(null);
-        setShowSettings(false);
-    }, [selectProject]);
-
-    if (isLoading) {
-        return (
-            <div className="min-h-screen flex justify-center items-center">
-                <Spinner />
-            </div>
-        );
+  // Initialize export scheduler on app load
+  useEffect(() => {
+    const exportPrefs = getExportPreferences();
+    if (exportPrefs.schedule?.enabled) {
+      startExportScheduler(exportPrefs.schedule);
     }
 
+    // Listen for preference updates
+    const handlePreferencesUpdate = () => {
+      const updatedPrefs = getExportPreferences();
+      if (updatedPrefs.schedule?.enabled) {
+        startExportScheduler(updatedPrefs.schedule);
+      }
+    };
+    window.addEventListener('preferences-updated', handlePreferencesUpdate);
+    return () => window.removeEventListener('preferences-updated', handlePreferencesUpdate);
+  }, []);
+
+  const handleCreateProject = useCallback(
+    async (name: string, description: string, templateId?: string) => {
+      try {
+        await createProject(name, description, templateId);
+        handleSuccess('Projeto criado com sucesso!');
+      } catch (error) {
+        handleError(error, 'Criar projeto');
+      }
+    },
+    [createProject, handleError, handleSuccess]
+  );
+
+  // Ref para rastrear último projeto atualizado e evitar toasts repetidos
+  const lastUpdatedProjectRef = React.useRef<{ id: string; timestamp: number } | null>(null);
+  const updateDebounceMs = 5000; // 5 segundos: só mostra um toast por janela
+
+  const handleUpdateProject = useCallback(
+    async (updatedProject: Project) => {
+      const now = Date.now();
+      const lastUpdate = lastUpdatedProjectRef.current;
+      const shouldShowToast =
+        !lastUpdate ||
+        lastUpdate.id !== updatedProject.id ||
+        now - lastUpdate.timestamp > updateDebounceMs;
+
+      if (shouldShowToast) {
+        lastUpdatedProjectRef.current = { id: updatedProject.id, timestamp: now };
+      }
+
+      try {
+        await updateProject(updatedProject);
+        if (shouldShowToast) {
+          handleSuccess('Projeto atualizado com sucesso!');
+        }
+      } catch (error) {
+        // Verificar se é erro de rede - não mostrar toast de erro se for
+        const errorMessage =
+          error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
+        const isNetworkErr =
+          errorMessage.includes('timeout') ||
+          errorMessage.includes('connection reset') ||
+          errorMessage.includes('err_timed_out') ||
+          errorMessage.includes('err_connection_reset') ||
+          errorMessage.includes('err_name_not_resolved') ||
+          errorMessage.includes('failed to fetch') ||
+          errorMessage.includes('network');
+
+        if (!isNetworkErr) {
+          handleError(error, 'Atualizar projeto');
+        }
+        // Erros de rede são silenciosos - projeto já está salvo localmente
+      }
+    },
+    [updateProject, handleError, handleSuccess]
+  );
+
+  const handleDeleteProject = useCallback(
+    async (projectId: string) => {
+      try {
+        await deleteProject(projectId);
+        handleSuccess('Projeto deletado com sucesso!');
+      } catch (error) {
+        handleError(error, 'Deletar projeto');
+      }
+    },
+    [deleteProject, handleError, handleSuccess]
+  );
+
+  const handleImportJiraProject = useCallback(
+    async (project: Project) => {
+      try {
+        const { importProject } = useProjectsStore.getState();
+        await importProject(project);
+        selectProject(project.id);
+        handleSuccess(`Projeto "${project.name}" importado do Jira com sucesso!`);
+      } catch (error) {
+        handleError(error, 'Importar projeto do Jira');
+      }
+    },
+    [selectProject, handleError, handleSuccess]
+  );
+
+  const handleSearchSelect = useCallback(
+    (result: SearchResult) => {
+      if (result.type === 'project' || result.projectId) {
+        selectProject(result.projectId || result.id);
+        setShowSearch(false);
+        setSearchQuery('');
+      }
+    },
+    [selectProject]
+  );
+
+  useKeyboardShortcuts([
+    {
+      ...SHORTCUTS.SEARCH,
+      action: () => setShowSearch(true),
+    },
+    {
+      ...SHORTCUTS.ESCAPE,
+      action: () => {
+        setShowSearch(false);
+        setSearchQuery('');
+      },
+    },
+  ]);
+
+  const selectedProject = useMemo(() => {
+    if (!selectedProjectId) return undefined;
+    return projects.find(p => p.id === selectedProjectId);
+  }, [projects, selectedProjectId]);
+
+  const isDashboard = !selectedProject && !showSettings;
+
+  const handleGoToDashboard = useCallback(() => {
+    selectProject(null);
+    setShowSettings(false);
+  }, [selectProject]);
+
+  if (isLoading) {
     return (
-        <ErrorBoundary>
-            <div className="min-h-screen font-sans text-text-primary">
-                <a href="#main-content" className="skip-link">
-                    Pular para o conteúdo principal
-                </a>
-                <Toaster
-                    position={isMobile ? "top-center" : "top-right"}
-                    toastOptions={{
-                        duration: 4000,
-                        style: {
-                            background: 'var(--layer-1)',
-                            color: 'var(--text-primary)',
-                            border: '1px solid var(--surface-border)',
-                            boxShadow: '0 25px 60px rgba(3, 7, 23, 0.55)',
-                            backdropFilter: 'blur(24px) saturate(140%)',
-                        },
-                        success: {
-                            iconTheme: {
-                                primary: '#0E6DFD',
-                                secondary: '#fff',
-                            },
-                        },
-                        error: {
-                            iconTheme: {
-                                primary: '#FF5C70',
-                                secondary: '#fff',
-                            },
-                        },
-                    }}
-                />
-                <Header 
-                    onProjectImported={handleImportJiraProject}
-                    onOpenSettings={() => setShowSettings(true)}
-                    onOpenCreateModal={() => window.dispatchEvent(new CustomEvent('open-create-project-modal'))}
-                    showDashboardActions={isDashboard}
-                    onLogoClick={handleGoToDashboard}
-                />
-                {showSearch && (
-                    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/30 backdrop-blur pt-20 p-4">
-                        <div className="w-full max-w-2xl">
-                            <SearchBar
-                                searchQuery={searchQuery}
-                                onSearchChange={setSearchQuery}
-                                searchResults={searchResults}
-                                onSelectResult={handleSearchSelect}
-                            />
-                        </div>
-                    </div>
-                )}
-
-                {showAdvancedSearch && (
-                    <Suspense fallback={<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur"><Spinner /></div>}>
-                        <AdvancedSearch
-                            projects={projects}
-                            onResultSelect={(result) => {
-                                if (result.type === 'project' || result.projectId) {
-                                    selectProject(result.projectId || result.id);
-                                }
-                                setShowAdvancedSearch(false);
-                            }}
-                            onClose={() => setShowAdvancedSearch(false)}
-                        />
-                    </Suspense>
-                )}
-
-
-                <main id="main-content">
-                    {showSettings ? (
-                        <Suspense fallback={<div className="container mx-auto p-8"><LoadingSkeleton variant="card" count={3} /></div>}>
-                            <SettingsView 
-                                onClose={() => setShowSettings(false)}
-                                onProjectImported={handleImportJiraProject}
-                            />
-                        </Suspense>
-                    ) : selectedProject ? (
-                        <Suspense fallback={<div className="container mx-auto p-8"><LoadingSkeleton variant="card" count={3} /></div>}>
-                            <ProjectView 
-                                project={selectedProject} 
-                                onUpdateProject={handleUpdateProject}
-                                onBack={() => selectProject(null)}
-                            />
-                        </Suspense>
-                    ) : (
-                        <Suspense fallback={<div className="container mx-auto p-8"><LoadingSkeleton variant="card" count={3} /></div>}>
-                            <ProjectsDashboard 
-                                projects={projects} 
-                                onSelectProject={selectProject} 
-                                onCreateProject={handleCreateProject}
-                                onDeleteProject={handleDeleteProject}
-                                onOpenSettings={() => setShowSettings(true)}
-                            />
-                        </Suspense>
-                    )}
-                </main>
-                <KeyboardShortcutsHelp />
-            </div>
-        </ErrorBoundary>
+      <div className="min-h-screen flex justify-center items-center">
+        <Spinner />
+      </div>
     );
+  }
+
+  return (
+    <ErrorBoundary>
+      <div className="min-h-screen font-sans text-text-primary">
+        <a href="#main-content" className="skip-link">
+          Pular para o conteúdo principal
+        </a>
+        <Toaster
+          position={isMobile ? 'top-center' : 'top-right'}
+          toastOptions={{
+            duration: 4000,
+            style: {
+              background: 'var(--layer-1)',
+              color: 'var(--text-primary)',
+              border: '1px solid var(--surface-border)',
+              boxShadow: '0 25px 60px rgba(3, 7, 23, 0.55)',
+              backdropFilter: 'blur(24px) saturate(140%)',
+            },
+            success: {
+              iconTheme: {
+                primary: '#0E6DFD',
+                secondary: '#fff',
+              },
+            },
+            error: {
+              iconTheme: {
+                primary: '#FF5C70',
+                secondary: '#fff',
+              },
+            },
+          }}
+        />
+        <Header
+          onProjectImported={handleImportJiraProject}
+          onOpenSettings={() => setShowSettings(true)}
+          onOpenCreateModal={() =>
+            window.dispatchEvent(new CustomEvent('open-create-project-modal'))
+          }
+          showDashboardActions={isDashboard}
+          onLogoClick={handleGoToDashboard}
+        />
+        {showSearch && (
+          <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/30 backdrop-blur pt-20 p-4">
+            <div className="w-full max-w-2xl">
+              <SearchBar
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+                searchResults={searchResults}
+                onSelectResult={handleSearchSelect}
+              />
+            </div>
+          </div>
+        )}
+
+        {showAdvancedSearch && (
+          <Suspense
+            fallback={
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur">
+                <Spinner />
+              </div>
+            }
+          >
+            <AdvancedSearch
+              projects={projects}
+              onResultSelect={result => {
+                if (result.type === 'project' || result.projectId) {
+                  selectProject(result.projectId || result.id);
+                }
+                setShowAdvancedSearch(false);
+              }}
+              onClose={() => setShowAdvancedSearch(false)}
+            />
+          </Suspense>
+        )}
+
+        <main id="main-content">
+          {showSettings ? (
+            <Suspense
+              fallback={
+                <div className="container mx-auto p-8">
+                  <LoadingSkeleton variant="card" count={3} />
+                </div>
+              }
+            >
+              <SettingsView
+                onClose={() => setShowSettings(false)}
+                onProjectImported={handleImportJiraProject}
+              />
+            </Suspense>
+          ) : selectedProject ? (
+            <Suspense
+              fallback={
+                <div className="container mx-auto p-8">
+                  <LoadingSkeleton variant="card" count={3} />
+                </div>
+              }
+            >
+              <ProjectView
+                project={selectedProject}
+                onUpdateProject={handleUpdateProject}
+                onBack={() => selectProject(null)}
+              />
+            </Suspense>
+          ) : (
+            <Suspense
+              fallback={
+                <div className="container mx-auto p-8">
+                  <LoadingSkeleton variant="card" count={3} />
+                </div>
+              }
+            >
+              <ProjectsDashboard
+                projects={projects}
+                onSelectProject={selectProject}
+                onCreateProject={handleCreateProject}
+                onDeleteProject={handleDeleteProject}
+                onOpenSettings={() => setShowSettings(true)}
+              />
+            </Suspense>
+          )}
+        </main>
+        <KeyboardShortcutsHelp />
+      </div>
+    </ErrorBoundary>
+  );
 };
 
 export default App;

@@ -9,12 +9,14 @@
 ## Resumo Executivo
 
 Esta inspeção identificou **23 problemas de responsividade** distribuídos em diferentes níveis de severidade:
+
 - **5 problemas Críticos** - Requerem correção imediata
 - **10 problemas de Alta Prioridade** - Impactam significativamente a experiência mobile
 - **6 problemas de Média Prioridade** - Melhorias recomendadas
 - **2 problemas de Baixa Prioridade** - Otimizações opcionais
 
 ### Status Geral
+
 - ✅ **Configuração Base:** Adequada (viewport, breakpoints, hook useIsMobile)
 - ⚠️ **Componentes Principais:** Necessitam melhorias em mobile
 - ⚠️ **Touch Targets:** Alguns elementos abaixo do mínimo recomendado (44x44px)
@@ -30,6 +32,7 @@ Esta inspeção identificou **23 problemas de responsividade** distribuídos em 
 **Status:** ✅ **ADEQUADO**
 
 Breakpoints definidos:
+
 - `sm`: 640px (Tablet pequeno)
 - `md`: 768px (Tablet)
 - `lg`: 1024px (Desktop pequeno)
@@ -78,6 +81,7 @@ export const useIsMobile = (breakpoint: number = 768) => {
 ```
 
 Hook implementado corretamente com:
+
 - SSR-safe (verifica `typeof window`)
 - Debounce implícito via React state
 - Cleanup adequado
@@ -99,9 +103,11 @@ Hook implementado corretamente com:
 ### 2.1 Header (components/common/Header.tsx)
 
 #### Problema 1.1: Botões de ícone podem ser pequenos em mobile
+
 **Severidade:** 🔴 **CRÍTICO**
 
 **Evidência:**
+
 ```423:424:components/tasks/JiraTaskItem.tsx
     const iconButtonClass = 'btn btn-ghost btn-circle btn-sm h-11 w-11 md:h-9 md:w-9 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30';
     const iconButtonSmallClass = 'btn btn-ghost btn-circle btn-sm h-11 w-11 md:h-8 md:w-8 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30';
@@ -112,15 +118,19 @@ Hook implementado corretamente com:
 **Impacto:** Dificulta interação em dispositivos touch, especialmente em tablets.
 
 **Recomendação:**
+
 ```tsx
 // Manter mínimo de 44px em todos os breakpoints
-const iconButtonClass = 'btn btn-ghost btn-circle btn-sm min-h-[44px] min-w-[44px] h-11 w-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30';
+const iconButtonClass =
+  'btn btn-ghost btn-circle btn-sm min-h-[44px] min-w-[44px] h-11 w-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30';
 ```
 
 #### Problema 1.2: Header pode ficar sobrecarregado em telas muito pequenas
+
 **Severidade:** 🟡 **MÉDIA**
 
 **Evidência:**
+
 ```110:127:components/common/Header.tsx
             <div className="container mx-auto flex flex-wrap items-center justify-between gap-3 min-w-0 py-2 px-4">
                 <div className="flex items-center gap-3 min-w-0">
@@ -151,9 +161,11 @@ const iconButtonClass = 'btn btn-ghost btn-circle btn-sm min-h-[44px] min-w-[44p
 ### 2.2 JiraTaskItem (components/tasks/JiraTaskItem.tsx)
 
 #### Problema 2.1: Grid de informações pode quebrar em mobile
+
 **Severidade:** 🟠 **ALTA**
 
 **Evidência:**
+
 ```463:494:components/tasks/JiraTaskItem.tsx
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                     {task.owner && (
@@ -167,14 +179,17 @@ const iconButtonClass = 'btn btn-ghost btn-circle btn-sm min-h-[44px] min-w-[44p
 **Problema:** Grid usa `grid-cols-1 sm:grid-cols-2 lg:grid-cols-3`, mas em tablets (640-768px) pode ficar apertado com 2 colunas.
 
 **Recomendação:** Adicionar breakpoint intermediário:
+
 ```tsx
 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
 ```
 
 #### Problema 2.2: Botões de ação em grid podem ser difíceis de tocar
+
 **Severidade:** 🟠 **ALTA**
 
 **Evidência:**
+
 ```1324:1377:components/tasks/JiraTaskItem.tsx
                                 <div className="grid grid-cols-5 gap-1 md:flex md:gap-1" onClick={(e) => e.stopPropagation()}>
 ```
@@ -182,6 +197,7 @@ const iconButtonClass = 'btn btn-ghost btn-circle btn-sm min-h-[44px] min-w-[44p
 **Problema:** Em mobile, botões são dispostos em `grid-cols-5` com `gap-1`, o que pode resultar em botões muito pequenos (< 44px).
 
 **Recomendação:**
+
 ```tsx
 <div className="grid grid-cols-3 gap-2 md:flex md:gap-1" onClick={(e) => e.stopPropagation()}>
 // Ou usar flex-wrap em mobile
@@ -189,9 +205,11 @@ const iconButtonClass = 'btn btn-ghost btn-circle btn-sm min-h-[44px] min-w-[44p
 ```
 
 #### Problema 2.3: Tabs podem transbordar em mobile
+
 **Severidade:** 🟡 **MÉDIA**
 
 **Evidência:**
+
 ```1396:1421:components/tasks/JiraTaskItem.tsx
                                         <div className="tabs tabs-boxed bg-base-200 p-1 w-fit" role="tablist" aria-label="Seções da tarefa">
                                             {sectionTabs.map((tab) => {
@@ -200,6 +218,7 @@ const iconButtonClass = 'btn btn-ghost btn-circle btn-sm min-h-[44px] min-w-[44p
 **Problema:** Tabs com `w-fit` podem transbordar horizontalmente em telas pequenas se houver muitas abas.
 
 **Recomendação:** Adicionar scroll horizontal ou dropdown em mobile:
+
 ```tsx
 <div className="tabs tabs-boxed bg-base-200 p-1 w-full md:w-fit overflow-x-auto" role="tablist">
 ```
@@ -209,9 +228,11 @@ const iconButtonClass = 'btn btn-ghost btn-circle btn-sm min-h-[44px] min-w-[44p
 ### 2.3 Modal (components/common/Modal.tsx)
 
 #### Problema 3.1: Modal pode ser muito grande em mobile
+
 **Severidade:** 🟠 **ALTA**
 
 **Evidência:**
+
 ```68:91:components/common/Modal.tsx
     const sizeClasses = {
         sm: 'max-w-md',
@@ -222,29 +243,31 @@ const iconButtonClass = 'btn btn-ghost btn-circle btn-sm min-h-[44px] min-w-[44p
     };
 
     return (
-        <div 
+        <div
             className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-base-100/60 backdrop-blur-sm transition-opacity duration-200"
             onClick={onClose}
             role="dialog"
             aria-modal="true"
             aria-labelledby="modal-title"
         >
-            <div 
+            <div
                 id="modal-content"
                 className={`w-full ${sizeClasses[size]} flex flex-col overflow-hidden animate-fade-in shadow-2xl border border-base-300 bg-base-100 rounded-[var(--rounded-box)]`}
                 onClick={(e) => e.stopPropagation()}
                 tabIndex={-1}
-                style={{ 
+                style={{
                     maxHeight: maxHeight || `calc(100vh - 2rem)`
                 }}
 ```
 
-**Problema:** 
+**Problema:**
+
 - Padding de `p-4` (16px) pode ser insuficiente em mobile
 - `maxHeight: '95vh'` padrão pode ser muito grande em telas pequenas
 - Tamanhos fixos não se adaptam bem a mobile
 
 **Recomendação:**
+
 ```tsx
 const sizeClasses = {
     sm: 'max-w-md md:max-w-md',
@@ -256,17 +279,19 @@ const sizeClasses = {
 
 // E ajustar padding
 <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-base-100/60 backdrop-blur-sm">
-    <div 
-        style={{ 
+    <div
+        style={{
             maxHeight: maxHeight || `calc(100vh - 1rem)`
         }}
     >
 ```
 
 #### Problema 3.2: Conteúdo do modal pode precisar de scroll melhor
+
 **Severidade:** 🟡 **MÉDIA**
 
 **Evidência:**
+
 ```117:121:components/common/Modal.tsx
                 {/* Content - Scrollable */}
                 <div className="px-5 py-4 flex-1 overflow-y-auto flex flex-col min-h-0 overscroll-contain">
@@ -278,6 +303,7 @@ const sizeClasses = {
 **Problema:** Padding fixo `px-5 py-4` pode ser grande demais em mobile, reduzindo área de conteúdo.
 
 **Recomendação:**
+
 ```tsx
 <div className="px-3 sm:px-5 py-3 sm:py-4 flex-1 overflow-y-auto flex flex-col min-h-0 overscroll-contain">
 ```
@@ -287,9 +313,11 @@ const sizeClasses = {
 ### 2.4 ProjectsDashboard (components/ProjectsDashboard.tsx)
 
 #### Problema 4.1: Grid de projetos pode ficar apertado em tablet
+
 **Severidade:** 🟡 **MÉDIA**
 
 **Evidência:**
+
 ```449:449:components/ProjectsDashboard.tsx
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4" data-tour="project-list">
 ```
@@ -297,14 +325,17 @@ const sizeClasses = {
 **Problema:** Entre `sm` (640px) e `lg` (1024px), o grid usa apenas 2 colunas, o que pode ser muito ou pouco dependendo do tamanho da tela.
 
 **Recomendação:** Adicionar breakpoint intermediário:
+
 ```tsx
 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
 ```
 
 #### Problema 4.2: Cards de projeto podem ter texto cortado
+
 **Severidade:** 🟠 **ALTA**
 
 **Evidência:**
+
 ```496:498:components/ProjectsDashboard.tsx
                                                     <h3 className="text-lg font-semibold leading-tight text-balance line-clamp-2">
                                                         {p.name}
@@ -314,9 +345,10 @@ const sizeClasses = {
 **Problema:** `line-clamp-2` pode cortar nomes importantes. Em mobile, pode ser necessário mais linhas.
 
 **Recomendação:**
+
 ```tsx
 <h3 className="text-base sm:text-lg font-semibold leading-tight text-balance line-clamp-2 sm:line-clamp-3">
-    {p.name}
+  {p.name}
 </h3>
 ```
 
@@ -325,9 +357,11 @@ const sizeClasses = {
 ### 2.5 SearchBar (components/common/SearchBar.tsx)
 
 #### Problema 5.1: Dropdown de resultados pode transbordar
+
 **Severidade:** 🟠 **ALTA**
 
 **Evidência:**
+
 ```104:135:components/common/SearchBar.tsx
       {isOpen && searchQuery && searchResults.length > 0 && (
         <div
@@ -336,11 +370,13 @@ const sizeClasses = {
         >
 ```
 
-**Problema:** 
+**Problema:**
+
 - `max-h-96` (384px) pode ser muito grande em mobile
 - Não há tratamento para posicionamento quando próximo ao bottom da viewport
 
 **Recomendação:**
+
 ```tsx
 <div
   ref={resultsRef}
@@ -353,9 +389,11 @@ const sizeClasses = {
 ### 2.6 Input (components/common/Input.tsx)
 
 #### Problema 6.1: Input pode ter padding insuficiente em mobile
+
 **Severidade:** 🟢 **BAIXA**
 
 **Evidência:**
+
 ```50:62:components/common/Input.tsx
     const baseInputClasses = cn(
       'input w-full',
@@ -375,9 +413,10 @@ const sizeClasses = {
 **Problema:** Padding padrão do DaisyUI `input` pode ser pequeno em mobile para touch targets.
 
 **Recomendação:** Adicionar min-height:
+
 ```tsx
 const baseInputClasses = cn(
-  'input w-full min-h-[44px]',
+  'input w-full min-h-[44px]'
   // ... resto
 );
 ```
@@ -387,9 +426,11 @@ const baseInputClasses = cn(
 ### 2.7 Button (components/common/Button.tsx)
 
 #### Problema 7.1: Botões podem não ter tamanho mínimo adequado
+
 **Severidade:** 🟡 **MÉDIA**
 
 **Evidência:**
+
 ```6:30:components/common/Button.tsx
 const buttonVariants = cva(
   "btn inline-flex items-center justify-center whitespace-nowrap text-sm font-semibold transition-colors outline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/40 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0",
@@ -415,6 +456,7 @@ const buttonVariants = cva(
 **Problema:** Tamanhos `btn-sm` podem resultar em botões < 44px em mobile.
 
 **Recomendação:** Adicionar min-height para mobile:
+
 ```tsx
 size: {
   default: "btn-md min-h-[44px] sm:min-h-0",
@@ -429,9 +471,11 @@ size: {
 ### 2.8 Landing Page (components/landing/LandingPage.tsx)
 
 #### Problema 8.1: Hero section pode ter altura excessiva em mobile
+
 **Severidade:** 🟢 **BAIXA**
 
 **Evidência:**
+
 ```25:25:components/landing/HeroSection.tsx
     <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-gradient-to-br from-base-100 via-base-200 to-base-300">
 ```
@@ -439,6 +483,7 @@ size: {
 **Problema:** `min-h-[90vh]` pode ser muito alto em mobile, forçando scroll desnecessário.
 
 **Recomendação:**
+
 ```tsx
 <section className="relative min-h-[70vh] sm:min-h-[90vh] flex items-center justify-center overflow-hidden bg-gradient-to-br from-base-100 via-base-200 to-base-300">
 ```
@@ -448,13 +493,15 @@ size: {
 ### 2.9 ProjectView (components/ProjectView.tsx)
 
 #### Problema 9.1: Tabs podem transbordar em mobile
+
 **Severidade:** 🟠 **ALTA**
 
 **Evidência:**
+
 ```144:150:components/ProjectView.tsx
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-end gap-2 mb-6">
                         {/* Botão sempre visível, mas desabilitado se Supabase não estiver disponível */}
-                        <button 
+                        <button
                             onClick={handleSaveToSupabase}
                             disabled={!supabaseAvailable || isSavingToSupabase}
                             className="btn btn-primary flex items-center justify-center gap-2 w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
@@ -483,6 +530,7 @@ size: {
 **Status:** ⚠️ **NECESSITA MELHORIAS**
 
 **Problemas encontrados:**
+
 1. Grids que pulam breakpoints (ex: `sm:grid-cols-2 lg:grid-cols-3` sem `md`)
 2. Alguns grids podem ficar apertados em tablets
 3. Uso de `flex-wrap` adequado na maioria dos casos
@@ -514,6 +562,7 @@ size: {
    - `Badge`: Comentário menciona 44x44px ✅
 
 **Recomendação Geral:**
+
 - Todos os elementos interativos devem ter mínimo de 44x44px
 - Adicionar `min-h-[44px] min-w-[44px]` em botões pequenos
 - Espaçamento mínimo de 8px entre elementos clicáveis
@@ -523,6 +572,7 @@ size: {
 **Status:** ⚠️ **NECESSITA VERIFICAÇÃO**
 
 **Observações:**
+
 - Logo no Header usa `h-10 w-auto sm:h-12` - adequado
 - Não foram encontradas imagens com `srcset` ou `sizes`
 - Lazy loading implementado no logo ✅
@@ -543,31 +593,31 @@ size: {
 
 ### Componentes Críticos
 
-| Componente | Mobile (<640px) | Tablet (640-1024px) | Desktop (>1024px) | Problemas |
-|------------|-----------------|---------------------|-------------------|-----------|
-| Header | ⚠️ | ✅ | ✅ | Botões pequenos, pode ficar apertado |
-| JiraTaskItem | ⚠️ | ⚠️ | ✅ | Grid, botões, tabs |
-| Modal | ⚠️ | ⚠️ | ✅ | Tamanho, padding |
-| ProjectsDashboard | ✅ | ⚠️ | ✅ | Grid apertado |
-| SearchBar | ⚠️ | ✅ | ✅ | Dropdown grande |
+| Componente        | Mobile (<640px) | Tablet (640-1024px) | Desktop (>1024px) | Problemas                            |
+| ----------------- | --------------- | ------------------- | ----------------- | ------------------------------------ |
+| Header            | ⚠️              | ✅                  | ✅                | Botões pequenos, pode ficar apertado |
+| JiraTaskItem      | ⚠️              | ⚠️                  | ✅                | Grid, botões, tabs                   |
+| Modal             | ⚠️              | ⚠️                  | ✅                | Tamanho, padding                     |
+| ProjectsDashboard | ✅              | ⚠️                  | ✅                | Grid apertado                        |
+| SearchBar         | ⚠️              | ✅                  | ✅                | Dropdown grande                      |
 
 ### Componentes Importantes
 
-| Componente | Mobile | Tablet | Desktop | Problemas |
-|------------|--------|--------|---------|-----------|
-| Input | ✅ | ✅ | ✅ | Padding pode ser pequeno |
-| Button | ⚠️ | ✅ | ✅ | Tamanho mínimo |
-| Card | ✅ | ✅ | ✅ | Nenhum |
-| QuickFilters | ✅ | ✅ | ✅ | Nenhum |
-| Breadcrumbs | ✅ | ✅ | ✅ | Nenhum |
+| Componente   | Mobile | Tablet | Desktop | Problemas                |
+| ------------ | ------ | ------ | ------- | ------------------------ |
+| Input        | ✅     | ✅     | ✅      | Padding pode ser pequeno |
+| Button       | ⚠️     | ✅     | ✅      | Tamanho mínimo           |
+| Card         | ✅     | ✅     | ✅      | Nenhum                   |
+| QuickFilters | ✅     | ✅     | ✅      | Nenhum                   |
+| Breadcrumbs  | ✅     | ✅     | ✅      | Nenhum                   |
 
 ### Páginas Especiais
 
-| Página | Mobile | Tablet | Desktop | Problemas |
-|--------|--------|--------|---------|-----------|
-| LandingPage | ⚠️ | ✅ | ✅ | Hero muito alto |
-| SettingsView | ✅ | ✅ | ✅ | Nenhum crítico |
-| AnalysisView | ✅ | ✅ | ✅ | Nenhum crítico |
+| Página       | Mobile | Tablet | Desktop | Problemas       |
+| ------------ | ------ | ------ | ------- | --------------- |
+| LandingPage  | ⚠️     | ✅     | ✅      | Hero muito alto |
+| SettingsView | ✅     | ✅     | ✅      | Nenhum crítico  |
+| AnalysisView | ✅     | ✅     | ✅      | Nenhum crítico  |
 
 ---
 
@@ -622,11 +672,13 @@ size: {
 ### Exemplo 1: Botões de Ícone com Touch Target Adequado
 
 **Antes:**
+
 ```tsx
 const iconButtonClass = 'btn btn-ghost btn-circle btn-sm h-11 w-11 md:h-9 md:w-9';
 ```
 
 **Depois:**
+
 ```tsx
 const iconButtonClass = 'btn btn-ghost btn-circle btn-sm min-h-[44px] min-w-[44px] h-11 w-11';
 // Remove redução em desktop - mantém 44px mínimo sempre
@@ -635,6 +687,7 @@ const iconButtonClass = 'btn btn-ghost btn-circle btn-sm min-h-[44px] min-w-[44p
 ### Exemplo 2: Modal Responsivo
 
 **Antes:**
+
 ```tsx
 const sizeClasses = {
     sm: 'max-w-md',
@@ -647,6 +700,7 @@ const sizeClasses = {
 ```
 
 **Depois:**
+
 ```tsx
 const sizeClasses = {
     sm: 'max-w-[95vw] md:max-w-md',
@@ -663,11 +717,13 @@ const sizeClasses = {
 ### Exemplo 3: Grid com Breakpoint Intermediário
 
 **Antes:**
+
 ```tsx
 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
 ```
 
 **Depois:**
+
 ```tsx
 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3">
 ```
@@ -720,4 +776,3 @@ A maioria dos problemas identificados são **fáceis de corrigir** e seguem padr
 
 **Relatório gerado por:** Inspeção Automatizada  
 **Última atualização:** Janeiro 2025
-

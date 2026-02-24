@@ -5,6 +5,7 @@ Este guia explica como configurar o Figma MCP Server no Cursor para integrar des
 ## O que é o Figma MCP Server?
 
 O Figma MCP Server permite que você:
+
 - **Gerar código a partir de frames selecionados**: Selecione um frame no Figma e transforme em código
 - **Extrair contexto de design**: Obtenha variáveis, componentes e dados de layout diretamente no seu IDE
 - **Recuperar recursos Make**: Colete recursos de código de arquivos Make e forneça ao LLM como contexto
@@ -121,4 +122,3 @@ O servidor remoto requer autenticação OAuth do Figma. Na primeira vez que voc�
 - O servidor remoto não requer a instalação do app desktop do Figma
 - Você precisa de um link válido do Figma para usar o servidor
 - O servidor extrai automaticamente o node-id do link fornecido
-

@@ -11,70 +11,96 @@ Este documento descreve o sistema de design completo baseado na identidade visua
 As cores verdes são a identidade principal da marca Leve Saúde.
 
 #### `--color-primary` (#109685)
+
 **Uso:** Botões primários, links principais, ícones de ação, CTAs principais
+
 - **Contraste:** 4.5:1 sobre branco ✅ (WCAG AA)
 - **Exemplo:** Botão "Agendar consulta"
 
 #### `--color-primary-dark` (#007367)
+
 **Uso:** Hover de botões primários, estados ativos, cabeçalhos em fundos claros
+
 - **Contraste:** 5.2:1 sobre branco ✅ (WCAG AA)
 - **Exemplo:** Estado hover do botão primário
 
 #### `--color-primary-deep` (#0B6156)
+
 **Uso:** Barras de navegação, rodapés, elementos que exigem contraste maior
+
 - **Contraste:** 5.8:1 sobre branco ✅ (WCAG AA)
 - **Exemplo:** Footer, barras de navegação
 
 ### Cores de Acento (Laranja)
 
 #### `--color-accent` (#FB4C00) / `--color-accent-2` (#FC4C02)
+
 **Uso:** CTAs secundários, alertas leves, badges, micro-interações
+
 - **Contraste:** 4.8:1 sobre branco ✅ (WCAG AA)
 - **Exemplo:** Badges de promoção, alertas informativos
 
 ### Cores de Estado
 
 #### `--color-success` (#15803D)
+
 **Uso:** Mensagens de sucesso, confirmações, estados positivos
+
 - **Contraste:** 5.1:1 sobre branco ✅ (WCAG AA)
 - **Exemplo:** "Pagamento confirmado", "Agendamento realizado"
 
 ### Cores Neutras
 
 #### `--color-text` (#333333)
+
 **Uso:** Texto principal em fundos claros
+
 - **Contraste:** 12.6:1 sobre branco ✅ (WCAG AAA)
 - **Exemplo:** Parágrafos, títulos em fundo branco
 
 #### `--color-muted` (#7F7F7F)
+
 **Uso:** Textos secundários, legendas, informações complementares
+
 - **Contraste:** 4.5:1 sobre branco ✅ (WCAG AA)
 - **Exemplo:** Legendas de campos, textos de apoio
 
 #### `--color-bg` (#FFFFFF)
+
 **Uso:** Fundo principal da aplicação
+
 - **Exemplo:** Background de páginas, cards
 
 #### `--color-surface` (#F6F6F6)
+
 **Uso:** Cartões e superfícies neutras
+
 - **Exemplo:** Fundo de cards, áreas de destaque
 
 #### `--color-surface-alt` (#F2F2F2)
+
 **Uso:** Superfícies alternativas, hover states
+
 - **Exemplo:** Hover de cards, estados de interação
 
 #### `--color-border` (#C6BEBF)
+
 **Uso:** Bordas suaves de elementos
+
 - **Exemplo:** Bordas de inputs, cards, divisores
 
 #### `--color-soft-bg` (#EAF3EE)
+
 **Uso:** Fundos suaves para seções informativas
+
 - **Exemplo:** Cards de dicas, blocos informativos
 
 ### Cores Especiais
 
 #### `--color-navy` (#191970)
+
 **Uso:** Cabeçalhos institucionais, elementos que exigem autoridade
+
 - **Contraste:** 8.6:1 sobre branco ✅ (WCAG AAA)
 - **Exemplo:** Páginas sobre a empresa, documentos institucionais
 
@@ -83,30 +109,33 @@ As cores verdes são a identidade principal da marca Leve Saúde.
 ### Famílias de Fonte
 
 #### Poppins (Títulos)
+
 - **Pesos:** 300, 400, 500, 600, 700
 - **Uso:** Títulos (h1-h4), destaques, CTAs
 - **Características:** Sem serifa, arredondada, moderna
 
 #### Inter (Corpo)
+
 - **Pesos:** 400, 500, 600
 - **Uso:** Texto corrido, parágrafos, labels
 - **Características:** Alta legibilidade em telas
 
 ### Escala Tipográfica
 
-| Elemento | Tamanho | Peso | Line Height | Uso |
-|----------|---------|------|-------------|-----|
-| h1 | 2.25rem (36px) | 600 | 1.15 | Títulos principais |
-| h2 | 1.75rem (28px) | 600 | 1.15 | Subtítulos principais |
-| h3 | 1.375rem (22px) | 600 | 1.25 | Subtítulos secundários |
-| h4 | 1.125rem (18px) | 600 | 1.25 | Subtítulos terciários |
-| body | 1rem (16px) | 400 | 1.5 | Texto corrido |
-| small | 0.875rem (14px) | 400 | 1.5 | Textos pequenos |
-| label | 0.9375rem (15px) | 500 | 1.5 | Labels de formulários |
+| Elemento | Tamanho          | Peso | Line Height | Uso                    |
+| -------- | ---------------- | ---- | ----------- | ---------------------- |
+| h1       | 2.25rem (36px)   | 600  | 1.15        | Títulos principais     |
+| h2       | 1.75rem (28px)   | 600  | 1.15        | Subtítulos principais  |
+| h3       | 1.375rem (22px)  | 600  | 1.25        | Subtítulos secundários |
+| h4       | 1.125rem (18px)  | 600  | 1.25        | Subtítulos terciários  |
+| body     | 1rem (16px)      | 400  | 1.5         | Texto corrido          |
+| small    | 0.875rem (14px)  | 400  | 1.5         | Textos pequenos        |
+| label    | 0.9375rem (15px) | 500  | 1.5         | Labels de formulários  |
 
 ### Responsividade Mobile
 
 No mobile, a escala é reduzida proporcionalmente:
+
 - **h1:** 1.75rem (28px)
 - **h2:** 1.5rem (24px)
 - **h3:** 1.25rem (20px)
@@ -118,32 +147,38 @@ No mobile, a escala é reduzida proporcionalmente:
 ### Botões
 
 #### Botão Primário
+
 ```tsx
 <ButtonLeve variant="primary">Agendar consulta</ButtonLeve>
 ```
 
 **Características:**
+
 - Cor: `--color-primary` (#109685)
 - Hover: `--color-primary-dark` (#007367)
 - Altura mínima: 44px (touch target)
 - Contraste: 4.5:1 ✅
 
 #### Botão Secundário
+
 ```tsx
 <ButtonLeve variant="secondary">Saiba mais</ButtonLeve>
 ```
 
 **Características:**
+
 - Fundo transparente
 - Borda: 2px solid `--color-primary`
 - Hover: fundo com opacidade
 
 #### Botão Ghost
+
 ```tsx
 <ButtonLeve variant="ghost">Cancelar</ButtonLeve>
 ```
 
 **Características:**
+
 - Fundo transparente
 - Sem borda
 - Hover: fundo sutil
@@ -151,7 +186,7 @@ No mobile, a escala é reduzida proporcionalmente:
 ### Inputs
 
 ```tsx
-<InputLeve 
+<InputLeve
   label="Nome completo"
   placeholder="Digite seu nome"
   state="default"
@@ -160,11 +195,13 @@ No mobile, a escala é reduzida proporcionalmente:
 ```
 
 **Estados:**
+
 - `default`: Estado normal
 - `error`: Borda vermelha, mensagem de erro
 - `success`: Borda verde, confirmação
 
 **Acessibilidade:**
+
 - Label associado via `htmlFor`
 - `aria-invalid` para estados de erro
 - `aria-describedby` para mensagens de ajuda
@@ -172,18 +209,17 @@ No mobile, a escala é reduzida proporcionalmente:
 ### Cards
 
 #### Card Padrão
+
 ```tsx
-<InfoCardLeve 
-  title="Plano Leve Saúde"
-  variant="default"
->
+<InfoCardLeve title="Plano Leve Saúde" variant="default">
   Informações sobre o plano...
 </InfoCardLeve>
 ```
 
 #### Card Informativo
+
 ```tsx
-<InfoCardLeve 
+<InfoCardLeve
   title="Dicas de Preparação"
   variant="info"
   actionLabel="Saiba mais"
@@ -197,25 +233,27 @@ No mobile, a escala é reduzida proporcionalmente:
 
 Sistema de espaçamento padronizado:
 
-| Token | Valor | Uso |
-|-------|-------|-----|
-| `--spacing-xs` | 0.375rem (6px) | Espaçamentos mínimos |
-| `--spacing-sm` | 0.5rem (8px) | Espaçamentos pequenos |
-| `--spacing-md` | 0.75rem (12px) | Espaçamentos médios |
-| `--spacing-lg` | 1rem (16px) | Espaçamentos grandes |
-| `--spacing-xl` | 1.25rem (20px) | Espaçamentos extra grandes |
+| Token           | Valor          | Uso                        |
+| --------------- | -------------- | -------------------------- |
+| `--spacing-xs`  | 0.375rem (6px) | Espaçamentos mínimos       |
+| `--spacing-sm`  | 0.5rem (8px)   | Espaçamentos pequenos      |
+| `--spacing-md`  | 0.75rem (12px) | Espaçamentos médios        |
+| `--spacing-lg`  | 1rem (16px)    | Espaçamentos grandes       |
+| `--spacing-xl`  | 1.25rem (20px) | Espaçamentos extra grandes |
 | `--spacing-2xl` | 1.75rem (28px) | Espaçamentos muito grandes |
-| `--spacing-3xl` | 2.25rem (36px) | Espaçamentos máximos |
+| `--spacing-3xl` | 2.25rem (36px) | Espaçamentos máximos       |
 
 ## Bordas e Sombras
 
 ### Border Radius
+
 - `--radius-sm`: 8px
 - `--radius-md`: 10px
 - `--radius-lg`: 12px
 - `--radius-xl`: 16px
 
 ### Sombras
+
 - `--shadow-sm`: Sombra suave para cards
 - `--shadow-md`: Sombra média para botões
 - `--shadow-lg`: Sombra grande para modais
@@ -233,6 +271,7 @@ Todos os componentes seguem as diretrizes WCAG AA:
 ### Estados de Foco
 
 Todos os elementos interativos possuem estados de foco visíveis:
+
 - Outline de 4px com cor primária
 - Contraste adequado
 - Não removido com `outline: none` sem alternativa
@@ -326,4 +365,3 @@ Todos os elementos interativos possuem estados de foco visíveis:
 - [WCAG Guidelines](https://www.w3.org/WAI/WCAG21/quickref/)
 - [Google Fonts - Poppins](https://fonts.google.com/specimen/Poppins)
 - [Google Fonts - Inter](https://fonts.google.com/specimen/Inter)
-

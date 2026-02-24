@@ -24,11 +24,15 @@ export const QuickStats: React.FC<QuickStatsProps> = ({ project, compact = false
           <div className="text-xs text-text-secondary">Testes</div>
         </div>
         <div className="p-3 bg-surface border border-surface-border rounded-lg text-center">
-          <div className="text-2xl font-bold text-text-primary">{metrics.bugsBySeverity['Crítico']}</div>
+          <div className="text-2xl font-bold text-text-primary">
+            {metrics.bugsBySeverity['Crítico']}
+          </div>
           <div className="text-xs text-text-secondary">Bugs Críticos</div>
         </div>
         <div className="p-3 bg-surface border border-surface-border rounded-lg text-center">
-          <div className="text-2xl font-bold text-text-primary">{Math.round(metrics.testCoverage)}%</div>
+          <div className="text-2xl font-bold text-text-primary">
+            {Math.round(metrics.testCoverage)}%
+          </div>
           <div className="text-xs text-text-secondary">Cobertura</div>
         </div>
       </div>
@@ -38,7 +42,7 @@ export const QuickStats: React.FC<QuickStatsProps> = ({ project, compact = false
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold text-text-primary">Estatísticas Rápidas</h3>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="p-4 bg-surface border border-surface-border rounded-lg">
           <div className="flex items-center justify-between mb-2">
@@ -57,7 +61,15 @@ export const QuickStats: React.FC<QuickStatsProps> = ({ project, compact = false
         <div className="p-4 bg-surface border border-surface-border rounded-lg">
           <div className="flex items-center justify-between mb-2">
             <span className="text-text-secondary">Taxa de Aprovação</span>
-            <Badge variant={metrics.testPassRate >= 80 ? 'success' : metrics.testPassRate >= 60 ? 'warning' : 'error'}>
+            <Badge
+              variant={
+                metrics.testPassRate >= 80
+                  ? 'success'
+                  : metrics.testPassRate >= 60
+                    ? 'warning'
+                    : 'error'
+              }
+            >
               {Math.round(metrics.testPassRate)}%
             </Badge>
           </div>
@@ -73,9 +85,7 @@ export const QuickStats: React.FC<QuickStatsProps> = ({ project, compact = false
         <div className="p-4 bg-surface border border-surface-border rounded-lg">
           <div className="flex items-center justify-between mb-2">
             <span className="text-text-secondary">Automação</span>
-            <Badge variant="info">
-              {Math.round(metrics.automationRatio)}%
-            </Badge>
+            <Badge variant="info">{Math.round(metrics.automationRatio)}%</Badge>
           </div>
           <ProgressIndicator
             value={metrics.automatedTestCases}
@@ -101,4 +111,3 @@ export const QuickStats: React.FC<QuickStatsProps> = ({ project, compact = false
     </div>
   );
 };
-

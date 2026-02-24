@@ -81,4 +81,3 @@ Armazenamento na nuvem opcional via Supabase. Implementado em `services/supabase
 - Compatível com Vite
 - TypeScript nativo
 - Boa experiência de desenvolvimento
-

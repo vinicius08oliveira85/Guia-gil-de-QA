@@ -1,4 +1,3 @@
-
 export interface TestCase {
   id: string;
   /** Título curto (opcional). Alguns fluxos usam a própria description como título. */
@@ -44,7 +43,7 @@ export interface TaskTestStatusRecord {
   created_at?: string;
 }
 
-export type STLCPhaseName = 
+export type STLCPhaseName =
   | 'Análise de Requisitos'
   | 'Planejamento de Testes'
   | 'Desenvolvimento de Casos de Teste'
@@ -161,20 +160,26 @@ export interface JiraTask {
   environment?: string;
   reporter?: { displayName: string; emailAddress?: string };
   watchers?: { watchCount: number; isWatching: boolean };
-  issueLinks?: Array<{ id: string; type: string; relatedKey: string; direction: 'inward' | 'outward' }>;
-  jiraAttachments?: Array<{ id: string; filename: string; size: number; created: string; author: string }>;
+  issueLinks?: Array<{
+    id: string;
+    type: string;
+    relatedKey: string;
+    direction: 'inward' | 'outward';
+  }>;
+  jiraAttachments?: Array<{
+    id: string;
+    filename: string;
+    size: number;
+    created: string;
+    author: string;
+  }>;
   jiraCustomFields?: { [key: string]: any }; // Campos customizados do Jira
 }
 
 // Ferramentas sugeridas para testes
-export const SUGGESTED_TOOLS = [
-  'Postman',
-  'Insomnia',
-  'DBeaver',
-  'Kibana'
-] as const;
+export const SUGGESTED_TOOLS = ['Postman', 'Insomnia', 'DBeaver', 'Kibana'] as const;
 
-export type SuggestedTool = typeof SUGGESTED_TOOLS[number];
+export type SuggestedTool = (typeof SUGGESTED_TOOLS)[number];
 
 export interface ProjectDocument {
   name: string;

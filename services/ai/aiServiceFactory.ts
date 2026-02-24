@@ -22,7 +22,7 @@ const getConfiguredProvider = (): AIProvider => {
   if (geminiKey) {
     return 'gemini';
   }
-  
+
   // Default para Gemini se nenhuma chave estiver configurada
   return 'gemini';
 };
@@ -45,14 +45,14 @@ const createAIService = (provider: AIProvider): AIService => {
  */
 export const getAIService = (provider?: AIProvider): AIService => {
   const selectedProvider = provider || getConfiguredProvider();
-  
+
   // Se o provedor mudou ou ainda não foi inicializado, cria uma nova instância
   if (!currentService || currentProvider !== selectedProvider) {
     currentService = createAIService(selectedProvider);
     currentProvider = selectedProvider;
     logger.info(`AI Service inicializado com provedor: ${selectedProvider}`, 'aiServiceFactory');
   }
-  
+
   return currentService;
 };
 
@@ -71,4 +71,3 @@ export const setAIProvider = (provider: AIProvider): void => {
 export const getCurrentAIProvider = (): AIProvider => {
   return currentProvider || getConfiguredProvider();
 };
-

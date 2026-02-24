@@ -5,7 +5,10 @@
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { Project, JiraTask, TestCase, TestStrategy, BddScenario } from '../../types';
-import { verifySupabaseStructure, verifyTaskRelations } from '../../scripts/verify-supabase-structure';
+import {
+  verifySupabaseStructure,
+  verifyTaskRelations,
+} from '../../scripts/verify-supabase-structure';
 import { updateProject, loadProjectsFromIndexedDB } from '../../services/dbService';
 
 describe('Estrutura de Dados no Supabase', () => {
@@ -19,7 +22,7 @@ describe('Estrutura de Dados no Supabase', () => {
       description: 'Teste de estrutura de dados',
       tasks: [],
       documents: [],
-      phases: []
+      phases: [],
     };
   });
 
@@ -30,7 +33,7 @@ describe('Estrutura de Dados no Supabase', () => {
         description: 'Caso de teste de exemplo',
         steps: ['Passo 1', 'Passo 2'],
         expectedResult: 'Resultado esperado',
-        status: 'Not Run'
+        status: 'Not Run',
       };
 
       const task: JiraTask = {
@@ -39,7 +42,7 @@ describe('Estrutura de Dados no Supabase', () => {
         description: 'Descrição da tarefa',
         type: 'Tarefa',
         status: 'To Do',
-        testCases: [testCase]
+        testCases: [testCase],
       };
 
       testProject.tasks = [task];
@@ -65,15 +68,15 @@ describe('Estrutura de Dados no Supabase', () => {
           description: 'Caso 1',
           steps: ['Passo 1'],
           expectedResult: 'Resultado 1',
-          status: 'Passed'
+          status: 'Passed',
         },
         {
           id: 'tc-002',
           description: 'Caso 2',
           steps: ['Passo 1'],
           expectedResult: 'Resultado 2',
-          status: 'Failed'
-        }
+          status: 'Failed',
+        },
       ];
 
       const task: JiraTask = {
@@ -82,7 +85,7 @@ describe('Estrutura de Dados no Supabase', () => {
         description: 'Descrição',
         type: 'Tarefa',
         status: 'To Do',
-        testCases
+        testCases,
       };
 
       testProject.tasks = [task];
@@ -102,7 +105,7 @@ describe('Estrutura de Dados no Supabase', () => {
         testType: 'Testes Funcionais',
         description: 'Estratégia de teste funcional',
         howToExecute: ['Executar casos de teste'],
-        tools: 'Postman'
+        tools: 'Postman',
       };
 
       const task: JiraTask = {
@@ -112,7 +115,7 @@ describe('Estrutura de Dados no Supabase', () => {
         type: 'Tarefa',
         status: 'To Do',
         testStrategy: [strategy],
-        testCases: []
+        testCases: [],
       };
 
       testProject.tasks = [task];
@@ -124,7 +127,9 @@ describe('Estrutura de Dados no Supabase', () => {
       expect(savedProject).toBeDefined();
       expect(savedProject?.tasks[0].testStrategy).toHaveLength(1);
       expect(savedProject?.tasks[0].testStrategy?.[0].testType).toBe('Testes Funcionais');
-      expect(savedProject?.tasks[0].testStrategy?.[0].description).toBe('Estratégia de teste funcional');
+      expect(savedProject?.tasks[0].testStrategy?.[0].description).toBe(
+        'Estratégia de teste funcional'
+      );
     });
   });
 
@@ -133,7 +138,8 @@ describe('Estrutura de Dados no Supabase', () => {
       const scenario: BddScenario = {
         id: 'bdd-001',
         title: 'Cenário de login',
-        gherkin: 'Dado que estou na página de login\nQuando preencho credenciais\nEntão sou autenticado'
+        gherkin:
+          'Dado que estou na página de login\nQuando preencho credenciais\nEntão sou autenticado',
       };
 
       const task: JiraTask = {
@@ -143,7 +149,7 @@ describe('Estrutura de Dados no Supabase', () => {
         type: 'Tarefa',
         status: 'To Do',
         bddScenarios: [scenario],
-        testCases: []
+        testCases: [],
       };
 
       testProject.tasks = [task];
@@ -173,9 +179,9 @@ describe('Estrutura de Dados no Supabase', () => {
             description: 'Teste da tarefa A',
             steps: ['Passo 1'],
             expectedResult: 'Resultado A',
-            status: 'Not Run'
-          }
-        ]
+            status: 'Not Run',
+          },
+        ],
       };
 
       const task2: JiraTask = {
@@ -190,9 +196,9 @@ describe('Estrutura de Dados no Supabase', () => {
             description: 'Teste da tarefa B',
             steps: ['Passo 1'],
             expectedResult: 'Resultado B',
-            status: 'Not Run'
-          }
-        ]
+            status: 'Not Run',
+          },
+        ],
       };
 
       testProject.tasks = [task1, task2];
@@ -202,7 +208,7 @@ describe('Estrutura de Dados no Supabase', () => {
       const savedProject = projects.find(p => p.id === testProject.id);
 
       expect(savedProject?.tasks).toHaveLength(2);
-      
+
       // Verificar que cada tarefa mantém seus próprios dados
       const savedTask1 = savedProject?.tasks.find(t => t.id === 'TASK-A');
       const savedTask2 = savedProject?.tasks.find(t => t.id === 'TASK-B');
@@ -233,24 +239,24 @@ describe('Estrutura de Dados no Supabase', () => {
             description: 'Teste X',
             steps: ['Passo 1'],
             expectedResult: 'Resultado X',
-            status: 'Not Run'
-          }
+            status: 'Not Run',
+          },
         ],
         testStrategy: [
           {
             testType: 'Estratégia X',
             description: 'Descrição estratégia X',
             howToExecute: ['Passo 1'],
-            tools: 'Ferramenta X'
-          }
+            tools: 'Ferramenta X',
+          },
         ],
         bddScenarios: [
           {
             id: 'bdd-x-001',
             title: 'Cenário X',
-            gherkin: 'Gherkin X'
-          }
-        ]
+            gherkin: 'Gherkin X',
+          },
+        ],
       };
 
       const task2: JiraTask = {
@@ -261,7 +267,7 @@ describe('Estrutura de Dados no Supabase', () => {
         status: 'To Do',
         testCases: [],
         testStrategy: [],
-        bddScenarios: []
+        bddScenarios: [],
       };
 
       testProject.tasks = [task1, task2];
@@ -302,24 +308,24 @@ describe('Estrutura de Dados no Supabase', () => {
             description: 'Caso de teste',
             steps: ['Passo 1'],
             expectedResult: 'Resultado',
-            status: 'Passed'
-          }
+            status: 'Passed',
+          },
         ],
         testStrategy: [
           {
             testType: 'Funcional',
             description: 'Estratégia',
             howToExecute: ['Passo 1'],
-            tools: 'Postman'
-          }
+            tools: 'Postman',
+          },
         ],
         bddScenarios: [
           {
             id: 'bdd-verify-001',
             title: 'Cenário',
-            gherkin: 'Gherkin'
-          }
-        ]
+            gherkin: 'Gherkin',
+          },
+        ],
       };
 
       testProject.tasks = [task];
@@ -352,9 +358,9 @@ describe('Estrutura de Dados no Supabase', () => {
             description: 'Teste 1',
             steps: ['Passo 1'],
             expectedResult: 'Resultado',
-            status: 'Not Run'
-          }
-        ]
+            status: 'Not Run',
+          },
+        ],
       };
 
       const task2: JiraTask = {
@@ -369,9 +375,9 @@ describe('Estrutura de Dados no Supabase', () => {
             description: 'Teste 2',
             steps: ['Passo 1'],
             expectedResult: 'Resultado',
-            status: 'Not Run'
-          }
-        ]
+            status: 'Not Run',
+          },
+        ],
       };
 
       testProject.tasks = [task1, task2];
@@ -379,7 +385,7 @@ describe('Estrutura de Dados no Supabase', () => {
 
       const results = await verifySupabaseStructure();
       const projectResult = results.find(r => r.projectId === testProject.id);
-      
+
       const relationCheck = verifyTaskRelations([projectResult!]);
 
       expect(relationCheck.isValid).toBe(true);
@@ -387,4 +393,3 @@ describe('Estrutura de Dados no Supabase', () => {
     });
   });
 });
-

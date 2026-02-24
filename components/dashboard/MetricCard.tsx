@@ -26,7 +26,7 @@ interface MetricCardProps {
 
 /**
  * Card de métrica com ícone, valor, tendência e descrição
- * 
+ *
  * @example
  * ```tsx
  * <MetricCard
@@ -39,46 +39,34 @@ interface MetricCardProps {
  * />
  * ```
  */
-export const MetricCard = React.memo<MetricCardProps>(({
-  title,
-  value,
-  change,
-  trend = 'neutral',
-  icon: Icon,
-  description,
-  className
-}) => {
-  const TrendIcon = trend === 'up' ? TrendingUp : trend === 'down' ? TrendingDown : Minus;
-  
-  const trendColor = trend === 'up' 
-    ? 'text-success' 
-    : trend === 'down' 
-    ? 'text-error' 
-    : 'text-base-content/60';
+export const MetricCard = React.memo<MetricCardProps>(
+  ({ title, value, change, trend = 'neutral', icon: Icon, description, className }) => {
+    const TrendIcon = trend === 'up' ? TrendingUp : trend === 'down' ? TrendingDown : Minus;
 
-  return (
-    <Card className={cn('p-6', className)} hoverable>
-      <div className="flex items-center justify-between mb-4">
-        <div className="p-2 rounded-lg bg-primary/10">
-          <Icon className="h-5 w-5 text-primary" aria-hidden="true" />
-        </div>
-        {change && (
-          <div className={cn('flex items-center gap-1 text-sm font-medium', trendColor)}>
-            <TrendIcon className="h-3 w-3" aria-hidden="true" />
-            <span>{change}</span>
+    const trendColor =
+      trend === 'up' ? 'text-success' : trend === 'down' ? 'text-error' : 'text-base-content/60';
+
+    return (
+      <Card className={cn('p-6', className)} hoverable>
+        <div className="flex items-center justify-between mb-4">
+          <div className="p-2 rounded-lg bg-primary/10">
+            <Icon className="h-5 w-5 text-primary" aria-hidden="true" />
           </div>
-        )}
-      </div>
-      <div className="space-y-1">
-        <p className="text-2xl font-bold text-base-content">{value}</p>
-        <p className="text-sm font-medium text-base-content">{title}</p>
-        {description && (
-          <p className="text-xs text-base-content/70">{description}</p>
-        )}
-      </div>
-    </Card>
-  );
-});
+          {change && (
+            <div className={cn('flex items-center gap-1 text-sm font-medium', trendColor)}>
+              <TrendIcon className="h-3 w-3" aria-hidden="true" />
+              <span>{change}</span>
+            </div>
+          )}
+        </div>
+        <div className="space-y-1">
+          <p className="text-2xl font-bold text-base-content">{value}</p>
+          <p className="text-sm font-medium text-base-content">{title}</p>
+          {description && <p className="text-xs text-base-content/70">{description}</p>}
+        </div>
+      </Card>
+    );
+  }
+);
 
 MetricCard.displayName = 'MetricCard';
-

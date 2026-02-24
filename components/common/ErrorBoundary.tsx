@@ -76,26 +76,29 @@ URL: ${typeof window !== 'undefined' ? window.location.href : 'N/A'}
 User Agent: ${typeof navigator !== 'undefined' ? navigator.userAgent : 'N/A'}
     `.trim();
 
-    navigator.clipboard.writeText(errorText).then(() => {
-      alert('Detalhes do erro copiados para a área de transferência!');
-    }).catch(() => {
-      // Fallback: criar elemento temporário
-      const textarea = document.createElement('textarea');
-      textarea.value = errorText;
-      document.body.appendChild(textarea);
-      textarea.select();
-      document.execCommand('copy');
-      document.body.removeChild(textarea);
-      alert('Detalhes do erro copiados para a área de transferência!');
-    });
+    navigator.clipboard
+      .writeText(errorText)
+      .then(() => {
+        alert('Detalhes do erro copiados para a área de transferência!');
+      })
+      .catch(() => {
+        // Fallback: criar elemento temporário
+        const textarea = document.createElement('textarea');
+        textarea.value = errorText;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        alert('Detalhes do erro copiados para a área de transferência!');
+      });
   };
 
   getErrorType = (error: Error | null): string => {
     if (!error) return 'Desconhecido';
-    
+
     const message = error.message.toLowerCase();
     const name = error.name.toLowerCase();
-    
+
     if (message.includes('network') || message.includes('fetch') || message.includes('cors')) {
       return 'Erro de Rede';
     }
@@ -111,15 +114,15 @@ User Agent: ${typeof navigator !== 'undefined' ? navigator.userAgent : 'N/A'}
     if (name.includes('referenceerror')) {
       return 'Erro de Referência';
     }
-    
+
     return 'Erro de Aplicação';
   };
 
   getErrorSuggestion = (error: Error | null): string => {
     if (!error) return '';
-    
+
     const message = error.message.toLowerCase();
-    
+
     if (message.includes('network') || message.includes('fetch') || message.includes('cors')) {
       return 'Verifique sua conexão com a internet e tente novamente.';
     }
@@ -129,7 +132,7 @@ User Agent: ${typeof navigator !== 'undefined' ? navigator.userAgent : 'N/A'}
     if (message.includes('timeout')) {
       return 'A operação demorou muito. Tente novamente.';
     }
-    
+
     return 'Tente recarregar a página. Se o problema persistir, entre em contato com o suporte.';
   };
 
@@ -147,22 +150,19 @@ User Agent: ${typeof navigator !== 'undefined' ? navigator.userAgent : 'N/A'}
           <Card className="max-w-2xl w-full">
             <div className="text-center">
               <div className="text-6xl mb-4">⚠️</div>
-              <h1 className="text-2xl font-bold text-text-primary mb-2">
-                Ops! Algo deu errado
-              </h1>
-              <p className="text-sm text-base-content/60 mb-4">
-                {errorType}
-              </p>
+              <h1 className="text-2xl font-bold text-text-primary mb-2">Ops! Algo deu errado</h1>
+              <p className="text-sm text-base-content/60 mb-4">{errorType}</p>
               <p className="text-text-secondary mb-6">
-                {errorSuggestion || 'Ocorreu um erro inesperado. Por favor, tente recarregar a página.'}
+                {errorSuggestion ||
+                  'Ocorreu um erro inesperado. Por favor, tente recarregar a página.'}
               </p>
-              
+
               {this.state.error && (
                 <details className="text-left mb-6 bg-base-200 dark:bg-base-300 p-4 rounded-md">
                   <summary className="cursor-pointer text-text-primary font-semibold mb-2 flex items-center gap-2">
                     <span>Detalhes do erro</span>
                     <button
-                      onClick={(e) => {
+                      onClick={e => {
                         e.stopPropagation();
                         this.handleCopyError();
                       }}
@@ -179,7 +179,9 @@ User Agent: ${typeof navigator !== 'undefined' ? navigator.userAgent : 'N/A'}
                     </div>
                     <div>
                       <strong className="text-text-primary">Mensagem:</strong>
-                      <p className="ml-2 text-text-secondary text-sm break-words">{this.state.error.message}</p>
+                      <p className="ml-2 text-text-secondary text-sm break-words">
+                        {this.state.error.message}
+                      </p>
                     </div>
                     {this.state.error.stack && (
                       <div>
@@ -202,16 +204,10 @@ User Agent: ${typeof navigator !== 'undefined' ? navigator.userAgent : 'N/A'}
               )}
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <button
-                  onClick={this.handleReset}
-                  className="btn btn-primary"
-                >
+                <button onClick={this.handleReset} className="btn btn-primary">
                   Tentar Novamente
                 </button>
-                <button
-                  onClick={() => window.location.reload()}
-                  className="btn btn-secondary"
-                >
+                <button onClick={() => window.location.reload()} className="btn btn-secondary">
                   Recarregar Página
                 </button>
               </div>
@@ -224,4 +220,3 @@ User Agent: ${typeof navigator !== 'undefined' ? navigator.userAgent : 'N/A'}
     return this.props.children;
   }
 }
-

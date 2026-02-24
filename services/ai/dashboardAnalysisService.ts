@@ -1,4 +1,4 @@
-import { Type } from "@google/genai";
+import { Type } from '@google/genai';
 import { Project, DashboardOverviewAnalysis } from '../../types';
 import { detectCurrentSTLCPhase } from '../../utils/stlcPhaseDetector';
 import { calculateProjectMetrics } from '../../hooks/useProjectMetrics';
@@ -8,7 +8,10 @@ import { logger } from '../../utils/logger';
 
 const CACHE_TTL_MS = 1000 * 60 * 5; // 5 minutos
 
-const analysisCache = new Map<string, { snapshotHash: string; expiresAt: number; analysis: DashboardOverviewAnalysis }>();
+const analysisCache = new Map<
+  string,
+  { snapshotHash: string; expiresAt: number; analysis: DashboardOverviewAnalysis }
+>();
 
 const hashString = (value: string): string => {
   let hash = 0;
@@ -23,7 +26,7 @@ const hashString = (value: string): string => {
 const createProjectSnapshot = (project: Project): string => {
   const metrics = calculateProjectMetrics(project);
   const currentPhase = detectCurrentSTLCPhase(project);
-  
+
   // Normalizar texto de documentos para snapshot
   const normalizeText = (value?: string, maxLength: number = 200): string => {
     if (!value) return '';
@@ -55,7 +58,7 @@ const createProjectSnapshot = (project: Project): string => {
     notRun: allTestCases.filter(tc => tc.status === 'Not Run').length,
     blocked: allTestCases.filter(tc => tc.status === 'Blocked').length,
   };
-  
+
   const snapshot = {
     projectId: project.id,
     projectName: project.name,
@@ -77,7 +80,7 @@ const createProjectSnapshot = (project: Project): string => {
     testExecution: testExecutionInfo,
     phases: project.phases.map(p => ({ name: p.name, status: p.status })),
   };
-  
+
   return JSON.stringify(snapshot);
 };
 
@@ -86,104 +89,110 @@ const overviewAnalysisSchema = {
   properties: {
     summary: {
       type: Type.STRING,
-      description: "Resumo executivo da análise geral do projeto"
+      description: 'Resumo executivo da análise geral do projeto',
     },
     currentPhase: {
       type: Type.STRING,
-      description: "Análise detalhada da fase atual do STLC"
+      description: 'Análise detalhada da fase atual do STLC',
     },
     metrics: {
       type: Type.OBJECT,
       properties: {
         analysis: {
           type: Type.STRING,
-          description: "Análise das métricas do projeto"
+          description: 'Análise das métricas do projeto',
         },
         strengths: {
           type: Type.ARRAY,
           items: { type: Type.STRING },
-          description: "Pontos fortes identificados nas métricas"
+          description: 'Pontos fortes identificados nas métricas',
         },
         weaknesses: {
           type: Type.ARRAY,
           items: { type: Type.STRING },
-          description: "Pontos fracos identificados nas métricas"
-        }
+          description: 'Pontos fracos identificados nas métricas',
+        },
       },
-      required: ["analysis", "strengths", "weaknesses"]
+      required: ['analysis', 'strengths', 'weaknesses'],
     },
     risks: {
       type: Type.ARRAY,
       items: { type: Type.STRING },
-      description: "Riscos identificados no projeto"
+      description: 'Riscos identificados no projeto',
     },
     recommendations: {
       type: Type.ARRAY,
       items: { type: Type.STRING },
-      description: "Recomendações acionáveis para o projeto"
-    }
+      description: 'Recomendações acionáveis para o projeto',
+    },
   },
-  required: ["summary", "currentPhase", "metrics", "risks", "recommendations"]
+  required: ['summary', 'currentPhase', 'metrics', 'risks', 'recommendations'],
 };
 
 /**
  * Gera análise de visão geral do dashboard
  */
-export async function generateDashboardOverviewAnalysis(project: Project): Promise<DashboardOverviewAnalysis> {
+export async function generateDashboardOverviewAnalysis(
+  project: Project
+): Promise<DashboardOverviewAnalysis> {
   const snapshot = createProjectSnapshot(project);
   const snapshotHash = hashString(snapshot);
   const cacheKey = `dashboard-overview:${project.id}`;
-  
+
   // Verificar cache
   const cached = analysisCache.get(cacheKey);
   if (cached && cached.snapshotHash === snapshotHash && cached.expiresAt > Date.now()) {
     return cached.analysis as DashboardOverviewAnalysis;
   }
-  
+
   const metrics = calculateProjectMetrics(project);
   const currentPhase = detectCurrentSTLCPhase(project);
   const allTestCases = project.tasks.flatMap(t => t.testCases || []);
-  
+
   const documentContext = await getFormattedContext(project);
   const prompt = `${documentContext}
 Você é um especialista sênior em QA e STLC (Software Testing Life Cycle). 
 Analise o projeto fornecido e gere uma análise estratégica focada na visão geral do projeto.
 
 CONTEXTO DO PROJETO:
-${JSON.stringify({
-  nome: project.name,
-  descricao: project.description,
-  faseAtualSTLC: currentPhase,
-  metricas: {
-    totalTarefas: metrics.totalTasks,
-    totalCasosTeste: metrics.totalTestCases,
-    taxaAprovacao: metrics.testPassRate,
-    coberturaTeste: metrics.testCoverage,
-    faseAtualSDLC: metrics.currentPhase,
-    metricasDocumentos: metrics.documentMetrics,
-    statusTarefas: metrics.taskStatus,
-    execucaoTestes: metrics.testExecution,
+${JSON.stringify(
+  {
+    nome: project.name,
+    descricao: project.description,
+    faseAtualSTLC: currentPhase,
+    metricas: {
+      totalTarefas: metrics.totalTasks,
+      totalCasosTeste: metrics.totalTestCases,
+      taxaAprovacao: metrics.testPassRate,
+      coberturaTeste: metrics.testCoverage,
+      faseAtualSDLC: metrics.currentPhase,
+      metricasDocumentos: metrics.documentMetrics,
+      statusTarefas: metrics.taskStatus,
+      execucaoTestes: metrics.testExecution,
+    },
+    documentos: (project.documents || []).map(doc => ({
+      nome: doc.name,
+      temAnalise: !!doc.analysis && doc.analysis.length > 0,
+    })),
+    statusTarefas: {
+      toDo: project.tasks.filter(t => t.type !== 'Bug' && t.status === 'To Do').length,
+      inProgress: project.tasks.filter(t => t.type !== 'Bug' && t.status === 'In Progress').length,
+      done: project.tasks.filter(t => t.type !== 'Bug' && t.status === 'Done').length,
+      blocked: project.tasks.filter(t => t.type !== 'Bug' && t.status === 'Blocked').length,
+    },
+    execucaoTestes: {
+      passed: allTestCases.filter(tc => tc.status === 'Passed').length,
+      failed: allTestCases.filter(tc => tc.status === 'Failed').length,
+      notRun: allTestCases.filter(tc => tc.status === 'Not Run').length,
+      blocked: allTestCases.filter(tc => tc.status === 'Blocked').length,
+    },
+    fases: project.phases.map(p => ({ nome: p.name, status: p.status })),
+    totalTarefas: project.tasks.length,
+    totalDocumentos: project.documents.length,
   },
-  documentos: (project.documents || []).map(doc => ({
-    nome: doc.name,
-    temAnalise: !!doc.analysis && doc.analysis.length > 0,
-  })),
-  statusTarefas: {
-    toDo: project.tasks.filter(t => t.type !== 'Bug' && t.status === 'To Do').length,
-    inProgress: project.tasks.filter(t => t.type !== 'Bug' && t.status === 'In Progress').length,
-    done: project.tasks.filter(t => t.type !== 'Bug' && t.status === 'Done').length,
-    blocked: project.tasks.filter(t => t.type !== 'Bug' && t.status === 'Blocked').length,
-  },
-  execucaoTestes: {
-    passed: allTestCases.filter(tc => tc.status === 'Passed').length,
-    failed: allTestCases.filter(tc => tc.status === 'Failed').length,
-    notRun: allTestCases.filter(tc => tc.status === 'Not Run').length,
-    blocked: allTestCases.filter(tc => tc.status === 'Blocked').length,
-  },
-  fases: project.phases.map(p => ({ nome: p.name, status: p.status })),
-  totalTarefas: project.tasks.length,
-  totalDocumentos: project.documents.length,
-}, null, 2)}
+  null,
+  2
+)}
 
 INSTRUÇÕES:
 1. Gere um resumo executivo conciso e acionável sobre o estado geral do projeto, considerando tarefas, testes e documentos.
@@ -212,32 +221,32 @@ INSTRUÇÕES:
 
 Respeite o schema JSON fornecido.
   `;
-  
+
   try {
     const response = await callGeminiWithRetry({
-      model: "gemini-2.5-flash",
+      model: 'gemini-2.5-flash',
       contents: prompt,
       config: {
-        responseMimeType: "application/json",
+        responseMimeType: 'application/json',
         responseSchema: overviewAnalysisSchema,
       },
     });
-    
+
     const parsedResponse = JSON.parse(response.text.trim());
-    
+
     const analysis: DashboardOverviewAnalysis = {
       ...parsedResponse,
       generatedAt: new Date().toISOString(),
       isOutdated: false,
     };
-    
+
     // Salvar no cache
     analysisCache.set(cacheKey, {
       snapshotHash,
       expiresAt: Date.now() + CACHE_TTL_MS,
       analysis,
     });
-    
+
     return analysis;
   } catch (error) {
     logger.error('Erro ao gerar análise de visão geral', 'dashboardAnalysisService', error);
@@ -250,16 +259,16 @@ Respeite o schema JSON fornecido.
  */
 export function markDashboardAnalysesAsOutdated(project: Project): Project {
   const updatedProject = { ...project };
-  
+
   // Criar snapshot atual
   const currentOverviewSnapshot = createProjectSnapshot(project);
-  
+
   // Verificar se houve mudanças
   if (project.dashboardOverviewAnalysis) {
     const cacheKey = `dashboard-overview:${project.id}`;
     const cached = analysisCache.get(cacheKey);
     const currentHash = hashString(currentOverviewSnapshot);
-    
+
     if (!cached || cached.snapshotHash !== currentHash) {
       updatedProject.dashboardOverviewAnalysis = {
         ...project.dashboardOverviewAnalysis,
@@ -267,7 +276,6 @@ export function markDashboardAnalysesAsOutdated(project: Project): Project {
       };
     }
   }
-  
+
   return updatedProject;
 }
-

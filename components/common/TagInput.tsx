@@ -12,7 +12,7 @@ export const TagInput: React.FC<TagInputProps> = ({
   tags,
   onChange,
   availableTags = [],
-  allowNewTags = true
+  allowNewTags = true,
 }) => {
   const [inputValue, setInputValue] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -82,7 +82,7 @@ export const TagInput: React.FC<TagInputProps> = ({
           ref={inputRef}
           type="text"
           value={inputValue}
-          onChange={(e) => {
+          onChange={e => {
             setInputValue(e.target.value);
             setShowSuggestions(true);
           }}
@@ -113,4 +113,3 @@ export const TagInput: React.FC<TagInputProps> = ({
     </div>
   );
 };
-

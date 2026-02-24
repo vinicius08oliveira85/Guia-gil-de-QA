@@ -8,11 +8,7 @@ interface EstimationInputProps {
   onCancel?: () => void;
 }
 
-export const EstimationInput: React.FC<EstimationInputProps> = ({
-  task,
-  onSave,
-  onCancel
-}) => {
+export const EstimationInput: React.FC<EstimationInputProps> = ({ task, onSave, onCancel }) => {
   const [estimatedHours, setEstimatedHours] = useState<number>(task.estimatedHours || 0);
   const [actualHours, setActualHours] = useState<number>(task.actualHours || 0);
 
@@ -34,7 +30,9 @@ export const EstimationInput: React.FC<EstimationInputProps> = ({
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold text-text-primary">Estimativas</h3>
         {onCancel && (
-          <button onClick={onCancel} className="text-text-secondary hover:text-text-primary">✕</button>
+          <button onClick={onCancel} className="text-text-secondary hover:text-text-primary">
+            ✕
+          </button>
         )}
       </div>
 
@@ -53,7 +51,8 @@ export const EstimationInput: React.FC<EstimationInputProps> = ({
           </button>
         </div>
         <div className="text-sm text-text-secondary">
-          Estimativa sugerida: <span className="font-semibold text-text-primary">{suggestion}h</span>
+          Estimativa sugerida:{' '}
+          <span className="font-semibold text-text-primary">{suggestion}h</span>
         </div>
       </div>
 
@@ -67,7 +66,7 @@ export const EstimationInput: React.FC<EstimationInputProps> = ({
           min="0"
           step="0.5"
           value={estimatedHours || ''}
-          onChange={(e) => setEstimatedHours(parseFloat(e.target.value) || 0)}
+          onChange={e => setEstimatedHours(parseFloat(e.target.value) || 0)}
           className="w-full px-3 py-2 bg-black/20 border border-surface-border rounded-md text-text-primary"
           placeholder="Ex: 8"
         />
@@ -83,19 +82,20 @@ export const EstimationInput: React.FC<EstimationInputProps> = ({
           min="0"
           step="0.5"
           value={actualHours || ''}
-          onChange={(e) => setActualHours(parseFloat(e.target.value) || 0)}
+          onChange={e => setActualHours(parseFloat(e.target.value) || 0)}
           className="w-full px-3 py-2 bg-black/20 border border-surface-border rounded-md text-text-primary"
           placeholder="Ex: 6.5"
         />
         {actualHours > 0 && estimatedHours > 0 && (
           <div className="mt-2 text-sm">
-            <span className={`font-semibold ${
-              actualHours <= estimatedHours ? 'text-green-400' : 'text-orange-400'
-            }`}>
-              {actualHours <= estimatedHours 
+            <span
+              className={`font-semibold ${
+                actualHours <= estimatedHours ? 'text-green-400' : 'text-orange-400'
+              }`}
+            >
+              {actualHours <= estimatedHours
                 ? `✅ Dentro do estimado (${estimatedHours - actualHours}h restantes)`
-                : `⚠️ Acima do estimado (+${actualHours - estimatedHours}h)`
-              }
+                : `⚠️ Acima do estimado (+${actualHours - estimatedHours}h)`}
             </span>
           </div>
         )}
@@ -119,4 +119,3 @@ export const EstimationInput: React.FC<EstimationInputProps> = ({
     </div>
   );
 };
-

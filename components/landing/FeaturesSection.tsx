@@ -25,55 +25,64 @@ const features: Feature[] = [
   {
     icon: TestTube,
     title: 'Tarefas, testes e evidências',
-    description: 'Estruture tarefas de QA, casos de teste e resultados no mesmo fluxo — com rastreabilidade e histórico.',
+    description:
+      'Estruture tarefas de QA, casos de teste e resultados no mesmo fluxo — com rastreabilidade e histórico.',
     color: 'text-primary',
   },
   {
     icon: FileText,
     title: 'Documentos e padrões',
-    description: 'Centralize estratégia, planos e artefatos do projeto, evitando duplicação e perda de contexto.',
+    description:
+      'Centralize estratégia, planos e artefatos do projeto, evitando duplicação e perda de contexto.',
     color: 'text-secondary',
   },
   {
     icon: BarChart3,
     title: 'Métricas e visão executiva',
-    description: 'Dashboards para acompanhar progresso, riscos e qualidade — sem “montagem manual” de relatórios.',
+    description:
+      'Dashboards para acompanhar progresso, riscos e qualidade — sem “montagem manual” de relatórios.',
     color: 'text-accent',
   },
   {
     icon: GitBranch,
     title: 'Integração com Jira',
-    description: 'Importe e conecte informações do Jira ao seu fluxo de QA para reduzir retrabalho e manter alinhamento.',
+    description:
+      'Importe e conecte informações do Jira ao seu fluxo de QA para reduzir retrabalho e manter alinhamento.',
     color: 'text-primary',
   },
   {
     icon: Zap,
     title: 'IA assistida (quando disponível)',
-    description: 'Sugestões e análises para acelerar escrita e revisão de artefatos, com controle humano e transparência.',
+    description:
+      'Sugestões e análises para acelerar escrita e revisão de artefatos, com controle humano e transparência.',
     color: 'text-secondary',
   },
   {
     icon: Shield,
     title: 'Sinais de qualidade',
-    description: 'Indicadores e checagens para orientar priorização, prevenção e decisões de release.',
+    description:
+      'Indicadores e checagens para orientar priorização, prevenção e decisões de release.',
     color: 'text-accent',
   },
   {
     icon: Users,
     title: 'Colaboração e consistência',
-    description: 'Padronize a forma como a equipe registra decisões, evidências e status do QA ao longo do ciclo.',
+    description:
+      'Padronize a forma como a equipe registra decisões, evidências e status do QA ao longo do ciclo.',
     color: 'text-primary',
   },
   {
     icon: TrendingUp,
     title: 'Evolução de métricas',
-    description: 'Acompanhe tendências ao longo do tempo para validar melhorias e capturar regressões cedo.',
+    description:
+      'Acompanhe tendências ao longo do tempo para validar melhorias e capturar regressões cedo.',
     color: 'text-secondary',
   },
   {
     icon: Clock,
     title: 'Armazenamento local + cloud opcional',
-    description: 'Funciona localmente (IndexedDB) com possibilidade de sincronização via Supabase quando configurado.',
+    description:
+      'Funciona localmente (IndexedDB) com possibilidade de sincronização via Supabase quando configurado.',
     color: 'text-accent',
   },
 ];
@@ -144,4 +153,3 @@ export const FeaturesSection: React.FC = () => {
     </section>
   );
 };
-

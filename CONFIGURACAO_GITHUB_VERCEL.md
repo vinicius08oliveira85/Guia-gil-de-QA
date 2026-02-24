@@ -13,10 +13,10 @@ A integração está pronta para funcionar **100% via GitHub Actions e Vercel**,
 3. Clique em **New repository secret**
 4. Adicione os seguintes secrets:
 
-| Nome | Valor |
-|------|-------|
+| Nome              | Valor                     |
+| ----------------- | ------------------------- |
 | `FIGMA_API_TOKEN` | `seu_token_do_figma_aqui` |
-| `FIGMA_FILE_KEY` | `seu_file_key_aqui` |
+| `FIGMA_FILE_KEY`  | `seu_file_key_aqui`       |
 
 ### 2. Configurar Variáveis no Vercel
 
@@ -24,11 +24,11 @@ A integração está pronta para funcionar **100% via GitHub Actions e Vercel**,
 2. Clique em **Settings** → **Environment Variables**
 3. Adicione as seguintes variáveis:
 
-| Nome | Valor | Ambiente |
-|------|-------|----------|
-| `VITE_FIGMA_API_TOKEN` | `seu_token_do_figma_aqui` | Production, Preview, Development |
-| `FIGMA_FILE_KEY` | `seu_file_key_aqui` | Production, Preview, Development |
-| `STORYBOOK_FIGMA_URL` | `https://www.figma.com/make/BnNDG2oJPvckiNda3H4MLt/...` | Production, Preview, Development |
+| Nome                   | Valor                                                   | Ambiente                         |
+| ---------------------- | ------------------------------------------------------- | -------------------------------- |
+| `VITE_FIGMA_API_TOKEN` | `seu_token_do_figma_aqui`                               | Production, Preview, Development |
+| `FIGMA_FILE_KEY`       | `seu_file_key_aqui`                                     | Production, Preview, Development |
+| `STORYBOOK_FIGMA_URL`  | `https://www.figma.com/make/BnNDG2oJPvckiNda3H4MLt/...` | Production, Preview, Development |
 
 ### 3. Testar Sincronização via GitHub Actions
 
@@ -97,4 +97,3 @@ O Vercel está configurado para:
 **Apenas adicionar os secrets no GitHub e variáveis no Vercel!**
 
 Depois disso, tudo funcionará automaticamente via GitHub Actions e Vercel.
-

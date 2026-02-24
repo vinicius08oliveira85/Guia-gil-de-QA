@@ -26,7 +26,7 @@ describe('Preservação de Dados após Sincronização Jira', () => {
       description: 'Teste de preservação após sync Jira',
       tasks: [],
       documents: [],
-      phases: []
+      phases: [],
     };
   });
 
@@ -39,7 +39,7 @@ describe('Preservação de Dados após Sincronização Jira', () => {
         expectedResult: 'Resultado esperado',
         status: 'Passed',
         observedResult: 'Resultado observado',
-        priority: 'Alta'
+        priority: 'Alta',
       };
 
       const task: JiraTask = {
@@ -48,7 +48,7 @@ describe('Preservação de Dados após Sincronização Jira', () => {
         description: 'Descrição original',
         type: 'Tarefa',
         status: 'To Do',
-        testCases: [originalTestCase]
+        testCases: [originalTestCase],
       };
 
       testProject.tasks = [task];
@@ -69,7 +69,7 @@ describe('Preservação de Dados após Sincronização Jira', () => {
         // Preservar dados locais
         testCases: task.testCases, // ✅ Preservar casos de teste
         bddScenarios: task.bddScenarios || [],
-        testStrategy: task.testStrategy
+        testStrategy: task.testStrategy,
       };
 
       testProject.tasks = [syncedTask];
@@ -94,22 +94,22 @@ describe('Preservação de Dados após Sincronização Jira', () => {
           description: 'Caso 1',
           steps: ['Passo 1'],
           expectedResult: 'Resultado 1',
-          status: 'Passed'
+          status: 'Passed',
         },
         {
           id: 'tc-status-2',
           description: 'Caso 2',
           steps: ['Passo 2'],
           expectedResult: 'Resultado 2',
-          status: 'Failed'
+          status: 'Failed',
         },
         {
           id: 'tc-status-3',
           description: 'Caso 3',
           steps: ['Passo 3'],
           expectedResult: 'Resultado 3',
-          status: 'Blocked'
-        }
+          status: 'Blocked',
+        },
       ];
 
       const task: JiraTask = {
@@ -118,7 +118,7 @@ describe('Preservação de Dados após Sincronização Jira', () => {
         description: 'Descrição',
         type: 'Tarefa',
         status: 'To Do',
-        testCases
+        testCases,
       };
 
       testProject.tasks = [task];
@@ -128,12 +128,12 @@ describe('Preservação de Dados após Sincronização Jira', () => {
       const jiraUpdatedTask: JiraTask = {
         ...task,
         title: 'Tarefa Atualizada',
-        status: 'Done'
+        status: 'Done',
       };
 
       const syncedTask: JiraTask = {
         ...jiraUpdatedTask,
-        testCases: task.testCases // ✅ Preservar casos de teste com seus status
+        testCases: task.testCases, // ✅ Preservar casos de teste com seus status
       };
 
       testProject.tasks = [syncedTask];
@@ -144,9 +144,15 @@ describe('Preservação de Dados após Sincronização Jira', () => {
       const savedProject = projects.find(p => p.id === testProject.id);
 
       expect(savedProject?.tasks[0].testCases).toHaveLength(3);
-      expect(savedProject?.tasks[0].testCases.find(tc => tc.id === 'tc-status-1')?.status).toBe('Passed');
-      expect(savedProject?.tasks[0].testCases.find(tc => tc.id === 'tc-status-2')?.status).toBe('Failed');
-      expect(savedProject?.tasks[0].testCases.find(tc => tc.id === 'tc-status-3')?.status).toBe('Blocked');
+      expect(savedProject?.tasks[0].testCases.find(tc => tc.id === 'tc-status-1')?.status).toBe(
+        'Passed'
+      );
+      expect(savedProject?.tasks[0].testCases.find(tc => tc.id === 'tc-status-2')?.status).toBe(
+        'Failed'
+      );
+      expect(savedProject?.tasks[0].testCases.find(tc => tc.id === 'tc-status-3')?.status).toBe(
+        'Blocked'
+      );
     });
   });
 
@@ -156,7 +162,7 @@ describe('Preservação de Dados após Sincronização Jira', () => {
         testType: 'Testes Funcionais',
         description: 'Estratégia de teste funcional',
         howToExecute: ['Passo 1', 'Passo 2'],
-        tools: 'Postman, Selenium'
+        tools: 'Postman, Selenium',
       };
 
       const task: JiraTask = {
@@ -166,7 +172,7 @@ describe('Preservação de Dados após Sincronização Jira', () => {
         type: 'Tarefa',
         status: 'To Do',
         testStrategy: [strategy],
-        testCases: []
+        testCases: [],
       };
 
       testProject.tasks = [task];
@@ -176,12 +182,12 @@ describe('Preservação de Dados após Sincronização Jira', () => {
       const jiraUpdatedTask: JiraTask = {
         ...task,
         title: 'Tarefa Atualizada do Jira',
-        description: 'Nova descrição do Jira'
+        description: 'Nova descrição do Jira',
       };
 
       const syncedTask: JiraTask = {
         ...jiraUpdatedTask,
-        testStrategy: task.testStrategy // ✅ Preservar estratégias
+        testStrategy: task.testStrategy, // ✅ Preservar estratégias
       };
 
       testProject.tasks = [syncedTask];
@@ -193,7 +199,9 @@ describe('Preservação de Dados após Sincronização Jira', () => {
 
       expect(savedProject?.tasks[0].testStrategy).toHaveLength(1);
       expect(savedProject?.tasks[0].testStrategy?.[0].testType).toBe('Testes Funcionais');
-      expect(savedProject?.tasks[0].testStrategy?.[0].description).toBe('Estratégia de teste funcional');
+      expect(savedProject?.tasks[0].testStrategy?.[0].description).toBe(
+        'Estratégia de teste funcional'
+      );
       expect(savedProject?.tasks[0].testStrategy?.[0].tools).toBe('Postman, Selenium');
     });
   });
@@ -203,7 +211,8 @@ describe('Preservação de Dados após Sincronização Jira', () => {
       const scenario: BddScenario = {
         id: 'bdd-preserve-001',
         title: 'Cenário de Login',
-        gherkin: 'Dado que estou na página de login\nQuando preencho credenciais válidas\nEntão sou autenticado'
+        gherkin:
+          'Dado que estou na página de login\nQuando preencho credenciais válidas\nEntão sou autenticado',
       };
 
       const task: JiraTask = {
@@ -213,7 +222,7 @@ describe('Preservação de Dados após Sincronização Jira', () => {
         type: 'Tarefa',
         status: 'To Do',
         bddScenarios: [scenario],
-        testCases: []
+        testCases: [],
       };
 
       testProject.tasks = [task];
@@ -223,12 +232,12 @@ describe('Preservação de Dados após Sincronização Jira', () => {
       const jiraUpdatedTask: JiraTask = {
         ...task,
         title: 'Tarefa Atualizada',
-        status: 'In Progress'
+        status: 'In Progress',
       };
 
       const syncedTask: JiraTask = {
         ...jiraUpdatedTask,
-        bddScenarios: task.bddScenarios || [] // ✅ Preservar cenários BDD
+        bddScenarios: task.bddScenarios || [], // ✅ Preservar cenários BDD
       };
 
       testProject.tasks = [syncedTask];
@@ -241,7 +250,9 @@ describe('Preservação de Dados após Sincronização Jira', () => {
       expect(savedProject?.tasks[0].bddScenarios).toHaveLength(1);
       expect(savedProject?.tasks[0].bddScenarios?.[0].id).toBe('bdd-preserve-001');
       expect(savedProject?.tasks[0].bddScenarios?.[0].title).toBe('Cenário de Login');
-      expect(savedProject?.tasks[0].bddScenarios?.[0].gherkin).toContain('Dado que estou na página de login');
+      expect(savedProject?.tasks[0].bddScenarios?.[0].gherkin).toContain(
+        'Dado que estou na página de login'
+      );
     });
   });
 
@@ -260,24 +271,24 @@ describe('Preservação de Dados após Sincronização Jira', () => {
             steps: ['Passo 1'],
             expectedResult: 'Resultado',
             status: 'Passed',
-            toolsUsed: ['Postman']
-          }
+            toolsUsed: ['Postman'],
+          },
         ],
         testStrategy: [
           {
             testType: 'Funcional',
             description: 'Estratégia funcional',
             howToExecute: ['Executar'],
-            tools: 'Postman'
-          }
+            tools: 'Postman',
+          },
         ],
         bddScenarios: [
           {
             id: 'bdd-complete-1',
             title: 'Cenário completo',
-            gherkin: 'Gherkin completo'
-          }
-        ]
+            gherkin: 'Gherkin completo',
+          },
+        ],
       };
 
       testProject.tasks = [task];
@@ -289,7 +300,7 @@ describe('Preservação de Dados após Sincronização Jira', () => {
         title: 'Tarefa Atualizada do Jira',
         description: 'Nova descrição do Jira',
         status: 'Done',
-        priority: 'Alta'
+        priority: 'Alta',
       };
 
       // Simular comportamento do syncJiraProject (linhas 1545-1578)
@@ -298,7 +309,7 @@ describe('Preservação de Dados após Sincronização Jira', () => {
         // ✅ Preservar todos os dados locais
         testCases: task.testCases, // ✅ Preservar casos de teste
         bddScenarios: task.bddScenarios || [], // ✅ Preservar cenários BDD
-        testStrategy: task.testStrategy // ✅ Preservar estratégias
+        testStrategy: task.testStrategy, // ✅ Preservar estratégias
       };
 
       testProject.tasks = [syncedTask];
@@ -318,10 +329,10 @@ describe('Preservação de Dados após Sincronização Jira', () => {
       expect(savedProject?.tasks[0].testCases).toHaveLength(1);
       expect(savedProject?.tasks[0].testCases[0].id).toBe('tc-complete-1');
       expect(savedProject?.tasks[0].testCases[0].status).toBe('Passed');
-      
+
       expect(savedProject?.tasks[0].testStrategy).toHaveLength(1);
       expect(savedProject?.tasks[0].testStrategy?.[0].testType).toBe('Funcional');
-      
+
       expect(savedProject?.tasks[0].bddScenarios).toHaveLength(1);
       expect(savedProject?.tasks[0].bddScenarios?.[0].id).toBe('bdd-complete-1');
     });
@@ -341,9 +352,9 @@ describe('Preservação de Dados após Sincronização Jira', () => {
             description: 'Teste tarefa 1',
             steps: ['Passo 1'],
             expectedResult: 'Resultado 1',
-            status: 'Passed'
-          }
-        ]
+            status: 'Passed',
+          },
+        ],
       };
 
       const task2: JiraTask = {
@@ -357,10 +368,10 @@ describe('Preservação de Dados após Sincronização Jira', () => {
             testType: 'Estratégia tarefa 2',
             description: 'Descrição estratégia',
             howToExecute: ['Executar'],
-            tools: 'Ferramenta'
-          }
+            tools: 'Ferramenta',
+          },
         ],
-        testCases: []
+        testCases: [],
       };
 
       testProject.tasks = [task1, task2];
@@ -371,14 +382,14 @@ describe('Preservação de Dados após Sincronização Jira', () => {
         ...task1,
         title: 'Tarefa 1 Atualizada',
         status: 'In Progress',
-        testCases: task1.testCases // ✅ Preservar
+        testCases: task1.testCases, // ✅ Preservar
       };
 
       const syncedTask2: JiraTask = {
         ...task2,
         title: 'Tarefa 2 Atualizada',
         status: 'Done',
-        testStrategy: task2.testStrategy // ✅ Preservar
+        testStrategy: task2.testStrategy, // ✅ Preservar
       };
 
       testProject.tasks = [syncedTask1, syncedTask2];
@@ -405,4 +416,3 @@ describe('Preservação de Dados após Sincronização Jira', () => {
     });
   });
 });
-

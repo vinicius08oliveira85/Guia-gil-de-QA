@@ -26,13 +26,13 @@ export async function getDocumentContext(project: Project | null): Promise<strin
 
   try {
     const content = loadProcessedDocument(project);
-    
+
     if (content && content.trim().length > 0) {
       contextCache.set(projectId, content);
       cacheInitialized.add(projectId);
       return content;
     }
-    
+
     // Se não há conteúdo, marcar como inicializado e cachear null
     contextCache.set(projectId, null);
     cacheInitialized.add(projectId);
@@ -56,9 +56,10 @@ export function buildContextSection(content: string): string {
   // Limitar o tamanho do contexto para evitar prompts muito longos
   // Manter apenas os primeiros 8000 caracteres para não exceder limites de tokens
   const maxLength = 8000;
-  const truncatedContent = content.length > maxLength 
-    ? content.substring(0, maxLength) + '\n\n[... conteúdo truncado para otimização ...]'
-    : content;
+  const truncatedContent =
+    content.length > maxLength
+      ? content.substring(0, maxLength) + '\n\n[... conteúdo truncado para otimização ...]'
+      : content;
 
   return `
 ═══════════════════════════════════════════════════════════════
@@ -96,4 +97,3 @@ export async function getFormattedContext(project: Project | null): Promise<stri
   }
   return buildContextSection(context);
 }
-

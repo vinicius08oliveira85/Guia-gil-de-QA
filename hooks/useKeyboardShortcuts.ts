@@ -14,7 +14,9 @@ export const useKeyboardShortcuts = (shortcuts: KeyboardShortcut[]) => {
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       shortcuts.forEach(shortcut => {
-        const ctrlMatch = shortcut.ctrl ? event.ctrlKey || event.metaKey : !event.ctrlKey && !event.metaKey;
+        const ctrlMatch = shortcut.ctrl
+          ? event.ctrlKey || event.metaKey
+          : !event.ctrlKey && !event.metaKey;
         const shiftMatch = shortcut.shift ? event.shiftKey : !event.shiftKey;
         const altMatch = shortcut.alt ? event.altKey : !event.altKey;
         const keyMatch = event.key.toLowerCase() === shortcut.key.toLowerCase();
@@ -45,8 +47,20 @@ const getShortcuts = () => {
   try {
     const prefs = getKeyboardShortcutPreferences();
     return {
-      SEARCH: { key: prefs.search.key, ctrl: prefs.search.ctrl, shift: prefs.search.shift, alt: prefs.search.alt, description: 'Abrir busca global' },
-      ESCAPE: { key: prefs.closeModal.key, ctrl: prefs.closeModal.ctrl, shift: prefs.closeModal.shift, alt: prefs.closeModal.alt, description: 'Fechar modais' },
+      SEARCH: {
+        key: prefs.search.key,
+        ctrl: prefs.search.ctrl,
+        shift: prefs.search.shift,
+        alt: prefs.search.alt,
+        description: 'Abrir busca global',
+      },
+      ESCAPE: {
+        key: prefs.closeModal.key,
+        ctrl: prefs.closeModal.ctrl,
+        shift: prefs.closeModal.shift,
+        alt: prefs.closeModal.alt,
+        description: 'Fechar modais',
+      },
     };
   } catch {
     return {
@@ -62,5 +76,5 @@ export const SHORTCUTS = new Proxy({} as ReturnType<typeof getShortcuts>, {
   get(_target, prop) {
     const shortcuts = getShortcuts();
     return shortcuts[prop as keyof typeof shortcuts];
-  }
+  },
 });

@@ -14,7 +14,7 @@ export const TaskAnalysisCard: React.FC<TaskAnalysisCardProps> = ({
   analysis,
   task,
   onTaskClick,
-  compact = false
+  compact = false,
 }) => {
   const [expanded, setExpanded] = useState(!compact);
 
@@ -55,14 +55,12 @@ export const TaskAnalysisCard: React.FC<TaskAnalysisCardProps> = ({
             </button>
           ) : (
             <div>
-              <h4 className="font-semibold text-base-content mb-1">
-                Tarefa {analysis.taskId}
-              </h4>
+              <h4 className="font-semibold text-base-content mb-1">Tarefa {analysis.taskId}</h4>
               <p className="text-xs text-base-content/70">ID: {analysis.taskId}</p>
             </div>
           )}
         </div>
-        
+
         {/* Risk Badge */}
         <div className={cn('badge badge-sm whitespace-nowrap', riskBadgeClass)}>
           {analysis.riskLevel}
@@ -71,9 +69,7 @@ export const TaskAnalysisCard: React.FC<TaskAnalysisCardProps> = ({
 
       {/* Summary */}
       <div className="mb-3">
-        <p className="text-sm text-base-content line-clamp-2">
-          {analysis.summary}
-        </p>
+        <p className="text-sm text-base-content line-clamp-2">{analysis.summary}</p>
       </div>
 
       {/* Expand/Collapse */}
@@ -199,7 +195,9 @@ export const TaskAnalysisCard: React.FC<TaskAnalysisCardProps> = ({
           {/* Metadata */}
           <div className="pt-2 border-t border-base-300">
             <p className="text-xs text-base-content/70 flex items-center gap-2">
-              <span>Gerada em {format(new Date(analysis.generatedAt), "dd/MM/yyyy 'às' HH:mm")}</span>
+              <span>
+                Gerada em {format(new Date(analysis.generatedAt), "dd/MM/yyyy 'às' HH:mm")}
+              </span>
               {analysis.isOutdated && (
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-warning/10 text-warning border border-warning/30 animate-pulse">
                   ⚠️ Desatualizada
@@ -212,4 +210,3 @@ export const TaskAnalysisCard: React.FC<TaskAnalysisCardProps> = ({
     </div>
   );
 };
-

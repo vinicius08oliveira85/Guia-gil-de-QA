@@ -16,4 +16,3 @@ export const a11yTest = async ({ canvasElement }) => {
 export const visualTest = async ({ canvasElement }) => {
   await expect(canvasElement).toMatchSnapshot();
 };
-

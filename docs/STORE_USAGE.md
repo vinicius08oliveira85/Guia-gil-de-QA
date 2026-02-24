@@ -124,7 +124,7 @@ const ProjectEditor = ({ projectId }: { projectId: string }) => {
 
   const handleSave = async (formData: ProjectFormData) => {
     if (!project) return;
-    
+
     await updateProject({
       ...project,
       ...formData,
@@ -149,4 +149,3 @@ O store inclui middleware para logging automático de mudanças de estado (apena
 ## Migração de Componentes
 
 Veja [MIGRATION_TO_STORE.md](MIGRATION_TO_STORE.md) para guia completo de migração.
-

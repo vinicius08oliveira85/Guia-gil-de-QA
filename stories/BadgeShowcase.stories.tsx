@@ -132,31 +132,19 @@ const testCategories: TestCategory[] = [
   },
 ];
 
-const allTests = testCategories.flatMap((c) => c.tests);
+const allTests = testCategories.flatMap(c => c.tests);
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
-  return (
-    <h2 className="text-base font-semibold text-base-content tracking-tight">
-      {children}
-    </h2>
-  );
+  return <h2 className="text-base font-semibold text-base-content tracking-tight">{children}</h2>;
 }
 
 function SectionDescription({ children }: { children: React.ReactNode }) {
   return <p className="text-sm text-base-content/70">{children}</p>;
 }
 
-function ShowcaseCard({
-  children,
-  className,
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
+function ShowcaseCard({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <div
-      className={`rounded-lg border border-base-200 bg-base-100 p-6 ${className ?? ''}`}
-    >
+    <div className={`rounded-lg border border-base-200 bg-base-100 p-6 ${className ?? ''}`}>
       {children}
     </div>
   );
@@ -177,26 +165,16 @@ export function BadgeShowcase() {
       <section className="flex flex-col gap-3">
         <div className="flex flex-col gap-1">
           <SectionTitle>Legenda de Cores</SectionTitle>
-          <SectionDescription>
-            Mapeamento de variante por criticidade do teste.
-          </SectionDescription>
+          <SectionDescription>Mapeamento de variante por criticidade do teste.</SectionDescription>
         </div>
         <ShowcaseCard className="overflow-hidden p-0">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-base-200 bg-base-200/50">
-                <th className="px-4 py-3 text-left font-medium text-base-content/70">
-                  Cor
-                </th>
-                <th className="px-4 py-3 text-left font-medium text-base-content/70">
-                  Variante
-                </th>
-                <th className="px-4 py-3 text-left font-medium text-base-content/70">
-                  Grupo
-                </th>
-                <th className="px-4 py-3 text-left font-medium text-base-content/70">
-                  Exemplo
-                </th>
+                <th className="px-4 py-3 text-left font-medium text-base-content/70">Cor</th>
+                <th className="px-4 py-3 text-left font-medium text-base-content/70">Variante</th>
+                <th className="px-4 py-3 text-left font-medium text-base-content/70">Grupo</th>
+                <th className="px-4 py-3 text-left font-medium text-base-content/70">Exemplo</th>
               </tr>
             </thead>
             <tbody>
@@ -226,11 +204,8 @@ export function BadgeShowcase() {
                   group: 'Compatibilidade / Exploratorio',
                   example: 'Teste de Design',
                 },
-              ].map((item) => (
-                <tr
-                  key={item.variant}
-                  className="border-b border-base-200 last:border-0"
-                >
+              ].map(item => (
+                <tr key={item.variant} className="border-b border-base-200 last:border-0">
                   <td className="px-4 py-3">
                     <Badge
                       variant={item.variant === 'outline' ? 'default' : item.variant}
@@ -243,9 +218,7 @@ export function BadgeShowcase() {
                     {item.variant}
                   </td>
                   <td className="px-4 py-3 text-base-content">{item.group}</td>
-                  <td className="px-4 py-3 text-base-content/70">
-                    {item.example}
-                  </td>
+                  <td className="px-4 py-3 text-base-content/70">{item.example}</td>
                 </tr>
               ))}
             </tbody>
@@ -257,9 +230,7 @@ export function BadgeShowcase() {
       <section className="flex flex-col gap-3">
         <div className="flex flex-col gap-1">
           <SectionTitle>Todos os Tipos de Teste</SectionTitle>
-          <SectionDescription>
-            Visualizacao completa com icone (pill).
-          </SectionDescription>
+          <SectionDescription>Visualizacao completa com icone (pill).</SectionDescription>
         </div>
         <ShowcaseCard>
           <div className="flex flex-wrap items-center gap-2">
@@ -282,7 +253,7 @@ export function BadgeShowcase() {
       </section>
 
       {/* Por Categoria */}
-      {testCategories.map((cat) => (
+      {testCategories.map(cat => (
         <section key={cat.title} className="flex flex-col gap-3">
           <div className="flex flex-col gap-1">
             <SectionTitle>{cat.title}</SectionTitle>
@@ -320,11 +291,7 @@ export function BadgeShowcase() {
                 </p>
                 <div className="flex flex-wrap items-center gap-2">
                   {cat.tests.map((t, i) => (
-                    <Badge
-                      key={`text-${i}`}
-                      variant={badgeVariant(t.variant)}
-                      appearance="pill"
-                    >
+                    <Badge key={`text-${i}`} variant={badgeVariant(t.variant)} appearance="pill">
                       {t.label}
                     </Badge>
                   ))}
@@ -347,8 +314,7 @@ export function BadgeShowcase() {
                       info: 'border-blue-200 bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:border-blue-800 dark:text-blue-300',
                       success:
                         'border-green-200 bg-green-50 text-green-700 dark:bg-green-950/40 dark:border-green-800 dark:text-green-300',
-                      outline:
-                        'border-base-300 bg-base-200/60 text-base-content',
+                      outline: 'border-base-300 bg-base-200/60 text-base-content',
                     }[t.variant];
                     return (
                       <Badge
@@ -401,33 +367,23 @@ export function BadgeShowcase() {
       <section className="flex flex-col gap-3">
         <div className="flex flex-col gap-1">
           <SectionTitle>Referencia Completa</SectionTitle>
-          <SectionDescription>
-            Tabela com todos os tipos, variante e codigo.
-          </SectionDescription>
+          <SectionDescription>Tabela com todos os tipos, variante e codigo.</SectionDescription>
         </div>
         <ShowcaseCard className="overflow-x-auto p-0">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-base-200 bg-base-200/50">
-                <th className="px-4 py-3 text-left font-medium text-base-content/70">
-                  #
-                </th>
+                <th className="px-4 py-3 text-left font-medium text-base-content/70">#</th>
                 <th className="px-4 py-3 text-left font-medium text-base-content/70">
                   Tipo de Teste
                 </th>
-                <th className="px-4 py-3 text-left font-medium text-base-content/70">
-                  Categoria
-                </th>
-                <th className="px-4 py-3 text-left font-medium text-base-content/70">
-                  Badge
-                </th>
-                <th className="px-4 py-3 text-left font-medium text-base-content/70">
-                  Variante
-                </th>
+                <th className="px-4 py-3 text-left font-medium text-base-content/70">Categoria</th>
+                <th className="px-4 py-3 text-left font-medium text-base-content/70">Badge</th>
+                <th className="px-4 py-3 text-left font-medium text-base-content/70">Variante</th>
               </tr>
             </thead>
             <tbody>
-              {testCategories.flatMap((cat) =>
+              {testCategories.flatMap(cat =>
                 cat.tests.map((t, i) => {
                   const Icon = t.icon;
                   const globalIndex =
@@ -444,12 +400,8 @@ export function BadgeShowcase() {
                       <td className="px-4 py-2.5 text-base-content/70 tabular-nums">
                         {globalIndex}
                       </td>
-                      <td className="px-4 py-2.5 text-base-content">
-                        {t.label}
-                      </td>
-                      <td className="px-4 py-2.5 text-base-content/70">
-                        {cat.title}
-                      </td>
+                      <td className="px-4 py-2.5 text-base-content">{t.label}</td>
+                      <td className="px-4 py-2.5 text-base-content/70">{cat.title}</td>
                       <td className="px-4 py-2.5">
                         <Badge
                           variant={badgeVariant(t.variant)}

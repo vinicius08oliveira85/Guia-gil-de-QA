@@ -31,6 +31,7 @@ CHROMATIC_PROJECT_TOKEN=
 ## ✅ Seu Token Já Está Configurado!
 
 O token do Figma deve ser configurado acima:
+
 - ⚠️ `VITE_FIGMA_API_TOKEN=YOUR_FIGMA_TOKEN_HERE` (substitua pelo seu token)
 
 ## 📋 Próximos Passos
@@ -57,14 +58,15 @@ O token do Figma deve ser configurado acima:
 ## 🎯 Exemplo Completo
 
 Se seu arquivo Figma tem a URL:
+
 ```
 https://www.figma.com/file/abc123xyz456/QA-Agile-Design-System
 ```
 
 Seu `.env` ficaria assim:
+
 ```env
 VITE_FIGMA_API_TOKEN=YOUR_FIGMA_TOKEN_HERE
 FIGMA_FILE_KEY=abc123xyz456
 STORYBOOK_FIGMA_URL=https://www.figma.com/file/abc123xyz456/QA-Agile-Design-System
 ```
-

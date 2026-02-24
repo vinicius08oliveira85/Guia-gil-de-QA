@@ -87,9 +87,7 @@ function SmallIndicatorCard({ item }: { item: SmallIndicatorItem }) {
         aria-hidden
       />
       <div className="flex justify-between items-start mb-4">
-        <span
-          className={`text-xs font-semibold uppercase tracking-wide ${config.labelColor}`}
-        >
+        <span className={`text-xs font-semibold uppercase tracking-wide ${config.labelColor}`}>
           {item.label}
         </span>
         <div className={`p-2 rounded-lg ${config.iconBg} ${config.glowClass}`}>
@@ -97,12 +95,8 @@ function SmallIndicatorCard({ item }: { item: SmallIndicatorItem }) {
         </div>
       </div>
       <div className="flex items-baseline gap-2">
-        <span className={`text-3xl font-bold ${config.valueColor}`}>
-          {item.value}
-        </span>
-        <span className="text-xs text-base-content/60 font-normal">
-          {item.modifier}
-        </span>
+        <span className={`text-3xl font-bold ${config.valueColor}`}>{item.value}</span>
+        <span className="text-xs text-base-content/60 font-normal">{item.modifier}</span>
       </div>
     </div>
   );
@@ -128,9 +122,7 @@ export function ExecutionAutomationCard({
   automationTrend = '+5.2% esta semana',
 }: ExecutionAutomationProps) {
   const executionPercent =
-    totalTestCases > 0
-      ? Math.round((executedTestCases / totalTestCases) * 100)
-      : 0;
+    totalTestCases > 0 ? Math.round((executedTestCases / totalTestCases) * 100) : 0;
   const circumference = 2 * Math.PI * 40;
   const strokeDashoffset = circumference - (automationRatio / 100) * circumference;
 
@@ -156,12 +148,8 @@ export function ExecutionAutomationCard({
                 <ListChecks className="w-6 h-6 text-orange-600 dark:text-orange-400" />
               </div>
               <div>
-                <h3 className="text-xl font-bold text-base-content">
-                  Execução de Testes
-                </h3>
-                <p className="text-sm text-base-content/70 font-medium">
-                  {projectName}
-                </p>
+                <h3 className="text-xl font-bold text-base-content">Execução de Testes</h3>
+                <p className="text-sm text-base-content/70 font-medium">{projectName}</p>
               </div>
             </div>
             <div className="text-right">
@@ -188,16 +176,12 @@ export function ExecutionAutomationCard({
               />
             </div>
             <div className="flex justify-between text-xs font-medium text-base-content/70 uppercase tracking-wide">
-              <span>
-                {executedTestCases} casos executados
-              </span>
+              <span>{executedTestCases} casos executados</span>
               <span>Total de {totalTestCases} casos</span>
             </div>
           </div>
           {executionTrend != null && executionTrend !== '' && (
-            <p className="text-xs text-base-content/60">
-              {executionTrend}
-            </p>
+            <p className="text-xs text-base-content/60">{executionTrend}</p>
           )}
         </div>
         <div className="lg:col-span-4 flex justify-center lg:justify-end items-center border-t lg:border-t-0 lg:border-l border-base-300 pt-8 lg:pt-0 lg:pl-8">
@@ -236,14 +220,10 @@ export function ExecutionAutomationCard({
               <span className="text-xs font-semibold uppercase tracking-wide text-base-content/70 block mb-1">
                 Automação
               </span>
-              <span className="text-xl font-bold text-base-content">
-                Automatizados
-              </span>
+              <span className="text-xl font-bold text-base-content">Automatizados</span>
               <div className="flex items-center gap-1 mt-1">
                 <TrendingUp className="w-4 h-4 text-success shrink-0" aria-hidden />
-                <span className="text-xs text-success font-medium">
-                  {automationTrend}
-                </span>
+                <span className="text-xs text-success font-medium">{automationTrend}</span>
               </div>
             </div>
           </div>

@@ -27,12 +27,12 @@ export const isAppInstalled = (): boolean => {
   if (window.matchMedia('(display-mode: standalone)').matches) {
     return true;
   }
-  
+
   // Verifica se está rodando em modo standalone no iOS
   if ((window.navigator as any).standalone === true) {
     return true;
   }
-  
+
   return false;
 };
 
@@ -57,14 +57,17 @@ export const registerServiceWorker = async (): Promise<void> => {
     if ('serviceWorker' in navigator) {
       const registration = await navigator.serviceWorker.ready;
       logger.info('Service Worker registrado com sucesso', 'pwa', { scope: registration.scope });
-      
+
       // Verificar atualizações periodicamente
       registration.addEventListener('updatefound', () => {
         const newWorker = registration.installing;
         if (newWorker) {
           newWorker.addEventListener('statechange', () => {
             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              logger.info('Nova versão do app disponível. Recarregue a página para atualizar.', 'pwa');
+              logger.info(
+                'Nova versão do app disponível. Recarregue a página para atualizar.',
+                'pwa'
+              );
               // Pode mostrar notificação ao usuário aqui
             }
           });
@@ -88,10 +91,10 @@ export const installApp = async (): Promise<boolean> => {
   try {
     // Mostra o prompt de instalação
     await deferredPrompt.prompt();
-    
+
     // Aguarda a resposta do usuário
     const { outcome } = await deferredPrompt.userChoice;
-    
+
     if (outcome === 'accepted') {
       logger.info('Usuário aceitou instalar o app', 'pwa');
       deferredPrompt = null;
@@ -126,12 +129,12 @@ export const initializePWA = (): void => {
   window.addEventListener('beforeinstallprompt', (e: Event) => {
     // Previne o prompt padrão do navegador
     e.preventDefault();
-    
+
     // Salva o evento para usar depois
     deferredPrompt = e as BeforeInstallPromptEvent;
-    
+
     logger.info('App pode ser instalado', 'pwa');
-    
+
     // Pode disparar evento customizado para mostrar botão de instalação
     window.dispatchEvent(new CustomEvent('pwa-installable'));
   });
@@ -140,7 +143,7 @@ export const initializePWA = (): void => {
   window.addEventListener('appinstalled', () => {
     logger.info('App instalado com sucesso', 'pwa');
     deferredPrompt = null;
-    
+
     // Pode disparar evento customizado para esconder botão de instalação
     window.dispatchEvent(new CustomEvent('pwa-installed'));
   });
@@ -164,13 +167,13 @@ export const checkForUpdates = async (): Promise<boolean> => {
   try {
     const registration = await navigator.serviceWorker.ready;
     await registration.update();
-    
+
     // Verifica se há um novo service worker esperando
     if (registration.waiting) {
       logger.info('Nova versão disponível', 'pwa');
       return true;
     }
-    
+
     return false;
   } catch (error) {
     logger.error('Erro ao verificar atualizações', 'pwa', error);
@@ -186,8 +189,9 @@ export const forceUpdate = (): void => {
     return;
   }
 
-  navigator.serviceWorker.getRegistration()
-    .then((registration) => {
+  navigator.serviceWorker
+    .getRegistration()
+    .then(registration => {
       if (registration?.waiting) {
         // Envia mensagem para o service worker para pular a espera
         try {
@@ -195,15 +199,14 @@ export const forceUpdate = (): void => {
         } catch (error) {
           logger.warn('Erro ao enviar mensagem para service worker', 'pwa', error);
         }
-        
+
         // Recarrega a página após um pequeno delay
         setTimeout(() => {
           window.location.reload();
         }, 100);
       }
     })
-    .catch((error) => {
+    .catch(error => {
       logger.error('Erro ao forçar atualização do service worker', 'pwa', error);
     });
 };
-
