@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
+import { useDebounceValue } from 'usehooks-ts';
 import { Project, JiraTask, BddScenario, TestCaseDetailLevel, TestCase, Comment, TaskTestStatus } from '../../types';
 import { getAIService } from '../../services/ai/aiServiceFactory';
 import { Card } from '../common/Card';
@@ -200,6 +201,8 @@ export const TasksView: React.FC<{
     const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
     const [selectedTargetProjects, setSelectedTargetProjects] = useState<Set<string>>(new Set());
     const [searchQuery, setSearchQuery] = useState('');
+    // Debounce search query to avoid expensive calculations on every keystroke
+    const [debouncedSearchQuery] = useDebounceValue(searchQuery, 300);
     const [statusFilter, setStatusFilter] = useState<string[]>([]);
     const [priorityFilter, setPriorityFilter] = useState<string[]>([]);
     const [typeFilter, setTypeFilter] = useState<string[]>([]);
@@ -253,8 +256,8 @@ export const TasksView: React.FC<{
     const filteredTasks = useMemo(() => {
         return project.tasks.filter(task => {
             // 1. Busca Textual
-            if (searchQuery) {
-                const query = searchQuery.toLowerCase();
+            if (debouncedSearchQuery) {
+                const query = debouncedSearchQuery.toLowerCase();
                 const matchesId = (task.id || '').toLowerCase().includes(query);
                 const matchesTitle = (task.title || '').toLowerCase().includes(query);
                 if (!matchesId && !matchesTitle) return false;
@@ -296,7 +299,7 @@ export const TasksView: React.FC<{
 
             return true;
         });
-    }, [project, project.tasks, searchQuery, statusFilter, priorityFilter, typeFilter, testStatusFilter, qualityFilter]);
+    }, [project, project.tasks, debouncedSearchQuery, statusFilter, priorityFilter, typeFilter, testStatusFilter, qualityFilter]);
 
     // Contadores para os filtros
     const counts = useMemo(() => {
