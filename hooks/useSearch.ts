@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useDebounceValue } from 'usehooks-ts';
 import { Project } from '../types';
 
 export interface SearchResult {
@@ -12,11 +13,13 @@ export interface SearchResult {
 
 export const useSearch = (projects: Project[]) => {
   const [searchQuery, setSearchQuery] = useState('');
+  // Debounce search query to avoid expensive calculations on every keystroke
+  const [debouncedSearchQuery] = useDebounceValue(searchQuery, 300);
 
   const searchResults = useMemo(() => {
-    if (!searchQuery.trim()) return [];
+    if (!debouncedSearchQuery.trim()) return [];
 
-    const query = searchQuery.toLowerCase().trim();
+    const query = debouncedSearchQuery.toLowerCase().trim();
     const results: SearchResult[] = [];
 
     projects.forEach(project => {
@@ -89,7 +92,7 @@ export const useSearch = (projects: Project[]) => {
     });
 
     return results;
-  }, [projects, searchQuery]);
+  }, [projects, debouncedSearchQuery]);
 
   return {
     searchQuery,
