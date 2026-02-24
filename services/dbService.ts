@@ -148,7 +148,13 @@ export const addProject = async (project: Project): Promise<void> => {
         request.onsuccess = () => resolve();
       });
     } catch (error) {
-      logger.warn('Erro ao salvar no Supabase, usando apenas IndexedDB', 'dbService', error);
+      const msg = error instanceof Error ? error.message : String(error);
+      const isLocalOnlyOrTooBig = msg.includes('salvo apenas localmente') || msg.includes('muito grande');
+      if (isLocalOnlyOrTooBig) {
+        logger.debug('Erro ao salvar no Supabase, usando apenas IndexedDB', 'dbService', error);
+      } else {
+        logger.warn('Erro ao salvar no Supabase, usando apenas IndexedDB', 'dbService', error);
+      }
       // Continuar para fallback IndexedDB
     }
   }
@@ -271,7 +277,12 @@ export const updateProject = async (project: Project): Promise<void> => {
         // Erro de rede - apenas debug, não warning (evita spam)
         logger.debug('Erro de rede ao salvar no Supabase, usando apenas IndexedDB (cooldown ativado)', 'dbService');
       } else {
-        logger.warn('Erro ao salvar no Supabase, usando apenas IndexedDB', 'dbService', error);
+        const isLocalOnlyOrTooBig = errorMessage.includes('salvo apenas localmente') || errorMessage.includes('muito grande');
+        if (isLocalOnlyOrTooBig) {
+          logger.debug('Erro ao salvar no Supabase, usando apenas IndexedDB', 'dbService', error);
+        } else {
+          logger.warn('Erro ao salvar no Supabase, usando apenas IndexedDB', 'dbService', error);
+        }
       }
       // Continuar para fallback IndexedDB
     }

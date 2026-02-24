@@ -36,6 +36,7 @@ const saveDebounceMs = 300; // Debounce de 300ms entre salvamentos do mesmo proj
 const maxRetries = 3; // Máximo de 3 tentativas
 const retryDelays = [1000, 2000, 4000]; // Backoff exponencial: 1s, 2s, 4s
 const requestTimeoutMs = 8000; // Timeout de 8 segundos (evita timeout em redes lentas; fallback usa cache local)
+const timeoutErrorMessage = `Timeout: requisição ao Supabase excedeu ${requestTimeoutMs / 1000}s`;
 
 // Inicializar cliente Supabase direto se variáveis estiverem disponíveis
 // Usado para salvamento direto (evita limite de 4MB do Vercel)
@@ -397,7 +398,7 @@ const saveThroughSdk = async (project: Project, retryCount: number = 0): Promise
     
     const timeoutPromise = createTimeoutPromise<{ error: { message: string } | null }>(
         requestTimeoutMs,
-        'Timeout: requisição ao Supabase excedeu 5s'
+        timeoutErrorMessage
     );
     
     const result = await Promise.race([savePromise, timeoutPromise]);
@@ -479,7 +480,40 @@ export const saveProjectToSupabase = async (project: Project): Promise<void> => 
                 hasSDK: !!supabase
             });
             
-            // Priorizar SDK direto (evita limite de 4MB do Vercel)
+            // Em produção com proxy: priorizar proxy para evitar CORS/522 no console (sem POST direto ao Supabase).
+            const useProxyFirst = isProduction() && !!supabaseProxyUrl;
+            if (useProxyFirst && supabaseProxyUrl) {
+                try {
+                    logger.debug(`Salvando projeto "${project.name}" via proxy (produção)`, 'supabaseService', {
+                        projectId,
+                        projectName: project.name
+                    });
+                    await saveThroughProxy(project);
+                    logger.info(`Projeto "${project.name}" salvo com sucesso via proxy`, 'supabaseService', {
+                        projectId,
+                        projectName: project.name
+                    });
+                    return;
+                } catch (error) {
+                    if (isNetworkError(error)) {
+                        logger.warn('Erro de rede ao salvar via proxy Supabase. Salvando apenas localmente.', 'supabaseService', error);
+                        throw error;
+                    }
+                    if (isPayloadTooLargeError(error)) {
+                        throw new Error(
+                            `O projeto "${project.name}" é muito grande para o proxy (limite 4MB). O projeto foi salvo apenas localmente.`
+                        );
+                    }
+                    if (isCorsError(error)) {
+                        logger.warn('Erro CORS ao salvar via proxy', 'supabaseService', error);
+                    } else {
+                        logger.warn('Erro ao salvar via proxy Supabase', 'supabaseService', error);
+                    }
+                    throw error;
+                }
+            }
+
+            // Fluxo não-produção ou sem proxy: SDK primeiro, depois proxy como fallback
             if (supabase) {
                 try {
                     await saveThroughSdk(project);
@@ -489,15 +523,12 @@ export const saveProjectToSupabase = async (project: Project): Promise<void> => 
                     });
                     return;
                 } catch (error) {
-                    // Erro de rede no browser pode ser CORS/522; o proxy pode continuar funcionando.
-                    // Só desistir aqui se não houver proxy configurado.
                     if (isNetworkError(error)) {
                         if (!supabaseProxyUrl) {
                             logger.warn('Erro de rede ao salvar via SDK Supabase. Salvando apenas localmente.', 'supabaseService', error);
                             throw error;
                         }
                         logger.debug('Erro de rede ao salvar via SDK Supabase. Tentando proxy como fallback.', 'supabaseService', error);
-                        // Continuar para tentar proxy como fallback
                     }
                     if (isForbiddenError(error)) {
                         sdkAlreadyFailedWith403 = true;
@@ -505,11 +536,9 @@ export const saveProjectToSupabase = async (project: Project): Promise<void> => 
                     } else {
                         logger.debug('Erro ao salvar via SDK Supabase, tentando proxy como fallback', 'supabaseService', error);
                     }
-                    // Continuar para tentar proxy como fallback
                 }
             }
 
-            // Fallback: usar proxy se SDK direto não estiver disponível ou falhou (e não for erro de rede)
             if (supabaseProxyUrl) {
                 try {
                     logger.debug(`Tentando salvar projeto "${project.name}" via proxy`, 'supabaseService', {
@@ -524,15 +553,16 @@ export const saveProjectToSupabase = async (project: Project): Promise<void> => 
                     });
                     return;
                 } catch (error) {
-                    // Se for erro de rede, não tentar mais - salvar apenas localmente
                     if (isNetworkError(error)) {
                         logger.warn('Erro de rede ao salvar via proxy Supabase. Salvando apenas localmente.', 'supabaseService', error);
                         throw error;
                     }
-                    
-                    // Tratamento específico para erro 413 (Payload Too Large)
                     if (isPayloadTooLargeError(error)) {
-                        // Não retentar SDK se já falhou com 403 nesta mesma operação
+                        if (isProduction()) {
+                            throw new Error(
+                                `O projeto "${project.name}" é muito grande para o proxy (limite 4MB). O projeto foi salvo apenas localmente.`
+                            );
+                        }
                         if (sdkAlreadyFailedWith403 || !supabase) {
                             throw new Error(
                                 `O projeto "${project.name}" é muito grande para o proxy (limite 4MB) e o salvamento direto não está disponível. O projeto foi salvo apenas localmente.`
@@ -545,12 +575,10 @@ export const saveProjectToSupabase = async (project: Project): Promise<void> => 
                         } catch (sdkError) {
                             logger.warn('Erro ao salvar via SDK após falha do proxy', 'supabaseService', sdkError);
                             throw new Error(
-                                `O projeto "${project.name}" é muito grande para ser salvo via proxy (limite 4MB) ` +
-                                `e falhou ao salvar direto no Supabase. O projeto foi salvo apenas localmente.`
+                                `O projeto "${project.name}" é muito grande para ser salvo via proxy (limite 4MB) e falhou ao salvar direto no Supabase. O projeto foi salvo apenas localmente.`
                             );
                         }
                     }
-                    
                     if (isCorsError(error)) {
                         logger.warn('Erro CORS ao salvar via proxy', 'supabaseService', error);
                     } else {
@@ -678,7 +706,7 @@ export const loadProjectsFromSupabase = async (): Promise<LoadProjectsResult> =>
             .select('data')
             .or(`user_id.eq.${userId},user_id.like.anon-%`)
             .order('updated_at', { ascending: false });
-        const timeoutPromise = createTimeoutPromise<{ data: null; error: { message: string } }>(requestTimeoutMs, 'Timeout: requisição ao Supabase excedeu 5s');
+        const timeoutPromise = createTimeoutPromise<{ data: null; error: { message: string } }>(requestTimeoutMs, timeoutErrorMessage);
         const result = await Promise.race([queryPromise, timeoutPromise]);
         const { data, error } = result;
 
@@ -754,7 +782,7 @@ export const deleteProjectFromSupabase = async (projectId: string): Promise<void
             .eq('id', projectId)
             .eq('user_id', userId);
         
-        const timeoutPromise = createTimeoutPromise<{ error: { message: string } }>(requestTimeoutMs, 'Timeout: requisição ao Supabase excedeu 5s');
+        const timeoutPromise = createTimeoutPromise<{ error: { message: string } }>(requestTimeoutMs, timeoutErrorMessage);
         
         const result = await Promise.race([queryPromise, timeoutPromise]);
         const { error } = result as { error?: { message: string } };
