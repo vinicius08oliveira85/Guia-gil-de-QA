@@ -149,6 +149,8 @@ export interface JiraTask {
   /** Ferramentas utilizadas por estratégia (índice -> ferramentas) */
   strategyTools?: { [strategyIndex: number]: string[] | undefined };
   isEscapedDefect?: boolean; // Indica se o bug foi vazado para produção
+  /** Tarefa marcada como favorita (prioritária) no projeto. */
+  isFavorite?: boolean;
   // Campos adicionais do Jira
   dueDate?: string; // ISO string
   timeTracking?: {

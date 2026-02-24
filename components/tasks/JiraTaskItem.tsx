@@ -5,7 +5,7 @@ import { Spinner } from '../common/Spinner';
 import { TaskTypeIcon, TaskStatusIcon, StartTestIcon, CompleteTestIcon, ToDoTestIcon, PlusIcon, EditIcon, TrashIcon, RefreshIcon } from '../common/Icons';
 import { BddScenarioForm, BddScenarioItem } from './BddScenario';
 import { TestCaseItem } from './TestCaseItem';
-import { BarChart3, Sparkles, Wrench, Zap, Wand2, Loader2, MoreVertical, ChevronDown, ClipboardList, Link, Paperclip, Timer } from 'lucide-react';
+import { BarChart3, Sparkles, Wrench, Zap, Wand2, Loader2, MoreVertical, ChevronDown, ClipboardList, Link, Paperclip, Timer, Star } from 'lucide-react';
 import { TestStrategyCard } from './TestStrategyCard';
 import { ToolsSelector } from './ToolsSelector';
 import { TestReportModal } from './TestReportModal';
@@ -156,7 +156,8 @@ export const JiraTaskItem: React.FC<{
     activeTaskId?: string | null;
     onFocusTask?: (taskId: string | null) => void;
     onOpenModal?: (task: JiraTask) => void;
-}> = React.memo(({ task, onTestCaseStatusChange, onToggleTestCaseAutomated, onExecutedStrategyChange, onTaskToolsChange, onTestCaseToolsChange, onStrategyExecutedChange, onStrategyToolsChange, onDelete, onGenerateTests, isGenerating: isGeneratingTests, onAddSubtask, onEdit, onGenerateBddScenarios, isGeneratingBdd, onGenerateAll, isGeneratingAll, onSyncToJira, isSyncing, onSaveBddScenario, onDeleteBddScenario, onTaskStatusChange, onAddTestCaseFromTemplate, onAddComment, onEditComment, onDeleteComment, onEditTestCase, onDeleteTestCase, project, onUpdateProject, isSelected, onToggleSelect, children, level, activeTaskId, onFocusTask, onOpenModal }) => {
+    onToggleFavorite?: () => void;
+}> = React.memo(({ task, onTestCaseStatusChange, onToggleTestCaseAutomated, onExecutedStrategyChange, onTaskToolsChange, onTestCaseToolsChange, onStrategyExecutedChange, onStrategyToolsChange, onDelete, onGenerateTests, isGenerating: isGeneratingTests, onAddSubtask, onEdit, onGenerateBddScenarios, isGeneratingBdd, onGenerateAll, isGeneratingAll, onSyncToJira, isSyncing, onSaveBddScenario, onDeleteBddScenario, onTaskStatusChange, onAddTestCaseFromTemplate, onAddComment, onEditComment, onDeleteComment, onEditTestCase, onDeleteTestCase, project, onUpdateProject, isSelected, onToggleSelect, children, level, activeTaskId, onFocusTask, onOpenModal, onToggleFavorite }) => {
     const reduceMotion = useReducedMotion();
     const [isDetailsOpen, setIsDetailsOpen] = useState(false); // Colapsado por padrão para compactar
     const [isChildrenOpen, setIsChildrenOpen] = useState(false);
@@ -1473,6 +1474,7 @@ export const JiraTaskItem: React.FC<{
                         'border-base-300',
                         activeTaskId === task.id ? 'ring-2 ring-primary/40 shadow-lg' : '',
                         isSelected ? 'bg-primary/5 border-primary/40 ring-1 ring-primary/30' : '',
+                        task.isFavorite ? 'border-amber-400/60 ring-1 ring-amber-400/30 shadow-[0_0_12px_rgba(251,191,36,0.2)]' : '',
                         onOpenModal ? 'cursor-pointer hover:translate-x-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2' : '',
                     ].join(' ')}
                     onClick={onOpenModal ? handleCardClick : undefined}
@@ -1484,13 +1486,27 @@ export const JiraTaskItem: React.FC<{
                     <div className="flex items-center gap-2 flex-1 min-w-0 order-1 w-full sm:w-auto">
                         {onToggleSelect && (
                             <input
-                                type="radio"
-                                checked={isSelected}
+                                type="checkbox"
+                                checked={!!isSelected}
                                 onChange={(e) => { e.stopPropagation(); onToggleSelect(); }}
                                 className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-primary rounded-full appearance-none checked:bg-primary checked:border-primary focus:outline-none focus:ring-2 focus:ring-primary/50 cursor-pointer shrink-0"
                                 style={{ backgroundImage: isSelected ? 'radial-gradient(circle, white 30%, transparent 30%)' : 'none' }}
-                                aria-label={isSelected ? `Tarefa ${task.id} selecionada` : `Selecionar tarefa ${task.id}`}
+                                aria-label={isSelected ? `Tarefa ${task.id} selecionada (clique para desselecionar)` : `Selecionar tarefa ${task.id}`}
                             />
+                        )}
+                        {onToggleFavorite && (
+                            <button
+                                type="button"
+                                onClick={(e) => { e.stopPropagation(); onToggleFavorite(); }}
+                                className="p-0.5 rounded hover:bg-base-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 shrink-0"
+                                aria-label={task.isFavorite ? 'Desmarcar favorito' : 'Marcar como favorito'}
+                            >
+                                {task.isFavorite ? (
+                                    <Star className="w-4 h-4 fill-amber-400 text-amber-400" aria-hidden />
+                                ) : (
+                                    <Star className="w-4 h-4 text-base-content/40" aria-hidden />
+                                )}
+                            </button>
                         )}
                         {hasChildren ? (
                             <button

@@ -8,7 +8,7 @@ import { Modal } from '../common/Modal';
 import { TaskForm } from './TaskForm';
 import { TestCaseEditorModal } from './TestCaseEditorModal';
 import { Button } from '../common/Button';
-import { Plus, Filter, Zap, AlertTriangle, X, Check, Link as LinkIcon, Clock, ClipboardList, CheckCircle } from 'lucide-react';
+import { Plus, Filter, Zap, AlertTriangle, X, Check, Link as LinkIcon, Clock, ClipboardList, CheckCircle, Star, List } from 'lucide-react';
 import { logger } from '../../utils/logger';
 import { useProjectsStore } from '../../store/projectsStore';
 import { getFriendlyAIErrorMessage } from '../../utils/aiErrorMapper';
@@ -1438,6 +1438,15 @@ export const TasksView: React.FC<{
         return tree;
     }, [filteredTasks]);
 
+    const favoriteRoots = useMemo(() => taskTree.filter(t => t.isFavorite), [taskTree]);
+    const otherRoots = useMemo(() => taskTree.filter(t => !t.isFavorite), [taskTree]);
+
+    const handleToggleFavorite = useCallback((taskId: string) => {
+        const updatedTasks = (project.tasks || []).map(t =>
+            t.id === taskId ? { ...t, isFavorite: !t.isFavorite } : t
+        );
+        onUpdateProject({ ...project, tasks: updatedTasks });
+    }, [project, onUpdateProject]);
 
     const toggleTaskSelection = (taskId: string) => {
         setSelectedTasks(prev => {
@@ -1512,12 +1521,13 @@ export const TasksView: React.FC<{
                     project={project}
                     onUpdateProject={onUpdateProject}
                     onOpenModal={setModalTask}
+                    onToggleFavorite={() => handleToggleFavorite(task.id)}
                 >
                     {task.children.length > 0 && renderTaskTree(task.children, level + 1, globalIndex + 1)}
                 </JiraTaskItem>
             );
         });
-    }, [selectedTasks, generatingTestsTaskId, generatingBddTaskId, generatingAllTaskId, syncingTaskId, handleTestCaseStatusChange, handleToggleTestCaseAutomated, handleExecutedStrategyChange, handleTaskToolsChange, handleTestCaseToolsChange, handleStrategyExecutedChange, handleStrategyToolsChange, handleDeleteTask, handleGenerateTests, openTaskFormForNew, openTaskFormForEdit, handleGenerateBddScenarios, handleGenerateAll, handleSyncTaskToJira, handleSaveBddScenario, handleDeleteBddScenario, handleTaskStatusChange, handleAddComment, handleEditComment, handleDeleteComment, project, onUpdateProject, toggleTaskSelection]);
+    }, [selectedTasks, generatingTestsTaskId, generatingBddTaskId, generatingAllTaskId, syncingTaskId, handleTestCaseStatusChange, handleToggleTestCaseAutomated, handleExecutedStrategyChange, handleTaskToolsChange, handleTestCaseToolsChange, handleStrategyExecutedChange, handleStrategyToolsChange, handleDeleteTask, handleGenerateTests, openTaskFormForNew, openTaskFormForEdit, handleGenerateBddScenarios, handleGenerateAll, handleSyncTaskToJira, handleSaveBddScenario, handleDeleteBddScenario, handleTaskStatusChange, handleAddComment, handleEditComment, handleDeleteComment, project, onUpdateProject, toggleTaskSelection, handleToggleFavorite]);
 
     return (
         <>
@@ -1819,20 +1829,48 @@ export const TasksView: React.FC<{
         </Modal>
 
                     {taskTree.length > 0 ? (
-                        <div>
-                            {renderTaskTree(taskTree, 0).map((taskElement, index) => (
-                                <motion.div
-                                    key={taskElement.key || index}
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ 
-                                        delay: index * 0.05,
-                                        duration: 0.3 
-                                    }}
-                                >
-                                    {taskElement}
-                                </motion.div>
-                            ))}
+                        <div className="space-y-6">
+                            {favoriteRoots.length > 0 && (
+                                <section aria-label="Favoritos">
+                                    <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-primary mb-3">
+                                        <Star className="w-4 h-4 fill-amber-400 text-amber-400" aria-hidden />
+                                        Favoritos
+                                    </h3>
+                                    <div className="space-y-1">
+                                        {renderTaskTree(favoriteRoots, 0).map((taskElement, index) => (
+                                            <motion.div
+                                                key={taskElement.key ?? `fav-${index}`}
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                transition={{ delay: index * 0.05, duration: 0.3 }}
+                                            >
+                                                {taskElement}
+                                            </motion.div>
+                                        ))}
+                                    </div>
+                                </section>
+                            )}
+                            {favoriteRoots.length > 0 && otherRoots.length > 0 && (
+                                <div className="border-t border-base-300 my-4" aria-hidden />
+                            )}
+                            <section aria-label="Outras tarefas">
+                                <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-base-content/70 mb-3">
+                                    <List className="w-4 h-4" aria-hidden />
+                                    Outras Tarefas
+                                </h3>
+                                <div className="space-y-1">
+                                    {renderTaskTree(otherRoots, 0).map((taskElement, index) => (
+                                        <motion.div
+                                            key={taskElement.key ?? `other-${index}`}
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: index * 0.05, duration: 0.3 }}
+                                        >
+                                            {taskElement}
+                                        </motion.div>
+                                    ))}
+                                </div>
+                            </section>
                         </div>
                     ) : (
                         <EmptyState

@@ -44,6 +44,16 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
     return (project.tasks || []).filter(task => selectedTasksArray.includes(task.id));
   }, [project.tasks, selectedTasksArray]);
 
+  // Exibir Favoritar só se há selecionada não favorita; Desfavoritar só se há favorita
+  const hasSelectedFavorited = useMemo(
+    () => selectedTasksData.some(task => task.isFavorite),
+    [selectedTasksData]
+  );
+  const hasSelectedNonFavorited = useMemo(
+    () => selectedTasksData.some(task => !task.isFavorite),
+    [selectedTasksData]
+  );
+
   const handleBulkStatusChange = () => {
     const updatedTasks = (project.tasks || []).map(task =>
       selectedTasksArray.includes(task.id)
@@ -88,6 +98,24 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
     onUpdateProject({ ...project, tasks: updatedTasks });
     handleSuccess(`${selectedTasksArray.length} tarefas atribuídas`);
     setShowModal(false);
+    onClearSelection();
+  };
+
+  const handleBulkFavorite = () => {
+    const updatedTasks = (project.tasks || []).map(task =>
+      selectedTasksArray.includes(task.id) ? { ...task, isFavorite: true } : task
+    );
+    onUpdateProject({ ...project, tasks: updatedTasks });
+    handleSuccess(`${selectedTasksArray.length} tarefa(s) favoritada(s)`);
+    onClearSelection();
+  };
+
+  const handleBulkUnfavorite = () => {
+    const updatedTasks = (project.tasks || []).map(task =>
+      selectedTasksArray.includes(task.id) ? { ...task, isFavorite: false } : task
+    );
+    onUpdateProject({ ...project, tasks: updatedTasks });
+    handleSuccess(`${selectedTasksArray.length} tarefa(s) desfavoritada(s)`);
     onClearSelection();
   };
 
@@ -196,6 +224,24 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
             >
               Atribuir
             </button>
+            {hasSelectedNonFavorited && (
+              <button
+                onClick={handleBulkFavorite}
+                className="px-3 py-1 bg-white/20 hover:bg-white/30 rounded text-sm"
+                aria-label="Favoritar tarefas selecionadas"
+              >
+                Favoritar
+              </button>
+            )}
+            {hasSelectedFavorited && (
+              <button
+                onClick={handleBulkUnfavorite}
+                className="px-3 py-1 bg-white/20 hover:bg-white/30 rounded text-sm"
+                aria-label="Desfavoritar tarefas selecionadas"
+              >
+                Desfavoritar
+              </button>
+            )}
             <button
               onClick={handleCreateProjectClick}
               className="px-3 py-1 bg-white/20 hover:bg-white/30 rounded text-sm font-semibold"
