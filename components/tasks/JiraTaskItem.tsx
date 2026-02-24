@@ -5,12 +5,12 @@ import { Spinner } from '../common/Spinner';
 import { TaskTypeIcon, TaskStatusIcon, StartTestIcon, CompleteTestIcon, ToDoTestIcon, PlusIcon, EditIcon, TrashIcon, RefreshIcon } from '../common/Icons';
 import { BddScenarioForm, BddScenarioItem } from './BddScenario';
 import { TestCaseItem } from './TestCaseItem';
-import { BarChart3, Sparkles, Wrench, Zap, Wand2, Loader2, MoreVertical, ChevronDown, ClipboardList } from 'lucide-react';
+import { BarChart3, Sparkles, Wrench, Zap, Wand2, Loader2, MoreVertical, ChevronDown, ClipboardList, Link, Paperclip, Timer } from 'lucide-react';
 import { TestStrategyCard } from './TestStrategyCard';
 import { ToolsSelector } from './ToolsSelector';
 import { TestReportModal } from './TestReportModal';
 import { CommentSection } from '../common/CommentSection';
-import { DependencyManager } from '../common/DependencyManager';
+import { TaskLinksView } from './TaskLinksView';
 import { AttachmentManager } from '../common/AttachmentManager';
 import { ChecklistView } from '../common/ChecklistView';
 import { EstimationInput } from '../common/EstimationInput';
@@ -182,10 +182,7 @@ export const JiraTaskItem: React.FC<{
     const [editingBddScenario, setEditingBddScenario] = useState<BddScenario | null>(null);
     const [isCreatingBdd, setIsCreatingBdd] = useState(false);
     const [detailLevel, setDetailLevel] = useState<TestCaseDetailLevel>('Padrão');
-    const [showDependencies, setShowDependencies] = useState(false);
     const [isGenerating, setIsGenerating] = useState(false);
-    const [showAttachments, setShowAttachments] = useState(false);
-    const [showEstimation, setShowEstimation] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [showTestReport, setShowTestReport] = useState(false);
     const [viewingJiraAttachment, setViewingJiraAttachment] = useState<{ id: string; filename: string; url: string; mimeType: string; content?: string } | null>(null);
@@ -1272,120 +1269,77 @@ export const JiraTaskItem: React.FC<{
             );
         }
 
+        const cardTitleClass = 'text-sm sm:text-base font-bold text-base-content flex items-center gap-2';
+
         return (
-            <div className="space-y-3">
-                <div>
-                    <div className="flex items-center justify-between mb-3">
-                        <h3 className="text-lg font-semibold text-base-content">Dependências</h3>
-                        <button
-                            onClick={() => setShowDependencies(!showDependencies)}
-                            className="text-sm text-primary hover:opacity-80"
-                        >
-                            {showDependencies ? 'Ocultar' : 'Gerenciar'}
-                        </button>
-                    </div>
-                    {showDependencies && (
-                        <DependencyManager
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4">
+                <div className="lg:col-span-7 space-y-3 sm:space-y-4 min-w-0">
+                    <section className="bg-base-100 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-base-300 shadow-sm">
+                        <h2 className={cardTitleClass + ' mb-3'}>
+                            <Link className="w-4 h-4 sm:w-5 sm:h-5 text-primary/70 shrink-0" aria-hidden />
+                            Dependências
+                        </h2>
+                        <TaskLinksView
                             task={task}
                             project={project}
                             onUpdateProject={onUpdateProject}
-                            onClose={() => setShowDependencies(false)}
                         />
-                    )}
-                </div>
+                    </section>
 
-                <div>
-                    <div className="flex items-center justify-between mb-3">
-                        <h3 className="text-lg font-semibold text-base-content">Anexos</h3>
-                        <button
-                            onClick={() => setShowAttachments(!showAttachments)}
-                            className="text-sm text-primary hover:opacity-80"
-                        >
-                            {showAttachments ? 'Ocultar' : 'Gerenciar'}
-                        </button>
-                    </div>
-                    {showAttachments && (
+                    <section className="bg-base-100 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-base-300 shadow-sm">
+                        <h2 className={cardTitleClass + ' mb-3'}>
+                            <Paperclip className="w-4 h-4 sm:w-5 sm:h-5 text-primary/70 shrink-0" aria-hidden />
+                            Anexos
+                            <span className="bg-base-200 text-base-content/70 text-xs px-2 py-0.5 rounded-full font-normal">
+                                {task.attachments?.length ?? 0}
+                            </span>
+                        </h2>
                         <AttachmentManager
                             task={task}
                             project={project}
                             onUpdateProject={onUpdateProject}
-                            onClose={() => setShowAttachments(false)}
+                            compact
                         />
+                    </section>
+
+                    {task.checklist && task.checklist.length > 0 && (
+                        <section className="bg-base-100 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-base-300 shadow-sm">
+                            <h2 className={cardTitleClass + ' mb-3'}>Checklist</h2>
+                            <ChecklistView
+                                checklist={task.checklist}
+                                onToggleItem={(itemId) => {
+                                    const updatedChecklist = updateChecklistItem(
+                                        task.checklist!,
+                                        itemId,
+                                        { checked: !task.checklist!.find(i => i.id === itemId)?.checked }
+                                    );
+                                    const updatedTasks = project.tasks.map(t =>
+                                        t.id === task.id ? { ...t, checklist: updatedChecklist } : t
+                                    );
+                                    onUpdateProject({ ...project, tasks: updatedTasks });
+                                }}
+                            />
+                        </section>
                     )}
                 </div>
 
-                <div>
-                    <div className="flex items-center justify-between mb-3">
-                        <h3 className="text-lg font-semibold text-base-content">Estimativas</h3>
-                        <button
-                            onClick={() => setShowEstimation(!showEstimation)}
-                            className="text-sm text-primary hover:opacity-80"
-                        >
-                            {showEstimation ? 'Ocultar' : task.estimatedHours ? 'Editar' : 'Adicionar'}
-                        </button>
-                    </div>
-                    {showEstimation && (
+                <div className="lg:col-span-5 min-w-0 self-start">
+                    <section className="bg-base-100 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-base-300 shadow-sm sticky top-20 lg:top-24">
+                        <h2 className={cardTitleClass + ' mb-3'}>
+                            <Timer className="w-4 h-4 sm:w-5 sm:h-5 text-primary/70 shrink-0" aria-hidden />
+                            Estimativas
+                        </h2>
                         <EstimationInput
                             task={task}
                             onSave={(estimatedHours, actualHours) => {
                                 const updatedTasks = project.tasks.map(t =>
-                                    t.id === task.id
-                                        ? { ...t, estimatedHours, actualHours }
-                                        : t
+                                    t.id === task.id ? { ...t, estimatedHours, actualHours } : t
                                 );
                                 onUpdateProject({ ...project, tasks: updatedTasks });
-                                setShowEstimation(false);
                             }}
-                            onCancel={() => setShowEstimation(false)}
                         />
-                    )}
-                    {!showEstimation && task.estimatedHours && (
-                        <div className="p-2.5 bg-base-100 border border-base-300 rounded-xl">
-                            <div className="flex items-center justify-between">
-                                <span className="text-base-content/70">Estimado:</span>
-                                <span className="font-semibold text-base-content">{task.estimatedHours}h</span>
-                            </div>
-                            {task.actualHours && (
-                                <>
-                                    <div className="flex items-center justify-between mt-2">
-                                        <span className="text-base-content/70">Real:</span>
-                                        <span className={`font-semibold ${
-                                            task.actualHours <= task.estimatedHours ? 'text-green-700 dark:text-green-400' : 'text-orange-700 dark:text-orange-400'
-                                        }`}>
-                                            {task.actualHours}h
-                                        </span>
-                                    </div>
-                                    <div className="mt-2 text-xs text-base-content/70">
-                                        {task.actualHours <= task.estimatedHours
-                                            ? `✅ Dentro do estimado (${task.estimatedHours - task.actualHours}h restantes)`
-                                            : `⚠️ Acima do estimado (+${task.actualHours - task.estimatedHours}h)`
-                                        }
-                                    </div>
-                                </>
-                            )}
-                        </div>
-                    )}
+                    </section>
                 </div>
-
-                {task.checklist && task.checklist.length > 0 && (
-                    <div>
-                        <h3 className="text-lg font-semibold text-base-content mb-3">Checklist</h3>
-                        <ChecklistView
-                            checklist={task.checklist}
-                            onToggleItem={(itemId) => {
-                                const updatedChecklist = updateChecklistItem(
-                                    task.checklist!,
-                                    itemId,
-                                    { checked: !task.checklist!.find(i => i.id === itemId)?.checked }
-                                );
-                                const updatedTasks = project.tasks.map(t =>
-                                    t.id === task.id ? { ...t, checklist: updatedChecklist } : t
-                                );
-                                onUpdateProject({ ...project, tasks: updatedTasks });
-                            }}
-                        />
-                    </div>
-                )}
             </div>
         );
     };

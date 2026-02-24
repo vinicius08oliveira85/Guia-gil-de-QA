@@ -26,6 +26,7 @@ const buttonVariants = cva(
         icon: "btn-square btn-md px-0 min-h-[44px] min-w-[44px]",
         panel: "px-2.5 py-1.5 text-xs rounded-xl min-h-0 sm:px-3 sm:py-2 sm:text-sm",
         panelSm: "px-2 py-1 text-xs rounded-xl min-h-0 sm:px-2.5 sm:py-1.5 sm:text-sm",
+        panelXs: "px-2 py-1 text-xs rounded-lg min-h-0 gap-1.5",
       },
     },
     defaultVariants: {

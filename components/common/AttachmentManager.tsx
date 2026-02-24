@@ -18,13 +18,16 @@ interface AttachmentManagerProps {
   project: Project;
   onUpdateProject: (project: Project) => void;
   onClose?: () => void;
+  /** Reduz padding e tamanhos para caber em painéis (ex.: modal Planejamento) */
+  compact?: boolean;
 }
 
 export const AttachmentManager: React.FC<AttachmentManagerProps> = ({
   task,
   project,
   onUpdateProject,
-  onClose
+  onClose,
+  compact = false
 }) => {
   const { handleError, handleSuccess } = useErrorHandler();
   const [uploading, setUploading] = useState(false);
@@ -86,17 +89,20 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = ({
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-base-content">Anexos ({attachments.length})</h3>
-        {onClose && (
-          <button type="button" onClick={onClose} className="btn btn-ghost btn-sm btn-circle">✕</button>
-        )}
-      </div>
+    <div className={compact ? 'space-y-2' : 'space-y-4'}>
+      {!compact && (
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-base-content">Anexos ({attachments.length})</h3>
+          {onClose && (
+            <button type="button" onClick={onClose} className="btn btn-ghost btn-sm btn-circle">✕</button>
+          )}
+        </div>
+      )}
 
       {/* Upload */}
       <div className={cn(
-        "border-2 border-dashed border-base-300 rounded-xl p-4 hover:border-primary/40 hover:bg-primary/5 transition-all"
+        "border-2 border-dashed border-base-300 rounded-xl hover:border-primary/40 hover:bg-primary/5 transition-all",
+        compact ? "p-3 rounded-lg" : "p-4"
       )}>
         <input
           ref={fileInputRef}
@@ -108,15 +114,15 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = ({
         />
         <label
           htmlFor={`file-input-${task.id}`}
-          className={`flex flex-col items-center justify-center cursor-pointer ${
+          className={`flex flex-col items-center justify-center cursor-pointer ${compact ? 'gap-0.5' : ''} ${
             uploading ? 'opacity-50 cursor-not-allowed' : ''
           }`}
         >
-          <span className="text-4xl mb-2">📎</span>
-          <span className="text-base-content font-semibold">
+          <span className={compact ? 'text-2xl mb-0.5' : 'text-4xl mb-2'}>📎</span>
+          <span className={compact ? 'text-sm font-semibold text-base-content' : 'text-base-content font-semibold'}>
             {uploading ? 'Enviando...' : 'Clique para anexar arquivo'}
           </span>
-          <span className="text-sm text-base-content/70 mt-1">
+          <span className={compact ? 'text-xs text-base-content/70' : 'text-sm text-base-content/70 mt-1'}>
             Tamanho máximo: 10MB
           </span>
         </label>
@@ -133,8 +139,8 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = ({
               <div className="flex items-center gap-3 flex-1 min-w-0">
                 <span className="text-2xl">{getFileIcon(attachment.type)}</span>
                 <div className="flex-1 min-w-0">
-                  <div className="font-semibold text-base-content truncate">{attachment.name}</div>
-                  <div className="text-sm text-base-content/70">
+                  <div className={cn("font-semibold text-base-content truncate", compact && "text-sm")}>{attachment.name}</div>
+                  <div className={compact ? "text-xs text-base-content/70" : "text-sm text-base-content/70"}>
                     {formatFileSize(attachment.size)} • {new Date(attachment.uploadedAt).toLocaleDateString('pt-BR')}
                   </div>
                 </div>
@@ -177,7 +183,7 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = ({
       )}
 
       {attachments.length === 0 && (
-        <p className="text-center text-base-content/70 py-4">
+        <p className={cn("text-center text-base-content/70", compact ? "py-1 text-xs" : "py-4")}>
           Nenhum anexo ainda. Clique acima para adicionar arquivos.
         </p>
       )}

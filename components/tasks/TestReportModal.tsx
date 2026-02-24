@@ -106,7 +106,7 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Registro de Testes Realizados" size="xl">
+    <Modal isOpen={isOpen} onClose={onClose} title="Registro de Testes Realizados" size="2xl">
       <div className="h-full flex flex-col min-h-0 space-y-5">
         {/* Cabeçalho: subtítulo + botões de ação */}
         <div className="flex-shrink-0 space-y-4">
@@ -117,18 +117,18 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({
             <Button
               type="button"
               variant="brandOutline"
-              size="panel"
+              size="panelXs"
               onClick={handleDownload}
               aria-label={`Baixar relatório em .${format === 'markdown' ? 'md' : 'txt'}`}
             >
-              <Download className="w-4 h-4" aria-hidden />
+              <Download className="w-3.5 h-3.5" aria-hidden />
               Baixar .{format === 'markdown' ? 'md' : 'txt'}
             </Button>
             <button
               type="button"
               onClick={handleCopy}
               className={`
-                flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-colors shadow-md
+                flex items-center gap-1.5 px-2.5 py-1.5 text-sm rounded-lg font-medium transition-colors shadow-sm
                 ${copied
                   ? 'bg-success text-success-content hover:opacity-90'
                   : 'bg-brand-orange text-white hover:bg-brand-orange-selected-hover shadow-brand-orange/20'}
@@ -137,12 +137,12 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({
             >
               {copied ? (
                 <>
-                  <Check className="w-4 h-4" aria-hidden />
+                  <Check className="w-3.5 h-3.5" aria-hidden />
                   <span>Copiado!</span>
                 </>
               ) : (
                 <>
-                  <Copy className="w-4 h-4" aria-hidden />
+                  <Copy className="w-3.5 h-3.5" aria-hidden />
                   <span>Copiar</span>
                 </>
               )}

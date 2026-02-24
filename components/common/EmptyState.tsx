@@ -7,6 +7,8 @@ interface EmptyStateProps {
   icon?: string | React.ReactNode;
   title: string;
   description?: string;
+  /** Reduz padding e tamanhos para caber em painéis (ex.: modal Planejamento) */
+  compact?: boolean;
   action?: {
     label: string;
     onClick: () => void;
@@ -30,6 +32,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   icon = '📋',
   title,
   description,
+  compact = false,
   action,
   secondaryAction,
   tip,
@@ -38,28 +41,36 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   helpText,
   illustration
 }) => {
+  const wrapperClass = compact
+    ? 'flex flex-col items-center justify-center py-2 px-2 text-center'
+    : 'flex flex-col items-center justify-center py-16 px-4 text-center';
+  const iconWrapperClass = compact ? 'mb-1' : 'mb-6';
+  const iconSizeClass = compact ? 'text-2xl' : 'text-6xl';
+  const titleWrapperClass = compact ? 'flex items-center gap-2 mb-0.5' : 'flex items-center gap-2 mb-3';
+  const titleClass = compact ? 'text-xs font-semibold tracking-tight text-base-content' : 'text-xl sm:text-2xl font-semibold tracking-tight text-base-content';
+  const descClass = compact ? 'text-base-content/70 max-w-md mb-0 text-xs' : 'text-base-content/70 max-w-md mb-6';
 
   return (
     <motion.div 
-      className="flex flex-col items-center justify-center py-16 px-4 text-center" 
+      className={wrapperClass}
       role="status" 
       aria-live="polite"
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: compact ? 8 : 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
+      transition={{ duration: compact ? 0.2 : 0.4 }}
     >
       {/* Ícone ou ilustração */}
       <motion.div 
-        className="mb-6"
+        className={iconWrapperClass}
         aria-hidden="true"
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        transition={{ delay: 0.1, duration: 0.3 }}
+        transition={{ delay: 0.05, duration: 0.2 }}
       >
         {illustration ? (
-          <div className="text-6xl">{illustration}</div>
+          <div className={iconSizeClass}>{illustration}</div>
         ) : typeof icon === 'string' ? (
-          <div className="text-6xl">{icon}</div>
+          <div className={iconSizeClass}>{icon}</div>
         ) : (
           icon
         )}
@@ -67,12 +78,12 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
 
       {/* Título */}
       <motion.div 
-        className="flex items-center gap-2 mb-3"
+        className={titleWrapperClass}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 0.2 }}
+        transition={{ delay: compact ? 0.1 : 0.2 }}
       >
-        <h3 className="text-xl sm:text-2xl font-semibold tracking-tight text-base-content">{title}</h3>
+        <h3 className={titleClass}>{title}</h3>
         {helpContent && (
           <HelpTooltip title={helpContent.title} content={helpContent.content} />
         )}
@@ -81,10 +92,10 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
       {/* Descrição */}
       {description && (
         <motion.p 
-          className="text-base-content/70 max-w-md mb-6"
+          className={descClass}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
+          transition={{ delay: 0.15 }}
         >
           {description}
         </motion.p>

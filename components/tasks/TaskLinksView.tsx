@@ -216,23 +216,23 @@ export const TaskLinksView: React.FC<TaskLinksViewProps> = ({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       {/* Status da tarefa */}
       {(isBlocked || isReady) && (
         <div className={cn(
-          "p-4 rounded-xl border-2",
+          "px-2 py-1.5 rounded-lg border",
           isBlocked ? "border-warning/40 bg-warning/10" : "border-success/40 bg-success/10"
         )}>
           {isBlocked && (
-            <div className="flex items-center gap-2 text-warning">
-              <span className="text-xl">⚠️</span>
-              <span className="font-semibold">Esta tarefa está bloqueada por dependências não concluídas</span>
+            <div className="flex items-center gap-1.5 text-warning text-sm">
+              <span className="text-base">⚠️</span>
+              <span className="font-medium">Esta tarefa está bloqueada por dependências não concluídas</span>
             </div>
           )}
           {isReady && !isBlocked && (
-            <div className="flex items-center gap-2 text-success">
-              <span className="text-xl">✅</span>
-              <span className="font-semibold">Esta tarefa está pronta para ser iniciada</span>
+            <div className="flex items-center gap-1.5 text-success text-sm">
+              <span className="text-base">✅</span>
+              <span className="font-medium">Esta tarefa está pronta para ser iniciada</span>
             </div>
           )}
         </div>
@@ -240,9 +240,9 @@ export const TaskLinksView: React.FC<TaskLinksViewProps> = ({
 
       {/* Seção: Bloqueado Por (Dependencies) */}
       <div>
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-base-content flex items-center gap-2">
-            <span className="text-xl">🔒</span>
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-sm font-semibold text-base-content flex items-center gap-2">
+            <span className="text-base">🔒</span>
             <span>Bloqueado Por</span>
             <span className="badge badge-primary badge-sm">{dependencies.length}</span>
           </h3>
@@ -250,7 +250,7 @@ export const TaskLinksView: React.FC<TaskLinksViewProps> = ({
             <button
               type="button"
               onClick={() => setShowAddDependency(true)}
-              className="btn btn-primary btn-sm"
+              className="btn btn-primary btn-sm min-h-0 h-7 px-2.5 text-xs rounded-lg"
             >
               + Adicionar Dependência
             </button>
@@ -258,7 +258,7 @@ export const TaskLinksView: React.FC<TaskLinksViewProps> = ({
         </div>
 
         {showAddDependency && (
-          <div className="mb-4 p-4 bg-base-200 rounded-xl border border-base-300">
+          <div className="mb-2 p-2 bg-base-200 rounded-lg border border-base-300">
             <div className="flex gap-2">
               <select
                 value={selectedTaskId}
@@ -327,6 +327,7 @@ export const TaskLinksView: React.FC<TaskLinksViewProps> = ({
           </div>
         ) : (
           <EmptyState
+            compact
             icon="🔗"
             title="Nenhuma dependência"
             description="Esta tarefa não depende de outras tarefas."
@@ -336,7 +337,7 @@ export const TaskLinksView: React.FC<TaskLinksViewProps> = ({
 
       {/* Divisor visual entre seções */}
       {dependencies.length > 0 && dependents.length > 0 && (
-        <div className="relative py-4">
+        <div className="relative py-2">
           <div className="absolute inset-0 flex items-center">
             <div className="w-full border-t border-dashed border-base-300"></div>
           </div>
@@ -350,9 +351,9 @@ export const TaskLinksView: React.FC<TaskLinksViewProps> = ({
 
       {/* Seção: Bloqueando (Dependents) */}
       <div>
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-base-content flex items-center gap-2">
-            <span className="text-xl">⚡</span>
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-sm font-semibold text-base-content flex items-center gap-2">
+            <span className="text-base">⚡</span>
             <span>Bloqueando</span>
             <span className="badge badge-primary badge-sm">{dependents.length}</span>
           </h3>
@@ -391,6 +392,7 @@ export const TaskLinksView: React.FC<TaskLinksViewProps> = ({
           </div>
         ) : (
           <EmptyState
+            compact
             icon="⚡"
             title="Nenhuma tarefa dependente"
             description="Nenhuma outra tarefa depende desta."

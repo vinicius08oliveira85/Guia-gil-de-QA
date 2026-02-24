@@ -9,7 +9,6 @@ import { TestStrategyCard } from './TestStrategyCard';
 import { ToolsSelector } from './ToolsSelector';
 import { TestReportModal } from './TestReportModal';
 import { CommentSection } from '../common/CommentSection';
-import { DependencyManager } from '../common/DependencyManager';
 import { AttachmentManager } from '../common/AttachmentManager';
 import { ChecklistView } from '../common/ChecklistView';
 import { EstimationInput } from '../common/EstimationInput';
@@ -33,9 +32,9 @@ import { canViewInBrowser, detectFileType } from '../../services/fileViewerServi
 import { JiraAttachment } from './JiraAttachment';
 import { JiraRichContent } from './JiraRichContent';
 import { Button } from '../common/Button';
-import { BarChart3, ClipboardList, Sparkles, Wrench } from 'lucide-react';
+import { BarChart3, ClipboardList, Sparkles, Wrench, Link, Paperclip, Timer } from 'lucide-react';
 
-type DetailSection = 'overview' | 'bdd' | 'tests' | 'planning' | 'collaboration' | 'links';
+type DetailSection = 'overview' | 'bdd' | 'tests' | 'planning' | 'collaboration';
 type TestSubSection = 'strategy' | 'test-cases';
 
 // Componente para renderizar descrição com formatação rica do Jira
@@ -143,9 +142,6 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
     const [editingBddScenario, setEditingBddScenario] = useState<BddScenario | null>(null);
     const [isCreatingBdd, setIsCreatingBdd] = useState(false);
     const [detailLevel, setDetailLevel] = useState<TestCaseDetailLevel>('Padrão');
-    const [showDependencies, setShowDependencies] = useState(false);
-    const [showAttachments, setShowAttachments] = useState(false);
-    const [showEstimation, setShowEstimation] = useState(false);
     const [showTestReport, setShowTestReport] = useState(false);
     const [viewingJiraAttachment, setViewingJiraAttachment] = useState<{ id: string; filename: string; url: string; mimeType: string; content?: string } | null>(null);
     const [loadingJiraAttachmentId, setLoadingJiraAttachmentId] = useState<string | null>(null);
@@ -169,15 +165,9 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
         }
 
         if (project && onUpdateProject) {
-            const planningBadge = (task.dependencies?.length || 0) + (task.attachments?.length || 0) + (task.checklist?.length || 0) + (task.estimatedHours ? 1 : 0);
-            tabs.push({ id: 'planning', label: 'Planejamento', badge: planningBadge });
-        }
-
-        if (project && onUpdateProject) {
-            const dependenciesCount = task.dependencies?.length || 0;
             const dependentsCount = getTaskDependents(task.id, project).length;
-            const linksBadge = dependenciesCount + dependentsCount;
-            tabs.push({ id: 'links', label: '🔗 Vínculos', badge: linksBadge > 0 ? linksBadge : undefined });
+            const planningBadge = (task.dependencies?.length || 0) + dependentsCount + (task.attachments?.length || 0) + (task.checklist?.length || 0) + (task.estimatedHours ? 1 : 0);
+            tabs.push({ id: 'planning', label: 'Planejamento', badge: planningBadge });
         }
 
         if (onAddComment) {
@@ -806,120 +796,80 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
             );
         }
 
+        const cardTitleClass = 'text-sm sm:text-base font-bold text-base-content flex items-center gap-2';
+
         return (
-            <div className="space-y-4">
-                <div>
-                    <div className="flex items-center justify-between mb-3">
-                        <h3 className="text-lg font-semibold text-base-content">Dependências</h3>
-                        <button
-                            onClick={() => setShowDependencies(!showDependencies)}
-                            className="text-sm text-primary hover:opacity-80"
-                        >
-                            {showDependencies ? 'Ocultar' : 'Gerenciar'}
-                        </button>
-                    </div>
-                    {showDependencies && (
-                        <DependencyManager
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4">
+                {/* Coluna esquerda */}
+                <div className="lg:col-span-7 space-y-3 sm:space-y-4 min-w-0">
+                    <section className="bg-base-100 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-base-300 shadow-sm">
+                        <h2 className={cardTitleClass + ' mb-3'}>
+                            <Link className="w-4 h-4 sm:w-5 sm:h-5 text-primary/70 shrink-0" aria-hidden />
+                            Dependências
+                        </h2>
+                        <TaskLinksView
                             task={task}
                             project={project}
                             onUpdateProject={onUpdateProject}
-                            onClose={() => setShowDependencies(false)}
+                            onOpenTask={onOpenTask}
                         />
-                    )}
-                </div>
+                    </section>
 
-                <div>
-                    <div className="flex items-center justify-between mb-3">
-                        <h3 className="text-lg font-semibold text-base-content">Anexos</h3>
-                        <button
-                            onClick={() => setShowAttachments(!showAttachments)}
-                            className="text-sm text-primary hover:opacity-80"
-                        >
-                            {showAttachments ? 'Ocultar' : 'Gerenciar'}
-                        </button>
-                    </div>
-                    {showAttachments && (
+                    <section className="bg-base-100 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-base-300 shadow-sm">
+                        <h2 className={cardTitleClass + ' mb-3'}>
+                            <Paperclip className="w-4 h-4 sm:w-5 sm:h-5 text-primary/70 shrink-0" aria-hidden />
+                            Anexos
+                            <span className="bg-base-200 text-base-content/70 text-xs px-2 py-0.5 rounded-full font-normal">
+                                {task.attachments?.length ?? 0}
+                            </span>
+                        </h2>
                         <AttachmentManager
                             task={task}
                             project={project}
                             onUpdateProject={onUpdateProject}
-                            onClose={() => setShowAttachments(false)}
+                            compact
                         />
+                    </section>
+
+                    {task.checklist && task.checklist.length > 0 && (
+                        <section className="bg-base-100 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-base-300 shadow-sm">
+                            <h2 className={cardTitleClass + ' mb-3'}>Checklist</h2>
+                            <ChecklistView
+                                checklist={task.checklist}
+                                onToggleItem={(itemId) => {
+                                    const updatedChecklist = updateChecklistItem(
+                                        task.checklist!,
+                                        itemId,
+                                        { checked: !task.checklist!.find(i => i.id === itemId)?.checked }
+                                    );
+                                    const updatedTasks = project.tasks.map(t =>
+                                        t.id === task.id ? { ...t, checklist: updatedChecklist } : t
+                                    );
+                                    onUpdateProject({ ...project, tasks: updatedTasks });
+                                }}
+                            />
+                        </section>
                     )}
                 </div>
 
-                <div>
-                    <div className="flex items-center justify-between mb-3">
-                        <h3 className="text-lg font-semibold text-base-content">Estimativas</h3>
-                        <button
-                            onClick={() => setShowEstimation(!showEstimation)}
-                            className="text-sm text-primary hover:opacity-80"
-                        >
-                            {showEstimation ? 'Ocultar' : task.estimatedHours ? 'Editar' : 'Adicionar'}
-                        </button>
-                    </div>
-                    {showEstimation && (
+                {/* Coluna direita - Estimativas (fixa ao lado ao rolar) */}
+                <div className="lg:col-span-5 min-w-0 self-start">
+                    <section className="bg-base-100 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-base-300 shadow-sm sticky top-20 lg:top-24">
+                        <h2 className={cardTitleClass + ' mb-3'}>
+                            <Timer className="w-4 h-4 sm:w-5 sm:h-5 text-primary/70 shrink-0" aria-hidden />
+                            Estimativas
+                        </h2>
                         <EstimationInput
                             task={task}
                             onSave={(estimatedHours, actualHours) => {
                                 const updatedTasks = project.tasks.map(t =>
-                                    t.id === task.id
-                                        ? { ...t, estimatedHours, actualHours }
-                                        : t
+                                    t.id === task.id ? { ...t, estimatedHours, actualHours } : t
                                 );
                                 onUpdateProject({ ...project, tasks: updatedTasks });
-                                setShowEstimation(false);
                             }}
-                            onCancel={() => setShowEstimation(false)}
                         />
-                    )}
-                    {!showEstimation && task.estimatedHours && (
-                        <div className="p-3 bg-base-100 border border-base-300 rounded-xl">
-                            <div className="flex items-center justify-between">
-                                <span className="text-base-content/70">Estimado:</span>
-                                <span className="font-semibold text-base-content">{task.estimatedHours}h</span>
-                            </div>
-                            {task.actualHours && (
-                                <>
-                                    <div className="flex items-center justify-between mt-2">
-                                        <span className="text-base-content/70">Real:</span>
-                                        <span className={`font-semibold ${
-                                            task.actualHours <= task.estimatedHours ? 'text-green-700 dark:text-green-400' : 'text-orange-700 dark:text-orange-400'
-                                        }`}>
-                                            {task.actualHours}h
-                                        </span>
-                                    </div>
-                                    <div className="mt-2 text-xs text-base-content/70">
-                                        {task.actualHours <= task.estimatedHours
-                                            ? `✅ Dentro do estimado (${task.estimatedHours - task.actualHours}h restantes)`
-                                            : `⚠️ Acima do estimado (+${task.actualHours - task.estimatedHours}h)`
-                                        }
-                                    </div>
-                                </>
-                            )}
-                        </div>
-                    )}
+                    </section>
                 </div>
-
-                {task.checklist && task.checklist.length > 0 && (
-                    <div>
-                        <h3 className="text-lg font-semibold text-base-content mb-3">Checklist</h3>
-                        <ChecklistView
-                            checklist={task.checklist}
-                            onToggleItem={(itemId) => {
-                                const updatedChecklist = updateChecklistItem(
-                                    task.checklist!,
-                                    itemId,
-                                    { checked: !task.checklist!.find(i => i.id === itemId)?.checked }
-                                );
-                                const updatedTasks = project.tasks.map(t =>
-                                    t.id === task.id ? { ...t, checklist: updatedChecklist } : t
-                                );
-                                onUpdateProject({ ...project, tasks: updatedTasks });
-                            }}
-                        />
-                    </div>
-                )}
             </div>
         );
     };
@@ -942,23 +892,6 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
         );
     };
 
-    const renderLinksSection = () => {
-        if (!project || !onUpdateProject) {
-            return (
-                <p className="text-sm text-base-content/70">Conecte um projeto para visualizar vínculos e dependências.</p>
-            );
-        }
-
-        return (
-            <TaskLinksView
-                task={task}
-                project={project}
-                onUpdateProject={onUpdateProject}
-                onOpenTask={onOpenTask}
-            />
-        );
-    };
-
     const renderSectionContent = () => {
         switch (activeSection) {
             case 'overview':
@@ -969,8 +902,6 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                 return renderTestsSection();
             case 'planning':
                 return renderPlanningSection();
-            case 'links':
-                return renderLinksSection();
             case 'collaboration':
                 return renderCollaborationSection();
             default:
