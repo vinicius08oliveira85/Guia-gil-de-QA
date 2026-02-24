@@ -36,6 +36,7 @@ const saveDebounceMs = 300; // Debounce de 300ms entre salvamentos do mesmo proj
 const maxRetries = 3; // Máximo de 3 tentativas
 const retryDelays = [1000, 2000, 4000]; // Backoff exponencial: 1s, 2s, 4s
 const requestTimeoutMs = 8000; // Timeout de 8 segundos (evita timeout em redes lentas; fallback usa cache local)
+const loadProjectsTimeoutMs = 32000; // 32s para GET de projetos (proxy usa 28s; cliente deve esperar mais que o proxy)
 const timeoutErrorMessage = `Timeout: requisição ao Supabase excedeu ${requestTimeoutMs / 1000}s`;
 
 // Inicializar cliente Supabase direto se variáveis estiverem disponíveis
@@ -500,6 +501,18 @@ export const saveProjectToSupabase = async (project: Project): Promise<void> => 
                         throw error;
                     }
                     if (isPayloadTooLargeError(error)) {
+                        if (supabase) {
+                            try {
+                                await saveThroughSdk(project);
+                                logger.info(`Projeto "${project.name}" salvo com sucesso via SDK (proxy retornou 413)`, 'supabaseService', {
+                                    projectId,
+                                    projectName: project.name
+                                });
+                                return;
+                            } catch (sdkError) {
+                                logger.warn('Erro ao salvar via SDK após 413 do proxy', 'supabaseService', sdkError);
+                            }
+                        }
                         throw new Error(
                             `O projeto "${project.name}" é muito grande para o proxy (limite 4MB). O projeto foi salvo apenas localmente.`
                         );
@@ -629,7 +642,7 @@ export const loadProjectsFromSupabase = async (): Promise<LoadProjectsResult> =>
             const userId = await getUserId();
             const response = await callSupabaseProxy<{ projects?: Project[] }>('GET', {
                 query: { userId }
-            }, requestTimeoutMs);
+            }, loadProjectsTimeoutMs);
             const projects = response.projects ?? [];
             if (projects.length === 0) {
                 logger.info('Nenhum projeto encontrado no Supabase (proxy)', 'supabaseService');

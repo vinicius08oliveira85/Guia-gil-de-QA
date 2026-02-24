@@ -72,35 +72,37 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
 
   return (
     <div className="space-y-4">
-      <h4 className="text-lg font-semibold text-text-primary">💬 Comentários ({comments.length})</h4>
-      
-      {/* Formulário de novo comentário */}
-      <div className="space-y-2">
+      <h3 className="text-sm font-bold text-base-content/70 uppercase tracking-wide">
+        Comentários ({comments.length})
+      </h3>
+      <div className="text-base-content/80 space-y-2">
+        {/* Formulário de novo comentário - mesma formatação da descrição */}
         <textarea
           value={newComment}
           onChange={(e) => setNewComment(e.target.value)}
           placeholder="Adicionar comentário..."
           rows={3}
-          className="w-full px-3 py-2 bg-surface border border-surface-border rounded-md text-text-primary placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-accent"
+          className="w-full px-3 py-2 bg-surface border border-surface-border rounded-md text-text-primary placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-accent text-base-content/80"
         />
         <button
           onClick={handleSubmit}
           disabled={!newComment.trim()}
-          className="btn btn-primary text-sm"
+          className="btn btn-primary btn-sm text-xs px-3 py-1.5"
+          aria-label="Enviar comentário"
         >
           Comentar
         </button>
       </div>
 
-      {/* Lista de comentários */}
-      <div className="space-y-3">
+      {/* Lista de comentários - mesma área visual da descrição */}
+      <div className="space-y-3 text-base-content/80">
         {comments.map(comment => (
           <div
             key={comment.id}
-            className="p-3 bg-black/20 rounded-md border border-surface-border"
+            className="p-3 bg-base-100/80 dark:bg-black/20 rounded-md border border-surface-border"
           >
             {editingId === comment.id ? (
-              <div className="space-y-2">
+              <div className="space-y-2 text-base-content/80">
                 <textarea
                   value={editContent}
                   onChange={(e) => setEditContent(e.target.value)}
@@ -110,13 +112,13 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
                 <div className="flex gap-2">
                   <button
                     onClick={handleSaveEdit}
-                    className="btn btn-primary text-sm"
+                    className="btn btn-primary btn-sm text-xs px-3 py-1.5"
                   >
                     Salvar
                   </button>
                   <button
                     onClick={handleCancelEdit}
-                    className="btn btn-secondary text-sm"
+                    className="btn btn-secondary btn-sm text-xs px-3 py-1.5"
                   >
                     Cancelar
                   </button>

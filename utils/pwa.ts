@@ -121,8 +121,10 @@ export const initializePWA = (): void => {
   pwaInitialized = true;
 
   // Listener para o evento beforeinstallprompt
-  // Nota: O aviso "Banner not shown: beforeinstallpromptevent.preventDefault()" no console é esperado:
-  // o app usa prompt customizado (InstallPWAButton); prompt() só é chamado quando o usuário clica em "Instalar App".
+  // AVISO NO CONSOLE (esperado): O Chrome pode exibir "Banner not shown: beforeinstallpromptevent.preventDefault()".
+  // Isso é intencional: o app usa prompt customizado (InstallPWAButton). Chamamos preventDefault() para evitar
+  // o banner nativo e guardamos o evento; prompt() é chamado apenas em installApp() quando o usuário clica em
+  // "Instalar App". Ver docs/PWA_SETUP.md seção "Avisos no console (esperados)".
   window.addEventListener('beforeinstallprompt', (e: Event) => {
     // Previne o prompt padrão do navegador
     e.preventDefault();
