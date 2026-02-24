@@ -252,6 +252,30 @@ export const TasksView: React.FC<{
     const metrics = useProjectMetrics(project);
     const { projects: allProjects, updateProject: updateGlobalProject } = useProjectsStore();
 
+    // Otimização Bolt: Agrupar tarefas por pai para acelerar o cálculo de status de O(N^2) para O(N)
+    const tasksByParent = useMemo(() => {
+        const map = new Map<string, JiraTask[]>();
+        project.tasks.forEach(t => {
+            if (t.parentId) {
+                const children = map.get(t.parentId) || [];
+                children.push(t);
+                map.set(t.parentId, children);
+            }
+        });
+        return map;
+    }, [project.tasks]);
+
+    // Otimização Bolt: Pré-calcular status efetivos de teste para evitar recalculação redundante durante filtragem e contagem
+    const taskEffectiveStatuses = useMemo(() => {
+        const statusMap = new Map<string, TaskTestStatus>();
+        project.tasks.forEach(task => {
+            // Se já temos o status persistido, usamos ele, senão calculamos usando o mapa otimizado
+            const status = task.testStatus ?? calculateTaskTestStatus(task, project.tasks, tasksByParent);
+            statusMap.set(task.id, status);
+        });
+        return statusMap;
+    }, [project.tasks, tasksByParent]);
+
     // Lógica de Filtragem Avançada
     const filteredTasks = useMemo(() => {
         return project.tasks.filter(task => {
@@ -272,8 +296,11 @@ export const TasksView: React.FC<{
             // 4. Tipo
             if (typeFilter.length > 0 && !typeFilter.includes(task.type)) return false;
 
-            // 5. Status de Teste (badge do card)
-            if (testStatusFilter.length > 0 && !testStatusFilter.includes(getEffectiveTestStatus(task, project.tasks))) return false;
+            // 5. Status de Teste (badge do card) - Otimizado Bolt: Usar mapa pré-calculado
+            if (testStatusFilter.length > 0) {
+                const effStatus = taskEffectiveStatuses.get(task.id);
+                if (effStatus && !testStatusFilter.includes(effStatus)) return false;
+            }
 
             // 6. Qualidade (BDD, Testes, Automação)
             if (qualityFilter.length > 0) {
@@ -299,29 +326,71 @@ export const TasksView: React.FC<{
 
             return true;
         });
-    }, [project, project.tasks, debouncedSearchQuery, statusFilter, priorityFilter, typeFilter, testStatusFilter, qualityFilter]);
+    }, [project, project.tasks, debouncedSearchQuery, statusFilter, priorityFilter, typeFilter, testStatusFilter, qualityFilter, taskEffectiveStatuses]);
 
     // Contadores para os filtros
+    // Otimização Bolt: Calcular todos os contadores em uma única passagem para evitar O(F * N)
     const counts = useMemo(() => {
         const allTasks = project.tasks;
-        return {
-            status: (statusName: string) => allTasks.filter(t => taskMatchesStatusName(t, statusName, project)).length,
-            priority: (priorityName: string) => allTasks.filter(t => taskMatchesPriorityName(t, priorityName, project)).length,
-            type: (type: string) => allTasks.filter(t => t.type === type).length,
-            testStatus: (status: TaskTestStatus) => allTasks.filter(t => getEffectiveTestStatus(t, allTasks) === status).length,
-            quality: (type: string) => {
-                switch (type) {
-                    case 'with-bdd': return allTasks.filter(t => t.bddScenarios?.length).length;
-                    case 'without-bdd': return allTasks.filter(t => !t.bddScenarios?.length).length;
-                    case 'with-tests': return allTasks.filter(t => t.testCases?.length).length;
-                    case 'without-tests': return allTasks.filter(t => !t.testCases?.length).length;
-                    case 'automated': return allTasks.filter(t => t.testCases?.some(tc => tc.isAutomated)).length;
-                    case 'manual': return allTasks.filter(t => t.testCases?.some(tc => !tc.isAutomated)).length;
-                    default: return 0;
-                }
-            }
+        const statusOptions = getStatusFilterOptions(project);
+        const priorityOptions = getPriorityFilterOptions(project);
+
+        const results = {
+            status: {} as Record<string, number>,
+            priority: {} as Record<string, number>,
+            type: {} as Record<string, number>,
+            testStatus: {} as Record<string, number>,
+            quality: {
+                'with-bdd': 0, 'without-bdd': 0, 'with-tests': 0, 'without-tests': 0, 'automated': 0, 'manual': 0
+            } as Record<string, number>
         };
-    }, [project.tasks, project.settings?.jiraStatuses, project.settings?.jiraPriorities]);
+
+        // Inicializar opções conhecidas
+        statusOptions.forEach(opt => results.status[opt] = 0);
+        priorityOptions.forEach(opt => results.priority[opt] = 0);
+        TEST_STATUS_FILTER_OPTIONS.forEach(opt => results.testStatus[opt.value] = 0);
+
+        allTasks.forEach(task => {
+            // Status
+            statusOptions.forEach(opt => {
+                if (taskMatchesStatusName(task, opt, project)) results.status[opt]++;
+            });
+
+            // Priority
+            priorityOptions.forEach(opt => {
+                if (taskMatchesPriorityName(task, opt, project)) results.priority[opt]++;
+            });
+
+            // Type (Dinâmico Bolt: evitar hardcoding de tipos)
+            results.type[task.type] = (results.type[task.type] || 0) + 1;
+
+            // Test Status - Usar mapa pré-calculado (O(1))
+            const effStatus = taskEffectiveStatuses.get(task.id);
+            if (effStatus && results.testStatus[effStatus] !== undefined) {
+                results.testStatus[effStatus]++;
+            }
+
+            // Quality
+            const hasBDD = (task.bddScenarios?.length || 0) > 0;
+            const hasTests = (task.testCases?.length || 0) > 0;
+            if (hasBDD) results.quality['with-bdd']++; else results.quality['without-bdd']++;
+            if (hasTests) {
+                results.quality['with-tests']++;
+                if (task.testCases?.some(tc => tc.isAutomated)) results.quality['automated']++;
+                if (task.testCases?.some(tc => !tc.isAutomated)) results.quality['manual']++;
+            } else {
+                results.quality['without-tests']++;
+            }
+        });
+
+        return {
+            status: (name: string) => results.status[name] || 0,
+            priority: (name: string) => results.priority[name] || 0,
+            type: (type: string) => results.type[type] || 0,
+            testStatus: (status: TaskTestStatus) => results.testStatus[status] || 0,
+            quality: (type: string) => results.quality[type] || 0
+        };
+    }, [project, project.tasks, project.settings?.jiraStatuses, project.settings?.jiraPriorities, taskEffectiveStatuses]);
 
     const activeFiltersCount = statusFilter.length + priorityFilter.length + typeFilter.length + testStatusFilter.length + qualityFilter.length;
 
@@ -1512,6 +1581,7 @@ export const TasksView: React.FC<{
                     project={project}
                     onUpdateProject={onUpdateProject}
                     onOpenModal={setModalTask}
+                    tasksByParent={tasksByParent}
                 >
                     {task.children.length > 0 && renderTaskTree(task.children, level + 1, globalIndex + 1)}
                 </JiraTaskItem>

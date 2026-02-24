@@ -156,7 +156,8 @@ export const JiraTaskItem: React.FC<{
     activeTaskId?: string | null;
     onFocusTask?: (taskId: string | null) => void;
     onOpenModal?: (task: JiraTask) => void;
-}> = React.memo(({ task, onTestCaseStatusChange, onToggleTestCaseAutomated, onExecutedStrategyChange, onTaskToolsChange, onTestCaseToolsChange, onStrategyExecutedChange, onStrategyToolsChange, onDelete, onGenerateTests, isGenerating: isGeneratingTests, onAddSubtask, onEdit, onGenerateBddScenarios, isGeneratingBdd, onGenerateAll, isGeneratingAll, onSyncToJira, isSyncing, onSaveBddScenario, onDeleteBddScenario, onTaskStatusChange, onAddTestCaseFromTemplate, onAddComment, onEditComment, onDeleteComment, onEditTestCase, onDeleteTestCase, project, onUpdateProject, isSelected, onToggleSelect, children, level, activeTaskId, onFocusTask, onOpenModal }) => {
+    tasksByParent?: Map<string, JiraTask[]>;
+}> = React.memo(({ task, onTestCaseStatusChange, onToggleTestCaseAutomated, onExecutedStrategyChange, onTaskToolsChange, onTestCaseToolsChange, onStrategyExecutedChange, onStrategyToolsChange, onDelete, onGenerateTests, isGenerating: isGeneratingTests, onAddSubtask, onEdit, onGenerateBddScenarios, isGeneratingBdd, onGenerateAll, isGeneratingAll, onSyncToJira, isSyncing, onSaveBddScenario, onDeleteBddScenario, onTaskStatusChange, onAddTestCaseFromTemplate, onAddComment, onEditComment, onDeleteComment, onEditTestCase, onDeleteTestCase, project, onUpdateProject, isSelected, onToggleSelect, children, level, activeTaskId, onFocusTask, onOpenModal, tasksByParent }) => {
     const reduceMotion = useReducedMotion();
     const [isDetailsOpen, setIsDetailsOpen] = useState(false); // Colapsado por padrão para compactar
     const [isChildrenOpen, setIsChildrenOpen] = useState(false);
@@ -299,13 +300,13 @@ export const JiraTaskItem: React.FC<{
                     }
                 } else {
                     // Se não há status salvo, calcular baseado nos testCases ou subtarefas
-                    const calculatedStatus = calculateTaskTestStatus(task, project?.tasks || []);
+                    const calculatedStatus = calculateTaskTestStatus(task, project?.tasks || [], tasksByParent);
                     setTaskTestStatus(calculatedStatus);
                 }
             } catch (error) {
                 logger.warn('Erro ao carregar status de teste do Supabase', 'JiraTaskItem', error);
                 // Em caso de erro, calcular baseado nos testCases ou subtarefas
-                const calculatedStatus = calculateTaskTestStatus(task, project?.tasks || []);
+                const calculatedStatus = calculateTaskTestStatus(task, project?.tasks || [], tasksByParent);
                 setTaskTestStatus(calculatedStatus);
             } finally {
                 setIsLoadingTestStatus(false);
@@ -318,7 +319,7 @@ export const JiraTaskItem: React.FC<{
     // Recalcular status automaticamente quando testCases mudam
     useEffect(() => {
         // Recalcular status quando testCases mudarem
-        const calculatedStatus = calculateTaskTestStatus(task, project?.tasks || []);
+        const calculatedStatus = calculateTaskTestStatus(task, project?.tasks || [], tasksByParent);
         
         // Atualizar se:
         // 1. Status calculado é diferente do atual
@@ -384,7 +385,7 @@ export const JiraTaskItem: React.FC<{
     const handleCompleteTest = useCallback(async (e: React.MouseEvent) => {
         e.stopPropagation();
         try {
-            const calculatedStatus = calculateTaskTestStatus(task, project?.tasks || []);
+            const calculatedStatus = calculateTaskTestStatus(task, project?.tasks || [], tasksByParent);
             // Se todos os testes passaram, marcar como concluído, senão pendente
             const finalStatus = calculatedStatus === 'teste_concluido' ? 'teste_concluido' : 'pendente';
             await updateTestStatus(finalStatus);
@@ -409,7 +410,7 @@ export const JiraTaskItem: React.FC<{
 
     // Cores e estilos para status de teste
     const testStatusConfig = useMemo(() => {
-        const status = taskTestStatus || calculateTaskTestStatus(task, project?.tasks || []);
+        const status = taskTestStatus || calculateTaskTestStatus(task, project?.tasks || [], tasksByParent);
         const configs: Record<TaskTestStatus, { label: string; color: string; bgColor: string; icon: string }> = {
             testar: { label: 'Testar', color: 'text-primary', bgColor: 'bg-primary/20 border-primary/30', icon: '📋' },
             testando: { label: 'Testando', color: 'text-blue-700 dark:text-blue-400', bgColor: 'bg-blue-500/20 border-blue-500/30', icon: '🔄' },

@@ -358,11 +358,19 @@ const loadMultipleThroughSdk = async (taskKeys: string[]): Promise<Map<string, T
  * 
  * @param task - Tarefa para calcular o status
  * @param allTasks - Lista completa de tarefas do projeto (necessária para encontrar subtarefas de Epic/História)
+ * @param tasksByParent - Opcional: Mapa de parentId -> JiraTask[] para otimizar a busca de subtarefas de O(N) para O(1)
  */
-export const calculateTaskTestStatus = (task: JiraTask, allTasks: JiraTask[] = []): TaskTestStatus => {
+export const calculateTaskTestStatus = (
+    task: JiraTask,
+    allTasks: JiraTask[] = [],
+    tasksByParent?: Map<string, JiraTask[]>
+): TaskTestStatus => {
     // Para Epic e História, verificar status das subtarefas
     if (task.type === 'Epic' || task.type === 'História') {
-        const subtasks = allTasks.filter(t => t.parentId === task.id);
+        // Otimização Bolt: Usar mapa pré-calculado se disponível, senão filtrar (O(N))
+        const subtasks = tasksByParent
+            ? (tasksByParent.get(task.id) || [])
+            : allTasks.filter(t => t.parentId === task.id);
         
         // Se não há subtarefas, retornar 'pendente' (conforme requisito)
         if (subtasks.length === 0) {
@@ -371,7 +379,7 @@ export const calculateTaskTestStatus = (task: JiraTask, allTasks: JiraTask[] = [
         
         // Calcular status de cada subtarefa recursivamente
         const subtaskStatuses = subtasks.map(subtask => 
-            calculateTaskTestStatus(subtask, allTasks)
+            calculateTaskTestStatus(subtask, allTasks, tasksByParent)
         );
         
         // Se todas as subtarefas estão 'teste_concluido', retornar 'teste_concluido'
