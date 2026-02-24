@@ -38,6 +38,25 @@ const allowCors = (res: VercelResponse) => {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-content-compressed');
 };
 
+const ensureTimeoutMessage = (message: string): string => {
+  return message.toLowerCase().startsWith('timeout:') ? message : `Timeout: ${message}`;
+};
+
+const withTimeout = async <T>(promise: Promise<T>, timeoutMs: number, timeoutMessage: string): Promise<T> => {
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timeoutId = setTimeout(() => reject(new Error(ensureTimeoutMessage(timeoutMessage))), timeoutMs);
+  });
+
+  try {
+    return await Promise.race([promise, timeoutPromise]);
+  } finally {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+  }
+};
+
 /**
  * Calcula o tamanho aproximado do payload em bytes
  */
@@ -92,16 +111,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       // Verificar se é requisição para task_test_status
       const table = req.query.table as string;
       if (table === 'task_test_status') {
+        const SUPABASE_READ_TIMEOUT_MS = 28000;
         const taskKey = req.query.task_key as string;
         const taskKeys = req.query.task_keys as string;
         
         if (taskKey) {
           // Buscar um único registro
-          const { data, error } = await supabase
-            .from('task_test_status')
-            .select('*')
-            .eq('task_key', taskKey)
-            .maybeSingle();
+          const { data, error } = await withTimeout(
+            supabase.from('task_test_status').select('*').eq('task_key', taskKey).maybeSingle(),
+            SUPABASE_READ_TIMEOUT_MS,
+            'Supabase demorou para responder ao buscar status de teste; tente novamente.'
+          );
 
           if (error && error.code !== 'PGRST116') {
             throw new Error(error.message);
@@ -115,10 +135,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         } else if (taskKeys) {
           // Buscar múltiplos registros
           const keysArray = taskKeys.split(',').filter(Boolean);
-          const { data, error } = await supabase
-            .from('task_test_status')
-            .select('*')
-            .in('task_key', keysArray);
+          const { data, error } = await withTimeout(
+            supabase.from('task_test_status').select('*').in('task_key', keysArray),
+            SUPABASE_READ_TIMEOUT_MS,
+            'Supabase demorou para responder ao buscar status de teste; tente novamente.'
+          );
 
           if (error) {
             throw new Error(error.message);
@@ -139,23 +160,29 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
 
       // Requisição padrão para projects (com timeout para evitar 504 do Vercel)
-      const SUPABASE_QUERY_TIMEOUT_MS = 15000;
-      const queryPromise = supabase
-        .from('projects')
-        .select('data')
-        .or(`user_id.eq.${userId},user_id.like.anon-%`)
-        .order('updated_at', { ascending: false });
-      const timeoutPromise = new Promise<never>((_, reject) =>
-        setTimeout(
-          () => reject(new Error('Supabase demorou para responder; tente novamente.')),
-          SUPABASE_QUERY_TIMEOUT_MS
-        )
+      const SUPABASE_QUERY_TIMEOUT_MS = 28000;
+      const isAnonUserId = typeof userId === 'string' && userId.startsWith('anon-');
+      const queryPromise = (isAnonUserId
+        ? supabase
+            .from('projects')
+            .select('data')
+            .like('user_id', 'anon-%')
+            .order('updated_at', { ascending: false })
+        : supabase
+            .from('projects')
+            .select('data')
+            .or(`user_id.eq.${userId},user_id.like.anon-%`)
+            .order('updated_at', { ascending: false })
       );
       let result: { data: Array<{ data: unknown }> | null; error: { message: string } | null };
       try {
-        result = await Promise.race([queryPromise, timeoutPromise]);
+        result = await withTimeout(
+          queryPromise,
+          SUPABASE_QUERY_TIMEOUT_MS,
+          'Supabase demorou para responder; tente novamente.'
+        );
       } catch (raceError) {
-        if (raceError instanceof Error && raceError.message.includes('Supabase demorou')) {
+        if (raceError instanceof Error && raceError.message.toLowerCase().startsWith('timeout:')) {
           res.status(503).json({ success: false, error: raceError.message });
           return;
         }
@@ -176,6 +203,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (req.method === 'POST') {
       const { storagePath } = req.body;
+      const SUPABASE_WRITE_TIMEOUT_MS = 28000;
 
       // Novo fluxo: Se storagePath for fornecido, buscar do Storage
       if (storagePath) {
@@ -183,9 +211,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         let projectFromStorage: StoredProject;
         try {
           // 1. Baixar o arquivo do Supabase Storage
-          const { data: blob, error: downloadError } = await supabase.storage
-            .from('qa-agile-guide-uploads')
-            .download(storagePath);
+          const { data: blob, error: downloadError } = await withTimeout(
+            supabase.storage.from('qa-agile-guide-uploads').download(storagePath),
+            SUPABASE_WRITE_TIMEOUT_MS,
+            'Supabase demorou para responder ao baixar arquivo do Storage; tente novamente.'
+          );
 
           if (downloadError) {
             console.error(`[SupabaseProxy] Erro ao baixar do Storage: ${downloadError.message}`);
@@ -203,18 +233,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           console.log(`[SupabaseProxy] Projeto "${projectFromStorage.name}" extraído do Storage com sucesso.`);
 
           // 3. Inserir o projeto no banco de dados (mesma lógica do upsert)
-          const { error: upsertError } = await supabase
-            .from('projects')
-            .upsert({
-              id: projectFromStorage.id,
-              user_id: req.body.userId || userId,
-              name: projectFromStorage.name,
-              description: projectFromStorage.description,
-              data: projectFromStorage,
-              updated_at: new Date().toISOString()
-            }, {
-              onConflict: 'id'
-            });
+          const { error: upsertError } = await withTimeout(
+            supabase
+              .from('projects')
+              .upsert(
+                {
+                  id: projectFromStorage.id,
+                  user_id: req.body.userId || userId,
+                  name: projectFromStorage.name,
+                  description: projectFromStorage.description,
+                  data: projectFromStorage,
+                  updated_at: new Date().toISOString(),
+                },
+                {
+                  onConflict: 'id',
+                }
+              ),
+            SUPABASE_WRITE_TIMEOUT_MS,
+            'Supabase demorou para responder ao salvar projeto do Storage; tente novamente.'
+          );
 
           if (upsertError) {
             console.error(`[SupabaseProxy] Erro ao fazer upsert do projeto do Storage: ${upsertError.message}`);
@@ -232,15 +269,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         } finally {
           // 4. Limpar o arquivo do Storage após o processamento
           console.log(`[SupabaseProxy] Deletando arquivo do Storage: ${storagePath}`);
-          const { error: removeError } = await supabase.storage
-            .from('qa-agile-guide-uploads')
-            .remove([storagePath]);
-          
-          if (removeError) {
-            // Apenas logar o erro, não enviar resposta ao cliente pois a operação principal pode ter funcionado
-            console.error(`[SupabaseProxy] Falha ao deletar arquivo do Storage: ${removeError.message}. Limpeza manual pode ser necessária.`);
-          } else {
-            console.log(`[SupabaseProxy] Arquivo ${storagePath} deletado do Storage com sucesso.`);
+          try {
+            const { error: removeError } = await withTimeout(
+              supabase.storage.from('qa-agile-guide-uploads').remove([storagePath]),
+              SUPABASE_WRITE_TIMEOUT_MS,
+              'Supabase demorou para responder ao remover arquivo do Storage; tente novamente.'
+            );
+
+            if (removeError) {
+              // Apenas logar o erro, não enviar resposta ao cliente pois a operação principal pode ter funcionado
+              console.error(
+                `[SupabaseProxy] Falha ao deletar arquivo do Storage: ${removeError.message}. Limpeza manual pode ser necessária.`
+              );
+            } else {
+              console.log(`[SupabaseProxy] Arquivo ${storagePath} deletado do Storage com sucesso.`);
+            }
+          } catch (removeError) {
+            console.error(
+              `[SupabaseProxy] Falha ao deletar arquivo do Storage (limpeza manual pode ser necessária): ${storagePath}`,
+              removeError
+            );
           }
         }
         return; // Finaliza o fluxo de storage
@@ -260,15 +308,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           return;
         }
 
-        const { error } = await supabase
-          .from('task_test_status')
-          .upsert({
-            task_key: record.task_key,
-            status: record.status,
-            updated_at: new Date().toISOString()
-          }, {
-            onConflict: 'task_key'
-          });
+        const { error } = await withTimeout(
+          supabase
+            .from('task_test_status')
+            .upsert(
+              {
+                task_key: record.task_key,
+                status: record.status,
+                updated_at: new Date().toISOString(),
+              },
+              {
+                onConflict: 'task_key',
+              }
+            ),
+          SUPABASE_WRITE_TIMEOUT_MS,
+          'Supabase demorou para responder ao salvar status de teste; tente novamente.'
+        );
 
         if (error) {
           throw new Error(error.message);
@@ -340,16 +395,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return;
       }
 
-      const { error } = await supabase
-        .from('projects')
-        .upsert({
-          id: (project as { id: string }).id,
-          user_id: finalUserId,
-          name: (project as { name: string }).name,
-          description: (project as { description?: string }).description,
-          data: project,
-          updated_at: new Date().toISOString()
-        });
+      const { error } = await withTimeout(
+        supabase
+          .from('projects')
+          .upsert({
+            id: (project as { id: string }).id,
+            user_id: finalUserId,
+            name: (project as { name: string }).name,
+            description: (project as { description?: string }).description,
+            data: project,
+            updated_at: new Date().toISOString(),
+          }),
+        SUPABASE_WRITE_TIMEOUT_MS,
+        'Supabase demorou para responder ao salvar projeto; tente novamente.'
+      );
 
       if (error) {
         throw new Error(error.message);
@@ -366,11 +425,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return;
       }
 
-      const { error } = await supabase
-        .from('projects')
-        .delete()
-        .eq('id', projectId)
-        .eq('user_id', userId);
+      const SUPABASE_DELETE_TIMEOUT_MS = 28000;
+      const { error } = await withTimeout(
+        supabase
+          .from('projects')
+          .delete()
+          .eq('id', projectId)
+          .eq('user_id', userId),
+        SUPABASE_DELETE_TIMEOUT_MS,
+        'Supabase demorou para responder ao deletar projeto; tente novamente.'
+      );
 
       if (error) {
         throw new Error(error.message);
@@ -383,9 +447,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     res.status(405).json({ success: false, error: 'Method not allowed' });
   } catch (error) {
     console.error('Supabase proxy error:', error);
-    res.status(500).json({
+    const message = error instanceof Error ? error.message : 'Erro interno ao acessar o Supabase';
+    const isTimeout = typeof message === 'string' && message.toLowerCase().startsWith('timeout:');
+    res.status(isTimeout ? 503 : 500).json({
       success: false,
-      error: error instanceof Error ? error.message : 'Erro interno ao acessar o Supabase'
+      error: message
     });
   }
 }

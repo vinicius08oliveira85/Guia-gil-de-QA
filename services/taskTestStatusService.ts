@@ -32,16 +32,29 @@ const retryDelays = [1000, 2000, 4000]; // Backoff exponencial: 1s, 2s, 4s
 // Inicializar cliente Supabase direto se variáveis estiverem disponíveis
 if (supabaseUrl && supabaseAnonKey) {
     logger.info('Inicializando SDK Supabase direto para task test status', 'taskTestStatusService');
-    supabase = createClient(supabaseUrl, supabaseAnonKey);
-    void supabase.auth.signInAnonymously().then(result => {
-        if (result.error) {
-            logger.warn('Erro ao autenticar anonimamente no Supabase', 'taskTestStatusService', result.error);
-            return;
+    supabase = createClient(supabaseUrl, supabaseAnonKey, {
+        auth: {
+            persistSession: false,
+            autoRefreshToken: false,
+            detectSessionInUrl: false,
         }
-        logger.info('Supabase configurado via SDK para task test status', 'taskTestStatusService');
-    }).catch(error => {
-        logger.warn('Erro ao configurar autenticação Supabase', 'taskTestStatusService', error);
     });
+
+    // Em produção, este serviço prefere proxy (evita 403/RLS no browser) e não deve iniciar fluxo de auth.
+    if (!isProduction()) {
+        void Promise.race([
+            supabase.auth.signInAnonymously(),
+            new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Timeout ao autenticar anonimamente')), 3000))
+        ]).then(result => {
+            if (result.error) {
+                logger.debug('Erro ao autenticar anonimamente no Supabase', 'taskTestStatusService', result.error);
+                return;
+            }
+            logger.info('Supabase configurado via SDK para task test status', 'taskTestStatusService');
+        }).catch(error => {
+            logger.debug('Falha ao autenticar anonimamente no Supabase', 'taskTestStatusService', error);
+        });
+    }
 }
 
 /**
@@ -59,6 +72,7 @@ const createTimeoutPromise = <T>(timeoutMs: number, errorMessage: string): Promi
 const isNetworkError = (error: unknown): boolean => {
     if (error instanceof Error) {
         const message = error.message.toLowerCase();
+        const transientHttpStatus = /\b(500|502|503|504|522)\b/.test(message);
         return message.includes('timeout') ||
                message.includes('timed_out') ||
                message.includes('connection reset') ||
@@ -67,7 +81,10 @@ const isNetworkError = (error: unknown): boolean => {
                message.includes('err_name_not_resolved') ||
                message.includes('failed to fetch') ||
                message.includes('networkerror') ||
-               message.includes('network request failed');
+               message.includes('network request failed') ||
+               message.includes('service unavailable') ||
+               message.includes('gateway timeout') ||
+               transientHttpStatus;
     }
     if (error instanceof TypeError) {
         return error.message.includes('Failed to fetch') || 
