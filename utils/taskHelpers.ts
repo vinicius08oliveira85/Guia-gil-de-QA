@@ -40,6 +40,15 @@ const PRIORITY_TO_PT: Record<string, string> = {
     'Baixa': 'Baixa',
 };
 
+/** Variante de Badge por prioridade (Urgente/Crítica=error, Alta=warning, Média=info, Baixa=success). */
+export function getPriorityVariant(priority: string): 'default' | 'success' | 'warning' | 'error' | 'info' {
+    if (priority === 'Urgente' || priority === 'Crítica') return 'error';
+    if (priority === 'Alta') return 'warning';
+    if (priority === 'Média') return 'info';
+    if (priority === 'Baixa') return 'success';
+    return 'default';
+}
+
 /**
  * Retorna o status de exibição da tarefa.
  * Sempre retorna o nome exato do Jira (jiraStatus) quando disponível,

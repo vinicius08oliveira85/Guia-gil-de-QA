@@ -2,6 +2,7 @@ import React from 'react';
 import { AlertCircle, CheckCircle2, Info, XCircle } from 'lucide-react';
 import { Card } from '../common/Card';
 import { DashboardInsightsAnalysis } from '../../types';
+import { getPriorityVariant } from '../../utils/taskHelpers';
 import { Badge } from '../common/Badge';
 
 interface DashboardInsightsCardProps {
@@ -56,16 +57,6 @@ export const DashboardInsightsCard: React.FC<DashboardInsightsCardProps> = React
     }
   };
 
-  const getPriorityVariant = (priority: string): 'error' | 'warning' | 'info' | 'success' | 'default' => {
-    switch (priority) {
-      case 'Crítica': return 'error';
-      case 'Alta': return 'warning';
-      case 'Média': return 'info';
-      case 'Baixa': return 'success';
-      default: return 'default';
-    }
-  };
-
   // Ordenar insights por prioridade
   const sortedInsights = [...analysis.insights].sort((a, b) => {
     const priorityOrder = { 'Crítica': 4, 'Alta': 3, 'Média': 2, 'Baixa': 1 };
@@ -92,7 +83,7 @@ export const DashboardInsightsCard: React.FC<DashboardInsightsCardProps> = React
                 <div className="flex items-start justify-between gap-3 flex-wrap">
                   <h4 className="font-semibold text-base-content text-base leading-relaxed">{insight.title}</h4>
                   <div className="flex items-center gap-2 flex-wrap">
-                    <Badge variant={getPriorityVariant(insight.priority)} size="sm">
+                    <Badge appearance="pill" variant={getPriorityVariant(insight.priority)} size="sm">
                       {insight.priority}
                     </Badge>
                     {insight.actionable && (

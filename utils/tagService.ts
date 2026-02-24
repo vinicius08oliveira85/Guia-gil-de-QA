@@ -24,7 +24,7 @@ export const TAG_COLORS: Record<string, string> = {
   'e2e': '#3b82f6',
   'automação': '#8b5cf6',
   'manual': '#ec4899',
-  'performance': '#f97316',
+  'performance': 'rgb(251 76 0)',
   'segurança': '#dc2626',
   'usabilidade': '#06b6d4',
   'api': '#6366f1',

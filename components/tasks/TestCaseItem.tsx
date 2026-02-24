@@ -2,17 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { TestCase } from '../../types';
 import { CheckIcon, ChevronDownIcon, EditIcon, ListIcon, TrashIcon } from '../common/Icons';
 import { normalizeExecutedStrategy } from '../../utils/testCaseMigration';
+import { getPriorityVariant } from '../../utils/taskHelpers';
 import { ToolsSelector } from './ToolsSelector';
 import { TestTypeBadge } from '../common/TestTypeBadge';
 import { Badge } from '../common/Badge';
-
-const getPriorityVariant = (priority: string): 'default' | 'success' | 'warning' | 'error' | 'info' => {
-    if (priority === 'Urgente' || priority === 'Crítica') return 'error';
-    if (priority === 'Alta') return 'warning';
-    if (priority === 'Média') return 'info';
-    if (priority === 'Baixa') return 'success';
-    return 'default';
-};
 
 export const TestCaseItem: React.FC<{ 
     testCase: TestCase; 
@@ -24,10 +17,10 @@ export const TestCaseItem: React.FC<{
     onDelete?: () => void;
 }> = ({ testCase, onStatusChange, onToggleAutomated, onExecutedStrategyChange, onToolsChange, onEdit, onDelete }) => {
     const statusBadgeClassName: Record<TestCase['status'], string> = {
-        'Not Run': 'badge badge-ghost badge-sm',
-        Passed: 'badge badge-success badge-sm',
-        Failed: 'badge badge-error badge-sm',
-        Blocked: 'badge badge-warning badge-sm',
+        'Not Run': 'badge badge-ghost badge-xs',
+        Passed: 'badge badge-success badge-xs',
+        Failed: 'badge badge-error badge-xs',
+        Blocked: 'badge badge-warning badge-xs',
     };
     const statusLabel: Record<TestCase['status'], string> = {
         'Not Run': 'Não Executado',
@@ -37,15 +30,7 @@ export const TestCaseItem: React.FC<{
     };
     const recommendedStrategies = testCase.strategies || [];
     const selectedStrategies = normalizeExecutedStrategy(testCase.executedStrategy);
-    const customStrategies = selectedStrategies.filter(s => !recommendedStrategies.includes(s));
-    const customStrategyValue = customStrategies.join(', ');
-    const showExecutedStrategySummary = selectedStrategies.length > 0;
-    const [customStrategyDraft, setCustomStrategyDraft] = useState(customStrategyValue);
     const [detailsOpen, setDetailsOpen] = useState(() => testCase.status === 'Failed');
-
-    useEffect(() => {
-        setCustomStrategyDraft(customStrategyValue);
-    }, [customStrategyValue]);
 
     useEffect(() => {
         if (testCase.status === 'Failed') {
@@ -68,21 +53,6 @@ export const TestCaseItem: React.FC<{
         }
     };
 
-    const handleCustomStrategyBlur = (value: string) => {
-        if (value.trim() === '') {
-            // Se campo vazio, mantém apenas as estratégias recomendadas selecionadas
-            const recommendedSelected = selectedStrategies.filter(s => recommendedStrategies.includes(s));
-            onExecutedStrategyChange(recommendedSelected);
-            return;
-        }
-        
-        // Separa por vírgula e adiciona estratégias customizadas
-        const customStrategiesList = value.split(',').map(s => s.trim()).filter(s => s !== '');
-        const recommendedSelected = selectedStrategies.filter(s => recommendedStrategies.includes(s));
-        const allStrategies = [...recommendedSelected, ...customStrategiesList];
-        onExecutedStrategyChange(allStrategies);
-    };
-
     return (
         <div className="rounded-2xl border border-base-300 bg-base-100 p-3 transition-colors hover:border-primary/30 space-y-2">
             {/* 1. Cabeçalho: pills de tipo + toggle + editar/excluir */}
@@ -92,7 +62,7 @@ export const TestCaseItem: React.FC<{
                         <TestTypeBadge
                             key={strategy}
                             testType={strategy}
-                            size="sm"
+                            size="xs"
                             selected={selectedStrategies.includes(strategy)}
                         />
                     ))}
@@ -128,16 +98,16 @@ export const TestCaseItem: React.FC<{
             {/* 2. Tags de status/prioridade + título */}
             <div className="space-y-1">
                 <div className="flex flex-wrap items-center gap-1.5">
-                    <span className={`${statusBadgeClassName[testCase.status]} text-xs font-bold uppercase tracking-wider`}>
+                    <span className={`${statusBadgeClassName[testCase.status]} text-[10px] font-bold tracking-wider`}>
                         {statusLabel[testCase.status]}
                     </span>
                     {testCase.priority && (
-                        <Badge variant={getPriorityVariant(testCase.priority)} size="sm" className="text-xs font-bold uppercase tracking-wider">
+                        <Badge appearance="pill" variant={getPriorityVariant(testCase.priority)} size="xs" className="shrink-0">
                             {testCase.priority}
                         </Badge>
                     )}
                     {testCase.isAutomated && (
-                        <span className="badge badge-ghost badge-sm text-xs font-bold uppercase tracking-wider">Automatizado</span>
+                        <span className="badge badge-ghost badge-xs text-[10px] font-bold tracking-wider">Automatizado</span>
                     )}
                 </div>
                 <p className="text-base font-bold text-base-content leading-tight break-words min-w-0">{testCase.description}</p>
@@ -158,36 +128,17 @@ export const TestCaseItem: React.FC<{
                                         key={strategy}
                                         type="button"
                                         onClick={() => handleStrategyToggle(strategy)}
-                                        className={`btn btn-xs rounded-xl flex items-center gap-1.5 transition-all ${
-                                            isSelected ? 'btn-primary' : 'btn-outline border-base-300 bg-base-100'
+                                        className={`btn btn-xs rounded-lg flex items-center gap-1 transition-all text-[9px] px-2 py-0.5 min-h-0 ${
+                                            isSelected ? 'bg-brand-orange-selected text-white shadow-md shadow-brand-orange-selected/20 hover:bg-brand-orange-selected-hover border-0' : 'btn-outline border-base-300 bg-base-100'
                                         }`}
                                     >
-                                        {isSelected && <CheckIcon className="w-3 h-3" />}
+                                        {isSelected && <CheckIcon className="w-2.5 h-2.5" />}
                                         {strategy}
                                     </button>
                                 );
                             })}
                         </div>
                     </>
-                )}
-                <div className="space-y-1">
-                    <label className="block text-xs font-medium text-base-content/70">Ou descreva outro teste executado</label>
-                    <input
-                        type="text"
-                        value={customStrategyDraft}
-                        onChange={(e) => setCustomStrategyDraft(e.target.value)}
-                        onBlur={(e) => handleCustomStrategyBlur(e.target.value)}
-                        placeholder="Ex: Teste Exploratório, Acessibilidade (separados por vírgula)"
-                        className="input input-bordered input-sm w-full bg-base-100 border-base-300 text-base-content focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                    />
-                    <p className="text-xs text-base-content/70 italic">Use esta opção se executou testes diferentes das recomendações acima.</p>
-                </div>
-                {showExecutedStrategySummary && (
-                    <div className="mt-1.5 flex flex-wrap gap-1.5">
-                        {selectedStrategies.map((strategy, idx) => (
-                            <span key={idx} className="badge badge-outline badge-sm">{strategy}</span>
-                        ))}
-                    </div>
                 )}
             </div>
 
@@ -277,14 +228,14 @@ export const TestCaseItem: React.FC<{
 
             {/* 6. Footer: Aprovar / Reprovar */}
             <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
-                <span className={`${statusBadgeClassName[testCase.status]} text-xs font-bold uppercase tracking-wider`}>
+                <span className={`${statusBadgeClassName[testCase.status]} text-[10px] font-bold tracking-wider`}>
                     {statusLabel[testCase.status]}
                 </span>
-                <div className="flex flex-wrap items-center gap-2">
-                    <button type="button" onClick={() => onStatusChange('Passed')} className="btn btn-success btn-xs rounded-xl">
+                <div className="flex flex-wrap items-center gap-1.5">
+                    <button type="button" onClick={() => onStatusChange('Passed')} className="btn btn-success btn-xs rounded-lg text-[10px] px-2 py-0.5 min-h-0">
                         Aprovar
                     </button>
-                    <button type="button" onClick={() => onStatusChange('Failed')} className="btn btn-error btn-xs rounded-xl">
+                    <button type="button" onClick={() => onStatusChange('Failed')} className="btn btn-error btn-xs rounded-lg text-[10px] px-2 py-0.5 min-h-0">
                         Reprovar
                     </button>
                 </div>

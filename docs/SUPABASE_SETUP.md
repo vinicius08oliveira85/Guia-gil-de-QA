@@ -87,6 +87,15 @@ CREATE POLICY "Users can delete their own projects"
   USING (auth.uid()::text = user_id);
 ```
 
+### Tabela task_test_status (status de teste por tarefa)
+
+O app persiste o status de teste (testar/testando/pendente/teste_concluido) no Supabase. Para evitar **403 (Forbidden)** ao salvar ou carregar status:
+
+1. Crie a tabela e as políticas RLS executando o script **`docs/SUPABASE_TASK_TEST_STATUS.sql`** no SQL Editor do Supabase.
+2. Esse script habilita RLS e cria a política "Allow all access for shared anonymous users", permitindo SELECT/INSERT/UPDATE para o cliente anônimo (o app usa `signInAnonymously()`).
+
+Se a tabela já existir mas as políticas RLS não permitirem acesso anônimo, você verá no console: `new row violates row-level security policy for table "task_test_status"`. Nesse caso, execute o script acima ou adicione políticas que permitam `anon` (ou o papel que o app usa) em SELECT, INSERT e UPDATE para a tabela `task_test_status`.
+
 ## Implementação no Código
 
 O repositório já está preparado com:

@@ -236,7 +236,7 @@ export const GlossaryView: React.FC = () => {
                                             key={idx}
                                             className="badge badge-outline badge-sm text-primary hover:bg-primary/10 cursor-pointer transition-colors"
                                             onClick={() => {
-                                                const relatedTerm = glossaryTerms.find(t => t.term.toLowerCase() === related.toLowerCase());
+                                                const relatedTerm = glossaryTerms.find(t => (t.term || '').toLowerCase() === (related || '').toLowerCase());
                                                 if (relatedTerm) setSelectedTerm(relatedTerm);
                                             }}
                                         >

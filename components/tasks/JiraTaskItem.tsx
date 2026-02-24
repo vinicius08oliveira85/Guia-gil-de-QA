@@ -412,7 +412,7 @@ export const JiraTaskItem: React.FC<{
     const testStatusConfig = useMemo(() => {
         const status = taskTestStatus || calculateTaskTestStatus(task, project?.tasks || []);
         const configs: Record<TaskTestStatus, { label: string; color: string; bgColor: string; icon: string }> = {
-            testar: { label: 'Testar', color: 'text-orange-700 dark:text-orange-400', bgColor: 'bg-orange-500/20 border-orange-500/30', icon: '📋' },
+            testar: { label: 'Testar', color: 'text-primary', bgColor: 'bg-primary/20 border-primary/30', icon: '📋' },
             testando: { label: 'Testando', color: 'text-blue-700 dark:text-blue-400', bgColor: 'bg-blue-500/20 border-blue-500/30', icon: '🔄' },
             pendente: { label: 'Pendente', color: 'text-red-700 dark:text-red-400', bgColor: 'bg-red-500/20 border-red-500/30', icon: '⚠️' },
             teste_concluido: { label: 'Teste Concluído', color: 'text-green-700 dark:text-green-400', bgColor: 'bg-green-500/20 border-green-500/30', icon: '✅' }
@@ -1080,7 +1080,7 @@ export const JiraTaskItem: React.FC<{
                         role="tab"
                         aria-selected={activeTestSubSection === 'strategy'}
                         onClick={() => setActiveTestSubSection('strategy')}
-                        className={`px-2 py-1 text-xs rounded-xl font-medium transition-colors sm:px-3 sm:py-1.5 sm:text-sm ${activeTestSubSection === 'strategy' ? 'bg-brand-orange text-white shadow-md shadow-brand-orange/20' : 'text-base-content/70 hover:text-base-content hover:bg-base-200'}`}
+                        className={`px-2 py-1 text-xs rounded-xl font-medium transition-colors sm:px-3 sm:py-1.5 sm:text-sm ${activeTestSubSection === 'strategy' ? 'bg-brand-orange-selected text-white shadow-md shadow-brand-orange-selected/20 hover:bg-brand-orange-selected-hover' : 'text-base-content/70 hover:text-base-content hover:bg-base-200'}`}
                     >
                         Estratégia
                     </button>
@@ -1089,7 +1089,7 @@ export const JiraTaskItem: React.FC<{
                         role="tab"
                         aria-selected={activeTestSubSection === 'test-cases'}
                         onClick={() => setActiveTestSubSection('test-cases')}
-                        className={`px-2 py-1 text-xs rounded-xl font-medium transition-colors flex items-center gap-1 sm:px-3 sm:py-1.5 sm:text-sm ${activeTestSubSection === 'test-cases' ? 'bg-brand-orange text-white shadow-md shadow-brand-orange/20' : 'text-base-content/70 hover:text-base-content hover:bg-base-200'}`}
+                        className={`px-2 py-1 text-xs rounded-xl font-medium transition-colors flex items-center gap-1 sm:px-3 sm:py-1.5 sm:text-sm ${activeTestSubSection === 'test-cases' ? 'bg-brand-orange-selected text-white shadow-md shadow-brand-orange-selected/20 hover:bg-brand-orange-selected-hover' : 'text-base-content/70 hover:text-base-content hover:bg-base-200'}`}
                     >
                         Casos de teste
                         {task.testCases?.length ? (
@@ -1429,7 +1429,7 @@ export const JiraTaskItem: React.FC<{
         const jiraStatuses = project?.settings?.jiraStatuses || [];
 
         const mapStatus = (jiraStatus: string): 'To Do' | 'In Progress' | 'Done' => {
-            const status = jiraStatus.toLowerCase();
+            const status = (jiraStatus || '').toLowerCase();
             // Verificar status concluído (inglês e português)
             if (
                 status.includes('done') ||
@@ -1533,7 +1533,7 @@ export const JiraTaskItem: React.FC<{
                                 type="radio"
                                 checked={isSelected}
                                 onChange={(e) => { e.stopPropagation(); onToggleSelect(); }}
-                                className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-orange-500 rounded-full appearance-none checked:bg-orange-500 checked:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/50 cursor-pointer shrink-0"
+                                className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-primary rounded-full appearance-none checked:bg-primary checked:border-primary focus:outline-none focus:ring-2 focus:ring-primary/50 cursor-pointer shrink-0"
                                 style={{ backgroundImage: isSelected ? 'radial-gradient(circle, white 30%, transparent 30%)' : 'none' }}
                                 aria-label={isSelected ? `Tarefa ${task.id} selecionada` : `Selecionar tarefa ${task.id}`}
                             />
@@ -1567,7 +1567,7 @@ export const JiraTaskItem: React.FC<{
                                 type="button"
                                 onClick={(e) => { e.stopPropagation(); handleGenerateAll(e); }}
                                 disabled={isGeneratingAll || isGenerating || isGeneratingBdd || isGeneratingTests}
-                                className="rounded-full px-3 py-1 sm:px-4 sm:py-1.5 text-[10px] sm:text-xs font-bold flex items-center gap-1.5 bg-orange-500 hover:bg-orange-600 text-white transition-colors shrink-0"
+                                className="rounded-full px-3 py-1 sm:px-4 sm:py-1.5 text-[10px] sm:text-xs font-bold flex items-center gap-1.5 bg-primary hover:bg-brand-orange-selected-hover text-primary-content transition-colors shrink-0"
                                 title="Gerar Tudo (BDD e Testes)"
                                 aria-label={isGenerating || isGeneratingAll ? 'Gerando tudo' : 'Gerar Tudo (BDD e Testes)'}
                             >
@@ -1591,7 +1591,7 @@ export const JiraTaskItem: React.FC<{
                                     ? 'bg-green-50 dark:bg-green-950/30 text-green-600 dark:text-green-400 border-green-200 dark:border-green-900/50 hover:bg-green-100 dark:hover:bg-green-900/40'
                                     : taskTestStatus === 'pendente'
                                     ? 'bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 border-red-200 dark:border-red-900/50 hover:bg-red-100 dark:hover:bg-red-900/40'
-                                    : 'bg-orange-50 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-900/50 hover:bg-orange-100 dark:hover:bg-orange-900/40'
+                                    : 'bg-primary/10 dark:bg-primary/20 text-primary border-primary/30 dark:border-primary/50 hover:bg-primary/20 dark:hover:bg-primary/30'
                             }`}
                             aria-label={taskTestStatus === 'testar' ? 'Iniciar teste' : taskTestStatus === 'testando' ? 'Concluir teste' : taskTestStatus === 'pendente' ? 'Definir status para Testar' : 'Voltar para Pendente'}
                         >
@@ -1919,7 +1919,7 @@ export const JiraTaskItem: React.FC<{
                                                         role="tab"
                                                         aria-selected={isActive}
                                                         aria-controls={panelId}
-                                                        className={`px-2 py-1 text-xs rounded-xl font-medium transition-colors sm:px-3 sm:py-1.5 sm:text-sm ${isActive ? 'bg-brand-orange text-white shadow-md shadow-brand-orange/20' : 'text-base-content/70 hover:text-base-content hover:bg-base-200'}`}
+                                                        className={`px-2 py-1 text-xs rounded-xl font-medium transition-colors sm:px-3 sm:py-1.5 sm:text-sm ${isActive ? 'bg-brand-orange-selected text-white shadow-md shadow-brand-orange-selected/20 hover:bg-brand-orange-selected-hover' : 'text-base-content/70 hover:text-base-content hover:bg-base-200'}`}
                                                         onClick={() => setActiveSection(tab.id)}
                                                     >
                                                         <span>{tab.label}</span>

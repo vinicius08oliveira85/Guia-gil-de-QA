@@ -28,18 +28,8 @@
       rel="stylesheet"
     />
 
-    <script type="importmap">
-{
-  "imports": {
-    "react": "https://aistudiocdn.com/react@^19.2.0",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
-    "react/": "https://aistudiocdn.com/react@^19.2.0/",
-    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.29.1",
-    "marked": "https://aistudiocdn.com/marked@^17.0.0"
-  }
-}
-    </script>
-
+    <!-- Import map removido: em dev/build com Vite o React vem do bundle (node_modules).
+         Se precisar para outro ambiente (ex.: AI Studio), adicione condicionalmente. -->
     <link rel="stylesheet" href="/index.css" />
   </head>
   <body class="min-h-screen bg-base-100 text-base-content antialiased">
