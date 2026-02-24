@@ -89,7 +89,6 @@ function drawSeverityBadge(
   x: number,
   y: number,
   severity: string,
-  font: any,
   boldFont: any
 ): number {
   const severityColor = getSeverityColor(severity);
@@ -266,69 +265,6 @@ function drawTable(
   });
   
   return { page: currentPage, yPosition: currentY };
-}
-
-/**
- * Desenha um gráfico de barras simples com verificação de espaço
- */
-function drawBarChart(
-  pdfDoc: PDFDocument,
-  page: PDFPage,
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-  data: { label: string; value: number; color: any }[],
-  maxValue: number,
-  font: any,
-  boldFont: any,
-  minY: number,
-  headerHeight: number,
-  margin: number,
-  pageHeight: number
-): { page: PDFPage; yPosition: number } {
-  const barHeight = (height - 40) / data.length;
-  const chartWidth = width - 100;
-  const totalChartHeight = height;
-  
-  // Verificar se há espaço suficiente para o gráfico
-  const chartCheck = checkAndBreakPage(pdfDoc, page, y, minY + totalChartHeight, headerHeight, margin, pageHeight);
-  let currentPage = chartCheck.page;
-  let currentY = chartCheck.yPosition;
-  
-  data.forEach((item, index) => {
-    const barY = currentY - (index * barHeight) - 20;
-    const barWidth = (item.value / maxValue) * chartWidth;
-    
-    // Barra
-    currentPage.drawRectangle({
-      x: x + 80,
-      y: barY - barHeight + 5,
-      width: barWidth,
-      height: barHeight - 10,
-      color: item.color,
-    });
-    
-    // Label
-    currentPage.drawText(item.label, {
-      x: x + 5,
-      y: barY - barHeight / 2 - 3,
-      size: 9,
-      font: font,
-      color: colors.text,
-    });
-    
-    // Valor
-    currentPage.drawText(item.value.toString(), {
-      x: x + 85 + barWidth,
-      y: barY - barHeight / 2 - 3,
-      size: 9,
-      font: boldFont,
-      color: colors.text,
-    });
-  });
-  
-  return { page: currentPage, yPosition: currentY - totalChartHeight };
 }
 
 /**
@@ -527,7 +463,6 @@ export async function generateFailedTestsPDF(
     const headerHeight = 30;
     const footerHeight = 40;
     const minYPosition = footerHeight + margin + 30; // Área segura mínima (footer + margem + espaço extra)
-    const safeContentArea = pageHeight - headerHeight - footerHeight - (2 * margin); // Área útil para conteúdo
 
     const tableOfContents: TableOfContentsItem[] = [];
     let currentPageIndex = 0;
@@ -757,7 +692,7 @@ export async function generateFailedTestsPDF(
       summaryParagraphs.forEach(paragraph => {
         const paragraphLines = wrapText(paragraph.trim(), pageWidth - 2 * margin, font, 11);
         
-        paragraphLines.forEach((line, lineIndex) => {
+        paragraphLines.forEach((line) => {
           const lineCheck = checkAndBreakPage(pdfDoc, page, yPosition, minYPosition, headerHeight, margin, pageHeight);
           if (lineCheck.page !== page) {
             currentPageIndex++;
@@ -1015,7 +950,7 @@ export async function generateFailedTestsPDF(
                 color: colors.text,
               });
               const badgeX = margin + 95;
-              drawSeverityBadge(page, badgeX, yPosition, severity, font, boldFont);
+              drawSeverityBadge(page, badgeX, yPosition, severity, boldFont);
               yPosition -= lineHeight + 8;
             } else if (trimmedLine.startsWith('- Impacto no Negócio:')) {
               const impact = trimmedLine.replace('- Impacto no Negócio:', '').trim();
@@ -1216,7 +1151,7 @@ export async function generateFailedTestsPDF(
               color: colors.text,
             });
             const severityX = margin + 80;
-            drawSeverityBadge(page, severityX, yPosition, severity, font, boldFont);
+            drawSeverityBadge(page, severityX, yPosition, severity, boldFont);
             yPosition -= 20;
           }
 
@@ -1519,15 +1454,25 @@ export async function generateFailedTestsPDF(
  * Quebra texto em linhas que cabem na largura especificada
  */
 function wrapText(text: string, maxWidth: number, font: any, fontSize: number): string[] {
-  const charsPerLine = Math.floor(maxWidth / (fontSize * 0.6));
-  const words = text.split(' ');
+  const words = text.split(/\s+/).filter(Boolean);
   const lines: string[] = [];
   let currentLine = '';
 
+  const measure = (value: string): number => {
+    try {
+      if (font && typeof font.widthOfTextAtSize === 'function') {
+        return font.widthOfTextAtSize(value, fontSize);
+      }
+    } catch {
+      // fallback abaixo
+    }
+    return value.length * fontSize * 0.6;
+  };
+
   words.forEach(word => {
-    const testLine = currentLine + (currentLine ? ' ' : '') + word;
-    
-    if (testLine.length > charsPerLine && currentLine) {
+    const testLine = currentLine ? `${currentLine} ${word}` : word;
+
+    if (measure(testLine) > maxWidth && currentLine) {
       lines.push(currentLine);
       currentLine = word;
     } else {

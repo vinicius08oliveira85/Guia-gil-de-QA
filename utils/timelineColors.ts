@@ -12,10 +12,12 @@ export const getActiveCardClasses = (theme: Theme): string => {
     case 'leve-saude':
       return 'border-surface-border bg-surface shadow-lg';
     case 'auto':
+    {
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      return prefersDark 
+      return prefersDark
         ? 'border-surface-border bg-surface shadow-lg'
         : 'border-surface-border bg-surface shadow-lg';
+    }
     default:
       return 'border-surface-border bg-surface shadow-lg';
   }
@@ -49,10 +51,12 @@ export const getActiveIconClasses = (theme: Theme): string => {
     case 'leve-saude':
       return 'bg-leve-accent text-white';
     case 'auto':
+    {
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      return prefersDark 
+      return prefersDark
         ? 'bg-accent text-white'
         : 'bg-accent text-white';
+    }
     default:
       return 'bg-accent text-white';
   }

@@ -74,7 +74,7 @@ export const ExportReport: React.FC<ExportReportProps> = ({ project, onClose }) 
 
   const handleExport = async () => {
     try {
-      let data: any = {
+      const data: any = {
         project: {
           name: project.name,
           description: project.description,

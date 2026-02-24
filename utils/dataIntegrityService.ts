@@ -249,7 +249,6 @@ export const validateProjectIntegrity = (project: Project): IntegrityCheckResult
   }
 
   const hasCriticalIssues = issues.some(issue => issue.severity === 'critical');
-  const hasHighIssues = issues.some(issue => issue.severity === 'high');
   const canAutoFix = !hasCriticalIssues && issues.every(issue => 
     issue.type === 'missing_field' || issue.type === 'inconsistent_data'
   );

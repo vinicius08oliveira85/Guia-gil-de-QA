@@ -69,8 +69,9 @@ describe('FilePreview', () => {
         );
 
         // Deve mostrar placeholder de loading
-        const container = screen.getByText('test.png').closest('.file-preview');
-        expect(container).toBeInTheDocument();
+        const preview = document.querySelector('.file-preview-image');
+        expect(preview).toBeInTheDocument();
+        expect(preview?.querySelector('.animate-pulse')).toBeInTheDocument();
     });
 
     it('deve renderizar estado de erro para imagens', () => {

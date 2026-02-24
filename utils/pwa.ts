@@ -10,6 +10,7 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 let deferredPrompt: BeforeInstallPromptEvent | null = null;
+let pwaInitialized = false;
 
 /**
  * Verifica se o navegador suporta service workers
@@ -112,6 +113,12 @@ export const initializePWA = (): void => {
   if (!isServiceWorkerSupported()) {
     return;
   }
+
+  // Evitar múltiplos listeners (ex.: React StrictMode + chamadas em mais de um lugar)
+  if (pwaInitialized) {
+    return;
+  }
+  pwaInitialized = true;
 
   // Listener para o evento beforeinstallprompt
   // Nota: O aviso "Banner not shown: beforeinstallpromptevent.preventDefault()" no console é esperado:

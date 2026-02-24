@@ -79,18 +79,22 @@ export const FileExportModal: React.FC<FileExportModalProps> = React.memo(({
 
                     switch (selectedFormat) {
                         case 'json':
+                        {
                             const jsonContent = exportProjectToJSON(project);
                             fileName = `${project.name}_${dateStr}.json`;
                             mimeType = 'application/json';
                             downloadFile(jsonContent, fileName, mimeType);
                             break;
+                        }
 
                         case 'csv':
+                        {
                             const csvContent = exportProjectToCSV(project);
                             fileName = `${project.name}_${dateStr}.csv`;
                             mimeType = 'text/csv';
                             downloadFile(csvContent, fileName, mimeType);
                             break;
+                        }
 
                         case 'excel':
                             await exportProjectToExcel(project);
@@ -105,11 +109,13 @@ export const FileExportModal: React.FC<FileExportModalProps> = React.memo(({
                             break;
 
                         case 'markdown':
+                        {
                             const mdContent = generateProjectReport(project);
                             fileName = `${project.name}_${dateStr}.md`;
                             mimeType = 'text/markdown';
                             downloadFile(mdContent, fileName, mimeType);
                             break;
+                        }
                     }
                     break;
 
@@ -118,6 +124,7 @@ export const FileExportModal: React.FC<FileExportModalProps> = React.memo(({
 
                     switch (selectedFormat) {
                         case 'csv':
+                        {
                             const csvContent = exportProjectToCSV({
                                 ...project!,
                                 tasks: tasks
@@ -126,6 +133,7 @@ export const FileExportModal: React.FC<FileExportModalProps> = React.memo(({
                             mimeType = 'text/csv';
                             downloadFile(csvContent, fileName, mimeType);
                             break;
+                        }
 
                         case 'excel':
                             await exportTasksToExcel(tasks);
@@ -138,11 +146,13 @@ export const FileExportModal: React.FC<FileExportModalProps> = React.memo(({
 
                     switch (selectedFormat) {
                         case 'csv':
+                        {
                             const csvContent = exportTestCasesToCSV(tasks);
                             fileName = `CasosDeTeste_${dateStr}.csv`;
                             mimeType = 'text/csv';
                             downloadFile(csvContent, fileName, mimeType);
                             break;
+                        }
                     }
                     break;
             }

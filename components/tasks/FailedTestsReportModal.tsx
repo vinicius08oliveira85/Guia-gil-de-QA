@@ -521,7 +521,7 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
       ),
       onClick: () => {
         // TODO: Implementar exportação CSV
-        toast.info('Exportação CSV em desenvolvimento');
+        toast('Exportação CSV em desenvolvimento', { icon: 'ℹ️' });
       }
     }
   ];

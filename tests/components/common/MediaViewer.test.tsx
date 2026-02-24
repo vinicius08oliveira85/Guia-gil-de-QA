@@ -13,6 +13,13 @@ vi.mock('../../../components/common/FilePreview', () => ({
     ),
 }));
 
+// Mock do PDFViewer (evita dependências do pdfjs em jsdom)
+vi.mock('../../../components/common/PDFViewer', () => ({
+    PDFViewer: ({ filename }: { filename: string }) => (
+        <div data-testid="pdf-viewer">{filename}</div>
+    ),
+}));
+
 describe('MediaViewer', () => {
     const defaultProps = {
         attachmentId: '123',
@@ -38,7 +45,7 @@ describe('MediaViewer', () => {
         render(<MediaViewer {...defaultProps} />);
         
         // Verificar que modal está presente
-        const filename = screen.getByText('test.png');
+        const filename = screen.getByRole('heading', { name: 'test.png' });
         expect(filename).toBeInTheDocument();
     });
 
@@ -78,7 +85,7 @@ describe('MediaViewer', () => {
     it('deve renderizar PDFPreview para PDFs', () => {
         render(<MediaViewer {...defaultProps} mediaType="pdf" />);
         
-        const preview = screen.getByTestId('pdf-preview');
+        const preview = screen.getByTestId('pdf-viewer');
         expect(preview).toBeInTheDocument();
     });
 
@@ -112,7 +119,7 @@ describe('MediaViewer', () => {
     it('deve exibir nome do arquivo corretamente', () => {
         render(<MediaViewer {...defaultProps} filename="arquivo-com-nome-longo.pdf" />);
         
-        const filename = screen.getByText('arquivo-com-nome-longo.pdf');
+        const filename = screen.getByRole('heading', { name: 'arquivo-com-nome-longo.pdf' });
         expect(filename).toBeInTheDocument();
     });
 });

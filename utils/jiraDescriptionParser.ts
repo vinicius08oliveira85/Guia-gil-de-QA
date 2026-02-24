@@ -34,10 +34,11 @@ function adfNodeToText(node: ADFNode): string {
     switch (node.type) {
         case 'paragraph':
             return (node.content ?? []).map(adfNodeToText).join('') + '\n';
-        case 'heading':
+        case 'heading': {
             const level = node.attrs?.level || 1;
             const prefix = '#'.repeat(level) + ' ';
             return prefix + (node.content ?? []).map(adfNodeToText).join('') + '\n';
+        }
         case 'bulletList':
         case 'orderedList':
             return (node.content ?? []).map(adfNodeToText).join('') + '\n';
@@ -160,10 +161,11 @@ function adfNodeToHTML(node: ADFNode, jiraUrl?: string, jiraAttachments?: JiraAt
                     case 'code':
                         text = `<code>${text}</code>`;
                         break;
-                    case 'link':
+                    case 'link': {
                         const href = mark.attrs?.href || '#';
                         text = `<a href="${escapeHTML(href)}">${text}</a>`;
                         break;
+                    }
                 }
             }
         }
@@ -178,18 +180,20 @@ function adfNodeToHTML(node: ADFNode, jiraUrl?: string, jiraAttachments?: JiraAt
         switch (node.type) {
             case 'paragraph':
                 return `<p>${content}</p>`;
-            case 'heading':
+            case 'heading': {
                 const level = node.attrs?.level || 1;
                 return `<h${level}>${content}</h${level}>`;
+            }
             case 'bulletList':
                 return `<ul>${content}</ul>`;
             case 'orderedList':
                 return `<ol>${content}</ol>`;
             case 'listItem':
                 return `<li>${content}</li>`;
-            case 'codeBlock':
+            case 'codeBlock': {
                 const language = node.attrs?.language || '';
                 return `<pre><code${language ? ` class="language-${language}"` : ''}>${escapeHTML(content)}</code></pre>`;
+            }
             case 'hardBreak':
                 return '<br />';
             case 'blockquote':
@@ -197,11 +201,10 @@ function adfNodeToHTML(node: ADFNode, jiraUrl?: string, jiraAttachments?: JiraAt
             case 'mediaSingle':
                 // Container para mídia única (imagem com layout)
                 return `<div class="jira-media-single">${content}</div>`;
-            case 'media':
+            case 'media': {
                 // Imagens e outros media do Jira
                 const mediaId = node.attrs?.id;
                 const mediaType = node.attrs?.type || 'file';
-                const mediaCollection = node.attrs?.collection;
                 const url = node.attrs?.url || node.attrs?.src || '';
                 const alt = node.attrs?.alt || node.attrs?.title || '';
                 
@@ -235,6 +238,7 @@ function adfNodeToHTML(node: ADFNode, jiraUrl?: string, jiraAttachments?: JiraAt
                 }
                 
                 return content;
+            }
             case 'table':
                 return `<table>${content}</table>`;
             case 'tableRow':
@@ -404,7 +408,7 @@ function processJiraImages(
                     const hasDataAttr = before.includes('data-jira-url=') || after.includes('data-jira-url=');
                     const hasLoading = before.includes('loading=') || after.includes('loading=');
                     let newBefore = before;
-                    let newAfter = after;
+                    const newAfter = after;
                     
                     if (!hasDataAttr) {
                         newBefore += ` data-jira-url="${escapeHTML(src)}"`;
@@ -438,7 +442,7 @@ function processJiraImages(
             const hasLoading = before.includes('loading=') || after.includes('loading=');
             
             let newBefore = before;
-            let newAfter = after;
+            const newAfter = after;
             
             if (!hasClass) {
                 newBefore += ` class="jira-image"`;

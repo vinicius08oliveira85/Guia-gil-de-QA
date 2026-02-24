@@ -107,7 +107,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
             <span
               key={tag}
               className="px-2 py-0.5 text-xs rounded text-white"
-              style={{ backgroundColor: `var(--tag-${tag})` || '#64748b' }}
+              style={{ backgroundColor: `var(--tag-${tag}, #64748b)` }}
             >
               {tag}
             </span>

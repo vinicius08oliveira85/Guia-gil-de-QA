@@ -1,4 +1,4 @@
-import { JiraTask, TestCase } from '../types';
+import { JiraTask } from '../types';
 
 /** Mapeia nome de status (Jira ou PT) para categoria interna. Mesma lógica do jiraService. */
 const mapJiraStatusToTaskStatus = (jiraStatus: string | undefined | null): 'To Do' | 'In Progress' | 'Done' => {

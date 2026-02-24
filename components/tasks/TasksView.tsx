@@ -226,7 +226,8 @@ export const TasksView: React.FC<{
         return (
             <div className="container mx-auto p-8">
                 <EmptyState 
-                    message="Projeto inválido ou sem tarefas. Por favor, selecione outro projeto ou crie um novo."
+                    title="Projeto inválido"
+                    description="Projeto inválido ou sem tarefas. Por favor, selecione outro projeto ou crie um novo."
                     icon={<AlertTriangle className="w-12 h-12 text-warning" />}
                 />
             </div>
@@ -565,7 +566,7 @@ export const TasksView: React.FC<{
         const updatedTestCases = task.testCases.map(tc => tc.id === testCaseId ? { ...tc, status: 'Failed' as const, observedResult } : tc);
         const updatedTask = { ...task, testCases: updatedTestCases };
         
-        let newTasks = project.tasks.map(t => t.id === taskId ? updatedTask : t);
+        const newTasks = project.tasks.map(t => t.id === taskId ? updatedTask : t);
     
         if (createBug) {
             const newBug = createBugFromFailedTest(testCase, task, observedResult);
@@ -881,7 +882,7 @@ export const TasksView: React.FC<{
             const aiService = getAIService();
             
             // Atualizar análises individuais nas tarefas
-            let updatedTasks = project.tasks.map(task => {
+            const updatedTasks = project.tasks.map(task => {
                 const taskAnalysis = analysis.taskAnalyses.find(ta => ta.taskId === task.id);
                 if (taskAnalysis) {
                     return {
@@ -1807,7 +1808,7 @@ export const TasksView: React.FC<{
                     <Button variant="outline" size="sm" className="rounded-full flex items-center gap-1.5 hover:bg-base-200" onClick={() => setIsLinkModalOpen(false)}>
                         Cancelar
                     </Button>
-                    <Button variant="primary" size="sm" className="rounded-full flex items-center gap-1.5 shadow-sm transition-all active:scale-95" onClick={handleLinkTasks} disabled={selectedTargetProjects.size === 0}>
+                    <Button variant="brand" size="sm" className="rounded-full flex items-center gap-1.5 shadow-sm transition-all active:scale-95" onClick={handleLinkTasks} disabled={selectedTargetProjects.size === 0}>
                         Vincular
                     </Button>
                 </div>

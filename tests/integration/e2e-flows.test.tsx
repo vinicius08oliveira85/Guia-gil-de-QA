@@ -6,6 +6,7 @@ import { useProjectsStore } from '../../store/projectsStore';
 import { JiraTask, Project } from '../../types';
 import { createDbMocks, createMockProject } from './mocks';
 import { resetStore, waitForStoreState } from './helpers';
+import * as dbService from '../../services/dbService';
 
 // Mock dos serviços
 vi.mock('../../services/dbService', () => ({
@@ -35,11 +36,11 @@ describe('Testes de Integração End-to-End', () => {
     mocks.reset();
     
     // Configurar mocks
-    vi.mocked(require('../../services/dbService').loadProjectsFromIndexedDB)
+    vi.mocked(dbService.loadProjectsFromIndexedDB)
       .mockImplementation(() => mocks.mockIndexedDB.loadProjects());
-    vi.mocked(require('../../services/dbService').addProject)
+    vi.mocked(dbService.addProject)
       .mockImplementation((project: Project) => mocks.mockIndexedDB.saveProject(project));
-    vi.mocked(require('../../services/dbService').updateProject)
+    vi.mocked(dbService.updateProject)
       .mockImplementation((project: Project) => mocks.mockIndexedDB.updateProject(project));
   });
 

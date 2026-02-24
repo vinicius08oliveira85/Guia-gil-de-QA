@@ -5,9 +5,8 @@
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { Project, JiraTask, TestCase, TestStrategy, BddScenario } from '../../types';
-import { verifySupabaseStructure, verifyTaskRelations, generateVerificationReport } from '../../scripts/verify-supabase-structure';
-import { updateProject } from '../../services/dbService';
-import { loadProjectsFromSupabase } from '../../services/supabaseService';
+import { verifySupabaseStructure, verifyTaskRelations } from '../../scripts/verify-supabase-structure';
+import { updateProject, loadProjectsFromIndexedDB } from '../../services/dbService';
 
 describe('Estrutura de Dados no Supabase', () => {
   let testProject: Project;
@@ -49,7 +48,7 @@ describe('Estrutura de Dados no Supabase', () => {
       await updateProject(testProject);
 
       // Carregar e verificar
-      const { projects } = await loadProjectsFromSupabase();
+      const projects = await loadProjectsFromIndexedDB();
       const savedProject = projects.find(p => p.id === testProject.id);
 
       expect(savedProject).toBeDefined();
@@ -89,7 +88,7 @@ describe('Estrutura de Dados no Supabase', () => {
       testProject.tasks = [task];
       await updateProject(testProject);
 
-      const { projects } = await loadProjectsFromSupabase();
+      const projects = await loadProjectsFromIndexedDB();
       const savedProject = projects.find(p => p.id === testProject.id);
 
       expect(savedProject?.tasks[0].testCases).toHaveLength(2);
@@ -112,13 +111,14 @@ describe('Estrutura de Dados no Supabase', () => {
         description: 'Descrição',
         type: 'Tarefa',
         status: 'To Do',
-        testStrategy: [strategy]
+        testStrategy: [strategy],
+        testCases: []
       };
 
       testProject.tasks = [task];
       await updateProject(testProject);
 
-      const { projects } = await loadProjectsFromSupabase();
+      const projects = await loadProjectsFromIndexedDB();
       const savedProject = projects.find(p => p.id === testProject.id);
 
       expect(savedProject).toBeDefined();
@@ -142,13 +142,14 @@ describe('Estrutura de Dados no Supabase', () => {
         description: 'Descrição',
         type: 'Tarefa',
         status: 'To Do',
-        bddScenarios: [scenario]
+        bddScenarios: [scenario],
+        testCases: []
       };
 
       testProject.tasks = [task];
       await updateProject(testProject);
 
-      const { projects } = await loadProjectsFromSupabase();
+      const projects = await loadProjectsFromIndexedDB();
       const savedProject = projects.find(p => p.id === testProject.id);
 
       expect(savedProject).toBeDefined();
@@ -197,7 +198,7 @@ describe('Estrutura de Dados no Supabase', () => {
       testProject.tasks = [task1, task2];
       await updateProject(testProject);
 
-      const { projects } = await loadProjectsFromSupabase();
+      const projects = await loadProjectsFromIndexedDB();
       const savedProject = projects.find(p => p.id === testProject.id);
 
       expect(savedProject?.tasks).toHaveLength(2);
@@ -266,7 +267,7 @@ describe('Estrutura de Dados no Supabase', () => {
       testProject.tasks = [task1, task2];
       await updateProject(testProject);
 
-      const { projects } = await loadProjectsFromSupabase();
+      const projects = await loadProjectsFromIndexedDB();
       const savedProject = projects.find(p => p.id === testProject.id);
 
       const savedTask1 = savedProject?.tasks.find(t => t.id === 'TASK-X');

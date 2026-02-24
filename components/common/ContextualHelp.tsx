@@ -85,33 +85,3 @@ export const ContextualHelp: React.FC<ContextualHelpProps> = ({
         </div>
     );
 };
-
-/**
- * Hook para obter ajuda contextual baseada no contexto atual
- */
-export const useContextualHelp = (context: string) => {
-    const helpContent: Record<string, { title: string; content: string }> = {
-        'metrics-overview': {
-            title: 'Visão Geral de Métricas',
-            content: 'Esta seção consolida todas as métricas principais do projeto em um único lugar. Use o seletor de versão para filtrar métricas por versão específica.'
-        },
-        'test-coverage': {
-            title: 'Cobertura de Testes',
-            content: 'A cobertura de testes indica quantas tarefas têm casos de teste documentados. Uma cobertura acima de 70% é recomendada para projetos em produção.'
-        },
-        'quality-metrics': {
-            title: 'Métricas de Qualidade',
-            content: 'As métricas de qualidade incluem taxa de aprovação de testes, bugs abertos e análise de risco. Use a análise IA para obter recomendações personalizadas.'
-        },
-        'filters': {
-            title: 'Filtros Rápidos',
-            content: 'Use os filtros para encontrar tarefas específicas rapidamente. Os filtros são salvos automaticamente e persistem entre sessões.'
-        },
-        'tasks': {
-            title: 'Gerenciamento de Tarefas',
-            content: 'Organize suas tarefas usando tags, prioridades e dependências. Use templates para criar tarefas rapidamente com estruturas pré-definidas.'
-        }
-    };
-
-    return helpContent[context] || { title: 'Ajuda', content: 'Informação não disponível para este contexto.' };
-};

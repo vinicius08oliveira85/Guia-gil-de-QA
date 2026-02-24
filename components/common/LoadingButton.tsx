@@ -24,7 +24,7 @@ export const LoadingButton: React.FC<LoadingButtonProps> = ({
     >
       {isLoading ? (
         <span className="flex items-center gap-2">
-          <Spinner size="sm" />
+          <Spinner small />
           {loadingText || 'Carregando...'}
         </span>
       ) : (

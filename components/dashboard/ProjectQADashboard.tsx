@@ -45,6 +45,8 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
     // Ordem de categorias do Jira para ordenação
     const categoryOrder: JiraStatusCategory[] = ['Pendente', 'Em Andamento', 'Validado', 'Bloqueado', 'Concluído', 'Outros'];
     const categoryOrderMap = new Map(categoryOrder.map((cat, idx) => [cat, idx]));
+
+    type StatusBucket = { status?: string; category: JiraStatusCategory; count: number; percentage: number };
     
     const priorityRanking: Record<TaskPriority, number> = { Urgente: 0, Alta: 1, Média: 2, Baixa: 3 };
     const periodWindowMs =
@@ -71,7 +73,7 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
     const totalVisibleTasks = tasksInPeriod.filter((task) => task.type !== 'Bug').length || 1;
 
     // Status buckets baseados em categorias do Jira
-    const statusBuckets = useMemo(() => {
+    const statusBuckets = useMemo<StatusBucket[]>(() => {
         if (metrics.jiraStatusMetrics) {
             // Usar métricas do Jira se disponíveis
             return metrics.jiraStatusMetrics.categoryDistribution
@@ -395,8 +397,8 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
                             </div>
                             <div className="space-y-4">
                                 {statusBuckets.map((bucket) => {
-                                    const statusLabel = 'category' in bucket ? bucket.category : bucket.status;
-                                    const category = 'category' in bucket ? bucket.category : categorizeJiraStatus(bucket.status);
+                                    const statusLabel = bucket.status ?? bucket.category;
+                                    const category = bucket.category;
                                     return (
                                         <div key={statusLabel}>
                                             <div className="flex items-center justify-between text-sm text-base-content/70">

@@ -209,7 +209,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
             return;
         }
         if ((activeSection === 'tests' || activeSection === 'bdd') && task.type !== 'Tarefa' && task.type !== 'Bug') {
-            if (activeSection !== 'overview') setActiveSection('overview');
+            setActiveSection('overview');
         }
     }, [isOpen, sectionTabs, activeSection, task.type]);
 
@@ -224,15 +224,15 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
         setIsCreatingBdd(false);
     };
 
-    const handleViewJiraAttachment = async (attachment: { id: string; filename: string; url: string; mimeType: string }) => {
-        const isImage = detectFileType(attachment.filename, attachment.mimeType) === 'image';
+    const handleViewJiraAttachment = async (attachment: { id: string; filename: string; url: string; mimeType?: string }) => {
+        const isImage = detectFileType(attachment.filename, attachment.mimeType || '') === 'image';
         setLoadingJiraAttachmentId(attachment.id);
         try {
             // Fazer fetch do anexo através do proxy do Jira se necessário
             const jiraConfig = getJiraConfig();
             if (!jiraConfig) {
                 if (isImage) {
-                    setViewingJiraAttachment({ ...attachment });
+                    setViewingJiraAttachment({ ...attachment, mimeType: attachment.mimeType ?? '' });
                 } else {
                     window.open(attachment.url, '_blank');
                 }
@@ -262,6 +262,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                 reader.onloadend = () => {
                     setViewingJiraAttachment({
                         ...attachment,
+                        mimeType: attachment.mimeType ?? '',
                         content: reader.result as string
                     });
                     setLoadingJiraAttachmentId(null);
@@ -269,7 +270,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                 reader.readAsDataURL(blob);
             } else {
                 if (isImage) {
-                    setViewingJiraAttachment({ ...attachment });
+                    setViewingJiraAttachment({ ...attachment, mimeType: attachment.mimeType ?? '' });
                 } else {
                     window.open(attachment.url, '_blank');
                 }
@@ -277,7 +278,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
             }
         } catch (error) {
             if (isImage) {
-                setViewingJiraAttachment({ ...attachment });
+                setViewingJiraAttachment({ ...attachment, mimeType: attachment.mimeType ?? '' });
             } else {
                 window.open(attachment.url, '_blank');
             }

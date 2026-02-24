@@ -47,7 +47,7 @@ export const useMetricsHistory = (project: Project, period: 'week' | 'month' = '
     updateProject(updatedProject).catch(error => {
       logger.error('Erro ao salvar snapshot de métricas', 'useMetricsHistory', error);
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [project.id]); // Apenas quando o projeto mudar (evitar loop infinito)
 
   // Obter métricas do período atual e anterior

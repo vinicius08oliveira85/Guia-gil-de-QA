@@ -16,7 +16,14 @@ const compat = new FlatCompat({
 
 export default [
   {
-    ignores: ['dist', 'node_modules', '.eslintrc.json'],
+    ignores: [
+      'dist',
+      'dev-dist',
+      'node_modules',
+      '.eslintrc.json',
+      'storybook-static',
+      'coverage',
+    ],
   },
   ...compat.extends(
     'eslint:recommended',
@@ -44,6 +51,32 @@ export default [
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
       'no-console': ['warn', { allow: ['warn', 'error'] }],
+    },
+  },
+  {
+    files: ['scripts/**/*.{js,ts}'],
+    rules: {
+      'no-console': 'off',
+      '@typescript-eslint/no-var-requires': 'off',
+    },
+  },
+  {
+    files: ['tests/**/*.{ts,tsx}'],
+    rules: {
+      '@typescript-eslint/no-var-requires': 'off',
+      'react-refresh/only-export-components': 'off',
+    },
+  },
+  {
+    files: ['utils/logger.ts'],
+    rules: {
+      'no-console': 'off',
+    },
+  },
+  {
+    files: ['api/**/*.{ts,js}'],
+    rules: {
+      'no-console': 'off',
     },
   },
 ];

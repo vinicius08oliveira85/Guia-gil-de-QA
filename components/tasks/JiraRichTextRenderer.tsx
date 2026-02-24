@@ -3,7 +3,7 @@ import { JiraAttachment } from './JiraAttachment';
 
 interface JiraRichTextRendererProps {
     content: any; // Pode ser string (Markdown) ou Objeto (ADF)
-    attachments?: Array<{ filename: string; url: string; mimeType: string }>;
+    attachments?: Array<{ id?: string; filename: string; url: string; mimeType: string }>;
 }
 
 /**
@@ -29,6 +29,7 @@ export const JiraRichTextRenderer: React.FC<JiraRichTextRendererProps> = ({ cont
                             return (
                                 <div key={index} className="my-2 inline-block">
                                     <JiraAttachment 
+                                        id={attachment.id ?? attachment.filename}
                                         url={attachment.url} 
                                         filename={attachment.filename} 
                                         mimeType={attachment.mimeType} 
@@ -70,20 +71,30 @@ const ADFNodeRenderer: React.FC<{ node: any; attachments: any[] }> = ({ node, at
                 </p>
             );
         
-        case 'text':
-            let text = node.text;
+        case 'text': {
+            const text = node.text;
             let className = '';
+            let href: string | undefined;
             if (node.marks) {
                 node.marks.forEach((mark: any) => {
                     if (mark.type === 'strong') className += ' font-bold';
                     if (mark.type === 'em') className += ' italic';
                     if (mark.type === 'code') className += ' font-mono bg-base-200 px-1 rounded';
                     if (mark.type === 'link') {
-                        return <a href={mark.attrs.href} className="link link-primary" target="_blank" rel="noreferrer">{text}</a>;
+                        href = mark.attrs?.href;
                     }
                 });
             }
-            return <span className={className}>{text}</span>;
+            const content = <span className={className}>{text}</span>;
+            if (href) {
+                return (
+                    <a href={href} className="link link-primary" target="_blank" rel="noreferrer">
+                        {content}
+                    </a>
+                );
+            }
+            return content;
+        }
 
         case 'mediaSingle':
             return (

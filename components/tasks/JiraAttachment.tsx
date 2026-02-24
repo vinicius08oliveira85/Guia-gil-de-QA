@@ -10,7 +10,7 @@ interface JiraAttachmentProps {
     size?: number;
     thumbnailUrl?: string;
     id: string; // ID do anexo no Jira (obrigatório)
-    onView?: (attachment: { id: string; filename: string; url: string; mimeType?: string }) => void;
+    onView?: (attachment: { id: string; filename: string; url: string; mimeType?: string }) => void | Promise<void>;
     isLoading?: boolean;
 }
 

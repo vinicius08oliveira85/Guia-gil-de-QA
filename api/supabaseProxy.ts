@@ -53,6 +53,19 @@ const getPayloadSize = (data: unknown): number => {
   }
 };
 
+type StoredProject = {
+  id: string;
+  name?: string;
+  description?: string;
+  [key: string]: unknown;
+};
+
+const isStoredProject = (value: unknown): value is StoredProject => {
+  if (typeof value !== 'object' || value === null) return false;
+  const record = value as Record<string, unknown>;
+  return typeof record.id === 'string' && record.id.trim().length > 0;
+};
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   allowCors(res);
 
@@ -167,7 +180,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       // Novo fluxo: Se storagePath for fornecido, buscar do Storage
       if (storagePath) {
         console.log(`[SupabaseProxy] Recebido pedido para processar arquivo do Storage: ${storagePath}`);
-        let projectFromStorage: any;
+        let projectFromStorage: StoredProject;
         try {
           // 1. Baixar o arquivo do Supabase Storage
           const { data: blob, error: downloadError } = await supabase.storage
@@ -181,11 +194,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
           // 2. Converter o Blob para JSON
           const projectJson = await blob.text();
-          projectFromStorage = JSON.parse(projectJson);
-
-          if (!projectFromStorage || !projectFromStorage.id) {
+          const parsedProject = JSON.parse(projectJson) as unknown;
+          if (!isStoredProject(parsedProject)) {
             throw new Error('Arquivo do Storage é inválido ou não contém um projeto.');
           }
+          projectFromStorage = parsedProject;
 
           console.log(`[SupabaseProxy] Projeto "${projectFromStorage.name}" extraído do Storage com sucesso.`);
 

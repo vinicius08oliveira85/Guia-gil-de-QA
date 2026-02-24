@@ -22,10 +22,11 @@ export const useJiraImage = (url: string, mimeType?: string) => {
     const isJiraUrl = (urlToCheck: string): boolean => {
         try {
             const urlObj = new URL(urlToCheck);
+            const jiraBaseUrl = getJiraConfig()?.url;
             // Verificar se contém /secure/attachment/ ou é do domínio configurado do Jira
             return urlToCheck.includes('/secure/attachment/') || 
                    urlToCheck.includes('/rest/api/') ||
-                   (getJiraConfig()?.url && urlObj.origin === new URL(getJiraConfig()!.url).origin);
+                   (Boolean(jiraBaseUrl) && urlObj.origin === new URL(jiraBaseUrl!).origin);
         } catch {
             return false;
         }
@@ -100,10 +101,9 @@ export const useJiraImage = (url: string, mimeType?: string) => {
                 }
                 
                 const blob = await response.blob();
+                const blobUrl = URL.createObjectURL(blob);
                 
                 if (active) {
-                    const blobUrl = URL.createObjectURL(blob);
-                    
                     // Armazenar no cache
                     imageCache.set(url, blobUrl);
                     

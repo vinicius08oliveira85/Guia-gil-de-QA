@@ -1,5 +1,4 @@
 import { sanitizeHTML } from './sanitize';
-import { jiraMediaService } from '../services/jiraMediaService';
 
 /**
  * Configuração para sanitização de conteúdo
@@ -42,13 +41,15 @@ export class JiraContentSanitizer {
         let processedHtml = html;
         let imageCount = 0;
         let linkCount = 0;
+        const allowImages = config.allowImages !== false;
+        const allowLinks = config.allowLinks !== false;
 
         // Processar imagens do Jira se configurado
-        if (config.processJiraImages && config.jiraAttachments && config.jiraUrl) {
+        if (config.processJiraImages && config.jiraUrl) {
             processedHtml = this.processJiraImages(processedHtml, config);
             imageCount = (processedHtml.match(/<img[^>]*>/gi) || []).length;
         } else {
-            imageCount = (html.match(/<img[^>]*>/gi) || []).length;
+            imageCount = (processedHtml.match(/<img[^>]*>/gi) || []).length;
         }
 
         // Contar links
@@ -58,13 +59,13 @@ export class JiraContentSanitizer {
         processedHtml = sanitizeHTML(processedHtml);
 
         // Remover imagens se não permitidas
-        if (!config.allowImages) {
+        if (!allowImages) {
             processedHtml = processedHtml.replace(/<img[^>]*>/gi, '');
             imageCount = 0;
         }
 
         // Remover links se não permitidos
-        if (!config.allowLinks) {
+        if (!allowLinks) {
             processedHtml = processedHtml.replace(/<a[^>]*>(.*?)<\/a>/gi, '$1');
             linkCount = 0;
         }
@@ -85,20 +86,24 @@ export class JiraContentSanitizer {
         html: string,
         config: SanitizationConfig
     ): string {
-        if (!config.jiraAttachments || !config.jiraUrl) {
+        if (!config.jiraUrl) {
             return html;
         }
 
         const baseUrl = config.jiraUrl.replace(/\/$/, '');
-        const attachmentMap = new Map<string, typeof config.jiraAttachments[0]>();
+        const attachmentMap = new Map<string, NonNullable<SanitizationConfig['jiraAttachments']>[0]>();
         
-        config.jiraAttachments.forEach(att => {
+        (config.jiraAttachments || []).forEach(att => {
             attachmentMap.set(att.filename.toLowerCase(), att);
             const nameWithoutExt = att.filename.toLowerCase().replace(/\.[^.]+$/, '');
             if (nameWithoutExt !== att.filename.toLowerCase()) {
                 attachmentMap.set(nameWithoutExt, att);
             }
         });
+
+        const sanitizeAttrFragment = (fragment: string): string => {
+            return fragment.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        };
 
         // Processar padrão Markdown do Jira: !imagem.png!
         html = html.replace(/!([^!|]+)(?:\|([^!]+))?!/g, (match, filename, params) => {
@@ -125,6 +130,7 @@ export class JiraContentSanitizer {
 
         // Processar tags <img> existentes
         html = html.replace(/<img([^>]*)\ssrc=["']([^"']+)["']([^>]*)>/gi, (match, before, src, after) => {
+            const safeAfter = sanitizeAttrFragment(after);
             // Se já é URL completa, adicionar atributos se necessário
             if (src.startsWith('http://') || src.startsWith('https://')) {
                 if (src.includes('/secure/attachment/') || src.includes(baseUrl)) {
@@ -143,7 +149,7 @@ export class JiraContentSanitizer {
                         newBefore += ` data-attachment-id="${idMatch[1]}"`;
                     }
                     
-                    return `<img${newBefore} src="${this.escapeHTML(src)}"${after}>`;
+                    return `<img${sanitizeAttrFragment(newBefore)} src="${this.escapeHTML(src)}"${safeAfter}>`;
                 }
                 return match;
             }
@@ -168,7 +174,7 @@ export class JiraContentSanitizer {
                 if (!hasLoading) newBefore += ` loading="lazy"`;
                 newBefore += ` data-attachment-id="${attachment.id}"`;
                 
-                return `<img${newBefore} src="${this.escapeHTML(imageUrl)}"${after}>`;
+                return `<img${sanitizeAttrFragment(newBefore)} src="${this.escapeHTML(imageUrl)}"${safeAfter}>`;
             }
 
             return match;

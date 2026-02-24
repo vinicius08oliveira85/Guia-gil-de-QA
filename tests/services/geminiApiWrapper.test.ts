@@ -42,14 +42,14 @@ vi.mock('../../utils/retry', () => ({
 describe('callGeminiWithRetry', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    (geminiApiKeyManager.getCurrentKey as unknown as vi.Mock).mockReturnValue('test-key');
-    (geminiApiKeyManager.getStats as unknown as vi.Mock).mockReturnValue({
+    vi.mocked(geminiApiKeyManager.getCurrentKey).mockReturnValue('test-key');
+    vi.mocked(geminiApiKeyManager.getStats).mockReturnValue({
       totalKeys: 1,
       availableKeys: 1,
       exhaustedKeys: 0,
       currentKeyIndex: 0,
     });
-    (geminiApiKeyManager.getExhaustedKeysInfo as unknown as vi.Mock).mockReturnValue([]);
+    vi.mocked(geminiApiKeyManager.getExhaustedKeysInfo).mockReturnValue([]);
   });
 
   it('deve marcar quota excedida e lançar erro tipado para 429', async () => {

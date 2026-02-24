@@ -52,14 +52,14 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
     useEffect(() => {
         checkScroll();
         const tabsElement = tabsRef.current;
-        if (tabsElement) {
-            tabsElement.addEventListener('scroll', checkScroll);
-            window.addEventListener('resize', checkScroll);
-            return () => {
-                tabsElement.removeEventListener('scroll', checkScroll);
-                window.removeEventListener('resize', checkScroll);
-            };
-        }
+        if (!tabsElement) return;
+
+        tabsElement.addEventListener('scroll', checkScroll);
+        window.addEventListener('resize', checkScroll);
+        return () => {
+            tabsElement.removeEventListener('scroll', checkScroll);
+            window.removeEventListener('resize', checkScroll);
+        };
     }, [checkScroll, activeTab]);
     
     // Auto-save: monitora mudanças e salva automaticamente

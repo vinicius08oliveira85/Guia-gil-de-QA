@@ -87,7 +87,9 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
   }, [project, dashboardFilters]);
 
   const metrics = useProjectMetrics(filteredProject);
-  const { trends } = useMetricsHistory(filteredProject, dashboardFilters.period || 'week');
+  const metricsPeriod: 'week' | 'month' =
+    dashboardFilters.period === 'month' || dashboardFilters.period === 'quarter' ? 'month' : 'week';
+  const { trends } = useMetricsHistory(filteredProject, metricsPeriod);
 
   const activeFiltersCount =
     (dashboardFilters.period && dashboardFilters.period !== 'all' ? 1 : 0) +
