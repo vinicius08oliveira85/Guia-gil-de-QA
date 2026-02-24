@@ -1662,8 +1662,9 @@ export const syncJiraProject = async (
                     testCases: finalTestCasesFromOriginal, // ✅ Preservar status dos testes (do originalTasksMap, mais recente)
                     bddScenarios: oldTask.bddScenarios || [], // ✅ Preservar cenários BDD
                     testStrategy: oldTask.testStrategy, // ✅ Preservar estratégia de teste
-                    tools: oldTask.tools, // ✅ Preservar ferramentas
-                    testCaseTools: oldTask.testCaseTools, // ✅ Preservar ferramentas de testes
+                    toolsUsed: oldTask.toolsUsed, // ✅ Preservar ferramentas
+                    executedStrategies: oldTask.executedStrategies, // ✅ Preservar estratégias executadas
+                    strategyTools: oldTask.strategyTools, // ✅ Preservar ferramentas por estratégia
                     // ✅ CRÍTICO: Preservar testStatus - NUNCA sobrescrever com dados do Jira
                     // O testStatus é completamente independente do status do Jira
                     testStatus: oldTask.testStatus, // ✅ Preservar status de teste independente do Jira
@@ -1706,7 +1707,7 @@ export const syncJiraProject = async (
                     const existingIdsNoChanges = new Set(existingTestCasesNoChanges.map(tc => tc.id).filter(Boolean));
                     
                     // Começar com os existentes (que têm status preservados)
-                    let mergedTestCasesNoChanges = [...existingTestCasesNoChanges];
+                    const mergedTestCasesNoChanges = [...existingTestCasesNoChanges];
                     
                     // Apenas adicionar testCases salvos que não existem nos existentes
                     for (const savedTestCase of savedTestCasesForTaskNoChanges) {
@@ -1761,7 +1762,7 @@ export const syncJiraProject = async (
                     });
                 } else if (existingTestCasesNoChanges.length > 0 || savedTestCasesForTaskNoChanges.length > 0) {
                     // Há existentes mas sem status executados - mesclar normalmente
-                    let mergedTestCasesNoChanges = existingTestCasesNoChanges.length > 0
+                    const mergedTestCasesNoChanges = existingTestCasesNoChanges.length > 0
                         ? mergeTestCases(existingTestCasesNoChanges, savedTestCasesForTaskNoChanges)
                         : savedTestCasesForTaskNoChanges;
                     

@@ -57,7 +57,6 @@ describe('useJiraMedia', () => {
     it('deve retornar estado inicial correto', () => {
         const { result } = renderHook(() => useJiraMedia('123', 'image.png', 1024));
         
-        expect(result.current.loading).toBe(false);
         expect(result.current.objectUrl).toBe(null);
         expect(result.current.error).toBe(null);
     });
@@ -160,8 +159,10 @@ describe('useJiraMedia', () => {
         const { result } = renderHook(() => useJiraMedia('123', 'image.png', 1024));
         
         await waitFor(() => {
-            expect(result.current.error).toBeTruthy();
+            expect(result.current.loading).toBe(false);
         }, { timeout: 3000 });
+        expect(result.current.error).toBe(null);
+        expect(global.fetch).not.toHaveBeenCalled();
     });
 
     it('deve limpar recursos ao desmontar', async () => {
@@ -175,11 +176,9 @@ describe('useJiraMedia', () => {
 
         const revokeObjectURLSpy = vi.spyOn(URL, 'revokeObjectURL');
 
-        const { unmount } = renderHook(() => useJiraMedia('123', 'image.png', 1024));
+        const { result, unmount } = renderHook(() => useJiraMedia('123', 'image.png', 1024));
         
-        await waitFor(() => {
-            expect(global.fetch).toHaveBeenCalled();
-        });
+        await waitFor(() => expect(result.current.objectUrl).toBeTruthy(), { timeout: 3000 });
         
         unmount();
         

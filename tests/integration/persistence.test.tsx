@@ -3,6 +3,8 @@ import { useProjectsStore } from '../../store/projectsStore';
 import { Project } from '../../types';
 import { createDbMocks, createMockProject, createMockProjects } from './mocks';
 import { resetStore, waitForStoreState } from './helpers';
+import * as dbService from '../../services/dbService';
+import * as supabaseService from '../../services/supabaseService';
 
 // Mock dos serviços
 vi.mock('../../services/dbService', () => ({
@@ -32,16 +34,16 @@ describe('Testes de Persistência de Dados', () => {
     mocks.reset();
     
     // Configurar mocks padrão
-    vi.mocked(require('../../services/dbService').loadProjectsFromIndexedDB)
+    vi.mocked(dbService.loadProjectsFromIndexedDB)
       .mockImplementation(() => mocks.mockIndexedDB.loadProjects());
-    vi.mocked(require('../../services/dbService').addProject)
+    vi.mocked(dbService.addProject)
       .mockImplementation((project: Project) => mocks.mockIndexedDB.saveProject(project));
-    vi.mocked(require('../../services/dbService').updateProject)
+    vi.mocked(dbService.updateProject)
       .mockImplementation((project: Project) => mocks.mockIndexedDB.updateProject(project));
-    vi.mocked(require('../../services/dbService').deleteProject)
+    vi.mocked(dbService.deleteProject)
       .mockImplementation((projectId: string) => mocks.mockIndexedDB.deleteProject(projectId));
     
-    vi.mocked(require('../../services/supabaseService').loadProjectsFromSupabase)
+    vi.mocked(supabaseService.loadProjectsFromSupabase)
       .mockImplementation(() =>
         mocks.mockSupabase.loadProjects().then(projects => ({ projects, loadFailed: false }))
       );

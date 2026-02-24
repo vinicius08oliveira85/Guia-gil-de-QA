@@ -16,14 +16,18 @@ export const ReportPreview: React.FC<ReportPreviewProps> = ({
   format,
   onFormatChange
 }) => {
+  type ReportSection = { title: string; content: string; startLine: number };
+  type DraftSection = { title: string; content: string[]; startLine: number };
+
   // Dividir relatório em seções
   const sections = useMemo(() => {
     const lines = reportText.split('\n');
-    const result: { title: string; content: string; startLine: number }[] = [];
+    const result: ReportSection[] = [];
     
-    let currentSection: { title: string; content: string[]; startLine: number } | null = null;
+    let currentSection: DraftSection | null = null;
     
-    lines.forEach((line, idx) => {
+    for (let idx = 0; idx < lines.length; idx++) {
+      const line = lines[idx];
       // Detectar cabeçalhos
       if (line.startsWith('RELATÓRIO DE TESTES REPROVADOS') || 
           line.startsWith('# RELATÓRIO DE TESTES REPROVADOS')) {
@@ -59,7 +63,7 @@ export const ReportPreview: React.FC<ReportPreviewProps> = ({
       } else if (currentSection) {
         currentSection.content.push(line);
       }
-    });
+    }
     
     if (currentSection) {
       result.push({

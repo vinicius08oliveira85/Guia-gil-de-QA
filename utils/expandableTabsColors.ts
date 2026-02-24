@@ -22,8 +22,10 @@ export const getActiveColorForTheme = (theme: Theme): string => {
       return 'text-orange-500';
     case 'auto':
       // Para auto, usar o tema efetivo baseado na preferência do sistema
+    {
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
       return prefersDark ? 'text-blue-500' : 'text-blue-600';
+    }
     default:
       return 'text-accent';
   }

@@ -1,9 +1,9 @@
 import React from 'react';
 import { formatRelativeTime } from '../../utils/dateUtils';
 import { Badge } from './Badge';
-import { AuditLog } from '../../types'; // Assumindo que AuditLog está definido em '../../types'
+import type { AuditLogEntry } from '../../utils/auditLog';
 
-export interface EnrichedAuditLog extends AuditLog {
+export interface EnrichedAuditLog extends AuditLogEntry {
   taskTitle?: string;
   taskId?: string;
 }

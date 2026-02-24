@@ -132,12 +132,34 @@ const callSupabaseProxy = async <T = any>(
 };
 
 /**
- * Salva status de teste via proxy (não implementado - usar SDK direto)
- * O proxy atual é específico para projects, então usamos apenas SDK direto
+ * Salva status de teste via proxy
  */
 const saveThroughProxy = async (taskKey: string, status: TaskTestStatus, retryCount: number = 0): Promise<void> => {
-    // Proxy não suporta task_test_status ainda - usar SDK direto
-    throw new Error('Proxy não suporta task_test_status. Use SDK direto.');
+    try {
+        await callSupabaseProxy('POST', {
+            body: {
+                table: 'task_test_status',
+                record: {
+                    task_key: taskKey,
+                    status,
+                },
+            },
+        }, requestTimeoutMs);
+
+        if (retryCount === 0) {
+            logger.debug(`Status de teste "${status}" salvo via proxy para ${taskKey}`, 'taskTestStatusService');
+        }
+    } catch (error) {
+        if (isNetworkError(error) && retryCount < maxRetries) {
+            const delay = retryDelays[retryCount] || 4000;
+            if (retryCount === 0) {
+                logger.debug(`Erro de rede ao salvar via proxy. Tentando novamente em ${delay}ms...`, 'taskTestStatusService');
+            }
+            await new Promise(resolve => setTimeout(resolve, delay));
+            return saveThroughProxy(taskKey, status, retryCount + 1);
+        }
+        throw error;
+    }
 };
 
 /**
@@ -185,21 +207,46 @@ const saveThroughSdk = async (taskKey: string, status: TaskTestStatus, retryCoun
 };
 
 /**
- * Carrega status de teste via proxy (não implementado - usar SDK direto)
- * O proxy atual é específico para projects, então usamos apenas SDK direto
+ * Carrega status de teste via proxy
  */
 const loadThroughProxy = async (taskKey: string): Promise<TaskTestStatus | null> => {
-    // Proxy não suporta task_test_status ainda - usar SDK direto
-    return null;
+    const response = await callSupabaseProxy<{
+        record: TaskTestStatusRecord | null;
+    }>('GET', {
+        query: {
+            table: 'task_test_status',
+            task_key: taskKey,
+        },
+    }, requestTimeoutMs);
+
+    return response.record?.status ?? null;
 };
 
 /**
- * Carrega múltiplos status de teste via proxy (não implementado - usar SDK direto)
- * O proxy atual é específico para projects, então usamos apenas SDK direto
+ * Carrega múltiplos status de teste via proxy
  */
 const loadMultipleThroughProxy = async (taskKeys: string[]): Promise<Map<string, TaskTestStatus>> => {
-    // Proxy não suporta task_test_status ainda - usar SDK direto
-    return new Map();
+    const result = new Map<string, TaskTestStatus>();
+
+    const normalizedKeys = taskKeys.map(k => k.trim()).filter(Boolean);
+    if (normalizedKeys.length === 0) {
+        return result;
+    }
+
+    const response = await callSupabaseProxy<{
+        records: TaskTestStatusRecord[];
+    }>('GET', {
+        query: {
+            table: 'task_test_status',
+            task_keys: normalizedKeys.join(','),
+        },
+    }, requestTimeoutMs);
+
+    (response.records || []).forEach(record => {
+        result.set(record.task_key, record.status);
+    });
+
+    return result;
 };
 
 /**
@@ -227,7 +274,11 @@ const loadThroughSdk = async (taskKey: string): Promise<TaskTestStatus | null> =
 
         if (error) {
             // Se não encontrou registro, não é erro
-            if (error.code === 'PGRST116') {
+            const errorCode =
+                typeof (error as { code?: unknown }).code === 'string'
+                    ? (error as { code: string }).code
+                    : undefined;
+            if (errorCode === 'PGRST116') {
                 return null;
             }
             throw new Error(error.message);
@@ -235,11 +286,9 @@ const loadThroughSdk = async (taskKey: string): Promise<TaskTestStatus | null> =
 
         return (data as { status: TaskTestStatus } | null)?.status || null;
     } catch (error) {
-        if (isNetworkError(error)) {
-            logger.warn('Erro de rede ao carregar status via SDK', 'taskTestStatusService', error);
-        } else {
-            logger.warn('Erro ao carregar status via SDK', 'taskTestStatusService', error);
-        }
+        // Em caso de falha, retornar null para não bloquear o fluxo de UI.
+        // Log apenas em debug para evitar ruído em produção (fallback pode ser esperado).
+        logger.debug('Falha ao carregar status via SDK (retornando null)', 'taskTestStatusService', error);
         return null;
     }
 };
@@ -387,13 +436,31 @@ export const calculateTaskTestStatus = (task: JiraTask, allTasks: JiraTask[] = [
  * Carrega o status de teste de uma task do Supabase
  */
 export const loadTaskTestStatus = async (taskKey: string): Promise<TaskTestStatus | null> => {
-    // Usar apenas SDK direto (proxy não suporta task_test_status)
-    if (supabase) {
+    const hasProxy = Boolean(supabaseProxyUrl);
+    const hasSdk = Boolean(supabase);
+
+    // Preferir proxy quando configurado (evita 403 por RLS no browser)
+    if (hasProxy) {
         try {
-            return await loadThroughSdk(taskKey);
+            return await loadThroughProxy(taskKey);
         } catch (error) {
-            logger.warn('Erro ao carregar status via SDK', 'taskTestStatusService', error);
+            // Em produção, evitar fallback para SDK direto (tende a gerar 403/RLS).
+            // Em dev, permitir fallback.
+            if (!isProduction() && hasSdk) {
+                try {
+                    return await loadThroughSdk(taskKey);
+                } catch {
+                    return null;
+                }
+            }
+
+            logger.warn('Falha ao carregar status via proxy (retornando null)', 'taskTestStatusService', error);
+            return null;
         }
+    }
+
+    if (hasSdk) {
+        return loadThroughSdk(taskKey);
     }
 
     return null;
@@ -407,12 +474,30 @@ export const loadMultipleTaskTestStatus = async (taskKeys: string[]): Promise<Ma
         return new Map();
     }
 
-    // Usar apenas SDK direto (proxy não suporta task_test_status)
-    if (supabase) {
+    const hasProxy = Boolean(supabaseProxyUrl);
+    const hasSdk = Boolean(supabase);
+
+    if (hasProxy) {
+        try {
+            return await loadMultipleThroughProxy(taskKeys);
+        } catch (error) {
+            if (!isProduction() && hasSdk) {
+                try {
+                    return await loadMultipleThroughSdk(taskKeys);
+                } catch {
+                    return new Map();
+                }
+            }
+            logger.warn('Falha ao carregar múltiplos status via proxy (retornando vazio)', 'taskTestStatusService', error);
+            return new Map();
+        }
+    }
+
+    if (hasSdk) {
         try {
             return await loadMultipleThroughSdk(taskKeys);
-        } catch (error) {
-            logger.warn('Erro ao carregar múltiplos status via SDK', 'taskTestStatusService', error);
+        } catch {
+            return new Map();
         }
     }
 
@@ -423,25 +508,44 @@ export const loadMultipleTaskTestStatus = async (taskKeys: string[]): Promise<Ma
  * Salva o status de teste de uma task no Supabase
  */
 export const saveTaskTestStatus = async (taskKey: string, status: TaskTestStatus): Promise<void> => {
-    // Usar apenas SDK direto (proxy não suporta task_test_status)
-    if (supabase) {
+    const hasProxy = Boolean(supabaseProxyUrl);
+    const hasSdk = Boolean(supabase);
+
+    // Preferir proxy quando configurado (evita 403 por RLS no browser)
+    if (hasProxy) {
+        try {
+            await saveThroughProxy(taskKey, status);
+            return;
+        } catch (error) {
+            // Em produção, não tentar SDK direto como fallback (tende a falhar com 403/RLS).
+            // Em dev, permitir fallback.
+            if (!isProduction() && hasSdk) {
+                try {
+                    await saveThroughSdk(taskKey, status);
+                    return;
+                } catch {
+                    // cair para "salvar apenas localmente"
+                }
+            }
+
+            logger.warn('Falha ao salvar status via proxy. Mantendo apenas localmente.', 'taskTestStatusService', error);
+            return;
+        }
+    }
+
+    // Fallback: SDK direto apenas quando não há proxy (tipicamente dev local)
+    if (hasSdk) {
         try {
             await saveThroughSdk(taskKey, status);
             return;
         } catch (error) {
-            if (isNetworkError(error)) {
-                logger.warn('Erro de rede ao salvar status via SDK. Salvando apenas localmente.', 'taskTestStatusService', error);
-            } else {
-                logger.warn('Erro ao salvar status via SDK', 'taskTestStatusService', error);
-            }
-            throw error;
+            // Evitar ruído: falha remota não deve quebrar o fluxo do usuário
+            logger.debug('Falha ao salvar status via SDK. Mantendo apenas localmente.', 'taskTestStatusService', error);
+            return;
         }
     }
 
-    // Se SDK não está disponível
-    if (!supabase) {
-        logger.debug('Supabase não configurado. Status salvo apenas localmente.', 'taskTestStatusService');
-    }
+    logger.debug('Supabase não configurado. Status salvo apenas localmente.', 'taskTestStatusService');
 };
 
 /**

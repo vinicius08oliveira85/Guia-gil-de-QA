@@ -11,7 +11,7 @@ export interface AIService {
         detailLevel?: TestCaseDetailLevel,
         taskType?: JiraTaskType,
         project?: Project | null
-    ): Promise<{ strategy: TestStrategy[]; testCases: TestCase[] }>;
+    ): Promise<{ strategy: TestStrategy[]; testCases: TestCase[]; bddScenarios: BddScenario[] }>;
 
     analyzeDocumentContent(content: string, project?: Project | null): Promise<string>;
 

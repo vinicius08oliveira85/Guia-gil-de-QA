@@ -23,7 +23,7 @@ export function useSDLCPhaseAnalysis(project: Project, onUpdateProject?: (projec
                 onUpdateProject(updatedProject);
             }
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+         
     }, [
         project.tasks.length,
         project.tasks.map(t => `${t.id}-${t.status}-${t.title}`).join(','),

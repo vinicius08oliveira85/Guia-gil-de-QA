@@ -2,26 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { ChevronDown, ChevronUp, Play, Check, X, Pause } from 'lucide-react';
 import { Card } from '../common/Card';
 import { Badge } from '../common/Badge';
-
-// Assumindo que seus tipos estão definidos em um arquivo como 'types.ts'
-// import { JiraTask } from '../../types';
-
-// Definição de tipos para o exemplo, caso não existam.
-// O ideal é que venham de um arquivo central de tipos.
-interface TestCase {
-  id: string;
-  status: 'Not Run' | 'Passed' | 'Failed' | 'Blocked';
-  description?: string;
-}
-
-interface JiraTask {
-  id: string;
-  title: string;
-  description: string;
-  type: 'Epic' | 'História' | 'Tarefa' | 'Bug';
-  status: 'To Do' | 'In Progress' | 'Done' | 'Blocked';
-  testCases: TestCase[];
-}
+import type { JiraTask } from '../../types';
 
 interface TaskCardProps {
   task: JiraTask;
@@ -35,6 +16,7 @@ interface TaskCardProps {
  */
 export const TaskCard: React.FC<TaskCardProps> = ({ task, onStartTest, onCompleteTest }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  type BadgeVariant = React.ComponentProps<typeof Badge>['variant'];
 
   // Calcula as métricas dos casos de teste
   const testMetrics = useMemo(() => {
@@ -47,7 +29,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onStartTest, onComplet
   }, [task.testCases]);
 
   // Determina o status geral do teste para a tarefa
-  const testStatus = useMemo(() => {
+  const testStatus = useMemo<{ label: string; variant: BadgeVariant; icon: React.ReactNode | null }>(() => {
     if (!testMetrics.total || testMetrics.total === 0) {
       return { label: 'Sem Testes', variant: 'neutral', icon: null };
     }
@@ -61,7 +43,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onStartTest, onComplet
   }, [testMetrics]);
 
   // Mapeia o status do Jira para um badge
-  const jiraStatusBadge = useMemo(() => {
+  const jiraStatusBadge = useMemo<{ label: string; variant: BadgeVariant }>(() => {
     switch (task.status) {
       case 'To Do': return { label: 'Pendente', variant: 'neutral' };
       case 'In Progress': return { label: 'Em Andamento', variant: 'info' };
@@ -71,7 +53,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onStartTest, onComplet
   }, [task.status]);
 
   // Mapeia o tipo de tarefa para um badge
-  const taskTypeBadge = useMemo(() => {
+  const taskTypeBadge = useMemo<{ label: string; variant: BadgeVariant }>(() => {
     switch (task.type) {
       case 'Bug': return { label: 'Bug', variant: 'error' };
       case 'História': return { label: 'História', variant: 'primary' };

@@ -5,10 +5,7 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { Project, JiraTask, TestCase, TestStrategy, BddScenario } from '../../types';
-import { syncJiraProject } from '../../services/jiraService';
-import { updateProject, getAllProjects } from '../../services/dbService';
-import { loadProjectsFromSupabase } from '../../services/supabaseService';
-import type { JiraConfig } from '../../types';
+import { updateProject, loadProjectsFromIndexedDB } from '../../services/dbService';
 
 // Mock do jiraService para testes
 vi.mock('../../services/jiraService', async () => {
@@ -21,7 +18,6 @@ vi.mock('../../services/jiraService', async () => {
 
 describe('Preservação de Dados após Sincronização Jira', () => {
   let testProject: Project;
-  let jiraConfig: JiraConfig;
 
   beforeEach(() => {
     testProject = {
@@ -31,13 +27,6 @@ describe('Preservação de Dados após Sincronização Jira', () => {
       tasks: [],
       documents: [],
       phases: []
-    };
-
-    jiraConfig = {
-      url: 'https://test-jira.atlassian.net',
-      email: 'test@example.com',
-      apiToken: 'test-token',
-      projectKey: 'TEST'
     };
   });
 
@@ -87,7 +76,7 @@ describe('Preservação de Dados após Sincronização Jira', () => {
       await updateProject(testProject);
 
       // Verificar preservação
-      const { projects } = await loadProjectsFromSupabase();
+      const projects = await loadProjectsFromIndexedDB();
       const savedProject = projects.find(p => p.id === testProject.id);
 
       expect(savedProject).toBeDefined();
@@ -151,7 +140,7 @@ describe('Preservação de Dados após Sincronização Jira', () => {
       await updateProject(testProject);
 
       // Verificar que todos os status foram preservados
-      const { projects } = await loadProjectsFromSupabase();
+      const projects = await loadProjectsFromIndexedDB();
       const savedProject = projects.find(p => p.id === testProject.id);
 
       expect(savedProject?.tasks[0].testCases).toHaveLength(3);
@@ -176,7 +165,8 @@ describe('Preservação de Dados após Sincronização Jira', () => {
         description: 'Descrição',
         type: 'Tarefa',
         status: 'To Do',
-        testStrategy: [strategy]
+        testStrategy: [strategy],
+        testCases: []
       };
 
       testProject.tasks = [task];
@@ -198,7 +188,7 @@ describe('Preservação de Dados após Sincronização Jira', () => {
       await updateProject(testProject);
 
       // Verificar preservação
-      const { projects } = await loadProjectsFromSupabase();
+      const projects = await loadProjectsFromIndexedDB();
       const savedProject = projects.find(p => p.id === testProject.id);
 
       expect(savedProject?.tasks[0].testStrategy).toHaveLength(1);
@@ -222,7 +212,8 @@ describe('Preservação de Dados após Sincronização Jira', () => {
         description: 'Descrição',
         type: 'Tarefa',
         status: 'To Do',
-        bddScenarios: [scenario]
+        bddScenarios: [scenario],
+        testCases: []
       };
 
       testProject.tasks = [task];
@@ -244,7 +235,7 @@ describe('Preservação de Dados após Sincronização Jira', () => {
       await updateProject(testProject);
 
       // Verificar preservação
-      const { projects } = await loadProjectsFromSupabase();
+      const projects = await loadProjectsFromIndexedDB();
       const savedProject = projects.find(p => p.id === testProject.id);
 
       expect(savedProject?.tasks[0].bddScenarios).toHaveLength(1);
@@ -314,7 +305,7 @@ describe('Preservação de Dados após Sincronização Jira', () => {
       await updateProject(testProject);
 
       // Verificar preservação completa
-      const { projects } = await loadProjectsFromSupabase();
+      const projects = await loadProjectsFromIndexedDB();
       const savedProject = projects.find(p => p.id === testProject.id);
 
       // Campos atualizados do Jira
@@ -368,7 +359,8 @@ describe('Preservação de Dados após Sincronização Jira', () => {
             howToExecute: ['Executar'],
             tools: 'Ferramenta'
           }
-        ]
+        ],
+        testCases: []
       };
 
       testProject.tasks = [task1, task2];
@@ -393,7 +385,7 @@ describe('Preservação de Dados após Sincronização Jira', () => {
       await updateProject(testProject);
 
       // Verificar preservação de ambas
-      const { projects } = await loadProjectsFromSupabase();
+      const projects = await loadProjectsFromIndexedDB();
       const savedProject = projects.find(p => p.id === testProject.id);
 
       expect(savedProject?.tasks).toHaveLength(2);

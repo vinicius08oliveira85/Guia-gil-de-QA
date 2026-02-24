@@ -130,15 +130,16 @@ export const protectionMiddleware = <T extends object>(
               projectId,
               'DESTRUCTIVE_OPERATION',
               () => options.getProjectFromState?.(get())
-            ).catch(error => {
+            ).catch((error: unknown) => {
               logger.warn('Erro ao criar backup automático no middleware', 'protectionMiddleware', error);
             });
 
             // Validar integridade do projeto após operação
             const newProject = options.getProjectFromState(newState);
             if (newProject) {
-              validateProjectIntegrity(newProject).then(checkResult => {
-                if (!checkResult.isValid && checkResult.issues.some(i => i.severity === 'critical')) {
+              try {
+                const checkResult = validateProjectIntegrity(newProject);
+                if (!checkResult.isValid && checkResult.issues.some(issue => issue.severity === 'critical')) {
                   logger.error(
                     `Problemas críticos de integridade detectados após operação destrutiva no projeto ${projectId}`,
                     'protectionMiddleware',
@@ -158,13 +159,13 @@ export const protectionMiddleware = <T extends object>(
                         'protectionMiddleware'
                       );
                     }
-                  }).catch(error => {
+                  }).catch((error: unknown) => {
                     logger.error('Erro ao tentar corrigir integridade', 'protectionMiddleware', error);
                   });
                 }
-              }).catch(error => {
+              } catch (error: unknown) {
                 logger.warn('Erro ao validar integridade no middleware', 'protectionMiddleware', error);
-              });
+              }
             }
           }
         }

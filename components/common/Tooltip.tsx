@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 interface TooltipProps {
   content: React.ReactNode;
-  children: React.ReactElement;
+  children: React.ReactNode;
   position?: 'top' | 'bottom' | 'left' | 'right';
   delay?: number;
   disabled?: boolean;
@@ -20,9 +20,9 @@ export const Tooltip: React.FC<TooltipProps> = ({
 }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
-  const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
-  const triggerRef = useRef<HTMLElement>(null);
+  const triggerRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
     return () => {
@@ -148,15 +148,18 @@ export const Tooltip: React.FC<TooltipProps> = ({
 
   return (
     <>
-      {React.cloneElement(children, {
-        ref: triggerRef,
-        onMouseEnter: handleMouseEnter,
-        onMouseLeave: handleMouseLeave,
-        onFocus: handleFocus,
-        onBlur: handleBlur,
-        'aria-label': ariaLabel || (typeof content === 'string' ? content : undefined),
-        tabIndex: disabled ? undefined : 0
-      })}
+      <span
+        ref={triggerRef}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
+        aria-label={ariaLabel || (typeof content === 'string' ? content : undefined)}
+        tabIndex={disabled ? undefined : 0}
+        className="inline-flex"
+      >
+        {children}
+      </span>
       <AnimatePresence>
         {isVisible && (
           <motion.div

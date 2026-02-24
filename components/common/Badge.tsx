@@ -9,7 +9,7 @@ interface BadgeProps {
   /** Conteúdo do badge */
   children: React.ReactNode;
   /** Variante visual do badge */
-  variant?: 'default' | 'success' | 'warning' | 'error' | 'info';
+  variant?: 'default' | 'neutral' | 'primary' | 'secondary' | 'accent' | 'success' | 'warning' | 'error' | 'info';
   /** Tamanho do badge */
   size?: 'xs' | 'sm' | 'md' | 'lg';
   /** Aparência: default (DaisyUI) ou pill (arredondada, cores sólidas estilo v0) */
@@ -43,11 +43,15 @@ export const Badge = React.memo<BadgeProps>(({
 }) => {
   // Pill (v0): fundo sólido + texto em contraste, apenas Tailwind
   const pillVariantClasses = {
+    neutral: 'bg-neutral text-neutral-content',
+    primary: 'bg-primary text-primary-content',
+    secondary: 'bg-secondary text-secondary-content',
+    accent: 'bg-accent text-accent-content',
     error: 'bg-red-600 text-white',
     warning: 'bg-amber-500 text-white',
     info: 'bg-blue-600 text-white',
     success: 'bg-green-600 text-white',
-    default: 'bg-gray-200 text-gray-800 border border-gray-300'
+    default: 'bg-base-200 text-base-content border border-base-300'
   };
   const pillSizeClasses = {
     xs: 'px-2 py-0.5 text-[10px]',
@@ -59,6 +63,10 @@ export const Badge = React.memo<BadgeProps>(({
   // Classes base para variantes (mantém compatibilidade com DaisyUI)
   const variantClasses = {
     default: 'badge-outline',
+    neutral: 'badge-neutral',
+    primary: 'badge-primary',
+    secondary: 'badge-secondary',
+    accent: 'badge-accent',
     success: 'badge-success',
     warning: 'badge-warning',
     error: 'badge-error',
@@ -76,6 +84,10 @@ export const Badge = React.memo<BadgeProps>(({
   // Estilos customizados para badges dismissible seguindo padrão Radix UI
   const dismissibleVariantStyles = {
     default: 'bg-gray-50 border border-gray-300 text-gray-700',
+    neutral: 'bg-base-200 border border-base-300 text-base-content',
+    primary: 'bg-primary/10 border border-primary text-primary',
+    secondary: 'bg-secondary/10 border border-secondary text-secondary',
+    accent: 'bg-accent/10 border border-accent text-accent',
     success: 'bg-green-50 border border-green-500 text-green-700',
     warning: 'bg-yellow-50 border border-yellow-500 text-yellow-700',
     error: 'bg-pink-50 border border-red-500 text-red-700',
@@ -85,6 +97,10 @@ export const Badge = React.memo<BadgeProps>(({
   // Dismissible + pill: cores sólidas do pill
   const dismissiblePillStyles = {
     default: 'bg-gray-200 text-gray-800 border border-gray-300',
+    neutral: 'bg-neutral text-neutral-content',
+    primary: 'bg-primary text-primary-content',
+    secondary: 'bg-secondary text-secondary-content',
+    accent: 'bg-accent text-accent-content',
     success: 'bg-green-600 text-white',
     warning: 'bg-amber-500 text-white',
     error: 'bg-red-600 text-white',

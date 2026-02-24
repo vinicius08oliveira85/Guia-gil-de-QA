@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { jiraMediaService, JiraMediaService, MediaType } from '../../services/jiraMediaService';
+import { jiraMediaService, JiraMediaService } from '../../services/jiraMediaService';
 
 // Mock do getJiraConfig
 vi.mock('../../services/jiraService', () => ({
@@ -85,7 +85,7 @@ describe('JiraMediaService', () => {
 
     describe('resolveMediaUrl', () => {
         it('deve resolver URL quando config do Jira está disponível', () => {
-            (getJiraConfig as unknown as vi.Mock).mockReturnValue({
+            vi.mocked(getJiraConfig).mockReturnValue({
                 url: 'https://jira.example.com',
             });
 
@@ -99,7 +99,7 @@ describe('JiraMediaService', () => {
         });
 
         it('deve codificar nome do arquivo corretamente', () => {
-            (getJiraConfig as unknown as vi.Mock).mockReturnValue({
+            vi.mocked(getJiraConfig).mockReturnValue({
                 url: 'https://jira.example.com',
             });
 
@@ -108,14 +108,14 @@ describe('JiraMediaService', () => {
         });
 
         it('deve retornar string vazia quando config não está disponível', () => {
-            (getJiraConfig as unknown as vi.Mock).mockReturnValue(null);
+            vi.mocked(getJiraConfig).mockReturnValue(null);
 
             const url = jiraMediaService.resolveMediaUrl('123', 'file.pdf');
             expect(url).toBe('');
         });
 
         it('deve remover barra final da URL do Jira', () => {
-            (getJiraConfig as unknown as vi.Mock).mockReturnValue({
+            vi.mocked(getJiraConfig).mockReturnValue({
                 url: 'https://jira.example.com/',
             });
 
@@ -127,7 +127,7 @@ describe('JiraMediaService', () => {
 
     describe('getMediaInfo', () => {
         beforeEach(() => {
-            (getJiraConfig as unknown as vi.Mock).mockReturnValue({
+            vi.mocked(getJiraConfig).mockReturnValue({
                 url: 'https://jira.example.com',
             });
         });
@@ -176,7 +176,7 @@ describe('JiraMediaService', () => {
 
     describe('isJiraUrl', () => {
         it('deve identificar URLs do Jira por origin', () => {
-            (getJiraConfig as unknown as vi.Mock).mockReturnValue({
+            vi.mocked(getJiraConfig).mockReturnValue({
                 url: 'https://jira.example.com',
             });
 
@@ -189,7 +189,7 @@ describe('JiraMediaService', () => {
         });
 
         it('deve retornar false para URLs externas', () => {
-            (getJiraConfig as unknown as vi.Mock).mockReturnValue({
+            vi.mocked(getJiraConfig).mockReturnValue({
                 url: 'https://jira.example.com',
             });
 
@@ -197,7 +197,7 @@ describe('JiraMediaService', () => {
         });
 
         it('deve retornar false quando config não está disponível', () => {
-            (getJiraConfig as unknown as vi.Mock).mockReturnValue(null);
+            vi.mocked(getJiraConfig).mockReturnValue(null);
 
             expect(jiraMediaService.isJiraUrl('https://jira.example.com/file.pdf')).toBe(false);
         });

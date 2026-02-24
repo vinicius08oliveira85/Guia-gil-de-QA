@@ -64,6 +64,12 @@ export const TaskStatusCard: React.FC<TaskStatusCardProps> = ({
         ? jiraStatusMetrics!.categoryDistribution
         : taskStatus?.distribution || [];
 
+    const isCategoryDistributionItem = (
+        item: { status: string; count: number; percentage: number } | { category: JiraStatusCategory; count: number; percentage: number }
+    ): item is { category: JiraStatusCategory; count: number; percentage: number } => {
+        return 'category' in item;
+    };
+
     return (
         <Card className="p-5 space-y-4 border border-base-300 hover:border-primary/30 hover:shadow-md transition-all duration-200">
             <div className="flex items-center justify-between">
@@ -90,16 +96,15 @@ export const TaskStatusCard: React.FC<TaskStatusCardProps> = ({
             {/* Distribuição por Status */}
             <div className="space-y-3">
                 {distribution.map((item) => {
-                    const config = useJira
-                        ? categoryConfig[item.category as JiraStatusCategory] || categoryConfig['Outros']
+                    const isCategory = isCategoryDistributionItem(item);
+                    const config = isCategory
+                        ? categoryConfig[item.category] || categoryConfig['Outros']
                         : statusConfig[item.status] || statusConfig['To Do'];
                     
-                    const label = useJira
-                        ? item.category
-                        : config.label;
+                    const label = isCategory ? item.category : config.label;
                     
                     return (
-                        <div key={useJira ? item.category : item.status} className="space-y-1">
+                        <div key={isCategory ? item.category : item.status} className="space-y-1">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
                                     <span className="text-lg">{config.icon}</span>

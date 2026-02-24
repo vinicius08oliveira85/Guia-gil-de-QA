@@ -115,19 +115,25 @@ function calculatePhaseProgress(project: Project, currentPhase: PhaseName): numb
   switch (currentPhase) {
     case 'Request':
       // Progresso baseado em documentos ou tarefas criados
+    {
       const hasContent = project.documents.length > 0 || project.tasks.length > 0;
       return hasContent ? 100 : 0;
+    }
       
     case 'Analysis':
       // Progresso baseado em cenários BDD
+    {
       const tasksWithBdd = project.tasks.filter(t => t.bddScenarios && t.bddScenarios.length > 0).length;
       return totalTasks > 0 ? Math.round((tasksWithBdd / totalTasks) * 100) : 0;
+    }
       
     case 'Design':
       // Progresso baseado em casos de teste criados
+    {
       const totalTestCases = metrics.totalTestCases;
       const expectedTestCases = totalTestCases > 0 ? totalTestCases : 1;
       return Math.min(100, Math.round((totalTestCases / expectedTestCases) * 100));
+    }
       
     case 'Analysis and Code':
       // Progresso baseado em tarefas concluídas
@@ -145,12 +151,14 @@ function calculatePhaseProgress(project: Project, currentPhase: PhaseName): numb
         
     case 'Release':
       // Progresso baseado em testes executados e bugs resolvidos
+    {
       const testProgress = metrics.totalTestCases > 0 
         ? (metrics.executedTestCases / metrics.totalTestCases) * 50 
         : 0;
       const bugProgress = metrics.openVsClosedBugs.open === 0 ? 50 : 
         Math.max(0, 50 - (metrics.openVsClosedBugs.open * 10));
       return Math.min(100, Math.round(testProgress + bugProgress));
+    }
       
     case 'Deploy':
       // Similar a Release

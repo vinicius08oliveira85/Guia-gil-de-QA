@@ -10,6 +10,7 @@ interface ModalProps {
     children: React.ReactNode;
     footer?: React.ReactNode;
     size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl' | '6xl' | '7xl' | 'full';
+    maxHeight?: string;
 }
 
 export const Modal: React.FC<ModalProps> = ({ 
@@ -18,7 +19,8 @@ export const Modal: React.FC<ModalProps> = ({
     title, 
     children, 
     size = 'md',
-    footer
+    footer,
+    maxHeight,
 }) => {
     // ESC handler
     useEffect(() => {
@@ -69,6 +71,7 @@ export const Modal: React.FC<ModalProps> = ({
                 id="modal-content"
                 className={`bg-base-100 shadow-2xl border border-base-300 relative w-full flex flex-col overflow-hidden ${size === 'full' ? 'rounded-none max-h-full' : 'rounded-2xl max-h-[90vh]'} ${sizeClasses[size]} duration-300 ease-out animate-in fade-in zoom-in-95 slide-in-from-bottom-8`}
                 onClick={(e) => e.stopPropagation()}
+                style={maxHeight && size !== 'full' ? { maxHeight } : undefined}
                 tabIndex={-1}
             >
                 <button 

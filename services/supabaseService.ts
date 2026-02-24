@@ -311,7 +311,7 @@ const saveThroughProxy = async (project: Project, retryCount: number = 0): Promi
     
     // Se o payload for maior que 1MB, tentar comprimir
     let body: unknown;
-    let headers: Record<string, string> = {
+    const headers: Record<string, string> = {
         'Content-Type': 'application/json'
     };
     

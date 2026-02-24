@@ -1,4 +1,4 @@
-import { expect, test } from '@storybook/test';
+import { expect } from '@storybook/test';
 import { checkA11y, injectAxe } from 'axe-playwright';
 
 /**
