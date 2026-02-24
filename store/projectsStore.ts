@@ -53,102 +53,99 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
   loadProjects: async () => {
     set({ isLoading: true, error: null, supabaseLoadFailed: false, supabaseLoadError: null });
     try {
-      let supabaseProjects: Project[] = [];
-      let supabaseLoadFailed = false;
-      let supabaseLoadError: string | null = null;
+      // Fase 1 (rápida): carregar só do IndexedDB para a UI abrir logo
       let indexedDBProjects: Project[] = [];
-
-      // Fase 1: Tentar carregar do Supabase primeiro (se disponível)
-      if (isSupabaseAvailable()) {
-        logger.debug('Carregando projetos do Supabase primeiro...', 'ProjectsStore');
-        const result = await loadProjectsFromSupabase();
-        supabaseProjects = result.projects;
-        supabaseLoadFailed = result.loadFailed;
-        supabaseLoadError = result.errorMessage ?? null;
-        if (supabaseProjects.length > 0) {
-          logger.info(`Projetos carregados do Supabase: ${supabaseProjects.length}`, 'ProjectsStore');
-        } else {
-          logger.debug('Nenhum projeto encontrado no Supabase', 'ProjectsStore');
-        }
-      }
-      
-      // Fase 2: Carregar do IndexedDB (para merge ou fallback)
       try {
         logger.debug('Carregando projetos do IndexedDB...', 'ProjectsStore');
         indexedDBProjects = await loadProjectsFromIndexedDB();
         logger.info(`Projetos carregados do IndexedDB: ${indexedDBProjects.length}`, 'ProjectsStore');
       } catch (error) {
         logger.error('Erro ao carregar do IndexedDB', 'ProjectsStore', error);
-        // Se IndexedDB falhar e não temos Supabase, lançar erro
-        if (supabaseProjects.length === 0) {
-          throw error;
-        }
-        // Se temos Supabase, continuar apenas com Supabase
-        indexedDBProjects = [];
-      }
-      
-      // Fase 3: Fazer merge inteligente dos dados (preservando dados mais recentes)
-      let finalProjects: Project[];
-      
-      if (supabaseProjects.length > 0 && indexedDBProjects.length > 0) {
-        // Criar backup antes de fazer merge (proteção contra perda de dados)
-        try {
-          const projectsToBackup = indexedDBProjects.filter(p => 
-            supabaseProjects.some(sp => sp.id === p.id)
-          );
-          
-          if (projectsToBackup.length > 0) {
-            logger.debug(`Criando backups antes de merge para ${projectsToBackup.length} projetos`, 'ProjectsStore');
-            await Promise.all(
-              projectsToBackup.map(project =>
-                createBackup(project, 'MERGE', 'Backup automático antes de merge Supabase/IndexedDB')
-                  .catch(error => {
-                    logger.warn(`Erro ao criar backup antes de merge para ${project.id}`, 'ProjectsStore', error);
-                  })
-              )
-            );
-          }
-        } catch (error) {
-          logger.warn('Erro ao criar backups antes de merge (continuando)', 'ProjectsStore', error);
-        }
-        
-        // Migrar TestCases dos projetos do Supabase
-        const migratedSupabaseProjects = supabaseProjects.map(project => ({
-          ...project,
-          tasks: (project.tasks || []).map(task => ({
-            ...task,
-            testCases: migrateTestCases(task.testCases || [])
-          }))
-        }));
-        
-        // Fazer merge inteligente preservando dados mais recentes
-        finalProjects = mergeProjectsList(indexedDBProjects, migratedSupabaseProjects);
-        
-        // Limpar casos de teste de tipos não permitidos
-        finalProjects = cleanupTestCasesForProjects(finalProjects);
-        
-        logger.info(
-          `Projetos carregados com merge inteligente: ${finalProjects.length} (${supabaseProjects.length} do Supabase + ${indexedDBProjects.length} do cache local)`,
-          'ProjectsStore'
-        );
-      } else if (supabaseProjects.length > 0) {
-        // Apenas Supabase disponível
-        const migratedSupabaseProjects = supabaseProjects.map(project => ({
-          ...project,
-          tasks: (project.tasks || []).map(task => ({
-            ...task,
-            testCases: migrateTestCases(task.testCases || [])
-          }))
-        }));
-        finalProjects = cleanupTestCasesForProjects(migratedSupabaseProjects);
-        logger.info(`Projetos carregados do Supabase: ${finalProjects.length}`, 'ProjectsStore');
-      } else {
-        // Apenas IndexedDB disponível
-        finalProjects = indexedDBProjects;
-        logger.info(`Projetos carregados do IndexedDB: ${finalProjects.length}`, 'ProjectsStore');
+        set({
+          projects: [],
+          isLoading: false,
+          error: error instanceof Error ? error : new Error('Erro ao carregar projetos'),
+          supabaseLoadFailed: false,
+          supabaseLoadError: null,
+        });
+        return;
       }
 
-      set({ projects: finalProjects, isLoading: false, supabaseLoadFailed, supabaseLoadError });
+      set({
+        projects: indexedDBProjects,
+        isLoading: false,
+        error: null,
+        supabaseLoadFailed: false,
+        supabaseLoadError: null,
+      });
+
+      // Fase 2 (background): Supabase em background; ao terminar, merge e atualiza o store
+      if (!isSupabaseAvailable()) return;
+
+      loadProjectsFromSupabase()
+        .then(async (result) => {
+          const currentProjects = get().projects;
+          const supabaseProjects = result.projects;
+          let finalProjects: Project[];
+
+          if (supabaseProjects.length > 0 && currentProjects.length > 0) {
+            try {
+              const projectsToBackup = currentProjects.filter((p) =>
+                supabaseProjects.some((sp) => sp.id === p.id)
+              );
+              if (projectsToBackup.length > 0) {
+                await Promise.all(
+                  projectsToBackup.map((project) =>
+                    createBackup(project, 'MERGE', 'Backup automático antes de merge Supabase/IndexedDB').catch(
+                      (err) => logger.warn(`Erro ao criar backup antes de merge para ${project.id}`, 'ProjectsStore', err)
+                    )
+                  )
+                );
+              }
+            } catch {
+              logger.warn('Erro ao criar backups antes de merge (continuando)', 'ProjectsStore');
+            }
+            const migratedSupabaseProjects = supabaseProjects.map((project) => ({
+              ...project,
+              tasks: (project.tasks || []).map((task) => ({
+                ...task,
+                testCases: migrateTestCases(task.testCases || []),
+              })),
+            }));
+            finalProjects = cleanupTestCasesForProjects(
+              mergeProjectsList(currentProjects, migratedSupabaseProjects)
+            );
+            logger.info(
+              `Projetos atualizados com merge Supabase: ${finalProjects.length} (${supabaseProjects.length} do Supabase + ${currentProjects.length} do cache)`,
+              'ProjectsStore'
+            );
+          } else if (supabaseProjects.length > 0) {
+            const migratedSupabaseProjects = supabaseProjects.map((project) => ({
+              ...project,
+              tasks: (project.tasks || []).map((task) => ({
+                ...task,
+                testCases: migrateTestCases(task.testCases || []),
+              })),
+            }));
+            finalProjects = cleanupTestCasesForProjects(migratedSupabaseProjects);
+            logger.info(`Projetos atualizados do Supabase: ${finalProjects.length}`, 'ProjectsStore');
+          } else {
+            finalProjects = currentProjects;
+          }
+
+          set({
+            projects: finalProjects,
+            supabaseLoadFailed: result.loadFailed,
+            supabaseLoadError: result.errorMessage ?? null,
+          });
+        })
+        .catch((err) => {
+          logger.warn('Erro ao sincronizar Supabase em background', 'ProjectsStore', err);
+          set({
+            supabaseLoadFailed: true,
+            supabaseLoadError: err instanceof Error ? err.message : String(err),
+          });
+        });
     } catch (error) {
       const errorObj = error instanceof Error ? error : new Error('Erro ao carregar projetos');
       logger.error('Erro ao carregar projetos', 'ProjectsStore', errorObj);
