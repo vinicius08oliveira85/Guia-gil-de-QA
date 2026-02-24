@@ -81,9 +81,9 @@ export const DocumentsView: React.FC<{ project: Project; onUpdateProject: (proje
         if (searchQuery) {
             const query = searchQuery.toLowerCase();
             filtered = filtered.filter(doc => 
-                doc.name.toLowerCase().includes(query) ||
-                doc.content.toLowerCase().includes(query) ||
-                doc.tags?.some(tag => tag.toLowerCase().includes(query))
+                (doc.name || '').toLowerCase().includes(query) ||
+                (doc.content || '').toLowerCase().includes(query) ||
+                doc.tags?.some(tag => (tag || '').toLowerCase().includes(query))
             );
         }
 

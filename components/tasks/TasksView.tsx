@@ -254,8 +254,8 @@ export const TasksView: React.FC<{
             // 1. Busca Textual
             if (searchQuery) {
                 const query = searchQuery.toLowerCase();
-                const matchesId = task.id.toLowerCase().includes(query);
-                const matchesTitle = task.title.toLowerCase().includes(query);
+                const matchesId = (task.id || '').toLowerCase().includes(query);
+                const matchesTitle = (task.title || '').toLowerCase().includes(query);
                 if (!matchesId && !matchesTitle) return false;
             }
 

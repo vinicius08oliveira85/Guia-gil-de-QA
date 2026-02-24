@@ -215,7 +215,7 @@ const loadThroughSdk = async (taskKey: string): Promise<TaskTestStatus | null> =
             .from('task_test_status')
             .select('status')
             .eq('task_key', taskKey)
-            .single();
+            .maybeSingle();
         
         const timeoutPromise = createTimeoutPromise<{ data: null; error: { message: string } }>(
             requestTimeoutMs,

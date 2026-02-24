@@ -15,7 +15,7 @@ const buttonVariants = cva(
         ghost: "btn-ghost",
         link: "btn-link",
         brand:
-          "rounded-xl bg-brand-orange text-white shadow-md shadow-brand-orange/20 hover:bg-orange-600 focus-visible:outline-brand-orange/40",
+          "rounded-xl bg-brand-orange text-white shadow-md shadow-brand-orange/20 hover:bg-brand-orange-selected-hover focus-visible:outline-brand-orange/40",
         brandOutline:
           "rounded-xl border border-base-300 bg-base-100 text-base-content hover:bg-base-200 focus-visible:outline-base-content/20",
       },

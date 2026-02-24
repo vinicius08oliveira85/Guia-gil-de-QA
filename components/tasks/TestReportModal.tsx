@@ -131,7 +131,7 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({
                 flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-colors shadow-md
                 ${copied
                   ? 'bg-success text-success-content hover:opacity-90'
-                  : 'bg-brand-orange text-white hover:bg-orange-600 shadow-brand-orange/20'}
+                  : 'bg-brand-orange text-white hover:bg-brand-orange-selected-hover shadow-brand-orange/20'}
               `}
               aria-label={copied ? 'Copiado' : 'Copiar relatório'}
             >

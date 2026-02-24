@@ -109,7 +109,7 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
       filtered = filtered.filter(ft => {
         const description = (ft.testCase.description || '').toLowerCase();
         const taskTitle = (ft.task.title || '').toLowerCase();
-        const taskId = ft.task.id.toLowerCase();
+        const taskId = (ft.task.id || '').toLowerCase();
         const observedResult = (ft.testCase.observedResult || '').toLowerCase();
         
         return description.includes(query) ||

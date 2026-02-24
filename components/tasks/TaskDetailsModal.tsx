@@ -616,7 +616,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                         role="tab"
                         aria-selected={activeTestSubSection === 'strategy'}
                         onClick={() => setActiveTestSubSection('strategy')}
-                        className={`px-2 py-1 text-xs rounded-xl font-medium transition-colors sm:px-3 sm:py-1.5 sm:text-sm ${activeTestSubSection === 'strategy' ? 'bg-brand-orange text-white shadow-md shadow-brand-orange/20' : 'text-base-content/70 hover:text-base-content hover:bg-base-200'}`}
+                        className={`px-2 py-1 text-xs rounded-xl font-medium transition-colors sm:px-3 sm:py-1.5 sm:text-sm ${activeTestSubSection === 'strategy' ? 'bg-brand-orange-selected text-white shadow-md shadow-brand-orange-selected/20 hover:bg-brand-orange-selected-hover' : 'text-base-content/70 hover:text-base-content hover:bg-base-200'}`}
                     >
                         Estratégia
                     </button>
@@ -625,7 +625,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                         role="tab"
                         aria-selected={activeTestSubSection === 'test-cases'}
                         onClick={() => setActiveTestSubSection('test-cases')}
-                        className={`px-2 py-1 text-xs rounded-xl font-medium transition-colors flex items-center gap-1 sm:px-3 sm:py-1.5 sm:text-sm ${activeTestSubSection === 'test-cases' ? 'bg-brand-orange text-white shadow-md shadow-brand-orange/20' : 'text-base-content/70 hover:text-base-content hover:bg-base-200'}`}
+                        className={`px-2 py-1 text-xs rounded-xl font-medium transition-colors flex items-center gap-1 sm:px-3 sm:py-1.5 sm:text-sm ${activeTestSubSection === 'test-cases' ? 'bg-brand-orange-selected text-white shadow-md shadow-brand-orange-selected/20 hover:bg-brand-orange-selected-hover' : 'text-base-content/70 hover:text-base-content hover:bg-base-200'}`}
                     >
                         Casos de teste
                         {task.testCases?.length ? (
@@ -1006,7 +1006,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                                     role="tab"
                                     aria-selected={isActive}
                                     aria-controls={panelId}
-                                    className={`px-2 py-1 text-xs rounded-xl font-medium transition-colors sm:px-3 sm:py-1.5 sm:text-sm ${isActive ? 'bg-brand-orange text-white shadow-md shadow-brand-orange/20' : 'text-base-content/70 hover:text-base-content hover:bg-base-200'}`}
+                                    className={`px-2 py-1 text-xs rounded-xl font-medium transition-colors sm:px-3 sm:py-1.5 sm:text-sm ${isActive ? 'bg-brand-orange-selected text-white shadow-md shadow-brand-orange-selected/20 hover:bg-brand-orange-selected-hover' : 'text-base-content/70 hover:text-base-content hover:bg-base-200'}`}
                                     onClick={(e) => { e.stopPropagation(); setActiveSection(tab.id); }}
                                 >
                                     <span>{tab.label}</span>
@@ -1019,32 +1019,6 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                             );
                         })}
                     </div>
-
-                    {(task.type === 'Tarefa' || task.type === 'Bug') && onGenerateAll && (
-                        <div className="flex justify-end">
-                            <Button
-                                type="button"
-                                variant="brand"
-                                size="panel"
-                                onClick={() => onGenerateAll(task.id)}
-                                disabled={isGeneratingAll || isGenerating || isGeneratingBdd}
-                            >
-                                {isGeneratingAll ? (
-                                    <>
-                                        <Spinner small />
-                                        Gerando...
-                                    </>
-                                ) : (
-                                    <>
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                                        </svg>
-                                        Gerar Tudo
-                                    </>
-                                )}
-                            </Button>
-                        </div>
-                    )}
 
                     <div
                         id={`task-${safeDomId}-panel-${activeSection}`}

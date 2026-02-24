@@ -22,14 +22,14 @@ export const useSearch = (projects: Project[]) => {
     projects.forEach(project => {
       // Buscar no nome e descrição do projeto
       if (
-        project.name.toLowerCase().includes(query) ||
-        project.description.toLowerCase().includes(query)
+        (project.name || '').toLowerCase().includes(query) ||
+        (project.description || '').toLowerCase().includes(query)
       ) {
         results.push({
           type: 'project',
           id: project.id,
-          title: project.name,
-          description: project.description,
+          title: project.name || '',
+          description: project.description || '',
           projectId: project.id,
           projectName: project.name
         });
@@ -38,14 +38,14 @@ export const useSearch = (projects: Project[]) => {
       // Buscar em documentos
       project.documents.forEach(doc => {
         if (
-          doc.name.toLowerCase().includes(query) ||
-          doc.content.toLowerCase().includes(query)
+          (doc.name || '').toLowerCase().includes(query) ||
+          (doc.content || '').toLowerCase().includes(query)
         ) {
           results.push({
             type: 'document',
-            id: doc.name,
-            title: doc.name,
-            description: doc.content.substring(0, 100),
+            id: doc.name || '',
+            title: doc.name || '',
+            description: (doc.content || '').substring(0, 100),
             projectId: project.id,
             projectName: project.name
           });
@@ -55,15 +55,15 @@ export const useSearch = (projects: Project[]) => {
       // Buscar em tarefas
       project.tasks.forEach(task => {
         if (
-          task.id.toLowerCase().includes(query) ||
-          task.title.toLowerCase().includes(query) ||
-          task.description.toLowerCase().includes(query)
+          (task.id || '').toLowerCase().includes(query) ||
+          (task.title || '').toLowerCase().includes(query) ||
+          (task.description || '').toLowerCase().includes(query)
         ) {
           results.push({
             type: 'task',
-            id: task.id,
-            title: task.title,
-            description: task.description.substring(0, 100),
+            id: task.id || '',
+            title: task.title || '',
+            description: (task.description || '').substring(0, 100),
             projectId: project.id,
             projectName: project.name
           });
@@ -79,7 +79,7 @@ export const useSearch = (projects: Project[]) => {
               type: 'testcase',
               id: tc.id,
               title: tc.description || '',
-              description: `Tarefa: ${task.title}`,
+              description: `Tarefa: ${task.title || ''}`,
               projectId: project.id,
               projectName: project.name
             });

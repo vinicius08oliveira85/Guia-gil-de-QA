@@ -79,7 +79,9 @@ export default {
         ...(designTokens.colors || {}),
         // Cores da marca (Documentos / referencial)
         'brand-purple': '#6366f1',
-        'brand-orange': '#f97316',
+        'brand-orange': 'rgb(251 76 0)',
+        'brand-orange-selected': 'rgb(251 76 0)',
+        'brand-orange-selected-hover': 'rgb(224 69 0)',
         'brand-blue': '#0ea5e9',
         // Aliases utilitários (não conflitam com DaisyUI)
         // Obs: DaisyUI expõe tokens via CSS vars (ex.: --b1/--b2/--b3/--bc/--er)

@@ -33,19 +33,19 @@ export const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
     const operators = {
       'status:': (result: any) => {
         const status = query.split('status:')[1]?.split(' ')[0];
-        return result.type === 'task' && result.status?.toLowerCase().includes(status);
+        return result.type === 'task' && (result.status ?? '').toLowerCase().includes((status ?? '').toLowerCase());
       },
       'type:': (result: any) => {
         const type = query.split('type:')[1]?.split(' ')[0];
-        return result.type === type.toLowerCase();
+        return (result.type ?? '').toLowerCase() === (type ?? '').toLowerCase();
       },
       'tag:': (result: any) => {
         const tag = query.split('tag:')[1]?.split(' ')[0];
-        return result.tags?.some((t: string) => t.toLowerCase().includes(tag));
+        return result.tags?.some((t: string) => (t ?? '').toLowerCase().includes((tag ?? '').toLowerCase()));
       },
       'project:': (result: any) => {
         const projectName = query.split('project:')[1]?.split(' ')[0];
-        return result.projectName?.toLowerCase().includes(projectName);
+        return (result.projectName ?? '').toLowerCase().includes((projectName ?? '').toLowerCase());
       }
     };
     

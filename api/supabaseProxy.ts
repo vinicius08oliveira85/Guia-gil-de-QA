@@ -88,7 +88,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             .from('task_test_status')
             .select('*')
             .eq('task_key', taskKey)
-            .single();
+            .maybeSingle();
 
           if (error && error.code !== 'PGRST116') {
             throw new Error(error.message);

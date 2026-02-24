@@ -11,7 +11,7 @@ interface BadgeProps {
   /** Variante visual do badge */
   variant?: 'default' | 'success' | 'warning' | 'error' | 'info';
   /** Tamanho do badge */
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'xs' | 'sm' | 'md' | 'lg';
   /** Aparência: default (DaisyUI) ou pill (arredondada, cores sólidas estilo v0) */
   appearance?: 'default' | 'pill';
   /** Classes CSS adicionais */
@@ -50,6 +50,7 @@ export const Badge = React.memo<BadgeProps>(({
     default: 'bg-gray-200 text-gray-800 border border-gray-300'
   };
   const pillSizeClasses = {
+    xs: 'px-2 py-0.5 text-[10px]',
     sm: 'px-2.5 py-0.5 text-xs',
     md: 'px-3 py-1 text-xs',
     lg: 'px-3 py-1.5 text-sm'
@@ -66,6 +67,7 @@ export const Badge = React.memo<BadgeProps>(({
 
   // Classes de tamanho
   const sizeClasses = {
+    xs: 'badge-xs',
     sm: 'badge-sm',
     md: 'badge-md',
     lg: 'badge-lg'
@@ -91,6 +93,7 @@ export const Badge = React.memo<BadgeProps>(({
 
   // Tamanhos do ícone de fechar
   const iconSizes = {
+    xs: 'h-2.5 w-2.5',
     sm: 'h-3 w-3',
     md: 'h-3.5 w-3.5',
     lg: 'h-4 w-4'
@@ -98,12 +101,14 @@ export const Badge = React.memo<BadgeProps>(({
 
   // Tamanhos do círculo do ícone (mínimo 44x44px para acessibilidade WCAG)
   const circleSizes = {
+    xs: 'h-4 w-4 min-h-[16px] min-w-[16px]',
     sm: 'h-5 w-5 min-h-[20px] min-w-[20px]', // 20px mínimo, mas preferível maior
     md: 'h-6 w-6 min-h-[24px] min-w-[24px]',
     lg: 'h-7 w-7 min-h-[28px] min-w-[28px]'
   };
 
   const label = typeof children === 'string' ? children : undefined;
+  const displayContent = typeof children === 'string' ? (children.charAt(0).toUpperCase() + children.slice(1).toLowerCase()) : children;
 
   const handleDismiss = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -124,7 +129,7 @@ export const Badge = React.memo<BadgeProps>(({
     return (
       <span
         className={cn(
-          'inline-flex items-center gap-1.5 rounded-full font-bold uppercase tracking-wider whitespace-nowrap',
+          'inline-flex items-center gap-1.5 rounded-full font-bold tracking-wider whitespace-nowrap',
           'transition-colors hover:opacity-80',
           appearance === 'pill' ? cn(pillSizeClasses[size], dismissStyles) : cn('px-2.5 py-1 font-medium', dismissStyles, size === 'sm' && 'text-xs px-2 py-0.5', size === 'lg' && 'text-sm px-3 py-1.5'),
           className
@@ -149,7 +154,7 @@ export const Badge = React.memo<BadgeProps>(({
             <X className={cn(iconSizes[size], 'text-current')} aria-hidden="true" />
           </button>
         )}
-        <span className="truncate">{children}</span>
+        <span className="truncate">{displayContent}</span>
       </span>
     );
   }
@@ -159,7 +164,7 @@ export const Badge = React.memo<BadgeProps>(({
     return (
       <span
         className={cn(
-          'inline-flex items-center rounded-full font-bold uppercase tracking-wider whitespace-nowrap shrink-0',
+          'inline-flex items-center rounded-full font-bold tracking-wider whitespace-nowrap shrink-0',
           pillSizeClasses[size],
           pillVariantClasses[variant],
           className
@@ -167,7 +172,7 @@ export const Badge = React.memo<BadgeProps>(({
         aria-label={label}
         role="status"
       >
-        {children}
+        {displayContent}
       </span>
     );
   }
@@ -184,7 +189,7 @@ export const Badge = React.memo<BadgeProps>(({
       aria-label={label}
       role="status"
     >
-      {children}
+      {displayContent}
     </span>
   );
 });

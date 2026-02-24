@@ -203,6 +203,14 @@ if (hasUpdate) {
 3. Verifique estratégia de cache no `vite.config.ts`
 4. Teste em modo avião após primeiro carregamento
 
+### Avisos no console (esperados)
+
+- **"Banner not shown: beforeinstallpromptevent.preventDefault()"**  
+  O app usa um botão customizado de instalação (`InstallPWAButton`). O `prompt()` só é chamado quando o usuário clica em "Instalar App". Esse aviso é esperado e pode ser ignorado.
+
+- **"A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received"**  
+  Erro típico de **extensões do navegador** (Chrome: gerenciadores de senha, tradutores, etc.), não do app. Não requer alteração no código.
+
 ## Próximos Passos
 
 1. ✅ Gerar ícones PWA (veja seção acima)

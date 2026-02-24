@@ -51,7 +51,7 @@ export const ToolsSelector: React.FC<ToolsSelectorProps> = ({
       ) : null}
 
       {/* Ferramentas Sugeridas */}
-      <div className="flex flex-wrap gap-2">
+      <div className={`flex flex-wrap gap-2 ${compact ? 'gap-1.5' : ''}`}>
         {SUGGESTED_TOOLS.map(tool => {
           const isSelected = selectedTools.includes(tool);
           return (
@@ -60,9 +60,8 @@ export const ToolsSelector: React.FC<ToolsSelectorProps> = ({
               type="button"
               onClick={() => handleToolToggle(tool)}
               className={`
-                px-3 py-1.5 rounded-lg text-xs font-semibold border
-                transition-all
-                flex items-center gap-1.5
+                rounded-lg font-semibold border transition-all flex items-center gap-1.5
+                ${compact ? 'px-2 py-0.5 text-[10px] gap-1' : 'px-3 py-1.5 text-xs'}
                 ${
                   isSelected
                     ? 'bg-primary text-primary-content border-primary shadow-sm'
@@ -71,10 +70,10 @@ export const ToolsSelector: React.FC<ToolsSelectorProps> = ({
               `}
               title={toolDescriptions[tool]}
             >
-              {isSelected && <CheckIcon className="w-3 h-3" />}
+              {isSelected && <CheckIcon className={compact ? 'w-2.5 h-2.5' : 'w-3 h-3'} />}
               <span>{tool}</span>
               {toolDescriptions[tool] && (
-                <span className="text-[10px] opacity-75">
+                <span className={compact ? 'text-[9px] opacity-75' : 'text-[10px] opacity-75'}>
                   ({toolDescriptions[tool]})
                 </span>
               )}
@@ -87,15 +86,14 @@ export const ToolsSelector: React.FC<ToolsSelectorProps> = ({
       {customTools.length > 0 && (
         <div className="space-y-1">
           <p className="text-xs text-base-content/70">Ferramentas customizadas:</p>
-          <div className="flex flex-wrap gap-2">
+          <div className={`flex flex-wrap gap-2 ${compact ? 'gap-1.5' : ''}`}>
             {customTools.map(tool => (
               <div
                 key={tool}
                 className={`
-                  px-3 py-1.5 rounded-lg text-xs font-semibold
-                  bg-primary/10 text-primary border border-primary/20
-                  flex items-center gap-2
-                  transition-all
+                  rounded-lg font-semibold bg-primary/10 text-primary border border-primary/20
+                  flex items-center gap-2 transition-all
+                  ${compact ? 'px-2 py-0.5 text-[10px] gap-1' : 'px-3 py-1.5 text-xs'}
                 `}
               >
                 <span>{tool}</span>

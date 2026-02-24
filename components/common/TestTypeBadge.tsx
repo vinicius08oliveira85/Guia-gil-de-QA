@@ -29,7 +29,7 @@ interface TestTypeBadgeProps {
     /** Quando true, exibe estilo de destaque (selecionado) */
     selected?: boolean;
     /** Tamanho do badge */
-    size?: 'sm' | 'md' | 'lg';
+    size?: 'xs' | 'sm' | 'md' | 'lg';
     /** Classes CSS adicionais */
     className?: string;
     /** Label adicional (ex: contador) */
@@ -82,7 +82,38 @@ const testTypeIconMap: { [key: string]: React.ComponentType<{ className?: string
     'Análise de Requisitos': Circle,
     'Análise de Casos de Uso': Circle,
     'Teste de Design': Circle,
+    'Teste de Verificação de Correção': FileCheck,
 };
+
+/** Ícones por chave normalizada (sem acento) para nomes vindos sem acento */
+const testTypeIconMapNormalized: Record<string, React.ComponentType<{ className?: string }>> = (() => {
+    const out: Record<string, React.ComponentType<{ className?: string }>> = {};
+    for (const [name, icon] of Object.entries(testTypeIconMap)) {
+        out[normalizeForVariantLookup(name)] = icon;
+    }
+    return out;
+})();
+
+/** Remove sufixo entre parênteses (ex: "Teste Funcional (API)" -> "Teste Funcional") para lookup de variante e ícone */
+function getBaseTestTypeName(testType: string): string {
+    const withoutSuffix = testType.replace(/\s*\([^)]*\)\s*$/, '').trim();
+    return withoutSuffix || testType;
+}
+
+/** Primeira letra maiúscula e as restantes minúsculas (ortografia) */
+function capitalizeLabel(s: string): string {
+    if (!s.length) return s;
+    return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+}
+
+/** Normaliza para lookup sem acentos (ex: "Integração" e "Integracao" batem na mesma variante) */
+function normalizeForVariantLookup(s: string): string {
+    return s
+        .normalize('NFD')
+        .replace(/\p{Diacritic}/gu, '')
+        .toLowerCase()
+        .trim();
+}
 
 /** Variante pill por categoria (Referência completa / v0): error=vermelho, warning=laranja, info=azul, success=verde, default=cinza outline */
 type TestTypeVariant = 'error' | 'warning' | 'info' | 'success' | 'default';
@@ -127,19 +158,43 @@ const testTypeVariantMap: Record<string, TestTypeVariant> = {
     'Análise de Requisitos': 'default',
     'Análise de Casos de Uso': 'default',
     'Teste de Design': 'default',
+    'Teste de Verificação de Correção': 'info',
 };
 
+/** Chaves normalizadas (sem acento) para lookup por categoria/variante mesmo com texto vindo sem acento */
+const testTypeVariantMapNormalized: Record<string, TestTypeVariant> = (() => {
+    const out: Record<string, TestTypeVariant> = {};
+    for (const [name, variant] of Object.entries(testTypeVariantMap)) {
+        out[normalizeForVariantLookup(name)] = variant;
+    }
+    return out;
+})();
+
 function getTestTypeVariant(testType: string): TestTypeVariant {
-    return testTypeVariantMap[testType] ?? 'default';
+    const exact = testTypeVariantMap[testType];
+    if (exact) return exact;
+    const base = getBaseTestTypeName(testType);
+    if (testTypeVariantMap[base]) return testTypeVariantMap[base];
+    const normalized = normalizeForVariantLookup(base);
+    return testTypeVariantMapNormalized[normalized] ?? 'default';
 }
 
-/** Cores pill sólido (topo – pills selecionáveis): fundo sólido + texto branco */
+/** Cores pill sólido (topo – pills selecionáveis): fundo sólido + texto branco; default = outline cinza */
 const pillVariantClassesSolid: Record<TestTypeVariant, string> = {
     error: 'bg-red-600 text-white',
     warning: 'bg-amber-500 text-white',
     info: 'bg-blue-600 text-white',
     success: 'bg-green-600 text-white',
-    default: 'bg-gray-200 text-gray-800',
+    default: 'bg-gray-200 text-gray-800 border border-gray-300',
+};
+
+/** Sombra na cor do badge quando selecionado (substitui borda laranja) */
+const pillSelectedShadowClasses: Record<TestTypeVariant, string> = {
+    error: 'shadow-md shadow-red-600/50',
+    warning: 'shadow-md shadow-amber-500/50',
+    info: 'shadow-md shadow-blue-600/50',
+    success: 'shadow-md shadow-green-600/50',
+    default: 'shadow-md shadow-gray-400/50',
 };
 const pillIconClassesSolid: Record<TestTypeVariant, string> = {
     error: 'text-white',
@@ -165,15 +220,6 @@ const pillIconClassesPastel: Record<TestTypeVariant, string> = {
     default: 'text-gray-600 dark:text-gray-400',
 };
 
-/** Sombra na cor da variante quando selecionado (em vez de borda/ring) */
-const pillSelectedShadowClasses: Record<TestTypeVariant, string> = {
-    error: 'shadow-[0_0_14px_2px_rgba(220,38,38,0.4)]',
-    warning: 'shadow-[0_0_14px_2px_rgba(245,158,11,0.4)]',
-    info: 'shadow-[0_0_14px_2px_rgba(37,99,235,0.4)]',
-    success: 'shadow-[0_0_14px_2px_rgba(22,163,74,0.4)]',
-    default: 'shadow-[0_0_14px_2px_rgba(156,163,175,0.4)]',
-};
-
 /**
  * Componente Badge específico para tipos de teste
  * Estilo Referência completa (v0): pill por categoria, cores sólidas, ícone + texto uppercase bold
@@ -195,16 +241,23 @@ export const TestTypeBadge = React.memo<TestTypeBadgeProps>(({
     variantStyle = 'solid',
 }) => {
     const variant = getTestTypeVariant(testType);
-    const TestTypeIcon = testTypeIconMap[testType] || Circle;
+    const baseName = getBaseTestTypeName(testType);
+    const TestTypeIcon =
+        testTypeIconMap[testType]
+        || testTypeIconMap[baseName]
+        || testTypeIconMapNormalized[normalizeForVariantLookup(baseName)]
+        || Circle;
     const pillVariantClasses = variantStyle === 'pastel' ? pillVariantClassesPastel : pillVariantClassesSolid;
     const pillIconClasses = variantStyle === 'pastel' ? pillIconClassesPastel : pillIconClassesSolid;
 
     const sizeClasses = {
+        xs: 'text-[10px] px-2 py-0.5',
         sm: 'text-xs px-2.5 py-1',
         md: 'text-sm px-3 py-1.5',
         lg: 'text-base px-4 py-2',
     };
     const iconSizes = {
+        xs: 'h-2.5 w-2.5',
         sm: 'h-3 w-3',
         md: 'h-3.5 w-3.5',
         lg: 'h-4 w-4',
@@ -227,7 +280,7 @@ export const TestTypeBadge = React.memo<TestTypeBadgeProps>(({
     return (
         <span
             className={cn(
-                'inline-flex items-center gap-2 rounded-full font-bold uppercase tracking-wider transition-all',
+                'inline-flex items-center gap-2 rounded-full font-bold tracking-wider transition-all',
                 'hover:scale-105 hover:shadow-sm whitespace-nowrap shrink-0',
                 pillVariantClasses[variant],
                 sizeClasses[size],
@@ -238,7 +291,7 @@ export const TestTypeBadge = React.memo<TestTypeBadgeProps>(({
             role="status"
         >
             <TestTypeIcon className={cn(iconSizes[size], pillIconClasses[variant])} aria-hidden="true" />
-            <span className="truncate">{testType}</span>
+            <span className="truncate">{capitalizeLabel(testType)}</span>
             {label && (
                 <span className={cn('ml-1 font-semibold shrink-0', pillIconClasses[variant])}>
                     {label}

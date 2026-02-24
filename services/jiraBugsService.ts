@@ -18,7 +18,7 @@ export const fetchBugsFromJira = async (
     
     // Filtrar apenas bugs não resolvidos
     const bugs = allIssues.filter(issue => {
-      const isBug = issue.fields.issuetype.name.toLowerCase().includes('bug');
+      const isBug = issue.fields?.issuetype?.name?.toLowerCase()?.includes('bug') === true;
       const isUnresolved = !issue.fields.resolutiondate;
       return isBug && isUnresolved;
     });
