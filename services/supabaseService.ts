@@ -42,16 +42,30 @@ const requestTimeoutMs = 8000; // Timeout de 8 segundos (evita timeout em redes 
 // Leitura continua usando proxy para manter segurança
 if (supabaseUrl && supabaseAnonKey) {
     logger.info('Inicializando SDK Supabase direto para salvamento', 'supabaseService');
-    supabase = createClient(supabaseUrl, supabaseAnonKey);
-    void supabase.auth.signInAnonymously().then(result => {
-        if (result.error) {
-            logger.warn('Erro ao autenticar anonimamente no Supabase', 'supabaseService', result.error);
-            return;
+    supabase = createClient(supabaseUrl, supabaseAnonKey, {
+        auth: {
+            persistSession: false,
+            autoRefreshToken: false,
+            detectSessionInUrl: false,
         }
-        logger.info('Supabase configurado via SDK (salvamento direto habilitado)', 'supabaseService');
-    }).catch(error => {
-        logger.warn('Erro ao configurar autenticação Supabase', 'supabaseService', error);
     });
+
+    // Evitar ruído em produção: autenticação anônima é opcional (anon key já habilita role=anon).
+    // Em dev, tentamos autenticar para cenários de RLS que dependem de sessão.
+    if (!isProduction()) {
+        void Promise.race([
+            supabase.auth.signInAnonymously(),
+            new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Timeout ao autenticar anonimamente')), 3000))
+        ]).then(result => {
+            if (result.error) {
+                logger.debug('Erro ao autenticar anonimamente no Supabase', 'supabaseService', result.error);
+                return;
+            }
+            logger.info('Supabase configurado via SDK (salvamento direto habilitado)', 'supabaseService');
+        }).catch(error => {
+            logger.debug('Falha ao autenticar anonimamente no Supabase', 'supabaseService', error);
+        });
+    }
 } else if (!supabaseProxyUrl) {
     if (isProduction()) {
         logger.warn('Supabase não configurado. Configure VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY para salvamento direto, ou VITE_SUPABASE_PROXY_URL para usar proxy. Usando apenas armazenamento local (IndexedDB).', 'supabaseService');
@@ -119,6 +133,7 @@ const isCorsError = (error: unknown): boolean => {
 const isNetworkError = (error: unknown): boolean => {
     if (error instanceof Error) {
         const message = error.message.toLowerCase();
+        const transientHttpStatus = /\b(500|502|503|504|522)\b/.test(message);
         return message.includes('timeout') ||
                message.includes('timed_out') ||
                message.includes('connection reset') ||
@@ -127,7 +142,10 @@ const isNetworkError = (error: unknown): boolean => {
                message.includes('err_name_not_resolved') ||
                message.includes('failed to fetch') ||
                message.includes('networkerror') ||
-               message.includes('network request failed');
+               message.includes('network request failed') ||
+               message.includes('service unavailable') ||
+               message.includes('gateway timeout') ||
+               transientHttpStatus;
     }
     if (error instanceof TypeError) {
         return error.message.includes('Failed to fetch') || 
@@ -471,10 +489,15 @@ export const saveProjectToSupabase = async (project: Project): Promise<void> => 
                     });
                     return;
                 } catch (error) {
-                    // Se for erro de rede, não tentar proxy (vai falhar também)
+                    // Erro de rede no browser pode ser CORS/522; o proxy pode continuar funcionando.
+                    // Só desistir aqui se não houver proxy configurado.
                     if (isNetworkError(error)) {
-                        logger.warn('Erro de rede ao salvar via SDK Supabase. Salvando apenas localmente.', 'supabaseService', error);
-                        throw error; // Não tentar proxy se for erro de rede
+                        if (!supabaseProxyUrl) {
+                            logger.warn('Erro de rede ao salvar via SDK Supabase. Salvando apenas localmente.', 'supabaseService', error);
+                            throw error;
+                        }
+                        logger.debug('Erro de rede ao salvar via SDK Supabase. Tentando proxy como fallback.', 'supabaseService', error);
+                        // Continuar para tentar proxy como fallback
                     }
                     if (isForbiddenError(error)) {
                         sdkAlreadyFailedWith403 = true;
@@ -591,13 +614,19 @@ export const loadProjectsFromSupabase = async (): Promise<LoadProjectsResult> =>
             return await attempt();
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : String(error);
+            const errorMessageLower = errorMessage.toLowerCase();
             const isSchemaCacheOrPaused =
-                errorMessage.includes('schema cache') ||
-                errorMessage.includes('paused') ||
-                errorMessage.includes('Retrying');
+                errorMessageLower.includes('schema cache') ||
+                errorMessageLower.includes('paused') ||
+                errorMessageLower.includes('retrying');
+            const isTimeout = errorMessageLower.includes('timeout');
+            const isTransientHttp =
+                /\b(500|502|503|504|522)\b/.test(errorMessageLower) ||
+                errorMessageLower.includes('service unavailable') ||
+                errorMessageLower.includes('gateway timeout');
             if (isCorsError(error)) {
                 logger.error('Erro CORS ao carregar do Supabase. Configure VITE_SUPABASE_PROXY_URL', 'supabaseService', error);
-            } else if (errorMessage.includes('Timeout')) {
+            } else if (isTimeout) {
                 logger.warn('Timeout ao carregar projetos do Supabase (proxy). Usando cache local', 'supabaseService', error);
             } else if (isSchemaCacheOrPaused) {
                 logger.warn(
@@ -605,12 +634,13 @@ export const loadProjectsFromSupabase = async (): Promise<LoadProjectsResult> =>
                     'supabaseService',
                     error
                 );
+            } else if (isTransientHttp) {
+                logger.warn('Supabase indisponível (503/504/5xx). Usando cache local', 'supabaseService', error);
             } else {
                 logger.warn('Erro ao carregar projetos via proxy Supabase', 'supabaseService', error);
             }
-            const isTimeout = errorMessage.includes('Timeout');
-            // Retry único após 2s em caso de 500/schema cache ou timeout (Supabase/rede pode estar lento)
-            if (isSchemaCacheOrPaused || errorMessage.includes('500') || isTimeout) {
+            // Retry único após 2s em caso de 5xx/schema cache/timeout (Supabase/rede pode estar lento)
+            if (isSchemaCacheOrPaused || isTransientHttp || isTimeout) {
                 try {
                     if (isTimeout) {
                         logger.debug('Retry em 2s após timeout ao carregar projetos do Supabase', 'supabaseService');
