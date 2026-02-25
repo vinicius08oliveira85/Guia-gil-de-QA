@@ -226,6 +226,7 @@ export const ProjectsDashboard: React.FC<{
 
 
     return (
+        <>
         <div className="min-h-[calc(100vh-4rem)] bg-gradient-to-b from-base-100 to-base-200/60">
             <div className="container mx-auto w-full max-w-7xl px-4 py-4 sm:py-6">
                 {/* Header */}
@@ -638,5 +639,6 @@ export const ProjectsDashboard: React.FC<{
                 }
             }}
         />
+        </>
     );
 };
