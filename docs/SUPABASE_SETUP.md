@@ -21,20 +21,24 @@ Para projetos com **mais de 10.000 issues**, recomenda-se usar Supabase para:
 
 ### 2. Configurar Variáveis de Ambiente
 
-No Vercel, adicione as seguintes variáveis de ambiente:
+No Vercel (ou no `.env` local), adicione as seguintes variáveis:
+
+**Importante:** No frontend (Vite), **apenas variáveis com prefixo `VITE_`** são expostas no navegador. Variáveis como `SUPABASE_URL` ou `SUPABASE_ANON_KEY` sem o prefixo ficam indefinidas no cliente.
 
 ```
-# Disponível apenas no backend (Functions)
+# Backend (apenas no servidor / Vercel Functions)
 SUPABASE_URL=https://xxxxx.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=sua-chave-service-role-aqui
 
-# Disponível no frontend
+# Frontend (com prefixo VITE_ para o navegador)
 VITE_SUPABASE_PROXY_URL=/api/supabaseProxy
 ```
 
-> 💡 Recomendado definir `VITE_SUPABASE_PROXY_URL=/api/supabaseProxy`. Em desenvolvimento
-> local, utilize `VITE_SUPABASE_PROXY_URL=http://localhost:3000/api/supabaseProxy`
-> ao executar `vercel dev`.
+Para **uso apenas do proxy** (recomendado em produção): configure `VITE_SUPABASE_PROXY_URL`. O backend usa `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY`.
+
+Para **SDK direto no cliente** (ex.: desenvolvimento local sem proxy): configure também `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY` (com prefixo `VITE_`).
+
+> 💡 Em desenvolvimento local com proxy: `VITE_SUPABASE_PROXY_URL=http://localhost:3000/api/supabaseProxy` ao executar `vercel dev`.
 
 ### 3. Criar Tabelas no Supabase
 

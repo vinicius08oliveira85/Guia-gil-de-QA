@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Database, CheckCircle2, AlertTriangle, Info } from 'lucide-react';
-import { isSupabaseAvailable } from '../../services/supabaseService';
+import { diagnoseSupabaseConfig, isSupabaseAvailable } from '../../services/supabaseService';
 import { StatusBadge } from './StatusBadge';
 import { Card } from '../common/Card';
 import { cn } from '../../utils/cn';
@@ -13,7 +13,8 @@ interface VariableStatus {
 }
 
 export const SupabaseSettingsTab: React.FC = () => {
-    const supabaseAvailable = isSupabaseAvailable();
+    const diagnosis = useMemo(() => diagnoseSupabaseConfig(), []);
+    const supabaseAvailable = diagnosis.isAvailable;
 
     const variablesStatus: VariableStatus[] = useMemo(() => {
         const supabaseProxyUrl = (import.meta.env.VITE_SUPABASE_PROXY_URL || '').trim();
@@ -98,7 +99,7 @@ export const SupabaseSettingsTab: React.FC = () => {
                         <>
                             <div>
                                 <p className="text-base-content/70 text-sm mb-4 leading-relaxed">
-                                    Supabase está configurado e funcionando. Seus projetos podem ser salvos na nuvem.
+                                    {diagnosis.details}
                                 </p>
                                 <div className="space-y-3 text-sm">
                                     <div className="flex items-center gap-2">
@@ -110,7 +111,8 @@ export const SupabaseSettingsTab: React.FC = () => {
                                     <div className="flex items-center gap-2">
                                         <Info className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0" />
                                         <p className="text-base-content/70">
-                                            <strong className="text-base-content">Modo:</strong> Via Proxy (recomendado)
+                                            <strong className="text-base-content">Modo:</strong>{' '}
+                                            {diagnosis.hasProxy && diagnosis.hasSDK ? 'Proxy e SDK' : diagnosis.hasProxy ? 'Proxy' : 'SDK'}
                                         </p>
                                     </div>
                                     <div className="flex items-center gap-2">
@@ -126,7 +128,7 @@ export const SupabaseSettingsTab: React.FC = () => {
                         <>
                             <div>
                                 <p className="text-base-content/70 text-sm mb-4 leading-relaxed">
-                                    Supabase não está configurado. Configure as variáveis abaixo para habilitar o armazenamento na nuvem.
+                                    {diagnosis.details} No navegador apenas variáveis com prefixo <code className="bg-base-300 px-1 rounded text-xs">VITE_</code> são expostas; use <code className="bg-base-300 px-1 rounded text-xs">VITE_SUPABASE_PROXY_URL</code> ou <code className="bg-base-300 px-1 rounded text-xs">VITE_SUPABASE_URL</code> + <code className="bg-base-300 px-1 rounded text-xs">VITE_SUPABASE_ANON_KEY</code>.
                                 </p>
                             </div>
 

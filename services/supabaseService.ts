@@ -70,9 +70,9 @@ if (supabaseUrl && supabaseAnonKey) {
     }
 } else if (!supabaseProxyUrl) {
     if (isProduction()) {
-        logger.warn('Supabase não configurado. Configure VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY para salvamento direto, ou VITE_SUPABASE_PROXY_URL para usar proxy. Usando apenas armazenamento local (IndexedDB).', 'supabaseService');
+        logger.warn('Supabase não configurado. No frontend use variáveis com prefixo VITE_: VITE_SUPABASE_PROXY_URL (recomendado) ou VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY. Usando apenas armazenamento local (IndexedDB).', 'supabaseService');
     } else {
-        logger.warn('Supabase não configurado. Usando apenas armazenamento local (IndexedDB).', 'supabaseService');
+        logger.warn('Supabase não configurado. Use VITE_SUPABASE_PROXY_URL ou VITE_SUPABASE_URL + VITE_SUPABASE_ANON_KEY no .env. Usando apenas armazenamento local (IndexedDB).', 'supabaseService');
     }
 }
 

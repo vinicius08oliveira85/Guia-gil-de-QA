@@ -36,6 +36,16 @@ describe('Testes de UX', () => {
     
     vi.mocked(dbService.loadProjectsFromIndexedDB)
       .mockImplementation(() => mocks.mockIndexedDB.loadProjects());
+    vi.mocked(dbService.addProject)
+      .mockImplementation(async (project: Project) => {
+        await mocks.mockIndexedDB.saveProject(project);
+        return { savedToSupabase: true };
+      });
+    vi.mocked(dbService.updateProject)
+      .mockImplementation(async (project: Project) => {
+        await mocks.mockIndexedDB.updateProject(project);
+        return { savedToSupabase: true };
+      });
   });
 
   describe('4.1 Estados de Loading', () => {

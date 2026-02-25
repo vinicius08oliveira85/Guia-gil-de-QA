@@ -5,19 +5,14 @@ import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, Table, TableRow, TableCell, WidthType } from 'docx';
 import { saveAs } from 'file-saver';
 
+/**
+ * Exporta o projeto completo para JSON (round-trip com importProjectFromJSON).
+ * Mantém formato { project: { ... } } para compatibilidade.
+ */
 export const exportProjectToJSON = (project: Project): string => {
   const exportData = {
-    project: {
-      id: project.id,
-      name: project.name,
-      description: project.description,
-      exportedAt: new Date().toISOString(),
-      documents: project.documents,
-      tasks: project.tasks,
-      phases: project.phases,
-      shiftLeftAnalysis: project.shiftLeftAnalysis,
-      testPyramidAnalysis: project.testPyramidAnalysis
-    }
+    project: { ...project },
+    exportedAt: new Date().toISOString(),
   };
   return JSON.stringify(exportData, null, 2);
 };

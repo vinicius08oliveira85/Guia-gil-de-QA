@@ -26,6 +26,15 @@ STORYBOOK_FIGMA_URL=
 # Chromatic Project Token (opcional - para visual testing)
 # Obtenha em: https://www.chromatic.com
 CHROMATIC_PROJECT_TOKEN=
+
+# Supabase (persistência na nuvem)
+# No frontend (Vite) apenas variáveis com prefixo VITE_ são expostas no navegador.
+# Para uso apenas do proxy (recomendado em produção):
+VITE_SUPABASE_PROXY_URL=/api/supabaseProxy
+
+# Para SDK direto no cliente (ex.: desenvolvimento local sem proxy):
+# VITE_SUPABASE_URL=https://xxxxx.supabase.co
+# VITE_SUPABASE_ANON_KEY=sua-anon-key-aqui
 ```
 
 ## ✅ Seu Token Já Está Configurado!

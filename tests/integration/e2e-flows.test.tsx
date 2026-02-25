@@ -39,9 +39,15 @@ describe('Testes de Integração End-to-End', () => {
     vi.mocked(dbService.loadProjectsFromIndexedDB)
       .mockImplementation(() => mocks.mockIndexedDB.loadProjects());
     vi.mocked(dbService.addProject)
-      .mockImplementation((project: Project) => mocks.mockIndexedDB.saveProject(project));
+      .mockImplementation(async (project: Project) => {
+        await mocks.mockIndexedDB.saveProject(project);
+        return { savedToSupabase: true };
+      });
     vi.mocked(dbService.updateProject)
-      .mockImplementation((project: Project) => mocks.mockIndexedDB.updateProject(project));
+      .mockImplementation(async (project: Project) => {
+        await mocks.mockIndexedDB.updateProject(project);
+        return { savedToSupabase: true };
+      });
   });
 
   describe('3.1 Fluxo Completo: Criar → Editar → Navegar → Persistir', () => {

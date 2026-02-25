@@ -43,6 +43,8 @@ const openDB = (): Promise<IDBDatabase> => {
 
 import { cleanupTestCasesForProjects, cleanupTestCasesForNonTaskTypesSync } from '../utils/testCaseCleanup';
 
+export type SaveResult = { savedToSupabase: boolean };
+
 /**
  * Carrega projetos apenas do IndexedDB (carregamento rápido inicial)
  * Usado para mostrar UI imediatamente enquanto Supabase carrega em background
@@ -129,24 +131,21 @@ export const getAllProjects = async (): Promise<Project[]> => {
   return indexedDBProjects;
 };
 
-export const addProject = async (project: Project): Promise<void> => {
-  // Limpar BDD e casos de teste de tipos não permitidos antes de salvar
-  // Usar versão síncrona para manter compatibilidade (backup já é feito em outro lugar se necessário)
+export const addProject = async (project: Project): Promise<SaveResult> => {
   const cleanedProject = cleanupTestCasesForNonTaskTypesSync(project);
-  
-  // Tentar Supabase primeiro se disponível
+
   if (isSupabaseAvailable()) {
     try {
       await saveProjectToSupabase(cleanedProject);
-      // Também salvar no IndexedDB como backup local
       const db = await openDB();
-      return new Promise((resolve, reject) => {
+      await new Promise<void>((resolve, reject) => {
         const transaction = db.transaction(STORE_NAME, 'readwrite');
         const store = transaction.objectStore(STORE_NAME);
         const request = store.add(cleanedProject);
         request.onerror = () => reject(request.error);
         request.onsuccess = () => resolve();
       });
+      return { savedToSupabase: true };
     } catch (error) {
       const msg = error instanceof Error ? error.message : String(error);
       const isLocalOnlyOrTooBig = msg.includes('salvo apenas localmente') || msg.includes('muito grande');
@@ -155,39 +154,29 @@ export const addProject = async (project: Project): Promise<void> => {
       } else {
         logger.warn('Erro ao salvar no Supabase, usando apenas IndexedDB', 'dbService', error);
       }
-      // Continuar para fallback IndexedDB
     }
   }
-  
-  // Fallback para IndexedDB
+
   const db = await openDB();
-  return new Promise((resolve, reject) => {
+  await new Promise<void>((resolve, reject) => {
     const transaction = db.transaction(STORE_NAME, 'readwrite');
     const store = transaction.objectStore(STORE_NAME);
     const request = store.add(cleanedProject);
-
     request.onerror = () => reject(request.error);
     request.onsuccess = () => resolve();
   });
+  return { savedToSupabase: false };
 };
 
 // Rastrear últimos erros de rede por projeto para evitar tentativas repetidas
 const recentNetworkErrors = new Map<string, number>();
 const networkErrorCooldownMs = 5000; // 5 segundos de cooldown após erro de rede (reduzido para ser mais responsivo)
 
-export const updateProject = async (project: Project): Promise<void> => {
-  // Limpar BDD e casos de teste de tipos não permitidos antes de salvar
-  // Usar versão síncrona para manter compatibilidade (backup já é feito em outro lugar se necessário)
+export const updateProject = async (project: Project): Promise<SaveResult> => {
   const cleanedProject = cleanupTestCasesForNonTaskTypesSync(project);
-  
-  // Log para rastrear estratégias de teste sendo salvas
-  const totalStrategies = cleanedProject.tasks.reduce((sum, task) => {
-    return sum + (task.testStrategy?.length || 0);
-  }, 0);
-  const totalExecutedStrategies = cleanedProject.tasks.reduce((sum, task) => {
-    return sum + (task.executedStrategies?.length || 0);
-  }, 0);
-  
+
+  const totalStrategies = cleanedProject.tasks.reduce((sum, task) => sum + (task.testStrategy?.length || 0), 0);
+  const totalExecutedStrategies = cleanedProject.tasks.reduce((sum, task) => sum + (task.executedStrategies?.length || 0), 0);
   if (totalStrategies > 0 || totalExecutedStrategies > 0) {
     logger.debug(
       `Salvando projeto com ${totalStrategies} estratégias de teste e ${totalExecutedStrategies} estratégias executadas`,
@@ -195,21 +184,14 @@ export const updateProject = async (project: Project): Promise<void> => {
       { projectId: cleanedProject.id, projectName: cleanedProject.name }
     );
   }
-  
-  // Verificar se houve erro de rede recente para este projeto
+
   const lastNetworkError = recentNetworkErrors.get(cleanedProject.id);
   const now = Date.now();
   const shouldSkipSupabase = lastNetworkError && (now - lastNetworkError) < networkErrorCooldownMs;
-  
-  // Sempre tentar Supabase se disponível (mesmo em cooldown, mas com retry mais espaçado)
-  // Isso garante que alterações importantes sejam salvas mesmo após erros de rede
+
   if (isSupabaseAvailable()) {
-    // Se estiver em cooldown, ainda tentar mas com menor prioridade (salvar local primeiro)
     if (shouldSkipSupabase) {
-      // Em cooldown - salvar local primeiro, depois tentar Supabase em background
       logger.debug(`Projeto "${cleanedProject.name}" em cooldown, salvando localmente primeiro e tentando Supabase em background`, 'dbService');
-      
-      // Salvar localmente primeiro
       const db = await openDB();
       await new Promise<void>((resolve, reject) => {
         const transaction = db.transaction(STORE_NAME, 'readwrite');
@@ -218,63 +200,41 @@ export const updateProject = async (project: Project): Promise<void> => {
         request.onerror = () => reject(request.error);
         request.onsuccess = () => resolve();
       });
-      
-      // Tentar Supabase em background (não bloquear)
       saveProjectToSupabase(cleanedProject).then(() => {
         recentNetworkErrors.delete(cleanedProject.id);
         logger.debug(`Projeto "${cleanedProject.name}" salvo no Supabase após cooldown`, 'dbService');
       }).catch((error) => {
-        // Se ainda falhar, manter cooldown
         const errorMessage = error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
-        const isNetworkErr = errorMessage.includes('timeout') || 
-                            errorMessage.includes('connection reset') ||
-                            errorMessage.includes('err_timed_out') ||
-                            errorMessage.includes('err_connection_reset') ||
-                            errorMessage.includes('err_name_not_resolved') ||
-                            errorMessage.includes('failed to fetch') ||
-                            errorMessage.includes('network');
+        const isNetworkErr = errorMessage.includes('timeout') || errorMessage.includes('connection reset') ||
+          errorMessage.includes('err_timed_out') || errorMessage.includes('err_connection_reset') ||
+          errorMessage.includes('err_name_not_resolved') || errorMessage.includes('failed to fetch') || errorMessage.includes('network');
         if (isNetworkErr) {
           recentNetworkErrors.set(cleanedProject.id, Date.now());
         }
       });
-      
-      return; // Retornar após salvar localmente
+      return { savedToSupabase: false };
     }
-    
-    // Não está em cooldown - tentar Supabase normalmente
+
     try {
       await saveProjectToSupabase(cleanedProject);
-      // Limpar erro de rede se salvamento foi bem-sucedido
       recentNetworkErrors.delete(cleanedProject.id);
-      // Log reduzido - apenas debug para evitar spam
-      logger.debug(
-        `Projeto "${cleanedProject.name}" salvo no Supabase`,
-        'dbService'
-      );
-      // Também salvar no IndexedDB como backup local
+      logger.debug(`Projeto "${cleanedProject.name}" salvo no Supabase`, 'dbService');
       const db = await openDB();
-      return new Promise((resolve, reject) => {
+      await new Promise<void>((resolve, reject) => {
         const transaction = db.transaction(STORE_NAME, 'readwrite');
         const store = transaction.objectStore(STORE_NAME);
         const request = store.put(cleanedProject);
         request.onerror = () => reject(request.error);
         request.onsuccess = () => resolve();
       });
+      return { savedToSupabase: true };
     } catch (error) {
-      // Verificar se é erro de rede
       const errorMessage = error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
-      const isNetworkErr = errorMessage.includes('timeout') || 
-                          errorMessage.includes('connection reset') ||
-                          errorMessage.includes('err_timed_out') ||
-                          errorMessage.includes('err_connection_reset') ||
-                          errorMessage.includes('err_name_not_resolved') ||
-                          errorMessage.includes('failed to fetch') ||
-                          errorMessage.includes('network');
-      
+      const isNetworkErr = errorMessage.includes('timeout') || errorMessage.includes('connection reset') ||
+        errorMessage.includes('err_timed_out') || errorMessage.includes('err_connection_reset') ||
+        errorMessage.includes('err_name_not_resolved') || errorMessage.includes('failed to fetch') || errorMessage.includes('network');
       if (isNetworkErr) {
-        // Registrar erro de rede e entrar em cooldown
         recentNetworkErrors.set(cleanedProject.id, now);
-        // Erro de rede - apenas debug, não warning (evita spam)
         logger.debug('Erro de rede ao salvar no Supabase, usando apenas IndexedDB (cooldown ativado)', 'dbService');
       } else {
         const isLocalOnlyOrTooBig = errorMessage.includes('salvo apenas localmente') || errorMessage.includes('muito grande');
@@ -284,20 +244,18 @@ export const updateProject = async (project: Project): Promise<void> => {
           logger.warn('Erro ao salvar no Supabase, usando apenas IndexedDB', 'dbService', error);
         }
       }
-      // Continuar para fallback IndexedDB
     }
   }
-  
-  // Fallback para IndexedDB
+
   const db = await openDB();
-  return new Promise((resolve, reject) => {
+  await new Promise<void>((resolve, reject) => {
     const transaction = db.transaction(STORE_NAME, 'readwrite');
     const store = transaction.objectStore(STORE_NAME);
     const request = store.put(cleanedProject);
-
     request.onerror = () => reject(request.error);
     request.onsuccess = () => resolve();
   });
+  return { savedToSupabase: false };
 };
 
 /**
