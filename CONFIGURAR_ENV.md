@@ -28,9 +28,17 @@ STORYBOOK_FIGMA_URL=
 CHROMATIC_PROJECT_TOKEN=
 
 # Supabase (persistência na nuvem)
-# No frontend (Vite) apenas variáveis com prefixo VITE_ são expostas no navegador.
-# Para uso apenas do proxy (recomendado em produção):
+# No frontend (Vite) APENAS variáveis com prefixo VITE_ são expostas no navegador.
+# Sem o prefixo VITE_, SUPABASE_URL e SUPABASE_ANON_KEY ficam undefined no cliente.
+# Para uso apenas do proxy (recomendado em produção no Vercel):
 VITE_SUPABASE_PROXY_URL=/api/supabaseProxy
+
+# Variáveis do servidor (Vercel: Settings → Environment Variables)
+# Usadas apenas pela API route api/supabaseProxy – não expor no frontend.
+# SUPABASE_URL=https://SEU_PROJECT_REF.supabase.co
+# SUPABASE_SERVICE_ROLE_KEY=sua-service-role-key-aqui
+# Exemplo para projeto veijknxfwjbzvgetzdzf:
+# SUPABASE_URL=https://veijknxfwjbzvgetzdzf.supabase.co
 
 # Para SDK direto no cliente (ex.: desenvolvimento local sem proxy):
 # VITE_SUPABASE_URL=https://xxxxx.supabase.co
@@ -56,6 +64,18 @@ O token do Figma deve ser configurado acima:
    ```bash
    npm run tokens:sync
    ```
+
+## 🌐 Supabase + Vercel (deploy em produção)
+
+Para o app persistir na nuvem no Vercel, configure no **Vercel** (Settings → Environment Variables) para Production e Preview:
+
+| Variável | Valor | Uso |
+|----------|--------|-----|
+| `SUPABASE_URL` | `https://SEU_PROJECT_REF.supabase.co` | URL do projeto no Supabase |
+| `SUPABASE_SERVICE_ROLE_KEY` | *(chave em Settings → API no Supabase)* | Usada pelo proxy; não expor no frontend |
+| `VITE_SUPABASE_PROXY_URL` | `/api/supabaseProxy` | Frontend usa o proxy na mesma origem |
+
+No **Supabase**, execute o script [docs/SUPABASE_NEW_PROJECT_SETUP.sql](docs/SUPABASE_NEW_PROJECT_SETUP.sql) no SQL Editor do projeto para criar as tabelas `projects` e `task_test_status`. Depois faça redeploy no Vercel.
 
 ## 🔒 Segurança
 

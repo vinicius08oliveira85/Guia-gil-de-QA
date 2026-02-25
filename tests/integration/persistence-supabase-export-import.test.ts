@@ -15,6 +15,7 @@ import { Project } from '../../types';
 
 vi.mock('../../services/dbService', () => ({
   loadProjectsFromIndexedDB: vi.fn(),
+  getProjectById: vi.fn(),
   addProject: vi.fn(),
   updateProject: vi.fn(),
   deleteProject: vi.fn(),
@@ -41,6 +42,8 @@ describe('Salvamento e recuperação (store → dbService → Supabase mock + In
 
     vi.mocked(dbService.loadProjectsFromIndexedDB)
       .mockImplementation(() => mocks.mockIndexedDB.loadProjects());
+    vi.mocked(dbService.getProjectById)
+      .mockImplementation((id: string) => mocks.mockIndexedDB.getProject(id));
     vi.mocked(dbService.addProject)
       .mockImplementation(async (project: Project) => {
         await mocks.mockIndexedDB.saveProject(project);
@@ -76,9 +79,9 @@ describe('Salvamento e recuperação (store → dbService → Supabase mock + In
     const project = createMockProject({ id: 'proj-update', name: 'Original' });
     await mocks.mockIndexedDB.saveProject(project);
     await mocks.mockSupabase.saveProject(project);
+    useProjectsStore.setState({ projects: [project] });
 
     const store = useProjectsStore.getState();
-    store.projects = [project];
     const updated = { ...project, name: 'Atualizado', description: 'Nova descrição' };
     await store.updateProject(updated);
 
@@ -102,6 +105,8 @@ describe('Importação de projetos', () => {
 
     vi.mocked(dbService.loadProjectsFromIndexedDB)
       .mockImplementation(() => mocks.mockIndexedDB.loadProjects());
+    vi.mocked(dbService.getProjectById)
+      .mockImplementation((id: string) => mocks.mockIndexedDB.getProject(id));
     vi.mocked(dbService.addProject)
       .mockImplementation(async (project: Project) => {
         await mocks.mockIndexedDB.saveProject(project);
@@ -140,7 +145,7 @@ describe('Importação de projetos', () => {
     expect(dbService.addProject).toHaveBeenCalledWith(expect.objectContaining({ id: newProject.id }));
   });
 
-  it('deve importar projeto com id já existente usando updateProject (sem ConstraintError)', async () => {
+  it('deve importar projeto com id já existente no state usando updateProject (sem ConstraintError)', async () => {
     const existing: Project = {
       id: 'proj-import-existing',
       name: 'Existente',
@@ -151,7 +156,6 @@ describe('Importação de projetos', () => {
     };
     await mocks.mockIndexedDB.saveProject(existing);
     await mocks.mockSupabase.saveProject(existing);
-
     useProjectsStore.setState({ projects: [existing] });
 
     const updated: Project = {
@@ -169,6 +173,34 @@ describe('Importação de projetos', () => {
     const state = useProjectsStore.getState();
     expect(state.projects.find(p => p.id === existing.id)?.description).toBe('Nova descrição');
     expect(dbService.updateProject).toHaveBeenCalledWith(expect.objectContaining({ id: existing.id, name: 'Existente Atualizado' }));
+  });
+
+  it('deve importar projeto com id já existente apenas no IndexedDB (não no state) usando updateProject', async () => {
+    const existing: Project = {
+      id: 'proj-import-db-only',
+      name: 'Só no IndexedDB',
+      description: 'Antiga',
+      documents: [],
+      tasks: [],
+      phases: [],
+    };
+    await mocks.mockIndexedDB.saveProject(existing);
+    await mocks.mockSupabase.saveProject(existing);
+    useProjectsStore.setState({ projects: [] });
+
+    const updated: Project = {
+      ...existing,
+      name: 'Atualizado via getProjectById',
+      description: 'Nova desc',
+    };
+
+    await expect(useProjectsStore.getState().importProject(updated)).resolves.not.toThrow();
+
+    await waitForStoreState(state => state.projects.some(p => p.id === existing.id));
+    const state = useProjectsStore.getState();
+    expect(state.projects.find(p => p.id === existing.id)?.name).toBe('Atualizado via getProjectById');
+    expect(dbService.getProjectById).toHaveBeenCalledWith(existing.id);
+    expect(dbService.updateProject).toHaveBeenCalledWith(expect.objectContaining({ id: existing.id, name: 'Atualizado via getProjectById' }));
   });
 });
 

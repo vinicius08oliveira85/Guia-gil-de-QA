@@ -42,8 +42,11 @@ Para **SDK direto no cliente** (ex.: desenvolvimento local sem proxy): configure
 
 ### 3. Criar Tabelas no Supabase
 
-**Recomendado (versão mais segura - SEM operações destrutivas):**
-- Execute o script **`docs/SUPABASE_FINAL.sql`** - versão final sem DROP, não mostra avisos
+**Projeto novo (ainda sem tabelas):**
+- Execute o script **`docs/SUPABASE_NEW_PROJECT_SETUP.sql`** no SQL Editor – cria `projects` e `task_test_status` em um único arquivo.
+
+**Projeto que já tem a tabela `projects`:**
+- Execute o script **`docs/SUPABASE_FINAL.sql`** – versão segura sem DROP, não mostra avisos.
 
 **Alternativas:**
 - **`docs/SUPABASE_SIMPLE.sql`** - versão simplificada (pode mostrar aviso de operação destrutiva)

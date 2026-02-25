@@ -7,6 +7,7 @@ import {
   generateProjectReport,
   downloadFile
 } from '../../utils/exportService';
+import { useErrorHandler } from '../../hooks/useErrorHandler';
 
 interface ExportMenuProps {
   project: Project;
@@ -14,28 +15,46 @@ interface ExportMenuProps {
 }
 
 export const ExportMenu: React.FC<ExportMenuProps> = ({ project, onClose }) => {
+  const { handleError } = useErrorHandler();
+
   const handleExportJSON = () => {
-    const json = exportProjectToJSON(project);
-    downloadFile(json, `${project.name}-export.json`, 'application/json');
-    onClose();
+    try {
+      const json = exportProjectToJSON(project);
+      downloadFile(json, `${project.name}-export.json`, 'application/json');
+      onClose();
+    } catch (error) {
+      handleError(error instanceof Error ? error : new Error('Erro ao exportar JSON'), 'Exportar JSON');
+    }
   };
 
   const handleExportCSV = () => {
-    const csv = exportProjectToCSV(project);
-    downloadFile(csv, `${project.name}-tasks.csv`, 'text/csv');
-    onClose();
+    try {
+      const csv = exportProjectToCSV(project);
+      downloadFile(csv, `${project.name}-tasks.csv`, 'text/csv');
+      onClose();
+    } catch (error) {
+      handleError(error instanceof Error ? error : new Error('Erro ao exportar CSV'), 'Exportar CSV');
+    }
   };
 
   const handleExportTestCasesCSV = () => {
-    const csv = exportTestCasesToCSV(project.tasks);
-    downloadFile(csv, `${project.name}-testcases.csv`, 'text/csv');
-    onClose();
+    try {
+      const csv = exportTestCasesToCSV(project.tasks);
+      downloadFile(csv, `${project.name}-testcases.csv`, 'text/csv');
+      onClose();
+    } catch (error) {
+      handleError(error instanceof Error ? error : new Error('Erro ao exportar casos de teste'), 'Exportar CSV');
+    }
   };
 
   const handleExportReport = () => {
-    const report = generateProjectReport(project);
-    downloadFile(report, `${project.name}-relatorio.md`, 'text/markdown');
-    onClose();
+    try {
+      const report = generateProjectReport(project);
+      downloadFile(report, `${project.name}-relatorio.md`, 'text/markdown');
+      onClose();
+    } catch (error) {
+      handleError(error instanceof Error ? error : new Error('Erro ao gerar relatório'), 'Gerar relatório');
+    }
   };
 
   return (

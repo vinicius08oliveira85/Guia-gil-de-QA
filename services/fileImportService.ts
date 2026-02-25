@@ -75,6 +75,8 @@ export const importProjectFromJSON = async (file: File): Promise<ImportResult<Pr
             id: projectData.id,
             name: projectData.name,
             description: projectData.description || '',
+            createdAt: projectData.createdAt,
+            updatedAt: projectData.updatedAt,
             documents: projectData.documents || [],
             tasks: projectData.tasks || [],
             phases: projectData.phases || [],
