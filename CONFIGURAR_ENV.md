@@ -77,6 +77,28 @@ Para o app persistir na nuvem no Vercel, configure no **Vercel** (Settings → E
 
 No **Supabase**, execute o script [docs/SUPABASE_NEW_PROJECT_SETUP.sql](docs/SUPABASE_NEW_PROJECT_SETUP.sql) no SQL Editor do projeto para criar as tabelas `projects` e `task_test_status`. Depois faça redeploy no Vercel.
 
+## Corrigir erro "Invalid API key" (Supabase no Vercel)
+
+Se o app em produção retornar 500 em `/api/supabaseProxy` e no console aparecer `Erro ao carregar projetos via proxy Supabase { data: Error: Invalid API key ... }`, o proxy está usando URL ou chave incorretas. Siga estes passos (apenas configuração, sem alterar código):
+
+1. **Obter os valores no Supabase**
+   - Acesse [Supabase Dashboard](https://supabase.com/dashboard/project/veijknxfwjbzvgetzdzf/settings/api).
+   - Copie a **Project URL** (ex.: `https://veijknxfwjbzvgetzdzf.supabase.co`, sem barra no final).
+   - Em **Project API keys**, use a chave **service_role** (secret), não a `anon`. É um JWT longo (eyJ...). Se aparecer apenas `sb_publishable_*` e `sb_secret_*`, use a chave **secret** como equivalente à service_role.
+
+2. **Ajustar variáveis no Vercel**
+   - Vercel → projeto (ex.: guia-gil-de-qa) → **Settings → Environment Variables**.
+   - Para Production e/ou Preview:
+     - `SUPABASE_URL`: cole a Project URL do passo 1.
+     - `SUPABASE_SERVICE_ROLE_KEY`: cole a chave **service_role** (ou secret). Sem espaços no início/fim; não use a anon key.
+   - Remova ou sobrescreva variáveis antigas de outro projeto Supabase.
+
+3. **Redeploy**
+   - Vercel → **Deployments** → último deploy → ⋮ → **Redeploy**. Variáveis só valem após novo deploy.
+
+4. **Validar**
+   - Abra o app em produção (ex.: `https://guia-gil-de-qa.vercel.app`), DevTools → Console e Rede. Não deve haver 500 em `/api/supabaseProxy` nem "Invalid API key". O status deve indicar sincronização com a nuvem em vez de "Salvo localmente (Supabase indisponível)".
+
 ## 🔒 Segurança
 
 - ⚠️ **NUNCA** commite o arquivo `.env` no Git
