@@ -124,11 +124,17 @@ export function createDbMocks() {
   const mockIndexedDB = new MockIndexedDB();
   const mockSupabase = new MockSupabase();
 
-  // Mock do dbService
+  const saveResult = { savedToSupabase: true };
   const dbServiceMocks = {
     loadProjectsFromIndexedDB: vi.fn(() => mockIndexedDB.loadProjects()),
-    addProject: vi.fn((project: Project) => mockIndexedDB.saveProject(project)),
-    updateProject: vi.fn((project: Project) => mockIndexedDB.updateProject(project)),
+    addProject: vi.fn(async (project: Project) => {
+      await mockIndexedDB.saveProject(project);
+      return saveResult;
+    }),
+    updateProject: vi.fn(async (project: Project) => {
+      await mockIndexedDB.updateProject(project);
+      return saveResult;
+    }),
     deleteProject: vi.fn((projectId: string) => mockIndexedDB.deleteProject(projectId)),
     saveProjectToSupabaseOnly: vi.fn((project: Project) => mockSupabase.saveProject(project)),
   };

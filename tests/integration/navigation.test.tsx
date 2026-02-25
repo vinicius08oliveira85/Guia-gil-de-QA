@@ -9,8 +9,8 @@ import { resetStore, simulateNavigation } from './helpers';
 // Mock dos serviços
 vi.mock('../../services/dbService', () => ({
   loadProjectsFromIndexedDB: vi.fn(() => Promise.resolve([])),
-  addProject: vi.fn(() => Promise.resolve()),
-  updateProject: vi.fn(() => Promise.resolve()),
+  addProject: vi.fn(() => Promise.resolve({ savedToSupabase: true })),
+  updateProject: vi.fn(() => Promise.resolve({ savedToSupabase: true })),
   deleteProject: vi.fn(() => Promise.resolve()),
   saveProjectToSupabaseOnly: vi.fn(() => Promise.resolve()),
 }));

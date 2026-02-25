@@ -68,7 +68,7 @@ describe('useProjectsStore', () => {
 
   describe('createProject', () => {
     it('deve criar projeto sem template', async () => {
-      vi.mocked(dbService.addProject).mockResolvedValue(undefined);
+      vi.mocked(dbService.addProject).mockResolvedValue({ savedToSupabase: true });
 
       const created = await useProjectsStore.getState().createProject(
         'Novo Projeto',
@@ -81,7 +81,7 @@ describe('useProjectsStore', () => {
     });
 
     it('deve criar projeto com template', async () => {
-      vi.mocked(dbService.addProject).mockResolvedValue(undefined);
+      vi.mocked(dbService.addProject).mockResolvedValue({ savedToSupabase: true });
 
       const created = await useProjectsStore.getState().createProject(
         'Projeto Template',
@@ -106,7 +106,7 @@ describe('useProjectsStore', () => {
       };
 
       useProjectsStore.setState({ projects: [project] });
-      vi.mocked(dbService.updateProject).mockResolvedValue(undefined);
+      vi.mocked(dbService.updateProject).mockResolvedValue({ savedToSupabase: true });
 
       const updated = { ...project, name: 'Projeto Atualizado' };
       await useProjectsStore.getState().updateProject(updated);

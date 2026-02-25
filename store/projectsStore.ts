@@ -26,6 +26,8 @@ interface ProjectsState {
   supabaseLoadFailed: boolean;
   /** Mensagem de erro retornada pelo proxy/Supabase (ex.: "Supabase não configurado") */
   supabaseLoadError: string | null;
+  /** false = último save foi só local (Supabase indisponível); null = ainda não houve save nesta sessão */
+  lastSaveToSupabase: boolean | null;
 
   // Actions
   loadProjects: () => Promise<void>;
@@ -49,6 +51,7 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
   error: null,
   supabaseLoadFailed: false,
   supabaseLoadError: null,
+  lastSaveToSupabase: null,
 
   loadProjects: async () => {
     set({ isLoading: true, error: null, supabaseLoadFailed: false, supabaseLoadError: null });
@@ -295,11 +298,12 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
         };
       }
       
-      await addProject(newProject);
+      const result = await addProject(newProject);
       set((state) => ({
         projects: [...state.projects, newProject],
+        lastSaveToSupabase: result.savedToSupabase,
       }));
-      
+
       addAuditLog({
         action: 'CREATE',
         entityType: 'project',
@@ -383,13 +387,14 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
         }
       }
       
-      await updateProject(finalProject);
+      const result = await updateProject(finalProject);
       set((state) => ({
-        projects: state.projects.map((p) => 
+        projects: state.projects.map((p) =>
           p.id === finalProject.id ? finalProject : p
         ),
+        lastSaveToSupabase: result.savedToSupabase,
       }));
-      
+
       if (oldProject && !options?.silent) {
         addAuditLog({
           action: 'UPDATE',
@@ -522,30 +527,36 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
 
   importProject: async (project: Project) => {
     try {
-      await addProject(project);
-      set((state) => {
-        // Verificar se projeto já existe
-        const exists = state.projects.some((p) => p.id === project.id);
-        if (exists) {
-          return {
-            projects: state.projects.map((p) => 
-              p.id === project.id ? project : p
-            ),
-          };
-        }
-        return {
-          projects: [...state.projects, project],
-        };
-      });
-      
-      addAuditLog({
-        action: 'CREATE',
-        entityType: 'project',
-        entityId: project.id,
-        entityName: project.name
-      });
+      const state = get();
+      const exists = state.projects.some((p) => p.id === project.id);
+
+      if (exists) {
+        const result = await updateProject(project);
+        set((s) => ({
+          projects: s.projects.map((p) => (p.id === project.id ? project : p)),
+          lastSaveToSupabase: result.savedToSupabase,
+        }));
+        addAuditLog({
+          action: 'UPDATE',
+          entityType: 'project',
+          entityId: project.id,
+          entityName: project.name,
+        });
+      } else {
+        const result = await addProject(project);
+        set((s) => ({
+          projects: [...s.projects, project],
+          lastSaveToSupabase: result.savedToSupabase,
+        }));
+        addAuditLog({
+          action: 'CREATE',
+          entityType: 'project',
+          entityId: project.id,
+          entityName: project.name,
+        });
+      }
     } catch (error) {
-      set({ 
+      set({
         error: error instanceof Error ? error : new Error('Erro ao importar projeto'),
       });
       throw error;
