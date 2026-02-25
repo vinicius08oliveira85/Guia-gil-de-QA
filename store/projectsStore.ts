@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { Project, JiraTask } from '../types';
 import { 
   loadProjectsFromIndexedDB,
+  getProjectById,
   addProject, 
   updateProject, 
   deleteProject,
@@ -528,14 +529,21 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
   importProject: async (project: Project) => {
     try {
       const state = get();
-      const exists = state.projects.some((p) => p.id === project.id);
+      const existsInState = state.projects.some((p) => p.id === project.id);
+      const existingInDb = await getProjectById(project.id);
+      const exists = existsInState || existingInDb != null;
 
       if (exists) {
         const result = await updateProject(project);
-        set((s) => ({
-          projects: s.projects.map((p) => (p.id === project.id ? project : p)),
-          lastSaveToSupabase: result.savedToSupabase,
-        }));
+        set((s) => {
+          const inList = s.projects.some((p) => p.id === project.id);
+          return {
+            projects: inList
+              ? s.projects.map((p) => (p.id === project.id ? project : p))
+              : [...s.projects, project],
+            lastSaveToSupabase: result.savedToSupabase,
+          };
+        });
         addAuditLog({
           action: 'UPDATE',
           entityType: 'project',

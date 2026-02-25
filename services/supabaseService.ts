@@ -857,7 +857,7 @@ export const diagnoseSupabaseConfig = (): {
             : 'Apenas SDK configurado. Funcionando em desenvolvimento.';
     } else {
         status = 'not-configured';
-        details = 'Supabase não configurado. Usando apenas armazenamento local (IndexedDB).';
+        details = 'Supabase não configurado. Usando apenas armazenamento local (IndexedDB). Configure no .env: VITE_SUPABASE_PROXY_URL (recomendado) ou VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY (prefixo VITE_ é obrigatório no frontend).';
     }
     
     return {

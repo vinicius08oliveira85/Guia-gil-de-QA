@@ -74,6 +74,31 @@ export const loadProjectsFromIndexedDB = async (): Promise<Project[]> => {
 };
 
 /**
+ * Obtém um projeto pelo id no IndexedDB (para verificar existência na importação).
+ * Não consulta o Supabase.
+ */
+export const getProjectById = async (projectId: string): Promise<Project | null> => {
+  const db = await openDB();
+  const raw = await new Promise<Project | undefined>((resolve, reject) => {
+    const transaction = db.transaction(STORE_NAME, 'readonly');
+    const store = transaction.objectStore(STORE_NAME);
+    const request = store.get(projectId);
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => resolve(request.result);
+  });
+  if (!raw) return null;
+  const migrated = {
+    ...raw,
+    tasks: raw.tasks.map(task => ({
+      ...task,
+      testCases: migrateTestCases(task.testCases || []),
+    })),
+  };
+  const [cleaned] = cleanupTestCasesForProjects([migrated]);
+  return cleaned ?? null;
+};
+
+/**
  * Carrega todos os projetos (IndexedDB + Supabase)
  * Mantido para compatibilidade, mas agora getAllProjects() usa carregamento em duas fases
  */

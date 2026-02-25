@@ -19,6 +19,7 @@ import { useTheme } from './hooks/useTheme';
 import { lazyWithRetry } from './utils/lazyWithRetry';
 import { logger } from './utils/logger';
 import { useRouterSync } from './hooks/useRouterSync';
+import { isSupabaseAvailable } from './services/supabaseService';
 
 // Code splitting - Lazy loading de componentes pesados
 const ProjectView = lazyWithRetry(() => import('./components/ProjectView').then(m => ({ default: m.ProjectView })));
@@ -26,9 +27,23 @@ const ProjectsDashboard = lazyWithRetry(() => import('./components/ProjectsDashb
 const AdvancedSearch = lazyWithRetry(() => import('./components/common/AdvancedSearch').then(m => ({ default: m.AdvancedSearch })));
 const SettingsView = lazyWithRetry(() => import('./components/settings/SettingsView').then(m => ({ default: m.SettingsView })));
 
+let bootstrapSupabaseWarningLogged = false;
+
 const App: React.FC = () => {
     // Tema global (fase atual: DaisyUI light fixo; outras opções permanecem no toggle para futuro)
     useTheme();
+
+    // Aviso único no bootstrap quando Supabase não está configurado (apenas IndexedDB será usado)
+    useEffect(() => {
+        if (bootstrapSupabaseWarningLogged) return;
+        if (!isSupabaseAvailable()) {
+            bootstrapSupabaseWarningLogged = true;
+            logger.warn(
+                'Supabase não configurado; apenas IndexedDB será usado. Configure VITE_SUPABASE_PROXY_URL ou VITE_SUPABASE_URL + VITE_SUPABASE_ANON_KEY.',
+                'App'
+            );
+        }
+    }, []);
 
     // Estado global do store
     const {

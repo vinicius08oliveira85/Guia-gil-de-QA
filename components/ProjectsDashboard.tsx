@@ -17,6 +17,7 @@ import { logger } from '../utils/logger';
 import { useProjectsStore } from '../store/projectsStore';
 import { EmptyState } from './common/EmptyState';
 import { isSupabaseAvailable } from '../services/supabaseService';
+import { FileImportModal } from './common/FileImportModal';
 
 export const ProjectsDashboard: React.FC<{
     projects: Project[];
@@ -37,6 +38,7 @@ export const ProjectsDashboard: React.FC<{
     const [isImportingJira, setIsImportingJira] = useState(false);
     const [importProgress, setImportProgress] = useState<{ current: number; total?: number } | null>(null);
     const [jiraConfigStatus, setJiraConfigStatus] = useState<'unknown' | 'configured' | 'missing'>('unknown');
+    const [showFileImportModal, setShowFileImportModal] = useState(false);
     // Visualização sempre em grade - removido viewMode
     // Ordenação fixa por nome - removido sortBy
     // Filtros removidos - removido selectedTags e showTagFilter
@@ -332,6 +334,22 @@ export const ProjectsDashboard: React.FC<{
                                         </div>
                                     </div>
                                 </button>
+
+                                <button
+                                    onClick={() => setShowFileImportModal(true)}
+                                    type="button"
+                                    className="w-full rounded-2xl border-2 border-dashed border-base-300 bg-base-100 p-4 text-left transition-colors hover:border-primary/40 hover:bg-base-200/40"
+                                >
+                                    <div className="flex items-start gap-3">
+                                        <span className="text-xl" aria-hidden="true">📁</span>
+                                        <div className="space-y-0.5">
+                                            <p className="font-semibold">Importar de arquivo</p>
+                                            <p className="text-sm text-base-content/70">
+                                                Importe um projeto a partir de um arquivo JSON exportado anteriormente.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </button>
                             </div>
 
                             <div className="grid gap-4">
@@ -604,5 +622,21 @@ export const ProjectsDashboard: React.FC<{
             </div>
             </div>
         </div>
+
+        <FileImportModal
+            isOpen={showFileImportModal}
+            onClose={() => setShowFileImportModal(false)}
+            importType="project"
+            onImportProject={async (project) => {
+                try {
+                    await importProject(project);
+                    handleSuccess('Projeto importado com sucesso!');
+                    setShowFileImportModal(false);
+                    setIsCreating(false);
+                } catch (err) {
+                    handleError(err instanceof Error ? err : new Error('Erro ao importar projeto'), 'Importar de arquivo');
+                }
+            }}
+        />
     );
 };

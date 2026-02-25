@@ -21,7 +21,7 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
     const [isPrinting, setIsPrinting] = useState(false);
     const [isSavingToSupabase, setIsSavingToSupabase] = useState(false);
     const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
-    const { saveProjectToSupabase, getSelectedProject } = useProjectsStore();
+    const { saveProjectToSupabase, getSelectedProject, lastSaveToSupabase } = useProjectsStore();
     const supabaseAvailable = isSupabaseAvailable();
     
     // IMPORTANTE: Sempre usar o projeto mais recente do store em vez de apenas o prop
@@ -62,11 +62,11 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
         };
     }, [checkScroll, activeTab]);
     
-    // Auto-save: monitora mudanças e salva automaticamente
+    // Auto-save: monitora mudanças e salva automaticamente (IndexedDB sempre; Supabase quando disponível)
     useAutoSave({
         project: currentProject,
         debounceMs: 300,
-        disabled: !supabaseAvailable,
+        disabled: false,
     });
 
     // Keep refs updated - usar currentProject (do store) em vez de apenas project prop
@@ -154,6 +154,15 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
         }
     };
     
+    // Toast quando um salvamento esperado na nuvem ficou apenas local (transição true -> false)
+    const prevLastSaveToSupabaseRef = useRef<boolean | null>(null);
+    useEffect(() => {
+        if (lastSaveToSupabase === false && prevLastSaveToSupabaseRef.current === true) {
+            toast('Salvo localmente (Supabase indisponível)', { icon: '⚠️', duration: 4000 });
+        }
+        prevLastSaveToSupabaseRef.current = lastSaveToSupabase;
+    }, [lastSaveToSupabase]);
+
     // Monitorar mudanças no projeto para atualizar status de salvamento
     useEffect(() => {
         if (supabaseAvailable && saveStatus === 'saved') {
@@ -218,9 +227,9 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                 </div>
 
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
-                    {/* Indicador de status de salvamento */}
-                    {supabaseAvailable && (
-                        <div className="flex items-center gap-2 text-sm">
+                    {/* Indicador de status de salvamento (aria-live para leitores de tela) */}
+                    {(supabaseAvailable || lastSaveToSupabase === false) && (
+                        <div className="flex items-center gap-2 text-sm" role="status" aria-live="polite" aria-atomic="true">
                             {saveStatus === 'saving' && (
                                 <div className="flex items-center gap-2 text-info">
                                     <Spinner small />
@@ -228,11 +237,11 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                                 </div>
                             )}
                             {saveStatus === 'saved' && (
-                                <div className="flex items-center gap-2 text-success">
+                                <div className={`flex items-center gap-2 ${lastSaveToSupabase === false ? 'text-warning' : 'text-success'}`}>
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                         <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" fill="currentColor"/>
                                     </svg>
-                                    <span>Salvo</span>
+                                    <span>{lastSaveToSupabase === false ? 'Salvo localmente (Supabase indisponível)' : 'Salvo'}</span>
                                 </div>
                             )}
                             {saveStatus === 'error' && (
@@ -241,6 +250,14 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                                         <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/>
                                     </svg>
                                     <span>Erro ao salvar</span>
+                                </div>
+                            )}
+                            {!supabaseAvailable && lastSaveToSupabase === false && saveStatus === 'idle' && (
+                                <div className="flex items-center gap-2 text-warning">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2V8h2v6z" fill="currentColor"/>
+                                    </svg>
+                                    <span>Salvo localmente (Supabase indisponível)</span>
                                 </div>
                             )}
                         </div>
