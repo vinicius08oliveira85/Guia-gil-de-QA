@@ -10,6 +10,7 @@ interface BulkActionsProps {
   onUpdateProject: (project: Project) => void;
   onClearSelection: () => void;
   onProjectCreated?: (projectId: string) => void;
+  onEditTask?: (taskId: string) => void;
 }
 
 export const BulkActions: React.FC<BulkActionsProps> = ({
@@ -17,7 +18,8 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
   project,
   onUpdateProject,
   onClearSelection,
-  onProjectCreated
+  onProjectCreated,
+  onEditTask
 }) => {
   const { handleSuccess, handleError } = useErrorHandler();
   const { createProject } = useProjectsStore();
@@ -117,6 +119,24 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
     onUpdateProject({ ...project, tasks: updatedTasks });
     handleSuccess(`${selectedTasksArray.length} tarefa(s) desfavoritada(s)`);
     onClearSelection();
+  };
+
+  const handleBulkDelete = () => {
+    const idsSet = new Set(selectedTasksArray);
+    let tasksToKeep = (project.tasks || []).map(t =>
+      t.parentId && idsSet.has(t.parentId) ? { ...t, parentId: undefined } : t
+    );
+    tasksToKeep = tasksToKeep.filter(t => !idsSet.has(t.id));
+    onUpdateProject({ ...project, tasks: tasksToKeep });
+    handleSuccess(`${selectedTasksArray.length} tarefa(s) excluída(s)`);
+    onClearSelection();
+  };
+
+  const handleBulkEdit = () => {
+    if (selectedTasksArray.length === 0) return;
+    const taskId = selectedTasksArray[0];
+    onClearSelection();
+    onEditTask?.(taskId);
   };
 
   const handleCreateProjectClick = () => {
@@ -247,6 +267,22 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
               className="px-3 py-1 bg-white/20 hover:bg-white/30 rounded text-sm font-semibold"
             >
               Criar Projeto
+            </button>
+            {onEditTask && (
+              <button
+                onClick={handleBulkEdit}
+                className="px-3 py-1 bg-white/20 hover:bg-white/30 rounded text-sm"
+                aria-label="Editar tarefa selecionada"
+              >
+                Editar
+              </button>
+            )}
+            <button
+              onClick={handleBulkDelete}
+              className="px-3 py-1 bg-white/20 hover:bg-white/30 rounded text-sm"
+              aria-label="Excluir tarefas selecionadas"
+            >
+              Excluir
             </button>
             <button
               onClick={onClearSelection}

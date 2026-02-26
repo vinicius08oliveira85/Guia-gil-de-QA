@@ -8,6 +8,8 @@ import { RichTextEditor } from '../common/RichTextEditor';
 import { HelpTooltip } from '../common/HelpTooltip';
 import { Input } from '../common/Input';
 import { helpContent } from '../../utils/helpContent';
+import { isValidJiraKey } from '../../utils/jiraFieldMapper';
+import type { JiraTaskFormData } from '../../services/jiraService';
 
 export const TaskForm: React.FC<{
     onSave: (task: Omit<JiraTask, 'testCases' | 'status' | 'testStrategy' | 'bddScenarios' | 'createdAt' | 'completedAt'>) => void;
@@ -15,7 +17,8 @@ export const TaskForm: React.FC<{
     existingTask?: JiraTask;
     epics: JiraTask[];
     parentId?: string;
-}> = ({ onSave, onCancel, existingTask, epics, parentId }) => {
+    onImportFromJira?: (issueKey: string) => Promise<Partial<JiraTaskFormData> | null>;
+}> = ({ onSave, onCancel, existingTask, epics, parentId, onImportFromJira }) => {
     const { handleWarning } = useErrorHandler();
     const [taskData, setTaskData] = useState({
         id: existingTask?.id || '',
@@ -27,10 +30,35 @@ export const TaskForm: React.FC<{
         priority: existingTask?.priority || 'Média',
         owner: existingTask?.owner || (parentId ? 'QA' : 'Product'),
         assignee: existingTask?.assignee || (parentId ? 'Dev' : 'QA'),
-        tags: existingTask?.tags || []
+        tags: existingTask?.tags || [],
+        jiraAttachments: existingTask?.jiraAttachments,
     });
 
     const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+    const [importingFromJira, setImportingFromJira] = useState(false);
+
+    const handleImportFromJira = () => {
+        const key = taskData.id.trim();
+        if (!key) {
+            handleWarning('Informe o ID da tarefa no formato PROJ-123.');
+            return;
+        }
+        if (!isValidJiraKey(key) && !/^[A-Za-z]+-\d+$/i.test(key)) {
+            handleWarning('ID inválido. Use o formato PROJ-123 (ex: PROJ-123).');
+            return;
+        }
+        if (!onImportFromJira) return;
+        setImportingFromJira(true);
+        onImportFromJira(key)
+            .then((data) => {
+                if (data) {
+                    setTaskData((prev) => ({ ...prev, ...data }));
+                    setValidationErrors({});
+                }
+            })
+            .finally(() => setImportingFromJira(false));
+    };
+
 
     // Atualizar taskData quando existingTask mudar
     useEffect(() => {
@@ -45,7 +73,8 @@ export const TaskForm: React.FC<{
                 priority: existingTask.priority || 'Média',
                 owner: existingTask.owner || (parentId ? 'QA' : 'Product'),
                 assignee: existingTask.assignee || (parentId ? 'Dev' : 'QA'),
-                tags: existingTask.tags || []
+                tags: existingTask.tags || [],
+                jiraAttachments: existingTask.jiraAttachments,
             });
             // Limpar erros de validação quando a tarefa mudar
             setValidationErrors({});
@@ -61,7 +90,8 @@ export const TaskForm: React.FC<{
                 priority: 'Média',
                 owner: parentId ? 'QA' : 'Product',
                 assignee: parentId ? 'Dev' : 'QA',
-                tags: []
+                tags: [],
+                jiraAttachments: undefined,
             });
             setValidationErrors({});
         }
@@ -146,6 +176,16 @@ export const TaskForm: React.FC<{
                             required
                             className="input-sm rounded-xl border-base-300"
                         />
+                        {!existingTask && onImportFromJira && (
+                            <button
+                                type="button"
+                                onClick={handleImportFromJira}
+                                disabled={importingFromJira}
+                                className="mt-2 btn btn-outline btn-sm btn-primary rounded-xl flex items-center gap-1.5"
+                            >
+                                {importingFromJira ? 'Importando…' : 'Importar do Jira'}
+                            </button>
+                        )}
                     </div>
                     <div className="sm:col-span-2 md:col-span-1">
                         <Input

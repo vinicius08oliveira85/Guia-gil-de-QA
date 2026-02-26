@@ -32,7 +32,7 @@ import { canViewInBrowser, detectFileType } from '../../services/fileViewerServi
 import { JiraAttachment } from './JiraAttachment';
 import { JiraRichContent } from './JiraRichContent';
 import { Button } from '../common/Button';
-import { BarChart3, ClipboardList, Sparkles, Wrench, Link, Paperclip, Timer } from 'lucide-react';
+import { BarChart3, ClipboardList, Sparkles, Wrench, Link, Paperclip, Timer, Download } from 'lucide-react';
 
 type DetailSection = 'overview' | 'bdd' | 'tests' | 'planning' | 'collaboration';
 type TestSubSection = 'strategy' | 'test-cases';
@@ -108,6 +108,8 @@ interface TaskDetailsModalProps {
     project?: Project;
     onUpdateProject?: (project: Project) => void;
     onOpenTask?: (task: JiraTask) => void;
+    onUpdateFromJira?: (taskId: string) => Promise<void>;
+    isUpdatingFromJira?: boolean;
 }
 
 export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
@@ -138,6 +140,8 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
     project,
     onUpdateProject,
     onOpenTask,
+    onUpdateFromJira,
+    isUpdatingFromJira,
 }) => {
     const [editingBddScenario, setEditingBddScenario] = useState<BddScenario | null>(null);
     const [isCreatingBdd, setIsCreatingBdd] = useState(false);
@@ -276,9 +280,10 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
         }
     };
 
-    const hasJiraSidebarFields = /^[A-Z]+-\d+$/.test(task.id) && (
+    const hasJiraSidebarFields = !!(
         task.dueDate || task.timeTracking || task.components || task.fixVersions ||
-        task.environment || task.reporter || task.watchers || task.issueLinks
+        task.environment || task.reporter || task.watchers || task.issueLinks ||
+        task.jiraAttachments?.length
     );
 
     const renderOverviewSection = () => (
@@ -423,8 +428,28 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                 )}
             </div>
 
-            {/* Sidebar: Campos do Jira + Ações Rápidas */}
+            {/* Sidebar: Atualizar do Jira + Campos do Jira + Ações Rápidas */}
             <aside className="space-y-4">
+                {onUpdateFromJira && /^[A-Z]+-\d+$/.test(task.id) && (
+                    <div className="bg-base-100 border border-base-300 rounded-2xl overflow-hidden shadow-sm p-4">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="w-full gap-2 rounded-xl"
+                            onClick={() => onUpdateFromJira(task.id)}
+                            disabled={!!isUpdatingFromJira}
+                            aria-label="Atualizar somente esta tarefa do Jira"
+                        >
+                            {isUpdatingFromJira ? (
+                                <Spinner small />
+                            ) : (
+                                <Download className="w-4 h-4" aria-hidden />
+                            )}
+                            {isUpdatingFromJira ? 'Atualizando…' : 'Atualizar do Jira (só esta tarefa)'}
+                        </Button>
+                        <p className="text-[11px] text-base-content/60 mt-2">Busca apenas esta tarefa no Jira, sem carregar o projeto inteiro.</p>
+                    </div>
+                )}
                 {hasJiraSidebarFields && (
                     <div className="bg-base-100 border border-base-300 rounded-2xl overflow-hidden shadow-sm">
                         <div className="p-4 border-b border-base-200 flex items-center gap-2">

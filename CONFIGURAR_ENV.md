@@ -97,6 +97,20 @@ Para o app persistir na nuvem no Vercel, configure no **Vercel** (Settings → E
 
 No **Supabase**, execute o script [docs/SUPABASE_NEW_PROJECT_SETUP.sql](docs/SUPABASE_NEW_PROJECT_SETUP.sql) no SQL Editor do projeto para criar as tabelas `projects` e `task_test_status`. Depois faça redeploy no Vercel.
 
+## Ambiente de homologação (banco separado para homolog)
+
+O deploy da branch **homolog** no Vercel roda como **Preview**. Para que homolog use um **banco Supabase separado** (somente teste), sem misturar dados com produção:
+
+1. **Criar um segundo projeto no Supabase** (ex.: nome "qa-guide-homolog" ou "guia-qa-homolog") em [Supabase Dashboard](https://supabase.com/dashboard). Anotar a **Project URL** e a chave **service_role** (Settings → API).
+
+2. **Rodar o mesmo schema no projeto de homolog:** no novo projeto, abrir **SQL Editor** e executar [docs/SUPABASE_NEW_PROJECT_SETUP.sql](docs/SUPABASE_NEW_PROJECT_SETUP.sql) para criar as tabelas `projects` e `task_test_status`.
+
+3. **Configurar variáveis no Vercel por ambiente:**
+   - **Production** (branch main): manter `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` apontando para o projeto Supabase de **produção**.
+   - **Preview** (branch homolog): definir `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` com a URL e a chave **service_role** do **projeto Supabase de homolog** (criado no passo 1).
+
+Assim, produção e homolog ficam com bancos distintos; não é necessária alteração de código — o proxy usa as variáveis de ambiente do deploy (Production vs Preview).
+
 ## Corrigir erro "Invalid API key" (Supabase no Vercel)
 
 Se o app em produção retornar 500 em `/api/supabaseProxy` e no console aparecer `Erro ao carregar projetos via proxy Supabase { data: Error: Invalid API key ... }`, o proxy está usando URL ou chave incorretas. Siga estes passos (apenas configuração, sem alterar código):
