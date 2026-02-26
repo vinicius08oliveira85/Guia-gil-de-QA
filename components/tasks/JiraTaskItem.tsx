@@ -5,7 +5,7 @@ import { Spinner } from '../common/Spinner';
 import { TaskTypeIcon, TaskStatusIcon, StartTestIcon, CompleteTestIcon, ToDoTestIcon, PlusIcon, EditIcon, TrashIcon, RefreshIcon } from '../common/Icons';
 import { BddScenarioForm, BddScenarioItem } from './BddScenario';
 import { TestCaseItem } from './TestCaseItem';
-import { BarChart3, Sparkles, Wrench, Zap, Wand2, Loader2, MoreVertical, ChevronDown, ClipboardList, Link, Paperclip, Timer, Star } from 'lucide-react';
+import { BarChart3, Sparkles, Wrench, Zap, Wand2, Loader2, MoreVertical, ChevronDown, ClipboardList, Link, Paperclip, Timer, Star, Download } from 'lucide-react';
 import { TestStrategyCard } from './TestStrategyCard';
 import { ToolsSelector } from './ToolsSelector';
 import { TestReportModal } from './TestReportModal';
@@ -138,6 +138,8 @@ export const JiraTaskItem: React.FC<{
     isGeneratingAll?: boolean;
     onSyncToJira?: (taskId: string) => Promise<void>;
     isSyncing?: boolean;
+    onUpdateFromJira?: (taskId: string) => Promise<void>;
+    isUpdatingFromJira?: boolean;
     onSaveBddScenario: (taskId: string, scenario: Omit<BddScenario, 'id'>, scenarioId?: string) => void;
     onDeleteBddScenario: (taskId: string, scenarioId: string) => void;
     onTaskStatusChange: (status: 'To Do' | 'In Progress' | 'Done') => void;
@@ -157,7 +159,7 @@ export const JiraTaskItem: React.FC<{
     onFocusTask?: (taskId: string | null) => void;
     onOpenModal?: (task: JiraTask) => void;
     onToggleFavorite?: () => void;
-}> = React.memo(({ task, onTestCaseStatusChange, onToggleTestCaseAutomated, onExecutedStrategyChange, onTaskToolsChange, onTestCaseToolsChange, onStrategyExecutedChange, onStrategyToolsChange, onDelete, onGenerateTests, isGenerating: isGeneratingTests, onAddSubtask, onEdit, onGenerateBddScenarios, isGeneratingBdd, onGenerateAll, isGeneratingAll, onSyncToJira, isSyncing, onSaveBddScenario, onDeleteBddScenario, onTaskStatusChange, onAddTestCaseFromTemplate, onAddComment, onEditComment, onDeleteComment, onEditTestCase, onDeleteTestCase, project, onUpdateProject, isSelected, onToggleSelect, children, level, activeTaskId, onFocusTask, onOpenModal, onToggleFavorite }) => {
+}> = React.memo(({ task, onTestCaseStatusChange, onToggleTestCaseAutomated, onExecutedStrategyChange, onTaskToolsChange, onTestCaseToolsChange, onStrategyExecutedChange, onStrategyToolsChange, onDelete, onGenerateTests, isGenerating: isGeneratingTests, onAddSubtask, onEdit, onGenerateBddScenarios, isGeneratingBdd, onGenerateAll, isGeneratingAll, onSyncToJira, isSyncing, onUpdateFromJira, isUpdatingFromJira, onSaveBddScenario, onDeleteBddScenario, onTaskStatusChange, onAddTestCaseFromTemplate, onAddComment, onEditComment, onDeleteComment, onEditTestCase, onDeleteTestCase, project, onUpdateProject, isSelected, onToggleSelect, children, level, activeTaskId, onFocusTask, onOpenModal, onToggleFavorite }) => {
     const reduceMotion = useReducedMotion();
     const [isDetailsOpen, setIsDetailsOpen] = useState(false); // Colapsado por padrão para compactar
     const [isChildrenOpen, setIsChildrenOpen] = useState(false);
@@ -818,13 +820,13 @@ export const JiraTaskItem: React.FC<{
                 </div>
             )}
 
-            {/* Seção de Campos do Jira */}
+            {/* Seção de Campos do Jira - exibe quando houver qualquer dado vindo do Jira */}
             {(() => {
                 const hasJiraFields = task.dueDate || task.timeTracking || task.components || task.fixVersions || 
                     task.environment || task.reporter || task.watchers || task.issueLinks || 
                     task.jiraAttachments;
                 
-                if (!hasJiraFields || !/^[A-Z]+-\d+$/.test(task.id)) {
+                if (!hasJiraFields) {
                     return null;
                 }
 
@@ -1751,6 +1753,23 @@ export const JiraTaskItem: React.FC<{
                                                 Sincronizar
                                             </button>
                                         )}
+                                        {onUpdateFromJira && /^[A-Z]+-\d+$/.test(task.id) && (
+                                            <button
+                                                type="button"
+                                                onClick={() => onUpdateFromJira(task.id)}
+                                                disabled={isUpdatingFromJira}
+                                                className="btn btn-ghost btn-sm gap-2 hidden md:inline-flex rounded-xl"
+                                                aria-label="Atualizar tarefa do Jira"
+                                                title="Trazer alterações do Jira (somente esta tarefa)"
+                                            >
+                                                {isUpdatingFromJira ? (
+                                                    <Spinner small />
+                                                ) : (
+                                                    <Download className="w-4 h-4" aria-hidden="true" />
+                                                )}
+                                                Atualizar do Jira
+                                            </button>
+                                        )}
 
                                         {/* Menu overflow: ações secundárias + destrutiva (abre à direita do botão) */}
                                         <div className="dropdown dropdown-start">
@@ -1806,6 +1825,20 @@ export const JiraTaskItem: React.FC<{
                                                         >
                                                             {isSyncing ? <Spinner small /> : <RefreshIcon className="w-4 h-4" aria-hidden="true" />}
                                                             Sincronizar
+                                                        </button>
+                                                    </li>
+                                                )}
+                                                {onUpdateFromJira && /^[A-Z]+-\d+$/.test(task.id) && (
+                                                    <li className="md:hidden" role="none">
+                                                        <button
+                                                            type="button"
+                                                            role="menuitem"
+                                                            className="gap-2"
+                                                            onClick={() => onUpdateFromJira(task.id)}
+                                                            disabled={isUpdatingFromJira}
+                                                        >
+                                                            {isUpdatingFromJira ? <Spinner small /> : <Download className="w-4 h-4" aria-hidden="true" />}
+                                                            Atualizar do Jira
                                                         </button>
                                                     </li>
                                                 )}

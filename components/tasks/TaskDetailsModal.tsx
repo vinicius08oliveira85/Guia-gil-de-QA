@@ -276,9 +276,10 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
         }
     };
 
-    const hasJiraSidebarFields = /^[A-Z]+-\d+$/.test(task.id) && (
+    const hasJiraSidebarFields = !!(
         task.dueDate || task.timeTracking || task.components || task.fixVersions ||
-        task.environment || task.reporter || task.watchers || task.issueLinks
+        task.environment || task.reporter || task.watchers || task.issueLinks ||
+        task.jiraAttachments?.length
     );
 
     const renderOverviewSection = () => (

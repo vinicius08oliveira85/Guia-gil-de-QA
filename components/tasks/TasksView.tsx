@@ -21,7 +21,7 @@ import { notifyTestFailed, notifyBugCreated, notifyCommentAdded, notifyDependenc
 import { BulkActions } from '../common/BulkActions';
 import { useLocalStorage } from '../../hooks/useLocalStorage';
 import { EmptyState } from '../common/EmptyState';
-import { getJiraConfig, syncTaskToJira, fetchJiraTaskFormDataByKey } from '../../services/jiraService';
+import { getJiraConfig, syncTaskToJira, fetchJiraTaskFormDataByKey, updateSingleTaskFromJira } from '../../services/jiraService';
 import { GeneralIAAnalysisButton } from './GeneralIAAnalysisButton';
 import { generateGeneralIAAnalysis } from '../../services/ai/generalAnalysisService';
 import { FailedTestsReportModal } from './FailedTestsReportModal';
@@ -188,6 +188,7 @@ export const TasksView: React.FC<{
     const [generatingBddTaskId, setGeneratingBddTaskId] = useState<string | null>(null);
     const [generatingAllTaskId, setGeneratingAllTaskId] = useState<string | null>(null);
     const [syncingTaskId, setSyncingTaskId] = useState<string | null>(null);
+    const [updatingFromJiraTaskId, setUpdatingFromJiraTaskId] = useState<string | null>(null);
     const [selectedTasks, setSelectedTasks] = useState<Set<string>>(new Set());
     const { handleError, handleSuccess } = useErrorHandler();
     
@@ -555,6 +556,23 @@ export const TasksView: React.FC<{
             setSyncingTaskId(null);
         }
     }, [project, handleError, handleSuccess]);
+
+    const handleUpdateTaskFromJira = useCallback(async (taskId: string) => {
+        setUpdatingFromJiraTaskId(taskId);
+        try {
+            const config = getJiraConfig();
+            if (!config) {
+                throw new Error('Jira não configurado. Configure nas configurações primeiro.');
+            }
+            const updatedProject = await updateSingleTaskFromJira(config, project, taskId);
+            await onUpdateProject(updatedProject);
+            handleSuccess('Tarefa atualizada do Jira.');
+        } catch (error) {
+            handleError(error instanceof Error ? error : new Error(String(error)), 'Atualizar do Jira');
+        } finally {
+            setUpdatingFromJiraTaskId(null);
+        }
+    }, [project, onUpdateProject, handleError, handleSuccess]);
 
     const handleConfirmFail = useCallback(() => {
         const { taskId, testCaseId, observedResult, createBug } = failModalState;
@@ -1541,6 +1559,8 @@ export const TasksView: React.FC<{
                     isGeneratingAll={generatingAllTaskId === task.id}
                     onSyncToJira={handleSyncTaskToJira}
                     isSyncing={syncingTaskId === task.id}
+                    onUpdateFromJira={handleUpdateTaskFromJira}
+                    isUpdatingFromJira={updatingFromJiraTaskId === task.id}
                     onSaveBddScenario={handleSaveBddScenario}
                     onDeleteBddScenario={handleDeleteBddScenario}
                     onTaskStatusChange={(status) => handleTaskStatusChange(task.id, status)}
@@ -1559,7 +1579,7 @@ export const TasksView: React.FC<{
                 </JiraTaskItem>
             );
         });
-    }, [selectedTasks, generatingTestsTaskId, generatingBddTaskId, generatingAllTaskId, syncingTaskId, handleTestCaseStatusChange, handleToggleTestCaseAutomated, handleExecutedStrategyChange, handleTaskToolsChange, handleTestCaseToolsChange, handleStrategyExecutedChange, handleStrategyToolsChange, handleDeleteTask, handleGenerateTests, openTaskFormForNew, openTaskFormForEdit, handleGenerateBddScenarios, handleGenerateAll, handleSyncTaskToJira, handleSaveBddScenario, handleDeleteBddScenario, handleTaskStatusChange, handleAddComment, handleEditComment, handleDeleteComment, project, onUpdateProject, toggleTaskSelection, handleToggleFavorite]);
+    }, [selectedTasks, generatingTestsTaskId, generatingBddTaskId, generatingAllTaskId, syncingTaskId, updatingFromJiraTaskId, handleUpdateTaskFromJira, handleTestCaseStatusChange, handleToggleTestCaseAutomated, handleExecutedStrategyChange, handleTaskToolsChange, handleTestCaseToolsChange, handleStrategyExecutedChange, handleStrategyToolsChange, handleDeleteTask, handleGenerateTests, openTaskFormForNew, openTaskFormForEdit, handleGenerateBddScenarios, handleGenerateAll, handleSyncTaskToJira, handleSaveBddScenario, handleDeleteBddScenario, handleTaskStatusChange, handleAddComment, handleEditComment, handleDeleteComment, project, onUpdateProject, toggleTaskSelection, handleToggleFavorite]);
 
     return (
         <>
