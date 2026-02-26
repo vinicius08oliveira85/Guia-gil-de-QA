@@ -805,6 +805,7 @@ export interface JiraTaskFormData {
     assignee: 'Product' | 'QA' | 'Dev';
     tags: string[];
     severity?: 'Crítico' | 'Alto' | 'Médio' | 'Baixo';
+    jiraAttachments?: Array<{ id: string; filename: string; size: number; created: string; author: string }>;
 }
 
 /**
@@ -897,6 +898,9 @@ const jiraIssueToTaskFormData = (issue: JiraIssue, config: JiraConfig): JiraTask
     };
     if (isBug) {
         data.severity = mapJiraSeverity(issue.fields?.labels);
+    }
+    if (jiraAttachments.length > 0) {
+        data.jiraAttachments = jiraAttachments;
     }
     return data;
 };

@@ -30,7 +30,8 @@ export const TaskForm: React.FC<{
         priority: existingTask?.priority || 'Média',
         owner: existingTask?.owner || (parentId ? 'QA' : 'Product'),
         assignee: existingTask?.assignee || (parentId ? 'Dev' : 'QA'),
-        tags: existingTask?.tags || []
+        tags: existingTask?.tags || [],
+        jiraAttachments: existingTask?.jiraAttachments,
     });
 
     const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
@@ -72,7 +73,8 @@ export const TaskForm: React.FC<{
                 priority: existingTask.priority || 'Média',
                 owner: existingTask.owner || (parentId ? 'QA' : 'Product'),
                 assignee: existingTask.assignee || (parentId ? 'Dev' : 'QA'),
-                tags: existingTask.tags || []
+                tags: existingTask.tags || [],
+                jiraAttachments: existingTask.jiraAttachments,
             });
             // Limpar erros de validação quando a tarefa mudar
             setValidationErrors({});
@@ -88,7 +90,8 @@ export const TaskForm: React.FC<{
                 priority: 'Média',
                 owner: parentId ? 'QA' : 'Product',
                 assignee: parentId ? 'Dev' : 'QA',
-                tags: []
+                tags: [],
+                jiraAttachments: undefined,
             });
             setValidationErrors({});
         }
