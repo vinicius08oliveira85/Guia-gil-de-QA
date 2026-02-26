@@ -15,6 +15,7 @@ export async function summarizeTestReport(reportText: string): Promise<string> {
 
 Requisitos:
 - Mantenha: identificador da tarefa, título, lista de casos executados com status (Aprovado/Reprovado) e resultado encontrado quando houver.
+- Para cada status, use o ícone correspondente: ✅ antes de "Aprovado" e ❌ antes de "Reprovado" (ex.: "✅ Aprovado", "❌ Reprovado"). Nunca escreva só "Aprovado" ou "Reprovado" sem o ícone.
 - Não inclua ferramentas de teste.
 - Use linguagem objetiva e poucas linhas.
 - Preserve a estrutura essencial (tarefa, casos, resumo numérico e data de conclusão).

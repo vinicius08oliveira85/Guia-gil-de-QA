@@ -209,11 +209,10 @@ function generateConciseReport(
     lines.push('');
     lines.push('Casos de teste:');
     executedTestCases.forEach((tc, index) => {
-      const statusEmoji = tc.status === 'Passed' ? '✅' : '❌';
-      const statusLabel = tc.status === 'Passed' ? 'Aprovado' : 'Reprovado';
+      const status = tc.status === 'Passed' ? 'Aprovado' : 'Reprovado';
       const desc = tc.description || `Teste ${index + 1}`;
       const result = tc.observedResult?.trim() ? ` [${tc.observedResult}]` : '';
-      lines.push(`${index + 1}. ${desc} – ${statusEmoji} ${statusLabel}${result}`);
+      lines.push(`${index + 1}. ${desc} – ${status}${result}`);
     });
   } else {
     lines.push('Nenhum teste executado até o momento.');
