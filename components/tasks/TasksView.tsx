@@ -2044,6 +2044,8 @@ export const TasksView: React.FC<{
                     project={project}
                     onUpdateProject={onUpdateProject}
                     onOpenTask={setModalTask}
+                    onUpdateFromJira={handleUpdateTaskFromJira}
+                    isUpdatingFromJira={modalTask ? updatingFromJiraTaskId === modalTask.id : false}
                 />
             );
         })()}
