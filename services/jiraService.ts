@@ -3,6 +3,7 @@ import { parseJiraDescription, parseJiraDescriptionHTML } from '../utils/jiraDes
 import { getCache, setCache, clearCache } from '../utils/apiCache';
 import { getJiraStatusColor } from '../utils/jiraStatusColors';
 import { logger } from '../utils/logger';
+import { isValidJiraKey } from '../utils/jiraFieldMapper';
 import { loadTestStatusesByJiraKeys } from './supabaseService';
 import { mergeTestCases } from '../utils/testCaseMerge';
 import { useProjectsStore } from '../store/projectsStore';
@@ -790,6 +791,125 @@ const extractJiraComments = async (
     }
     
     return jiraComments;
+};
+
+/** Formato dos dados do formulário de tarefa (TaskForm) para preenchimento após importação do Jira */
+export interface JiraTaskFormData {
+    id: string;
+    title: string;
+    description: string;
+    type: 'Epic' | 'História' | 'Tarefa' | 'Bug';
+    priority: 'Baixa' | 'Média' | 'Alta' | 'Urgente';
+    parentId: string;
+    owner: 'Product' | 'QA' | 'Dev';
+    assignee: 'Product' | 'QA' | 'Dev';
+    tags: string[];
+    severity?: 'Crítico' | 'Alto' | 'Médio' | 'Baixo';
+}
+
+/**
+ * Busca uma issue do Jira pela chave (ex: PROJ-123).
+ * @throws Error se a issue não for encontrada (404) ou em falha de rede
+ */
+export const getJiraIssueByKey = async (
+    config: JiraConfig,
+    issueKey: string
+): Promise<JiraIssue> => {
+    const key = issueKey.trim().toUpperCase();
+    if (!isValidJiraKey(key)) {
+        throw new Error(`ID inválido. Use o formato PROJ-123 (ex: ${key || 'PROJ-123'}).`);
+    }
+    const endpoint = `issue/${key}?expand=renderedFields,comment,attachment&fields=*all`;
+    try {
+        const response = await jiraApiCall<JiraIssue>(config, endpoint, { timeout: 30000 });
+        if (!response?.key) {
+            throw new Error(`Tarefa ${key} não encontrada no Jira.`);
+        }
+        return response;
+    } catch (error) {
+        if (error instanceof Error) {
+            if (error.message.includes('404') || error.message.toLowerCase().includes('not found')) {
+                throw new Error(`Tarefa ${key} não encontrada no Jira.`);
+            }
+            throw error;
+        }
+        throw error;
+    }
+};
+
+/**
+ * Converte uma JiraIssue nos campos do formulário "Adicionar Tarefa" (TaskForm).
+ */
+const jiraIssueToTaskFormData = (issue: JiraIssue, config: JiraConfig): JiraTaskFormData => {
+    const taskType = mapJiraTypeToTaskType(issue.fields?.issuetype?.name);
+    const isBug = taskType === 'Bug';
+
+    let jiraAttachments: Array<{ id: string; filename: string; size: number; created: string; author: string }> = [];
+    if (issue.fields?.attachment && issue.fields.attachment.length > 0) {
+        jiraAttachments = issue.fields.attachment.map((att: any) => ({
+            id: att.id,
+            filename: att.filename,
+            size: att.size,
+            created: att.created,
+            author: att.author?.displayName || 'Desconhecido',
+        }));
+    }
+
+    let description = '';
+    if (issue.renderedFields?.description) {
+        description = parseJiraDescriptionHTML(
+            issue.renderedFields.description,
+            config.url,
+            jiraAttachments
+        );
+    } else if (issue.fields?.description) {
+        description = parseJiraDescriptionHTML(
+            issue.fields.description,
+            config.url,
+            jiraAttachments
+        );
+    }
+
+    let assignee: 'Product' | 'QA' | 'Dev' = 'Product';
+    if (issue.fields?.assignee?.emailAddress) {
+        const email = issue.fields.assignee.emailAddress.toLowerCase();
+        if (email.includes('qa') || email.includes('test')) {
+            assignee = 'QA';
+        } else if (email.includes('dev') || email.includes('developer')) {
+            assignee = 'Dev';
+        } else {
+            assignee = 'Product';
+        }
+    }
+
+    const parentId = issue.fields?.parent?.key || extractEpicLink(issue.fields) || '';
+
+    const data: JiraTaskFormData = {
+        id: issue.key || '',
+        title: issue.fields?.summary || 'Sem título',
+        description,
+        type: taskType,
+        priority: mapJiraPriorityToTaskPriority(issue.fields?.priority?.name),
+        parentId,
+        owner: 'Product',
+        assignee,
+        tags: issue.fields?.labels || [],
+    };
+    if (isBug) {
+        data.severity = mapJiraSeverity(issue.fields?.labels);
+    }
+    return data;
+};
+
+/**
+ * Busca uma issue do Jira pela chave e retorna os dados prontos para preencher o formulário "Adicionar Tarefa".
+ */
+export const fetchJiraTaskFormDataByKey = async (
+    config: JiraConfig,
+    issueKey: string
+): Promise<JiraTaskFormData> => {
+    const issue = await getJiraIssueByKey(config, issueKey.trim());
+    return jiraIssueToTaskFormData(issue, config);
 };
 
 export const importJiraProject = async (

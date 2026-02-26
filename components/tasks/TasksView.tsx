@@ -21,7 +21,7 @@ import { notifyTestFailed, notifyBugCreated, notifyCommentAdded, notifyDependenc
 import { BulkActions } from '../common/BulkActions';
 import { useLocalStorage } from '../../hooks/useLocalStorage';
 import { EmptyState } from '../common/EmptyState';
-import { getJiraConfig, syncTaskToJira } from '../../services/jiraService';
+import { getJiraConfig, syncTaskToJira, fetchJiraTaskFormDataByKey } from '../../services/jiraService';
 import { GeneralIAAnalysisButton } from './GeneralIAAnalysisButton';
 import { generateGeneralIAAnalysis } from '../../services/ai/generalAnalysisService';
 import { FailedTestsReportModal } from './FailedTestsReportModal';
@@ -1180,6 +1180,21 @@ export const TasksView: React.FC<{
         setIsTaskFormOpen(true);
     };
 
+    const handleImportFromJira = useCallback(async (issueKey: string) => {
+        const config = getJiraConfig();
+        if (!config) {
+            handleError(new Error('Configure o Jira nas configurações do projeto primeiro.'), 'Importar do Jira');
+            return null;
+        }
+        try {
+            const data = await fetchJiraTaskFormDataByKey(config, issueKey);
+            handleSuccess('Tarefa importada do Jira. Revise os dados e salve.');
+            return data;
+        } catch (e) {
+            handleError(e instanceof Error ? e : new Error(String(e)), 'Importar do Jira');
+            return null;
+        }
+    }, [handleError, handleSuccess]);
 
     const epics = useMemo(() => project.tasks.filter(t => t.type === 'Epic'), [project.tasks]);
 
@@ -1800,6 +1815,7 @@ export const TasksView: React.FC<{
                 existingTask={editingTask}
                 epics={epics}
                 parentId={defaultParentId}
+                onImportFromJira={handleImportFromJira}
             />
         </Modal>
 
