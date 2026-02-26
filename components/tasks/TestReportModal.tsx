@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Download, Copy, Check } from 'lucide-react';
+import { Download, Copy, Check, Sparkles } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { Modal } from '../common/Modal';
 import { JiraTask } from '../../types';
 import { generateTestReport, TestReportFormat } from '../../utils/testReportGenerator';
@@ -7,11 +8,25 @@ import { downloadFile } from '../../utils/exportService';
 import { Badge } from '../common/Badge';
 import { Button } from '../common/Button';
 import { logger } from '../../utils/logger';
+import { summarizeTestReport } from '../../services/ai/testReportSummaryService';
+
+type ReportFormatOption = TestReportFormat | 'resumido';
 
 interface TestReportModalProps {
   isOpen: boolean;
   onClose: () => void;
   task: JiraTask;
+}
+
+function getReportGeneratorOptions(format: ReportFormatOption) {
+  if (format === 'resumido') {
+    return { format: 'text' as TestReportFormat, concise: true, includeTools: false };
+  }
+  return {
+    format: format as TestReportFormat,
+    concise: false,
+    includeTools: false
+  };
 }
 
 export const TestReportModal: React.FC<TestReportModalProps> = ({
@@ -21,8 +36,9 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({
 }) => {
   const [reportText, setReportText] = useState('');
   const [copied, setCopied] = useState(false);
-  const [format, setFormat] = useState<TestReportFormat>('text');
+  const [format, setFormat] = useState<ReportFormatOption>('text');
   const [generationDate, setGenerationDate] = useState<Date | null>(null);
+  const [summarizing, setSummarizing] = useState(false);
   const executedTestCases = useMemo(
     () => (task?.testCases || []).filter(testCase => testCase.status !== 'Not Run'),
     [task]
@@ -32,7 +48,8 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({
     if (isOpen && task) {
       const now = new Date();
       setGenerationDate(now);
-      const report = generateTestReport(task, now, { format });
+      const opts = getReportGeneratorOptions(format);
+      const report = generateTestReport(task, now, opts);
       setReportText(report);
       setCopied(false);
     } else {
@@ -49,7 +66,8 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({
     if (!generationDate) {
       setGenerationDate(baseDate);
     }
-    const report = generateTestReport(task, baseDate, { format });
+    const opts = getReportGeneratorOptions(format);
+    const report = generateTestReport(task, baseDate, opts);
     setReportText(report);
     setCopied(false);
   }, [format, generationDate, isOpen, task]);
@@ -92,9 +110,27 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({
     );
   };
 
-  const formatOptions: Array<{ label: string; value: TestReportFormat; description: string }> = [
+  const handleSummarizeWithAI = async () => {
+    if (!reportText.trim() || summarizing) {
+      return;
+    }
+    setSummarizing(true);
+    try {
+      const summarized = await summarizeTestReport(reportText);
+      setReportText(summarized);
+      toast.success('Relatório resumido com IA.');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Erro ao resumir com IA. Verifique a API key do Gemini em Configurações.';
+      toast.error(message);
+    } finally {
+      setSummarizing(false);
+    }
+  };
+
+  const formatOptions: Array<{ label: string; value: ReportFormatOption; description: string }> = [
     { label: 'Texto estruturado', value: 'text', description: 'Formato ideal para colar em campos comuns.' },
-    { label: 'Markdown', value: 'markdown', description: 'Melhor para docs e wikis com formatação.' }
+    { label: 'Markdown', value: 'markdown', description: 'Melhor para docs e wikis com formatação.' },
+    { label: 'Resumido', value: 'resumido', description: 'Versão compacta, sem ferramentas de teste.' }
   ];
 
   const getStatusBadge = (status: string) => {
@@ -114,6 +150,17 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({
             Copie o registro abaixo para colar em outras plataformas
           </p>
           <div className="flex flex-wrap items-center justify-end gap-3">
+            <Button
+              type="button"
+              variant="brandOutline"
+              size="panelXs"
+              onClick={handleSummarizeWithAI}
+              disabled={summarizing || !reportText.trim()}
+              aria-label="Resumir relatório com IA"
+            >
+              <Sparkles className="w-3.5 h-3.5" aria-hidden />
+              {summarizing ? 'Resumindo…' : 'Resumir com IA'}
+            </Button>
             <Button
               type="button"
               variant="brandOutline"
@@ -153,7 +200,7 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({
         {/* Formato do relatório - cards selecionáveis (v0 style) */}
         <div className="flex-shrink-0 flex flex-col gap-3">
           <p className="text-sm font-semibold text-base-content">Formato do relatório</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {formatOptions.map((option) => {
               const isSelected = format === option.value;
               return (

@@ -125,7 +125,7 @@ export function ExecutionAutomationCard({
   automationRatio,
   projectName,
   executionTrend,
-  automationTrend = '+5.2% esta semana',
+  automationTrend,
 }: ExecutionAutomationProps) {
   const executionPercent =
     totalTestCases > 0
@@ -239,12 +239,14 @@ export function ExecutionAutomationCard({
               <span className="text-xl font-bold text-base-content">
                 Automatizados
               </span>
-              <div className="flex items-center gap-1 mt-1">
-                <TrendingUp className="w-4 h-4 text-success shrink-0" aria-hidden />
-                <span className="text-xs text-success font-medium">
-                  {automationTrend}
-                </span>
-              </div>
+              {automationTrend != null && automationTrend !== '' && (
+                <div className="flex items-center gap-1 mt-1">
+                  <TrendingUp className="w-4 h-4 text-success shrink-0" aria-hidden />
+                  <span className="text-xs text-success font-medium">
+                    {automationTrend}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         </div>

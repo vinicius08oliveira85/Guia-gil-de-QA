@@ -45,6 +45,26 @@ VITE_SUPABASE_PROXY_URL=/api/supabaseProxy
 # VITE_SUPABASE_ANON_KEY=sua-anon-key-aqui
 ```
 
+## Desenvolvimento local (localhost)
+
+**Um comando só (recomendado):** na raiz do projeto execute `npm run dev:local`. Quando o servidor subir, abra **http://localhost:3000**. O app e o proxy Supabase rodam juntos. No `.env` use `VITE_SUPABASE_PROXY_URL=/api/supabaseProxy` e preencha `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` (veja exemplo em `.env.example`).  
+**Primeira vez:** se aparecer erro de credenciais, rode `npx vercel login` no terminal, faça login no navegador e depois execute `npm run dev:local` de novo.
+
+- **Opção 1 – `npm run dev` (porta 5173)**  
+  O app abre em `http://localhost:5173`. O Vite encaminha `/api/*` para `http://localhost:3000`.  
+  Para o Supabase funcionar no localhost:
+  1. Em um terminal: `npx vercel dev` (sobe o backend na porta 3000).
+  2. Em outro: `npm run dev` (sobe o frontend na porta 5173).
+  3. No `.env`: `VITE_SUPABASE_PROXY_URL=/api/supabaseProxy` (caminho relativo; o proxy do Vite envia para a porta 3000).
+  4. No mesmo `.env` (para o `vercel dev` usar): `SUPABASE_URL=https://SEU_PROJECT_REF.supabase.co` e `SUPABASE_SERVICE_ROLE_KEY=sua-service-role-key`.
+
+- **Opção 2 – Só `vercel dev` (porta 3000)**  
+  Rode `npx vercel dev` e abra `http://localhost:3000`. O app e o proxy Supabase rodam juntos.  
+  No `.env`: `VITE_SUPABASE_PROXY_URL=http://localhost:3000/api/supabaseProxy` (ou `/api/supabaseProxy` se o frontend for servido na mesma origem).
+
+- **Opção 3 – Sem proxy (apenas IndexedDB ou SDK direto)**  
+  Use só `npm run dev` e `http://localhost:5173`. Para falar com o Supabase sem proxy, configure `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY` (acesso direto; em produção pode haver CORS).
+
 ## ✅ Seu Token Já Está Configurado!
 
 O token do Figma deve ser configurado acima:
@@ -98,6 +118,17 @@ Se o app em produção retornar 500 em `/api/supabaseProxy` e no console aparece
 
 4. **Validar**
    - Abra o app em produção (ex.: `https://guia-gil-de-qa.vercel.app`), DevTools → Console e Rede. Não deve haver 500 em `/api/supabaseProxy` nem "Invalid API key". O status deve indicar sincronização com a nuvem em vez de "Salvo localmente (Supabase indisponível)".
+
+## Aviso no console: "message channel closed before a response was received"
+
+Se aparecer no console (como *Uncaught in promise*):
+
+`A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received`
+
+**Não é um bug do QA Agile Guide.** Esse erro vem da API de mensagens de **extensões do Chrome** (`chrome.runtime.onMessage`). Alguma extensão instalada (bloqueador de anúncios, React DevTools, Cursor, etc.) indica que vai responder à mensagem de forma assíncrona e não envia a resposta a tempo.
+
+- **O que fazer:** pode ignorar; o app funciona normalmente. Para confirmar que é extensão: abra o app em uma janela anônima (extensões costumam ficar desativadas) — se o aviso sumir, a causa é uma extensão.
+- Nenhuma alteração no código do projeto é necessária.
 
 ## 🔒 Segurança
 

@@ -1404,14 +1404,31 @@ export const TasksView: React.FC<{
     );
 
     const executionProps = useMemo(
-        () => ({
-            executedTestCases: stats.executedTests,
-            totalTestCases: stats.totalTests,
-            automationRatio: automationRate,
-            projectName: project?.name ?? 'Projeto',
-            automationTrend: '+5.2% esta semana',
-        }),
-        [stats.executedTests, stats.totalTests, automationRate, project?.name]
+        () => {
+            const executionTrendText =
+                stats.totalTests > 0
+                    ? `${stats.executedTests} de ${stats.totalTests} executados`
+                    : '';
+            const automationTrendText =
+                stats.totalTests > 0
+                    ? `${stats.automatedTests} de ${stats.totalTests} casos`
+                    : '';
+            return {
+                executedTestCases: stats.executedTests,
+                totalTestCases: stats.totalTests,
+                automationRatio: automationRate,
+                projectName: project?.name ?? 'Projeto',
+                executionTrend: executionTrendText,
+                automationTrend: automationTrendText,
+            };
+        },
+        [
+            stats.executedTests,
+            stats.totalTests,
+            stats.automatedTests,
+            automationRate,
+            project?.name,
+        ]
     );
 
     const taskTree = useMemo(() => {

@@ -260,6 +260,27 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                                     <span>Salvo localmente (Supabase indisponível)</span>
                                 </div>
                             )}
+                            {supabaseAvailable && lastSaveToSupabase === false && saveStatus === 'idle' && (
+                                <div className="flex items-center gap-2 flex-wrap">
+                                    <span className="text-warning">Salvo localmente (nuvem indisponível)</span>
+                                    <button
+                                        type="button"
+                                        onClick={handleSaveToSupabase}
+                                        disabled={isSavingToSupabase}
+                                        className="btn btn-sm btn-outline btn-primary"
+                                        aria-label="Sincronizar projeto com a nuvem"
+                                    >
+                                        {isSavingToSupabase ? (
+                                            <>
+                                                <Spinner small />
+                                                <span>Salvando...</span>
+                                            </>
+                                        ) : (
+                                            'Sincronizar com a nuvem'
+                                        )}
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>
