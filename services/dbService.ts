@@ -284,6 +284,33 @@ export const updateProject = async (project: Project): Promise<SaveResult> => {
 };
 
 /**
+ * Escreve um projeto apenas no IndexedDB (sem chamar Supabase).
+ * Usado após Sincronizar (persistir lista final) e opcionalmente após Salvar (alinhar cache).
+ * Aplica cleanup e migrateTestCases para manter consistência com o restante do app.
+ */
+export const writeProjectToIndexedDBOnly = async (project: Project): Promise<void> => {
+  const cleaned = cleanupTestCasesForNonTaskTypesSync(project);
+  const migrated: Project = {
+    ...cleaned,
+    tasks: cleaned.tasks.map(task => ({
+      ...task,
+      testCases: migrateTestCases(task.testCases || []),
+    })),
+  };
+  const [toWrite] = cleanupTestCasesForProjects([migrated]);
+  if (!toWrite) return;
+
+  const db = await openDB();
+  await new Promise<void>((resolve, reject) => {
+    const transaction = db.transaction(STORE_NAME, 'readwrite');
+    const store = transaction.objectStore(STORE_NAME);
+    const request = store.put(toWrite);
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => resolve();
+  });
+};
+
+/**
  * Salva um projeto apenas no Supabase (sem salvar no IndexedDB)
  * Usado para salvamento manual pelo usuário
  */

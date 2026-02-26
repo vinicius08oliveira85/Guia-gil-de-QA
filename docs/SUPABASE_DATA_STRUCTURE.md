@@ -4,6 +4,11 @@
 
 O Supabase armazena todos os dados do projeto em uma única tabela `projects` com um campo JSONB chamado `data`. Esta estrutura permite armazenar o projeto completo de forma hierárquica, incluindo todas as tarefas e seus dados de teste.
 
+## Salvar e Sincronizar
+
+- **Salvar:** Envia o projeto atual (do estado da aplicação) para o Supabase. O payload em `data` contém o objeto `Project` completo: dados importados do Jira e todas as alterações feitas no app (tarefas, casos de teste, estratégias, cenários BDD, documentos, histórico de métricas, análises de IA, etc.). Após sucesso, o cache local (IndexedDB) é atualizado com o mesmo projeto.
+- **Sincronizar:** Traz os projetos do Supabase e usa o Supabase como **fonte da verdade**: para cada projeto que existe no remoto, a versão do Supabase substitui a local (sem merge). Projetos que existem apenas no dispositivo são mantidos. A lista final é persistida no IndexedDB, de modo que em qualquer dispositivo, após Salvar em um e Sincronizar em outro, o usuário vê exatamente o que foi salvo.
+
 ## Estrutura da Tabela `projects`
 
 ```sql
