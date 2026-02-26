@@ -7,6 +7,13 @@ export default defineConfig({
   server: {
     port: 5173,
     host: '0.0.0.0',
+    // Em desenvolvimento local: encaminha /api/* para o servidor que expõe o proxy Supabase (ex.: vercel dev na porta 3000)
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      },
+    },
   },
   plugins: [
     react(),

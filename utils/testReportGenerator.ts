@@ -1,10 +1,14 @@
-import { JiraTask } from '../types';
+import { JiraTask, TestCase } from '../types';
 import { normalizeExecutedStrategy } from './testCaseMigration';
 
 export type TestReportFormat = 'text' | 'markdown';
 
-interface GenerateTestReportOptions {
+export interface GenerateTestReportOptions {
   format?: TestReportFormat;
+  /** Exibir "Ferramentas Utilizadas" nas estratégias. Default: false. */
+  includeTools?: boolean;
+  /** Saída compacta: menos linhas em branco, casos em uma linha cada. Default: false. */
+  concise?: boolean;
 }
 
 /**
@@ -29,11 +33,17 @@ export function generateTestReport(
   options: GenerateTestReportOptions = {}
 ): string {
   const format: TestReportFormat = options.format ?? 'text';
+  const includeTools = options.includeTools ?? false;
+  const concise = options.concise ?? false;
   const lines: string[] = [];
   const allTestCases = task.testCases || [];
   const executedTestCases = allTestCases.filter(
     tc => tc.status !== 'Not Run'
   );
+
+  if (concise) {
+    return generateConciseReport(task, executedTestCases, allTestCases, generatedAt);
+  }
 
   // Cabeçalho
   lines.push(`TASK: ${task.id}`);
@@ -47,78 +57,19 @@ export function generateTestReport(
     lines.push('ESTRATÉGIAS REALIZADAS:');
     lines.push('');
 
-    // Coletar estratégias únicas dos casos executados
-    const strategyMap = new Map<string, {
-      testType: string;
-      description: string;
-      tools: Set<string>;
-    }>();
-
-    executedTestCases.forEach(testCase => {
-      const executedStrategies = normalizeExecutedStrategy(testCase.executedStrategy);
-      
-      executedStrategies.forEach(strategyName => {
-        if (!strategyMap.has(strategyName)) {
-          // Buscar estratégia em task.testStrategy pelo testType
-          const strategyIndex = task.testStrategy?.findIndex(s => s.testType === strategyName);
-          const strategy = strategyIndex !== undefined && strategyIndex >= 0 
-            ? task.testStrategy![strategyIndex] 
-            : undefined;
-          
-          // Coletar ferramentas: priorizar task.strategyTools[índice], depois testCase.toolsUsed, depois strategy.tools
-          const toolsSet = new Set<string>();
-          
-          // 1. Prioridade: Ferramentas da estratégia em task.strategyTools
-          if (strategyIndex !== undefined && strategyIndex >= 0 && task.strategyTools?.[strategyIndex]) {
-            task.strategyTools[strategyIndex].forEach(tool => toolsSet.add(tool));
-          }
-          
-          // 2. Ferramentas do testCase
-          if (testCase.toolsUsed && testCase.toolsUsed.length > 0) {
-            testCase.toolsUsed.forEach(tool => toolsSet.add(tool));
-          }
-          
-          // 3. Ferramentas sugeridas da estratégia (se não houver outras)
-          if (toolsSet.size === 0 && strategy?.tools) {
-            strategy.tools.split(',').forEach(tool => {
-              const trimmed = tool.trim();
-              if (trimmed) toolsSet.add(trimmed);
-            });
-          }
-
-          strategyMap.set(strategyName, {
-            testType: strategyName,
-            description: strategy?.description || strategyName,
-            tools: toolsSet
-          });
-        } else {
-          // Adicionar ferramentas deste caso de teste à estratégia existente
-          const existing = strategyMap.get(strategyName)!;
-          
-          // Buscar índice da estratégia para verificar task.strategyTools
-          const strategyIndex = task.testStrategy?.findIndex(s => s.testType === strategyName);
-          if (strategyIndex !== undefined && strategyIndex >= 0 && task.strategyTools?.[strategyIndex]) {
-            task.strategyTools[strategyIndex].forEach(tool => existing.tools.add(tool));
-          }
-          
-          if (testCase.toolsUsed && testCase.toolsUsed.length > 0) {
-            testCase.toolsUsed.forEach(tool => existing.tools.add(tool));
-          }
-        }
-      });
-    });
-
-    // Ordenar estratégias e formatar
-    const sortedStrategies = Array.from(strategyMap.values()).sort((a, b) => 
+    const strategyMap = buildStrategyMap(task, executedTestCases, includeTools);
+    const sortedStrategies = Array.from(strategyMap.values()).sort((a, b) =>
       a.testType.localeCompare(b.testType)
     );
 
     sortedStrategies.forEach((strategy, index) => {
-      const toolsList = Array.from(strategy.tools).join(', ') || 'Não informado';
       lines.push(`${index + 1}. ${strategy.testType}: ${strategy.description}`);
       lines.push('');
-      lines.push(`   Ferramentas Utilizadas: ${toolsList}`);
-      lines.push('');
+      if (includeTools) {
+        const toolsList = Array.from(strategy.tools).join(', ') || 'Não informado';
+        lines.push(`   Ferramentas Utilizadas: ${toolsList}`);
+        lines.push('');
+      }
       lines.push('');
     });
   } else {
@@ -142,16 +93,14 @@ export function generateTestReport(
       const statusEmoji = testCase.status === 'Passed' ? '✅' : '❌';
       const statusLabel = testCase.status === 'Passed' ? 'Aprovado' : 'Reprovado';
       const description = testCase.description || `Teste ${index + 1}`;
-      
-      // Obter testType do executedStrategy (primeiro se houver múltiplos)
+
       const executedStrategies = normalizeExecutedStrategy(testCase.executedStrategy);
       const testType = executedStrategies.length > 0 ? executedStrategies[0] : 'Não especificado';
 
       lines.push(`${index + 1}. ${description} - Status: ${statusEmoji} ${statusLabel}`);
       lines.push('');
       lines.push(`   Testes Executados: ${testType}`);
-      
-      // Adicionar Resultado Encontrado se existir
+
       if (testCase.observedResult && testCase.observedResult.trim()) {
         if (format === 'markdown') {
           lines.push('');
@@ -161,7 +110,7 @@ export function generateTestReport(
           lines.push(`   RESULTADO ENCONTRADO: ${testCase.observedResult}`);
         }
       }
-      
+
       lines.push('');
       lines.push('');
     });
@@ -182,6 +131,101 @@ export function generateTestReport(
   lines.push(`Não Executados: ${notRun}`);
   lines.push(`Concluído em: ${formatDateTime(generatedAt)}`);
 
+  return lines.join('\n');
+}
+
+type StrategyEntry = { testType: string; description: string; tools: Set<string> };
+
+function buildStrategyMap(
+  task: JiraTask,
+  executedTestCases: TestCase[],
+  includeTools: boolean
+): Map<string, StrategyEntry> {
+  const strategyMap = new Map<string, StrategyEntry>();
+
+  executedTestCases.forEach(testCase => {
+    const executedStrategies = normalizeExecutedStrategy(testCase.executedStrategy);
+
+    executedStrategies.forEach(strategyName => {
+      if (!strategyMap.has(strategyName)) {
+        const strategyIndex = task.testStrategy?.findIndex(s => s.testType === strategyName);
+        const strategy = strategyIndex !== undefined && strategyIndex >= 0
+          ? task.testStrategy![strategyIndex]
+          : undefined;
+
+        const toolsSet = new Set<string>();
+        if (includeTools) {
+          if (strategyIndex !== undefined && strategyIndex >= 0 && task.strategyTools?.[strategyIndex]) {
+            task.strategyTools[strategyIndex].forEach(tool => toolsSet.add(tool));
+          }
+          if (testCase.toolsUsed?.length) {
+            testCase.toolsUsed.forEach(tool => toolsSet.add(tool));
+          }
+          if (toolsSet.size === 0 && strategy?.tools) {
+            strategy.tools.split(',').forEach(tool => {
+              const t = tool.trim();
+              if (t) toolsSet.add(t);
+            });
+          }
+        }
+
+        strategyMap.set(strategyName, {
+          testType: strategyName,
+          description: strategy?.description || strategyName,
+          tools: toolsSet
+        });
+      } else if (includeTools) {
+        const existing = strategyMap.get(strategyName)!;
+        const strategyIndex = task.testStrategy?.findIndex(s => s.testType === strategyName);
+        if (strategyIndex !== undefined && strategyIndex >= 0 && task.strategyTools?.[strategyIndex]) {
+          task.strategyTools[strategyIndex].forEach(tool => existing.tools.add(tool));
+        }
+        if (testCase.toolsUsed?.length) {
+          testCase.toolsUsed.forEach(tool => existing.tools.add(tool));
+        }
+      }
+    });
+  });
+
+  return strategyMap;
+}
+
+function generateConciseReport(
+  task: JiraTask,
+  executedTestCases: TestCase[],
+  allTestCases: TestCase[],
+  generatedAt: Date
+): string {
+  const lines: string[] = [];
+  lines.push(`TASK: ${task.id} | Título: ${task.title ?? '-'}`);
+  lines.push('');
+
+  if (executedTestCases.length > 0) {
+    const strategyNames = new Set<string>();
+    executedTestCases.forEach(tc => {
+      normalizeExecutedStrategy(tc.executedStrategy).forEach(s => strategyNames.add(s));
+    });
+    lines.push('Estratégias: ' + Array.from(strategyNames).sort().join(', '));
+    lines.push('');
+    lines.push('Casos de teste:');
+    executedTestCases.forEach((tc, index) => {
+      const statusEmoji = tc.status === 'Passed' ? '✅' : '❌';
+      const statusLabel = tc.status === 'Passed' ? 'Aprovado' : 'Reprovado';
+      const desc = tc.description || `Teste ${index + 1}`;
+      const result = tc.observedResult?.trim() ? ` [${tc.observedResult}]` : '';
+      lines.push(`${index + 1}. ${desc} – ${statusEmoji} ${statusLabel}${result}`);
+    });
+  } else {
+    lines.push('Nenhum teste executado até o momento.');
+  }
+
+  lines.push('');
+  const total = allTestCases.length;
+  const approved = allTestCases.filter(tc => tc.status === 'Passed').length;
+  const failed = allTestCases.filter(tc => tc.status === 'Failed').length;
+  const notRun = allTestCases.filter(tc => tc.status === 'Not Run').length;
+  lines.push(`Resumo: ${total} total | Aprovados: ${approved} | Reprovados: ${failed} | Não executados: ${notRun}`);
+  lines.push(`Concluído em: ${formatDateTime(generatedAt)}`);
   return lines.join('\n');
 }
 
