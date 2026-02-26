@@ -33,6 +33,15 @@ import { normalizeExecutedStrategy } from '../../utils/testCaseMigration';
 
 const TASK_ID_REGEX = /^([A-Z]+)-(\d+)/i;
 
+/** Monta texto de contexto dos anexos da tarefa para enriquecer prompts de IA (casos de teste, BDD, estratégias). */
+function buildAttachmentsContextForTask(task: JiraTask): string {
+  const names: string[] = [];
+  (task.attachments || []).forEach((a) => names.push(a.name));
+  (task.jiraAttachments || []).forEach((a) => names.push(a.filename));
+  if (names.length === 0) return '';
+  return `A tarefa possui os seguintes anexos (podem conter requisitos, especificações ou evidências relevantes): ${names.join(', ')}.`;
+}
+
 // Função para mapear status do Jira para status interno (mesma lógica de jiraService.ts)
 const mapJiraStatusToTaskStatus = (jiraStatus: string | undefined | null): 'To Do' | 'In Progress' | 'Done' => {
     if (!jiraStatus) return 'To Do';
@@ -418,7 +427,8 @@ export const TasksView: React.FC<{
             }
             
             const aiService = getAIService();
-            const scenarios = await aiService.generateBddScenarios(task.title, task.description, project);
+            const attachmentsContext = buildAttachmentsContextForTask(task);
+            const scenarios = await aiService.generateBddScenarios(task.title, task.description, project, attachmentsContext || undefined);
             const updatedTask = { ...task, bddScenarios: [...(task.bddScenarios || []), ...scenarios] };
             const newTasks = project.tasks.map(t => t.id === taskId ? updatedTask : t);
             onUpdateProject({ ...project, tasks: newTasks });
@@ -474,13 +484,15 @@ export const TasksView: React.FC<{
             }
             
             const aiService = getAIService();
+            const attachmentsContext = buildAttachmentsContextForTask(task);
             const { strategy, testCases } = await aiService.generateTestCasesForTask(
                 task.title,
                 task.description,
                 task.bddScenarios,
                 detailLevel,
                 task.type,
-                project
+                project,
+                attachmentsContext || undefined
             );
             const updatedTask = { ...task, testStrategy: strategy, testCases };
             const newTasks = project.tasks.map(t => t.id === updatedTask.id ? updatedTask : t);
@@ -507,7 +519,7 @@ export const TasksView: React.FC<{
             }
             
             const aiService = getAIService();
-                        
+            const attachmentsContext = buildAttachmentsContextForTask(task);
             // Gerar BDD, estratégias e casos de teste em uma única chamada
             const { strategy, testCases, bddScenarios } = await aiService.generateTestCasesForTask(
                 task.title,
@@ -515,7 +527,8 @@ export const TasksView: React.FC<{
                 undefined, // BDDs agora são gerados na mesma chamada
                 detailLevel,
                 task.type,
-                project
+                project,
+                attachmentsContext || undefined
             );
             
             // Atualizar a tarefa com todos os dados sincronizados (substituir, não adicionar)
@@ -960,8 +973,9 @@ export const TasksView: React.FC<{
                     });
 
                     try {
+                        const attachmentsContext = buildAttachmentsContextForTask(task);
                         const scenarios = await withTimeout(
-                            aiService.generateBddScenarios(task.title, task.description || '', project),
+                            aiService.generateBddScenarios(task.title, task.description || '', project, attachmentsContext || undefined),
                             60000
                         );
                         
@@ -1014,6 +1028,7 @@ export const TasksView: React.FC<{
                         // Usar a tarefa atualizada do array para garantir que BDDs recém-gerados sejam incluídos
                         const currentTask = taskIndex !== -1 ? updatedTasks[taskIndex] : task;
                         
+                        const attachmentsContext = buildAttachmentsContextForTask(currentTask);
                         const { strategy, testCases } = await withTimeout(
                             aiService.generateTestCasesForTask(
                                 currentTask.title, 
@@ -1021,7 +1036,8 @@ export const TasksView: React.FC<{
                                 currentTask.bddScenarios || [], // Garantir que seja array
                                 'Padrão',
                                 currentTask.type,
-                                project
+                                project,
+                                attachmentsContext || undefined
                             ),
                             60000
                         );
