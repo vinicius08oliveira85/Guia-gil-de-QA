@@ -1776,6 +1776,11 @@ export const TasksView: React.FC<{
                                         const { selectProject } = useProjectsStore.getState();
                                         selectProject(projectId);
                                     }}
+                                    onEditTask={(taskId) => {
+                                        const task = project.tasks.find(t => t.id === taskId);
+                                        if (task) openTaskFormForEdit(task);
+                                        setSelectedTasks(new Set());
+                                    }}
                                 />
                                 <button
                                     onClick={() => setIsLinkModalOpen(true)}
