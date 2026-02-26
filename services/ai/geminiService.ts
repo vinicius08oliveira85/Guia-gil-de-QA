@@ -107,7 +107,8 @@ export class GeminiService implements AIService {
     bddScenarios?: BddScenario[],
     detailLevel: TestCaseDetailLevel = 'Padrão',
     taskType?: JiraTaskType,
-    project?: Project | null
+    project?: Project | null,
+    attachmentsContext?: string
   ): Promise<string> {
     const documentContext = await getFormattedContext(project || null);
 
@@ -205,6 +206,13 @@ export class GeminiService implements AIService {
       Título: ${title}
       Descrição: ${description}
       ${taskType ? `Tipo: ${taskType}` : ''}
+      ${attachmentsContext ? `
+      ════════════════════════════════════════════════════════════════
+      ANEXOS DA TAREFA
+      ════════════════════════════════════════════════════════════════
+      ${attachmentsContext}
+      Considere as informações contidas ou sugeridas pelos anexos ao gerar estratégias, casos de teste e cenários BDD.
+      ` : ''}
       
       ${taskType === 'Bug' ? `
       ════════════════════════════════════════════════════════════════
@@ -314,9 +322,10 @@ export class GeminiService implements AIService {
     bddScenarios?: BddScenario[],
     detailLevel: TestCaseDetailLevel = 'Padrão',
     taskType?: JiraTaskType,
-    project?: Project | null
+    project?: Project | null,
+    attachmentsContext?: string
   ): Promise<{ strategy: TestStrategy[]; testCases: TestCase[]; bddScenarios: BddScenario[] }> {
-    const prompt = await this.buildRobustTestGenerationPrompt(title, description, bddScenarios, detailLevel, taskType, project);
+    const prompt = await this.buildRobustTestGenerationPrompt(title, description, bddScenarios, detailLevel, taskType, project, attachmentsContext);
 
     try {
       const response = await callGeminiWithRetry({
@@ -606,7 +615,7 @@ export class GeminiService implements AIService {
     }
   }
 
-  async generateBddScenarios(title: string, description: string, project?: Project | null): Promise<BddScenario[]> {
+  async generateBddScenarios(title: string, description: string, project?: Project | null, attachmentsContext?: string): Promise<BddScenario[]> {
     const documentContext = await getFormattedContext(project || null);
     const prompt = `${documentContext}
     Aja como um especialista em BDD (Behavior-Driven Development). Para a tarefa a seguir, crie cenários de comportamento usando a sintaxe Gherkin (Dado, Quando, Então).
@@ -619,6 +628,10 @@ export class GeminiService implements AIService {
 
     Título da Tarefa: ${title}
     Descrição: ${description}
+    ${attachmentsContext ? `
+    Anexos da tarefa (considere para enriquecer os cenários):
+    ${attachmentsContext}
+    ` : ''}
 
     Sua resposta DEVE ser um objeto JSON com uma única chave "scenarios".
     "scenarios" deve ser um array de objetos, onde cada objeto tem duas chaves:
