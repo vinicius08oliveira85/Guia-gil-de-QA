@@ -28,9 +28,11 @@ const supabase =
 
 const DEFAULT_USER_ID = 'anonymous-shared';
 
-// Limite do Vercel para serverless functions: 4.5MB
-// Deixamos uma margem de segurança: 4MB
-const MAX_PAYLOAD_SIZE = 4 * 1024 * 1024; // 4MB em bytes
+// Vercel aceita ~4.5MB por requisição, mas o app envia o projeto
+// comprimido (gzip/base64). Aqui limitamos o tamanho do JSON
+// DESCOMPRIMIDO para 8MB, o que na prática mantém o body da
+// requisição dentro do limite da plataforma na maior parte dos casos.
+const MAX_PAYLOAD_SIZE = 8 * 1024 * 1024; // 8MB em bytes
 
 const allowCors = (res: VercelResponse) => {
   res.setHeader('Access-Control-Allow-Origin', '*');

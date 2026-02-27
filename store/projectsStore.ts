@@ -261,10 +261,11 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
                           errorMessage.includes('failed to fetch') ||
                           errorMessage.includes('network');
       
-      // Tratamento específico para erro 413 (Payload Too Large)
+      // Tratamento específico para erro 413 (Payload Too Large) ou mensagem de projeto muito grande
       if (errorMessage.includes('413') || 
           errorMessage.includes('payload muito grande') || 
-          errorMessage.includes('content too large')) {
+          errorMessage.includes('content too large') ||
+          errorMessage.includes('muito grande')) {
         logger.debug(
           `Projeto "${project.name}" muito grande para Supabase. Salvo apenas localmente.`,
           'ProjectsStore'

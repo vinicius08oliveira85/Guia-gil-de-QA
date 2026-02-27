@@ -40,7 +40,7 @@ const loadProjectsTimeoutMs = 32000; // 32s para GET de projetos (proxy usa 28s;
 const timeoutErrorMessage = `Timeout: requisição ao Supabase excedeu ${requestTimeoutMs / 1000}s`;
 
 // Inicializar cliente Supabase direto se variáveis estiverem disponíveis
-// Usado para salvamento direto (evita limite de 4MB do Vercel)
+// Usado para salvamento direto (evita limite de 8MB do proxy)
 // Leitura continua usando proxy para manter segurança
 if (supabaseUrl && supabaseAnonKey) {
     logger.info('Inicializando SDK Supabase direto para salvamento', 'supabaseService');
@@ -514,7 +514,7 @@ export const saveProjectToSupabase = async (project: Project): Promise<void> => 
                             }
                         }
                         throw new Error(
-                            `O projeto "${project.name}" é muito grande para o proxy (limite 4MB). O projeto foi salvo apenas localmente.`
+                            `O projeto "${project.name}" é muito grande para o proxy (limite 8MB). O projeto foi salvo apenas localmente.`
                         );
                     }
                     if (isCorsError(error)) {
@@ -573,12 +573,12 @@ export const saveProjectToSupabase = async (project: Project): Promise<void> => 
                     if (isPayloadTooLargeError(error)) {
                         if (isProduction()) {
                             throw new Error(
-                                `O projeto "${project.name}" é muito grande para o proxy (limite 4MB). O projeto foi salvo apenas localmente.`
+                                `O projeto "${project.name}" é muito grande para o proxy (limite 8MB). O projeto foi salvo apenas localmente.`
                             );
                         }
                         if (sdkAlreadyFailedWith403 || !supabase) {
                             throw new Error(
-                                `O projeto "${project.name}" é muito grande para o proxy (limite 4MB) e o salvamento direto não está disponível. O projeto foi salvo apenas localmente.`
+                                `O projeto "${project.name}" é muito grande para o proxy (limite 8MB) e o salvamento direto não está disponível. O projeto foi salvo apenas localmente.`
                             );
                         }
                         logger.debug('Erro 413: Payload muito grande para salvar via proxy. Tentando SDK direto...', 'supabaseService', error);
@@ -588,7 +588,7 @@ export const saveProjectToSupabase = async (project: Project): Promise<void> => 
                         } catch (sdkError) {
                             logger.warn('Erro ao salvar via SDK após falha do proxy', 'supabaseService', sdkError);
                             throw new Error(
-                                `O projeto "${project.name}" é muito grande para ser salvo via proxy (limite 4MB) e falhou ao salvar direto no Supabase. O projeto foi salvo apenas localmente.`
+                                `O projeto "${project.name}" é muito grande para ser salvo via proxy (limite 8MB) e falhou ao salvar direto no Supabase. O projeto foi salvo apenas localmente.`
                             );
                         }
                     }
@@ -821,7 +821,7 @@ export const deleteProjectFromSupabase = async (projectId: string): Promise<void
 
 /**
  * Verifica se Supabase está configurado e disponível
- * Considera tanto proxy quanto SDK direto (SDK direto usado para salvamento, evita limite 4MB)
+ * Considera tanto proxy quanto SDK direto (SDK direto usado para salvamento, evita limite 8MB do proxy)
  */
 /**
  * Diagnóstico da configuração do Supabase

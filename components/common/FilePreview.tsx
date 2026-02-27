@@ -83,6 +83,7 @@ export const FilePreview: React.FC<FilePreviewProps> = ({
                     <div className="flex flex-col items-center justify-center w-full h-full bg-base-200 text-base-content/70 p-2 text-center">
                         <ImageIcon size={iconSize} className="text-base-content/50" />
                         <span className="text-xs mt-1 truncate w-full" title={filename}>{filename}</span>
+                        <span className="text-xs mt-0.5 text-error/80">{typeof error === 'string' ? error : 'Erro ao carregar'}</span>
                         <span className="text-[10px] mt-0.5 text-base-content/50">Clique para abrir</span>
                     </div>
                 ) : displayUrl ? (

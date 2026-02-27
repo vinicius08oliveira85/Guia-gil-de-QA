@@ -151,7 +151,12 @@ const App: React.FC = () => {
         try {
             await updateProject(updatedProject);
             if (shouldShowToast) {
-                handleSuccess('Projeto atualizado com sucesso!');
+                const { lastSaveToSupabase } = useProjectsStore.getState();
+                if (lastSaveToSupabase) {
+                    handleSuccess('Projeto atualizado com sucesso!');
+                } else {
+                    handleSuccess('Projeto salvo apenas neste dispositivo (não foi possível sincronizar com a nuvem).');
+                }
             }
         } catch (error) {
             // Verificar se é erro de rede - não mostrar toast de erro se for

@@ -8,14 +8,13 @@ import { sanitizeHTML } from '../utils/sanitize';
 import { Badge } from './common/Badge';
 import { EmptyState } from './common/EmptyState';
 import { createDocumentFromFile, convertDocumentFileToProjectDocument } from '../utils/documentService';
-import { SolusSchemaModal } from './solus/SolusSchemaModal';
 import { SpecificationDocumentProcessor } from './settings/SpecificationDocumentProcessor';
 import { FileImportModal } from './common/FileImportModal';
 import { FileViewer } from './common/FileViewer';
 import { viewFileInNewTab } from '../services/fileViewerService';
 import { DocumentStatsCards } from './documents/DocumentStatsCards';
 import { DocumentCard } from './documents/DocumentCard';
-import { Search, Upload, FileDown } from 'lucide-react';
+import { Search, Upload } from 'lucide-react';
 
 interface DocumentWithMetadata extends ProjectDocument {
     uploadedAt?: string;
@@ -39,20 +38,9 @@ export const DocumentsView: React.FC<{ project: Project; onUpdateProject: (proje
     const [selectedDoc, setSelectedDoc] = useState<DocumentWithMetadata | null>(null);
     const [showPreview, setShowPreview] = useState(false);
     const [editingDoc, setEditingDoc] = useState<DocumentWithMetadata | null>(null);
-    const [isSolusSchemaOpen, setIsSolusSchemaOpen] = useState(false);
     const [isImportModalOpen, setIsImportModalOpen] = useState(false);
     const [viewingDocument, setViewingDocument] = useState<DocumentWithMetadata | null>(null);
     const { handleError, handleSuccess, handleWarning } = useErrorHandler();
-    const normalizedProjectName = useMemo(
-        () =>
-            project.name
-                .normalize('NFD')
-                .replace(/[\u0300-\u036f]/g, '')
-                .toLowerCase(),
-        [project.name]
-    );
-    const shouldShowSolusButton = normalizedProjectName.includes('gestao de pacientes internados');
-
     // Converter documentos para incluir metadados
     const documentsWithMetadata = useMemo<DocumentWithMetadata[]>(() => {
         return project.documents.map(doc => {
@@ -303,11 +291,6 @@ export const DocumentsView: React.FC<{ project: Project; onUpdateProject: (proje
                         </p>
                     </div>
                     <div className="flex items-center gap-2 flex-wrap">
-                        {shouldShowSolusButton && (
-                            <button type="button" onClick={() => setIsSolusSchemaOpen(true)} className="rounded-full px-3 py-1.5 text-xs font-semibold text-base-content/70 hover:bg-base-200 hover:text-base-content transition-colors duration-300 flex items-center gap-1.5" aria-label="Abrir Esquema da API Solus">
-                                <FileDown className="w-3.5 h-3.5" aria-hidden /> Esquema API
-                            </button>
-                        )}
                         <label className="rounded-full px-3 py-1.5 text-xs font-semibold bg-primary text-primary-content hover:bg-primary/90 transition-colors duration-300 flex items-center gap-1.5 cursor-pointer">
                             <Upload className="w-3.5 h-3.5" aria-hidden /> Carregar
                             <input type="file" accept=".txt,.md,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar,.json,.csv,.xml,.jpg,.jpeg,.png,.gif,.webp,.svg" onChange={handleFileUpload} className="hidden" />
@@ -509,13 +492,6 @@ export const DocumentsView: React.FC<{ project: Project; onUpdateProject: (proje
                         </div>
                     </div>
                 </Modal>
-            )}
-
-            {shouldShowSolusButton && (
-                <SolusSchemaModal
-                    isOpen={isSolusSchemaOpen}
-                    onClose={() => setIsSolusSchemaOpen(false)}
-                />
             )}
         </div>
     );
