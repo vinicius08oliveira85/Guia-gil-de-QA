@@ -49,6 +49,9 @@ export const ExpansibleButton: React.FC<ExpansibleButtonProps> = ({
   isExpanded,
   onExpandedChange,
 }) => {
+  const [isHovered, setIsHovered] = React.useState(false);
+  const isLabelVisible = isHovered;
+
   const handleClick = () => {
     onExpandedChange?.(!isExpanded);
     onClick();
@@ -61,21 +64,24 @@ export const ExpansibleButton: React.FC<ExpansibleButtonProps> = ({
       variants={buttonVariants}
       initial={false}
       animate="animate"
-      custom={isExpanded}
+      custom={isLabelVisible}
       transition={transition}
       onClick={handleClick}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
       disabled={disabled}
       aria-label={ariaLabel ?? label}
       aria-pressed={isExpanded}
       className={cn(
         'relative flex items-center rounded-full py-1.5 text-xs font-semibold transition-colors duration-300',
         'text-base-content/70 hover:bg-base-200 hover:text-base-content disabled:opacity-50 disabled:cursor-not-allowed',
+        'focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2 focus-visible:ring-offset-base-100 outline-none',
         className
       )}
     >
       <span className="flex-shrink-0">{icon}</span>
       <AnimatePresence initial={false}>
-        {isExpanded && (
+        {isLabelVisible && (
           <motion.span
             variants={spanVariants}
             initial="initial"

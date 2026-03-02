@@ -74,6 +74,7 @@ export const ExpandableTabs: React.FC<ExpandableTabsProps> = ({
   onOutsideClick,
 }) => {
   const [selected, setSelected] = React.useState<number | null>(null);
+  const [hoveredIndex, setHoveredIndex] = React.useState<number | null>(null);
   const outsideClickRef = React.useRef<HTMLDivElement>(null);
 
   useOnClickOutside(outsideClickRef as React.RefObject<HTMLElement>, () => {
@@ -88,7 +89,7 @@ export const ExpandableTabs: React.FC<ExpandableTabsProps> = ({
   };
 
   const Separator = () => (
-    <div className="mx-0.5 h-[20px] w-px bg-base-300" aria-hidden="true" />
+    <div className="mx-0.5 h-[20px] w-px bg-base-200" aria-hidden="true" />
   );
 
   return (
@@ -101,7 +102,7 @@ export const ExpandableTabs: React.FC<ExpandableTabsProps> = ({
     >
       {leadingContent}
       {leadingContent != null && (
-        <div className="mx-0.5 h-[20px] w-px bg-base-300" aria-hidden="true" />
+        <div className="mx-0.5 h-[20px] w-px bg-base-200" aria-hidden="true" />
       )}
       {tabs.map((tab, index) => {
         if (tab.type === "separator") {
@@ -109,20 +110,24 @@ export const ExpandableTabs: React.FC<ExpandableTabsProps> = ({
         }
 
         const Icon = tab.icon;
+        const isExpanded = hoveredIndex === index;
         return (
           <motion.button
             key={tab.title}
             variants={buttonVariants}
             initial={false}
             animate="animate"
-            custom={selected === index}
+            custom={isExpanded}
             onClick={() => handleSelect(index, tab.id)}
+            onMouseEnter={() => setHoveredIndex(index)}
+            onMouseLeave={() => setHoveredIndex(null)}
             transition={transition}
             className={cn(
-              "relative flex items-center rounded-full px-3 py-1.5 text-xs font-semibold transition-colors duration-300",
+              "relative flex items-center rounded-full px-3 py-1.5 text-xs font-semibold transition-colors duration-300 outline-none",
+              "focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2 focus-visible:ring-offset-base-100",
               selected === index
-                ? cn("bg-base-200", activeColor)
-                : "text-base-content/70 hover:bg-base-200 hover:text-base-content"
+                ? cn("bg-primary/15", activeColor)
+                : "text-base-content/70 hover:bg-base-200/80 hover:text-base-content hover:ring-2 hover:ring-primary/20"
             )}
             aria-label={tab.title}
             aria-pressed={selected === index}
@@ -130,7 +135,7 @@ export const ExpandableTabs: React.FC<ExpandableTabsProps> = ({
           >
             <Icon size={18} />
             <AnimatePresence initial={false}>
-              {selected === index && (
+              {isExpanded && (
                 <motion.span
                   variants={spanVariants}
                   initial="initial"
