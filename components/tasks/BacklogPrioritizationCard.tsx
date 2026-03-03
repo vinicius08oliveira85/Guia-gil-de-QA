@@ -4,6 +4,7 @@ import {
     buildBacklogPrioritizationFieldMap,
     extractBacklogPrioritization,
     getImpactColorFromOptions,
+    getImpactDisplayLabel,
     hasBacklogPrioritizationData,
     type BacklogPrioritizationData,
 } from '../../utils/backlogPrioritization';
@@ -116,7 +117,7 @@ export const BacklogPrioritizationCard: React.FC<BacklogPrioritizationCardProps>
                     <div className="p-3 bg-base-100 border border-base-300 rounded-xl shadow-sm">
                         <p className="text-[10px] uppercase tracking-wider font-bold text-base-content/60 block mb-1">Impact</p>
                         <div className={`min-h-[20px] rounded px-2 py-1 text-sm font-medium ${impactColor}`}>
-                            {data.impact != null && data.impact !== '' ? String(data.impact) : '—'}
+                            {getImpactDisplayLabel(data.impact, impactOptions)}
                         </div>
                     </div>
                     <div className="p-3 bg-base-100 border border-base-300 rounded-xl shadow-sm">

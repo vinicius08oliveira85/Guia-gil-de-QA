@@ -103,6 +103,7 @@ const IMPACT_COLOR_DEFAULT = 'bg-base-200 text-base-content';
 
 /**
  * Cor do Impact com base em texto (fallback quando não há opções da API).
+ * Suporta rótulos em inglês (Very High, High, Medium, Low, Very Low, Almost Zero) e português.
  */
 function getImpactColorByText(value: string | number | null): string {
     if (value == null) return IMPACT_COLOR_DEFAULT;
@@ -110,7 +111,29 @@ function getImpactColorByText(value: string | number | null): string {
     if (s.includes('very high') || s.includes('muito alto') || s.includes('crítico')) return IMPACT_COLOR_HIGH;
     if (s.includes('high') || s.includes('alto')) return IMPACT_COLOR_MEDIUM_HIGH;
     if (s.includes('medium') || s.includes('médio')) return IMPACT_COLOR_MEDIUM;
+    if (s.includes('low') || s.includes('baixo') || s.includes('almost zero')) return IMPACT_COLOR_DEFAULT;
     return IMPACT_COLOR_DEFAULT;
+}
+
+/**
+ * Retorna o rótulo do Impact para exibição (ex.: id "13" → "Very High").
+ * Quando há opções da API, procura por id ou value e retorna option.value; senão retorna o valor como string.
+ */
+export function getImpactDisplayLabel(
+    value: string | number | null,
+    options: Array<{ id: string; value: string }>
+): string {
+    if (value == null || value === '') return '—';
+    const valueStr = String(value).trim();
+    if (options.length > 0) {
+        const option = options.find(
+            (o) =>
+                o.value.trim().toLowerCase() === valueStr.toLowerCase() ||
+                String(o.id) === valueStr
+        );
+        if (option) return option.value;
+    }
+    return valueStr;
 }
 
 /**
