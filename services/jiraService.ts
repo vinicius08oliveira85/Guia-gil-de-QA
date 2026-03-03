@@ -372,12 +372,23 @@ export interface JiraFieldInfo {
     name: string;
     custom?: boolean;
 }
-export const getJiraFields = async (config: JiraConfig): Promise<JiraFieldInfo[]> => {
+export interface GetJiraFieldsOptions {
+    /** Quando true, ignora cache e não grava no cache (útil para listagem manual). */
+    skipCache?: boolean;
+}
+
+export const getJiraFields = async (
+    config: JiraConfig,
+    options?: GetJiraFieldsOptions
+): Promise<JiraFieldInfo[]> => {
+    const skipCache = options?.skipCache === true;
     const cacheKey = `jira_fields_${config.url}`;
-    const cached = getCache<JiraFieldInfo[]>(cacheKey);
-    if (cached?.length !== undefined) {
-        logger.debug('Usando campos do Jira do cache', 'jiraService');
-        return cached;
+    if (!skipCache) {
+        const cached = getCache<JiraFieldInfo[]>(cacheKey);
+        if (cached?.length !== undefined) {
+            logger.debug('Usando campos do Jira do cache', 'jiraService');
+            return cached;
+        }
     }
     try {
         const response = await jiraApiCall<(JiraFieldInfo & { key?: string })[] | { values?: (JiraFieldInfo & { key?: string })[]; startAt?: number; maxResults?: number; total?: number }>(
@@ -391,7 +402,7 @@ export const getJiraFields = async (config: JiraConfig): Promise<JiraFieldInfo[]
         const fields = list
             .filter((f): f is JiraFieldInfo & { key?: string } => !!(f?.id ?? f?.key) && !!f?.name)
             .map(f => ({ id: (f.id ?? f.key) as string, name: f.name, custom: f.custom }));
-        if (fields.length > 0) {
+        if (fields.length > 0 && !skipCache) {
             setCache(cacheKey, fields, 15 * 60 * 1000);
         }
         return fields;

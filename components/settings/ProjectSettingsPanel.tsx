@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Project, BacklogPrioritizationFieldIds } from '../../types';
+import { getJiraConfig, getJiraFields, type JiraFieldInfo } from '../../services/jiraService';
+import { Modal } from '../common/Modal';
 
 interface ProjectSettingsPanelProps {
     project: Project;
@@ -20,6 +22,12 @@ export const ProjectSettingsPanel: React.FC<ProjectSettingsPanelProps> = ({ proj
         easeId: project.settings?.backlogPrioritizationFieldIds?.easeId ?? '',
         scoreId: project.settings?.backlogPrioritizationFieldIds?.scoreId ?? '',
     }));
+
+    const [showJiraFieldsModal, setShowJiraFieldsModal] = useState(false);
+    const [jiraFieldsList, setJiraFieldsList] = useState<JiraFieldInfo[]>([]);
+    const [jiraFieldsLoading, setJiraFieldsLoading] = useState(false);
+    const [jiraFieldsError, setJiraFieldsError] = useState<string | null>(null);
+    const [filterCustomOnly, setFilterCustomOnly] = useState(false);
 
     useEffect(() => {
         setIds({
@@ -50,6 +58,27 @@ export const ProjectSettingsPanel: React.FC<ProjectSettingsPanelProps> = ({ proj
         onUpdateProject(next);
     };
 
+    const handleListJiraFields = async () => {
+        setJiraFieldsError(null);
+        setShowJiraFieldsModal(true);
+        const config = getJiraConfig();
+        if (!config) {
+            setJiraFieldsError('Configure a integração Jira nas configurações gerais primeiro.');
+            setJiraFieldsList([]);
+            return;
+        }
+        setJiraFieldsLoading(true);
+        try {
+            const fields = await getJiraFields(config, { skipCache: true });
+            setJiraFieldsList(fields);
+        } catch {
+            setJiraFieldsError('Erro ao buscar campos do Jira.');
+            setJiraFieldsList([]);
+        } finally {
+            setJiraFieldsLoading(false);
+        }
+    };
+
     const hasAny = ids.impactId || ids.confidenceId || ids.easeId || ids.scoreId;
     const unchanged =
         (project.settings?.backlogPrioritizationFieldIds?.impactId ?? '') === (ids.impactId ?? '') &&
@@ -57,12 +86,17 @@ export const ProjectSettingsPanel: React.FC<ProjectSettingsPanelProps> = ({ proj
         (project.settings?.backlogPrioritizationFieldIds?.easeId ?? '') === (ids.easeId ?? '') &&
         (project.settings?.backlogPrioritizationFieldIds?.scoreId ?? '') === (ids.scoreId ?? '');
 
+    const displayedFields = filterCustomOnly
+        ? jiraFieldsList.filter((f) => f.custom)
+        : jiraFieldsList;
+    const sortedFields = [...displayedFields].sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
+
     return (
         <div className="space-y-6">
             <div className="rounded-2xl border border-base-300 bg-base-100 p-6 shadow-sm">
                 <h2 className="text-lg font-bold text-base-content mb-1">Preencher Backlog Prioritization no card da tarefa</h2>
                 <p className="text-sm text-base-content/70 mb-4">
-                    Estes IDs são usados para exibir Impact, Confidence, Ease e Score no bloco Backlog Prioritization que aparece no detalhe de cada tarefa. Se os valores não aparecerem após &quot;Atualizar do Jira&quot;, informe os IDs dos custom fields do seu Jira (ex.: customfield_10050). Você pode obter os IDs em GET /rest/api/3/field.
+                    Estes IDs são usados para exibir Impact, Confidence, Ease e Score no bloco Backlog Prioritization que aparece no detalhe de cada tarefa. Se os valores não aparecerem após &quot;Atualizar do Jira&quot;, use &quot;Listar campos do Jira&quot; para ver os IDs ou informe manualmente (ex.: customfield_10050).
                 </p>
                 <div className="space-y-4">
                     {FIELD_LABELS.map(({ key, label }) => (
@@ -90,6 +124,13 @@ export const ProjectSettingsPanel: React.FC<ProjectSettingsPanelProps> = ({ proj
                     >
                         Salvar
                     </button>
+                    <button
+                        type="button"
+                        onClick={handleListJiraFields}
+                        className="btn btn-outline btn-sm"
+                    >
+                        Listar campos do Jira
+                    </button>
                     {hasAny && (
                         <span className="text-xs text-base-content/60">
                             Quando pelo menos um ID estiver definido, o card de Backlog Prioritization usará estes IDs em vez do mapeamento por nome.
@@ -97,6 +138,55 @@ export const ProjectSettingsPanel: React.FC<ProjectSettingsPanelProps> = ({ proj
                     )}
                 </div>
             </div>
+
+            <Modal
+                isOpen={showJiraFieldsModal}
+                onClose={() => {
+                    setShowJiraFieldsModal(false);
+                    setJiraFieldsError(null);
+                }}
+                title="Campos do Jira"
+                size="2xl"
+            >
+                <div className="space-y-3">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                            type="checkbox"
+                            checked={filterCustomOnly}
+                            onChange={(e) => setFilterCustomOnly(e.target.checked)}
+                            className="checkbox checkbox-sm"
+                        />
+                        <span className="text-sm text-base-content/80">Apenas custom fields</span>
+                    </label>
+                    {jiraFieldsLoading && <p className="text-sm text-base-content/70">Carregando campos…</p>}
+                    {jiraFieldsError && <p className="text-sm text-error">{jiraFieldsError}</p>}
+                    {!jiraFieldsLoading && !jiraFieldsError && (
+                        <div className="max-h-96 overflow-y-auto border border-base-300 rounded-lg">
+                            <table className="table table-zebra table-pin-rows text-sm">
+                                <thead>
+                                    <tr>
+                                        <th className="font-mono">ID</th>
+                                        <th>Nome</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {sortedFields.map((f) => (
+                                        <tr key={f.id}>
+                                            <td className="font-mono text-base-content/90">{f.id}</td>
+                                            <td>{f.name}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                            {sortedFields.length === 0 && (
+                                <p className="p-4 text-sm text-base-content/60">
+                                    {filterCustomOnly ? 'Nenhum custom field encontrado.' : 'Nenhum campo retornado.'}
+                                </p>
+                            )}
+                        </div>
+                    )}
+                </div>
+            </Modal>
         </div>
     );
 };

@@ -1,55 +1,119 @@
 import type { JiraFieldInfo } from '../services/jiraService';
+import { logger } from './logger';
 
 /** Nomes comuns usados por apps de Backlog Prioritization / ICE / RICE no Jira. */
-const IMPACT_NAMES = ['Impact', 'Impacto', 'ICE Impact', 'RICE Impact', 'Backlog Impact', 'Prioritization Impact', 'impact'];
-const CONFIDENCE_NAMES = ['Confidence', 'Confiança', 'ICE Confidence', 'RICE Confidence', 'Backlog Confidence', 'Prioritization Confidence', 'confidence'];
-const EASE_NAMES = ['Ease', 'Facilidade', 'ICE Ease', 'RICE Ease', 'Ease of Implementation', 'Backlog Ease', 'Prioritization Ease', 'ease'];
-const SCORE_NAMES = ['Score', 'Backlog Prioritization Score', 'ICE Score', 'RICE Score', 'Prioritization Score', 'Backlog Score', 'score'];
+const IMPACT_NAMES = [
+    'Impact', 'Impacto', 'ICE Impact', 'RICE Impact', 'Impact (RICE)', 'Impacto RICE',
+    'Backlog Impact', 'Prioritization Impact', 'impact'
+];
+const CONFIDENCE_NAMES = [
+    'Confidence', 'Confiança', 'ICE Confidence', 'RICE Confidence', 'Confidence (RICE)',
+    'Backlog Confidence', 'Prioritization Confidence', 'confidence'
+];
+const EASE_NAMES = [
+    'Ease', 'Facilidade', 'Facilidade de implementação', 'ICE Ease', 'RICE Ease', 'Ease (RICE)',
+    'Ease of Implementation', 'Backlog Ease', 'Prioritization Ease', 'ease'
+];
+const SCORE_NAMES = [
+    'Score', 'Score RICE', 'Backlog Prioritization Score', 'ICE Score', 'RICE Score',
+    'Prioritization Score', 'Backlog Score', 'score'
+];
 
 function normalizeFieldName(name: string): string {
     return name.toLowerCase().replace(/\s+/g, ' ').trim();
 }
 
-function fieldNameMatches(name: string, patterns: string[]): boolean {
+/** 0 = não bate, 1 = match parcial (um contém o outro), 2 = match exato. */
+function fieldNameMatchScore(name: string, patterns: string[]): 0 | 1 | 2 {
     const n = normalizeFieldName(name);
-    return patterns.some(p => n === normalizeFieldName(p) || n.includes(normalizeFieldName(p)));
+    let best: 0 | 1 | 2 = 0;
+    for (const p of patterns) {
+        const pn = normalizeFieldName(p);
+        if (n === pn) return 2;
+        if (n.includes(pn) || pn.includes(n)) best = 1;
+    }
+    return best;
 }
 
 /**
  * Constrói mapa de papel (impact | confidence | ease | score) -> field id
  * a partir da lista de campos do Jira, por nome.
+ * Matching bidirecional (nome contém padrão ou padrão contém nome).
+ * Preferência por match exato quando há vários candidatos.
  */
 export function buildBacklogPrioritizationFieldMap(
     fields: JiraFieldInfo[]
 ): { impactId?: string; confidenceId?: string; easeId?: string; scoreId?: string } {
     const map: { impactId?: string; confidenceId?: string; easeId?: string; scoreId?: string } = {};
-    for (const f of fields) {
-        if (!f.id || !f.name) continue;
-        if (fieldNameMatches(f.name, IMPACT_NAMES) && !map.impactId) map.impactId = f.id;
-        if (fieldNameMatches(f.name, CONFIDENCE_NAMES) && !map.confidenceId) map.confidenceId = f.id;
-        if (fieldNameMatches(f.name, EASE_NAMES) && !map.easeId) map.easeId = f.id;
-        if (fieldNameMatches(f.name, SCORE_NAMES) && !map.scoreId) map.scoreId = f.id;
+    const pickBest = (
+        key: 'impactId' | 'confidenceId' | 'easeId' | 'scoreId',
+        names: string[],
+        list: JiraFieldInfo[]
+    ) => {
+        let bestId: string | undefined;
+        let bestScore: 0 | 1 | 2 = 0;
+        for (const f of list) {
+            if (!f.id || !f.name) continue;
+            const score = fieldNameMatchScore(f.name, names);
+            if (score > bestScore) {
+                bestScore = score;
+                bestId = f.id;
+            }
+        }
+        if (bestId) map[key] = bestId;
+    };
+    pickBest('impactId', IMPACT_NAMES, fields);
+    pickBest('confidenceId', CONFIDENCE_NAMES, fields);
+    pickBest('easeId', EASE_NAMES, fields);
+    pickBest('scoreId', SCORE_NAMES, fields);
+
+    const isEmpty = !map.impactId && !map.confidenceId && !map.easeId && !map.scoreId;
+    if (isEmpty && fields.length > 0) {
+        logger.debug(
+            'buildBacklogPrioritizationFieldMap retornou mapa vazio; nomes dos campos disponíveis',
+            'backlogPrioritization',
+            { fieldNames: fields.map((f) => f.name) }
+        );
     }
+
     return map;
 }
 
 /**
- * Extrai valor exibível de um campo custom do Jira (pode ser objeto ou primitivo).
+ * Extrai valor exibível de um campo custom do Jira (pode ser objeto, array ou primitivo).
+ * Arrays são tratados usando o primeiro elemento. String vazia é considerada ausente (null).
  */
 export function normalizeCustomFieldValue(value: unknown): string | number | null {
     if (value === null || value === undefined) return null;
-    if (typeof value === 'string' || typeof value === 'number') return value;
+    if (Array.isArray(value)) {
+        const first = value[0];
+        if (first === undefined) return null;
+        return normalizeCustomFieldValue(first);
+    }
+    if (typeof value === 'string') return value.trim() === '' ? null : value;
+    if (typeof value === 'number') return value;
     if (typeof value === 'object' && value !== null) {
         const o = value as Record<string, unknown>;
-        if (typeof o.value === 'string' || typeof o.value === 'number') return o.value;
-        if (typeof o.name === 'string') return o.name;
-        if (typeof o.displayValue === 'string' || typeof o.displayValue === 'number') return o.displayValue;
+        if (typeof o.value === 'string' || typeof o.value === 'number') {
+            const v = o.value;
+            return typeof v === 'string' && v.trim() === '' ? null : (v as string | number);
+        }
+        if (typeof o.name === 'string') return o.name.trim() === '' ? null : o.name;
+        if (typeof o.displayValue === 'string' || typeof o.displayValue === 'number') {
+            const v = o.displayValue;
+            return typeof v === 'string' && v.trim() === '' ? null : (v as string | number);
+        }
         if (typeof o.id === 'string') return o.id;
         const child = o.child as Record<string, unknown> | undefined;
         if (child && typeof child === 'object') {
-            if (typeof child.value === 'string' || typeof child.value === 'number') return child.value;
+            if (typeof child.value === 'string' || typeof child.value === 'number') return child.value as string | number;
             if (typeof child.name === 'string') return child.name;
         }
+        logger.debug(
+            'normalizeCustomFieldValue retornou null para valor objeto com estrutura não reconhecida',
+            'backlogPrioritization',
+            { value: o }
+        );
     }
     return null;
 }
