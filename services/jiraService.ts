@@ -376,17 +376,17 @@ export const getJiraFields = async (config: JiraConfig): Promise<JiraFieldInfo[]
         return cached;
     }
     try {
-        const response = await jiraApiCall<JiraFieldInfo[] | { values?: JiraFieldInfo[]; startAt?: number; maxResults?: number; total?: number }>(
+        const response = await jiraApiCall<(JiraFieldInfo & { key?: string })[] | { values?: (JiraFieldInfo & { key?: string })[]; startAt?: number; maxResults?: number; total?: number }>(
             config,
             'field',
             { timeout: 15000 }
         );
         const list = Array.isArray(response)
             ? response
-            : (response as { values?: JiraFieldInfo[] }).values ?? [];
+            : (response as { values?: (JiraFieldInfo & { key?: string })[] }).values ?? [];
         const fields = list
-            .filter((f): f is JiraFieldInfo => !!f?.id && !!f?.name)
-            .map(f => ({ id: f.id, name: f.name, custom: f.custom }));
+            .filter((f): f is JiraFieldInfo & { key?: string } => !!(f?.id ?? f?.key) && !!f?.name)
+            .map(f => ({ id: (f.id ?? f.key) as string, name: f.name, custom: f.custom }));
         if (fields.length > 0) {
             setCache(cacheKey, fields, 15 * 60 * 1000);
         }

@@ -56,18 +56,29 @@ export interface BacklogPrioritizationData {
 }
 
 /**
+ * Retorna o valor de um custom field; tenta tanto "id" quanto "customfield_Id" (Jira pode devolver id em formatos diferentes).
+ */
+function getCustomFieldValue(
+    jiraCustomFields: { [key: string]: any } | undefined,
+    id: string | undefined
+): string | number | null {
+    if (!id || !jiraCustomFields) return null;
+    const raw = jiraCustomFields[id] ?? jiraCustomFields[id.startsWith('customfield_') ? id : `customfield_${id}`];
+    return raw != null ? normalizeCustomFieldValue(raw) : null;
+}
+
+/**
  * Extrai Impact, Confidence, Ease e Score de task.jiraCustomFields usando o mapa de ids.
  */
 export function extractBacklogPrioritization(
     jiraCustomFields: { [key: string]: any } | undefined,
     fieldMap: { impactId?: string; confidenceId?: string; easeId?: string; scoreId?: string }
 ): BacklogPrioritizationData {
-    const get = (id?: string) => (id && jiraCustomFields?.[id] != null ? normalizeCustomFieldValue(jiraCustomFields[id]) : null);
     return {
-        score: get(fieldMap.scoreId),
-        impact: get(fieldMap.impactId),
-        confidence: get(fieldMap.confidenceId),
-        ease: get(fieldMap.easeId),
+        score: getCustomFieldValue(jiraCustomFields, fieldMap.scoreId),
+        impact: getCustomFieldValue(jiraCustomFields, fieldMap.impactId),
+        confidence: getCustomFieldValue(jiraCustomFields, fieldMap.confidenceId),
+        ease: getCustomFieldValue(jiraCustomFields, fieldMap.easeId),
     };
 }
 
