@@ -2015,14 +2015,16 @@ export const TasksView: React.FC<{
 
         {/* Modal de Detalhes da Tarefa */}
         {modalTask && (() => {
-            // Encontrar a tarefa completa com children
-            const findTaskWithChildren = (tasks: JiraTask[], taskId: string): TaskWithChildren | null => {
+            // Encontrar a tarefa completa com children (com proteção contra referências circulares em parentId)
+            const findTaskWithChildren = (tasks: JiraTask[], taskId: string, visited: Set<string> = new Set()): TaskWithChildren | null => {
+                if (visited.has(taskId)) return null;
+                visited.add(taskId);
                 for (const t of tasks) {
                     if (t.id === taskId) {
                         const children = tasks.filter(child => child.parentId === taskId);
                         return {
                             ...t,
-                            children: children.map(child => findTaskWithChildren(tasks, child.id) || { ...child, children: [] })
+                            children: children.map(child => findTaskWithChildren(tasks, child.id, visited) || { ...child, children: [] })
                         } as TaskWithChildren;
                     }
                 }

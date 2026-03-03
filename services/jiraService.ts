@@ -362,6 +362,41 @@ export const getJiraStatuses = async (config: JiraConfig, projectKey: string): P
     }
 };
 
+/** Lista de campos do Jira (GET /rest/api/3/field). Usado para mapear custom fields como Backlog Prioritization (Impact, Confidence, Ease, Score). */
+export interface JiraFieldInfo {
+    id: string;
+    name: string;
+    custom?: boolean;
+}
+export const getJiraFields = async (config: JiraConfig): Promise<JiraFieldInfo[]> => {
+    const cacheKey = `jira_fields_${config.url}`;
+    const cached = getCache<JiraFieldInfo[]>(cacheKey);
+    if (cached?.length !== undefined) {
+        logger.debug('Usando campos do Jira do cache', 'jiraService');
+        return cached;
+    }
+    try {
+        const response = await jiraApiCall<(JiraFieldInfo & { key?: string })[] | { values?: (JiraFieldInfo & { key?: string })[]; startAt?: number; maxResults?: number; total?: number }>(
+            config,
+            'field',
+            { timeout: 15000 }
+        );
+        const list = Array.isArray(response)
+            ? response
+            : (response as { values?: (JiraFieldInfo & { key?: string })[] }).values ?? [];
+        const fields = list
+            .filter((f): f is JiraFieldInfo & { key?: string } => !!(f?.id ?? f?.key) && !!f?.name)
+            .map(f => ({ id: (f.id ?? f.key) as string, name: f.name, custom: f.custom }));
+        if (fields.length > 0) {
+            setCache(cacheKey, fields, 15 * 60 * 1000);
+        }
+        return fields;
+    } catch (error) {
+        logger.error('Erro ao buscar campos do Jira', 'jiraService', error);
+        return [];
+    }
+};
+
 /** Lista de prioridades do Jira (GET /rest/api/3/priority). */
 export const getJiraPriorities = async (config: JiraConfig): Promise<Array<{ name: string }>> => {
     const cacheKey = `jira_priorities_${config.url}`;
