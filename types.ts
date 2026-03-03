@@ -365,6 +365,14 @@ export interface ChecklistItem {
   required: boolean;
 }
 
+/** IDs dos custom fields do Jira para Backlog Prioritization (Impact, Confidence, Ease, Score). Ex.: customfield_10050 */
+export interface BacklogPrioritizationFieldIds {
+  impactId?: string;
+  confidenceId?: string;
+  easeId?: string;
+  scoreId?: string;
+}
+
 export interface ProjectSettings {
   theme?: 'light' | 'dark' | 'auto';
   notifications?: NotificationSettings;
@@ -372,6 +380,8 @@ export interface ProjectSettings {
   jiraStatuses?: Array<{ name: string; color: string } | string>; // Lista de status disponíveis no Jira com suas cores
   jiraPriorities?: Array<{ name: string } | string>; // Lista de prioridades disponíveis no Jira
   jiraProjectKey?: string; // Chave do projeto Jira associado
+  /** Mapeamento opcional dos custom fields do Jira para Backlog Prioritization; quando definido, o card usa estes IDs em vez do mapa por nome. */
+  backlogPrioritizationFieldIds?: BacklogPrioritizationFieldIds;
 }
 
 export interface NotificationSettings {

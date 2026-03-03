@@ -1,5 +1,6 @@
 import React, { useState, useEffect, Suspense, useRef, useCallback } from 'react';
 import { Project } from '../types';
+import { ProjectSettingsPanel } from './settings/ProjectSettingsPanel';
 import { useProjectMetrics } from '../hooks/useProjectMetrics';
 import { TasksView } from './tasks/TasksView';
 import { DocumentsView } from './DocumentsView';
@@ -188,6 +189,7 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
         { id: 'dashboard', label: 'Dashboard' },
         { id: 'tasks', label: 'Tarefas & Testes' },
         { id: 'documents', label: 'Documentos' },
+        { id: 'settings', label: 'Configurações' },
     ];
 
     const handleTabClick = (tabId: string) => {
@@ -204,7 +206,8 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
         const tabLabels: Record<string, string> = {
             dashboard: 'Dashboard',
             tasks: 'Tarefas & Testes',
-            documents: 'Documentos'
+            documents: 'Documentos',
+            settings: 'Configurações'
         };
 
         if (activeTab !== 'dashboard') {
@@ -361,6 +364,11 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                             <Suspense fallback={<LoadingSkeleton variant="card" count={3} />}>
                                 <DocumentsView project={currentProject} onUpdateProject={onUpdateProject} />
                             </Suspense>
+                            </section>
+                        )}
+                        {activeTab === 'settings' && (
+                            <section id="tab-panel-settings" role="tabpanel" aria-labelledby="tab-settings" className="max-w-2xl">
+                                <ProjectSettingsPanel project={currentProject} onUpdateProject={onUpdateProject} />
                             </section>
                         )}
                     </PageTransition>

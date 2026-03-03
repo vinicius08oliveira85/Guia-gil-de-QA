@@ -1059,7 +1059,10 @@ export const updateSingleTaskFromJira = async (
     Object.keys(issue.fields || {}).forEach(k => {
         if (!standardFields.includes(k) && !k.startsWith('_') && !EPIC_LINK_FIELD_KEYS.includes(k)) customFields[k] = issue.fields![k];
     });
-    if (Object.keys(customFields).length > 0) task.jiraCustomFields = customFields;
+    if (Object.keys(customFields).length > 0) {
+        task.jiraCustomFields = customFields;
+        logger.debug('jiraCustomFields keys', 'jiraService', { issueKey: key, keys: Object.keys(task.jiraCustomFields) });
+    }
     const finalTask: JiraTask = existingTask ? {
         ...existingTask,
         ...task,

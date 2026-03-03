@@ -7,11 +7,12 @@ import {
     normalizeCustomFieldValue,
     type BacklogPrioritizationData,
 } from '../../utils/backlogPrioritization';
-import type { JiraTask } from '../../types';
+import type { JiraTask, Project } from '../../types';
 import { ChevronDown } from 'lucide-react';
 
 interface BacklogPrioritizationCardProps {
     task: JiraTask;
+    project?: Project;
 }
 
 /** Cor para valor de Impact (ex.: Very High = destaque). */
@@ -24,11 +25,20 @@ function getImpactColor(value: string | number | null): string {
     return 'bg-base-200 text-base-content';
 }
 
-export const BacklogPrioritizationCard: React.FC<BacklogPrioritizationCardProps> = ({ task }) => {
+function hasConfigFieldMap(ids: { impactId?: string; confidenceId?: string; easeId?: string; scoreId?: string } | undefined): boolean {
+    return !!(ids && (ids.impactId || ids.confidenceId || ids.easeId || ids.scoreId));
+}
+
+export const BacklogPrioritizationCard: React.FC<BacklogPrioritizationCardProps> = ({ task, project }) => {
     const [fields, setFields] = useState<Array<{ id: string; name: string }>>([]);
     const [loading, setLoading] = useState(true);
+    const configMap = project?.settings?.backlogPrioritizationFieldIds;
 
     useEffect(() => {
+        if (hasConfigFieldMap(configMap)) {
+            setLoading(false);
+            return;
+        }
         let cancelled = false;
         const config = getJiraConfig();
         if (!config) {
@@ -46,9 +56,12 @@ export const BacklogPrioritizationCard: React.FC<BacklogPrioritizationCardProps>
                 if (!cancelled) setLoading(false);
             });
         return () => { cancelled = true; };
-    }, []);
+    }, [configMap]);
 
-    const fieldMap = useMemo(() => buildBacklogPrioritizationFieldMap(fields), [fields]);
+    const fieldMap = useMemo(() => {
+        if (hasConfigFieldMap(configMap)) return configMap!;
+        return buildBacklogPrioritizationFieldMap(fields);
+    }, [configMap, fields]);
     const data: BacklogPrioritizationData = useMemo(
         () => extractBacklogPrioritization(task.jiraCustomFields, fieldMap),
         [task.jiraCustomFields, fieldMap]

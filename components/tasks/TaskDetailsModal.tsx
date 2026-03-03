@@ -327,7 +327,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                     </div>
                 )}
 
-                <BacklogPrioritizationCard task={task} />
+                <BacklogPrioritizationCard task={task} project={project} />
 
                 {(task.type === 'Tarefa' || task.type === 'Bug') && (task.testCases?.length > 0 || (task.testStrategy?.length ?? 0) > 0) && (
                     <div className="flex justify-end">
