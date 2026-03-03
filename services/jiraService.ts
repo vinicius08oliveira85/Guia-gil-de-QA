@@ -14,6 +14,9 @@ export interface JiraConfig {
     apiToken: string;
 }
 
+/** Chaves de Epic Link conhecidas; ao montar jiraCustomFields excluímos só estas (não qualquer campo com "epic" no nome). */
+const EPIC_LINK_FIELD_KEYS = ['epicLink', 'epic', 'customfield_10011', 'customfield_10014'];
+
 export interface JiraIssue {
     id: string;
     key: string;
@@ -1054,7 +1057,7 @@ export const updateSingleTaskFromJira = async (
     const standardFields = ['summary', 'description', 'issuetype', 'status', 'priority', 'assignee', 'reporter', 'created', 'updated', 'resolutiondate', 'labels', 'parent', 'subtasks', 'comment', 'duedate', 'timetracking', 'components', 'fixVersions', 'environment', 'watches', 'issuelinks', 'attachment'];
     const customFields: { [key: string]: any } = {};
     Object.keys(issue.fields || {}).forEach(k => {
-        if (!standardFields.includes(k) && !k.startsWith('_') && !k.toLowerCase().includes('epic')) customFields[k] = issue.fields![k];
+        if (!standardFields.includes(k) && !k.startsWith('_') && !EPIC_LINK_FIELD_KEYS.includes(k)) customFields[k] = issue.fields![k];
     });
     if (Object.keys(customFields).length > 0) task.jiraCustomFields = customFields;
     const finalTask: JiraTask = existingTask ? {
@@ -1281,7 +1284,7 @@ export const importJiraProject = async (
         const customFields: { [key: string]: any } = {};
         Object.keys(issue.fields).forEach((key) => {
             // Não incluir campos de Epic Link nos customizados (já processados)
-            if (!standardFields.includes(key) && !key.startsWith('_') && !key.toLowerCase().includes('epic')) {
+            if (!standardFields.includes(key) && !key.startsWith('_') && !EPIC_LINK_FIELD_KEYS.includes(key)) {
                 customFields[key] = issue.fields[key];
             }
         });
@@ -1729,7 +1732,7 @@ export const syncJiraProject = async (
         const customFields: { [key: string]: any } = {};
         Object.keys(issue.fields).forEach((key) => {
             // Não incluir campos de Epic Link nos customizados (já processados)
-            if (!standardFields.includes(key) && !key.startsWith('_') && !key.toLowerCase().includes('epic')) {
+            if (!standardFields.includes(key) && !key.startsWith('_') && !EPIC_LINK_FIELD_KEYS.includes(key)) {
                 customFields[key] = issue.fields[key];
             }
         });
@@ -2437,7 +2440,7 @@ export const addNewJiraTasks = async (
         const customFields: { [key: string]: any } = {};
         Object.keys(issue.fields).forEach((key) => {
             // Não incluir campos de Epic Link nos customizados (já processados)
-            if (!standardFields.includes(key) && !key.startsWith('_') && !key.toLowerCase().includes('epic')) {
+            if (!standardFields.includes(key) && !key.startsWith('_') && !EPIC_LINK_FIELD_KEYS.includes(key)) {
                 customFields[key] = issue.fields[key];
             }
         });

@@ -4,6 +4,7 @@ import {
     buildBacklogPrioritizationFieldMap,
     extractBacklogPrioritization,
     hasBacklogPrioritizationData,
+    normalizeCustomFieldValue,
     type BacklogPrioritizationData,
 } from '../../utils/backlogPrioritization';
 import type { JiraTask } from '../../types';
@@ -54,6 +55,10 @@ export const BacklogPrioritizationCard: React.FC<BacklogPrioritizationCardProps>
     );
 
     const hasData = hasBacklogPrioritizationData(data);
+    const fieldMapEmpty = !fieldMap.impactId && !fieldMap.confidenceId && !fieldMap.easeId && !fieldMap.scoreId;
+    const hasCustomFields = task.jiraCustomFields && Object.keys(task.jiraCustomFields).length > 0;
+    const showFallbackCustomFields = fieldMapEmpty && hasCustomFields;
+
     if (loading) return null;
 
     const scoreDisplay = data.score != null ? String(data.score) : '—';
@@ -66,9 +71,14 @@ export const BacklogPrioritizationCard: React.FC<BacklogPrioritizationCardProps>
                 <h2 className="font-bold text-base-content">Backlog Prioritization</h2>
             </div>
             <div className="p-4 space-y-4">
-                {!hasData && (
+                {!hasData && !showFallbackCustomFields && (
                     <p className="text-xs text-base-content/60">
                         Sincronize a tarefa do Jira (Atualizar do Jira) para preencher Score, Impact, Confidence e Ease, se o projeto usar esses campos.
+                    </p>
+                )}
+                {showFallbackCustomFields && (
+                    <p className="text-xs text-base-content/60">
+                        Campos do Jira disponíveis; mapeamento por nome não encontrou Impact/Confidence/Ease/Score. Valores abaixo:
                     </p>
                 )}
                 <div className="flex items-baseline gap-2">
@@ -95,6 +105,22 @@ export const BacklogPrioritizationCard: React.FC<BacklogPrioritizationCardProps>
                         </div>
                     </div>
                 </div>
+                {showFallbackCustomFields && task.jiraCustomFields && (
+                    <div className="pt-2 border-t border-base-200">
+                        <p className="text-[10px] uppercase tracking-wider font-bold text-base-content/60 mb-2">Campos customizados do Jira</p>
+                        <ul className="space-y-1 text-xs text-base-content/80">
+                            {Object.entries(task.jiraCustomFields).map(([key, val]) => {
+                                const display = normalizeCustomFieldValue(val);
+                                return (
+                                    <li key={key} className="flex flex-wrap gap-x-2 gap-y-0.5">
+                                        <span className="font-mono text-base-content/60">{key}</span>
+                                        <span>{display != null ? String(display) : '(objeto)'}</span>
+                                    </li>
+                                );
+                            })}
+                        </ul>
+                    </div>
+                )}
             </div>
         </div>
     );

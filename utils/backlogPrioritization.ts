@@ -1,10 +1,10 @@
 import type { JiraFieldInfo } from '../services/jiraService';
 
-/** Nomes comuns usados por apps de Backlog Prioritization / ICE no Jira. */
-const IMPACT_NAMES = ['Impact', 'Impacto', 'ICE Impact', 'impact'];
-const CONFIDENCE_NAMES = ['Confidence', 'Confiança', 'ICE Confidence', 'confidence'];
-const EASE_NAMES = ['Ease', 'Facilidade', 'ICE Ease', 'Ease of Implementation', 'ease'];
-const SCORE_NAMES = ['Score', 'Backlog Prioritization Score', 'ICE Score', 'Prioritization Score', 'score'];
+/** Nomes comuns usados por apps de Backlog Prioritization / ICE / RICE no Jira. */
+const IMPACT_NAMES = ['Impact', 'Impacto', 'ICE Impact', 'RICE Impact', 'Backlog Impact', 'Prioritization Impact', 'impact'];
+const CONFIDENCE_NAMES = ['Confidence', 'Confiança', 'ICE Confidence', 'RICE Confidence', 'Backlog Confidence', 'Prioritization Confidence', 'confidence'];
+const EASE_NAMES = ['Ease', 'Facilidade', 'ICE Ease', 'RICE Ease', 'Ease of Implementation', 'Backlog Ease', 'Prioritization Ease', 'ease'];
+const SCORE_NAMES = ['Score', 'Backlog Prioritization Score', 'ICE Score', 'RICE Score', 'Prioritization Score', 'Backlog Score', 'score'];
 
 function normalizeFieldName(name: string): string {
     return name.toLowerCase().replace(/\s+/g, ' ').trim();
@@ -43,7 +43,13 @@ export function normalizeCustomFieldValue(value: unknown): string | number | nul
         const o = value as Record<string, unknown>;
         if (typeof o.value === 'string' || typeof o.value === 'number') return o.value;
         if (typeof o.name === 'string') return o.name;
+        if (typeof o.displayValue === 'string' || typeof o.displayValue === 'number') return o.displayValue;
         if (typeof o.id === 'string') return o.id;
+        const child = o.child as Record<string, unknown> | undefined;
+        if (child && typeof child === 'object') {
+            if (typeof child.value === 'string' || typeof child.value === 'number') return child.value;
+            if (typeof child.name === 'string') return child.name;
+        }
     }
     return null;
 }
