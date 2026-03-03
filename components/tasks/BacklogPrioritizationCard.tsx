@@ -78,13 +78,14 @@ export const BacklogPrioritizationCard: React.FC<BacklogPrioritizationCardProps>
     }, [fieldMap.impactId]);
 
     const data: BacklogPrioritizationData = useMemo(
-        () => extractBacklogPrioritization(task.jiraCustomFields, fieldMap),
-        [task.jiraCustomFields, fieldMap]
+        () => extractBacklogPrioritization(task, fieldMap),
+        [task, fieldMap]
     );
 
     const hasData = hasBacklogPrioritizationData(data);
     const fieldMapEmpty = !fieldMap.impactId && !fieldMap.confidenceId && !fieldMap.easeId && !fieldMap.scoreId;
-    const hasCustomFields = task.jiraCustomFields && Object.keys(task.jiraCustomFields).length > 0;
+    const hasCustomFields = (task.jiraCustomFields && Object.keys(task.jiraCustomFields).length > 0) ||
+        task.impact != null || task.confidence != null || task.ease != null || task.score != null;
     const showFallbackMessage = fieldMapEmpty && hasCustomFields;
 
     if (loading) return null;

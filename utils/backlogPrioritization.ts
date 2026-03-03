@@ -73,18 +73,32 @@ function getCustomFieldValue(
     return raw != null ? normalizeCustomFieldValue(raw) : null;
 }
 
+/** Task (ou objeto parcial) com propriedades de priorização de primeira classe e/ou jiraCustomFields. */
+export type TaskWithPrioritization = {
+    impact?: number | string;
+    confidence?: number | string;
+    ease?: number | string;
+    score?: number;
+    jiraCustomFields?: { [key: string]: any };
+};
+
+function toScalar(value: number | string | undefined | null): string | number | null {
+    if (value === undefined || value === null) return null;
+    return typeof value === 'number' ? value : String(value);
+}
+
 /**
- * Extrai Impact, Confidence, Ease e Score de task.jiraCustomFields usando o mapa de ids.
+ * Extrai Impact, Confidence, Ease e Score da task. Preferência para propriedades de primeira classe (task.impact, etc.); fallback para task.jiraCustomFields usando o mapa de ids.
  */
 export function extractBacklogPrioritization(
-    jiraCustomFields: { [key: string]: any } | undefined,
+    task: TaskWithPrioritization,
     fieldMap: { impactId?: string; confidenceId?: string; easeId?: string; scoreId?: string }
 ): BacklogPrioritizationData {
     return {
-        score: getCustomFieldValue(jiraCustomFields, fieldMap.scoreId),
-        impact: getCustomFieldValue(jiraCustomFields, fieldMap.impactId),
-        confidence: getCustomFieldValue(jiraCustomFields, fieldMap.confidenceId),
-        ease: getCustomFieldValue(jiraCustomFields, fieldMap.easeId),
+        score: task.score !== undefined ? toScalar(task.score) : getCustomFieldValue(task.jiraCustomFields, fieldMap.scoreId),
+        impact: task.impact !== undefined ? toScalar(task.impact) : getCustomFieldValue(task.jiraCustomFields, fieldMap.impactId),
+        confidence: task.confidence !== undefined ? toScalar(task.confidence) : getCustomFieldValue(task.jiraCustomFields, fieldMap.confidenceId),
+        ease: task.ease !== undefined ? toScalar(task.ease) : getCustomFieldValue(task.jiraCustomFields, fieldMap.easeId),
     };
 }
 

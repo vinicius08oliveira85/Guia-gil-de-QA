@@ -165,7 +165,12 @@ export interface JiraTask {
   watchers?: { watchCount: number; isWatching: boolean };
   issueLinks?: Array<{ id: string; type: string; relatedKey: string; direction: 'inward' | 'outward' }>;
   jiraAttachments?: Array<{ id: string; filename: string; size: number; created: string; author: string }>;
-  jiraCustomFields?: { [key: string]: any }; // Campos customizados do Jira
+  /** Campos de priorização do backlog (Impact, Confidence, Ease, Score) – primeira classe. */
+  impact?: number | string;
+  confidence?: number | string;
+  ease?: number | string;
+  score?: number;
+  jiraCustomFields?: { [key: string]: any }; // Campos customizados do Jira (excluindo os de priorização)
 }
 
 // Ferramentas sugeridas para testes

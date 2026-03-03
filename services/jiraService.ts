@@ -1,4 +1,5 @@
-import { Project, JiraTask, Comment, TestCase } from '../types';
+import { Project, JiraTask, Comment, TestCase, BacklogPrioritizationFieldIds } from '../types';
+import { buildBacklogPrioritizationFieldMap, normalizeCustomFieldValue } from '../utils/backlogPrioritization';
 import { parseJiraDescription, parseJiraDescriptionHTML } from '../utils/jiraDescriptionParser';
 import { getCache, setCache, clearCache } from '../utils/apiCache';
 import { getJiraStatusColor } from '../utils/jiraStatusColors';
@@ -484,6 +485,58 @@ export const getJiraCustomFieldOptions = async (
         return [];
     }
 };
+
+/** Mapa de IDs dos campos de priorização + Set para exclusão do objeto genérico customFields. */
+export async function getPrioritizationFieldMapAndSet(
+    config: JiraConfig,
+    project?: Project
+): Promise<{ fieldMap: BacklogPrioritizationFieldIds; prioritizationFieldIds: Set<string> }> {
+    const settings = project?.settings?.backlogPrioritizationFieldIds;
+    const hasSettings = settings && (settings.impactId || settings.confidenceId || settings.easeId || settings.scoreId);
+    let fieldMap: BacklogPrioritizationFieldIds;
+    if (hasSettings) {
+        fieldMap = {
+            impactId: settings.impactId,
+            confidenceId: settings.confidenceId,
+            easeId: settings.easeId,
+            scoreId: settings.scoreId,
+        };
+    } else {
+        const fields = await getJiraFields(config);
+        fieldMap = buildBacklogPrioritizationFieldMap(fields);
+    }
+    const prioritizationFieldIds = new Set<string>(
+        [fieldMap.impactId, fieldMap.confidenceId, fieldMap.easeId, fieldMap.scoreId].filter(
+            (id): id is string => !!id
+        )
+    );
+    return { fieldMap, prioritizationFieldIds };
+}
+
+/** Preenche task.impact, task.confidence, task.ease, task.score a partir de issue.fields usando o fieldMap. */
+export function applyPrioritizationFromIssue(
+    issue: { fields?: Record<string, unknown> },
+    task: Partial<JiraTask>,
+    fieldMap: BacklogPrioritizationFieldIds
+): void {
+    const fields = issue.fields || {};
+    if (fieldMap.impactId && fields[fieldMap.impactId] != null) {
+        const v = normalizeCustomFieldValue(fields[fieldMap.impactId]);
+        if (v != null) task.impact = typeof v === 'number' ? v : String(v);
+    }
+    if (fieldMap.confidenceId && fields[fieldMap.confidenceId] != null) {
+        const v = normalizeCustomFieldValue(fields[fieldMap.confidenceId]);
+        if (v != null) task.confidence = typeof v === 'number' ? v : String(v);
+    }
+    if (fieldMap.easeId && fields[fieldMap.easeId] != null) {
+        const v = normalizeCustomFieldValue(fields[fieldMap.easeId]);
+        if (v != null) task.ease = typeof v === 'number' ? v : String(v);
+    }
+    if (fieldMap.scoreId && fields[fieldMap.scoreId] != null) {
+        const v = normalizeCustomFieldValue(fields[fieldMap.scoreId]);
+        if (v != null) task.score = typeof v === 'number' ? v : Number(v);
+    }
+}
 
 /** Lista de prioridades do Jira (GET /rest/api/3/priority). */
 export const getJiraPriorities = async (config: JiraConfig): Promise<Array<{ name: string }>> => {
@@ -1054,6 +1107,7 @@ export const updateSingleTaskFromJira = async (
     }
     const issue = await getJiraIssueByKey(config, key);
     const existingTask = project.tasks.find(t => t.id === key);
+    const { fieldMap, prioritizationFieldIds } = await getPrioritizationFieldMapAndSet(config, project);
     const savedTestStatuses = await loadTestStatusesByJiraKeys([key]);
     const savedTestCases = savedTestStatuses.get(key) || [];
 
@@ -1138,11 +1192,12 @@ export const updateSingleTaskFromJira = async (
         })),
         jiraAttachments: jiraAttachments.length ? jiraAttachments : undefined,
     };
+    applyPrioritizationFromIssue(issue, task, fieldMap);
     if (isBug) task.severity = mapJiraSeverity(issue.fields?.labels);
     const standardFields = ['summary', 'description', 'issuetype', 'status', 'priority', 'assignee', 'reporter', 'created', 'updated', 'resolutiondate', 'labels', 'parent', 'subtasks', 'comment', 'duedate', 'timetracking', 'components', 'fixVersions', 'environment', 'watches', 'issuelinks', 'attachment'];
     const customFields: { [key: string]: any } = {};
     Object.keys(issue.fields || {}).forEach(k => {
-        if (!standardFields.includes(k) && !k.startsWith('_') && !EPIC_LINK_FIELD_KEYS.includes(k)) customFields[k] = issue.fields![k];
+        if (!standardFields.includes(k) && !k.startsWith('_') && !EPIC_LINK_FIELD_KEYS.includes(k) && !prioritizationFieldIds.has(k)) customFields[k] = issue.fields![k];
     });
     if (Object.keys(customFields).length > 0) {
         task.jiraCustomFields = customFields;
@@ -1184,6 +1239,8 @@ export const importJiraProject = async (
 
     // Buscar TODAS as issues do projeto (sem limite)
     const jiraIssues = await getJiraIssues(config, jiraProjectKey, undefined, onProgress);
+
+    const { fieldMap: prioritizationFieldMap, prioritizationFieldIds } = await getPrioritizationFieldMapAndSet(config);
 
     // Buscar status dos testes salvos no Supabase para todas as chaves Jira
     const jiraKeys = jiraIssues.map(issue => issue.key).filter(Boolean) as string[];
@@ -1471,6 +1528,8 @@ export const syncJiraProject = async (
         // Se não conseguir acessar o store, usar o projeto passado como parâmetro
         logger.warn('Erro ao acessar store, usando projeto passado como parâmetro', 'jiraService', { error });
     }
+
+    const { fieldMap: syncPrioritizationFieldMap, prioritizationFieldIds: syncPrioritizationFieldIds } = await getPrioritizationFieldMapAndSet(config, projectToUse);
     
     // Atualizar tarefas existentes e adicionar novas
     const updatedTasks = [...projectToUse.tasks];
@@ -1809,8 +1868,10 @@ export const syncJiraProject = async (
             task.jiraAttachments = undefined;
         }
 
+        applyPrioritizationFromIssue(issue, task, syncPrioritizationFieldMap);
+
         // Mapear campos customizados - sempre atualizar exatamente como estão no Jira
-        // Excluir campos de Epic Link da lista de customizados pois já foram processados
+        // Excluir campos de Epic Link e de priorização da lista de customizados
         const standardFields = [
             'summary', 'description', 'issuetype', 'status', 'priority', 'assignee', 'reporter',
             'created', 'updated', 'resolutiondate', 'labels', 'parent', 'subtasks', 'comment',
@@ -1819,8 +1880,7 @@ export const syncJiraProject = async (
         ];
         const customFields: { [key: string]: any } = {};
         Object.keys(issue.fields).forEach((key) => {
-            // Não incluir campos de Epic Link nos customizados (já processados)
-            if (!standardFields.includes(key) && !key.startsWith('_') && !EPIC_LINK_FIELD_KEYS.includes(key)) {
+            if (!standardFields.includes(key) && !key.startsWith('_') && !EPIC_LINK_FIELD_KEYS.includes(key) && !syncPrioritizationFieldIds.has(key)) {
                 customFields[key] = issue.fields[key];
             }
         });
@@ -1861,7 +1921,11 @@ export const syncJiraProject = async (
                 JSON.stringify(oldTask.watchers) !== JSON.stringify(task.watchers) ||
                 JSON.stringify(oldTask.issueLinks || []) !== JSON.stringify(task.issueLinks || []) ||
                 JSON.stringify(oldTask.jiraAttachments || []) !== JSON.stringify(task.jiraAttachments || []) ||
-                JSON.stringify(oldTask.jiraCustomFields || {}) !== JSON.stringify(task.jiraCustomFields || {})
+                JSON.stringify(oldTask.jiraCustomFields || {}) !== JSON.stringify(task.jiraCustomFields || {}) ||
+                oldTask.impact !== task.impact ||
+                oldTask.confidence !== task.confidence ||
+                oldTask.ease !== task.ease ||
+                oldTask.score !== task.score
             );
             
             if (hasChanges) {
@@ -2354,6 +2418,8 @@ export const addNewJiraTasks = async (
 
     // Buscar TODAS as issues do Jira
     const jiraIssues = await getJiraIssues(config, jiraProjectKey, undefined, onProgress);
+
+    const { fieldMap: prioritizationFieldMap, prioritizationFieldIds } = await getPrioritizationFieldMapAndSet(config, project);
     
     // Criar um Map com as tarefas existentes para busca rápida
     const existingTasksMap = new Map(project.tasks.map(t => [t.id, t]));
@@ -2517,8 +2583,10 @@ export const addNewJiraTasks = async (
             }));
         }
 
+        applyPrioritizationFromIssue(issue, task, prioritizationFieldMap);
+
         // Mapear campos customizados (todos os campos que não são padrão)
-        // Excluir campos de Epic Link da lista de customizados pois já foram processados
+        // Excluir campos de Epic Link e de priorização da lista de customizados
         const standardFields = [
             'summary', 'description', 'issuetype', 'status', 'priority', 'assignee', 'reporter',
             'created', 'updated', 'resolutiondate', 'labels', 'parent', 'subtasks', 'comment',
@@ -2527,8 +2595,7 @@ export const addNewJiraTasks = async (
         ];
         const customFields: { [key: string]: any } = {};
         Object.keys(issue.fields).forEach((key) => {
-            // Não incluir campos de Epic Link nos customizados (já processados)
-            if (!standardFields.includes(key) && !key.startsWith('_') && !EPIC_LINK_FIELD_KEYS.includes(key)) {
+            if (!standardFields.includes(key) && !key.startsWith('_') && !EPIC_LINK_FIELD_KEYS.includes(key) && !prioritizationFieldIds.has(key)) {
                 customFields[key] = issue.fields[key];
             }
         });
@@ -2597,6 +2664,31 @@ export const syncTaskToJira = async (
 
     const issueKey = task.id;
     const fieldsToUpdate: { [key: string]: any } = {};
+
+    const { fieldMap: syncToJiraFieldMap } = await getPrioritizationFieldMapAndSet(config);
+
+    const prioritizationValueForJira = (value: number | string | undefined): any => {
+        if (value === undefined || value === null) return undefined;
+        if (typeof value === 'object' && value !== null && 'id' in value) return { id: (value as { id: string }).id };
+        if (typeof value === 'object' && value !== null && 'key' in value) return { key: (value as { key: string }).key };
+        return value;
+    };
+    if (task.impact !== undefined && syncToJiraFieldMap.impactId) {
+        const v = prioritizationValueForJira(task.impact as number | string);
+        if (v !== undefined) fieldsToUpdate[syncToJiraFieldMap.impactId] = v;
+    }
+    if (task.confidence !== undefined && syncToJiraFieldMap.confidenceId) {
+        const v = prioritizationValueForJira(task.confidence as number | string);
+        if (v !== undefined) fieldsToUpdate[syncToJiraFieldMap.confidenceId] = v;
+    }
+    if (task.ease !== undefined && syncToJiraFieldMap.easeId) {
+        const v = prioritizationValueForJira(task.ease as number | string);
+        if (v !== undefined) fieldsToUpdate[syncToJiraFieldMap.easeId] = v;
+    }
+    if (task.score !== undefined && syncToJiraFieldMap.scoreId) {
+        const v = prioritizationValueForJira(task.score);
+        if (v !== undefined) fieldsToUpdate[syncToJiraFieldMap.scoreId] = v;
+    }
 
     // Mapear campos de volta para o formato do Jira
     if (task.dueDate) {
