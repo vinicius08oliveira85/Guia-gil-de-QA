@@ -6,7 +6,9 @@ import { VitePWA } from 'vite-plugin-pwa';
 export default defineConfig({
   server: {
     port: 5173,
-    host: '0.0.0.0',
+    host: true, // true = escuta em 0.0.0.0 e mostra URL local (localhost)
+    strictPort: false, // se 5173 estiver em uso, tenta a próxima porta livre
+    open: true, // abre o app em http://localhost:5173 ao rodar npm run dev
     // Em desenvolvimento local: encaminha /api/* para o servidor que expõe o proxy Supabase (ex.: vercel dev na porta 3000)
     proxy: {
       '/api': {

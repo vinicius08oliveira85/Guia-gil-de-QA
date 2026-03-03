@@ -94,3 +94,47 @@ export function extractBacklogPrioritization(
 export function hasBacklogPrioritizationData(data: BacklogPrioritizationData): boolean {
     return data.score != null || data.impact != null || data.confidence != null || data.ease != null;
 }
+
+/** Classes CSS para cor por nível de impacto (alto = destaque). */
+const IMPACT_COLOR_HIGH = 'bg-error/15 text-error border border-error/30';
+const IMPACT_COLOR_MEDIUM_HIGH = 'bg-warning/15 text-warning border border-warning/30';
+const IMPACT_COLOR_MEDIUM = 'bg-info/15 text-info border border-info/30';
+const IMPACT_COLOR_DEFAULT = 'bg-base-200 text-base-content';
+
+/**
+ * Cor do Impact com base em texto (fallback quando não há opções da API).
+ */
+function getImpactColorByText(value: string | number | null): string {
+    if (value == null) return IMPACT_COLOR_DEFAULT;
+    const s = String(value).toLowerCase();
+    if (s.includes('very high') || s.includes('muito alto') || s.includes('crítico')) return IMPACT_COLOR_HIGH;
+    if (s.includes('high') || s.includes('alto')) return IMPACT_COLOR_MEDIUM_HIGH;
+    if (s.includes('medium') || s.includes('médio')) return IMPACT_COLOR_MEDIUM;
+    return IMPACT_COLOR_DEFAULT;
+}
+
+/**
+ * Retorna a classe CSS de cor para o valor de Impact.
+ * Se options tiver itens (da API do Jira), usa a posição na lista (últimos = maior impacto).
+ * Caso contrário, usa fallback por texto (very high, alto, médio, etc.).
+ */
+export function getImpactColorFromOptions(
+    value: string | number | null,
+    options: Array<{ id: string; value: string }>
+): string {
+    if (options.length === 0) return getImpactColorByText(value);
+    if (value == null) return IMPACT_COLOR_DEFAULT;
+    const valueStr = String(value).trim();
+    const index = options.findIndex(
+        (o) =>
+            o.value.trim().toLowerCase() === valueStr.toLowerCase() ||
+            String(o.id) === valueStr
+    );
+    if (index < 0) return getImpactColorByText(value);
+    const n = options.length;
+    const ratio = n <= 1 ? 0 : index / (n - 1);
+    if (ratio >= 2 / 3) return IMPACT_COLOR_HIGH;
+    if (ratio >= 1 / 3) return IMPACT_COLOR_MEDIUM_HIGH;
+    if (ratio > 0 || n === 1) return IMPACT_COLOR_MEDIUM;
+    return IMPACT_COLOR_DEFAULT;
+}

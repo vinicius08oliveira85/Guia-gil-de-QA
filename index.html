@@ -33,7 +33,11 @@
     <link rel="stylesheet" href="/index.css" />
   </head>
   <body class="min-h-screen bg-base-100 text-base-content antialiased">
-    <div id="root"></div>
+    <div id="root" aria-busy="true" aria-live="polite">
+      <div class="min-h-screen flex items-center justify-center bg-base-100 text-base-content" data-fallback>
+        <p class="text-lg opacity-80">Carregando…</p>
+      </div>
+    </div>
     <script type="module" src="/index.tsx"></script>
     <script>
       // Carrega o tema salvo do localStorage na inicialização para evitar flash de conteúdo incorreto

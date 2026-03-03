@@ -62,7 +62,7 @@ export const ProjectSettingsPanel: React.FC<ProjectSettingsPanelProps> = ({ proj
             <div className="rounded-2xl border border-base-300 bg-base-100 p-6 shadow-sm">
                 <h2 className="text-lg font-bold text-base-content mb-1">Preencher Backlog Prioritization no card da tarefa</h2>
                 <p className="text-sm text-base-content/70 mb-4">
-                    Estes IDs são usados para exibir Impact, Confidence, Ease e Score no bloco Backlog Prioritization que aparece no detalhe de cada tarefa. Se os valores não aparecerem após &quot;Atualizar do Jira&quot;, informe os IDs dos custom fields do seu Jira (ex.: customfield_10050). Você pode obter os IDs em GET /rest/api/3/field ou na seção &quot;Campos customizados do Jira&quot; no card da tarefa.
+                    Estes IDs são usados para exibir Impact, Confidence, Ease e Score no bloco Backlog Prioritization que aparece no detalhe de cada tarefa. Se os valores não aparecerem após &quot;Atualizar do Jira&quot;, informe os IDs dos custom fields do seu Jira (ex.: customfield_10050). Você pode obter os IDs em GET /rest/api/3/field.
                 </p>
                 <div className="space-y-4">
                     {FIELD_LABELS.map(({ key, label }) => (

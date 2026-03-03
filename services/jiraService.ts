@@ -400,6 +400,91 @@ export const getJiraFields = async (config: JiraConfig): Promise<JiraFieldInfo[]
     }
 };
 
+/** Opção de um custom field do tipo select no Jira (ex.: Impact). */
+export interface JiraCustomFieldOption {
+    id: string;
+    value: string;
+    disabled?: boolean;
+}
+
+/** Resposta paginada de contextos do campo (GET field/{fieldId}/context). */
+interface JiraFieldContextPage {
+    values?: Array<{ id: string }>;
+    startAt?: number;
+    maxResults?: number;
+    total?: number;
+    isLast?: boolean;
+}
+
+/** Resposta paginada de opções do contexto (GET field/{fieldId}/context/{contextId}/option). */
+interface JiraFieldOptionPage {
+    values?: Array<{ id: string; value: string; disabled?: boolean }>;
+    startAt?: number;
+    maxResults?: number;
+    total?: number;
+    isLast?: boolean;
+}
+
+/**
+ * Lista de opções (valores permitidos) de um custom field do tipo select no Jira.
+ * Usado para o campo Impact do Backlog Prioritization. Requer Administer Jira; em 403/404 retorna [].
+ */
+export const getJiraCustomFieldOptions = async (
+    config: JiraConfig,
+    fieldId: string
+): Promise<JiraCustomFieldOption[]> => {
+    const cacheKey = `jira_field_options_${config.url}_${fieldId}`;
+    const cached = getCache<JiraCustomFieldOption[]>(cacheKey);
+    if (cached?.length !== undefined) {
+        logger.debug('Usando opções do custom field do cache', 'jiraService', { fieldId });
+        return cached;
+    }
+    try {
+        const contextEndpoint = `field/${fieldId}/context`;
+        const contextResponse = await jiraApiCall<JiraFieldContextPage>(config, contextEndpoint, {
+            timeout: 10000,
+        });
+        const contexts = contextResponse?.values ?? [];
+        const contextId = contexts[0]?.id;
+        if (!contextId) {
+            logger.debug('Nenhum contexto encontrado para o campo', 'jiraService', { fieldId });
+            return [];
+        }
+        const allOptions: JiraCustomFieldOption[] = [];
+        let startAt = 0;
+        const pageSize = 100;
+        let isLast = false;
+        while (!isLast) {
+            const optionEndpoint = `field/${fieldId}/context/${contextId}/option?startAt=${startAt}&maxResults=${pageSize}`;
+            const optionResponse = await jiraApiCall<JiraFieldOptionPage>(config, optionEndpoint, {
+                timeout: 10000,
+            });
+            const values = optionResponse?.values ?? [];
+            for (const v of values) {
+                if (v?.id != null && v?.value != null) {
+                    allOptions.push({
+                        id: String(v.id),
+                        value: String(v.value),
+                        disabled: v.disabled,
+                    });
+                }
+            }
+            isLast = optionResponse?.isLast ?? true;
+            startAt += pageSize;
+        }
+        if (allOptions.length > 0) {
+            setCache(cacheKey, allOptions, 10 * 60 * 1000);
+        }
+        return allOptions;
+    } catch (error) {
+        logger.warn('Erro ao buscar opções do custom field (pode exigir Administer Jira)', 'jiraService', {
+            fieldId,
+            error: error instanceof Error ? error.message : String(error),
+        });
+        return [];
+    }
+};
+
 /** Lista de prioridades do Jira (GET /rest/api/3/priority). */
 export const getJiraPriorities = async (config: JiraConfig): Promise<Array<{ name: string }>> => {
     const cacheKey = `jira_priorities_${config.url}`;

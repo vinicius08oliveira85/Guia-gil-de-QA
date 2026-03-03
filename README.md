@@ -74,10 +74,11 @@ Nota: Apenas uma chave do Gemini é suportada; não há fallback. Remova variáv
    export VITE_GEMINI_API_KEY=sua_chave_gemini_aqui
    ```
 
-4. Execute o aplicativo:
+4. Execute o aplicativo em localhost:
    ```bash
    npm run dev
    ```
+   O app estará disponível em **http://localhost:5173** (o navegador pode abrir automaticamente).
 
 5. Acesse o aplicativo em: `http://localhost:3000`
 

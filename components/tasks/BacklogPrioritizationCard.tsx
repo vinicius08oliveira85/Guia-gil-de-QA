@@ -1,10 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { getJiraConfig, getJiraFields } from '../../services/jiraService';
+import { getJiraConfig, getJiraFields, getJiraCustomFieldOptions, type JiraCustomFieldOption } from '../../services/jiraService';
 import {
     buildBacklogPrioritizationFieldMap,
     extractBacklogPrioritization,
+    getImpactColorFromOptions,
     hasBacklogPrioritizationData,
-    normalizeCustomFieldValue,
     type BacklogPrioritizationData,
 } from '../../utils/backlogPrioritization';
 import type { JiraTask, Project } from '../../types';
@@ -15,22 +15,13 @@ interface BacklogPrioritizationCardProps {
     project?: Project;
 }
 
-/** Cor para valor de Impact (ex.: Very High = destaque). */
-function getImpactColor(value: string | number | null): string {
-    if (value == null) return 'bg-base-200';
-    const s = String(value).toLowerCase();
-    if (s.includes('very high') || s.includes('muito alto') || s.includes('crítico')) return 'bg-error/15 text-error border border-error/30';
-    if (s.includes('high') || s.includes('alto')) return 'bg-warning/15 text-warning border border-warning/30';
-    if (s.includes('medium') || s.includes('médio')) return 'bg-info/15 text-info border border-info/30';
-    return 'bg-base-200 text-base-content';
-}
-
 function hasConfigFieldMap(ids: { impactId?: string; confidenceId?: string; easeId?: string; scoreId?: string } | undefined): boolean {
     return !!(ids && (ids.impactId || ids.confidenceId || ids.easeId || ids.scoreId));
 }
 
 export const BacklogPrioritizationCard: React.FC<BacklogPrioritizationCardProps> = ({ task, project }) => {
     const [fields, setFields] = useState<Array<{ id: string; name: string }>>([]);
+    const [impactOptions, setImpactOptions] = useState<JiraCustomFieldOption[]>([]);
     const [loading, setLoading] = useState(true);
     const configMap = project?.settings?.backlogPrioritizationFieldIds;
 
@@ -62,6 +53,29 @@ export const BacklogPrioritizationCard: React.FC<BacklogPrioritizationCardProps>
         if (hasConfigFieldMap(configMap)) return configMap!;
         return buildBacklogPrioritizationFieldMap(fields);
     }, [configMap, fields]);
+
+    useEffect(() => {
+        const impactId = fieldMap.impactId;
+        if (!impactId) {
+            setImpactOptions([]);
+            return;
+        }
+        const config = getJiraConfig();
+        if (!config) {
+            setImpactOptions([]);
+            return;
+        }
+        let cancelled = false;
+        getJiraCustomFieldOptions(config, impactId)
+            .then((opts) => {
+                if (!cancelled) setImpactOptions(opts);
+            })
+            .catch(() => {
+                if (!cancelled) setImpactOptions([]);
+            });
+        return () => { cancelled = true; };
+    }, [fieldMap.impactId]);
+
     const data: BacklogPrioritizationData = useMemo(
         () => extractBacklogPrioritization(task.jiraCustomFields, fieldMap),
         [task.jiraCustomFields, fieldMap]
@@ -70,12 +84,12 @@ export const BacklogPrioritizationCard: React.FC<BacklogPrioritizationCardProps>
     const hasData = hasBacklogPrioritizationData(data);
     const fieldMapEmpty = !fieldMap.impactId && !fieldMap.confidenceId && !fieldMap.easeId && !fieldMap.scoreId;
     const hasCustomFields = task.jiraCustomFields && Object.keys(task.jiraCustomFields).length > 0;
-    const showFallbackCustomFields = fieldMapEmpty && hasCustomFields;
+    const showFallbackMessage = fieldMapEmpty && hasCustomFields;
 
     if (loading) return null;
 
     const scoreDisplay = data.score != null ? String(data.score) : '—';
-    const impactColor = getImpactColor(data.impact);
+    const impactColor = getImpactColorFromOptions(data.impact, impactOptions);
 
     return (
         <div className="bg-base-100 border border-base-300 rounded-2xl overflow-hidden shadow-sm">
@@ -84,14 +98,14 @@ export const BacklogPrioritizationCard: React.FC<BacklogPrioritizationCardProps>
                 <h2 className="font-bold text-base-content">Backlog Prioritization</h2>
             </div>
             <div className="p-4 space-y-4">
-                {!hasData && !showFallbackCustomFields && (
+                {!hasData && !showFallbackMessage && (
                     <p className="text-xs text-base-content/60">
                         Sincronize a tarefa do Jira (Atualizar do Jira) para preencher Score, Impact, Confidence e Ease, se o projeto usar esses campos.
                     </p>
                 )}
-                {showFallbackCustomFields && (
+                {showFallbackMessage && (
                     <p className="text-xs text-base-content/60">
-                        Campos do Jira disponíveis; mapeamento por nome não encontrou Impact/Confidence/Ease/Score. Valores abaixo:
+                        Mapeamento por nome não encontrou Impact/Confidence/Ease/Score. Configure os IDs dos custom fields nas configurações do projeto.
                     </p>
                 )}
                 <div className="flex items-baseline gap-2">
@@ -118,22 +132,6 @@ export const BacklogPrioritizationCard: React.FC<BacklogPrioritizationCardProps>
                         </div>
                     </div>
                 </div>
-                {showFallbackCustomFields && task.jiraCustomFields && (
-                    <div className="pt-2 border-t border-base-200">
-                        <p className="text-[10px] uppercase tracking-wider font-bold text-base-content/60 mb-2">Campos customizados do Jira</p>
-                        <ul className="space-y-1 text-xs text-base-content/80">
-                            {Object.entries(task.jiraCustomFields).map(([key, val]) => {
-                                const display = normalizeCustomFieldValue(val);
-                                return (
-                                    <li key={key} className="flex flex-wrap gap-x-2 gap-y-0.5">
-                                        <span className="font-mono text-base-content/60">{key}</span>
-                                        <span>{display != null ? String(display) : '(objeto)'}</span>
-                                    </li>
-                                );
-                            })}
-                        </ul>
-                    </div>
-                )}
             </div>
         </div>
     );
