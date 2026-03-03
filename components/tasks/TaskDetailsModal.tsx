@@ -25,6 +25,7 @@ import { getJiraConfig } from '../../services/jiraService';
 import { fetchJiraAttachmentAsDataUrl } from '../../utils/jiraAttachmentFetch';
 import { TaskWithChildren } from './JiraTaskItem';
 import { TaskLinksView } from './TaskLinksView';
+import { BacklogPrioritizationCard } from './BacklogPrioritizationCard';
 import { getTaskDependents } from '../../utils/dependencyService';
 import { FileViewer } from '../common/FileViewer';
 import { ImageModal } from '../common/ImageModal';
@@ -325,6 +326,8 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                         )}
                     </div>
                 )}
+
+                <BacklogPrioritizationCard task={task} />
 
                 {(task.type === 'Tarefa' || task.type === 'Bug') && (task.testCases?.length > 0 || (task.testStrategy?.length ?? 0) > 0) && (
                     <div className="flex justify-end">
