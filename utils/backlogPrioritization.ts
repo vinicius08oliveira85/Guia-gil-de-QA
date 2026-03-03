@@ -1,10 +1,10 @@
 import type { JiraFieldInfo } from '../services/jiraService';
 
 /** Nomes comuns usados por apps de Backlog Prioritization / ICE no Jira. */
-const IMPACT_NAMES = ['Impact', 'Impacto', 'ICE Impact'];
-const CONFIDENCE_NAMES = ['Confidence', 'Confiança', 'ICE Confidence'];
-const EASE_NAMES = ['Ease', 'Facilidade', 'ICE Ease', 'Ease of Implementation'];
-const SCORE_NAMES = ['Score', 'Backlog Prioritization Score', 'ICE Score', 'Prioritization Score'];
+const IMPACT_NAMES = ['Impact', 'Impacto', 'ICE Impact', 'impact'];
+const CONFIDENCE_NAMES = ['Confidence', 'Confiança', 'ICE Confidence', 'confidence'];
+const EASE_NAMES = ['Ease', 'Facilidade', 'ICE Ease', 'Ease of Implementation', 'ease'];
+const SCORE_NAMES = ['Score', 'Backlog Prioritization Score', 'ICE Score', 'Prioritization Score', 'score'];
 
 function normalizeFieldName(name: string): string {
     return name.toLowerCase().replace(/\s+/g, ' ').trim();

@@ -54,7 +54,7 @@ export const BacklogPrioritizationCard: React.FC<BacklogPrioritizationCardProps>
     );
 
     const hasData = hasBacklogPrioritizationData(data);
-    if (loading || !hasData) return null;
+    if (loading) return null;
 
     const scoreDisplay = data.score != null ? String(data.score) : '—';
     const impactColor = getImpactColor(data.impact);
@@ -66,6 +66,11 @@ export const BacklogPrioritizationCard: React.FC<BacklogPrioritizationCardProps>
                 <h2 className="font-bold text-base-content">Backlog Prioritization</h2>
             </div>
             <div className="p-4 space-y-4">
+                {!hasData && (
+                    <p className="text-xs text-base-content/60">
+                        Sincronize a tarefa do Jira (Atualizar do Jira) para preencher Score, Impact, Confidence e Ease, se o projeto usar esses campos.
+                    </p>
+                )}
                 <div className="flex items-baseline gap-2">
                     <span className="text-2xl sm:text-3xl font-bold text-primary tabular-nums">{scoreDisplay}</span>
                     <span className="text-sm font-semibold text-base-content/70">Score</span>
