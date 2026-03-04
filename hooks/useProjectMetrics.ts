@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Project, PhaseName, BugSeverity, PhaseStatus, TestCase, JiraTask } from '../types';
+import { Project, PhaseName, BugSeverity, PhaseStatus, TestCase, JiraTask, TaskPriority } from '../types';
 import { PHASE_NAMES } from '../utils/constants';
 import { 
     categorizeJiraStatus, 
@@ -10,6 +10,7 @@ import {
     JiraStatusCategory 
 } from '../utils/jiraStatusCategorizer';
 import { getDisplayStatus } from '../utils/taskHelpers';
+import { estimateTaskComplexity } from '../utils/estimationService';
 
 const phaseNamesInOrder: PhaseName[] = [...PHASE_NAMES];
 
@@ -299,6 +300,50 @@ export const calculateProjectMetrics = (project: Project) => {
         return completedDate >= sevenDaysAgo;
     }).length;
 
+    // --- Distribuição por prioridade (tarefas não-Bug) ---
+    const priorityOrder: (TaskPriority | 'Sem prioridade')[] = ['Urgente', 'Alta', 'Média', 'Baixa', 'Sem prioridade'];
+    const priorityCounts = nonBugTasks.reduce((acc, task) => {
+        const p = task.priority ?? 'Sem prioridade';
+        acc[p] = (acc[p] || 0) + 1;
+        return acc;
+    }, {} as Record<string, number>);
+    const priorityDistribution = priorityOrder
+        .filter(p => (priorityCounts[p] ?? 0) > 0)
+        .map(priority => ({
+            priority,
+            count: priorityCounts[priority] ?? 0,
+            percentage: totalNonBugTasks > 0 ? Math.round(((priorityCounts[priority] ?? 0) / totalNonBugTasks) * 100) : 0,
+        }));
+
+    // --- Distribuição por responsável (tarefas não-Bug) ---
+    const assigneeCounts = nonBugTasks.reduce((acc, task) => {
+        const label = task.jiraAssignee?.displayName ?? task.assignee ?? 'Sem responsável';
+        acc[label] = (acc[label] || 0) + 1;
+        return acc;
+    }, {} as Record<string, number>);
+    const assigneeDistribution = Object.entries(assigneeCounts)
+        .map(([assigneeLabel, count]) => ({
+            assigneeLabel,
+            count,
+            percentage: totalNonBugTasks > 0 ? Math.round((count / totalNonBugTasks) * 100) : 0,
+        }))
+        .sort((a, b) => b.count - a.count);
+
+    // --- Distribuição por complexidade (tarefas não-Bug) ---
+    const complexityOrder = ['Baixa', 'Média', 'Alta', 'Muito Alta'] as const;
+    const complexityCounts = nonBugTasks.reduce((acc, task) => {
+        const c = estimateTaskComplexity(task);
+        acc[c] = (acc[c] || 0) + 1;
+        return acc;
+    }, {} as Record<string, number>);
+    const complexityDistribution = complexityOrder
+        .filter(c => (complexityCounts[c] ?? 0) > 0)
+        .map(complexity => ({
+            complexity,
+            count: complexityCounts[complexity] ?? 0,
+            percentage: totalNonBugTasks > 0 ? Math.round(((complexityCounts[complexity] ?? 0) / totalNonBugTasks) * 100) : 0,
+        }));
+
     return {
         newPhases,
         currentPhase,
@@ -350,6 +395,10 @@ export const calculateProjectMetrics = (project: Project) => {
             reexecutedTests,
             recentlyResolvedBugs,
         },
+        // Distribuições para indicadores do dashboard
+        priorityDistribution,
+        assigneeDistribution,
+        complexityDistribution,
     };
 };
 

@@ -167,12 +167,7 @@ export interface JiraTask {
   watchers?: { watchCount: number; isWatching: boolean };
   issueLinks?: Array<{ id: string; type: string; relatedKey: string; direction: 'inward' | 'outward' }>;
   jiraAttachments?: Array<{ id: string; filename: string; size: number; created: string; author: string }>;
-  /** Campos de priorização do backlog (Impact, Confidence, Ease, Score) – primeira classe. */
-  impact?: number | string;
-  confidence?: number | string;
-  ease?: number | string;
-  score?: number;
-  jiraCustomFields?: { [key: string]: any }; // Campos customizados do Jira (excluindo os de priorização)
+  jiraCustomFields?: { [key: string]: any }; // Campos customizados do Jira
 }
 
 // Ferramentas sugeridas para testes
@@ -372,14 +367,6 @@ export interface ChecklistItem {
   required: boolean;
 }
 
-/** IDs dos custom fields do Jira para Backlog Prioritization (Impact, Confidence, Ease, Score). Ex.: customfield_10050 */
-export interface BacklogPrioritizationFieldIds {
-  impactId?: string;
-  confidenceId?: string;
-  easeId?: string;
-  scoreId?: string;
-}
-
 export interface ProjectSettings {
   theme?: 'light' | 'dark' | 'auto';
   notifications?: NotificationSettings;
@@ -387,8 +374,6 @@ export interface ProjectSettings {
   jiraStatuses?: Array<{ name: string; color: string } | string>; // Lista de status disponíveis no Jira com suas cores
   jiraPriorities?: Array<{ name: string } | string>; // Lista de prioridades disponíveis no Jira
   jiraProjectKey?: string; // Chave do projeto Jira associado
-  /** Mapeamento opcional dos custom fields do Jira para Backlog Prioritization; quando definido, o card usa estes IDs em vez do mapa por nome. */
-  backlogPrioritizationFieldIds?: BacklogPrioritizationFieldIds;
 }
 
 export interface NotificationSettings {

@@ -7,6 +7,7 @@ import { QualityScoreChart } from './QualityScoreChart';
 import { CriticalAlerts } from './CriticalAlerts';
 import { ProjectDetailsPanel } from './ProjectDetailsPanel';
 import { RecentActivity } from './RecentActivity';
+import { BarChartWidget } from './BarChartWidget';
 import { FileExportModal } from '../common/FileExportModal';
 import { DashboardFiltersModal, DashboardFilters } from './DashboardFiltersModal';
 import { getQualityAlerts, calculateQualityScore } from '../tasks/qualityMetrics';
@@ -198,6 +199,45 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
     [metrics]
   );
 
+  // Dados para gráficos de distribuição (prioridade, responsável, complexidade)
+  const priorityChartData = useMemo(() => {
+    const dist = metrics.priorityDistribution ?? [];
+    const colorByPriority: Record<string, string> = {
+      Urgente: 'bg-error',
+      Alta: 'bg-warning',
+      Média: 'bg-info',
+      Baixa: 'bg-success',
+      'Sem prioridade': 'bg-base-content/30',
+    };
+    return {
+      data: dist.map(d => ({ label: d.priority, value: d.percentage, color: colorByPriority[d.priority] ?? 'bg-base-300' })),
+      rawData: dist.map(d => ({ label: d.priority, value: d.count, color: colorByPriority[d.priority] ?? 'bg-base-300' })),
+    };
+  }, [metrics.priorityDistribution]);
+
+  const assigneeChartData = useMemo(() => {
+    const dist = metrics.assigneeDistribution ?? [];
+    const palette = ['bg-primary', 'bg-secondary', 'bg-accent', 'bg-info', 'bg-success', 'bg-warning'];
+    return {
+      data: dist.map((d, i) => ({ label: d.assigneeLabel, value: d.percentage, color: palette[i % palette.length] })),
+      rawData: dist.map((d, i) => ({ label: d.assigneeLabel, value: d.count, color: palette[i % palette.length] })),
+    };
+  }, [metrics.assigneeDistribution]);
+
+  const complexityChartData = useMemo(() => {
+    const dist = metrics.complexityDistribution ?? [];
+    const colorByComplexity: Record<string, string> = {
+      Baixa: 'bg-success',
+      Média: 'bg-info',
+      Alta: 'bg-warning',
+      'Muito Alta': 'bg-error',
+    };
+    return {
+      data: dist.map(d => ({ label: d.complexity, value: d.percentage, color: colorByComplexity[d.complexity] ?? 'bg-base-300' })),
+      rawData: dist.map(d => ({ label: d.complexity, value: d.count, color: colorByComplexity[d.complexity] ?? 'bg-base-300' })),
+    };
+  }, [metrics.complexityDistribution]);
+
   const alerts = useMemo(() => {
     const alertsList: Array<{
       id: string;
@@ -371,6 +411,25 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
             kpiMetrics={kpiMetrics}
           />
         </div>
+      </div>
+
+      {/* Indicadores: Prioridade, Responsável, Complexidade */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <BarChartWidget
+          title="Por prioridade"
+          data={priorityChartData.data}
+          rawData={priorityChartData.rawData}
+        />
+        <BarChartWidget
+          title="Por responsável"
+          data={assigneeChartData.data}
+          rawData={assigneeChartData.rawData}
+        />
+        <BarChartWidget
+          title="Por complexidade"
+          data={complexityChartData.data}
+          rawData={complexityChartData.rawData}
+        />
       </div>
 
       {/* Atividades Recentes */}
