@@ -209,11 +209,18 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
         }
     }, [isOpen, sectionTabs, activeSection, task.type]);
 
+    // Chave estável para evitar reexecução quando apenas a referência de jiraCustomFields muda
+    const jiraCustomFieldsKey = useMemo(
+        () =>
+            task.jiraCustomFields && Object.keys(task.jiraCustomFields).length > 0
+                ? `${task.id}:${Object.keys(task.jiraCustomFields).sort().join(',')}`
+                : '',
+        [task.id, task.jiraCustomFields]
+    );
+
     // Carregar nomes dos campos customizados do Jira quando o modal abre e a tarefa tem jiraCustomFields
     useEffect(() => {
-        if (!isOpen || !task.jiraCustomFields || Object.keys(task.jiraCustomFields).length === 0) {
-            return;
-        }
+        if (!isOpen || !jiraCustomFieldsKey) return;
         const config = getJiraConfig();
         if (!config) return;
         let cancelled = false;
@@ -229,14 +236,14 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
             .catch(() => {
                 if (!cancelled) setFieldNames({});
             });
-        return () => { cancelled = true; };
-    }, [isOpen, task.id, task.jiraCustomFields]);
+        return () => {
+            cancelled = true;
+        };
+    }, [isOpen, jiraCustomFieldsKey]);
 
     // Para campos cujo valor é objeto com apenas id (select sem label), resolver label via getJiraCustomFieldOptions
     useEffect(() => {
-        if (!isOpen || !task.jiraCustomFields || Object.keys(task.jiraCustomFields).length === 0) {
-            return;
-        }
+        if (!isOpen || !task.jiraCustomFields || Object.keys(task.jiraCustomFields).length === 0) return;
         const config = getJiraConfig();
         if (!config) return;
         const fieldIdsToResolve = Object.entries(task.jiraCustomFields)
@@ -269,8 +276,10 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
             }
         };
         loadOptions();
-        return () => { cancelled = true; };
-    }, [isOpen, task.id, task.jiraCustomFields]);
+        return () => {
+            cancelled = true;
+        };
+    }, [isOpen, jiraCustomFieldsKey]);
 
     const handleSaveScenario = (scenario: Omit<BddScenario, 'id'>) => {
         onSaveBddScenario(task.id, scenario, editingBddScenario?.id);

@@ -2015,20 +2015,35 @@ export const TasksView: React.FC<{
 
         {/* Modal de Detalhes da Tarefa */}
         {modalTask && (() => {
-            // Encontrar a tarefa completa com children (com proteção contra referências circulares em parentId)
-            const findTaskWithChildren = (tasks: JiraTask[], taskId: string, visited: Set<string> = new Set()): TaskWithChildren | null => {
-                if (visited.has(taskId)) return null;
-                visited.add(taskId);
-                for (const t of tasks) {
-                    if (t.id === taskId) {
-                        const children = tasks.filter(child => child.parentId === taskId);
-                        return {
-                            ...t,
-                            children: children.map(child => findTaskWithChildren(tasks, child.id, visited) || { ...child, children: [] })
-                        } as TaskWithChildren;
+            // Encontrar a tarefa completa com children (iterativo para evitar stack overflow em hierarquias profundas)
+            const findTaskWithChildren = (tasks: JiraTask[], rootId: string): TaskWithChildren | null => {
+                const taskById = new Map(tasks.map((t) => [t.id, t]));
+                if (!taskById.has(rootId)) return null;
+                const visited = new Set<string>();
+                const queue: string[] = [rootId];
+                visited.add(rootId);
+                const order: string[] = [];
+                while (queue.length > 0) {
+                    const id = queue.shift()!;
+                    order.push(id);
+                    const children = tasks.filter((c) => c.parentId === id);
+                    for (const c of children) {
+                        if (!visited.has(c.id)) {
+                            visited.add(c.id);
+                            queue.push(c.id);
+                        }
                     }
                 }
-                return null;
+                const built = new Map<string, TaskWithChildren>();
+                for (let i = order.length - 1; i >= 0; i--) {
+                    const id = order[i];
+                    const t = taskById.get(id)!;
+                    const children = tasks
+                        .filter((c) => c.parentId === id)
+                        .map((c) => built.get(c.id) ?? ({ ...c, children: [] } as TaskWithChildren));
+                    built.set(id, { ...t, children } as TaskWithChildren);
+                }
+                return built.get(rootId) ?? null;
             };
 
             const taskWithChildren = findTaskWithChildren(project.tasks, modalTask.id);
