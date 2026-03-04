@@ -524,6 +524,15 @@ export async function getPrioritizationFieldMapAndSet(
     return { fieldMap, prioritizationFieldIds };
 }
 
+/** Obtém valor de issue.fields tentando id exato e formato alternativo (customfield_XXX / XXX). */
+function getFieldValue(fields: Record<string, unknown>, fieldId: string | undefined): unknown {
+    if (!fieldId) return undefined;
+    const exact = fields[fieldId];
+    if (exact != null) return exact;
+    const altKey = fieldId.startsWith('customfield_') ? fieldId.replace(/^customfield_/, '') : `customfield_${fieldId}`;
+    return fields[altKey];
+}
+
 /** Preenche task.impact, task.confidence, task.ease, task.score a partir de issue.fields usando o fieldMap. */
 export function applyPrioritizationFromIssue(
     issue: { fields?: Record<string, unknown> },
@@ -531,20 +540,24 @@ export function applyPrioritizationFromIssue(
     fieldMap: BacklogPrioritizationFieldIds
 ): void {
     const fields = issue.fields || {};
-    if (fieldMap.impactId && fields[fieldMap.impactId] != null) {
-        const v = normalizeCustomFieldValue(fields[fieldMap.impactId]);
+    const rawImpact = getFieldValue(fields, fieldMap.impactId);
+    if (fieldMap.impactId && rawImpact != null) {
+        const v = normalizeCustomFieldValue(rawImpact);
         if (v != null) task.impact = typeof v === 'number' ? v : String(v);
     }
-    if (fieldMap.confidenceId && fields[fieldMap.confidenceId] != null) {
-        const v = normalizeCustomFieldValue(fields[fieldMap.confidenceId]);
+    const rawConfidence = getFieldValue(fields, fieldMap.confidenceId);
+    if (fieldMap.confidenceId && rawConfidence != null) {
+        const v = normalizeCustomFieldValue(rawConfidence);
         if (v != null) task.confidence = typeof v === 'number' ? v : String(v);
     }
-    if (fieldMap.easeId && fields[fieldMap.easeId] != null) {
-        const v = normalizeCustomFieldValue(fields[fieldMap.easeId]);
+    const rawEase = getFieldValue(fields, fieldMap.easeId);
+    if (fieldMap.easeId && rawEase != null) {
+        const v = normalizeCustomFieldValue(rawEase);
         if (v != null) task.ease = typeof v === 'number' ? v : String(v);
     }
-    if (fieldMap.scoreId && fields[fieldMap.scoreId] != null) {
-        const v = normalizeCustomFieldValue(fields[fieldMap.scoreId]);
+    const rawScore = getFieldValue(fields, fieldMap.scoreId);
+    if (fieldMap.scoreId && rawScore != null) {
+        const v = normalizeCustomFieldValue(rawScore);
         if (v != null) task.score = typeof v === 'number' ? v : Number(v);
     }
 }
@@ -1209,7 +1222,7 @@ export const updateSingleTaskFromJira = async (
     const standardFields = ['summary', 'description', 'issuetype', 'status', 'priority', 'assignee', 'reporter', 'created', 'updated', 'resolutiondate', 'labels', 'parent', 'subtasks', 'comment', 'duedate', 'timetracking', 'components', 'fixVersions', 'environment', 'watches', 'issuelinks', 'attachment'];
     const customFields: { [key: string]: any } = {};
     Object.keys(issue.fields || {}).forEach(k => {
-        if (!standardFields.includes(k) && !k.startsWith('_') && !EPIC_LINK_FIELD_KEYS.includes(k) && !prioritizationFieldIds.has(k)) customFields[k] = issue.fields![k];
+        if (!standardFields.includes(k) && !k.startsWith('_') && !EPIC_LINK_FIELD_KEYS.includes(k)) customFields[k] = issue.fields![k];
     });
     if (Object.keys(customFields).length > 0) {
         task.jiraCustomFields = customFields;
@@ -1902,7 +1915,7 @@ export const syncJiraProject = async (
         ];
         const customFields: { [key: string]: any } = {};
         Object.keys(issue.fields).forEach((key) => {
-            if (!standardFields.includes(key) && !key.startsWith('_') && !EPIC_LINK_FIELD_KEYS.includes(key) && !syncPrioritizationFieldIds.has(key)) {
+            if (!standardFields.includes(key) && !key.startsWith('_') && !EPIC_LINK_FIELD_KEYS.includes(key)) {
                 customFields[key] = issue.fields[key];
             }
         });
@@ -2622,7 +2635,7 @@ export const addNewJiraTasks = async (
         ];
         const customFields: { [key: string]: any } = {};
         Object.keys(issue.fields).forEach((key) => {
-            if (!standardFields.includes(key) && !key.startsWith('_') && !EPIC_LINK_FIELD_KEYS.includes(key) && !prioritizationFieldIds.has(key)) {
+            if (!standardFields.includes(key) && !key.startsWith('_') && !EPIC_LINK_FIELD_KEYS.includes(key)) {
                 customFields[key] = issue.fields[key];
             }
         });
