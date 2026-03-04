@@ -21,7 +21,7 @@ import { getNextStepForTask } from '../../utils/taskPhaseHelper';
 import { EmptyState } from '../common/EmptyState';
 import { LoadingSkeleton } from '../common/LoadingSkeleton';
 import { parseJiraDescriptionHTML } from '../../utils/jiraDescriptionParser';
-import { getJiraConfig, getJiraFields, getJiraCustomFieldOptions } from '../../services/jiraService';
+import { getJiraConfig } from '../../services/jiraService';
 import { fetchJiraAttachmentAsDataUrl } from '../../utils/jiraAttachmentFetch';
 import { TaskWithChildren } from './JiraTaskItem';
 import { TaskLinksView } from './TaskLinksView';
@@ -151,8 +151,6 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
     const [loadingJiraAttachmentId, setLoadingJiraAttachmentId] = useState<string | null>(null);
     const [activeSection, setActiveSection] = useState<DetailSection>('overview');
     const [activeTestSubSection, setActiveTestSubSection] = useState<TestSubSection>('strategy');
-    const [fieldNames, setFieldNames] = useState<Record<string, string>>({});
-    const [optionLabelsByField, setOptionLabelsByField] = useState<Record<string, Record<string, string>>>({});
     const nextStep = getNextStepForTask(task);
     const hasTests = task.testCases && task.testCases.length > 0;
     const safeDomId = useMemo(() => task.id.replace(/[^a-zA-Z0-9_-]/g, '_'), [task.id]);
@@ -208,78 +206,6 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
             setActiveSection('overview');
         }
     }, [isOpen, sectionTabs, activeSection, task.type]);
-
-    // Chave estável para evitar reexecução quando apenas a referência de jiraCustomFields muda
-    const jiraCustomFieldsKey = useMemo(
-        () =>
-            task.jiraCustomFields && Object.keys(task.jiraCustomFields).length > 0
-                ? `${task.id}:${Object.keys(task.jiraCustomFields).sort().join(',')}`
-                : '',
-        [task.id, task.jiraCustomFields]
-    );
-
-    // Carregar nomes dos campos customizados do Jira quando o modal abre e a tarefa tem jiraCustomFields
-    useEffect(() => {
-        if (!isOpen || !jiraCustomFieldsKey) return;
-        const config = getJiraConfig();
-        if (!config) return;
-        let cancelled = false;
-        getJiraFields(config)
-            .then((fields) => {
-                if (cancelled) return;
-                const map: Record<string, string> = {};
-                fields.forEach((f) => {
-                    map[f.id] = f.name;
-                });
-                setFieldNames(map);
-            })
-            .catch(() => {
-                if (!cancelled) setFieldNames({});
-            });
-        return () => {
-            cancelled = true;
-        };
-    }, [isOpen, jiraCustomFieldsKey]);
-
-    // Para campos cujo valor é objeto com apenas id (select sem label), resolver label via getJiraCustomFieldOptions
-    useEffect(() => {
-        if (!isOpen || !task.jiraCustomFields || Object.keys(task.jiraCustomFields).length === 0) return;
-        const config = getJiraConfig();
-        if (!config) return;
-        const fieldIdsToResolve = Object.entries(task.jiraCustomFields)
-            .filter(([, value]) => {
-                if (value == null || typeof value !== 'object') return false;
-                const hasId = 'id' in value && (value as { id: unknown }).id != null;
-                const hasValue = 'value' in value && (value as { value: unknown }).value != null;
-                return hasId && !hasValue;
-            })
-            .map(([fieldId]) => fieldId);
-        if (fieldIdsToResolve.length === 0) return;
-        let cancelled = false;
-        const loadOptions = async () => {
-            const next: Record<string, Record<string, string>> = {};
-            for (const fieldId of fieldIdsToResolve) {
-                if (cancelled) return;
-                try {
-                    const options = await getJiraCustomFieldOptions(config, fieldId);
-                    const map: Record<string, string> = {};
-                    options.forEach((opt) => {
-                        map[opt.id] = opt.value;
-                    });
-                    next[fieldId] = map;
-                } catch {
-                    // 403/404 ou outro erro: manter fallback por id
-                }
-            }
-            if (!cancelled) {
-                setOptionLabelsByField((prev) => ({ ...prev, ...next }));
-            }
-        };
-        loadOptions();
-        return () => {
-            cancelled = true;
-        };
-    }, [isOpen, jiraCustomFieldsKey]);
 
     const handleSaveScenario = (scenario: Omit<BddScenario, 'id'>) => {
         onSaveBddScenario(task.id, scenario, editingBddScenario?.id);
@@ -618,34 +544,6 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                                     </div>
                                 </div>
                             )}
-                        </div>
-                    </div>
-                )}
-
-                {task.jiraCustomFields && Object.keys(task.jiraCustomFields).length > 0 && getJiraConfig() && (
-                    <div className="bg-base-100 border border-base-300 rounded-2xl overflow-hidden shadow-sm">
-                        <div className="p-4 border-b border-base-200 flex items-center gap-2">
-                            <BarChart3 className="w-5 h-5 text-primary" aria-hidden />
-                            <h2 className="font-bold text-base-content">Campos customizados do Jira</h2>
-                        </div>
-                        <div className="p-4 space-y-3">
-                            {Object.entries(task.jiraCustomFields).map(([fieldId, value]) => {
-                                const label = fieldNames[fieldId] ?? fieldId;
-                                const displayValue =
-                                    value != null && typeof value === 'object' && 'value' in value && (value as { value?: unknown }).value != null
-                                        ? String((value as { value: unknown }).value)
-                                        : value != null && typeof value === 'object' && 'id' in value
-                                          ? optionLabelsByField[fieldId]?.[(value as { id: string }).id] ?? (value as { id: string }).id
-                                          : value == null
-                                            ? ''
-                                            : String(value);
-                                return (
-                                    <div key={fieldId} className="text-sm">
-                                        <p className="text-[10px] font-bold uppercase tracking-widest text-base-content/60 mb-0.5">{label}</p>
-                                        <p className="text-base-content break-words">{displayValue || '—'}</p>
-                                    </div>
-                                );
-                            })}
                         </div>
                     </div>
                 )}

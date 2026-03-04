@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'lucide-react';
-import { JiraConfig, testJiraConnection, getJiraProjects, getJiraFields, importJiraProject, saveJiraConfig, getJiraConfig, deleteJiraConfig, JiraProject, JiraFieldInfo } from '../../services/jiraService';
+import { JiraConfig, testJiraConnection, getJiraProjects, importJiraProject, saveJiraConfig, getJiraConfig, deleteJiraConfig, JiraProject } from '../../services/jiraService';
 import { Project } from '../../types';
 import { Modal } from '../common/Modal';
 import { Spinner } from '../common/Spinner';
@@ -28,8 +28,6 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({ onProjectImpor
     const [isImporting, setIsImporting] = useState(false);
     const [importProgress, setImportProgress] = useState<{ current: number; total?: number } | null>(null);
     const [showConfigModal, setShowConfigModal] = useState(false);
-    const [jiraCustomFields, setJiraCustomFields] = useState<JiraFieldInfo[] | null>(null);
-    const [isLoadingFields, setIsLoadingFields] = useState(false);
     const { handleError, handleSuccess } = useErrorHandler();
 
     useEffect(() => {
@@ -143,28 +141,6 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({ onProjectImpor
         const cacheKey = `jira_projects_${config.url}`;
         localStorage.removeItem(cacheKey);
         handleSuccess('Conexão com Jira desconectada');
-    };
-
-    const loadJiraCustomFields = async (skipCache: boolean = false) => {
-        if (!config.url || !config.email || !config.apiToken) return;
-        setIsLoadingFields(true);
-        try {
-            const fields = await getJiraFields(config, skipCache ? { skipCache: true } : undefined);
-            const customOnly = fields.filter((f) => f.custom === true);
-            setJiraCustomFields(customOnly);
-            if (customOnly.length === 0 && fields.length > 0) {
-                logger.debug('Nenhum campo customizado na instância Jira', 'JiraSettingsTab');
-            }
-        } catch (error) {
-            logger.error('Erro ao listar campos do Jira', 'JiraSettingsTab', error);
-            handleError(
-                new Error('Não foi possível listar os campos. Verifique permissões na instância Jira.'),
-                'Campos do Jira'
-            );
-            setJiraCustomFields([]);
-        } finally {
-            setIsLoadingFields(false);
-        }
     };
 
     const handleImport = async () => {
@@ -334,62 +310,6 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({ onProjectImpor
                                             </>
                                         )}
                                     </button>
-                                </div>
-                            </Card>
-
-                            <Card className="p-6">
-                                <div className="space-y-4">
-                                    <div className="flex items-center justify-between">
-                                        <h4 className="text-sm font-medium text-base-content">Campos customizados do Jira</h4>
-                                        <div className="flex items-center gap-2">
-                                            {jiraCustomFields !== null && (
-                                                <button
-                                                    type="button"
-                                                    onClick={() => loadJiraCustomFields(true)}
-                                                    disabled={isLoadingFields}
-                                                    className="text-xs text-primary hover:underline flex items-center gap-1 disabled:opacity-50"
-                                                    title="Atualizar lista de campos"
-                                                >
-                                                    <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                                    </svg>
-                                                    Atualizar
-                                                </button>
-                                            )}
-                                            <button
-                                                type="button"
-                                                onClick={() => loadJiraCustomFields(false)}
-                                                disabled={isLoadingFields}
-                                                className="btn btn-secondary btn-sm"
-                                            >
-                                                {isLoadingFields ? <Spinner small /> : 'Listar campos'}
-                                            </button>
-                                        </div>
-                                    </div>
-                                    {isLoadingFields && (
-                                        <div className="flex items-center gap-2 text-sm text-base-content/70">
-                                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary" />
-                                            Carregando campos...
-                                        </div>
-                                    )}
-                                    {!isLoadingFields && jiraCustomFields !== null && (
-                                        <>
-                                            {jiraCustomFields.length === 0 ? (
-                                                <p className="text-sm text-base-content/70">
-                                                    Nenhum campo customizado encontrado ou não foi possível carregar (verifique permissões).
-                                                </p>
-                                            ) : (
-                                                <ul className="space-y-1.5 text-sm text-base-content/80">
-                                                    {jiraCustomFields.map((f) => (
-                                                        <li key={f.id} className="flex items-baseline gap-2">
-                                                            <span className="font-medium text-base-content">{f.name}</span>
-                                                            <span className="text-base-content/60 font-mono text-xs">({f.id})</span>
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            )}
-                                        </>
-                                    )}
                                 </div>
                             </Card>
 
