@@ -292,7 +292,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
             {/* Coluna principal */}
             <div className="lg:col-span-2 space-y-3">
                 {/* Cartões de resumo no topo */}
-                {(task.priority || task.severity || task.owner || task.assignee || nextStep) && (
+                {(task.priority || task.severity || task.owner || task.assignee || task.jiraAssignee?.displayName || nextStep) && (
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                         {task.owner && (
                             <div className="p-3 bg-base-100 border border-base-300 rounded-xl shadow-sm">
@@ -300,10 +300,10 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                                 <p className="text-sm font-medium text-base-content">{task.owner}</p>
                             </div>
                         )}
-                        {task.assignee && (
+                        {(task.jiraAssignee?.displayName ?? task.assignee) && (
                             <div className="p-3 bg-base-100 border border-base-300 rounded-xl shadow-sm">
                                 <p className="text-[10px] uppercase tracking-wider font-bold text-base-content/60 block mb-1">Responsável</p>
-                                <p className="text-sm font-medium text-base-content">{task.assignee}</p>
+                                <p className="text-sm font-medium text-base-content">{task.jiraAssignee?.displayName ?? task.assignee}</p>
                             </div>
                         )}
                         {(task.priority || task.jiraPriority) && (

@@ -735,7 +735,7 @@ export const JiraTaskItem: React.FC<{
                 </div>
             )}
 
-            {(task.priority || task.severity || task.owner || task.assignee || nextStep) && (
+            {(task.priority || task.severity || task.owner || task.assignee || task.jiraAssignee?.displayName || nextStep) && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-2">
                     {task.owner && (
                         <div className="p-2.5 bg-base-100 border border-base-300 rounded-xl">
@@ -743,10 +743,10 @@ export const JiraTaskItem: React.FC<{
                             <p className="text-sm font-semibold text-base-content">{task.owner}</p>
                         </div>
                     )}
-                    {task.assignee && (
+                    {(task.jiraAssignee?.displayName ?? task.assignee) && (
                         <div className="p-2.5 bg-base-100 border border-base-300 rounded-xl">
                             <p className="text-[11px] uppercase text-base-content/60 tracking-wide">Responsável</p>
-                            <p className="text-sm font-semibold text-base-content">{task.assignee}</p>
+                            <p className="text-sm font-semibold text-base-content">{task.jiraAssignee?.displayName ?? task.assignee}</p>
                         </div>
                     )}
                     {task.priority && (

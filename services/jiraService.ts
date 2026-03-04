@@ -1194,6 +1194,7 @@ export const updateSingleTaskFromJira = async (
         fixVersions: issue.fields?.fixVersions?.map((v: any) => ({ id: v.id, name: v.name })),
         environment: issue.fields?.environment,
         reporter: issue.fields?.reporter ? { displayName: issue.fields.reporter.displayName, emailAddress: issue.fields.reporter.emailAddress } : undefined,
+        jiraAssignee: issue.fields?.assignee ? { displayName: issue.fields.assignee.displayName, emailAddress: issue.fields.assignee.emailAddress } : undefined,
         watchers: issue.fields?.watches ? { watchCount: issue.fields.watches.watchCount || 0, isWatching: issue.fields.watches.isWatching || false } : undefined,
         issueLinks: issue.fields?.issuelinks?.map((l: any) => ({
             id: l.id,
@@ -1363,6 +1364,11 @@ export const importJiraProject = async (
             }
         } else {
             task.assignee = 'Product';
+        }
+        if (issue.fields?.assignee) {
+            task.jiraAssignee = { displayName: issue.fields.assignee.displayName, emailAddress: issue.fields.assignee.emailAddress };
+        } else {
+            task.jiraAssignee = undefined;
         }
 
         // Mapear campos adicionais do Jira
@@ -1778,6 +1784,11 @@ export const syncJiraProject = async (
             }
         } else {
             task.assignee = existingIndex >= 0 ? updatedTasks[existingIndex].assignee : 'Product';
+        }
+        if (issue.fields?.assignee) {
+            task.jiraAssignee = { displayName: issue.fields.assignee.displayName, emailAddress: issue.fields.assignee.emailAddress };
+        } else {
+            task.jiraAssignee = undefined;
         }
 
         // Mapear campos adicionais do Jira - sempre atualizar exatamente como estão no Jira
@@ -2528,6 +2539,11 @@ export const addNewJiraTasks = async (
             }
         } else {
             task.assignee = 'Product';
+        }
+        if (issue.fields?.assignee) {
+            task.jiraAssignee = { displayName: issue.fields.assignee.displayName, emailAddress: issue.fields.assignee.emailAddress };
+        } else {
+            task.jiraAssignee = undefined;
         }
 
         // Mapear campos adicionais do Jira (exatamente como estão no Jira)

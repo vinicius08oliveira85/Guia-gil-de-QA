@@ -162,6 +162,8 @@ export interface JiraTask {
   fixVersions?: Array<{ id: string; name: string }>;
   environment?: string;
   reporter?: { displayName: string; emailAddress?: string };
+  /** Responsável no Jira (nome/e-mail). Exibido na UI; assignee continua sendo o papel para filtros/export. */
+  jiraAssignee?: { displayName: string; emailAddress?: string };
   watchers?: { watchCount: number; isWatching: boolean };
   issueLinks?: Array<{ id: string; type: string; relatedKey: string; direction: 'inward' | 'outward' }>;
   jiraAttachments?: Array<{ id: string; filename: string; size: number; created: string; author: string }>;
