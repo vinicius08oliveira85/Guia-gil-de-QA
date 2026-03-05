@@ -404,5 +404,104 @@ describe('Preservação de Dados após Sincronização Jira', () => {
       expect(savedTask2?.testStrategy?.[0].testType).toBe('Estratégia tarefa 2');
     });
   });
+
+  describe('Atualização de campos do Jira na sincronização', () => {
+    it('deve atualizar type quando o tipo da issue muda no Jira', async () => {
+      const task: JiraTask = {
+        id: 'TEST-TYPE-001',
+        title: 'Tarefa que virou Bug',
+        description: 'Descrição',
+        type: 'Tarefa',
+        status: 'To Do',
+        testCases: []
+      };
+
+      testProject.tasks = [task];
+      await updateProject(testProject);
+
+      // Simular sync: no Jira o tipo foi alterado de Tarefa para Bug
+      const syncedTask: JiraTask = {
+        ...task,
+        type: 'Bug',
+        severity: 'Médio',
+        status: 'In Progress'
+      };
+
+      testProject.tasks = [syncedTask];
+      await updateProject(testProject);
+
+      const projects = await loadProjectsFromIndexedDB();
+      const savedProject = projects.find(p => p.id === testProject.id);
+
+      expect(savedProject?.tasks[0].type).toBe('Bug');
+      expect(savedProject?.tasks[0].severity).toBe('Médio');
+    });
+
+    it('deve atualizar jiraPriority após sincronização', async () => {
+      const task: JiraTask = {
+        id: 'TEST-PRIO-001',
+        title: 'Tarefa com prioridade',
+        description: 'Descrição',
+        type: 'Tarefa',
+        status: 'To Do',
+        priority: 'Média',
+        testCases: []
+      };
+
+      testProject.tasks = [task];
+      await updateProject(testProject);
+
+      // Simular sync: no Jira a prioridade mudou (nome original "High")
+      const syncedTask: JiraTask = {
+        ...task,
+        priority: 'Alta',
+        jiraPriority: 'High',
+        status: 'In Progress'
+      };
+
+      testProject.tasks = [syncedTask];
+      await updateProject(testProject);
+
+      const projects = await loadProjectsFromIndexedDB();
+      const savedProject = projects.find(p => p.id === testProject.id);
+
+      expect(savedProject?.tasks[0].priority).toBe('Alta');
+      expect(savedProject?.tasks[0].jiraPriority).toBe('High');
+    });
+
+    it('deve atualizar jiraAssignee após sincronização', async () => {
+      const task: JiraTask = {
+        id: 'TEST-ASSIGN-001',
+        title: 'Tarefa com responsável',
+        description: 'Descrição',
+        type: 'Tarefa',
+        status: 'To Do',
+        testCases: []
+      };
+
+      testProject.tasks = [task];
+      await updateProject(testProject);
+
+      // Simular sync: no Jira foi atribuído a um usuário
+      const syncedTask: JiraTask = {
+        ...task,
+        assignee: 'QA',
+        jiraAssignee: { displayName: 'João Silva', emailAddress: 'joao@empresa.com' },
+        status: 'In Progress'
+      };
+
+      testProject.tasks = [syncedTask];
+      await updateProject(testProject);
+
+      const projects = await loadProjectsFromIndexedDB();
+      const savedProject = projects.find(p => p.id === testProject.id);
+
+      expect(savedProject?.tasks[0].assignee).toBe('QA');
+      expect(savedProject?.tasks[0].jiraAssignee).toEqual({
+        displayName: 'João Silva',
+        emailAddress: 'joao@empresa.com'
+      });
+    });
+  });
 });
 

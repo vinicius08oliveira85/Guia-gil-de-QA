@@ -1866,7 +1866,10 @@ export const syncJiraProject = async (
                 oldTask.description !== task.description ||
                 statusMappedChanged ||
                 jiraStatusChanged ||
+                oldTask.type !== task.type ||
                 oldTask.priority !== task.priority ||
+                oldTask.jiraPriority !== task.jiraPriority ||
+                JSON.stringify(oldTask.jiraAssignee || {}) !== JSON.stringify(task.jiraAssignee || {}) ||
                 JSON.stringify(oldTask.tags || []) !== JSON.stringify(task.tags || []) ||
                 oldTask.severity !== task.severity ||
                 oldTask.completedAt !== task.completedAt ||
@@ -2033,7 +2036,10 @@ export const syncJiraProject = async (
                     description: task.description,
                     status: task.status,
                     jiraStatus: jiraStatusName || task.jiraStatus, // Sempre usar jiraStatusName do Jira, ou manter existente se vazio
+                    type: task.type,
                     priority: task.priority,
+                    jiraPriority: task.jiraPriority,
+                    jiraAssignee: task.jiraAssignee,
                     tags: task.tags,
                     severity: task.severity,
                     completedAt: task.completedAt,
