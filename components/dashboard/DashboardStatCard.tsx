@@ -12,6 +12,8 @@ interface DashboardStatCardProps {
   trend?: TrendType;
   icon: LucideIcon;
   className?: string;
+  /** Callback ao clicar no card; quando definido, o card fica clicável com feedback visual */
+  onClick?: () => void;
 }
 
 /**
@@ -25,6 +27,7 @@ export const DashboardStatCard = React.memo<DashboardStatCardProps>(({
   trend = 'neutral',
   icon: Icon,
   className,
+  onClick,
 }) => {
   const changeColor =
     trend === 'up'
@@ -33,10 +36,21 @@ export const DashboardStatCard = React.memo<DashboardStatCardProps>(({
         ? 'text-error'
         : 'text-base-content/60';
 
+  const isClickable = !!onClick;
+
+  const handleClick = () => {
+    onClick?.();
+  };
+
   return (
     <div
+      role={isClickable ? 'button' : undefined}
+      tabIndex={isClickable ? 0 : undefined}
+      onClick={isClickable ? handleClick : undefined}
+      onKeyDown={isClickable ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleClick(); } } : undefined}
       className={cn(
         'bg-base-100 px-5 py-4 rounded-xl shadow-sm border border-base-300 flex items-center gap-4',
+        isClickable && 'cursor-pointer hover:ring-2 hover:ring-primary/20 hover:scale-[1.02] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/30',
         className
       )}
     >

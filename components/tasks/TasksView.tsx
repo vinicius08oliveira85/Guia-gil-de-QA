@@ -8,7 +8,7 @@ import { Modal } from '../common/Modal';
 import { TaskForm } from './TaskForm';
 import { TestCaseEditorModal } from './TestCaseEditorModal';
 import { Button } from '../common/Button';
-import { Plus, Filter, Zap, AlertTriangle, X, Check, Link as LinkIcon, Clock, ClipboardList, CheckCircle, Star, List } from 'lucide-react';
+import { Plus, Filter, Zap, AlertTriangle, X, Check, Link as LinkIcon, Clock, ClipboardList, CheckCircle, Star, List, Download } from 'lucide-react';
 import { logger } from '../../utils/logger';
 import { useProjectsStore } from '../../store/projectsStore';
 import { getFriendlyAIErrorMessage } from '../../utils/aiErrorMapper';
@@ -30,6 +30,7 @@ import { GlassIndicatorCards } from '../dashboard/GlassIndicatorCards';
 import { getDisplayStatus } from '../../utils/taskHelpers';
 import { calculateTaskTestStatus } from '../../services/taskTestStatusService';
 import { normalizeExecutedStrategy } from '../../utils/testCaseMigration';
+import { FileExportModal } from '../common/FileExportModal';
 
 const TASK_ID_REGEX = /^([A-Z]+)-(\d+)/i;
 
@@ -165,6 +166,45 @@ const compareTasksById = (a: JiraTask, b: JiraTask) => {
     return a.title.localeCompare(b.title);
 };
 
+type TaskSortBy = 'id' | 'status' | 'priority' | 'createdAt' | 'title';
+type TaskGroupBy = 'none' | 'status' | 'priority' | 'type';
+
+const STATUS_ORDER: Record<string, number> = { 'To Do': 0, 'Blocked': 1, 'In Progress': 2, 'Done': 3 };
+const PRIORITY_ORDER: Record<string, number> = { 'Urgente': 0, 'Alta': 1, 'Média': 2, 'Baixa': 3 };
+
+function getTaskComparator(sortBy: TaskSortBy): (a: JiraTask, b: JiraTask) => number {
+    return (a, b) => {
+        switch (sortBy) {
+            case 'id':
+                return compareTasksById(a, b);
+            case 'status': {
+                const orderA = STATUS_ORDER[a.status] ?? 99;
+                const orderB = STATUS_ORDER[b.status] ?? 99;
+                if (orderA !== orderB) return orderA - orderB;
+                return compareTasksById(a, b);
+            }
+            case 'priority': {
+                const orderA = PRIORITY_ORDER[a.priority ?? ''] ?? 99;
+                const orderB = PRIORITY_ORDER[b.priority ?? ''] ?? 99;
+                if (orderA !== orderB) return orderA - orderB;
+                return compareTasksById(a, b);
+            }
+            case 'createdAt': {
+                const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+                const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+                if (dateB !== dateA) return dateB - dateA; // mais recente primeiro
+                return compareTasksById(a, b);
+            }
+            case 'title':
+                const cmp = (a.title ?? '').localeCompare(b.title ?? '', undefined, { sensitivity: 'base' });
+                if (cmp !== 0) return cmp;
+                return compareTasksById(a, b);
+            default:
+                return compareTasksById(a, b);
+        }
+    };
+}
+
 // Componente Helper para Chips de Filtro
 const FilterChip = ({ 
     label, 
@@ -218,6 +258,9 @@ export const TasksView: React.FC<{
     const [typeFilter, setTypeFilter] = useState<string[]>([]);
     const [testStatusFilter, setTestStatusFilter] = useState<TaskTestStatus[]>([]);
     const [qualityFilter, setQualityFilter] = useState<string[]>([]);
+    const [sortBy, setSortBy] = useState<TaskSortBy>('id');
+    const [showExportTasksModal, setShowExportTasksModal] = useState(false);
+    const [groupBy, setGroupBy] = useState<TaskGroupBy>('none');
 
     const [failModalState, setFailModalState] = useState<{
         isOpen: boolean;
@@ -343,6 +386,53 @@ export const TasksView: React.FC<{
         setQualityFilter([]);
         setSearchQuery('');
     };
+
+    const TASKS_FILTERS_STORAGE_KEY = 'tasks_filters';
+    const filtersRestoredForProjectRef = useRef<string | null>(null);
+
+    useEffect(() => {
+        if (!project?.id) return;
+        const key = `${TASKS_FILTERS_STORAGE_KEY}_${project.id}`;
+        try {
+            const raw = localStorage.getItem(key);
+            if (raw) {
+                const data = JSON.parse(raw) as Record<string, unknown>;
+                if (data && typeof data === 'object') {
+                    if (Array.isArray(data.statusFilter)) setStatusFilter(data.statusFilter as string[]);
+                    if (Array.isArray(data.priorityFilter)) setPriorityFilter(data.priorityFilter as string[]);
+                    if (Array.isArray(data.typeFilter)) setTypeFilter(data.typeFilter as string[]);
+                    if (Array.isArray(data.testStatusFilter)) setTestStatusFilter(data.testStatusFilter as TaskTestStatus[]);
+                    if (Array.isArray(data.qualityFilter)) setQualityFilter(data.qualityFilter as string[]);
+                    if (typeof data.searchQuery === 'string') setSearchQuery(data.searchQuery);
+                    if (typeof data.sortBy === 'string' && ['id', 'status', 'priority', 'createdAt', 'title'].includes(data.sortBy)) {
+                        setSortBy(data.sortBy as TaskSortBy);
+                    }
+                    if (typeof data.groupBy === 'string' && ['none', 'status', 'priority', 'type'].includes(data.groupBy)) {
+                        setGroupBy(data.groupBy as TaskGroupBy);
+                    }
+                }
+            }
+        } catch {
+            // ignorar dados inválidos
+        }
+        filtersRestoredForProjectRef.current = project.id;
+    }, [project?.id]);
+
+    useEffect(() => {
+        if (!project?.id || filtersRestoredForProjectRef.current !== project.id) return;
+        const key = `${TASKS_FILTERS_STORAGE_KEY}_${project.id}`;
+        const payload = {
+            statusFilter,
+            priorityFilter,
+            typeFilter,
+            testStatusFilter,
+            qualityFilter,
+            searchQuery,
+            sortBy,
+            groupBy,
+        };
+        localStorage.setItem(key, JSON.stringify(payload));
+    }, [project?.id, statusFilter, priorityFilter, typeFilter, testStatusFilter, qualityFilter, searchQuery, sortBy, groupBy]);
 
     // Função helper para adicionar timeout às chamadas de IA
     const withTimeout = <T,>(promise: Promise<T>, timeoutMs: number = 60000): Promise<T> => {
@@ -1237,11 +1327,24 @@ export const TasksView: React.FC<{
     // Usar useRef para evitar loops infinitos e correções múltiplas
     const hasCorrectedStatus = useRef<string | null>(null);
     const onUpdateProjectRef = useRef(onUpdateProject);
-    
+    const searchInputRef = useRef<HTMLInputElement>(null);
+
     // Atualizar ref quando onUpdateProject mudar
     useEffect(() => {
         onUpdateProjectRef.current = onUpdateProject;
     }, [onUpdateProject]);
+
+    // Atalho de teclado para focar na busca (Ctrl+Shift+F / Cmd+Shift+F)
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'F') {
+                e.preventDefault();
+                searchInputRef.current?.focus();
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, []);
 
     // Scroll até a tarefa quando initialTaskId estiver definido
     useEffect(() => {
@@ -1404,6 +1507,12 @@ export const TasksView: React.FC<{
     const testExecutionRate = stats.totalTests > 0 ? Math.round((stats.executedTests / stats.totalTests) * 100) : 0;
     const automationRate = stats.totalTests > 0 ? Math.round((stats.automatedTests / stats.totalTests) * 100) : 0;
 
+    const statusOptions = useMemo(() => getStatusFilterOptions(project), [project]);
+    const toDoLabel = useMemo(() => statusOptions.find(o => PT_STATUS_TO_CATEGORY[o] === 'To Do' || mapJiraStatusToTaskStatus(o) === 'To Do') ?? statusOptions[0], [statusOptions]);
+    const inProgressLabel = useMemo(() => statusOptions.find(o => PT_STATUS_TO_CATEGORY[o] === 'In Progress' || mapJiraStatusToTaskStatus(o) === 'In Progress') ?? statusOptions[1], [statusOptions]);
+    const doneLabel = useMemo(() => statusOptions.find(o => PT_STATUS_TO_CATEGORY[o] === 'Done' || mapJiraStatusToTaskStatus(o) === 'Done') ?? statusOptions[2], [statusOptions]);
+    const nonDoneLabels = useMemo(() => statusOptions.filter(o => (PT_STATUS_TO_CATEGORY[o] ?? mapJiraStatusToTaskStatus(o)) !== 'Done'), [statusOptions]);
+
     const indicatorItems = useMemo(
         () => [
             {
@@ -1419,6 +1528,8 @@ export const TasksView: React.FC<{
                 modifier: '-',
                 icon: Clock,
                 colorTheme: 'yellow' as const,
+                onClick: () => { setStatusFilter([toDoLabel]); setTypeFilter([]); setTestStatusFilter([]); setQualityFilter([]); setPriorityFilter([]); },
+                isActive: statusFilter.length === 1 && statusFilter[0] === toDoLabel && typeFilter.length === 0,
             },
             {
                 label: 'Em Andamento',
@@ -1426,6 +1537,8 @@ export const TasksView: React.FC<{
                 modifier: 'active',
                 icon: Zap,
                 colorTheme: 'blue' as const,
+                onClick: () => { setStatusFilter([inProgressLabel]); setTypeFilter([]); setTestStatusFilter([]); setQualityFilter([]); setPriorityFilter([]); },
+                isActive: statusFilter.length === 1 && statusFilter[0] === inProgressLabel && typeFilter.length === 0,
             },
             {
                 label: 'Concluídas',
@@ -1433,6 +1546,8 @@ export const TasksView: React.FC<{
                 modifier: stats.total > 0 ? `${Math.round((stats.done / stats.total) * 100)}%` : '0%',
                 icon: CheckCircle,
                 colorTheme: 'emerald' as const,
+                onClick: () => { setStatusFilter([doneLabel]); setTypeFilter([]); setTestStatusFilter([]); setQualityFilter([]); setPriorityFilter([]); },
+                isActive: statusFilter.length === 1 && statusFilter[0] === doneLabel && typeFilter.length === 0,
             },
             {
                 label: 'Bugs Abertos',
@@ -1440,6 +1555,8 @@ export const TasksView: React.FC<{
                 modifier: (metrics.bugsBySeverity?.['Crítico'] ?? 0) > 0 ? 'Critical' : 'Abertos',
                 icon: AlertTriangle,
                 colorTheme: 'red' as const,
+                onClick: () => { setTypeFilter(['Bug']); setStatusFilter(nonDoneLabels); setTestStatusFilter([]); setQualityFilter([]); setPriorityFilter([]); },
+                isActive: typeFilter.length === 1 && typeFilter[0] === 'Bug' && statusFilter.length === nonDoneLabels.length && statusFilter.every(s => nonDoneLabels.includes(s)),
             },
         ],
         [
@@ -1449,6 +1566,12 @@ export const TasksView: React.FC<{
             stats.done,
             stats.bugsOpen,
             metrics.bugsBySeverity,
+            toDoLabel,
+            inProgressLabel,
+            doneLabel,
+            nonDoneLabels,
+            statusFilter,
+            typeFilter,
         ]
     );
 
@@ -1480,8 +1603,10 @@ export const TasksView: React.FC<{
         ]
     );
 
+    const taskComparator = useMemo(() => getTaskComparator(sortBy), [sortBy]);
+
     const taskTree = useMemo(() => {
-        const tasks = [...filteredTasks].sort(compareTasksById);
+        const tasks = [...filteredTasks].sort(taskComparator);
         const taskMap = new Map(tasks.map(t => [t.id, { ...t, children: [] as TaskWithChildren[] }]));
         const tree: TaskWithChildren[] = [];
 
@@ -1493,7 +1618,7 @@ export const TasksView: React.FC<{
             }
         }
         const sortChildrenRecursive = (nodes: TaskWithChildren[]) => {
-            nodes.sort(compareTasksById);
+            nodes.sort(taskComparator);
             nodes.forEach(node => {
                 if (node.children.length > 0) {
                     sortChildrenRecursive(node.children);
@@ -1502,10 +1627,34 @@ export const TasksView: React.FC<{
         };
         sortChildrenRecursive(tree);
         return tree;
-    }, [filteredTasks]);
+    }, [filteredTasks, taskComparator]);
 
     const favoriteRoots = useMemo(() => taskTree.filter(t => t.isFavorite), [taskTree]);
     const otherRoots = useMemo(() => taskTree.filter(t => !t.isFavorite), [taskTree]);
+
+    const groupedTasksEntries = useMemo((): [string, TaskWithChildren[]][] => {
+        if (groupBy === 'none') return [];
+        const map = new Map<string, TaskWithChildren[]>();
+        filteredTasks.forEach(task => {
+            const key = groupBy === 'status'
+                ? getDisplayStatus(task)
+                : groupBy === 'priority'
+                    ? (task.priority ?? 'Sem prioridade')
+                    : task.type;
+            const withChildren = { ...task, children: [] as TaskWithChildren[] };
+            if (!map.has(key)) map.set(key, []);
+            map.get(key)!.push(withChildren);
+        });
+        const entries = Array.from(map.entries());
+        if (groupBy === 'status') {
+            const order = statusOptions;
+            entries.sort((a, b) => (order.indexOf(a[0]) === -1 ? 999 : order.indexOf(a[0])) - (order.indexOf(b[0]) === -1 ? 999 : order.indexOf(b[0])));
+        } else if (groupBy === 'priority') {
+            const order = ['Urgente', 'Alta', 'Média', 'Baixa', 'Sem prioridade'];
+            entries.sort((a, b) => (order.indexOf(a[0]) === -1 ? 999 : order.indexOf(a[0])) - (order.indexOf(b[0]) === -1 ? 999 : order.indexOf(b[0])));
+        }
+        return entries;
+    }, [filteredTasks, groupBy, statusOptions]);
 
     const handleToggleFavorite = useCallback((taskId: string) => {
         const updatedTasks = (project.tasks || []).map(t =>
@@ -1648,6 +1797,7 @@ export const TasksView: React.FC<{
                     <label 
                         htmlFor="quick-task-search" 
                         className="text-sm font-medium text-base-content/80 mb-2 flex items-center gap-2"
+                        title="Atalho: Ctrl+Shift+F (ou Cmd+Shift+F no Mac)"
                     >
                         <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -1657,6 +1807,7 @@ export const TasksView: React.FC<{
                     <div className="relative">
                         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-base-content/60">🔍</span>
                         <input
+                            ref={searchInputRef}
                             id="quick-task-search"
                             type="search"
                             inputMode="search"
@@ -1665,22 +1816,143 @@ export const TasksView: React.FC<{
                             onChange={(e) => setSearchQuery(e.target.value)}
                             placeholder="Digite ID, título ou palavra-chave..."
                             className="input input-bordered w-full pl-10 pr-12 py-3 h-auto min-h-[48px] bg-base-100 border-base-300 text-base-content placeholder:text-base-content/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all rounded-xl shadow-sm"
+                            title="Atalho: Ctrl+Shift+F (ou Cmd+Shift+F no Mac)"
+                            aria-label="Busca rápida por tarefa ou teste. Atalho: Ctrl+Shift+F"
                         />
                         {searchQuery && (
                             <button
                                 type="button"
                                 onClick={() => setSearchQuery('')}
                                 className="absolute right-2 top-1/2 -translate-y-1/2 text-base-content/60 hover:text-base-content p-2 rounded-full hover:bg-base-200 focus:outline-none focus:ring-2 focus:ring-primary/20"
-                                aria-label="Limpar busca rápida"
+                                aria-label="Limpar busca"
                             >
                                 ✕
                             </button>
                         )}
                     </div>
                     <p className="text-xs text-base-content/70 mt-2">
-                        Filtre tarefas e casos instantaneamente sem precisar abrir o painel completo de filtros.
+                        Filtre tarefas e casos instantaneamente sem precisar abrir o painel completo de filtros. Atalho: Ctrl+Shift+F.
                     </p>
                 </div>
+
+                {(activeFiltersCount > 0 || searchQuery) && (
+                    <div className="flex flex-wrap items-center gap-2">
+                        {statusFilter.map((s) => (
+                            <span
+                                key={`status-${s}`}
+                                className="badge badge-primary badge-outline gap-1 pr-1 py-2 text-xs font-medium"
+                            >
+                                Status: {s}
+                                <button
+                                    type="button"
+                                    onClick={() => setStatusFilter((prev) => prev.filter((x) => x !== s))}
+                                    className="btn btn-ghost btn-xs btn-circle p-0 min-h-0 h-5 w-5 rounded-full hover:bg-primary/20"
+                                    aria-label={`Remover filtro Status: ${s}`}
+                                >
+                                    <X className="w-3 h-3" />
+                                </button>
+                            </span>
+                        ))}
+                        {priorityFilter.map((p) => (
+                            <span
+                                key={`priority-${p}`}
+                                className="badge badge-primary badge-outline gap-1 pr-1 py-2 text-xs font-medium"
+                            >
+                                Prioridade: {p}
+                                <button
+                                    type="button"
+                                    onClick={() => setPriorityFilter((prev) => prev.filter((x) => x !== p))}
+                                    className="btn btn-ghost btn-xs btn-circle p-0 min-h-0 h-5 w-5 rounded-full hover:bg-primary/20"
+                                    aria-label={`Remover filtro Prioridade: ${p}`}
+                                >
+                                    <X className="w-3 h-3" />
+                                </button>
+                            </span>
+                        ))}
+                        {typeFilter.map((t) => (
+                            <span
+                                key={`type-${t}`}
+                                className="badge badge-primary badge-outline gap-1 pr-1 py-2 text-xs font-medium"
+                            >
+                                Tipo: {t}
+                                <button
+                                    type="button"
+                                    onClick={() => setTypeFilter((prev) => prev.filter((x) => x !== t))}
+                                    className="btn btn-ghost btn-xs btn-circle p-0 min-h-0 h-5 w-5 rounded-full hover:bg-primary/20"
+                                    aria-label={`Remover filtro Tipo: ${t}`}
+                                >
+                                    <X className="w-3 h-3" />
+                                </button>
+                            </span>
+                        ))}
+                        {testStatusFilter.map((ts) => {
+                            const opt = TEST_STATUS_FILTER_OPTIONS.find((o) => o.value === ts);
+                            return (
+                                <span
+                                    key={`testStatus-${ts}`}
+                                    className="badge badge-primary badge-outline gap-1 pr-1 py-2 text-xs font-medium"
+                                >
+                                    Teste: {opt?.label ?? ts}
+                                    <button
+                                        type="button"
+                                        onClick={() => setTestStatusFilter((prev) => prev.filter((x) => x !== ts))}
+                                        className="btn btn-ghost btn-xs btn-circle p-0 min-h-0 h-5 w-5 rounded-full hover:bg-primary/20"
+                                        aria-label={`Remover filtro Teste: ${opt?.label ?? ts}`}
+                                    >
+                                        <X className="w-3 h-3" />
+                                    </button>
+                                </span>
+                            );
+                        })}
+                        {qualityFilter.map((q) => {
+                            const labels: Record<string, string> = {
+                                'with-bdd': 'Com BDD',
+                                'without-bdd': 'Sem BDD',
+                                'with-tests': 'Com Testes',
+                                'without-tests': 'Sem Testes',
+                                automated: 'Automatizados',
+                                manual: 'Manuais',
+                            };
+                            return (
+                                <span
+                                    key={`quality-${q}`}
+                                    className="badge badge-primary badge-outline gap-1 pr-1 py-2 text-xs font-medium"
+                                >
+                                    Qualidade: {labels[q] ?? q}
+                                    <button
+                                        type="button"
+                                        onClick={() => setQualityFilter((prev) => prev.filter((x) => x !== q))}
+                                        className="btn btn-ghost btn-xs btn-circle p-0 min-h-0 h-5 w-5 rounded-full hover:bg-primary/20"
+                                        aria-label={`Remover filtro Qualidade: ${labels[q] ?? q}`}
+                                    >
+                                        <X className="w-3 h-3" />
+                                    </button>
+                                </span>
+                            );
+                        })}
+                        {searchQuery && (
+                            <span className="badge badge-primary badge-outline gap-1 pr-1 py-2 text-xs font-medium">
+                                Busca: {searchQuery.length > 20 ? `${searchQuery.slice(0, 20)}…` : searchQuery}
+                                <button
+                                    type="button"
+                                    onClick={() => setSearchQuery('')}
+                                    className="btn btn-ghost btn-xs btn-circle p-0 min-h-0 h-5 w-5 rounded-full hover:bg-primary/20"
+                                    aria-label="Remover filtro de busca"
+                                >
+                                    <X className="w-3 h-3" />
+                                </button>
+                            </span>
+                        )}
+                        <button
+                            type="button"
+                            onClick={() => { clearAllFilters(); setIsFiltersModalOpen(false); }}
+                            className="btn btn-ghost btn-sm text-error hover:bg-error/10 text-xs font-medium"
+                        >
+                            <X className="w-3 h-3 mr-1" />
+                            Limpar todos
+                        </button>
+                    </div>
+                )}
 
                 <motion.div
                     className="mb-6"
@@ -1834,6 +2106,11 @@ export const TasksView: React.FC<{
                                 {generatingBddTaskId && <span>Gerando cenários BDD para {generatingBddTaskId}...</span>}
                             </div>
                         )}
+                        {(activeFiltersCount > 0 || debouncedSearchQuery) && (
+                            <p className="text-sm text-base-content/70">
+                                Exibindo {filteredTasks.length} de {project.tasks.length} tarefas
+                            </p>
+                        )}
                     </div>
 
         <Modal 
@@ -1904,6 +2181,75 @@ export const TasksView: React.FC<{
 
                     {taskTree.length > 0 ? (
                         <div className="space-y-6">
+                            <div className="flex flex-wrap items-center gap-3 justify-end">
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowExportTasksModal(true)}
+                                        className="btn btn-ghost btn-sm text-xs gap-1"
+                                        aria-label={`Exportar lista visível (${filteredTasks.length} tarefas)`}
+                                    >
+                                        <Download className="w-3.5 h-3.5" aria-hidden />
+                                        Exportar lista visível {filteredTasks.length !== project.tasks.length ? `(${filteredTasks.length})` : ''}
+                                    </button>
+                                </div>
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <label htmlFor="tasks-sort-by" className="text-xs font-medium text-base-content/70">Ordenar por</label>
+                                    <select
+                                        id="tasks-sort-by"
+                                        value={sortBy}
+                                        onChange={(e) => setSortBy(e.target.value as TaskSortBy)}
+                                        className="select select-bordered select-sm rounded-lg text-sm bg-base-100 border-base-300"
+                                        aria-label="Ordenação da lista de tarefas"
+                                    >
+                                        <option value="id">ID</option>
+                                        <option value="status">Status</option>
+                                        <option value="priority">Prioridade</option>
+                                        <option value="createdAt">Data de criação</option>
+                                        <option value="title">Título</option>
+                                    </select>
+                                </div>
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <label htmlFor="tasks-group-by" className="text-xs font-medium text-base-content/70">Agrupar por</label>
+                                    <select
+                                        id="tasks-group-by"
+                                        value={groupBy}
+                                        onChange={(e) => setGroupBy(e.target.value as TaskGroupBy)}
+                                        className="select select-bordered select-sm rounded-lg text-sm bg-base-100 border-base-300"
+                                        aria-label="Agrupar lista de tarefas por"
+                                    >
+                                        <option value="none">Nenhum</option>
+                                        <option value="status">Status</option>
+                                        <option value="priority">Prioridade</option>
+                                        <option value="type">Tipo</option>
+                                    </select>
+                                </div>
+                            </div>
+                            {groupBy !== 'none' && groupedTasksEntries.length > 0 ? (
+                                <div className="space-y-6">
+                                    {groupedTasksEntries.map(([groupLabel, tasksInGroup]) => (
+                                        <section key={groupLabel} aria-label={`Grupo: ${groupLabel}`}>
+                                            <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-base-content/70 mb-3">
+                                                <List className="w-4 h-4" aria-hidden />
+                                                {groupLabel}
+                                            </h3>
+                                            <div className="space-y-1">
+                                                {renderTaskTree(tasksInGroup, 0).map((taskElement, index) => (
+                                                    <motion.div
+                                                        key={taskElement.key ?? `grp-${groupLabel}-${index}`}
+                                                        initial={{ opacity: 0, y: 10 }}
+                                                        animate={{ opacity: 1, y: 0 }}
+                                                        transition={{ delay: index * 0.03, duration: 0.25 }}
+                                                    >
+                                                        {taskElement}
+                                                    </motion.div>
+                                                ))}
+                                            </div>
+                                        </section>
+                                    ))}
+                                </div>
+                            ) : (
+                            <>
                             {favoriteRoots.length > 0 && (
                                 <section aria-label="Favoritos">
                                     <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-primary mb-3">
@@ -1945,7 +2291,20 @@ export const TasksView: React.FC<{
                                     ))}
                                 </div>
                             </section>
+                            </>
+                            )}
                         </div>
+                    ) : filteredTasks.length === 0 && project.tasks.length > 0 ? (
+                        <EmptyState
+                            icon="🔍"
+                            title="Nenhuma tarefa corresponde aos filtros"
+                            description="Ajuste os filtros ou a busca para ver mais tarefas."
+                            action={{
+                                label: "Limpar filtros",
+                                onClick: () => { clearAllFilters(); setIsFiltersModalOpen(false); },
+                                variant: 'primary'
+                            }}
+                        />
                     ) : (
                         <EmptyState
                             icon="📋"
@@ -1961,6 +2320,14 @@ export const TasksView: React.FC<{
                 </div>
             </div>
         </Card>
+
+        <FileExportModal
+            isOpen={showExportTasksModal}
+            onClose={() => setShowExportTasksModal(false)}
+            exportType="tasks"
+            project={project}
+            tasks={filteredTasks}
+        />
 
         <Modal 
             isOpen={failModalState.isOpen} 

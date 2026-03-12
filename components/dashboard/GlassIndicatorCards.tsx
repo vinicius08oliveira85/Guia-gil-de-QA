@@ -18,6 +18,10 @@ export interface SmallIndicatorItem {
   modifier: string;
   icon: LucideIcon;
   colorTheme: IndicatorColorTheme;
+  /** Se definido, o card fica clicável e aplica o filtro rápido ao clicar. */
+  onClick?: () => void;
+  /** Se true, indica que o filtro correspondente a este indicador está ativo (estilo de destaque). */
+  isActive?: boolean;
 }
 
 const themeConfig: Record<
@@ -76,11 +80,15 @@ const themeConfig: Record<
 function SmallIndicatorCard({ item }: { item: SmallIndicatorItem }) {
   const config = themeConfig[item.colorTheme];
   const Icon = item.icon;
+  const isClickable = !!item.onClick;
   return (
     <div
-      className="glass bg-white/60 dark:bg-slate-800/40 p-6 rounded-xl relative overflow-hidden group hover:-translate-y-1 transition-all duration-300"
-      role="article"
-      aria-label={`${item.label}: ${item.value} ${item.modifier}`}
+      className={`glass bg-white/60 dark:bg-slate-800/40 p-6 rounded-xl relative overflow-hidden group transition-all duration-300 ${isClickable ? 'cursor-pointer hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-primary/30' : ''} ${item.isActive ? 'ring-2 ring-primary/50 shadow-md' : ''}`}
+      role={isClickable ? 'button' : 'article'}
+      tabIndex={isClickable ? 0 : undefined}
+      aria-label={isClickable ? `${item.label}: ${item.value} ${item.modifier}. Clique para filtrar.` : `${item.label}: ${item.value} ${item.modifier}`}
+      onClick={item.onClick}
+      onKeyDown={isClickable && item.onClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); item.onClick!(); } } : undefined}
     >
       <div
         className={`absolute -right-4 -top-4 w-24 h-24 rounded-full blur-2xl transition-colors ${config.orbBg} group-hover:opacity-80`}

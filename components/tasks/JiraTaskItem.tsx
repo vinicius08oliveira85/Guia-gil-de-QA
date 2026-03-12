@@ -228,6 +228,10 @@ export const JiraTaskItem: React.FC<{
     }, [task.type]);
 
     const taskTypeNorm = (task.type || '').toLowerCase();
+
+    /** Título do card: apenas o título da própria tarefa (sem prefixo Epic/História). */
+    const displayTitle = task.title;
+
     const borderL4Class = useMemo(() => {
         if (['tarefa', 'task'].includes(taskTypeNorm)) return 'border-l-4 border-blue-600';
         if (taskTypeNorm === 'bug') return 'border-l-4 border-error';
@@ -1471,6 +1475,7 @@ export const JiraTaskItem: React.FC<{
                 <div
                     className={[
                         'flex flex-wrap items-center gap-x-2 gap-y-2 sm:gap-y-0 px-3 py-2 sm:px-4 sm:py-2.5 bg-base-100 dark:bg-base-200 border rounded-xl task-card-shadow transition-all duration-200',
+                        level > 0 ? 'max-md:bg-base-200/60 max-md:dark:bg-base-300/50 max-md:border-base-300' : '',
                         isStatusDropdownOpen ? 'relative z-10' : '',
                         borderL4Class,
                         'border-base-300',
@@ -1523,7 +1528,12 @@ export const JiraTaskItem: React.FC<{
                         ) : null}
                         <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded tracking-wider shrink-0 ${typeBadgeClass}`}>{task.type}</span>
                         <span className="text-xs font-medium text-base-content/60 shrink-0">{task.id}</span>
-                        <span className="text-sm font-semibold text-base-content truncate min-w-0 flex-1">{task.title}</span>
+                        <span className="text-sm font-semibold text-base-content truncate min-w-0 flex-1" title={displayTitle}>{displayTitle}</span>
+                        {!isDetailsOpen && (task.type === 'Tarefa' || task.type === 'Bug' || task.type === 'Epic' || task.type === 'História') && (
+                            <span className="text-xs text-base-content/70 w-full basis-full mt-0.5 ml-0 line-clamp-2" aria-hidden title={displayTitle}>
+                                {displayTitle}
+                            </span>
+                        )}
                     </div>
 
                     <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap sm:flex-nowrap flex-shrink-0 w-full sm:w-auto sm:ml-auto order-2" onClick={(e) => e.stopPropagation()}>
@@ -1952,7 +1962,7 @@ export const JiraTaskItem: React.FC<{
             </div>
 
             {hasChildren && isChildrenOpen && (
-                <div id={childrenRegionId} className="ml-6 border-l border-base-300/60 pl-3 mt-1">
+                <div id={childrenRegionId} className="ml-6 border-l-2 border-base-300/70 pl-3 mt-1 max-md:bg-base-200/30 max-md:rounded-r-lg max-md:pr-2">
                     {children}
                 </div>
             )}

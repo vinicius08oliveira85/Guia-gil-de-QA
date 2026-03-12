@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { ProjectFullAnalysis } from '../../types';
 import { Modal } from '../common/Modal';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, Printer, Copy } from 'lucide-react';
+import { cn } from '../../utils/cn';
+import toast from 'react-hot-toast';
 
 const SUMMARY_SNIPPET_LENGTH = 120;
 
@@ -11,12 +13,26 @@ interface ProjectAnalysesBoardProps {
   isGenerating?: boolean;
 }
 
+/** Retorna classe de borda/ênfase por “sentimento” da análise (riscos vs pontos fortes). */
+function getSentimentBorderClass(a: ProjectFullAnalysis): string {
+  const risksCount = a.risks?.length ?? 0;
+  const strengthsCount = a.strengths?.length ?? 0;
+  if (risksCount > strengthsCount && risksCount > 0) return 'border-l-4 border-l-error';
+  if (strengthsCount > risksCount && strengthsCount > 0) return 'border-l-4 border-l-success';
+  return '';
+}
+
 export const ProjectAnalysesBoard: React.FC<ProjectAnalysesBoardProps> = ({
   analyses,
   onGenerateAnalysis,
   isGenerating = false,
 }) => {
   const [selectedAnalysis, setSelectedAnalysis] = useState<ProjectFullAnalysis | null>(null);
+
+  const sortedAnalyses = useMemo(
+    () => [...analyses].sort((x, y) => new Date(y.generatedAt).getTime() - new Date(x.generatedAt).getTime()),
+    [analyses]
+  );
 
   const snippet = (text: string) =>
     text.length <= SUMMARY_SNIPPET_LENGTH ? text : `${text.slice(0, SUMMARY_SNIPPET_LENGTH)}…`;
@@ -46,26 +62,46 @@ export const ProjectAnalysesBoard: React.FC<ProjectAnalysesBoardProps> = ({
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {analyses.map((a, index) => (
-            <div
-              key={a.generatedAt + index}
-              className="bg-base-100 rounded-xl border border-base-300 shadow-sm p-4 flex flex-col hover:border-primary/30 transition-colors"
-            >
-              <p className="text-xs text-base-content/60 mb-2">
-                {new Date(a.generatedAt).toLocaleString('pt-BR')}
-              </p>
-              <p className="text-sm text-base-content flex-1 line-clamp-3 mb-4">
-                {snippet(a.summary)}
-              </p>
-              <button
-                type="button"
-                onClick={() => setSelectedAnalysis(a)}
-                className="text-sm font-medium text-primary hover:underline text-left"
+          {sortedAnalyses.map((a, index) => {
+            const isMostRecent = index === 0;
+            const risksCount = a.risks?.length ?? 0;
+            const recsCount = a.recommendations?.length ?? 0;
+            return (
+              <div
+                key={a.generatedAt + index}
+                className={cn(
+                  'bg-base-100 rounded-xl border border-base-300 shadow-sm p-4 flex flex-col hover:border-primary/30 transition-colors',
+                  getSentimentBorderClass(a)
+                )}
               >
-                Ver análise
-              </button>
-            </div>
-          ))}
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <p className="text-xs text-base-content/60">
+                    {new Date(a.generatedAt).toLocaleString('pt-BR')}
+                  </p>
+                  {isMostRecent && (
+                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-primary/15 text-primary">
+                      Mais recente
+                    </span>
+                  )}
+                </div>
+                <p className="text-sm text-base-content flex-1 line-clamp-3 mb-2">
+                  {snippet(a.summary)}
+                </p>
+                <p className="text-xs text-base-content/50 mb-4">
+                  {risksCount > 0 || recsCount > 0
+                    ? `${risksCount} risco${risksCount !== 1 ? 's' : ''}, ${recsCount} recomendaç${recsCount !== 1 ? 'ões' : 'ão'}`
+                    : '—'}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setSelectedAnalysis(a)}
+                  className="text-sm font-medium text-primary hover:underline text-left"
+                >
+                  Ver análise
+                </button>
+              </div>
+            );
+          })}
         </div>
       )}
 
@@ -75,9 +111,36 @@ export const ProjectAnalysesBoard: React.FC<ProjectAnalysesBoardProps> = ({
         title="Análise IA - Projeto completo"
         size="xl"
         maxHeight="85vh"
+        footer={
+          selectedAnalysis ? (
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard.writeText(selectedAnalysis.summary).then(
+                    () => toast.success('Resumo copiado para a área de transferência.'),
+                    () => toast.error('Falha ao copiar.')
+                  );
+                }}
+                className="btn btn-sm btn-ghost gap-1.5"
+              >
+                <Copy className="w-4 h-4" aria-hidden="true" />
+                Copiar resumo
+              </button>
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="btn btn-sm btn-ghost gap-1.5"
+              >
+                <Printer className="w-4 h-4" aria-hidden="true" />
+                Imprimir
+              </button>
+            </div>
+          ) : null
+        }
       >
         {selectedAnalysis && (
-          <div className="space-y-6 overflow-y-auto scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-transparent hover:scrollbar-thumb-primary/50 transition-colors pr-2">
+          <div id="analysis-modal-content" className="space-y-6 overflow-y-auto scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-transparent hover:scrollbar-thumb-primary/50 transition-colors pr-2">
             <p className="text-xs text-base-content/60">
               Gerada em: {new Date(selectedAnalysis.generatedAt).toLocaleString('pt-BR')}
             </p>

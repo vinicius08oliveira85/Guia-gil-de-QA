@@ -39,37 +39,40 @@ export const RecentActivity = React.memo<RecentActivityProps>(({ project, classN
       iconColor: string;
     }> = [];
 
-    // Atividades de testes executados recentemente
-    const recentTestCases = tasks
-      .flatMap(t => t.testCases || [])
+    // Atividades de testes executados recentemente (ordenar por data da tarefa: completedAt ou createdAt)
+    const testCasesWithTask = tasks.flatMap(t => (t.testCases || [])
       .filter(tc => tc.status !== 'Not Run')
-      .sort((a, b) => {
-        // Ordenar por data de execução (se disponível) ou usar ordem inversa
-        return 0;
-      })
+      .map(tc => ({ tc, task: t })));
+    const taskDate = (t: { completedAt?: string; createdAt?: string }) => {
+      const d = t.completedAt || t.createdAt;
+      return d ? new Date(d).getTime() : 0;
+    };
+    const recentTestCases = testCasesWithTask
+      .sort((a, b) => taskDate(b.task) - taskDate(a.task))
       .slice(0, 5);
 
-    recentTestCases.forEach((tc, index) => {
-      const task = tasks.find(t => t.testCases?.some(tc2 => tc2.id === tc.id));
-      if (task) {
-        activitiesList.push({
-          id: `test-${tc.id}`,
-          type: tc.status === 'Passed' ? 'pass' : tc.status === 'Failed' ? 'fail' : 'pending',
-          title: tc.status === 'Passed' 
-            ? 'Caso de Teste Aprovado' 
-            : tc.status === 'Failed' 
-            ? 'Caso de Teste Falhou' 
+    recentTestCases.forEach(({ tc, task }) => {
+      const dateForTime = task.completedAt || task.createdAt;
+      const timeStr = dateForTime
+        ? formatDistanceToNow(new Date(dateForTime), { addSuffix: true, locale: ptBR })
+        : 'Recentemente';
+      activitiesList.push({
+        id: `test-${tc.id}`,
+        type: tc.status === 'Passed' ? 'pass' : tc.status === 'Failed' ? 'fail' : 'pending',
+        title: tc.status === 'Passed'
+          ? 'Caso de Teste Aprovado'
+          : tc.status === 'Failed'
+            ? 'Caso de Teste Falhou'
             : 'Caso de Teste Executado',
-          description: `${task.title}: ${tc.description?.substring(0, 50)}${tc.description && tc.description.length > 50 ? '...' : ''}`,
-          time: formatDistanceToNow(new Date(), { addSuffix: true }),
-          icon: tc.status === 'Passed' ? CheckCircle2 : tc.status === 'Failed' ? XCircle : Clock,
-          iconColor: tc.status === 'Passed' 
-            ? 'text-success' 
-            : tc.status === 'Failed' 
-            ? 'text-error' 
+        description: `${task.title}: ${tc.description?.substring(0, 50)}${tc.description && tc.description.length > 50 ? '...' : ''}`,
+        time: timeStr,
+        icon: tc.status === 'Passed' ? CheckCircle2 : tc.status === 'Failed' ? XCircle : Clock,
+        iconColor: tc.status === 'Passed'
+          ? 'text-success'
+          : tc.status === 'Failed'
+            ? 'text-error'
             : 'text-warning',
-        });
-      }
+      });
     });
 
     // Adicionar alertas se houver bugs críticos

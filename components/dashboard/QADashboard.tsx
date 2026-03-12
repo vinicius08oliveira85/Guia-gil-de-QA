@@ -22,6 +22,7 @@ import {
   Filter,
   Plus,
   Sparkles,
+  ChevronDown,
 } from 'lucide-react';
 import { generateProjectFullAnalysis, appendProjectFullAnalysis } from '../../services/ai/projectFullAnalysisService';
 import { ProjectAnalysesBoard } from './ProjectAnalysesBoard';
@@ -53,6 +54,7 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
   const [showExportModal, setShowExportModal] = useState(false);
   const [showNewTestModal, setShowNewTestModal] = useState(false);
   const [isGeneratingAnalysis, setIsGeneratingAnalysis] = useState(false);
+  const [showActionsMenu, setShowActionsMenu] = useState(false);
   const [dashboardFilters, setDashboardFilters] = useState<DashboardFilters>({});
   const { handleError, handleSuccess } = useErrorHandler();
 
@@ -96,7 +98,7 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
   const metrics = useProjectMetrics(filteredProject);
   const metricsPeriod: 'week' | 'month' =
     dashboardFilters.period === 'month' || dashboardFilters.period === 'quarter' ? 'month' : 'week';
-  const { trends } = useMetricsHistory(filteredProject, metricsPeriod);
+  const { trends, previousMetrics } = useMetricsHistory(filteredProject, metricsPeriod);
 
   const activeFiltersCount =
     (dashboardFilters.period && dashboardFilters.period !== 'all' ? 1 : 0) +
@@ -196,6 +198,28 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
     () => calculateQualityScore(qualityMetricsObj),
     [qualityMetricsObj]
   );
+
+  const qualityScoreTrendLabel = useMemo(() => {
+    if (!previousMetrics) return undefined;
+    const prevCoverage = previousMetrics.totalTestCases > 0
+      ? Math.round((previousMetrics.executedTestCases / previousMetrics.totalTestCases) * 100)
+      : 0;
+    const prevDefect = previousMetrics.totalTestCases > 0
+      ? Math.round((previousMetrics.failedTestCases / previousMetrics.totalTestCases) * 100)
+      : 0;
+    const prevScore = calculateQualityScore({
+      coverage: prevCoverage,
+      passRate: previousMetrics.testPassRate,
+      defectRate: prevDefect,
+      reopeningRate: 0,
+    });
+    const diff = Math.round(qualityScore - prevScore);
+    if (diff === 0) return undefined;
+    const periodLabel = metricsPeriod === 'month' ? 'mês' : 'semana';
+    return diff > 0
+      ? `+${diff} em relação ao ${periodLabel} passado`
+      : `${diff} em relação ao ${periodLabel} passado`;
+  }, [previousMetrics, qualityScore, metricsPeriod, metrics.totalTestCases]);
 
   const kpiMetrics = useMemo(
     () => ({
@@ -355,39 +379,91 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
               <AlertCircle className="w-3.5 h-3.5" aria-hidden="true" />
               <span>Bugs</span>
             </button>
-            <button
-              type="button"
-              onClick={() => setShowFilters(true)}
-              className="rounded-full px-3 py-1.5 text-xs font-semibold text-base-content/70 hover:bg-base-200 hover:text-base-content transition-colors duration-300 flex items-center gap-1.5"
-              aria-label="Filtrar dados do dashboard"
-            >
-              <Filter className="w-3.5 h-3.5" aria-hidden="true" />
-              <span>{`Filtrar${activeFiltersCount > 0 ? ` (${activeFiltersCount})` : ''}`}</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setShowExportModal(true)}
-              className="rounded-full px-3 py-1.5 text-xs font-semibold text-base-content/70 hover:bg-base-200 hover:text-base-content transition-colors duration-300 flex items-center gap-1.5"
-              aria-label="Exportar dados do dashboard"
-            >
-              <Download className="w-3.5 h-3.5" aria-hidden="true" />
-              <span>Exportar</span>
-            </button>
-            <button
-              type="button"
-              onClick={handleGenerateAnalysis}
-              disabled={isGeneratingAnalysis || !onUpdateProject}
-              className="rounded-full px-3 py-1.5 text-xs font-semibold text-primary bg-primary/10 hover:bg-primary/20 border border-primary/30 transition-colors duration-300 flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
-              aria-label={isGeneratingAnalysis ? 'Gerando análise…' : 'Gerar análise IA'}
-            >
-              <Sparkles className="w-3.5 h-3.5" aria-hidden="true" />
-              <span>{isGeneratingAnalysis ? 'Gerando…' : 'Gerar análise IA'}</span>
-            </button>
+            {/* Em telas médias ou maiores: botões visíveis */}
+            <div className="hidden md:flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setShowFilters(true)}
+                className="rounded-full px-3 py-1.5 text-xs font-semibold text-base-content/70 hover:bg-base-200 hover:text-base-content transition-colors duration-300 flex items-center gap-1.5"
+                aria-label="Filtrar dados do dashboard"
+              >
+                <Filter className="w-3.5 h-3.5" aria-hidden="true" />
+                <span>{`Filtrar${activeFiltersCount > 0 ? ` (${activeFiltersCount})` : ''}`}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowExportModal(true)}
+                className="rounded-full px-3 py-1.5 text-xs font-semibold text-base-content/70 hover:bg-base-200 hover:text-base-content transition-colors duration-300 flex items-center gap-1.5"
+                aria-label="Exportar dados do dashboard"
+              >
+                <Download className="w-3.5 h-3.5" aria-hidden="true" />
+                <span>Exportar</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleGenerateAnalysis}
+                disabled={isGeneratingAnalysis || !onUpdateProject}
+                className="rounded-full px-3 py-1.5 text-xs font-semibold text-primary bg-primary/10 hover:bg-primary/20 border border-primary/30 transition-colors duration-300 flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                aria-label={isGeneratingAnalysis ? 'Gerando análise…' : 'Gerar análise IA'}
+              >
+                <Sparkles className="w-3.5 h-3.5" aria-hidden="true" />
+                <span>{isGeneratingAnalysis ? 'Gerando…' : 'Gerar análise IA'}</span>
+              </button>
+            </div>
+            {/* Em mobile: dropdown Ações */}
+            <div className="relative md:hidden">
+              <button
+                type="button"
+                onClick={() => setShowActionsMenu((v) => !v)}
+                className="rounded-full px-3 py-1.5 text-xs font-semibold text-base-content/70 hover:bg-base-200 hover:text-base-content border border-base-300 transition-colors duration-300 flex items-center gap-1.5"
+                aria-label="Abrir menu de ações"
+                aria-expanded={showActionsMenu}
+              >
+                <span>Ações</span>
+                <ChevronDown className="w-3.5 h-3.5" aria-hidden="true" />
+              </button>
+              {showActionsMenu && (
+                <>
+                  <div
+                    className="fixed inset-0 z-10"
+                    aria-hidden="true"
+                    onClick={() => setShowActionsMenu(false)}
+                  />
+                  <div className="absolute right-0 top-full mt-1 z-20 py-1 rounded-xl border border-base-300 bg-base-100 shadow-lg min-w-[180px]">
+                    <button
+                      type="button"
+                      onClick={() => { setShowFilters(true); setShowActionsMenu(false); }}
+                      className="w-full text-left px-4 py-2 text-sm text-base-content hover:bg-base-200 flex items-center gap-2"
+                    >
+                      <Filter className="w-4 h-4" />
+                      {`Filtrar${activeFiltersCount > 0 ? ` (${activeFiltersCount})` : ''}`}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setShowExportModal(true); setShowActionsMenu(false); }}
+                      className="w-full text-left px-4 py-2 text-sm text-base-content hover:bg-base-200 flex items-center gap-2"
+                    >
+                      <Download className="w-4 h-4" />
+                      Exportar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { handleGenerateAnalysis(); setShowActionsMenu(false); }}
+                      disabled={isGeneratingAnalysis || !onUpdateProject}
+                      className="w-full text-left px-4 py-2 text-sm text-base-content hover:bg-base-200 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <Sparkles className="w-4 h-4" />
+                      {isGeneratingAnalysis ? 'Gerando…' : 'Gerar análise IA'}
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Grid: 4 stat cards */}
+      {/* Grid: 4 stat cards (clicáveis para navegar à aba Tarefas quando onNavigateToTab existir) */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <DashboardStatCard
           title="Total de Tarefas"
@@ -395,6 +471,7 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
           changePercent={tasksTrend.change}
           trend={tasksTrend.trend}
           icon={ListChecks}
+          onClick={onNavigateToTab ? () => onNavigateToTab('tasks') : undefined}
         />
         <DashboardStatCard
           title="Casos de Teste"
@@ -402,6 +479,7 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
           changePercent={testCasesTrend.change}
           trend={testCasesTrend.trend}
           icon={FileText}
+          onClick={onNavigateToTab ? () => onNavigateToTab('tasks') : undefined}
         />
         <DashboardStatCard
           title="Estratégias de Teste"
@@ -409,6 +487,7 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
           changePercent={strategiesTrend.change}
           trend={strategiesTrend.trend}
           icon={Target}
+          onClick={onNavigateToTab ? () => onNavigateToTab('tasks') : undefined}
         />
         <DashboardStatCard
           title="Fases de Teste"
@@ -422,7 +501,7 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
       {/* Grid principal: Score + Alertas (7) | Detalhes do Projeto (5) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         <div className="lg:col-span-7 space-y-6">
-          <QualityScoreChart score={qualityScore} />
+          <QualityScoreChart score={qualityScore} trendLabel={qualityScoreTrendLabel} />
           <CriticalAlerts alerts={alerts} onlyCriticalAndWarning />
         </div>
         <div className="lg:col-span-5">
@@ -434,22 +513,31 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
         </div>
       </div>
 
-      {/* Indicadores: Prioridade, Responsável, Complexidade */}
+      {/* Indicadores: Prioridade, Responsável, Complexidade (clicáveis para abrir filtros) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <BarChartWidget
           title="Por prioridade"
           data={priorityChartData.data}
           rawData={priorityChartData.rawData}
+          interactive
+          onBarClick={() => setShowFilters(true)}
+          updatedAt={project.updatedAt}
         />
         <BarChartWidget
           title="Por responsável"
           data={assigneeChartData.data}
           rawData={assigneeChartData.rawData}
+          interactive
+          onBarClick={() => setShowFilters(true)}
+          updatedAt={project.updatedAt}
         />
         <BarChartWidget
           title="Por complexidade"
           data={complexityChartData.data}
           rawData={complexityChartData.rawData}
+          interactive
+          onBarClick={() => setShowFilters(true)}
+          updatedAt={project.updatedAt}
         />
       </div>
 

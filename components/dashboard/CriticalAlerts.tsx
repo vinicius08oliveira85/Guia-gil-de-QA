@@ -70,7 +70,10 @@ export const CriticalAlerts = React.memo<CriticalAlertsProps>(({
         </h3>
       </div>
       {items.length === 0 ? (
-        <p className="text-sm text-base-content/70">Nenhum alerta crítico no momento.</p>
+        <div className="p-4 rounded-r-xl border-l-4 border-l-success bg-success/10">
+          <p className="text-sm font-medium text-green-800 dark:text-green-400">Nenhum alerta crítico</p>
+          <p className="text-xs text-green-700/90 dark:text-green-500/90 mt-0.5">O projeto está em bom estado no momento.</p>
+        </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {items.map((alert) => {

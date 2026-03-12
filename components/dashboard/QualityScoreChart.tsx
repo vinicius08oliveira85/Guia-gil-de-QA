@@ -20,6 +20,8 @@ interface QualityScoreChartProps {
   score: number;
   qualityLevel?: QualityLevel;
   className?: string;
+  /** Texto opcional de tendência (ex.: "+2 em relação à semana passada") */
+  trendLabel?: string;
 }
 
 /**
@@ -29,6 +31,7 @@ export const QualityScoreChart = React.memo<QualityScoreChartProps>(({
   score,
   qualityLevel,
   className,
+  trendLabel,
 }) => {
   const level = qualityLevel ?? getQualityLevel(score);
   const clampedScore = Math.min(100, Math.max(0, score));
@@ -41,9 +44,14 @@ export const QualityScoreChart = React.memo<QualityScoreChartProps>(({
         className
       )}
     >
-      <span className="text-xs font-semibold text-base-content/70 uppercase tracking-widest mb-6">
-        Score Geral de Qualidade
-      </span>
+      <div className="flex flex-col items-center gap-1 mb-6">
+        <span className="text-xs font-semibold text-base-content/70 uppercase tracking-widest">
+          Score Geral de Qualidade
+        </span>
+        {trendLabel && (
+          <span className="text-[10px] text-base-content/50">{trendLabel}</span>
+        )}
+      </div>
       <div className="relative flex items-center justify-center">
         <svg
           className="w-64 h-64 -rotate-90"

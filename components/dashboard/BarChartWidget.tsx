@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Card } from '../common/Card';
 import { cn } from '../../utils/cn';
+import { formatDistanceToNow } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 type BarChartWidgetProps = {
     title: string;
@@ -9,23 +11,29 @@ type BarChartWidgetProps = {
     className?: string;
     onBarClick?: (label: string, value: number) => void;
     interactive?: boolean;
+    /** Data da última atualização do projeto (ex.: project.updatedAt); quando fornecida, exibe "Atualizado há X" */
+    updatedAt?: string;
 };
 
-export const BarChartWidget: React.FC<BarChartWidgetProps> = ({ 
-    title, 
-    data, 
-    rawData, 
+export const BarChartWidget: React.FC<BarChartWidgetProps> = ({
+    title,
+    data,
+    rawData,
     className = '',
     onBarClick,
-    interactive = false
+    interactive = false,
+    updatedAt,
 }) => {
     const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+    const updatedLabel = updatedAt
+        ? `Atualizado ${formatDistanceToNow(new Date(updatedAt), { addSuffix: true, locale: ptBR })}`
+        : 'Atualizado';
 
     return (
         <Card className={cn('!p-4 sm:!p-6', className)}>
             <div className="flex items-center justify-between gap-4">
                 <h4 className="text-base font-semibold text-base-content text-[clamp(1rem,2vw,1.3rem)]">{title}</h4>
-                <span className="text-xs text-base-content/60">Atualizado</span>
+                <span className="text-xs text-base-content/60">{updatedLabel}</span>
             </div>
             <div className="mt-4 space-y-4">
                 {data.map((item, index) => (

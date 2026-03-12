@@ -82,8 +82,8 @@ export const Modal: React.FC<ModalProps> = ({
                     <X size={20} />
                 </button>
 
-                {/* Header */}
-                <div className="flex items-center justify-between gap-3 p-6 border-b border-base-200 flex-shrink-0">
+                {/* Header (sticky no scroll para mobile) */}
+                <div className="sticky top-0 z-10 flex items-center justify-between gap-3 p-6 border-b border-base-200 flex-shrink-0 bg-base-100">
                     <div id="modal-title" className="min-w-0 flex-1 pr-8 text-lg sm:text-xl font-semibold text-base-content">
                         {title}
                     </div>
