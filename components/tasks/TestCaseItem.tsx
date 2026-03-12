@@ -1,21 +1,31 @@
 import React, { useEffect, useState } from 'react';
 import { TestCase } from '../../types';
 import { CheckIcon, ChevronDownIcon, EditIcon, ListIcon, TrashIcon } from '../common/Icons';
+import { Copy } from 'lucide-react';
 import { normalizeExecutedStrategy } from '../../utils/testCaseMigration';
 import { getPriorityVariant } from '../../utils/taskHelpers';
 import { ToolsSelector } from './ToolsSelector';
 import { TestTypeBadge } from '../common/TestTypeBadge';
 import { Badge } from '../common/Badge';
 
-export const TestCaseItem: React.FC<{ 
-    testCase: TestCase; 
+const DESCRIPTION_TRUNCATE_LINES = 3;
+
+export const TestCaseItem: React.FC<{
+    testCase: TestCase;
     onStatusChange: (status: 'Passed' | 'Failed') => void;
     onToggleAutomated: (isAutomated: boolean) => void;
     onExecutedStrategyChange: (strategies: string[]) => void;
     onToolsChange?: (tools: string[]) => void;
     onEdit?: () => void;
     onDelete?: () => void;
-}> = ({ testCase, onStatusChange, onToggleAutomated, onExecutedStrategyChange, onToolsChange, onEdit, onDelete }) => {
+    onDuplicate?: () => void;
+    /** Quando definido, a seção "Detalhes" fica controlada pelo pai (expandir/recolher todos). */
+    detailsOpenOverride?: boolean;
+    /** Exibir checkbox para ações em lote. */
+    onBatchSelect?: boolean;
+    selected?: boolean;
+    onToggleSelect?: () => void;
+}> = ({ testCase, onStatusChange, onToggleAutomated, onExecutedStrategyChange, onToolsChange, onEdit, onDelete, onDuplicate, detailsOpenOverride, onBatchSelect, selected, onToggleSelect }) => {
     const statusBadgeClassName: Record<TestCase['status'], string> = {
         'Not Run': 'badge badge-ghost badge-xs',
         Passed: 'badge badge-success badge-xs',
@@ -31,6 +41,10 @@ export const TestCaseItem: React.FC<{
     const recommendedStrategies = testCase.strategies || [];
     const selectedStrategies = normalizeExecutedStrategy(testCase.executedStrategy);
     const [detailsOpen, setDetailsOpen] = useState(() => testCase.status === 'Failed');
+    const [descriptionExpanded, setDescriptionExpanded] = useState(false);
+
+    const effectiveDetailsOpen = detailsOpenOverride !== undefined ? detailsOpenOverride : detailsOpen;
+    const isDescriptionLong = (testCase.description || '').split(/\n/).length > DESCRIPTION_TRUNCATE_LINES || (testCase.description || '').length > 180;
 
     useEffect(() => {
         if (testCase.status === 'Failed') {
@@ -55,9 +69,20 @@ export const TestCaseItem: React.FC<{
 
     return (
         <div className="rounded-2xl border border-base-300 bg-base-100 p-3 transition-colors hover:border-primary/30 space-y-2">
-            {/* 1. Cabeçalho: pills de tipo + toggle + editar/excluir */}
+            {/* 1. Cabeçalho: checkbox lote (opcional) + pills de tipo + toggle + editar/duplicar/excluir */}
             <div className="flex flex-wrap items-center justify-between gap-1.5">
                 <div className="flex flex-wrap items-center gap-1.5">
+                    {onBatchSelect && onToggleSelect && (
+                        <label className="label cursor-pointer gap-1.5 py-0 pr-2 border-r border-base-300">
+                            <input
+                                type="checkbox"
+                                checked={!!selected}
+                                onChange={onToggleSelect}
+                                className="checkbox checkbox-sm"
+                                aria-label="Selecionar caso de teste para ações em lote"
+                            />
+                        </label>
+                    )}
                     {recommendedStrategies.map((strategy) => (
                         <TestTypeBadge
                             key={strategy}
@@ -78,11 +103,16 @@ export const TestCaseItem: React.FC<{
                         />
                         <span className="hidden sm:inline text-xs font-medium text-base-content/70">Automatizado</span>
                     </label>
-                    {(onEdit || onDelete) && (
+                    {(onEdit || onDuplicate || onDelete) && (
                         <div className="flex items-center gap-1">
                             {onEdit && (
                                 <button type="button" onClick={onEdit} className="btn btn-ghost btn-sm btn-circle" aria-label="Editar caso de teste">
                                     <EditIcon className="w-4 h-4" />
+                                </button>
+                            )}
+                            {onDuplicate && (
+                                <button type="button" onClick={onDuplicate} className="btn btn-ghost btn-sm btn-circle" aria-label="Duplicar caso de teste" title="Duplicar">
+                                    <Copy className="w-4 h-4" />
                                 </button>
                             )}
                             {onDelete && (
@@ -110,7 +140,23 @@ export const TestCaseItem: React.FC<{
                         <span className="badge badge-ghost badge-xs text-[10px] font-bold tracking-wider">Automatizado</span>
                     )}
                 </div>
-                <p className="text-base font-bold text-base-content leading-tight break-words min-w-0">{testCase.description}</p>
+                <div className="min-w-0">
+                    <p
+                        className={`text-base font-bold text-base-content leading-tight break-words ${!descriptionExpanded && isDescriptionLong ? 'line-clamp-3' : ''}`}
+                        title={testCase.description}
+                    >
+                        {testCase.description}
+                    </p>
+                    {isDescriptionLong && !descriptionExpanded && (
+                        <button
+                            type="button"
+                            onClick={() => setDescriptionExpanded(true)}
+                            className="btn btn-ghost btn-xs mt-0.5 text-primary hover:bg-primary/10"
+                        >
+                            Ver mais
+                        </button>
+                    )}
+                </div>
             </div>
 
             {/* 3. Card "Selecione os testes executados" */}
@@ -163,17 +209,21 @@ export const TestCaseItem: React.FC<{
             <div className="bg-base-100 border border-base-300 rounded-lg overflow-hidden shadow-sm">
                 <button
                     type="button"
-                    onClick={() => setDetailsOpen((o) => !o)}
+                    onClick={() => {
+                        if (detailsOpenOverride === undefined) {
+                            setDetailsOpen((o) => !o);
+                        }
+                    }}
                     className="w-full flex items-center justify-between px-3 py-2 hover:bg-base-200/50 transition-colors text-left"
-                    aria-expanded={detailsOpen}
+                    aria-expanded={effectiveDetailsOpen}
                 >
                     <div className="flex items-center gap-2 min-w-0">
                         <ListIcon className="w-4 h-4 text-base-content/70 flex-shrink-0" />
                         <span className="text-xs font-semibold text-base-content">Detalhes do caso de teste</span>
                     </div>
-                    <ChevronDownIcon className={`w-4 h-4 text-base-content/70 flex-shrink-0 transition-transform ${detailsOpen ? 'rotate-180' : ''}`} />
+                    <ChevronDownIcon className={`w-4 h-4 text-base-content/70 flex-shrink-0 transition-transform ${effectiveDetailsOpen ? 'rotate-180' : ''}`} />
                 </button>
-                {detailsOpen && (
+                {effectiveDetailsOpen && (
                     <div className="px-3 pb-3 pt-0 space-y-3 border-t border-base-200">
                         {testCase.preconditions && (
                             <div>
@@ -226,19 +276,14 @@ export const TestCaseItem: React.FC<{
                 )}
             </div>
 
-            {/* 6. Footer: Aprovar / Reprovar */}
-            <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
-                <span className={`${statusBadgeClassName[testCase.status]} text-[10px] font-bold tracking-wider`}>
-                    {statusLabel[testCase.status]}
-                </span>
-                <div className="flex flex-wrap items-center gap-1.5">
-                    <button type="button" onClick={() => onStatusChange('Passed')} className="btn btn-success btn-xs rounded-lg text-[10px] px-2 py-0.5 min-h-0">
-                        Aprovar
-                    </button>
-                    <button type="button" onClick={() => onStatusChange('Failed')} className="btn btn-error btn-xs rounded-lg text-[10px] px-2 py-0.5 min-h-0">
-                        Reprovar
-                    </button>
-                </div>
+            {/* 6. Footer: apenas Aprovar / Reprovar (status já exibido no topo) */}
+            <div className="flex flex-wrap items-center justify-end gap-1.5 pt-1">
+                <button type="button" onClick={() => onStatusChange('Passed')} className="btn btn-success btn-xs rounded-lg text-[10px] px-2 py-0.5 min-h-0">
+                    Aprovar
+                </button>
+                <button type="button" onClick={() => onStatusChange('Failed')} className="btn btn-error btn-xs rounded-lg text-[10px] px-2 py-0.5 min-h-0">
+                    Reprovar
+                </button>
             </div>
         </div>
     );

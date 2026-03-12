@@ -4,7 +4,7 @@ import { Modal } from '../common/Modal';
 import { Spinner } from '../common/Spinner';
 import { PlusIcon, RefreshIcon } from '../common/Icons';
 import { BddScenarioForm, BddScenarioItem } from './BddScenario';
-import { TestCaseItem } from './TestCaseItem';
+import { TestCasesSection } from './TestCasesSection';
 import { TestStrategyCard } from './TestStrategyCard';
 import { ToolsSelector } from './ToolsSelector';
 import { TestReportModal } from './TestReportModal';
@@ -105,6 +105,7 @@ interface TaskDetailsModalProps {
     onDeleteComment?: (commentId: string) => void;
     onEditTestCase?: (taskId: string, testCase: TestCase) => void;
     onDeleteTestCase?: (taskId: string, testCaseId: string) => void;
+    onDuplicateTestCase?: (taskId: string, testCase: TestCase) => void;
     project?: Project;
     onUpdateProject?: (project: Project) => void;
     onOpenTask?: (task: JiraTask) => void;
@@ -137,6 +138,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
     onDeleteComment,
     onEditTestCase,
     onDeleteTestCase,
+    onDuplicateTestCase,
     project,
     onUpdateProject,
     onOpenTask,
@@ -699,60 +701,20 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                 )}
 
                 {activeTestSubSection === 'test-cases' && canHaveTestCases && (
-                    <div>
-                        <header className="flex items-center gap-3 mb-4">
-                            <div className="p-1.5 bg-primary/10 rounded-lg">
-                                <ClipboardList className="w-5 h-5 text-primary" aria-hidden />
-                            </div>
-                            <h2 className="text-lg font-bold text-base-content">Casos de Teste</h2>
-                            <span className="text-xs font-medium text-base-content/70 bg-base-200 px-3 py-1 rounded-full">
-                                {task.testCases?.length || 0} caso(s)
-                            </span>
-                        </header>
-                        {isGenerating ? (
-                            <div className="space-y-3">
-                                <LoadingSkeleton variant="task" count={3} />
-                                <div className="flex flex-col items-center justify-center py-4">
-                                    <Spinner small />
-                                    <p className="mt-2 text-sm text-base-content/70">Gerando casos de teste com IA...</p>
-                                    <p className="mt-1 text-xs text-base-content/70">⏱️ Isso pode levar 10-30 segundos</p>
-                                </div>
-                            </div>
-                        ) : (task.testCases || []).length > 0 ? (
-                            <div className="space-y-3">
-                                {task.testCases.map(tc => (
-                                    <TestCaseItem 
-                                        key={tc.id} 
-                                        testCase={tc} 
-                                        onStatusChange={(status) => onTestCaseStatusChange(tc.id, status)}
-                                        onToggleAutomated={(isAutomated) => onToggleTestCaseAutomated(tc.id, isAutomated)}
-                                        onExecutedStrategyChange={(strategies) => onExecutedStrategyChange(tc.id, strategies)}
-                                        onToolsChange={onTestCaseToolsChange ? (tools) => onTestCaseToolsChange(tc.id, tools) : undefined}
-                                        onEdit={onEditTestCase ? () => onEditTestCase(task.id, tc) : undefined}
-                                        onDelete={onDeleteTestCase ? () => onDeleteTestCase(task.id, tc.id) : undefined}
-                                    />
-                                ))}
-                            </div>
-                        ) : (
-                            <div>
-                                <EmptyState
-                                    icon="🧪"
-                                    title="Nenhum caso de teste ainda"
-                                    description="Comece gerando casos de teste com IA ou adicione manualmente."
-                                    action={{
-                                        label: "Gerar com IA",
-                                        onClick: () => onGenerateTests(task.id, detailLevel)
-                                    }}
-                                    secondaryAction={onAddTestCaseFromTemplate ? {
-                                        label: "Usar Template",
-                                        onClick: () => {
-                                            onAddTestCaseFromTemplate(task.id);
-                                        }
-                                    } : undefined}
-                                />
-                            </div>
-                        )}
-                    </div>
+                    <TestCasesSection
+                        task={task}
+                        isGenerating={isGenerating}
+                        onGenerateTests={onGenerateTests}
+                        detailLevel={detailLevel}
+                        onTestCaseStatusChange={onTestCaseStatusChange}
+                        onToggleTestCaseAutomated={onToggleTestCaseAutomated}
+                        onExecutedStrategyChange={onExecutedStrategyChange}
+                        onTestCaseToolsChange={onTestCaseToolsChange}
+                        onEditTestCase={onEditTestCase}
+                        onDeleteTestCase={onDeleteTestCase}
+                        onDuplicateTestCase={onDuplicateTestCase}
+                        onAddTestCaseFromTemplate={onAddTestCaseFromTemplate}
+                    />
                 )}
 
                 <section className="mt-6 bg-base-100 border border-base-300 rounded-2xl shadow-sm overflow-hidden">

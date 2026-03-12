@@ -310,7 +310,7 @@ export class OpenAIService implements AIService {
             expectedResult: item.expectedResult,
             status: 'Not Run' as const,
             strategies: item.strategies || [],
-            isAutomated: item.isAutomated || false,
+            isAutomated: false,
             preconditions: item.preconditions || undefined,
             testSuite: item.testSuite || undefined,
             testEnvironment: item.testEnvironment || undefined,

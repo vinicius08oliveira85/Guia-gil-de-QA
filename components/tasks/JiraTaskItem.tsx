@@ -4,7 +4,7 @@ import { JiraTask, BddScenario, TestCaseDetailLevel, TeamRole, Project, TestCase
 import { Spinner } from '../common/Spinner';
 import { TaskTypeIcon, TaskStatusIcon, StartTestIcon, CompleteTestIcon, ToDoTestIcon, PlusIcon, EditIcon, TrashIcon, RefreshIcon } from '../common/Icons';
 import { BddScenarioForm, BddScenarioItem } from './BddScenario';
-import { TestCaseItem } from './TestCaseItem';
+import { TestCasesSection } from './TestCasesSection';
 import { BarChart3, Sparkles, Wrench, Zap, Wand2, Loader2, MoreVertical, ChevronDown, ClipboardList, Link, Paperclip, Timer, Star, Download } from 'lucide-react';
 import { TestStrategyCard } from './TestStrategyCard';
 import { ToolsSelector } from './ToolsSelector';
@@ -149,6 +149,7 @@ export const JiraTaskItem: React.FC<{
     onDeleteComment?: (commentId: string) => void;
     onEditTestCase?: (taskId: string, testCase: TestCase) => void;
     onDeleteTestCase?: (taskId: string, testCaseId: string) => void;
+    onDuplicateTestCase?: (taskId: string, testCase: TestCase) => void;
     project?: Project;
     onUpdateProject?: (project: Project) => void;
     isSelected?: boolean;
@@ -159,7 +160,7 @@ export const JiraTaskItem: React.FC<{
     onFocusTask?: (taskId: string | null) => void;
     onOpenModal?: (task: JiraTask) => void;
     onToggleFavorite?: () => void;
-}> = React.memo(({ task, onTestCaseStatusChange, onToggleTestCaseAutomated, onExecutedStrategyChange, onTaskToolsChange, onTestCaseToolsChange, onStrategyExecutedChange, onStrategyToolsChange, onDelete, onGenerateTests, isGenerating: isGeneratingTests, onAddSubtask, onEdit, onGenerateBddScenarios, isGeneratingBdd, onGenerateAll, isGeneratingAll, onSyncToJira, isSyncing, onUpdateFromJira, isUpdatingFromJira, onSaveBddScenario, onDeleteBddScenario, onTaskStatusChange, onAddTestCaseFromTemplate, onAddComment, onEditComment, onDeleteComment, onEditTestCase, onDeleteTestCase, project, onUpdateProject, isSelected, onToggleSelect, children, level, activeTaskId, onFocusTask, onOpenModal, onToggleFavorite }) => {
+}> = React.memo(({ task, onTestCaseStatusChange, onToggleTestCaseAutomated, onExecutedStrategyChange, onTaskToolsChange, onTestCaseToolsChange, onStrategyExecutedChange, onStrategyToolsChange, onDelete, onGenerateTests, isGenerating: isGeneratingTests, onAddSubtask, onEdit, onGenerateBddScenarios, isGeneratingBdd, onGenerateAll, isGeneratingAll, onSyncToJira, isSyncing, onUpdateFromJira, isUpdatingFromJira, onSaveBddScenario, onDeleteBddScenario, onTaskStatusChange, onAddTestCaseFromTemplate, onAddComment, onEditComment, onDeleteComment, onEditTestCase, onDeleteTestCase, onDuplicateTestCase, project, onUpdateProject, isSelected, onToggleSelect, children, level, activeTaskId, onFocusTask, onOpenModal, onToggleFavorite }) => {
     const reduceMotion = useReducedMotion();
     const [isDetailsOpen, setIsDetailsOpen] = useState(false); // Colapsado por padrão para compactar
     const [isChildrenOpen, setIsChildrenOpen] = useState(false);
@@ -1153,61 +1154,20 @@ export const JiraTaskItem: React.FC<{
 
                 {/* Conteúdo da sub-aba "Casos de Teste" */}
                 {activeTestSubSection === 'test-cases' && canHaveTestCases && (
-                    <div>
-                        <header className="flex items-center gap-3 mb-4">
-                            <div className="p-1.5 bg-primary/10 rounded-lg">
-                                <ClipboardList className="w-5 h-5 text-primary" aria-hidden />
-                            </div>
-                            <h2 className="text-lg font-bold text-base-content">Casos de Teste</h2>
-                            <span className="text-xs font-medium text-base-content/70 bg-base-200 px-3 py-1 rounded-full">
-                                {task.testCases?.length || 0} caso(s)
-                            </span>
-                        </header>
-                        {isGeneratingTests ? (
-                            <div className="space-y-2">
-                                <LoadingSkeleton variant="task" count={3} />
-                                <div className="flex flex-col items-center justify-center py-3">
-                                    <Spinner small />
-                                    <p className="mt-2 text-sm text-base-content/70">Gerando casos de teste com IA...</p>
-                                    <p className="mt-1 text-xs text-base-content/70">⏱️ Isso pode levar 10-30 segundos</p>
-                                </div>
-                            </div>
-                        ) : (task.testCases || []).length > 0 ? (
-                            <div className="space-y-2">
-                                {task.testCases.map(tc => (
-                                    <TestCaseItem 
-                                        key={tc.id} 
-                                        testCase={tc} 
-                                        onStatusChange={(status) => onTestCaseStatusChange(tc.id, status)}
-                                        onToggleAutomated={(isAutomated) => onToggleTestCaseAutomated(tc.id, isAutomated)}
-                                        onExecutedStrategyChange={(strategies) => onExecutedStrategyChange(tc.id, strategies)}
-                                        onToolsChange={onTestCaseToolsChange ? (tools) => onTestCaseToolsChange(tc.id, tools) : undefined}
-                                        onEdit={onEditTestCase ? () => onEditTestCase(task.id, tc) : undefined}
-                                        onDelete={onDeleteTestCase ? () => onDeleteTestCase(task.id, tc.id) : undefined}
-                                    />
-                                ))}
-                            </div>
-                        ) : (
-                            <div>
-                                <EmptyState
-                                    icon="🧪"
-                                    title="Nenhum caso de teste ainda"
-                                    description="Comece gerando casos de teste com IA ou adicione manualmente."
-                                    action={{
-                                        label: "Gerar com IA",
-                                        onClick: () => onGenerateTests(task.id, detailLevel)
-                                    }}
-                                    secondaryAction={onAddTestCaseFromTemplate ? {
-                                        label: "Usar Template",
-                                        onClick: () => {
-                                            // Abrir modal de templates com esta tarefa pré-selecionada
-                                            onAddTestCaseFromTemplate(task.id);
-                                        }
-                                    } : undefined}
-                                />
-                            </div>
-                        )}
-                    </div>
+                    <TestCasesSection
+                        task={task}
+                        isGenerating={isGeneratingTests}
+                        onGenerateTests={onGenerateTests}
+                        detailLevel={detailLevel}
+                        onTestCaseStatusChange={onTestCaseStatusChange}
+                        onToggleTestCaseAutomated={onToggleTestCaseAutomated}
+                        onExecutedStrategyChange={onExecutedStrategyChange}
+                        onTestCaseToolsChange={onTestCaseToolsChange}
+                        onEditTestCase={onEditTestCase}
+                        onDeleteTestCase={onDeleteTestCase}
+                        onDuplicateTestCase={onDuplicateTestCase}
+                        onAddTestCaseFromTemplate={onAddTestCaseFromTemplate}
+                    />
                 )}
 
                 {/* Ferramentas (Geral) + Nível de Detalhe + Regerar com IA */}

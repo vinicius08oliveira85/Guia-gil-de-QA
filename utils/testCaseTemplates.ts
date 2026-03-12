@@ -180,7 +180,8 @@ export const createTestCaseFromTemplate = (templateId: string): TestCase => {
   return {
     id: `tc-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
     ...template.testCase,
-    status: 'Not Run'
+    status: 'Not Run',
+    isAutomated: false
   };
 };
 

@@ -845,6 +845,30 @@ export const TasksView: React.FC<{
         handleSuccess('Caso de teste excluído.');
     }, [project, onUpdateProject, handleSuccess, handleError]);
 
+    const handleDuplicateTestCase = useCallback((taskId: string, testCase: TestCase) => {
+        const task = project.tasks.find(t => t.id === taskId);
+        if (!task) {
+            handleError(new Error('Tarefa não encontrada ao duplicar o teste'), 'Duplicar caso de teste');
+            return;
+        }
+        const clone: TestCase = {
+            ...testCase,
+            id: crypto.randomUUID?.() ?? `tc-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+            status: 'Not Run',
+            isAutomated: false,
+            observedResult: undefined,
+        };
+        const updatedTasks = project.tasks.map(t => {
+            if (t.id !== taskId) return t;
+            const updatedCases = [...(t.testCases || []), clone];
+            const updatedTask = { ...t, testCases: updatedCases };
+            propagateTaskUpdate(updatedTask);
+            return updatedTask;
+        });
+        onUpdateProject({ ...project, tasks: updatedTasks });
+        handleSuccess('Caso de teste duplicado.');
+    }, [project, onUpdateProject, handleSuccess, handleError]);
+
     const handleStrategyExecutedChange = useCallback((taskId: string, strategyIndex: number, executed: boolean) => {
         const task = project.tasks.find(t => t.id === taskId);
         if (!task) return;
@@ -1735,6 +1759,7 @@ export const TasksView: React.FC<{
                     onDeleteComment={(commentId) => handleDeleteComment(task.id, commentId)}
                     onEditTestCase={handleOpenTestCaseEditor}
                     onDeleteTestCase={handleDeleteTestCase}
+                    onDuplicateTestCase={handleDuplicateTestCase}
                     project={project}
                     onUpdateProject={onUpdateProject}
                     onOpenModal={setModalTask}
@@ -1744,7 +1769,7 @@ export const TasksView: React.FC<{
                 </JiraTaskItem>
             );
         });
-    }, [selectedTasks, generatingTestsTaskId, generatingBddTaskId, generatingAllTaskId, syncingTaskId, updatingFromJiraTaskId, handleUpdateTaskFromJira, handleTestCaseStatusChange, handleToggleTestCaseAutomated, handleExecutedStrategyChange, handleTaskToolsChange, handleTestCaseToolsChange, handleStrategyExecutedChange, handleStrategyToolsChange, handleDeleteTask, handleGenerateTests, openTaskFormForNew, openTaskFormForEdit, handleGenerateBddScenarios, handleGenerateAll, handleSyncTaskToJira, handleSaveBddScenario, handleDeleteBddScenario, handleTaskStatusChange, handleAddComment, handleEditComment, handleDeleteComment, project, onUpdateProject, toggleTaskSelection, handleToggleFavorite]);
+    }, [selectedTasks, generatingTestsTaskId, generatingBddTaskId, generatingAllTaskId, syncingTaskId, updatingFromJiraTaskId, handleUpdateTaskFromJira, handleTestCaseStatusChange, handleToggleTestCaseAutomated, handleExecutedStrategyChange, handleTaskToolsChange, handleTestCaseToolsChange, handleStrategyExecutedChange, handleStrategyToolsChange, handleDeleteTask, handleGenerateTests, openTaskFormForNew, openTaskFormForEdit, handleGenerateBddScenarios, handleGenerateAll, handleSyncTaskToJira, handleSaveBddScenario, handleDeleteBddScenario, handleTaskStatusChange, handleAddComment, handleEditComment, handleDeleteComment, handleOpenTestCaseEditor, handleDeleteTestCase, handleDuplicateTestCase, project, onUpdateProject, toggleTaskSelection, handleToggleFavorite]);
 
     return (
         <>
@@ -2441,6 +2466,7 @@ export const TasksView: React.FC<{
                     onDeleteComment={(commentId) => handleDeleteComment(modalTask.id, commentId)}
                     onEditTestCase={handleOpenTestCaseEditor}
                     onDeleteTestCase={handleDeleteTestCase}
+                    onDuplicateTestCase={handleDuplicateTestCase}
                     project={project}
                     onUpdateProject={onUpdateProject}
                     onOpenTask={setModalTask}
