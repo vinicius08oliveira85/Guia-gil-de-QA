@@ -7,6 +7,7 @@ export type TrendType = 'up' | 'down' | 'neutral';
 interface DashboardStatCardProps {
   title: string;
   value: string | number;
+  /** Variação percentual em relação ao período anterior; omitido quando não há dados de tendência */
   changePercent?: string;
   trend?: TrendType;
   icon: LucideIcon;

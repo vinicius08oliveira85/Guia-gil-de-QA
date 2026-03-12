@@ -55,7 +55,7 @@ export const getMetricsForPeriod = (
 };
 
 /**
- * Compara métricas atuais com período anterior
+ * Compara métricas atuais com período anterior (tendências por métrica para cada card)
  */
 export const compareMetricsPeriods = (
   currentMetrics: MetricsSnapshot,
@@ -64,12 +64,23 @@ export const compareMetricsPeriods = (
   passRate: { current: number; previous: number; trend: 'up' | 'down' | 'stable' };
   totalBugs: { current: number; previous: number; trend: 'up' | 'down' | 'stable' };
   executedTests: { current: number; previous: number; trend: 'up' | 'down' | 'stable' };
+  totalTasks: { current: number; previous: number; trend: 'up' | 'down' | 'stable' };
+  totalTestCases: { current: number; previous: number; trend: 'up' | 'down' | 'stable' };
+  totalStrategies: { current: number; previous: number; trend: 'up' | 'down' | 'stable' };
+  activePhases: { current: number; previous: number; trend: 'up' | 'down' | 'stable' };
 } => {
   const calculateTrend = (current: number, previous: number): 'up' | 'down' | 'stable' => {
     if (current > previous) return 'up';
     if (current < previous) return 'down';
     return 'stable';
   };
+
+  const currTasks = currentMetrics.totalTasks ?? 0;
+  const prevTasks = previousMetrics.totalTasks ?? 0;
+  const currStrategies = currentMetrics.totalStrategies ?? 0;
+  const prevStrategies = previousMetrics.totalStrategies ?? 0;
+  const currPhases = currentMetrics.activePhasesCount ?? 0;
+  const prevPhases = previousMetrics.activePhasesCount ?? 0;
 
   return {
     passRate: {
@@ -86,6 +97,26 @@ export const compareMetricsPeriods = (
       current: currentMetrics.executedTestCases,
       previous: previousMetrics.executedTestCases,
       trend: calculateTrend(currentMetrics.executedTestCases, previousMetrics.executedTestCases),
+    },
+    totalTasks: {
+      current: currTasks,
+      previous: prevTasks,
+      trend: calculateTrend(currTasks, prevTasks),
+    },
+    totalTestCases: {
+      current: currentMetrics.totalTestCases,
+      previous: previousMetrics.totalTestCases,
+      trend: calculateTrend(currentMetrics.totalTestCases, previousMetrics.totalTestCases),
+    },
+    totalStrategies: {
+      current: currStrategies,
+      previous: prevStrategies,
+      trend: calculateTrend(currStrategies, prevStrategies),
+    },
+    activePhases: {
+      current: currPhases,
+      previous: prevPhases,
+      trend: calculateTrend(currPhases, prevPhases),
     },
   };
 };
@@ -154,7 +185,10 @@ export const createMetricsSnapshot = (
   bugsBySeverity: Record<string, number>,
   executedTestCases: number,
   testPassRate: number,
-  automationRatio: number
+  automationRatio: number,
+  totalTasks?: number,
+  totalStrategies?: number,
+  activePhasesCount?: number
 ): MetricsSnapshot => {
   return {
     date: new Date().toISOString(),
@@ -168,6 +202,9 @@ export const createMetricsSnapshot = (
     executedTestCases,
     testPassRate,
     automationRatio,
+    totalTasks,
+    totalStrategies,
+    activePhasesCount,
   };
 };
 

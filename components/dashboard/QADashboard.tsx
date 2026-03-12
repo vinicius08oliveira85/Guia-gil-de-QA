@@ -98,28 +98,34 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
     (dashboardFilters.testStatus?.length ?? 0) +
     (dashboardFilters.phase?.length ?? 0);
 
-  const tasksTrend = useMemo(() => {
-    if (!trends) return { change: '0%', trend: 'neutral' as const };
-    const current = trends.executedTests?.current || 0;
-    const previous = trends.executedTests?.previous || 0;
-    if (previous === 0) return { change: '0%', trend: 'neutral' as const };
+  const computeTrendFromMetric = (
+    current: number,
+    previous: number,
+    options?: { minChangePercent?: number }
+  ): { change: string | undefined; trend: 'up' | 'down' | 'neutral' } => {
+    if (previous === 0) return { change: undefined, trend: 'neutral' };
     const changePercent = Math.round(((current - previous) / previous) * 100);
-    return {
-      change: changePercent > 0 ? `+${changePercent}%` : changePercent < 0 ? `${changePercent}%` : '0%',
-      trend: changePercent > 0 ? 'up' as const : changePercent < 0 ? 'down' as const : 'neutral' as const,
-    };
+    if (options?.minChangePercent != null && Math.abs(changePercent) < options.minChangePercent) {
+      return { change: undefined, trend: 'neutral' };
+    }
+    const change =
+      changePercent > 0 ? `+${changePercent}%` : changePercent < 0 ? `${changePercent}%` : '0%';
+    const trend = changePercent > 0 ? 'up' as const : changePercent < 0 ? 'down' as const : 'neutral' as const;
+    return { change, trend };
+  };
+
+  const tasksTrend = useMemo(() => {
+    if (!trends) return { change: undefined, trend: 'neutral' as const };
+    const current = trends.totalTasks?.current ?? 0;
+    const previous = trends.totalTasks?.previous ?? 0;
+    return computeTrendFromMetric(current, previous);
   }, [trends]);
 
   const testCasesTrend = useMemo(() => {
-    if (!trends) return { change: '0%', trend: 'neutral' as const };
-    const current = trends.executedTests?.current || 0;
-    const previous = trends.executedTests?.previous || 0;
-    if (previous === 0) return { change: '0%', trend: 'neutral' as const };
-    const changePercent = Math.round(((current - previous) / previous) * 100);
-    return {
-      change: changePercent > 0 ? `+${changePercent}%` : changePercent < 0 ? `${changePercent}%` : '0%',
-      trend: changePercent > 0 ? 'up' as const : changePercent < 0 ? 'down' as const : 'neutral' as const,
-    };
+    if (!trends) return { change: undefined, trend: 'neutral' as const };
+    const current = trends.totalTestCases?.current ?? 0;
+    const previous = trends.totalTestCases?.previous ?? 0;
+    return computeTrendFromMetric(current, previous);
   }, [trends]);
 
   const toggleBugFilter = () => {
@@ -134,38 +140,22 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
   }, [filteredProject.tasks]);
 
   const strategiesTrend = useMemo(() => {
-    if (!trends || !project.metricsHistory || project.metricsHistory.length < 2) {
-      return { change: '0%', trend: 'neutral' as const };
-    }
-    const current = trends.executedTests?.current || 0;
-    const previous = trends.executedTests?.previous || 0;
-    if (previous === 0) return { change: '0%', trend: 'neutral' as const };
-    const changePercent = Math.round(((current - previous) / previous) * 100);
-    if (Math.abs(changePercent) < 5) return { change: '0%', trend: 'neutral' as const };
-    return {
-      change: changePercent > 0 ? `+${changePercent}%` : `${changePercent}%`,
-      trend: changePercent > 0 ? 'up' as const : 'down' as const,
-    };
-  }, [trends, project.metricsHistory]);
+    if (!trends) return { change: undefined, trend: 'neutral' as const };
+    const current = trends.totalStrategies?.current ?? 0;
+    const previous = trends.totalStrategies?.previous ?? 0;
+    return computeTrendFromMetric(current, previous, { minChangePercent: 5 });
+  }, [trends]);
 
   const activePhases = useMemo(() => {
     return metrics.newPhases?.filter(p => p.status === 'Em Andamento' || p.status === 'Concluído').length || 0;
   }, [metrics.newPhases]);
 
   const phasesTrend = useMemo(() => {
-    if (!trends || !project.metricsHistory || project.metricsHistory.length < 2) {
-      return { change: '0%', trend: 'neutral' as const };
-    }
-    const current = trends.passRate?.current || 0;
-    const previous = trends.passRate?.previous || 0;
-    if (previous === 0) return { change: '0%', trend: 'neutral' as const };
-    const changePercent = Math.round(((current - previous) / previous) * 100);
-    if (Math.abs(changePercent) < 5) return { change: '0%', trend: 'neutral' as const };
-    return {
-      change: changePercent > 0 ? `+${changePercent}%` : `${changePercent}%`,
-      trend: changePercent > 0 ? 'up' as const : 'down' as const,
-    };
-  }, [trends, project.metricsHistory]);
+    if (!trends) return { change: undefined, trend: 'neutral' as const };
+    const current = trends.activePhases?.current ?? 0;
+    const previous = trends.activePhases?.previous ?? 0;
+    return computeTrendFromMetric(current, previous, { minChangePercent: 5 });
+  }, [trends]);
 
   const defectRate = useMemo(() => {
     if (metrics.totalTestCases === 0) return 0;

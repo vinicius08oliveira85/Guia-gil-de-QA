@@ -318,6 +318,12 @@ export interface MetricsSnapshot {
   executedTestCases: number;
   testPassRate: number;
   automationRatio: number;
+  /** Total de tarefas do projeto (para tendência no card) */
+  totalTasks?: number;
+  /** Total de estratégias de teste (para tendência no card) */
+  totalStrategies?: number;
+  /** Quantidade de fases em andamento/concluídas (para tendência no card) */
+  activePhasesCount?: number;
 }
 
 export interface Project {

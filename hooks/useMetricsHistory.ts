@@ -29,7 +29,12 @@ export const useMetricsHistory = (project: Project, period: 'week' | 'month' = '
       return;
     }
 
-    // Criar e salvar snapshot
+    const totalTasks = project.tasks?.length ?? 0;
+    const totalStrategies = project.tasks?.reduce((acc, t) => acc + (t.testStrategy?.length ?? 0), 0) ?? 0;
+    const activePhasesCount = metrics.newPhases?.filter(
+      p => p.status === 'Em Andamento' || p.status === 'Concluído'
+    ).length ?? 0;
+
     const snapshot = createMetricsSnapshot(
       metrics.totalTestCases,
       metrics.passedTestCases,
@@ -40,7 +45,10 @@ export const useMetricsHistory = (project: Project, period: 'week' | 'month' = '
       metrics.bugsBySeverity,
       metrics.executedTestCases,
       metrics.testPassRate,
-      metrics.automationRatio
+      metrics.automationRatio,
+      totalTasks,
+      totalStrategies,
+      activePhasesCount
     );
 
     const updatedProject = saveMetricsSnapshot(project, snapshot);

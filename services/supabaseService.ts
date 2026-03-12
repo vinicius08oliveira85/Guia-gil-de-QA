@@ -39,6 +39,15 @@ const requestTimeoutMs = 8000; // Timeout de 8 segundos (evita timeout em redes 
 const loadProjectsTimeoutMs = 32000; // 32s para GET de projetos (proxy usa 28s; cliente deve esperar mais que o proxy)
 const timeoutErrorMessage = `Timeout: requisição ao Supabase excedeu ${requestTimeoutMs / 1000}s`;
 
+/** Mensagem amigável para erros genéricos de rede (ex.: fetch failed) exibida na UI */
+function normalizeLoadErrorForUser(message: string): string {
+    const lower = message.toLowerCase();
+    if (lower.includes('fetch failed') || lower.includes('failed to fetch') || lower.includes('network') || lower.includes('connection refused')) {
+        return 'Verifique a conexão ou se o proxy está rodando (local: npm run dev:local; produção: variáveis no Vercel).';
+    }
+    return message;
+}
+
 // Inicializar cliente Supabase direto se variáveis estiverem disponíveis
 // Usado para salvamento direto (evita limite de 8MB do proxy)
 // Leitura continua usando proxy para manter segurança
@@ -697,10 +706,10 @@ export const loadProjectsFromSupabase = async (): Promise<LoadProjectsResult> =>
                             retryError
                         );
                     }
-                    return { projects: [], loadFailed: true, errorMessage: retryMsg };
+                    return { projects: [], loadFailed: true, errorMessage: normalizeLoadErrorForUser(retryMsg) };
                 }
             }
-            return { projects: [], loadFailed: true, errorMessage };
+            return { projects: [], loadFailed: true, errorMessage: normalizeLoadErrorForUser(errorMessage) };
         }
     }
 
@@ -730,7 +739,7 @@ export const loadProjectsFromSupabase = async (): Promise<LoadProjectsResult> =>
             } else {
                 logger.warn('Erro ao carregar projetos do Supabase', 'supabaseService', error);
             }
-            return { projects: [], loadFailed: true, errorMessage: errMsg };
+            return { projects: [], loadFailed: true, errorMessage: normalizeLoadErrorForUser(errMsg) };
         }
         if (!data || data.length === 0) {
             logger.info('Nenhum projeto encontrado no Supabase', 'supabaseService');
@@ -746,7 +755,7 @@ export const loadProjectsFromSupabase = async (): Promise<LoadProjectsResult> =>
         } else {
             logger.warn('Erro ao carregar do Supabase (usando cache local)', 'supabaseService', error);
         }
-        return { projects: [], loadFailed: true, errorMessage: errMsg };
+        return { projects: [], loadFailed: true, errorMessage: normalizeLoadErrorForUser(errMsg) };
     }
 };
 

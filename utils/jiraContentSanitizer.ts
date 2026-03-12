@@ -94,9 +94,12 @@ export class JiraContentSanitizer {
         const attachmentMap = new Map<string, NonNullable<SanitizationConfig['jiraAttachments']>[0]>();
         
         (config.jiraAttachments || []).forEach(att => {
-            attachmentMap.set(att.filename.toLowerCase(), att);
-            const nameWithoutExt = att.filename.toLowerCase().replace(/\.[^.]+$/, '');
-            if (nameWithoutExt !== att.filename.toLowerCase()) {
+            const name = (att.filename ?? '').trim();
+            if (!name) return;
+            const nameLower = name.toLowerCase();
+            attachmentMap.set(nameLower, att);
+            const nameWithoutExt = nameLower.replace(/\.[^.]+$/, '');
+            if (nameWithoutExt !== nameLower) {
                 attachmentMap.set(nameWithoutExt, att);
             }
         });

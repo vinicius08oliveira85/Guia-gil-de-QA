@@ -365,10 +365,13 @@ function processJiraImages(
     // Criar mapa de filename -> attachment para busca rápida
     const attachmentMap = new Map<string, JiraAttachment>();
     jiraAttachments.forEach(att => {
-        attachmentMap.set(att.filename.toLowerCase(), att);
+        const name = (att.filename ?? '').trim();
+        if (!name) return;
+        const nameLower = name.toLowerCase();
+        attachmentMap.set(nameLower, att);
         // Também mapear sem extensão para casos onde o nome pode variar
-        const nameWithoutExt = att.filename.toLowerCase().replace(/\.[^.]+$/, '');
-        if (nameWithoutExt !== att.filename.toLowerCase()) {
+        const nameWithoutExt = nameLower.replace(/\.[^.]+$/, '');
+        if (nameWithoutExt !== nameLower) {
             attachmentMap.set(nameWithoutExt, att);
         }
     });

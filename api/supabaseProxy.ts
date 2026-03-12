@@ -104,9 +104,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   if (!supabase) {
-    res.status(500).json({
+    const errorMsg = 'Supabase não configurado. Defina SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY.';
+    console.error('[SupabaseProxy] 503 Supabase não configurado:', errorMsg);
+    res.status(503).json({
       success: false,
-      error: 'Supabase não configurado. Defina SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY.'
+      error: errorMsg
     });
     return;
   }
@@ -456,10 +458,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     res.status(405).json({ success: false, error: 'Method not allowed' });
   } catch (error) {
-    console.error('Supabase proxy error:', error);
     const message = error instanceof Error ? error.message : 'Erro interno ao acessar o Supabase';
     const isTimeout = typeof message === 'string' && message.toLowerCase().startsWith('timeout:');
-    res.status(isTimeout ? 503 : 500).json({
+    const status = isTimeout ? 503 : 500;
+    console.error(`[SupabaseProxy] ${status}`, { error: message, stack: error instanceof Error ? error.stack : undefined });
+    res.status(status).json({
       success: false,
       error: message
     });
