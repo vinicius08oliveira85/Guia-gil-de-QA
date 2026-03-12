@@ -32,7 +32,7 @@ import { canViewInBrowser, detectFileType } from '../../services/fileViewerServi
 import { JiraAttachment } from './JiraAttachment';
 import { JiraRichContent } from './JiraRichContent';
 import { Button } from '../common/Button';
-import { BarChart3, ClipboardList, Sparkles, Wrench, Link, Paperclip, Timer, Download } from 'lucide-react';
+import { BarChart3, ClipboardList, Sparkles, Wrench, Link, Paperclip, Timer, Download, ChevronLeft } from 'lucide-react';
 
 type DetailSection = 'overview' | 'bdd' | 'tests' | 'planning' | 'collaboration';
 type TestSubSection = 'strategy' | 'test-cases';
@@ -935,9 +935,20 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
     };
 
     const modalTitle = (
-        <div className="flex items-center gap-3">
-            <span className="font-mono text-sm text-base-content/60">{task.id}</span>
-            <span className="text-base-content">{task.title}</span>
+        <div className="flex items-center justify-between gap-3 w-full min-w-0 pr-10 sm:pr-12">
+            <div className="flex items-center gap-3 min-w-0 flex-1">
+                <span className="font-mono text-sm text-base-content/60 shrink-0">{task.id}</span>
+                <span className="text-base-content truncate">{task.title}</span>
+            </div>
+            <button
+                type="button"
+                onClick={onClose}
+                className="btn btn-ghost btn-sm shrink-0 gap-1.5"
+                aria-label="Voltar para a lista de tarefas"
+            >
+                <ChevronLeft className="w-4 h-4" aria-hidden />
+                Voltar
+            </button>
         </div>
     );
 
