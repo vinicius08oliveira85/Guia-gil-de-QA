@@ -21,7 +21,11 @@ import {
   Download,
   Filter,
   Plus,
+  Sparkles,
 } from 'lucide-react';
+import { generateProjectFullAnalysis, appendProjectFullAnalysis } from '../../services/ai/projectFullAnalysisService';
+import { ProjectAnalysesBoard } from './ProjectAnalysesBoard';
+import { useErrorHandler } from '../../hooks/useErrorHandler';
 
 /**
  * Props do componente QADashboard
@@ -48,7 +52,9 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
   const [showFilters, setShowFilters] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
   const [showNewTestModal, setShowNewTestModal] = useState(false);
+  const [isGeneratingAnalysis, setIsGeneratingAnalysis] = useState(false);
   const [dashboardFilters, setDashboardFilters] = useState<DashboardFilters>({});
+  const { handleError, handleSuccess } = useErrorHandler();
 
   // Aplicar filtros ao projeto
   const filteredProject = useMemo(() => {
@@ -133,6 +139,21 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
       const isBugOnly = prev.taskType?.length === 1 && prev.taskType[0] === 'Bug';
       return { ...prev, taskType: isBugOnly ? [] : ['Bug'] };
     });
+  };
+
+  const handleGenerateAnalysis = async () => {
+    if (!onUpdateProject || isGeneratingAnalysis) return;
+    setIsGeneratingAnalysis(true);
+    try {
+      const analysis = await generateProjectFullAnalysis(project);
+      const updated = appendProjectFullAnalysis(project, analysis);
+      onUpdateProject(updated);
+      handleSuccess('Análise IA gerada e salva com sucesso!');
+    } catch (err) {
+      handleError(err instanceof Error ? err : new Error('Erro ao gerar análise'), 'Gerar análise IA');
+    } finally {
+      setIsGeneratingAnalysis(false);
+    }
   };
 
   const totalStrategies = useMemo(() => {
@@ -352,6 +373,16 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
               <Download className="w-3.5 h-3.5" aria-hidden="true" />
               <span>Exportar</span>
             </button>
+            <button
+              type="button"
+              onClick={handleGenerateAnalysis}
+              disabled={isGeneratingAnalysis || !onUpdateProject}
+              className="rounded-full px-3 py-1.5 text-xs font-semibold text-primary bg-primary/10 hover:bg-primary/20 border border-primary/30 transition-colors duration-300 flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+              aria-label={isGeneratingAnalysis ? 'Gerando análise…' : 'Gerar análise IA'}
+            >
+              <Sparkles className="w-3.5 h-3.5" aria-hidden="true" />
+              <span>{isGeneratingAnalysis ? 'Gerando…' : 'Gerar análise IA'}</span>
+            </button>
           </div>
         </div>
       </div>
@@ -421,6 +452,13 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
           rawData={complexityChartData.rawData}
         />
       </div>
+
+      {/* Quadro: Análises IA do projeto */}
+      <ProjectAnalysesBoard
+        analyses={project.projectFullAnalyses ?? []}
+        onGenerateAnalysis={onUpdateProject ? handleGenerateAnalysis : undefined}
+        isGenerating={isGeneratingAnalysis}
+      />
 
       {/* Atividades Recentes */}
       <div className="mt-6">

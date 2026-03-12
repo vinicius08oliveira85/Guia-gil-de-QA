@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'lucide-react';
-import { JiraConfig, testJiraConnection, getJiraProjects, importJiraProject, saveJiraConfig, getJiraConfig, deleteJiraConfig, JiraProject } from '../../services/jiraService';
+import { JiraConfig, testJiraConnection, getJiraProjects, importJiraProject, saveJiraConfig, getJiraConfig, getJiraLastUrl, setJiraLastUrl, deleteJiraConfig, JiraProject } from '../../services/jiraService';
 import { Project } from '../../types';
 import { Modal } from '../common/Modal';
 import { Spinner } from '../common/Spinner';
@@ -31,12 +31,17 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({ onProjectImpor
     const { handleError, handleSuccess } = useErrorHandler();
 
     useEffect(() => {
-        // Carregar configuração salva
+        // Carregar configuração salva; se não houver config, pré-preencher URL com último endereço usado
         const savedConfig = getJiraConfig();
         if (savedConfig) {
             setConfig(savedConfig);
             setIsConnected(true);
             loadJiraProjects(savedConfig);
+        } else {
+            const lastUrl = getJiraLastUrl();
+            if (lastUrl) {
+                setConfig(prev => ({ ...prev, url: lastUrl }));
+            }
         }
     }, []);
 
@@ -372,6 +377,10 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({ onProjectImpor
                             type="text"
                             value={config.url}
                             onChange={(e) => setConfig({ ...config, url: e.target.value })}
+                            onBlur={(e) => {
+                                const url = e.target.value?.trim() ?? '';
+                                if (url) setJiraLastUrl(url);
+                            }}
                             placeholder="https://seu-dominio.atlassian.net"
                             className="input input-bordered w-full bg-base-100 border-base-300 text-base-content focus:outline-none focus:border-primary"
                         />

@@ -80,7 +80,8 @@ export const useAutoSave = ({
         oldProject.generalIAAnalysis !== newProject.generalIAAnalysis ||
         oldProject.dashboardOverviewAnalysis !== newProject.dashboardOverviewAnalysis ||
         oldProject.dashboardInsightsAnalysis !== newProject.dashboardInsightsAnalysis ||
-        oldProject.sdlcPhaseAnalysis !== newProject.sdlcPhaseAnalysis) {
+        oldProject.sdlcPhaseAnalysis !== newProject.sdlcPhaseAnalysis ||
+        (oldProject.projectFullAnalyses?.length ?? 0) !== (newProject.projectFullAnalyses?.length ?? 0)) {
       return true;
     }
 

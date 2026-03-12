@@ -240,6 +240,20 @@ export interface DashboardOverviewAnalysis {
   isOutdated?: boolean;
 }
 
+/** Análise IA completa do projeto (documentos, tarefas, testes, indicadores e fases) — salva no Supabase com o projeto */
+export interface ProjectFullAnalysis {
+  summary: string;
+  documentsAnalysis: string;
+  tasksAnalysis: string;
+  testsAnalysis: string;
+  indicatorsAndPhases: string;
+  strengths: string[];
+  weaknesses: string[];
+  risks: string[];
+  recommendations: string[];
+  generatedAt: string;
+}
+
 export interface DashboardInsightsAnalysis {
   qualityScore: number; // Score de qualidade geral (0-100)
   qualityLevel: 'Excelente' | 'Bom' | 'Regular' | 'Ruim' | 'Crítico';
@@ -345,6 +359,8 @@ export interface Project {
   sdlcPhaseAnalysis?: SDLCPhaseAnalysis;
   metricsHistory?: MetricsSnapshot[];
   specificationDocument?: string; // Conteúdo processado do documento de especificação
+  /** Histórico de análises IA completas do projeto (persistido no Supabase com o projeto) */
+  projectFullAnalyses?: ProjectFullAnalysis[];
 }
 
 export interface Comment {

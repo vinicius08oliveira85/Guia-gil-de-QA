@@ -89,7 +89,8 @@ export const importProjectFromJSON = async (file: File): Promise<ImportResult<Pr
             dashboardInsightsAnalysis: projectData.dashboardInsightsAnalysis,
             sdlcPhaseAnalysis: projectData.sdlcPhaseAnalysis,
             metricsHistory: projectData.metricsHistory,
-            specificationDocument: projectData.specificationDocument
+            specificationDocument: projectData.specificationDocument,
+            projectFullAnalyses: projectData.projectFullAnalyses
         };
 
         logger.info(`Projeto importado do JSON: ${project.name}`, 'FileImportService');

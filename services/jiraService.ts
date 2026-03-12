@@ -133,14 +133,31 @@ export interface JiraProject {
 }
 
 const JIRA_CONFIG_KEY = 'jira_config';
+const JIRA_LAST_URL_KEY = 'jira_last_url';
 
 export const saveJiraConfig = (config: JiraConfig): void => {
     localStorage.setItem(JIRA_CONFIG_KEY, JSON.stringify(config));
+    if (config.url?.trim()) {
+        localStorage.setItem(JIRA_LAST_URL_KEY, config.url.trim());
+    }
 };
 
 export const getJiraConfig = (): JiraConfig | null => {
     const stored = localStorage.getItem(JIRA_CONFIG_KEY);
     return stored ? JSON.parse(stored) : null;
+};
+
+/** Retorna a última URL do Jira digitada/salva (para pré-preencher o campo mesmo sem config completa). */
+export const getJiraLastUrl = (): string => {
+    return localStorage.getItem(JIRA_LAST_URL_KEY) ?? '';
+};
+
+/** Persiste a URL do Jira para manter o endereço salvo e pré-preencher em aberturas futuras. */
+export const setJiraLastUrl = (url: string): void => {
+    const trimmed = url?.trim() ?? '';
+    if (trimmed) {
+        localStorage.setItem(JIRA_LAST_URL_KEY, trimmed);
+    }
 };
 
 export const deleteJiraConfig = (): void => {

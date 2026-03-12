@@ -94,6 +94,13 @@ export const mergeProjects = (localProject: Project, remoteProject: Project): Pr
             : remoteProject.metricsHistory)
         : localProject.metricsHistory || remoteProject.metricsHistory,
       
+      // Preservar análises IA completas (lista mais longa)
+      projectFullAnalyses: localProject.projectFullAnalyses && remoteProject.projectFullAnalyses
+        ? (localProject.projectFullAnalyses.length >= remoteProject.projectFullAnalyses.length
+            ? localProject.projectFullAnalyses
+            : remoteProject.projectFullAnalyses)
+        : localProject.projectFullAnalyses || remoteProject.projectFullAnalyses,
+      
       // Preservar tags e settings do mais recente
       tags: timestampComparison >= 0 ? localProject.tags : remoteProject.tags,
       settings: timestampComparison >= 0 ? localProject.settings : remoteProject.settings,

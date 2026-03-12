@@ -14,6 +14,9 @@ import { estimateTaskComplexity } from '../utils/estimationService';
 
 const phaseNamesInOrder: PhaseName[] = [...PHASE_NAMES];
 
+/** Percentual mínimo (0–1) para considerar uma fase concluída e desbloquear a seguinte (evita fases travadas). */
+const PHASE_COMPLETION_THRESHOLD = 0.8;
+
 export const calculateProjectMetrics = (project: Project) => {
     const tasks = project.tasks || [];
     const documents = project.documents || [];
@@ -37,30 +40,33 @@ export const calculateProjectMetrics = (project: Project) => {
         return category !== 'Concluído';
     });
     
-    // --- Phase Logic ---
+    // --- Phase Logic (com thresholds para desbloquear avanço) ---
     const hasDocumentsOrTasks = documents.length > 0 || tasks.length > 0;
     const hasBddScenarios = tasks.some(t => t.bddScenarios && t.bddScenarios.length > 0);
     const hasTestCases = totalTestCases > 0;
-    // Verificar se todas as tarefas estão concluídas usando categoria do Jira
-    const allTasksDone = totalTasks > 0 && tasks.filter(t => {
-        if (t.type === 'Bug') return true; // Ignorar bugs na contagem
-        const category = getTaskStatusCategory(t);
-        return category === 'Concluído';
-    }).length === totalTasks;
-    const allTestsExecuted = totalTestCases > 0 && executedTestCases === totalTestCases;
+
+    const nonBugTasks = tasks.filter(t => t.type !== 'Bug');
+    const doneNonBugTasks = nonBugTasks.filter(t => getTaskStatusCategory(t) === 'Concluído').length;
+    const totalNonBugTasks = nonBugTasks.length;
+    const tasksDoneRatio = totalNonBugTasks > 0 ? doneNonBugTasks / totalNonBugTasks : 0;
+    const testsExecutedRatio = totalTestCases > 0 ? executedTestCases / totalTestCases : 0;
     const noOpenBugs = openBugs.length === 0;
+
+    const tasksDoneAtThreshold = totalNonBugTasks > 0 && tasksDoneRatio >= PHASE_COMPLETION_THRESHOLD;
+    const testsExecutedAtThreshold = totalTestCases > 0 && testsExecutedRatio >= PHASE_COMPLETION_THRESHOLD;
+    const releaseCondition = testsExecutedAtThreshold && noOpenBugs;
 
     const phaseCompletionConditions: Record<PhaseName, boolean> = {
         'Request': hasDocumentsOrTasks,
         'Analysis': hasBddScenarios,
         'Design': hasTestCases,
-        'Analysis and Code': allTasksDone,
-        'Build': allTasksDone, // Dependent
-        'Test': allTestsExecuted,
-        'Release': allTestsExecuted && noOpenBugs,
-        'Deploy': allTestsExecuted && noOpenBugs, // Dependent
-        'Operate': allTestsExecuted && noOpenBugs, // Dependent
-        'Monitor': false, // Manual / Last phase
+        'Analysis and Code': tasksDoneAtThreshold,
+        'Build': tasksDoneAtThreshold,
+        'Test': testsExecutedAtThreshold,
+        'Release': releaseCondition,
+        'Deploy': releaseCondition,
+        'Operate': releaseCondition,
+        'Monitor': false,
     };
 
     let previousPhaseCompleted = true;
@@ -202,7 +208,6 @@ export const calculateProjectMetrics = (project: Project) => {
         blocked: tasks.filter(t => t.type !== 'Bug' && t.status === 'Blocked').length,
     };
 
-    const totalNonBugTasks = taskStatus.toDo + taskStatus.inProgress + taskStatus.done + taskStatus.blocked;
     const taskStatusDistribution = [
         { status: 'To Do', count: taskStatus.toDo, percentage: totalNonBugTasks > 0 ? Math.round((taskStatus.toDo / totalNonBugTasks) * 100) : 0 },
         { status: 'In Progress', count: taskStatus.inProgress, percentage: totalNonBugTasks > 0 ? Math.round((taskStatus.inProgress / totalNonBugTasks) * 100) : 0 },
@@ -211,7 +216,6 @@ export const calculateProjectMetrics = (project: Project) => {
     ];
 
     // --- Jira Status Metrics (novo - baseado em status do Jira real) ---
-    const nonBugTasks = tasks.filter(t => t.type !== 'Bug');
     const statusByCategory = countTasksByStatusCategory(nonBugTasks);
     const jiraStatusCounts = countTasksByJiraStatus(nonBugTasks);
     const jiraStatusGrouped = groupTasksByJiraStatus(nonBugTasks);

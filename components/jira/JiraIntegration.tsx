@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { JiraConfig, testJiraConnection, getJiraProjects, importJiraProject, saveJiraConfig, getJiraConfig, deleteJiraConfig, JiraProject } from '../../services/jiraService';
+import { JiraConfig, testJiraConnection, getJiraProjects, importJiraProject, saveJiraConfig, getJiraConfig, getJiraLastUrl, setJiraLastUrl, deleteJiraConfig, JiraProject } from '../../services/jiraService';
 import { Project } from '../../types';
 import { Card } from '../common/Card';
 import { Modal } from '../common/Modal';
@@ -29,12 +29,17 @@ export const JiraIntegration: React.FC<JiraIntegrationProps> = ({ onProjectImpor
     const { handleError, handleSuccess } = useErrorHandler();
 
     useEffect(() => {
-        // Carregar configuração salva
+        // Carregar configuração salva; se não houver config, pré-preencher URL com último endereço usado
         const savedConfig = getJiraConfig();
         if (savedConfig) {
             setConfig(savedConfig);
             setIsConnected(true);
             loadJiraProjects(savedConfig);
+        } else {
+            const lastUrl = getJiraLastUrl();
+            if (lastUrl) {
+                setConfig(prev => ({ ...prev, url: lastUrl }));
+            }
         }
     }, []);
 
@@ -356,6 +361,10 @@ export const JiraIntegration: React.FC<JiraIntegrationProps> = ({ onProjectImpor
                             type="text"
                             value={config.url}
                             onChange={(e) => setConfig({ ...config, url: e.target.value })}
+                            onBlur={(e) => {
+                                const url = e.target.value?.trim() ?? '';
+                                if (url) setJiraLastUrl(url);
+                            }}
                             placeholder="https://seu-dominio.atlassian.net"
                             className="w-full px-4 py-2 bg-surface border border-surface-border rounded-lg text-text-primary focus:outline-none focus:border-accent"
                         />
