@@ -160,7 +160,7 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
       onUpdateProject(updated);
       handleSuccess('Análise IA gerada e salva com sucesso!');
     } catch (err) {
-      handleError(err instanceof Error ? err : new Error('Erro ao gerar análise'), 'Gerar análise IA');
+      handleError(err instanceof Error ? err : new Error('Erro ao gerar análise'), 'Gerar análise completa');
     } finally {
       setIsGeneratingAnalysis(false);
     }
@@ -505,11 +505,12 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
                 type="button"
                 onClick={handleGenerateAnalysis}
                 disabled={isGeneratingAnalysis || !onUpdateProject}
+                title="Gera análise completa do projeto para o dashboard (métricas, qualidade, alertas)."
                 className="rounded-full px-3 py-1.5 text-xs font-semibold text-primary bg-primary/10 hover:bg-primary/20 border border-primary/30 transition-colors duration-300 flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
-                aria-label={isGeneratingAnalysis ? 'Gerando análise…' : 'Gerar análise IA'}
+                aria-label={isGeneratingAnalysis ? 'Gerando análise…' : 'Gerar análise completa'}
               >
                 <Sparkles className="w-3.5 h-3.5" aria-hidden="true" />
-                <span>{isGeneratingAnalysis ? 'Gerando…' : 'Gerar análise IA'}</span>
+                <span>{isGeneratingAnalysis ? 'Gerando…' : 'Gerar análise completa'}</span>
               </button>
             </div>
             {activeFiltersCount > 0 && (
@@ -580,10 +581,11 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
                       type="button"
                       onClick={() => { handleGenerateAnalysis(); setShowActionsMenu(false); }}
                       disabled={isGeneratingAnalysis || !onUpdateProject}
+                      title="Gera análise completa do projeto para o dashboard (métricas, qualidade, alertas)."
                       className="w-full text-left px-4 py-2 text-sm text-base-content hover:bg-base-200 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <Sparkles className="w-4 h-4" />
-                      {isGeneratingAnalysis ? 'Gerando…' : 'Gerar análise IA'}
+                      {isGeneratingAnalysis ? 'Gerando…' : 'Gerar análise completa'}
                     </button>
                   </div>
                 </>

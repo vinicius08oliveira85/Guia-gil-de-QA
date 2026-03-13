@@ -18,6 +18,7 @@ import { createProjectFromTemplate } from '../utils/projectTemplates';
 import { PHASE_NAMES } from '../utils/constants';
 import { addAuditLog } from '../utils/auditLog';
 import { logger } from '../utils/logger';
+import { invalidateGeneralAnalysisCache } from '../services/ai/generalAnalysisService';
 
 interface ProjectsState {
   projects: Project[];
@@ -397,6 +398,10 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
       }
 
       finalProject = { ...finalProject, updatedAt: new Date().toISOString() };
+
+      if (oldProject && oldProject.tasks !== finalProject.tasks) {
+        invalidateGeneralAnalysisCache(finalProject.id);
+      }
 
       const result = await updateProject(finalProject);
       set((state) => ({

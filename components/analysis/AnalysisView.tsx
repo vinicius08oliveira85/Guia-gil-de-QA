@@ -165,10 +165,11 @@ export const AnalysisView: React.FC<{
                         </p>
                     </div>
                     <div className="flex items-center gap-2 flex-wrap">
-                        <button 
+                        <button
                             type="button"
-                            onClick={handleAnalyzeAndUpdateDashboard} 
-                            disabled={isAnalyzing} 
+                            onClick={handleAnalyzeAndUpdateDashboard}
+                            disabled={isAnalyzing}
+                            title="Gera plano de ciclo de vida (SDLC), análise Shift-Left e pirâmide de testes para o projeto."
                             className="btn btn-outline btn-sm rounded-full disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
                             aria-label="Analisar projeto completo"
                         >
@@ -191,6 +192,7 @@ export const AnalysisView: React.FC<{
                                 type="button"
                                 onClick={handleRefreshGeneralAnalysis}
                                 disabled={isAnalyzingGeneral}
+                                title="Executa análise de risco e recomendações por tarefa e teste (análise geral do projeto)."
                                 className="btn btn-primary btn-sm rounded-full disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 font-semibold"
                                 aria-label="Executar análise geral IA"
                             >
@@ -243,6 +245,7 @@ export const AnalysisView: React.FC<{
                                 type="button"
                                 onClick={handleRefreshGeneralAnalysis}
                                 disabled={isAnalyzingGeneral}
+                                title="Executa análise de risco e recomendações por tarefa e teste (análise geral do projeto)."
                                 className="btn btn-primary btn-sm rounded-full disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                             >
                                 {isAnalyzingGeneral ? <Spinner small /> : '🧠'}

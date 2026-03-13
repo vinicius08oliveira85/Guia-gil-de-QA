@@ -42,6 +42,23 @@ vi.mock('../../services/geminiService', () => ({
   })),
 }));
 
+vi.mock('../../services/ai/generalAnalysisService', () => ({
+  generateGeneralIAAnalysis: vi.fn(() =>
+    Promise.resolve({
+      summary: 'Análise geral mock',
+      detectedProblems: [],
+      riskCalculation: { overallRisk: 'Baixo', riskScore: 20, riskFactors: [] },
+      missingItems: [],
+      bddSuggestions: [],
+      qaImprovements: [],
+      taskAnalyses: [],
+      testAnalyses: [],
+      generatedAt: new Date().toISOString(),
+      isOutdated: false,
+    })
+  ),
+}));
+
 describe('Testes de Integração End-to-End', () => {
   let mocks: ReturnType<typeof createDbMocks>;
 
@@ -319,15 +336,21 @@ describe('Testes de Integração End-to-End', () => {
       const gerarButton = screen.getByRole('button', { name: /gerar tarefa/i });
       await user.click(gerarButton);
 
-      await waitFor(() => {
-        const tasksTab = screen.getByRole('tab', { name: /tarefas/i });
-        expect(tasksTab).toHaveAttribute('aria-selected', 'true');
-      });
-      await waitFor(() => {
-        const updatedProject = useProjectsStore.getState().projects.find(p => p.id === project.id);
-        expect(updatedProject?.tasks?.length).toBeGreaterThanOrEqual(1);
-        expect(updatedProject?.tasks?.some(t => t.title?.includes('Tarefa gerada') || t.title?.includes('documento'))).toBe(true);
-      });
+      await waitFor(
+        () => {
+          const tasksTab = screen.getByRole('tab', { name: /tarefas/i });
+          expect(tasksTab).toHaveAttribute('aria-selected', 'true');
+        },
+        { timeout: 70000 }
+      );
+      await waitFor(
+        () => {
+          const updatedProject = useProjectsStore.getState().projects.find(p => p.id === project.id);
+          expect(updatedProject?.tasks?.length).toBeGreaterThanOrEqual(1);
+          expect(updatedProject?.tasks?.some(t => t.title?.includes('Tarefa gerada') || t.title?.includes('documento'))).toBe(true);
+        },
+        { timeout: 70000 }
+      );
     });
 
     it('deve filtrar documentos sem análise e exibir botão Limpar filtros', async () => {

@@ -1,5 +1,9 @@
-// Este arquivo mantém compatibilidade com código existente
-// Redireciona para a nova arquitetura de serviços de IA
+/**
+ * Facade de IA: ponto único para chamadas de IA na aplicação.
+ * Todas as operações de análise e geração (documentos, tarefas, BDD, casos de teste,
+ * lifecycle, shift-left, pirâmide) devem passar por este módulo ou por getAIService()
+ * do aiServiceFactory, para manter um único ponto de retry, chaves e provedor (Gemini/OpenAI).
+ */
 
 import { getAIService } from './ai/aiServiceFactory';
 import type { AIService } from './ai/aiServiceInterface';

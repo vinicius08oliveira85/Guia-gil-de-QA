@@ -9,12 +9,14 @@ interface GeneralIAAnalysisButtonProps {
     current: number;
     total: number;
     message: string;
+    estimatedSeconds?: number;
   } | null;
 }
 
 export const GeneralIAAnalysisButton: React.FC<GeneralIAAnalysisButtonProps> = ({
   onAnalyze,
   isAnalyzing = false,
+  progress,
 }) => {
   const handleClick = async () => {
     if (isAnalyzing) return;
@@ -25,17 +27,29 @@ export const GeneralIAAnalysisButton: React.FC<GeneralIAAnalysisButtonProps> = (
     }
   };
 
+  const progressLabel = isAnalyzing && progress?.message ? progress.message : null;
+  const stepLabel = isAnalyzing && progress && progress.total > 0 ? `Etapa ${progress.current} de ${progress.total}` : null;
+  const estimatedLabel =
+    isAnalyzing && progress?.estimatedSeconds != null
+      ? `Tempo estimado: ~${Math.ceil(progress.estimatedSeconds / 60)} min`
+      : null;
+  const defaultTooltip = 'Executa análise de risco e recomendações e pode gerar BDD e casos de teste para tarefas sem eles.';
+  const title = isAnalyzing
+    ? ([progressLabel, stepLabel, estimatedLabel].filter(Boolean).join(' • ') || 'Analisando…')
+    : defaultTooltip;
+
   return (
     <button
       type="button"
       onClick={handleClick}
       disabled={isAnalyzing}
+      title={title}
       className={cn(
         'rounded-full px-3 py-1.5 text-xs font-semibold transition-colors duration-300 flex items-center gap-1.5',
         'text-base-content/70 hover:bg-base-200 hover:text-base-content',
         'disabled:opacity-50 disabled:cursor-not-allowed'
       )}
-      aria-label={isAnalyzing ? 'Analisando' : 'Análise IA'}
+      aria-label={isAnalyzing ? 'Analisando' : 'Análise geral com IA'}
     >
       {isAnalyzing ? (
         <Spinner small />
@@ -55,7 +69,9 @@ export const GeneralIAAnalysisButton: React.FC<GeneralIAAnalysisButtonProps> = (
           />
         </svg>
       )}
-      <span>{isAnalyzing ? 'Analisando…' : 'Análise IA'}</span>
+      <span>
+        {isAnalyzing ? (progress?.message ? progress.message : 'Analisando…') : 'Análise geral com IA'}
+      </span>
     </button>
   );
 };

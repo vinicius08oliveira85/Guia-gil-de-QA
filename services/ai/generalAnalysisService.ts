@@ -5,15 +5,20 @@ import { callGeminiWithRetry } from './geminiApiWrapper';
 import { logger } from '../../utils/logger';
 
 const CACHE_TTL_MS = 1000 * 60 * 5; // 5 minutos
+/** Máximo de tarefas consideradas no contexto enviado ao modelo (análise considera até esta quantidade). */
+const MAX_TASKS_IN_CONTEXT = 100;
 const MAX_AI_TASKS = 20;
 const MAX_AI_TESTS = 30;
+/** Máximo de caracteres por trecho de texto (descrição, etc.) no contexto. */
 const TEXT_SNIPPET_LENGTH = 220;
 
+/** Snapshot usado para hash de cache: inclui todos os campos que influenciam o resultado da análise. */
 interface TaskSnapshot {
   id: string;
   title: string;
   type: JiraTask['type'];
   status: JiraTask['status'];
+  priority?: string;
   description: string;
   testCasesTotal: number;
   testsPassed: number;
@@ -28,6 +33,7 @@ interface TaskSnapshot {
   riskLevel: TaskIAAnalysis['riskLevel'];
 }
 
+/** Snapshot usado para hash de cache: inclui todos os campos que influenciam o resultado da análise. */
 interface TestSnapshot {
   id: string;
   taskId: string;
@@ -35,6 +41,7 @@ interface TestSnapshot {
   description: string;
   expectedResult: string;
   status: TestCase['status'];
+  priority?: string;
   stepsCount: number;
   isAutomated: boolean;
   issues: string[];
@@ -136,6 +143,7 @@ const calculateTaskSnapshot = (task: JiraTask): TaskSnapshot => {
     title: task.title,
     type: task.type,
     status: task.status,
+    priority: task.priority,
     description: normalizeText(task.description, TEXT_SNIPPET_LENGTH),
     testCasesTotal: totalTests,
     testsPassed,
@@ -173,6 +181,7 @@ const calculateTestSnapshot = (task: JiraTask, testCase: TestCase): TestSnapshot
     description: normalizeText(testCase.description, 180),
     expectedResult: normalizeText(testCase.expectedResult, 180),
     status: testCase.status,
+    priority: testCase.priority,
     stepsCount: testCase.steps?.length || 0,
     isAutomated: testCase.isAutomated || false,
     issues
@@ -374,6 +383,11 @@ const setCachedAnalysis = (key: string, hash: string, analysis: GeneralIAAnalysi
   });
 };
 
+/** Remove o cache de análise geral do projeto para forçar nova análise na próxima abertura. Chamar ao salvar/editar tarefa ou caso de teste. */
+export function invalidateGeneralAnalysisCache(projectId: string): void {
+  generalAnalysisCache.delete(`general-ia-analysis:${projectId}`);
+}
+
 const getFallbackRiskScore = (taskAnalyses: TaskIAAnalysis[]): number => {
   if (taskAnalyses.length === 0) return 35;
   const total = taskAnalyses.reduce((acc, task) => acc + (task.riskScore || 0), 0);
@@ -525,8 +539,9 @@ const generalAnalysisSchema = {
  */
 export async function generateGeneralIAAnalysis(project: Project): Promise<GeneralIAAnalysis> {
   try {
-    const taskSnapshots = project.tasks.map(calculateTaskSnapshot);
-    const testSnapshots = project.tasks.flatMap(task =>
+    const tasksForContext = project.tasks.slice(0, MAX_TASKS_IN_CONTEXT);
+    const taskSnapshots = tasksForContext.map(calculateTaskSnapshot);
+    const testSnapshots = tasksForContext.flatMap(task =>
       (task.testCases || []).map(testCase => calculateTestSnapshot(task, testCase))
     );
 

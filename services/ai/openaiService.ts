@@ -5,6 +5,7 @@ import { sanitizeHTML } from '../../utils/sanitize';
 import { AIService } from './aiServiceInterface';
 import { getFormattedContext } from './documentContextService';
 import { logger } from '../../utils/logger';
+import { retryWithBackoff } from '../../utils/retry';
 
 const API_KEY = import.meta.env.VITE_OPENAI_API_KEY || import.meta.env.OPENAI_API_KEY;
 
@@ -36,29 +37,47 @@ const getOpenAI = () => {
   return openai;
 };
 
+/** Considera 429, 503 e 5xx como retentáveis para chamadas à API OpenAI */
+function isOpenAIRetryable(error: unknown): boolean {
+  const err = error as { status?: number; statusCode?: number; message?: string };
+  const status = err?.status ?? err?.statusCode;
+  if (typeof status === 'number' && (status === 429 || status === 503 || (status >= 500 && status < 600))) {
+    return true;
+  }
+  if (error instanceof Error) {
+    if (error.message.includes('429') || error.message.includes('Too Many Requests')) return true;
+    if (error.message.includes('ECONNRESET') || error.message.includes('ETIMEDOUT') || error.message.includes('ENOTFOUND')) return true;
+  }
+  return false;
+}
+
 export class OpenAIService implements AIService {
   private async callAPI(prompt: string, responseFormat?: { type: 'json_object' }): Promise<string> {
     const client = getOpenAI();
-    
-    const response = await client.chat.completions.create({
-      model: "gpt-4o-mini", // ou "gpt-4" para melhor qualidade
-      messages: [
-        {
-          role: "system",
-          content: "Você é um especialista em garantia de qualidade de software (QA) e análise de projetos. Sempre responda em português brasileiro."
-        },
-        {
-          role: "user",
-          content: prompt
-        }
-      ],
-      response_format: responseFormat,
-      temperature: 0.7,
-    });
+
+    const response = await retryWithBackoff(
+      () =>
+        client.chat.completions.create({
+          model: 'gpt-4o-mini',
+          messages: [
+            {
+              role: 'system',
+              content: 'Você é um especialista em garantia de qualidade de software (QA) e análise de projetos. Sempre responda em português brasileiro.',
+            },
+            {
+              role: 'user',
+              content: prompt,
+            },
+          ],
+          response_format: responseFormat,
+          temperature: 0.7,
+        }),
+      { isRetryable: isOpenAIRetryable, maxRetries: 3, initialDelay: 1000 }
+    );
 
     const content = response.choices[0]?.message?.content;
     if (!content) {
-      throw new Error("Resposta vazia da API OpenAI");
+      throw new Error('Resposta vazia da API OpenAI');
     }
     return content;
   }

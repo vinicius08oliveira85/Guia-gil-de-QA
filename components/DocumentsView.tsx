@@ -26,6 +26,17 @@ interface DocumentWithMetadata extends ProjectDocument {
     size?: number;
 }
 
+const DOCUMENT_AI_TIMEOUT_MS = 90_000;
+
+function withTimeout<T>(promise: Promise<T>, ms: number, message: string): Promise<T> {
+    return Promise.race([
+        promise,
+        new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error(message)), ms)
+        ),
+    ]);
+}
+
 const DOCUMENT_CATEGORIES = [
     { id: 'requisitos', label: '📋 Requisitos', color: 'blue' },
     { id: 'testes', label: '🧪 Testes', color: 'green' },
@@ -192,7 +203,11 @@ export const DocumentsView: React.FC<{
     const handleAnalyze = async (doc: ProjectDocument) => {
         setLoadingStates(prev => ({ ...prev, [doc.name]: 'analyze' }));
         try {
-            const analysis = await analyzeDocumentContent(doc.content, project);
+            const analysis = await withTimeout(
+                analyzeDocumentContent(doc.content, project),
+                DOCUMENT_AI_TIMEOUT_MS,
+                'A operação demorou muito. Tente novamente ou use um documento menor.'
+            );
             const sanitizedAnalysis = sanitizeHTML(analysis);
             
             // Salvar análise no documento
@@ -213,7 +228,11 @@ export const DocumentsView: React.FC<{
     const handleGenerateTask = async (doc: ProjectDocument) => {
         setLoadingStates(prev => ({ ...prev, [doc.name]: 'generate' }));
         try {
-            const { task, strategy, testCases } = await generateTaskFromDocument(doc.content, project);
+            const { task, strategy, testCases } = await withTimeout(
+                generateTaskFromDocument(doc.content, project),
+                DOCUMENT_AI_TIMEOUT_MS,
+                'A operação demorou muito. Tente novamente ou use um documento menor.'
+            );
             const newTask: JiraTask = {
                 ...task,
                 id: `DOC-${doc.name.substring(0, 5)}-${Date.now().toString().slice(-4)}`,

@@ -7,6 +7,10 @@ import { logger } from '../../utils/logger';
 import { getQualityAlerts, calculateQualityScore } from '../../components/tasks/qualityMetrics';
 
 const MAX_ANALYSES_STORED = 10;
+/** Máximo de tarefas incluídas no contexto enviado ao modelo para análise completa. */
+const MAX_TASKS_IN_CONTEXT = 100;
+/** Máximo de caracteres por trecho de documento no contexto. */
+const MAX_DOCUMENTS_SNIPPET_CHARS = 500;
 
 const normalizeSnippet = (value: string | undefined, maxLength: number): string => {
   if (!value) return '';
@@ -45,10 +49,10 @@ function buildFullContext(project: Project): string {
   const documentsInfo = (project.documents || []).map(doc => ({
     name: doc.name,
     category: doc.category,
-    contentSnippet: normalizeSnippet(doc.content, 300),
+    contentSnippet: normalizeSnippet(doc.content, MAX_DOCUMENTS_SNIPPET_CHARS),
     hasAnalysis: !!doc.analysis?.trim(),
   }));
-  const tasksSummary = project.tasks.slice(0, 100).map(t => ({
+  const tasksSummary = project.tasks.slice(0, MAX_TASKS_IN_CONTEXT).map(t => ({
     id: t.id,
     title: t.title?.slice(0, 80),
     type: t.type,
@@ -66,7 +70,7 @@ function buildFullContext(project: Project): string {
 
   return JSON.stringify({
     projectName: project.name,
-    projectDescription: normalizeSnippet(project.description, 500),
+    projectDescription: normalizeSnippet(project.description, MAX_DOCUMENTS_SNIPPET_CHARS),
     documentsCount: (project.documents || []).length,
     documents: documentsInfo,
     tasksCount: project.tasks.length,

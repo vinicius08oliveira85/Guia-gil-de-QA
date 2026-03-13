@@ -112,6 +112,7 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
             className={actionBtnClass}
             onClick={onAnalyze}
             disabled={loadingState === 'analyze'}
+            title="Analisa o conteúdo do documento com IA."
             aria-label="Analisar com IA"
           >
             <div className="p-2 rounded-lg transition-colors duration-300 group-hover:bg-base-200">
@@ -128,6 +129,7 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
             className={actionBtnClass}
             onClick={onGenerate}
             disabled={loadingState === 'generate'}
+            title="Gera uma tarefa a partir do documento com IA."
             aria-label="Gerar tarefa"
           >
             <div className="p-2 rounded-lg transition-colors duration-300 group-hover:bg-base-200">

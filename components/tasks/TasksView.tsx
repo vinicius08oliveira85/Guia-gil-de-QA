@@ -152,6 +152,7 @@ export const TasksView: React.FC<{
         current: number;
         total: number;
         message: string;
+        estimatedSeconds?: number;
     } | null>(null);
     const [showFailedTestsReport, setShowFailedTestsReport] = useState(false);
     const [modalTask, setModalTask] = useState<JiraTask | null>(null);
@@ -740,16 +741,16 @@ export const TasksView: React.FC<{
     }, [project, onUpdateProject]);
 
     const handleGeneralIAAnalysis = useCallback(async () => {
-        setIsRunningGeneralAnalysis(true);
-        setAnalysisProgress({ current: 0, total: 0, message: 'Iniciando análise...' });
-        
-        // Calcular timeout adaptativo baseado no número de tarefas (fora do try para usar no catch)
         const taskCount = project.tasks.length;
         const adaptiveTimeout = Math.min(120000 + (taskCount * 5000), 180000); // Base 120s + 5s por tarefa, máximo 180s
-        
+        const estimatedSeconds = Math.round(adaptiveTimeout / 1000);
+
+        setIsRunningGeneralAnalysis(true);
+        setAnalysisProgress({ current: 0, total: 0, message: 'Iniciando análise...', estimatedSeconds });
+
         try {
             // Passo 1: Gerar análise geral
-            setAnalysisProgress({ current: 1, total: 3, message: 'Gerando análise geral do projeto...' });
+            setAnalysisProgress({ current: 1, total: 3, message: 'Gerando análise geral do projeto...', estimatedSeconds });
             const analysis = await withTimeout(generateGeneralIAAnalysis(project), adaptiveTimeout);
             const aiService = getAIService();
             
@@ -797,7 +798,8 @@ export const TasksView: React.FC<{
                 setAnalysisProgress({ 
                     current: 2, 
                     total: 3, 
-                    message: `Gerando BDDs (0/${limitedBDDTasks.length})...` 
+                    message: `Gerando BDDs (0/${limitedBDDTasks.length})...`,
+                    estimatedSeconds 
                 });
 
                 for (let i = 0; i < limitedBDDTasks.length; i++) {
@@ -807,7 +809,8 @@ export const TasksView: React.FC<{
                     setAnalysisProgress({ 
                         current: 2, 
                         total: 3, 
-                        message: `Gerando BDDs para "${task.title.substring(0, 30)}..." (${i + 1}/${limitedBDDTasks.length})` 
+                        message: `Gerando BDDs para "${task.title.substring(0, 30)}..." (${i + 1}/${limitedBDDTasks.length})`,
+                        estimatedSeconds 
                     });
 
                     try {
@@ -848,7 +851,8 @@ export const TasksView: React.FC<{
                 setAnalysisProgress({ 
                     current: 3, 
                     total: 3, 
-                    message: `Gerando casos de teste (0/${limitedTestTasks.length})...` 
+                    message: `Gerando casos de teste (0/${limitedTestTasks.length})...`,
+                    estimatedSeconds 
                 });
 
                 for (let i = 0; i < limitedTestTasks.length; i++) {
@@ -858,7 +862,8 @@ export const TasksView: React.FC<{
                     setAnalysisProgress({ 
                         current: 3, 
                         total: 3, 
-                        message: `Gerando testes para "${task.title.substring(0, 30)}..." (${i + 1}/${limitedTestTasks.length})` 
+                        message: `Gerando testes para "${task.title.substring(0, 30)}..." (${i + 1}/${limitedTestTasks.length})`,
+                        estimatedSeconds 
                     });
 
                     try {
@@ -1513,10 +1518,12 @@ export const TasksView: React.FC<{
                     </div>
                     <div className="flex flex-wrap items-center justify-start md:justify-end gap-2 w-full md:w-auto">
                         {/* Botão Principal - Adicionar Tarefa */}
-                        <Button 
+                        <Button
                             variant="default"
                             size="sm"
-                            onClick={() => openTaskFormForNew()} 
+                            onClick={() => openTaskFormForNew()}
+                            disabled={isRunningGeneralAnalysis}
+                            title={isRunningGeneralAnalysis ? 'Conclua a análise em andamento' : undefined}
                             className="rounded-full px-3 py-1.5 text-xs min-h-0 flex items-center gap-1.5 font-semibold flex-shrink-0 shadow-sm transition-all active:scale-95"
                         >
                             <Plus className="w-3.5 h-3.5" />
@@ -1537,10 +1544,12 @@ export const TasksView: React.FC<{
                         <div className="w-px h-8 bg-base-300 flex-shrink-0 hidden md:block" />
                         
                         {/* Botões Secundários */}
-                        <Button 
+                        <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => setIsFiltersModalOpen(true)} 
+                            onClick={() => setIsFiltersModalOpen(true)}
+                            disabled={isRunningGeneralAnalysis}
+                            title={isRunningGeneralAnalysis ? 'Conclua a análise em andamento' : undefined}
                             className="rounded-full px-3 py-1.5 text-xs min-h-0 flex items-center gap-1.5 flex-shrink-0 hover:bg-base-200"
                         >
                             <Filter className="w-3.5 h-3.5" />

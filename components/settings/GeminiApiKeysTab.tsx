@@ -98,6 +98,9 @@ export const GeminiApiKeysTab: React.FC = () => {
                         <p className="text-base-content/70 text-sm leading-relaxed">
                             Configure sua chave API do Google Gemini para usar funcionalidades de IA
                         </p>
+                        <p className="text-base-content/60 text-xs mt-2">
+                            Conteúdo de documentos e descrições de tarefas são enviados ao provedor de IA para análises e gerações. Evite colar dados sensíveis se necessário.
+                        </p>
                     </div>
                 </div>
                 {isConfigured ? (
