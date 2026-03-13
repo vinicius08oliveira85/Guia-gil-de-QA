@@ -1,11 +1,12 @@
-import React, { useState, useEffect, Suspense, useRef, useCallback } from 'react';
+import React, { useState, useEffect, Suspense, useRef, useCallback, lazy } from 'react';
 import { Project } from '../types';
 import { useProjectMetrics } from '../hooks/useProjectMetrics';
-import { TasksView } from './tasks/TasksView';
-import { DocumentsView } from './DocumentsView';
 import { PrintableReport } from './PrintableReport';
 import { LoadingSkeleton } from './common/LoadingSkeleton';
 import { QADashboard } from './dashboard/QADashboard';
+
+const TasksView = lazy(() => import('./tasks/TasksView').then(m => ({ default: m.TasksView })));
+const DocumentsView = lazy(() => import('./DocumentsView').then(m => ({ default: m.DocumentsView })));
 import { Breadcrumbs } from './common/Breadcrumbs';
 import { PageTransition } from './common/PageTransition';
 import { SectionHeader } from './common/SectionHeader';
@@ -201,9 +202,32 @@ export const ProjectView: React.FC<{
         { id: 'documents', label: 'Documentos' },
     ];
 
-    const handleTabClick = (tabId: string) => {
+    const handleTabClick = useCallback((tabId: string) => {
         setActiveTab(tabId);
-    };
+    }, []);
+
+    const handleTabKeyDown = useCallback((e: React.KeyboardEvent) => {
+        const index = tabs.findIndex(t => t.id === activeTab);
+        if (index < 0) return;
+        let nextIndex = index;
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+            e.preventDefault();
+            nextIndex = Math.min(index + 1, tabs.length - 1);
+        } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+            e.preventDefault();
+            nextIndex = Math.max(index - 1, 0);
+        } else if (e.key === 'Home') {
+            e.preventDefault();
+            nextIndex = 0;
+        } else if (e.key === 'End') {
+            e.preventDefault();
+            nextIndex = tabs.length - 1;
+        } else if (e.key >= '1' && e.key <= '3' && Number(e.key) <= tabs.length) {
+            e.preventDefault();
+            nextIndex = Number(e.key) - 1;
+        } else return;
+        if (nextIndex !== index) setActiveTab(tabs[nextIndex].id);
+    }, [activeTab, tabs]);
 
     // Breadcrumbs items baseado na aba ativa
     const getBreadcrumbItems = () => {
@@ -343,6 +367,7 @@ export const ProjectView: React.FC<{
                                 key={tab.id}
                                 type="button"
                                 onClick={() => handleTabClick(tab.id)}
+                                onKeyDown={handleTabKeyDown}
                                 className={`tab whitespace-nowrap flex-shrink-0 snap-start ${activeTab === tab.id ? 'tab-active' : ''}`}
                                 id={`tab-${tab.id}`}
                                 role="tab"
@@ -383,7 +408,7 @@ export const ProjectView: React.FC<{
                         {activeTab === 'documents' && (
                             <section id="tab-panel-documents" role="tabpanel" aria-labelledby="tab-documents">
                             <Suspense fallback={<LoadingSkeleton variant="card" count={3} />}>
-                                <DocumentsView project={currentProject} onUpdateProject={onUpdateProject} />
+                                <DocumentsView project={currentProject} onUpdateProject={onUpdateProject} onNavigateToTab={handleTabClick} />
                             </Suspense>
                             </section>
                         )}

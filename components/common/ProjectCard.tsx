@@ -1,10 +1,19 @@
 import React, { useMemo } from 'react';
+import { formatDistanceToNow } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 import { Project } from '../../types';
-import { Layout, CheckCircle2, ArrowUpRight, Trash2 } from 'lucide-react';
+import { Layout, CheckCircle2, ArrowUpRight, Trash2, Bug } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import { calculateProjectMetrics } from '../../hooks/useProjectMetrics';
 import { getTaskStatusCategory } from '../../utils/jiraStatusCategorizer';
+
+/** Risco: 2+ bugs abertos ou taxa de sucesso < 70% (com testes executados). Aviso: 1 bug ou taxa < 90%. */
+function getProjectHealth(openBugs: number, testPassRate: number, executedTestCases: number): 'ok' | 'warning' | 'risk' {
+    if (openBugs >= 2 || (executedTestCases > 0 && testPassRate < 70)) return 'risk';
+    if (openBugs >= 1 || (executedTestCases > 0 && testPassRate < 90)) return 'warning';
+    return 'ok';
+}
 
 const RADIUS = 16;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
@@ -73,6 +82,20 @@ export const ProjectCard = React.memo<ProjectCardProps>(({
 }) => {
   const metrics = useMemo(() => calculateProjectMetrics(project), [project]);
   const tasks = project.tasks || [];
+  const openBugsCount = metrics.openVsClosedBugs?.open ?? 0;
+  const health = useMemo(
+    () => getProjectHealth(openBugsCount, metrics.testPassRate, metrics.executedTestCases),
+    [openBugsCount, metrics.testPassRate, metrics.executedTestCases]
+  );
+  const updatedAtLabel = useMemo(() => {
+    const date = project.updatedAt || project.createdAt;
+    if (!date) return null;
+    try {
+      return formatDistanceToNow(new Date(date), { addSuffix: true, locale: ptBR });
+    } catch {
+      return null;
+    }
+  }, [project.updatedAt, project.createdAt]);
 
   const testsPercent = useMemo(() => {
     if (metrics.totalTestCases === 0) return 0;
@@ -120,6 +143,13 @@ export const ProjectCard = React.memo<ProjectCardProps>(({
     onDelete?.();
   };
 
+  const healthBarClass =
+    health === 'risk'
+      ? 'bg-error'
+      : health === 'warning'
+        ? 'bg-warning'
+        : 'bg-success';
+
   return (
     <div
       role="button"
@@ -132,12 +162,17 @@ export const ProjectCard = React.memo<ProjectCardProps>(({
         }
       }}
       className={cn(
-        'bg-base-100 rounded-3xl p-5 shadow-sm border border-base-300 relative',
+        'bg-base-100 rounded-3xl p-5 shadow-sm border border-base-300 relative overflow-hidden',
         'flex flex-col md:flex-row md:items-center gap-6',
         'transition-all hover:shadow-md cursor-pointer',
         className
       )}
     >
+      {/* Barra de saúde no topo */}
+      <div
+        className={cn('absolute top-0 left-0 right-0 h-1', healthBarClass)}
+        aria-hidden
+      />
       {onDelete && (
         <button
           type="button"
@@ -158,6 +193,22 @@ export const ProjectCard = React.memo<ProjectCardProps>(({
             {project.name}
           </h3>
           <p className="text-xs text-base-content/60">{jiraLabel}</p>
+          <div className="flex items-center gap-3 mt-1.5 flex-wrap">
+            {openBugsCount > 0 && (
+              <span
+                className="inline-flex items-center gap-1 text-xs font-medium text-error bg-error/10 rounded-md px-2 py-0.5"
+                title={`${openBugsCount} bug(s) aberto(s)`}
+              >
+                <Bug className="w-3.5 h-3.5" aria-hidden />
+                {openBugsCount} {openBugsCount === 1 ? 'bug aberto' : 'bugs abertos'}
+              </span>
+            )}
+            {updatedAtLabel && (
+              <span className="text-[11px] text-base-content/50" title="Última atualização">
+                Atualizado {updatedAtLabel}
+              </span>
+            )}
+          </div>
         </div>
       </div>
 

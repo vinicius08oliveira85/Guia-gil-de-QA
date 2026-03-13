@@ -6,7 +6,11 @@ import { motion } from 'framer-motion';
 interface EmptyStateProps {
   icon?: string | React.ReactNode;
   title: string;
+  /** Descrição principal (alias: message, para compatibilidade) */
   description?: string;
+  message?: string;
+  /** Lista de sugestões exibida abaixo da descrição (ex.: modal de relatório de falhas) */
+  suggestions?: string[];
   /** Reduz padding e tamanhos para caber em painéis (ex.: modal Planejamento) */
   compact?: boolean;
   action?: {
@@ -31,7 +35,9 @@ interface EmptyStateProps {
 export const EmptyState: React.FC<EmptyStateProps> = ({
   icon = '📋',
   title,
-  description,
+  description: descriptionProp,
+  message,
+  suggestions,
   compact = false,
   action,
   secondaryAction,
@@ -41,6 +47,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   helpText,
   illustration
 }) => {
+  const description = descriptionProp ?? message;
   const wrapperClass = compact
     ? 'flex flex-col items-center justify-center py-2 px-2 text-center'
     : 'flex flex-col items-center justify-center py-16 px-4 text-center max-w-xl mx-auto';
@@ -99,6 +106,23 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
         >
           {description}
         </motion.p>
+      )}
+
+      {/* Sugestões (lista) */}
+      {suggestions && suggestions.length > 0 && (
+        <motion.ul
+          className="text-sm text-base-content/70 max-w-md mb-6 space-y-1 text-left list-none"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+        >
+          {suggestions.map((s, idx) => (
+            <li key={idx} className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" aria-hidden />
+              {s}
+            </li>
+          ))}
+        </motion.ul>
       )}
 
       {/* Dica única */}

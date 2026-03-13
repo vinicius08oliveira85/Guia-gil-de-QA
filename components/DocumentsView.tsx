@@ -1,4 +1,6 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
+import { formatDistanceToNow } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 import { Project, ProjectDocument } from '../types';
 import type { JiraTask } from '../types';
 import { analyzeDocumentContent, generateTaskFromDocument } from '../services/geminiService';
@@ -8,13 +10,14 @@ import { sanitizeHTML } from '../utils/sanitize';
 import { Badge } from './common/Badge';
 import { EmptyState } from './common/EmptyState';
 import { createDocumentFromFile, convertDocumentFileToProjectDocument } from '../utils/documentService';
+import { formatFileSize } from '../utils/attachmentService';
 import { SpecificationDocumentProcessor } from './settings/SpecificationDocumentProcessor';
 import { FileImportModal } from './common/FileImportModal';
 import { FileViewer } from './common/FileViewer';
 import { viewFileInNewTab } from '../services/fileViewerService';
 import { DocumentStatsCards } from './documents/DocumentStatsCards';
 import { DocumentCard } from './documents/DocumentCard';
-import { Search, Upload } from 'lucide-react';
+import { Search, Upload, FileText, CheckCircle2, AlertCircle } from 'lucide-react';
 
 interface DocumentWithMetadata extends ProjectDocument {
     uploadedAt?: string;
@@ -30,16 +33,22 @@ const DOCUMENT_CATEGORIES = [
     { id: 'outros', label: '📄 Outros', color: 'gray' }
 ] as const;
 
-export const DocumentsView: React.FC<{ project: Project; onUpdateProject: (project: Project) => void; }> = ({ project, onUpdateProject }) => {
+export const DocumentsView: React.FC<{
+    project: Project;
+    onUpdateProject: (project: Project) => void;
+    onNavigateToTab?: (tabId: string) => void;
+}> = ({ project, onUpdateProject, onNavigateToTab }) => {
     const [analysisResult, setAnalysisResult] = useState<{ name: string; content: string } | null>(null);
     const [loadingStates, setLoadingStates] = useState<{ [docName: string]: 'analyze' | 'generate' | null }>({});
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState<string | 'all'>('all');
+    const [onlyWithoutAnalysis, setOnlyWithoutAnalysis] = useState(false);
     const [selectedDoc, setSelectedDoc] = useState<DocumentWithMetadata | null>(null);
     const [showPreview, setShowPreview] = useState(false);
     const [editingDoc, setEditingDoc] = useState<DocumentWithMetadata | null>(null);
     const [isImportModalOpen, setIsImportModalOpen] = useState(false);
     const [viewingDocument, setViewingDocument] = useState<DocumentWithMetadata | null>(null);
+    const uploadInputRef = useRef<HTMLInputElement>(null);
     const { handleError, handleSuccess, handleWarning } = useErrorHandler();
     // Converter documentos para incluir metadados
     const documentsWithMetadata = useMemo<DocumentWithMetadata[]>(() => {
@@ -65,10 +74,15 @@ export const DocumentsView: React.FC<{ project: Project; onUpdateProject: (proje
             filtered = filtered.filter(doc => doc.category === selectedCategory);
         }
 
+        // Filtro: apenas documentos sem análise
+        if (onlyWithoutAnalysis) {
+            filtered = filtered.filter(doc => !doc.analysis || doc.analysis.trim() === '');
+        }
+
         // Filtro por busca
         if (searchQuery) {
             const query = searchQuery.toLowerCase();
-            filtered = filtered.filter(doc => 
+            filtered = filtered.filter(doc =>
                 (doc.name || '').toLowerCase().includes(query) ||
                 (doc.content || '').toLowerCase().includes(query) ||
                 doc.tags?.some(tag => (tag || '').toLowerCase().includes(query))
@@ -76,7 +90,7 @@ export const DocumentsView: React.FC<{ project: Project; onUpdateProject: (proje
         }
 
         return filtered;
-    }, [documentsWithMetadata, selectedCategory, searchQuery]);
+    }, [documentsWithMetadata, selectedCategory, searchQuery, onlyWithoutAnalysis]);
 
     // Estatísticas
     const stats = useMemo(() => {
@@ -85,14 +99,28 @@ export const DocumentsView: React.FC<{ project: Project; onUpdateProject: (proje
             acc[doc.category || 'outros'] = (acc[doc.category || 'outros'] || 0) + 1;
             return acc;
         }, {} as Record<string, number>);
+        const withAnalysisCount = documentsWithMetadata.filter(d => d.analysis && d.analysis.trim() !== '').length;
+        const withoutAnalysisCount = documentsWithMetadata.length - withAnalysisCount;
 
         return {
             total: documentsWithMetadata.length,
             totalSize,
             categoryCounts,
-            avgSize: documentsWithMetadata.length > 0 ? totalSize / documentsWithMetadata.length : 0
+            avgSize: documentsWithMetadata.length > 0 ? totalSize / documentsWithMetadata.length : 0,
+            withAnalysisCount,
+            withoutAnalysisCount,
         };
     }, [documentsWithMetadata]);
+
+    const lastUpdatedText = useMemo(() => {
+        const date = project.updatedAt || project.createdAt;
+        if (!date) return null;
+        try {
+            return formatDistanceToNow(new Date(date), { addSuffix: true, locale: ptBR });
+        } catch {
+            return null;
+        }
+    }, [project.updatedAt, project.createdAt]);
 
     function detectCategory(name: string, content: string): DocumentWithMetadata['category'] {
         const lowerName = name.toLowerCase();
@@ -196,6 +224,7 @@ export const DocumentsView: React.FC<{ project: Project; onUpdateProject: (proje
             };
             onUpdateProject({ ...project, tasks: [...project.tasks, newTask] });
             handleSuccess(`Tarefa "${newTask.id}" criada com sucesso a partir do documento!`);
+            onNavigateToTab?.('tasks');
         } catch (error) {
             handleError(error, 'Gerar tarefa do documento');
         } finally {
@@ -267,12 +296,6 @@ export const DocumentsView: React.FC<{ project: Project; onUpdateProject: (proje
         handleSuccess('Documento atualizado com sucesso!');
     };
 
-    const formatFileSize = (bytes: number): string => {
-        if (bytes < 1024) return bytes + ' B';
-        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-        return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-    };
-
     return (
         <div className="space-y-6">
             {/* Documento de Especificação */}
@@ -286,61 +309,141 @@ export const DocumentsView: React.FC<{ project: Project; onUpdateProject: (proje
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
                         <h2 id="documents-section-heading" className="text-2xl md:text-3xl font-bold tracking-tight text-base-content">Documentos do Projeto</h2>
-                        <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
+                        <p className="text-base-content/70 text-sm mt-1">
                             Gerencie e analise documentos do projeto. <span className="font-medium">{stats.total} documento{stats.total !== 1 ? 's' : ''} • {formatFileSize(stats.totalSize)}</span>
                         </p>
+                        {lastUpdatedText && (
+                            <p className="text-xs text-base-content/50 mt-0.5" title="Última alteração do projeto">
+                                Atualizado {lastUpdatedText}
+                            </p>
+                        )}
                     </div>
                     <div className="flex items-center gap-2 flex-wrap">
                         <label className="rounded-full px-3 py-1.5 text-xs font-semibold bg-primary text-primary-content hover:bg-primary/90 transition-colors duration-300 flex items-center gap-1.5 cursor-pointer">
                             <Upload className="w-3.5 h-3.5" aria-hidden /> Carregar
-                            <input type="file" accept=".txt,.md,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar,.json,.csv,.xml,.jpg,.jpeg,.png,.gif,.webp,.svg" onChange={handleFileUpload} className="hidden" />
+                            <input ref={uploadInputRef} type="file" accept=".txt,.md,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar,.json,.csv,.xml,.jpg,.jpeg,.png,.gif,.webp,.svg" onChange={handleFileUpload} className="hidden" aria-label="Carregar documento" />
                         </label>
                     </div>
                 </div>
             </div>
-            <DocumentStatsCards categoryCounts={stats.categoryCounts} />
+
+            {/* Faixa de resumo: totais e indicadores */}
+            {stats.total > 0 && (
+                <div className="flex flex-wrap items-center gap-4 py-3 px-4 rounded-xl bg-base-200/50 border border-base-300">
+                    <span className="text-xs font-semibold text-base-content/70 uppercase tracking-widest">Resumo</span>
+                    <div className="flex flex-wrap items-center gap-4">
+                        <span className="inline-flex items-center gap-1.5 text-sm text-base-content">
+                            <FileText className="w-4 h-4 text-primary" aria-hidden />
+                            <strong>{stats.total}</strong> documento{stats.total !== 1 ? 's' : ''}
+                        </span>
+                        <span className="inline-flex items-center gap-1.5 text-sm text-base-content/80">
+                            <CheckCircle2 className="w-4 h-4 text-success" aria-hidden />
+                            <strong>{stats.withAnalysisCount}</strong> com análise
+                        </span>
+                        {stats.withoutAnalysisCount > 0 && (
+                            <span className="inline-flex items-center gap-1.5 text-sm text-base-content/80">
+                                <AlertCircle className="w-4 h-4 text-warning" aria-hidden />
+                                <strong>{stats.withoutAnalysisCount}</strong> sem análise
+                            </span>
+                        )}
+                        <span className="text-sm text-base-content/60">
+                            Total: <strong>{formatFileSize(stats.totalSize)}</strong>
+                        </span>
+                    </div>
+                </div>
+            )}
+
+            {/* Ações rápidas */}
+            {stats.total > 0 && (
+                <div className="flex flex-wrap items-center gap-2">
+                    {stats.withoutAnalysisCount > 0 && (
+                        <button
+                            type="button"
+                            onClick={() => setOnlyWithoutAnalysis(prev => !prev)}
+                            className={`btn btn-sm gap-1.5 ${onlyWithoutAnalysis ? 'btn-warning' : 'btn-ghost text-warning hover:bg-warning/10'}`}
+                            aria-pressed={onlyWithoutAnalysis}
+                            aria-label={onlyWithoutAnalysis ? 'Mostrar todos os documentos' : `Filtrar ${stats.withoutAnalysisCount} documento(s) sem análise`}
+                        >
+                            <AlertCircle className="w-4 h-4" aria-hidden />
+                            {onlyWithoutAnalysis ? 'Mostrar todos' : `Ver ${stats.withoutAnalysisCount} sem análise`}
+                        </button>
+                    )}
+                    {(searchQuery || selectedCategory !== 'all' || onlyWithoutAnalysis) && (
+                        <button type="button" onClick={() => { setSearchQuery(''); setSelectedCategory('all'); setOnlyWithoutAnalysis(false); }} className="btn btn-sm btn-ghost rounded-full" aria-label="Limpar filtros">
+                            Limpar filtros
+                        </button>
+                    )}
+                </div>
+            )}
+
+            <DocumentStatsCards
+                categoryCounts={stats.categoryCounts}
+                selectedCategory={selectedCategory}
+                onCategorySelect={setSelectedCategory}
+            />
             {stats.total > 0 && (
                 <div className="flex flex-wrap items-center gap-4">
                     <div className="relative flex-1 min-w-[300px]">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" aria-hidden />
-                        <input type="text" placeholder="Buscar documentos..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-10 pr-4 py-2.5 bg-slate-100 dark:bg-slate-800 border-none rounded-[12px] focus:ring-2 focus:ring-primary/50 text-sm transition-all dark:text-white placeholder:text-slate-500" aria-label="Buscar documentos" />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-base-content/40 pointer-events-none" aria-hidden />
+                        <input type="text" placeholder="Buscar documentos..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="input input-bordered w-full pl-10 bg-base-100 border-base-300 text-base-content placeholder:text-base-content/50 focus:outline-none focus:ring-2 focus:ring-primary/20 rounded-xl" aria-label="Buscar documentos" />
                     </div>
-                    <div className="flex gap-2 flex-wrap">
-                        <button type="button" onClick={() => setSelectedCategory('all')} className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors duration-300 flex items-center gap-1.5 ${selectedCategory === 'all' ? 'bg-primary text-primary-content hover:bg-primary/90' : 'text-base-content/70 hover:bg-base-200 hover:text-base-content'}`} aria-pressed={selectedCategory === 'all'} aria-label={`Filtrar: todas, ${stats.total} documento(s)`}>Todas ({stats.total})</button>
+                    <div className="flex gap-2 flex-wrap" role="group" aria-label="Filtrar documentos">
+                        <button type="button" onClick={() => setSelectedCategory('all')} className={`btn btn-sm rounded-full ${selectedCategory === 'all' ? 'btn-primary' : 'btn-ghost'}`} aria-pressed={selectedCategory === 'all'} aria-label={`Filtrar: todas, ${stats.total} documento(s)`}>Todas ({stats.total})</button>
                         {DOCUMENT_CATEGORIES.map(cat => {
                             const label = cat.label.replace(/^[^\s]+\s/, '');
                             const isSelected = selectedCategory === cat.id;
                             return (
-                                <button key={cat.id} type="button" onClick={() => setSelectedCategory(cat.id)} className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors duration-300 flex items-center gap-1.5 ${isSelected ? 'bg-primary text-primary-content hover:bg-primary/90' : 'text-base-content/70 hover:bg-base-200 hover:text-base-content'}`} aria-pressed={isSelected} aria-label={`Filtrar por ${label}, ${stats.categoryCounts[cat.id] || 0} documento(s)`}>{label} ({stats.categoryCounts[cat.id] || 0})</button>
+                                <button key={cat.id} type="button" onClick={() => setSelectedCategory(cat.id)} className={`btn btn-sm rounded-full ${isSelected ? 'btn-primary' : 'btn-ghost'}`} aria-pressed={isSelected} aria-label={`Filtrar por ${label}, ${stats.categoryCounts[cat.id] || 0} documento(s)`}>{label} ({stats.categoryCounts[cat.id] || 0})</button>
                             );
                         })}
+                        {stats.withoutAnalysisCount > 0 && (
+                            <button type="button" onClick={() => setOnlyWithoutAnalysis(prev => !prev)} className={`btn btn-sm rounded-full gap-1 ${onlyWithoutAnalysis ? 'btn-warning' : 'btn-ghost'}`} aria-pressed={onlyWithoutAnalysis} aria-label={onlyWithoutAnalysis ? 'Mostrar todos' : `Apenas sem análise (${stats.withoutAnalysisCount})`}>
+                                Sem análise ({stats.withoutAnalysisCount})
+                            </button>
+                        )}
+                        {(searchQuery || selectedCategory !== 'all' || onlyWithoutAnalysis) && (
+                            <button type="button" onClick={() => { setSearchQuery(''); setSelectedCategory('all'); setOnlyWithoutAnalysis(false); }} className="btn btn-sm btn-ghost rounded-full" aria-label="Limpar filtros">
+                                Limpar filtros
+                            </button>
+                        )}
                     </div>
                 </div>
             )}
 
             {/* Lista de Documentos */}
             {filteredDocuments.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {filteredDocuments.map(doc => (
-                        <DocumentCard
-                            key={doc.name}
-                            doc={doc}
-                            onView={() => handleViewDocument(doc)}
-                            onPreview={() => setViewingDocument(doc)}
-                            onAnalyze={() => handleAnalyze(doc)}
-                            onGenerate={() => handleGenerateTask(doc)}
-                            onEdit={() => handleEdit(doc)}
-                            onRemove={() => handleDelete(doc.name)}
-                            loadingState={loadingStates[doc.name] ?? null}
-                            formatFileSize={formatFileSize}
-                        />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6" role="list" aria-label="Lista de documentos do projeto">
+                    {filteredDocuments.map((doc, index) => (
+                        <div key={doc.name} role="listitem" aria-posinset={index + 1} aria-setsize={filteredDocuments.length}>
+                            <DocumentCard
+                                doc={doc}
+                                onView={() => handleViewDocument(doc)}
+                                onPreview={() => setViewingDocument(doc)}
+                                onAnalyze={() => handleAnalyze(doc)}
+                                onGenerate={() => handleGenerateTask(doc)}
+                                onEdit={() => handleEdit(doc)}
+                                onRemove={() => handleDelete(doc.name)}
+                                loadingState={loadingStates[doc.name] ?? null}
+                                formatFileSize={formatFileSize}
+                            />
+                        </div>
                     ))}
                 </div>
             ) : (
                 <EmptyState
-                    title={searchQuery || selectedCategory !== 'all' ? 'Nenhum documento encontrado' : 'Nenhum documento carregado'}
-                    description={searchQuery || selectedCategory !== 'all' ? 'Tente ajustar os filtros de busca' : 'Comece carregando seu primeiro documento'}
+                    title={searchQuery || selectedCategory !== 'all' || onlyWithoutAnalysis ? 'Nenhum documento encontrado' : 'Nenhum documento carregado'}
+                    description={searchQuery || selectedCategory !== 'all' || onlyWithoutAnalysis
+                        ? (onlyWithoutAnalysis && !searchQuery && selectedCategory === 'all'
+                            ? 'Nenhum documento sem análise no momento.'
+                            : 'Tente ajustar os filtros de busca.')
+                        : 'Comece carregando seu primeiro documento'}
                     icon="📄"
+                    action={!(searchQuery || selectedCategory !== 'all' || onlyWithoutAnalysis)
+                        ? { label: 'Carregar documento', onClick: () => uploadInputRef.current?.click(), variant: 'primary' }
+                        : undefined}
+                    secondaryAction={searchQuery || selectedCategory !== 'all' || onlyWithoutAnalysis
+                        ? { label: 'Limpar filtros', onClick: () => { setSearchQuery(''); setSelectedCategory('all'); setOnlyWithoutAnalysis(false); } }
+                        : undefined}
                 />
             )}
         </section>

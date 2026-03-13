@@ -1,10 +1,12 @@
 import React, { useMemo, useState, useCallback } from 'react';
+import { formatDistanceToNow } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 import { Project } from '../types';
 import { ConfirmDialog } from './common/ConfirmDialog';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { Badge } from './common/Badge';
 import { ProgressIndicator } from './common/ProgressIndicator';
-import { Plus, Search } from 'lucide-react';
+import { Plus, Search, AlertTriangle, Bug } from 'lucide-react';
 import { ProjectCard } from './common/ProjectCard';
 import { ConsolidatedMetrics } from './common/ConsolidatedMetrics';
 import { useErrorHandler } from '../hooks/useErrorHandler';
@@ -12,6 +14,21 @@ import { useProjectsStore } from '../store/projectsStore';
 import { EmptyState } from './common/EmptyState';
 import { isSupabaseAvailable } from '../services/supabaseService';
 import { CreateProjectModal } from './CreateProjectModal';
+import { calculateProjectMetrics } from '../hooks/useProjectMetrics';
+import { cn } from '../utils/cn';
+
+type QuickFilter = 'all' | 'withBugs' | 'needsAttention';
+
+/** Projeto precisa de atenção: 2+ bugs abertos ou taxa de sucesso < 70% (com testes executados). */
+function projectNeedsAttention(project: Project): boolean {
+  const m = calculateProjectMetrics(project);
+  return m.openVsClosedBugs.open >= 2 || (m.executedTestCases > 0 && m.testPassRate < 70);
+}
+
+/** Projeto tem pelo menos 1 bug aberto. */
+function projectHasOpenBugs(project: Project): boolean {
+  return calculateProjectMetrics(project).openVsClosedBugs.open > 0;
+}
 
 export const ProjectsDashboard: React.FC<{
     projects: Project[];
@@ -27,6 +44,7 @@ export const ProjectsDashboard: React.FC<{
         const v = localStorage.getItem('projectsSortBy');
         return v === 'updatedAt' ? 'updatedAt' : 'name';
     });
+    const [quickFilter, setQuickFilter] = useState<QuickFilter>('all');
     // Visualização sempre em grade - removido viewMode
     // Ordenação fixa por nome - removido sortBy
     // Filtros removidos - removido selectedTags e showTagFilter
@@ -95,7 +113,7 @@ export const ProjectsDashboard: React.FC<{
         localStorage.setItem('projectsSortBy', value);
     }, []);
 
-    const filteredProjects = useMemo(() => {
+    const sortedProjects = useMemo(() => {
         const list = [...projects];
         if (sortBy === 'name') {
             return list.sort((a, b) => a.name.localeCompare(b.name));
@@ -106,6 +124,33 @@ export const ProjectsDashboard: React.FC<{
             return bDate.localeCompare(aDate);
         });
     }, [projects, sortBy]);
+
+    const filteredProjects = useMemo(() => {
+        if (quickFilter === 'withBugs') return sortedProjects.filter(projectHasOpenBugs);
+        if (quickFilter === 'needsAttention') return sortedProjects.filter(projectNeedsAttention);
+        return sortedProjects;
+    }, [sortedProjects, quickFilter]);
+
+    const lastActivity = useMemo(() => {
+        if (projects.length === 0) return null;
+        const dates = projects.map(p => new Date(p.updatedAt || p.createdAt || 0).getTime());
+        return new Date(Math.max(...dates));
+    }, [projects]);
+
+    const lastActivityText = useMemo(() => {
+        if (!lastActivity) return null;
+        try {
+            return formatDistanceToNow(lastActivity, { addSuffix: true, locale: ptBR });
+        } catch {
+            return null;
+        }
+    }, [lastActivity]);
+
+    const projectsNeedingAttention = useMemo(
+        () => projects.filter(projectNeedsAttention),
+        [projects]
+    );
+    const projectsWithBugs = useMemo(() => projects.filter(projectHasOpenBugs), [projects]);
 
 
     return (
@@ -154,6 +199,33 @@ export const ProjectsDashboard: React.FC<{
                         <p className="text-sm text-base-content/70 max-w-2xl">
                             Crie, organize e acompanhe o QA por projeto — templates, métricas e integrações opcionais quando fizer sentido.
                         </p>
+                        {/* Indicadores: última atividade + projetos com atenção */}
+                        {projects.length > 0 && (
+                            <div className="flex flex-wrap items-center gap-3 mt-3 text-sm">
+                                {lastActivityText && (
+                                    <span className="text-base-content/60" title="Última alteração em qualquer projeto">
+                                        Última atividade: {lastActivityText}
+                                    </span>
+                                )}
+                                {projectsNeedingAttention.length > 0 && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setQuickFilter(quickFilter === 'needsAttention' ? 'all' : 'needsAttention')}
+                                        className={cn(
+                                            'inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 font-medium transition-colors',
+                                            quickFilter === 'needsAttention'
+                                                ? 'bg-warning/20 text-warning border border-warning/40'
+                                                : 'bg-warning/10 text-warning-content border border-warning/20 hover:bg-warning/20'
+                                        )}
+                                        aria-pressed={quickFilter === 'needsAttention'}
+                                        aria-label={`${projectsNeedingAttention.length} projetos precisam de atenção. Clique para filtrar.`}
+                                    >
+                                        <AlertTriangle className="w-4 h-4" aria-hidden />
+                                        {projectsNeedingAttention.length} {projectsNeedingAttention.length === 1 ? 'projeto com atenção' : 'projetos com atenção'}
+                                    </button>
+                                )}
+                            </div>
+                        )}
                     </div>
 
                     <div className="flex flex-wrap items-center gap-2 justify-start lg:justify-end">
@@ -162,6 +234,82 @@ export const ProjectsDashboard: React.FC<{
                 </div>
 
                 {projects.length > 0 && <ConsolidatedMetrics projects={projects} />}
+
+                {/* Filtros rápidos */}
+                {projects.length > 1 && (
+                    <div className="flex flex-wrap items-center gap-2 mb-4" role="group" aria-label="Filtrar projetos">
+                        <button
+                            type="button"
+                            onClick={() => setQuickFilter('all')}
+                            className={cn(
+                                'btn btn-sm rounded-lg',
+                                quickFilter === 'all' ? 'btn-primary' : 'btn-ghost btn-outline'
+                            )}
+                            aria-pressed={quickFilter === 'all'}
+                        >
+                            Todos
+                        </button>
+                        {projectsWithBugs.length > 0 && (
+                            <button
+                                type="button"
+                                onClick={() => setQuickFilter(quickFilter === 'withBugs' ? 'all' : 'withBugs')}
+                                className={cn(
+                                    'btn btn-sm rounded-lg inline-flex items-center gap-1',
+                                    quickFilter === 'withBugs' ? 'btn-primary' : 'btn-ghost btn-outline'
+                                )}
+                                aria-pressed={quickFilter === 'withBugs'}
+                            >
+                                <Bug className="w-3.5 h-3.5" aria-hidden />
+                                Com bugs ({projectsWithBugs.length})
+                            </button>
+                        )}
+                        {projectsNeedingAttention.length > 0 && (
+                            <button
+                                type="button"
+                                onClick={() => setQuickFilter(quickFilter === 'needsAttention' ? 'all' : 'needsAttention')}
+                                className={cn(
+                                    'btn btn-sm rounded-lg inline-flex items-center gap-1',
+                                    quickFilter === 'needsAttention' ? 'btn-primary' : 'btn-ghost btn-outline'
+                                )}
+                                aria-pressed={quickFilter === 'needsAttention'}
+                            >
+                                <AlertTriangle className="w-3.5 h-3.5" aria-hidden />
+                                Precisa de atenção ({projectsNeedingAttention.length})
+                            </button>
+                        )}
+                    </div>
+                )}
+
+                {/* Card Precisa de atenção: lista de projetos em risco */}
+                {projects.length > 0 && projectsNeedingAttention.length > 0 && (
+                    <section
+                        className="mb-6 p-4 rounded-2xl bg-warning/10 border border-warning/30"
+                        aria-labelledby="needs-attention-heading"
+                    >
+                        <h2 id="needs-attention-heading" className="text-sm font-bold text-warning-content/90 uppercase tracking-widest flex items-center gap-2 mb-3">
+                            <AlertTriangle className="w-4 h-4" aria-hidden />
+                            Precisa de atenção
+                        </h2>
+                        <p className="text-sm text-base-content/80 mb-3">
+                            {projectsNeedingAttention.length === 1
+                                ? '1 projeto com bugs em destaque ou taxa de sucesso baixa.'
+                                : `${projectsNeedingAttention.length} projetos com bugs em destaque ou taxa de sucesso baixa.`}
+                        </p>
+                        <ul className="flex flex-wrap gap-2">
+                            {projectsNeedingAttention.map(p => (
+                                <li key={p.id}>
+                                    <button
+                                        type="button"
+                                        onClick={() => onSelectProject(p.id)}
+                                        className="text-left px-3 py-2 rounded-xl bg-base-100 border border-warning/20 hover:border-warning/50 hover:bg-warning/5 transition-colors text-sm font-medium text-base-content"
+                                    >
+                                        {p.name}
+                                    </button>
+                                </li>
+                            ))}
+                        </ul>
+                    </section>
+                )}
 
                 {supabaseLoadFailed && filteredProjects.length > 0 && !syncBannerDismissed && (
                     <div

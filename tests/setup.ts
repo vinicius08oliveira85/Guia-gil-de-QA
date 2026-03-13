@@ -1,8 +1,32 @@
+import React from 'react';
 import { afterEach, vi } from 'vitest';
 import { cleanup } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
 import 'fake-indexeddb/auto';
 import { DB_NAME, DB_VERSION, STORE_NAME } from '../utils/constants';
+
+// Mock framer-motion para evitar ReferenceError/IntersectionObserver em jsdom (SectionHeader, etc.)
+vi.mock('framer-motion', () => {
+  const createMotion = (tag: string) => {
+    const Comp = (props: Record<string, unknown>) => {
+      const { children, ...rest } = props;
+      return React.createElement(tag, rest, children);
+    };
+    Comp.displayName = `motion.${tag}`;
+    return Comp;
+  };
+  const motion = new Proxy({} as Record<string, React.ComponentType<Record<string, unknown>>>, {
+    get(_, key: string) {
+      const tag = key === 'svg' ? 'svg' : key;
+      return createMotion(tag);
+    },
+  });
+  return {
+    motion,
+    AnimatePresence: ({ children }: { children: React.ReactNode }) => React.createElement(React.Fragment, null, children),
+    useReducedMotion: () => true,
+  };
+});
 
 type IndexedDbStoreSpec = {
   dbName: string;

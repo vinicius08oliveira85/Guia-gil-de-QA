@@ -1,4 +1,5 @@
 import { ProjectDocument } from '../types';
+import { formatFileSize } from './attachmentService';
 
 const MAX_DOCUMENT_SIZE = 50 * 1024 * 1024; // 50MB
 
@@ -117,13 +118,7 @@ export const convertDocumentFileToProjectDocument = (docFile: DocumentFile): Pro
     };
 };
 
-export const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
-};
+export { formatFileSize };
 
 export const getFileIcon = (type: string, name: string): string => {
     if (type.startsWith('image/')) return '🖼️';

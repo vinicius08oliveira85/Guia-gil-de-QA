@@ -13,7 +13,7 @@ import { FilterBuilder } from './FilterBuilder';
 import { SearchBar } from './SearchBar';
 import { TestCard } from './TestCard';
 import { BulkActionsToolbar } from './BulkActionsToolbar';
-import { EmptyState } from './EmptyState';
+import { EmptyState } from '../common/EmptyState';
 import { ReportPreview } from './ReportPreview';
 import { ActionMenu } from './ActionMenu';
 
@@ -740,7 +740,7 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
               ) : (
                 <EmptyState
                   title="Nenhum teste encontrado"
-                  message="Não há testes reprovados que correspondam aos filtros aplicados."
+                  description="Não há testes reprovados que correspondam aos filtros aplicados."
                   suggestions={[
                     'Tente remover alguns filtros',
                     'Verifique se há testes reprovados no escopo selecionado',

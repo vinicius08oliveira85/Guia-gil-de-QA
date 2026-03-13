@@ -22,10 +22,10 @@ const CATEGORY_BADGE_CLASS: Record<string, string> = {
   requisitos: 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400',
   testes: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400',
   arquitetura: 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400',
-  outros: 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300',
+  outros: 'bg-base-200 text-base-content/70',
 };
 
-const defaultBadgeClass = 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300';
+const defaultBadgeClass = 'bg-base-200 text-base-content/70';
 
 export interface DocumentCardProps {
   doc: DocumentCardDoc;
@@ -65,28 +65,36 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
 
   return (
     <article
-      className="bg-white dark:bg-slate-800 rounded-[12px] p-6 soft-shadow border border-slate-100 dark:border-slate-700 hover-glow transition-all"
+      className="bg-base-100 rounded-xl p-6 shadow-sm border border-base-300 hover:shadow-md transition-all"
       aria-labelledby={`doc-title-${doc.name}`}
     >
       <div className="space-y-4">
         <div>
           <h3
             id={`doc-title-${doc.name}`}
-            className="font-bold text-slate-800 dark:text-white truncate"
+            className="font-bold text-base-content truncate"
             title={doc.name}
           >
             {doc.name}
           </h3>
-          <div className="flex gap-2 mt-2">
+          <div className="flex gap-2 mt-2 flex-wrap items-center">
             <span
               className={`px-2 py-0.5 text-[10px] font-bold rounded uppercase ${badgeClass}`}
             >
               {categoryLabel}
             </span>
+            {doc.analysis && doc.analysis.trim() !== '' && (
+              <span
+                className="px-2 py-0.5 text-[10px] font-semibold rounded bg-success/20 text-success dark:bg-success/30 dark:text-success"
+                title="Documento já analisado com IA"
+              >
+                Com análise
+              </span>
+            )}
           </div>
         </div>
-        <p className="text-xs text-slate-500 dark:text-slate-400">{metaText}</p>
-        <div className="grid grid-cols-6 gap-2 pt-4 border-t border-slate-50 dark:border-slate-700">
+        <p className="text-xs text-base-content/70">{metaText}</p>
+        <div className="grid grid-cols-6 gap-2 pt-4 border-t border-base-300">
           <button type="button" className={actionBtnClass} onClick={onView} aria-label="Ver documento">
             <div className="p-2 rounded-lg transition-colors duration-300 group-hover:bg-base-200">
               <Eye className="w-[18px] h-[18px] text-current" aria-hidden />
