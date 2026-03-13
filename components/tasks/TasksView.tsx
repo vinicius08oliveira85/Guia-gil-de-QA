@@ -7,7 +7,7 @@ import { Modal } from '../common/Modal';
 import { TaskForm } from './TaskForm';
 import { TestCaseEditorModal } from './TestCaseEditorModal';
 import { Button } from '../common/Button';
-import { Plus, Filter, Zap, AlertTriangle, X, Check, Link as LinkIcon, Clock, ClipboardList, CheckCircle, Star, List, Download } from 'lucide-react';
+import { Zap, AlertTriangle, X, Check, Link as LinkIcon, Clock, ClipboardList, CheckCircle, Star, List, Download } from 'lucide-react';
 import { logger } from '../../utils/logger';
 import { useProjectsStore } from '../../store/projectsStore';
 import { getFriendlyAIErrorMessage } from '../../utils/aiErrorMapper';
@@ -23,6 +23,10 @@ import { useLocalStorage } from '../../hooks/useLocalStorage';
 import { EmptyState } from '../common/EmptyState';
 import { getJiraConfig, syncTaskToJira, fetchJiraTaskFormDataByKey, updateSingleTaskFromJira } from '../../services/jiraService';
 import { GeneralIAAnalysisButton } from './GeneralIAAnalysisButton';
+import { TasksViewHeader } from './TasksViewHeader';
+import { TasksViewSearch } from './TasksViewSearch';
+import { TasksViewFiltersModalContent } from './TasksViewFiltersModal';
+import { TasksViewList } from './TasksViewList';
 import { generateGeneralIAAnalysis } from '../../services/ai/generalAnalysisService';
 import { FailedTestsReportModal } from './FailedTestsReportModal';
 import { useProjectMetrics } from '../../hooks/useProjectMetrics';
@@ -43,28 +47,6 @@ import {
     type TaskSortBy,
     type TaskGroupBy,
 } from './tasksViewHelpers';
-
-// Componente Helper para Chips de Filtro
-const FilterChip = ({ 
-    label, 
-    count, 
-    isActive, 
-    onClick 
-}: { label: string, count: number, isActive: boolean, onClick: () => void }) => (
-    <button
-        onClick={onClick}
-        className={`
-            inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-all border
-            ${isActive 
-                ? 'bg-primary text-primary-content border-primary shadow-sm' 
-                : 'bg-base-100 text-base-content/70 border-base-300 hover:border-primary/50 hover:text-base-content'
-            }
-        `}
-    >
-        {label}
-        <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${isActive ? 'bg-white/20' : 'bg-base-200'}`}>{count}</span>
-    </button>
-);
 
 export const TasksView: React.FC<{ 
     project: Project, 
@@ -1502,213 +1484,20 @@ export const TasksView: React.FC<{
         <>
         <Card hoverable={false} className="p-4 sm:p-6 lg:p-8">
             <div className="flex flex-col gap-6 mb-8">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
-                    <div className="flex-shrink-0 text-left">
-                        <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-base-content">Tarefas & Casos de Teste</h2>
-                        <p className="text-base-content/70 text-sm mt-1">Acompanhe o progresso das atividades e resultados de QA.</p>
-                    </div>
-                    <div className="flex flex-wrap items-center justify-start md:justify-end gap-2 w-full md:w-auto">
-                        {/* Botão Principal - Adicionar Tarefa */}
-                        <Button
-                            variant="default"
-                            size="sm"
-                            onClick={() => openTaskFormForNew()}
-                            disabled={isRunningGeneralAnalysis}
-                            title={isRunningGeneralAnalysis ? 'Conclua a análise em andamento' : undefined}
-                            className="rounded-full px-3 py-1.5 text-xs min-h-0 flex items-center gap-1.5 font-semibold flex-shrink-0 shadow-sm transition-all active:scale-95"
-                        >
-                            <Plus className="w-3.5 h-3.5" />
-                            <span>Adicionar Tarefa</span>
-                        </Button>
-                        
-                        {/* Botão de Análise IA */}
-                        <div className="flex-shrink-0">
-                            <GeneralIAAnalysisButton 
-                                onAnalyze={handleGeneralIAAnalysis}
-                                isAnalyzing={isRunningGeneralAnalysis}
-                                progress={analysisProgress}
-                            />
-                        </div>
-                        
-                        {/* Separador visual */}
-                        <div className="w-px h-8 bg-base-300 flex-shrink-0 hidden sm:block" />
-                        <div className="w-px h-8 bg-base-300 flex-shrink-0 hidden md:block" />
-                        
-                        {/* Botões Secundários */}
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setIsFiltersModalOpen(true)}
-                            disabled={isRunningGeneralAnalysis}
-                            title={isRunningGeneralAnalysis ? 'Conclua a análise em andamento' : undefined}
-                            className="rounded-full px-3 py-1.5 text-xs min-h-0 flex items-center gap-1.5 flex-shrink-0 hover:bg-base-200"
-                        >
-                            <Filter className="w-3.5 h-3.5" />
-                            <span>{`Filtros${activeFiltersCount > 0 ? ` (${activeFiltersCount})` : ''}`}</span>
-                        </Button>
-                    </div>
-                </div>
+                <TasksViewHeader
+                    onAddTask={() => openTaskFormForNew()}
+                    onOpenFilters={() => setIsFiltersModalOpen(true)}
+                    onAnalyze={handleGeneralIAAnalysis}
+                    isRunningGeneralAnalysis={isRunningGeneralAnalysis}
+                    analysisProgress={analysisProgress}
+                    activeFiltersCount={activeFiltersCount}
+                />
 
-                <div className="mb-6 lg:mb-8">
-                    <label 
-                        htmlFor="quick-task-search" 
-                        className="text-sm font-medium text-base-content/80 mb-2 flex items-center gap-2"
-                        title="Atalho: Ctrl+Shift+F (ou Cmd+Shift+F no Mac)"
-                    >
-                        <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
-                        Busca rápida por tarefa ou teste
-                    </label>
-                    <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-base-content/60">🔍</span>
-                        <input
-                            ref={searchInputRef}
-                            id="quick-task-search"
-                            type="search"
-                            inputMode="search"
-                            autoComplete="off"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            placeholder="Digite ID, título ou palavra-chave..."
-                            className="input input-bordered w-full pl-10 pr-12 py-3 h-auto min-h-[48px] bg-base-100 border-base-300 text-base-content placeholder:text-base-content/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all rounded-xl shadow-sm"
-                            title="Atalho: Ctrl+Shift+F (ou Cmd+Shift+F no Mac)"
-                            aria-label="Busca rápida por tarefa ou teste. Atalho: Ctrl+Shift+F"
-                        />
-                        {searchQuery && (
-                            <button
-                                type="button"
-                                onClick={() => setSearchQuery('')}
-                                className="absolute right-2 top-1/2 -translate-y-1/2 text-base-content/60 hover:text-base-content p-2 rounded-full hover:bg-base-200 focus:outline-none focus:ring-2 focus:ring-primary/20"
-                                aria-label="Limpar busca"
-                            >
-                                ✕
-                            </button>
-                        )}
-                    </div>
-                    <p className="text-xs text-base-content/70 mt-2">
-                        Filtre tarefas e casos instantaneamente sem precisar abrir o painel completo de filtros. Atalho: Ctrl+Shift+F.
-                    </p>
-                </div>
-
-                {(activeFiltersCount > 0 || searchQuery) && (
-                    <div className="flex flex-wrap items-center gap-2">
-                        {statusFilter.map((s) => (
-                            <span
-                                key={`status-${s}`}
-                                className="badge badge-primary badge-outline gap-1 pr-1 py-2 text-xs font-medium"
-                            >
-                                Status: {s}
-                                <button
-                                    type="button"
-                                    onClick={() => setStatusFilter((prev) => prev.filter((x) => x !== s))}
-                                    className="btn btn-ghost btn-xs btn-circle p-0 min-h-0 h-5 w-5 rounded-full hover:bg-primary/20"
-                                    aria-label={`Remover filtro Status: ${s}`}
-                                >
-                                    <X className="w-3 h-3" />
-                                </button>
-                            </span>
-                        ))}
-                        {priorityFilter.map((p) => (
-                            <span
-                                key={`priority-${p}`}
-                                className="badge badge-primary badge-outline gap-1 pr-1 py-2 text-xs font-medium"
-                            >
-                                Prioridade: {p}
-                                <button
-                                    type="button"
-                                    onClick={() => setPriorityFilter((prev) => prev.filter((x) => x !== p))}
-                                    className="btn btn-ghost btn-xs btn-circle p-0 min-h-0 h-5 w-5 rounded-full hover:bg-primary/20"
-                                    aria-label={`Remover filtro Prioridade: ${p}`}
-                                >
-                                    <X className="w-3 h-3" />
-                                </button>
-                            </span>
-                        ))}
-                        {typeFilter.map((t) => (
-                            <span
-                                key={`type-${t}`}
-                                className="badge badge-primary badge-outline gap-1 pr-1 py-2 text-xs font-medium"
-                            >
-                                Tipo: {t}
-                                <button
-                                    type="button"
-                                    onClick={() => setTypeFilter((prev) => prev.filter((x) => x !== t))}
-                                    className="btn btn-ghost btn-xs btn-circle p-0 min-h-0 h-5 w-5 rounded-full hover:bg-primary/20"
-                                    aria-label={`Remover filtro Tipo: ${t}`}
-                                >
-                                    <X className="w-3 h-3" />
-                                </button>
-                            </span>
-                        ))}
-                        {testStatusFilter.map((ts) => {
-                            const opt = TEST_STATUS_FILTER_OPTIONS.find((o) => o.value === ts);
-                            return (
-                                <span
-                                    key={`testStatus-${ts}`}
-                                    className="badge badge-primary badge-outline gap-1 pr-1 py-2 text-xs font-medium"
-                                >
-                                    Teste: {opt?.label ?? ts}
-                                    <button
-                                        type="button"
-                                        onClick={() => setTestStatusFilter((prev) => prev.filter((x) => x !== ts))}
-                                        className="btn btn-ghost btn-xs btn-circle p-0 min-h-0 h-5 w-5 rounded-full hover:bg-primary/20"
-                                        aria-label={`Remover filtro Teste: ${opt?.label ?? ts}`}
-                                    >
-                                        <X className="w-3 h-3" />
-                                    </button>
-                                </span>
-                            );
-                        })}
-                        {qualityFilter.map((q) => {
-                            const labels: Record<string, string> = {
-                                'with-bdd': 'Com BDD',
-                                'without-bdd': 'Sem BDD',
-                                'with-tests': 'Com Testes',
-                                'without-tests': 'Sem Testes',
-                                automated: 'Automatizados',
-                                manual: 'Manuais',
-                            };
-                            return (
-                                <span
-                                    key={`quality-${q}`}
-                                    className="badge badge-primary badge-outline gap-1 pr-1 py-2 text-xs font-medium"
-                                >
-                                    Qualidade: {labels[q] ?? q}
-                                    <button
-                                        type="button"
-                                        onClick={() => setQualityFilter((prev) => prev.filter((x) => x !== q))}
-                                        className="btn btn-ghost btn-xs btn-circle p-0 min-h-0 h-5 w-5 rounded-full hover:bg-primary/20"
-                                        aria-label={`Remover filtro Qualidade: ${labels[q] ?? q}`}
-                                    >
-                                        <X className="w-3 h-3" />
-                                    </button>
-                                </span>
-                            );
-                        })}
-                        {searchQuery && (
-                            <span className="badge badge-primary badge-outline gap-1 pr-1 py-2 text-xs font-medium">
-                                Busca: {searchQuery.length > 20 ? `${searchQuery.slice(0, 20)}…` : searchQuery}
-                                <button
-                                    type="button"
-                                    onClick={() => setSearchQuery('')}
-                                    className="btn btn-ghost btn-xs btn-circle p-0 min-h-0 h-5 w-5 rounded-full hover:bg-primary/20"
-                                    aria-label="Remover filtro de busca"
-                                >
-                                    <X className="w-3 h-3" />
-                                </button>
-                            </span>
-                        )}
-                        <button
-                            type="button"
-                            onClick={() => { clearAllFilters(); setIsFiltersModalOpen(false); }}
-                            className="btn btn-ghost btn-sm text-error hover:bg-error/10 text-xs font-medium"
-                        >
-                            <X className="w-3 h-3 mr-1" />
-                            Limpar todos
-                        </button>
-                    </div>
-                )}
+                <TasksViewSearch
+                    searchQuery={searchQuery}
+                    onSearchChange={setSearchQuery}
+                    searchInputRef={searchInputRef}
+                />
 
                 <motion.div
                     className="mb-6"
@@ -1726,107 +1515,45 @@ export const TasksView: React.FC<{
                     onClose={() => setIsFiltersModalOpen(false)}
                     title="Filtros"
                 >
-                    {activeFiltersCount > 0 && (
-                        <div className="flex justify-end mb-4">
-                            <button
-                                type="button"
-                                onClick={() => { clearAllFilters(); setIsFiltersModalOpen(false); }}
-                                className="text-xs text-error hover:text-error/80 font-medium flex items-center gap-1"
-                            >
-                                <X className="w-3 h-3" /> Limpar todos
-                            </button>
-                        </div>
-                    )}
-                    <div className="space-y-5">
-                            {/* Grupo: Status — todos os status do Jira quando existirem; senão A Fazer / Em Andamento / Concluído */}
-                            <div>
-                                <p className="text-xs font-semibold text-base-content/60 mb-2 uppercase tracking-wider">Status</p>
-                                <div className="flex flex-wrap gap-2">
-                                    {statusOptions.map(statusName => (
-                                        <FilterChip
-                                            key={statusName}
-                                            label={statusName}
-                                            count={counts.status(statusName)}
-                                            isActive={statusFilter.includes(statusName)}
-                                            onClick={() => setStatusFilter(prev => prev.includes(statusName) ? prev.filter(s => s !== statusName) : [...prev, statusName])}
-                                        />
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Grupo: Prioridade — nomes do Jira quando existirem; senão Baixa/Média/Alta/Urgente */}
-                            <div>
-                                <p className="text-xs font-semibold text-base-content/60 mb-2 uppercase tracking-wider">Prioridade</p>
-                                <div className="flex flex-wrap gap-2">
-                                    {priorityOptions.map(priorityName => (
-                                        <FilterChip
-                                            key={priorityName}
-                                            label={priorityName}
-                                            count={counts.priority(priorityName)}
-                                            isActive={priorityFilter.includes(priorityName)}
-                                            onClick={() => setPriorityFilter(prev => prev.includes(priorityName) ? prev.filter(p => p !== priorityName) : [...prev, priorityName])}
-                                        />
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Grupo: Tipo */}
-                            <div>
-                                <p className="text-xs font-semibold text-base-content/60 mb-2 uppercase tracking-wider">Tipo de Tarefa</p>
-                                <div className="flex flex-wrap gap-2">
-                                    {['Tarefa', 'Bug', 'Epic', 'História'].map(type => (
-                                        <FilterChip
-                                            key={type}
-                                            label={type}
-                                            count={counts.type(type)}
-                                            isActive={typeFilter.includes(type)}
-                                            onClick={() => setTypeFilter(prev => prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type])}
-                                        />
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Grupo: Status de Teste — alinhado à badge do card */}
-                            <div>
-                                <p className="text-xs font-semibold text-base-content/60 mb-2 uppercase tracking-wider">Status de Teste</p>
-                                <div className="flex flex-wrap gap-2">
-                                    {TEST_STATUS_FILTER_OPTIONS.map(({ value, label }) => (
-                                        <FilterChip
-                                            key={value}
-                                            label={label}
-                                            count={counts.testStatus(value)}
-                                            isActive={testStatusFilter.includes(value)}
-                                            onClick={() => setTestStatusFilter(prev => prev.includes(value) ? prev.filter(s => s !== value) : [...prev, value])}
-                                        />
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Grupo: Qualidade */}
-                            <div>
-                                <p className="text-xs font-semibold text-base-content/60 mb-2 uppercase tracking-wider">Estado de Qualidade</p>
-                                <div className="flex flex-wrap gap-2">
-                                    {[
-                                        { id: 'with-bdd', label: 'Com BDD' },
-                                        { id: 'without-bdd', label: 'Sem BDD' },
-                                        { id: 'with-tests', label: 'Com Testes' },
-                                        { id: 'without-tests', label: 'Sem Testes' },
-                                        { id: 'automated', label: 'Automatizados' },
-                                        { id: 'manual', label: 'Manuais' },
-                                    ].map(q => (
-                                        <FilterChip
-                                            key={q.id}
-                                            label={q.label}
-                                            count={counts.quality(q.id)}
-                                            isActive={qualityFilter.includes(q.id)}
-                                            onClick={() => setQualityFilter(prev => prev.includes(q.id) ? prev.filter(i => i !== q.id) : [...prev, q.id])}
-                                        />
-                                    ))}
-                                </div>
-                            </div>
-                    </div>
+                    <TasksViewFiltersModalContent
+                        statusOptions={statusOptions}
+                        priorityOptions={priorityOptions}
+                        counts={counts}
+                        statusFilter={statusFilter}
+                        setStatusFilter={setStatusFilter}
+                        priorityFilter={priorityFilter}
+                        setPriorityFilter={setPriorityFilter}
+                        typeFilter={typeFilter}
+                        setTypeFilter={setTypeFilter}
+                        testStatusFilter={testStatusFilter}
+                        setTestStatusFilter={setTestStatusFilter}
+                        qualityFilter={qualityFilter}
+                        setQualityFilter={setQualityFilter}
+                        activeFiltersCount={activeFiltersCount}
+                        onClearAll={() => { clearAllFilters(); setIsFiltersModalOpen(false); }}
+                    />
                 </Modal>
 
+                <TasksViewList
+                    statusFilter={statusFilter}
+                    setStatusFilter={setStatusFilter}
+                    priorityFilter={priorityFilter}
+                    setPriorityFilter={setPriorityFilter}
+                    typeFilter={typeFilter}
+                    setTypeFilter={setTypeFilter}
+                    testStatusFilter={testStatusFilter}
+                    setTestStatusFilter={setTestStatusFilter}
+                    qualityFilter={qualityFilter}
+                    setQualityFilter={setQualityFilter}
+                    searchQuery={searchQuery}
+                    setSearchQuery={setSearchQuery}
+                    activeFiltersCount={activeFiltersCount}
+                    clearAllFilters={clearAllFilters}
+                    onClearAndCloseFilters={() => { clearAllFilters(); setIsFiltersModalOpen(false); }}
+                    filteredCount={filteredTasks.length}
+                    totalCount={project.tasks.length}
+                    hasActiveFiltersOrSearch={activeFiltersCount > 0 || !!debouncedSearchQuery}
+                >
                 <div className="space-y-4 min-w-0">
                     <div className="flex flex-col gap-4">
                         {selectedTasks.size > 0 && (
@@ -1861,11 +1588,6 @@ export const TasksView: React.FC<{
                                 {generatingTestsTaskId && <span>Gerando casos de teste para {generatingTestsTaskId}...</span>}
                                 {generatingBddTaskId && <span>Gerando cenários BDD para {generatingBddTaskId}...</span>}
                             </div>
-                        )}
-                        {(activeFiltersCount > 0 || debouncedSearchQuery) && (
-                            <p className="text-sm text-base-content/70">
-                                Exibindo {filteredTasks.length} de {project.tasks.length} tarefas
-                            </p>
                         )}
                     </div>
 
@@ -2074,6 +1796,7 @@ export const TasksView: React.FC<{
                         />
                     )}
                 </div>
+                </TasksViewList>
             </div>
         </Card>
 

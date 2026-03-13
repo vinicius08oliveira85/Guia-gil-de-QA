@@ -195,6 +195,11 @@ Sem `VITE_SUPABASE_PROXY_URL` no build, o app em produção não usa o Supabase 
 - Se a tela exibir a mensagem **"Supabase não configurado. Defina SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY."**, confira se essas variáveis estão preenchidas para o ambiente do deploy e redeploy.
 - Se aparecer **timeout ou 504**: verifique no [Supabase Dashboard](https://supabase.com/dashboard) se o projeto está ativo (não pausado). Projetos free pausam após inatividade; reative e aguarde alguns segundos antes de tentar novamente (use o botão "Tentar novamente" na tela).
 
+## Segurança e rotação de chaves
+
+- **Pasta BD/**: A pasta `BD/` está no `.gitignore` e não deve ser commitada. Ela pode conter exports/backups com dados sensíveis (ex.: chaves Supabase em JSON).
+- **Se chaves foram expostas**: Se arquivos em `BD/` ou no histórico do Git contiverem chaves do Supabase (anon ou service_role), **revogue-as no painel do Supabase** (Project Settings → API) e crie novas chaves. Não commite novamente arquivos com chaves; use apenas variáveis de ambiente no servidor e no build.
+
 ## Escolhendo o Provedor de IA
 
 O aplicativo suporta múltiplos provedores de IA e escolhe automaticamente baseado nas variáveis de ambiente configuradas:

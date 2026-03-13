@@ -128,10 +128,11 @@ export function getTaskComparator(sortBy: TaskSortBy): (a: JiraTask, b: JiraTask
                 if (dateB !== dateA) return dateB - dateA;
                 return compareTasksById(a, b);
             }
-            case 'title':
+            case 'title': {
                 const cmp = (a.title ?? '').localeCompare(b.title ?? '', undefined, { sensitivity: 'base' });
                 if (cmp !== 0) return cmp;
                 return compareTasksById(a, b);
+            }
             default:
                 return compareTasksById(a, b);
         }

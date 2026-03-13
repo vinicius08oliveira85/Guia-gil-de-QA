@@ -1,4 +1,4 @@
-﻿# Dependencias e builds
+# Dependencias e builds
 node_modules/
 dist/
 coverage/
@@ -23,6 +23,9 @@ pnpm-debug.log*
 
 # Scripts locais (não devem ir para o repositório)
 configurar-v0-api-key.ps1
+
+# Dados locais / backups (podem conter chaves ou dados sensíveis)
+BD/
 
 # Sistema
 .DS_Store
