@@ -116,6 +116,12 @@ Nota: Apenas uma chave do Gemini é suportada; não há fallback. Remova variáv
 └── App.tsx          # Componente principal
 ```
 
+## Arquitetura (resumo)
+
+A aplicação é uma SPA React em que o roteamento é feito por estado: **Meus Projetos** (dashboard), **Projeto selecionado** (ProjectView com abas Dashboard, Tarefas, Documentos) e **Configurações**. O estado global é gerenciado com Zustand em `store/projectsStore.ts` (lista de projetos, projeto selecionado, carregamento e erros). A persistência usa **IndexedDB** (sempre) e **Supabase** (opcional) para sincronização na nuvem; variáveis de ambiente principais são as de IA (`VITE_OPENAI_API_KEY` ou `VITE_GEMINI_API_KEY`) e as de Supabase para produção (ver seção [Armazenamento](#armazenamento) e [Carregar projetos do Supabase](#carregar-projetos-do-supabase-em-produção)).
+
+Para decisões técnicas, padrões e detalhes da estrutura, consulte [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
 ## Testes
 
 O projeto inclui testes automatizados usando Vitest e Testing Library.

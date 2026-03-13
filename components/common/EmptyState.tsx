@@ -43,7 +43,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
 }) => {
   const wrapperClass = compact
     ? 'flex flex-col items-center justify-center py-2 px-2 text-center'
-    : 'flex flex-col items-center justify-center py-16 px-4 text-center';
+    : 'flex flex-col items-center justify-center py-16 px-4 text-center max-w-xl mx-auto';
   const iconWrapperClass = compact ? 'mb-1' : 'mb-6';
   const iconSizeClass = compact ? 'text-2xl' : 'text-6xl';
   const titleWrapperClass = compact ? 'flex items-center gap-2 mb-0.5' : 'flex items-center gap-2 mb-3';

@@ -23,6 +23,7 @@ import {
   Plus,
   Sparkles,
   ChevronDown,
+  X,
 } from 'lucide-react';
 import { generateProjectFullAnalysis, appendProjectFullAnalysis } from '../../services/ai/projectFullAnalysisService';
 import { ProjectAnalysesBoard } from './ProjectAnalysesBoard';
@@ -410,6 +411,34 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(({ project, on
                 <span>{isGeneratingAnalysis ? 'Gerando…' : 'Gerar análise IA'}</span>
               </button>
             </div>
+            {activeFiltersCount > 0 && (
+              <div className="flex flex-wrap gap-2 w-full md:w-auto">
+                {dashboardFilters.period && dashboardFilters.period !== 'all' && (
+                  <span className="inline-flex items-center gap-1 rounded-full pl-2.5 pr-1 py-1 text-xs bg-base-200 border border-base-300">
+                    Período: {dashboardFilters.period === 'month' ? 'Mês' : dashboardFilters.period === 'quarter' ? 'Trimestre' : 'Semana'}
+                    <button type="button" onClick={() => setDashboardFilters((prev) => ({ ...prev, period: 'all' }))} className="btn btn-ghost btn-xs rounded-full p-0.5" aria-label="Remover filtro período"><X className="w-3 h-3" /></button>
+                  </span>
+                )}
+                {(dashboardFilters.taskType ?? []).map((t) => (
+                  <span key={t} className="inline-flex items-center gap-1 rounded-full pl-2.5 pr-1 py-1 text-xs bg-base-200 border border-base-300">
+                    Tipo: {t}
+                    <button type="button" onClick={() => setDashboardFilters((prev) => ({ ...prev, taskType: prev.taskType?.filter((x) => x !== t) ?? [] }))} className="btn btn-ghost btn-xs rounded-full p-0.5" aria-label={`Remover filtro tipo ${t}`}><X className="w-3 h-3" /></button>
+                  </span>
+                ))}
+                {(dashboardFilters.testStatus ?? []).map((s) => (
+                  <span key={s} className="inline-flex items-center gap-1 rounded-full pl-2.5 pr-1 py-1 text-xs bg-base-200 border border-base-300">
+                    Status: {s === 'Not Run' ? 'Não executado' : s === 'Passed' ? 'Passou' : s === 'Failed' ? 'Falhou' : 'Bloqueado'}
+                    <button type="button" onClick={() => setDashboardFilters((prev) => ({ ...prev, testStatus: prev.testStatus?.filter((x) => x !== s) ?? [] }))} className="btn btn-ghost btn-xs rounded-full p-0.5" aria-label={`Remover filtro status ${s}`}><X className="w-3 h-3" /></button>
+                  </span>
+                ))}
+                {(dashboardFilters.phase ?? []).map((p) => (
+                  <span key={p} className="inline-flex items-center gap-1 rounded-full pl-2.5 pr-1 py-1 text-xs bg-base-200 border border-base-300">
+                    Fase: {p}
+                    <button type="button" onClick={() => setDashboardFilters((prev) => ({ ...prev, phase: prev.phase?.filter((x) => x !== p) ?? [] }))} className="btn btn-ghost btn-xs rounded-full p-0.5" aria-label={`Remover filtro fase ${p}`}><X className="w-3 h-3" /></button>
+                  </span>
+                ))}
+              </div>
+            )}
             {/* Em mobile: dropdown Ações */}
             <div className="relative md:hidden">
               <button

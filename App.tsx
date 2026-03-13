@@ -3,6 +3,7 @@ import React, { useState, useCallback, useMemo, useEffect, Suspense } from 'reac
 import { Toaster } from 'react-hot-toast';
 import { Project } from './types';
 import { Header } from './components/common/Header';
+import { OfflineBanner } from './components/common/OfflineBanner';
 import { Spinner } from './components/common/Spinner';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { SearchBar } from './components/common/SearchBar';
@@ -219,6 +220,12 @@ const App: React.FC = () => {
         }
     ]);
 
+    useEffect(() => {
+        const handler = () => setShowSearch(true);
+        window.addEventListener('open-global-search', handler);
+        return () => window.removeEventListener('open-global-search', handler);
+    }, []);
+
     const selectedProject = useMemo(() => {
         if (!selectedProjectId) return undefined;
         return projects.find(p => p.id === selectedProjectId);
@@ -233,8 +240,9 @@ const App: React.FC = () => {
 
     if (isLoading) {
         return (
-            <div className="min-h-screen flex justify-center items-center">
+            <div className="min-h-screen flex flex-col justify-center items-center gap-4 bg-base-100 text-base-content">
                 <Spinner />
+                <p className="text-base text-base-content/80">Carregando…</p>
             </div>
         );
     }
@@ -242,7 +250,7 @@ const App: React.FC = () => {
     return (
         <ErrorBoundary>
             <div className="min-h-screen font-sans text-text-primary">
-                <a href="#main-content" className="skip-link">
+                <a href="#main-content" className="skip-link" tabIndex={0}>
                     Pular para o conteúdo principal
                 </a>
                 <Toaster
@@ -277,6 +285,7 @@ const App: React.FC = () => {
                     showDashboardActions={isDashboard}
                     onLogoClick={handleGoToDashboard}
                 />
+                <OfflineBanner />
                 {showSearch && (
                     <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/30 backdrop-blur pt-20 p-4">
                         <div className="w-full max-w-2xl">
@@ -307,6 +316,23 @@ const App: React.FC = () => {
 
 
                 <main id="main-content">
+                    {storeError && (
+                        <div className="container mx-auto px-4 py-3">
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-3 rounded-lg bg-error/10 border border-error/30 text-error-content" role="alert">
+                                <span className="text-sm">
+                                    Não foi possível carregar os projetos. {storeError instanceof Error ? storeError.message : String(storeError)}
+                                </span>
+                                <button
+                                    type="button"
+                                    onClick={() => loadProjects()}
+                                    disabled={isLoading}
+                                    className="btn btn-sm btn-error btn-outline shrink-0"
+                                >
+                                    {isLoading ? 'Carregando…' : 'Tentar novamente'}
+                                </button>
+                            </div>
+                        </div>
+                    )}
                     {showSettings ? (
                         <Suspense fallback={<div className="container mx-auto p-8"><LoadingSkeleton variant="card" count={3} /></div>}>
                             <SettingsView 
@@ -320,6 +346,7 @@ const App: React.FC = () => {
                                 project={selectedProject} 
                                 onUpdateProject={handleUpdateProject}
                                 onBack={() => selectProject(null)}
+                                onDeleteProject={handleDeleteProject}
                             />
                         </Suspense>
                     ) : (

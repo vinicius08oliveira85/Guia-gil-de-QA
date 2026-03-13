@@ -291,8 +291,9 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
       logger.debug(`Criando projeto: ${name}`, 'ProjectsStore', { templateId });
       let newProject: Project;
       
+      const now = new Date().toISOString();
       if (templateId) {
-        newProject = createProjectFromTemplate(templateId, name, description);
+        newProject = { ...createProjectFromTemplate(templateId, name, description), createdAt: now, updatedAt: now };
       } else {
         newProject = {
           id: `proj-${Date.now()}`,
@@ -301,9 +302,11 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
           documents: [],
           tasks: [],
           phases: PHASE_NAMES.map(name => ({ name, status: 'Não Iniciado' })),
+          createdAt: now,
+          updatedAt: now,
         };
       }
-      
+
       const result = await addProject(newProject);
       set((state) => ({
         projects: [...state.projects, newProject],
@@ -392,7 +395,9 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
           });
         }
       }
-      
+
+      finalProject = { ...finalProject, updatedAt: new Date().toISOString() };
+
       const result = await updateProject(finalProject);
       set((state) => ({
         projects: state.projects.map((p) =>

@@ -48,6 +48,8 @@ describe('Testes de Integração End-to-End', () => {
         await mocks.mockIndexedDB.updateProject(project);
         return { savedToSupabase: true };
       });
+    vi.mocked(dbService.deleteProject)
+      .mockImplementation((projectId: string) => mocks.mockIndexedDB.deleteProject(projectId));
   });
 
   describe('3.1 Fluxo Completo: Criar → Editar → Navegar → Persistir', () => {
@@ -232,6 +234,40 @@ describe('Testes de Integração End-to-End', () => {
       expect(indexedDBProjects).toHaveLength(3);
       expect(indexedDBProjects.find(p => p.id === project1.id)?.tasks).toHaveLength(1);
       expect(indexedDBProjects.find(p => p.id === project2.id)?.tasks).toHaveLength(0);
+    });
+  });
+
+  describe('3.4 Fluxo: Excluir projeto a partir da tela do projeto', () => {
+    it('deve excluir projeto a partir da ProjectView e voltar para a lista', async () => {
+      const user = userEvent.setup();
+      const store = useProjectsStore.getState();
+
+      const project = createMockProject({ name: 'Projeto para Excluir', description: 'Será excluído' });
+      await mocks.mockIndexedDB.saveProject(project);
+      await store.loadProjects();
+      await waitForStoreState(state => state.projects.some(p => p.id === project.id));
+
+      store.selectProject(project.id);
+      render(<App />);
+
+      await waitFor(() => {
+        expect(screen.getByText(/Projeto para Excluir/i)).toBeInTheDocument();
+      });
+
+      const deleteButton = screen.getByRole('button', { name: /excluir projeto projeto para excluir/i });
+      await user.click(deleteButton);
+
+      const confirmButton = await screen.findByRole('button', { name: /sim, excluir/i });
+      await user.click(confirmButton);
+
+      await waitFor(() => {
+        expect(store.projects.some(p => p.id === project.id)).toBe(false);
+        expect(store.selectedProjectId).toBeNull();
+      });
+
+      await waitFor(() => {
+        expect(screen.queryByText(/Projeto para Excluir/i)).not.toBeInTheDocument();
+      });
     });
   });
 });

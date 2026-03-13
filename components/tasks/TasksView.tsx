@@ -1,6 +1,5 @@
 import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { useDebounceValue } from 'usehooks-ts';
 import { Project, JiraTask, BddScenario, TestCaseDetailLevel, TestCase, Comment, TaskTestStatus } from '../../types';
 import { getAIService } from '../../services/ai/aiServiceFactory';
 import { Card } from '../common/Card';
@@ -26,184 +25,23 @@ import { GeneralIAAnalysisButton } from './GeneralIAAnalysisButton';
 import { generateGeneralIAAnalysis } from '../../services/ai/generalAnalysisService';
 import { FailedTestsReportModal } from './FailedTestsReportModal';
 import { useProjectMetrics } from '../../hooks/useProjectMetrics';
+import { useTaskFilters } from '../../hooks/useTaskFilters';
 import { GlassIndicatorCards } from '../dashboard/GlassIndicatorCards';
 import { getDisplayStatus } from '../../utils/taskHelpers';
-import { calculateTaskTestStatus } from '../../services/taskTestStatusService';
 import { normalizeExecutedStrategy } from '../../utils/testCaseMigration';
 import { FileExportModal } from '../common/FileExportModal';
-
-const TASK_ID_REGEX = /^([A-Z]+)-(\d+)/i;
-
-/** Monta texto de contexto dos anexos da tarefa para enriquecer prompts de IA (casos de teste, BDD, estratégias). */
-function buildAttachmentsContextForTask(task: JiraTask): string {
-  const names: string[] = [];
-  (task.attachments || []).forEach((a) => names.push(a.name));
-  (task.jiraAttachments || []).forEach((a) => names.push(a.filename));
-  if (names.length === 0) return '';
-  return `A tarefa possui os seguintes anexos (podem conter requisitos, especificações ou evidências relevantes): ${names.join(', ')}.`;
-}
-
-// Função para mapear status do Jira para status interno (mesma lógica de jiraService.ts)
-const mapJiraStatusToTaskStatus = (jiraStatus: string | undefined | null): 'To Do' | 'In Progress' | 'Done' => {
-    if (!jiraStatus) return 'To Do';
-    const status = jiraStatus.toLowerCase();
-    // Verificar status concluído (inglês e português)
-    if (status.includes('done') || status.includes('resolved') || status.includes('closed') || 
-        status.includes('concluído') || status.includes('concluido') || status.includes('finalizado') || 
-        status.includes('resolvido') || status.includes('fechado')) {
-        return 'Done';
-    }
-    // Verificar status em andamento (inglês e português)
-    if (status.includes('progress') || status.includes('in progress') || 
-        status.includes('em andamento') || status.includes('andamento') || 
-        status.includes('em desenvolvimento') || status.includes('desenvolvimento')) {
-        return 'In Progress';
-    }
-    return 'To Do';
-};
-
-/** Opções de status no filtro: todos os status do Jira quando existirem; senão os 3 em português. */
-const getStatusFilterOptions = (project: Project): string[] => {
-    const jiraStatuses = project?.settings?.jiraStatuses;
-    if (jiraStatuses && jiraStatuses.length > 0) {
-        return jiraStatuses.map(s => typeof s === 'string' ? s : s.name);
-    }
-    return ['A Fazer', 'Em Andamento', 'Concluído'];
-};
-
-/** Mapeamento do rótulo em português (fallback) para categoria interna. */
-const PT_STATUS_TO_CATEGORY: Record<string, 'To Do' | 'In Progress' | 'Done'> = {
-    'A Fazer': 'To Do',
-    'Em Andamento': 'In Progress',
-    'Concluído': 'Done',
-};
-
-/** Verifica se a tarefa corresponde ao nome de status (do Jira ou rótulo em português). */
-const taskMatchesStatusName = (task: JiraTask, statusName: string, project: Project): boolean => {
-    const display = getDisplayStatus(task);
-    if (display === statusName) return true;
-    const jiraStatuses = project?.settings?.jiraStatuses;
-    if (jiraStatuses && jiraStatuses.length > 0) {
-        const category = mapJiraStatusToTaskStatus(statusName);
-        return !task.jiraStatus && task.status === category;
-    }
-    const category = PT_STATUS_TO_CATEGORY[statusName];
-    return category !== undefined && task.status === category;
-};
-
-/** Mapeia nome de prioridade (Jira) para TaskPriority. Mesma lógica do jiraService. */
-const mapJiraPriorityToTaskPriority = (jiraPriority: string | undefined | null): 'Baixa' | 'Média' | 'Alta' | 'Urgente' => {
-    if (!jiraPriority) return 'Média';
-    const p = jiraPriority.toLowerCase();
-    if (p.includes('highest') || p.includes('urgent')) return 'Urgente';
-    if (p.includes('high')) return 'Alta';
-    if (p.includes('low') || p.includes('lowest')) return 'Baixa';
-    return 'Média';
-};
-
-/** Opções de prioridade no filtro: nomes do Jira quando existirem; senão Baixa/Média/Alta/Urgente. */
-const getPriorityFilterOptions = (project: Project): string[] => {
-    const jiraPriorities = project?.settings?.jiraPriorities;
-    if (jiraPriorities && jiraPriorities.length > 0) {
-        return jiraPriorities.map(p => typeof p === 'string' ? p : p.name);
-    }
-    return ['Baixa', 'Média', 'Alta', 'Urgente'];
-};
-
-/** Verifica se a tarefa corresponde ao nome de prioridade (do Jira ou rótulo em PT). */
-const taskMatchesPriorityName = (task: JiraTask, priorityName: string, project: Project): boolean => {
-    if (task.jiraPriority === priorityName) return true;
-    const jiraPriorities = project?.settings?.jiraPriorities;
-    if (jiraPriorities && jiraPriorities.length > 0) {
-        const category = mapJiraPriorityToTaskPriority(priorityName);
-        return !task.jiraPriority && (task.priority || 'Média') === category;
-    }
-    return (task.priority || 'Sem Prioridade') === priorityName;
-};
-
-/** Status de teste efetivo da tarefa (persistido ou calculado). Alinhado à badge do card. */
-const getEffectiveTestStatus = (task: JiraTask, allTasks: JiraTask[]): TaskTestStatus => {
-    return task.testStatus ?? calculateTaskTestStatus(task, allTasks);
-};
-
-/** Opções do filtro Status de Teste: valor + rótulo igual à badge. */
-const TEST_STATUS_FILTER_OPTIONS: { value: TaskTestStatus; label: string }[] = [
-    { value: 'testar', label: 'Testar' },
-    { value: 'testando', label: 'Testando' },
-    { value: 'pendente', label: 'Pendente' },
-    { value: 'teste_concluido', label: 'Teste Concluído' },
-];
-
-const parseTaskId = (taskId: string) => {
-    if (!taskId) {
-        return { prefix: '', number: Number.MAX_SAFE_INTEGER };
-    }
-    const match = taskId.match(TASK_ID_REGEX);
-    if (match) {
-        return {
-            prefix: match[1].toUpperCase(),
-            number: parseInt(match[2], 10)
-        };
-    }
-    return {
-        prefix: taskId.toUpperCase(),
-        number: Number.MAX_SAFE_INTEGER
-    };
-};
-
-const compareTasksById = (a: JiraTask, b: JiraTask) => {
-    const parsedA = parseTaskId(a.id);
-    const parsedB = parseTaskId(b.id);
-
-    if (parsedA.prefix !== parsedB.prefix) {
-        return parsedA.prefix.localeCompare(parsedB.prefix);
-    }
-
-    if (parsedA.number !== parsedB.number) {
-        return parsedA.number - parsedB.number;
-    }
-
-    return a.title.localeCompare(b.title);
-};
-
-type TaskSortBy = 'id' | 'status' | 'priority' | 'createdAt' | 'title';
-type TaskGroupBy = 'none' | 'status' | 'priority' | 'type';
-
-const STATUS_ORDER: Record<string, number> = { 'To Do': 0, 'Blocked': 1, 'In Progress': 2, 'Done': 3 };
-const PRIORITY_ORDER: Record<string, number> = { 'Urgente': 0, 'Alta': 1, 'Média': 2, 'Baixa': 3 };
-
-function getTaskComparator(sortBy: TaskSortBy): (a: JiraTask, b: JiraTask) => number {
-    return (a, b) => {
-        switch (sortBy) {
-            case 'id':
-                return compareTasksById(a, b);
-            case 'status': {
-                const orderA = STATUS_ORDER[a.status] ?? 99;
-                const orderB = STATUS_ORDER[b.status] ?? 99;
-                if (orderA !== orderB) return orderA - orderB;
-                return compareTasksById(a, b);
-            }
-            case 'priority': {
-                const orderA = PRIORITY_ORDER[a.priority ?? ''] ?? 99;
-                const orderB = PRIORITY_ORDER[b.priority ?? ''] ?? 99;
-                if (orderA !== orderB) return orderA - orderB;
-                return compareTasksById(a, b);
-            }
-            case 'createdAt': {
-                const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-                const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-                if (dateB !== dateA) return dateB - dateA; // mais recente primeiro
-                return compareTasksById(a, b);
-            }
-            case 'title':
-                const cmp = (a.title ?? '').localeCompare(b.title ?? '', undefined, { sensitivity: 'base' });
-                if (cmp !== 0) return cmp;
-                return compareTasksById(a, b);
-            default:
-                return compareTasksById(a, b);
-        }
-    };
-}
+import {
+    buildAttachmentsContextForTask,
+    taskMatchesStatusName,
+    taskMatchesPriorityName,
+    getEffectiveTestStatus,
+    TEST_STATUS_FILTER_OPTIONS,
+    getTaskComparator,
+    PT_STATUS_TO_CATEGORY,
+    mapJiraStatusToTaskStatus,
+    type TaskSortBy,
+    type TaskGroupBy,
+} from './tasksViewHelpers';
 
 // Componente Helper para Chips de Filtro
 const FilterChip = ({ 
@@ -247,20 +85,35 @@ export const TasksView: React.FC<{
     const [defaultParentId, setDefaultParentId] = useState<string | undefined>(undefined);
     const [isFiltersModalOpen, setIsFiltersModalOpen] = useState(false);
     
-    // Novos Estados de Filtro
     const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
     const [selectedTargetProjects, setSelectedTargetProjects] = useState<Set<string>>(new Set());
-    const [searchQuery, setSearchQuery] = useState('');
-    // Debounce search query to avoid expensive calculations on every keystroke
-    const [debouncedSearchQuery] = useDebounceValue(searchQuery, 300);
-    const [statusFilter, setStatusFilter] = useState<string[]>([]);
-    const [priorityFilter, setPriorityFilter] = useState<string[]>([]);
-    const [typeFilter, setTypeFilter] = useState<string[]>([]);
-    const [testStatusFilter, setTestStatusFilter] = useState<TaskTestStatus[]>([]);
-    const [qualityFilter, setQualityFilter] = useState<string[]>([]);
-    const [sortBy, setSortBy] = useState<TaskSortBy>('id');
     const [showExportTasksModal, setShowExportTasksModal] = useState(false);
-    const [groupBy, setGroupBy] = useState<TaskGroupBy>('none');
+
+    const {
+        searchQuery,
+        setSearchQuery,
+        debouncedSearchQuery,
+        statusFilter,
+        setStatusFilter,
+        priorityFilter,
+        setPriorityFilter,
+        typeFilter,
+        setTypeFilter,
+        testStatusFilter,
+        setTestStatusFilter,
+        qualityFilter,
+        setQualityFilter,
+        sortBy,
+        setSortBy,
+        groupBy,
+        setGroupBy,
+        filteredTasks,
+        counts,
+        activeFiltersCount,
+        clearAllFilters,
+        statusOptions,
+        priorityOptions,
+    } = useTaskFilters(project);
 
     const [failModalState, setFailModalState] = useState<{
         isOpen: boolean;
@@ -304,135 +157,6 @@ export const TasksView: React.FC<{
     const [modalTask, setModalTask] = useState<JiraTask | null>(null);
     const metrics = useProjectMetrics(project);
     const { projects: allProjects, updateProject: updateGlobalProject } = useProjectsStore();
-
-    // Lógica de Filtragem Avançada
-    const filteredTasks = useMemo(() => {
-        return project.tasks.filter(task => {
-            // 1. Busca Textual
-            if (debouncedSearchQuery) {
-                const query = debouncedSearchQuery.toLowerCase();
-                const matchesId = (task.id || '').toLowerCase().includes(query);
-                const matchesTitle = (task.title || '').toLowerCase().includes(query);
-                if (!matchesId && !matchesTitle) return false;
-            }
-
-            // 2. Status (por nome do Jira ou rótulo em português)
-            if (statusFilter.length > 0 && !statusFilter.some(name => taskMatchesStatusName(task, name, project))) return false;
-
-            // 3. Prioridade (por nome do Jira ou rótulo em PT)
-            if (priorityFilter.length > 0 && !priorityFilter.some(name => taskMatchesPriorityName(task, name, project))) return false;
-
-            // 4. Tipo
-            if (typeFilter.length > 0 && !typeFilter.includes(task.type)) return false;
-
-            // 5. Status de Teste (badge do card)
-            if (testStatusFilter.length > 0 && !testStatusFilter.includes(getEffectiveTestStatus(task, project.tasks))) return false;
-
-            // 6. Qualidade (BDD, Testes, Automação)
-            if (qualityFilter.length > 0) {
-                const hasBDD = task.bddScenarios && task.bddScenarios.length > 0;
-                const hasTestCases = task.testCases && task.testCases.length > 0;
-                const hasAutomated = task.testCases?.some(tc => tc.isAutomated);
-                const hasManual = task.testCases?.some(tc => !tc.isAutomated);
-
-                // Lógica OR dentro da categoria de qualidade
-                const matchesQuality = qualityFilter.some(filter => {
-                    switch (filter) {
-                        case 'with-bdd': return hasBDD;
-                        case 'without-bdd': return !hasBDD;
-                        case 'with-tests': return hasTestCases;
-                        case 'without-tests': return !hasTestCases;
-                        case 'automated': return hasAutomated;
-                        case 'manual': return hasManual;
-                        default: return false;
-                    }
-                });
-                if (!matchesQuality) return false;
-            }
-
-            return true;
-        });
-    }, [project, project.tasks, debouncedSearchQuery, statusFilter, priorityFilter, typeFilter, testStatusFilter, qualityFilter]);
-
-    // Contadores para os filtros
-    const counts = useMemo(() => {
-        const allTasks = project.tasks;
-        return {
-            status: (statusName: string) => allTasks.filter(t => taskMatchesStatusName(t, statusName, project)).length,
-            priority: (priorityName: string) => allTasks.filter(t => taskMatchesPriorityName(t, priorityName, project)).length,
-            type: (type: string) => allTasks.filter(t => t.type === type).length,
-            testStatus: (status: TaskTestStatus) => allTasks.filter(t => getEffectiveTestStatus(t, allTasks) === status).length,
-            quality: (type: string) => {
-                switch (type) {
-                    case 'with-bdd': return allTasks.filter(t => t.bddScenarios?.length).length;
-                    case 'without-bdd': return allTasks.filter(t => !t.bddScenarios?.length).length;
-                    case 'with-tests': return allTasks.filter(t => t.testCases?.length).length;
-                    case 'without-tests': return allTasks.filter(t => !t.testCases?.length).length;
-                    case 'automated': return allTasks.filter(t => t.testCases?.some(tc => tc.isAutomated)).length;
-                    case 'manual': return allTasks.filter(t => t.testCases?.some(tc => !tc.isAutomated)).length;
-                    default: return 0;
-                }
-            }
-        };
-    }, [project.tasks, project.settings?.jiraStatuses, project.settings?.jiraPriorities]);
-
-    const activeFiltersCount = statusFilter.length + priorityFilter.length + typeFilter.length + testStatusFilter.length + qualityFilter.length;
-
-    const clearAllFilters = () => {
-        setStatusFilter([]);
-        setPriorityFilter([]);
-        setTypeFilter([]);
-        setTestStatusFilter([]);
-        setQualityFilter([]);
-        setSearchQuery('');
-    };
-
-    const TASKS_FILTERS_STORAGE_KEY = 'tasks_filters';
-    const filtersRestoredForProjectRef = useRef<string | null>(null);
-
-    useEffect(() => {
-        if (!project?.id) return;
-        const key = `${TASKS_FILTERS_STORAGE_KEY}_${project.id}`;
-        try {
-            const raw = localStorage.getItem(key);
-            if (raw) {
-                const data = JSON.parse(raw) as Record<string, unknown>;
-                if (data && typeof data === 'object') {
-                    if (Array.isArray(data.statusFilter)) setStatusFilter(data.statusFilter as string[]);
-                    if (Array.isArray(data.priorityFilter)) setPriorityFilter(data.priorityFilter as string[]);
-                    if (Array.isArray(data.typeFilter)) setTypeFilter(data.typeFilter as string[]);
-                    if (Array.isArray(data.testStatusFilter)) setTestStatusFilter(data.testStatusFilter as TaskTestStatus[]);
-                    if (Array.isArray(data.qualityFilter)) setQualityFilter(data.qualityFilter as string[]);
-                    if (typeof data.searchQuery === 'string') setSearchQuery(data.searchQuery);
-                    if (typeof data.sortBy === 'string' && ['id', 'status', 'priority', 'createdAt', 'title'].includes(data.sortBy)) {
-                        setSortBy(data.sortBy as TaskSortBy);
-                    }
-                    if (typeof data.groupBy === 'string' && ['none', 'status', 'priority', 'type'].includes(data.groupBy)) {
-                        setGroupBy(data.groupBy as TaskGroupBy);
-                    }
-                }
-            }
-        } catch {
-            // ignorar dados inválidos
-        }
-        filtersRestoredForProjectRef.current = project.id;
-    }, [project?.id]);
-
-    useEffect(() => {
-        if (!project?.id || filtersRestoredForProjectRef.current !== project.id) return;
-        const key = `${TASKS_FILTERS_STORAGE_KEY}_${project.id}`;
-        const payload = {
-            statusFilter,
-            priorityFilter,
-            typeFilter,
-            testStatusFilter,
-            qualityFilter,
-            searchQuery,
-            sortBy,
-            groupBy,
-        };
-        localStorage.setItem(key, JSON.stringify(payload));
-    }, [project?.id, statusFilter, priorityFilter, typeFilter, testStatusFilter, qualityFilter, searchQuery, sortBy, groupBy]);
 
     // Função helper para adicionar timeout às chamadas de IA
     const withTimeout = <T,>(promise: Promise<T>, timeoutMs: number = 60000): Promise<T> => {
@@ -1531,7 +1255,6 @@ export const TasksView: React.FC<{
     const testExecutionRate = stats.totalTests > 0 ? Math.round((stats.executedTests / stats.totalTests) * 100) : 0;
     const automationRate = stats.totalTests > 0 ? Math.round((stats.automatedTests / stats.totalTests) * 100) : 0;
 
-    const statusOptions = useMemo(() => getStatusFilterOptions(project), [project]);
     const toDoLabel = useMemo(() => statusOptions.find(o => PT_STATUS_TO_CATEGORY[o] === 'To Do' || mapJiraStatusToTaskStatus(o) === 'To Do') ?? statusOptions[0], [statusOptions]);
     const inProgressLabel = useMemo(() => statusOptions.find(o => PT_STATUS_TO_CATEGORY[o] === 'In Progress' || mapJiraStatusToTaskStatus(o) === 'In Progress') ?? statusOptions[1], [statusOptions]);
     const doneLabel = useMemo(() => statusOptions.find(o => PT_STATUS_TO_CATEGORY[o] === 'Done' || mapJiraStatusToTaskStatus(o) === 'Done') ?? statusOptions[2], [statusOptions]);
@@ -1721,12 +1444,19 @@ export const TasksView: React.FC<{
         handleSuccess('Tarefas vinculadas com sucesso!');
     };
 
-    const renderTaskTree = useCallback((tasks: TaskWithChildren[], level: number, startIndex: number = 0): React.ReactElement[] => {
+    const totalTaskCount = filteredTasks.length;
+    const renderTaskTree = useCallback((tasks: TaskWithChildren[], level: number, startIndex: number = 0, totalCount?: number): React.ReactElement[] => {
+        const total = totalCount ?? totalTaskCount;
         return tasks.map((task, index) => {
             const globalIndex = startIndex + index;
             return (
-                <JiraTaskItem
+                <div
                     key={task.id}
+                    role="listitem"
+                    aria-posinset={globalIndex + 1}
+                    aria-setsize={total}
+                >
+                <JiraTaskItem
                     task={task}
                     isSelected={selectedTasks.has(task.id)}
                     onToggleSelect={() => toggleTaskSelection(task.id)}
@@ -1765,11 +1495,12 @@ export const TasksView: React.FC<{
                     onOpenModal={setModalTask}
                     onToggleFavorite={() => handleToggleFavorite(task.id)}
                 >
-                    {task.children.length > 0 && renderTaskTree(task.children, level + 1, globalIndex + 1)}
+                    {task.children.length > 0 && renderTaskTree(task.children, level + 1, globalIndex + 1, total)}
                 </JiraTaskItem>
+                </div>
             );
         });
-    }, [selectedTasks, generatingTestsTaskId, generatingBddTaskId, generatingAllTaskId, syncingTaskId, updatingFromJiraTaskId, handleUpdateTaskFromJira, handleTestCaseStatusChange, handleToggleTestCaseAutomated, handleExecutedStrategyChange, handleTaskToolsChange, handleTestCaseToolsChange, handleStrategyExecutedChange, handleStrategyToolsChange, handleDeleteTask, handleGenerateTests, openTaskFormForNew, openTaskFormForEdit, handleGenerateBddScenarios, handleGenerateAll, handleSyncTaskToJira, handleSaveBddScenario, handleDeleteBddScenario, handleTaskStatusChange, handleAddComment, handleEditComment, handleDeleteComment, handleOpenTestCaseEditor, handleDeleteTestCase, handleDuplicateTestCase, project, onUpdateProject, toggleTaskSelection, handleToggleFavorite]);
+    }, [totalTaskCount, selectedTasks, generatingTestsTaskId, generatingBddTaskId, generatingAllTaskId, syncingTaskId, updatingFromJiraTaskId, handleUpdateTaskFromJira, handleTestCaseStatusChange, handleToggleTestCaseAutomated, handleExecutedStrategyChange, handleTaskToolsChange, handleTestCaseToolsChange, handleStrategyExecutedChange, handleStrategyToolsChange, handleDeleteTask, handleGenerateTests, openTaskFormForNew, openTaskFormForEdit, handleGenerateBddScenarios, handleGenerateAll, handleSyncTaskToJira, handleSaveBddScenario, handleDeleteBddScenario, handleTaskStatusChange, handleAddComment, handleEditComment, handleDeleteComment, handleOpenTestCaseEditor, handleDeleteTestCase, handleDuplicateTestCase, project, onUpdateProject, toggleTaskSelection, handleToggleFavorite]);
 
     return (
         <>
@@ -2011,7 +1742,7 @@ export const TasksView: React.FC<{
                             <div>
                                 <p className="text-xs font-semibold text-base-content/60 mb-2 uppercase tracking-wider">Status</p>
                                 <div className="flex flex-wrap gap-2">
-                                    {getStatusFilterOptions(project).map(statusName => (
+                                    {statusOptions.map(statusName => (
                                         <FilterChip
                                             key={statusName}
                                             label={statusName}
@@ -2027,7 +1758,7 @@ export const TasksView: React.FC<{
                             <div>
                                 <p className="text-xs font-semibold text-base-content/60 mb-2 uppercase tracking-wider">Prioridade</p>
                                 <div className="flex flex-wrap gap-2">
-                                    {getPriorityFilterOptions(project).map(priorityName => (
+                                    {priorityOptions.map(priorityName => (
                                         <FilterChip
                                             key={priorityName}
                                             label={priorityName}
@@ -2258,7 +1989,7 @@ export const TasksView: React.FC<{
                                                 <List className="w-4 h-4" aria-hidden />
                                                 {groupLabel}
                                             </h3>
-                                            <div className="space-y-1">
+                                            <div className="space-y-1" role="list" aria-label="Lista de tarefas">
                                                 {renderTaskTree(tasksInGroup, 0).map((taskElement, index) => (
                                                     <motion.div
                                                         key={taskElement.key ?? `grp-${groupLabel}-${index}`}
@@ -2281,7 +2012,7 @@ export const TasksView: React.FC<{
                                         <Star className="w-4 h-4 fill-amber-400 text-amber-400" aria-hidden />
                                         Favoritos
                                     </h3>
-                                    <div className="space-y-1">
+                                    <div className="space-y-1" role="list" aria-label="Lista de tarefas favoritas">
                                         {renderTaskTree(favoriteRoots, 0).map((taskElement, index) => (
                                             <motion.div
                                                 key={taskElement.key ?? `fav-${index}`}
@@ -2303,7 +2034,7 @@ export const TasksView: React.FC<{
                                     <List className="w-4 h-4" aria-hidden />
                                     Outras Tarefas
                                 </h3>
-                                <div className="space-y-1">
+                                <div className="space-y-1" role="list" aria-label="Lista de outras tarefas">
                                     {renderTaskTree(otherRoots, 0).map((taskElement, index) => (
                                         <motion.div
                                             key={taskElement.key ?? `other-${index}`}

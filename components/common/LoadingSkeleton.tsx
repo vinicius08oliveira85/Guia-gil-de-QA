@@ -15,7 +15,7 @@ export const LoadingSkeleton: React.FC<LoadingSkeletonProps> = ({
 }) => {
     const renderSkeleton = () => {
         const baseClasses = 'relative overflow-hidden rounded-lg';
-        const shimmerClasses = 'absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-shimmer';
+        const shimmerClasses = 'absolute inset-0 bg-gradient-to-r from-transparent via-base-content/5 to-transparent animate-shimmer';
         
         switch (variant) {
             case 'task':

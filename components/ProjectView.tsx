@@ -9,20 +9,31 @@ import { QADashboard } from './dashboard/QADashboard';
 import { Breadcrumbs } from './common/Breadcrumbs';
 import { PageTransition } from './common/PageTransition';
 import { SectionHeader } from './common/SectionHeader';
+import { ConfirmDialog } from './common/ConfirmDialog';
 import { useProjectsStore } from '../store/projectsStore';
 import { isSupabaseAvailable } from '../services/supabaseService';
 import { useAutoSave } from '../hooks/useAutoSave';
+import { useOnlineStatus } from '../hooks/useOnlineStatus';
 import toast from 'react-hot-toast';
 import { Spinner } from './common/Spinner';
+import { Trash2 } from 'lucide-react';
 
-export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project: Project) => void; onBack: () => void; }> = ({ project, onUpdateProject, onBack }) => {
+export const ProjectView: React.FC<{
+  project: Project;
+  onUpdateProject: (project: Project) => void;
+  onBack: () => void;
+  onDeleteProject?: (projectId: string) => void | Promise<void>;
+}> = ({ project, onUpdateProject, onBack, onDeleteProject }) => {
     const [activeTab, setActiveTab] = useState('dashboard');
     const [initialTaskId, setInitialTaskId] = useState<string | undefined>(undefined);
     const [isPrinting, setIsPrinting] = useState(false);
+    const [showDeleteProjectConfirm, setShowDeleteProjectConfirm] = useState(false);
+    const [isDeletingProject, setIsDeletingProject] = useState(false);
     const [isSavingToSupabase, setIsSavingToSupabase] = useState(false);
     const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
     const { saveProjectToSupabase, getSelectedProject, lastSaveToSupabase } = useProjectsStore();
     const supabaseAvailable = isSupabaseAvailable();
+    const isOnline = useOnlineStatus();
     
     // IMPORTANTE: Sempre usar o projeto mais recente do store em vez de apenas o prop
     // Isso garante que temos a versão mais atualizada, especialmente após sincronizações
@@ -266,9 +277,10 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                                     <button
                                         type="button"
                                         onClick={handleSaveToSupabase}
-                                        disabled={isSavingToSupabase}
+                                        disabled={isSavingToSupabase || !isOnline}
                                         className="btn btn-sm btn-outline btn-primary"
                                         aria-label="Sincronizar projeto com a nuvem"
+                                        title={!isOnline ? 'É necessário estar online para sincronizar com a nuvem.' : undefined}
                                     >
                                         {isSavingToSupabase ? (
                                             <>
@@ -298,7 +310,19 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                     className="max-w-4xl mb-4"
                     compact
                 />
-                
+                {onDeleteProject && (
+                    <div className="flex justify-end -mt-2 mb-4">
+                        <button
+                            type="button"
+                            onClick={() => setShowDeleteProjectConfirm(true)}
+                            className="btn btn-ghost btn-sm text-error hover:bg-error/10 gap-1.5"
+                            aria-label={`Excluir projeto ${currentProject.name}`}
+                        >
+                            <Trash2 className="w-4 h-4" aria-hidden />
+                            Excluir projeto
+                        </button>
+                    </div>
+                )}
                 <div className="border-b border-base-300 pb-3 relative">
                     {/* Indicadores de Scroll para Mobile */}
                     {canScrollLeft && (
@@ -310,7 +334,7 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
 
                     <nav
                         ref={tabsRef}
-                        className="tabs tabs-boxed overflow-x-auto w-full flex-nowrap scroll-smooth no-scrollbar"
+                        className="tabs tabs-boxed overflow-x-auto w-full flex-nowrap scroll-smooth no-scrollbar snap-x snap-mandatory"
                         aria-label="Navegação de abas"
                         role="tablist"
                     >
@@ -319,7 +343,7 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                                 key={tab.id}
                                 type="button"
                                 onClick={() => handleTabClick(tab.id)}
-                                className={`tab whitespace-nowrap flex-shrink-0 ${activeTab === tab.id ? 'tab-active' : ''}`}
+                                className={`tab whitespace-nowrap flex-shrink-0 snap-start ${activeTab === tab.id ? 'tab-active' : ''}`}
                                 id={`tab-${tab.id}`}
                                 role="tab"
                                 aria-selected={activeTab === tab.id}
@@ -366,6 +390,27 @@ export const ProjectView: React.FC<{ project: Project; onUpdateProject: (project
                     </PageTransition>
                 </div>
             </div>
+            {onDeleteProject && (
+                <ConfirmDialog
+                    isOpen={showDeleteProjectConfirm}
+                    onClose={() => setShowDeleteProjectConfirm(false)}
+                    onConfirm={async () => {
+                        setIsDeletingProject(true);
+                        try {
+                            await onDeleteProject(currentProject.id);
+                            setShowDeleteProjectConfirm(false);
+                        } finally {
+                            setIsDeletingProject(false);
+                        }
+                    }}
+                    title={`Excluir "${currentProject.name}"`}
+                    message="Você tem certeza que deseja excluir este projeto? Todos os dados associados (tarefas, documentos, análises) serão perdidos permanentemente. Esta ação não pode ser desfeita."
+                    confirmText="Sim, Excluir"
+                    cancelText="Cancelar"
+                    variant="danger"
+                    isLoading={isDeletingProject}
+                />
+            )}
             {isPrinting && <PrintableReport project={currentProject} metrics={metrics} />}
         </>
     );
