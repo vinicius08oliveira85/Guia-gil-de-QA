@@ -7,6 +7,7 @@ import { analyzeDocumentContent, generateTaskFromDocument } from '../services/ge
 import { Modal } from './common/Modal';
 import { useErrorHandler } from '../hooks/useErrorHandler';
 import { sanitizeHTML } from '../utils/sanitize';
+import { withTimeout } from '../utils/withTimeout';
 import { Badge } from './common/Badge';
 import { EmptyState } from './common/EmptyState';
 import { createDocumentFromFile, convertDocumentFileToProjectDocument } from '../utils/documentService';
@@ -27,15 +28,6 @@ interface DocumentWithMetadata extends ProjectDocument {
 }
 
 const DOCUMENT_AI_TIMEOUT_MS = 90_000;
-
-function withTimeout<T>(promise: Promise<T>, ms: number, message: string): Promise<T> {
-    return Promise.race([
-        promise,
-        new Promise<never>((_, reject) =>
-            setTimeout(() => reject(new Error(message)), ms)
-        ),
-    ]);
-}
 
 const DOCUMENT_CATEGORIES = [
     { id: 'requisitos', label: '📋 Requisitos', color: 'blue' },

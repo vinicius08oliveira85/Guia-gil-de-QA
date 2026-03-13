@@ -11,6 +11,7 @@ import { Plus, Filter, Zap, AlertTriangle, X, Check, Link as LinkIcon, Clock, Cl
 import { logger } from '../../utils/logger';
 import { useProjectsStore } from '../../store/projectsStore';
 import { getFriendlyAIErrorMessage } from '../../utils/aiErrorMapper';
+import { withTimeout } from '../../utils/withTimeout';
 import { JiraTaskItem, TaskWithChildren } from './JiraTaskItem';
 import { TaskDetailsModal } from './TaskDetailsModal';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
@@ -158,16 +159,6 @@ export const TasksView: React.FC<{
     const [modalTask, setModalTask] = useState<JiraTask | null>(null);
     const metrics = useProjectMetrics(project);
     const { projects: allProjects, updateProject: updateGlobalProject } = useProjectsStore();
-
-    // Função helper para adicionar timeout às chamadas de IA
-    const withTimeout = <T,>(promise: Promise<T>, timeoutMs: number = 60000): Promise<T> => {
-        return Promise.race([
-            promise,
-            new Promise<T>((_, reject) => 
-                setTimeout(() => reject(new Error(`Timeout: operação excedeu ${timeoutMs / 1000} segundos`)), timeoutMs)
-            )
-        ]);
-    };
 
     // Função helper para delay
     const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
