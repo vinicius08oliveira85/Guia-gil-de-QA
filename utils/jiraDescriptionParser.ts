@@ -6,6 +6,9 @@ import { marked } from 'marked';
 import { sanitizeHTML } from './sanitize';
 import { JiraContentSanitizer } from './jiraContentSanitizer';
 
+/** Profundidade máxima de recursão para conversão ADF — evita stack overflow com dados aninhados. */
+const MAX_ADF_DEPTH = 50;
+
 /** Converte texto simples (markdown-like) em HTML sanitizado, estilo Jira (parágrafos, listas, negrito). */
 function plainTextToHtml(text: string): string {
     const trimmed = text.trim();
@@ -144,7 +147,8 @@ export function parseJiraDescription(description: any): string {
  * @param jiraUrl URL base do Jira (opcional, para construir URLs de imagens)
  * @param jiraAttachments Array de anexos do Jira (opcional, para mapear imagens)
  */
-function adfNodeToHTML(node: ADFNode, jiraUrl?: string, jiraAttachments?: JiraAttachment[]): string {
+function adfNodeToHTML(node: ADFNode, jiraUrl?: string, jiraAttachments?: JiraAttachment[], depth = 0): string {
+    if (depth >= MAX_ADF_DEPTH) return '';
     if (node.text) {
         let text = escapeHTML(node.text);
         
@@ -174,7 +178,7 @@ function adfNodeToHTML(node: ADFNode, jiraUrl?: string, jiraAttachments?: JiraAt
     }
     
     if (node.content && Array.isArray(node.content)) {
-        const content = node.content.map(child => adfNodeToHTML(child, jiraUrl, jiraAttachments)).join('');
+        const content = node.content.map(child => adfNodeToHTML(child, jiraUrl, jiraAttachments, depth + 1)).join('');
         
         // Tratamento de tipos específicos
         switch (node.type) {
@@ -479,11 +483,13 @@ function processJiraImages(
 export function parseJiraDescriptionHTML(
     description: any,
     jiraUrl?: string,
-    jiraAttachments?: JiraAttachment[]
+    jiraAttachments?: JiraAttachment[],
+    depth = 0
 ): string {
     if (!description) {
         return '';
     }
+    if (depth >= MAX_ADF_DEPTH) return '';
     
     let html = '';
     
@@ -506,9 +512,9 @@ export function parseJiraDescriptionHTML(
         } else if (description.type) {
             html = sanitizeHTML(adfNodeToHTML(description, jiraUrl, jiraAttachments));
         } else if (description.content) {
-            return parseJiraDescriptionHTML(description.content, jiraUrl, jiraAttachments);
+            return parseJiraDescriptionHTML(description.content, jiraUrl, jiraAttachments, depth + 1);
         } else if (description.html) {
-            return parseJiraDescriptionHTML(description.html, jiraUrl, jiraAttachments);
+            return parseJiraDescriptionHTML(description.html, jiraUrl, jiraAttachments, depth + 1);
         } else if (description.text) {
             html = plainTextToHtml(description.text);
         }
