@@ -182,7 +182,9 @@ export const extractJiraComments = async (
             updatedAt: comment.updated,
             fromJira: true,
         }));
-    } else {
+    } else if (!issue.renderedFields?.comment && !issue.fields?.comment) {
+        // Só busca comentários se o campo não veio na resposta inicial (expand=renderedFields,comment)
+        // Quando o campo existe mas está vazio ([]), significa que a issue não tem comentários
         jiraComments = await getJiraIssueComments(config, issue.key, jiraAttachments);
     }
 

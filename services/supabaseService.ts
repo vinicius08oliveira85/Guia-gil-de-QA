@@ -235,12 +235,11 @@ const compressData = async (data: unknown): Promise<string> => {
             offset += chunk.length;
         }
 
-        // Construir string binária em chunks; spread de Uint8Array grande estoura a call stack
-        const CHUNK_SIZE = 8192;
+        // Construir string binária elemento a elemento para evitar STATUS_STACK_OVERFLOW
+        // String.fromCharCode.apply com arrays grandes pode overflow a pilha de argumentos do V8
         let binary = '';
-        for (let i = 0; i < combined.length; i += CHUNK_SIZE) {
-            const chunk = combined.subarray(i, Math.min(i + CHUNK_SIZE, combined.length));
-            binary += String.fromCharCode.apply(null, chunk as unknown as number[]);
+        for (let i = 0; i < combined.length; i++) {
+            binary += String.fromCharCode(combined[i]);
         }
         return btoa(binary);
     } catch (error) {

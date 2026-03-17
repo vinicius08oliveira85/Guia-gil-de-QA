@@ -376,7 +376,13 @@ const loadMultipleThroughSdk = async (taskKeys: string[]): Promise<Map<string, T
  * @param task - Tarefa para calcular o status
  * @param allTasks - Lista completa de tarefas do projeto (necessária para encontrar subtarefas de Epic/História)
  */
-export const calculateTaskTestStatus = (task: JiraTask, allTasks: JiraTask[] = []): TaskTestStatus => {
+export const calculateTaskTestStatus = (task: JiraTask, allTasks: JiraTask[] = [], _visited: Set<string> = new Set()): TaskTestStatus => {
+    // Guarda contra referências parentId circulares que causariam STATUS_STACK_OVERFLOW
+    if (_visited.has(task.id)) {
+        return 'pendente';
+    }
+    _visited.add(task.id);
+
     // Para Epic e História, verificar status das subtarefas
     if (task.type === 'Epic' || task.type === 'História') {
         const subtasks = allTasks.filter(t => t.parentId === task.id);
@@ -388,7 +394,7 @@ export const calculateTaskTestStatus = (task: JiraTask, allTasks: JiraTask[] = [
         
         // Calcular status de cada subtarefa recursivamente
         const subtaskStatuses = subtasks.map(subtask => 
-            calculateTaskTestStatus(subtask, allTasks)
+            calculateTaskTestStatus(subtask, allTasks, _visited)
         );
         
         // Se todas as subtarefas estão 'teste_concluido', retornar 'teste_concluido'

@@ -119,7 +119,13 @@ export const getDisplayPriorityLabel = (task: JiraTask, project?: ProjectWithJir
  * @param allTasks - Lista completa de tarefas do projeto (necessária para encontrar subtarefas de Epic/História)
  * @returns 'Concluído' ou 'Pendente'
  */
-export const getTestPhaseStatus = (task: JiraTask, allTasks: JiraTask[] = []): 'Concluído' | 'Pendente' => {
+export const getTestPhaseStatus = (task: JiraTask, allTasks: JiraTask[] = [], _visited: Set<string> = new Set()): 'Concluído' | 'Pendente' => {
+    // Guarda contra referências parentId circulares que causariam STATUS_STACK_OVERFLOW
+    if (_visited.has(task.id)) {
+        return 'Pendente';
+    }
+    _visited.add(task.id);
+
     // Para Epic e História, verificar status das subtarefas
     if (task.type === 'Epic' || task.type === 'História') {
         const subtasks = allTasks.filter(t => t.parentId === task.id);
@@ -131,7 +137,7 @@ export const getTestPhaseStatus = (task: JiraTask, allTasks: JiraTask[] = []): '
         
         // Verificar se todas as subtarefas retornam 'Concluído' recursivamente
         const allSubtasksCompleted = subtasks.every(subtask => 
-            getTestPhaseStatus(subtask, allTasks) === 'Concluído'
+            getTestPhaseStatus(subtask, allTasks, _visited) === 'Concluído'
         );
         
         return allSubtasksCompleted ? 'Concluído' : 'Pendente';

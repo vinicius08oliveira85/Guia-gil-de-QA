@@ -842,19 +842,26 @@ export const syncJiraProject = async (
     });
     
     // Criar Map dos status antes para validação
-    const statusMapAntes = new Map<string, TestCase['status']>();
+    // Usar objeto estruturado para evitar parsing de string com split('-'),
+    // pois IDs Jira como "GDPI-304" contêm hífen e quebrariam a extração
+    const statusMapAntes = new Map<string, { taskId: string; testCaseId: string; expectedStatus: TestCase['status'] }>();
     statusAntes.forEach(s => {
         if (s.testCaseId) {
-            statusMapAntes.set(`${s.taskId}-${s.testCaseId}`, s.status);
+            statusMapAntes.set(`${s.taskId}||${s.testCaseId}`, {
+                taskId: s.taskId,
+                testCaseId: s.testCaseId,
+                expectedStatus: s.status,
+            });
         }
     });
     
     // Verificar se algum status foi perdido e restaurar do originalTasksMap
     let statusPerdidos = 0;
     let statusRestaurados = 0;
-    statusMapAntes.forEach((expectedStatus, key) => {
-        const [taskId, testCaseId] = key.split('-');
-        const statusDepoisEncontrado = statusDepois.find(s => s.testCaseId && `${s.taskId}-${s.testCaseId}` === key);
+    statusMapAntes.forEach(({ taskId, testCaseId, expectedStatus }) => {
+        const statusDepoisEncontrado = statusDepois.find(
+            s => s.testCaseId && s.taskId === taskId && s.testCaseId === testCaseId
+        );
         
         if (!statusDepoisEncontrado || statusDepoisEncontrado.status !== expectedStatus) {
             statusPerdidos++;

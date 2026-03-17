@@ -190,7 +190,7 @@ export class GeminiService implements AIService {
          complexidade do teste e risco de falha.
       ` : '';
 
-    return `${documentContext}
+    const rawPrompt = `${documentContext}
       Você é um QA Sênior com mais de 10 anos de experiência em garantia de qualidade de software, 
       metodologias ágeis (Scrum, Kanban), e práticas de DevOps. Sua expertise inclui:
       - Testes funcionais, de integração, regressão, performance e segurança
@@ -314,6 +314,11 @@ export class GeminiService implements AIService {
       - Valores devem ser apropriados e realistas
       - Use português brasileiro em todas as descrições
     `;
+
+    const MAX_PROMPT_LENGTH = 28_000;
+    return rawPrompt.length > MAX_PROMPT_LENGTH
+      ? rawPrompt.slice(0, MAX_PROMPT_LENGTH) + '\n\n[... contexto truncado ...]'
+      : rawPrompt;
   }
 
   async generateTestCasesForTask(
