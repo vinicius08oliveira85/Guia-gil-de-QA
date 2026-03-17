@@ -39,27 +39,21 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({
   const [format, setFormat] = useState<ReportFormatOption>('text');
   const [generationDate, setGenerationDate] = useState<Date | null>(null);
   const [summarizing, setSummarizing] = useState(false);
+  const [isAISummarized, setIsAISummarized] = useState(false);
   const executedTestCases = useMemo(
     () => (task?.testCases || []).filter(testCase => testCase.status !== 'Not Run'),
     [task]
   );
 
-  useEffect(() => {
-    if (isOpen && task) {
-      const now = new Date();
-      setGenerationDate(now);
-      const opts = getReportGeneratorOptions(format);
-      const report = generateTestReport(task, now, opts);
-      setReportText(report);
-      setCopied(false);
-    } else {
-      setFormat('text');
-      setGenerationDate(null);
-    }
-  }, [isOpen, task]);
-
+  // Efeito único: ao fechar reseta estado; ao abrir/alterar formato gera relatório (não sobrescreve se já resumido com IA)
   useEffect(() => {
     if (!isOpen || !task) {
+      setFormat('text');
+      setGenerationDate(null);
+      setIsAISummarized(false);
+      return;
+    }
+    if (isAISummarized) {
       return;
     }
     const baseDate = generationDate ?? new Date();
@@ -70,7 +64,7 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({
     const report = generateTestReport(task, baseDate, opts);
     setReportText(report);
     setCopied(false);
-  }, [format, generationDate, isOpen, task]);
+  }, [format, generationDate, isOpen, task, isAISummarized]);
 
   const handleCopy = async () => {
     try {
@@ -118,6 +112,7 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({
     try {
       const summarized = await summarizeTestReport(reportText);
       setReportText(summarized);
+      setIsAISummarized(true);
       toast.success('Relatório resumido com IA.');
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Erro ao resumir com IA. Verifique a API key do Gemini em Configurações.';
@@ -207,7 +202,10 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({
                 <button
                   key={option.value}
                   type="button"
-                  onClick={() => setFormat(option.value)}
+                  onClick={() => {
+                    setFormat(option.value);
+                    setIsAISummarized(false);
+                  }}
                   role="button"
                   aria-pressed={isSelected}
                   aria-label={`${option.label}: ${option.description}`}

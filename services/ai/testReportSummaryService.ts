@@ -1,6 +1,9 @@
 import { callGeminiWithRetry } from './geminiApiWrapper';
 import { logger } from '../../utils/logger';
 
+/** Limite de caracteres do relatório enviado à IA (evita payload excessivo e stack overflow no cliente). */
+const MAX_REPORT_LENGTH = 15_000;
+
 /**
  * Gera uma versão resumida do registro de testes usando IA.
  * Mantém: identificador da tarefa, título, casos executados com status e resultado encontrado.
@@ -10,6 +13,11 @@ export async function summarizeTestReport(reportText: string): Promise<string> {
   if (!reportText || !reportText.trim()) {
     return '';
   }
+
+  const truncated =
+    reportText.length > MAX_REPORT_LENGTH
+      ? reportText.slice(0, MAX_REPORT_LENGTH) + '\n\n[... texto truncado para análise ...]'
+      : reportText;
 
   const prompt = `Resuma o seguinte registro de testes de forma concisa.
 
@@ -22,7 +30,7 @@ Requisitos:
 
 REGISTRO ORIGINAL:
 ---
-${reportText}
+${truncated}
 ---
 
 Retorne apenas o texto resumido, sem introduções ou explicações.`;

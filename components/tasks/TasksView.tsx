@@ -142,6 +142,39 @@ export const TasksView: React.FC<{
     const metrics = useProjectMetrics(project);
     const { projects: allProjects, updateProject: updateGlobalProject } = useProjectsStore();
 
+    // Tarefa com árvore de children estável por referência (evita re-renders em cascata no TestReportModal)
+    const taskForModal = useMemo<TaskWithChildren | null>(() => {
+        if (!modalTask) return null;
+        const tasks = project.tasks;
+        const taskById = new Map(tasks.map((t) => [t.id, t]));
+        if (!taskById.has(modalTask.id)) return { ...modalTask, children: [] };
+        const visited = new Set<string>();
+        const queue: string[] = [modalTask.id];
+        visited.add(modalTask.id);
+        const order: string[] = [];
+        while (queue.length > 0) {
+            const id = queue.shift()!;
+            order.push(id);
+            const children = tasks.filter((c) => c.parentId === id);
+            for (const c of children) {
+                if (!visited.has(c.id)) {
+                    visited.add(c.id);
+                    queue.push(c.id);
+                }
+            }
+        }
+        const built = new Map<string, TaskWithChildren>();
+        for (let i = order.length - 1; i >= 0; i--) {
+            const id = order[i];
+            const t = taskById.get(id)!;
+            const children = tasks
+                .filter((c) => c.parentId === id)
+                .map((c) => built.get(c.id) ?? ({ ...c, children: [] } as TaskWithChildren));
+            built.set(id, { ...t, children } as TaskWithChildren);
+        }
+        return built.get(modalTask.id) ?? { ...modalTask, children: [] };
+    }, [project.tasks, modalTask]);
+
     // Função helper para delay
     const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -1860,75 +1893,39 @@ export const TasksView: React.FC<{
         />
 
         {/* Modal de Detalhes da Tarefa */}
-        {modalTask && (() => {
-            // Encontrar a tarefa completa com children (iterativo para evitar stack overflow em hierarquias profundas)
-            const findTaskWithChildren = (tasks: JiraTask[], rootId: string): TaskWithChildren | null => {
-                const taskById = new Map(tasks.map((t) => [t.id, t]));
-                if (!taskById.has(rootId)) return null;
-                const visited = new Set<string>();
-                const queue: string[] = [rootId];
-                visited.add(rootId);
-                const order: string[] = [];
-                while (queue.length > 0) {
-                    const id = queue.shift()!;
-                    order.push(id);
-                    const children = tasks.filter((c) => c.parentId === id);
-                    for (const c of children) {
-                        if (!visited.has(c.id)) {
-                            visited.add(c.id);
-                            queue.push(c.id);
-                        }
-                    }
-                }
-                const built = new Map<string, TaskWithChildren>();
-                for (let i = order.length - 1; i >= 0; i--) {
-                    const id = order[i];
-                    const t = taskById.get(id)!;
-                    const children = tasks
-                        .filter((c) => c.parentId === id)
-                        .map((c) => built.get(c.id) ?? ({ ...c, children: [] } as TaskWithChildren));
-                    built.set(id, { ...t, children } as TaskWithChildren);
-                }
-                return built.get(rootId) ?? null;
-            };
-
-            const taskWithChildren = findTaskWithChildren(project.tasks, modalTask.id);
-            const taskForModal: TaskWithChildren = taskWithChildren ?? { ...modalTask, children: [] };
-
-            return (
-                <TaskDetailsModal
-                    task={taskForModal}
-                    isOpen={!!modalTask}
-                    onClose={() => setModalTask(null)}
-                    onTestCaseStatusChange={(testCaseId, status) => handleTestCaseStatusChange(modalTask.id, testCaseId, status)}
-                    onToggleTestCaseAutomated={(testCaseId, isAutomated) => handleToggleTestCaseAutomated(modalTask.id, testCaseId, isAutomated)}
-                    onExecutedStrategyChange={(testCaseId, strategies) => handleExecutedStrategyChange(modalTask.id, testCaseId, strategies)}
-                    onTaskToolsChange={(tools) => handleTaskToolsChange(modalTask.id, tools)}
-                    onTestCaseToolsChange={(testCaseId, tools) => handleTestCaseToolsChange(modalTask.id, testCaseId, tools)}
-                    onStrategyExecutedChange={(strategyIndex, executed) => handleStrategyExecutedChange(modalTask.id, strategyIndex, executed)}
-                    onStrategyToolsChange={(strategyIndex, tools) => handleStrategyToolsChange(modalTask.id, strategyIndex, tools)}
-                    onGenerateTests={handleGenerateTests}
-                    isGenerating={generatingTestsTaskId === modalTask.id}
-                    onGenerateBddScenarios={handleGenerateBddScenarios}
-                    isGeneratingBdd={generatingBddTaskId === modalTask.id}
-                    onGenerateAll={handleGenerateAll}
-                    isGeneratingAll={generatingAllTaskId === modalTask.id}
-                    onSaveBddScenario={handleSaveBddScenario}
-                    onDeleteBddScenario={handleDeleteBddScenario}
-                    onAddComment={(content) => handleAddComment(modalTask.id, content)}
-                    onEditComment={(commentId, content) => handleEditComment(modalTask.id, commentId, content)}
-                    onDeleteComment={(commentId) => handleDeleteComment(modalTask.id, commentId)}
-                    onEditTestCase={handleOpenTestCaseEditor}
-                    onDeleteTestCase={handleDeleteTestCase}
-                    onDuplicateTestCase={handleDuplicateTestCase}
-                    project={project}
-                    onUpdateProject={onUpdateProject}
-                    onOpenTask={setModalTask}
-                    onUpdateFromJira={handleUpdateTaskFromJira}
-                    isUpdatingFromJira={modalTask ? updatingFromJiraTaskId === modalTask.id : false}
-                />
-            );
-        })()}
+        {modalTask && taskForModal && (
+            <TaskDetailsModal
+                task={taskForModal}
+                isOpen={!!modalTask}
+                onClose={() => setModalTask(null)}
+                onTestCaseStatusChange={(testCaseId, status) => handleTestCaseStatusChange(modalTask.id, testCaseId, status)}
+                onToggleTestCaseAutomated={(testCaseId, isAutomated) => handleToggleTestCaseAutomated(modalTask.id, testCaseId, isAutomated)}
+                onExecutedStrategyChange={(testCaseId, strategies) => handleExecutedStrategyChange(modalTask.id, testCaseId, strategies)}
+                onTaskToolsChange={(tools) => handleTaskToolsChange(modalTask.id, tools)}
+                onTestCaseToolsChange={(testCaseId, tools) => handleTestCaseToolsChange(modalTask.id, testCaseId, tools)}
+                onStrategyExecutedChange={(strategyIndex, executed) => handleStrategyExecutedChange(modalTask.id, strategyIndex, executed)}
+                onStrategyToolsChange={(strategyIndex, tools) => handleStrategyToolsChange(modalTask.id, strategyIndex, tools)}
+                onGenerateTests={handleGenerateTests}
+                isGenerating={generatingTestsTaskId === modalTask.id}
+                onGenerateBddScenarios={handleGenerateBddScenarios}
+                isGeneratingBdd={generatingBddTaskId === modalTask.id}
+                onGenerateAll={handleGenerateAll}
+                isGeneratingAll={generatingAllTaskId === modalTask.id}
+                onSaveBddScenario={handleSaveBddScenario}
+                onDeleteBddScenario={handleDeleteBddScenario}
+                onAddComment={(content) => handleAddComment(modalTask.id, content)}
+                onEditComment={(commentId, content) => handleEditComment(modalTask.id, commentId, content)}
+                onDeleteComment={(commentId) => handleDeleteComment(modalTask.id, commentId)}
+                onEditTestCase={handleOpenTestCaseEditor}
+                onDeleteTestCase={handleDeleteTestCase}
+                onDuplicateTestCase={handleDuplicateTestCase}
+                project={project}
+                onUpdateProject={onUpdateProject}
+                onOpenTask={setModalTask}
+                onUpdateFromJira={handleUpdateTaskFromJira}
+                isUpdatingFromJira={modalTask ? updatingFromJiraTaskId === modalTask.id : false}
+            />
+        )}
 
         </>
     );
