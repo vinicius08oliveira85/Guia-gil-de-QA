@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'lucide-react';
+import { Link, Globe, Mail, KeyRound } from 'lucide-react';
 import { JiraConfig, testJiraConnection, getJiraProjects, importJiraProject, saveJiraConfig, getJiraConfig, getJiraLastUrl, setJiraLastUrl, deleteJiraConfig, JiraProject } from '../../services/jiraService';
 import { Project } from '../../types';
 import { Modal } from '../common/Modal';
@@ -7,8 +7,10 @@ import { Spinner } from '../common/Spinner';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import { StatusBadge } from './StatusBadge';
 import { Card } from '../common/Card';
+import { Input } from '../common/Input';
 import { logger } from '../../utils/logger';
 import { cn } from '../../utils/cn';
+import toast from 'react-hot-toast';
 
 interface JiraSettingsTabProps {
     onProjectImported?: (project: Project) => void;
@@ -21,7 +23,16 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({ onProjectImpor
         apiToken: '',
     });
     const [isTesting, setIsTesting] = useState(false);
+    const [isSavingOnly, setIsSavingOnly] = useState(false);
     const [isConnected, setIsConnected] = useState(false);
+    const [fieldErrors, setFieldErrors] = useState({ url: '', email: '', apiToken: '' });
+
+    const validateUrl = (v: string) =>
+        v && !v.startsWith('https://') ? 'URL deve começar com https://' : '';
+    const validateEmail = (v: string) =>
+        v && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) ? 'E-mail inválido' : '';
+    const validateToken = (v: string) =>
+        v && v.length < 10 ? 'Token muito curto (mínimo 10 caracteres)' : '';
     const [jiraProjects, setJiraProjects] = useState<JiraProject[]>([]);
     const [isLoadingProjects, setIsLoadingProjects] = useState(false);
     const [selectedProjectKey, setSelectedProjectKey] = useState<string>('');
@@ -111,13 +122,45 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({ onProjectImpor
         }
     };
 
+    const validateAllFields = () => {
+        const errors = {
+            url: validateUrl(config.url),
+            email: validateEmail(config.email),
+            apiToken: validateToken(config.apiToken),
+        };
+        setFieldErrors(errors);
+        return !errors.url && !errors.email && !errors.apiToken;
+    };
+
+    const handleTestOnly = async () => {
+        if (!config.url || !config.email || !config.apiToken) {
+            handleError(new Error('Preencha todos os campos antes de testar'), 'Testar Conexão');
+            return;
+        }
+        setIsTesting(true);
+        try {
+            const ok = await testJiraConnection(config);
+            if (ok) {
+                toast.success('Conexão com Jira bem-sucedida!');
+            } else {
+                toast.error('Falha na conexão. Verifique suas credenciais.');
+            }
+        } catch (error) {
+            toast.error('Erro ao testar conexão com Jira.');
+            logger.error('Teste de conexão falhou', 'JiraSettingsTab', error);
+        } finally {
+            setIsTesting(false);
+        }
+    };
+
     const handleSaveConfig = async () => {
         if (!config.url || !config.email || !config.apiToken) {
             handleError(new Error('Preencha todos os campos'), 'Configuração do Jira');
             return;
         }
+        if (!validateAllFields()) return;
 
-        setIsTesting(true);
+        setIsSavingOnly(true);
         try {
             const isValid = await testJiraConnection(config);
             if (isValid) {
@@ -130,9 +173,9 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({ onProjectImpor
                 handleError(new Error('Não foi possível conectar ao Jira. Verifique suas credenciais.'), 'Teste de Conexão');
             }
         } catch (error) {
-            handleError(error instanceof Error ? error : new Error('Erro ao testar conexão'), 'Teste de Conexão');
+            handleError(error instanceof Error ? error : new Error('Erro ao salvar configuração'), 'Salvar Configuração');
         } finally {
-            setIsTesting(false);
+            setIsSavingOnly(false);
         }
     };
 
@@ -369,73 +412,66 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({ onProjectImpor
                 maxHeight="90vh"
             >
                 <div className="space-y-5 pb-2">
-                    <div>
-                        <label className="block text-sm font-medium text-base-content/70 mb-1">
-                            URL do Jira *
-                        </label>
-                        <input
-                            type="text"
-                            value={config.url}
-                            onChange={(e) => setConfig({ ...config, url: e.target.value })}
-                            onBlur={(e) => {
-                                const url = e.target.value?.trim() ?? '';
-                                if (url) setJiraLastUrl(url);
-                            }}
-                            placeholder="https://seu-dominio.atlassian.net"
-                            className="input input-bordered w-full bg-base-100 border-base-300 text-base-content focus:outline-none focus:border-primary"
-                        />
-                        <p className="text-xs text-base-content/70 mt-1">
-                            URL completa do seu Jira (sem barra no final)
-                        </p>
-                    </div>
+                    <Input
+                        label="URL do Jira *"
+                        type="text"
+                        value={config.url}
+                        onChange={(e) => setConfig({ ...config, url: e.target.value })}
+                        onBlur={(e) => {
+                            const url = e.target.value?.trim() ?? '';
+                            if (url) setJiraLastUrl(url);
+                            setFieldErrors(prev => ({ ...prev, url: validateUrl(url) }));
+                        }}
+                        placeholder="https://seu-dominio.atlassian.net"
+                        helperText="URL completa do seu Jira (sem barra no final)"
+                        error={fieldErrors.url}
+                        leftIcon={<Globe className="w-4 h-4" />}
+                    />
 
-                    <div>
-                        <label className="block text-sm font-medium text-base-content/70 mb-1">
-                            Email *
-                        </label>
-                        <input
-                            type="email"
-                            value={config.email}
-                            onChange={(e) => setConfig({ ...config, email: e.target.value })}
-                            placeholder="seu-email@exemplo.com"
-                            className="input input-bordered w-full bg-base-100 border-base-300 text-base-content focus:outline-none focus:border-primary"
-                        />
-                    </div>
+                    <Input
+                        label="Email *"
+                        type="email"
+                        value={config.email}
+                        onChange={(e) => setConfig({ ...config, email: e.target.value })}
+                        onBlur={() => setFieldErrors(prev => ({ ...prev, email: validateEmail(config.email) }))}
+                        placeholder="seu-email@exemplo.com"
+                        error={fieldErrors.email}
+                        leftIcon={<Mail className="w-4 h-4" />}
+                    />
 
-                    <div>
-                        <label className="block text-sm font-medium text-base-content/70 mb-1">
-                            API Token *
-                        </label>
-                        <input
-                            type="password"
-                            value={config.apiToken}
-                            onChange={(e) => setConfig({ ...config, apiToken: e.target.value })}
-                            placeholder="Seu API Token do Jira"
-                            className="input input-bordered w-full bg-base-100 border-base-300 text-base-content focus:outline-none focus:border-primary"
-                        />
-                        <p className="text-xs text-base-content/70 mt-1">
-                            <a
-                                href="https://id.atlassian.com/manage-profile/security/api-tokens"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-accent hover:text-accent-light underline"
-                            >
-                                Como gerar um API Token?
-                            </a>
-                        </p>
-                    </div>
+                    <Input
+                        label="API Token *"
+                        type="password"
+                        value={config.apiToken}
+                        onChange={(e) => setConfig({ ...config, apiToken: e.target.value })}
+                        onBlur={() => setFieldErrors(prev => ({ ...prev, apiToken: validateToken(config.apiToken) }))}
+                        placeholder="Seu API Token do Jira"
+                        error={fieldErrors.apiToken}
+                        leftIcon={<KeyRound className="w-4 h-4" />}
+                        helperText=""
+                    />
+                    <p className="text-xs text-base-content/70 -mt-3">
+                        <a
+                            href="https://id.atlassian.com/manage-profile/security/api-tokens"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary hover:underline"
+                        >
+                            Como gerar um API Token?
+                        </a>
+                    </p>
 
-                    <div className="flex justify-end gap-2 pt-4 border-t border-base-300 mt-6">
+                    <div className="flex flex-wrap justify-end gap-2 pt-4 border-t border-base-300 mt-6">
                         <button
                             onClick={() => setShowConfigModal(false)}
-                            className="btn btn-secondary"
+                            className="btn btn-ghost"
                         >
                             Cancelar
                         </button>
                         <button
-                            onClick={handleSaveConfig}
-                            disabled={isTesting}
-                            className="btn btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                            onClick={handleTestOnly}
+                            disabled={isTesting || isSavingOnly}
+                            className="btn btn-outline btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {isTesting ? (
                                 <>
@@ -443,7 +479,21 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({ onProjectImpor
                                     Testando...
                                 </>
                             ) : (
-                                'Salvar e Testar'
+                                'Testar Conexão'
+                            )}
+                        </button>
+                        <button
+                            onClick={handleSaveConfig}
+                            disabled={isTesting || isSavingOnly}
+                            className="btn btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {isSavingOnly ? (
+                                <>
+                                    <Spinner small />
+                                    Salvando...
+                                </>
+                            ) : (
+                                'Salvar'
                             )}
                         </button>
                     </div>

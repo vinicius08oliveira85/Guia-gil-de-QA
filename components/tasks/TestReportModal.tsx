@@ -253,7 +253,7 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({
           </div>
           {executedTestCases.length > 0 ? (
             <div className="rounded-xl border border-base-300 overflow-hidden bg-base-100">
-              <div className="max-h-32 overflow-y-auto divide-y divide-base-200">
+              <div className="max-h-32 overflow-y-auto custom-scrollbar divide-y divide-base-200">
                 {executedTestCases.map((testCase, index) => {
                   const statusData = getStatusBadge(testCase.status);
                   return (

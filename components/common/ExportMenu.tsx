@@ -1,4 +1,5 @@
 import React from 'react';
+import toast from 'react-hot-toast';
 import { Project } from '../../types';
 import {
   exportProjectToJSON,
@@ -21,6 +22,7 @@ export const ExportMenu: React.FC<ExportMenuProps> = ({ project, onClose }) => {
     try {
       const json = exportProjectToJSON(project);
       downloadFile(json, `${project.name}-export.json`, 'application/json');
+      toast.success('Projeto exportado como JSON com sucesso!');
       onClose();
     } catch (error) {
       handleError(error instanceof Error ? error : new Error('Erro ao exportar JSON'), 'Exportar JSON');
@@ -31,6 +33,7 @@ export const ExportMenu: React.FC<ExportMenuProps> = ({ project, onClose }) => {
     try {
       const csv = exportProjectToCSV(project);
       downloadFile(csv, `${project.name}-tasks.csv`, 'text/csv');
+      toast.success('Tarefas exportadas como CSV com sucesso!');
       onClose();
     } catch (error) {
       handleError(error instanceof Error ? error : new Error('Erro ao exportar CSV'), 'Exportar CSV');
@@ -41,6 +44,7 @@ export const ExportMenu: React.FC<ExportMenuProps> = ({ project, onClose }) => {
     try {
       const csv = exportTestCasesToCSV(project.tasks);
       downloadFile(csv, `${project.name}-testcases.csv`, 'text/csv');
+      toast.success('Casos de teste exportados como CSV com sucesso!');
       onClose();
     } catch (error) {
       handleError(error instanceof Error ? error : new Error('Erro ao exportar casos de teste'), 'Exportar CSV');
@@ -51,6 +55,7 @@ export const ExportMenu: React.FC<ExportMenuProps> = ({ project, onClose }) => {
     try {
       const report = generateProjectReport(project);
       downloadFile(report, `${project.name}-relatorio.md`, 'text/markdown');
+      toast.success('Relatório gerado em Markdown com sucesso!');
       onClose();
     } catch (error) {
       handleError(error instanceof Error ? error : new Error('Erro ao gerar relatório'), 'Gerar relatório');

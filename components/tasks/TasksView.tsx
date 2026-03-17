@@ -7,6 +7,7 @@ import { Modal } from '../common/Modal';
 import { TaskForm } from './TaskForm';
 import { TestCaseEditorModal } from './TestCaseEditorModal';
 import { Button } from '../common/Button';
+import { ConfirmDialog } from '../common/ConfirmDialog';
 import { Zap, AlertTriangle, X, Check, Link as LinkIcon, Clock, ClipboardList, CheckCircle, Star, List, Download } from 'lucide-react';
 import { logger } from '../../utils/logger';
 import { useProjectsStore } from '../../store/projectsStore';
@@ -71,6 +72,13 @@ export const TasksView: React.FC<{
     const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
     const [selectedTargetProjects, setSelectedTargetProjects] = useState<Set<string>>(new Set());
     const [showExportTasksModal, setShowExportTasksModal] = useState(false);
+
+    const [confirmDeleteState, setConfirmDeleteState] = useState<{
+        type: 'task' | 'testcase' | 'bdd';
+        taskId: string;
+        targetId?: string;
+        label?: string;
+    } | null>(null);
 
     const {
         searchQuery,
@@ -282,9 +290,12 @@ export const TasksView: React.FC<{
     }, [project, onUpdateProject]);
 
     const handleDeleteBddScenario = useCallback((taskId: string, scenarioId: string) => {
+        setConfirmDeleteState({ type: 'bdd', taskId, targetId: scenarioId, label: 'este cenário BDD' });
+    }, []);
+
+    const executeDeleteBddScenario = useCallback((taskId: string, scenarioId: string) => {
         const task = project.tasks.find(t => t.id === taskId);
         if (!task) return;
-
         const updatedScenarios = (task.bddScenarios || []).filter(sc => sc.id !== scenarioId);
         const updatedTask = { ...task, bddScenarios: updatedScenarios };
         const newTasks = project.tasks.map(t => t.id === taskId ? updatedTask : t);
@@ -554,10 +565,10 @@ export const TasksView: React.FC<{
             handleError(new Error('Tarefa não encontrada ao excluir o teste'), 'Excluir caso de teste');
             return;
         }
+        setConfirmDeleteState({ type: 'testcase', taskId, targetId: testCaseId, label: 'este caso de teste' });
+    }, [project, handleError]);
 
-        const confirmed = window.confirm('Deseja realmente excluir este caso de teste? Esta ação não pode ser desfeita.');
-        if (!confirmed) return;
-
+    const executeDeleteTestCase = useCallback((taskId: string, testCaseId: string) => {
         const updatedTasks = project.tasks.map(t => {
             if (t.id !== taskId) return t;
             const updatedCases = (t.testCases || []).filter(tc => tc.id !== testCaseId);
@@ -565,16 +576,13 @@ export const TasksView: React.FC<{
             propagateTaskUpdate(updatedTask);
             return updatedTask;
         });
-
         onUpdateProject({ ...project, tasks: updatedTasks });
         setTestCaseEditorRef(prev => {
-            if (prev && prev.taskId === taskId && prev.testCase.id === testCaseId) {
-                return null;
-            }
+            if (prev && prev.taskId === taskId && prev.testCase.id === testCaseId) return null;
             return prev;
         });
         handleSuccess('Caso de teste excluído.');
-    }, [project, onUpdateProject, handleSuccess, handleError]);
+    }, [project, onUpdateProject, handleSuccess]);
 
     const handleDuplicateTestCase = useCallback((taskId: string, testCase: TestCase) => {
         const task = project.tasks.find(t => t.id === taskId);
@@ -1040,18 +1048,30 @@ export const TasksView: React.FC<{
 
     const handleDeleteTask = useCallback((taskId: string) => {
         const taskToDelete = project.tasks.find(t => t.id === taskId);
+        const label = taskToDelete?.title ? `"${taskToDelete.title}"` : 'esta tarefa';
+        setConfirmDeleteState({ type: 'task', taskId, label });
+    }, [project]);
+
+    const executeDeleteTask = useCallback((taskId: string) => {
+        const taskToDelete = project.tasks.find(t => t.id === taskId);
         let tasksToKeep = project.tasks;
-        
         if (taskToDelete?.type === 'Epic') {
             tasksToKeep = tasksToKeep.map(t => t.parentId === taskId ? { ...t, parentId: undefined } : t);
         }
-        
         tasksToKeep = tasksToKeep.filter(t => t.id !== taskId);
-
         onUpdateProject({ ...project, tasks: tasksToKeep });
         handleSuccess('Tarefa excluída com sucesso!');
     }, [project, onUpdateProject, handleSuccess]);
     
+    const handleConfirmDelete = useCallback(() => {
+        if (!confirmDeleteState) return;
+        const { type, taskId, targetId } = confirmDeleteState;
+        if (type === 'task') executeDeleteTask(taskId);
+        else if (type === 'testcase' && targetId) executeDeleteTestCase(taskId, targetId);
+        else if (type === 'bdd' && targetId) executeDeleteBddScenario(taskId, targetId);
+        setConfirmDeleteState(null);
+    }, [confirmDeleteState, executeDeleteTask, executeDeleteTestCase, executeDeleteBddScenario]);
+
     const openTaskFormForEdit = (task: JiraTask) => {
         setEditingTask(task);
         setIsTaskFormOpen(true);
@@ -1564,6 +1584,19 @@ export const TasksView: React.FC<{
                         setQualityFilter={setQualityFilter}
                         activeFiltersCount={activeFiltersCount}
                         onClearAll={() => { clearAllFilters(); setIsFiltersModalOpen(false); }}
+                        projectId={project.id}
+                        sortBy={sortBy}
+                        groupBy={groupBy}
+                        onLoadPreset={(preset) => {
+                            setStatusFilter(preset.filters.statusFilter);
+                            setPriorityFilter(preset.filters.priorityFilter);
+                            setTypeFilter(preset.filters.typeFilter);
+                            setTestStatusFilter(preset.filters.testStatusFilter);
+                            setQualityFilter(preset.filters.qualityFilter);
+                            setSortBy(preset.filters.sortBy);
+                            setGroupBy(preset.filters.groupBy);
+                            setIsFiltersModalOpen(false);
+                        }}
                     />
                 </Modal>
 
@@ -1658,7 +1691,7 @@ export const TasksView: React.FC<{
                     Selecione os projetos para onde deseja vincular as {selectedTasks.size} tarefa(s) selecionada(s).
                     As tarefas serão adicionadas aos projetos selecionados e manterão sincronia de conteúdo.
                 </p>
-                <div className="max-h-60 overflow-y-auto border border-base-300 rounded-lg p-2">
+                <div className="max-h-60 overflow-y-auto custom-scrollbar border border-base-300 rounded-lg p-2">
                     {allProjects.filter(p => p.id !== project.id).map(p => (
                         <label key={p.id} className="flex items-center gap-2 p-2 hover:bg-base-200 rounded cursor-pointer">
                             <input
@@ -1890,6 +1923,23 @@ export const TasksView: React.FC<{
             isOpen={showFailedTestsReport}
             onClose={() => setShowFailedTestsReport(false)}
             project={project}
+        />
+
+        <ConfirmDialog
+            isOpen={!!confirmDeleteState}
+            onClose={() => setConfirmDeleteState(null)}
+            onConfirm={handleConfirmDelete}
+            title={
+                confirmDeleteState?.type === 'task'
+                    ? `Excluir tarefa`
+                    : confirmDeleteState?.type === 'testcase'
+                    ? 'Excluir caso de teste'
+                    : 'Excluir cenário BDD'
+            }
+            message={`Tem certeza que deseja excluir ${confirmDeleteState?.label ?? 'este item'}? Esta ação não pode ser desfeita.`}
+            confirmText="Excluir"
+            cancelText="Cancelar"
+            variant="danger"
         />
 
         {/* Modal de Detalhes da Tarefa */}

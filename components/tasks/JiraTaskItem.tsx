@@ -1755,7 +1755,7 @@ export const JiraTaskItem: React.FC<{
                                             </button>
                                             <ul
                                                 tabIndex={0}
-                                                className="dropdown-content menu bg-base-100 rounded-xl z-50 w-56 max-h-[min(70vh,24rem)] overflow-y-auto p-2 shadow-lg border border-base-300"
+                                                className="dropdown-content menu bg-base-100 rounded-xl z-50 w-56 max-h-[min(70vh,24rem)] overflow-y-auto custom-scrollbar p-2 shadow-lg border border-base-300"
                                                 role="menu"
                                                 onClick={(e) => e.stopPropagation()}
                                             >

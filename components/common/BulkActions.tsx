@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Project } from '../../types';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import { Modal } from './Modal';
+import { ConfirmDialog } from './ConfirmDialog';
 import { useProjectsStore } from '../../store/projectsStore';
 
 interface BulkActionsProps {
@@ -29,6 +30,8 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
   const [tagValue, setTagValue] = useState('');
   const [assigneeValue, setAssigneeValue] = useState<'Product' | 'QA' | 'Dev'>('QA');
   
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
   // Estados para criação de projeto
   const [showTaskSelectionModal, setShowTaskSelectionModal] = useState(false);
   const [showProjectNameModal, setShowProjectNameModal] = useState(false);
@@ -122,6 +125,10 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
   };
 
   const handleBulkDelete = () => {
+    setShowDeleteConfirm(true);
+  };
+
+  const executeDelete = () => {
     const idsSet = new Set(selectedTasksArray);
     let tasksToKeep = (project.tasks || []).map(t =>
       t.parentId && idsSet.has(t.parentId) ? { ...t, parentId: undefined } : t
@@ -129,6 +136,7 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
     tasksToKeep = tasksToKeep.filter(t => !idsSet.has(t.id));
     onUpdateProject({ ...project, tasks: tasksToKeep });
     handleSuccess(`${selectedTasksArray.length} tarefa(s) excluída(s)`);
+    setShowDeleteConfirm(false);
     onClearSelection();
   };
 
@@ -484,6 +492,16 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
           </div>
         </div>
       </Modal>
+      <ConfirmDialog
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={executeDelete}
+        title="Excluir tarefas selecionadas"
+        message={`Tem certeza que deseja excluir ${selectedTasksArray.length} tarefa(s)? Esta ação não pode ser desfeita.`}
+        confirmText="Excluir"
+        cancelText="Cancelar"
+        variant="danger"
+      />
     </>
   );
 };

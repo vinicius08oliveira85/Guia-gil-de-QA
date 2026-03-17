@@ -142,7 +142,7 @@ export const Modal: React.FC<ModalProps> = ({
                 </div>
 
                 {/* Content Area */}
-                <div className="flex-1 overflow-y-auto overscroll-contain p-6 scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-transparent hover:scrollbar-thumb-primary/50 transition-colors">
+                <div className="flex-1 overflow-y-auto overscroll-contain p-6 custom-scrollbar scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-transparent hover:scrollbar-thumb-primary/50 transition-colors">
                     {children}
                 </div>
 

@@ -2,6 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { Project } from '../types';
 import { Modal } from './common/Modal';
 import { Card } from './common/Card';
+import { Input } from './common/Input';
 import { ProjectTemplateSelector } from './common/ProjectTemplateSelector';
 import { FileImportModal } from './common/FileImportModal';
 import { getJiraConfig, getJiraProjects, importJiraProject, JiraProject } from '../services/jiraService';
@@ -229,24 +230,17 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
                                 </button>
                             </div>
                             <div className="grid gap-4">
-                                <label className="form-control w-full">
-                                    <div className="label">
-                                        <span className="label-text">Nome do Projeto</span>
-                                        {newName.length > 80 && (
-                                            <span className={`label-text-alt ${newName.length > 100 ? 'text-error' : 'text-base-content/60'}`}>{newName.length}/100</span>
-                                        )}
-                                    </div>
-                                    <input
-                                        id="proj-name"
-                                        type="text"
-                                        value={newName}
-                                        onChange={e => setNewName(e.target.value)}
-                                        className="input input-bordered w-full"
-                                        placeholder="Ex: E-commerce App"
-                                        maxLength={100}
-                                        aria-invalid={newName.length > 100}
-                                    />
-                                </label>
+                                <Input
+                                    id="proj-name"
+                                    label="Nome do Projeto *"
+                                    type="text"
+                                    value={newName}
+                                    onChange={e => setNewName(e.target.value)}
+                                    placeholder="Ex: E-commerce App"
+                                    maxLength={100}
+                                    error={newName.length > 100 ? 'O nome deve ter no máximo 100 caracteres' : undefined}
+                                    helperText={newName.length > 80 ? `${newName.length}/100 caracteres` : undefined}
+                                />
                                 <label className="form-control w-full">
                                     <div className="label">
                                         <span className="label-text">Descrição</span>

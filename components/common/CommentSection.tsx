@@ -3,6 +3,7 @@ import { Comment } from '../../types';
 import { format } from 'date-fns';
 import { logger } from '../../utils/logger';
 import { JiraRichContent } from '../tasks/JiraRichContent';
+import { ConfirmDialog } from './ConfirmDialog';
 
 interface CommentSectionProps {
   comments: Comment[];
@@ -22,6 +23,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
   const [newComment, setNewComment] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState('');
+  const [pendingDeleteCommentId, setPendingDeleteCommentId] = useState<string | null>(null);
 
   /**
    * Formata a data do comentário com validação
@@ -150,7 +152,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
                       )}
                       {onDeleteComment && (
                         <button
-                          onClick={() => onDeleteComment(comment.id)}
+                          onClick={() => setPendingDeleteCommentId(comment.id)}
                           className="text-sm text-red-700 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300"
                         >
                           Excluir
@@ -194,6 +196,22 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
           Nenhum comentário ainda. Seja o primeiro a comentar!
         </p>
       )}
+
+      <ConfirmDialog
+        isOpen={!!pendingDeleteCommentId}
+        onClose={() => setPendingDeleteCommentId(null)}
+        onConfirm={() => {
+          if (pendingDeleteCommentId && onDeleteComment) {
+            onDeleteComment(pendingDeleteCommentId);
+          }
+          setPendingDeleteCommentId(null);
+        }}
+        title="Excluir comentário"
+        message="Tem certeza que deseja excluir este comentário? Esta ação não pode ser desfeita."
+        confirmText="Excluir"
+        cancelText="Cancelar"
+        variant="danger"
+      />
     </div>
   );
 };

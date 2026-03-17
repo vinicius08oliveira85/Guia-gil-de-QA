@@ -6,13 +6,20 @@ import { Spinner } from '../common/Spinner';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import { StatusBadge } from './StatusBadge';
 import { Card } from '../common/Card';
+import { Input } from '../common/Input';
+import toast from 'react-hot-toast';
 
 export const GeminiApiKeysTab: React.FC = () => {
     const [apiKey, setApiKey] = useState('');
     const [isTesting, setIsTesting] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
     const [isConfigured, setIsConfigured] = useState(false);
     const [showConfigModal, setShowConfigModal] = useState(false);
+    const [keyError, setKeyError] = useState('');
     const { handleError, handleSuccess } = useErrorHandler();
+
+    const validateKey = (v: string) =>
+        v.trim().length > 0 && v.trim().length < 10 ? 'Chave muito curta (mínimo 10 caracteres)' : '';
 
     useEffect(() => {
         // Carregar configuração salva
@@ -28,39 +35,67 @@ export const GeminiApiKeysTab: React.FC = () => {
         }
     }, []);
 
+    const reloadManager = async () => {
+        try {
+            const { geminiApiKeyManager } = await import('../../services/ai/geminiApiKeyManager');
+            geminiApiKeyManager.reloadKeys();
+        } catch {
+            console.warn('Erro ao recarregar keys no manager');
+        }
+    };
+
+    const handleTestKey = async () => {
+        const key = apiKey.trim();
+        if (!key) {
+            toast.error('Preencha a chave API antes de testar.');
+            return;
+        }
+        if (key.length < 10) {
+            toast.error('Chave muito curta.');
+            return;
+        }
+        setIsTesting(true);
+        try {
+            const res = await fetch(
+                `https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(key)}`,
+                { signal: AbortSignal.timeout(10_000) }
+            );
+            if (res.ok) {
+                toast.success('Chave API válida e com acesso ao Gemini!');
+            } else {
+                const body = await res.json().catch(() => ({}));
+                const msg = body?.error?.message ?? `Resposta inesperada (status ${res.status})`;
+                toast.error(`Chave inválida: ${msg}`);
+            }
+        } catch {
+            toast.error('Falha ao testar a chave. Verifique sua conexão.');
+        } finally {
+            setIsTesting(false);
+        }
+    };
+
     const handleSaveConfig = async () => {
         if (!apiKey.trim()) {
             handleError(new Error('Preencha a chave API'), 'Configuração do Gemini');
             return;
         }
-
-        // Validar formato básico
         if (apiKey.trim().length < 10) {
             handleError(new Error('Chave API inválida. Verifique o formato da chave.'), 'Configuração do Gemini');
             return;
         }
 
-        setIsTesting(true);
+        setIsSaving(true);
         try {
             const config: GeminiConfig = { apiKey: apiKey.trim() };
             saveGeminiConfig(config);
-            
-            // Recarregar keys no manager
-            try {
-                const { geminiApiKeyManager } = await import('../../services/ai/geminiApiKeyManager');
-                geminiApiKeyManager.reloadKeys();
-            } catch (reloadError) {
-                // Se houver erro ao recarregar, apenas logar mas continuar
-                console.warn('Erro ao recarregar keys no manager:', reloadError);
-            }
-            
+            await reloadManager();
             setIsConfigured(true);
             setShowConfigModal(false);
             handleSuccess('Chave API do Gemini configurada com sucesso!');
         } catch (error) {
             handleError(error instanceof Error ? error : new Error('Erro ao salvar configuração'), 'Configuração do Gemini');
         } finally {
-            setIsTesting(false);
+            setIsSaving(false);
         }
     };
 
@@ -176,45 +211,55 @@ export const GeminiApiKeysTab: React.FC = () => {
                 maxHeight="90vh"
             >
                 <div className="space-y-5 pb-2">
-                    <div>
-                        <label className="block text-sm font-medium text-base-content/70 mb-1">
-                            Chave API do Gemini *
-                        </label>
-                        <input
-                            type="password"
-                            value={apiKey}
-                            onChange={(e) => setApiKey(e.target.value)}
-                            placeholder="Sua chave API do Gemini"
-                            className="input input-bordered w-full bg-base-100 border-base-300 text-base-content focus:outline-none focus:border-primary"
-                        />
-                        <p className="text-xs text-base-content/70 mt-1">
-                            <a
-                                href="https://makersuite.google.com/app/apikey"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-accent hover:text-accent-light underline"
-                            >
-                                Como obter uma chave API?
-                            </a>
-                        </p>
-                        <p className="text-xs text-base-content/70 mt-2">
-                            A chave será armazenada localmente no seu navegador e terá prioridade sobre variáveis de ambiente.
-                        </p>
-                    </div>
+                    <Input
+                        label="Chave API do Gemini *"
+                        type="password"
+                        value={apiKey}
+                        onChange={(e) => setApiKey(e.target.value)}
+                        onBlur={() => setKeyError(validateKey(apiKey))}
+                        placeholder="Sua chave API do Gemini"
+                        error={keyError}
+                        leftIcon={<Key className="w-4 h-4" />}
+                    />
+                    <p className="text-xs text-base-content/70 -mt-3">
+                        <a
+                            href="https://makersuite.google.com/app/apikey"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary hover:underline"
+                        >
+                            Como obter uma chave API?
+                        </a>
+                        {' '}— A chave é armazenada localmente no navegador.
+                    </p>
 
-                    <div className="flex justify-end gap-2 pt-4 border-t border-base-300 mt-6">
+                    <div className="flex flex-wrap justify-end gap-2 pt-4 border-t border-base-300 mt-6">
                         <button
                             onClick={() => setShowConfigModal(false)}
-                            className="btn btn-secondary"
+                            className="btn btn-ghost"
                         >
                             Cancelar
                         </button>
                         <button
-                            onClick={handleSaveConfig}
-                            disabled={isTesting || !apiKey.trim()}
-                            className="btn btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                            onClick={handleTestKey}
+                            disabled={isTesting || isSaving || !apiKey.trim()}
+                            className="btn btn-outline btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {isTesting ? (
+                                <>
+                                    <Spinner small />
+                                    Testando...
+                                </>
+                            ) : (
+                                'Testar Chave'
+                            )}
+                        </button>
+                        <button
+                            onClick={handleSaveConfig}
+                            disabled={isTesting || isSaving || !apiKey.trim()}
+                            className="btn btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {isSaving ? (
                                 <>
                                     <Spinner small />
                                     Salvando...
