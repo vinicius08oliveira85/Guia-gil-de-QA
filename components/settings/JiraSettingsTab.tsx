@@ -14,9 +14,10 @@ import toast from 'react-hot-toast';
 
 interface JiraSettingsTabProps {
     onProjectImported?: (project: Project) => void;
+    onDirtyChange?: (dirty: boolean) => void;
 }
 
-export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({ onProjectImported }) => {
+export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({ onProjectImported, onDirtyChange }) => {
     const [config, setConfig] = useState<JiraConfig>({
         url: '',
         email: '',
@@ -167,6 +168,7 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({ onProjectImpor
                 saveJiraConfig(config);
                 setIsConnected(true);
                 setShowConfigModal(false);
+                onDirtyChange?.(false);
                 await loadJiraProjects(config, false);
                 handleSuccess('Conexão com Jira configurada com sucesso!');
             } else {
@@ -416,7 +418,7 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({ onProjectImpor
                         label="URL do Jira *"
                         type="text"
                         value={config.url}
-                        onChange={(e) => setConfig({ ...config, url: e.target.value })}
+                        onChange={(e) => { setConfig({ ...config, url: e.target.value }); onDirtyChange?.(true); }}
                         onBlur={(e) => {
                             const url = e.target.value?.trim() ?? '';
                             if (url) setJiraLastUrl(url);
@@ -432,7 +434,7 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({ onProjectImpor
                         label="Email *"
                         type="email"
                         value={config.email}
-                        onChange={(e) => setConfig({ ...config, email: e.target.value })}
+                        onChange={(e) => { setConfig({ ...config, email: e.target.value }); onDirtyChange?.(true); }}
                         onBlur={() => setFieldErrors(prev => ({ ...prev, email: validateEmail(config.email) }))}
                         placeholder="seu-email@exemplo.com"
                         error={fieldErrors.email}
@@ -443,7 +445,7 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({ onProjectImpor
                         label="API Token *"
                         type="password"
                         value={config.apiToken}
-                        onChange={(e) => setConfig({ ...config, apiToken: e.target.value })}
+                        onChange={(e) => { setConfig({ ...config, apiToken: e.target.value }); onDirtyChange?.(true); }}
                         onBlur={() => setFieldErrors(prev => ({ ...prev, apiToken: validateToken(config.apiToken) }))}
                         placeholder="Seu API Token do Jira"
                         error={fieldErrors.apiToken}

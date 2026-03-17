@@ -212,10 +212,10 @@ export const ProjectView: React.FC<{
         let nextIndex = index;
         if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
             e.preventDefault();
-            nextIndex = Math.min(index + 1, tabs.length - 1);
+            nextIndex = (index + 1) % tabs.length;
         } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
             e.preventDefault();
-            nextIndex = Math.max(index - 1, 0);
+            nextIndex = (index - 1 + tabs.length) % tabs.length;
         } else if (e.key === 'Home') {
             e.preventDefault();
             nextIndex = 0;

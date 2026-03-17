@@ -56,6 +56,8 @@ export const TaskForm: React.FC<{
                     setTaskData((prev) => ({ ...prev, ...data }));
                     setValidationErrors({});
                     toast.success(`Tarefa ${key} importada do Jira com sucesso!`);
+                } else {
+                    toast.error(`Tarefa "${key}" não encontrada no Jira.`);
                 }
             })
             .finally(() => setImportingFromJira(false));
@@ -172,6 +174,11 @@ export const TaskForm: React.FC<{
                                 setTaskData({ ...taskData, id: e.target.value });
                                 if (validationErrors.id) setValidationErrors({ ...validationErrors, id: '' });
                             }}
+                            onBlur={() => {
+                                if (!taskData.id || taskData.id.trim().length < 3) {
+                                    setValidationErrors(p => ({ ...p, id: 'ID muito curto. Use pelo menos 3 caracteres.' }));
+                                }
+                            }}
                             placeholder="PROJ-123"
                             error={validationErrors.id}
                             success={taskData.id.length >= 3 && !validationErrors.id}
@@ -204,7 +211,12 @@ export const TaskForm: React.FC<{
                                 setTaskData({ ...taskData, title: e.target.value });
                                 if (validationErrors.title) setValidationErrors({ ...validationErrors, title: '' });
                             }}
-                            placeholder=""
+                            onBlur={() => {
+                                if (!taskData.title || taskData.title.trim().length < 5) {
+                                    setValidationErrors(p => ({ ...p, title: 'Título muito curto. Seja mais descritivo.' }));
+                                }
+                            }}
+                            placeholder="Ex: Implementar login com email"
                             error={validationErrors.title}
                             success={taskData.title.length >= 5 && !validationErrors.title}
                             required
@@ -235,20 +247,18 @@ export const TaskForm: React.FC<{
                             <option value="Urgente">Urgente</option>
                         </select>
                     </div>
-                    {taskData.type === 'Bug' && (
-                        <div>
-                            <label htmlFor="severity" className={labelClass}>
-                                Severidade
-                                <HelpTooltip title={helpContent.task.fields.severity.title} content={helpContent.task.fields.severity.content} />
-                            </label>
-                            <select id="severity" value={taskData.severity} onChange={e => setTaskData({ ...taskData, severity: e.target.value as BugSeverity })} className={selectClass}>
-                                <option value="Crítico">Crítico</option>
-                                <option value="Alto">Alto</option>
-                                <option value="Médio">Médio</option>
-                                <option value="Baixo">Baixo</option>
-                            </select>
-                        </div>
-                    )}
+                    <div className={taskData.type !== 'Bug' ? 'opacity-40 pointer-events-none' : ''}>
+                        <label htmlFor="severity" className={labelClass}>
+                            Severidade
+                            <HelpTooltip title={helpContent.task.fields.severity.title} content={helpContent.task.fields.severity.content} />
+                        </label>
+                        <select id="severity" value={taskData.severity} onChange={e => setTaskData({ ...taskData, severity: e.target.value as BugSeverity })} disabled={taskData.type !== 'Bug'} className={selectClass}>
+                            <option value="Crítico">Crítico</option>
+                            <option value="Alto">Alto</option>
+                            <option value="Médio">Médio</option>
+                            <option value="Baixo">Baixo</option>
+                        </select>
+                    </div>
                     {taskData.type !== 'Epic' && (
                         <div className={taskData.type === 'Bug' ? '' : 'sm:col-span-2'}>
                             <label htmlFor="parentId" className={labelClass}>

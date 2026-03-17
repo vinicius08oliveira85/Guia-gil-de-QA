@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
+import { X } from 'lucide-react';
 import { getNotifications, getUnreadCount, markAsRead, markAllAsRead, deleteNotification, restoreNotification, Notification } from '../../utils/notificationService';
 
 interface NotificationBellProps {
@@ -46,6 +47,15 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
     window.addEventListener('notification-created', handleNotificationCreated);
     return () => window.removeEventListener('notification-created', handleNotificationCreated);
   }, []);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsOpen(false);
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [isOpen]);
 
   const handleMarkAsRead = (id: string) => {
     markAsRead(id);
@@ -127,18 +137,28 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
               />
             )}
             <div className={`${showButton ? 'absolute right-0 mt-3' : 'relative'} w-80 bg-base-100 border border-base-300 rounded-[var(--rounded-box)] shadow-2xl z-50 max-h-96 overflow-hidden flex flex-col`}>
-              <div className="p-4 border-b border-base-300 flex items-center justify-between">
-              <h3 className="font-semibold text-base-content">Notificações</h3>
-              {unreadCount > 0 && (
-                <button
-                  onClick={handleMarkAllAsRead}
-                    className="btn btn-ghost btn-xs rounded-full"
+              <div className="p-4 border-b border-base-300 flex items-center justify-between gap-2">
+                <h3 className="font-semibold text-base-content">Notificações</h3>
+                <div className="flex items-center gap-1">
+                  {unreadCount > 0 && (
+                    <button
+                      onClick={handleMarkAllAsRead}
+                      className="btn btn-ghost btn-xs rounded-full"
+                      type="button"
+                    >
+                      Marcar todas como lidas
+                    </button>
+                  )}
+                  <button
                     type="button"
-                >
-                  Marcar todas como lidas
-                </button>
-              )}
-            </div>
+                    onClick={() => setIsOpen(false)}
+                    aria-label="Fechar notificações"
+                    className="btn btn-ghost btn-xs btn-circle"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
             <div className="overflow-y-auto flex-1">
               {notifications.length > 0 ? (
                 notifications.map(notification => (
@@ -178,7 +198,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
                         type="button"
                         aria-label="Excluir notificação"
                       >
-                        ×
+                        <X className="w-3 h-3" />
                       </button>
                     </div>
                   </div>

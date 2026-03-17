@@ -9,7 +9,11 @@ import { Card } from '../common/Card';
 import { Input } from '../common/Input';
 import toast from 'react-hot-toast';
 
-export const GeminiApiKeysTab: React.FC = () => {
+interface GeminiApiKeysTabProps {
+    onDirtyChange?: (dirty: boolean) => void;
+}
+
+export const GeminiApiKeysTab: React.FC<GeminiApiKeysTabProps> = ({ onDirtyChange }) => {
     const [apiKey, setApiKey] = useState('');
     const [isTesting, setIsTesting] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
@@ -91,6 +95,7 @@ export const GeminiApiKeysTab: React.FC = () => {
             await reloadManager();
             setIsConfigured(true);
             setShowConfigModal(false);
+            onDirtyChange?.(false);
             handleSuccess('Chave API do Gemini configurada com sucesso!');
         } catch (error) {
             handleError(error instanceof Error ? error : new Error('Erro ao salvar configuração'), 'Configuração do Gemini');
@@ -215,7 +220,7 @@ export const GeminiApiKeysTab: React.FC = () => {
                         label="Chave API do Gemini *"
                         type="password"
                         value={apiKey}
-                        onChange={(e) => setApiKey(e.target.value)}
+                        onChange={(e) => { setApiKey(e.target.value); onDirtyChange?.(true); }}
                         onBlur={() => setKeyError(validateKey(apiKey))}
                         placeholder="Sua chave API do Gemini"
                         error={keyError}

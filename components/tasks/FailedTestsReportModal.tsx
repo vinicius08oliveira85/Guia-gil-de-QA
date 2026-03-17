@@ -416,19 +416,15 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
     if (!isOpen) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Cmd/Ctrl+A para selecionar todos
+      // Cmd/Ctrl+A para selecionar todos (ignorar quando foco está em input/textarea)
       if ((e.metaKey || e.ctrlKey) && e.key === 'a') {
+        const tag = (document.activeElement as HTMLElement)?.tagName;
+        if (tag === 'INPUT' || tag === 'TEXTAREA') return;
         e.preventDefault();
         if (filteredTests.length > 0) {
           const allIds = new Set(filteredTests.map(ft => ft.testCase.id));
           setSelectedTestIds(allIds);
         }
-      }
-
-      // Escape para desselecionar todos (se não estiver fechando modal)
-      if (e.key === 'Escape' && selectedTestIds.size > 0) {
-        e.preventDefault();
-        setSelectedTestIds(new Set());
       }
 
       // Navegação com setas
@@ -889,7 +885,7 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
                 <button
                   type="button"
                   onClick={handleGeneratePDF}
-                  className="btn btn-sm btn-error"
+                  className="btn btn-sm btn-outline"
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
@@ -905,7 +901,7 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
                 w-full min-h-[200px] max-h-[400px]
                 bg-base-100 border border-base-300 rounded-lg
                 p-card text-sm text-base-content
-                font-mono
+                font-sans
                 resize-none
                 overflow-y-auto
                 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary

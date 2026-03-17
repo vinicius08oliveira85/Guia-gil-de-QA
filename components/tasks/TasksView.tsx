@@ -1651,8 +1651,22 @@ export const TasksView: React.FC<{
                         {(generatingTestsTaskId || generatingBddTaskId) && (
                             <div className="p-4 bg-primary/10 border border-primary/40 rounded-lg text-sm text-base-content flex items-center gap-2">
                                 <span className="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent"></span>
-                                {generatingTestsTaskId && <span>Gerando casos de teste para {generatingTestsTaskId}...</span>}
-                                {generatingBddTaskId && <span>Gerando cenários BDD para {generatingBddTaskId}...</span>}
+                                {generatingTestsTaskId && (
+                                    <span>
+                                        Gerando casos de teste para{' '}
+                                        <strong>
+                                            {project?.tasks?.find(t => t.id === generatingTestsTaskId)?.title ?? generatingTestsTaskId}
+                                        </strong>...
+                                    </span>
+                                )}
+                                {generatingBddTaskId && (
+                                    <span>
+                                        Gerando cenários BDD para{' '}
+                                        <strong>
+                                            {project?.tasks?.find(t => t.id === generatingBddTaskId)?.title ?? generatingBddTaskId}
+                                        </strong>...
+                                    </span>
+                                )}
                             </div>
                         )}
                     </div>

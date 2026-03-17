@@ -7,7 +7,7 @@ import { useIsMobile } from '../hooks/useIsMobile';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { Badge } from './common/Badge';
 import { ProgressIndicator } from './common/ProgressIndicator';
-import { Plus, Search, AlertTriangle, Bug } from 'lucide-react';
+import { Plus, Search, AlertTriangle, Bug, Loader2 } from 'lucide-react';
 import { ProjectCard } from './common/ProjectCard';
 import { ConsolidatedMetrics } from './common/ConsolidatedMetrics';
 import { useErrorHandler } from '../hooks/useErrorHandler';
@@ -226,7 +226,14 @@ export const ProjectsDashboard: React.FC<{
                     </div>
 
                     <div className="flex flex-wrap items-center gap-2 justify-start lg:justify-end">
-                        {/* Botões movidos para o Header */}
+                        <button
+                            type="button"
+                            onClick={() => setIsCreating(true)}
+                            className="btn btn-primary btn-sm gap-1.5 rounded-full"
+                        >
+                            <Plus className="w-4 h-4" aria-hidden />
+                            Novo Projeto
+                        </button>
                     </div>
                 </div>
 
@@ -411,7 +418,12 @@ export const ProjectsDashboard: React.FC<{
                                     disabled={retryButtonDisabled}
                                     className={`shrink-0 px-3 py-1.5 rounded-md text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed ${isSyncServerError ? 'bg-error/20 hover:bg-error/30 border border-error/40 text-error-content' : 'bg-warning/20 hover:bg-warning/30 border border-warning/40 text-warning-content'}`}
                                 >
-                                    {retryButtonDisabled ? (isLoading ? 'Carregando…' : 'Aguarde…') : 'Tentar novamente'}
+                                    {retryButtonDisabled ? (
+                                    <>
+                                        <Loader2 className="w-3.5 h-3.5 animate-spin inline-block mr-1" aria-hidden />
+                                        {isLoading ? 'Carregando…' : 'Aguarde…'}
+                                    </>
+                                ) : 'Tentar novamente'}
                                 </button>
                             </div>
                         )}
