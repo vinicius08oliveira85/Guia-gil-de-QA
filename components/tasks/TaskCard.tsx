@@ -76,6 +76,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onStartTest, onComplet
           <h3 className="font-bold text-lg text-base-content leading-tight">{task.title}</h3>
         </div>
         <button
+          type="button"
           onClick={handleToggleExpand}
           className="btn btn-ghost btn-sm btn-circle"
           aria-expanded={isExpanded}

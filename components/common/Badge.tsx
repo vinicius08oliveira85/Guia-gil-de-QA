@@ -1,6 +1,7 @@
 import React from 'react';
 import { X } from 'lucide-react';
 import { cn } from '../../utils/cn';
+import { BADGE_SIZE_CLASSES, BADGE_ICON_SIZES, type BadgeSize } from '../../utils/badgeSizes';
 
 /**
  * Props do componente Badge
@@ -11,7 +12,7 @@ interface BadgeProps {
   /** Variante visual do badge */
   variant?: 'default' | 'neutral' | 'primary' | 'secondary' | 'accent' | 'success' | 'warning' | 'error' | 'info';
   /** Tamanho do badge */
-  size?: 'xs' | 'sm' | 'md' | 'lg';
+  size?: BadgeSize;
   /** Aparência: default (DaisyUI) ou pill (arredondada, cores sólidas estilo v0) */
   appearance?: 'default' | 'pill';
   /** Classes CSS adicionais */
@@ -53,12 +54,7 @@ export const Badge = React.memo<BadgeProps>(({
     success: 'bg-green-600 text-white',
     default: 'bg-base-200 text-base-content border border-base-300'
   };
-  const pillSizeClasses = {
-    xs: 'px-2 py-0.5 text-[10px]',
-    sm: 'px-2.5 py-0.5 text-xs',
-    md: 'px-3 py-1 text-xs',
-    lg: 'px-3 py-1.5 text-sm'
-  };
+  const pillSizeClasses = BADGE_SIZE_CLASSES;
 
   // Classes base para variantes (mantém compatibilidade com DaisyUI)
   const variantClasses = {
@@ -107,13 +103,7 @@ export const Badge = React.memo<BadgeProps>(({
     info: 'bg-blue-600 text-white'
   };
 
-  // Tamanhos do ícone de fechar
-  const iconSizes = {
-    xs: 'h-2.5 w-2.5',
-    sm: 'h-3 w-3',
-    md: 'h-3.5 w-3.5',
-    lg: 'h-4 w-4'
-  };
+  const iconSizes = BADGE_ICON_SIZES;
 
   // Tamanhos do círculo do ícone (mínimo 44x44px para acessibilidade WCAG)
   const circleSizes = {

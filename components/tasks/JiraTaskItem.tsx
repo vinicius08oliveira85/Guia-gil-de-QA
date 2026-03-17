@@ -37,6 +37,8 @@ import { loadTaskTestStatus, saveTaskTestStatus, calculateTaskTestStatus } from 
 import { useProjectsStore } from '../../store/projectsStore';
 import { logger } from '../../utils/logger';
 import { Button } from '../common/Button';
+import { Badge } from '../common/Badge';
+import { useJiraAttachmentViewer } from '../../hooks/useJiraAttachmentViewer';
 
 // Componente para renderizar descrição com formatação rica do Jira
 const DescriptionRenderer: React.FC<{ 
@@ -189,8 +191,7 @@ export const JiraTaskItem: React.FC<{
     const [isGenerating, setIsGenerating] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [showTestReport, setShowTestReport] = useState(false);
-    const [viewingJiraAttachment, setViewingJiraAttachment] = useState<{ id: string; filename: string; url: string; mimeType: string; content?: string } | null>(null);
-    const [loadingJiraAttachmentId, setLoadingJiraAttachmentId] = useState<string | null>(null);
+    const { viewingJiraAttachment, setViewingJiraAttachment, loadingJiraAttachmentId, handleViewJiraAttachment } = useJiraAttachmentViewer();
     const [activeSection, setActiveSection] = useState<DetailSection>('overview');
     const [activeTestSubSection, setActiveTestSubSection] = useState<TestSubSection>('strategy');
     const [taskTestStatus, setTaskTestStatus] = useState<TaskTestStatus | null>(task.testStatus || null);
@@ -246,6 +247,14 @@ export const JiraTaskItem: React.FC<{
         if (['história', 'story'].includes(taskTypeNorm)) return 'bg-success text-success-content';
         if (taskTypeNorm === 'epic') return 'bg-secondary text-secondary-content';
         return 'bg-base-300 text-base-content';
+    }, [taskTypeNorm]);
+
+    const typeBadgeVariant = useMemo((): React.ComponentProps<typeof Badge>['variant'] => {
+        if (['tarefa', 'task'].includes(taskTypeNorm)) return 'info';
+        if (taskTypeNorm === 'bug') return 'error';
+        if (['história', 'story'].includes(taskTypeNorm)) return 'success';
+        if (taskTypeNorm === 'epic') return 'secondary';
+        return 'neutral';
     }, [taskTypeNorm]);
 
     const jiraStatusPalette = project?.settings?.jiraStatuses;
@@ -615,73 +624,18 @@ export const JiraTaskItem: React.FC<{
         setIsCreatingBdd(false);
     };
 
-    const handleViewJiraAttachment = async (attachment: { id: string; filename: string; url: string; mimeType?: string }) => {
-        const isImage = detectFileType(attachment.filename, attachment.mimeType || '') === 'image';
-        setLoadingJiraAttachmentId(attachment.id);
-        try {
-            // Fazer fetch do anexo através do proxy do Jira se necessário
-            const jiraConfig = getJiraConfig();
-            if (!jiraConfig) {
-                if (isImage) {
-                    setViewingJiraAttachment({ ...attachment, mimeType: attachment.mimeType ?? '' });
-                } else {
-                    window.open(attachment.url, '_blank');
-                }
-                setLoadingJiraAttachmentId(null);
-                return;
-            }
-
-            // Tentar fazer fetch do anexo
-            const endpoint = `/secure/attachment/${attachment.id}/${encodeURIComponent(attachment.filename)}`;
-            const response = await fetch('/api/jira-proxy', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    url: jiraConfig.url,
-                    email: jiraConfig.email,
-                    apiToken: jiraConfig.apiToken,
-                    endpoint,
-                    method: 'GET',
-                }),
-            });
-
-            if (response.ok) {
-                const blob = await response.blob();
-                const reader = new FileReader();
-                reader.onloadend = () => {
-                    setViewingJiraAttachment({
-                        ...attachment,
-                        mimeType: attachment.mimeType ?? '',
-                        content: reader.result as string
-                    });
-                    setLoadingJiraAttachmentId(null);
-                };
-                reader.readAsDataURL(blob);
-            } else {
-                if (isImage) {
-                    setViewingJiraAttachment({ ...attachment, mimeType: attachment.mimeType ?? '' });
-                } else {
-                    window.open(attachment.url, '_blank');
-                }
-                setLoadingJiraAttachmentId(null);
-            }
-        } catch (error) {
-            if (isImage) {
-                setViewingJiraAttachment({ ...attachment, mimeType: attachment.mimeType ?? '' });
-            } else {
-                window.open(attachment.url, '_blank');
-            }
-            setLoadingJiraAttachmentId(null);
-        }
-    };
-    
     const indentationStyle = { paddingLeft: `${level * 1.2}rem` };
+
+    // Classes visuais do botão de status de teste por estado
+    const testStatusButtonVariant: Record<string, string> = {
+        testando:        'bg-blue-50  dark:bg-blue-950/30  text-blue-600  dark:text-blue-400  border-blue-200  dark:border-blue-900/50  hover:bg-blue-100  dark:hover:bg-blue-900/40',
+        teste_concluido: 'bg-green-50 dark:bg-green-950/30 text-green-600 dark:text-green-400 border-green-200 dark:border-green-900/50 hover:bg-green-100 dark:hover:bg-green-900/40',
+        pendente:        'bg-red-50   dark:bg-red-950/30   text-red-600   dark:text-red-400   border-red-200   dark:border-red-900/50   hover:bg-red-100   dark:hover:bg-red-900/40',
+    };
+    const defaultTestStatusButtonClass = 'bg-primary/10 dark:bg-primary/20 text-primary border-primary/30 dark:border-primary/50 hover:bg-primary/20 dark:hover:bg-primary/30';
 
     // Touch targets mínimos de 44x44px para acessibilidade (WCAG)
     const iconButtonClass = 'btn btn-ghost btn-circle btn-sm min-h-[44px] min-w-[44px] h-11 w-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30';
-    const iconButtonSmallClass = 'btn btn-ghost btn-circle btn-sm min-h-[44px] min-w-[44px] h-11 w-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30';
 
     const renderOverviewSection = () => (
         <div className="space-y-3">
@@ -1486,14 +1440,9 @@ export const JiraTaskItem: React.FC<{
                                 <span className="bg-base-300 text-[10px] px-1.5 py-0.5 rounded-full">{task.children.length}</span>
                             </button>
                         ) : null}
-                        <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded tracking-wider shrink-0 ${typeBadgeClass}`}>{task.type}</span>
+                        <Badge appearance="pill" variant={typeBadgeVariant} size="xs" className="shrink-0 uppercase tracking-wider">{task.type}</Badge>
                         <span className="text-xs font-medium text-base-content/60 shrink-0">{task.id}</span>
                         <span className="text-sm font-semibold text-base-content truncate min-w-0 flex-1" title={displayTitle}>{displayTitle}</span>
-                        {!isDetailsOpen && (task.type === 'Tarefa' || task.type === 'Bug' || task.type === 'Epic' || task.type === 'História') && (
-                            <span className="text-xs text-base-content/70 w-full basis-full mt-0.5 ml-0 line-clamp-2" aria-hidden title={displayTitle}>
-                                {displayTitle}
-                            </span>
-                        )}
                     </div>
 
                     <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap sm:flex-nowrap flex-shrink-0 w-full sm:w-auto sm:ml-auto order-2" onClick={(e) => e.stopPropagation()}>
@@ -1526,15 +1475,7 @@ export const JiraTaskItem: React.FC<{
                                 else if (taskTestStatus === 'teste_concluido') updateTestStatus('pendente');
                                 else updateTestStatus('testar');
                             }}
-                            className={`rounded-full px-3 py-1 sm:px-4 sm:py-1.5 text-[10px] sm:text-xs font-bold border flex items-center gap-1.5 shrink-0 transition-colors ${
-                                taskTestStatus === 'testando'
-                                    ? 'bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-900/50 hover:bg-blue-100 dark:hover:bg-blue-900/40'
-                                    : taskTestStatus === 'teste_concluido'
-                                    ? 'bg-green-50 dark:bg-green-950/30 text-green-600 dark:text-green-400 border-green-200 dark:border-green-900/50 hover:bg-green-100 dark:hover:bg-green-900/40'
-                                    : taskTestStatus === 'pendente'
-                                    ? 'bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 border-red-200 dark:border-red-900/50 hover:bg-red-100 dark:hover:bg-red-900/40'
-                                    : 'bg-primary/10 dark:bg-primary/20 text-primary border-primary/30 dark:border-primary/50 hover:bg-primary/20 dark:hover:bg-primary/30'
-                            }`}
+                            className={`rounded-full px-3 py-1 sm:px-4 sm:py-1.5 text-[10px] sm:text-xs font-bold border flex items-center gap-1.5 shrink-0 transition-colors ${testStatusButtonVariant[taskTestStatus] ?? defaultTestStatusButtonClass}`}
                             aria-label={taskTestStatus === 'testar' ? 'Iniciar teste' : taskTestStatus === 'testando' ? 'Concluir teste' : taskTestStatus === 'pendente' ? 'Definir status para Testar' : 'Voltar para Pendente'}
                         >
                             <ClipboardList className="w-3.5 h-3.5" aria-hidden="true" />

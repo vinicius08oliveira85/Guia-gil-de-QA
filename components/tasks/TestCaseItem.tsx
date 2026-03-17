@@ -93,7 +93,7 @@ export const TestCaseItem: React.FC<{
                     ))}
                 </div>
                 <div className="flex items-center gap-2">
-                    <label className="flex items-center gap-1.5">
+                    <label className="flex items-center gap-1.5" title="Automatizado">
                         <input
                             type="checkbox"
                             checked={!!testCase.isAutomated}
@@ -101,7 +101,7 @@ export const TestCaseItem: React.FC<{
                             className="toggle toggle-primary toggle-sm"
                             aria-label="Marcar caso como automatizado"
                         />
-                        <span className="hidden sm:inline text-xs font-medium text-base-content/70">Automatizado</span>
+                        <span className="text-xs font-medium text-base-content/70">Automatizado</span>
                     </label>
                     {(onEdit || onDuplicate || onDelete) && (
                         <div className="flex items-center gap-1">
@@ -165,6 +165,9 @@ export const TestCaseItem: React.FC<{
                     <>
                         <p className="text-[10px] font-bold text-base-content/70 uppercase tracking-widest mb-2">
                             Selecione os testes executados
+                            <span className="ml-2 text-primary font-normal normal-case tracking-normal">
+                                ({selectedStrategies.length} de {recommendedStrategies.length})
+                            </span>
                         </p>
                         <div className="flex flex-wrap gap-1.5 mb-2">
                             {recommendedStrategies.map((strategy) => {
@@ -219,7 +222,14 @@ export const TestCaseItem: React.FC<{
                 >
                     <div className="flex items-center gap-2 min-w-0">
                         <ListIcon className="w-4 h-4 text-base-content/70 flex-shrink-0" />
-                        <span className="text-xs font-semibold text-base-content">Detalhes do caso de teste</span>
+                        <span className="text-xs font-semibold text-base-content">
+                            Detalhes do caso de teste
+                            {!effectiveDetailsOpen && testCase.steps.length > 0 && (
+                                <span className="ml-1.5 text-base-content/50 font-normal">
+                                    ({testCase.steps.length} passo{testCase.steps.length !== 1 ? 's' : ''})
+                                </span>
+                            )}
+                        </span>
                     </div>
                     <ChevronDownIcon className={`w-4 h-4 text-base-content/70 flex-shrink-0 transition-transform ${effectiveDetailsOpen ? 'rotate-180' : ''}`} />
                 </button>
@@ -278,11 +288,25 @@ export const TestCaseItem: React.FC<{
 
             {/* 6. Footer: apenas Aprovar / Reprovar (status já exibido no topo) */}
             <div className="flex flex-wrap items-center justify-end gap-1.5 pt-1">
-                <button type="button" onClick={() => onStatusChange('Passed')} className="btn btn-success btn-xs rounded-lg text-[10px] px-2 py-0.5 min-h-0">
-                    Aprovar
+                <button
+                    type="button"
+                    onClick={() => onStatusChange('Passed')}
+                    title="Marcar como Aprovado"
+                    className={`btn btn-xs rounded-lg text-[10px] px-2 py-0.5 min-h-0 ${
+                        testCase.status === 'Passed' ? 'btn-success' : 'btn-outline btn-success'
+                    }`}
+                >
+                    {testCase.status === 'Passed' ? '✓ Aprovado' : 'Aprovar'}
                 </button>
-                <button type="button" onClick={() => onStatusChange('Failed')} className="btn btn-error btn-xs rounded-lg text-[10px] px-2 py-0.5 min-h-0">
-                    Reprovar
+                <button
+                    type="button"
+                    onClick={() => onStatusChange('Failed')}
+                    title="Marcar como Reprovado"
+                    className={`btn btn-xs rounded-lg text-[10px] px-2 py-0.5 min-h-0 ${
+                        testCase.status === 'Failed' ? 'btn-error' : 'btn-outline btn-error'
+                    }`}
+                >
+                    {testCase.status === 'Failed' ? '✗ Reprovado' : 'Reprovar'}
                 </button>
             </div>
         </div>

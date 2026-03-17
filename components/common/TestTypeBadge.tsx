@@ -1,4 +1,5 @@
 import React from 'react';
+import { BADGE_SIZE_CLASSES, BADGE_ICON_SIZES, type BadgeSize } from '../../utils/badgeSizes';
 import {
     Beaker,
     Layers,
@@ -29,7 +30,7 @@ interface TestTypeBadgeProps {
     /** Quando true, exibe estilo de destaque (selecionado) */
     selected?: boolean;
     /** Tamanho do badge */
-    size?: 'xs' | 'sm' | 'md' | 'lg';
+    size?: BadgeSize;
     /** Classes CSS adicionais */
     className?: string;
     /** Label adicional (ex: contador) */
@@ -250,18 +251,8 @@ export const TestTypeBadge = React.memo<TestTypeBadgeProps>(({
     const pillVariantClasses = variantStyle === 'pastel' ? pillVariantClassesPastel : pillVariantClassesSolid;
     const pillIconClasses = variantStyle === 'pastel' ? pillIconClassesPastel : pillIconClassesSolid;
 
-    const sizeClasses = {
-        xs: 'text-[10px] px-2 py-0.5',
-        sm: 'text-xs px-2.5 py-1',
-        md: 'text-sm px-3 py-1.5',
-        lg: 'text-base px-4 py-2',
-    };
-    const iconSizes = {
-        xs: 'h-2.5 w-2.5',
-        sm: 'h-3 w-3',
-        md: 'h-3.5 w-3.5',
-        lg: 'h-4 w-4',
-    };
+    const sizeClasses = BADGE_SIZE_CLASSES;
+    const iconSizes = BADGE_ICON_SIZES;
 
     const actualStatus = (() => {
         if (status) return status;

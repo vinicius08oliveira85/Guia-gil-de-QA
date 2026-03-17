@@ -24,7 +24,7 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({ onProjectImported: _onProjectImported, onOpenSettings, onNavigate, onOpenCreateModal, showDashboardActions, onLogoClick }) => {
-    const { theme, toggleTheme, isOnlyLightSupported } = useTheme();
+    const { theme, toggleTheme } = useTheme();
     const [notificationUnreadCount, setNotificationUnreadCount] = useState(0);
     const [showNotificationDropdown, setShowNotificationDropdown] = useState(false);
     const [isGlossaryOpen, setIsGlossaryOpen] = useState(false);
@@ -160,6 +160,34 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported: _onProjectImp
         }
     };
 
+    // Ícone Supabase bolt reutilizado nos botões "Salvar" e "Sync"
+    const supabaseBoltIcon = (
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0" aria-hidden>
+            <path d="M21.362 9.354H12V.396a.396.396 0 0 0-.716-.233L2.203 12.424l-.401.562a1.04 1.04 0 0 0 .836 1.659H12v8.959a.396.396 0 0 0 .724.229l9.075-12.476.401-.562a1.04 1.04 0 0 0-.838-1.66Z" fill="#3ECF8E" />
+        </svg>
+    );
+
+    // Conteúdo do logo compartilhado entre o wrapper clicável e o estático
+    const logoContent = (
+        <>
+            <img
+                src="/Logo_Moderno_Leve-removebg-preview.png"
+                alt=""
+                aria-hidden="true"
+                className="h-10 w-auto sm:h-12 flex-shrink-0"
+                loading="lazy"
+                decoding="async"
+                draggable={false}
+            />
+            <div className="min-w-0">
+                <p className="text-sm sm:text-base font-semibold leading-tight truncate">QA Agile Guide</p>
+                <p className="text-xs text-base-content/60 truncate hidden sm:block">
+                    Gestão de QA ágil, métricas e automação
+                </p>
+            </div>
+        </>
+    );
+
     return (
         <header
             className="sticky top-0 z-30 border-b border-base-300 bg-base-100/80 backdrop-blur"
@@ -173,42 +201,14 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported: _onProjectImp
                         className="flex items-center gap-2 sm:gap-3 min-w-0 bg-transparent border-none p-0 cursor-pointer hover:opacity-80 transition-opacity"
                         aria-label="Voltar para Meus Projetos"
                     >
-                        <img
-                            src="/Logo_Moderno_Leve-removebg-preview.png"
-                            alt="Logo QA Agile Guide"
-                            className="h-14 w-auto sm:h-16 flex-shrink-0"
-                            loading="lazy"
-                            decoding="async"
-                            draggable={false}
-                        />
-                        <div className="min-w-0">
-                            <p className="text-sm sm:text-base font-semibold leading-tight truncate">QA Agile Guide</p>
-                            <p className="text-xs text-base-content/60 truncate hidden sm:block">
-                                Gestão de QA ágil, métricas e automação
-                            </p>
-                        </div>
+                        {logoContent}
                     </button>
                 ) : (
                     <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                        <img
-                            src="/Logo_Moderno_Leve-removebg-preview.png"
-                            alt="Logo QA Agile Guide"
-                            className="h-14 w-auto sm:h-16 flex-shrink-0"
-                            loading="lazy"
-                            decoding="async"
-                            draggable={false}
-                        />
-                        <div className="min-w-0">
-                            <p className="text-sm sm:text-base font-semibold leading-tight truncate">QA Agile Guide</p>
-                            <p className="text-xs text-base-content/60 truncate hidden sm:block">
-                                Gestão de QA ágil, métricas e automação
-                            </p>
-                        </div>
+                        {logoContent}
                     </div>
                 )}
                 <div className="flex items-center justify-end gap-1.5 sm:gap-2 relative">
-                    <nav className="flex items-center gap-2"></nav>
-
                     <div className="relative">
                         <ExpandableTabs
                             tabs={tabs}
@@ -245,11 +245,7 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported: _onProjectImp
                                             onExpandedChange={(expanded) => setExpandedButton(expanded ? 'jira' : null)}
                                         />
                                         <ExpansibleButton
-                                            icon={
-                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0" aria-hidden>
-                                                    <path d="M21.362 9.354H12V.396a.396.396 0 0 0-.716-.233L2.203 12.424l-.401.562a1.04 1.04 0 0 0 .836 1.659H12v8.959a.396.396 0 0 0 .724.229l9.075-12.476.401-.562a1.04 1.04 0 0 0-.838-1.66Z" fill="#3ECF8E" />
-                                                </svg>
-                                            }
+                                            icon={supabaseBoltIcon}
                                             label={isSaving ? 'Salvando...' : 'Salvar'}
                                             onClick={handleSave}
                                             disabled={isSaving}
@@ -272,11 +268,7 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported: _onProjectImp
                                             />
                                         )}
                                         <ExpansibleButton
-                                            icon={
-                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0" aria-hidden>
-                                                    <path d="M21.362 9.354H12V.396a.396.396 0 0 0-.716-.233L2.203 12.424l-.401.562a1.04 1.04 0 0 0 .836 1.659H12v8.959a.396.396 0 0 0 .724.229l9.075-12.476.401-.562a1.04 1.04 0 0 0-.838-1.66Z" fill="#3ECF8E" />
-                                                </svg>
-                                            }
+                                            icon={supabaseBoltIcon}
                                             label={isSyncingSupabase ? 'Sincronizando...' : 'Sync'}
                                             onClick={handleSyncSupabase}
                                             disabled={isSyncingSupabase || !isSupabaseAvailable()}
@@ -381,13 +373,6 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported: _onProjectImp
                             </div>
                         </div>
                     </Modal>
-
-                    {/* Badge para temas ainda não suportados (leve-saude, auto) */}
-                    {isOnlyLightSupported && (
-                        <span className="badge badge-outline badge-sm hidden sm:inline-flex">
-                            Tema em breve
-                        </span>
-                    )}
                 </div>
             </div>
         </header>

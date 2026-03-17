@@ -32,10 +32,31 @@ import { canViewInBrowser, detectFileType } from '../../services/fileViewerServi
 import { JiraAttachment } from './JiraAttachment';
 import { JiraRichContent } from './JiraRichContent';
 import { Button } from '../common/Button';
+import { Badge } from '../common/Badge';
+import { useJiraAttachmentViewer } from '../../hooks/useJiraAttachmentViewer';
 import { BarChart3, ClipboardList, Sparkles, Wrench, Link, Paperclip, Timer, Download, ChevronLeft } from 'lucide-react';
 
 type DetailSection = 'overview' | 'bdd' | 'tests' | 'planning' | 'collaboration';
 type TestSubSection = 'strategy' | 'test-cases';
+
+const CARD_TITLE_CLASS = 'text-sm sm:text-base font-bold text-base-content flex items-center gap-2';
+
+/** Resolve o MIME type de um anexo pelo nome do arquivo */
+function resolveMimeType(filename: string): string | undefined {
+    const ext = filename.toLowerCase().split('.').pop();
+    const map: Record<string, string> = {
+        pdf: 'application/pdf',
+        png: 'image/png',
+        jpg: 'image/jpeg',
+        jpeg: 'image/jpeg',
+        gif: 'image/gif',
+        webp: 'image/webp',
+        txt: 'text/plain',
+        json: 'application/json',
+        csv: 'text/csv',
+    };
+    return ext ? map[ext] : undefined;
+}
 
 // Componente para renderizar descrição com formatação rica do Jira
 const DescriptionRenderer: React.FC<{ 
@@ -149,13 +170,24 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
     const [isCreatingBdd, setIsCreatingBdd] = useState(false);
     const [detailLevel, setDetailLevel] = useState<TestCaseDetailLevel>('Padrão');
     const [showTestReport, setShowTestReport] = useState(false);
-    const [viewingJiraAttachment, setViewingJiraAttachment] = useState<{ id: string; filename: string; url: string; mimeType: string; content?: string } | null>(null);
-    const [loadingJiraAttachmentId, setLoadingJiraAttachmentId] = useState<string | null>(null);
+    const { viewingJiraAttachment, setViewingJiraAttachment, loadingJiraAttachmentId, handleViewJiraAttachment } = useJiraAttachmentViewer();
     const [activeSection, setActiveSection] = useState<DetailSection>('overview');
     const [activeTestSubSection, setActiveTestSubSection] = useState<TestSubSection>('strategy');
     const nextStep = getNextStepForTask(task);
     const hasTests = task.testCases && task.testCases.length > 0;
     const safeDomId = useMemo(() => task.id.replace(/[^a-zA-Z0-9_-]/g, '_'), [task.id]);
+
+    const jiraAttachmentItems = useMemo(() => {
+        const jiraConfig = getJiraConfig();
+        const jiraUrl = jiraConfig?.url ?? '';
+        return (task.jiraAttachments ?? []).map((att) => ({
+            ...att,
+            attachmentUrl: jiraUrl
+                ? `${jiraUrl}/secure/attachment/${att.id}/${encodeURIComponent(att.filename)}`
+                : '',
+            mimeType: resolveMimeType(att.filename),
+        }));
+    }, [task.jiraAttachments]);
 
     const sectionTabs = useMemo(() => {
         const tabs: { id: DetailSection; label: string; badge?: number }[] = [
@@ -220,68 +252,6 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
         setIsCreatingBdd(false);
     };
 
-    const handleViewJiraAttachment = async (attachment: { id: string; filename: string; url: string; mimeType?: string }) => {
-        const isImage = detectFileType(attachment.filename, attachment.mimeType || '') === 'image';
-        setLoadingJiraAttachmentId(attachment.id);
-        try {
-            // Fazer fetch do anexo através do proxy do Jira se necessário
-            const jiraConfig = getJiraConfig();
-            if (!jiraConfig) {
-                if (isImage) {
-                    setViewingJiraAttachment({ ...attachment, mimeType: attachment.mimeType ?? '' });
-                } else {
-                    window.open(attachment.url, '_blank');
-                }
-                setLoadingJiraAttachmentId(null);
-                return;
-            }
-
-            // Tentar fazer fetch do anexo
-            const endpoint = `/secure/attachment/${attachment.id}/${encodeURIComponent(attachment.filename)}`;
-            const response = await fetch('/api/jira-proxy', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    url: jiraConfig.url,
-                    email: jiraConfig.email,
-                    apiToken: jiraConfig.apiToken,
-                    endpoint,
-                    method: 'GET',
-                }),
-            });
-
-            if (response.ok) {
-                const blob = await response.blob();
-                const reader = new FileReader();
-                reader.onloadend = () => {
-                    setViewingJiraAttachment({
-                        ...attachment,
-                        mimeType: attachment.mimeType ?? '',
-                        content: reader.result as string
-                    });
-                    setLoadingJiraAttachmentId(null);
-                };
-                reader.readAsDataURL(blob);
-            } else {
-                if (isImage) {
-                    setViewingJiraAttachment({ ...attachment, mimeType: attachment.mimeType ?? '' });
-                } else {
-                    window.open(attachment.url, '_blank');
-                }
-                setLoadingJiraAttachmentId(null);
-            }
-        } catch (error) {
-            if (isImage) {
-                setViewingJiraAttachment({ ...attachment, mimeType: attachment.mimeType ?? '' });
-            } else {
-                window.open(attachment.url, '_blank');
-            }
-            setLoadingJiraAttachmentId(null);
-        }
-    };
-
     const hasJiraSidebarFields = !!(
         task.dueDate || task.timeTracking || task.components || task.fixVersions ||
         task.environment || task.reporter || task.watchers || task.issueLinks ||
@@ -331,6 +301,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                 {(task.type === 'Tarefa' || task.type === 'Bug') && (task.testCases?.length > 0 || (task.testStrategy?.length ?? 0) > 0) && (
                     <div className="flex justify-end">
                         <button
+                            type="button"
                             onClick={() => setShowTestReport(true)}
                             className="btn btn-outline btn-sm flex items-center gap-2"
                         >
@@ -389,41 +360,23 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                     );
                 })()}
 
-                {task.jiraAttachments && task.jiraAttachments.length > 0 && (
+                {jiraAttachmentItems.length > 0 && (
                     <section className="space-y-2">
                         <h3 className="text-sm font-bold text-base-content/70 uppercase tracking-wide">Anexos do Jira</h3>
                         <div className="p-3 bg-base-100 border border-base-300 rounded-xl">
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                                {task.jiraAttachments.map((att) => {
-                                    const jiraConfig = getJiraConfig();
-                                    const jiraUrl = jiraConfig?.url;
-                                    const attachmentUrl = jiraUrl ? `${jiraUrl}/secure/attachment/${att.id}/${encodeURIComponent(att.filename)}` : '';
-                                    const fileType = detectFileType(att.filename, '');
-                                    let mimeType: string | undefined;
-                                    if (fileType === 'pdf') mimeType = 'application/pdf';
-                                    else if (fileType === 'image') {
-                                        const ext = att.filename.toLowerCase().split('.').pop();
-                                        if (ext === 'png') mimeType = 'image/png';
-                                        else if (ext === 'jpg' || ext === 'jpeg') mimeType = 'image/jpeg';
-                                        else if (ext === 'gif') mimeType = 'image/gif';
-                                        else if (ext === 'webp') mimeType = 'image/webp';
-                                        else mimeType = 'image/*';
-                                    } else if (fileType === 'text') mimeType = 'text/plain';
-                                    else if (fileType === 'json') mimeType = 'application/json';
-                                    else if (fileType === 'csv') mimeType = 'text/csv';
-                                    return (
-                                        <JiraAttachment
-                                            key={att.id}
-                                            id={att.id}
-                                            url={attachmentUrl}
-                                            filename={att.filename}
-                                            mimeType={mimeType}
-                                            size={att.size}
-                                            onView={handleViewJiraAttachment}
-                                            isLoading={loadingJiraAttachmentId === att.id}
-                                        />
-                                    );
-                                })}
+                                {jiraAttachmentItems.map((att) => (
+                                    <JiraAttachment
+                                        key={att.id}
+                                        id={att.id}
+                                        url={att.attachmentUrl}
+                                        filename={att.filename}
+                                        mimeType={att.mimeType}
+                                        size={att.size}
+                                        onView={handleViewJiraAttachment}
+                                        isLoading={loadingJiraAttachmentId === att.id}
+                                    />
+                                ))}
                             </div>
                         </div>
                     </section>
@@ -783,14 +736,12 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
             );
         }
 
-        const cardTitleClass = 'text-sm sm:text-base font-bold text-base-content flex items-center gap-2';
-
         return (
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4">
                 {/* Coluna esquerda */}
                 <div className="lg:col-span-7 space-y-3 sm:space-y-4 min-w-0">
                     <section className="bg-base-100 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-base-300 shadow-sm">
-                        <h2 className={cardTitleClass + ' mb-3'}>
+                        <h2 className={CARD_TITLE_CLASS + ' mb-3'}>
                             <Link className="w-4 h-4 sm:w-5 sm:h-5 text-primary/70 shrink-0" aria-hidden />
                             Dependências
                         </h2>
@@ -803,7 +754,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                     </section>
 
                     <section className="bg-base-100 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-base-300 shadow-sm">
-                        <h2 className={cardTitleClass + ' mb-3'}>
+                        <h2 className={CARD_TITLE_CLASS + ' mb-3'}>
                             <Paperclip className="w-4 h-4 sm:w-5 sm:h-5 text-primary/70 shrink-0" aria-hidden />
                             Anexos
                             <span className="bg-base-200 text-base-content/70 text-xs px-2 py-0.5 rounded-full font-normal">
@@ -820,7 +771,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
 
                     {task.checklist && task.checklist.length > 0 && (
                         <section className="bg-base-100 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-base-300 shadow-sm">
-                            <h2 className={cardTitleClass + ' mb-3'}>Checklist</h2>
+                            <h2 className={CARD_TITLE_CLASS + ' mb-3'}>Checklist</h2>
                             <ChecklistView
                                 checklist={task.checklist}
                                 onToggleItem={(itemId) => {
@@ -842,7 +793,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                 {/* Coluna direita - Estimativas (fixa ao lado ao rolar) */}
                 <div className="lg:col-span-5 min-w-0 self-start">
                     <section className="bg-base-100 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-base-300 shadow-sm sticky top-20 lg:top-24">
-                        <h2 className={cardTitleClass + ' mb-3'}>
+                        <h2 className={CARD_TITLE_CLASS + ' mb-3'}>
                             <Timer className="w-4 h-4 sm:w-5 sm:h-5 text-primary/70 shrink-0" aria-hidden />
                             Estimativas
                         </h2>
@@ -941,9 +892,14 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                                 >
                                     <span>{tab.label}</span>
                                     {typeof tab.badge === 'number' && tab.badge > 0 ? (
-                                        <span className={`ml-2 px-1.5 py-0.5 rounded-md text-xs font-medium ${isActive ? 'bg-white/20' : 'bg-base-300 text-base-content'}`}>
+                                        <Badge
+                                            size="xs"
+                                            appearance="pill"
+                                            variant={isActive ? 'default' : 'neutral'}
+                                            className={`ml-2 ${isActive ? 'bg-white/20 text-white border-0' : ''}`}
+                                        >
                                             {tab.badge}
-                                        </span>
+                                        </Badge>
                                     ) : null}
                                 </button>
                             );

@@ -1,4 +1,5 @@
 import React from 'react';
+import { type BadgeSize } from '../../utils/badgeSizes';
 
 /**
  * Props do componente VersionBadge
@@ -7,7 +8,7 @@ interface VersionBadgeProps {
   /** Versão a ser exibida (ex: "V1", "V2") */
   version: string;
   /** Tamanho do badge */
-  size?: 'sm' | 'md' | 'lg';
+  size?: BadgeSize;
   /** Classes CSS adicionais */
   className?: string;
   /** Mostrar ícone */
@@ -30,16 +31,19 @@ export const VersionBadge: React.FC<VersionBadgeProps> = ({
   className = '',
   showIcon = true
 }) => {
+  // Escala alinhada com BADGE_SIZE_CLASSES; altura definida via padding (sem h-* fixo)
   const sizeClasses = {
-    sm: 'h-5 px-1.5 text-[0.65rem]',
-    md: 'h-6 px-2 text-[0.7rem]',
-    lg: 'h-7 px-2.5 text-[0.75rem]'
+    xs: 'px-1.5 py-0.5 text-[0.6rem]',
+    sm: 'px-2 py-0.5 text-[0.65rem]',
+    md: 'px-2 py-1 text-[0.7rem]',
+    lg: 'px-2.5 py-1.5 text-[0.75rem]',
   };
 
   const iconSize = {
+    xs: 'text-[10px]',
     sm: 'text-xs',
     md: 'text-sm',
-    lg: 'text-base'
+    lg: 'text-base',
   };
 
   return (
@@ -78,7 +82,7 @@ interface VersionBadgesProps {
   /** Array de versões */
   versions: string[];
   /** Tamanho dos badges */
-  size?: 'sm' | 'md' | 'lg';
+  size?: BadgeSize;
   /** Classes CSS adicionais */
   className?: string;
 }

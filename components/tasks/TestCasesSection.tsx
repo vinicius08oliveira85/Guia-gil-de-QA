@@ -6,6 +6,7 @@ import { EmptyState } from '../common/EmptyState';
 import { LoadingSkeleton } from '../common/LoadingSkeleton';
 import { Spinner } from '../common/Spinner';
 import { FileExportModal } from '../common/FileExportModal';
+import { Badge } from '../common/Badge';
 import {
     ClipboardList,
     ChevronDown,
@@ -14,6 +15,7 @@ import {
     Download,
     X,
     Filter,
+    SlidersHorizontal,
 } from 'lucide-react';
 
 const STATUS_OPTIONS: Array<TestCase['status']> = ['Not Run', 'Passed', 'Failed', 'Blocked'];
@@ -102,6 +104,7 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     /** Controla expandir/recolher todos os "Detalhes". null = cada item usa estado interno. */
     const [detailsOpenOverride, setDetailsOpenOverride] = useState<boolean | null>(null);
+    const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
     const strategies = useMemo(() => {
         const set = new Set<string>();
@@ -267,13 +270,25 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
                                     key={item.label}
                                     type="button"
                                     onClick={item.onClick}
-                                    className={`badge gap-1 py-2 text-xs font-medium transition-all ${
+                                    title={
+                                        item.isActive
+                                            ? item.status
+                                                ? `Remover filtro: ${item.label}`
+                                                : 'Remover filtros de status'
+                                            : item.status
+                                                ? `Filtrar por: ${item.label}`
+                                                : 'Ver todos'
+                                    }
+                                    className={`badge gap-1.5 py-2 text-xs font-medium transition-all ${
                                         item.isActive
                                             ? 'badge-primary'
                                             : 'badge-ghost badge-outline hover:badge-primary/20'
                                     }`}
                                     aria-pressed={item.isActive}
                                 >
+                                    {!item.isActive && (
+                                        <SlidersHorizontal className="w-2.5 h-2.5 opacity-40" />
+                                    )}
                                     {item.label}: {item.value}
                                 </button>
                             ))}
@@ -322,6 +337,21 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
                                     </option>
                                 ))}
                             </select>
+                            <button
+                                type="button"
+                                onClick={() => setShowAdvancedFilters((p) => !p)}
+                                className={`btn btn-ghost btn-sm gap-1.5 text-xs ${showAdvancedFilters ? 'btn-active' : ''}`}
+                                aria-expanded={showAdvancedFilters}
+                                aria-label="Abrir filtros avançados"
+                            >
+                                <Filter className="w-3.5 h-3.5" />
+                                Filtros
+                                {activeFiltersCount > 0 && (
+                                    <Badge size="xs" appearance="pill" variant="primary">
+                                        {activeFiltersCount}
+                                    </Badge>
+                                )}
+                            </button>
                             <div className="flex gap-1">
                                 <button
                                     type="button"
@@ -344,52 +374,51 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
                             </div>
                         </div>
 
-                        {/* Filtros extras: Status múltiplo, Automatizado, Estratégia */}
-                        <div className="flex flex-wrap items-center gap-2">
-                            <span className="text-xs text-base-content/60 flex items-center gap-1">
-                                <Filter className="w-3.5 h-3.5" />
-                                Status:
-                            </span>
-                            {STATUS_OPTIONS.map((s) => (
-                                <label key={s} className="label cursor-pointer gap-1.5 py-0">
-                                    <input
-                                        type="checkbox"
-                                        checked={statusFilter.includes(s)}
-                                        onChange={() => toggleStatusFilter(s)}
-                                        className="checkbox checkbox-sm"
-                                    />
-                                    <span className="text-xs">{STATUS_LABEL[s]}</span>
-                                </label>
-                            ))}
-                            <select
-                                value={automatedFilter === 'all' ? 'all' : automatedFilter ? 'yes' : 'no'}
-                                onChange={(e) => {
-                                    const v = e.target.value;
-                                    setAutomatedFilter(v === 'all' ? 'all' : v === 'yes');
-                                }}
-                                className="select select-bordered select-sm text-xs w-auto"
-                                aria-label="Filtrar por automatizado"
-                            >
-                                <option value="all">Automatizado: Todos</option>
-                                <option value="yes">Sim</option>
-                                <option value="no">Não</option>
-                            </select>
-                            {strategies.length > 0 && (
+                        {/* Filtros avançados: painel colapsável */}
+                        {showAdvancedFilters && (
+                            <div className="flex flex-wrap items-center gap-2 p-2.5 bg-base-200/60 rounded-xl border border-base-300">
+                                <span className="text-xs text-base-content/60 font-medium">Status:</span>
+                                {STATUS_OPTIONS.map((s) => (
+                                    <label key={s} className="label cursor-pointer gap-1.5 py-0">
+                                        <input
+                                            type="checkbox"
+                                            checked={statusFilter.includes(s)}
+                                            onChange={() => toggleStatusFilter(s)}
+                                            className="checkbox checkbox-sm"
+                                        />
+                                        <span className="text-xs">{STATUS_LABEL[s]}</span>
+                                    </label>
+                                ))}
                                 <select
-                                    value={strategyFilter}
-                                    onChange={(e) => setStrategyFilter(e.target.value)}
-                                    className="select select-bordered select-sm text-xs w-auto max-w-[180px]"
-                                    aria-label="Filtrar por estratégia"
+                                    value={automatedFilter === 'all' ? 'all' : automatedFilter ? 'yes' : 'no'}
+                                    onChange={(e) => {
+                                        const v = e.target.value;
+                                        setAutomatedFilter(v === 'all' ? 'all' : v === 'yes');
+                                    }}
+                                    className="select select-bordered select-sm text-xs w-auto"
+                                    aria-label="Filtrar por automatizado"
                                 >
-                                    <option value="all">Estratégia: Todas</option>
-                                    {strategies.map((s) => (
-                                        <option key={s} value={s}>
-                                            {s}
-                                        </option>
-                                    ))}
+                                    <option value="all">Automatizado: Todos</option>
+                                    <option value="yes">Sim</option>
+                                    <option value="no">Não</option>
                                 </select>
-                            )}
-                        </div>
+                                {strategies.length > 0 && (
+                                    <select
+                                        value={strategyFilter}
+                                        onChange={(e) => setStrategyFilter(e.target.value)}
+                                        className="select select-bordered select-sm text-xs w-auto max-w-[180px]"
+                                        aria-label="Filtrar por estratégia"
+                                    >
+                                        <option value="all">Estratégia: Todas</option>
+                                        {strategies.map((s) => (
+                                            <option key={s} value={s}>
+                                                {s}
+                                            </option>
+                                        ))}
+                                    </select>
+                                )}
+                            </div>
+                        )}
 
                         {/* Chips de filtros ativos */}
                         {activeFiltersCount > 0 && (

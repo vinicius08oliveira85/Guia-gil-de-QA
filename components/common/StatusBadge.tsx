@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { cn } from '../../utils/cn';
 import { AlertCircle, CheckCircle, Clock, XCircle, MinusCircle, Info, X } from 'lucide-react';
+import { BADGE_SIZE_CLASSES, BADGE_ICON_SIZES, type BadgeSize } from '../../utils/badgeSizes';
 
 // Define the available standard statuses
 export type StatusType = 'success' | 'error' | 'warning' | 'info' | 'pending' | 'default';
@@ -53,6 +54,8 @@ export interface StatusBadgeProps {
   children: React.ReactNode;
   /** The predefined status type to determine color and icon. */
   status: StatusType;
+  /** Tamanho do badge (default: 'sm') */
+  size?: BadgeSize;
   /** Optional custom Tailwind classes for further styling. */
   className?: string;
   /** If true, the icon will not be displayed. */
@@ -71,6 +74,7 @@ export interface StatusBadgeProps {
 export const StatusBadge: React.FC<StatusBadgeProps> = ({
   children,
   status,
+  size = 'sm',
   className,
   hideIcon = false,
   dismissible = false,
@@ -148,7 +152,8 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
   return (
     <span
       className={cn(
-        "badge badge-sm inline-flex items-center gap-1 font-medium cursor-default whitespace-nowrap",
+        "badge inline-flex items-center gap-1 font-medium cursor-default whitespace-nowrap",
+        BADGE_SIZE_CLASSES[size],
         config.classNames,
         className
       )}
@@ -157,7 +162,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
       aria-label={label}
     >
       {!hideIcon && (
-        <IconComponent className="h-3 w-3 flex-shrink-0" aria-hidden="true" />
+        <IconComponent className={cn(BADGE_ICON_SIZES[size], 'flex-shrink-0')} aria-hidden="true" />
       )}
       <span className="truncate">{children}</span>
     </span>
