@@ -1,5 +1,14 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, Children } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+
+const INTERACTIVE_TYPES = ['button', 'a', 'input', 'select', 'textarea'];
+
+function isInteractiveChild(children: React.ReactNode): boolean {
+  const child = Children.only(children) as React.ReactElement | null;
+  if (!child) return false;
+  const type = typeof child.type === 'string' ? child.type : '';
+  return INTERACTIVE_TYPES.includes(type);
+}
 
 interface TooltipProps {
   content: React.ReactNode;
@@ -146,6 +155,8 @@ export const Tooltip: React.FC<TooltipProps> = ({
     };
   }, [isVisible]);
 
+  const childIsInteractive = isInteractiveChild(children);
+
   return (
     <>
       <span
@@ -154,8 +165,8 @@ export const Tooltip: React.FC<TooltipProps> = ({
         onMouseLeave={handleMouseLeave}
         onFocus={handleFocus}
         onBlur={handleBlur}
-        aria-label={ariaLabel || (typeof content === 'string' ? content : undefined)}
-        tabIndex={disabled ? undefined : 0}
+        aria-label={!childIsInteractive ? (ariaLabel || (typeof content === 'string' ? content : undefined)) : undefined}
+        tabIndex={disabled || childIsInteractive ? undefined : 0}
         className="inline-flex"
       >
         {children}

@@ -16,6 +16,7 @@ interface TaskCardProps {
  */
 export const TaskCard: React.FC<TaskCardProps> = ({ task, onStartTest, onCompleteTest }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const contentId = `task-card-content-${task.id}`;
   type BadgeVariant = React.ComponentProps<typeof Badge>['variant'];
 
   // Calcula as métricas dos casos de teste
@@ -74,8 +75,14 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onStartTest, onComplet
           </div>
           <h3 className="font-bold text-lg text-base-content leading-tight">{task.title}</h3>
         </div>
-        <button onClick={handleToggleExpand} className="btn btn-ghost btn-sm btn-circle">
-          {isExpanded ? <ChevronUp /> : <ChevronDown />}
+        <button
+          onClick={handleToggleExpand}
+          className="btn btn-ghost btn-sm btn-circle"
+          aria-expanded={isExpanded}
+          aria-controls={contentId}
+          aria-label={isExpanded ? 'Recolher detalhes' : 'Expandir detalhes'}
+        >
+          {isExpanded ? <ChevronUp aria-hidden="true" /> : <ChevronDown aria-hidden="true" />}
         </button>
       </div>
 
@@ -120,7 +127,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onStartTest, onComplet
       </div>
 
       {isExpanded && (
-        <div className="pt-4 mt-4 border-t border-base-300/20">
+        <div id={contentId} className="pt-4 mt-4 border-t border-base-300/20">
           <h4 className="font-semibold mb-2 text-base-content">Descrição</h4>
           <p className="text-base-content/80 whitespace-pre-wrap text-sm">
             {task.description || 'Esta tarefa não possui uma descrição detalhada.'}

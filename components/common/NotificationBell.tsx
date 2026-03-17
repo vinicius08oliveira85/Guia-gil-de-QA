@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { getNotifications, getUnreadCount, markAsRead, markAllAsRead, deleteNotification, Notification } from '../../utils/notificationService';
+import toast from 'react-hot-toast';
+import { getNotifications, getUnreadCount, markAsRead, markAllAsRead, deleteNotification, restoreNotification, Notification } from '../../utils/notificationService';
 
 interface NotificationBellProps {
   onClick?: () => void;
@@ -58,10 +59,30 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
     setUnreadCount(0);
   };
 
-  const handleDelete = (id: string) => {
-    deleteNotification(id);
+  const handleDelete = (notification: Notification) => {
+    deleteNotification(notification.id);
     setNotifications(getNotifications().slice(0, 10));
     setUnreadCount(getUnreadCount());
+
+    toast(
+      (t) => (
+        <span className="flex items-center gap-3">
+          Notificação excluída
+          <button
+            onClick={() => {
+              restoreNotification(notification);
+              setNotifications(getNotifications().slice(0, 10));
+              setUnreadCount(getUnreadCount());
+              toast.dismiss(t.id);
+            }}
+            className="btn btn-xs btn-ghost underline"
+          >
+            Desfazer
+          </button>
+        </span>
+      ),
+      { duration: 4000 }
+    );
   };
 
   const getNotificationIcon = (type: Notification['type']) => {
@@ -151,10 +172,11 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleDelete(notification.id);
+                          handleDelete(notification);
                         }}
                         className="btn btn-ghost btn-xs btn-circle text-base-content/60 hover:text-error hover:bg-error/10"
                         type="button"
+                        aria-label="Excluir notificação"
                       >
                         ×
                       </button>
@@ -162,8 +184,10 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
                   </div>
                 ))
               ) : (
-                <div className="p-8 text-center text-base-content/60">
-                  Nenhuma notificação
+                <div className="p-8 text-center">
+                  <p className="text-3xl mb-2">🔔</p>
+                  <p className="text-sm font-medium text-base-content/70">Nenhuma notificação</p>
+                  <p className="text-xs text-base-content/50 mt-1">Você será notificado quando houver atualizações importantes.</p>
                 </div>
               )}
             </div>

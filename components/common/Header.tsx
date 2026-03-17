@@ -77,18 +77,15 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported: _onProjectImp
 
     // Obter título do tema
     const getThemeTitle = () => {
-        // Temas suportados: light e dark não mostram "(em breve)"
-        const supportedThemes = ['light', 'dark'];
-        const suffix = supportedThemes.includes(theme) ? '' : ' (em breve)';
         switch (theme) {
             case 'dark':
-                return `Tema Escuro${suffix}`;
+                return 'Tema Escuro';
             case 'light':
                 return 'Tema Claro';
             case 'leve-saude':
-                return `Leve Saúde${suffix}`;
+                return 'Leve Saúde';
             default:
-                return `Tema Automático${suffix}`;
+                return 'Tema Automático';
         }
     };
 

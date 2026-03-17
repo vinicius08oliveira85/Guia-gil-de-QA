@@ -99,6 +99,15 @@ export const deleteNotification = (notificationId: string) => {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
 };
 
+export const restoreNotification = (notification: Notification) => {
+  const notifications = getNotifications();
+  const alreadyExists = notifications.some(n => n.id === notification.id);
+  if (!alreadyExists) {
+    notifications.unshift(notification);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(notifications));
+  }
+};
+
 // Helpers para criar notificações específicas
 export const notifyBugCreated = (bug: JiraTask, project: Project) => {
   return createNotification({

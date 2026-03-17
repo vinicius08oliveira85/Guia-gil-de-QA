@@ -8,7 +8,7 @@ export interface TasksViewHeaderProps {
     onOpenFilters: () => void;
     onAnalyze: () => void;
     isRunningGeneralAnalysis: boolean;
-    analysisProgress: { current: number; total: number } | null;
+    analysisProgress: { current: number; total: number; message?: string; estimatedSeconds?: number } | null;
     activeFiltersCount: number;
 }
 
@@ -47,7 +47,6 @@ export const TasksViewHeader: React.FC<TasksViewHeaderProps> = ({
             </div>
 
             <div className="w-px h-8 bg-base-300 flex-shrink-0 hidden sm:block" />
-            <div className="w-px h-8 bg-base-300 flex-shrink-0 hidden md:block" />
 
             <Button
                 variant="outline"

@@ -1,4 +1,5 @@
 import { Component, ErrorInfo, ReactNode } from 'react';
+import toast from 'react-hot-toast';
 import { Card } from './Card';
 import { logger } from '../../utils/logger';
 
@@ -77,7 +78,7 @@ User Agent: ${typeof navigator !== 'undefined' ? navigator.userAgent : 'N/A'}
     `.trim();
 
     navigator.clipboard.writeText(errorText).then(() => {
-      alert('Detalhes do erro copiados para a área de transferência!');
+      toast.success('Detalhes do erro copiados para a área de transferência!');
     }).catch(() => {
       // Fallback: criar elemento temporário
       const textarea = document.createElement('textarea');
@@ -86,7 +87,7 @@ User Agent: ${typeof navigator !== 'undefined' ? navigator.userAgent : 'N/A'}
       textarea.select();
       document.execCommand('copy');
       document.body.removeChild(textarea);
-      alert('Detalhes do erro copiados para a área de transferência!');
+      toast.success('Detalhes do erro copiados para a área de transferência!');
     });
   };
 

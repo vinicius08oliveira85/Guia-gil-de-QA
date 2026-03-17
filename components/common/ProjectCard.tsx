@@ -219,9 +219,9 @@ export const ProjectCard = React.memo<ProjectCardProps>(({
           <DonutRing percent={tasksPercent} strokeClass="stroke-secondary" label="Tarefas" />
           <DonutRing percent={successPercent} strokeClass="stroke-primary" label="Sucesso" />
         </div>
-        <div className="hidden lg:flex flex-col gap-2 max-w-xs flex-grow ml-8">
+        <div className="hidden md:flex flex-col gap-2 max-w-xs flex-grow ml-8">
           {recentActivity.length > 0 ? (
-            recentActivity.map(item => (
+            recentActivity.slice(0, 1).map(item => (
               <button
                 key={item.id}
                 type="button"
@@ -243,7 +243,33 @@ export const ProjectCard = React.memo<ProjectCardProps>(({
                 <CheckCircle2 className="w-4 h-4 text-primary flex-shrink-0" aria-hidden="true" />
                 <span className="text-[11px] text-base-content truncate">{item.title}</span>
               </button>
-            ))
+            )).concat(
+              recentActivity.length > 1
+                ? recentActivity.slice(1).map(item => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      data-task-activity
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onTaskClick?.(item.id);
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          onTaskClick?.(item.id);
+                        }
+                      }}
+                      className="w-full text-left bg-primary/5 border border-primary/10 rounded-lg px-3 py-1.5 items-center gap-2 cursor-pointer hover:bg-primary/10 transition-colors hidden lg:flex"
+                      aria-label={`Ir para a tarefa: ${item.title}`}
+                    >
+                      <CheckCircle2 className="w-4 h-4 text-primary flex-shrink-0" aria-hidden="true" />
+                      <span className="text-[11px] text-base-content truncate">{item.title}</span>
+                    </button>
+                  ))
+                : []
+            )
           ) : (
             <span className="text-[11px] text-base-content/60">Nenhuma tarefa concluída</span>
           )}

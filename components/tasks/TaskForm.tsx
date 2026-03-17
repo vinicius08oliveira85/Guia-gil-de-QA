@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
 import { JiraTask, JiraTaskType, BugSeverity, TeamRole, TaskPriority } from '../../types';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
@@ -54,6 +55,7 @@ export const TaskForm: React.FC<{
                 if (data) {
                     setTaskData((prev) => ({ ...prev, ...data }));
                     setValidationErrors({});
+                    toast.success(`Tarefa ${key} importada do Jira com sucesso!`);
                 }
             })
             .finally(() => setImportingFromJira(false));

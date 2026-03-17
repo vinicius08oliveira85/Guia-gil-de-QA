@@ -4,6 +4,7 @@ import { ptBR } from 'date-fns/locale';
 import { Project } from '../types';
 import { ConfirmDialog } from './common/ConfirmDialog';
 import { useIsMobile } from '../hooks/useIsMobile';
+import { useLocalStorage } from '../hooks/useLocalStorage';
 import { Badge } from './common/Badge';
 import { ProgressIndicator } from './common/ProgressIndicator';
 import { Plus, Search, AlertTriangle, Bug } from 'lucide-react';
@@ -40,10 +41,7 @@ export const ProjectsDashboard: React.FC<{
     const [isCreating, setIsCreating] = useState(false);
     const [retryCooldownUntil, setRetryCooldownUntil] = useState<number | null>(null);
     const [syncBannerDismissed, setSyncBannerDismissed] = useState(false);
-    const [sortBy, setSortBy] = useState<'name' | 'updatedAt'>(() => {
-        const v = localStorage.getItem('projectsSortBy');
-        return v === 'updatedAt' ? 'updatedAt' : 'name';
-    });
+    const [sortBy, setSortBy] = useLocalStorage<'name' | 'updatedAt'>('projectsSortBy', 'name');
     const [quickFilter, setQuickFilter] = useState<QuickFilter>('all');
     // Visualização sempre em grade - removido viewMode
     // Ordenação fixa por nome - removido sortBy
@@ -110,8 +108,7 @@ export const ProjectsDashboard: React.FC<{
 
     const handleSortByChange = useCallback((value: 'name' | 'updatedAt') => {
         setSortBy(value);
-        localStorage.setItem('projectsSortBy', value);
-    }, []);
+    }, [setSortBy]);
 
     const sortedProjects = useMemo(() => {
         const list = [...projects];
