@@ -11,6 +11,8 @@ const MAX_AI_TASKS = 20;
 const MAX_AI_TESTS = 30;
 /** Máximo de caracteres por trecho de texto (descrição, etc.) no contexto. */
 const TEXT_SNIPPET_LENGTH = 220;
+/** Limite total do prompt enviado à IA (evita payload excessivo e stack overflow no cliente). */
+const MAX_PROMPT_LENGTH = 28_000;
 
 /** Snapshot usado para hash de cache: inclui todos os campos que influenciam o resultado da análise. */
 interface TaskSnapshot {
@@ -596,9 +598,14 @@ OBSERVAÇÕES IMPORTANTES:
 - Não faça referência a tarefas/testes que não estejam presentes no contexto.
     `;
 
+    const finalPrompt =
+      prompt.length > MAX_PROMPT_LENGTH
+        ? prompt.slice(0, MAX_PROMPT_LENGTH) + '\n\n[... contexto truncado para evitar sobrecarga ...]'
+        : prompt;
+
     const response = await callGeminiWithRetry({
       model: "gemini-2.5-flash",
-      contents: prompt,
+      contents: finalPrompt,
       config: {
         responseMimeType: "application/json",
         responseSchema: generalAnalysisSchema,
