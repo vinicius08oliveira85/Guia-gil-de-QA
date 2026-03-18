@@ -18,10 +18,11 @@ import { useOnlineStatus } from '../hooks/useOnlineStatus';
 import toast from 'react-hot-toast';
 import { Spinner } from './common/Spinner';
 import { Trash2 } from 'lucide-react';
+import { logger } from '../utils/logger';
 
 export const ProjectView: React.FC<{
   project: Project;
-  onUpdateProject: (project: Project) => void;
+  onUpdateProject: (project: Project) => void | Promise<void>;
   onBack: () => void;
   onDeleteProject?: (projectId: string) => void | Promise<void>;
 }> = ({ project, onUpdateProject, onBack, onDeleteProject }) => {
@@ -107,7 +108,9 @@ export const ProjectView: React.FC<{
             // Use setTimeout to ensure update happens after render, preventing React error #130
             setTimeout(() => {
                 if (isMountedRef.current) {
-                    onUpdateProjectRef.current({ ...projectRef.current, phases: metrics.newPhases });
+                    Promise.resolve(
+                        onUpdateProjectRef.current({ ...projectRef.current, phases: metrics.newPhases })
+                    ).catch((err) => logger.warn('Erro ao atualizar fases do projeto', 'ProjectView', err));
                 }
             }, 0);
         }
