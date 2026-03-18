@@ -29,12 +29,19 @@ const SupabaseSettingsTab = lazyLoadTab(() => import('./SupabaseSettingsTab').th
 const PreferencesTab = lazyLoadTab(() => import('./PreferencesTab').then(m => ({ default: m.PreferencesTab })), 'PreferencesTab');
 const GeminiApiKeysTab = lazyLoadTab(() => import('./GeminiApiKeysTab').then(m => ({ default: m.GeminiApiKeysTab })), 'GeminiApiKeysTab');
 
+type TabType = 'jira' | 'supabase' | 'preferences' | 'api-keys';
+
+const tabs: { id: TabType; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
+    { id: 'jira', label: 'Jira', icon: Link },
+    { id: 'supabase', label: 'Supabase', icon: Database },
+    { id: 'api-keys', label: 'API Keys', icon: Key },
+    { id: 'preferences', label: 'Preferências', icon: SettingsIcon },
+];
+
 interface SettingsViewProps {
     onClose: () => void;
     onProjectImported?: (project: Project) => void;
 }
-
-type TabType = 'jira' | 'supabase' | 'preferences' | 'api-keys';
 
 export const SettingsView: React.FC<SettingsViewProps> = ({ onClose, onProjectImported }) => {
     const [activeTab, setActiveTab] = useState<TabType>('jira');
@@ -67,14 +74,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClose, onProjectIm
             nextIndex = tabs.length - 1;
         } else return;
         if (nextIndex !== index) setActiveTab(tabs[nextIndex].id);
-    }, [activeTab, tabs]);
-
-    const tabs: { id: TabType; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
-        { id: 'jira', label: 'Jira', icon: Link },
-        { id: 'supabase', label: 'Supabase', icon: Database },
-        { id: 'api-keys', label: 'API Keys', icon: Key },
-        { id: 'preferences', label: 'Preferências', icon: SettingsIcon },
-    ];
+    }, [activeTab]);
 
     return (
         <div className="min-h-screen flex flex-col bg-base-100">
