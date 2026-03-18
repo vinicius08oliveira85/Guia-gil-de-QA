@@ -14,6 +14,7 @@ import {
 import { loadTestStatusesByJiraKeys } from '../supabaseService';
 import { mergeTestCases } from '../../utils/testCaseMerge';
 import { parseJiraDescriptionHTML } from '../../utils/jiraDescriptionParser';
+import { getJiraStatusColor } from '../../utils/jiraStatusColors';
 import { logger } from '../../utils/logger';
 
 export const syncJiraProject = async (
@@ -930,10 +931,38 @@ export const syncJiraProject = async (
         });
     }
 
+    // Sincronizar lista de jiraStatuses: incluir status encontrados nas tasks que ainda não constam
+    // em project.settings.jiraStatuses (ex.: status criados no Jira após a importação inicial)
+    const existingStatusNames = new Set(
+        (projectToUse.settings?.jiraStatuses || []).map(s => (typeof s === 'string' ? s : s.name))
+    );
+    const newStatuses: Array<{ name: string; color: string }> = [];
+    updatedTasks.forEach(task => {
+        if (task.jiraStatus && !existingStatusNames.has(task.jiraStatus)) {
+            existingStatusNames.add(task.jiraStatus);
+            newStatuses.push({ name: task.jiraStatus, color: getJiraStatusColor(task.jiraStatus) });
+        }
+    });
+    if (newStatuses.length > 0) {
+        logger.info(
+            `Sync: ${newStatuses.length} novo(s) status do Jira descobertos e adicionados à lista do projeto`,
+            'jiraService',
+            { novosStatus: newStatuses.map(s => s.name) }
+        );
+    }
+    const mergedJiraStatuses = [
+        ...(projectToUse.settings?.jiraStatuses || []),
+        ...newStatuses,
+    ];
+
     // IMPORTANTE: Retornar projeto baseado em projectToUse (do store), não no project passado como parâmetro
     // Isso garante que todos os campos do projeto (não apenas tasks) venham do store com os dados mais recentes
     return {
         ...projectToUse,
         tasks: updatedTasks,
+        settings: {
+            ...projectToUse.settings,
+            jiraStatuses: mergedJiraStatuses.length > 0 ? mergedJiraStatuses : projectToUse.settings?.jiraStatuses,
+        },
     };
 }

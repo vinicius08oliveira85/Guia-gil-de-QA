@@ -27,8 +27,23 @@ export const mapJiraStatusToTaskStatus = (jiraStatus: string | undefined | null)
 
 export const getStatusFilterOptions = (project: Project): string[] => {
     const jiraStatuses = project?.settings?.jiraStatuses;
-    if (jiraStatuses && jiraStatuses.length > 0) return jiraStatuses.map(s => typeof s === 'string' ? s : s.name);
-    return ['A Fazer', 'Em Andamento', 'Concluído'];
+    const configuredNames = jiraStatuses?.length
+        ? jiraStatuses.map(s => (typeof s === 'string' ? s : s.name))
+        : [];
+
+    // Safety net: inclui jiraStatus presentes nas tasks mas ausentes da lista configurada
+    // (ex.: status criados no Jira após a importação inicial e ainda não persistidos em settings)
+    const configuredSet = new Set(configuredNames);
+    const extraFromTasks: string[] = [];
+    (project.tasks || []).forEach(t => {
+        if (t.jiraStatus && !configuredSet.has(t.jiraStatus)) {
+            configuredSet.add(t.jiraStatus);
+            extraFromTasks.push(t.jiraStatus);
+        }
+    });
+
+    const allOptions = [...configuredNames, ...extraFromTasks];
+    return allOptions.length > 0 ? allOptions : ['A Fazer', 'Em Andamento', 'Concluído'];
 };
 
 export const PT_STATUS_TO_CATEGORY: Record<string, 'To Do' | 'In Progress' | 'Done'> = {
