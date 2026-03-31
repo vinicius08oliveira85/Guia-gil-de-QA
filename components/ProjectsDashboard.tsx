@@ -96,8 +96,13 @@ export const ProjectsDashboard: React.FC<{
     };
 
 
+    /** Erros que merecem destaque vermelho: 5xx, timeout e indisponibilidade transitória (cold start / pausado). */
     const isSyncServerError = Boolean(
-        supabaseLoadError && /\b(500|502|503|504|Erro HTTP)/i.test(supabaseLoadError)
+        supabaseLoadError &&
+            (/\b(500|502|503|504|522|Erro HTTP)\b/i.test(supabaseLoadError) ||
+                /timeout|expirou|demorou demais|cold start|service unavailable|indisponível/i.test(
+                    supabaseLoadError
+                ))
     );
     const retryButtonDisabled = isLoading || (retryCooldownUntil != null && Date.now() < retryCooldownUntil);
 
@@ -315,7 +320,8 @@ export const ProjectsDashboard: React.FC<{
                     </section>
                 )}
 
-                {supabaseLoadFailed && filteredProjects.length > 0 && !syncBannerDismissed && (
+                {/* Com projetos no workspace: banner não depende do filtro (evita sumir quando o filtro zera a lista) */}
+                {supabaseLoadFailed && projects.length > 0 && !syncBannerDismissed && (
                     <div
                         className={`mb-4 p-3 rounded-lg text-sm flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between ${isSyncServerError ? 'bg-error/10 text-error-content border border-error/30' : 'bg-warning/10 text-warning-content border border-warning/30'}`}
                         role="alert"
@@ -394,7 +400,8 @@ export const ProjectsDashboard: React.FC<{
                     </div>
                 ) : (
                     <>
-                        {supabaseLoadFailed && (
+                        {/* Sem projetos no workspace: aviso de sync aqui (com lista vazia não há banner no topo) */}
+                        {supabaseLoadFailed && projects.length === 0 && (
                             <div
                                 className={`mb-4 p-3 rounded-lg text-sm flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between ${isSyncServerError ? 'bg-error/10 text-error-content border border-error/30' : 'bg-warning/10 text-warning-content border border-warning/30'}`}
                                 role="alert"
@@ -427,6 +434,7 @@ export const ProjectsDashboard: React.FC<{
                                 </button>
                             </div>
                         )}
+                        {projects.length === 0 ? (
                         <EmptyState
                             icon="🚀"
                             title="Nenhum projeto ainda"
@@ -438,6 +446,26 @@ export const ProjectsDashboard: React.FC<{
                             }}
                             tip="Você pode criar um projeto do zero, usar um template ou importar do Jira se estiver configurado."
                         />
+                        ) : (
+                            <div
+                                className="rounded-2xl border border-base-300/80 bg-base-100 p-8 text-center"
+                                role="status"
+                                aria-live="polite"
+                            >
+                                <p className="text-sm text-base-content/80 mb-4 max-w-md mx-auto">
+                                    {quickFilter === 'withBugs'
+                                        ? 'Nenhum projeto com bugs abertos corresponde a este filtro.'
+                                        : 'Nenhum projeto corresponde a "Precisa de atenção" com os critérios atuais.'}
+                                </p>
+                                <button
+                                    type="button"
+                                    onClick={() => setQuickFilter('all')}
+                                    className="btn btn-outline btn-sm rounded-lg"
+                                >
+                                    Mostrar todos os projetos
+                                </button>
+                            </div>
+                        )}
                     </>
                 )}
             </div>
