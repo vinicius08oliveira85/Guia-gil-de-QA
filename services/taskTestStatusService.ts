@@ -1,6 +1,11 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { TaskTestStatus, TaskTestStatusRecord, JiraTask } from '../types';
 import { logger } from '../utils/logger';
+import {
+    clearSupabaseRemotePause,
+    isSupabaseRemotePaused,
+    pauseSupabaseRemoteAfterTransientFailure,
+} from './supabaseCircuitBreaker';
 
 const supabaseProxyUrl = (import.meta.env.VITE_SUPABASE_PROXY_URL || '').trim();
 const forceLocalOnly = import.meta.env.VITE_LOCAL_ONLY === 'true';
@@ -170,6 +175,7 @@ const saveThroughProxy = async (taskKey: string, status: TaskTestStatus, retryCo
         if (retryCount === 0) {
             logger.debug(`Status de teste "${status}" salvo via proxy para ${taskKey}`, 'taskTestStatusService');
         }
+        clearSupabaseRemotePause();
     } catch (error) {
         if (isNetworkError(error) && retryCount < maxRetries) {
             const delay = retryDelays[retryCount] || 4000;
@@ -225,6 +231,7 @@ const saveThroughSdk = async (taskKey: string, status: TaskTestStatus, retryCoun
     if (retryCount === 0) {
         logger.debug(`Status de teste "${status}" salvo via SDK para ${taskKey}`, 'taskTestStatusService');
     }
+    clearSupabaseRemotePause();
 };
 
 /**
@@ -240,6 +247,7 @@ const loadThroughProxy = async (taskKey: string): Promise<TaskTestStatus | null>
         },
     }, requestTimeoutMs);
 
+    clearSupabaseRemotePause();
     return response.record?.status ?? null;
 };
 
@@ -267,6 +275,7 @@ const loadMultipleThroughProxy = async (taskKeys: string[]): Promise<Map<string,
         result.set(record.task_key, record.status);
     });
 
+    clearSupabaseRemotePause();
     return result;
 };
 
@@ -466,6 +475,9 @@ export const loadTaskTestStatus = async (taskKey: string): Promise<TaskTestStatu
     if (forceLocalOnly) {
         return null;
     }
+    if (isSupabaseRemotePaused()) {
+        return null;
+    }
     const hasProxy = Boolean(supabaseProxyUrl);
     const hasSdk = Boolean(supabase);
 
@@ -484,7 +496,8 @@ export const loadTaskTestStatus = async (taskKey: string): Promise<TaskTestStatu
                 }
             }
 
-            logger.warn('Falha ao carregar status via proxy (retornando null)', 'taskTestStatusService', error);
+            logger.debug('Falha ao carregar status via proxy (retornando null)', 'taskTestStatusService', error);
+            pauseSupabaseRemoteAfterTransientFailure();
             return null;
         }
     }
@@ -506,6 +519,9 @@ export const loadMultipleTaskTestStatus = async (taskKeys: string[]): Promise<Ma
     if (forceLocalOnly) {
         return new Map();
     }
+    if (isSupabaseRemotePaused()) {
+        return new Map();
+    }
 
     const hasProxy = Boolean(supabaseProxyUrl);
     const hasSdk = Boolean(supabase);
@@ -521,7 +537,8 @@ export const loadMultipleTaskTestStatus = async (taskKeys: string[]): Promise<Ma
                     return new Map();
                 }
             }
-            logger.warn('Falha ao carregar múltiplos status via proxy (retornando vazio)', 'taskTestStatusService', error);
+            logger.debug('Falha ao carregar múltiplos status via proxy (retornando vazio)', 'taskTestStatusService', error);
+            pauseSupabaseRemoteAfterTransientFailure();
             return new Map();
         }
     }
@@ -544,6 +561,9 @@ export const saveTaskTestStatus = async (taskKey: string, status: TaskTestStatus
     if (forceLocalOnly) {
         return;
     }
+    if (isSupabaseRemotePaused()) {
+        return;
+    }
     const hasProxy = Boolean(supabaseProxyUrl);
     const hasSdk = Boolean(supabase);
 
@@ -564,7 +584,8 @@ export const saveTaskTestStatus = async (taskKey: string, status: TaskTestStatus
                 }
             }
 
-            logger.warn('Falha ao salvar status via proxy. Mantendo apenas localmente.', 'taskTestStatusService', error);
+            logger.debug('Falha ao salvar status via proxy. Mantendo apenas localmente.', 'taskTestStatusService', error);
+            pauseSupabaseRemoteAfterTransientFailure();
             return;
         }
     }

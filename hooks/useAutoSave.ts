@@ -17,10 +17,10 @@ interface UseAutoSaveOptions {
 }
 
 /**
- * Hook que monitora mudanças no projeto e salva automaticamente no Supabase
- * 
- * Mudanças críticas (status de tarefas/testes, análises) são salvas imediatamente
- * Outras mudanças aguardam o debounce antes de salvar
+ * Hook que monitora mudanças no projeto e persiste automaticamente no IndexedDB.
+ * A nuvem (Supabase) só é atualizada quando o usuário usa o botão Salvar / sincronização explícita.
+ *
+ * Mudanças críticas são persistidas localmente imediatamente; demais mudanças usam debounce.
  */
 export const useAutoSave = ({
   project,
@@ -96,7 +96,7 @@ export const useAutoSave = ({
   }, []);
 
   /**
-   * Salva o projeto no Supabase
+   * Persiste o projeto localmente (IndexedDB), sem enviar ao Supabase.
    */
   const saveProject = useCallback(async (projectToSave: Project) => {
     if (isSavingRef.current) {

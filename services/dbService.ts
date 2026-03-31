@@ -177,22 +177,6 @@ export const addProject = async (project: Project): Promise<SaveResult> => {
     request.onsuccess = () => resolve();
   });
 
-  if (isSupabaseAvailable()) {
-    saveProjectToSupabase(cleanedProject)
-      .then(() => {
-        logger.debug(`Projeto "${cleanedProject.name}" sincronizado com Supabase após add local`, 'dbService');
-      })
-      .catch((error) => {
-        const msg = error instanceof Error ? error.message : String(error);
-        const isLocalOnlyOrTooBig = msg.includes('salvo apenas localmente') || msg.includes('muito grande');
-        if (isLocalOnlyOrTooBig) {
-          logger.debug('Supabase (background): projeto permanece local', 'dbService', error);
-        } else {
-          logger.warn('Supabase (background): falha ao sincronizar projeto novo', 'dbService', error);
-        }
-      });
-  }
-
   return { savedToSupabase: false };
 };
 
@@ -200,8 +184,16 @@ export const addProject = async (project: Project): Promise<SaveResult> => {
 const recentNetworkErrors = new Map<string, number>();
 const networkErrorCooldownMs = 5000; // 5 segundos de cooldown após erro de rede (reduzido para ser mais responsivo)
 
-export const updateProject = async (project: Project): Promise<SaveResult> => {
+/**
+ * Persiste o projeto no IndexedDB.
+ * @param options.syncRemote - Se true, também envia ao Supabase (salvamento explícito). O padrão é só local.
+ */
+export const updateProject = async (
+  project: Project,
+  options?: { syncRemote?: boolean }
+): Promise<SaveResult> => {
   const cleanedProject = cleanupTestCasesForNonTaskTypesSync(project);
+  const syncRemote = options?.syncRemote === true;
 
   const totalStrategies = cleanedProject.tasks.reduce((sum, task) => sum + (task.testStrategy?.length || 0), 0);
   const totalExecutedStrategies = cleanedProject.tasks.reduce((sum, task) => sum + (task.executedStrategies?.length || 0), 0);
@@ -211,6 +203,18 @@ export const updateProject = async (project: Project): Promise<SaveResult> => {
       'dbService',
       { projectId: cleanedProject.id, projectName: cleanedProject.name }
     );
+  }
+
+  if (!syncRemote) {
+    const db = await openDB();
+    await new Promise<void>((resolve, reject) => {
+      const transaction = db.transaction(STORE_NAME, 'readwrite');
+      const store = transaction.objectStore(STORE_NAME);
+      const request = store.put(cleanedProject);
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => resolve();
+    });
+    return { savedToSupabase: false };
   }
 
   const lastNetworkError = recentNetworkErrors.get(cleanedProject.id);

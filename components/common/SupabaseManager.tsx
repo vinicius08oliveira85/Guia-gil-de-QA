@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Project } from '../../types';
 import { isSupabaseAvailable } from '../../services/supabaseService';
-import { updateProject, deleteProject } from '../../services/dbService';
+import { deleteProject } from '../../services/dbService';
+import { useProjectsStore } from '../../store/projectsStore';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import { Card } from './Card';
 import { Badge } from './Badge';
@@ -15,6 +16,7 @@ export const SupabaseManager: React.FC<SupabaseManagerProps> = ({ project, onPro
     const [isSaving, setIsSaving] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
     const { handleError, handleSuccess, handleWarning } = useErrorHandler();
+    const saveProjectToSupabase = useProjectsStore((s) => s.saveProjectToSupabase);
     const supabaseAvailable = isSupabaseAvailable();
 
     const handleSaveToSupabase = async () => {
@@ -25,8 +27,7 @@ export const SupabaseManager: React.FC<SupabaseManagerProps> = ({ project, onPro
 
         setIsSaving(true);
         try {
-            // Usar updateProject que salva tanto no Supabase quanto no IndexedDB
-            await updateProject(project);
+            await saveProjectToSupabase(project.id);
             handleSuccess(`Projeto "${project.name}" salvo no Supabase e no cache local com sucesso!`);
             onProjectUpdated?.();
         } catch (error) {

@@ -1,6 +1,11 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { Project, TestCase, JiraTask } from '../types';
 import { logger } from '../utils/logger';
+import {
+    clearSupabaseRemotePause,
+    isSupabaseRemotePaused,
+    pauseSupabaseRemoteAfterTransientFailure,
+} from './supabaseCircuitBreaker';
 
 const supabaseProxyUrl = (import.meta.env.VITE_SUPABASE_PROXY_URL || '').trim();
 const forceLocalOnly = import.meta.env.VITE_LOCAL_ONLY === 'true';
@@ -408,6 +413,7 @@ const saveThroughProxy = async (project: Project, retryCount: number = 0): Promi
             body,
             headers
         }, requestTimeoutMs);
+        clearSupabaseRemotePause();
         // Log reduzido - apenas debug para evitar spam
         if (retryCount === 0) {
             logger.debug(`Projeto "${project.name}" salvo via proxy Supabase`, 'supabaseService');
@@ -425,6 +431,11 @@ const saveThroughProxy = async (project: Project, retryCount: number = 0): Promi
         }
         throw error;
     }
+};
+
+const logSaveNetworkFailure = (context: string, error: unknown): void => {
+    pauseSupabaseRemoteAfterTransientFailure();
+    logger.debug(`${context} Salvando apenas localmente.`, 'supabaseService', error);
 };
 
 const saveThroughSdk = async (project: Project, retryCount: number = 0): Promise<void> => {
@@ -470,6 +481,7 @@ const saveThroughSdk = async (project: Project, retryCount: number = 0): Promise
         throw new Error(error.message);
     }
 
+    clearSupabaseRemotePause();
     // Log apenas se não for retry (evitar spam)
     if (retryCount === 0) {
         logger.debug(`Projeto "${project.name}" salvo via SDK Supabase`, 'supabaseService');
@@ -479,6 +491,12 @@ const saveThroughSdk = async (project: Project, retryCount: number = 0): Promise
 export const saveProjectToSupabase = async (project: Project): Promise<void> => {
     if (forceLocalOnly) {
         logger.debug('VITE_LOCAL_ONLY=true: salvamento remoto ignorado (local-first)', 'supabaseService', { projectId: project.id });
+        return;
+    }
+    if (isSupabaseRemotePaused()) {
+        logger.debug('Supabase em pausa após falhas transitórias: salvamento remoto adiado', 'supabaseService', {
+            projectId: project.id,
+        });
         return;
     }
 
@@ -553,7 +571,7 @@ export const saveProjectToSupabase = async (project: Project): Promise<void> => 
                     return;
                 } catch (error) {
                     if (isNetworkError(error)) {
-                        logger.warn('Erro de rede ao salvar via proxy Supabase. Salvando apenas localmente.', 'supabaseService', error);
+                        logSaveNetworkFailure('Erro de rede ao salvar via proxy.', error);
                         throw error;
                     }
                     if (isPayloadTooLargeError(error)) {
@@ -594,7 +612,7 @@ export const saveProjectToSupabase = async (project: Project): Promise<void> => 
                 } catch (error) {
                     if (isNetworkError(error)) {
                         if (!supabaseProxyUrl) {
-                            logger.warn('Erro de rede ao salvar via SDK Supabase. Salvando apenas localmente.', 'supabaseService', error);
+                            logSaveNetworkFailure('Erro de rede ao salvar via SDK.', error);
                             throw error;
                         }
                         logger.debug('Erro de rede ao salvar via SDK Supabase. Tentando proxy como fallback.', 'supabaseService', error);
@@ -623,7 +641,7 @@ export const saveProjectToSupabase = async (project: Project): Promise<void> => 
                     return;
                 } catch (error) {
                     if (isNetworkError(error)) {
-                        logger.warn('Erro de rede ao salvar via proxy Supabase. Salvando apenas localmente.', 'supabaseService', error);
+                        logSaveNetworkFailure('Erro de rede ao salvar via proxy.', error);
                         throw error;
                     }
                     if (isPayloadTooLargeError(error)) {
@@ -698,12 +716,16 @@ export const loadProjectsFromSupabase = async (): Promise<LoadProjectsResult> =>
     }
 
     if (supabaseProxyUrl) {
+        if (isSupabaseRemotePaused()) {
+            return { projects: [], loadFailed: false };
+        }
         const attempt = async (): Promise<LoadProjectsResult> => {
             const userId = await getUserId();
             const response = await callSupabaseProxy<{ projects?: Project[] }>('GET', {
                 query: { userId }
             }, loadProjectsTimeoutMs);
             const projects = response.projects ?? [];
+            clearSupabaseRemotePause();
             if (projects.length === 0) {
                 logger.info('Nenhum projeto encontrado no Supabase (proxy)', 'supabaseService');
             } else {
@@ -739,35 +761,42 @@ export const loadProjectsFromSupabase = async (): Promise<LoadProjectsResult> =>
                 }
 
                 if (isTimeout) {
-                    logger.warn(
-                        `Timeout ao carregar projetos do Supabase (proxy) [tentativa ${attemptIndex + 1}/${maxLoadAttempts}]. Possível cold start.`,
+                    logger.debug(
+                        `Timeout ao carregar projetos (proxy) [${attemptIndex + 1}/${maxLoadAttempts}] — possível cold start.`,
                         'supabaseService',
                         error
                     );
                 } else if (isSchemaCacheOrPaused) {
-                    logger.warn(
-                        `Supabase indisponível (schema cache/pausado) [tentativa ${attemptIndex + 1}/${maxLoadAttempts}].`,
+                    logger.debug(
+                        `Supabase indisponível (schema cache/pausado) [${attemptIndex + 1}/${maxLoadAttempts}].`,
                         'supabaseService',
                         error
                     );
                 } else if (isTransientHttp) {
-                    logger.warn(
-                        `Supabase indisponível (503/504/5xx) [tentativa ${attemptIndex + 1}/${maxLoadAttempts}].`,
+                    logger.debug(
+                        `Supabase indisponível (503/504/5xx) [${attemptIndex + 1}/${maxLoadAttempts}].`,
                         'supabaseService',
                         error
                     );
                 } else {
-                    logger.warn(
-                        `Erro ao carregar projetos via proxy Supabase [tentativa ${attemptIndex + 1}/${maxLoadAttempts}].`,
+                    logger.debug(
+                        `Erro ao carregar projetos via proxy [${attemptIndex + 1}/${maxLoadAttempts}].`,
                         'supabaseService',
                         error
                     );
+                    pauseSupabaseRemoteAfterTransientFailure();
                     return { projects: [], loadFailed: true, errorMessage: getSupabaseLoadFailureUserMessage(errorMessage) };
                 }
 
                 const shouldRetry = isSchemaCacheOrPaused || isTransientHttp || isTimeout;
                 const hasMoreAttempts = attemptIndex < maxLoadAttempts - 1;
                 if (!shouldRetry || !hasMoreAttempts) {
+                    pauseSupabaseRemoteAfterTransientFailure();
+                    logger.debug(
+                        'Carregamento Supabase esgotou tentativas; dados locais preservados.',
+                        'supabaseService',
+                        lastErrorMessage
+                    );
                     return { projects: [], loadFailed: true, errorMessage: getSupabaseLoadFailureUserMessage(errorMessage) };
                 }
 
@@ -776,12 +805,6 @@ export const loadProjectsFromSupabase = async (): Promise<LoadProjectsResult> =>
                 await new Promise(r => setTimeout(r, delayMs));
             }
         }
-
-        return {
-            projects: [],
-            loadFailed: true,
-            errorMessage: getSupabaseLoadFailureUserMessage(lastErrorMessage ?? 'Erro desconhecido ao carregar do Supabase'),
-        };
     }
 
     // SDK direto apenas em desenvolvimento local
@@ -814,9 +837,11 @@ export const loadProjectsFromSupabase = async (): Promise<LoadProjectsResult> =>
         }
         if (!data || data.length === 0) {
             logger.info('Nenhum projeto encontrado no Supabase', 'supabaseService');
+            clearSupabaseRemotePause();
             return { projects: [], loadFailed: false };
         }
         const projects = data.map(row => row.data as Project);
+        clearSupabaseRemotePause();
         logger.info(`${projects.length} projetos carregados do Supabase via SDK`, 'supabaseService');
         return { projects, loadFailed: false };
     } catch (error) {

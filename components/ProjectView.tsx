@@ -75,7 +75,7 @@ export const ProjectView: React.FC<{
         };
     }, [checkScroll, activeTab]);
     
-    // Auto-save: monitora mudanças e salva automaticamente (IndexedDB sempre; Supabase quando disponível)
+    // Auto-save: IndexedDB automático; Supabase apenas pelo botão Salvar (ou sync manual)
     useAutoSave({
         project: currentProject,
         debounceMs: 300,

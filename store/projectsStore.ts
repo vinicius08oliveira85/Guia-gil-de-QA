@@ -4,12 +4,13 @@ import {
   loadProjectsFromIndexedDB,
   getProjectById,
   addProject, 
-  updateProject, 
+  updateProject as updateProjectInDatabase, 
   deleteProject,
   saveProjectToSupabaseOnly,
   writeProjectToIndexedDBOnly
 } from '../services/dbService';
 import { loadProjectsFromSupabase, isSupabaseAvailable } from '../services/supabaseService';
+import { clearSupabaseRemotePause } from '../services/supabaseCircuitBreaker';
 import { autoBackupBeforeOperation, createBackup } from '../services/backupService';
 import { migrateTestCases } from '../utils/testCaseMigration';
 import { cleanupTestCasesForProjects } from '../utils/testCaseCleanup';
@@ -38,7 +39,7 @@ interface ProjectsState {
   syncProjectsFromSupabase: () => Promise<void>;
   saveProjectToSupabase: (projectId: string) => Promise<void>;
   createProject: (name: string, description: string, templateId?: string) => Promise<Project>;
-  updateProject: (project: Project, options?: { silent?: boolean }) => Promise<void>;
+  updateProject: (project: Project, options?: { silent?: boolean; syncRemote?: boolean }) => Promise<void>;
   deleteProject: (projectId: string) => Promise<void>;
   selectProject: (projectId: string | null) => void;
   addTaskToProject: (projectId: string, task: JiraTask) => Promise<void>;
@@ -170,6 +171,7 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
 
   syncProjectsFromSupabase: async () => {
     try {
+      clearSupabaseRemotePause();
       logger.debug('Sincronizando projetos do Supabase...', 'ProjectsStore');
       const result = await loadProjectsFromSupabase();
       if (result.loadFailed) {
@@ -272,6 +274,7 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
       await writeProjectToIndexedDBOnly(project).catch(err => {
         logger.warn(`Erro ao atualizar IndexedDB após salvar no Supabase`, 'ProjectsStore', err);
       });
+      set({ lastSaveToSupabase: true });
       logger.debug(`Projeto "${project.name}" salvo no Supabase`, 'ProjectsStore');
     } catch (error) {
       const errorObj = error instanceof Error ? error : new Error('Erro ao salvar projeto no Supabase');
@@ -357,7 +360,7 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
     }
   },
 
-  updateProject: async (project: Project, options?: { silent?: boolean }) => {
+  updateProject: async (project: Project, options?: { silent?: boolean; syncRemote?: boolean }) => {
     try {
       const state = get();
       const oldProject = state.projects.find((p) => p.id === project.id);
@@ -427,12 +430,19 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
         invalidateGeneralAnalysisCache(finalProject.id);
       }
 
-      const result = await updateProject(finalProject);
+      const syncRemote = options?.syncRemote === true;
+      const result = await updateProjectInDatabase(finalProject, {
+        syncRemote,
+      });
       set((state) => ({
         projects: state.projects.map((p) =>
           p.id === finalProject.id ? finalProject : p
         ),
-        lastSaveToSupabase: result.savedToSupabase,
+        lastSaveToSupabase: syncRemote
+          ? result.savedToSupabase
+          : isSupabaseAvailable()
+            ? false
+            : state.lastSaveToSupabase,
       }));
 
       if (oldProject && !options?.silent) {
@@ -573,7 +583,7 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
       const exists = existsInState || existingInDb != null;
 
       if (exists) {
-        const result = await updateProject(project);
+        const result = await updateProjectInDatabase(project);
         set((s) => {
           const inList = s.projects.some((p) => p.id === project.id);
           return {
