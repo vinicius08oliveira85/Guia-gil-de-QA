@@ -3,6 +3,7 @@ import { Project, TestCase, JiraTask } from '../types';
 import { logger } from '../utils/logger';
 
 const supabaseProxyUrl = (import.meta.env.VITE_SUPABASE_PROXY_URL || '').trim();
+const forceLocalOnly = import.meta.env.VITE_LOCAL_ONLY === 'true';
 
 const supabaseUrl =
     import.meta.env.VITE_SUPABASE_URL ||
@@ -33,8 +34,8 @@ const savingProjects = new Map<string, Promise<void>>(); // Rastreia salvamentos
 const lastSaveTime = new Map<string, number>(); // Rastreia último tempo de salvamento para debounce
 const pendingSaves = new Map<string, Project>(); // Fila de salvamentos pendentes (última versão de cada projeto)
 const saveDebounceMs = 300; // Debounce de 300ms entre salvamentos do mesmo projeto (reduzido para ser mais responsivo)
-const maxRetries = 2; // Máximo de 2 tentativas (reduzido para evitar avalanche de requisições em cold start)
-const retryDelays = [3000, 6000]; // Backoff maior: 3s, 6s (dá tempo para o Supabase acordar do pause)
+const maxRetries = 3; // Até 3 retentativas após falha de rede (cold start / plano gratuito)
+const retryDelays = [3000, 7000, 12000]; // Backoff progressivo para o Supabase "acordar"
 const requestTimeoutMs = 15000; // Timeout de 15s (cobre cold start do Supabase free tier ~10-30s)
 const loadProjectsTimeoutMs = 32000; // 32s para GET de projetos (proxy usa 28s; cliente deve esperar mais que o proxy)
 const timeoutErrorMessage = `Timeout: requisição ao Supabase excedeu ${requestTimeoutMs / 1000}s`;
@@ -48,12 +49,12 @@ function normalizeLoadErrorForUser(message: string): string {
     return message;
 }
 
-/** Texto comum para indisponibilidade transitória do Supabase (cold start / projeto pausado no free tier). */
-const SUPABASE_COLD_START_OR_PAUSED =
-    'No plano gratuito, o banco pode estar pausado por inatividade ou demorando a responder (cold start). Aguarde cerca de um minuto e use o botão Tentar novamente no aviso, ou confira se o projeto está ativo em https://supabase.com/dashboard.';
+/** Mensagem única para cold start / 503 / timeout no carregamento (local-first). */
+const SUPABASE_LOAD_TRANSIENT_USER_MESSAGE =
+    'O banco de dados está iniciando (plano gratuito). Seus dados locais estão seguros e disponíveis. A sincronização ocorrerá automaticamente em instantes.';
 
 /**
- * Mensagem para a UI ao falhar o carregamento de projetos: destaca timeout e 5xx/503 como possível cold start ou banco pausado.
+ * Mensagem para a UI ao falhar o carregamento de projetos: timeout e 5xx transitórios usam texto local-first.
  */
 function getSupabaseLoadFailureUserMessage(message: string): string {
     const lower = message.toLowerCase();
@@ -68,12 +69,8 @@ function getSupabaseLoadFailureUserMessage(message: string): string {
         lower.includes('service unavailable') ||
         lower.includes('bad gateway') ||
         lower.includes('gateway timeout');
-    if (isTimeout) {
-        return `A conexão com o banco expirou ou demorou demais. ${SUPABASE_COLD_START_OR_PAUSED}`;
-    }
-    if (isTransientHttp) {
-        const code = statusMatch ? statusMatch[1] : 'temporário';
-        return `Não foi possível sincronizar agora (erro HTTP ${code}). ${SUPABASE_COLD_START_OR_PAUSED}`;
+    if (isTimeout || isTransientHttp) {
+        return SUPABASE_LOAD_TRANSIENT_USER_MESSAGE;
     }
     return normalizeLoadErrorForUser(message);
 }
@@ -291,6 +288,9 @@ const callSupabaseProxy = async <T = any>(
     },
     timeoutMs: number = requestTimeoutMs // 5 segundos (timeout mais curto)
 ): Promise<T> => {
+    if (forceLocalOnly) {
+        throw new Error('Supabase desativado (VITE_LOCAL_ONLY=true).');
+    }
     if (!supabaseProxyUrl) {
         throw new Error('Supabase proxy não configurado');
     }
@@ -477,6 +477,11 @@ const saveThroughSdk = async (project: Project, retryCount: number = 0): Promise
 };
 
 export const saveProjectToSupabase = async (project: Project): Promise<void> => {
+    if (forceLocalOnly) {
+        logger.debug('VITE_LOCAL_ONLY=true: salvamento remoto ignorado (local-first)', 'supabaseService', { projectId: project.id });
+        return;
+    }
+
     const projectId = project.id;
     
     // Sempre atualizar a fila de salvamentos pendentes com a versão mais recente
@@ -688,6 +693,10 @@ export const saveProjectToSupabase = async (project: Project): Promise<void> => 
 export type LoadProjectsResult = { projects: Project[]; loadFailed: boolean; errorMessage?: string };
 
 export const loadProjectsFromSupabase = async (): Promise<LoadProjectsResult> => {
+    if (forceLocalOnly) {
+        return { projects: [], loadFailed: false };
+    }
+
     if (supabaseProxyUrl) {
         const attempt = async (): Promise<LoadProjectsResult> => {
             const userId = await getUserId();
@@ -702,62 +711,77 @@ export const loadProjectsFromSupabase = async (): Promise<LoadProjectsResult> =>
             }
             return { projects, loadFailed: false };
         };
-        try {
-            return await attempt();
-        } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : String(error);
-            const errorMessageLower = errorMessage.toLowerCase();
-            const isSchemaCacheOrPaused =
-                errorMessageLower.includes('schema cache') ||
-                errorMessageLower.includes('paused') ||
-                errorMessageLower.includes('retrying');
-            const isTimeout = errorMessageLower.includes('timeout');
-            const isTransientHttp =
-                /\b(500|502|503|504|522)\b/.test(errorMessageLower) ||
-                errorMessageLower.includes('service unavailable') ||
-                errorMessageLower.includes('gateway timeout');
-            if (isCorsError(error)) {
-                logger.error('Erro CORS ao carregar do Supabase. Configure VITE_SUPABASE_PROXY_URL', 'supabaseService', error);
-            } else if (isTimeout) {
-                logger.warn('Timeout ao carregar projetos do Supabase (proxy). O banco pode estar iniciando.', 'supabaseService', error);
-                return {
-                    projects: [],
-                    loadFailed: true,
-                    errorMessage: getSupabaseLoadFailureUserMessage(errorMessage),
-                };
-            } else if (isSchemaCacheOrPaused) {
-                logger.warn(
-                    'Supabase indisponível (schema cache/pausado). Verifique no dashboard se o projeto está ativo: https://supabase.com/dashboard',
-                    'supabaseService',
-                    error
-                );
-            } else if (isTransientHttp) {
-                logger.warn('Supabase indisponível (503/504/5xx). Usando cache local', 'supabaseService', error);
-            } else {
-                logger.warn('Erro ao carregar projetos via proxy Supabase', 'supabaseService', error);
-            }
-            // Retry único após 2s em caso de 5xx/schema cache/timeout (Supabase/rede pode estar lento)
-            if (isSchemaCacheOrPaused || isTransientHttp || isTimeout) {
-                try {
-                    if (isTimeout) {
-                        logger.debug('Retry em 2s após timeout ao carregar projetos do Supabase', 'supabaseService');
-                    }
-                    await new Promise(r => setTimeout(r, 2000));
-                    return await attempt();
-                } catch (retryError) {
-                    const retryMsg = retryError instanceof Error ? retryError.message : String(retryError);
-                    if (retryMsg.includes('schema cache') || retryMsg.includes('paused')) {
-                        logger.warn(
-                            'Supabase ainda indisponível após retry. Verifique se o projeto está ativo em https://supabase.com/dashboard',
-                            'supabaseService',
-                            retryError
-                        );
-                    }
-                    return { projects: [], loadFailed: true, errorMessage: getSupabaseLoadFailureUserMessage(retryMsg) };
+        const maxLoadAttempts = 3;
+        const loadRetryDelaysMs = [3000, 7000, 12000];
+        let lastErrorMessage: string | null = null;
+
+        for (let attemptIndex = 0; attemptIndex < maxLoadAttempts; attemptIndex++) {
+            try {
+                return await attempt();
+            } catch (error) {
+                const errorMessage = error instanceof Error ? error.message : String(error);
+                lastErrorMessage = errorMessage;
+                const errorMessageLower = errorMessage.toLowerCase();
+
+                const isSchemaCacheOrPaused =
+                    errorMessageLower.includes('schema cache') ||
+                    errorMessageLower.includes('paused') ||
+                    errorMessageLower.includes('retrying');
+                const isTimeout = errorMessageLower.includes('timeout');
+                const isTransientHttp =
+                    /\b(500|502|503|504|522)\b/.test(errorMessageLower) ||
+                    errorMessageLower.includes('service unavailable') ||
+                    errorMessageLower.includes('gateway timeout');
+
+                if (isCorsError(error)) {
+                    logger.error('Erro CORS ao carregar do Supabase. Configure VITE_SUPABASE_PROXY_URL', 'supabaseService', error);
+                    return { projects: [], loadFailed: true, errorMessage: normalizeLoadErrorForUser(errorMessage) };
                 }
+
+                if (isTimeout) {
+                    logger.warn(
+                        `Timeout ao carregar projetos do Supabase (proxy) [tentativa ${attemptIndex + 1}/${maxLoadAttempts}]. Possível cold start.`,
+                        'supabaseService',
+                        error
+                    );
+                } else if (isSchemaCacheOrPaused) {
+                    logger.warn(
+                        `Supabase indisponível (schema cache/pausado) [tentativa ${attemptIndex + 1}/${maxLoadAttempts}].`,
+                        'supabaseService',
+                        error
+                    );
+                } else if (isTransientHttp) {
+                    logger.warn(
+                        `Supabase indisponível (503/504/5xx) [tentativa ${attemptIndex + 1}/${maxLoadAttempts}].`,
+                        'supabaseService',
+                        error
+                    );
+                } else {
+                    logger.warn(
+                        `Erro ao carregar projetos via proxy Supabase [tentativa ${attemptIndex + 1}/${maxLoadAttempts}].`,
+                        'supabaseService',
+                        error
+                    );
+                    return { projects: [], loadFailed: true, errorMessage: getSupabaseLoadFailureUserMessage(errorMessage) };
+                }
+
+                const shouldRetry = isSchemaCacheOrPaused || isTransientHttp || isTimeout;
+                const hasMoreAttempts = attemptIndex < maxLoadAttempts - 1;
+                if (!shouldRetry || !hasMoreAttempts) {
+                    return { projects: [], loadFailed: true, errorMessage: getSupabaseLoadFailureUserMessage(errorMessage) };
+                }
+
+                const delayMs = loadRetryDelaysMs[Math.min(attemptIndex, loadRetryDelaysMs.length - 1)];
+                logger.debug(`Aguardando ${Math.round(delayMs / 1000)}s antes de retentar carregar projetos (Supabase cold start/5xx)`, 'supabaseService');
+                await new Promise(r => setTimeout(r, delayMs));
             }
-            return { projects: [], loadFailed: true, errorMessage: getSupabaseLoadFailureUserMessage(errorMessage) };
         }
+
+        return {
+            projects: [],
+            loadFailed: true,
+            errorMessage: getSupabaseLoadFailureUserMessage(lastErrorMessage ?? 'Erro desconhecido ao carregar do Supabase'),
+        };
     }
 
     // SDK direto apenas em desenvolvimento local
@@ -811,6 +835,10 @@ export const loadProjectsFromSupabase = async (): Promise<LoadProjectsResult> =>
  * Não lança erro - apenas loga aviso se falhar
  */
 export const deleteProjectFromSupabase = async (projectId: string): Promise<void> => {
+    if (forceLocalOnly) {
+        return;
+    }
+
     if (supabaseProxyUrl) {
         try {
             const userId = await getUserId();
@@ -927,7 +955,7 @@ export const diagnoseSupabaseConfig = (): {
 };
 
 export const isSupabaseAvailable = (): boolean => {
-    // Supabase está disponível se tiver proxy OU SDK direto configurado
+    if (forceLocalOnly) return false;
     return Boolean(supabaseProxyUrl) || supabase !== null;
 };
 

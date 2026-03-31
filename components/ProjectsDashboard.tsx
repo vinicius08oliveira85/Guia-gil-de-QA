@@ -96,11 +96,11 @@ export const ProjectsDashboard: React.FC<{
     };
 
 
-    /** Erros que merecem destaque vermelho: 5xx, timeout e indisponibilidade transitória (cold start / pausado). */
+    /** Erros que merecem destaque vermelho: 5xx, timeout e cold start (mensagem local-first). */
     const isSyncServerError = Boolean(
         supabaseLoadError &&
             (/\b(500|502|503|504|522|Erro HTTP)\b/i.test(supabaseLoadError) ||
-                /timeout|expirou|demorou demais|cold start|service unavailable|indisponível/i.test(
+                /timeout|expirou|demorou demais|cold start|plano gratuito|banco de dados está iniciando|service unavailable|indisponível/i.test(
                     supabaseLoadError
                 ))
     );

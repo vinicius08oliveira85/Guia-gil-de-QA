@@ -16,15 +16,49 @@ const supabaseServiceRoleKey =
   process.env.VITE_SUPABASE_ANON_KEY ||
   '';
 
-const supabase =
-  supabaseUrl && supabaseServiceRoleKey
-    ? createClient(supabaseUrl, supabaseServiceRoleKey, {
-        auth: {
-          persistSession: false,
-          autoRefreshToken: false
-        }
-      })
-    : null;
+const getSupabaseUrlSource = (): string => {
+  if (process.env.SUPABASE_URL) return 'SUPABASE_URL';
+  if (process.env.VITE_SUPABASE_URL) return 'VITE_SUPABASE_URL';
+  return 'não definido';
+};
+
+const getSupabaseKeySource = (): string => {
+  if (process.env.SUPABASE_SERVICE_ROLE_KEY) return 'SUPABASE_SERVICE_ROLE_KEY';
+  if (process.env.SUPABASE_ANON_KEY) return 'SUPABASE_ANON_KEY';
+  if (process.env.VITE_SUPABASE_ANON_KEY) return 'VITE_SUPABASE_ANON_KEY';
+  return 'não definido';
+};
+
+let supabase: ReturnType<typeof createClient> | null = null;
+try {
+  if (supabaseUrl && supabaseServiceRoleKey) {
+    supabase = createClient(supabaseUrl, supabaseServiceRoleKey, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false
+      }
+    });
+  }
+} catch (error) {
+  const missingUrl = !supabaseUrl;
+  const missingKey = !supabaseServiceRoleKey;
+  console.error(
+    missingUrl || missingKey
+      ? '[SupabaseProxy] Falha ao inicializar: variáveis de ambiente ausentes (URL ou chave vazias).'
+      : '[SupabaseProxy] Falha ao inicializar: createClient lançou erro (URL/chave inválidas ou rede).',
+    {
+      tipo: missingUrl || missingKey ? 'credenciais_ausentes' : 'falha_createClient',
+      urlSource: getSupabaseUrlSource(),
+      keySource: getSupabaseKeySource(),
+      missingUrl,
+      missingKey,
+      supabaseUrlLength: supabaseUrl?.length ?? 0,
+      supabaseServiceRoleKeyLength: supabaseServiceRoleKey?.length ?? 0,
+      error
+    }
+  );
+  supabase = null;
+}
 
 const DEFAULT_USER_ID = 'anonymous-shared';
 
@@ -42,6 +76,15 @@ const allowCors = (res: VercelResponse) => {
 
 const ensureTimeoutMessage = (message: string): string => {
   return message.toLowerCase().startsWith('timeout:') ? message : `Timeout: ${message}`;
+};
+
+/** Log em Vercel Logs quando a query ao Supabase atinge o limite de 28s (cold start / instância lenta). */
+const logTimeout28s = (route: string, extra?: Record<string, unknown>) => {
+  console.warn('[SupabaseProxy] Timeout de 28s — Supabase não respondeu a tempo (cold start ou DB lento).', {
+    route,
+    timeoutMs: 28000,
+    ...extra
+  });
 };
 
 /** Aceita Promise ou thenable (ex.: PostgrestBuilder do Supabase) */
@@ -104,8 +147,28 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   if (!supabase) {
-    const errorMsg = 'Supabase não configurado. Defina SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY.';
-    console.error('[SupabaseProxy] 503 Supabase não configurado:', errorMsg);
+    const missingUrl = !supabaseUrl;
+    const missingKey = !supabaseServiceRoleKey;
+    const errorMsg =
+      missingUrl || missingKey
+        ? 'Supabase não configurado: SUPABASE_URL e/ou SUPABASE_SERVICE_ROLE_KEY estão vazias no ambiente (Vercel).'
+        : 'Falha ao inicializar o Supabase client no proxy.';
+
+    if (missingUrl || missingKey) {
+      console.error('[SupabaseProxy] 503 — credenciais ausentes (defina SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY no Vercel):', {
+        errorMsg,
+        urlSource: getSupabaseUrlSource(),
+        keySource: getSupabaseKeySource(),
+        missingUrl,
+        missingKey
+      });
+    } else {
+      console.error('[SupabaseProxy] 503 — cliente Supabase não inicializado (createClient falhou no boot; ver logs acima):', {
+        errorMsg,
+        urlSource: getSupabaseUrlSource(),
+        keySource: getSupabaseKeySource()
+      });
+    }
     res.status(503).json({
       success: false,
       error: errorMsg
@@ -128,12 +191,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const taskKeys = req.query.task_keys as string;
         
         if (taskKey) {
-          // Buscar um único registro
-          const { data, error } = await withTimeout(
-            supabase.from('task_test_status').select('*').eq('task_key', taskKey).maybeSingle(),
-            SUPABASE_READ_TIMEOUT_MS,
-            'Supabase demorou para responder ao buscar status de teste; tente novamente.'
-          ) as SupabaseQueryResult;
+          let singleResult: SupabaseQueryResult;
+          try {
+            singleResult = (await withTimeout(
+              supabase.from('task_test_status').select('*').eq('task_key', taskKey).maybeSingle(),
+              SUPABASE_READ_TIMEOUT_MS,
+              'Supabase demorou para responder ao buscar status de teste; tente novamente.'
+            )) as SupabaseQueryResult;
+          } catch (raceError) {
+            if (raceError instanceof Error && raceError.message.toLowerCase().startsWith('timeout:')) {
+              logTimeout28s('GET task_test_status (task_key)', { taskKey });
+              res.status(503).json({ success: false, error: raceError.message });
+              return;
+            }
+            throw raceError;
+          }
+          const { data, error } = singleResult;
 
           if (error && error.code !== 'PGRST116') {
             throw new Error(error.message);
@@ -145,13 +218,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           });
           return;
         } else if (taskKeys) {
-          // Buscar múltiplos registros
           const keysArray = taskKeys.split(',').filter(Boolean);
-          const { data, error } = await withTimeout(
-            supabase.from('task_test_status').select('*').in('task_key', keysArray),
-            SUPABASE_READ_TIMEOUT_MS,
-            'Supabase demorou para responder ao buscar status de teste; tente novamente.'
-          ) as SupabaseQueryResult<unknown[]>;
+          let multiResult: SupabaseQueryResult<unknown[]>;
+          try {
+            multiResult = (await withTimeout(
+              supabase.from('task_test_status').select('*').in('task_key', keysArray),
+              SUPABASE_READ_TIMEOUT_MS,
+              'Supabase demorou para responder ao buscar status de teste; tente novamente.'
+            )) as SupabaseQueryResult<unknown[]>;
+          } catch (raceError) {
+            if (raceError instanceof Error && raceError.message.toLowerCase().startsWith('timeout:')) {
+              logTimeout28s('GET task_test_status (task_keys)', { keyCount: keysArray.length });
+              res.status(503).json({ success: false, error: raceError.message });
+              return;
+            }
+            throw raceError;
+          }
+          const { data, error } = multiResult;
 
           if (error) {
             throw new Error(error.message);
@@ -195,6 +278,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         ) as SupabaseQueryResult<Array<{ data: unknown }>>;
       } catch (raceError) {
         if (raceError instanceof Error && raceError.message.toLowerCase().startsWith('timeout:')) {
+          logTimeout28s('GET projects', { userId });
           res.status(503).json({ success: false, error: raceError.message });
           return;
         }

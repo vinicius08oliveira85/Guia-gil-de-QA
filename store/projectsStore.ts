@@ -19,6 +19,7 @@ import { PHASE_NAMES } from '../utils/constants';
 import { addAuditLog } from '../utils/auditLog';
 import { logger } from '../utils/logger';
 import { invalidateGeneralAnalysisCache } from '../services/ai/generalAnalysisService';
+import toast from 'react-hot-toast';
 
 interface ProjectsState {
   projects: Project[];
@@ -144,6 +145,9 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
             supabaseLoadFailed: result.loadFailed,
             supabaseLoadError: result.errorMessage ?? null,
           });
+          if (result.loadFailed && result.errorMessage) {
+            toast(result.errorMessage, { duration: 5000, id: 'supabase-sync-degraded' });
+          }
         })
         .catch((err) => {
           logger.warn('Erro ao sincronizar Supabase em background', 'ProjectsStore', err);
@@ -167,7 +171,23 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
   syncProjectsFromSupabase: async () => {
     try {
       logger.debug('Sincronizando projetos do Supabase...', 'ProjectsStore');
-      const { projects: supabaseProjects } = await loadProjectsFromSupabase();
+      const result = await loadProjectsFromSupabase();
+      if (result.loadFailed) {
+        set({
+          supabaseLoadFailed: true,
+          supabaseLoadError: result.errorMessage ?? null,
+        });
+        if (result.errorMessage) {
+          toast(result.errorMessage, { duration: 5000, id: 'supabase-sync-degraded' });
+        }
+        logger.warn(
+          'Sincronização manual: Supabase indisponível — dados locais preservados',
+          'ProjectsStore',
+          result.errorMessage
+        );
+        return;
+      }
+      const { projects: supabaseProjects } = result;
 
       // Migrar TestCases dos projetos do Supabase
       const migratedSupabaseProjects = supabaseProjects.map(project => ({
@@ -214,7 +234,11 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
         )
       );
 
-      set({ projects: cleanedProjects });
+      set({
+        projects: cleanedProjects,
+        supabaseLoadFailed: false,
+        supabaseLoadError: null,
+      });
       logger.info(`Projetos sincronizados do Supabase (fonte da verdade): ${cleanedProjects.length} (${migratedSupabaseProjects.length} do Supabase + ${localOnly.length} só locais)`, 'ProjectsStore');
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);

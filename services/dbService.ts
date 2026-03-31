@@ -106,10 +106,19 @@ export const getAllProjects = async (): Promise<Project[]> => {
   // Fase 1: Carregar rapidamente do IndexedDB
   const indexedDBProjects = await loadProjectsFromIndexedDB();
 
-  // Se Supabase está disponível, fazer merge com IndexedDB
+  // Se Supabase está disponível, fazer merge com IndexedDB (local-first: falha na nuvem não trava a UI)
   if (isSupabaseAvailable()) {
     try {
-      const { projects: supabaseProjects } = await loadProjectsFromSupabase();
+      const { projects: supabaseProjects, loadFailed, errorMessage } = await loadProjectsFromSupabase();
+
+      if (loadFailed) {
+        logger.warn(
+          'Supabase indisponível (local-first); usando apenas dados do IndexedDB',
+          'dbService',
+          errorMessage ? { errorMessage } : undefined
+        );
+        return indexedDBProjects;
+      }
 
       // Migrar TestCases dos projetos do Supabase (otimizado)
       const migratedSupabaseProjects = supabaseProjects.map(project => ({

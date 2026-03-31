@@ -3,6 +3,7 @@ import { TaskTestStatus, TaskTestStatusRecord, JiraTask } from '../types';
 import { logger } from '../utils/logger';
 
 const supabaseProxyUrl = (import.meta.env.VITE_SUPABASE_PROXY_URL || '').trim();
+const forceLocalOnly = import.meta.env.VITE_LOCAL_ONLY === 'true';
 
 const supabaseUrl =
     import.meta.env.VITE_SUPABASE_URL ||
@@ -105,6 +106,9 @@ const callSupabaseProxy = async <T = any>(
     },
     timeoutMs: number = requestTimeoutMs
 ): Promise<T> => {
+    if (forceLocalOnly) {
+        throw new Error('Supabase desativado (VITE_LOCAL_ONLY=true).');
+    }
     if (!supabaseProxyUrl) {
         throw new Error('Supabase proxy não configurado');
     }
@@ -459,6 +463,9 @@ export const calculateTaskTestStatus = (task: JiraTask, allTasks: JiraTask[] = [
  * Carrega o status de teste de uma task do Supabase
  */
 export const loadTaskTestStatus = async (taskKey: string): Promise<TaskTestStatus | null> => {
+    if (forceLocalOnly) {
+        return null;
+    }
     const hasProxy = Boolean(supabaseProxyUrl);
     const hasSdk = Boolean(supabase);
 
@@ -496,6 +503,9 @@ export const loadMultipleTaskTestStatus = async (taskKeys: string[]): Promise<Ma
     if (taskKeys.length === 0) {
         return new Map();
     }
+    if (forceLocalOnly) {
+        return new Map();
+    }
 
     const hasProxy = Boolean(supabaseProxyUrl);
     const hasSdk = Boolean(supabase);
@@ -531,6 +541,9 @@ export const loadMultipleTaskTestStatus = async (taskKeys: string[]): Promise<Ma
  * Salva o status de teste de uma task no Supabase
  */
 export const saveTaskTestStatus = async (taskKey: string, status: TaskTestStatus): Promise<void> => {
+    if (forceLocalOnly) {
+        return;
+    }
     const hasProxy = Boolean(supabaseProxyUrl);
     const hasSdk = Boolean(supabase);
 
@@ -575,6 +588,7 @@ export const saveTaskTestStatus = async (taskKey: string, status: TaskTestStatus
  * Verifica se Supabase está configurado e disponível
  */
 export const isTaskTestStatusAvailable = (): boolean => {
+    if (forceLocalOnly) return false;
     return Boolean(supabaseProxyUrl) || supabase !== null;
 };
 
