@@ -19,7 +19,7 @@ export interface FileImportModalProps {
     isOpen: boolean;
     onClose: () => void;
     importType?: ImportType;
-    onImportProject?: (project: Project) => void;
+    onImportProject?: (project: Project) => void | Promise<void>;
     onImportTasks?: (tasks: JiraTask[]) => void;
     onImportTestCases?: (testCases: TestCase[], taskId?: string) => void;
     onImportDocument?: (document: ProjectDocument) => void;
@@ -60,7 +60,7 @@ export const FileImportModal: React.FC<FileImportModalProps> = React.memo(({
                     if (file.name.endsWith('.json') || file.type === 'application/json') {
                         result = await importProjectFromJSON(file);
                         if (result.success && result.data && onImportProject) {
-                            onImportProject(result.data);
+                            await Promise.resolve(onImportProject(result.data));
                             handleSuccess('Projeto importado com sucesso!');
                             onClose();
                         }
@@ -131,7 +131,7 @@ export const FileImportModal: React.FC<FileImportModalProps> = React.memo(({
                         } else if ('id' in result.data && 'name' in result.data) {
                             // Projeto
                             if (onImportProject) {
-                                onImportProject(result.data as Project);
+                                await Promise.resolve(onImportProject(result.data as Project));
                                 handleSuccess('Projeto importado com sucesso!');
                             }
                         } else if ('name' in result.data && 'content' in result.data) {

@@ -168,29 +168,6 @@ export const getAllProjects = async (): Promise<Project[]> => {
 export const addProject = async (project: Project): Promise<SaveResult> => {
   const cleanedProject = cleanupTestCasesForNonTaskTypesSync(project);
 
-  if (isSupabaseAvailable()) {
-    try {
-      await saveProjectToSupabase(cleanedProject);
-      const db = await openDB();
-      await new Promise<void>((resolve, reject) => {
-        const transaction = db.transaction(STORE_NAME, 'readwrite');
-        const store = transaction.objectStore(STORE_NAME);
-        const request = store.add(cleanedProject);
-        request.onerror = () => reject(request.error);
-        request.onsuccess = () => resolve();
-      });
-      return { savedToSupabase: true };
-    } catch (error) {
-      const msg = error instanceof Error ? error.message : String(error);
-      const isLocalOnlyOrTooBig = msg.includes('salvo apenas localmente') || msg.includes('muito grande');
-      if (isLocalOnlyOrTooBig) {
-        logger.debug('Erro ao salvar no Supabase, usando apenas IndexedDB', 'dbService', error);
-      } else {
-        logger.warn('Erro ao salvar no Supabase, usando apenas IndexedDB', 'dbService', error);
-      }
-    }
-  }
-
   const db = await openDB();
   await new Promise<void>((resolve, reject) => {
     const transaction = db.transaction(STORE_NAME, 'readwrite');
@@ -199,6 +176,23 @@ export const addProject = async (project: Project): Promise<SaveResult> => {
     request.onerror = () => reject(request.error);
     request.onsuccess = () => resolve();
   });
+
+  if (isSupabaseAvailable()) {
+    saveProjectToSupabase(cleanedProject)
+      .then(() => {
+        logger.debug(`Projeto "${cleanedProject.name}" sincronizado com Supabase após add local`, 'dbService');
+      })
+      .catch((error) => {
+        const msg = error instanceof Error ? error.message : String(error);
+        const isLocalOnlyOrTooBig = msg.includes('salvo apenas localmente') || msg.includes('muito grande');
+        if (isLocalOnlyOrTooBig) {
+          logger.debug('Supabase (background): projeto permanece local', 'dbService', error);
+        } else {
+          logger.warn('Supabase (background): falha ao sincronizar projeto novo', 'dbService', error);
+        }
+      });
+  }
+
   return { savedToSupabase: false };
 };
 
