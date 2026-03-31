@@ -338,6 +338,7 @@ const App: React.FC = () => {
                             <SettingsView 
                                 onClose={() => setShowSettings(false)}
                                 onProjectImported={handleImportJiraProject}
+                                onLocalBackupRestored={() => loadProjects()}
                             />
                         </Suspense>
                     ) : selectedProject ? (

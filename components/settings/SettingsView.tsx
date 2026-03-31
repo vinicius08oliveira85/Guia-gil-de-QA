@@ -1,5 +1,6 @@
 import React, { useState, Suspense, useCallback } from 'react';
-import { Link, Database, Settings as SettingsIcon, Key } from 'lucide-react';
+import { Link, Database, Settings as SettingsIcon, Key, HardDrive } from 'lucide-react';
+import { LocalDataManagement } from '../common/LocalDataManagement';
 import { LoadingSkeleton } from '../common/LoadingSkeleton';
 import { ConfirmDialog } from '../common/ConfirmDialog';
 import { Project } from '../../types';
@@ -29,11 +30,12 @@ const SupabaseSettingsTab = lazyLoadTab(() => import('./SupabaseSettingsTab').th
 const PreferencesTab = lazyLoadTab(() => import('./PreferencesTab').then(m => ({ default: m.PreferencesTab })), 'PreferencesTab');
 const GeminiApiKeysTab = lazyLoadTab(() => import('./GeminiApiKeysTab').then(m => ({ default: m.GeminiApiKeysTab })), 'GeminiApiKeysTab');
 
-type TabType = 'jira' | 'supabase' | 'preferences' | 'api-keys';
+type TabType = 'jira' | 'supabase' | 'local-data' | 'api-keys' | 'preferences';
 
 const tabs: { id: TabType; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
     { id: 'jira', label: 'Jira', icon: Link },
     { id: 'supabase', label: 'Supabase', icon: Database },
+    { id: 'local-data', label: 'Dados locais', icon: HardDrive },
     { id: 'api-keys', label: 'API Keys', icon: Key },
     { id: 'preferences', label: 'Preferências', icon: SettingsIcon },
 ];
@@ -41,9 +43,15 @@ const tabs: { id: TabType; label: string; icon: React.ComponentType<{ className?
 interface SettingsViewProps {
     onClose: () => void;
     onProjectImported?: (project: Project) => void;
+    /** Após importar backup JSON do IndexedDB, recarregar projetos no store. */
+    onLocalBackupRestored?: () => void | Promise<void>;
 }
 
-export const SettingsView: React.FC<SettingsViewProps> = ({ onClose, onProjectImported }) => {
+export const SettingsView: React.FC<SettingsViewProps> = ({
+    onClose,
+    onProjectImported,
+    onLocalBackupRestored,
+}) => {
     const [activeTab, setActiveTab] = useState<TabType>('jira');
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
     const [showCloseConfirm, setShowCloseConfirm] = useState(false);
@@ -150,6 +158,9 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ onClose, onProjectIm
                                 <JiraSettingsTab onProjectImported={onProjectImported} onDirtyChange={setHasUnsavedChanges} />
                             )}
                             {activeTab === 'supabase' && <SupabaseSettingsTab />}
+                            {activeTab === 'local-data' && (
+                                <LocalDataManagement onImportComplete={onLocalBackupRestored} />
+                            )}
                             {activeTab === 'api-keys' && <GeminiApiKeysTab onDirtyChange={setHasUnsavedChanges} />}
                             {activeTab === 'preferences' && <PreferencesTab />}
                         </div>

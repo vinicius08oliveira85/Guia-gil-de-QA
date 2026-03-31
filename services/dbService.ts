@@ -1,15 +1,18 @@
-
-import { Project } from '../types';
-import { DB_NAME, DB_VERSION, STORE_NAME } from '../utils/constants';
-import { 
-    isSupabaseAvailable, 
-    saveProjectToSupabase, 
-    loadProjectsFromSupabase, 
-    deleteProjectFromSupabase 
+import { Phase, PhaseName, Project } from '../types';
+import { DB_NAME, DB_VERSION, PHASE_NAMES, STORE_NAME } from '../utils/constants';
+import {
+  isSupabaseAvailable,
+  saveProjectToSupabase,
+  loadProjectsFromSupabase,
+  deleteProjectFromSupabase,
 } from './supabaseService';
 import { autoBackupBeforeOperation } from './backupService';
 import { migrateTestCases } from '../utils/testCaseMigration';
 import { logger } from '../utils/logger';
+import { cleanupTestCasesForProjects, cleanupTestCasesForNonTaskTypesSync } from '../utils/testCaseCleanup';
+
+/** Versão do envelope JSON de backup (independente do DB_VERSION do IndexedDB). */
+export const BACKUP_EXPORT_FORMAT_VERSION = 1;
 
 let db: IDBDatabase;
 
@@ -41,9 +44,13 @@ const openDB = (): Promise<IDBDatabase> => {
   });
 };
 
-import { cleanupTestCasesForProjects, cleanupTestCasesForNonTaskTypesSync } from '../utils/testCaseCleanup';
-
 export type SaveResult = { savedToSupabase: boolean };
+
+const defaultPhasesForImport = (): Phase[] =>
+  PHASE_NAMES.map((name) => ({
+    name: name as PhaseName,
+    status: 'Não Iniciado',
+  }));
 
 /**
  * Carrega projetos apenas do IndexedDB (carregamento rápido inicial)
@@ -61,12 +68,12 @@ export const loadProjectsFromIndexedDB = async (): Promise<Project[]> => {
   });
 
   // Migrar TestCases dos projetos do IndexedDB (otimizado)
-  const migratedIndexedDBProjects = indexedDBProjects.map(project => ({
+  const migratedIndexedDBProjects = indexedDBProjects.map((project) => ({
     ...project,
-    tasks: project.tasks.map(task => ({
+    tasks: (project.tasks || []).map((task) => ({
       ...task,
-      testCases: migrateTestCases(task.testCases || [])
-    }))
+      testCases: migrateTestCases(task.testCases || []),
+    })),
   }));
 
   // Limpar casos de teste de tipos não permitidos (Bug, Epic, História)
@@ -99,70 +106,90 @@ export const getProjectById = async (projectId: string): Promise<Project | null>
 };
 
 /**
- * Carrega todos os projetos (IndexedDB + Supabase)
- * Mantido para compatibilidade, mas agora getAllProjects() usa carregamento em duas fases
+ * Carrega todos os projetos (IndexedDB + Supabase).
+ * Local-first: qualquer falha crítica no merge com a nuvem retorna somente os dados do IndexedDB.
  */
 export const getAllProjects = async (): Promise<Project[]> => {
-  // Fase 1: Carregar rapidamente do IndexedDB
-  const indexedDBProjects = await loadProjectsFromIndexedDB();
+  let indexedDBProjects: Project[] = [];
+  try {
+    indexedDBProjects = await loadProjectsFromIndexedDB();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    const stack = error instanceof Error ? error.stack : undefined;
+    logger.error(
+      'Erro crítico ao ler IndexedDB em getAllProjects; não há fallback sem dados locais',
+      'dbService',
+      { message, stack, error }
+    );
+    throw error;
+  }
 
-  // Se Supabase está disponível, fazer merge com IndexedDB (local-first: falha na nuvem não trava a UI)
-  if (isSupabaseAvailable()) {
+  if (!isSupabaseAvailable()) {
+    return indexedDBProjects;
+  }
+
+  try {
+    const { projects: supabaseProjects, loadFailed, errorMessage } = await loadProjectsFromSupabase();
+
+    if (loadFailed) {
+      logger.warn(
+        'Supabase indisponível (local-first); usando apenas dados do IndexedDB',
+        'dbService',
+        errorMessage ? { errorMessage } : undefined
+      );
+      return indexedDBProjects;
+    }
+
     try {
-      const { projects: supabaseProjects, loadFailed, errorMessage } = await loadProjectsFromSupabase();
-
-      if (loadFailed) {
-        logger.warn(
-          'Supabase indisponível (local-first); usando apenas dados do IndexedDB',
-          'dbService',
-          errorMessage ? { errorMessage } : undefined
-        );
-        return indexedDBProjects;
-      }
-
-      // Migrar TestCases dos projetos do Supabase (otimizado)
-      const migratedSupabaseProjects = supabaseProjects.map(project => ({
+      const migratedSupabaseProjects = supabaseProjects.map((project) => ({
         ...project,
-        tasks: project.tasks.map(task => ({
+        tasks: (project.tasks || []).map((task) => ({
           ...task,
-          testCases: migrateTestCases(task.testCases || [])
-        }))
+          testCases: migrateTestCases(task.testCases || []),
+        })),
       }));
-      
-      // Fazer merge: criar um Map com ID como chave, priorizando Supabase
+
       const projectsMap = new Map<string, Project>();
-      
-      // Primeiro adicionar projetos do IndexedDB (já migrados)
-      indexedDBProjects.forEach(project => {
+      indexedDBProjects.forEach((project) => {
         projectsMap.set(project.id, project);
       });
-      
-      // Depois sobrescrever/atualizar com projetos do Supabase (prioridade, já migrados)
-      migratedSupabaseProjects.forEach(project => {
+      migratedSupabaseProjects.forEach((project) => {
         projectsMap.set(project.id, project);
       });
-      
+
       const mergedProjects = Array.from(projectsMap.values());
-      
-      // Limpar casos de teste de tipos não permitidos (Bug, Epic, História)
       const cleanedProjects = cleanupTestCasesForProjects(mergedProjects);
-      
+
       if (supabaseProjects.length === 0 && indexedDBProjects.length > 0) {
         logger.info(`Usando projetos do cache local: ${indexedDBProjects.length}`, 'dbService');
       } else if (supabaseProjects.length > 0) {
-        logger.info(`${cleanedProjects.length} projetos carregados (${supabaseProjects.length} do Supabase + ${indexedDBProjects.length} do cache local)`, 'dbService');
+        logger.info(
+          `${cleanedProjects.length} projetos carregados (${supabaseProjects.length} do Supabase + ${indexedDBProjects.length} do cache local)`,
+          'dbService'
+        );
       }
-      
+
       return cleanedProjects;
-    } catch (error) {
-      logger.warn('Erro ao carregar do Supabase, usando apenas IndexedDB', 'dbService', error);
-      // Retornar projetos do IndexedDB em caso de erro (já migrados e limpos)
+    } catch (mergeError) {
+      const message = mergeError instanceof Error ? mergeError.message : String(mergeError);
+      const stack = mergeError instanceof Error ? mergeError.stack : undefined;
+      logger.error(
+        'Erro crítico no merge/processamento dos dados do Supabase em getAllProjects; retornando apenas IndexedDB',
+        'dbService',
+        { message, stack, phase: 'merge-cleanup', error: mergeError }
+      );
       return indexedDBProjects;
     }
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    const stack = error instanceof Error ? error.stack : undefined;
+    logger.error(
+      'Erro crítico ao integrar Supabase em getAllProjects; retornando apenas IndexedDB (fallback total)',
+      'dbService',
+      { message, stack, phase: 'supabase-load-or-merge', error }
+    );
+    return indexedDBProjects;
   }
-  
-  // Se Supabase não está disponível, retornar apenas IndexedDB (já migrados e limpos)
-  return indexedDBProjects;
 };
 
 export const addProject = async (project: Project): Promise<SaveResult> => {
@@ -315,6 +342,134 @@ export const writeProjectToIndexedDBOnly = async (project: Project): Promise<voi
     request.onerror = () => reject(request.error);
     request.onsuccess = () => resolve();
   });
+};
+
+/**
+ * Normaliza um item de backup para Project; exige id e name. Demais campos recebem padrões seguros.
+ */
+function normalizeImportedProject(raw: unknown): Project | null {
+  if (!raw || typeof raw !== 'object') {
+    return null;
+  }
+  const o = raw as Record<string, unknown>;
+  if (typeof o.id !== 'string' || !o.id.trim()) {
+    return null;
+  }
+  if (typeof o.name !== 'string') {
+    return null;
+  }
+  const now = new Date().toISOString();
+  const partial = raw as Partial<Project>;
+  return {
+    ...partial,
+    id: o.id.trim(),
+    name: o.name,
+    description: typeof o.description === 'string' ? o.description : '',
+    documents: Array.isArray(o.documents) ? (o.documents as Project['documents']) : [],
+    tasks: Array.isArray(o.tasks) ? (o.tasks as Project['tasks']) : [],
+    phases:
+      Array.isArray(o.phases) && o.phases.length > 0
+        ? (o.phases as Project['phases'])
+        : defaultPhasesForImport(),
+    createdAt: typeof o.createdAt === 'string' ? o.createdAt : now,
+    updatedAt: typeof o.updatedAt === 'string' ? o.updatedAt : now,
+  };
+}
+
+function extractProjectsArray(parsed: unknown): unknown[] {
+  if (Array.isArray(parsed)) {
+    return parsed;
+  }
+  if (parsed && typeof parsed === 'object' && Array.isArray((parsed as { projects?: unknown }).projects)) {
+    return (parsed as { projects: unknown[] }).projects;
+  }
+  throw new Error(
+    'Formato de backup inválido: esperado um array de projetos ou um objeto com propriedade "projects" (array).'
+  );
+}
+
+/**
+ * Exporta todos os projetos do IndexedDB para um arquivo JSON (backup manual).
+ */
+export const exportProjectsToBackup = async (): Promise<void> => {
+  try {
+    const projects = await loadProjectsFromIndexedDB();
+    const backupData = {
+      backupFormatVersion: BACKUP_EXPORT_FORMAT_VERSION,
+      dbVersion: DB_VERSION,
+      exportedAt: new Date().toISOString(),
+      app: 'qa-agile-guide',
+      projects,
+    };
+
+    const jsonString = JSON.stringify(backupData, null, 2);
+    const blob = new Blob([jsonString], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    const datePart = new Date().toISOString().split('T')[0];
+    link.download = `qa-agile-guide-backup-${datePart}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    logger.info(`Backup local exportado: ${projects.length} projeto(s)`, 'dbService', {
+      backupFormatVersion: BACKUP_EXPORT_FORMAT_VERSION,
+      dbVersion: DB_VERSION,
+    });
+  } catch (error) {
+    logger.error('Erro ao exportar backup local', 'dbService', error);
+    throw error;
+  }
+};
+
+/**
+ * Importa projetos de um arquivo JSON para o IndexedDB (sobrescreve id existente via put).
+ * Aplica migrateTestCases e cleanup via writeProjectToIndexedDBOnly.
+ */
+export const importProjectsFromBackup = async (file: File): Promise<number> => {
+  let text: string;
+  try {
+    text = await file.text();
+  } catch (error) {
+    logger.error('Erro ao ler arquivo de backup', 'dbService', error);
+    throw error;
+  }
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(text);
+  } catch (error) {
+    logger.error('JSON de backup inválido (parse)', 'dbService', error);
+    throw new Error('Arquivo não é um JSON válido.');
+  }
+
+  const rawProjects = extractProjectsArray(parsed);
+  let imported = 0;
+  let skipped = 0;
+
+  for (let i = 0; i < rawProjects.length; i++) {
+    const normalized = normalizeImportedProject(rawProjects[i]);
+    if (!normalized) {
+      skipped++;
+      logger.debug(`Item ${i} ignorado no backup (id/nome inválidos)`, 'dbService');
+      continue;
+    }
+    try {
+      await writeProjectToIndexedDBOnly(normalized);
+      imported++;
+    } catch (error) {
+      skipped++;
+      logger.warn(`Falha ao importar projeto "${normalized.id}" do backup`, 'dbService', error);
+    }
+  }
+
+  logger.info(
+    `Importação de backup concluída: ${imported} projeto(s) gravados, ${skipped} ignorado(s)`,
+    'dbService'
+  );
+  return imported;
 };
 
 /**
