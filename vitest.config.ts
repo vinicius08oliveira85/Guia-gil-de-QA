@@ -9,10 +9,11 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./tests/setup.ts'],
-    // Integrações/E2E deste repo são experimentais e frágeis; mantemos fora do suite padrão.
-    // Rode manualmente quando necessário: `vitest run tests/integration`.
+    hookTimeout: 30_000,
+    /** Fluxos com lazy routes + waitFor longos (ex.: aba Documentos) excedem 5s facilmente. */
+    testTimeout: 120_000,
+    // Inclui `tests/integration/**`. Para rodar só unitários: `npm run test:unit`.
     include: ['tests/**/*.test.{ts,tsx}', 'tests/**/*.spec.{ts,tsx}'],
-    exclude: ['tests/integration/**'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],

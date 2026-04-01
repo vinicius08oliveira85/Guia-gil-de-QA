@@ -3,15 +3,17 @@ import { useProjectsStore } from '../../store/projectsStore';
 import { Project } from '../../types';
 import { createDbMocks, createMockProject, createMockProjects } from './mocks';
 import { resetStore, waitForStoreState } from './helpers';
-import * as dbService from '../../services/dbService';
+import { wireDbServiceMocks, wireSupabaseLoadMock } from './wireDbServiceMocks';
 
 // Mock dos serviços
 vi.mock('../../services/dbService', () => ({
   loadProjectsFromIndexedDB: vi.fn(),
+  getProjectById: vi.fn(),
   addProject: vi.fn(),
   updateProject: vi.fn(),
   deleteProject: vi.fn(),
   saveProjectToSupabaseOnly: vi.fn(),
+  writeProjectToIndexedDBOnly: vi.fn(),
 }));
 
 vi.mock('../../services/supabaseService', () => ({
@@ -31,19 +33,8 @@ describe('Testes de Edge Cases e Erros', () => {
     resetStore();
     mocks = createDbMocks();
     mocks.reset();
-    
-    vi.mocked(dbService.loadProjectsFromIndexedDB)
-      .mockImplementation(() => mocks.mockIndexedDB.loadProjects());
-    vi.mocked(dbService.addProject)
-      .mockImplementation(async (project: Project) => {
-        await mocks.mockIndexedDB.saveProject(project);
-        return { savedToSupabase: true };
-      });
-    vi.mocked(dbService.updateProject)
-      .mockImplementation(async (project: Project) => {
-        await mocks.mockIndexedDB.updateProject(project);
-        return { savedToSupabase: true };
-      });
+    wireDbServiceMocks(mocks);
+    wireSupabaseLoadMock(mocks);
   });
 
   describe('5.1 Falhas de Rede', () => {
@@ -63,13 +54,17 @@ describe('Testes de Edge Cases e Erros', () => {
       expect(useProjectsStore.getState().projects.length).toBeGreaterThan(0);
     });
 
-    it('deve tratar timeout durante sincronização', async () => {
-      mocks.mockSupabase.setDelay(10000);
-      mocks.mockSupabase.setShouldFail(true, new Error('Timeout'));
-      const store = useProjectsStore.getState();
-      await store.syncProjectsFromSupabase();
-      expect(useProjectsStore.getState().projects).toBeDefined();
-    });
+    it(
+      'deve tratar timeout durante sincronização',
+      async () => {
+        mocks.mockSupabase.setDelay(10000);
+        mocks.mockSupabase.setShouldFail(true, new Error('Timeout'));
+        const store = useProjectsStore.getState();
+        await store.syncProjectsFromSupabase();
+        expect(useProjectsStore.getState().projects).toBeDefined();
+      },
+      15_000
+    );
 
     it('deve exibir mensagens de erro apropriadas', async () => {
       mocks.mockSupabase.setShouldFail(true, new Error('Erro de conexão com Supabase'));
@@ -175,18 +170,9 @@ describe('Testes de Edge Cases e Erros', () => {
       await mocks.mockIndexedDB.saveProject(largeProject);
       useProjectsStore.setState({ projects: [largeProject] });
       const store = useProjectsStore.getState();
-      try {
-        await store.saveProjectToSupabase(largeProject.id);
-      } catch (error) {
-        const errorMessage = (error as Error).message.toLowerCase();
-        expect(
-          errorMessage.includes('413') ||
-          errorMessage.includes('payload') ||
-          errorMessage.includes('large')
-        ).toBe(true);
-      }
+      await store.saveProjectToSupabase(largeProject.id);
       const indexedDBProjects = await mocks.mockIndexedDB.loadProjects();
-      expect(indexedDBProjects.some(p => p.id === largeProject.id)).toBe(true);
+      expect(indexedDBProjects.some((p) => p.id === largeProject.id)).toBe(true);
     });
 
     it('deve lidar com muitos projetos (> 100)', async () => {

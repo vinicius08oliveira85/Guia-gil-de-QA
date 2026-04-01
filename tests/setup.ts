@@ -1,7 +1,10 @@
 import React from 'react';
-import { afterEach, vi } from 'vitest';
-import { cleanup } from '@testing-library/react';
+import { afterEach, beforeEach, vi } from 'vitest';
+import { cleanup, configure } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
+
+// Lazy-loaded routes (ProjectsDashboard, ProjectView) costumam levar >1s no Vitest em suíte cheia.
+configure({ asyncUtilTimeout: 30_000 });
 import 'fake-indexeddb/auto';
 import { DB_NAME, DB_VERSION, STORE_NAME } from '../utils/constants';
 
@@ -74,6 +77,13 @@ const clearIndexedDbStore = async (spec: IndexedDbStoreSpec): Promise<void> => {
     }
   });
 };
+
+// Evita vazamento de ?project= / ?view= entre testes (App useRouterSync)
+beforeEach(() => {
+  if (typeof window !== 'undefined') {
+    window.history.replaceState({}, '', '/');
+  }
+});
 
 // Limpar após cada teste
 afterEach(async () => {

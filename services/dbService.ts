@@ -388,20 +388,36 @@ function extractProjectsArray(parsed: unknown): unknown[] {
   );
 }
 
+/** Envelope JSON de backup local (IndexedDB), usado em exportação por download ou File System Access API. */
+export type LocalBackupEnvelope = {
+  backupFormatVersion: number;
+  dbVersion: number;
+  exportedAt: string;
+  app: string;
+  projects: Project[];
+};
+
 /**
- * Exporta todos os projetos do IndexedDB para um arquivo JSON (backup manual).
+ * Monta o objeto de backup a partir do IndexedDB (sem gravar arquivo).
+ */
+export const buildLocalBackupData = async (): Promise<LocalBackupEnvelope> => {
+  const projects = await loadProjectsFromIndexedDB();
+  return {
+    backupFormatVersion: BACKUP_EXPORT_FORMAT_VERSION,
+    dbVersion: DB_VERSION,
+    exportedAt: new Date().toISOString(),
+    app: 'qa-agile-guide',
+    projects,
+  };
+};
+
+/**
+ * Exporta todos os projetos do IndexedDB para um arquivo JSON (backup manual via download do navegador).
+ * Quando a File System Access API estiver disponível, prefira o fluxo em `fileSystemBackupService`.
  */
 export const exportProjectsToBackup = async (): Promise<void> => {
   try {
-    const projects = await loadProjectsFromIndexedDB();
-    const backupData = {
-      backupFormatVersion: BACKUP_EXPORT_FORMAT_VERSION,
-      dbVersion: DB_VERSION,
-      exportedAt: new Date().toISOString(),
-      app: 'qa-agile-guide',
-      projects,
-    };
-
+    const backupData = await buildLocalBackupData();
     const jsonString = JSON.stringify(backupData, null, 2);
     const blob = new Blob([jsonString], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -414,7 +430,7 @@ export const exportProjectsToBackup = async (): Promise<void> => {
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
 
-    logger.info(`Backup local exportado: ${projects.length} projeto(s)`, 'dbService', {
+    logger.info(`Backup local exportado: ${backupData.projects.length} projeto(s)`, 'dbService', {
       backupFormatVersion: BACKUP_EXPORT_FORMAT_VERSION,
       dbVersion: DB_VERSION,
     });
@@ -424,11 +440,25 @@ export const exportProjectsToBackup = async (): Promise<void> => {
   }
 };
 
+/** Resultado da importação de backup JSON (IndexedDB e, opcionalmente, Supabase). */
+export type ImportBackupResult = {
+  imported: number;
+  skipped: number;
+  supabaseSynced: number;
+  supabaseSyncFailed: number;
+};
+
 /**
  * Importa projetos de um arquivo JSON para o IndexedDB (sobrescreve id existente via put).
  * Aplica migrateTestCases e cleanup via writeProjectToIndexedDBOnly.
+ * @param options.syncToSupabase — Se true e o Supabase estiver disponível, tenta enviar cada projeto importado após gravar localmente.
  */
-export const importProjectsFromBackup = async (file: File): Promise<number> => {
+export const importProjectsFromBackup = async (
+  file: File,
+  options?: { syncToSupabase?: boolean }
+): Promise<ImportBackupResult> => {
+  const trySyncRemote = options?.syncToSupabase === true && isSupabaseAvailable();
+
   let text: string;
   try {
     text = await file.text();
@@ -448,6 +478,8 @@ export const importProjectsFromBackup = async (file: File): Promise<number> => {
   const rawProjects = extractProjectsArray(parsed);
   let imported = 0;
   let skipped = 0;
+  let supabaseSynced = 0;
+  let supabaseSyncFailed = 0;
 
   for (let i = 0; i < rawProjects.length; i++) {
     const normalized = normalizeImportedProject(rawProjects[i]);
@@ -459,6 +491,19 @@ export const importProjectsFromBackup = async (file: File): Promise<number> => {
     try {
       await writeProjectToIndexedDBOnly(normalized);
       imported++;
+      if (trySyncRemote) {
+        try {
+          await saveProjectToSupabase(normalized);
+          supabaseSynced++;
+        } catch (syncError) {
+          supabaseSyncFailed++;
+          logger.warn(
+            `Projeto "${normalized.id}" importado localmente, mas falhou o envio ao Supabase`,
+            'dbService',
+            syncError
+          );
+        }
+      }
     } catch (error) {
       skipped++;
       logger.warn(`Falha ao importar projeto "${normalized.id}" do backup`, 'dbService', error);
@@ -466,10 +511,13 @@ export const importProjectsFromBackup = async (file: File): Promise<number> => {
   }
 
   logger.info(
-    `Importação de backup concluída: ${imported} projeto(s) gravados, ${skipped} ignorado(s)`,
+    `Importação de backup concluída: ${imported} projeto(s) gravados, ${skipped} ignorado(s)` +
+      (trySyncRemote
+        ? `; Supabase: ${supabaseSynced} ok, ${supabaseSyncFailed} falha(s)`
+        : ''),
     'dbService'
   );
-  return imported;
+  return { imported, skipped, supabaseSynced, supabaseSyncFailed };
 };
 
 /**

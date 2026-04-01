@@ -3,17 +3,21 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from '../../App';
 import { useProjectsStore } from '../../store/projectsStore';
+import type { Project } from '../../types';
 import { createDbMocks, createMockProject } from './mocks';
 import { resetStore } from './helpers';
+import { wireDbServiceMocks, wireSupabaseLoadMock } from './wireDbServiceMocks';
 import * as dbService from '../../services/dbService';
 
 // Mock dos serviços
 vi.mock('../../services/dbService', () => ({
   loadProjectsFromIndexedDB: vi.fn(),
+  getProjectById: vi.fn(),
   addProject: vi.fn(),
   updateProject: vi.fn(),
   deleteProject: vi.fn(),
   saveProjectToSupabaseOnly: vi.fn(),
+  writeProjectToIndexedDBOnly: vi.fn(),
 }));
 
 vi.mock('../../services/supabaseService', () => ({
@@ -33,20 +37,19 @@ describe('Testes de UX', () => {
     resetStore();
     mocks = createDbMocks();
     mocks.reset();
-    
-    vi.mocked(dbService.loadProjectsFromIndexedDB)
-      .mockImplementation(() => mocks.mockIndexedDB.loadProjects());
-    vi.mocked(dbService.addProject)
-      .mockImplementation(async (project: Project) => {
-        await mocks.mockIndexedDB.saveProject(project);
-        return { savedToSupabase: true };
-      });
-    vi.mocked(dbService.updateProject)
-      .mockImplementation(async (project: Project) => {
-        await mocks.mockIndexedDB.updateProject(project);
-        return { savedToSupabase: true };
-      });
+    wireDbServiceMocks(mocks);
+    wireSupabaseLoadMock(mocks);
   });
+
+  async function seedAndLoadApp(projects: Project[]) {
+    for (const p of projects) {
+      await mocks.mockIndexedDB.saveProject(p);
+    }
+    render(<App />);
+    await waitFor(() => {
+      expect(useProjectsStore.getState().projects.length).toBe(projects.length);
+    });
+  }
 
   describe('4.1 Estados de Loading', () => {
     it('deve exibir loading skeleton durante carregamento de projetos', async () => {
@@ -101,15 +104,17 @@ describe('Testes de UX', () => {
 
   describe('4.2 Feedback Visual', () => {
     it('deve exibir toast de sucesso ao criar projeto', async () => {
-      const store = useProjectsStore.getState();
-      
       render(<App />);
-      
-      // Criar projeto
+      await waitFor(() => {
+        expect(screen.getByText(/Meus Projetos/i)).toBeInTheDocument();
+      });
+
+      const store = useProjectsStore.getState();
       await store.createProject('Projeto Teste', 'Descrição');
-      
-      // Verificar que projeto foi criado (toast pode não estar no DOM imediatamente)
-      expect(store.projects.length).toBeGreaterThan(0);
+
+      await waitFor(() => {
+        expect(useProjectsStore.getState().projects.length).toBeGreaterThan(0);
+      });
     });
 
     it('deve exibir mensagens de erro claras', async () => {
@@ -128,13 +133,7 @@ describe('Testes de UX', () => {
     it('deve solicitar confirmação para ações destrutivas', async () => {
       const user = userEvent.setup();
       const project = createMockProject();
-      const store = useProjectsStore.getState();
-      store.projects = [project];
-      
-      render(<App />);
-      
-      // Navegar para dashboard
-      window.dispatchEvent(new CustomEvent('show-dashboard'));
+      await seedAndLoadApp([project]);
       
       // Procurar botão de deletar (pode estar em modal ou card)
       const deleteButton = screen.queryByRole('button', { name: /deletar|delete|excluir/i });
@@ -155,10 +154,7 @@ describe('Testes de UX', () => {
     it('deve permitir navegação por teclado', async () => {
       const user = userEvent.setup();
       const projects = [createMockProject()];
-      const store = useProjectsStore.getState();
-      store.projects = projects;
-      
-      render(<App />);
+      await seedAndLoadApp(projects);
       
       // Navegar com Tab
       await user.tab();
@@ -170,18 +166,12 @@ describe('Testes de UX', () => {
 
     it('deve ter ARIA labels corretos', async () => {
       const project = createMockProject();
-      const store = useProjectsStore.getState();
-      store.projects = [project];
-      store.selectedProjectId = project.id;
-      
-      render(<App />);
-      
-      // Verificar elementos com roles apropriados
+      await seedAndLoadApp([project]);
+      useProjectsStore.setState({ selectedProjectId: project.id });
+
       await waitFor(() => {
         const tabs = screen.queryAllByRole('tab');
         const tabpanels = screen.queryAllByRole('tabpanel');
-        
-        // Se houver tabs, devem ter tabpanels correspondentes
         if (tabs.length > 0) {
           expect(tabpanels.length).toBeGreaterThan(0);
         }
@@ -189,24 +179,22 @@ describe('Testes de UX', () => {
     });
 
     it('deve anunciar mudanças de estado para screen readers', async () => {
-      const store = useProjectsStore.getState();
-      
       render(<App />);
-      
-      // Criar projeto deve atualizar estado
-      await store.createProject('Projeto Acessível', 'Descrição');
-      
-      // Verificar que estado foi atualizado (screen readers leem mudanças)
-      expect(store.projects.length).toBeGreaterThan(0);
+      await waitFor(() => {
+        expect(screen.getByText(/Meus Projetos/i)).toBeInTheDocument();
+      });
+
+      await useProjectsStore.getState().createProject('Projeto Acessível', 'Descrição');
+
+      await waitFor(() => {
+        expect(useProjectsStore.getState().projects.length).toBeGreaterThan(0);
+      });
     });
 
     it('deve manter foco visual correto durante navegação', async () => {
       const user = userEvent.setup();
       const projects = [createMockProject()];
-      const store = useProjectsStore.getState();
-      store.projects = projects;
-      
-      render(<App />);
+      await seedAndLoadApp(projects);
       
       // Navegar com teclado
       await user.tab();
@@ -223,15 +211,11 @@ describe('Testes de UX', () => {
   describe('4.4 Performance de Navegação', () => {
     it('deve ter transições rápidas entre telas', async () => {
       const project = createMockProject();
-      const store = useProjectsStore.getState();
-      store.projects = [project];
-      
-      render(<App />);
-      
+      await seedAndLoadApp([project]);
+
       const startTime = Date.now();
-      
-      // Navegar para projeto
-      store.selectProject(project.id);
+
+      useProjectsStore.getState().selectProject(project.id);
       
       const endTime = Date.now();
       const duration = endTime - startTime;
@@ -242,35 +226,25 @@ describe('Testes de UX', () => {
 
     it('deve carregar componentes lazy corretamente', async () => {
       const project = createMockProject();
-      const store = useProjectsStore.getState();
-      store.projects = [project];
-      store.selectedProjectId = project.id;
-      
-      render(<App />);
-      
-      // Aguardar componente lazy carregar
+      await seedAndLoadApp([project]);
+      useProjectsStore.setState({ selectedProjectId: project.id });
+
       await waitFor(() => {
-        // ProjectView deve estar renderizado
-        expect(store.selectedProjectId).toBe(project.id);
+        expect(useProjectsStore.getState().selectedProjectId).toBe(project.id);
       }, { timeout: 2000 });
     });
 
     it('não deve vazar memória durante navegação', async () => {
       const projects = [createMockProject(), createMockProject(), createMockProject()];
-      const store = useProjectsStore.getState();
-      store.projects = projects;
-      
-      render(<App />);
-      
-      // Navegar entre projetos múltiplas vezes
+      await seedAndLoadApp(projects);
+
       for (let i = 0; i < 10; i++) {
-        store.selectProject(projects[i % projects.length].id);
-        await new Promise(resolve => setTimeout(resolve, 10));
+        useProjectsStore.getState().selectProject(projects[i % projects.length].id);
+        await new Promise((resolve) => setTimeout(resolve, 10));
       }
-      
-      // Verificar que store ainda funciona corretamente
-      expect(store.projects).toHaveLength(3);
-      expect(store.selectedProjectId).toBeDefined();
+
+      expect(useProjectsStore.getState().projects).toHaveLength(3);
+      expect(useProjectsStore.getState().selectedProjectId).toBeDefined();
     });
   });
 });

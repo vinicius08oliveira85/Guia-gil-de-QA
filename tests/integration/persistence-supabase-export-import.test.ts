@@ -20,6 +20,7 @@ vi.mock('../../services/dbService', () => ({
   updateProject: vi.fn(),
   deleteProject: vi.fn(),
   saveProjectToSupabaseOnly: vi.fn(),
+  writeProjectToIndexedDBOnly: vi.fn(),
 }));
 
 vi.mock('../../services/supabaseService', () => ({
@@ -32,6 +33,34 @@ vi.mock('../../utils/auditLog', () => ({
   addAuditLog: vi.fn(),
 }));
 
+function setupPersistenceSupabaseDbMocks(mocks: ReturnType<typeof createDbMocks>) {
+  vi.mocked(dbService.loadProjectsFromIndexedDB).mockImplementation(() => mocks.mockIndexedDB.loadProjects());
+  vi.mocked(dbService.getProjectById).mockImplementation((id: string) => mocks.mockIndexedDB.getProject(id));
+  vi.mocked(dbService.addProject).mockImplementation(async (project: Project) => {
+    await mocks.mockIndexedDB.saveProject(project);
+    await mocks.mockSupabase.saveProject(project);
+    return { savedToSupabase: true };
+  });
+  vi.mocked(dbService.updateProject).mockImplementation(async (project: Project) => {
+    await mocks.mockIndexedDB.updateProject(project);
+    await mocks.mockSupabase.updateProject(project);
+    return { savedToSupabase: true };
+  });
+  vi.mocked(dbService.deleteProject).mockImplementation(async (projectId: string) => {
+    await mocks.mockIndexedDB.deleteProject(projectId);
+    await mocks.mockSupabase.deleteProject(projectId);
+  });
+  vi.mocked(dbService.saveProjectToSupabaseOnly).mockImplementation(async (project: Project) => {
+    await mocks.mockSupabase.saveProject(project);
+  });
+  vi.mocked(dbService.writeProjectToIndexedDBOnly).mockImplementation(async (project: Project) => {
+    await mocks.mockIndexedDB.saveProject(project);
+  });
+  vi.mocked(supabaseService.loadProjectsFromSupabase).mockImplementation(() =>
+    mocks.mockSupabase.loadProjects().then((projects) => ({ projects, loadFailed: false }))
+  );
+}
+
 describe('Salvamento e recuperação (store → dbService → Supabase mock + IndexedDB)', () => {
   let mocks: ReturnType<typeof createDbMocks>;
 
@@ -39,27 +68,7 @@ describe('Salvamento e recuperação (store → dbService → Supabase mock + In
     resetStore();
     mocks = createDbMocks();
     mocks.reset();
-
-    vi.mocked(dbService.loadProjectsFromIndexedDB)
-      .mockImplementation(() => mocks.mockIndexedDB.loadProjects());
-    vi.mocked(dbService.getProjectById)
-      .mockImplementation((id: string) => mocks.mockIndexedDB.getProject(id));
-    vi.mocked(dbService.addProject)
-      .mockImplementation(async (project: Project) => {
-        await mocks.mockIndexedDB.saveProject(project);
-        await mocks.mockSupabase.saveProject(project);
-        return { savedToSupabase: true };
-      });
-    vi.mocked(dbService.updateProject)
-      .mockImplementation(async (project: Project) => {
-        await mocks.mockIndexedDB.updateProject(project);
-        await mocks.mockSupabase.updateProject(project);
-        return { savedToSupabase: true };
-      });
-    vi.mocked(supabaseService.loadProjectsFromSupabase)
-      .mockImplementation(() =>
-        mocks.mockSupabase.loadProjects().then(projects => ({ projects, loadFailed: false }))
-      );
+    setupPersistenceSupabaseDbMocks(mocks);
   });
 
   it('deve persistir no mock Supabase e no IndexedDB ao criar projeto', async () => {
@@ -102,27 +111,7 @@ describe('Importação de projetos', () => {
     resetStore();
     mocks = createDbMocks();
     mocks.reset();
-
-    vi.mocked(dbService.loadProjectsFromIndexedDB)
-      .mockImplementation(() => mocks.mockIndexedDB.loadProjects());
-    vi.mocked(dbService.getProjectById)
-      .mockImplementation((id: string) => mocks.mockIndexedDB.getProject(id));
-    vi.mocked(dbService.addProject)
-      .mockImplementation(async (project: Project) => {
-        await mocks.mockIndexedDB.saveProject(project);
-        await mocks.mockSupabase.saveProject(project);
-        return { savedToSupabase: true };
-      });
-    vi.mocked(dbService.updateProject)
-      .mockImplementation(async (project: Project) => {
-        await mocks.mockIndexedDB.updateProject(project);
-        await mocks.mockSupabase.updateProject(project);
-        return { savedToSupabase: true };
-      });
-    vi.mocked(supabaseService.loadProjectsFromSupabase)
-      .mockImplementation(() =>
-        mocks.mockSupabase.loadProjects().then(projects => ({ projects, loadFailed: false }))
-      );
+    setupPersistenceSupabaseDbMocks(mocks);
   });
 
   it('deve importar projeto novo e chamar addProject', async () => {

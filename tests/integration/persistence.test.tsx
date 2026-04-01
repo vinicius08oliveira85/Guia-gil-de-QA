@@ -3,16 +3,18 @@ import { useProjectsStore } from '../../store/projectsStore';
 import { Project } from '../../types';
 import { createDbMocks, createMockProject, createMockProjects } from './mocks';
 import { resetStore, waitForStoreState } from './helpers';
-import * as dbService from '../../services/dbService';
+import { wireDbServiceMocks, wireSupabaseLoadMock } from './wireDbServiceMocks';
 import * as supabaseService from '../../services/supabaseService';
 
 // Mock dos serviços
 vi.mock('../../services/dbService', () => ({
   loadProjectsFromIndexedDB: vi.fn(),
+  getProjectById: vi.fn(),
   addProject: vi.fn(),
   updateProject: vi.fn(),
   deleteProject: vi.fn(),
   saveProjectToSupabaseOnly: vi.fn(),
+  writeProjectToIndexedDBOnly: vi.fn(),
 }));
 
 vi.mock('../../services/supabaseService', () => ({
@@ -33,28 +35,8 @@ describe('Testes de Persistência de Dados', () => {
     mocks = createDbMocks();
     mocks.reset();
     
-    // Configurar mocks padrão
-    vi.mocked(dbService.loadProjectsFromIndexedDB)
-      .mockImplementation(() => mocks.mockIndexedDB.loadProjects());
-    vi.mocked(dbService.addProject)
-      .mockImplementation(async (project: Project) => {
-        await mocks.mockIndexedDB.saveProject(project);
-        return { savedToSupabase: true };
-      });
-    vi.mocked(dbService.updateProject)
-      .mockImplementation(async (project: Project) => {
-        await mocks.mockIndexedDB.updateProject(project);
-        return { savedToSupabase: true };
-      });
-    vi.mocked(dbService.deleteProject)
-      .mockImplementation((projectId: string) => mocks.mockIndexedDB.deleteProject(projectId));
-    vi.mocked(dbService.saveProjectToSupabaseOnly)
-      .mockImplementation((project: Project) => mocks.mockSupabase.saveProject(project));
-
-    vi.mocked(supabaseService.loadProjectsFromSupabase)
-      .mockImplementation(() =>
-        mocks.mockSupabase.loadProjects().then(projects => ({ projects, loadFailed: false }))
-      );
+    wireDbServiceMocks(mocks);
+    wireSupabaseLoadMock(mocks);
   });
 
   describe('2.1 Persistência IndexedDB', () => {
