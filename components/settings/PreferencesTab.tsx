@@ -1,12 +1,18 @@
-import React, { useState, Suspense, lazy } from 'react';
+import React, { useState, Suspense } from 'react';
 import { Bell, Keyboard, Upload } from 'lucide-react';
 import { LoadingSkeleton } from '../common/LoadingSkeleton';
 import { cn } from '../../utils/cn';
+import { lazyWithRetry } from '../../utils/lazyWithRetry';
 
-// Lazy load preference components
-const NotificationPreferences = lazy(() => import('./NotificationPreferences').then(m => ({ default: m.NotificationPreferences })));
-const KeyboardShortcutsEditor = lazy(() => import('./KeyboardShortcutsEditor').then(m => ({ default: m.KeyboardShortcutsEditor })));
-const ExportPreferences = lazy(() => import('./ExportPreferences').then(m => ({ default: m.ExportPreferences })));
+const NotificationPreferences = lazyWithRetry(() =>
+  import('./NotificationPreferences').then(m => ({ default: m.NotificationPreferences }))
+);
+const KeyboardShortcutsEditor = lazyWithRetry(() =>
+  import('./KeyboardShortcutsEditor').then(m => ({ default: m.KeyboardShortcutsEditor }))
+);
+const ExportPreferences = lazyWithRetry(() =>
+  import('./ExportPreferences').then(m => ({ default: m.ExportPreferences }))
+);
 
 type PreferenceSection = 'notifications' | 'shortcuts' | 'export';
 

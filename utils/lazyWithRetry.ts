@@ -3,11 +3,15 @@ import { logger } from './logger';
 
 const isChunkLoadError = (error: any) => {
     if (!error) return false;
+    const name = typeof error === 'object' && error !== null && 'name' in error ? String(error.name) : '';
+    if (name === 'ChunkLoadError') return true;
     const message = typeof error === 'string' ? error : error.message || '';
     return (
         message.includes('Failed to fetch dynamically imported module') ||
         message.includes('Importing a module script failed') ||
-        message.includes('does not provide an export named')
+        message.includes('does not provide an export named') ||
+        message.includes('Loading chunk') ||
+        message.includes('Unable to preload CSS')
     );
 };
 

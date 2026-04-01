@@ -1,12 +1,13 @@
-import React, { useState, useEffect, Suspense, useRef, useCallback, lazy } from 'react';
+import React, { useState, useEffect, Suspense, useRef, useCallback } from 'react';
 import { Project } from '../types';
 import { useProjectMetrics } from '../hooks/useProjectMetrics';
 import { PrintableReport } from './PrintableReport';
 import { LoadingSkeleton } from './common/LoadingSkeleton';
 import { QADashboard } from './dashboard/QADashboard';
+import { lazyWithRetry } from '../utils/lazyWithRetry';
 
-const TasksView = lazy(() => import('./tasks/TasksView').then(m => ({ default: m.TasksView })));
-const DocumentsView = lazy(() => import('./DocumentsView').then(m => ({ default: m.DocumentsView })));
+const TasksView = lazyWithRetry(() => import('./tasks/TasksView').then(m => ({ default: m.TasksView })));
+const DocumentsView = lazyWithRetry(() => import('./DocumentsView').then(m => ({ default: m.DocumentsView })));
 import { Breadcrumbs } from './common/Breadcrumbs';
 import { PageTransition } from './common/PageTransition';
 import { SectionHeader } from './common/SectionHeader';
