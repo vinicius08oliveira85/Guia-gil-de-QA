@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Project, PhaseName, BugSeverity, PhaseStatus, TestCase, JiraTask, TaskPriority } from '../types';
+import { Project, PhaseName, BugSeverity, PhaseStatus, JiraTask, TaskPriority } from '../types';
 import { PHASE_NAMES } from '../utils/constants';
 import { 
     categorizeJiraStatus, 
@@ -17,17 +17,58 @@ const phaseNamesInOrder: PhaseName[] = [...PHASE_NAMES];
 /** Percentual mínimo (0–1) para considerar uma fase concluída e desbloquear a seguinte (evita fases travadas). */
 const PHASE_COMPLETION_THRESHOLD = 0.8;
 
+/** Contagens sobre casos de teste sem materializar `flatMap` (projetos com muitos casos). */
+const aggregateTestCaseCounts = (tasks: JiraTask[]) => {
+    let totalTestCases = 0;
+    let executedTestCases = 0;
+    let passedTestCases = 0;
+    let automatedTestCases = 0;
+    let failedTestCases = 0;
+    let blockedTestCases = 0;
+    let notRunTestCases = 0;
+    let reexecutedTests = 0;
+
+    for (const task of tasks) {
+        for (const tc of task.testCases || []) {
+            totalTestCases++;
+            if (tc.status !== 'Not Run') executedTestCases++;
+            if (tc.status === 'Passed') passedTestCases++;
+            if (tc.isAutomated) automatedTestCases++;
+            if (tc.status === 'Failed') failedTestCases++;
+            if (tc.status === 'Blocked') blockedTestCases++;
+            if (tc.status === 'Not Run') notRunTestCases++;
+            if (tc.observedResult && tc.status !== 'Not Run') reexecutedTests++;
+        }
+    }
+
+    return {
+        totalTestCases,
+        executedTestCases,
+        passedTestCases,
+        automatedTestCases,
+        failedTestCases,
+        blockedTestCases,
+        notRunTestCases,
+        reexecutedTests,
+    };
+};
+
 export const calculateProjectMetrics = (project: Project) => {
     const tasks = project.tasks || [];
     const documents = project.documents || [];
     const phases = project.phases || [];
 
     // --- Basic Counts ---
-    const allTestCases: TestCase[] = tasks.flatMap(t => t.testCases || []);
-    const totalTestCases = allTestCases.length;
-    const executedTestCases = allTestCases.filter(tc => tc.status !== 'Not Run').length;
-    const passedTestCases = allTestCases.filter(tc => tc.status === 'Passed').length;
-    const automatedTestCases = allTestCases.filter(tc => tc.isAutomated).length;
+    const {
+        totalTestCases,
+        executedTestCases,
+        passedTestCases,
+        automatedTestCases,
+        failedTestCases,
+        blockedTestCases,
+        notRunTestCases,
+        reexecutedTests,
+    } = aggregateTestCaseCounts(tasks);
 
     // Apenas tarefas do tipo "Tarefa" devem ter casos de teste
     const totalTasks = tasks.filter(t => t.type === 'Tarefa').length;
@@ -125,9 +166,14 @@ export const calculateProjectMetrics = (project: Project) => {
 
     const qualityByModule = tasks.filter(t => t.type === 'Epic').map(epic => {
         const childTasks = tasks.filter(t => t.parentId === epic.id);
-        const moduleTestCases = childTasks.flatMap(t => t.testCases || []);
-        const passed = moduleTestCases.filter(tc => tc.status === 'Passed').length;
-        const total = moduleTestCases.length;
+        let passed = 0;
+        let total = 0;
+        for (const ct of childTasks) {
+            for (const tc of ct.testCases || []) {
+                total++;
+                if (tc.status === 'Passed') passed++;
+            }
+        }
         return {
             module: epic.title.split(' ')[0],
             quality: total > 0 ? Math.round((passed / total) * 100) : 100
@@ -239,13 +285,10 @@ export const calculateProjectMetrics = (project: Project) => {
     ];
 
     // --- Test Execution Status Metrics ---
-    const failedTestCases = allTestCases.filter(tc => tc.status === 'Failed').length;
-    const blockedTestCases = allTestCases.filter(tc => tc.status === 'Blocked').length;
-    
     const testExecution = {
         passed: passedTestCases,
         failed: failedTestCases,
-        notRun: allTestCases.filter(tc => tc.status === 'Not Run').length,
+        notRun: notRunTestCases,
         blocked: blockedTestCases,
         passRate: executedTestCases > 0 ? Math.round((passedTestCases / executedTestCases) * 100) : 0,
     };
@@ -287,10 +330,6 @@ export const calculateProjectMetrics = (project: Project) => {
     // Para isso, precisamos verificar histórico ou assumir que testes que mudaram de status indicam retrabalho
     // Por enquanto, vamos contar testes que falharam e depois passaram (indicando retrabalho)
     // Como não temos histórico detalhado, vamos usar uma heurística: testes com observedResult indicam reexecução
-    const reexecutedTests = allTestCases.filter(tc => 
-        tc.observedResult && tc.status !== 'Not Run'
-    ).length;
-
     // Média de falhas por dia (simplificado: total de falhas / 30)
     const averageFailuresPerDay = totalTestCases > 0 
         ? Math.round((failedTestCases / 30) * 10) / 10 

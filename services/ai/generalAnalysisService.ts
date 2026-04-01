@@ -9,10 +9,19 @@ const CACHE_TTL_MS = 1000 * 60 * 5; // 5 minutos
 const MAX_TASKS_IN_CONTEXT = 100;
 const MAX_AI_TASKS = 20;
 const MAX_AI_TESTS = 30;
+/**
+ * Pool de snapshots de teste para priorização (evita materializar todos os casos do projeto).
+ * `selectPriorityTests` escolhe entre estes; métricas globais vêm de `aggregateTestsMetricsFromTasks`.
+ */
+const MAX_TEST_SNAPSHOT_POOL = 2000;
+/** Análises persistidas em `generalIAAnalysis.testAnalyses` = apenas os testes priorizados (≤ MAX_AI_TESTS). */
+export const MAX_PERSISTED_TEST_ANALYSES = MAX_AI_TESTS;
 /** Máximo de caracteres por trecho de texto (descrição, etc.) no contexto. */
 const TEXT_SNIPPET_LENGTH = 220;
 /** Limite total do prompt enviado à IA (evita payload excessivo e stack overflow no cliente). */
 const MAX_PROMPT_LENGTH = 28_000;
+/** Espaço reservado para instruções fixas + margem ao montar o prompt com JSON embutido. */
+const PROMPT_TEMPLATE_RESERVE = 2400;
 
 /** Snapshot usado para hash de cache: inclui todos os campos que influenciam o resultado da análise. */
 interface TaskSnapshot {
@@ -190,37 +199,97 @@ const calculateTestSnapshot = (task: JiraTask, testCase: TestCase): TestSnapshot
   };
 };
 
-const buildProjectMetrics = (tasks: TaskSnapshot[], tests: TestSnapshot[]): ProjectMetrics => {
-  const tasksByStatus = tasks.reduce<Record<string, number>>((acc, task) => {
-    acc[task.status] = (acc[task.status] || 0) + 1;
-    return acc;
-  }, {});
+/** Métricas de testes sobre todas as tarefas (varredura O(n) sem array gigante de snapshots). */
+const aggregateTestsMetricsFromTasks = (tasks: JiraTask[]): ProjectMetrics['tests'] => {
+  const byStatus: Record<string, number> = {};
+  let total = 0;
+  let missingSteps = 0;
+  let missingExpectedResult = 0;
+  let automated = 0;
 
-  const testsByStatus = tests.reduce<Record<string, number>>((acc, test) => {
-    acc[test.status] = (acc[test.status] || 0) + 1;
+  for (const task of tasks) {
+    for (const tc of task.testCases || []) {
+      total++;
+      const st = tc.status;
+      byStatus[st] = (byStatus[st] || 0) + 1;
+      if (!tc.steps?.length) missingSteps++;
+      if (!tc.expectedResult?.trim()) missingExpectedResult++;
+      if (tc.isAutomated) automated++;
+    }
+  }
+
+  return { total, byStatus, missingSteps, missingExpectedResult, automated };
+};
+
+const buildProjectMetrics = (taskSnapshots: TaskSnapshot[], testsMetrics: ProjectMetrics['tests']): ProjectMetrics => {
+  const tasksByStatus = taskSnapshots.reduce<Record<string, number>>((acc, task) => {
+    acc[task.status] = (acc[task.status] || 0) + 1;
     return acc;
   }, {});
 
   return {
     tasks: {
-      total: tasks.length,
+      total: taskSnapshots.length,
       byStatus: tasksByStatus,
-      withoutTests: tasks.filter(t => t.testCasesTotal === 0).length,
-      withoutDescription: tasks.filter(t => !t.hasDescription).length,
-      withoutBDD: tasks.filter(t => t.bddScenarios === 0).length,
-      withoutStrategy: tasks.filter(t => !t.hasTestStrategy).length,
-      withFailedTests: tasks.filter(t => t.testsFailed > 0).length,
-      withPendingTests: tasks.filter(t => t.testsNotRun > 0).length,
-      highRisk: tasks.filter(t => t.riskLevel === 'Crítico' || t.riskLevel === 'Alto').length
+      withoutTests: taskSnapshots.filter(t => t.testCasesTotal === 0).length,
+      withoutDescription: taskSnapshots.filter(t => !t.hasDescription).length,
+      withoutBDD: taskSnapshots.filter(t => t.bddScenarios === 0).length,
+      withoutStrategy: taskSnapshots.filter(t => !t.hasTestStrategy).length,
+      withFailedTests: taskSnapshots.filter(t => t.testsFailed > 0).length,
+      withPendingTests: taskSnapshots.filter(t => t.testsNotRun > 0).length,
+      highRisk: taskSnapshots.filter(t => t.riskLevel === 'Crítico' || t.riskLevel === 'Alto').length
     },
-    tests: {
-      total: tests.length,
-      byStatus: testsByStatus,
-      missingSteps: tests.filter(t => t.stepsCount === 0).length,
-      missingExpectedResult: tests.filter(t => !t.expectedResult).length,
-      automated: tests.filter(t => t.isAutomated).length
-    }
+    tests: testsMetrics
   };
+};
+
+const testSnapshotPriorityScore = (test: TestSnapshot): number => {
+  let total = 0;
+  if (test.status === 'Failed') total += 30;
+  if (test.status === 'Not Run') total += 15;
+  total += test.issues.length * 5;
+  return total;
+};
+
+/**
+ * Mantém até `maxKeep` snapshots com maior score de prioridade, sem alocar um array com todos os casos.
+ */
+const collectTestSnapshotsForPool = (tasks: JiraTask[], maxKeep: number): TestSnapshot[] => {
+  let totalCases = 0;
+  for (const t of tasks) {
+    totalCases += (t.testCases || []).length;
+  }
+
+  if (totalCases <= maxKeep) {
+    return tasks.flatMap((task) => (task.testCases || []).map((tc) => calculateTestSnapshot(task, tc)));
+  }
+
+  type Slot = { snap: TestSnapshot; score: number };
+  const pool: Slot[] = [];
+
+  for (const task of tasks) {
+    for (const tc of task.testCases || []) {
+      const snap = calculateTestSnapshot(task, tc);
+      const score = testSnapshotPriorityScore(snap);
+
+      if (pool.length < maxKeep) {
+        pool.push({ snap, score });
+        continue;
+      }
+
+      let minIdx = 0;
+      for (let i = 1; i < pool.length; i++) {
+        if (pool[i].score < pool[minIdx].score) minIdx = i;
+      }
+      if (score > pool[minIdx].score) {
+        pool[minIdx] = { snap, score };
+      }
+    }
+  }
+
+  return pool
+    .sort((a, b) => b.score - a.score)
+    .map((p) => p.snap);
 };
 
 const buildQualitySignals = (metrics: ProjectMetrics, tasks: TaskSnapshot[]): string[] => {
@@ -277,16 +346,7 @@ const selectPriorityTests = (tests: TestSnapshot[]): TestSnapshot[] => {
   }
 
   return [...tests]
-    .sort((a, b) => {
-      const score = (test: TestSnapshot) => {
-        let total = 0;
-        if (test.status === 'Failed') total += 30;
-        if (test.status === 'Not Run') total += 15;
-        total += test.issues.length * 5;
-        return total;
-      };
-      return score(b) - score(a);
-    })
+    .sort((a, b) => testSnapshotPriorityScore(b) - testSnapshotPriorityScore(a))
     .slice(0, MAX_AI_TESTS);
 };
 
@@ -543,14 +603,13 @@ export async function generateGeneralIAAnalysis(project: Project): Promise<Gener
   try {
     const tasksForContext = project.tasks.slice(0, MAX_TASKS_IN_CONTEXT);
     const taskSnapshots = tasksForContext.map(calculateTaskSnapshot);
-    const testSnapshots = tasksForContext.flatMap(task =>
-      (task.testCases || []).map(testCase => calculateTestSnapshot(task, testCase))
-    );
+    const testsMetrics = aggregateTestsMetricsFromTasks(tasksForContext);
+    const testSnapshotsPool = collectTestSnapshotsForPool(tasksForContext, MAX_TEST_SNAPSHOT_POOL);
 
-    const metrics = buildProjectMetrics(taskSnapshots, testSnapshots);
+    const metrics = buildProjectMetrics(taskSnapshots, testsMetrics);
     const qualitySignals = buildQualitySignals(metrics, taskSnapshots);
     const priorityTasks = selectPriorityTasks(taskSnapshots);
-    const priorityTests = selectPriorityTests(testSnapshots);
+    const priorityTests = selectPriorityTests(testSnapshotsPool);
 
     const snapshotPayload = {
       project: {
@@ -565,8 +624,8 @@ export async function generateGeneralIAAnalysis(project: Project): Promise<Gener
       priorityTests
     };
 
-    const snapshotString = JSON.stringify(snapshotPayload);
-    const snapshotHash = hashString(snapshotString);
+    const snapshotJsonCompact = JSON.stringify(snapshotPayload);
+    const snapshotHash = hashString(snapshotJsonCompact);
     const cacheKey = `general-ia-analysis:${project.id}`;
 
     const cached = getCachedAnalysis(cacheKey, snapshotHash);
@@ -575,12 +634,21 @@ export async function generateGeneralIAAnalysis(project: Project): Promise<Gener
     }
 
     const documentContext = await getFormattedContext(project);
-    const prompt = `${documentContext}
+    const maxJsonLen = Math.max(
+      2000,
+      MAX_PROMPT_LENGTH - documentContext.length - PROMPT_TEMPLATE_RESERVE
+    );
+    const contextJsonBlock =
+      snapshotJsonCompact.length > maxJsonLen
+        ? `${snapshotJsonCompact.slice(0, maxJsonLen - 48)}\n[...JSON truncado por limite de prompt...]`
+        : snapshotJsonCompact;
+
+    const finalPrompt = `${documentContext}
 Você é um especialista sênior em QA e precisa produzir uma análise estratégica e acionável.
 Use o contexto JSON fornecido (tarefas e testes mais críticos já foram filtrados para você).
 
-CONTEXTO E MÉTRICAS:
-${JSON.stringify(snapshotPayload, null, 2)}
+CONTEXTO E MÉTRICAS (JSON compacto):
+${contextJsonBlock}
 
 INSTRUÇÕES:
 1. Gere um resumo executivo e liste problemas/riscos globais com base em qualitySignals e metrics.
@@ -596,12 +664,7 @@ OBSERVAÇÕES IMPORTANTES:
 - Foque em recomendações acionáveis e priorizadas.
 - Utilize o idioma português.
 - Não faça referência a tarefas/testes que não estejam presentes no contexto.
-    `;
-
-    const finalPrompt =
-      prompt.length > MAX_PROMPT_LENGTH
-        ? prompt.slice(0, MAX_PROMPT_LENGTH) + '\n\n[... contexto truncado para evitar sobrecarga ...]'
-        : prompt;
+    `.slice(0, MAX_PROMPT_LENGTH);
 
     const response = await callGeminiWithRetry({
       model: "gemini-2.5-flash",
@@ -642,7 +705,7 @@ OBSERVAÇÕES IMPORTANTES:
       return buildTaskHeuristicAnalysis(snapshot);
     });
 
-    const finalTestAnalyses: TestIAAnalysis[] = testSnapshots.map(snapshot => {
+    const finalTestAnalyses: TestIAAnalysis[] = priorityTests.map((snapshot) => {
       const aiAnalysis = aiTestAnalysesMap.get(snapshot.id);
       if (aiAnalysis) {
         return {

@@ -19,20 +19,49 @@ export interface IntegrityCheckResult {
 }
 
 /**
- * Calcula checksum simples de um objeto
+ * Impressão digital leve do projeto (evita JSON.stringify do grafo inteiro → stack/heap em projetos grandes).
  */
-const calculateChecksum = (obj: any): string => {
+const projectIntegrityFingerprint = (project: Project): string => {
   try {
-    const str = JSON.stringify(obj);
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-      const char = str.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
-      hash = hash & hash; // Convert to 32bit integer
+    let hash = 5381;
+    const mix = (s: string) => {
+      for (let i = 0; i < s.length; i++) {
+        hash = (hash * 33) ^ s.charCodeAt(i);
+        hash |= 0;
+      }
+    };
+
+    mix(project.id || '');
+    mix(project.name || '');
+    mix(project.updatedAt || '');
+    mix(project.createdAt || '');
+
+    const tasks = project.tasks || [];
+    hash = (hash * 33 + tasks.length) | 0;
+
+    for (let ti = 0; ti < tasks.length; ti++) {
+      const t = tasks[ti];
+      mix(t.id || '');
+      mix(t.title?.slice(0, 120) || '');
+      mix(t.updatedAt || t.createdAt || '');
+      const tcs = t.testCases || [];
+      hash = (hash * 33 + tcs.length) | 0;
+      for (let ci = 0; ci < tcs.length; ci++) {
+        const tc = tcs[ci];
+        mix(tc.id || '');
+        mix(tc.status || '');
+      }
     }
-    return hash.toString(36);
+
+    const docs = project.documents || [];
+    hash = (hash * 33 + docs.length) | 0;
+    for (let di = 0; di < docs.length; di++) {
+      mix(docs[di].name || '');
+    }
+
+    return `fp:${(hash >>> 0).toString(36)}`;
   } catch {
-    return 'error';
+    return 'fp:error';
   }
 };
 
@@ -228,18 +257,17 @@ export const validateProjectIntegrity = (project: Project): IntegrityCheckResult
     });
   }
 
-  // Verificar se há dados corrompidos (valores null/undefined em campos críticos)
   try {
-    const checksum = calculateChecksum(project);
-    if (checksum === 'error') {
+    const fingerprint = projectIntegrityFingerprint(project);
+    if (fingerprint === 'fp:error') {
       issues.push({
         type: 'corrupted_data',
         severity: 'critical',
         path: 'root',
-        message: 'Não foi possível calcular checksum do projeto (possível corrupção)',
+        message: 'Não foi possível calcular impressão digital do projeto (possível corrupção)',
       });
     }
-  } catch (error) {
+  } catch {
     issues.push({
       type: 'corrupted_data',
       severity: 'critical',

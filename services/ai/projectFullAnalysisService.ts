@@ -18,23 +18,43 @@ const normalizeSnippet = (value: string | undefined, maxLength: number): string 
   return s.length <= maxLength ? s : `${s.slice(0, maxLength)}…`;
 };
 
+function aggregateTestExecutionForContext(tasks: Project['tasks']) {
+  let passed = 0;
+  let failed = 0;
+  let notRun = 0;
+  let blocked = 0;
+  const testStrategiesCount = new Map<string, number>();
+  let totalTestCases = 0;
+
+  for (const t of tasks || []) {
+    for (const tc of t.testCases || []) {
+      totalTestCases++;
+      if (tc.status === 'Passed') passed++;
+      else if (tc.status === 'Failed') failed++;
+      else if (tc.status === 'Not Run') notRun++;
+      else if (tc.status === 'Blocked') blocked++;
+      const s = tc.executedStrategy || 'Não definida';
+      testStrategiesCount.set(s, (testStrategiesCount.get(s) || 0) + 1);
+    }
+  }
+
+  return { passed, failed, notRun, blocked, testStrategiesCount, totalTestCases };
+}
+
 function buildFullContext(project: Project): string {
   const metrics = calculateProjectMetrics(project);
-  const allTestCases = project.tasks.flatMap(t => t.testCases || []);
-  const tasksByType = { tarefa: project.tasks.filter(t => t.type === 'Tarefa').length, bug: project.tasks.filter(t => t.type === 'Bug').length };
+  const tasks = project.tasks || [];
+  const { passed, failed, notRun, blocked, testStrategiesCount, totalTestCases } =
+    aggregateTestExecutionForContext(tasks);
+  const tasksByType = { tarefa: tasks.filter(t => t.type === 'Tarefa').length, bug: tasks.filter(t => t.type === 'Bug').length };
   const taskStatus = {
-    toDo: project.tasks.filter(t => t.type !== 'Bug' && t.status === 'To Do').length,
-    inProgress: project.tasks.filter(t => t.type !== 'Bug' && t.status === 'In Progress').length,
-    done: project.tasks.filter(t => t.type !== 'Bug' && t.status === 'Done').length,
-    blocked: project.tasks.filter(t => t.type !== 'Bug' && t.status === 'Blocked').length,
+    toDo: tasks.filter(t => t.type !== 'Bug' && t.status === 'To Do').length,
+    inProgress: tasks.filter(t => t.type !== 'Bug' && t.status === 'In Progress').length,
+    done: tasks.filter(t => t.type !== 'Bug' && t.status === 'Done').length,
+    blocked: tasks.filter(t => t.type !== 'Bug' && t.status === 'Blocked').length,
   };
-  const testExecution = {
-    passed: allTestCases.filter(tc => tc.status === 'Passed').length,
-    failed: allTestCases.filter(tc => tc.status === 'Failed').length,
-    notRun: allTestCases.filter(tc => tc.status === 'Not Run').length,
-    blocked: allTestCases.filter(tc => tc.status === 'Blocked').length,
-  };
-  const totalStrategies = project.tasks.reduce((acc, t) => acc + (t.testStrategy?.length ?? 0), 0);
+  const testExecution = { passed, failed, notRun, blocked };
+  const totalStrategies = tasks.reduce((acc, t) => acc + (t.testStrategy?.length ?? 0), 0);
   const defectRate = metrics.totalTestCases > 0
     ? Math.round((metrics.failedTestCases / metrics.totalTestCases) * 100)
     : 0;
@@ -52,7 +72,7 @@ function buildFullContext(project: Project): string {
     contentSnippet: normalizeSnippet(doc.content, MAX_DOCUMENTS_SNIPPET_CHARS),
     hasAnalysis: !!doc.analysis?.trim(),
   }));
-  const tasksSummary = project.tasks.slice(0, MAX_TASKS_IN_CONTEXT).map(t => ({
+  const tasksSummary = tasks.slice(0, MAX_TASKS_IN_CONTEXT).map(t => ({
     id: t.id,
     title: t.title?.slice(0, 80),
     type: t.type,
@@ -60,11 +80,6 @@ function buildFullContext(project: Project): string {
     priority: t.priority,
     testCasesCount: (t.testCases || []).length,
   }));
-  const testStrategiesCount = new Map<string, number>();
-  allTestCases.forEach(tc => {
-    const s = tc.executedStrategy || 'Não definida';
-    testStrategiesCount.set(s, (testStrategiesCount.get(s) || 0) + 1);
-  });
   const phasesInfo = (project.phases || []).map(p => ({ name: p.name, status: p.status }));
   const currentPhaseProgress = project.sdlcPhaseAnalysis?.progressPercentage ?? 0;
 
@@ -73,11 +88,11 @@ function buildFullContext(project: Project): string {
     projectDescription: normalizeSnippet(project.description, MAX_DOCUMENTS_SNIPPET_CHARS),
     documentsCount: (project.documents || []).length,
     documents: documentsInfo,
-    tasksCount: project.tasks.length,
+    tasksCount: tasks.length,
     tasksByType,
     taskStatus,
     tasksSummary,
-    totalTestCases: allTestCases.length,
+    totalTestCases,
     testExecution,
     testStrategiesCount: Object.fromEntries(testStrategiesCount),
     totalStrategies,

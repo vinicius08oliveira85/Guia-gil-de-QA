@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { Project } from '../../types';
 import { generateProjectLifecyclePlan, generateShiftLeftAnalysis, generateTestPyramidAnalysis } from '../../services/geminiService';
-import { generateGeneralIAAnalysis } from '../../services/ai/generalAnalysisService';
+import { generateGeneralIAAnalysis, MAX_PERSISTED_TEST_ANALYSES } from '../../services/ai/generalAnalysisService';
 import { Spinner } from '../common/Spinner';
 import { ProjectLifecycleCard } from './ProjectLifecycleCard';
 import { ShiftLeftCard } from './ShiftLeftCard';
@@ -445,6 +445,7 @@ export const AnalysisView: React.FC<{
                     title="Análises por Teste"
                     icon="🧪"
                     count={testAnalyses.length}
+                    subtitle={`Priorização automática: até ${MAX_PERSISTED_TEST_ANALYSES} casos de teste com maior impacto (falhas, pendentes, lacunas). Demais casos entram nas métricas globais acima, sem análise individual nesta lista.`}
                     defaultExpanded={false}
                     viewMode={testViewMode}
                     onViewModeChange={setTestViewMode}

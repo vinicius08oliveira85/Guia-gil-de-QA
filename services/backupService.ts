@@ -60,11 +60,43 @@ const openBackupDB = (): Promise<IDBDatabase> => {
 };
 
 /**
- * Calcula o tamanho aproximado do projeto em bytes
+ * Estimativa de tamanho serializado (evita JSON.stringify do projeto inteiro em grafos enormes).
  */
 const calculateProjectSize = (project: Project): number => {
   try {
-    return new Blob([JSON.stringify(project)]).size;
+    let n = 512;
+    const addStr = (s: string | undefined, cap = 50_000) => {
+      const len = Math.min(s?.length ?? 0, cap);
+      n += len * 2;
+    };
+
+    addStr(project.id, 200);
+    addStr(project.name, 2000);
+    addStr(project.description, 100_000);
+
+    for (const doc of project.documents || []) {
+      n += 64;
+      addStr(doc.name, 2000);
+      addStr(doc.content, 500_000);
+      addStr(doc.analysis, 200_000);
+    }
+
+    for (const t of project.tasks || []) {
+      n += 256;
+      addStr(t.id, 200);
+      addStr(t.title, 4000);
+      addStr(t.description, 200_000);
+      for (const tc of t.testCases || []) {
+        n += 128;
+        addStr(tc.id, 200);
+        addStr(tc.description, 50_000);
+        for (const step of tc.steps || []) addStr(step, 20_000);
+        addStr(tc.expectedResult, 20_000);
+        addStr(tc.observedResult, 20_000);
+      }
+    }
+
+    return n;
   } catch {
     return 0;
   }

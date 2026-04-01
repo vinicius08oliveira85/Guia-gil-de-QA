@@ -16,6 +16,8 @@ interface AnalysisSectionProps {
     description: string;
   };
   count?: number;
+  /** Texto auxiliar abaixo do título (ex.: escopo parcial da análise). */
+  subtitle?: string;
 }
 
 export const AnalysisSection: React.FC<AnalysisSectionProps> = ({
@@ -28,7 +30,8 @@ export const AnalysisSection: React.FC<AnalysisSectionProps> = ({
   onViewModeChange,
   filters,
   emptyState,
-  count
+  count,
+  subtitle
 }) => {
   const [expanded, setExpanded] = useState(defaultExpanded);
   const [showFilters, setShowFilters] = useState(false);
@@ -51,6 +54,9 @@ export const AnalysisSection: React.FC<AnalysisSectionProps> = ({
               <p className="text-base text-base-content/70">
                 {count} {count === 1 ? 'item' : 'itens'}
               </p>
+            )}
+            {subtitle && (
+              <p className="text-sm text-base-content/60 mt-1 max-w-3xl leading-snug">{subtitle}</p>
             )}
           </div>
         </button>
