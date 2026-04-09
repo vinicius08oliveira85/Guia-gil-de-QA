@@ -667,7 +667,7 @@ OBSERVAÇÕES IMPORTANTES:
     `.slice(0, MAX_PROMPT_LENGTH);
 
     const response = await callGeminiWithRetry({
-      model: "gemini-2.5-flash",
+      model: "gemini-1.5-flash",
       contents: finalPrompt,
       config: {
         responseMimeType: "application/json",

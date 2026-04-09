@@ -280,7 +280,7 @@ Respeite o schema JSON fornecido.
   
   try {
     const response = await callGeminiWithRetry({
-      model: "gemini-2.5-flash",
+      model: "gemini-1.5-flash",
       contents: prompt,
       config: {
         responseMimeType: "application/json",

@@ -9,7 +9,8 @@ let currentService: AIService | null = null;
 let currentProvider: AIProvider | null = null;
 
 /**
- * Obtém o provedor de IA configurado nas variáveis de ambiente
+ * Obtém o provedor de IA configurado nas variáveis de ambiente.
+ * Gemini: `VITE_GEMINI_API_KEY` ou `GEMINI_API_KEY` (a chave efetiva nas chamadas vem do `geminiApiKeyManager`, que prioriza localStorage e depois essas env vars).
  */
 const getConfiguredProvider = (): AIProvider => {
   const geminiKey = import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.GEMINI_API_KEY;

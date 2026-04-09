@@ -5,7 +5,10 @@ interface ImportMetaEnv {
   readonly DEV: boolean;
   readonly PROD: boolean;
   readonly MODE: string;
-  // Adicione outras variáveis de ambiente aqui conforme necessário
+  /** Chave da API Google Gemini (exposta no bundle Vite; use apenas chaves restritas por domínio/referrer). */
+  readonly VITE_GEMINI_API_KEY?: string;
+  /** Fallback sem prefixo VITE (alguns ambientes de build). */
+  readonly GEMINI_API_KEY?: string;
 }
 
 interface ImportMeta {

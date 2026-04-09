@@ -45,13 +45,16 @@ const requestTimeoutMs = 15000; // Timeout de 15s (cobre cold start do Supabase 
 const loadProjectsTimeoutMs = 32000; // 32s para GET de projetos (proxy usa 28s; cliente deve esperar mais que o proxy)
 const timeoutErrorMessage = `Timeout: requisição ao Supabase excedeu ${requestTimeoutMs / 1000}s`;
 
+const DEFAULT_LOAD_ERROR_USER_MESSAGE = 'Erro de conexão com o banco de dados.';
+
 /** Mensagem amigável para erros genéricos de rede (ex.: fetch failed) exibida na UI */
-function normalizeLoadErrorForUser(message: string): string {
-    const lower = message.toLowerCase();
+function normalizeLoadErrorForUser(message: unknown): string {
+    if (message == null) return DEFAULT_LOAD_ERROR_USER_MESSAGE;
+    const lower = String(message).toLowerCase();
     if (lower.includes('fetch failed') || lower.includes('failed to fetch') || lower.includes('network') || lower.includes('connection refused')) {
         return 'Verifique a conexão ou se o proxy está rodando (local: npm run dev:local; produção: variáveis no Vercel).';
     }
-    return message;
+    return String(message);
 }
 
 /** Mensagem única para cold start / 503 / timeout no carregamento (local-first). */
@@ -61,14 +64,16 @@ const SUPABASE_LOAD_TRANSIENT_USER_MESSAGE =
 /**
  * Mensagem para a UI ao falhar o carregamento de projetos: timeout e 5xx transitórios usam texto local-first.
  */
-function getSupabaseLoadFailureUserMessage(message: string): string {
-    const lower = message.toLowerCase();
+function getSupabaseLoadFailureUserMessage(message: unknown): string {
+    if (message == null) return SUPABASE_LOAD_TRANSIENT_USER_MESSAGE;
+    const text = String(message);
+    const lower = text.toLowerCase();
     const isTimeout =
         lower.includes('timeout') ||
         lower.includes('timed out') ||
         lower.includes('excedeu') ||
         lower.includes('gateway timeout');
-    const statusMatch = message.match(/\b(500|502|503|504|522)\b/);
+    const statusMatch = text.match(/\b(500|502|503|504|522)\b/);
     const isTransientHttp =
         Boolean(statusMatch) ||
         lower.includes('service unavailable') ||
