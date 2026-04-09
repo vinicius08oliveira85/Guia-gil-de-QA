@@ -5,6 +5,7 @@ import { sanitizeHTML } from '../../utils/sanitize';
 import { AIService } from './aiServiceInterface';
 import { getFormattedContext } from './documentContextService';
 import { callGeminiWithRetry } from './geminiApiWrapper';
+import { GEMINI_DEFAULT_MODEL } from './geminiConstants';
 import { logger } from '../../utils/logger';
 
 const testCaseGenerationSchema = {
@@ -334,7 +335,7 @@ export class GeminiService implements AIService {
 
     try {
       const response = await callGeminiWithRetry({
-        model: "gemini-1.5-flash",
+        model: GEMINI_DEFAULT_MODEL,
         contents: prompt,
         config: {
           responseMimeType: "application/json",
@@ -413,7 +414,7 @@ export class GeminiService implements AIService {
 
     try {
         const response = await callGeminiWithRetry({
-            model: "gemini-1.5-flash",
+            model: GEMINI_DEFAULT_MODEL,
             contents: prompt,
         });
 
@@ -468,7 +469,7 @@ export class GeminiService implements AIService {
 
     try {
         const response = await callGeminiWithRetry({
-            model: "gemini-1.5-flash",
+            model: GEMINI_DEFAULT_MODEL,
             contents: prompt,
             config: {
                 responseMimeType: "application/json",
@@ -550,7 +551,7 @@ export class GeminiService implements AIService {
 
     try {
         const response = await callGeminiWithRetry({
-            model: "gemini-1.5-flash",
+            model: GEMINI_DEFAULT_MODEL,
             contents: prompt,
             config: {
                 responseMimeType: "application/json",
@@ -604,7 +605,7 @@ export class GeminiService implements AIService {
 
     try {
         const response = await callGeminiWithRetry({
-            model: "gemini-1.5-flash",
+            model: GEMINI_DEFAULT_MODEL,
             contents: prompt,
             config: {
                 responseMimeType: "application/json",
@@ -664,7 +665,7 @@ export class GeminiService implements AIService {
 
     try {
         const response = await callGeminiWithRetry({
-            model: "gemini-1.5-flash",
+            model: GEMINI_DEFAULT_MODEL,
             contents: prompt,
             config: {
                 responseMimeType: "application/json",
@@ -728,7 +729,7 @@ export class GeminiService implements AIService {
 
      try {
         const response = await callGeminiWithRetry({
-            model: "gemini-1.5-flash",
+            model: GEMINI_DEFAULT_MODEL,
             contents: prompt,
             config: {
                 responseMimeType: "application/json",

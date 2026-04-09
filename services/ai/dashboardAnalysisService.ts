@@ -4,6 +4,7 @@ import { detectCurrentSTLCPhase } from '../../utils/stlcPhaseDetector';
 import { calculateProjectMetrics } from '../../hooks/useProjectMetrics';
 import { getFormattedContext } from './documentContextService';
 import { callGeminiWithRetry } from './geminiApiWrapper';
+import { GEMINI_DEFAULT_MODEL } from './geminiConstants';
 import { logger } from '../../utils/logger';
 
 const CACHE_TTL_MS = 1000 * 60 * 5; // 5 minutos
@@ -215,7 +216,7 @@ Respeite o schema JSON fornecido.
   
   try {
     const response = await callGeminiWithRetry({
-      model: "gemini-1.5-flash",
+      model: GEMINI_DEFAULT_MODEL,
       contents: prompt,
       config: {
         responseMimeType: "application/json",

@@ -1,5 +1,6 @@
 import { Project, JiraTask, TestCase } from '../../types';
 import { callGeminiWithRetry } from './geminiApiWrapper';
+import { GEMINI_DEFAULT_MODEL } from './geminiConstants';
 import { getAIService } from './aiServiceFactory';
 import { logger } from '../../utils/logger';
 import { normalizeExecutedStrategy } from '../../utils/testCaseMigration';
@@ -147,7 +148,7 @@ IMPORTANTE:
     // Usar Gemini diretamente via callGeminiWithRetry
     try {
       const response = await callGeminiWithRetry({
-        model: 'gemini-2.0-flash-exp',
+        model: GEMINI_DEFAULT_MODEL,
         contents: prompt
       });
       

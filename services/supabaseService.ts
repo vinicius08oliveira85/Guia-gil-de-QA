@@ -47,14 +47,31 @@ const timeoutErrorMessage = `Timeout: requisição ao Supabase excedeu ${request
 
 const DEFAULT_LOAD_ERROR_USER_MESSAGE = 'Erro de conexão com o banco de dados.';
 
+/** Texto seguro para análise/exibição (evita undefined e tipos não string antes de .toLowerCase()). */
+function safeUnknownToMessageText(input: unknown): string {
+    if (input == null) return '';
+    if (typeof input === 'string') return input;
+    if (input instanceof Error) return input.message ?? '';
+    if (typeof input === 'object') {
+        try {
+            return JSON.stringify(input);
+        } catch {
+            return String(input);
+        }
+    }
+    return String(input);
+}
+
 /** Mensagem amigável para erros genéricos de rede (ex.: fetch failed) exibida na UI */
 function normalizeLoadErrorForUser(message: unknown): string {
     if (message == null) return DEFAULT_LOAD_ERROR_USER_MESSAGE;
-    const lower = String(message).toLowerCase();
+    const text = safeUnknownToMessageText(message);
+    if (!text) return DEFAULT_LOAD_ERROR_USER_MESSAGE;
+    const lower = text.toLowerCase();
     if (lower.includes('fetch failed') || lower.includes('failed to fetch') || lower.includes('network') || lower.includes('connection refused')) {
         return 'Verifique a conexão ou se o proxy está rodando (local: npm run dev:local; produção: variáveis no Vercel).';
     }
-    return String(message);
+    return text;
 }
 
 /** Mensagem única para cold start / 503 / timeout no carregamento (local-first). */
@@ -66,7 +83,8 @@ const SUPABASE_LOAD_TRANSIENT_USER_MESSAGE =
  */
 function getSupabaseLoadFailureUserMessage(message: unknown): string {
     if (message == null) return SUPABASE_LOAD_TRANSIENT_USER_MESSAGE;
-    const text = String(message);
+    const text = safeUnknownToMessageText(message);
+    if (!text) return SUPABASE_LOAD_TRANSIENT_USER_MESSAGE;
     const lower = text.toLowerCase();
     const isTimeout =
         lower.includes('timeout') ||
@@ -163,14 +181,15 @@ const createTimeoutPromise = <T>(timeoutMs: number, errorMessage: string): Promi
  */
 const isCorsError = (error: unknown): boolean => {
     if (error instanceof Error) {
-        const message = error.message.toLowerCase();
+        const message = safeUnknownToMessageText(error).toLowerCase();
         return message.includes('cors') || 
                message.includes('access-control-allow-origin') ||
                message.includes('blocked by cors policy');
     }
     if (error instanceof TypeError) {
-        return error.message.includes('Failed to fetch') || 
-               error.message.includes('NetworkError');
+        const m = safeUnknownToMessageText(error);
+        return m.includes('Failed to fetch') || 
+               m.includes('NetworkError');
     }
     return false;
 };
@@ -180,7 +199,7 @@ const isCorsError = (error: unknown): boolean => {
  */
 const isNetworkError = (error: unknown): boolean => {
     if (error instanceof Error) {
-        const message = error.message.toLowerCase();
+        const message = safeUnknownToMessageText(error).toLowerCase();
         const transientHttpStatus = /\b(500|502|503|504|522)\b/.test(message);
         return message.includes('timeout') ||
                message.includes('timed_out') ||
@@ -196,8 +215,9 @@ const isNetworkError = (error: unknown): boolean => {
                transientHttpStatus;
     }
     if (error instanceof TypeError) {
-        return error.message.includes('Failed to fetch') || 
-               error.message.includes('NetworkError');
+        const m = safeUnknownToMessageText(error);
+        return m.includes('Failed to fetch') || 
+               m.includes('NetworkError');
     }
     return false;
 };
@@ -207,7 +227,7 @@ const isNetworkError = (error: unknown): boolean => {
  */
 const isPayloadTooLargeError = (error: unknown): boolean => {
     if (error instanceof Error) {
-        const message = error.message.toLowerCase();
+        const message = safeUnknownToMessageText(error).toLowerCase();
         return message.includes('413') || 
                message.includes('content too large') ||
                message.includes('payload muito grande');
@@ -220,7 +240,7 @@ const isPayloadTooLargeError = (error: unknown): boolean => {
  */
 const isForbiddenError = (error: unknown): boolean => {
     if (error instanceof Error) {
-        const message = error.message.toLowerCase();
+        const message = safeUnknownToMessageText(error).toLowerCase();
         return message.includes('403') ||
                message.includes('forbidden') ||
                message.includes('row-level security') ||
@@ -483,7 +503,7 @@ const saveThroughSdk = async (project: Project, retryCount: number = 0): Promise
             await new Promise(resolve => setTimeout(resolve, delay));
             return saveThroughSdk(project, retryCount + 1);
         }
-        throw new Error(error.message);
+        throw new Error(safeUnknownToMessageText(error) || 'Erro ao salvar no Supabase');
     }
 
     clearSupabaseRemotePause();
@@ -746,7 +766,7 @@ export const loadProjectsFromSupabase = async (): Promise<LoadProjectsResult> =>
             try {
                 return await attempt();
             } catch (error) {
-                const errorMessage = error instanceof Error ? error.message : String(error);
+                const errorMessage = safeUnknownToMessageText(error) || 'Erro desconhecido ao carregar projetos';
                 lastErrorMessage = errorMessage;
                 const errorMessageLower = errorMessage.toLowerCase();
 
@@ -832,7 +852,7 @@ export const loadProjectsFromSupabase = async (): Promise<LoadProjectsResult> =>
         const { data, error } = result;
 
         if (error) {
-            const errMsg = error?.message ?? String(error);
+            const errMsg = safeUnknownToMessageText(error?.message ?? error) || 'Erro ao consultar projetos';
             if (isCorsError(error)) {
                 logger.error('Erro CORS ao carregar via SDK. Use proxy em produção', 'supabaseService', error);
             } else {
@@ -850,7 +870,7 @@ export const loadProjectsFromSupabase = async (): Promise<LoadProjectsResult> =>
         logger.info(`${projects.length} projetos carregados do Supabase via SDK`, 'supabaseService');
         return { projects, loadFailed: false };
     } catch (error) {
-        const errMsg = error instanceof Error ? error.message : String(error);
+        const errMsg = safeUnknownToMessageText(error) || 'Erro ao carregar projetos';
         if (isCorsError(error)) {
             logger.error('Erro CORS ao carregar do Supabase. Use proxy', 'supabaseService', error);
         } else {

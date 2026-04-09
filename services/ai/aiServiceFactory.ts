@@ -10,11 +10,12 @@ let currentProvider: AIProvider | null = null;
 
 /**
  * Obtém o provedor de IA configurado nas variáveis de ambiente.
- * Gemini: `VITE_GEMINI_API_KEY` ou `GEMINI_API_KEY` (a chave efetiva nas chamadas vem do `geminiApiKeyManager`, que prioriza localStorage e depois essas env vars).
+ * Gemini: `VITE_GEMINI_API_KEY` ou `GEMINI_API_KEY` (trim; a chave nas chamadas vem do `geminiApiKeyManager`, que prioriza localStorage e depois env).
+ * Modelo padrão: `gemini-2.0-flash` em `geminiConstants` (override com `VITE_GEMINI_MODEL`).
  */
 const getConfiguredProvider = (): AIProvider => {
-  const geminiKey = import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.GEMINI_API_KEY;
-  const openaiKey = import.meta.env.VITE_OPENAI_API_KEY || import.meta.env.OPENAI_API_KEY;
+  const geminiKey = (import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.GEMINI_API_KEY || '').trim();
+  const openaiKey = (import.meta.env.VITE_OPENAI_API_KEY || import.meta.env.OPENAI_API_KEY || '').trim();
 
   // Prioridade: OpenAI > Gemini
   if (openaiKey) {

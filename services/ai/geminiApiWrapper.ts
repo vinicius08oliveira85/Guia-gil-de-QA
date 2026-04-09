@@ -8,6 +8,14 @@ import { retryWithBackoff } from '../../utils/retry';
 import { geminiRateLimiter } from '../../utils/rateLimiter';
 import { logger } from '../../utils/logger';
 import { geminiApiKeyManager } from './geminiApiKeyManager';
+import { GEMINI_DEFAULT_MODEL } from './geminiConstants';
+
+/** Garante ID no formato esperado pelo SDK (sem prefixo `models/`). */
+function resolveGeminiModelId(model: string | undefined): string {
+  const raw = (model ?? '').trim();
+  const id = raw.replace(/^models\//, '');
+  return id || GEMINI_DEFAULT_MODEL;
+}
 
 export type GeminiAppError = Error & { code?: string; status?: number; retryAfter?: number };
 
@@ -106,7 +114,7 @@ function isRetryableGeminiError(error: unknown): boolean {
   }
   
   if (error instanceof Error) {
-    const message = error.message.toLowerCase();
+    const message = String(error.message ?? '').toLowerCase();
     
     // Erro 429 (Too Many Requests) - mas não quota
     if (message.includes('429') || message.includes('too many requests')) {
@@ -266,6 +274,7 @@ export async function callGeminiWithRetry(
     const ai = new GoogleGenAI({ apiKey });
 
     try {
+      const modelId = resolveGeminiModelId(params.model);
       // Executar com retry automático
       return await retryWithBackoff(
         async () => {
@@ -275,12 +284,12 @@ export async function callGeminiWithRetry(
           logger.debug(
             'Chamando API Gemini',
             'callGeminiWithRetry',
-            { model: params.model, keyAttempt: keyAttempt + 1 }
+            { model: modelId, keyAttempt: keyAttempt + 1 }
           );
 
           try {
             const response = await ai.models.generateContent({
-              model: params.model,
+              model: modelId,
               contents: params.contents,
               config: params.config,
             });
@@ -288,7 +297,7 @@ export async function callGeminiWithRetry(
             logger.debug(
               'Resposta recebida da API Gemini',
               'callGeminiWithRetry',
-              { model: params.model, textLength: response.text?.length || 0 }
+              { model: modelId, textLength: response.text?.length || 0 }
             );
 
             const text = response.text ?? '';

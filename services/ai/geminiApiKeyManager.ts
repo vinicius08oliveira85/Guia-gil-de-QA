@@ -34,8 +34,9 @@ export class GeminiApiKeyManager {
     try {
       // 1. Tentar ler do localStorage primeiro (prioridade)
       const savedConfig = getGeminiConfig();
-      if (savedConfig?.apiKey) {
-        this.keys = [{ key: savedConfig.apiKey, exhausted: false }];
+      const storedKey = savedConfig?.apiKey?.trim();
+      if (storedKey) {
+        this.keys = [{ key: storedKey, exhausted: false }];
         logger.info('API key do Gemini carregada via localStorage', 'GeminiApiKeyManager');
         return;
       }
@@ -45,7 +46,7 @@ export class GeminiApiKeyManager {
     }
 
     // 2. Fallback para variáveis de ambiente
-    const primaryKey = import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.GEMINI_API_KEY;
+    const primaryKey = (import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.GEMINI_API_KEY || '').trim();
 
     if (primaryKey) {
       this.keys = [{ key: primaryKey, exhausted: false }];

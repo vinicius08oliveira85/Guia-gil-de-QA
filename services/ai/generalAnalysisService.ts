@@ -2,6 +2,7 @@ import { Type } from "@google/genai";
 import { Project, GeneralIAAnalysis, TaskIAAnalysis, TestIAAnalysis, JiraTask, TestCase } from '../../types';
 import { getFormattedContext } from './documentContextService';
 import { callGeminiWithRetry } from './geminiApiWrapper';
+import { GEMINI_DEFAULT_MODEL } from './geminiConstants';
 import { logger } from '../../utils/logger';
 
 const CACHE_TTL_MS = 1000 * 60 * 5; // 5 minutos
@@ -667,7 +668,7 @@ OBSERVAÇÕES IMPORTANTES:
     `.slice(0, MAX_PROMPT_LENGTH);
 
     const response = await callGeminiWithRetry({
-      model: "gemini-1.5-flash",
+      model: GEMINI_DEFAULT_MODEL,
       contents: finalPrompt,
       config: {
         responseMimeType: "application/json",

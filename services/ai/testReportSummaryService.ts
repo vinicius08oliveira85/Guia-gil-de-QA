@@ -1,4 +1,5 @@
 import { callGeminiWithRetry } from './geminiApiWrapper';
+import { GEMINI_DEFAULT_MODEL } from './geminiConstants';
 import { logger } from '../../utils/logger';
 
 /** Limite de caracteres do relatório enviado à IA (evita payload excessivo e stack overflow no cliente). */
@@ -37,7 +38,7 @@ Retorne apenas o texto resumido, sem introduções ou explicações.`;
 
   try {
     const response = await callGeminiWithRetry({
-      model: 'gemini-1.5-flash',
+      model: GEMINI_DEFAULT_MODEL,
       contents: prompt
     });
     return response.text.trim();

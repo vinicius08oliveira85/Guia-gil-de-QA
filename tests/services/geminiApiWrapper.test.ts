@@ -56,7 +56,7 @@ describe('callGeminiWithRetry', () => {
     generateContentMock.mockRejectedValueOnce({ status: 429, message: 'quota exceeded' });
 
     await expect(
-      callGeminiWithRetry({ model: 'gemini-1.5-flash', contents: 'conteudo de teste' })
+      callGeminiWithRetry({ model: 'gemini-2.0-flash', contents: 'conteudo de teste' })
     ).rejects.toMatchObject({ code: 'GEMINI_QUOTA_EXCEEDED', status: 429 });
 
     expect(generateContentMock).toHaveBeenCalledTimes(1);
@@ -67,7 +67,7 @@ describe('callGeminiWithRetry', () => {
     generateContentMock.mockRejectedValueOnce({ status: 503, message: 'Service Unavailable' });
 
     await expect(
-      callGeminiWithRetry({ model: 'gemini-1.5-flash', contents: 'conteudo de teste' })
+      callGeminiWithRetry({ model: 'gemini-2.0-flash', contents: 'conteudo de teste' })
     ).rejects.toMatchObject({ code: 'GEMINI_TEMP_UNAVAILABLE', status: 503 });
 
     expect(geminiApiKeyManager.markCurrentKeyAsExhausted).not.toHaveBeenCalled();
