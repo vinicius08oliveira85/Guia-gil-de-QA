@@ -624,8 +624,9 @@ export const JiraTaskItem: React.FC<{
     const defaultTestStatusButtonClass =
         'bg-primary text-primary-content border-primary hover:bg-primary/90';
 
-    // Touch targets mínimos de 44x44px para acessibilidade (WCAG)
-    const iconButtonClass = 'btn btn-ghost btn-circle btn-sm min-h-[44px] min-w-[44px] h-11 w-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30';
+    /** Ícones compactos no desktop; área tocável ≥44px no mobile (WCAG) */
+    const iconTouchTargetClass =
+        'btn btn-ghost btn-circle btn-sm min-h-[44px] min-w-[44px] sm:min-h-8 sm:min-w-8 sm:h-8 sm:w-8 p-0 [&_svg]:size-[18px] sm:[&_svg]:size-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30';
 
     const renderOverviewSection = () => (
         <div className="space-y-3">
@@ -672,12 +673,12 @@ export const JiraTaskItem: React.FC<{
                 <div className="flex items-center gap-2 p-2.5 rounded-xl bg-base-200 border border-base-300 mt-1.5">
                     <p className="text-sm font-medium flex-1">Ações de Teste:</p>
                     {taskTestStatus === 'testar' && (
-                        <Button type="button" variant="default" size="panelSm" onClick={handleStartTest}>
+                        <button type="button" className="btn btn-sm btn-info rounded-xl shadow-sm" onClick={handleStartTest}>
                             <span className="mr-1">▶</span> Iniciar Teste
-                        </Button>
+                        </button>
                     )}
                     {taskTestStatus === 'testando' && (
-                        <button type="button" onClick={handleCompleteTest} className="btn btn-sm btn-success text-white shadow-sm rounded-xl">
+                        <button type="button" onClick={handleCompleteTest} className="btn btn-sm btn-success rounded-xl shadow-sm">
                             <span className="mr-1">✓</span> Concluir Teste
                         </button>
                     )}
@@ -1373,12 +1374,14 @@ export const JiraTaskItem: React.FC<{
         }
     };
 
+    const isAiProcessing = isGeneratingTests || isGeneratingBdd || isGeneratingAll || isGenerating;
+
     return (
         <div className="relative" data-task-id={task.id}>
             <div style={indentationStyle} className="py-0.5">
                 <div
                     className={[
-                        'flex flex-wrap items-center gap-x-1.5 gap-y-1 sm:gap-x-2 sm:gap-y-1 px-2 py-1 sm:px-2.5 sm:py-1.5 md:px-3 md:py-2 bg-base-100 dark:bg-base-200 border rounded-xl task-card-shadow transition-all duration-200',
+                        'flex flex-wrap items-center gap-x-1.5 gap-y-1 sm:gap-x-2 sm:gap-y-1 px-2 py-1.5 sm:px-2.5 md:px-3 md:py-2 bg-base-100 dark:bg-base-200 border rounded-xl task-card-shadow transition-all duration-200',
                         level > 0 ? 'max-md:bg-base-200/60 max-md:dark:bg-base-300/50 max-md:border-base-300' : '',
                         isStatusDropdownOpen ? 'relative z-10' : '',
                         borderL4Class,
@@ -1386,6 +1389,7 @@ export const JiraTaskItem: React.FC<{
                         activeTaskId === task.id ? 'ring-2 ring-primary/40 shadow-lg' : '',
                         isSelected ? 'bg-primary/5 border-primary/40 ring-1 ring-primary/30' : '',
                         task.isFavorite ? 'border-amber-400/60 ring-1 ring-amber-400/30 shadow-[0_0_12px_rgba(251,191,36,0.2)]' : '',
+                        isAiProcessing ? 'animate-ai-card-border' : '',
                         onOpenModal ? 'cursor-pointer hover:translate-x-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2' : '',
                     ].join(' ')}
                     onClick={onOpenModal ? handleCardClick : undefined}
@@ -1409,13 +1413,13 @@ export const JiraTaskItem: React.FC<{
                             <button
                                 type="button"
                                 onClick={(e) => { e.stopPropagation(); onToggleFavorite(); }}
-                                className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 p-1 sm:p-0.5 rounded-lg sm:rounded hover:bg-base-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 shrink-0"
+                                className={`${iconTouchTargetClass} shrink-0 hover:bg-base-300/80`}
                                 aria-label={task.isFavorite ? 'Desmarcar favorito' : 'Marcar como favorito'}
                             >
                                 {task.isFavorite ? (
-                                    <Star className="w-4 h-4 fill-amber-400 text-amber-400" aria-hidden />
+                                    <Star className="fill-amber-400 text-amber-400" aria-hidden />
                                 ) : (
-                                    <Star className="w-4 h-4 text-base-content/40" aria-hidden />
+                                    <Star className="text-base-content/40" aria-hidden />
                                 )}
                             </button>
                         )}
@@ -1423,15 +1427,15 @@ export const JiraTaskItem: React.FC<{
                             <button
                                 type="button"
                                 onClick={(e) => { e.stopPropagation(); setIsChildrenOpen(!isChildrenOpen); }}
-                                className="btn btn-ghost btn-xs flex items-center gap-1 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 sm:px-1 px-2 shrink-0 rounded-xl"
+                                className="btn btn-ghost btn-xs flex items-center gap-1 min-h-[44px] min-w-[44px] sm:min-h-8 sm:min-w-8 sm:px-1 px-2 shrink-0 rounded-xl p-0 sm:py-0 [&_svg:first-child]:size-[18px] sm:[&_svg:first-child]:size-4"
                                 aria-label={isChildrenOpen ? `Colapsar ${task.children.length} subtarefas de ${task.id}` : `Expandir ${task.children.length} subtarefas de ${task.id}`}
                             >
-                                <ChevronDown className={`w-4 h-4 transition-transform flex-shrink-0 ${isChildrenOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
+                                <ChevronDown className={`transition-transform flex-shrink-0 ${isChildrenOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
                                 <span className="bg-base-300 text-[10px] px-1.5 py-0.5 rounded-full">{task.children.length}</span>
                             </button>
                         ) : null}
                         <div
-                            className="inline-flex flex-wrap items-center gap-x-1 gap-y-0.5 rounded-md border border-base-300/70 bg-base-200/40 px-1 py-0.5 shrink-0 max-w-full"
+                            className="inline-flex flex-nowrap items-center gap-x-1 rounded-md border border-base-300/70 bg-base-200/40 px-1.5 py-0.5 shrink-0 max-w-full min-w-0 overflow-x-auto text-[10px] leading-tight [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
                             role="group"
                             aria-label="Metadados da tarefa"
                         >
@@ -1439,24 +1443,19 @@ export const JiraTaskItem: React.FC<{
                                 appearance="pill"
                                 variant={typeBadgeVariant}
                                 size="xs"
-                                className="shrink-0 uppercase tracking-wide text-[10px] leading-tight min-h-0 h-5 py-0 px-1.5"
+                                className="shrink-0 uppercase tracking-wide text-[10px] leading-tight min-h-0 h-4 py-0 px-1"
                             >
                                 {task.type}
                             </Badge>
-                            <span className="text-xs font-mono text-base-content/70 tabular-nums">{task.id}</span>
-                            {task.priority ? (
-                                <span className="badge badge-ghost badge-xs border-base-300/60 text-xs font-normal whitespace-nowrap">
-                                    {task.priority}
-                                </span>
-                            ) : null}
+                            <span className="font-mono text-base-content/75 tabular-nums shrink-0">{task.id}</span>
                             <span
-                                className="text-xs text-base-content/55 truncate max-w-[4.5rem] sm:max-w-[9rem]"
+                                className="text-base-content/60 truncate min-w-0 max-w-[5rem] sm:max-w-[11rem]"
                                 title={getDisplayStatusLabel(task, project)}
                             >
                                 {getDisplayStatusLabel(task, project)}
                             </span>
                         </div>
-                        <span className="text-sm font-semibold text-base-content text-balance line-clamp-2 min-w-0 w-full flex-1 basis-full sm:basis-0 sm:w-auto sm:min-w-[8rem]" title={displayTitle}>{displayTitle}</span>
+                        <span className="text-sm font-semibold text-base-content text-balance line-clamp-1 sm:line-clamp-2 min-w-0 w-full flex-1 basis-full sm:basis-0 sm:w-auto sm:min-w-[8rem]" title={displayTitle}>{displayTitle}</span>
                     </div>
 
                     <div className="flex items-center gap-2 flex-wrap flex-shrink-0 w-full sm:w-auto sm:ml-auto order-2 sm:gap-2 sm:flex-nowrap" onClick={(e) => e.stopPropagation()}>
@@ -1472,7 +1471,7 @@ export const JiraTaskItem: React.FC<{
                                 type="button"
                                 onClick={(e) => { e.stopPropagation(); handleGenerateAll(e); }}
                                 disabled={isGeneratingAll || isGenerating || isGeneratingBdd || isGeneratingTests}
-                                className="rounded-full px-3 py-2 sm:py-1.5 sm:px-4 min-h-[44px] sm:min-h-0 text-[10px] sm:text-xs font-bold inline-flex items-center gap-1.5 bg-primary hover:bg-brand-orange-selected-hover text-primary-content transition-colors shrink-0"
+                                className="rounded-full px-3 py-2 sm:py-1.5 sm:px-4 min-h-[44px] sm:min-h-0 text-[10px] sm:text-xs font-bold inline-flex items-center gap-1.5 bg-primary hover:bg-primary/90 text-primary-content transition-colors shrink-0"
                                 title="Gerar Tudo (BDD e Testes)"
                                 aria-label={isGenerating || isGeneratingAll ? 'Gerando tudo' : 'Gerar Tudo (BDD e Testes)'}
                             >
@@ -1594,11 +1593,11 @@ export const JiraTaskItem: React.FC<{
                                 handleToggleDetails();
                               }
                             }}
-                            className="btn btn-ghost btn-sm btn-circle shrink-0 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 text-base-content/60 hover:text-base-content"
+                            className={`${iconTouchTargetClass} shrink-0`}
                             aria-label={onOpenModal ? `Abrir detalhes da tarefa ${task.id} em modal` : (isDetailsOpen ? `Colapsar detalhes da tarefa ${task.id}` : `Expandir detalhes da tarefa ${task.id}`)}
                             aria-expanded={onOpenModal ? undefined : isDetailsOpen}
                         >
-                            <ChevronDown className={`w-4 h-4 transition-transform ${isDetailsOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
+                            <ChevronDown className={`transition-transform ${isDetailsOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
                         </button>
                     </div>
                 </div>
@@ -1622,7 +1621,7 @@ export const JiraTaskItem: React.FC<{
                                         {(task.type === 'Tarefa' || task.type === 'Bug') && onGenerateAll && (
                                             <Button
                                                 type="button"
-                                                variant="brand"
+                                                variant="default"
                                                 size="panel"
                                                 onClick={handleGenerateAll}
                                                 disabled={isGeneratingAll || isGenerating || isGeneratingBdd || isGeneratingTests}
@@ -1701,12 +1700,12 @@ export const JiraTaskItem: React.FC<{
                                             <button
                                                 type="button"
                                                 tabIndex={0}
-                                                className="btn btn-ghost btn-sm btn-square rounded-xl min-h-[44px] min-w-[44px] sm:min-h-8 sm:min-w-8"
+                                                className="btn btn-ghost btn-sm btn-square rounded-xl min-h-[44px] min-w-[44px] sm:min-h-8 sm:min-w-8 p-0 [&_svg]:size-[18px] sm:[&_svg]:size-4"
                                                 aria-label="Mais ações"
                                                 aria-haspopup="true"
                                                 onClick={(e) => e.stopPropagation()}
                                             >
-                                                <MoreVertical className="w-4 h-4" aria-hidden="true" />
+                                                <MoreVertical aria-hidden="true" />
                                             </button>
                                             <ul
                                                 tabIndex={0}

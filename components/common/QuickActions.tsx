@@ -72,7 +72,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
         <button
           type="button"
           onClick={handleComplete}
-          className="px-3 py-1.5 text-sm bg-green-500/20 text-green-700 dark:text-green-400 border border-green-500/30 rounded-lg hover:bg-green-500/30 w-fit"
+          className="btn btn-sm btn-success btn-outline w-fit rounded-lg"
         >
           Concluir Teste
         </button>
