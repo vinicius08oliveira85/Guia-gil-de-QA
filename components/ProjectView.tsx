@@ -255,7 +255,7 @@ export const ProjectView: React.FC<{
 
     return (
         <>
-            <div className="w-full max-w-none mx-auto px-4 sm:px-6 py-4 sm:py-6 non-printable">
+            <div className="w-full max-w-full mx-auto px-4 sm:px-6 py-4 sm:py-6 non-printable">
                 {/* Breadcrumbs */}
                 <div className="mb-2">
                     <Breadcrumbs 
@@ -335,7 +335,7 @@ export const ProjectView: React.FC<{
                             ? <span className="break-words">{currentProject.description}</span>
                             : 'Sem descrição.'
                     }
-                    className="max-w-4xl mb-4"
+                    className="max-w-full mb-4"
                     compact
                 />
                 {onDeleteProject && (

@@ -158,7 +158,7 @@ export const ProjectsDashboard: React.FC<{
     return (
         <>
         <div className="min-h-[calc(100vh-4rem)] bg-gradient-to-b from-base-100 to-base-200/60">
-            <div className="w-full max-w-none mx-auto px-4 sm:px-6 py-4 sm:py-6">
+            <div className="w-full max-w-full mx-auto px-4 sm:px-6 py-4 sm:py-6">
                 {/* Header */}
                 <div className="flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between">
                     <div className="space-y-1.5">
@@ -198,7 +198,7 @@ export const ProjectsDashboard: React.FC<{
                                 <Search className="w-4 h-4" aria-hidden />
                             </button>
                         </div>
-                        <p className="text-sm text-base-content/70 max-w-2xl">
+                        <p className="text-sm text-base-content/70 max-w-full">
                             Crie, organize e acompanhe o QA por projeto — templates, métricas e integrações opcionais quando fizer sentido.
                         </p>
                         {/* Indicadores: última atividade + projetos com atenção */}
@@ -452,7 +452,7 @@ export const ProjectsDashboard: React.FC<{
                                 role="status"
                                 aria-live="polite"
                             >
-                                <p className="text-sm text-base-content/80 mb-4 max-w-md mx-auto">
+                                <p className="text-sm text-base-content/80 mb-4 max-w-full mx-auto">
                                     {quickFilter === 'withBugs'
                                         ? 'Nenhum projeto com bugs abertos corresponde a este filtro.'
                                         : 'Nenhum projeto corresponde a "Precisa de atenção" com os critérios atuais.'}
