@@ -255,7 +255,7 @@ export const ProjectView: React.FC<{
 
     return (
         <>
-            <div className="container mx-auto w-full max-w-7xl px-4 py-4 sm:py-6 non-printable">
+            <div className="w-full max-w-none mx-auto px-4 sm:px-6 py-4 sm:py-6 non-printable">
                 {/* Breadcrumbs */}
                 <div className="mb-2">
                     <Breadcrumbs 
@@ -372,7 +372,7 @@ export const ProjectView: React.FC<{
                                 type="button"
                                 onClick={() => handleTabClick(tab.id)}
                                 onKeyDown={handleTabKeyDown}
-                                className={`tab whitespace-nowrap flex-shrink-0 snap-start ${activeTab === tab.id ? 'tab-active' : ''}`}
+                                className={`tab whitespace-nowrap flex-shrink-0 snap-start min-h-[44px] sm:min-h-0 ${activeTab === tab.id ? 'tab-active' : ''}`}
                                 id={`tab-${tab.id}`}
                                 role="tab"
                                 aria-selected={activeTab === tab.id}

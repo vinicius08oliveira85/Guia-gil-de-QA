@@ -103,16 +103,30 @@ export const Modal: React.FC<ModalProps> = ({
 
     if (!isOpen) return null;
 
-    const sizeClasses = {
-        sm: 'max-w-sm', md: 'max-w-md', lg: 'max-w-lg', xl: 'max-w-xl',
-        '2xl': 'max-w-2xl', '3xl': 'max-w-3xl', '4xl': 'max-w-4xl',
-        '5xl': 'max-w-5xl', '6xl': 'max-w-6xl', '7xl': 'max-w-7xl',
-        full: 'max-w-none w-full h-screen max-h-full',
+    const isFull = size === 'full';
+
+    /** Mobile: largura total + bottom-sheet; desktop: max-width centralizado. */
+    const sizeClasses: Record<NonNullable<ModalProps['size']>, string> = {
+        sm: 'max-w-full sm:max-w-sm',
+        md: 'max-w-full sm:max-w-md',
+        lg: 'max-w-full sm:max-w-lg',
+        xl: 'max-w-full sm:max-w-xl',
+        '2xl': 'max-w-full sm:max-w-2xl',
+        '3xl': 'max-w-full sm:max-w-3xl',
+        '4xl': 'max-w-full sm:max-w-4xl',
+        '5xl': 'max-w-full sm:max-w-5xl',
+        '6xl': 'max-w-full sm:max-w-6xl',
+        '7xl': 'max-w-full sm:max-w-7xl',
+        full: 'max-w-none w-full h-screen max-h-full rounded-none',
     };
 
     const modalLayout = (
         <div
-            className={`fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm transition-opacity duration-200 ${size === 'full' ? 'p-0' : 'p-4 sm:p-6'}`}
+            className={
+                isFull
+                    ? 'fixed inset-0 z-[9999] flex items-stretch justify-stretch bg-black/60 backdrop-blur-sm transition-opacity duration-200 p-0'
+                    : 'fixed inset-0 z-[9999] flex items-end justify-center p-0 sm:items-center sm:p-4 md:p-6 bg-black/60 backdrop-blur-sm transition-opacity duration-200'
+            }
             onClick={handleClose}
             role="dialog"
             aria-modal="true"
@@ -121,34 +135,39 @@ export const Modal: React.FC<ModalProps> = ({
         >
             <div
                 id="modal-content"
-                className={`bg-base-100 shadow-2xl border border-base-300 relative w-full flex flex-col overflow-hidden ${size === 'full' ? 'rounded-none max-h-full' : 'rounded-2xl max-h-[90vh]'} ${sizeClasses[size]} duration-300 ease-out animate-in fade-in zoom-in-95 slide-in-from-bottom-8`}
+                className={
+                    isFull
+                        ? `${sizeClasses.full} bg-base-100 shadow-2xl border border-base-300 relative flex flex-col overflow-hidden duration-300 ease-out animate-in fade-in`
+                        : `bg-base-100 shadow-2xl border border-base-300 relative w-full flex flex-col overflow-hidden rounded-t-2xl rounded-b-none max-h-[min(92dvh,100svh)] sm:rounded-2xl sm:rounded-b-2xl sm:max-h-[90vh] ${sizeClasses[size]} duration-300 ease-out animate-in fade-in zoom-in-95 max-sm:slide-in-from-bottom-4 sm:slide-in-from-bottom-8`
+                }
                 onClick={(e) => e.stopPropagation()}
-                style={maxHeight && size !== 'full' ? { maxHeight } : undefined}
+                style={maxHeight && !isFull ? { maxHeight } : undefined}
                 tabIndex={-1}
             >
                 <button
+                    type="button"
                     onClick={handleClose}
-                    className="absolute top-4 right-4 btn btn-sm btn-circle btn-ghost z-10"
+                    className="absolute top-3 right-3 sm:top-4 sm:right-4 btn btn-ghost btn-circle btn-sm z-10 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
                     aria-label="Fechar modal"
                 >
                     <X size={20} />
                 </button>
 
-                {/* Header (sticky no scroll para mobile) */}
-                <div className="sticky top-0 z-10 flex items-center justify-between gap-3 p-6 border-b border-base-200 flex-shrink-0 bg-base-100">
-                    <div id="modal-title" className="min-w-0 flex-1 pr-8 text-lg sm:text-xl font-semibold text-base-content">
+                <div className="sticky top-0 z-10 flex items-center justify-between gap-3 px-4 py-4 sm:px-5 sm:py-5 border-b border-base-200 flex-shrink-0 bg-base-100">
+                    <div
+                        id="modal-title"
+                        className="min-w-0 flex-1 pr-10 sm:pr-12 text-lg sm:text-xl font-semibold text-base-content text-balance"
+                    >
                         {title}
                     </div>
                 </div>
 
-                {/* Content Area */}
-                <div className="flex-1 overflow-y-auto overscroll-contain p-6 custom-scrollbar scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-transparent hover:scrollbar-thumb-primary/50 transition-colors">
+                <div className="flex-1 overflow-y-auto overscroll-contain px-3 py-4 sm:px-6 sm:py-6 custom-scrollbar scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-transparent hover:scrollbar-thumb-primary/50 transition-colors">
                     {children}
                 </div>
 
-                {/* Footer */}
                 {footer && (
-                    <div className="p-4 border-t border-base-200 bg-base-100/50 flex-shrink-0">
+                    <div className="px-3 py-3 sm:px-4 sm:py-4 border-t border-base-200 bg-base-100/50 flex-shrink-0">
                         {footer}
                     </div>
                 )}

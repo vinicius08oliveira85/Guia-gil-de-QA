@@ -721,3 +721,39 @@ A maioria dos problemas identificados são **fáceis de corrigir** e seguem padr
 **Relatório gerado por:** Inspeção Automatizada  
 **Última atualização:** Janeiro 2025
 
+---
+
+## 10. Status pós-correção (Abril 2026)
+
+Revisão de UI/UX aplicada no código (Tailwind + DaisyUI): interface mais **data-dense**, touch targets **≥44×44px** no mobile (`max-sm` / base mobile com `sm:` relaxando no desktop), grids com passo **`md:`**, modal em **bottom-sheet** abaixo de 640px, remoção de **`max-w-7xl`/`container`** nas views de projeto/dashboard para melhor uso em telas largas, e ajustes em **`JiraTaskItem`**, **`ProjectCard`**, **`Modal`**, **`Button`**, **`ExpandableTabs`**, **`ExpansibleButton`**, **`Header`**, **`ConsolidatedMetrics`**, **`ProjectAnalysesBoard`**, **`TaskDetailsModal`**, **`TasksView`** e **`App`** (fallbacks).
+
+Os **23 pontos** do sumário executivo e do corpo do relatório são considerados **tratados** conforme a tabela abaixo (itens 15–23 ampliam os tópicos das seções 3 e 5 que não tinham cabeçalho `#### Problema` próprio).
+
+| # | Referência | Status |
+|---|------------|--------|
+| 1 | Problema 1.1 — Touch em botões de ícone | ✅ Resolvido (`JiraTaskItem`, `Header`, `ExpandableTabs`, `ExpansibleButton`, `ProjectCard`, pills/ações) |
+| 2 | Problema 1.2 — Header em telas muito pequenas | ✅ Resolvido (`flex-wrap`, área mínima no logo, tabs com área de toque; descrição continua oculta em `sm` conforme layout) |
+| 3 | Problema 2.1 — Grid de informações / `md` | ✅ Resolvido (grids com `md:grid-cols-*` onde faltava) |
+| 4 | Problema 2.2 — Ações da linha da tarefa | ✅ Resolvido (`flex-wrap`, `gap-2`, altura mínima nos pills e botões) |
+| 5 | Problema 2.3 — Tabs da tarefa | ✅ Resolvido (`w-full md:w-fit`, `overflow-x-auto`, `min-h` nas abas; sub-abas de testes alinhadas) |
+| 6 | Problema 3.1 — Modal em mobile | ✅ Resolvido (`Modal.tsx`: `w-full`, `rounded-t-2xl`, `items-end` + centralizado a partir de `sm`) |
+| 7 | Problema 3.2 — Padding / scroll do modal | ✅ Resolvido (`px-3` mobile / `sm:px-6`, header e footer responsivos) |
+| 8 | Problema 4.1 — Grid de projetos em tablet | ✅ Resolvido (lista atual em coluna única; **`ConsolidatedMetrics`** com `sm:grid-cols-2 md:grid-cols-3`) |
+| 9 | Problema 4.2 — Título em cards | ✅ Resolvido (`ProjectCard`: `text-balance`, `line-clamp-2 sm:line-clamp-3`) |
+| 10 | Problema 5.1 — Dropdown SearchBar | ✅ Resolvido (`max-h-[60vh] sm:max-h-96` já aplicado) |
+| 11 | Problema 6.1 — Input altura toque | ✅ Resolvido (`min-h-[44px]` no `Input`) |
+| 12 | Problema 7.1 — Button tamanho mínimo | ✅ Resolvido (`Button` default/sm/icon + variantes `panel*`) |
+| 13 | Problema 8.1 — Hero altura mobile | ✅ Resolvido (`min-h-[70vh] sm:min-h-[90vh]`) |
+| 14 | Problema 9.1 — Tabs do `ProjectView` | ✅ Resolvido (scroll horizontal existente + `min-h-[44px]` nas abas) |
+| 15 | §3.2 — Grids sem breakpoint intermediário | ✅ Resolvido (varredura `grid-cols` com `md:`) |
+| 16 | §3.2 — Grids apertados em tablet | ✅ Resolvido (passos `sm`/`md`/`lg` coerentes) |
+| 17 | §3.4 — Touch targets insuficientes (geral) | ✅ Resolvido (política 44px mobile nos interativos citados) |
+| 18 | §5 crítico 1–3 | ✅ Resolvido (alinhado às linhas 1–7 desta tabela) |
+| 19 | §5 alta 4–7 | ✅ Resolvido (grids, SearchBar, cards, métricas) |
+| 20 | §5 média 8–10 | ✅ Resolvido (abas, modal, hero) |
+| 21 | §5 baixa 11 — srcset/sizes | ✅ Aceito / N/A no escopo atual (sem galeria de imagens; logo com lazy loading) |
+| 22 | §5 baixa 12 — espaçamentos | ✅ Resolvido (`p-4`/`p-5` em cards e estados vazios onde aplicável) |
+| 23 | Espaço útil UltraWide (`max-w-7xl`) | ✅ Resolvido (`ProjectView` e `ProjectsDashboard` sem `max-w-7xl`) |
+
+**Última revisão desta seção:** Abril de 2026.
+

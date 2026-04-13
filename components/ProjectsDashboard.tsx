@@ -158,7 +158,7 @@ export const ProjectsDashboard: React.FC<{
     return (
         <>
         <div className="min-h-[calc(100vh-4rem)] bg-gradient-to-b from-base-100 to-base-200/60">
-            <div className="container mx-auto w-full max-w-7xl px-4 py-4 sm:py-6">
+            <div className="w-full max-w-none mx-auto px-4 sm:px-6 py-4 sm:py-6">
                 {/* Header */}
                 <div className="flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between">
                     <div className="space-y-1.5">
@@ -175,7 +175,7 @@ export const ProjectsDashboard: React.FC<{
                                     <select
                                         value={sortBy}
                                         onChange={(e) => handleSortByChange(e.target.value as 'name' | 'updatedAt')}
-                                        className="select select-bordered select-sm py-1 h-8 min-h-8 text-xs rounded-lg"
+                                        className="select select-bordered select-sm py-1 min-h-[44px] sm:min-h-8 sm:h-8 text-xs rounded-lg"
                                         aria-label="Ordenar projetos por"
                                     >
                                         <option value="name">Nome</option>
@@ -192,7 +192,7 @@ export const ProjectsDashboard: React.FC<{
                             <button
                                 type="button"
                                 onClick={() => window.dispatchEvent(new CustomEvent('open-global-search'))}
-                                className="btn btn-ghost btn-sm btn-circle"
+                                className="btn btn-ghost btn-sm btn-circle min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
                                 aria-label="Abrir busca (Ctrl+K)"
                             >
                                 <Search className="w-4 h-4" aria-hidden />
@@ -251,7 +251,7 @@ export const ProjectsDashboard: React.FC<{
                             type="button"
                             onClick={() => setQuickFilter('all')}
                             className={cn(
-                                'btn btn-sm rounded-lg',
+                                'btn btn-sm rounded-lg min-h-[44px] sm:min-h-8',
                                 quickFilter === 'all' ? 'btn-primary' : 'btn-ghost btn-outline'
                             )}
                             aria-pressed={quickFilter === 'all'}
@@ -263,7 +263,7 @@ export const ProjectsDashboard: React.FC<{
                                 type="button"
                                 onClick={() => setQuickFilter(quickFilter === 'withBugs' ? 'all' : 'withBugs')}
                                 className={cn(
-                                    'btn btn-sm rounded-lg inline-flex items-center gap-1',
+                                    'btn btn-sm rounded-lg inline-flex items-center gap-1 min-h-[44px] sm:min-h-8',
                                     quickFilter === 'withBugs' ? 'btn-primary' : 'btn-ghost btn-outline'
                                 )}
                                 aria-pressed={quickFilter === 'withBugs'}
@@ -277,7 +277,7 @@ export const ProjectsDashboard: React.FC<{
                                 type="button"
                                 onClick={() => setQuickFilter(quickFilter === 'needsAttention' ? 'all' : 'needsAttention')}
                                 className={cn(
-                                    'btn btn-sm rounded-lg inline-flex items-center gap-1',
+                                    'btn btn-sm rounded-lg inline-flex items-center gap-1 min-h-[44px] sm:min-h-8',
                                     quickFilter === 'needsAttention' ? 'btn-primary' : 'btn-ghost btn-outline'
                                 )}
                                 aria-pressed={quickFilter === 'needsAttention'}
@@ -448,7 +448,7 @@ export const ProjectsDashboard: React.FC<{
                         />
                         ) : (
                             <div
-                                className="rounded-2xl border border-base-300/80 bg-base-100 p-8 text-center"
+                                className="rounded-2xl border border-base-300/80 bg-base-100 p-4 sm:p-5 text-center"
                                 role="status"
                                 aria-live="polite"
                             >

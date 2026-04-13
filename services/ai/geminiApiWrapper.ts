@@ -288,12 +288,11 @@ export async function callGeminiWithRetry(
             const status = extractHttpStatus(error);
             const retryInfo = extractRetryInfo(error);
 
-            // 429: nunca invalidar a key aqui — a mensagem da Google frequentemente cita "quota" também para RPM
-
-            // Verificar se é erro de API key inválida (403)
-            if (isInvalidApiKeyError(error)) {
+            // Melhoria: Se for 403 (chave inválida) ou 400 (bad request/config), 
+            // invalidamos imediatamente para não gastar tempo em retries inúteis.
+            if (isInvalidApiKeyError(error) || status === 400) {
               logger.warn(
-                'Erro de API key inválida detectado (403), marcando como esgotada',
+                'Erro fatal de configuração/autenticação detectado, invalidando chave',
                 'callGeminiWithRetry',
                 { keyAttempt: keyAttempt + 1, status }
               );

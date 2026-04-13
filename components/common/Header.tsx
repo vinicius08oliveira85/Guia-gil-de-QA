@@ -198,7 +198,7 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported: _onProjectImp
                     <button
                         type="button"
                         onClick={onLogoClick}
-                        className="flex items-center gap-2 sm:gap-3 min-w-0 bg-transparent border-none p-0 cursor-pointer hover:opacity-80 transition-opacity"
+                        className="flex items-center gap-2 sm:gap-3 min-w-0 min-h-[44px] sm:min-h-0 bg-transparent border-none p-0 cursor-pointer hover:opacity-80 transition-opacity rounded-lg"
                         aria-label="Voltar para Meus Projetos"
                     >
                         {logoContent}

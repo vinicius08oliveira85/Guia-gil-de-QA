@@ -45,7 +45,7 @@ export const ConsolidatedMetrics = React.memo<ConsolidatedMetricsProps>(({ proje
           Consolidado de Métricas
         </h2>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
         <div
           className="flex items-center gap-6 p-4 rounded-2xl bg-success/5 border border-success/10"
           role="group"
