@@ -125,7 +125,7 @@ export const Modal: React.FC<ModalProps> = ({
             className={
                 isFull
                     ? 'fixed inset-0 z-[9999] flex items-stretch justify-stretch bg-black/60 backdrop-blur-sm transition-opacity duration-200 p-0'
-                    : 'fixed inset-0 z-[9999] flex items-end justify-center p-0 sm:items-center sm:p-4 md:p-6 bg-black/60 backdrop-blur-sm transition-opacity duration-200'
+                    : 'fixed inset-0 z-[9999] flex items-end justify-center p-0 sm:items-center sm:p-4 md:p-6 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200'
             }
             onClick={handleClose}
             role="dialog"
@@ -138,7 +138,7 @@ export const Modal: React.FC<ModalProps> = ({
                 className={
                     isFull
                         ? `${sizeClasses.full} bg-base-100 shadow-2xl border border-base-300 relative flex flex-col overflow-hidden duration-300 ease-out animate-in fade-in`
-                        : `bg-base-100 shadow-2xl border border-base-300 relative w-full flex flex-col overflow-hidden rounded-t-2xl rounded-b-none max-h-[min(92dvh,100svh)] sm:rounded-2xl sm:rounded-b-2xl sm:max-h-[90vh] ${sizeClasses[size]} duration-300 ease-out animate-in fade-in max-sm:slide-in-from-bottom-full sm:zoom-in-95 sm:slide-in-from-bottom-8`
+                        : `bg-base-100 shadow-2xl border border-base-300 relative flex flex-col overflow-hidden rounded-t-2xl rounded-b-none max-h-[min(92dvh,100svh)] sm:rounded-2xl sm:rounded-b-2xl sm:max-h-[90vh] w-full max-sm:w-full max-sm:max-w-none ${sizeClasses[size]} max-sm:animate-modal-bottom-sheet-in sm:animate-in sm:fade-in sm:duration-200 sm:zoom-in-95 sm:slide-in-from-bottom-8`
                 }
                 onClick={(e) => e.stopPropagation()}
                 style={maxHeight && !isFull ? { maxHeight } : undefined}

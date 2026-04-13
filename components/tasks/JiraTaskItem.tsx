@@ -1375,13 +1375,15 @@ export const JiraTaskItem: React.FC<{
     };
 
     const isAiProcessing = isGeneratingTests || isGeneratingBdd || isGeneratingAll || isGenerating;
+    /** Destaque forte só para “Gerar tudo” / geração local do item (pedido UX). */
+    const showBulkGenerateFeedback = isGenerating || isGeneratingAll;
 
     return (
         <div className="relative" data-task-id={task.id}>
             <div style={indentationStyle} className="py-0.5">
                 <div
                     className={[
-                        'flex flex-wrap items-center gap-x-1.5 gap-y-1 sm:gap-x-2 sm:gap-y-1 px-2 py-1.5 sm:px-2.5 md:px-3 md:py-2 bg-base-100 dark:bg-base-200 border rounded-xl task-card-shadow transition-all duration-200',
+                        'flex flex-wrap items-center gap-x-1.5 gap-y-0.5 sm:gap-x-2 sm:gap-y-1 px-1.5 py-1 sm:px-2 sm:py-1 md:px-2.5 md:py-1 bg-base-100 dark:bg-base-200 border rounded-xl task-card-shadow transition-all duration-200',
                         level > 0 ? 'max-md:bg-base-200/60 max-md:dark:bg-base-300/50 max-md:border-base-300' : '',
                         isStatusDropdownOpen ? 'relative z-10' : '',
                         borderL4Class,
@@ -1389,7 +1391,8 @@ export const JiraTaskItem: React.FC<{
                         activeTaskId === task.id ? 'ring-2 ring-primary/40 shadow-lg' : '',
                         isSelected ? 'bg-primary/5 border-primary/40 ring-1 ring-primary/30' : '',
                         task.isFavorite ? 'border-amber-400/60 ring-1 ring-amber-400/30 shadow-[0_0_12px_rgba(251,191,36,0.2)]' : '',
-                        isAiProcessing ? 'animate-ai-card-border' : '',
+                        showBulkGenerateFeedback ? 'ring-2 ring-primary/50 animate-pulse' : '',
+                        isAiProcessing && !showBulkGenerateFeedback ? 'animate-ai-card-border' : '',
                         onOpenModal ? 'cursor-pointer hover:translate-x-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2' : '',
                     ].join(' ')}
                     onClick={onOpenModal ? handleCardClick : undefined}
@@ -1398,47 +1401,51 @@ export const JiraTaskItem: React.FC<{
                     tabIndex={onOpenModal ? 0 : undefined}
                     aria-label={onOpenModal ? `Abrir detalhes da tarefa ${task.id}: ${task.title}` : undefined}
                 >
-                    <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1 flex-1 min-w-0 order-1 w-full sm:w-auto">
-                        {onToggleSelect && (
-                            <input
-                                type="checkbox"
-                                checked={!!isSelected}
-                                onChange={(e) => { e.stopPropagation(); onToggleSelect(); }}
-                                className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-primary rounded-full appearance-none checked:bg-primary checked:border-primary focus:outline-none focus:ring-2 focus:ring-primary/50 cursor-pointer shrink-0"
-                                style={{ backgroundImage: isSelected ? 'radial-gradient(circle, white 30%, transparent 30%)' : 'none' }}
-                                aria-label={isSelected ? `Tarefa ${task.id} selecionada (clique para desselecionar)` : `Selecionar tarefa ${task.id}`}
-                            />
-                        )}
-                        {onToggleFavorite && (
-                            <button
-                                type="button"
-                                onClick={(e) => { e.stopPropagation(); onToggleFavorite(); }}
-                                className={`${iconTouchTargetClass} shrink-0 hover:bg-base-300/80`}
-                                aria-label={task.isFavorite ? 'Desmarcar favorito' : 'Marcar como favorito'}
-                            >
-                                {task.isFavorite ? (
-                                    <Star className="fill-amber-400 text-amber-400" aria-hidden />
-                                ) : (
-                                    <Star className="text-base-content/40" aria-hidden />
-                                )}
-                            </button>
-                        )}
-                        {hasChildren ? (
-                            <button
-                                type="button"
-                                onClick={(e) => { e.stopPropagation(); setIsChildrenOpen(!isChildrenOpen); }}
-                                className="btn btn-ghost btn-xs flex items-center gap-1 min-h-[44px] min-w-[44px] sm:min-h-8 sm:min-w-8 sm:px-1 px-2 shrink-0 rounded-xl p-0 sm:py-0 [&_svg:first-child]:size-[18px] sm:[&_svg:first-child]:size-4"
-                                aria-label={isChildrenOpen ? `Colapsar ${task.children.length} subtarefas de ${task.id}` : `Expandir ${task.children.length} subtarefas de ${task.id}`}
-                            >
-                                <ChevronDown className={`transition-transform flex-shrink-0 ${isChildrenOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
-                                <span className="bg-base-300 text-[10px] px-1.5 py-0.5 rounded-full">{task.children.length}</span>
-                            </button>
-                        ) : null}
+                    <div className="flex flex-1 min-w-0 order-1 w-full sm:w-auto flex-wrap sm:flex-nowrap items-center gap-x-1.5 gap-y-1">
+                        <div className="flex items-center gap-1 shrink-0">
+                            {onToggleSelect && (
+                                <input
+                                    type="checkbox"
+                                    checked={!!isSelected}
+                                    onChange={(e) => { e.stopPropagation(); onToggleSelect(); }}
+                                    className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-primary rounded-full appearance-none checked:bg-primary checked:border-primary focus:outline-none focus:ring-2 focus:ring-primary/50 cursor-pointer shrink-0"
+                                    style={{ backgroundImage: isSelected ? 'radial-gradient(circle, white 30%, transparent 30%)' : 'none' }}
+                                    aria-label={isSelected ? `Tarefa ${task.id} selecionada (clique para desselecionar)` : `Selecionar tarefa ${task.id}`}
+                                />
+                            )}
+                            {onToggleFavorite && (
+                                <button
+                                    type="button"
+                                    onClick={(e) => { e.stopPropagation(); onToggleFavorite(); }}
+                                    className={`${iconTouchTargetClass} shrink-0 hover:bg-base-300/80`}
+                                    aria-label={task.isFavorite ? 'Desmarcar favorito' : 'Marcar como favorito'}
+                                >
+                                    {task.isFavorite ? (
+                                        <Star className="fill-amber-400 text-amber-400" aria-hidden />
+                                    ) : (
+                                        <Star className="text-base-content/40" aria-hidden />
+                                    )}
+                                </button>
+                            )}
+                            {hasChildren ? (
+                                <button
+                                    type="button"
+                                    onClick={(e) => { e.stopPropagation(); setIsChildrenOpen(!isChildrenOpen); }}
+                                    className="btn btn-ghost btn-xs flex items-center gap-1 min-h-[44px] min-w-[44px] sm:min-h-8 sm:min-w-8 sm:px-1 px-2 shrink-0 rounded-xl p-0 sm:py-0 [&_svg:first-child]:size-[18px] sm:[&_svg:first-child]:size-4"
+                                    aria-label={isChildrenOpen ? `Colapsar ${task.children.length} subtarefas de ${task.id}` : `Expandir ${task.children.length} subtarefas de ${task.id}`}
+                                >
+                                    <ChevronDown className={`transition-transform flex-shrink-0 ${isChildrenOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
+                                    <span className="bg-base-300 text-[10px] px-1.5 py-0.5 rounded-full">{task.children.length}</span>
+                                </button>
+                            ) : null}
+                        </div>
                         <div
-                            className="inline-flex flex-nowrap items-center gap-x-1 rounded-md border border-base-300/70 bg-base-200/40 px-1.5 py-0.5 shrink-0 max-w-full min-w-0 overflow-x-auto text-[10px] leading-tight [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+                            className="inline-flex flex-nowrap items-center gap-x-1 rounded-md border border-base-300/70 bg-base-200/40 px-1.5 py-0.5 shrink-0 max-w-[min(100%,24rem)] min-w-0 overflow-x-auto text-[10px] leading-tight [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
                             role="group"
                             aria-label="Metadados da tarefa"
                         >
+                            <span className="font-mono text-[10px] text-base-content/80 tabular-nums shrink-0">{task.id}</span>
+                            <span className="text-[10px] text-base-content/40 shrink-0" aria-hidden>·</span>
                             <Badge
                                 appearance="pill"
                                 variant={typeBadgeVariant}
@@ -1447,15 +1454,20 @@ export const JiraTaskItem: React.FC<{
                             >
                                 {task.type}
                             </Badge>
-                            <span className="font-mono text-base-content/75 tabular-nums shrink-0">{task.id}</span>
+                            <span className="text-[10px] text-base-content/40 shrink-0" aria-hidden>·</span>
                             <span
-                                className="text-base-content/60 truncate min-w-0 max-w-[5rem] sm:max-w-[11rem]"
+                                className="text-[10px] text-base-content/65 truncate min-w-0 max-w-[4.5rem] sm:max-w-[10rem]"
                                 title={getDisplayStatusLabel(task, project)}
                             >
                                 {getDisplayStatusLabel(task, project)}
                             </span>
                         </div>
-                        <span className="text-sm font-semibold text-base-content text-balance line-clamp-1 sm:line-clamp-2 min-w-0 w-full flex-1 basis-full sm:basis-0 sm:w-auto sm:min-w-[8rem]" title={displayTitle}>{displayTitle}</span>
+                        <span
+                            className="text-sm font-semibold text-base-content min-w-0 flex-1 basis-full sm:basis-0 line-clamp-1"
+                            title={displayTitle}
+                        >
+                            {displayTitle}
+                        </span>
                     </div>
 
                     <div className="flex items-center gap-2 flex-wrap flex-shrink-0 w-full sm:w-auto sm:ml-auto order-2 sm:gap-2 sm:flex-nowrap" onClick={(e) => e.stopPropagation()}>

@@ -37,6 +37,11 @@ export interface GeminiResponse {
  */
 function isInvalidApiKeyError(error: unknown): boolean {
   const status = extractHttpStatus(error);
+
+  // 429 nunca deve ser tratado como chave inválida / esgotada
+  if (status === 429) {
+    return false;
+  }
   
   // Status 403 (Forbidden) pode indicar API key inválida ou sem permissões
   if (status === 403) {
@@ -288,9 +293,8 @@ export async function callGeminiWithRetry(
             const status = extractHttpStatus(error);
             const retryInfo = extractRetryInfo(error);
 
+            // Se for 429 (Rate Limit), não invalidamos a chave, apenas deixamos o retry com backoff agir.
             if (status === 429) {
-                // Apenas enriquece o erro para o retryWithBackoff tratar.
-                // Não chamamos markCurrentKeyAsExhausted para erros 429.
               const enrichedError =
                 error instanceof Error ? error : new Error(String(error));
               (enrichedError as GeminiAppError).status = retryInfo.status ?? 429;
@@ -300,7 +304,8 @@ export async function callGeminiWithRetry(
               throw enrichedError;
             }
 
-            if (isInvalidApiKeyError(error)) {
+            // Apenas erros de chave inválida (ex.: 403). 429 nunca invalida a chave.
+            if (status !== 429 && isInvalidApiKeyError(error)) {
               logger.warn(
                 'Chave de API inválida ou sem permissão detectada, invalidando chave',
                 'callGeminiWithRetry',

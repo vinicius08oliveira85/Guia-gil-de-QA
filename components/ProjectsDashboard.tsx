@@ -158,7 +158,7 @@ export const ProjectsDashboard: React.FC<{
     return (
         <>
         <div className="min-h-[calc(100vh-4rem)] bg-gradient-to-b from-base-100 to-base-200/60">
-            <div className="w-full max-w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+            <div className="w-full max-w-full mx-auto px-4 sm:px-8 py-4 sm:py-6">
                 {/* Header */}
                 <div className="flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between">
                     <div className="space-y-1.5">

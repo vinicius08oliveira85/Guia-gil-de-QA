@@ -150,6 +150,26 @@
     }
   }
 
+  /** Modal mobile: bottom sheet desliza de baixo */
+  @keyframes modal-bottom-sheet-in {
+    from {
+      transform: translate3d(0, 100%, 0);
+      opacity: 0.96;
+    }
+    to {
+      transform: translate3d(0, 0, 0);
+      opacity: 1;
+    }
+  }
+  .animate-modal-bottom-sheet-in {
+    animation: modal-bottom-sheet-in 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .animate-modal-bottom-sheet-in {
+      animation: none;
+    }
+  }
+
   /* Dashboard glass indicators */
   .glass {
     backdrop-filter: blur(12px);
