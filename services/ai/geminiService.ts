@@ -39,7 +39,11 @@ const testCaseGenerationSchema = {
             type: Type.STRING,
             description: "Um título descritivo para o cenário."
           },
-          gherkin: { type: Type.STRING, description: "Uma string contendo o cenário completo formatado com a sintaxe Gherkin, usando as palavras-chave em português (Dado, E, Quando, Então)." }
+          gherkin: {
+            type: Type.STRING,
+            description:
+              'Cenário Gherkin em português: use SOMENTE as palavras-chave Funcionalidade, Cenário (ou Esquema do Cenário), Dado, Quando, Então, E, Mas — em português, sem Given/When/Then em inglês. Cada passo em linha própria.',
+          },
         },
         required: ['title', 'gherkin']
       }
@@ -189,6 +193,25 @@ export class GeminiService implements AIService {
          
          Considere: criticidade da funcionalidade, impacto no negócio, frequência de uso, 
          complexidade do teste e risco de falha.
+
+      ════════════════════════════════════════════════════════════════
+      OBRIGATÓRIO: CAMINHOS DE EXCEÇÃO (NEGATIVE TESTING) E SEGURANÇA
+      ════════════════════════════════════════════════════════════════
+      
+      Além dos fluxos de sucesso, você DEVE incluir casos de teste explícitos para:
+      
+      1. **Caminho de exceção / Negative testing**: entradas inválidas, regras de negócio violadas, 
+         limites (valores vazios, nulos, formatos incorretos, estouro de limites), falhas de integração 
+         (API indisponível, timeout, resposta de erro), cancelamento e rollback quando aplicável.
+         Cada cenário negativo deve ter passos claros, resultado esperado mensurável e prioridade coerente 
+         com o risco (muitos devem ser **Alta** ou **Urgente** quando impactam integridade ou segurança).
+      
+      2. **Segurança e permissões**: acesso não autorizado, escalonamento de privilégio, sessão expirada ou inválida, 
+         tentativa de ação sem permissão (RBAC/perfis), exposição indevida de dados (IDOR, vazamento em mensagens de erro), 
+         CSRF/XSS onde relevante ao contexto web, e validação de auditoria quando o domínio exigir.
+         Inclua pelo menos um caso focado em **autorização** se a tarefa envolver dados sensíveis ou áreas restritas.
+      
+      Esses casos devem aparecer em **testCases** (e, quando fizer sentido, refletidos também em **bddScenarios** e **strategy**).
       ` : '';
 
     const rawPrompt = `${documentContext}
@@ -270,18 +293,23 @@ export class GeminiService implements AIService {
       ${testCasesInstructions}
 
       ════════════════════════════════════════════════════════════════
-      INSTRUÇÕES PARA GERAÇÃO DE CENÁRIOS BDD
+      INSTRUÇÕES PARA GERAÇÃO DE CENÁRIOS BDD (GHERKIN ESTRITO EM PORTUGUÊS)
       ════════════════════════════════════════════════════════════════
-      TERCEIRO: Gere cenários BDD (Behavior-Driven Development) usando a sintaxe Gherkin.
-      Foque em descrever o comportamento do sistema do ponto de vista do usuário.
+      TERCEIRO: Gere cenários BDD com sintaxe Gherkin em **português exclusivo** (não misture inglês).
       
-      Certifique-se de cobrir:
-      1. Caminho Feliz (Happy Path) - O fluxo padrão de sucesso.
-      2. Cenários Alternativos - Variações de dados ou fluxo.
-      3. Cenários de Exceção/Erro - Como o sistema deve reagir a falhas.
+      Regras obrigatórias de formatação:
+      - Palavras-chave permitidas: **Funcionalidade**, **Cenário** (ou **Esquema do Cenário**), **Dado**, **Quando**, **Então**, **E**, **Mas**.
+      - Proibido usar Given, When, Then, Feature, Scenario, Background em inglês no texto do gherkin.
+      - Cada passo em uma linha; inicie cada linha de passo com uma das palavras-chave acima (maiúscula inicial conforme Gherkin).
+      - Use **Dado** para contexto/pré-condições, **Quando** para ação, **Então** para resultado; **E** / **Mas** para continuação do mesmo tipo de passo.
+      
+      Cobertura mínima:
+      1. Caminho feliz (happy path).
+      2. Cenários alternativos (dados ou fluxos válidos diferentes).
+      3. Cenários de exceção/erro (negative testing) — alinhados aos casos de exceção obrigatórios acima.
+      4. Pelo menos um cenário que trate **permissão, autenticação ou negação de acesso**, se aplicável ao contexto da tarefa.
 
-      Para cada cenário, forneça um "title" descritivo e o "gherkin" completo
-      usando as palavras-chave em português (Dado, E, Quando, Então).
+      Para cada cenário: "title" descritivo e "gherkin" completo seguindo estritamente estas regras.
 
       
       ════════════════════════════════════════════════════════════════
@@ -625,13 +653,11 @@ export class GeminiService implements AIService {
   async generateBddScenarios(title: string, description: string, project?: Project | null, attachmentsContext?: string): Promise<BddScenario[]> {
     const documentContext = await getFormattedContext(project || null);
     const prompt = `${documentContext}
-    Aja como um especialista em BDD (Behavior-Driven Development). Para a tarefa a seguir, crie cenários de comportamento usando a sintaxe Gherkin (Dado, Quando, Então).
-    Foque em descrever o comportamento do sistema do ponto de vista do usuário.
+    Aja como um especialista em BDD. Gere cenários em Gherkin **somente em português**, usando estritamente as palavras-chave:
+    Funcionalidade, Cenário (ou Esquema do Cenário), Dado, Quando, Então, E, Mas.
+    Não use Given, When, Then, Feature, Scenario em inglês. Um passo por linha; Dado/Quando/Então com uso correto.
 
-    Certifique-se de cobrir:
-    1. Caminho Feliz (Happy Path) - O fluxo padrão de sucesso.
-    2. Cenários Alternativos - Variações de dados ou fluxo.
-    3. Cenários de Exceção/Erro - Como o sistema deve reagir a falhas.
+    Cobrir: caminho feliz; alternativas válidas; exceções/erros (negative testing); e, se fizer sentido, permissões/negação de acesso.
 
     Título da Tarefa: ${title}
     Descrição: ${description}
@@ -643,7 +669,7 @@ export class GeminiService implements AIService {
     Sua resposta DEVE ser um objeto JSON com uma única chave "scenarios".
     "scenarios" deve ser um array de objetos, onde cada objeto tem duas chaves:
     1. "title": Um título descritivo para o cenário.
-    2. "gherkin": Uma string contendo o cenário completo formatado com a sintaxe Gherkin, usando as palavras-chave em português (Dado, E, Quando, Então).
+    2. "gherkin": Texto Gherkin completo em português, apenas palavras-chave Funcionalidade, Cenário, Dado, Quando, Então, E, Mas (sem keywords em inglês).
     `;
 
     const bddSchema = {

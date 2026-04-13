@@ -22,6 +22,8 @@ export interface RetryOptions {
   isRetryable?: (error: unknown) => boolean;
   /** Função chamada antes de cada retry */
   onRetry?: (attempt: number, error: unknown, delay: number) => void;
+  /** Se true, logs de tentativa falha/retry vão só para debug (menos ruído; cold start / retentativas “silenciosas”). */
+  quietRetryLogs?: boolean;
 }
 
 /**
@@ -129,6 +131,7 @@ export async function retryWithBackoff<T>(
     useJitter = true,
     isRetryable = isRetryableError,
     onRetry,
+    quietRetryLogs = false,
   } = options;
 
   let lastError: unknown;
@@ -209,11 +212,25 @@ export async function retryWithBackoff<T>(
         throw timeoutError;
       }
       
-      logger.warn(
-        `Tentativa ${attempt}/${maxRetries} falhou, retentando em ${delay}ms`,
-        'retryWithBackoff',
-        { error, attempt, delay, totalElapsedTime: Math.round(totalElapsedTime / 1000) + 's' }
-      );
+      const retryPayload = {
+        error,
+        attempt,
+        delay,
+        totalElapsedTime: Math.round(totalElapsedTime / 1000) + 's',
+      };
+      if (quietRetryLogs) {
+        logger.debug(
+          `Tentativa ${attempt}/${maxRetries} falhou, retentando em ${delay}ms`,
+          'retryWithBackoff',
+          retryPayload
+        );
+      } else {
+        logger.warn(
+          `Tentativa ${attempt}/${maxRetries} falhou, retentando em ${delay}ms`,
+          'retryWithBackoff',
+          retryPayload
+        );
+      }
       
       // Chamar callback de retry se fornecido
       if (onRetry) {

@@ -73,6 +73,24 @@ export class GeminiApiKeyManager {
   }
 
   /**
+   * Indica se existe chave configurada em localStorage ou em variáveis de ambiente,
+   * independentemente do estado "esgotada" no runtime.
+   */
+  hasConfiguredKeySource(): boolean {
+    try {
+      const cfg = getGeminiConfig();
+      const k = cfg?.apiKey;
+      if (typeof k === 'string' && k.trim().length > 0) {
+        return true;
+      }
+    } catch {
+      /* ignore */
+    }
+    const envKey = (import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.GEMINI_API_KEY || '').trim();
+    return envKey.length > 0;
+  }
+
+  /**
    * Obtém a API key atual (não esgotada)
    * @returns API key atual ou null se todas estiverem esgotadas
    */

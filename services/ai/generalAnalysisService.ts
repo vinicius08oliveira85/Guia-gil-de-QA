@@ -6,8 +6,8 @@ import { GEMINI_DEFAULT_MODEL } from './geminiConstants';
 import { logger } from '../../utils/logger';
 
 const CACHE_TTL_MS = 1000 * 60 * 5; // 5 minutos
-/** Máximo de tarefas consideradas no contexto enviado ao modelo (análise considera até esta quantidade). */
-const MAX_TASKS_IN_CONTEXT = 100;
+/** Máximo de tarefas no contexto do prompt (análise geral mais rica em projetos grandes). */
+const MAX_TASKS_IN_CONTEXT = 250;
 const MAX_AI_TASKS = 20;
 const MAX_AI_TESTS = 30;
 /**
@@ -18,9 +18,9 @@ const MAX_TEST_SNAPSHOT_POOL = 2000;
 /** Análises persistidas em `generalIAAnalysis.testAnalyses` = apenas os testes priorizados (≤ MAX_AI_TESTS). */
 export const MAX_PERSISTED_TEST_ANALYSES = MAX_AI_TESTS;
 /** Máximo de caracteres por trecho de texto (descrição, etc.) no contexto. */
-const TEXT_SNIPPET_LENGTH = 220;
-/** Limite total do prompt (alinhado ao tier gratuito / TPM do Gemini). */
-const MAX_PROMPT_LENGTH = 12_000;
+const TEXT_SNIPPET_LENGTH = 500;
+/** Limite total de caracteres do prompt de análise geral (contexto expandido). */
+const MAX_PROMPT_LENGTH = 40_000;
 /** Espaço reservado para instruções fixas + margem ao montar o prompt com JSON embutido. */
 const PROMPT_TEMPLATE_RESERVE = 2400;
 
@@ -751,4 +751,3 @@ OBSERVAÇÕES IMPORTANTES:
     throw new Error("Falha ao gerar análise geral de IA. Verifique a configuração da API e tente novamente.");
   }
 }
-

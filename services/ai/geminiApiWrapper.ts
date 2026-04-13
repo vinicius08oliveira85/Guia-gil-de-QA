@@ -131,13 +131,31 @@ function isRetryableGeminiError(error: unknown): boolean {
     const st = err.status || err.statusCode;
 
     if (typeof st === 'number') {
-      if (st === 429 || (st >= 500 && st < 600)) {
+      if (st === 429 || st === 408 || st === 502 || st === 504 || (st >= 500 && st < 600)) {
         return true;
       }
     }
   }
 
-  return false;
+  const msg = getErrorMessage(error).toLowerCase();
+  const coldOrTransient =
+    msg.includes('failed to fetch') ||
+    msg.includes('network request failed') ||
+    msg.includes('fetch failed') ||
+    msg.includes('socket hang up') ||
+    msg.includes('econnreset') ||
+    msg.includes('econnrefused') ||
+    msg.includes('etimedout') ||
+    msg.includes('aborted') ||
+    msg.includes('abort') ||
+    msg.includes('deadline exceeded') ||
+    msg.includes('temporarily unavailable') ||
+    msg.includes('try again later') ||
+    msg.includes('cold') ||
+    msg.includes('internal error') ||
+    msg.includes('empty response');
+
+  return coldOrTransient;
 }
 
 /**
@@ -221,7 +239,8 @@ function extractRetryInfo(error: unknown): { retryAfter?: number; status?: numbe
  * @returns Resposta da API
  * @throws Erro se todas as tentativas falharem
  */
-const GEMINI_HTTP_MAX_RETRIES = 3;
+/** Inclui margem para cold start / rede intermitente (tier gratuito, edge, etc.). */
+const GEMINI_HTTP_MAX_RETRIES = 5;
 
 export async function callGeminiWithRetry(
   params: GeminiGenerateContentParams
@@ -248,8 +267,15 @@ export async function callGeminiWithRetry(
 
   for (let keyAttempt = 0; keyAttempt < maxKeyRetries; keyAttempt++) {
     const apiKey = geminiApiKeyManager.getCurrentKey();
-    
+
     if (!apiKey) {
+      if (geminiApiKeyManager.hasConfiguredKeySource()) {
+        throw buildGeminiError(
+          'Chave do Gemini configurada, mas indisponível no momento (carregamento, estado temporário ou quota marcada). Recarregue a página ou verifique Configurações > API Keys.',
+          'GEMINI_KEY_UNAVAILABLE',
+          503
+        );
+      }
       throw buildGeminiError(
         'Nenhuma API key do Gemini disponível. Configure em Configurações > API Keys.',
         'GEMINI_NO_KEY',
@@ -342,17 +368,18 @@ export async function callGeminiWithRetry(
         },
         {
           maxRetries: GEMINI_HTTP_MAX_RETRIES,
-          initialDelay: 5000,
+          initialDelay: 4000,
           backoffMultiplier: 2,
           maxDelay: 180_000,
-          maxTotalTimeout: 420_000, // ~7 min: 429 com espera de 60s+ entre tentativas
+          maxTotalTimeout: 480_000,
           useJitter: true,
           isRetryable: isRetryableGeminiError,
+          quietRetryLogs: true,
           onRetry: (attempt, error, delay) => {
             const retryInfo = extractRetryInfo(error);
             const statusInfo = retryInfo.status ? ` (HTTP ${retryInfo.status})` : '';
-            logger.warn(
-              `Retry ${attempt}/${GEMINI_HTTP_MAX_RETRIES} para API Gemini após ${delay}ms${statusInfo}`,
+            logger.debug(
+              `Retry silencioso ${attempt}/${GEMINI_HTTP_MAX_RETRIES} Gemini após ${delay}ms${statusInfo}`,
               'callGeminiWithRetry',
               { attempt, delay, keyAttempt: keyAttempt + 1, status: retryInfo.status }
             );

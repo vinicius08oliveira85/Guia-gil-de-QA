@@ -123,30 +123,34 @@
     box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px 0 rgba(0, 0, 0, 0.03);
   }
 
-  /** Feedback visual: tarefa com geração IA em andamento (usa token primary / --p) */
+  /** Feedback visual: tarefa com geração IA em andamento (glow + pulsação perceptível) */
   @keyframes ai-card-border-glow {
     0%,
     100% {
       box-shadow:
         0 1px 3px 0 rgba(0, 0, 0, 0.05),
-        0 0 0 1px color-mix(in oklch, oklch(var(--p)) 32%, transparent);
+        0 0 0 1px color-mix(in oklch, oklch(var(--p)) 38%, transparent),
+        0 0 12px color-mix(in oklch, oklch(var(--p)) 22%, transparent),
+        0 0 28px color-mix(in oklch, oklch(var(--p)) 12%, transparent);
     }
     50% {
       box-shadow:
         0 1px 3px 0 rgba(0, 0, 0, 0.05),
-        0 0 0 2px color-mix(in oklch, oklch(var(--p)) 48%, transparent),
-        0 0 16px color-mix(in oklch, oklch(var(--p)) 18%, transparent);
+        0 0 0 3px color-mix(in oklch, oklch(var(--p)) 55%, transparent),
+        0 0 22px color-mix(in oklch, oklch(var(--p)) 35%, transparent),
+        0 0 44px color-mix(in oklch, oklch(var(--p)) 20%, transparent);
     }
   }
   .animate-ai-card-border {
-    animation: ai-card-border-glow 2.2s ease-in-out infinite;
+    animation: ai-card-border-glow 1.45s ease-in-out infinite;
   }
   @media (prefers-reduced-motion: reduce) {
     .animate-ai-card-border {
       animation: none;
       box-shadow:
         0 1px 3px 0 rgba(0, 0, 0, 0.05),
-        0 0 0 1px color-mix(in oklch, oklch(var(--p)) 36%, transparent);
+        0 0 0 2px color-mix(in oklch, oklch(var(--p)) 42%, transparent),
+        0 0 14px color-mix(in oklch, oklch(var(--p)) 25%, transparent);
     }
   }
 

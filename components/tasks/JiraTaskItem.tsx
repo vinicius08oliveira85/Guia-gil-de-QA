@@ -1378,6 +1378,15 @@ export const JiraTaskItem: React.FC<{
     /** Destaque forte só para “Gerar tudo” / geração local do item (pedido UX). */
     const showBulkGenerateFeedback = isGenerating || isGeneratingAll;
 
+    const aiPhaseMessage = useMemo(() => {
+        if (!isAiProcessing) return '';
+        if (isGenerating || isGeneratingAll) return 'Gerando BDD, estratégia e casos de teste…';
+        if (isGeneratingBdd && isGeneratingTests) return 'Gerando BDD e casos de teste…';
+        if (isGeneratingBdd) return 'Gerando cenários BDD…';
+        if (isGeneratingTests) return 'Gerando casos de teste…';
+        return 'Processando com IA…';
+    }, [isAiProcessing, isGenerating, isGeneratingAll, isGeneratingBdd, isGeneratingTests]);
+
     return (
         <div className="relative" data-task-id={task.id}>
             <div style={indentationStyle} className="py-0.5">
@@ -1392,7 +1401,7 @@ export const JiraTaskItem: React.FC<{
                         isSelected ? 'bg-primary/5 border-primary/40 ring-1 ring-primary/30' : '',
                         task.isFavorite ? 'border-amber-400/60 ring-1 ring-amber-400/30 shadow-[0_0_12px_rgba(251,191,36,0.2)]' : '',
                         showBulkGenerateFeedback ? 'ring-2 ring-primary/50 animate-pulse' : '',
-                        isAiProcessing && !showBulkGenerateFeedback ? 'animate-ai-card-border' : '',
+                        isAiProcessing ? 'animate-ai-card-border' : '',
                         onOpenModal ? 'cursor-pointer hover:translate-x-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2' : '',
                     ].join(' ')}
                     onClick={onOpenModal ? handleCardClick : undefined}
@@ -1400,6 +1409,8 @@ export const JiraTaskItem: React.FC<{
                     role={onOpenModal ? 'button' : undefined}
                     tabIndex={onOpenModal ? 0 : undefined}
                     aria-label={onOpenModal ? `Abrir detalhes da tarefa ${task.id}: ${task.title}` : undefined}
+                    aria-busy={isAiProcessing}
+                    title={isAiProcessing && aiPhaseMessage ? aiPhaseMessage : undefined}
                 >
                     <div className="flex flex-1 min-w-0 order-1 w-full sm:w-auto flex-wrap sm:flex-nowrap items-center gap-x-1.5 gap-y-1">
                         <div className="flex items-center gap-1 shrink-0">
@@ -1471,6 +1482,15 @@ export const JiraTaskItem: React.FC<{
                     </div>
 
                     <div className="flex items-center gap-2 flex-wrap flex-shrink-0 w-full sm:w-auto sm:ml-auto order-2 sm:gap-2 sm:flex-nowrap" onClick={(e) => e.stopPropagation()}>
+                        {isAiProcessing && aiPhaseMessage ? (
+                            <span
+                                className="hidden min-[420px]:inline-flex items-center gap-1 max-w-[10rem] sm:max-w-[14rem] truncate text-[9px] sm:text-[10px] font-medium text-primary/90"
+                                title={aiPhaseMessage}
+                            >
+                                <span className="loading loading-spinner loading-xs shrink-0 text-primary" aria-hidden />
+                                <span className="truncate">{aiPhaseMessage}</span>
+                            </span>
+                        ) : null}
                         {(task.type === 'Tarefa' || task.type === 'Bug') && (
                             <div className="flex items-center gap-1" role="group" aria-label="Métricas de teste">
                                 <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-success flex items-center justify-center text-[9px] sm:text-[10px] text-white font-bold" title="Aprovados" aria-label={`${testExecutionSummary.passed} aprovados`}>{testExecutionSummary.passed}</div>
@@ -1484,11 +1504,11 @@ export const JiraTaskItem: React.FC<{
                                 onClick={(e) => { e.stopPropagation(); handleGenerateAll(e); }}
                                 disabled={isGeneratingAll || isGenerating || isGeneratingBdd || isGeneratingTests}
                                 className="rounded-full px-3 py-2 sm:py-1.5 sm:px-4 min-h-[44px] sm:min-h-0 text-[10px] sm:text-xs font-bold inline-flex items-center gap-1.5 bg-primary hover:bg-primary/90 text-primary-content transition-colors shrink-0"
-                                title="Gerar Tudo (BDD e Testes)"
-                                aria-label={isGenerating || isGeneratingAll ? 'Gerando tudo' : 'Gerar Tudo (BDD e Testes)'}
+                                title={isGenerating || isGeneratingAll ? aiPhaseMessage || 'Gerando…' : 'Gerar Tudo (BDD e Testes)'}
+                                aria-label={isGenerating || isGeneratingAll ? aiPhaseMessage || 'Gerando' : 'Gerar Tudo (BDD e Testes)'}
                             >
                                 {isGenerating || isGeneratingAll ? <span className="loading loading-spinner loading-xs" /> : <Zap className="w-3.5 h-3.5" aria-hidden="true" />}
-                                <span>{isGenerating || isGeneratingAll ? 'Gerando...' : 'Gerar Tudo'}</span>
+                                <span>{isGenerating || isGeneratingAll ? 'Gerando…' : 'Gerar Tudo'}</span>
                             </button>
                         )}
                         <button
@@ -1637,16 +1657,24 @@ export const JiraTaskItem: React.FC<{
                                                 size="panel"
                                                 onClick={handleGenerateAll}
                                                 disabled={isGeneratingAll || isGenerating || isGeneratingBdd || isGeneratingTests}
-                                                title="Gerar BDD, Estratégia e Testes com IA"
-                                                aria-label="Gerar tudo com IA (BDD, estratégia e testes)"
+                                                title={
+                                                    isGenerating || isGeneratingAll
+                                                        ? aiPhaseMessage || 'Gerando com IA…'
+                                                        : 'Gerar BDD, Estratégia e Testes com IA'
+                                                }
+                                                aria-label={
+                                                    isGenerating || isGeneratingAll
+                                                        ? aiPhaseMessage || 'Gerando com IA'
+                                                        : 'Gerar tudo com IA (BDD, estratégia e testes)'
+                                                }
                                             >
                                                 {isGenerating || isGeneratingAll ? (
                                                     <span className="loading loading-spinner loading-xs" aria-hidden="true"></span>
                                                 ) : (
                                                     <Zap className="w-4 h-4" aria-hidden="true" />
                                                 )}
-                                                <span className="hidden sm:inline">{isGenerating || isGeneratingAll ? 'Gerando...' : 'Gerar Tudo'}</span>
-                                                <span className="sm:hidden">{isGenerating || isGeneratingAll ? 'Gerando...' : 'Gerar'}</span>
+                                                <span className="hidden sm:inline">{isGenerating || isGeneratingAll ? 'Gerando…' : 'Gerar Tudo'}</span>
+                                                <span className="sm:hidden">{isGenerating || isGeneratingAll ? 'Gerando…' : 'Gerar'}</span>
                                             </Button>
                                         )}
 

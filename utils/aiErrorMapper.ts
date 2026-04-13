@@ -11,6 +11,8 @@ const codeToMessage: Record<string, string> = {
   GEMINI_TEMP_UNAVAILABLE: 'Serviço do Gemini indisponível no momento. Tente novamente em alguns minutos.',
   GEMINI_KEYS_INVALID: 'API key do Gemini inválida ou sem permissão. Atualize as credenciais em Configurações > API Keys.',
   GEMINI_NO_KEY: 'Nenhuma API key do Gemini configurada. Adicione uma em Configurações > API Keys.',
+  GEMINI_KEY_UNAVAILABLE:
+    'A chave do Gemini está configurada, mas não pôde ser usada agora. Recarregue a página ou confira Configurações > API Keys.',
   GEMINI_NETWORK_ERROR: 'Não foi possível comunicar com a API do Gemini. Verifique sua conexão e tente novamente.',
   OPENAI_QUOTA_EXCEEDED: 'Limite de uso da API de IA atingido. Aguarde alguns minutos e tente novamente ou verifique seu plano em Configurações.',
   OPENAI_RATE_LIMIT: 'Muitas requisições. Aguarde um momento e tente novamente.',
