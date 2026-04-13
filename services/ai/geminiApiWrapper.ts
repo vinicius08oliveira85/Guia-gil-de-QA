@@ -216,6 +216,8 @@ function extractRetryInfo(error: unknown): { retryAfter?: number; status?: numbe
  * @returns Resposta da API
  * @throws Erro se todas as tentativas falharem
  */
+const GEMINI_HTTP_MAX_RETRIES = 3;
+
 export async function callGeminiWithRetry(
   params: GeminiGenerateContentParams
 ): Promise<GeminiResponse> {
@@ -325,18 +327,18 @@ export async function callGeminiWithRetry(
           }
         },
         {
-          maxRetries: 5,
-          initialDelay: 2000,
+          maxRetries: GEMINI_HTTP_MAX_RETRIES,
+          initialDelay: 5000,
           backoffMultiplier: 2,
-          maxDelay: 90000,
-          maxTotalTimeout: 300000, // 5 minutos máximo total para evitar retries infinitos
+          maxDelay: 180_000,
+          maxTotalTimeout: 420_000, // ~7 min: 429 com espera de 60s+ entre tentativas
           useJitter: true,
           isRetryable: isRetryableGeminiError,
           onRetry: (attempt, error, delay) => {
             const retryInfo = extractRetryInfo(error);
             const statusInfo = retryInfo.status ? ` (HTTP ${retryInfo.status})` : '';
             logger.warn(
-              `Retry ${attempt}/5 para API Gemini após ${delay}ms${statusInfo}`,
+              `Retry ${attempt}/${GEMINI_HTTP_MAX_RETRIES} para API Gemini após ${delay}ms${statusInfo}`,
               'callGeminiWithRetry',
               { attempt, delay, keyAttempt: keyAttempt + 1, status: retryInfo.status }
             );

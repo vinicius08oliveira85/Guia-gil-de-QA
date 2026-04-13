@@ -19,8 +19,8 @@ const MAX_TEST_SNAPSHOT_POOL = 2000;
 export const MAX_PERSISTED_TEST_ANALYSES = MAX_AI_TESTS;
 /** Máximo de caracteres por trecho de texto (descrição, etc.) no contexto. */
 const TEXT_SNIPPET_LENGTH = 220;
-/** Limite total do prompt enviado à IA (evita payload excessivo e stack overflow no cliente). */
-const MAX_PROMPT_LENGTH = 28_000;
+/** Limite total do prompt (alinhado ao tier gratuito / TPM do Gemini). */
+const MAX_PROMPT_LENGTH = 12_000;
 /** Espaço reservado para instruções fixas + margem ao montar o prompt com JSON embutido. */
 const PROMPT_TEMPLATE_RESERVE = 2400;
 

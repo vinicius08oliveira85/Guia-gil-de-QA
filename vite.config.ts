@@ -77,10 +77,13 @@ export default defineConfig({
         categories: ['productivity', 'business', 'developer']
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
-        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5 MB (para incluir logo se necessário)
+        // Não precachear JS/HTML: evita SW servir bundles antigos (lógica Gemini/rate limit desatualizada).
+        // Ícones, CSS e imagens continuam em cache; o app carrega chunks sempre da rede (HTTP cache do browser aplica).
+        globPatterns: ['**/*.{css,ico,png,svg,woff2}'],
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         skipWaiting: true,
         clientsClaim: true,
+        cleanupOutdatedCaches: true,
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,

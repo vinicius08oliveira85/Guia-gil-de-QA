@@ -178,10 +178,11 @@ export async function retryWithBackoff<T>(
           { attempt, initialDelay: effectiveInitialDelay, maxDelay: effectiveMaxDelay }
         );
       } else if (errorStatus === 429) {
-        effectiveInitialDelay = Math.max(initialDelay, 4000);
-        effectiveMaxDelay = Math.max(effectiveMaxDelay, 120000);
+        // TPM/RPM: esperar ~1 min entre tentativas (tier gratuito costuma precisar disso)
+        effectiveInitialDelay = Math.max(initialDelay, 60_000);
+        effectiveMaxDelay = Math.max(effectiveMaxDelay, 180_000);
         logger.debug(
-          'Erro 429 detectado, usando backoff mais longo entre tentativas',
+          'Erro 429 detectado, usando backoff longo entre tentativas',
           'retryWithBackoff',
           { attempt, initialDelay: effectiveInitialDelay, maxDelay: effectiveMaxDelay }
         );

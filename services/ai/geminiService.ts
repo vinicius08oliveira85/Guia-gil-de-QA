@@ -316,7 +316,8 @@ export class GeminiService implements AIService {
       - Use português brasileiro em todas as descrições
     `;
 
-    const MAX_PROMPT_LENGTH = 28_000;
+    /** Tier gratuito: prompts muito longos elevam TPM e disparam 429 mesmo com poucas requisições. */
+    const MAX_PROMPT_LENGTH = 12_000;
     return rawPrompt.length > MAX_PROMPT_LENGTH
       ? rawPrompt.slice(0, MAX_PROMPT_LENGTH) + '\n\n[... contexto truncado ...]'
       : rawPrompt;
