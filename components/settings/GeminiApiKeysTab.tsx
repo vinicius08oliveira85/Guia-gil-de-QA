@@ -43,6 +43,8 @@ export const GeminiApiKeysTab: React.FC<GeminiApiKeysTabProps> = ({ onDirtyChang
         try {
             const { geminiApiKeyManager } = await import('../../services/ai/geminiApiKeyManager');
             geminiApiKeyManager.reloadKeys();
+            const { invalidateAIServiceCache } = await import('../../services/ai/aiServiceFactory');
+            invalidateAIServiceCache();
         } catch {
             console.warn('Erro ao recarregar keys no manager');
         }
@@ -114,6 +116,8 @@ export const GeminiApiKeysTab: React.FC<GeminiApiKeysTabProps> = ({ onDirtyChang
             try {
                 const { geminiApiKeyManager } = await import('../../services/ai/geminiApiKeyManager');
                 geminiApiKeyManager.reloadKeys();
+                const { invalidateAIServiceCache } = await import('../../services/ai/aiServiceFactory');
+                invalidateAIServiceCache();
             } catch (reloadError) {
                 // Se houver erro ao recarregar, apenas logar mas continuar
                 console.warn('Erro ao recarregar keys no manager:', reloadError);

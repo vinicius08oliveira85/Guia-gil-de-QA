@@ -2,6 +2,7 @@ import { AIService } from './aiServiceInterface';
 import { GeminiService } from './geminiService';
 import { OpenAIService } from './openaiService';
 import { logger } from '../../utils/logger';
+import { getGeminiConfig } from '../geminiConfigService';
 
 export type AIProvider = 'gemini' | 'openai';
 
@@ -9,25 +10,34 @@ let currentService: AIService | null = null;
 let currentProvider: AIProvider | null = null;
 
 /**
- * Obtém o provedor de IA configurado nas variáveis de ambiente.
- * Gemini: `VITE_GEMINI_API_KEY` ou `GEMINI_API_KEY` (trim; a chave nas chamadas vem do `geminiApiKeyManager`, que prioriza localStorage e depois env).
- * Modelo padrão: `gemini-2.0-flash` em `geminiConstants` (override com `VITE_GEMINI_MODEL`).
+ * Resolve qual provedor de IA usar.
+ *
+ * Ordem de precedência:
+ * 1. Chave Gemini salva pelo usuário em Configurações (localStorage) — uso explícito do Gemini na UI.
+ * 2. `VITE_OPENAI_API_KEY` / `OPENAI_API_KEY` no ambiente.
+ * 3. `VITE_GEMINI_API_KEY` / `GEMINI_API_KEY` no ambiente.
+ * 4. Padrão: Gemini (a chave efetiva nas chamadas vem do `geminiApiKeyManager`: localStorage depois env).
  */
-const getConfiguredProvider = (): AIProvider => {
-  const geminiKey = (import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.GEMINI_API_KEY || '').trim();
+export const resolveConfiguredAIProvider = (): AIProvider => {
+  const geminiUiKey = getGeminiConfig()?.apiKey?.trim() ?? '';
+  if (geminiUiKey) {
+    return 'gemini';
+  }
+
+  const geminiEnvKey = (import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.GEMINI_API_KEY || '').trim();
   const openaiKey = (import.meta.env.VITE_OPENAI_API_KEY || import.meta.env.OPENAI_API_KEY || '').trim();
 
-  // Prioridade: OpenAI > Gemini
   if (openaiKey) {
     return 'openai';
   }
-  if (geminiKey) {
+  if (geminiEnvKey) {
     return 'gemini';
   }
-  
-  // Default para Gemini se nenhuma chave estiver configurada
+
   return 'gemini';
 };
+
+const getConfiguredProvider = (): AIProvider => resolveConfiguredAIProvider();
 
 /**
  * Cria uma instância do serviço de IA baseado no provedor especificado
@@ -72,5 +82,14 @@ export const setAIProvider = (provider: AIProvider): void => {
  */
 export const getCurrentAIProvider = (): AIProvider => {
   return currentProvider || getConfiguredProvider();
+};
+
+/**
+ * Limpa o cache do serviço para que o próximo `getAIService()` recalcule o provedor
+ * (ex.: após salvar ou remover a chave Gemini nas Configurações).
+ */
+export const invalidateAIServiceCache = (): void => {
+  currentService = null;
+  currentProvider = null;
 };
 

@@ -6,14 +6,16 @@ import { AIService } from './aiServiceInterface';
 import { getFormattedContext } from './documentContextService';
 import { logger } from '../../utils/logger';
 import { retryWithBackoff } from '../../utils/retry';
+import { getGeminiConfig } from '../geminiConfigService';
 
 const API_KEY = import.meta.env.VITE_OPENAI_API_KEY || import.meta.env.OPENAI_API_KEY;
 
-// Verificar se há alguma chave de IA disponível (OpenAI ou Gemini)
+// Verificar se há alguma chave de IA disponível (OpenAI, Gemini no ambiente ou Gemini nas Configurações)
 const hasAnyAIKey = () => {
   const openaiKey = import.meta.env.VITE_OPENAI_API_KEY || import.meta.env.OPENAI_API_KEY;
   const geminiKey = import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.GEMINI_API_KEY;
-  return !!(openaiKey || geminiKey);
+  const geminiUiKey = getGeminiConfig()?.apiKey?.trim();
+  return !!(openaiKey || geminiKey || geminiUiKey);
 };
 
 let openai: OpenAI | null = null;

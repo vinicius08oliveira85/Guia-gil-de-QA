@@ -77,6 +77,11 @@ export class GeminiApiKeyManager {
    * @returns API key atual ou null se todas estiverem esgotadas
    */
   getCurrentKey(): string | null {
+    // Se ainda não carregou nenhuma fonte (ex.: módulo avaliado cedo ou chave salva depois), re-sincroniza
+    if (this.keys.length === 0) {
+      this.reloadKeys();
+    }
+
     // Encontrar primeira key não esgotada
     const availableKey = this.keys.find(k => !k.exhausted);
 
