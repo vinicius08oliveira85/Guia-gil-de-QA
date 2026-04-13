@@ -288,8 +288,21 @@ export async function callGeminiWithRetry(
             const status = extractHttpStatus(error);
             const retryInfo = extractRetryInfo(error);
 
-            // Melhoria: Se for 403 (chave inválida) ou 400 (bad request/config), 
-            // invalidamos imediatamente para não gastar tempo em retries inúteis.
+            /**
+             * 429 (rate limit / quota temporária): somente retry com backoff.
+             * NUNCA chamar markCurrentKeyAsExhausted — a chave continua válida no menu.
+             */
+            if (status === 429) {
+              const enrichedError =
+                error instanceof Error ? error : new Error(String(error));
+              (enrichedError as GeminiAppError).status = retryInfo.status ?? 429;
+              if (retryInfo.retryAfter != null) {
+                (enrichedError as GeminiAppError).retryAfter = retryInfo.retryAfter;
+              }
+              throw enrichedError;
+            }
+
+            // 403 / chave inválida ou 400 (config): invalidar chave e não insistir com a mesma key
             if (isInvalidApiKeyError(error) || status === 400) {
               logger.warn(
                 'Erro fatal de configuração/autenticação detectado, invalidando chave',

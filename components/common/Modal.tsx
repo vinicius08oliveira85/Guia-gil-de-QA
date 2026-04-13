@@ -138,7 +138,7 @@ export const Modal: React.FC<ModalProps> = ({
                 className={
                     isFull
                         ? `${sizeClasses.full} bg-base-100 shadow-2xl border border-base-300 relative flex flex-col overflow-hidden duration-300 ease-out animate-in fade-in`
-                        : `bg-base-100 shadow-2xl border border-base-300 relative w-full flex flex-col overflow-hidden rounded-t-2xl rounded-b-none max-h-[min(92dvh,100svh)] sm:rounded-2xl sm:rounded-b-2xl sm:max-h-[90vh] ${sizeClasses[size]} duration-300 ease-out animate-in fade-in zoom-in-95 max-sm:slide-in-from-bottom-4 sm:slide-in-from-bottom-8`
+                        : `bg-base-100 shadow-2xl border border-base-300 relative w-full flex flex-col overflow-hidden rounded-t-2xl rounded-b-none max-h-[min(92dvh,100svh)] sm:rounded-2xl sm:rounded-b-2xl sm:max-h-[90vh] ${sizeClasses[size]} duration-300 ease-out animate-in fade-in max-sm:slide-in-from-bottom-full sm:zoom-in-95 sm:slide-in-from-bottom-8`
                 }
                 onClick={(e) => e.stopPropagation()}
                 style={maxHeight && !isFull ? { maxHeight } : undefined}

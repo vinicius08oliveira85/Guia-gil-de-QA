@@ -421,18 +421,6 @@ export const JiraTaskItem: React.FC<{
         }
     }, [onGenerateAll, task.id, detailLevel]);
 
-    // Cores e estilos para status de teste
-    const testStatusConfig = useMemo(() => {
-        const status = taskTestStatus || calculateTaskTestStatus(task, project?.tasks || []);
-        const configs: Record<TaskTestStatus, { label: string; color: string; bgColor: string; icon: string }> = {
-            testar: { label: 'Testar', color: 'text-primary', bgColor: 'bg-primary/20 border-primary/30', icon: '📋' },
-            testando: { label: 'Testando', color: 'text-blue-700 dark:text-blue-400', bgColor: 'bg-blue-500/20 border-blue-500/30', icon: '🔄' },
-            pendente: { label: 'Pendente', color: 'text-red-700 dark:text-red-400', bgColor: 'bg-red-500/20 border-red-500/30', icon: '⚠️' },
-            teste_concluido: { label: 'Teste Concluído', color: 'text-green-700 dark:text-green-400', bgColor: 'bg-green-500/20 border-green-500/30', icon: '✅' }
-        };
-        return configs[status];
-    }, [taskTestStatus, task, project?.tasks]);
-
     const testTypeBadges = useMemo(() => {
         const typeMap = new Map<string, { total: number; executed: number; failed: number; hasStrategy: boolean; strategyExecuted: boolean }>();
         const ensureType = (type: string) => {
@@ -627,12 +615,14 @@ export const JiraTaskItem: React.FC<{
     const indentationStyle = { paddingLeft: `${level * 1.2}rem` };
 
     // Classes visuais do botão de status de teste por estado
+    /** Tokens semânticos DaisyUI (primary, info, success, warning) */
     const testStatusButtonVariant: Record<string, string> = {
-        testando:        'bg-blue-50  dark:bg-blue-950/30  text-blue-600  dark:text-blue-400  border-blue-200  dark:border-blue-900/50  hover:bg-blue-100  dark:hover:bg-blue-900/40',
-        teste_concluido: 'bg-green-50 dark:bg-green-950/30 text-green-600 dark:text-green-400 border-green-200 dark:border-green-900/50 hover:bg-green-100 dark:hover:bg-green-900/40',
-        pendente:        'bg-red-50   dark:bg-red-950/30   text-red-600   dark:text-red-400   border-red-200   dark:border-red-900/50   hover:bg-red-100   dark:hover:bg-red-900/40',
+        testando:        'bg-info text-info-content border-info hover:bg-info/90',
+        teste_concluido: 'bg-success text-success-content border-success hover:bg-success/90',
+        pendente:        'bg-warning text-warning-content border-warning hover:bg-warning/90',
     };
-    const defaultTestStatusButtonClass = 'bg-primary/10 dark:bg-primary/20 text-primary border-primary/30 dark:border-primary/50 hover:bg-primary/20 dark:hover:bg-primary/30';
+    const defaultTestStatusButtonClass =
+        'bg-primary text-primary-content border-primary hover:bg-primary/90';
 
     // Touch targets mínimos de 44x44px para acessibilidade (WCAG)
     const iconButtonClass = 'btn btn-ghost btn-circle btn-sm min-h-[44px] min-w-[44px] h-11 w-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30';
@@ -682,7 +672,7 @@ export const JiraTaskItem: React.FC<{
                 <div className="flex items-center gap-2 p-2.5 rounded-xl bg-base-200 border border-base-300 mt-1.5">
                     <p className="text-sm font-medium flex-1">Ações de Teste:</p>
                     {taskTestStatus === 'testar' && (
-                        <Button type="button" variant="brand" size="panelSm" onClick={handleStartTest}>
+                        <Button type="button" variant="default" size="panelSm" onClick={handleStartTest}>
                             <span className="mr-1">▶</span> Iniciar Teste
                         </Button>
                     )}
@@ -1388,7 +1378,7 @@ export const JiraTaskItem: React.FC<{
             <div style={indentationStyle} className="py-0.5">
                 <div
                     className={[
-                        'flex flex-wrap items-center gap-x-2 gap-y-2 sm:gap-y-0 px-3 py-2 sm:px-4 sm:py-2.5 bg-base-100 dark:bg-base-200 border rounded-xl task-card-shadow transition-all duration-200',
+                        'flex flex-wrap items-center gap-x-1.5 gap-y-1 sm:gap-x-2 sm:gap-y-1 px-2 py-1 sm:px-2.5 sm:py-1.5 md:px-3 md:py-2 bg-base-100 dark:bg-base-200 border rounded-xl task-card-shadow transition-all duration-200',
                         level > 0 ? 'max-md:bg-base-200/60 max-md:dark:bg-base-300/50 max-md:border-base-300' : '',
                         isStatusDropdownOpen ? 'relative z-10' : '',
                         borderL4Class,
@@ -1404,7 +1394,7 @@ export const JiraTaskItem: React.FC<{
                     tabIndex={onOpenModal ? 0 : undefined}
                     aria-label={onOpenModal ? `Abrir detalhes da tarefa ${task.id}: ${task.title}` : undefined}
                 >
-                    <div className="flex items-center gap-2 flex-1 min-w-0 order-1 w-full sm:w-auto">
+                    <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1 flex-1 min-w-0 order-1 w-full sm:w-auto">
                         {onToggleSelect && (
                             <input
                                 type="checkbox"
@@ -1440,9 +1430,33 @@ export const JiraTaskItem: React.FC<{
                                 <span className="bg-base-300 text-[10px] px-1.5 py-0.5 rounded-full">{task.children.length}</span>
                             </button>
                         ) : null}
-                        <Badge appearance="pill" variant={typeBadgeVariant} size="xs" className="shrink-0 uppercase tracking-wider">{task.type}</Badge>
-                        <span className="text-xs font-medium text-base-content/60 shrink-0">{task.id}</span>
-                        <span className="text-sm font-semibold text-base-content text-balance line-clamp-2 min-w-0 flex-1" title={displayTitle}>{displayTitle}</span>
+                        <div
+                            className="inline-flex flex-wrap items-center gap-x-1 gap-y-0.5 rounded-md border border-base-300/70 bg-base-200/40 px-1 py-0.5 shrink-0 max-w-full"
+                            role="group"
+                            aria-label="Metadados da tarefa"
+                        >
+                            <Badge
+                                appearance="pill"
+                                variant={typeBadgeVariant}
+                                size="xs"
+                                className="shrink-0 uppercase tracking-wide text-[10px] leading-tight min-h-0 h-5 py-0 px-1.5"
+                            >
+                                {task.type}
+                            </Badge>
+                            <span className="text-xs font-mono text-base-content/70 tabular-nums">{task.id}</span>
+                            {task.priority ? (
+                                <span className="badge badge-ghost badge-xs border-base-300/60 text-xs font-normal whitespace-nowrap">
+                                    {task.priority}
+                                </span>
+                            ) : null}
+                            <span
+                                className="text-xs text-base-content/55 truncate max-w-[4.5rem] sm:max-w-[9rem]"
+                                title={getDisplayStatusLabel(task, project)}
+                            >
+                                {getDisplayStatusLabel(task, project)}
+                            </span>
+                        </div>
+                        <span className="text-sm font-semibold text-base-content text-balance line-clamp-2 min-w-0 w-full flex-1 basis-full sm:basis-0 sm:w-auto sm:min-w-[8rem]" title={displayTitle}>{displayTitle}</span>
                     </div>
 
                     <div className="flex items-center gap-2 flex-wrap flex-shrink-0 w-full sm:w-auto sm:ml-auto order-2 sm:gap-2 sm:flex-nowrap" onClick={(e) => e.stopPropagation()}>
@@ -1450,7 +1464,7 @@ export const JiraTaskItem: React.FC<{
                             <div className="flex items-center gap-1" role="group" aria-label="Métricas de teste">
                                 <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-success flex items-center justify-center text-[9px] sm:text-[10px] text-white font-bold" title="Aprovados" aria-label={`${testExecutionSummary.passed} aprovados`}>{testExecutionSummary.passed}</div>
                                 <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-error flex items-center justify-center text-[9px] sm:text-[10px] text-white font-bold" title="Reprovados" aria-label={`${testExecutionSummary.failed} reprovados`}>{testExecutionSummary.failed}</div>
-                                <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-amber-500 flex items-center justify-center text-[9px] sm:text-[10px] text-white font-bold" title="Pendentes" aria-label={`${testExecutionSummary.pending} pendentes`}>{testExecutionSummary.pending}</div>
+                                <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-warning flex items-center justify-center text-[9px] sm:text-[10px] text-warning-content font-bold" title="Pendentes" aria-label={`${testExecutionSummary.pending} pendentes`}>{testExecutionSummary.pending}</div>
                             </div>
                         )}
                         {['tarefa', 'bug', 'task'].includes(taskTypeNorm) && onGenerateAll && (
