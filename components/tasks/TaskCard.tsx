@@ -78,7 +78,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onStartTest, onComplet
         <button
           type="button"
           onClick={handleToggleExpand}
-          className="btn btn-ghost btn-sm btn-circle"
+          className="btn btn-ghost btn-sm btn-circle min-h-[44px] min-w-[44px] sm:min-h-8 sm:min-w-8 p-0 [&_svg]:size-[18px] sm:[&_svg]:size-5"
           aria-expanded={isExpanded}
           aria-controls={contentId}
           aria-label={isExpanded ? 'Recolher detalhes' : 'Expandir detalhes'}
@@ -110,7 +110,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onStartTest, onComplet
           <Badge variant={jiraStatusBadge.variant} size="sm">{jiraStatusBadge.label}</Badge>
           {testStatus.label !== 'Teste Concluído' && testStatus.label !== 'Sem Testes' && (
             <button 
-              className="btn btn-primary btn-sm"
+              className={testStatus.label === 'Testar' ? 'btn btn-info btn-sm' : 'btn btn-warning btn-sm'}
               onClick={() => onStartTest?.(task.id)}
             >
               {testStatus.label === 'Testar' ? 'Iniciar Teste' : 'Continuar'}
@@ -118,7 +118,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onStartTest, onComplet
           )}
           {testStatus.label === 'Teste Concluído' && (
              <button 
-              className="btn btn-secondary btn-sm"
+              className="btn btn-success btn-sm"
               onClick={() => onCompleteTest?.(task.id)}
             >
               Concluir

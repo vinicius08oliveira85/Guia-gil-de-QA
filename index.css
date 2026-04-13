@@ -123,6 +123,33 @@
     box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px 0 rgba(0, 0, 0, 0.03);
   }
 
+  /** Feedback visual: tarefa com geração IA em andamento (usa token primary / --p) */
+  @keyframes ai-card-border-glow {
+    0%,
+    100% {
+      box-shadow:
+        0 1px 3px 0 rgba(0, 0, 0, 0.05),
+        0 0 0 1px color-mix(in oklch, oklch(var(--p)) 32%, transparent);
+    }
+    50% {
+      box-shadow:
+        0 1px 3px 0 rgba(0, 0, 0, 0.05),
+        0 0 0 2px color-mix(in oklch, oklch(var(--p)) 48%, transparent),
+        0 0 16px color-mix(in oklch, oklch(var(--p)) 18%, transparent);
+    }
+  }
+  .animate-ai-card-border {
+    animation: ai-card-border-glow 2.2s ease-in-out infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .animate-ai-card-border {
+      animation: none;
+      box-shadow:
+        0 1px 3px 0 rgba(0, 0, 0, 0.05),
+        0 0 0 1px color-mix(in oklch, oklch(var(--p)) 36%, transparent);
+    }
+  }
+
   /* Dashboard glass indicators */
   .glass {
     backdrop-filter: blur(12px);
