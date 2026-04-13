@@ -4,7 +4,7 @@ import { ExpandableTabs } from './ExpandableTabs';
 import { ExpansibleButton } from './ExpansibleButton';
 import { useTheme } from '../../hooks/useTheme';
 import { getActiveColorForTheme } from '../../utils/expandableTabsColors';
-import { BookOpen, Bell, Moon, Sun, Heart, Monitor, Sliders, Cloud, Plus, Loader2 } from 'lucide-react';
+import { BookOpen, Bell, Moon, Sun, Heart, Monitor, Sliders, Cloud, Plus, Loader2, ChevronLeft } from 'lucide-react';
 import { Project } from '../../types';
 import { getUnreadCount } from '../../utils/notificationService';
 import { Modal } from './Modal';
@@ -201,6 +201,7 @@ export const Header: React.FC<HeaderProps> = ({ onProjectImported: _onProjectImp
                         className="flex items-center gap-2 sm:gap-3 min-w-0 min-h-[44px] sm:min-h-0 bg-transparent border-none p-0 cursor-pointer hover:opacity-80 transition-opacity rounded-lg"
                         aria-label="Voltar para Meus Projetos"
                     >
+                        <ChevronLeft className="w-4 h-4 shrink-0 text-base-content/70 sm:w-5 sm:h-5" aria-hidden />
                         {logoContent}
                     </button>
                 ) : (

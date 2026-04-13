@@ -53,8 +53,10 @@ export const TasksView: React.FC<{
     project: Project, 
     onUpdateProject: (project: Project) => void,
     onNavigateToTab?: (tabId: string) => void,
-    initialTaskId?: string
-}> = ({ project, onUpdateProject, onNavigateToTab, initialTaskId }) => {
+    initialTaskId?: string,
+    /** Inline detalhes ou modal de tarefa — atualiza breadcrumb no ProjectView. */
+    onTaskDetailsOpenChange?: (taskId: string, isOpen: boolean) => void,
+}> = ({ project, onUpdateProject, onNavigateToTab, initialTaskId, onTaskDetailsOpenChange }) => {
     const [generatingTestsTaskId, setGeneratingTestsTaskId] = useState<string | null>(null);
     const [generatingBddTaskId, setGeneratingBddTaskId] = useState<string | null>(null);
     const [generatingAllTaskId, setGeneratingAllTaskId] = useState<string | null>(null);
@@ -193,6 +195,14 @@ export const TasksView: React.FC<{
         }
         return built.get(modalTask.id) ?? { ...modalTask, children: [] };
     }, [project.tasks, modalTask]);
+
+    useEffect(() => {
+        if (!onTaskDetailsOpenChange) return;
+        if (modalTask) {
+            onTaskDetailsOpenChange(modalTask.id, true);
+            return () => onTaskDetailsOpenChange(modalTask.id, false);
+        }
+    }, [modalTask, onTaskDetailsOpenChange]);
 
     // Função helper para delay
     const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -1539,13 +1549,14 @@ export const TasksView: React.FC<{
                     onUpdateProject={onUpdateProject}
                     onOpenModal={setModalTask}
                     onToggleFavorite={() => handleToggleFavorite(task.id)}
+                    onDetailsOpenChange={onTaskDetailsOpenChange}
                 >
                     {task.children.length > 0 && renderTaskTree(task.children, level + 1, globalIndex + 1, total)}
                 </JiraTaskItem>
                 </div>
             );
         });
-    }, [totalTaskCount, selectedTasks, generatingTestsTaskId, generatingBddTaskId, generatingAllTaskId, syncingTaskId, updatingFromJiraTaskId, handleUpdateTaskFromJira, handleTestCaseStatusChange, handleToggleTestCaseAutomated, handleExecutedStrategyChange, handleTaskToolsChange, handleTestCaseToolsChange, handleStrategyExecutedChange, handleStrategyToolsChange, handleDeleteTask, handleGenerateTests, openTaskFormForNew, openTaskFormForEdit, handleGenerateBddScenarios, handleGenerateAll, handleSyncTaskToJira, handleSaveBddScenario, handleDeleteBddScenario, handleTaskStatusChange, handleAddComment, handleEditComment, handleDeleteComment, handleOpenTestCaseEditor, handleDeleteTestCase, handleDuplicateTestCase, project, onUpdateProject, toggleTaskSelection, handleToggleFavorite]);
+    }, [totalTaskCount, selectedTasks, generatingTestsTaskId, generatingBddTaskId, generatingAllTaskId, syncingTaskId, updatingFromJiraTaskId, handleUpdateTaskFromJira, handleTestCaseStatusChange, handleToggleTestCaseAutomated, handleExecutedStrategyChange, handleTaskToolsChange, handleTestCaseToolsChange, handleStrategyExecutedChange, handleStrategyToolsChange, handleDeleteTask, handleGenerateTests, openTaskFormForNew, openTaskFormForEdit, handleGenerateBddScenarios, handleGenerateAll, handleSyncTaskToJira, handleSaveBddScenario, handleDeleteBddScenario, handleTaskStatusChange, handleAddComment, handleEditComment, handleDeleteComment, handleOpenTestCaseEditor, handleDeleteTestCase, handleDuplicateTestCase, project, onUpdateProject, toggleTaskSelection, handleToggleFavorite, onTaskDetailsOpenChange]);
 
     return (
         <>

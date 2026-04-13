@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { JiraTask, BddScenario, TestCaseDetailLevel, Project, TestCase } from '../../types';
 import { Modal } from '../common/Modal';
 import { Spinner } from '../common/Spinner';
@@ -32,9 +33,10 @@ import { canViewInBrowser, detectFileType } from '../../services/fileViewerServi
 import { JiraAttachment } from './JiraAttachment';
 import { JiraRichContent } from './JiraRichContent';
 import { Button } from '../common/Button';
+import { BackButton } from '../common/BackButton';
 import { Badge } from '../common/Badge';
 import { useJiraAttachmentViewer } from '../../hooks/useJiraAttachmentViewer';
-import { BarChart3, ClipboardList, Sparkles, Wrench, Link, Paperclip, Timer, Download, ChevronLeft } from 'lucide-react';
+import { BarChart3, ClipboardList, Sparkles, Wrench, Link, Paperclip, Timer, Download, ChevronLeft, ChevronRight } from 'lucide-react';
 
 type DetailSection = 'overview' | 'bdd' | 'tests' | 'planning' | 'collaboration';
 type TestSubSection = 'strategy' | 'test-cases';
@@ -166,6 +168,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
     onUpdateFromJira,
     isUpdatingFromJira,
 }) => {
+    const reduceMotion = useReducedMotion();
     const [editingBddScenario, setEditingBddScenario] = useState<BddScenario | null>(null);
     const [isCreatingBdd, setIsCreatingBdd] = useState(false);
     const [detailLevel, setDetailLevel] = useState<TestCaseDetailLevel>('Padrão');
@@ -227,6 +230,21 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
         onAddComment,
         project?.tasks
     ]);
+
+    const prevActiveSectionRef = useRef<DetailSection>(activeSection);
+    const [sectionEnterDirection, setSectionEnterDirection] = useState<1 | -1>(1);
+
+    useEffect(() => {
+        const prev = prevActiveSectionRef.current;
+        if (prev !== activeSection) {
+            const oldIdx = sectionTabs.findIndex((t) => t.id === prev);
+            const newIdx = sectionTabs.findIndex((t) => t.id === activeSection);
+            if (oldIdx >= 0 && newIdx >= 0 && oldIdx !== newIdx) {
+                setSectionEnterDirection(newIdx > oldIdx ? 1 : -1);
+            }
+            prevActiveSectionRef.current = activeSection;
+        }
+    }, [activeSection, sectionTabs]);
 
     useEffect(() => {
         if (!isOpen) return;
@@ -847,21 +865,53 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
         }
     };
 
-    const modalTitle = (
-        <div className="flex items-center justify-between gap-3 w-full min-w-0 pr-10 sm:pr-12">
-            <div className="flex items-center gap-3 min-w-0 flex-1">
-                <span className="font-mono text-sm text-base-content/60 shrink-0">{task.id}</span>
-                <span className="text-base-content truncate">{task.title}</span>
-            </div>
-            <button
-                type="button"
-                onClick={onClose}
-                className="btn btn-ghost btn-sm shrink-0 gap-1.5"
-                aria-label="Voltar para a lista de tarefas"
+    const renderNavigationFooter = () => {
+        const currentIndex = sectionTabs.findIndex((tab) => tab.id === activeSection);
+        const prevTab = sectionTabs[currentIndex - 1];
+        const nextTab = sectionTabs[currentIndex + 1];
+        return (
+            <nav
+                className="flex justify-between items-center gap-2 mt-5 pt-3 border-t border-base-200"
+                aria-label="Navegação entre seções da tarefa"
             >
-                <ChevronLeft className="w-4 h-4" aria-hidden />
-                Voltar
-            </button>
+                {prevTab ? (
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="gap-1"
+                        onClick={() => setActiveSection(prevTab.id)}
+                        aria-label={`Anterior: ${prevTab.label}`}
+                    >
+                        <ChevronLeft className="w-4 h-4 shrink-0" aria-hidden />
+                        Anterior
+                    </Button>
+                ) : (
+                    <span className="inline-flex min-w-[5rem]" aria-hidden />
+                )}
+                {nextTab ? (
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="gap-1"
+                        onClick={() => setActiveSection(nextTab.id)}
+                        aria-label={`Próximo: ${nextTab.label}`}
+                    >
+                        Próximo
+                        <ChevronRight className="w-4 h-4 shrink-0" aria-hidden />
+                    </Button>
+                ) : (
+                    <span className="inline-flex min-w-[5rem]" aria-hidden />
+                )}
+            </nav>
+        );
+    };
+
+    const modalTitle = (
+        <div className="flex items-center gap-3 min-w-0 w-full pr-10 sm:pr-12">
+            <span className="font-mono text-sm text-base-content/60 shrink-0">{task.id}</span>
+            <span className="text-base-content truncate">{task.title}</span>
         </div>
     );
 
@@ -874,6 +924,11 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                 size="full"
             >
                 <div className="flex flex-col gap-4">
+                    <BackButton
+                        className="self-start -ml-1"
+                        onClick={onClose}
+                        aria-label="Voltar para a lista de tarefas"
+                    />
                     <div className="flex flex-wrap gap-2 p-1.5 bg-base-200 rounded-xl w-full overflow-x-auto" role="tablist" aria-label="Seções da tarefa">
                         {sectionTabs.map((tab) => {
                             const isActive = tab.id === activeSection;
@@ -910,8 +965,27 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                         id={`task-${safeDomId}-panel-${activeSection}`}
                         role="tabpanel"
                         aria-labelledby={`task-${safeDomId}-tab-${activeSection}`}
+                        className="overflow-x-hidden"
                     >
-                        {renderSectionContent()}
+                        <AnimatePresence mode="wait" initial={false}>
+                            <motion.div
+                                key={activeSection}
+                                initial={
+                                    reduceMotion ? false : { opacity: 0, x: sectionEnterDirection * 28 }
+                                }
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={
+                                    reduceMotion ? undefined : { opacity: 0, x: sectionEnterDirection * -28 }
+                                }
+                                transition={{
+                                    duration: reduceMotion ? 0 : 0.22,
+                                    ease: [0.25, 1, 0.5, 1],
+                                }}
+                            >
+                                {renderSectionContent()}
+                                {renderNavigationFooter()}
+                            </motion.div>
+                        </AnimatePresence>
                     </div>
                 </div>
             </Modal>

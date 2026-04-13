@@ -20,6 +20,8 @@ import toast from 'react-hot-toast';
 import { Spinner } from './common/Spinner';
 import { Trash2 } from 'lucide-react';
 import { logger } from '../utils/logger';
+import { Button } from './common/Button';
+import { BackButton } from './common/BackButton';
 
 export const ProjectView: React.FC<{
   project: Project;
@@ -29,6 +31,8 @@ export const ProjectView: React.FC<{
 }> = ({ project, onUpdateProject, onBack, onDeleteProject }) => {
     const [activeTab, setActiveTab] = useState('dashboard');
     const [initialTaskId, setInitialTaskId] = useState<string | undefined>(undefined);
+    /** Tarefa com detalhes inline ou modal aberto — terceiro nível do breadcrumb. */
+    const [breadcrumbTaskId, setBreadcrumbTaskId] = useState<string | null>(null);
     const [isPrinting, setIsPrinting] = useState(false);
     const [showDeleteProjectConfirm, setShowDeleteProjectConfirm] = useState(false);
     const [isDeletingProject, setIsDeletingProject] = useState(false);
@@ -210,6 +214,26 @@ export const ProjectView: React.FC<{
         setActiveTab(tabId);
     }, []);
 
+    const handleTaskDetailsOpenChange = useCallback((taskId: string, isOpen: boolean) => {
+        if (isOpen) setBreadcrumbTaskId(taskId);
+        else setBreadcrumbTaskId((prev) => (prev === taskId ? null : prev));
+    }, []);
+
+    useEffect(() => {
+        if (activeTab !== 'tasks') setBreadcrumbTaskId(null);
+    }, [activeTab]);
+
+    const scrollToTaskInList = useCallback((taskId: string) => {
+        setActiveTab('tasks');
+        setInitialTaskId(taskId);
+        const safe = typeof CSS !== 'undefined' && typeof CSS.escape === 'function' ? CSS.escape(taskId) : taskId.replace(/["\\]/g, '');
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                document.querySelector(`[data-task-id="${safe}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            });
+        });
+    }, []);
+
     const handleTabKeyDown = useCallback((e: React.KeyboardEvent) => {
         const index = tabs.findIndex(t => t.id === activeTab);
         if (index < 0) return;
@@ -233,35 +257,46 @@ export const ProjectView: React.FC<{
         if (nextIndex !== index) setActiveTab(tabs[nextIndex].id);
     }, [activeTab, tabs]);
 
-    // Breadcrumbs items baseado na aba ativa
+    const tabLabels: Record<string, string> = {
+        dashboard: 'Dashboard',
+        tasks: 'Tarefas & Testes',
+        documents: 'Documentos',
+    };
+
     const getBreadcrumbItems = () => {
-        const baseItems = [
-            { label: 'Projetos', onClick: onBack },
-            { label: currentProject.name }
+        const items: { label: string; onClick?: () => void }[] = [
+            { label: 'Dashboard', onClick: onBack },
+            { label: currentProject.name, onClick: () => handleTabClick('dashboard') },
         ];
 
-        const tabLabels: Record<string, string> = {
-            dashboard: 'Dashboard',
-            tasks: 'Tarefas & Testes',
-            documents: 'Documentos'
-        };
-
-        if (activeTab !== 'dashboard') {
-            baseItems.push({ label: tabLabels[activeTab] || activeTab });
+        if (activeTab === 'tasks' && breadcrumbTaskId) {
+            items.push({
+                label: breadcrumbTaskId,
+                onClick: () => scrollToTaskInList(breadcrumbTaskId),
+            });
+        } else if (activeTab !== 'dashboard') {
+            items.push({
+                label: tabLabels[activeTab] || activeTab,
+                onClick: () => handleTabClick(activeTab),
+            });
         }
 
-        return baseItems;
+        return items;
     };
 
     return (
         <>
             <div className="w-full max-w-full mx-auto px-4 sm:px-8 py-4 sm:py-6 non-printable">
-                {/* Breadcrumbs */}
-                <div className="mb-2">
-                    <Breadcrumbs 
+                <div className="mb-3 flex flex-col items-stretch gap-2">
+                    <BackButton
+                        className="self-start -ml-1"
+                        onClick={onBack}
+                        aria-label="Voltar para a lista de projetos"
+                    />
+                    <Breadcrumbs
                         items={getBreadcrumbItems()}
-                        onHomeClick={onBack}
-                        className="mb-2"
+                        showHome={false}
+                        className="text-sm"
                     />
                 </div>
 
@@ -405,6 +440,7 @@ export const ProjectView: React.FC<{
                                     onUpdateProject={onUpdateProject}
                                     onNavigateToTab={(tabId) => handleTabClick(tabId)}
                                     initialTaskId={initialTaskId}
+                                    onTaskDetailsOpenChange={handleTaskDetailsOpenChange}
                                 />
                             </Suspense>
                             </section>

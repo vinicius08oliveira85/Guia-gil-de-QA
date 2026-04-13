@@ -5,7 +5,7 @@ import { Spinner } from '../common/Spinner';
 import { TaskTypeIcon, TaskStatusIcon, StartTestIcon, CompleteTestIcon, ToDoTestIcon, PlusIcon, EditIcon, TrashIcon, RefreshIcon } from '../common/Icons';
 import { BddScenarioForm, BddScenarioItem } from './BddScenario';
 import { TestCasesSection } from './TestCasesSection';
-import { BarChart3, Sparkles, Wrench, Zap, Wand2, Loader2, MoreVertical, ChevronDown, ClipboardList, Link, Paperclip, Timer, Star, Download } from 'lucide-react';
+import { BarChart3, Sparkles, Wrench, Zap, Wand2, Loader2, MoreVertical, ChevronDown, ChevronLeft, ChevronRight, ClipboardList, Link, Paperclip, Timer, Star, Download } from 'lucide-react';
 import { TestStrategyCard } from './TestStrategyCard';
 import { ToolsSelector } from './ToolsSelector';
 import { TestReportModal } from './TestReportModal';
@@ -162,7 +162,9 @@ export const JiraTaskItem: React.FC<{
     onFocusTask?: (taskId: string | null) => void;
     onOpenModal?: (task: JiraTask) => void;
     onToggleFavorite?: () => void;
-}> = React.memo(({ task, onTestCaseStatusChange, onToggleTestCaseAutomated, onExecutedStrategyChange, onTaskToolsChange, onTestCaseToolsChange, onStrategyExecutedChange, onStrategyToolsChange, onDelete, onGenerateTests, isGenerating: isGeneratingTests, onAddSubtask, onEdit, onGenerateBddScenarios, isGeneratingBdd, onGenerateAll, isGeneratingAll, onSyncToJira, isSyncing, onUpdateFromJira, isUpdatingFromJira, onSaveBddScenario, onDeleteBddScenario, onTaskStatusChange, onAddTestCaseFromTemplate, onAddComment, onEditComment, onDeleteComment, onEditTestCase, onDeleteTestCase, onDuplicateTestCase, project, onUpdateProject, isSelected, onToggleSelect, children, level, activeTaskId, onFocusTask, onOpenModal, onToggleFavorite }) => {
+    /** Detalhes inline abertos/fechados — breadcrumb no projeto. */
+    onDetailsOpenChange?: (taskId: string, isOpen: boolean) => void;
+}> = React.memo(({ task, onTestCaseStatusChange, onToggleTestCaseAutomated, onExecutedStrategyChange, onTaskToolsChange, onTestCaseToolsChange, onStrategyExecutedChange, onStrategyToolsChange, onDelete, onGenerateTests, isGenerating: isGeneratingTests, onAddSubtask, onEdit, onGenerateBddScenarios, isGeneratingBdd, onGenerateAll, isGeneratingAll, onSyncToJira, isSyncing, onUpdateFromJira, isUpdatingFromJira, onSaveBddScenario, onDeleteBddScenario, onTaskStatusChange, onAddTestCaseFromTemplate, onAddComment, onEditComment, onDeleteComment, onEditTestCase, onDeleteTestCase, onDuplicateTestCase, project, onUpdateProject, isSelected, onToggleSelect, children, level, activeTaskId, onFocusTask, onOpenModal, onToggleFavorite, onDetailsOpenChange }) => {
     const reduceMotion = useReducedMotion();
     const [isDetailsOpen, setIsDetailsOpen] = useState(false); // Colapsado por padrão para compactar
     const [isChildrenOpen, setIsChildrenOpen] = useState(false);
@@ -568,6 +570,25 @@ export const JiraTaskItem: React.FC<{
         onUpdateProject,
         onAddComment
     ]);
+
+    const prevActiveSectionRef = useRef<DetailSection>(activeSection);
+    const [sectionEnterDirection, setSectionEnterDirection] = useState<1 | -1>(1);
+
+    useEffect(() => {
+        const prev = prevActiveSectionRef.current;
+        if (prev !== activeSection) {
+            const oldIdx = sectionTabs.findIndex((t) => t.id === prev);
+            const newIdx = sectionTabs.findIndex((t) => t.id === activeSection);
+            if (oldIdx >= 0 && newIdx >= 0 && oldIdx !== newIdx) {
+                setSectionEnterDirection(newIdx > oldIdx ? 1 : -1);
+            }
+            prevActiveSectionRef.current = activeSection;
+        }
+    }, [activeSection, sectionTabs]);
+
+    useEffect(() => {
+        onDetailsOpenChange?.(task.id, isDetailsOpen);
+    }, [task.id, isDetailsOpen, onDetailsOpenChange]);
 
     useEffect(() => {
         if (activeTaskId === undefined) {
@@ -1291,6 +1312,52 @@ export const JiraTaskItem: React.FC<{
         }
     };
 
+    // Sugestão de rodapé de navegação para o Agent implementar
+    const renderNavigationFooter = () => {
+        const currentIndex = sectionTabs.findIndex((tab) => tab.id === activeSection);
+        const prevTab = sectionTabs[currentIndex - 1];
+        const nextTab = sectionTabs[currentIndex + 1];
+
+        return (
+            <nav
+                className="flex justify-between items-center gap-2 mt-5 pt-3 border-t border-base-200"
+                aria-label="Navegação entre seções da tarefa"
+            >
+                {prevTab ? (
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="gap-1"
+                        onClick={() => setActiveSection(prevTab.id)}
+                        aria-label={`Anterior: ${prevTab.label}`}
+                    >
+                        <ChevronLeft className="w-4 h-4 shrink-0" aria-hidden />
+                        Anterior
+                    </Button>
+                ) : (
+                    <span className="inline-flex min-w-[5rem]" aria-hidden />
+                )}
+
+                {nextTab ? (
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="gap-1"
+                        onClick={() => setActiveSection(nextTab.id)}
+                        aria-label={`Próximo: ${nextTab.label}`}
+                    >
+                        Próximo
+                        <ChevronRight className="w-4 h-4 shrink-0" aria-hidden />
+                    </Button>
+                ) : (
+                    <span className="inline-flex min-w-[5rem]" aria-hidden />
+                )}
+            </nav>
+        );
+    };
+
     const handleChangeStatus = (newStatusValue: 'To Do' | 'In Progress' | 'Done' | string) => {
         const jiraStatuses = project?.settings?.jiraStatuses || [];
 
@@ -1905,9 +1972,31 @@ export const JiraTaskItem: React.FC<{
                                         id={`task-${safeDomId}-panel-${activeSection}`}
                                         role="tabpanel"
                                         aria-labelledby={`task-${safeDomId}-tab-${activeSection}`}
-                                        className="mt-3"
+                                        className="mt-3 overflow-x-hidden"
                                     >
-                                        {renderSectionContent()}
+                                        <AnimatePresence mode="wait" initial={false}>
+                                            <motion.div
+                                                key={activeSection}
+                                                initial={
+                                                    reduceMotion
+                                                        ? false
+                                                        : { opacity: 0, x: sectionEnterDirection * 28 }
+                                                }
+                                                animate={{ opacity: 1, x: 0 }}
+                                                exit={
+                                                    reduceMotion
+                                                        ? undefined
+                                                        : { opacity: 0, x: sectionEnterDirection * -28 }
+                                                }
+                                                transition={{
+                                                    duration: reduceMotion ? 0 : 0.22,
+                                                    ease: [0.25, 1, 0.5, 1],
+                                                }}
+                                            >
+                                                {renderSectionContent()}
+                                                {renderNavigationFooter()}
+                                            </motion.div>
+                                        </AnimatePresence>
                                     </div>
                                 </div>
                             </motion.div>

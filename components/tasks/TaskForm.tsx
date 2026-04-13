@@ -8,6 +8,7 @@ import { TagInput } from '../common/TagInput';
 import { RichTextEditor } from '../common/RichTextEditor';
 import { HelpTooltip } from '../common/HelpTooltip';
 import { Input } from '../common/Input';
+import { Button } from '../common/Button';
 import { helpContent } from '../../utils/helpContent';
 import { isValidJiraKey } from '../../utils/jiraFieldMapper';
 import type { JiraTaskFormData } from '../../services/jiraService';
@@ -324,9 +325,15 @@ export const TaskForm: React.FC<{
             </div>
 
             <div className="flex flex-wrap justify-end gap-2 pt-1">
-                <button type="button" onClick={onCancel} className="btn btn-ghost btn-sm rounded-xl border border-base-300 text-base-content hover:bg-base-200">
+                <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="rounded-xl border border-base-300 text-base-content hover:bg-base-200"
+                    onClick={onCancel}
+                >
                     Cancelar
-                </button>
+                </Button>
                 <button type="submit" className="btn btn-primary btn-sm rounded-xl shadow-md shadow-primary/20">
                     Salvar Tarefa
                 </button>

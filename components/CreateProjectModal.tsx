@@ -10,6 +10,7 @@ import { useErrorHandler } from '../hooks/useErrorHandler';
 import { useProjectsStore } from '../store/projectsStore';
 import { logger } from '../utils/logger';
 import { RefreshCw } from 'lucide-react';
+import { BackButton } from './common/BackButton';
 
 export interface CreateProjectModalProps {
     isOpen: boolean;
@@ -258,13 +259,11 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
                         </>
                     ) : showJiraImport ? (
                         <div className="space-y-4">
-                            <button
-                                type="button"
+                            <BackButton
+                                className="self-start"
                                 onClick={() => { setShowJiraImport(false); setSelectedJiraProjectKey(''); }}
-                                className="btn btn-ghost btn-sm rounded-full self-start"
-                            >
-                                ← Voltar
-                            </button>
+                                aria-label="Voltar"
+                            />
                             {jiraConfigStatus === 'missing' && (
                                 <div className="alert alert-warning">
                                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 w-full">
@@ -347,9 +346,11 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
                         </div>
                     ) : (
                         <div className="space-y-4">
-                            <button type="button" onClick={() => setShowTemplates(false)} className="btn btn-ghost btn-sm rounded-full self-start">
-                                ← Voltar
-                            </button>
+                            <BackButton
+                                className="self-start"
+                                onClick={() => setShowTemplates(false)}
+                                aria-label="Voltar"
+                            />
                             <ProjectTemplateSelector
                                 onSelectTemplate={(templateId) => { setSelectedTemplate(templateId); setShowTemplates(false); }}
                                 onClose={() => setShowTemplates(false)}

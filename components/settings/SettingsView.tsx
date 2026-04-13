@@ -1,5 +1,6 @@
 import React, { useState, Suspense, useCallback } from 'react';
 import { Link, Database, Settings as SettingsIcon, Key, HardDrive } from 'lucide-react';
+import { BackButton } from '../common/BackButton';
 import { LocalDataManagement } from '../common/LocalDataManagement';
 import { LoadingSkeleton } from '../common/LoadingSkeleton';
 import { ConfirmDialog } from '../common/ConfirmDialog';
@@ -92,18 +93,12 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                     <div className="flex flex-col gap-6">
                         {/* Header com título e subtítulo */}
                         <div className="flex items-start gap-4">
-                            <button
+                            <BackButton
+                                className="shrink-0 mt-1 self-start"
                                 onClick={handleClose}
-                                className="btn btn-ghost btn-sm rounded-full shrink-0 mt-1 gap-1"
                                 title="Voltar"
                                 aria-label="Voltar"
-                                type="button"
-                            >
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                                </svg>
-                                <span className="sr-only sm:not-sr-only text-sm">Voltar</span>
-                            </button>
+                            />
                             <div className="flex-1 min-w-0">
                                 <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-base-content">
                                     Configurações
