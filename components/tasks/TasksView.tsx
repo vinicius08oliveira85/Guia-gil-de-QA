@@ -58,6 +58,17 @@ export const TasksView: React.FC<{
     const [generatingTestsTaskId, setGeneratingTestsTaskId] = useState<string | null>(null);
     const [generatingBddTaskId, setGeneratingBddTaskId] = useState<string | null>(null);
     const [generatingAllTaskId, setGeneratingAllTaskId] = useState<string | null>(null);
+
+    /** Garante uma única operação Gemini por vez na tela de tarefas (evita 429 por paralelismo). */
+    const geminiOpQueueRef = useRef(Promise.resolve());
+    const enqueueGeminiOperation = useCallback(<T,>(operation: () => Promise<T>): Promise<T> => {
+        const scheduled = geminiOpQueueRef.current.then(() => operation());
+        geminiOpQueueRef.current = scheduled.then(
+            () => undefined,
+            () => undefined
+        );
+        return scheduled;
+    }, []);
     const [syncingTaskId, setSyncingTaskId] = useState<string | null>(null);
     const [updatingFromJiraTaskId, setUpdatingFromJiraTaskId] = useState<string | null>(null);
     const [selectedTasks, setSelectedTasks] = useState<Set<string>>(new Set());
@@ -244,31 +255,32 @@ export const TasksView: React.FC<{
     }, [project, onUpdateProject]);
     
     const handleGenerateBddScenarios = useCallback(async (taskId: string) => {
-        setGeneratingBddTaskId(taskId);
-        try {
-            const task = project.tasks.find(t => t.id === taskId);
-            if (!task) throw new Error("Task not found");
-            
-            // BDD pode ser gerado para tarefas do tipo "Tarefa" ou "Bug"
-            if (task.type !== 'Tarefa' && task.type !== 'Bug') {
-                handleError(new Error('BDD só pode ser gerado para tarefas do tipo "Tarefa" ou "Bug"'), 'Gerar cenários BDD');
-                return;
+        return enqueueGeminiOperation(async () => {
+            setGeneratingBddTaskId(taskId);
+            try {
+                const task = project.tasks.find(t => t.id === taskId);
+                if (!task) throw new Error("Task not found");
+
+                if (task.type !== 'Tarefa' && task.type !== 'Bug') {
+                    handleError(new Error('BDD só pode ser gerado para tarefas do tipo "Tarefa" ou "Bug"'), 'Gerar cenários BDD');
+                    return;
+                }
+
+                const aiService = getAIService();
+                const attachmentsContext = buildAttachmentsContextForTask(task);
+                const scenarios = await aiService.generateBddScenarios(task.title, task.description, project, attachmentsContext || undefined);
+                const updatedTask = { ...task, bddScenarios: [...(task.bddScenarios || []), ...scenarios] };
+                const newTasks = project.tasks.map(t => t.id === taskId ? updatedTask : t);
+                onUpdateProject({ ...project, tasks: newTasks });
+                propagateTaskUpdate(updatedTask);
+                handleSuccess('Cenários BDD gerados com sucesso!');
+            } catch (error) {
+                notifyAiError(error, 'Gerar cenários BDD');
+            } finally {
+                setGeneratingBddTaskId(null);
             }
-            
-            const aiService = getAIService();
-            const attachmentsContext = buildAttachmentsContextForTask(task);
-            const scenarios = await aiService.generateBddScenarios(task.title, task.description, project, attachmentsContext || undefined);
-            const updatedTask = { ...task, bddScenarios: [...(task.bddScenarios || []), ...scenarios] };
-            const newTasks = project.tasks.map(t => t.id === taskId ? updatedTask : t);
-            onUpdateProject({ ...project, tasks: newTasks });
-            propagateTaskUpdate(updatedTask);
-            handleSuccess('Cenários BDD gerados com sucesso!');
-        } catch (error) {
-            notifyAiError(error, 'Gerar cenários BDD');
-        } finally {
-            setGeneratingBddTaskId(null);
-        }
-    }, [project, onUpdateProject, handleError, handleSuccess]);
+        });
+    }, [project, onUpdateProject, handleError, handleSuccess, enqueueGeminiOperation]);
 
     const handleSaveBddScenario = useCallback((taskId: string, scenarioData: Omit<BddScenario, 'id'>, scenarioId?: string) => {
         const task = project.tasks.find(t => t.id === taskId);
@@ -304,83 +316,83 @@ export const TasksView: React.FC<{
     }, [project, onUpdateProject]);
 
     const handleGenerateTests = useCallback(async (taskId: string, detailLevel: TestCaseDetailLevel) => {
-        setGeneratingTestsTaskId(taskId);
-        try {
-            const task = project.tasks.find(t => t.id === taskId);
-            if (!task) throw new Error("Task not found");
-            
-            // Casos de teste só podem ser gerados para tarefas do tipo "Tarefa"
-            if (task.type !== 'Tarefa') {
-                handleError(new Error('Casos de teste só podem ser gerados para tarefas do tipo "Tarefa"'), 'Gerar casos de teste');
-                return;
+        return enqueueGeminiOperation(async () => {
+            setGeneratingTestsTaskId(taskId);
+            try {
+                const task = project.tasks.find(t => t.id === taskId);
+                if (!task) throw new Error("Task not found");
+
+                if (task.type !== 'Tarefa') {
+                    handleError(new Error('Casos de teste só podem ser gerados para tarefas do tipo "Tarefa"'), 'Gerar casos de teste');
+                    return;
+                }
+
+                const aiService = getAIService();
+                const attachmentsContext = buildAttachmentsContextForTask(task);
+                const { strategy, testCases } = await aiService.generateTestCasesForTask(
+                    task.title,
+                    task.description,
+                    task.bddScenarios,
+                    detailLevel,
+                    task.type,
+                    project,
+                    attachmentsContext || undefined
+                );
+                const updatedTask = { ...task, testStrategy: strategy, testCases };
+                const newTasks = project.tasks.map(t => t.id === updatedTask.id ? updatedTask : t);
+                onUpdateProject({ ...project, tasks: newTasks });
+                propagateTaskUpdate(updatedTask);
+                handleSuccess('Casos de teste gerados com sucesso!');
+            } catch (error) {
+                notifyAiError(error, 'Gerar casos de teste');
+            } finally {
+                setGeneratingTestsTaskId(null);
             }
-            
-            const aiService = getAIService();
-            const attachmentsContext = buildAttachmentsContextForTask(task);
-            const { strategy, testCases } = await aiService.generateTestCasesForTask(
-                task.title,
-                task.description,
-                task.bddScenarios,
-                detailLevel,
-                task.type,
-                project,
-                attachmentsContext || undefined
-            );
-            const updatedTask = { ...task, testStrategy: strategy, testCases };
-            const newTasks = project.tasks.map(t => t.id === updatedTask.id ? updatedTask : t);
-            onUpdateProject({ ...project, tasks: newTasks });
-            propagateTaskUpdate(updatedTask);
-            handleSuccess('Casos de teste gerados com sucesso!');
-        } catch (error) {
-            notifyAiError(error, 'Gerar casos de teste');
-        } finally {
-            setGeneratingTestsTaskId(null);
-        }
-    }, [project, onUpdateProject, handleError, handleSuccess]);
+        });
+    }, [project, onUpdateProject, handleError, handleSuccess, enqueueGeminiOperation]);
 
     const handleGenerateAll = useCallback(async (taskId: string, detailLevel: TestCaseDetailLevel = 'Padrão') => {
-        setGeneratingAllTaskId(taskId);
-        try {
-            const task = project.tasks.find(t => t.id === taskId);
-            if (!task) throw new Error("Task not found");
-            
-            // BDD e casos de teste podem ser gerados para tarefas do tipo "Tarefa" ou "Bug"
-            if (task.type !== 'Tarefa' && task.type !== 'Bug') {
-                handleError(new Error('BDD e casos de teste só podem ser gerados para tarefas do tipo "Tarefa" ou "Bug"'), 'Gerar BDD, estratégias e testes');
-                return;
+        return enqueueGeminiOperation(async () => {
+            setGeneratingAllTaskId(taskId);
+            try {
+                const task = project.tasks.find(t => t.id === taskId);
+                if (!task) throw new Error("Task not found");
+
+                if (task.type !== 'Tarefa' && task.type !== 'Bug') {
+                    handleError(new Error('BDD e casos de teste só podem ser gerados para tarefas do tipo "Tarefa" ou "Bug"'), 'Gerar BDD, estratégias e testes');
+                    return;
+                }
+
+                const aiService = getAIService();
+                const attachmentsContext = buildAttachmentsContextForTask(task);
+                const { strategy, testCases, bddScenarios } = await aiService.generateTestCasesForTask(
+                    task.title,
+                    task.description,
+                    undefined,
+                    detailLevel,
+                    task.type,
+                    project,
+                    attachmentsContext || undefined
+                );
+
+                const updatedTask = {
+                    ...task,
+                    bddScenarios,
+                    testStrategy: strategy,
+                    testCases
+                };
+
+                const newTasks = project.tasks.map(t => t.id === updatedTask.id ? updatedTask : t);
+                onUpdateProject({ ...project, tasks: newTasks });
+                propagateTaskUpdate(updatedTask);
+                handleSuccess('BDD, estratégias e casos de teste gerados com sucesso!');
+            } catch (error) {
+                notifyAiError(error, 'Gerar BDD, estratégias e testes');
+            } finally {
+                setGeneratingAllTaskId(null);
             }
-            
-            const aiService = getAIService();
-            const attachmentsContext = buildAttachmentsContextForTask(task);
-            // Gerar BDD, estratégias e casos de teste em uma única chamada
-            const { strategy, testCases, bddScenarios } = await aiService.generateTestCasesForTask(
-                task.title,
-                task.description,
-                undefined, // BDDs agora são gerados na mesma chamada
-                detailLevel,
-                task.type,
-                project,
-                attachmentsContext || undefined
-            );
-            
-            // Atualizar a tarefa com todos os dados sincronizados (substituir, não adicionar)
-            const updatedTask = {
-                ...task,
-                bddScenarios, // Substituir BDD
-                testStrategy: strategy, // Substituir estratégias
-                testCases // Substituir casos de teste
-            };
-            
-            const newTasks = project.tasks.map(t => t.id === updatedTask.id ? updatedTask : t);
-            onUpdateProject({ ...project, tasks: newTasks });
-            propagateTaskUpdate(updatedTask);
-            handleSuccess('BDD, estratégias e casos de teste gerados com sucesso!');
-        } catch (error) {
-            notifyAiError(error, 'Gerar BDD, estratégias e testes');
-        } finally {
-            setGeneratingAllTaskId(null);
-        }
-    }, [project, onUpdateProject, handleError, handleSuccess]);
+        });
+    }, [project, onUpdateProject, handleError, handleSuccess, enqueueGeminiOperation]);
 
     const handleSyncTaskToJira = useCallback(async (taskId: string) => {
         setSyncingTaskId(taskId);
@@ -755,6 +767,7 @@ export const TasksView: React.FC<{
     }, [project, onUpdateProject]);
 
     const handleGeneralIAAnalysis = useCallback(async () => {
+        return enqueueGeminiOperation(async () => {
         const taskCount = project.tasks.length;
         const adaptiveTimeout = Math.min(120000 + (taskCount * 5000), 180000); // Base 120s + 5s por tarefa, máximo 180s
         const estimatedSeconds = Math.round(adaptiveTimeout / 1000);
@@ -1003,7 +1016,8 @@ export const TasksView: React.FC<{
             setIsRunningGeneralAnalysis(false);
             setAnalysisProgress(null);
         }
-    }, [project, onUpdateProject, handleError, handleSuccess, onNavigateToTab]);
+        });
+    }, [project, onUpdateProject, handleError, handleSuccess, onNavigateToTab, enqueueGeminiOperation]);
     
     const handleSaveTask = (taskData: Omit<JiraTask, 'testCases' | 'status' | 'testStrategy' | 'bddScenarios' | 'createdAt' | 'completedAt'>) => {
         let newTasks: JiraTask[];

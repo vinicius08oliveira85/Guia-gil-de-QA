@@ -229,11 +229,11 @@ export class RateLimiter {
 
 /**
  * Instância global de rate limiter para API Gemini
- * Tier gratuito do generateContent costuma ser restrito; valores conservadores reduzem 429 por RPM.
+ * ~2 requisições por minuto + 30s entre chamadas (tier gratuito / RPM agressivo).
  */
 export const geminiRateLimiter = new RateLimiter({
-  maxRequests: 4,
+  maxRequests: 2,
   windowMs: 60000,
-  minDelayMs: 3500,
+  minDelayMs: 30000,
 });
 
