@@ -33,28 +33,6 @@ export interface GeminiResponse {
 }
 
 /**
- * Quota definitiva de projeto/conta (ex.: limite diário, billing) — deve marcar a key e não apenas retentar.
- * Throttle por minuto (RPM) costuma vir como 429 sem essas assinaturas; nesse caso fazemos backoff, sem invalidar a key.
- */
-function isDefinitiveQuotaExhaustionError(error: unknown): boolean {
-  const status = extractHttpStatus(error);
-  if (status !== 429) {
-    return false;
-  }
-
-  const errorMessage = getErrorMessage(error).toLowerCase();
-
-  if (errorMessage.includes('quota')) {
-    return true;
-  }
-  if (errorMessage.includes('limit exceeded') || errorMessage.includes('limit_exceeded')) {
-    return true;
-  }
-
-  return false;
-}
-
-/**
  * Verifica se um erro indica que a API key é inválida ou sem permissões (deve trocar API key)
  */
 function isInvalidApiKeyError(error: unknown): boolean {
@@ -108,14 +86,10 @@ function getErrorMessage(error: unknown): string {
 }
 
 /**
- * Erros recuperáveis com backoff (inclui 429 de rate limit / RPM).
- * Quota definitiva de conta não é retryable aqui: troca de key ou mensagem específica.
+ * Erros recuperáveis com backoff. Inclui 429: a API Google costuma incluir "quota" no JSON mesmo para
+ * limite por minuto (RPM); não tratamos 429 como fatal aqui — apenas backoff e GEMINI_RATE_LIMITED ao fim.
  */
 function isRetryableGeminiError(error: unknown): boolean {
-  if (isDefinitiveQuotaExhaustionError(error)) {
-    return false;
-  }
-
   const status = extractHttpStatus(error);
   if (status === 429) {
     return true;
@@ -312,22 +286,8 @@ export async function callGeminiWithRetry(
             const status = extractHttpStatus(error);
             const retryInfo = extractRetryInfo(error);
 
-            // Apenas quota definitiva (conta/projeto) invalida a key; 429 por RPM usa backoff acima
-            if (isDefinitiveQuotaExhaustionError(error)) {
-              logger.warn(
-                'Quota definitiva do Gemini detectada, marcando API key como esgotada',
-                'callGeminiWithRetry',
-                { keyAttempt: keyAttempt + 1, status }
-              );
-              geminiApiKeyManager.markCurrentKeyAsExhausted();
-              throw buildGeminiError(
-                'Limite de uso da API Gemini atingido. Aguarde e tente novamente mais tarde ou configure uma nova API key.',
-                'GEMINI_QUOTA_EXCEEDED',
-                status ?? 429,
-                retryInfo.retryAfter
-              );
-            }
-            
+            // 429: nunca invalidar a key aqui — a mensagem da Google frequentemente cita "quota" também para RPM
+
             // Verificar se é erro de API key inválida (403)
             if (isInvalidApiKeyError(error)) {
               logger.warn(
@@ -365,10 +325,10 @@ export async function callGeminiWithRetry(
           }
         },
         {
-          maxRetries: 3, // Reduzido para 3 tentativas - erros 503 persistentes indicam problema no servidor
-          initialDelay: 1000,
+          maxRetries: 5,
+          initialDelay: 2000,
           backoffMultiplier: 2,
-          maxDelay: 60000, // 60s máximo para erros 503
+          maxDelay: 90000,
           maxTotalTimeout: 300000, // 5 minutos máximo total para evitar retries infinitos
           useJitter: true,
           isRetryable: isRetryableGeminiError,
@@ -376,7 +336,7 @@ export async function callGeminiWithRetry(
             const retryInfo = extractRetryInfo(error);
             const statusInfo = retryInfo.status ? ` (HTTP ${retryInfo.status})` : '';
             logger.warn(
-              `Retry ${attempt}/3 para API Gemini após ${delay}ms${statusInfo}`,
+              `Retry ${attempt}/5 para API Gemini após ${delay}ms${statusInfo}`,
               'callGeminiWithRetry',
               { attempt, delay, keyAttempt: keyAttempt + 1, status: retryInfo.status }
             );
@@ -406,24 +366,10 @@ export async function callGeminiWithRetry(
     );
   }
 
-  if (isDefinitiveQuotaExhaustionError(lastError)) {
-    const exhaustedInfo = geminiApiKeyManager.getExhaustedKeysInfo();
-    let timeInfo = '';
-    if (exhaustedInfo.length > 0 && stats.nextResetInMs) {
-      const hoursUntilReset = Math.ceil(stats.nextResetInMs / (60 * 60 * 1000));
-      timeInfo = ` As keys podem ser reutilizadas em aproximadamente ${hoursUntilReset} hora(s).`;
-    }
-    throw buildGeminiError(
-      `Todas as ${stats.totalKeys} API key(s) do Gemini excederam a quota. Aguarde algumas horas ou adicione uma nova API key em Configurações > API Keys.${timeInfo}`,
-      'GEMINI_QUOTA_EXCEEDED',
-      429
-    );
-  }
-
   if (status === 429) {
     const retryInfo = extractRetryInfo(lastError);
     throw buildGeminiError(
-      'Muitas requisições ao Gemini (limite por minuto). Aguarde um momento e tente novamente.',
+      'Muitas requisições ao Gemini ou limite temporário atingido. Aguarde alguns minutos e tente novamente. Se persistir, verifique o plano em Google AI Studio.',
       'GEMINI_RATE_LIMITED',
       429,
       retryInfo.retryAfter
@@ -432,7 +378,7 @@ export async function callGeminiWithRetry(
 
   if (status === 503) {
     throw buildGeminiError(
-      'A API do Gemini está temporariamente indisponível (erro 503). Após 3 tentativas, o serviço ainda não está respondendo. Tente novamente em alguns minutos ou verifique o status da API do Google.',
+      'A API do Gemini está temporariamente indisponível (erro 503). Após várias tentativas, o serviço ainda não está respondendo. Tente novamente em alguns minutos ou verifique o status da API do Google.',
       'GEMINI_TEMP_UNAVAILABLE',
       status
     );

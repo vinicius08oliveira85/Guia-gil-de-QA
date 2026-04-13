@@ -229,12 +229,11 @@ export class RateLimiter {
 
 /**
  * Instância global de rate limiter para API Gemini
- * Configurado para 6 requisições por minuto com delay mínimo de 2s entre requisições
- * (mais conservador para evitar erros 429)
+ * Tier gratuito do generateContent costuma ser restrito; valores conservadores reduzem 429 por RPM.
  */
 export const geminiRateLimiter = new RateLimiter({
-  maxRequests: 6,
-  windowMs: 60000, // 1 minuto
-  minDelayMs: 2000, // 2 segundos de delay mínimo entre requisições
+  maxRequests: 4,
+  windowMs: 60000,
+  minDelayMs: 3500,
 });
 

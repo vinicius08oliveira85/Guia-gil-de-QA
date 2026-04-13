@@ -170,11 +170,18 @@ export async function retryWithBackoff<T>(
       const errorStatus = (error as { status?: number })?.status;
       
       if (errorStatus === 503) {
-        // Para erros 503, usar delay inicial de 5 segundos e max de 60 segundos
         effectiveInitialDelay = 5000;
         effectiveMaxDelay = 60000;
         logger.debug(
           'Erro 503 detectado, usando delay aumentado',
+          'retryWithBackoff',
+          { attempt, initialDelay: effectiveInitialDelay, maxDelay: effectiveMaxDelay }
+        );
+      } else if (errorStatus === 429) {
+        effectiveInitialDelay = Math.max(initialDelay, 4000);
+        effectiveMaxDelay = Math.max(effectiveMaxDelay, 120000);
+        logger.debug(
+          'Erro 429 detectado, usando backoff mais longo entre tentativas',
           'retryWithBackoff',
           { attempt, initialDelay: effectiveInitialDelay, maxDelay: effectiveMaxDelay }
         );

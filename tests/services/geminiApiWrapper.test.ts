@@ -52,15 +52,15 @@ describe('callGeminiWithRetry', () => {
     vi.mocked(geminiApiKeyManager.getExhaustedKeysInfo).mockReturnValue([]);
   });
 
-  it('deve marcar quota excedida e lançar erro tipado para 429 com mensagem de quota definitiva', async () => {
-    generateContentMock.mockRejectedValueOnce({ status: 429, message: 'quota exceeded' });
+  it('429 com "quota" na mensagem (comum na API Google para RPM) não invalida a key; retorna GEMINI_RATE_LIMITED', async () => {
+    generateContentMock.mockRejectedValueOnce({ status: 429, message: 'quota exceeded for generate_content' });
 
     await expect(
       callGeminiWithRetry({ model: 'gemini-2.0-flash', contents: 'conteudo de teste' })
-    ).rejects.toMatchObject({ code: 'GEMINI_QUOTA_EXCEEDED', status: 429 });
+    ).rejects.toMatchObject({ code: 'GEMINI_RATE_LIMITED', status: 429 });
 
     expect(generateContentMock).toHaveBeenCalledTimes(1);
-    expect(geminiApiKeyManager.markCurrentKeyAsExhausted).toHaveBeenCalledTimes(1);
+    expect(geminiApiKeyManager.markCurrentKeyAsExhausted).not.toHaveBeenCalled();
   });
 
   it('não deve invalidar a key em 429 genérico (rate limit); após falhas retorna GEMINI_RATE_LIMITED', async () => {
