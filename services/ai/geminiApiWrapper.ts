@@ -33,21 +33,25 @@ export interface GeminiResponse {
 }
 
 /**
- * Verifica se um erro é de quota excedida (não deve fazer retry, deve trocar API key)
+ * Quota definitiva de projeto/conta (ex.: limite diário, billing) — deve marcar a key e não apenas retentar.
+ * Throttle por minuto (RPM) costuma vir como 429 sem essas assinaturas; nesse caso fazemos backoff, sem invalidar a key.
  */
-function isQuotaExceededError(error: unknown): boolean {
-  const errorMessage = getErrorMessage(error).toLowerCase();
+function isDefinitiveQuotaExhaustionError(error: unknown): boolean {
   const status = extractHttpStatus(error);
-  
-  // Status 429 (Too Many Requests) geralmente indica quota
-  if (status === 429) {
+  if (status !== 429) {
+    return false;
+  }
+
+  const errorMessage = getErrorMessage(error).toLowerCase();
+
+  if (errorMessage.includes('quota')) {
     return true;
   }
-  
-  // Palavras-chave que indicam quota excedida
-  const quotaKeywords = ['quota', 'exceeded', 'limit exceeded', 'quota exceeded', 'rate limit'];
-  
-  return quotaKeywords.some(keyword => errorMessage.includes(keyword));
+  if (errorMessage.includes('limit exceeded') || errorMessage.includes('limit_exceeded')) {
+    return true;
+  }
+
+  return false;
 }
 
 /**
@@ -104,19 +108,22 @@ function getErrorMessage(error: unknown): string {
 }
 
 /**
- * Verifica se um erro é do tipo 429 (Too Many Requests) ou outro erro recuperável
- * NOTA: Erros de quota excedida NÃO são retryable aqui (devem trocar API key)
+ * Erros recuperáveis com backoff (inclui 429 de rate limit / RPM).
+ * Quota definitiva de conta não é retryable aqui: troca de key ou mensagem específica.
  */
 function isRetryableGeminiError(error: unknown): boolean {
-  // Se for erro de quota, não é retryable (deve trocar API key)
-  if (isQuotaExceededError(error)) {
+  if (isDefinitiveQuotaExhaustionError(error)) {
     return false;
   }
-  
+
+  const status = extractHttpStatus(error);
+  if (status === 429) {
+    return true;
+  }
+
   if (error instanceof Error) {
     const message = String(error.message ?? '').toLowerCase();
-    
-    // Erro 429 (Too Many Requests) - mas não quota
+
     if (message.includes('429') || message.includes('too many requests')) {
       return true;
     }
@@ -142,11 +149,10 @@ function isRetryableGeminiError(error: unknown): boolean {
   // Verificar se é um objeto de erro com status
   if (typeof error === 'object' && error !== null) {
     const err = error as Record<string, unknown>;
-    const status = err.status || err.statusCode;
-    
-    if (typeof status === 'number') {
-      // 429 ou erros 5xx são recuperáveis (mas não se for quota)
-      if (status === 429 || (status >= 500 && status < 600)) {
+    const st = err.status || err.statusCode;
+
+    if (typeof st === 'number') {
+      if (st === 429 || (st >= 500 && st < 600)) {
         return true;
       }
     }
@@ -306,10 +312,10 @@ export async function callGeminiWithRetry(
             const status = extractHttpStatus(error);
             const retryInfo = extractRetryInfo(error);
 
-            // Verificar se é erro de quota (429)
-            if (isQuotaExceededError(error)) {
+            // Apenas quota definitiva (conta/projeto) invalida a key; 429 por RPM usa backoff acima
+            if (isDefinitiveQuotaExhaustionError(error)) {
               logger.warn(
-                'Erro de quota detectado, marcando API key como esgotada',
+                'Quota definitiva do Gemini detectada, marcando API key como esgotada',
                 'callGeminiWithRetry',
                 { keyAttempt: keyAttempt + 1, status }
               );
@@ -400,7 +406,7 @@ export async function callGeminiWithRetry(
     );
   }
 
-  if (status === 429 || isQuotaExceededError(lastError)) {
+  if (isDefinitiveQuotaExhaustionError(lastError)) {
     const exhaustedInfo = geminiApiKeyManager.getExhaustedKeysInfo();
     let timeInfo = '';
     if (exhaustedInfo.length > 0 && stats.nextResetInMs) {
@@ -411,6 +417,16 @@ export async function callGeminiWithRetry(
       `Todas as ${stats.totalKeys} API key(s) do Gemini excederam a quota. Aguarde algumas horas ou adicione uma nova API key em Configurações > API Keys.${timeInfo}`,
       'GEMINI_QUOTA_EXCEEDED',
       429
+    );
+  }
+
+  if (status === 429) {
+    const retryInfo = extractRetryInfo(lastError);
+    throw buildGeminiError(
+      'Muitas requisições ao Gemini (limite por minuto). Aguarde um momento e tente novamente.',
+      'GEMINI_RATE_LIMITED',
+      429,
+      retryInfo.retryAfter
     );
   }
 
@@ -429,4 +445,3 @@ export async function callGeminiWithRetry(
 
   throw buildGeminiError(networkMessage, 'GEMINI_NETWORK_ERROR', status ?? undefined);
 }
-

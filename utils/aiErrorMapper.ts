@@ -6,6 +6,7 @@ const fallbackMessage = 'Não foi possível completar a ação com a IA. Tente n
 
 const codeToMessage: Record<string, string> = {
   GEMINI_QUOTA_EXCEEDED: 'Limite de uso do Gemini atingido. Aguarde alguns minutos e tente novamente ou configure uma nova API key em Configurações > API Keys.',
+  GEMINI_RATE_LIMITED: 'Muitas requisições ao Gemini em pouco tempo. Aguarde um momento e tente novamente.',
   GEMINI_TEMP_UNAVAILABLE: 'Serviço do Gemini indisponível no momento. Tente novamente em alguns minutos.',
   GEMINI_KEYS_INVALID: 'API key do Gemini inválida ou sem permissão. Atualize as credenciais em Configurações > API Keys.',
   GEMINI_NO_KEY: 'Nenhuma API key do Gemini configurada. Adicione uma em Configurações > API Keys.',

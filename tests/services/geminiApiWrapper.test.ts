@@ -52,7 +52,7 @@ describe('callGeminiWithRetry', () => {
     vi.mocked(geminiApiKeyManager.getExhaustedKeysInfo).mockReturnValue([]);
   });
 
-  it('deve marcar quota excedida e lançar erro tipado para 429', async () => {
+  it('deve marcar quota excedida e lançar erro tipado para 429 com mensagem de quota definitiva', async () => {
     generateContentMock.mockRejectedValueOnce({ status: 429, message: 'quota exceeded' });
 
     await expect(
@@ -61,6 +61,16 @@ describe('callGeminiWithRetry', () => {
 
     expect(generateContentMock).toHaveBeenCalledTimes(1);
     expect(geminiApiKeyManager.markCurrentKeyAsExhausted).toHaveBeenCalledTimes(1);
+  });
+
+  it('não deve invalidar a key em 429 genérico (rate limit); após falhas retorna GEMINI_RATE_LIMITED', async () => {
+    generateContentMock.mockRejectedValue({ status: 429, message: 'Too many requests per minute' });
+
+    await expect(
+      callGeminiWithRetry({ model: 'gemini-2.0-flash', contents: 'conteudo de teste' })
+    ).rejects.toMatchObject({ code: 'GEMINI_RATE_LIMITED', status: 429 });
+
+    expect(geminiApiKeyManager.markCurrentKeyAsExhausted).not.toHaveBeenCalled();
   });
 
   it('deve retornar erro amigável para indisponibilidade 503', async () => {
