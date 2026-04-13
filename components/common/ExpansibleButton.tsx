@@ -73,7 +73,8 @@ export const ExpansibleButton: React.FC<ExpansibleButtonProps> = ({
       aria-label={ariaLabel ?? label}
       aria-pressed={isExpanded}
       className={cn(
-        'relative flex items-center rounded-full py-1.5 text-xs font-semibold transition-colors duration-300',
+        'relative flex items-center justify-center rounded-full py-1.5 text-xs font-semibold transition-colors duration-300',
+        'min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 sm:justify-start',
         'text-base-content/70 hover:bg-base-200 hover:text-base-content disabled:opacity-50 disabled:cursor-not-allowed',
         'focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2 focus-visible:ring-offset-base-100 outline-none',
         className

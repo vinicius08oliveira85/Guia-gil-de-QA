@@ -135,7 +135,7 @@ export const TasksView: React.FC<{
     if (!project || typeof project !== 'object' || !project.tasks || !Array.isArray(project.tasks)) {
         logger.warn('Projeto inválido ou sem tarefas', 'TasksView', { projectId: project?.id, hasTasks: !!project?.tasks });
         return (
-            <div className="container mx-auto p-8">
+            <div className="container mx-auto p-4 md:p-5">
                 <EmptyState 
                     title="Projeto inválido"
                     description="Projeto inválido ou sem tarefas. Por favor, selecione outro projeto ou crie um novo."
@@ -1549,8 +1549,8 @@ export const TasksView: React.FC<{
 
     return (
         <>
-        <Card hoverable={false} className="p-4 sm:p-6 lg:p-8">
-            <div className="flex flex-col gap-6 mb-8">
+        <Card hoverable={false} className="p-4 sm:p-5 lg:p-6">
+            <div className="flex flex-col gap-4 sm:gap-5 mb-6 sm:mb-8">
                 <TasksViewHeader
                     onAddTask={() => openTaskFormForNew()}
                     onOpenFilters={() => setIsFiltersModalOpen(true)}

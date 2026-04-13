@@ -61,7 +61,7 @@ export const ProjectAnalysesBoard: React.FC<ProjectAnalysesBoardProps> = ({
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {sortedAnalyses.map((a, index) => {
             const isMostRecent = index === 0;
             const risksCount = a.risks?.length ?? 0;

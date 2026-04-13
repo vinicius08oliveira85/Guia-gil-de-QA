@@ -364,7 +364,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                     <section className="space-y-2">
                         <h3 className="text-sm font-bold text-base-content/70 uppercase tracking-wide">Anexos do Jira</h3>
                         <div className="p-3 bg-base-100 border border-base-300 rounded-xl">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3">
                                 {jiraAttachmentItems.map((att) => (
                                     <JiraAttachment
                                         key={att.id}

@@ -334,7 +334,7 @@ const App: React.FC = () => {
                         </div>
                     )}
                     {showSettings ? (
-                        <Suspense fallback={<div className="container mx-auto p-8"><LoadingSkeleton variant="card" count={3} /></div>}>
+                        <Suspense fallback={<div className="container mx-auto p-4 sm:p-6"><LoadingSkeleton variant="card" count={3} /></div>}>
                             <SettingsView 
                                 onClose={() => setShowSettings(false)}
                                 onProjectImported={handleImportJiraProject}
@@ -342,7 +342,7 @@ const App: React.FC = () => {
                             />
                         </Suspense>
                     ) : selectedProject ? (
-                        <Suspense fallback={<div className="container mx-auto p-8"><LoadingSkeleton variant="card" count={3} /></div>}>
+                        <Suspense fallback={<div className="container mx-auto p-4 sm:p-6"><LoadingSkeleton variant="card" count={3} /></div>}>
                             <ProjectView 
                                 project={selectedProject} 
                                 onUpdateProject={handleUpdateProject}
@@ -351,7 +351,7 @@ const App: React.FC = () => {
                             />
                         </Suspense>
                     ) : (
-                        <Suspense fallback={<div className="container mx-auto p-8"><LoadingSkeleton variant="card" count={3} /></div>}>
+                        <Suspense fallback={<div className="container mx-auto p-4 sm:p-6"><LoadingSkeleton variant="card" count={3} /></div>}>
                             <ProjectsDashboard 
                                 projects={projects} 
                                 onSelectProject={selectProject} 

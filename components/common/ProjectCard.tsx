@@ -162,7 +162,7 @@ export const ProjectCard = React.memo<ProjectCardProps>(({
         }
       }}
       className={cn(
-        'bg-base-100 rounded-3xl p-5 shadow-sm border border-base-300 relative overflow-hidden',
+        'bg-base-100 rounded-3xl p-4 sm:p-5 shadow-sm border border-base-300 relative overflow-hidden',
         'flex flex-col md:flex-row md:items-center gap-6',
         'transition-all hover:shadow-md cursor-pointer',
         className
@@ -177,7 +177,7 @@ export const ProjectCard = React.memo<ProjectCardProps>(({
         <button
           type="button"
           onClick={handleDeleteClick}
-          className="absolute top-4 right-4 p-1.5 rounded-lg text-base-content/50 hover:text-error hover:bg-error/10 transition-colors z-10"
+          className="absolute top-3 right-3 sm:top-4 sm:right-4 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 p-2 sm:p-1.5 rounded-lg inline-flex items-center justify-center text-base-content/50 hover:text-error hover:bg-error/10 transition-colors z-10"
           aria-label={`Excluir projeto ${project.name}`}
         >
           <Trash2 className="w-4 h-4" aria-hidden="true" />
@@ -189,7 +189,7 @@ export const ProjectCard = React.memo<ProjectCardProps>(({
           <Icon className="w-6 h-6" aria-hidden="true" />
         </div>
         <div className="min-w-0">
-          <h3 className="font-bold text-sm uppercase tracking-tight leading-tight text-base-content truncate">
+          <h3 className="font-bold text-sm uppercase tracking-tight leading-tight text-base-content text-balance line-clamp-2 sm:line-clamp-3">
             {project.name}
           </h3>
           <p className="text-xs text-base-content/60">{jiraLabel}</p>
@@ -277,7 +277,7 @@ export const ProjectCard = React.memo<ProjectCardProps>(({
         <a
           href="#"
           onClick={handleLinkClick}
-          className="flex items-center text-primary font-semibold text-sm hover:gap-2 transition-all ml-auto pl-4 flex-shrink-0"
+          className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 text-primary font-semibold text-sm hover:gap-2 transition-all ml-auto pl-2 sm:pl-4 flex-shrink-0 rounded-lg"
           aria-label={`Ver detalhes de ${project.name}`}
         >
           <span className="hidden sm:inline">Detalhes</span>
