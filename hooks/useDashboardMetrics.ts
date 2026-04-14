@@ -29,14 +29,14 @@ export interface DashboardMetrics {
 }
 
 const MEMBER_BAR_FILLS = [
-  'hsl(var(--p))',
-  'hsl(var(--s))',
-  'hsl(var(--a))',
-  'hsl(var(--in))',
-  'hsl(var(--su))',
-  'hsl(var(--wa))',
-  'hsl(var(--er))',
-  'hsl(var(--bc) / 0.45)',
+  'oklch(var(--p))',
+  'oklch(var(--s))',
+  'oklch(var(--a))',
+  'oklch(var(--in))',
+  'oklch(var(--su))',
+  'oklch(var(--wa))',
+  'oklch(var(--er))',
+  'oklch(var(--bc) / 0.45)',
 ];
 
 /**
@@ -54,13 +54,13 @@ export function useDashboardMetrics(project: Project): DashboardMetrics {
       .map((s) => ({
         name: s.name,
         value: s.value,
-        fill: s.fill ?? 'hsl(var(--p))',
+        fill: s.fill ?? 'oklch(var(--p))',
       }));
 
     const workloadByMember: DashboardMemberBarRow[] = m.assigneeDistribution.map((row, i) => ({
       name: row.name,
       value: row.value,
-      fill: row.name === 'Outros' ? 'hsl(var(--bc) / 0.35)' : MEMBER_BAR_FILLS[i % MEMBER_BAR_FILLS.length],
+      fill: row.name === 'Outros' ? 'oklch(var(--bc) / 0.35)' : MEMBER_BAR_FILLS[i % MEMBER_BAR_FILLS.length],
     }));
 
     return {

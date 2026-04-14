@@ -32,20 +32,21 @@ export const DashboardMemberWorkloadBarChart: React.FC<DashboardMemberWorkloadBa
       <p className="text-xs text-base-content/60 mb-3">Quantidade de tarefas por responsável (nome Jira ou papel).</p>
       <div className="h-[280px] w-full min-h-[240px]">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data} layout="vertical" margin={{ top: 4, right: 16, left: 4, bottom: 4 }}>
+          <BarChart data={data} layout="vertical" margin={{ top: 4, right: 16, left: 12, bottom: 4 }}>
             <CartesianGrid strokeDasharray="3 3" className="stroke-base-300" horizontal={false} />
-            <XAxis type="number" allowDecimals={false} tick={{ fill: 'hsl(var(--bc) / 0.6)', fontSize: 11 }} />
+            <XAxis type="number" allowDecimals={false} tick={{ fill: 'oklch(var(--bc) / 0.6)', fontSize: 11 }} />
             <YAxis
               type="category"
               dataKey="name"
-              width={118}
-              tick={{ fill: 'hsl(var(--bc) / 0.75)', fontSize: 10 }}
+              width={188}
+              tick={{ fill: 'oklch(var(--bc) / 0.75)', fontSize: 10 }}
+              tickFormatter={(v: string) => (v.length > 26 ? `${v.slice(0, 24)}…` : v)}
               interval={0}
             />
             <Tooltip
               contentStyle={{
-                background: 'hsl(var(--b1))',
-                border: '1px solid hsl(var(--b3))',
+                background: 'oklch(var(--b1))',
+                border: '1px solid oklch(var(--b3))',
                 borderRadius: 8,
               }}
               formatter={(v: number) => [`${v} tarefa(s)`, 'Quantidade']}

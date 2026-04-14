@@ -28,30 +28,35 @@ export const DashboardTaskStatusPieChart: React.FC<DashboardTaskStatusPieChartPr
       <p className="text-xs text-base-content/60 mb-2">Proporção de tarefas por status de fluxo (dados locais).</p>
       <div className="h-[280px] w-full min-h-[240px]">
         <ResponsiveContainer width="100%" height="100%">
-          <PieChart margin={{ top: 8, right: 8, bottom: 8, left: 8 }}>
+          <PieChart margin={{ top: 8, right: 108, bottom: 8, left: 8 }}>
             <Pie
               data={data}
               dataKey="value"
               nameKey="name"
-              cx="50%"
+              cx="40%"
               cy="50%"
               innerRadius={52}
               outerRadius={88}
               paddingAngle={2}
             >
               {data.map((entry) => (
-                <Cell key={entry.name} fill={entry.fill} stroke="hsl(var(--b1))" strokeWidth={1} />
+                <Cell key={entry.name} fill={entry.fill} stroke="oklch(var(--b1))" strokeWidth={1} />
               ))}
             </Pie>
             <Tooltip
               contentStyle={{
-                background: 'hsl(var(--b1))',
-                border: '1px solid hsl(var(--b3))',
+                background: 'oklch(var(--b1))',
+                border: '1px solid oklch(var(--b3))',
                 borderRadius: 8,
               }}
               formatter={(value: number) => [`${value} tarefa(s)`, 'Quantidade']}
             />
-            <Legend wrapperStyle={{ fontSize: 12, color: 'hsl(var(--bc) / 0.85)' }} />
+            <Legend
+              layout="vertical"
+              verticalAlign="middle"
+              align="right"
+              wrapperStyle={{ fontSize: 12, color: 'oklch(var(--bc) / 0.85)', paddingLeft: 8 }}
+            />
           </PieChart>
         </ResponsiveContainer>
       </div>

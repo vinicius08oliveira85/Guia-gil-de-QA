@@ -44,10 +44,10 @@ export interface ProjectDashboardDeterministicMetrics {
 const STATUS_ORDER: JiraTask['status'][] = ['To Do', 'In Progress', 'Blocked', 'Done'];
 
 const STATUS_FILL: Record<JiraTask['status'], string> = {
-  'To Do': 'hsl(var(--bc) / 0.35)',
-  'In Progress': 'hsl(var(--p))',
-  Blocked: 'hsl(var(--er))',
-  Done: 'hsl(var(--su))',
+  'To Do': 'oklch(var(--bc) / 0.35)',
+  'In Progress': 'oklch(var(--p))',
+  Blocked: 'oklch(var(--er))',
+  Done: 'oklch(var(--su))',
 };
 
 function isTaskDone(task: JiraTask): boolean {
