@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { callGeminiWithRetry } from '../../services/ai/geminiApiWrapper';
+import { callGeminiWithRetry, isGeminiRateLimitOrQuotaError } from '../../services/ai/geminiApiWrapper';
 import { geminiApiKeyManager } from '../../services/ai/geminiApiKeyManager';
 
 const generateContentMock = vi.fn();
@@ -40,6 +40,33 @@ vi.mock('../../services/ai/geminiApiKeyManager', () => {
 vi.mock('../../utils/retry', () => ({
   retryWithBackoff: async (fn: () => Promise<unknown>) => fn(),
 }));
+
+describe('isGeminiRateLimitOrQuotaError', () => {
+  it('retorna true para códigos normalizados do wrapper', () => {
+    expect(isGeminiRateLimitOrQuotaError(Object.assign(new Error('x'), { code: 'GEMINI_RATE_LIMITED' }))).toBe(
+      true
+    );
+    expect(isGeminiRateLimitOrQuotaError(Object.assign(new Error('x'), { code: 'GEMINI_QUOTA_EXCEEDED' }))).toBe(
+      true
+    );
+  });
+
+  it('retorna true para HTTP 429 do SDK (antes ou depois do retry)', () => {
+    expect(isGeminiRateLimitOrQuotaError({ status: 429, message: 'Too many requests' })).toBe(true);
+  });
+
+  it('retorna true quando retry estoura timeout mas preserva status 429', () => {
+    const err = new Error('Timeout máximo total de 45s excedido após 2 tentativa(s).') as Error & {
+      status?: number;
+    };
+    err.status = 429;
+    expect(isGeminiRateLimitOrQuotaError(err)).toBe(true);
+  });
+
+  it('retorna false para erro genérico sem 429', () => {
+    expect(isGeminiRateLimitOrQuotaError(new Error('Model not found'))).toBe(false);
+  });
+});
 
 describe('callGeminiWithRetry', () => {
   beforeEach(() => {

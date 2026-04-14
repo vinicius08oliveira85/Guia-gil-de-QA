@@ -19,13 +19,32 @@ function resolveGeminiModelId(model: string | undefined): string {
 
 export type GeminiAppError = Error & { code?: string; status?: number; retryAfter?: number };
 
-/** Indica limite de taxa ou cota do Gemini (útil para fallback OpenAI). */
+/**
+ * Limite de taxa/cota do Gemini (útil para fallback OpenAI).
+ * Inclui: códigos normalizados, HTTP 429 do SDK, e timeout de retry que preserva `status` do último erro.
+ */
 export function isGeminiRateLimitOrQuotaError(error: unknown): boolean {
   if (!error || typeof error !== 'object') {
     return false;
   }
-  const code = (error as GeminiAppError).code;
-  return code === 'GEMINI_RATE_LIMITED' || code === 'GEMINI_QUOTA_EXCEEDED';
+  const e = error as GeminiAppError;
+  if (e.code === 'GEMINI_RATE_LIMITED' || e.code === 'GEMINI_QUOTA_EXCEEDED') {
+    return true;
+  }
+  if (e.status === 429) {
+    return true;
+  }
+  const msg = getErrorMessage(error).toLowerCase();
+  if (
+    msg.includes('429') &&
+    (msg.includes('quota') ||
+      msg.includes('rate') ||
+      msg.includes('resource_exhausted') ||
+      msg.includes('too many requests'))
+  ) {
+    return true;
+  }
+  return false;
 }
 
 export interface GeminiGenerateContentParams {
@@ -249,7 +268,7 @@ function extractRetryInfo(error: unknown): { retryAfter?: number; status?: numbe
  * @throws Erro se todas as tentativas falharem
  */
 /** Inclui margem para cold start / rede intermitente (tier gratuito, edge, etc.). */
-const GEMINI_HTTP_MAX_RETRIES = 5;
+const GEMINI_HTTP_MAX_RETRIES = 3;
 
 export async function callGeminiWithRetry(
   params: GeminiGenerateContentParams
@@ -380,7 +399,7 @@ export async function callGeminiWithRetry(
           initialDelay: 5000, // Aumentado para dar mais fôlego à cota
           backoffMultiplier: 2,
           maxDelay: 180_000,
-          maxTotalTimeout: 120_000, // Reduzido para 2 min: se não liberar em 2min, melhor avisar o usuário
+          maxTotalTimeout: 45_000, // 45s: falha rápido para permitir fallback OpenAI / feedback ao usuário
           useJitter: true,
           isRetryable: isRetryableGeminiError,
           quietRetryLogs: true,

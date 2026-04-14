@@ -105,7 +105,7 @@ const testCaseGenerationSchema = {
 
 export class GeminiService implements AIService {
   /**
-   * Prompt conciso para geração de testes (limite 8000 chars) — reduz TPM e risco de 429 no tier gratuito.
+   * Prompt compacto para geração de testes (sem arte ASCII; limite 7000 chars) — reduz TPM e risco de 429.
    */
   private async buildRobustTestGenerationPrompt(
     title: string,
@@ -118,50 +118,51 @@ export class GeminiService implements AIService {
   ): Promise<string> {
     const documentContext = await getFormattedContext(project || null);
 
-    const detailInstruction = `Nível de detalhe dos passos: ${detailLevel} — Resumido: 3–5; Padrão: 5–8; Detalhado: 8+ com dados e validações intermediárias.`;
+    const detailInstruction = `Passos (${detailLevel}): Resumido 3–5; Padrão 5–8; Detalhado 8+ com dados.`;
 
     const shouldGenerateTestCases = taskType === 'Tarefa' || taskType === 'Bug' || !taskType;
     const attentionMessage = !shouldGenerateTestCases
-      ? `Tipo "${taskType}": gere apenas estratégias; testCases = [].`
+      ? `Tipo "${taskType}": só estratégias; testCases=[].`
       : '';
 
     const bddRef =
       bddScenarios && bddScenarios.length > 0
-        ? `Referência BDD (resumo): ${bddScenarios
-            .map((b) => `${b.title}: ${(b.gherkin || '').slice(0, 400)}`)
+        ? `BDD ref: ${bddScenarios
+            .map((b) => `${b.title}:${(b.gherkin || '').slice(0, 320)}`)
             .join(' | ')
-            .slice(0, 2500)}`
+            .slice(0, 1800)}`
         : '';
 
     const testCasesInstructions = shouldGenerateTestCases
-      ? `Casos de teste (derivados das estratégias): description; steps[]; expectedResult; preconditions; strategies[]; isAutomated; testSuite; testEnvironment; priority (Baixa|Média|Alta|Urgente). Cubra sucesso, alternativas, exceção/negative e segurança/permissão quando aplicável.`
+      ? `Casos: description, steps[], expectedResult, preconditions, strategies[], isAutomated, testSuite, testEnvironment, priority (Baixa|Média|Alta|Urgente). Sucesso, alternativas, negative, permissão.`
       : '';
 
     const bugBlock =
       taskType === 'Bug'
-        ? 'BUG: priorize regressão, verificação da correção e impactos colaterais; BDD descreve o comportamento esperado após a correção.'
+        ? 'Bug: regressão, verificação da correção, impactos; BDD pós-correção.'
         : '';
 
     const rawPrompt = `${documentContext}
-Você é QA sênior (funcional, regressão, integração, segurança, BDD). Português brasileiro.
+QA sênior. PT-BR. Modelo da chamada: ${GEMINI_DEFAULT_MODEL}.
 
-TAREFA
-Título: ${title}
-Descrição: ${description}
-${taskType ? `Tipo: ${taskType}` : ''}
-${bddRef ? `${bddRef}\n` : ''}${attachmentsContext ? `Anexos:\n${attachmentsContext}\n` : ''}${bugBlock ? `${bugBlock}\n` : ''}
+TAREFA: ${title}
+DESC: ${description}
+${taskType ? `TIPO: ${taskType}` : ''}
+${bddRef}
+${attachmentsContext ? `ANEXOS: ${attachmentsContext}` : ''}
+${bugBlock}
 ${detailInstruction}
 ${attentionMessage}
 
-1) Estratégias: lista de { testType, description, howToExecute[], tools } alinhadas ao risco da tarefa.
-2) ${testCasesInstructions || 'Sem casos automatizados neste tipo — apenas estratégias.'}
-3) BDD: Gherkin só em português (Funcionalidade, Cenário, Dado, Quando, Então, E, Mas). Sem Given/When/Then. Cubra happy path, alternativas, erro e permissão se aplicável.
+(1) strategy: {testType, description, howToExecute[], tools}[]
+(2) ${testCasesInstructions || 'só strategy'}
+(3) bddScenarios: Gherkin PT (Funcionalidade,Cenário,Dado,Quando,Então,E,Mas); sem Given/When/Then; happy+alt+erro+permissão se couber.
 
-Responda somente JSON válido (sem markdown). Formato: {"strategy":[...],"bddScenarios":[{"title","gherkin"}],"testCases":${shouldGenerateTestCases ? '[...]' : '[]'}} — o schema da requisição define os tipos; preencha todos os campos obrigatórios.
+Saída: só JSON válido, sem markdown. Estrutura {"strategy":[...],"bddScenarios":[{"title":"","gherkin":""}],"testCases":${shouldGenerateTestCases ? '[...]' : '[]'}} — schema da API define campos obrigatórios.
 `;
 
-    /** Tier gratuito: prompts longos elevam TPM e podem disparar 429. */
-    const MAX_PROMPT_LENGTH = 8000;
+    /** Reduz TPM no tier gratuito. */
+    const MAX_PROMPT_LENGTH = 7000;
     return rawPrompt.length > MAX_PROMPT_LENGTH
       ? rawPrompt.slice(0, MAX_PROMPT_LENGTH) + '\n\n[... contexto truncado ...]'
       : rawPrompt;

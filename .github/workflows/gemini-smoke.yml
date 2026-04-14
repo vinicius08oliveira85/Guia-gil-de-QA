@@ -1,0 +1,31 @@
+# Smoke test opcional: chama generateContent na API Gemini (mesmo fluxo do script local).
+# Não roda em push/PR — evita falhas intermitentes (429/cota) na CI principal.
+# Configure o secret VITE_GEMINI_API_KEY em Settings → Secrets and variables → Actions.
+name: Gemini API smoke
+
+on:
+  workflow_dispatch:
+
+jobs:
+  ping-gemini:
+    name: npm run ping:gemini
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+
+      - name: Ping Gemini (generateContent)
+        env:
+          VITE_GEMINI_API_KEY: ${{ secrets.VITE_GEMINI_API_KEY }}
+        run: npm run ping:gemini

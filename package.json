@@ -24,7 +24,8 @@
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "setup:figma": "node scripts/setup-figma-integration.js",
-    "generate-icons": "node scripts/generate-pwa-icons.js"
+    "generate-icons": "node scripts/generate-pwa-icons.js",
+    "ping:gemini": "node scripts/ping-gemini.mjs"
   },
   "dependencies": {
     "@google/genai": "^1.29.1",

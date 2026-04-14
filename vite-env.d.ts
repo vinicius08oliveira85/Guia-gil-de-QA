@@ -9,7 +9,7 @@ interface ImportMetaEnv {
   readonly VITE_GEMINI_API_KEY?: string;
   /** Fallback sem prefixo VITE (alguns ambientes de build). */
   readonly GEMINI_API_KEY?: string;
-  /** Opcional: sobrescreve o modelo padrão (ex.: gemini-2.0-flash, gemini-2.0-flash-exp). */
+  /** Opcional: sobrescreve o modelo padrão (ex.: gemini-2.5-flash, gemini-2.0-flash, gemini-1.5-flash-latest). */
   readonly VITE_GEMINI_MODEL?: string;
 }
 

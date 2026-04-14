@@ -94,6 +94,25 @@ Nota: Apenas uma chave do Gemini é suportada; não há fallback. Remova variáv
 - `npm run lint:fix` - Corrige problemas de lint automaticamente
 - `npm run format` - Formata código com Prettier
 - `npm run type-check` - Verifica tipos TypeScript
+- `npm run ping:gemini` - Smoke test da API Google Gemini (`generateContent`); exige `VITE_GEMINI_API_KEY` em `.env.local`, `.env` ou no ambiente (não imprime a chave)
+
+### Smoke test da API Gemini (local)
+
+Útil antes de um release ou quando aparecer **404 de modelo** / **429 de cota** na UI.
+
+1. Configure `VITE_GEMINI_API_KEY` (por exemplo em `.env.local`).
+2. Opcional: `VITE_GEMINI_MODEL` para forçar um modelo (o script tenta vários se estiver vazio).
+3. Execute na raiz do repositório:
+   ```bash
+   npm run ping:gemini
+   ```
+4. Saída esperada em caso de sucesso: linha `[ping-gemini] OK — modelo "…" respondeu: …`. Código de saída **0**. **429** ou **404** em todos os modelos indica cota ou ID de modelo incompatível com o projeto na Google AI.
+
+### Smoke test no GitHub Actions (equipe)
+
+1. No repositório: **Settings** → **Secrets and variables** → **Actions** → crie o secret **`VITE_GEMINI_API_KEY`** (mesmo valor usado no app; restrinja a chave por referrer/IP no Google AI Studio quando possível).
+2. **Actions** → workflow **“Gemini API smoke”** → **Run workflow**.
+3. O job executa `npm run ping:gemini` no runner (sem `.env` no repositório; só o secret). Se o secret não existir, o passo falha ao não encontrar a chave.
 
 ## Avisos no console do navegador
 
