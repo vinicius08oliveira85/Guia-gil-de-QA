@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect, useRef, useCallback } from 'react';
 import { useDebounceValue } from 'usehooks-ts';
-import { Project, JiraTask, TaskTestStatus } from '../types';
+import { Project, JiraTask, TaskTestStatus, TestCase } from '../types';
 import {
     getStatusFilterOptions,
     getPriorityFilterOptions,
@@ -13,6 +13,17 @@ import {
 } from '../components/tasks/tasksViewHelpers';
 
 const TASKS_FILTERS_STORAGE_KEY = 'tasks_filters';
+
+export type TestCaseExecutionStatus = TestCase['status'];
+
+export interface UseTaskFiltersOptions {
+    /**
+     * Incrementado ao navegar do Dashboard (ou outro lugar) para aplicar
+     * `executionStatusNavStatuses` uma vez na aba Tarefas.
+     */
+    executionStatusNavKey?: number;
+    executionStatusNavStatuses?: TestCaseExecutionStatus[];
+}
 
 export interface UseTaskFiltersResult {
     searchQuery: string;
@@ -39,24 +50,31 @@ export interface UseTaskFiltersResult {
         type: (type: string) => number;
         testStatus: (status: TaskTestStatus) => number;
         quality: (type: string) => number;
+        caseExecution: (status: TestCaseExecutionStatus) => number;
     };
+    testCaseExecutionStatusFilter: TestCaseExecutionStatus[];
+    setTestCaseExecutionStatusFilter: (
+        v: TestCaseExecutionStatus[] | ((prev: TestCaseExecutionStatus[]) => TestCaseExecutionStatus[])
+    ) => void;
     activeFiltersCount: number;
     clearAllFilters: () => void;
     statusOptions: string[];
     priorityOptions: string[];
 }
 
-export function useTaskFilters(project: Project): UseTaskFiltersResult {
+export function useTaskFilters(project: Project, options?: UseTaskFiltersOptions): UseTaskFiltersResult {
     const [searchQuery, setSearchQuery] = useState('');
     const [debouncedSearchQuery] = useDebounceValue(searchQuery, 300);
     const [statusFilter, setStatusFilter] = useState<string[]>([]);
     const [priorityFilter, setPriorityFilter] = useState<string[]>([]);
     const [typeFilter, setTypeFilter] = useState<string[]>([]);
     const [testStatusFilter, setTestStatusFilter] = useState<TaskTestStatus[]>([]);
+    const [testCaseExecutionStatusFilter, setTestCaseExecutionStatusFilter] = useState<TestCaseExecutionStatus[]>([]);
     const [qualityFilter, setQualityFilter] = useState<string[]>([]);
     const [sortBy, setSortBy] = useState<TaskSortBy>('id');
     const [groupBy, setGroupBy] = useState<TaskGroupBy>('none');
     const filtersRestoredForProjectRef = useRef<string | null>(null);
+    const lastExecutionStatusNavKeyRef = useRef(0);
 
     const statusOptions = useMemo(() => getStatusFilterOptions(project), [project]);
     const priorityOptions = useMemo(() => getPriorityFilterOptions(project), [project]);
@@ -73,6 +91,13 @@ export function useTaskFilters(project: Project): UseTaskFiltersResult {
                     if (Array.isArray(data.priorityFilter)) setPriorityFilter(data.priorityFilter as string[]);
                     if (Array.isArray(data.typeFilter)) setTypeFilter(data.typeFilter as string[]);
                     if (Array.isArray(data.testStatusFilter)) setTestStatusFilter(data.testStatusFilter as TaskTestStatus[]);
+                    if (Array.isArray(data.testCaseExecutionStatusFilter)) {
+                        const allowed: TestCaseExecutionStatus[] = ['Not Run', 'Passed', 'Failed', 'Blocked'];
+                        const parsed = (data.testCaseExecutionStatusFilter as string[]).filter((x): x is TestCaseExecutionStatus =>
+                            (allowed as string[]).includes(x)
+                        );
+                        setTestCaseExecutionStatusFilter(parsed);
+                    }
                     if (Array.isArray(data.qualityFilter)) setQualityFilter(data.qualityFilter as string[]);
                     if (typeof data.searchQuery === 'string') setSearchQuery(data.searchQuery);
                     if (typeof data.sortBy === 'string' && ['id', 'status', 'priority', 'createdAt', 'title'].includes(data.sortBy)) {
@@ -87,7 +112,18 @@ export function useTaskFilters(project: Project): UseTaskFiltersResult {
             // ignorar dados inválidos
         }
         filtersRestoredForProjectRef.current = project.id;
+        lastExecutionStatusNavKeyRef.current = 0;
     }, [project?.id]);
+
+    useEffect(() => {
+        const navKey = options?.executionStatusNavKey ?? 0;
+        if (navKey <= 0 || navKey === lastExecutionStatusNavKeyRef.current) return;
+        lastExecutionStatusNavKeyRef.current = navKey;
+        const statuses = options?.executionStatusNavStatuses;
+        if (statuses && statuses.length > 0) {
+            setTestCaseExecutionStatusFilter(statuses);
+        }
+    }, [options?.executionStatusNavKey, options?.executionStatusNavStatuses]);
 
     useEffect(() => {
         if (!project?.id || filtersRestoredForProjectRef.current !== project.id) return;
@@ -97,13 +133,14 @@ export function useTaskFilters(project: Project): UseTaskFiltersResult {
             priorityFilter,
             typeFilter,
             testStatusFilter,
+            testCaseExecutionStatusFilter,
             qualityFilter,
             searchQuery,
             sortBy,
             groupBy,
         };
         localStorage.setItem(key, JSON.stringify(payload));
-    }, [project?.id, statusFilter, priorityFilter, typeFilter, testStatusFilter, qualityFilter, searchQuery, sortBy, groupBy]);
+    }, [project?.id, statusFilter, priorityFilter, typeFilter, testStatusFilter, testCaseExecutionStatusFilter, qualityFilter, searchQuery, sortBy, groupBy]);
 
     const filteredTasks = useMemo(() => {
         return project.tasks.filter(task => {
@@ -117,6 +154,12 @@ export function useTaskFilters(project: Project): UseTaskFiltersResult {
             if (priorityFilter.length > 0 && !priorityFilter.some(name => taskMatchesPriorityName(task, name, project))) return false;
             if (typeFilter.length > 0 && !typeFilter.includes(task.type)) return false;
             if (testStatusFilter.length > 0 && !testStatusFilter.includes(getEffectiveTestStatus(task, project.tasks))) return false;
+            if (
+                testCaseExecutionStatusFilter.length > 0 &&
+                !testCaseExecutionStatusFilter.some((st) => (task.testCases || []).some((tc) => tc.status === st))
+            ) {
+                return false;
+            }
             if (qualityFilter.length > 0) {
                 const hasBDD = task.bddScenarios && task.bddScenarios.length > 0;
                 const hasTestCases = task.testCases && task.testCases.length > 0;
@@ -137,7 +180,7 @@ export function useTaskFilters(project: Project): UseTaskFiltersResult {
             }
             return true;
         });
-    }, [project, project.tasks, debouncedSearchQuery, statusFilter, priorityFilter, typeFilter, testStatusFilter, qualityFilter]);
+    }, [project, project.tasks, debouncedSearchQuery, statusFilter, priorityFilter, typeFilter, testStatusFilter, testCaseExecutionStatusFilter, qualityFilter]);
 
     const counts = useMemo(() => {
         const allTasks = project.tasks;
@@ -146,6 +189,8 @@ export function useTaskFilters(project: Project): UseTaskFiltersResult {
             priority: (priorityName: string) => allTasks.filter(t => taskMatchesPriorityName(t, priorityName, project)).length,
             type: (type: string) => allTasks.filter(t => t.type === type).length,
             testStatus: (status: TaskTestStatus) => allTasks.filter(t => getEffectiveTestStatus(t, allTasks) === status).length,
+            caseExecution: (status: TestCaseExecutionStatus) =>
+                allTasks.filter(t => (t.testCases || []).some(tc => tc.status === status)).length,
             quality: (type: string) => {
                 switch (type) {
                     case 'with-bdd': return allTasks.filter(t => t.bddScenarios?.length).length;
@@ -160,13 +205,20 @@ export function useTaskFilters(project: Project): UseTaskFiltersResult {
         };
     }, [project.tasks, project.settings?.jiraStatuses, project.settings?.jiraPriorities, project]);
 
-    const activeFiltersCount = statusFilter.length + priorityFilter.length + typeFilter.length + testStatusFilter.length + qualityFilter.length;
+    const activeFiltersCount =
+        statusFilter.length +
+        priorityFilter.length +
+        typeFilter.length +
+        testStatusFilter.length +
+        testCaseExecutionStatusFilter.length +
+        qualityFilter.length;
 
     const clearAllFilters = useCallback(() => {
         setStatusFilter([]);
         setPriorityFilter([]);
         setTypeFilter([]);
         setTestStatusFilter([]);
+        setTestCaseExecutionStatusFilter([]);
         setQualityFilter([]);
         setSearchQuery('');
     }, []);
@@ -183,6 +235,8 @@ export function useTaskFilters(project: Project): UseTaskFiltersResult {
         setTypeFilter,
         testStatusFilter,
         setTestStatusFilter,
+        testCaseExecutionStatusFilter,
+        setTestCaseExecutionStatusFilter,
         qualityFilter,
         setQualityFilter,
         sortBy,

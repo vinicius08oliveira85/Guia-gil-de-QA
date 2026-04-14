@@ -1,5 +1,5 @@
 import React, { useState, useEffect, Suspense, useRef, useCallback } from 'react';
-import { Project } from '../types';
+import { Project, TestCase } from '../types';
 import { useProjectMetrics } from '../hooks/useProjectMetrics';
 import { PrintableReport } from './PrintableReport';
 import { LoadingSkeleton } from './common/LoadingSkeleton';
@@ -31,6 +31,9 @@ export const ProjectView: React.FC<{
 }> = ({ project, onUpdateProject, onBack, onDeleteProject }) => {
     const [activeTab, setActiveTab] = useState('dashboard');
     const [initialTaskId, setInitialTaskId] = useState<string | undefined>(undefined);
+    /** Deep link do Dashboard: filtrar tarefas com casos em certos status (ex.: falhas). */
+    const [tasksExecutionNavKey, setTasksExecutionNavKey] = useState(0);
+    const [tasksExecutionNavStatuses, setTasksExecutionNavStatuses] = useState<TestCase['status'][]>([]);
     /** Tarefa com detalhes inline ou modal aberto — terceiro nível do breadcrumb. */
     const [breadcrumbTaskId, setBreadcrumbTaskId] = useState<string | null>(null);
     const [isPrinting, setIsPrinting] = useState(false);
@@ -212,6 +215,12 @@ export const ProjectView: React.FC<{
 
     const handleTabClick = useCallback((tabId: string) => {
         setActiveTab(tabId);
+    }, []);
+
+    const handleNavigateToTasksWithExecutionStatuses = useCallback((statuses: TestCase['status'][]) => {
+        setTasksExecutionNavStatuses(statuses);
+        setTasksExecutionNavKey((k) => k + 1);
+        setActiveTab('tasks');
     }, []);
 
     const handleTaskDetailsOpenChange = useCallback((taskId: string, isOpen: boolean) => {
@@ -428,6 +437,7 @@ export const ProjectView: React.FC<{
                                     project={currentProject} 
                                     onUpdateProject={onUpdateProject}
                                     onNavigateToTab={(tabId) => handleTabClick(tabId)}
+                                    onNavigateToTasksWithExecutionStatuses={handleNavigateToTasksWithExecutionStatuses}
                                 />
                             </Suspense>
                             </section>
@@ -441,6 +451,8 @@ export const ProjectView: React.FC<{
                                     onNavigateToTab={(tabId) => handleTabClick(tabId)}
                                     initialTaskId={initialTaskId}
                                     onTaskDetailsOpenChange={handleTaskDetailsOpenChange}
+                                    tasksExecutionNavKey={tasksExecutionNavKey}
+                                    tasksExecutionNavStatuses={tasksExecutionNavStatuses}
                                 />
                             </Suspense>
                             </section>

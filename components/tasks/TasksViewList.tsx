@@ -1,6 +1,6 @@
 import React from 'react';
 import { X } from 'lucide-react';
-import type { TaskTestStatus } from '../../types';
+import type { TaskTestStatus, TestCase } from '../../types';
 import { TEST_STATUS_FILTER_OPTIONS } from './tasksViewHelpers';
 
 export interface TasksViewListProps {
@@ -12,6 +12,10 @@ export interface TasksViewListProps {
     setTypeFilter: (v: string[] | ((prev: string[]) => string[])) => void;
     testStatusFilter: TaskTestStatus[];
     setTestStatusFilter: (v: TaskTestStatus[] | ((prev: TaskTestStatus[]) => TaskTestStatus[])) => void;
+    testCaseExecutionStatusFilter: TestCase['status'][];
+    setTestCaseExecutionStatusFilter: (
+        v: TestCase['status'][] | ((prev: TestCase['status'][]) => TestCase['status'][])
+    ) => void;
     qualityFilter: string[];
     setQualityFilter: (v: string[] | ((prev: string[]) => string[])) => void;
     searchQuery: string;
@@ -24,6 +28,13 @@ export interface TasksViewListProps {
     hasActiveFiltersOrSearch: boolean;
     children: React.ReactNode;
 }
+
+const CASE_EXECUTION_LABEL: Record<TestCase['status'], string> = {
+    'Not Run': 'Caso: Não executado',
+    Passed: 'Caso: Passou',
+    Failed: 'Caso: Falhou',
+    Blocked: 'Caso: Bloqueado',
+};
 
 const QUALITY_LABELS: Record<string, string> = {
     'with-bdd': 'Com BDD',
@@ -43,6 +54,8 @@ export const TasksViewList: React.FC<TasksViewListProps> = ({
     setTypeFilter,
     testStatusFilter,
     setTestStatusFilter,
+    testCaseExecutionStatusFilter,
+    setTestCaseExecutionStatusFilter,
     qualityFilter,
     setQualityFilter,
     searchQuery,
@@ -125,6 +138,24 @@ export const TasksViewList: React.FC<TasksViewListProps> = ({
                         </span>
                     );
                 })}
+                {testCaseExecutionStatusFilter.map((st) => (
+                    <span
+                        key={`caseExec-${st}`}
+                        className="badge badge-secondary badge-outline gap-1 pr-1 py-2 text-xs font-medium"
+                    >
+                        {CASE_EXECUTION_LABEL[st]}
+                        <button
+                            type="button"
+                            onClick={() =>
+                                setTestCaseExecutionStatusFilter((prev) => prev.filter((x) => x !== st))
+                            }
+                            className="btn btn-ghost btn-xs btn-circle p-0 min-h-0 h-5 w-5 rounded-full hover:bg-secondary/20"
+                            aria-label={`Remover filtro ${CASE_EXECUTION_LABEL[st]}`}
+                        >
+                            <X className="w-3 h-3" />
+                        </button>
+                    </span>
+                ))}
                 {qualityFilter.map((q) => (
                     <span
                         key={`quality-${q}`}

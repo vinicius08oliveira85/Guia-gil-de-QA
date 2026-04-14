@@ -7,6 +7,7 @@ import type { LucideIcon } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import { calculateProjectMetrics } from '../../hooks/useProjectMetrics';
 import { getTaskStatusCategory } from '../../utils/jiraStatusCategorizer';
+import { computePhaseCompletionPercent } from '../../utils/workspaceAnalytics';
 
 /** Risco: 2+ bugs abertos ou taxa de sucesso < 70% (com testes executados). Aviso: 1 bug ou taxa < 90%. */
 function getProjectHealth(openBugs: number, testPassRate: number, executedTestCases: number): 'ok' | 'warning' | 'risk' {
@@ -110,6 +111,8 @@ export const ProjectCard = React.memo<ProjectCardProps>(({
 
   const successPercent = useMemo(() => metrics.testPassRate, [metrics.testPassRate]);
 
+  const phaseCompletionPercent = useMemo(() => computePhaseCompletionPercent(project), [project]);
+
   const recentActivity = useMemo(() => {
     const completed = tasks
       .filter(t => getTaskStatusCategory(t) === 'Concluído')
@@ -163,7 +166,7 @@ export const ProjectCard = React.memo<ProjectCardProps>(({
       }}
       className={cn(
         'bg-base-100 rounded-3xl p-4 sm:p-5 shadow-sm border border-base-300 relative overflow-hidden',
-        'flex flex-col md:flex-row md:items-center gap-6',
+        'flex flex-wrap flex-col md:flex-row md:items-center gap-6',
         'transition-all hover:shadow-md cursor-pointer',
         className
       )}
@@ -284,6 +287,21 @@ export const ProjectCard = React.memo<ProjectCardProps>(({
           <ArrowUpRight className="w-4 h-4 sm:ml-1" aria-hidden="true" />
         </a>
       </div>
+
+      {(project.phases?.length ?? 0) > 0 && (
+        <div className="w-full min-w-0 flex-[1_1_100%] border-t border-base-300 pt-3 mt-1 order-last">
+          <div className="flex items-center justify-between text-[10px] uppercase tracking-wide text-base-content/50 mb-1">
+            <span>Fases SDLC</span>
+            <span className="tabular-nums font-semibold text-base-content/70">{phaseCompletionPercent}%</span>
+          </div>
+          <progress
+            className="progress progress-primary w-full h-2"
+            value={phaseCompletionPercent}
+            max={100}
+            aria-label={`Conclusão das fases do projeto: ${phaseCompletionPercent}%`}
+          />
+        </div>
+      )}
     </div>
   );
 });

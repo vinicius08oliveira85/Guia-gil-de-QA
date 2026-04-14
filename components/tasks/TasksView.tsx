@@ -56,7 +56,18 @@ export const TasksView: React.FC<{
     initialTaskId?: string,
     /** Inline detalhes ou modal de tarefa — atualiza breadcrumb no ProjectView. */
     onTaskDetailsOpenChange?: (taskId: string, isOpen: boolean) => void,
-}> = ({ project, onUpdateProject, onNavigateToTab, initialTaskId, onTaskDetailsOpenChange }) => {
+    /** Incrementado pelo ProjectView ao abrir com filtro de resultado de casos (ex.: falhas). */
+    tasksExecutionNavKey?: number,
+    tasksExecutionNavStatuses?: TestCase['status'][],
+}> = ({
+    project,
+    onUpdateProject,
+    onNavigateToTab,
+    initialTaskId,
+    onTaskDetailsOpenChange,
+    tasksExecutionNavKey = 0,
+    tasksExecutionNavStatuses = [],
+}) => {
     const [generatingTestsTaskId, setGeneratingTestsTaskId] = useState<string | null>(null);
     const [generatingBddTaskId, setGeneratingBddTaskId] = useState<string | null>(null);
     const [generatingAllTaskId, setGeneratingAllTaskId] = useState<string | null>(null);
@@ -117,7 +128,12 @@ export const TasksView: React.FC<{
         clearAllFilters,
         statusOptions,
         priorityOptions,
-    } = useTaskFilters(project);
+        testCaseExecutionStatusFilter,
+        setTestCaseExecutionStatusFilter,
+    } = useTaskFilters(project, {
+        executionStatusNavKey: tasksExecutionNavKey,
+        executionStatusNavStatuses: tasksExecutionNavStatuses,
+    });
 
     const [failModalState, setFailModalState] = useState<{
         isOpen: boolean;
@@ -1605,6 +1621,8 @@ export const TasksView: React.FC<{
                         setTypeFilter={setTypeFilter}
                         testStatusFilter={testStatusFilter}
                         setTestStatusFilter={setTestStatusFilter}
+                        testCaseExecutionStatusFilter={testCaseExecutionStatusFilter}
+                        setTestCaseExecutionStatusFilter={setTestCaseExecutionStatusFilter}
                         qualityFilter={qualityFilter}
                         setQualityFilter={setQualityFilter}
                         activeFiltersCount={activeFiltersCount}
@@ -1617,6 +1635,7 @@ export const TasksView: React.FC<{
                             setPriorityFilter(preset.filters.priorityFilter);
                             setTypeFilter(preset.filters.typeFilter);
                             setTestStatusFilter(preset.filters.testStatusFilter);
+                            setTestCaseExecutionStatusFilter(preset.filters.testCaseExecutionStatusFilter ?? []);
                             setQualityFilter(preset.filters.qualityFilter);
                             setSortBy(preset.filters.sortBy);
                             setGroupBy(preset.filters.groupBy);
@@ -1634,6 +1653,8 @@ export const TasksView: React.FC<{
                     setTypeFilter={setTypeFilter}
                     testStatusFilter={testStatusFilter}
                     setTestStatusFilter={setTestStatusFilter}
+                    testCaseExecutionStatusFilter={testCaseExecutionStatusFilter}
+                    setTestCaseExecutionStatusFilter={setTestCaseExecutionStatusFilter}
                     qualityFilter={qualityFilter}
                     setQualityFilter={setQualityFilter}
                     searchQuery={searchQuery}

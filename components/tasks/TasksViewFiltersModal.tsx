@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X, Bookmark, BookmarkCheck, Trash2 } from 'lucide-react';
-import type { TaskTestStatus } from '../../types';
+import type { TaskTestStatus, TestCase } from '../../types';
 import { TEST_STATUS_FILTER_OPTIONS, type TaskSortBy, type TaskGroupBy } from './tasksViewHelpers';
 import { getSavedFilters, saveFilter, deleteFilter, type SavedFilterPreset } from '../../utils/savedFiltersService';
 
@@ -35,8 +35,16 @@ export interface TasksViewFiltersModalCounts {
     priority: (priorityName: string) => number;
     type: (type: string) => number;
     testStatus: (status: TaskTestStatus) => number;
+    caseExecution: (status: TestCase['status']) => number;
     quality: (type: string) => number;
 }
+
+const CASE_EXECUTION_OPTIONS: { value: TestCase['status']; label: string }[] = [
+    { value: 'Not Run', label: 'Não executado' },
+    { value: 'Passed', label: 'Passou' },
+    { value: 'Failed', label: 'Falhou' },
+    { value: 'Blocked', label: 'Bloqueado' },
+];
 
 export interface TasksViewFiltersModalProps {
     statusOptions: string[];
@@ -50,6 +58,10 @@ export interface TasksViewFiltersModalProps {
     setTypeFilter: (v: string[] | ((prev: string[]) => string[])) => void;
     testStatusFilter: TaskTestStatus[];
     setTestStatusFilter: (v: TaskTestStatus[] | ((prev: TaskTestStatus[]) => TaskTestStatus[])) => void;
+    testCaseExecutionStatusFilter: TestCase['status'][];
+    setTestCaseExecutionStatusFilter: (
+        v: TestCase['status'][] | ((prev: TestCase['status'][]) => TestCase['status'][])
+    ) => void;
     qualityFilter: string[];
     setQualityFilter: (v: string[] | ((prev: string[]) => string[])) => void;
     activeFiltersCount: number;
@@ -73,6 +85,8 @@ export const TasksViewFiltersModalContent: React.FC<TasksViewFiltersModalProps> 
     setTypeFilter,
     testStatusFilter,
     setTestStatusFilter,
+    testCaseExecutionStatusFilter,
+    setTestCaseExecutionStatusFilter,
     qualityFilter,
     setQualityFilter,
     activeFiltersCount,
@@ -99,6 +113,7 @@ export const TasksViewFiltersModalContent: React.FC<TasksViewFiltersModalProps> 
             priorityFilter,
             typeFilter,
             testStatusFilter,
+            testCaseExecutionStatusFilter,
             qualityFilter,
             sortBy: sortBy ?? 'id',
             groupBy: groupBy ?? 'none',
@@ -264,6 +279,30 @@ export const TasksViewFiltersModalContent: React.FC<TasksViewFiltersModalProps> 
                                 count={counts.testStatus(value)}
                                 isActive={testStatusFilter.includes(value)}
                                 onClick={() => setTestStatusFilter(prev => prev.includes(value) ? prev.filter(s => s !== value) : [...prev, value])}
+                            />
+                        ))}
+                    </div>
+                </div>
+
+                <div>
+                    <p className="text-xs font-semibold text-base-content/60 mb-2 uppercase tracking-wider">
+                        Resultado do caso de teste
+                    </p>
+                    <p className="text-[11px] text-base-content/50 mb-2">
+                        Filtra tarefas que possuem ao menos um caso neste status (Passou, Falhou, etc.).
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                        {CASE_EXECUTION_OPTIONS.map(({ value, label }) => (
+                            <FilterChip
+                                key={value}
+                                label={label}
+                                count={counts.caseExecution(value)}
+                                isActive={testCaseExecutionStatusFilter.includes(value)}
+                                onClick={() =>
+                                    setTestCaseExecutionStatusFilter((prev) =>
+                                        prev.includes(value) ? prev.filter((s) => s !== value) : [...prev, value]
+                                    )
+                                }
                             />
                         ))}
                     </div>

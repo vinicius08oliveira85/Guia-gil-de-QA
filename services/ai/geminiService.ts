@@ -4,7 +4,11 @@ import { marked } from 'marked';
 import { sanitizeHTML } from '../../utils/sanitize';
 import { AIService } from './aiServiceInterface';
 import { getFormattedContext } from './documentContextService';
-import { callGeminiWithRetry, isGeminiRateLimitOrQuotaError } from './geminiApiWrapper';
+import {
+  callGeminiWithRetry,
+  isGeminiRateLimitOrQuotaError,
+  isGeminiTemporaryServiceError,
+} from './geminiApiWrapper';
 import { OpenAIService, isOpenAIEnvApiKeyConfigured } from './openaiService';
 import { GEMINI_DEFAULT_MODEL } from './geminiConstants';
 import { logger } from '../../utils/logger';
@@ -229,9 +233,12 @@ Saída: só JSON válido, sem markdown. Estrutura {"strategy":[...],"bddScenario
 
       return { strategy, testCases, bddScenarios };
     } catch (error) {
-      if (isGeminiRateLimitOrQuotaError(error) && isOpenAIEnvApiKeyConfigured()) {
+      if (
+        (isGeminiRateLimitOrQuotaError(error) || isGeminiTemporaryServiceError(error)) &&
+        isOpenAIEnvApiKeyConfigured()
+      ) {
         logger.warn(
-          'generateTestCasesForTask: Gemini com limite/cota; usando OpenAI (VITE_OPENAI_API_KEY) como fallback',
+          'generateTestCasesForTask: Gemini com limite/cota ou serviço temporariamente indisponível; usando OpenAI (VITE_OPENAI_API_KEY) como fallback',
           'GeminiService'
         );
         return new OpenAIService().generateTestCasesForTask(
@@ -282,9 +289,12 @@ Saída: só JSON válido, sem markdown. Estrutura {"strategy":[...],"bddScenario
         const html = marked(markdownText) as string;
         return sanitizeHTML(html);
     } catch (error) {
-        if (isGeminiRateLimitOrQuotaError(error) && isOpenAIEnvApiKeyConfigured()) {
+        if (
+          (isGeminiRateLimitOrQuotaError(error) || isGeminiTemporaryServiceError(error)) &&
+          isOpenAIEnvApiKeyConfigured()
+        ) {
           logger.warn(
-            'analyzeDocumentContent: Gemini com limite/cota; usando OpenAI como fallback',
+            'analyzeDocumentContent: Gemini com limite/cota ou serviço temporariamente indisponível; usando OpenAI como fallback',
             'GeminiService'
           );
           return new OpenAIService().analyzeDocumentContent(content, project);
@@ -547,9 +557,12 @@ Saída: só JSON válido, sem markdown. Estrutura {"strategy":[...],"bddScenario
             id: `bdd-${Date.now()}-${index}`,
         }));
     } catch (error) {
-        if (isGeminiRateLimitOrQuotaError(error) && isOpenAIEnvApiKeyConfigured()) {
+        if (
+          (isGeminiRateLimitOrQuotaError(error) || isGeminiTemporaryServiceError(error)) &&
+          isOpenAIEnvApiKeyConfigured()
+        ) {
           logger.warn(
-            'generateBddScenarios: Gemini com limite/cota; usando OpenAI como fallback',
+            'generateBddScenarios: Gemini com limite/cota ou serviço temporariamente indisponível; usando OpenAI como fallback',
             'GeminiService'
           );
           return new OpenAIService().generateBddScenarios(title, description, project, attachmentsContext);

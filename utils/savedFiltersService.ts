@@ -1,4 +1,4 @@
-import { TaskTestStatus } from '../types';
+import { TaskTestStatus, TestCase } from '../types';
 import { type TaskSortBy, type TaskGroupBy } from '../components/tasks/tasksViewHelpers';
 
 export interface SavedFilterPreset {
@@ -11,6 +11,7 @@ export interface SavedFilterPreset {
         priorityFilter: string[];
         typeFilter: string[];
         testStatusFilter: TaskTestStatus[];
+        testCaseExecutionStatusFilter?: TestCase['status'][];
         qualityFilter: string[];
         sortBy: TaskSortBy;
         groupBy: TaskGroupBy;

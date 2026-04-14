@@ -1,5 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { callGeminiWithRetry, isGeminiRateLimitOrQuotaError } from '../../services/ai/geminiApiWrapper';
+import {
+  callGeminiWithRetry,
+  isGeminiRateLimitOrQuotaError,
+  isGeminiTemporaryServiceError,
+} from '../../services/ai/geminiApiWrapper';
 import { geminiApiKeyManager } from '../../services/ai/geminiApiKeyManager';
 
 const generateContentMock = vi.fn();
@@ -125,14 +129,49 @@ describe('callGeminiWithRetry', () => {
     expect(generateContentMock).not.toHaveBeenCalled();
   });
 
-  it('deve retornar erro amigável para indisponibilidade 503', async () => {
-    generateContentMock.mockRejectedValueOnce({ status: 503, message: 'Service Unavailable' });
+  it('deve retornar erro amigável para indisponibilidade 503 após esgotar a cadeia de modelos', async () => {
+    generateContentMock.mockRejectedValue({ status: 503, message: 'Service Unavailable' });
 
     await expect(
       callGeminiWithRetry({ model: 'gemini-2.0-flash', contents: 'conteudo de teste' })
     ).rejects.toMatchObject({ code: 'GEMINI_TEMP_UNAVAILABLE', status: 503 });
 
     expect(geminiApiKeyManager.markCurrentKeyAsExhausted).not.toHaveBeenCalled();
+    expect(generateContentMock.mock.calls.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('503 no primeiro modelo deve tentar o próximo e retornar sucesso se a segunda chamada responder', async () => {
+    generateContentMock
+      .mockRejectedValueOnce({ status: 503, message: 'Service Unavailable' })
+      .mockResolvedValueOnce({ text: 'ok' });
+
+    const result = await callGeminiWithRetry({
+      model: 'gemini-2.5-flash',
+      contents: 'x',
+    });
+
+    expect(result.text).toBe('ok');
+    expect(generateContentMock).toHaveBeenCalledTimes(2);
+    const firstModel = generateContentMock.mock.calls[0][0].model;
+    const secondModel = generateContentMock.mock.calls[1][0].model;
+    expect(firstModel).toBe('gemini-2.5-flash');
+    expect(secondModel).not.toBe(firstModel);
+  });
+});
+
+describe('isGeminiTemporaryServiceError', () => {
+  it('retorna true para código GEMINI_TEMP_UNAVAILABLE', () => {
+    expect(
+      isGeminiTemporaryServiceError(Object.assign(new Error('x'), { code: 'GEMINI_TEMP_UNAVAILABLE' }))
+    ).toBe(true);
+  });
+
+  it('retorna true para HTTP 503', () => {
+    expect(isGeminiTemporaryServiceError({ status: 503, message: 'Service Unavailable' })).toBe(true);
+  });
+
+  it('retorna false para 429', () => {
+    expect(isGeminiTemporaryServiceError({ status: 429, message: 'quota' })).toBe(false);
   });
 });
 

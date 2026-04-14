@@ -5,8 +5,6 @@ import { Project } from '../types';
 import { ConfirmDialog } from './common/ConfirmDialog';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { useLocalStorage } from '../hooks/useLocalStorage';
-import { Badge } from './common/Badge';
-import { ProgressIndicator } from './common/ProgressIndicator';
 import { Plus, Search, AlertTriangle, Bug, Loader2 } from 'lucide-react';
 import { ProjectCard } from './common/ProjectCard';
 import { ConsolidatedMetrics } from './common/ConsolidatedMetrics';
@@ -17,6 +15,15 @@ import { isSupabaseAvailable } from '../services/supabaseService';
 import { CreateProjectModal } from './CreateProjectModal';
 import { calculateProjectMetrics } from '../hooks/useProjectMetrics';
 import { cn } from '../utils/cn';
+import {
+  computeWorkspaceTestMetrics,
+  computeTaskWorkflowBuckets,
+  computeTaskDonePercent,
+  computeProjectsWithTestExecutionAlerts,
+} from '../utils/workspaceAnalytics';
+import { WorkspaceDaisyStats } from './projectsDashboard/WorkspaceDaisyStats';
+import { TaskStatusDistributionBar } from './projectsDashboard/TaskStatusDistributionBar';
+import { ProjectsTestHealthWidget } from './projectsDashboard/ProjectsTestHealthWidget';
 
 type QuickFilter = 'all' | 'withBugs' | 'needsAttention';
 
@@ -55,7 +62,7 @@ export const ProjectsDashboard: React.FC<{
     });
     const [isDeletingProject, setIsDeletingProject] = useState(false);
     const { handleError, handleSuccess } = useErrorHandler();
-    const { supabaseLoadFailed, supabaseLoadError, loadProjects, isLoading } = useProjectsStore();
+    const { supabaseLoadFailed, supabaseLoadError, loadProjects, isLoading, lastSaveToSupabase } = useProjectsStore();
 
     // Função para navegar para uma tarefa específica
     const handleNavigateToTask = useCallback((projectId: string, taskId: string) => {
@@ -154,6 +161,10 @@ export const ProjectsDashboard: React.FC<{
     );
     const projectsWithBugs = useMemo(() => projects.filter(projectHasOpenBugs), [projects]);
 
+    const workspaceTestMetrics = useMemo(() => computeWorkspaceTestMetrics(projects), [projects]);
+    const taskWorkflowBuckets = useMemo(() => computeTaskWorkflowBuckets(projects), [projects]);
+    const taskDonePercentGlobal = useMemo(() => computeTaskDonePercent(projects), [projects]);
+    const projectsTestAlertList = useMemo(() => computeProjectsWithTestExecutionAlerts(projects), [projects]);
 
     return (
         <>
@@ -241,6 +252,39 @@ export const ProjectsDashboard: React.FC<{
                         </button>
                     </div>
                 </div>
+
+                {projects.length > 0 && (
+                    <div className="space-y-4 mb-6">
+                        <WorkspaceDaisyStats
+                            projectCount={projects.length}
+                            testSuccessPercent={workspaceTestMetrics.testSuccessPercent}
+                            taskDonePercent={taskDonePercentGlobal}
+                            lastSaveToSupabase={lastSaveToSupabase}
+                            supabaseAvailable={isSupabaseAvailable()}
+                            supabaseLoadFailed={supabaseLoadFailed}
+                        />
+                        <p className="text-xs text-base-content/60 -mt-1 px-1">
+                            Eficiência de execução (casos com status ≠ Não executado):{' '}
+                            <strong className="text-base-content">
+                                {workspaceTestMetrics.executionEfficiencyPercent}%
+                            </strong>
+                            {workspaceTestMetrics.totalTestCases > 0 && (
+                                <span className="text-base-content/50">
+                                    {' '}
+                                    · {workspaceTestMetrics.executedTestCases}/{workspaceTestMetrics.totalTestCases}{' '}
+                                    casos
+                                </span>
+                            )}
+                        </p>
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            <TaskStatusDistributionBar buckets={taskWorkflowBuckets} />
+                            <ProjectsTestHealthWidget
+                                alertProjects={projectsTestAlertList}
+                                onSelectProject={onSelectProject}
+                            />
+                        </div>
+                    </div>
+                )}
 
                 {projects.length > 0 && <ConsolidatedMetrics projects={projects} />}
 

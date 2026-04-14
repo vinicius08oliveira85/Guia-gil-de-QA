@@ -11,6 +11,9 @@ interface ProjectAnalysesBoardProps {
   analyses: ProjectFullAnalysis[];
   onGenerateAnalysis?: () => void | Promise<void>;
   isGenerating?: boolean;
+  /** Estratégia Shift Left + Pirâmide (sem análise completa do projeto). */
+  onGenerateStrategyWithGemini?: () => void | Promise<void>;
+  isGeneratingStrategy?: boolean;
 }
 
 /** Retorna classe de borda/ênfase por “sentimento” da análise (riscos vs pontos fortes). */
@@ -26,6 +29,8 @@ export const ProjectAnalysesBoard: React.FC<ProjectAnalysesBoardProps> = ({
   analyses,
   onGenerateAnalysis,
   isGenerating = false,
+  onGenerateStrategyWithGemini,
+  isGeneratingStrategy = false,
 }) => {
   const [selectedAnalysis, setSelectedAnalysis] = useState<ProjectFullAnalysis | null>(null);
 
@@ -44,21 +49,35 @@ export const ProjectAnalysesBoard: React.FC<ProjectAnalysesBoardProps> = ({
       </h2>
 
       {analyses.length === 0 ? (
-        <div className="bg-base-100 rounded-xl border border-base-300 p-6 text-center">
-          <p className="text-base-content/70 text-sm mb-4">
-            Nenhuma análise gerada ainda. Gere uma análise completa (documentos, tarefas, testes e indicadores) pelo botão no topo do dashboard.
+        <div className="bg-base-100 rounded-xl border border-base-300 p-6 text-center space-y-4">
+          <p className="text-base-content/70 text-sm">
+            Nenhuma análise completa do projeto ainda. Você pode gerar a análise ampla (documentos, tarefas, testes e
+            indicadores) ou começar só pela estratégia de QA com Gemini (Shift Left + pirâmide de testes).
           </p>
-          {onGenerateAnalysis && (
-            <button
-              type="button"
-              onClick={onGenerateAnalysis}
-              disabled={isGenerating}
-              className="rounded-full px-4 py-2 text-sm font-semibold text-primary bg-primary/10 hover:bg-primary/20 border border-primary/30 transition-colors flex items-center gap-2 mx-auto disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Sparkles className="w-4 h-4" aria-hidden="true" />
-              {isGenerating ? 'Gerando…' : 'Gerar primeira análise'}
-            </button>
-          )}
+          <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-2">
+            {onGenerateStrategyWithGemini && (
+              <button
+                type="button"
+                onClick={onGenerateStrategyWithGemini}
+                disabled={isGeneratingStrategy || isGenerating}
+                className="rounded-full px-4 py-2 text-sm font-semibold text-secondary-content bg-secondary hover:bg-secondary/90 border border-secondary/30 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Sparkles className="w-4 h-4" aria-hidden="true" />
+                {isGeneratingStrategy ? 'Gerando estratégia…' : 'Gerar estratégia com Gemini'}
+              </button>
+            )}
+            {onGenerateAnalysis && (
+              <button
+                type="button"
+                onClick={onGenerateAnalysis}
+                disabled={isGenerating || isGeneratingStrategy}
+                className="rounded-full px-4 py-2 text-sm font-semibold text-primary bg-primary/10 hover:bg-primary/20 border border-primary/30 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Sparkles className="w-4 h-4" aria-hidden="true" />
+                {isGenerating ? 'Gerando…' : 'Gerar análise completa'}
+              </button>
+            )}
+          </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
