@@ -12,106 +12,211 @@ import {
 import { OpenAIService, isOpenAIEnvApiKeyConfigured } from './openaiService';
 import { GEMINI_DEFAULT_MODEL } from './geminiConstants';
 import { logger } from '../../utils/logger';
+import {
+  buildBddOnlyPrompt,
+  buildComplementaryDocumentSection,
+  buildStrategyOnlyPrompt,
+  buildTestCasesOnlyPrompt,
+  shouldGenerateTestCasesAndBdd,
+} from './testGenerationPrompts';
+import { normalizeStrategyReferences } from './testGenerationValidators';
 
+const geminiTestStrategyItemSchema = {
+  type: Type.OBJECT,
+  properties: {
+    testType: {
+      type: Type.STRING,
+      description:
+        'O nome do tipo de teste (ex: Teste Funcional, Teste de Integração, Teste de Regressão).',
+    },
+    description: {
+      type: Type.STRING,
+      description: 'Uma breve explicação do propósito deste teste no contexto da tarefa.',
+    },
+    howToExecute: {
+      type: Type.ARRAY,
+      description: 'Um array de strings, onde cada string é um passo curto e acionável para executar o teste.',
+      items: { type: Type.STRING },
+    },
+    tools: {
+      type: Type.STRING,
+      description: 'Ferramentas recomendadas para este tipo de teste, separadas por vírgula (ex: Selenium, Postman, JMeter).',
+    },
+  },
+  required: ['testType', 'description', 'howToExecute', 'tools'],
+};
+
+const geminiStrategyArrayProperty = {
+  type: Type.ARRAY,
+  description: 'Uma lista de estratégias de teste recomendadas para a tarefa.',
+  items: geminiTestStrategyItemSchema,
+};
+
+const geminiBddItemSchema = {
+  type: Type.OBJECT,
+  properties: {
+    title: { type: Type.STRING, description: 'Um título descritivo para o cenário.' },
+    gherkin: {
+      type: Type.STRING,
+      description:
+        'Cenário Gherkin em português: use SOMENTE as palavras-chave Funcionalidade, Cenário (ou Esquema do Cenário), Dado, Quando, Então, E, Mas — em português, sem Given/When/Then em inglês. Cada passo em linha própria.',
+    },
+  },
+  required: ['title', 'gherkin'],
+};
+
+const geminiBddArrayProperty = {
+  type: Type.ARRAY,
+  description: 'Uma lista de cenários BDD (Behavior-Driven Development) usando a sintaxe Gherkin.',
+  items: geminiBddItemSchema,
+};
+
+const geminiTestCaseItemSchema = {
+  type: Type.OBJECT,
+  properties: {
+    description: { type: Type.STRING, description: 'Descrição concisa do caso de teste.' },
+    steps: {
+      type: Type.ARRAY,
+      items: { type: Type.STRING },
+      description: 'Lista de passos para executar o teste.',
+    },
+    expectedResult: { type: Type.STRING, description: 'Resultado esperado após os passos.' },
+    strategies: {
+      type: Type.ARRAY,
+      items: { type: Type.STRING },
+      description:
+        'Lista de testType das estratégias geradas que se aplicam a este caso (ex.: ["Teste Funcional"]).',
+    },
+    isAutomated: {
+      type: Type.BOOLEAN,
+      description:
+        'True se o caso for bom candidato à automação (regressivo, repetitivo, baseado em dados); false caso contrário.',
+    },
+    preconditions: {
+      type: Type.STRING,
+      description: 'Pré-condições necessárias; vazio se não houver.',
+    },
+    testSuite: {
+      type: Type.STRING,
+      description: 'Nome da suite de teste (ex: Login, Pagamento).',
+    },
+    testEnvironment: {
+      type: Type.STRING,
+      description: 'Ambiente(s) de execução (ex: Chrome / API).',
+    },
+    priority: {
+      type: Type.STRING,
+      enum: ['Baixa', 'Média', 'Alta', 'Urgente'],
+      description: 'Prioridade do caso de teste.',
+    },
+  },
+  required: ['description', 'steps', 'expectedResult', 'strategies', 'isAutomated'],
+};
+
+const geminiTestCasesArrayProperty = {
+  type: Type.ARRAY,
+  items: geminiTestCaseItemSchema,
+};
+
+/** Schema completo (ex.: geração a partir de documento). */
 const testCaseGenerationSchema = {
   type: Type.OBJECT,
   properties: {
-    strategy: {
-      type: Type.ARRAY,
-      description: "Uma lista de estratégias de teste recomendadas para a tarefa.",
-      items: {
-        type: Type.OBJECT,
-        properties: {
-          testType: { type: Type.STRING, description: "O nome do tipo de teste (ex: Teste Funcional, Teste de Integração, Teste de Caixa Branca)." },
-          description: { type: Type.STRING, description: "Uma breve explicação do propósito deste teste no contexto da tarefa." },
-          howToExecute: {
-            type: Type.ARRAY,
-            description: "Um array de strings, onde cada string é um passo curto e acionável para executar o teste.",
-            items: { type: Type.STRING }
-          },
-          tools: { type: Type.STRING, description: "Ferramentas recomendadas para este tipo de teste, separadas por vírgula (ex: Selenium, Postman, JMeter)." }
-        },
-        required: ['testType', 'description', 'howToExecute', 'tools']
-      }
-    },
-    bddScenarios: {
-      type: Type.ARRAY,
-      description: "Uma lista de cenários BDD (Behavior-Driven Development) usando a sintaxe Gherkin.",
-      items: {
-        type: Type.OBJECT,
-        properties: {
-          title: {
-            type: Type.STRING,
-            description: "Um título descritivo para o cenário."
-          },
-          gherkin: {
-            type: Type.STRING,
-            description:
-              'Cenário Gherkin em português: use SOMENTE as palavras-chave Funcionalidade, Cenário (ou Esquema do Cenário), Dado, Quando, Então, E, Mas — em português, sem Given/When/Then em inglês. Cada passo em linha própria.',
-          },
-        },
-        required: ['title', 'gherkin']
-      }
-    },
-    testCases: {
-      type: Type.ARRAY,
-      items: {
-        type: Type.OBJECT,
-        properties: {
-          description: {
-            type: Type.STRING,
-            description: 'A concise description of the test case.',
-          },
-          steps: {
-            type: Type.ARRAY,
-            items: {
-              type: Type.STRING,
-            },
-            description: 'A list of steps to perform to execute the test.',
-          },
-          expectedResult: {
-            type: Type.STRING,
-            description: 'The expected outcome after performing the steps.',
-          },
-          strategies: {
-            type: Type.ARRAY,
-            items: { type: Type.STRING },
-            description: 'A list of test types from the generated strategy list that apply to this specific test case (e.g., ["Teste Funcional", "Teste de Usabilidade"]).',
-          },
-          isAutomated: {
-            type: Type.BOOLEAN,
-            description: 'True se este caso de teste for um bom candidato para automação (ex: regressivo, repetitivo, baseado em dados), caso contrário, false.'
-          },
-          preconditions: {
-            type: Type.STRING,
-            description: 'Précondições necessárias para executar este teste (ex: dados que devem existir, estados do sistema, configurações). Deixe vazio se não houver précondições específicas.'
-          },
-          testSuite: {
-            type: Type.STRING,
-            description: 'Nome da suite de teste à qual este caso pertence (ex: Login, Cadastro, Pagamento). Baseie-se no contexto da tarefa e funcionalidade testada.'
-          },
-          testEnvironment: {
-            type: Type.STRING,
-            description: 'Ambiente(s) de teste onde este caso deve ser executado (ex: Chrome, Firefox, Safari, Mobile, API). Pode incluir múltiplos ambientes separados por "/" (ex: "Chrome / Firefox").'
-          },
-          priority: {
-            type: Type.STRING,
-            enum: ['Baixa', 'Média', 'Alta', 'Urgente'],
-            description: 'Prioridade do caso de teste baseada em criticidade da funcionalidade, impacto no negócio, frequência de uso e risco de falha.'
-          }
-        },
-        required: ['description', 'steps', 'expectedResult', 'strategies', 'isAutomated'],
-      },
-    }
+    strategy: geminiStrategyArrayProperty,
+    bddScenarios: geminiBddArrayProperty,
+    testCases: geminiTestCasesArrayProperty,
   },
-  required: ['strategy', 'bddScenarios', 'testCases']
+  required: ['strategy', 'bddScenarios', 'testCases'],
+};
+
+const strategyOnlyResponseSchema = {
+  type: Type.OBJECT,
+  properties: { strategy: geminiStrategyArrayProperty },
+  required: ['strategy'],
+};
+
+const bddOnlyResponseSchema = {
+  type: Type.OBJECT,
+  properties: { bddScenarios: geminiBddArrayProperty },
+  required: ['bddScenarios'],
+};
+
+const testCasesOnlyResponseSchema = {
+  type: Type.OBJECT,
+  properties: { testCases: geminiTestCasesArrayProperty },
+  required: ['testCases'],
+};
+
+type GeminiStrategyRow = {
+  testType?: string;
+  description?: string;
+  howToExecute?: string[];
+  tools?: string;
+};
+
+type GeminiBddRow = { title?: string; gherkin?: string };
+
+type GeminiTestCaseRow = {
+  description?: string;
+  steps?: string[];
+  expectedResult?: string;
+  strategies?: string[];
+  isAutomated?: boolean;
+  preconditions?: string;
+  testSuite?: string;
+  testEnvironment?: string;
+  priority?: string;
 };
 
 export class GeminiService implements AIService {
+  private mapStrategyFromResponse(items: unknown[]): TestStrategy[] {
+    return (items as GeminiStrategyRow[]).map((item) => ({
+      testType: item.testType ?? '',
+      description: item.description ?? '',
+      howToExecute: Array.isArray(item.howToExecute) ? item.howToExecute : [],
+      tools: item.tools ?? '',
+    }));
+  }
+
+  private mapBddFromResponse(items: unknown[], baseTs: number): BddScenario[] {
+    return (items as GeminiBddRow[]).map((item, index) => ({
+      id: `bdd-${baseTs}-${index}`,
+      title: item.title ?? '',
+      gherkin: item.gherkin ?? '',
+    }));
+  }
+
+  private mapTestCasesFromResponse(
+    items: unknown[],
+    strategy: TestStrategy[],
+    baseTs: number
+  ): TestCase[] {
+    return (items as GeminiTestCaseRow[]).map((item, index) => ({
+      id: `tc-${baseTs}-${index}`,
+      description: item.description ?? '',
+      steps: Array.isArray(item.steps) ? item.steps : [],
+      expectedResult: item.expectedResult ?? '',
+      status: 'Not Run' as const,
+      strategies: normalizeStrategyReferences(item.strategies, strategy),
+      isAutomated: typeof item.isAutomated === 'boolean' ? item.isAutomated : false,
+      preconditions: item.preconditions || undefined,
+      testSuite: item.testSuite || undefined,
+      testEnvironment: item.testEnvironment || undefined,
+      priority:
+        item.priority === 'Baixa' ||
+        item.priority === 'Média' ||
+        item.priority === 'Alta' ||
+        item.priority === 'Urgente'
+          ? item.priority
+          : undefined,
+    }));
+  }
+
   /**
-   * Prompt compacto para geração de testes (sem arte ASCII; limite 7000 chars) — reduz TPM e risco de 429.
+   * Gera estratégia, BDD e casos em chamadas separadas para maximizar aderência à tarefa
+   * (tarefa primeiro; documento do projeto só como complemento truncado).
    */
-  private async buildRobustTestGenerationPrompt(
+  async generateTestCasesForTask(
     title: string,
     description: string,
     bddScenarios?: BddScenario[],
@@ -119,119 +224,102 @@ export class GeminiService implements AIService {
     taskType?: JiraTaskType,
     project?: Project | null,
     attachmentsContext?: string
-  ): Promise<string> {
-    const documentContext = await getFormattedContext(project || null);
-
-    const detailInstruction = `Passos (${detailLevel}): Resumido 3–5; Padrão 5–8; Detalhado 8+ com dados.`;
-
-    const shouldGenerateTestCases = taskType === 'Tarefa' || taskType === 'Bug' || !taskType;
-    const attentionMessage = !shouldGenerateTestCases
-      ? `Tipo "${taskType}": só estratégias; testCases=[].`
-      : '';
-
-    const bddRef =
-      bddScenarios && bddScenarios.length > 0
-        ? `BDD ref: ${bddScenarios
-            .map((b) => `${b.title}:${(b.gherkin || '').slice(0, 320)}`)
-            .join(' | ')
-            .slice(0, 1800)}`
-        : '';
-
-    const testCasesInstructions = shouldGenerateTestCases
-      ? `Casos: description, steps[], expectedResult, preconditions, strategies[], isAutomated, testSuite, testEnvironment, priority (Baixa|Média|Alta|Urgente). Sucesso, alternativas, negative, permissão.`
-      : '';
-
-    const bugBlock =
-      taskType === 'Bug'
-        ? 'Bug: regressão, verificação da correção, impactos; BDD pós-correção.'
-        : '';
-
-    const rawPrompt = `${documentContext}
-QA sênior. PT-BR. Modelo da chamada: ${GEMINI_DEFAULT_MODEL}.
-
-TAREFA: ${title}
-DESC: ${description}
-${taskType ? `TIPO: ${taskType}` : ''}
-${bddRef}
-${attachmentsContext ? `ANEXOS: ${attachmentsContext}` : ''}
-${bugBlock}
-${detailInstruction}
-${attentionMessage}
-
-(1) strategy: {testType, description, howToExecute[], tools}[]
-(2) ${testCasesInstructions || 'só strategy'}
-(3) bddScenarios: Gherkin PT (Funcionalidade,Cenário,Dado,Quando,Então,E,Mas); sem Given/When/Then; happy+alt+erro+permissão se couber.
-
-Saída: só JSON válido, sem markdown. Estrutura {"strategy":[...],"bddScenarios":[{"title":"","gherkin":""}],"testCases":${shouldGenerateTestCases ? '[...]' : '[]'}} — schema da API define campos obrigatórios.
-`;
-
-    /** Reduz TPM no tier gratuito. */
-    const MAX_PROMPT_LENGTH = 7000;
-    return rawPrompt.length > MAX_PROMPT_LENGTH
-      ? rawPrompt.slice(0, MAX_PROMPT_LENGTH) + '\n\n[... contexto truncado ...]'
-      : rawPrompt;
-  }
-
-  async generateTestCasesForTask(
-    title: string, 
-    description: string, 
-    bddScenarios?: BddScenario[],
-    detailLevel: TestCaseDetailLevel = 'Padrão',
-    taskType?: JiraTaskType,
-    project?: Project | null,
-    attachmentsContext?: string
   ): Promise<{ strategy: TestStrategy[]; testCases: TestCase[]; bddScenarios: BddScenario[] }> {
-    const prompt = await this.buildRobustTestGenerationPrompt(title, description, bddScenarios, detailLevel, taskType, project, attachmentsContext);
+    const shouldCases = shouldGenerateTestCasesAndBdd(taskType);
+    const baseTs = Date.now();
+
+    const fallbackOpenAI = () =>
+      new OpenAIService().generateTestCasesForTask(
+        title,
+        description,
+        bddScenarios,
+        detailLevel,
+        taskType,
+        project,
+        attachmentsContext
+      );
 
     try {
-      const response = await callGeminiWithRetry({
+      const strategyPrompt = await buildStrategyOnlyPrompt(
+        title,
+        description,
+        taskType,
+        project ?? null,
+        attachmentsContext
+      );
+      const strategyResp = await callGeminiWithRetry({
         model: GEMINI_DEFAULT_MODEL,
-        contents: prompt,
+        contents: strategyPrompt,
         config: {
-          responseMimeType: "application/json",
-          responseSchema: testCaseGenerationSchema,
+          responseMimeType: 'application/json',
+          responseSchema: strategyOnlyResponseSchema,
         },
       });
+      const strategyParsed = JSON.parse(strategyResp.text.trim());
+      if (!strategyParsed || !Array.isArray(strategyParsed.strategy)) {
+        logger.error('Resposta da IA com strategy inválida', 'geminiService', strategyParsed);
+        throw new Error('Resposta da IA com estrutura inválida (strategy).');
+      }
+      const strategy = this.mapStrategyFromResponse(strategyParsed.strategy);
 
-      const jsonString = response.text.trim();
-      const parsedResponse = JSON.parse(jsonString);
-
-      if (!parsedResponse || !Array.isArray(parsedResponse.strategy) || !Array.isArray(parsedResponse.testCases) || !Array.isArray(parsedResponse.bddScenarios)) {
-          logger.error("Resposta da IA com estrutura inválida", 'geminiService', parsedResponse);
-          throw new Error("Resposta da IA com estrutura inválida.");
+      if (!shouldCases) {
+        return { strategy, testCases: [], bddScenarios: [] };
       }
 
-      const shouldGenerateTestCases = taskType === 'Tarefa' || taskType === 'Bug' || !taskType;
-      const testCases: TestCase[] = shouldGenerateTestCases 
-        ? (parsedResponse.testCases || []).map((item: any, index: number) => ({
-            id: `tc-${Date.now()}-${index}`,
-            description: item.description,
-            steps: item.steps,
-            expectedResult: item.expectedResult,
-            status: 'Not Run' as const,
-            strategies: item.strategies || [],
-            isAutomated: false,
-            preconditions: item.preconditions || undefined,
-            testSuite: item.testSuite || undefined,
-            testEnvironment: item.testEnvironment || undefined,
-            priority: item.priority || undefined,
-          }))
-        : [];
-      
-      const strategy: TestStrategy[] = parsedResponse.strategy.map((item: any) => ({
-        testType: item.testType,
-        description: item.description,
-        howToExecute: item.howToExecute,
-        tools: item.tools,
-      }));
+      let bddOut: BddScenario[];
+      if (bddScenarios && bddScenarios.length > 0) {
+        bddOut = bddScenarios;
+      } else {
+        const bddPrompt = await buildBddOnlyPrompt(
+          title,
+          description,
+          taskType,
+          project ?? null,
+          strategy,
+          attachmentsContext
+        );
+        const bddResp = await callGeminiWithRetry({
+          model: GEMINI_DEFAULT_MODEL,
+          contents: bddPrompt,
+          config: {
+            responseMimeType: 'application/json',
+            responseSchema: bddOnlyResponseSchema,
+          },
+        });
+        const bddParsed = JSON.parse(bddResp.text.trim());
+        if (!bddParsed || !Array.isArray(bddParsed.bddScenarios)) {
+          logger.error('Resposta da IA com bddScenarios inválidos', 'geminiService', bddParsed);
+          throw new Error('Resposta da IA com estrutura inválida (bddScenarios).');
+        }
+        bddOut = this.mapBddFromResponse(bddParsed.bddScenarios, baseTs);
+      }
 
-      const bddScenarios: BddScenario[] = (parsedResponse.bddScenarios || []).map((item: any, index: number) => ({
-        id: `bdd-${Date.now()}-${index}`,
-        title: item.title,
-        gherkin: item.gherkin,
-      }));
+      const tcPrompt = await buildTestCasesOnlyPrompt(
+        title,
+        description,
+        taskType,
+        detailLevel,
+        project ?? null,
+        strategy,
+        bddOut,
+        attachmentsContext
+      );
+      const tcResp = await callGeminiWithRetry({
+        model: GEMINI_DEFAULT_MODEL,
+        contents: tcPrompt,
+        config: {
+          responseMimeType: 'application/json',
+          responseSchema: testCasesOnlyResponseSchema,
+        },
+      });
+      const tcParsed = JSON.parse(tcResp.text.trim());
+      if (!tcParsed || !Array.isArray(tcParsed.testCases)) {
+        logger.error('Resposta da IA com testCases inválidos', 'geminiService', tcParsed);
+        throw new Error('Resposta da IA com estrutura inválida (testCases).');
+      }
+      const testCases = this.mapTestCasesFromResponse(tcParsed.testCases, strategy, baseTs);
 
-      return { strategy, testCases, bddScenarios };
+      return { strategy, testCases, bddScenarios: bddOut };
     } catch (error) {
       if (
         (isGeminiRateLimitOrQuotaError(error) || isGeminiTemporaryServiceError(error)) &&
@@ -241,17 +329,9 @@ Saída: só JSON válido, sem markdown. Estrutura {"strategy":[...],"bddScenario
           'generateTestCasesForTask: Gemini com limite/cota ou serviço temporariamente indisponível; usando OpenAI (VITE_OPENAI_API_KEY) como fallback',
           'GeminiService'
         );
-        return new OpenAIService().generateTestCasesForTask(
-          title,
-          description,
-          bddScenarios,
-          detailLevel,
-          taskType,
-          project,
-          attachmentsContext
-        );
+        return fallbackOpenAI();
       }
-      logger.error("Erro ao gerar casos de teste", 'geminiService', error);
+      logger.error('Erro ao gerar casos de teste', 'geminiService', error);
       throw error;
     }
   }
@@ -498,26 +578,30 @@ Saída: só JSON válido, sem markdown. Estrutura {"strategy":[...],"bddScenario
   }
 
   async generateBddScenarios(title: string, description: string, project?: Project | null, attachmentsContext?: string): Promise<BddScenario[]> {
-    const documentContext = await getFormattedContext(project || null);
-    const prompt = `${documentContext}
-    Aja como um especialista em BDD. Gere cenários em Gherkin **somente em português**, usando estritamente as palavras-chave:
-    Funcionalidade, Cenário (ou Esquema do Cenário), Dado, Quando, Então, E, Mas.
-    Não use Given, When, Then, Feature, Scenario em inglês. Um passo por linha; Dado/Quando/Então com uso correto.
+    const doc = await buildComplementaryDocumentSection(project ?? null);
+    const att = attachmentsContext?.trim()
+      ? `\nAnexos (nomes; use só se coerente com a descrição):\n${attachmentsContext.trim()}\n`
+      : '';
+    const prompt = `
+Você é especialista em BDD. Responda em português brasileiro.
 
-    Cobrir: caminho feliz; alternativas válidas; exceções/erros (negative testing); e, se fizer sentido, permissões/negação de acesso.
+Objetivo: gerar cenários Gherkin **somente** para a tarefa abaixo. Não invente escopo de outras partes do projeto.
 
-    Título da Tarefa: ${title}
-    Descrição: ${description}
-    ${attachmentsContext ? `
-    Anexos da tarefa (considere para enriquecer os cenários):
-    ${attachmentsContext}
-    ` : ''}
+Regras:
+- Palavras-chave somente em português: Funcionalidade, Cenário (ou Esquema do Cenário), Dado, Quando, Então, E, Mas.
+- Não use Given, When, Then, Feature, Scenario em inglês. Um passo por linha.
+- Cobrir: caminho feliz; alternativas válidas; exceções/erros; permissões apenas se fizer sentido na descrição.
 
-    Sua resposta DEVE ser um objeto JSON com uma única chave "scenarios".
-    "scenarios" deve ser um array de objetos, onde cada objeto tem duas chaves:
-    1. "title": Um título descritivo para o cenário.
-    2. "gherkin": Texto Gherkin completo em português, apenas palavras-chave Funcionalidade, Cenário, Dado, Quando, Então, E, Mas (sem keywords em inglês).
-    `;
+═══════════════════════════════════════════════════════════════
+TAREFA (prioridade máxima)
+═══════════════════════════════════════════════════════════════
+Título: ${title}
+Descrição: ${description}
+${att}
+${doc}
+
+Responda somente com JSON válido: {"scenarios":[{"title":"","gherkin":""},...]}.
+`.trim();
 
     const bddSchema = {
         type: Type.OBJECT,
