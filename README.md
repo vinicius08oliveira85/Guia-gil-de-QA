@@ -95,6 +95,10 @@ Nota: Apenas uma chave do Gemini é suportada; não há fallback. Remova variáv
 - `npm run format` - Formata código com Prettier
 - `npm run type-check` - Verifica tipos TypeScript
 
+## Avisos no console do navegador
+
+Mensagens como **"Banner not shown: beforeinstallpromptevent.preventDefault()"** ou **"A listener indicated an asynchronous response…"** costumam ser **esperadas ou causadas por extensões do Chrome**, não por bugs do app. Explicação e como validar: [docs/PWA_SETUP.md — Avisos no console (esperados)](docs/PWA_SETUP.md#avisos-no-console-esperados).
+
 ## Estrutura do Projeto
 
 ```

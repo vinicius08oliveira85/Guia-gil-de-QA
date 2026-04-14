@@ -25,10 +25,13 @@ describe('useErrorHandler', () => {
       result.current.handleError(error, 'Contexto de teste');
     });
 
-    expect(toast.error).toHaveBeenCalledWith('Erro de teste', {
-      duration: 5000,
-      position: 'top-right',
-    });
+    expect(toast.error).toHaveBeenCalledWith(
+      'Erro de teste',
+      expect.objectContaining({
+        duration: 5000,
+        position: 'top-right',
+      })
+    );
   });
 
   it('deve lidar com strings de erro', () => {
@@ -38,10 +41,33 @@ describe('useErrorHandler', () => {
       result.current.handleError('Erro de string', 'Contexto');
     });
 
-    expect(toast.error).toHaveBeenCalledWith('Erro de string', {
-      duration: 5000,
-      position: 'top-right',
+    expect(toast.error).toHaveBeenCalledWith(
+      'Erro de string',
+      expect.objectContaining({
+        duration: 5000,
+        position: 'top-right',
+      })
+    );
+  });
+
+  it('deve exibir mensagem amigável e id estável para GEMINI_RATE_LIMITED', () => {
+    const { result } = renderHook(() => useErrorHandler());
+    const err = new Error('Muitas requisições') as Error & { code?: string; status?: number };
+    err.code = 'GEMINI_RATE_LIMITED';
+    err.status = 429;
+
+    act(() => {
+      result.current.handleError(err, 'IA');
     });
+
+    expect(toast.error).toHaveBeenCalledWith(
+      expect.stringContaining('Limite temporário do Gemini'),
+      expect.objectContaining({
+        duration: 8000,
+        position: 'top-right',
+        id: 'ai-toast-GEMINI_RATE_LIMITED',
+      })
+    );
   });
 
   it('deve mostrar mensagem de sucesso', () => {
@@ -51,9 +77,26 @@ describe('useErrorHandler', () => {
       result.current.handleSuccess('Operação bem-sucedida');
     });
 
-    expect(toast.success).toHaveBeenCalledWith('Operação bem-sucedida', {
+    expect(toast.success).toHaveBeenCalledWith(
+      'Operação bem-sucedida',
+      expect.objectContaining({
+        duration: 3000,
+        position: 'top-right',
+      })
+    );
+  });
+
+  it('deve repassar id ao toast de sucesso para deduplicação', () => {
+    const { result } = renderHook(() => useErrorHandler());
+
+    act(() => {
+      result.current.handleSuccess('Salvo', { id: 'toast-test-id' });
+    });
+
+    expect(toast.success).toHaveBeenCalledWith('Salvo', {
       duration: 3000,
       position: 'top-right',
+      id: 'toast-test-id',
     });
   });
 

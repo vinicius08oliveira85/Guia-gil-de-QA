@@ -4,7 +4,8 @@ import { marked } from 'marked';
 import { sanitizeHTML } from '../../utils/sanitize';
 import { AIService } from './aiServiceInterface';
 import { getFormattedContext } from './documentContextService';
-import { callGeminiWithRetry } from './geminiApiWrapper';
+import { callGeminiWithRetry, isGeminiRateLimitOrQuotaError } from './geminiApiWrapper';
+import { OpenAIService, isOpenAIEnvApiKeyConfigured } from './openaiService';
 import { GEMINI_DEFAULT_MODEL } from './geminiConstants';
 import { logger } from '../../utils/logger';
 
@@ -104,7 +105,7 @@ const testCaseGenerationSchema = {
 
 export class GeminiService implements AIService {
   /**
-   * Constrói um prompt robusto e profissional para geração de testes como um QA Sênior
+   * Prompt conciso para geração de testes (limite 8000 chars) — reduz TPM e risco de 429 no tier gratuito.
    */
   private async buildRobustTestGenerationPrompt(
     title: string,
@@ -117,235 +118,50 @@ export class GeminiService implements AIService {
   ): Promise<string> {
     const documentContext = await getFormattedContext(project || null);
 
-    const detailInstruction = `
-      📋 NÍVEL DE DETALHE PARA OS PASSOS DO TESTE: ${detailLevel}
-      
-      - Se 'Resumido': Forneça apenas os passos essenciais de alto nível (3-5 passos).
-      - Se 'Padrão': Forneça um bom equilíbrio de detalhes (5-8 passos), suficiente para um analista de QA entender o fluxo completo.
-      - Se 'Detalhado': Forneça passos muito granulares e específicos (8+ passos), incluindo dados de exemplo, validações intermediárias e pré-condições explícitas.
-    `;
+    const detailInstruction = `Nível de detalhe dos passos: ${detailLevel} — Resumido: 3–5; Padrão: 5–8; Detalhado: 8+ com dados e validações intermediárias.`;
 
     const shouldGenerateTestCases = taskType === 'Tarefa' || taskType === 'Bug' || !taskType;
-    const attentionMessage = !shouldGenerateTestCases 
-      ? `⚠️ ATENÇÃO: Esta tarefa é do tipo "${taskType}". Para este tipo, gere APENAS estratégias de teste. NÃO gere casos de teste (testCases deve ser um array vazio []).`
+    const attentionMessage = !shouldGenerateTestCases
+      ? `Tipo "${taskType}": gere apenas estratégias; testCases = [].`
       : '';
 
-    const testCasesInstructions = shouldGenerateTestCases ? `
-      ════════════════════════════════════════════════════════════════
-      INSTRUÇÕES PARA GERAÇÃO DE CASOS DE TESTE
-      ════════════════════════════════════════════════════════════════
-      
-      IMPORTANTE: Os casos de teste devem ser derivados DIRETAMENTE das estratégias de teste definidas anteriormente.
-      
-      Gere uma lista abrangente e detalhada de casos de teste específicos. Para cada caso de teste, 
-      siga rigorosamente a seguinte estrutura:
-      
-      1. **description**: Descrição clara, concisa e objetiva do que está sendo testado. 
-         Use linguagem técnica mas acessível. Exemplo: "Validar login com credenciais válidas" 
-         ao invés de "Teste de login".
-      
-      2. **steps**: Array de strings com passos detalhados para execução. Cada passo deve:
-         - Ser acionável e verificável
-         - Incluir dados específicos quando relevante (ex: "Informar email: usuario@exemplo.com")
-         - Ser numerado logicamente (1, 2, 3...)
-         - Incluir validações intermediárias quando necessário
-         - Seguir o nível de detalhe especificado (${detailLevel})
-      
-      3. **expectedResult**: Resultado esperado após a execução dos passos. Deve ser:
-         - Específico e mensurável
-         - Incluir valores, mensagens ou comportamentos esperados
-         - Considerar diferentes cenários (sucesso, erro, edge cases)
-         - Exemplo: "Sistema deve exibir mensagem 'Login realizado com sucesso' e redirecionar para /dashboard"
-      
-      4. **preconditions**: Pré-condições necessárias para executar este teste. Inclua:
-         - Dados que devem existir no sistema (ex: "Usuário cadastrado com email usuario@exemplo.com")
-         - Estados prévios do sistema (ex: "Sessão anterior deve estar encerrada")
-         - Configurações necessárias (ex: "Ambiente de teste configurado com dados de homologação")
-         - Permissões ou roles necessárias (ex: "Usuário deve ter permissão de administrador")
-         - Deixe vazio ou omita apenas se NÃO houver pré-condições específicas
-      
-      5. **strategies**: Array de strings contendo os 'testType's da seção de estratégia que se aplicam 
-         a este caso de teste. Um caso pode ter múltiplas estratégias (ex: ["Teste Funcional", "Teste de Regressão"]).
-      
-      6. **isAutomated**: Boolean indicando se o teste é candidato para automação.
-         - true: Teste repetitivo, crítico, de regressão, baseado em dados, ou que será executado frequentemente
-         - false: Teste exploratório, de usabilidade, ad-hoc, ou que requer análise humana
-      
-      7. **testSuite**: Nome da suite de teste à qual este caso pertence. Baseie-se no contexto da tarefa 
-         e funcionalidade testada. Exemplos: "Login", "Cadastro", "Pagamento", "Relatórios", "Dashboard", 
-         "Configurações", "Perfil do Usuário".
-      
-      8. **testEnvironment**: Ambiente(s) de teste onde este caso deve ser executado. Pode incluir:
-         - Navegadores: "Chrome", "Firefox", "Safari", "Edge"
-         - Dispositivos: "Mobile", "Tablet", "Desktop"
-         - Ambientes: "API", "Web", "Mobile App"
-         - Para múltiplos ambientes, separe por " / " (ex: "Chrome / Firefox / Mobile")
-      
-      9. **priority**: Prioridade do caso de teste baseada em:
-         - **Urgente**: Testes críticos que validam funcionalidades essenciais do negócio, 
-           que podem causar impacto grave se falharem (ex: pagamento, autenticação, segurança)
-         - **Alta**: Testes importantes que validam funcionalidades principais, 
-           com impacto significativo se falharem (ex: fluxos principais, integrações críticas)
-         - **Média**: Testes que validam funcionalidades secundárias ou melhorias, 
-           com impacto moderado se falharem (ex: relatórios, configurações, validações)
-         - **Baixa**: Testes que validam funcionalidades de baixa criticidade, 
-           melhorias cosméticas ou edge cases raros (ex: formatação, textos, validações opcionais)
-         
-         Considere: criticidade da funcionalidade, impacto no negócio, frequência de uso, 
-         complexidade do teste e risco de falha.
+    const bddRef =
+      bddScenarios && bddScenarios.length > 0
+        ? `Referência BDD (resumo): ${bddScenarios
+            .map((b) => `${b.title}: ${(b.gherkin || '').slice(0, 400)}`)
+            .join(' | ')
+            .slice(0, 2500)}`
+        : '';
 
-      ════════════════════════════════════════════════════════════════
-      OBRIGATÓRIO: CAMINHOS DE EXCEÇÃO (NEGATIVE TESTING) E SEGURANÇA
-      ════════════════════════════════════════════════════════════════
-      
-      Além dos fluxos de sucesso, você DEVE incluir casos de teste explícitos para:
-      
-      1. **Caminho de exceção / Negative testing**: entradas inválidas, regras de negócio violadas, 
-         limites (valores vazios, nulos, formatos incorretos, estouro de limites), falhas de integração 
-         (API indisponível, timeout, resposta de erro), cancelamento e rollback quando aplicável.
-         Cada cenário negativo deve ter passos claros, resultado esperado mensurável e prioridade coerente 
-         com o risco (muitos devem ser **Alta** ou **Urgente** quando impactam integridade ou segurança).
-      
-      2. **Segurança e permissões**: acesso não autorizado, escalonamento de privilégio, sessão expirada ou inválida, 
-         tentativa de ação sem permissão (RBAC/perfis), exposição indevida de dados (IDOR, vazamento em mensagens de erro), 
-         CSRF/XSS onde relevante ao contexto web, e validação de auditoria quando o domínio exigir.
-         Inclua pelo menos um caso focado em **autorização** se a tarefa envolver dados sensíveis ou áreas restritas.
-      
-      Esses casos devem aparecer em **testCases** (e, quando fizer sentido, refletidos também em **bddScenarios** e **strategy**).
-      ` : '';
+    const testCasesInstructions = shouldGenerateTestCases
+      ? `Casos de teste (derivados das estratégias): description; steps[]; expectedResult; preconditions; strategies[]; isAutomated; testSuite; testEnvironment; priority (Baixa|Média|Alta|Urgente). Cubra sucesso, alternativas, exceção/negative e segurança/permissão quando aplicável.`
+      : '';
+
+    const bugBlock =
+      taskType === 'Bug'
+        ? 'BUG: priorize regressão, verificação da correção e impactos colaterais; BDD descreve o comportamento esperado após a correção.'
+        : '';
 
     const rawPrompt = `${documentContext}
-      Você é um QA Sênior com mais de 10 anos de experiência em garantia de qualidade de software, 
-      metodologias ágeis (Scrum, Kanban), e práticas de DevOps. Sua expertise inclui:
-      - Testes funcionais, de integração, regressão, performance e segurança
-      - BDD (Behavior-Driven Development) e TDD (Test-Driven Development)
-      - Automação de testes com ferramentas modernas
-      - Análise de risco e priorização de testes
-      - Cobertura de testes e métricas de qualidade
+Você é QA sênior (funcional, regressão, integração, segurança, BDD). Português brasileiro.
 
-      ════════════════════════════════════════════════════════════════
-      CONTEXTO DA TAREFA
-      ════════════════════════════════════════════════════════════════
-      
-      Título: ${title}
-      Descrição: ${description}
-      ${taskType ? `Tipo: ${taskType}` : ''}
-      ${attachmentsContext ? `
-      ════════════════════════════════════════════════════════════════
-      ANEXOS DA TAREFA
-      ════════════════════════════════════════════════════════════════
-      ${attachmentsContext}
-      Considere as informações contidas ou sugeridas pelos anexos ao gerar estratégias, casos de teste e cenários BDD.
-      ` : ''}
-      
-      ${taskType === 'Bug' ? `
-      ════════════════════════════════════════════════════════════════
-      CONTEXTO ESPECÍFICO PARA BUG
-      ════════════════════════════════════════════════════════════════
-      
-      Esta é uma tarefa do tipo "Bug". Ao gerar estratégias e casos de teste, FOQUE em:
-      
-      1. **Testes de Verificação de Correção**: Casos de teste que validam que o bug foi corrigido
-         e que o comportamento esperado agora funciona corretamente.
-      
-      2. **Testes de Regressão**: Casos de teste que verificam se a correção não introduziu novos bugs
-         ou quebrou funcionalidades relacionadas.
-      
-      3. **Testes Relacionados**: Casos de teste que validam funcionalidades similares ou que podem
-         ter sido afetadas pela mesma causa raiz do bug.
-      
-      4. **Cenários BDD**: Devem descrever o comportamento esperado APÓS a correção do bug,
-         focando no comportamento correto que deve ser observado.
-      
-      5. **Estratégias de Teste**: Priorize estratégias como:
-         - Teste de Regressão (crítico para bugs)
-         - Teste de Verificação de Correção
-         - Teste Funcional (para validar o comportamento correto)
-         - Teste de Integração (se o bug afetou integrações)
-         - Teste de Edge Cases (para evitar recorrência)
-      ` : ''}
-      
-      ${detailInstruction}
+TAREFA
+Título: ${title}
+Descrição: ${description}
+${taskType ? `Tipo: ${taskType}` : ''}
+${bddRef ? `${bddRef}\n` : ''}${attachmentsContext ? `Anexos:\n${attachmentsContext}\n` : ''}${bugBlock ? `${bugBlock}\n` : ''}
+${detailInstruction}
+${attentionMessage}
 
-      ════════════════════════════════════════════════════════════════
-      INSTRUÇÕES PARA GERAÇÃO DE ESTRATÉGIAS DE TESTE
-      ════════════════════════════════════════════════════════════════
-      PRIMEIRO: Defina a Estratégia de Teste baseada no tipo da tarefa e nos riscos envolvidos.
-      
-      Gere uma lista abrangente de estratégias de teste recomendadas. Para cada estratégia, forneça:
-      
-      1. **testType**: Nome específico do tipo de teste (ex: "Teste Funcional", "Teste de Integração", 
-         "Teste de Regressão", "Teste de Usabilidade", "Teste de Performance", "Teste de Segurança", 
-         "Teste de Acessibilidade", "Teste de API", "Teste de Caixa Branca", etc.)
-      
-      2. **description**: Explicação clara e objetiva do propósito desta estratégia no contexto específico 
-         da tarefa. Explique POR QUE este tipo de teste é necessário e QUAIS riscos ele mitiga.
-      
-      3. **howToExecute**: Array de strings com passos acionáveis e práticos para executar este tipo de teste. 
-         Cada passo deve ser claro, específico e executável por um QA.
-      
-      4. **tools**: Ferramentas recomendadas para este tipo de teste, separadas por vírgulas. 
-         Considere ferramentas modernas e amplamente utilizadas (ex: "Selenium, Cypress, Playwright" 
-         para testes web, "Postman, Insomnia" para APIs, "JMeter, K6" para performance).
-      
-      SEGUNDO: Gere os Casos de Teste baseados nessas estratégias.
+1) Estratégias: lista de { testType, description, howToExecute[], tools } alinhadas ao risco da tarefa.
+2) ${testCasesInstructions || 'Sem casos automatizados neste tipo — apenas estratégias.'}
+3) BDD: Gherkin só em português (Funcionalidade, Cenário, Dado, Quando, Então, E, Mas). Sem Given/When/Then. Cubra happy path, alternativas, erro e permissão se aplicável.
 
-      ${testCasesInstructions}
+Responda somente JSON válido (sem markdown). Formato: {"strategy":[...],"bddScenarios":[{"title","gherkin"}],"testCases":${shouldGenerateTestCases ? '[...]' : '[]'}} — o schema da requisição define os tipos; preencha todos os campos obrigatórios.
+`;
 
-      ════════════════════════════════════════════════════════════════
-      INSTRUÇÕES PARA GERAÇÃO DE CENÁRIOS BDD (GHERKIN ESTRITO EM PORTUGUÊS)
-      ════════════════════════════════════════════════════════════════
-      TERCEIRO: Gere cenários BDD com sintaxe Gherkin em **português exclusivo** (não misture inglês).
-      
-      Regras obrigatórias de formatação:
-      - Palavras-chave permitidas: **Funcionalidade**, **Cenário** (ou **Esquema do Cenário**), **Dado**, **Quando**, **Então**, **E**, **Mas**.
-      - Proibido usar Given, When, Then, Feature, Scenario, Background em inglês no texto do gherkin.
-      - Cada passo em uma linha; inicie cada linha de passo com uma das palavras-chave acima (maiúscula inicial conforme Gherkin).
-      - Use **Dado** para contexto/pré-condições, **Quando** para ação, **Então** para resultado; **E** / **Mas** para continuação do mesmo tipo de passo.
-      
-      Cobertura mínima:
-      1. Caminho feliz (happy path).
-      2. Cenários alternativos (dados ou fluxos válidos diferentes).
-      3. Cenários de exceção/erro (negative testing) — alinhados aos casos de exceção obrigatórios acima.
-      4. Pelo menos um cenário que trate **permissão, autenticação ou negação de acesso**, se aplicável ao contexto da tarefa.
-
-      Para cada cenário: "title" descritivo e "gherkin" completo seguindo estritamente estas regras.
-
-      
-      ════════════════════════════════════════════════════════════════
-      BOAS PRÁTICAS E CONSIDERAÇÕES
-      ════════════════════════════════════════════════════════════════
-      
-      - Cobertura: Garanta cobertura de casos de sucesso, falha, edge cases e validações
-      - Clareza: Cada caso de teste deve ser compreensível e executável por qualquer QA
-      - Rastreabilidade: Relacione casos de teste com os cenários BDD quando disponíveis
-      - Priorização: Priorize testes críticos e de alto impacto
-      - Reutilização: Considere pré-condições que podem ser reutilizadas entre testes
-      - Manutenibilidade: Use descrições e passos que facilitem a manutenção futura
-      - Automação: Identifique claramente quais testes são candidatos à automação
-      
-      ════════════════════════════════════════════════════════════════
-      FORMATO DE RESPOSTA
-      ════════════════════════════════════════════════════════════════
-      
-      Retorne APENAS um objeto JSON válido com a seguinte estrutura:
-      {
-        "strategy": [...],
-        "bddScenarios": [...],
-        "testCases": ${shouldGenerateTestCases ? '[...]' : '[]'}
-      }
-      
-      ${attentionMessage}
-      
-      IMPORTANTE: 
-      - Retorne APENAS JSON válido, sem markdown, sem código, sem explicações adicionais
-      - Todos os campos obrigatórios devem estar presentes
-      - Valores devem ser apropriados e realistas
-      - Use português brasileiro em todas as descrições
-    `;
-
-    /** Tier gratuito: prompts muito longos elevam TPM e disparam 429 mesmo com poucas requisições. */
-    const MAX_PROMPT_LENGTH = 12_000;
+    /** Tier gratuito: prompts longos elevam TPM e podem disparar 429. */
+    const MAX_PROMPT_LENGTH = 8000;
     return rawPrompt.length > MAX_PROMPT_LENGTH
       ? rawPrompt.slice(0, MAX_PROMPT_LENGTH) + '\n\n[... contexto truncado ...]'
       : rawPrompt;
@@ -412,8 +228,22 @@ export class GeminiService implements AIService {
 
       return { strategy, testCases, bddScenarios };
     } catch (error) {
+      if (isGeminiRateLimitOrQuotaError(error) && isOpenAIEnvApiKeyConfigured()) {
+        logger.warn(
+          'generateTestCasesForTask: Gemini com limite/cota; usando OpenAI (VITE_OPENAI_API_KEY) como fallback',
+          'GeminiService'
+        );
+        return new OpenAIService().generateTestCasesForTask(
+          title,
+          description,
+          bddScenarios,
+          detailLevel,
+          taskType,
+          project,
+          attachmentsContext
+        );
+      }
       logger.error("Erro ao gerar casos de teste", 'geminiService', error);
-      // Preservar erro original do callGeminiWithRetry que contém informações detalhadas (status, code, message)
       throw error;
     }
   }
@@ -451,8 +281,14 @@ export class GeminiService implements AIService {
         const html = marked(markdownText) as string;
         return sanitizeHTML(html);
     } catch (error) {
+        if (isGeminiRateLimitOrQuotaError(error) && isOpenAIEnvApiKeyConfigured()) {
+          logger.warn(
+            'analyzeDocumentContent: Gemini com limite/cota; usando OpenAI como fallback',
+            'GeminiService'
+          );
+          return new OpenAIService().analyzeDocumentContent(content, project);
+        }
         logger.error("Erro ao analisar documento", 'geminiService', error);
-        // Preservar erro original do callGeminiWithRetry que contém informações detalhadas (status, code, message)
         throw error;
     }
   }
@@ -710,8 +546,14 @@ export class GeminiService implements AIService {
             id: `bdd-${Date.now()}-${index}`,
         }));
     } catch (error) {
+        if (isGeminiRateLimitOrQuotaError(error) && isOpenAIEnvApiKeyConfigured()) {
+          logger.warn(
+            'generateBddScenarios: Gemini com limite/cota; usando OpenAI como fallback',
+            'GeminiService'
+          );
+          return new OpenAIService().generateBddScenarios(title, description, project, attachmentsContext);
+        }
         logger.error("Erro ao gerar cenários BDD", 'geminiService', error);
-        // Preservar erro original do callGeminiWithRetry que contém informações detalhadas (status, code, message)
         throw error;
     }
   }

@@ -66,7 +66,14 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
       try {
         logger.debug('Carregando projetos do IndexedDB...', 'ProjectsStore');
         indexedDBProjects = await loadProjectsFromIndexedDB();
-        logger.info(`Projetos carregados do IndexedDB: ${indexedDBProjects.length}`, 'ProjectsStore');
+        if (indexedDBProjects.length === 0 && isSupabaseAvailable()) {
+          logger.debug(
+            `Projetos carregados do IndexedDB: 0 (Supabase disponível; merge em seguida pode trazer projetos da nuvem)`,
+            'ProjectsStore'
+          );
+        } else {
+          logger.info(`Projetos carregados do IndexedDB: ${indexedDBProjects.length}`, 'ProjectsStore');
+        }
       } catch (error) {
         logger.error('Erro ao carregar do IndexedDB', 'ProjectsStore', error);
         set({

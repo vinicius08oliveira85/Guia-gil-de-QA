@@ -19,6 +19,15 @@ function resolveGeminiModelId(model: string | undefined): string {
 
 export type GeminiAppError = Error & { code?: string; status?: number; retryAfter?: number };
 
+/** Indica limite de taxa ou cota do Gemini (útil para fallback OpenAI). */
+export function isGeminiRateLimitOrQuotaError(error: unknown): boolean {
+  if (!error || typeof error !== 'object') {
+    return false;
+  }
+  const code = (error as GeminiAppError).code;
+  return code === 'GEMINI_RATE_LIMITED' || code === 'GEMINI_QUOTA_EXCEEDED';
+}
+
 export interface GeminiGenerateContentParams {
   model: string;
   contents: string;
@@ -368,10 +377,10 @@ export async function callGeminiWithRetry(
         },
         {
           maxRetries: GEMINI_HTTP_MAX_RETRIES,
-          initialDelay: 4000,
+          initialDelay: 5000, // Aumentado para dar mais fôlego à cota
           backoffMultiplier: 2,
           maxDelay: 180_000,
-          maxTotalTimeout: 480_000,
+          maxTotalTimeout: 120_000, // Reduzido para 2 min: se não liberar em 2min, melhor avisar o usuário
           useJitter: true,
           isRetryable: isRetryableGeminiError,
           quietRetryLogs: true,

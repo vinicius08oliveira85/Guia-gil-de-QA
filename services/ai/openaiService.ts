@@ -39,6 +39,11 @@ const getOpenAI = () => {
   return openai;
 };
 
+/** True se houver chave OpenAI no ambiente (fallback quando o Gemini retorna 429/cota). */
+export function isOpenAIEnvApiKeyConfigured(): boolean {
+  return !!((import.meta.env.VITE_OPENAI_API_KEY || import.meta.env.OPENAI_API_KEY || '').trim());
+}
+
 /** Considera 429, 503 e 5xx como retentáveis para chamadas à API OpenAI */
 function isOpenAIRetryable(error: unknown): boolean {
   const err = error as { status?: number; statusCode?: number; message?: string };

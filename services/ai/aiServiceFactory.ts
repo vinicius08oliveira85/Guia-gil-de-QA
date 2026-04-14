@@ -1,8 +1,11 @@
 import { AIService } from './aiServiceInterface';
 import { GeminiService } from './geminiService';
-import { OpenAIService } from './openaiService';
+import { OpenAIService, isOpenAIEnvApiKeyConfigured } from './openaiService';
 import { logger } from '../../utils/logger';
 import { getGeminiConfig } from '../geminiConfigService';
+import { isGeminiRateLimitOrQuotaError } from './geminiApiWrapper';
+
+export { isOpenAIEnvApiKeyConfigured, isGeminiRateLimitOrQuotaError };
 
 export type AIProvider = 'gemini' | 'openai';
 
@@ -53,7 +56,11 @@ const createAIService = (provider: AIProvider): AIService => {
 };
 
 /**
- * Obtém ou cria a instância do serviço de IA
+ * Obtém ou cria a instância do serviço de IA.
+ *
+ * Quando o provedor ativo é Gemini e a API retorna limite/cota (429), o {@link GeminiService}
+ * pode repetir a operação automaticamente com OpenAI se `VITE_OPENAI_API_KEY` (ou `OPENAI_API_KEY`) estiver definida.
+ * Use {@link isOpenAIEnvApiKeyConfigured} para verificar se o fallback está disponível.
  */
 export const getAIService = (provider?: AIProvider): AIService => {
   const selectedProvider = provider || getConfiguredProvider();

@@ -154,9 +154,12 @@ const App: React.FC = () => {
             if (shouldShowToast) {
                 const { lastSaveToSupabase } = useProjectsStore.getState();
                 if (lastSaveToSupabase) {
-                    handleSuccess('Projeto atualizado com sucesso!');
+                    handleSuccess('Projeto atualizado com sucesso!', { id: 'toast-project-updated' });
                 } else {
-                    handleSuccess('Projeto salvo apenas neste dispositivo (não foi possível sincronizar com a nuvem).');
+                    handleSuccess(
+                        'Projeto salvo apenas neste dispositivo (não foi possível sincronizar com a nuvem).',
+                        { id: 'toast-project-local-only' }
+                    );
                 }
             }
         } catch (error) {
