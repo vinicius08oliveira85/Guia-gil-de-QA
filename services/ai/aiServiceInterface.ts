@@ -11,6 +11,7 @@ export interface AIService {
         detailLevel?: TestCaseDetailLevel,
         taskType?: JiraTaskType,
         project?: Project | null,
+        task?: JiraTask | null,
         attachmentsContext?: string
     ): Promise<{ strategy: TestStrategy[]; testCases: TestCase[]; bddScenarios: BddScenario[] }>;
 
@@ -35,7 +36,13 @@ export interface AIService {
         project?: Project | null
     ): Promise<ShiftLeftAnalysis>;
 
-    generateBddScenarios(title: string, description: string, project?: Project | null, attachmentsContext?: string): Promise<BddScenario[]>;
+    generateBddScenarios(
+        title: string,
+        description: string,
+        project?: Project | null,
+        task?: JiraTask | null,
+        attachmentsContext?: string
+    ): Promise<BddScenario[]>;
 
     generateTestPyramidAnalysis(
         projectName: string,

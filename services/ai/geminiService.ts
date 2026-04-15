@@ -17,6 +17,7 @@ import {
   buildComplementaryDocumentSection,
   buildStrategyOnlyPrompt,
   buildTestCasesOnlyPrompt,
+  formatBusinessRulesForPrompt,
   shouldGenerateTestCasesAndBdd,
 } from './testGenerationPrompts';
 import { normalizeStrategyReferences } from './testGenerationValidators';
@@ -223,6 +224,7 @@ export class GeminiService implements AIService {
     detailLevel: TestCaseDetailLevel = 'Padrão',
     taskType?: JiraTaskType,
     project?: Project | null,
+    task?: JiraTask | null,
     attachmentsContext?: string
   ): Promise<{ strategy: TestStrategy[]; testCases: TestCase[]; bddScenarios: BddScenario[] }> {
     const shouldCases = shouldGenerateTestCasesAndBdd(taskType);
@@ -236,6 +238,7 @@ export class GeminiService implements AIService {
         detailLevel,
         taskType,
         project,
+        task,
         attachmentsContext
       );
 
@@ -245,7 +248,8 @@ export class GeminiService implements AIService {
         description,
         taskType,
         project ?? null,
-        attachmentsContext
+        attachmentsContext,
+        task
       );
       const strategyResp = await callGeminiWithRetry({
         model: GEMINI_DEFAULT_MODEL,
@@ -276,7 +280,8 @@ export class GeminiService implements AIService {
           taskType,
           project ?? null,
           strategy,
-          attachmentsContext
+          attachmentsContext,
+          task
         );
         const bddResp = await callGeminiWithRetry({
           model: GEMINI_DEFAULT_MODEL,
@@ -302,7 +307,8 @@ export class GeminiService implements AIService {
         project ?? null,
         strategy,
         bddOut,
-        attachmentsContext
+        attachmentsContext,
+        task
       );
       const tcResp = await callGeminiWithRetry({
         model: GEMINI_DEFAULT_MODEL,
@@ -577,11 +583,19 @@ export class GeminiService implements AIService {
     }
   }
 
-  async generateBddScenarios(title: string, description: string, project?: Project | null, attachmentsContext?: string): Promise<BddScenario[]> {
+  async generateBddScenarios(
+    title: string,
+    description: string,
+    project?: Project | null,
+    task?: JiraTask | null,
+    attachmentsContext?: string
+  ): Promise<BddScenario[]> {
+    const br = formatBusinessRulesForPrompt(project ?? null, task);
     const doc = await buildComplementaryDocumentSection(project ?? null);
     const att = attachmentsContext?.trim()
       ? `\nAnexos (nomes; use só se coerente com a descrição):\n${attachmentsContext.trim()}\n`
       : '';
+    const brBlock = br ? `\n${br}\n` : '';
     const prompt = `
 Você é especialista em BDD. Responda em português brasileiro.
 
@@ -598,7 +612,7 @@ TAREFA (prioridade máxima)
 Título: ${title}
 Descrição: ${description}
 ${att}
-${doc}
+${brBlock}${doc}
 
 Responda somente com JSON válido: {"scenarios":[{"title":"","gherkin":""},...]}.
 `.trim();
@@ -649,7 +663,7 @@ Responda somente com JSON válido: {"scenarios":[{"title":"","gherkin":""},...]}
             'generateBddScenarios: Gemini com limite/cota ou serviço temporariamente indisponível; usando OpenAI como fallback',
             'GeminiService'
           );
-          return new OpenAIService().generateBddScenarios(title, description, project, attachmentsContext);
+          return new OpenAIService().generateBddScenarios(title, description, project, task, attachmentsContext);
         }
         logger.error("Erro ao gerar cenários BDD", 'geminiService', error);
         throw error;

@@ -224,6 +224,7 @@ export const importJiraProject = async (
         name: jiraProject.name,
         description: jiraProject.description || `Projeto importado do Jira: ${jiraProjectKey}`,
         documents: [],
+        businessRules: [],
         tasks: tasks,
         phases: [],
         tags: [],

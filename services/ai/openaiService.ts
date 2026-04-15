@@ -9,6 +9,7 @@ import {
   buildComplementaryDocumentSection,
   buildStrategyOnlyPrompt,
   buildTestCasesOnlyPrompt,
+  formatBusinessRulesForPrompt,
   shouldGenerateTestCasesAndBdd,
 } from './testGenerationPrompts';
 import { normalizeStrategyReferences } from './testGenerationValidators';
@@ -177,6 +178,7 @@ export class OpenAIService implements AIService {
     detailLevel: TestCaseDetailLevel = 'Padrão',
     taskType?: JiraTaskType,
     project?: Project | null,
+    task?: JiraTask | null,
     attachmentsContext?: string
   ): Promise<{ strategy: TestStrategy[]; testCases: TestCase[]; bddScenarios: BddScenario[] }> {
     const shouldCases = shouldGenerateTestCasesAndBdd(taskType);
@@ -189,7 +191,8 @@ export class OpenAIService implements AIService {
         description,
         taskType,
         project ?? null,
-        attachmentsContext
+        attachmentsContext,
+        task
       );
       const strategyJson = await this.callAPI(strategyPrompt, jsonOpts);
       const strategyParsed = JSON.parse(strategyJson);
@@ -213,7 +216,8 @@ export class OpenAIService implements AIService {
           taskType,
           project ?? null,
           strategy,
-          attachmentsContext
+          attachmentsContext,
+          task
         );
         const bddJson = await this.callAPI(bddPrompt, jsonOpts);
         const bddParsed = JSON.parse(bddJson);
@@ -232,7 +236,8 @@ export class OpenAIService implements AIService {
         project ?? null,
         strategy,
         bddOut,
-        attachmentsContext
+        attachmentsContext,
+        task
       );
       const tcJson = await this.callAPI(tcPrompt, jsonOpts);
       const tcParsed = JSON.parse(tcJson);
@@ -396,11 +401,19 @@ export class OpenAIService implements AIService {
     }
   }
 
-  async generateBddScenarios(title: string, description: string, project?: Project | null, attachmentsContext?: string): Promise<BddScenario[]> {
+  async generateBddScenarios(
+    title: string,
+    description: string,
+    project?: Project | null,
+    task?: JiraTask | null,
+    attachmentsContext?: string
+  ): Promise<BddScenario[]> {
+    const br = formatBusinessRulesForPrompt(project ?? null, task);
     const doc = await buildComplementaryDocumentSection(project ?? null);
     const att = attachmentsContext?.trim()
       ? `\nAnexos (nomes; use só se coerente com a descrição):\n${attachmentsContext.trim()}\n`
       : '';
+    const brBlock = br ? `\n${br}\n` : '';
     const prompt = `
 Você é especialista em BDD. Responda em português brasileiro.
 
@@ -418,7 +431,7 @@ TAREFA (prioridade máxima)
 Título: ${title}
 Descrição: ${description}
 ${att}
-${doc}
+${brBlock}${doc}
 
 Responda somente com JSON válido: {"scenarios":[{"title":"","gherkin":""},...]}.
 `.trim();

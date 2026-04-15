@@ -18,6 +18,7 @@ import { FileViewer } from './common/FileViewer';
 import { viewFileInNewTab } from '../services/fileViewerService';
 import { DocumentStatsCards } from './documents/DocumentStatsCards';
 import { DocumentCard } from './documents/DocumentCard';
+import { BusinessRulesPanel } from './documents/BusinessRulesPanel';
 import { Search, Upload, FileText, CheckCircle2, AlertCircle } from 'lucide-react';
 
 interface DocumentWithMetadata extends ProjectDocument {
@@ -314,6 +315,8 @@ export const DocumentsView: React.FC<{
                 project={project} 
                 onUpdateProject={onUpdateProject} 
             />
+
+            <BusinessRulesPanel project={project} onUpdateProject={onUpdateProject} />
             
         <section className="space-y-6" aria-labelledby="documents-section-heading">
             <div className="flex flex-col gap-1">

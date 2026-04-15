@@ -1,4 +1,4 @@
-import { Project, JiraTask } from '../types';
+import type { BusinessRule, JiraTask, Project } from '../types';
 import { format } from 'date-fns';
 import * as XLSX from 'xlsx';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
@@ -15,6 +15,19 @@ export const exportProjectToJSON = (project: Project): string => {
     exportedAt: new Date().toISOString(),
   };
   return JSON.stringify(exportData, null, 2);
+};
+
+/** JSON apenas das regras de negócio (backup parcial / reuso entre projetos). */
+export const exportBusinessRulesToJSON = (projectName: string, rules: BusinessRule[]): string => {
+  return JSON.stringify(
+    {
+      projectName,
+      exportedAt: new Date().toISOString(),
+      businessRules: rules,
+    },
+    null,
+    2
+  );
 };
 
 export const exportProjectToCSV = (project: Project): string => {

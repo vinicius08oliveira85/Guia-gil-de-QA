@@ -25,7 +25,11 @@
     "build-storybook": "storybook build",
     "setup:figma": "node scripts/setup-figma-integration.js",
     "generate-icons": "node scripts/generate-pwa-icons.js",
-    "ping:gemini": "node scripts/ping-gemini.mjs"
+    "ping:gemini": "node scripts/ping-gemini.mjs",
+    "extract:business-rules": "node scripts/extract-business-rules.mjs",
+    "extract:business-rules:ai": "node scripts/extract-business-rules.mjs --ai",
+    "extract:business-rules:all": "node scripts/extract-business-rules.mjs --all",
+    "extract:business-rules:all-per-export": "node scripts/extract-business-rules.mjs --all --per-export"
   },
   "dependencies": {
     "@google/genai": "^1.29.1",

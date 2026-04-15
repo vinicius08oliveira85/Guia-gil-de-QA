@@ -70,6 +70,7 @@ export const loadProjectsFromIndexedDB = async (): Promise<Project[]> => {
   // Migrar TestCases dos projetos do IndexedDB (otimizado)
   const migratedIndexedDBProjects = indexedDBProjects.map((project) => ({
     ...project,
+    businessRules: project.businessRules ?? [],
     tasks: (project.tasks || []).map((task) => ({
       ...task,
       testCases: migrateTestCases(task.testCases || []),
@@ -96,6 +97,7 @@ export const getProjectById = async (projectId: string): Promise<Project | null>
   if (!raw) return null;
   const migrated = {
     ...raw,
+    businessRules: raw.businessRules ?? [],
     tasks: raw.tasks.map(task => ({
       ...task,
       testCases: migrateTestCases(task.testCases || []),
@@ -143,6 +145,7 @@ export const getAllProjects = async (): Promise<Project[]> => {
     try {
       const migratedSupabaseProjects = supabaseProjects.map((project) => ({
         ...project,
+        businessRules: project.businessRules ?? [],
         tasks: (project.tasks || []).map((task) => ({
           ...task,
           testCases: migrateTestCases(task.testCases || []),

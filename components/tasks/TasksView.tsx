@@ -294,7 +294,7 @@ export const TasksView: React.FC<{
 
                 const aiService = getAIService();
                 const attachmentsContext = buildAttachmentsContextForTask(task);
-                const scenarios = await aiService.generateBddScenarios(task.title, task.description, project, attachmentsContext || undefined);
+                const scenarios = await aiService.generateBddScenarios(task.title, task.description, project, task, attachmentsContext || undefined);
                 const updatedTask = { ...task, bddScenarios: [...(task.bddScenarios || []), ...scenarios] };
                 const newTasks = project.tasks.map(t => t.id === taskId ? updatedTask : t);
                 onUpdateProject({ ...project, tasks: newTasks });
@@ -362,6 +362,7 @@ export const TasksView: React.FC<{
                     detailLevel,
                     task.type,
                     project,
+                    task,
                     attachmentsContext || undefined
                 );
                 const updatedTask = { ...task, testStrategy: strategy, testCases };
@@ -398,6 +399,7 @@ export const TasksView: React.FC<{
                     detailLevel,
                     task.type,
                     project,
+                    task,
                     attachmentsContext || undefined
                 );
 
@@ -869,7 +871,7 @@ export const TasksView: React.FC<{
                     try {
                         const attachmentsContext = buildAttachmentsContextForTask(task);
                         const scenarios = await withTimeout(
-                            aiService.generateBddScenarios(task.title, task.description || '', project, attachmentsContext || undefined),
+                            aiService.generateBddScenarios(task.title, task.description || '', project, task, attachmentsContext || undefined),
                             60000
                         );
                         
@@ -933,6 +935,7 @@ export const TasksView: React.FC<{
                                 'Padrão',
                                 currentTask.type,
                                 project,
+                                currentTask,
                                 attachmentsContext || undefined
                             ),
                             60000
@@ -2031,6 +2034,7 @@ export const TasksView: React.FC<{
                 onDuplicateTestCase={handleDuplicateTestCase}
                 project={project}
                 onUpdateProject={onUpdateProject}
+                onNavigateToTab={onNavigateToTab}
                 onOpenTask={setModalTask}
                 onUpdateFromJira={handleUpdateTaskFromJira}
                 isUpdatingFromJira={modalTask ? updatingFromJiraTaskId === modalTask.id : false}

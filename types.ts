@@ -168,6 +168,8 @@ export interface JiraTask {
   issueLinks?: Array<{ id: string; type: string; relatedKey: string; direction: 'inward' | 'outward' }>;
   jiraAttachments?: Array<{ id: string; filename: string; size: number; created: string; author: string }>;
   jiraCustomFields?: { [key: string]: any }; // Campos customizados do Jira
+  /** IDs de regras de negócio do projeto vinculadas a esta tarefa (geração de testes/BDD). */
+  linkedBusinessRuleIds?: string[];
 }
 
 // Ferramentas sugeridas para testes
@@ -179,6 +181,13 @@ export const SUGGESTED_TOOLS = [
 ] as const;
 
 export type SuggestedTool = typeof SUGGESTED_TOOLS[number];
+
+export interface BusinessRule {
+  id: string;
+  title: string;
+  description: string;
+  createdAt: string;
+}
 
 export interface ProjectDocument {
   name: string;
@@ -347,6 +356,8 @@ export interface Project {
   createdAt?: string;
   updatedAt?: string;
   documents: ProjectDocument[];
+  /** Regras de negócio definidas para o projeto (contexto IA e vínculo por tarefa). */
+  businessRules?: BusinessRule[];
   tasks: JiraTask[];
   phases: Phase[];
   shiftLeftAnalysis?: ShiftLeftAnalysis;

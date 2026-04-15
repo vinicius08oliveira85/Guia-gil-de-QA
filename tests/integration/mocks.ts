@@ -182,6 +182,7 @@ export function createMockProject(overrides?: Partial<Project>): Project {
     name: overrides?.name || 'Projeto de Teste',
     description: overrides?.description || 'Descrição do projeto de teste',
     documents: overrides?.documents || [],
+    businessRules: overrides?.businessRules ?? [],
     tasks: overrides?.tasks || [],
     phases: overrides?.phases || [],
     ...overrides,

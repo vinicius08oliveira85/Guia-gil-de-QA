@@ -122,6 +122,7 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
             }
             const migratedSupabaseProjects = supabaseProjects.map((project) => ({
               ...project,
+              businessRules: project.businessRules ?? [],
               tasks: (project.tasks || []).map((task) => ({
                 ...task,
                 testCases: migrateTestCases(task.testCases || []),
@@ -137,6 +138,7 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
           } else if (supabaseProjects.length > 0) {
             const migratedSupabaseProjects = supabaseProjects.map((project) => ({
               ...project,
+              businessRules: project.businessRules ?? [],
               tasks: (project.tasks || []).map((task) => ({
                 ...task,
                 testCases: migrateTestCases(task.testCases || []),
@@ -201,6 +203,7 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
       // Migrar TestCases dos projetos do Supabase
       const migratedSupabaseProjects = supabaseProjects.map(project => ({
         ...project,
+        businessRules: project.businessRules ?? [],
         tasks: (project.tasks || []).map(task => ({
           ...task,
           testCases: migrateTestCases(task.testCases || [])
@@ -335,6 +338,7 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
           name,
           description,
           documents: [],
+          businessRules: [],
           tasks: [],
           phases: PHASE_NAMES.map(name => ({ name, status: 'Não Iniciado' })),
           createdAt: now,

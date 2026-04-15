@@ -254,6 +254,7 @@ export const updateSingleTaskFromJira = async (
         executedStrategies: existingTask.executedStrategies,
         strategyTools: existingTask.strategyTools,
         testStatus: existingTask.testStatus,
+        linkedBusinessRuleIds: existingTask.linkedBusinessRuleIds,
     } : task;
     const newTasks = project.tasks.some(t => t.id === key)
         ? project.tasks.map(t => t.id === key ? finalTask : t)

@@ -1,8 +1,61 @@
-import type { BddScenario, JiraTaskType, Project, TestCaseDetailLevel, TestStrategy } from '../../types';
+import type { BddScenario, BusinessRule, JiraTask, JiraTaskType, Project, TestCaseDetailLevel, TestStrategy } from '../../types';
 import { getDocumentContext } from './documentContextService';
 
 /** Tamanho máximo do trecho de especificação injetado após o bloco da tarefa (evita documento “engolir” a tarefa). */
 export const TASK_GEN_MAX_DOC_CHARS = 3200;
+
+/** Limite do bloco de regras de negócio no prompt (projetos com muitas regras). */
+export const BUSINESS_RULES_PROMPT_MAX_CHARS = 4000;
+
+/**
+ * Se a tarefa tiver vínculos, envia essas regras como obrigatórias; senão, todas as regras do projeto como contexto geral.
+ * Formato estruturado para a IA processar item a item sem inventar regras extras.
+ */
+export function formatBusinessRulesForPrompt(project: Project | null | undefined, task?: JiraTask | null): string {
+  const all = project?.businessRules ?? [];
+  const linkedIds = (task?.linkedBusinessRuleIds ?? []).filter(Boolean);
+  const byId = new Map(all.map((r) => [r.id, r]));
+
+  let label: string;
+  let items: BusinessRule[];
+
+  if (linkedIds.length > 0) {
+    label = 'REGRAS DE NEGÓCIO OBRIGATÓRIAS';
+    items = linkedIds.map((id) => byId.get(id)).filter((r): r is BusinessRule => !!r);
+    if (items.length === 0) return '';
+  } else if (all.length > 0) {
+    label = 'CONTEXTO GERAL DE NEGÓCIO';
+    items = [...all];
+  } else {
+    return '';
+  }
+
+  const lines: string[] = [];
+  let used = 0;
+  for (let i = 0; i < items.length; i++) {
+    const r = items[i];
+    const block =
+      `[${i + 1}] id: ${r.id}\n` +
+      `    título: ${r.title}\n` +
+      `    descrição: ${r.description}`;
+    const nextLen = block.length + (lines.length ? 2 : 0);
+    if (used + nextLen > BUSINESS_RULES_PROMPT_MAX_CHARS) {
+      lines.push('    [... demais regras omitidas por limite de tamanho ...]');
+      break;
+    }
+    lines.push(block);
+    used += nextLen;
+  }
+
+  const body = lines.join('\n\n');
+  return `
+═══════════════════════════════════════════════════════════════
+${label}
+Prioridade: aplique cada item abaixo ao validar escopo nos artefatos gerados. Não invente regras além das listadas. Processe cada [n] de forma independente.
+═══════════════════════════════════════════════════════════════
+${body}
+`.trim();
+}
 
 export function shouldGenerateTestCasesAndBdd(taskType?: JiraTaskType): boolean {
   return taskType === 'Tarefa' || taskType === 'Bug' || taskType === undefined;
@@ -84,10 +137,13 @@ export async function buildStrategyOnlyPrompt(
   description: string,
   taskType: JiraTaskType | undefined,
   project: Project | null | undefined,
-  attachmentsContext?: string
+  attachmentsContext?: string,
+  task?: JiraTask | null
 ): Promise<string> {
+  const br = formatBusinessRulesForPrompt(project ?? null, task);
   const doc = await buildComplementaryDocumentSection(project ?? null);
   const bug = taskType === 'Bug' ? bugFocusBlock() : '';
+  const brBlock = br ? `\n${br}\n` : '';
   return `Você é um analista de QA sênior. Responda em português brasileiro.
 
 Objetivo: gerar APENAS a lista de estratégias de teste para a tarefa abaixo.
@@ -100,7 +156,7 @@ Regras:
 - Campos por item: testType, description, howToExecute (array de passos curtos), tools (string, ferramentas separadas por vírgula).
 
 ${taskHeaderBlock(title, description, taskType, attachmentsContext)}
-${bug}
+${bug}${brBlock}
 ${doc}
 
 Responda somente com JSON válido no formato: {"strategy":[...]}.
@@ -114,11 +170,14 @@ export async function buildBddOnlyPrompt(
   taskType: JiraTaskType | undefined,
   project: Project | null | undefined,
   strategies: TestStrategy[],
-  attachmentsContext?: string
+  attachmentsContext?: string,
+  task?: JiraTask | null
 ): Promise<string> {
+  const br = formatBusinessRulesForPrompt(project ?? null, task);
   const doc = await buildComplementaryDocumentSection(project ?? null);
   const bug = taskType === 'Bug' ? bugFocusBlock() : '';
   const strat = summarizeStrategiesForPrompt(strategies);
+  const brBlock = br ? `\n${br}\n` : '';
   return `Você é especialista em BDD. Responda em português brasileiro.
 
 Objetivo: gerar APENAS cenários Gherkin em JSON (bddScenarios). Não gere estratégias nem casos de teste.
@@ -133,7 +192,7 @@ Estratégias já definidas (alinhe os cenários a estes tipos de teste):
 ${strat}
 
 ${taskHeaderBlock(title, description, taskType, attachmentsContext)}
-${bug}
+${bug}${brBlock}
 ${doc}
 
 Responda somente com JSON válido: {"bddScenarios":[{"title":"","gherkin":""},...]}.
@@ -149,13 +208,16 @@ export async function buildTestCasesOnlyPrompt(
   project: Project | null | undefined,
   strategies: TestStrategy[],
   bddScenarios: BddScenario[],
-  attachmentsContext?: string
+  attachmentsContext?: string,
+  task?: JiraTask | null
 ): Promise<string> {
+  const br = formatBusinessRulesForPrompt(project ?? null, task);
   const doc = await buildComplementaryDocumentSection(project ?? null);
   const bug = taskType === 'Bug' ? bugFocusBlock() : '';
   const strat = summarizeStrategiesForPrompt(strategies);
   const bdd = summarizeBddForPrompt(bddScenarios);
   const allowedTypes = strategies.map((s) => s.testType).filter(Boolean);
+  const brBlock = br ? `\n${br}\n` : '';
   return `Você é um analista de QA sênior. Responda em português brasileiro.
 
 Objetivo: gerar APENAS casos de teste em JSON (testCases). Não gere estratégias nem BDD.
@@ -176,7 +238,7 @@ Cenários BDD de referência (alinhe cobertura; não copie texto sem adaptar a p
 ${bdd}
 
 ${taskHeaderBlock(title, description, taskType, attachmentsContext)}
-${bug}
+${bug}${brBlock}
 ${doc}
 
 Responda somente com JSON válido: {"testCases":[...]}.

@@ -227,6 +227,7 @@ export const createProjectFromTemplate = (templateId: string, projectName: strin
     name: projectName,
     description: description || template.description,
     documents: [],
+    businessRules: [],
     tasks,
     phases
   };
