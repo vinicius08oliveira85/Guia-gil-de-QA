@@ -19,11 +19,16 @@ function normalizeRule(row: unknown): BusinessRule | null {
   const description = typeof o.description === 'string' ? o.description : '';
   const createdAt =
     typeof o.createdAt === 'string' && o.createdAt.trim() ? o.createdAt.trim() : new Date().toISOString();
+  const linkedRaw = o.linkedBusinessRuleIds;
+  const linkedBusinessRuleIds = Array.isArray(linkedRaw)
+    ? linkedRaw.filter((x): x is string => typeof x === 'string' && x.trim().length > 0).map((x) => x.trim())
+    : undefined;
   return {
     id: String(o.id).trim(),
     title,
     description,
     createdAt,
+    ...(linkedBusinessRuleIds && linkedBusinessRuleIds.length > 0 ? { linkedBusinessRuleIds } : {}),
   };
 }
 
@@ -92,6 +97,9 @@ export function mergeBusinessRulesInto(existing: BusinessRule[], incoming: Busin
         ...cur,
         title: inc.title,
         description: inc.description,
+        ...(inc.linkedBusinessRuleIds !== undefined
+          ? { linkedBusinessRuleIds: inc.linkedBusinessRuleIds }
+          : {}),
       });
     } else {
       map.set(inc.id, { ...inc });

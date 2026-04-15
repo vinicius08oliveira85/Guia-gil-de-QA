@@ -187,6 +187,8 @@ export interface BusinessRule {
   title: string;
   description: string;
   createdAt: string;
+  /** Outras regras do mesmo projeto vinculadas a esta; a UI insere `@NomeDaRegra` na descrição ao marcar. */
+  linkedBusinessRuleIds?: string[];
 }
 
 export interface ProjectDocument {

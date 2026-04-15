@@ -6,6 +6,7 @@ export const BusinessRuleSchema = z.object({
   title: z.string().min(1),
   description: z.string(),
   createdAt: z.string(),
+  linkedBusinessRuleIds: z.array(z.string()).optional(),
 });
 
 export const ProjectDocumentSchema = z.object({

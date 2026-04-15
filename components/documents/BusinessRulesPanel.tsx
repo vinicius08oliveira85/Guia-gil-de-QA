@@ -1,8 +1,13 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
-import { Pencil, Plus, Trash2, Scale, Search, Download, Upload, ChevronDown } from 'lucide-react';
+import { Pencil, Plus, Trash2, Scale, Search, Download, Upload, ChevronDown, Link2 } from 'lucide-react';
 import type { BusinessRule, Project } from '../../types';
 import { filterBusinessRulesByQuery } from '../../utils/businessRulesFilter';
+import {
+  appendMentionToDescription,
+  mentionTokenForRule,
+  removeMentionFromDescription,
+} from '../../utils/businessRuleMention';
 import { sortBusinessRules, type BusinessRuleSortKey } from '../../utils/businessRulesSort';
 import { downloadFile, exportBusinessRulesToJSON } from '../../utils/exportService';
 import { mergeBusinessRulesInto, parseBusinessRulesImportJson } from '../../utils/businessRulesImport';
@@ -10,11 +15,24 @@ import { Modal } from '../common/Modal';
 import { Button } from '../common/Button';
 import { ConfirmDialog } from '../common/ConfirmDialog';
 
-function stripRuleFromTasks(project: Project, ruleId: string): Project {
-  const businessRules = (project.businessRules ?? []).filter((r) => r.id !== ruleId);
+function stripRuleFromProject(project: Project, deletedRule: BusinessRule): Project {
+  const allRules = project.businessRules ?? [];
+  const mention = mentionTokenForRule(deletedRule, allRules);
+  const businessRules = allRules
+    .filter((r) => r.id !== deletedRule.id)
+    .map((r) => {
+      const linkedBusinessRuleIds = (r.linkedBusinessRuleIds ?? []).filter((id) => id !== deletedRule.id);
+      const description = removeMentionFromDescription(r.description, mention);
+      const { linkedBusinessRuleIds: _drop, ...rest } = r;
+      return {
+        ...rest,
+        ...(linkedBusinessRuleIds.length > 0 ? { linkedBusinessRuleIds } : {}),
+        description,
+      };
+    });
   const tasks = project.tasks.map((t) => ({
     ...t,
-    linkedBusinessRuleIds: (t.linkedBusinessRuleIds ?? []).filter((id) => id !== ruleId),
+    linkedBusinessRuleIds: (t.linkedBusinessRuleIds ?? []).filter((id) => id !== deletedRule.id),
   }));
   return { ...project, businessRules, tasks };
 }
@@ -28,6 +46,8 @@ export const BusinessRulesPanel: React.FC<{
   const [editingId, setEditingId] = useState<string | null>(null);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  /** IDs de outras regras vinculadas; ao marcar, insere `@NomeDaRegra` na descrição. */
+  const [linkedRuleIds, setLinkedRuleIds] = useState<string[]>([]);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<BusinessRuleSortKey>('created_desc');
@@ -78,6 +98,7 @@ export const BusinessRulesPanel: React.FC<{
     setEditingId(null);
     setTitle('');
     setDescription('');
+    setLinkedRuleIds([]);
     setFormOpen(true);
   };
 
@@ -85,27 +106,68 @@ export const BusinessRulesPanel: React.FC<{
     setEditingId(rule.id);
     setTitle(rule.title);
     setDescription(rule.description);
+    setLinkedRuleIds([...(rule.linkedBusinessRuleIds ?? [])]);
     setFormOpen(true);
   };
 
+  const linkableRules = useMemo(() => {
+    if (!editingId) return rules;
+    return rules.filter((r) => r.id !== editingId);
+  }, [rules, editingId]);
+
+  const handleToggleLinkRule = useCallback(
+    (otherId: string, checked: boolean) => {
+      const target = rules.find((r) => r.id === otherId);
+      if (!target) return;
+      const token = mentionTokenForRule(target, rules);
+      setLinkedRuleIds((prev) => {
+        const s = new Set(prev);
+        if (checked) s.add(otherId);
+        else s.delete(otherId);
+        return [...s];
+      });
+      setDescription((prev) =>
+        checked ? appendMentionToDescription(prev, token) : removeMentionFromDescription(prev, token)
+      );
+    },
+    [rules]
+  );
+
   const handleSave = () => {
     const t = title.trim();
-    const d = description.trim();
     if (!t) return;
 
     const list = [...(project.businessRules ?? [])];
+    let d = description.trim();
+    const uniqueLinked = [...new Set(linkedRuleIds)];
+    for (const id of uniqueLinked) {
+      const target = list.find((r) => r.id === id);
+      if (!target) continue;
+      const token = mentionTokenForRule(target, list);
+      d = appendMentionToDescription(d, token);
+    }
+
     if (editingId) {
       const idx = list.findIndex((r) => r.id === editingId);
       if (idx === -1) return;
-      list[idx] = { ...list[idx], title: t, description: d };
+      const prev = list[idx];
+      const { linkedBusinessRuleIds: _drop, ...rest } = prev;
+      list[idx] = {
+        ...rest,
+        title: t,
+        description: d,
+        ...(uniqueLinked.length > 0 ? { linkedBusinessRuleIds: uniqueLinked } : {}),
+      };
     } else {
       const now = new Date().toISOString();
-      list.push({
+      const row: BusinessRule = {
         id: crypto.randomUUID(),
         title: t,
         description: d,
         createdAt: now,
-      });
+      };
+      if (uniqueLinked.length > 0) row.linkedBusinessRuleIds = uniqueLinked;
+      list.push(row);
     }
     onUpdateProject({ ...project, businessRules: list });
     setFormOpen(false);
@@ -113,7 +175,12 @@ export const BusinessRulesPanel: React.FC<{
 
   const confirmRemove = () => {
     if (!deleteId) return;
-    onUpdateProject(stripRuleFromTasks(project, deleteId));
+    const deleted = rules.find((r) => r.id === deleteId);
+    if (!deleted) {
+      setDeleteId(null);
+      return;
+    }
+    onUpdateProject(stripRuleFromProject(project, deleted));
     setDeleteId(null);
   };
 
@@ -129,7 +196,8 @@ export const BusinessRulesPanel: React.FC<{
             Regras de Negócio
           </h2>
           <p className="text-sm text-base-content/70 mt-1 max-w-2xl">
-            Lista por título — clique em uma regra para expandir a descrição e as ações. Vincule regras às tarefas no detalhe da tarefa.
+            Lista por título — clique em uma regra para expandir a descrição e as ações. Vincule regras entre si ao editar (insere{' '}
+            <code className="text-xs bg-base-300/50 px-1 rounded">@NomeDaRegra</code> na descrição) ou vincule regras às tarefas no detalhe da tarefa.
           </p>
         </div>
         <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto sm:shrink-0">
@@ -217,6 +285,16 @@ export const BusinessRulesPanel: React.FC<{
                       <span className="italic text-base-content/50">Sem descrição</span>
                     )}
                   </p>
+                  {(rule.linkedBusinessRuleIds?.length ?? 0) > 0 && (
+                    <p className="text-xs text-base-content/65 flex flex-wrap gap-x-1 gap-y-0.5 items-baseline">
+                      <span className="font-medium text-base-content/75 shrink-0">Vinculada a:</span>
+                      <span>
+                        {(rule.linkedBusinessRuleIds ?? [])
+                          .map((id) => rules.find((x) => x.id === id)?.title ?? id)
+                          .join(', ')}
+                      </span>
+                    </p>
+                  )}
                   <div className="flex flex-wrap items-center gap-2">
                     <Button type="button" variant="outline" size="sm" onClick={() => openEdit(rule)} aria-label={`Editar regra ${rule.title}`}>
                       <Pencil className="w-4 h-4" aria-hidden />
@@ -273,6 +351,45 @@ export const BusinessRulesPanel: React.FC<{
               className="textarea textarea-bordered w-full bg-base-100 border-base-300 text-base-content text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20"
             />
           </div>
+          {linkableRules.length > 0 && (
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <Link2 className="w-4 h-4 text-primary shrink-0" aria-hidden />
+                <span className="block text-sm font-semibold text-base-content/70">Vincular a outras regras</span>
+              </div>
+              <p className="text-xs text-base-content/55 mb-2">
+                Ao marcar, inclui <code className="text-xs bg-base-200 px-1 rounded">@NomeDaRegra</code> na descrição (nome derivado do
+                título; títulos iguais no projeto ganham sufixo para diferenciar).
+              </p>
+              <ul
+                className="max-h-48 overflow-y-auto rounded-lg border border-base-300 divide-y divide-base-300 bg-base-100/80"
+                role="list"
+              >
+                {linkableRules.map((r) => {
+                  const checked = linkedRuleIds.includes(r.id);
+                  const preview = mentionTokenForRule(r, rules);
+                  return (
+                    <li key={r.id} className="flex items-start gap-3 px-3 py-2">
+                      <input
+                        type="checkbox"
+                        id={`br-link-${r.id}`}
+                        className="checkbox checkbox-sm checkbox-primary mt-0.5 shrink-0"
+                        checked={checked}
+                        onChange={(e) => handleToggleLinkRule(r.id, e.target.checked)}
+                        aria-label={
+                          checked ? `Desvincular regra ${r.title}` : `Vincular regra ${r.title}; insere ${preview} na descrição`
+                        }
+                      />
+                      <label htmlFor={`br-link-${r.id}`} className="text-sm cursor-pointer flex-1 min-w-0">
+                        <span className="font-medium text-base-content">{r.title}</span>
+                        <span className="block text-xs text-base-content/50">Inserirá {preview}</span>
+                      </label>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          )}
           <div className="flex justify-end gap-2 flex-wrap">
             <Button type="button" variant="ghost" size="default" onClick={() => setFormOpen(false)}>
               Cancelar
@@ -289,7 +406,7 @@ export const BusinessRulesPanel: React.FC<{
         onClose={() => setDeleteId(null)}
         onConfirm={confirmRemove}
         title="Excluir regra de negócio"
-        message="Esta regra será removida do projeto e desvinculada de todas as tarefas. Deseja continuar?"
+        message="Esta regra será removida do projeto, desvinculada de tarefas e das referências de outras regras (incluindo menções @ na descrição). Deseja continuar?"
         confirmText="Excluir"
         cancelText="Cancelar"
         variant="danger"

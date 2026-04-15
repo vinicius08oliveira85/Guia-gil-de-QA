@@ -34,10 +34,17 @@ export function formatBusinessRulesForPrompt(project: Project | null | undefined
   let used = 0;
   for (let i = 0; i < items.length; i++) {
     const r = items[i];
+    const refs = (r.linkedBusinessRuleIds ?? [])
+      .map((id) => byId.get(id))
+      .filter((x): x is BusinessRule => !!x);
+    const refLine =
+      refs.length > 0
+        ? `\n    referências (regras vinculadas nesta regra): ${refs.map((x) => `${x.title} [id: ${x.id}]`).join('; ')}`
+        : '';
     const block =
       `[${i + 1}] id: ${r.id}\n` +
       `    título: ${r.title}\n` +
-      `    descrição: ${r.description}`;
+      `    descrição: ${r.description}${refLine}`;
     const nextLen = block.length + (lines.length ? 2 : 0);
     if (used + nextLen > BUSINESS_RULES_PROMPT_MAX_CHARS) {
       lines.push('    [... demais regras omitidas por limite de tamanho ...]');
