@@ -1,5 +1,4 @@
-import { useMemo, useState, useEffect, useRef, useCallback } from 'react';
-import { useDebounceValue } from 'usehooks-ts';
+import { useMemo, useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
 import { Project, JiraTask, TaskTestStatus, TestCase } from '../types';
 import {
     getStatusFilterOptions,
@@ -28,7 +27,6 @@ export interface UseTaskFiltersOptions {
 export interface UseTaskFiltersResult {
     searchQuery: string;
     setSearchQuery: (v: string) => void;
-    debouncedSearchQuery: string;
     statusFilter: string[];
     setStatusFilter: (v: string[] | ((prev: string[]) => string[])) => void;
     priorityFilter: string[];
@@ -64,7 +62,6 @@ export interface UseTaskFiltersResult {
 
 export function useTaskFilters(project: Project, options?: UseTaskFiltersOptions): UseTaskFiltersResult {
     const [searchQuery, setSearchQuery] = useState('');
-    const [debouncedSearchQuery] = useDebounceValue(searchQuery, 300);
     const [statusFilter, setStatusFilter] = useState<string[]>([]);
     const [priorityFilter, setPriorityFilter] = useState<string[]>([]);
     const [typeFilter, setTypeFilter] = useState<string[]>([]);
@@ -79,7 +76,7 @@ export function useTaskFilters(project: Project, options?: UseTaskFiltersOptions
     const statusOptions = useMemo(() => getStatusFilterOptions(project), [project]);
     const priorityOptions = useMemo(() => getPriorityFilterOptions(project), [project]);
 
-    useEffect(() => {
+    useLayoutEffect(() => {
         if (!project?.id) return;
         const key = `${TASKS_FILTERS_STORAGE_KEY}_${project.id}`;
         try {
@@ -143,15 +140,23 @@ export function useTaskFilters(project: Project, options?: UseTaskFiltersOptions
     }, [project?.id, statusFilter, priorityFilter, typeFilter, testStatusFilter, testCaseExecutionStatusFilter, qualityFilter, searchQuery, sortBy, groupBy]);
 
     const filteredTasks = useMemo(() => {
-        return project.tasks.filter(task => {
-            if (debouncedSearchQuery) {
-                const query = debouncedSearchQuery.toLowerCase();
+        const tasks = project?.tasks ?? [];
+        const searchTrim = searchQuery.trim();
+        return tasks.filter(task => {
+            if (searchTrim) {
+                const query = searchTrim.toLowerCase();
                 const matchesId = (task.id || '').toLowerCase().includes(query);
                 const matchesTitle = (task.title || '').toLowerCase().includes(query);
                 if (!matchesId && !matchesTitle) return false;
             }
-            if (statusFilter.length > 0 && !statusFilter.some(name => taskMatchesStatusName(task, name, project))) return false;
-            if (priorityFilter.length > 0 && !priorityFilter.some(name => taskMatchesPriorityName(task, name, project))) return false;
+            
+            if (statusFilter.length > 0) {
+                if (!statusFilter.some(name => taskMatchesStatusName(task, name, project))) return false;
+            }
+            
+            if (priorityFilter.length > 0) {
+                if (!priorityFilter.some(name => taskMatchesPriorityName(task, name, project))) return false;
+            }
             if (typeFilter.length > 0 && !typeFilter.includes(task.type)) return false;
             if (testStatusFilter.length > 0 && !testStatusFilter.includes(getEffectiveTestStatus(task, project.tasks))) return false;
             if (
@@ -180,10 +185,10 @@ export function useTaskFilters(project: Project, options?: UseTaskFiltersOptions
             }
             return true;
         });
-    }, [project, project.tasks, debouncedSearchQuery, statusFilter, priorityFilter, typeFilter, testStatusFilter, testCaseExecutionStatusFilter, qualityFilter]);
+    }, [project, project.tasks, searchQuery, statusFilter, priorityFilter, typeFilter, testStatusFilter, testCaseExecutionStatusFilter, qualityFilter]);
 
     const counts = useMemo(() => {
-        const allTasks = project.tasks;
+        const allTasks = project.tasks ?? [];
         return {
             status: (statusName: string) => allTasks.filter(t => taskMatchesStatusName(t, statusName, project)).length,
             priority: (priorityName: string) => allTasks.filter(t => taskMatchesPriorityName(t, priorityName, project)).length,
@@ -205,13 +210,15 @@ export function useTaskFilters(project: Project, options?: UseTaskFiltersOptions
         };
     }, [project.tasks, project.settings?.jiraStatuses, project.settings?.jiraPriorities, project]);
 
-    const activeFiltersCount =
+    const chipFiltersCount =
         statusFilter.length +
         priorityFilter.length +
         typeFilter.length +
         testStatusFilter.length +
         testCaseExecutionStatusFilter.length +
         qualityFilter.length;
+
+    const activeFiltersCount = chipFiltersCount + (searchQuery.trim() ? 1 : 0);
 
     const clearAllFilters = useCallback(() => {
         setStatusFilter([]);
@@ -221,12 +228,13 @@ export function useTaskFilters(project: Project, options?: UseTaskFiltersOptions
         setTestCaseExecutionStatusFilter([]);
         setQualityFilter([]);
         setSearchQuery('');
+        setSortBy('id');
+        setGroupBy('none');
     }, []);
 
     return {
         searchQuery,
         setSearchQuery,
-        debouncedSearchQuery,
         statusFilter,
         setStatusFilter,
         priorityFilter,

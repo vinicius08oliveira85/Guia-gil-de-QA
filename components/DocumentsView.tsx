@@ -324,20 +324,21 @@ export const DocumentsView: React.FC<{
     );
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 py-8 md:py-10 lg:py-12">
             {/* Documento de Especificação */}
             <SpecificationDocumentProcessor 
                 project={project} 
                 onUpdateProject={onUpdateProject} 
             />
 
-        <section className="space-y-6 py-8 md:py-10 lg:py-12" aria-labelledby="documents-section-heading">
+        <section className="space-y-6" aria-labelledby="documents-section-heading">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <SectionHeader
                     as="h1"
                     align="left"
                     fullWidth
                     titleSize="page"
+                    density="dense"
                     headingId="documents-section-heading"
                     title="Documentos do Projeto"
                     description={documentsDescription}
@@ -605,14 +606,14 @@ export const DocumentsView: React.FC<{
                             <button
                                 type="button"
                                 onClick={() => setEditingDoc(null)}
-                                className="btn btn-ghost"
+                                className="btn btn-ghost rounded-full px-5"
                             >
                                 Cancelar
                             </button>
                             <button
                                 type="button"
                                 onClick={handleSaveEdit}
-                                className="btn btn-primary"
+                                className="btn btn-primary rounded-full px-6"
                             >
                                 Salvar
                             </button>

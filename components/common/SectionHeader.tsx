@@ -64,10 +64,15 @@ export const SectionHeader = React.memo<SectionHeaderProps>(({
       )}
     >
       {eyebrow && (
-        <div className={cn(isCenter ? 'flex justify-center' : 'flex justify-start')}>
+        <div
+          className={cn(
+            isCenter ? 'flex justify-center' : 'flex justify-start',
+            dense && titleSize === 'page' && 'leading-none'
+          )}
+        >
           <span className={cn(
             'badge badge-outline border-primary/30 text-primary bg-primary/10',
-            compact && dense ? 'px-2 py-0 text-[10px] leading-tight' : compact ? 'px-2.5 py-0.5 text-[11px] leading-tight' : 'px-4 py-3'
+            compact && dense ? 'px-2 py-0 text-[10px] leading-none' : compact ? 'px-2.5 py-0.5 text-[11px] leading-tight' : 'px-4 py-3'
           )}>
             {eyebrow}
           </span>
@@ -87,7 +92,7 @@ export const SectionHeader = React.memo<SectionHeaderProps>(({
             : 'font-semibold text-[clamp(1.75rem,4vw,3rem)] sm:text-[clamp(2rem,3.5vw,3.5rem)] md:text-[clamp(2.25rem,3vw,4rem)]',
         eyebrow
           ? titleSize === 'page' && dense
-            ? 'mt-1'
+            ? 'mt-0.5'
             : titleSize === 'page'
               ? 'mt-2'
               : compact
@@ -104,7 +109,7 @@ export const SectionHeader = React.memo<SectionHeaderProps>(({
         <p className={cn(
           'font-body text-balance text-base-content/70',
           titleSize === 'page' && dense
-            ? 'mt-1 text-xs leading-snug text-base-content/70 sm:text-sm'
+            ? 'mt-0.5 text-xs leading-tight text-base-content/70 sm:text-sm'
             : titleSize === 'page'
               ? 'mt-2 text-sm leading-relaxed text-base-content/70 sm:text-base'
               : compact

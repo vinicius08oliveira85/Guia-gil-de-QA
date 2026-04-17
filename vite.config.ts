@@ -80,11 +80,30 @@ export default defineConfig({
         // Não precachear JS/HTML: evita SW servir bundles antigos (lógica Gemini/rate limit desatualizada).
         // Ícones, CSS e imagens continuam em cache; o app carrega chunks sempre da rede (HTTP cache do browser aplica).
         globPatterns: ['**/*.{css,ico,png,svg,woff2}'],
+        // Sem index.html no precache, o fallback de navegação geraria WorkboxError "non-precached-url".
+        navigateFallback: null,
+        // Navegações (document): rede primeiro, cache como fallback (PWA / offline leve) sem precachear HTML.
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         skipWaiting: true,
         clientsClaim: true,
         cleanupOutdatedCaches: true,
         runtimeCaching: [
+          {
+            urlPattern: ({ request, url }: { request: Request; url: URL }) =>
+              request.mode === 'navigate' && url.origin === self.location.origin,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'qa-agile-spa-navigation',
+              networkTimeoutSeconds: 5,
+              expiration: {
+                maxEntries: 8,
+                maxAgeSeconds: 60 * 60 * 24,
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
             handler: 'CacheFirst',

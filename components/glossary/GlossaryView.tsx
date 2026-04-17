@@ -65,6 +65,7 @@ export const GlossaryView: React.FC = () => {
                     align="left"
                     fullWidth
                     titleSize="page"
+                    density="dense"
                     title="Glossário de Termos de QA"
                     description={
                         <>

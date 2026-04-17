@@ -15,6 +15,8 @@ interface BreadcrumbsProps {
   showHome?: boolean;
   onHomeClick?: () => void;
   align?: 'left' | 'center';
+  /** Menos espaço vertical entre itens quebrados em várias linhas (ex.: cabeçalho de projeto). */
+  dense?: boolean;
   /**
    * Quando true, renderiza sem `<nav>` e com `aria-hidden` — use só para réplica visual
    * junto ao título (o landmark real permanece no Header).
@@ -32,11 +34,13 @@ const listContent = (
   items: BreadcrumbItem[],
   showHome: boolean | undefined,
   onHomeClick: (() => void) | undefined,
-  align: 'left' | 'center'
+  align: 'left' | 'center',
+  dense?: boolean
 ) => (
   <ol
     className={cn(
-      'flex min-w-0 flex-wrap items-center gap-x-0.5 gap-y-0.5 text-balance text-sm leading-snug text-base-content/70',
+      'flex min-w-0 flex-wrap items-center gap-x-0.5 text-balance text-sm text-base-content/70',
+      dense ? 'gap-y-0 leading-tight' : 'gap-y-0.5 leading-snug',
       align === 'center' && 'justify-center'
     )}
   >
@@ -94,9 +98,9 @@ const listContent = (
  * Breadcrumbs com separadores Lucide, tipografia Poppins e alvo de toque ≥44px (mobile).
  */
 export const Breadcrumbs: React.FC<BreadcrumbsProps> = React.memo(
-  ({ items, className, showHome = true, onHomeClick, align: alignProp = 'left', presentation = false }) => {
+  ({ items, className, showHome = true, onHomeClick, align: alignProp = 'left', dense = false, presentation = false }) => {
     const align: 'left' | 'center' = alignProp === 'center' ? 'center' : 'left';
-    const inner = listContent(items, showHome, onHomeClick, align);
+    const inner = listContent(items, showHome, onHomeClick, align, dense);
 
     if (presentation) {
       return (

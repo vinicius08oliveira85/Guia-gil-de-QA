@@ -16,6 +16,7 @@ const FilterChip = ({
     onClick: () => void;
 }) => (
     <button
+        type="button"
         onClick={onClick}
         className={`
             inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-all border
@@ -165,7 +166,7 @@ export const TasksViewFiltersModalContent: React.FC<TasksViewFiltersModalProps> 
                                 type="button"
                                 onClick={handleSavePreset}
                                 disabled={!presetName.trim()}
-                                className="btn btn-primary btn-sm text-xs disabled:opacity-50"
+                                className="btn btn-primary btn-sm rounded-full px-4 text-xs disabled:opacity-50"
                             >
                                 Salvar
                             </button>
@@ -223,8 +224,8 @@ export const TasksViewFiltersModalContent: React.FC<TasksViewFiltersModalProps> 
                     </button>
                 </div>
             )}
-            <div className="space-y-5">
-                <div>
+            <div className="grid grid-cols-1 gap-x-6 gap-y-5 md:grid-cols-2 xl:grid-cols-3">
+                <div className="min-w-0">
                     <p className="text-xs font-semibold text-base-content/60 mb-2 uppercase tracking-wider">Status</p>
                     <div className="flex flex-wrap gap-2">
                         {statusOptions.map(statusName => (
@@ -239,7 +240,7 @@ export const TasksViewFiltersModalContent: React.FC<TasksViewFiltersModalProps> 
                     </div>
                 </div>
 
-                <div>
+                <div className="min-w-0">
                     <p className="text-xs font-semibold text-base-content/60 mb-2 uppercase tracking-wider">Prioridade</p>
                     <div className="flex flex-wrap gap-2">
                         {priorityOptions.map(priorityName => (
@@ -254,7 +255,7 @@ export const TasksViewFiltersModalContent: React.FC<TasksViewFiltersModalProps> 
                     </div>
                 </div>
 
-                <div>
+                <div className="min-w-0">
                     <p className="text-xs font-semibold text-base-content/60 mb-2 uppercase tracking-wider">Tipo de Tarefa</p>
                     <div className="flex flex-wrap gap-2">
                         {['Tarefa', 'Bug', 'Epic', 'História'].map(type => (
@@ -269,7 +270,7 @@ export const TasksViewFiltersModalContent: React.FC<TasksViewFiltersModalProps> 
                     </div>
                 </div>
 
-                <div>
+                <div className="min-w-0">
                     <p className="text-xs font-semibold text-base-content/60 mb-2 uppercase tracking-wider">Status de Teste</p>
                     <div className="flex flex-wrap gap-2">
                         {TEST_STATUS_FILTER_OPTIONS.map(({ value, label }) => (
@@ -284,7 +285,7 @@ export const TasksViewFiltersModalContent: React.FC<TasksViewFiltersModalProps> 
                     </div>
                 </div>
 
-                <div>
+                <div className="min-w-0 md:col-span-2 xl:col-span-3">
                     <p className="text-xs font-semibold text-base-content/60 mb-2 uppercase tracking-wider">
                         Resultado do caso de teste
                     </p>
@@ -308,7 +309,7 @@ export const TasksViewFiltersModalContent: React.FC<TasksViewFiltersModalProps> 
                     </div>
                 </div>
 
-                <div>
+                <div className="min-w-0 md:col-span-2 xl:col-span-3">
                     <p className="text-xs font-semibold text-base-content/60 mb-2 uppercase tracking-wider">Estado de Qualidade</p>
                     <div className="flex flex-wrap gap-2">
                         {[

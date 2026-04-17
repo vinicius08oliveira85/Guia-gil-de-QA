@@ -315,12 +315,13 @@ export const ProjectView: React.FC<{
         <>
             <div className="w-full max-w-full mx-auto px-4 py-3 sm:px-8 sm:py-4 non-printable">
                 <div
-                    className="sticky z-40 -mx-4 mb-3 min-w-0 max-w-full border-b border-base-200/50 bg-base-100/80 px-4 py-1.5 backdrop-blur-md sm:-mx-8 sm:px-8"
+                    className="sticky z-40 -mx-4 mb-2 min-w-0 max-w-full border-b border-base-200/50 bg-base-100/80 px-4 py-1 backdrop-blur-md sm:-mx-8 sm:px-8"
                     style={{ top: 'var(--app-header-h, 4.5rem)' }}
                 >
-                    <div className="mb-1 flex min-w-0 flex-col gap-0.5 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-2 sm:gap-y-0.5">
+                    <div className="flex min-w-0 flex-col gap-0.5">
+                    <div className="flex min-w-0 flex-col gap-0 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-2 sm:gap-y-0">
                         <BackButton
-                            className="self-start -ml-1 sm:shrink-0"
+                            className="self-start -ml-1 sm:shrink-0 sm:min-h-0 sm:h-7 sm:py-0 sm:leading-tight"
                             onClick={onBack}
                             aria-label="Voltar para a lista de projetos"
                         />
@@ -376,11 +377,12 @@ export const ProjectView: React.FC<{
                         )}
                     </div>
 
-                    <div className="mb-1 flex min-w-0 w-full max-w-full flex-col gap-1.5 xl:flex-row xl:items-start xl:gap-4">
+                    <div className="flex min-w-0 w-full max-w-full flex-col gap-0.5 xl:flex-row xl:items-start xl:gap-4">
                         <Breadcrumbs
                             items={breadcrumbItems}
                             showHome={false}
                             align="left"
+                            dense
                             className="w-full min-w-0 shrink-0 xl:w-auto xl:max-w-md 2xl:max-w-lg"
                         />
                         <SectionHeader
@@ -401,11 +403,11 @@ export const ProjectView: React.FC<{
                         />
                     </div>
                     {onDeleteProject && (
-                        <div className="mb-1 flex justify-end">
+                        <div className="flex justify-end sm:-mt-0.5">
                             <button
                                 type="button"
                                 onClick={() => setShowDeleteProjectConfirm(true)}
-                                className="btn btn-ghost btn-xs min-h-[40px] gap-1.5 text-error hover:bg-error/10 sm:min-h-0 sm:gap-2"
+                                className="btn btn-ghost btn-xs min-h-[40px] gap-1.5 text-error hover:bg-error/10 sm:min-h-0 sm:h-7 sm:gap-1 sm:py-0 sm:leading-tight"
                                 aria-label={`Excluir projeto ${currentProject.name}`}
                             >
                                 <Trash2 className="h-4 w-4" aria-hidden />
@@ -413,13 +415,14 @@ export const ProjectView: React.FC<{
                             </button>
                         </div>
                     )}
-                    <div className="relative border-b border-base-200/50 pb-1">
+                    </div>
+                    <div className="relative mt-0.5 border-b border-base-200/50 pb-0.5">
                     {/* Indicadores de Scroll para Mobile */}
                     {canScrollLeft && (
-                        <div className="absolute left-0 top-0 bottom-1 w-8 bg-gradient-to-r from-base-100 to-transparent pointer-events-none z-10" />
+                        <div className="absolute left-0 top-0 bottom-0.5 w-8 bg-gradient-to-r from-base-100 to-transparent pointer-events-none z-10" />
                     )}
                     {canScrollRight && (
-                        <div className="absolute right-0 top-0 bottom-1 w-8 bg-gradient-to-l from-base-100 to-transparent pointer-events-none z-10" />
+                        <div className="absolute right-0 top-0 bottom-0.5 w-8 bg-gradient-to-l from-base-100 to-transparent pointer-events-none z-10" />
                     )}
 
                     <nav

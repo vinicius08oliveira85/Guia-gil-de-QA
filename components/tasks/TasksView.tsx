@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useCallback, useMemo, useEffect, useLayoutEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Project, JiraTask, BddScenario, TestCaseDetailLevel, TestCase, Comment, TaskTestStatus } from '../../types';
 import { getAIService } from '../../services/ai/aiServiceFactory';
@@ -107,7 +107,6 @@ export const TasksView: React.FC<{
     const {
         searchQuery,
         setSearchQuery,
-        debouncedSearchQuery,
         statusFilter,
         setStatusFilter,
         priorityFilter,
@@ -212,12 +211,10 @@ export const TasksView: React.FC<{
         return built.get(modalTask.id) ?? { ...modalTask, children: [] };
     }, [project.tasks, modalTask]);
 
-    useEffect(() => {
-        if (!onTaskDetailsOpenChange) return;
-        if (modalTask) {
-            onTaskDetailsOpenChange(modalTask.id, true);
-            return () => onTaskDetailsOpenChange(modalTask.id, false);
-        }
+    useLayoutEffect(() => {
+        if (!onTaskDetailsOpenChange || !modalTask) return undefined;
+        onTaskDetailsOpenChange(modalTask.id, true);
+        return () => onTaskDetailsOpenChange(modalTask.id, false);
     }, [modalTask, onTaskDetailsOpenChange]);
 
     // Função helper para delay
@@ -1349,7 +1346,7 @@ export const TasksView: React.FC<{
                 modifier: '-',
                 icon: Clock,
                 colorTheme: 'yellow' as const,
-                onClick: () => { setStatusFilter([toDoLabel]); setTypeFilter([]); setTestStatusFilter([]); setQualityFilter([]); setPriorityFilter([]); },
+                onClick: () => { setSearchQuery(''); setStatusFilter([toDoLabel]); setTypeFilter([]); setTestStatusFilter([]); setQualityFilter([]); setPriorityFilter([]); setTestCaseExecutionStatusFilter([]); },
                 isActive: statusFilter.length === 1 && statusFilter[0] === toDoLabel && typeFilter.length === 0,
             },
             {
@@ -1358,7 +1355,7 @@ export const TasksView: React.FC<{
                 modifier: 'active',
                 icon: Zap,
                 colorTheme: 'blue' as const,
-                onClick: () => { setStatusFilter([inProgressLabel]); setTypeFilter([]); setTestStatusFilter([]); setQualityFilter([]); setPriorityFilter([]); },
+                onClick: () => { setSearchQuery(''); setStatusFilter([inProgressLabel]); setTypeFilter([]); setTestStatusFilter([]); setQualityFilter([]); setPriorityFilter([]); setTestCaseExecutionStatusFilter([]); },
                 isActive: statusFilter.length === 1 && statusFilter[0] === inProgressLabel && typeFilter.length === 0,
             },
             {
@@ -1367,7 +1364,7 @@ export const TasksView: React.FC<{
                 modifier: stats.total > 0 ? `${Math.round((stats.done / stats.total) * 100)}%` : '0%',
                 icon: CheckCircle,
                 colorTheme: 'emerald' as const,
-                onClick: () => { setStatusFilter([doneLabel]); setTypeFilter([]); setTestStatusFilter([]); setQualityFilter([]); setPriorityFilter([]); },
+                onClick: () => { setSearchQuery(''); setStatusFilter([doneLabel]); setTypeFilter([]); setTestStatusFilter([]); setQualityFilter([]); setPriorityFilter([]); setTestCaseExecutionStatusFilter([]); },
                 isActive: statusFilter.length === 1 && statusFilter[0] === doneLabel && typeFilter.length === 0,
             },
             {
@@ -1376,7 +1373,7 @@ export const TasksView: React.FC<{
                 modifier: (metrics.bugsBySeverity?.['Crítico'] ?? 0) > 0 ? 'Critical' : 'Abertos',
                 icon: AlertTriangle,
                 colorTheme: 'red' as const,
-                onClick: () => { setTypeFilter(['Bug']); setStatusFilter(nonDoneLabels); setTestStatusFilter([]); setQualityFilter([]); setPriorityFilter([]); },
+                onClick: () => { setSearchQuery(''); setTypeFilter(['Bug']); setStatusFilter(nonDoneLabels); setTestStatusFilter([]); setQualityFilter([]); setPriorityFilter([]); setTestCaseExecutionStatusFilter([]); },
                 isActive: typeFilter.length === 1 && typeFilter[0] === 'Bug' && statusFilter.length === nonDoneLabels.length && statusFilter.every(s => nonDoneLabels.includes(s)),
             },
         ],
@@ -1393,6 +1390,8 @@ export const TasksView: React.FC<{
             nonDoneLabels,
             statusFilter,
             typeFilter,
+            setSearchQuery,
+            setTestCaseExecutionStatusFilter,
         ]
     );
 
@@ -1611,6 +1610,7 @@ export const TasksView: React.FC<{
                     isOpen={isFiltersModalOpen}
                     onClose={() => setIsFiltersModalOpen(false)}
                     title="Filtros"
+                    size="6xl"
                 >
                     <TasksViewFiltersModalContent
                         statusOptions={statusOptions}
@@ -1634,6 +1634,7 @@ export const TasksView: React.FC<{
                         sortBy={sortBy}
                         groupBy={groupBy}
                         onLoadPreset={(preset) => {
+                            setSearchQuery('');
                             setStatusFilter(preset.filters.statusFilter);
                             setPriorityFilter(preset.filters.priorityFilter);
                             setTypeFilter(preset.filters.typeFilter);
@@ -1667,7 +1668,7 @@ export const TasksView: React.FC<{
                     onClearAndCloseFilters={() => { clearAllFilters(); setIsFiltersModalOpen(false); }}
                     filteredCount={filteredTasks.length}
                     totalCount={project.tasks.length}
-                    hasActiveFiltersOrSearch={activeFiltersCount > 0 || !!debouncedSearchQuery}
+                    hasActiveFiltersOrSearch={activeFiltersCount > 0}
                 >
                 <div className="space-y-4 min-w-0">
                     <div className="flex flex-col gap-4">
@@ -1779,7 +1780,13 @@ export const TasksView: React.FC<{
                     <Button variant="outline" size="sm" className="rounded-full flex items-center gap-1.5 hover:bg-base-200" onClick={() => setIsLinkModalOpen(false)}>
                         Cancelar
                     </Button>
-                    <Button variant="brand" size="sm" className="rounded-full flex items-center gap-1.5 shadow-sm transition-all active:scale-95" onClick={handleLinkTasks} disabled={selectedTargetProjects.size === 0}>
+                    <Button
+                        variant="default"
+                        size="sm"
+                        className="rounded-full px-5 shadow-sm transition-all active:scale-95"
+                        onClick={handleLinkTasks}
+                        disabled={selectedTargetProjects.size === 0}
+                    >
                         Vincular
                     </Button>
                 </div>

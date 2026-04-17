@@ -45,6 +45,13 @@ export const canInstallApp = (): boolean => {
 
 /**
  * Registra o service worker
+ *
+ * O registro efetivo costuma vir do cliente gerado pelo vite-plugin-pwa (`registerSW`).
+ * Aqui apenas aguardamos `ready` para anexar listeners de atualização.
+ * Com `workbox.navigateFallback: null` e sem `index.html` no precache, evita-se o erro
+ * Workbox "non-precached-url" ao usar `createHandlerBoundToURL('index.html')`.
+ * Navegações do app usam `runtimeCaching` (NetworkFirst, cache `qa-agile-spa-navigation`) no
+ * `vite.config.ts` para fallback offline leve sem servir HTML stale do precache.
  */
 export const registerServiceWorker = async (): Promise<void> => {
   if (!isServiceWorkerSupported()) {
@@ -53,7 +60,6 @@ export const registerServiceWorker = async (): Promise<void> => {
   }
 
   try {
-    // O vite-plugin-pwa registra automaticamente, mas podemos verificar
     if ('serviceWorker' in navigator) {
       const registration = await navigator.serviceWorker.ready;
       logger.info('Service Worker registrado com sucesso', 'pwa', { scope: registration.scope });

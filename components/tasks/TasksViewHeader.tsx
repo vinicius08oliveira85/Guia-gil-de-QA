@@ -27,6 +27,7 @@ export const TasksViewHeader: React.FC<TasksViewHeaderProps> = ({
             align="left"
             fullWidth
             titleSize="page"
+            density="dense"
             title="Tarefas & Casos de Teste"
             description="Acompanhe o progresso das atividades e resultados de QA."
             className="max-w-2xl"
