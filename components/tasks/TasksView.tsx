@@ -38,6 +38,7 @@ import { normalizeExecutedStrategy } from '../../utils/testCaseMigration';
 import { FileExportModal } from '../common/FileExportModal';
 import {
     buildAttachmentsContextForTask,
+    buildTaskTreeSectionA11y,
     taskMatchesStatusName,
     taskMatchesPriorityName,
     getEffectiveTestStatus,
@@ -48,6 +49,7 @@ import {
     type TaskSortBy,
     type TaskGroupBy,
 } from './tasksViewHelpers';
+import { VirtualizedTaskRootList, shouldVirtualizeTaskRoots } from './VirtualizedTaskRootList';
 
 export const TasksView: React.FC<{ 
     project: Project, 
@@ -1452,6 +1454,9 @@ export const TasksView: React.FC<{
     const favoriteRoots = useMemo(() => taskTree.filter(t => t.isFavorite), [taskTree]);
     const otherRoots = useMemo(() => taskTree.filter(t => !t.isFavorite), [taskTree]);
 
+    const favoriteSectionA11y = useMemo(() => buildTaskTreeSectionA11y(favoriteRoots), [favoriteRoots]);
+    const otherSectionA11y = useMemo(() => buildTaskTreeSectionA11y(otherRoots), [otherRoots]);
+
     const groupedTasksEntries = useMemo((): [string, TaskWithChildren[]][] => {
         if (groupBy === 'none') return [];
         const map = new Map<string, TaskWithChildren[]>();
@@ -1475,6 +1480,14 @@ export const TasksView: React.FC<{
         }
         return entries;
     }, [filteredTasks, groupBy, statusOptions]);
+
+    const groupedTasksEntriesWithA11y = useMemo(
+        () =>
+            groupedTasksEntries.map(
+                ([label, tasks]) => [label, tasks, buildTaskTreeSectionA11y(tasks)] as const
+            ),
+        [groupedTasksEntries]
+    );
 
     const handleToggleFavorite = useCallback((taskId: string) => {
         const updatedTasks = (project.tasks || []).map(t =>
@@ -1518,63 +1531,117 @@ export const TasksView: React.FC<{
     };
 
     const totalTaskCount = filteredTasks.length;
-    const renderTaskTree = useCallback((tasks: TaskWithChildren[], level: number, startIndex: number = 0, totalCount?: number): React.ReactElement[] => {
+    /** Listas grandes + stagger do Framer atrasam a UI ao filtrar; desliga animação de entrada acima do limite. */
+    const reduceListMotion = filteredTasks.length > 42;
+    const renderTaskTree = useCallback((
+        tasks: TaskWithChildren[],
+        level: number,
+        startIndex: number = 0,
+        totalCount?: number,
+        sectionA11yByTaskId?: Map<string, { posinset: number; setsize: number }>
+    ): React.ReactElement[] => {
         const total = totalCount ?? totalTaskCount;
-        return tasks.map((task, index) => {
-            const globalIndex = startIndex + index;
+        const renderNode = (task: TaskWithChildren, taskLevel: number, indexInSiblings: number, siblingsStartGlobal: number): React.ReactElement => {
+            const globalIndex = siblingsStartGlobal + indexInSiblings;
+            const a11y = sectionA11yByTaskId?.get(task.id);
+            const posinset = a11y?.posinset ?? globalIndex + 1;
+            const setsize = a11y?.setsize ?? total;
             return (
                 <div
                     key={task.id}
                     role="listitem"
-                    aria-posinset={globalIndex + 1}
-                    aria-setsize={total}
+                    aria-posinset={posinset}
+                    aria-setsize={setsize}
                 >
-                <JiraTaskItem
-                    task={task}
-                    isSelected={selectedTasks.has(task.id)}
-                    onToggleSelect={() => toggleTaskSelection(task.id)}
-                    onTestCaseStatusChange={(testCaseId, status) => handleTestCaseStatusChange(task.id, testCaseId, status)}
-                    onToggleTestCaseAutomated={(testCaseId, isAutomated) => handleToggleTestCaseAutomated(task.id, testCaseId, isAutomated)}
-                    onExecutedStrategyChange={(testCaseId, strategies) => handleExecutedStrategyChange(task.id, testCaseId, strategies)}
-                    onTaskToolsChange={(tools) => handleTaskToolsChange(task.id, tools)}
-                    onTestCaseToolsChange={(testCaseId, tools) => handleTestCaseToolsChange(task.id, testCaseId, tools)}
-                    onStrategyExecutedChange={(strategyIndex, executed) => handleStrategyExecutedChange(task.id, strategyIndex, executed)}
-                    onStrategyToolsChange={(strategyIndex, tools) => handleStrategyToolsChange(task.id, strategyIndex, tools)}
-                    onDelete={handleDeleteTask}
-                    onGenerateTests={handleGenerateTests}
-                    isGenerating={generatingTestsTaskId === task.id}
-                    onAddSubtask={openTaskFormForNew}
-                    onEdit={openTaskFormForEdit}
-                    onGenerateBddScenarios={handleGenerateBddScenarios}
-                    isGeneratingBdd={generatingBddTaskId === task.id}
-                    onGenerateAll={handleGenerateAll}
-                    isGeneratingAll={generatingAllTaskId === task.id}
-                    onSyncToJira={handleSyncTaskToJira}
-                    isSyncing={syncingTaskId === task.id}
-                    onUpdateFromJira={handleUpdateTaskFromJira}
-                    isUpdatingFromJira={updatingFromJiraTaskId === task.id}
-                    onSaveBddScenario={handleSaveBddScenario}
-                    onDeleteBddScenario={handleDeleteBddScenario}
-                    onTaskStatusChange={(status) => handleTaskStatusChange(task.id, status)}
-                    level={level}
-                    onAddComment={(content) => handleAddComment(task.id, content)}
-                    onEditComment={(commentId, content) => handleEditComment(task.id, commentId, content)}
-                    onDeleteComment={(commentId) => handleDeleteComment(task.id, commentId)}
-                    onEditTestCase={handleOpenTestCaseEditor}
-                    onDeleteTestCase={handleDeleteTestCase}
-                    onDuplicateTestCase={handleDuplicateTestCase}
-                    project={project}
-                    onUpdateProject={onUpdateProject}
-                    onOpenModal={setModalTask}
-                    onToggleFavorite={() => handleToggleFavorite(task.id)}
-                    onDetailsOpenChange={onTaskDetailsOpenChange}
-                >
-                    {task.children.length > 0 && renderTaskTree(task.children, level + 1, globalIndex + 1, total)}
-                </JiraTaskItem>
+                    <JiraTaskItem
+                        task={task}
+                        isSelected={selectedTasks.has(task.id)}
+                        onToggleSelect={() => toggleTaskSelection(task.id)}
+                        onTestCaseStatusChange={(testCaseId, status) => handleTestCaseStatusChange(task.id, testCaseId, status)}
+                        onToggleTestCaseAutomated={(testCaseId, isAutomated) => handleToggleTestCaseAutomated(task.id, testCaseId, isAutomated)}
+                        onExecutedStrategyChange={(testCaseId, strategies) => handleExecutedStrategyChange(task.id, testCaseId, strategies)}
+                        onTaskToolsChange={(tools) => handleTaskToolsChange(task.id, tools)}
+                        onTestCaseToolsChange={(testCaseId, tools) => handleTestCaseToolsChange(task.id, testCaseId, tools)}
+                        onStrategyExecutedChange={(strategyIndex, executed) => handleStrategyExecutedChange(task.id, strategyIndex, executed)}
+                        onStrategyToolsChange={(strategyIndex, tools) => handleStrategyToolsChange(task.id, strategyIndex, tools)}
+                        onDelete={handleDeleteTask}
+                        onGenerateTests={handleGenerateTests}
+                        isGenerating={generatingTestsTaskId === task.id}
+                        onAddSubtask={openTaskFormForNew}
+                        onEdit={openTaskFormForEdit}
+                        onGenerateBddScenarios={handleGenerateBddScenarios}
+                        isGeneratingBdd={generatingBddTaskId === task.id}
+                        onGenerateAll={handleGenerateAll}
+                        isGeneratingAll={generatingAllTaskId === task.id}
+                        onSyncToJira={handleSyncTaskToJira}
+                        isSyncing={syncingTaskId === task.id}
+                        onUpdateFromJira={handleUpdateTaskFromJira}
+                        isUpdatingFromJira={updatingFromJiraTaskId === task.id}
+                        onSaveBddScenario={handleSaveBddScenario}
+                        onDeleteBddScenario={handleDeleteBddScenario}
+                        onTaskStatusChange={(status) => handleTaskStatusChange(task.id, status)}
+                        level={taskLevel}
+                        onAddComment={(content) => handleAddComment(task.id, content)}
+                        onEditComment={(commentId, content) => handleEditComment(task.id, commentId, content)}
+                        onDeleteComment={(commentId) => handleDeleteComment(task.id, commentId)}
+                        onEditTestCase={handleOpenTestCaseEditor}
+                        onDeleteTestCase={handleDeleteTestCase}
+                        onDuplicateTestCase={handleDuplicateTestCase}
+                        project={project}
+                        onUpdateProject={onUpdateProject}
+                        onOpenModal={setModalTask}
+                        onToggleFavorite={() => handleToggleFavorite(task.id)}
+                        onDetailsOpenChange={onTaskDetailsOpenChange}
+                    >
+                        {task.children.length > 0 &&
+                            task.children.map((child, cidx) =>
+                                renderNode(child, taskLevel + 1, cidx, globalIndex + 1)
+                            )}
+                    </JiraTaskItem>
                 </div>
             );
-        });
+        };
+        return tasks.map((task, index) => renderNode(task, level, index, startIndex));
     }, [totalTaskCount, selectedTasks, generatingTestsTaskId, generatingBddTaskId, generatingAllTaskId, syncingTaskId, updatingFromJiraTaskId, handleUpdateTaskFromJira, handleTestCaseStatusChange, handleToggleTestCaseAutomated, handleExecutedStrategyChange, handleTaskToolsChange, handleTestCaseToolsChange, handleStrategyExecutedChange, handleStrategyToolsChange, handleDeleteTask, handleGenerateTests, openTaskFormForNew, openTaskFormForEdit, handleGenerateBddScenarios, handleGenerateAll, handleSyncTaskToJira, handleSaveBddScenario, handleDeleteBddScenario, handleTaskStatusChange, handleAddComment, handleEditComment, handleDeleteComment, handleOpenTestCaseEditor, handleDeleteTestCase, handleDuplicateTestCase, project, onUpdateProject, toggleTaskSelection, handleToggleFavorite, onTaskDetailsOpenChange]);
+
+    const renderRootTaskList = useCallback(
+        (
+            roots: TaskWithChildren[],
+            listAriaLabel: string,
+            sectionA11yByTaskId: Map<string, { posinset: number; setsize: number }>
+        ) => {
+            if (shouldVirtualizeTaskRoots(roots.length)) {
+                const renderRow = (task: TaskWithChildren) =>
+                    renderTaskTree([task], 0, 0, undefined, sectionA11yByTaskId)[0];
+                return (
+                    <VirtualizedTaskRootList
+                        roots={roots}
+                        listAriaLabel={listAriaLabel}
+                        renderRootNode={renderRow}
+                    />
+                );
+            }
+            return (
+                <div className="space-y-1" role="list" aria-label={listAriaLabel}>
+                    {renderTaskTree(roots, 0, 0, undefined, sectionA11yByTaskId).map((taskElement, index) =>
+                        reduceListMotion ? (
+                            <div key={taskElement.key ?? `row-${index}`}>{taskElement}</div>
+                        ) : (
+                            <motion.div
+                                key={taskElement.key ?? `row-${index}`}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: index * 0.05, duration: 0.3 }}
+                            >
+                                {taskElement}
+                            </motion.div>
+                        )
+                    )}
+                </div>
+            );
+        },
+        [renderTaskTree, reduceListMotion]
+    );
 
     return (
         <>
@@ -1839,26 +1906,15 @@ export const TasksView: React.FC<{
                                     </select>
                                 </div>
                             </div>
-                            {groupBy !== 'none' && groupedTasksEntries.length > 0 ? (
+                            {groupBy !== 'none' && groupedTasksEntriesWithA11y.length > 0 ? (
                                 <div className="space-y-6">
-                                    {groupedTasksEntries.map(([groupLabel, tasksInGroup]) => (
+                                    {groupedTasksEntriesWithA11y.map(([groupLabel, tasksInGroup, groupA11y]) => (
                                         <section key={groupLabel} aria-label={`Grupo: ${groupLabel}`}>
                                             <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-base-content/70 mb-3">
                                                 <List className="w-4 h-4" aria-hidden />
                                                 {groupLabel}
                                             </h3>
-                                            <div className="space-y-1" role="list" aria-label="Lista de tarefas">
-                                                {renderTaskTree(tasksInGroup, 0).map((taskElement, index) => (
-                                                    <motion.div
-                                                        key={taskElement.key ?? `grp-${groupLabel}-${index}`}
-                                                        initial={{ opacity: 0, y: 10 }}
-                                                        animate={{ opacity: 1, y: 0 }}
-                                                        transition={{ delay: index * 0.03, duration: 0.25 }}
-                                                    >
-                                                        {taskElement}
-                                                    </motion.div>
-                                                ))}
-                                            </div>
+                                            {renderRootTaskList(tasksInGroup, `Lista de tarefas — ${groupLabel}`, groupA11y)}
                                         </section>
                                     ))}
                                 </div>
@@ -1870,18 +1926,7 @@ export const TasksView: React.FC<{
                                         <Star className="w-4 h-4 fill-amber-400 text-amber-400" aria-hidden />
                                         Favoritos
                                     </h3>
-                                    <div className="space-y-1" role="list" aria-label="Lista de tarefas favoritas">
-                                        {renderTaskTree(favoriteRoots, 0).map((taskElement, index) => (
-                                            <motion.div
-                                                key={taskElement.key ?? `fav-${index}`}
-                                                initial={{ opacity: 0, y: 10 }}
-                                                animate={{ opacity: 1, y: 0 }}
-                                                transition={{ delay: index * 0.05, duration: 0.3 }}
-                                            >
-                                                {taskElement}
-                                            </motion.div>
-                                        ))}
-                                    </div>
+                                    {renderRootTaskList(favoriteRoots, 'Lista de tarefas favoritas', favoriteSectionA11y)}
                                 </section>
                             )}
                             {favoriteRoots.length > 0 && otherRoots.length > 0 && (
@@ -1892,18 +1937,7 @@ export const TasksView: React.FC<{
                                     <List className="w-4 h-4" aria-hidden />
                                     Outras Tarefas
                                 </h3>
-                                <div className="space-y-1" role="list" aria-label="Lista de outras tarefas">
-                                    {renderTaskTree(otherRoots, 0).map((taskElement, index) => (
-                                        <motion.div
-                                            key={taskElement.key ?? `other-${index}`}
-                                            initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            transition={{ delay: index * 0.05, duration: 0.3 }}
-                                        >
-                                            {taskElement}
-                                        </motion.div>
-                                    ))}
-                                </div>
+                                {renderRootTaskList(otherRoots, 'Lista de outras tarefas', otherSectionA11y)}
                             </section>
                             </>
                             )}

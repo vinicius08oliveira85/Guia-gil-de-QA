@@ -31,6 +31,17 @@ export const useAutoSave = ({
   const previousProjectRef = useRef<string>('');
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isSavingRef = useRef(false);
+  /** Evita JSON.stringify completo quando o store devolve novo objeto com o mesmo conteúdo indexado. */
+  const lastPersistedMetaRef = useRef<{
+    projectId: string;
+    updatedAt?: string;
+    tasksRef: unknown;
+    documentsRef: unknown;
+    settingsRef: unknown;
+    phasesRef: unknown;
+    businessRulesRef: unknown;
+  } | null>(null);
+  const activeProjectIdRef = useRef<string | null>(null);
 
   /**
    * Verifica se uma mudança é crítica e deve ser salva imediatamente
@@ -125,9 +136,43 @@ export const useAutoSave = ({
       return;
     }
 
-    // Serializar projeto atual para comparação
+    if (activeProjectIdRef.current !== project.id) {
+      activeProjectIdRef.current = project.id;
+      previousProjectRef.current = '';
+      lastPersistedMetaRef.current = null;
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+        saveTimeoutRef.current = null;
+      }
+    }
+
+    const meta = lastPersistedMetaRef.current;
+    if (
+      meta &&
+      meta.projectId === project.id &&
+      meta.updatedAt === project.updatedAt &&
+      meta.tasksRef === project.tasks &&
+      meta.documentsRef === project.documents &&
+      meta.settingsRef === project.settings &&
+      meta.phasesRef === project.phases &&
+      meta.businessRulesRef === project.businessRules
+    ) {
+      return;
+    }
+
+    // Serializar projeto atual para comparação (custo alto — só após falha do atalho acima)
     const currentProjectString = JSON.stringify(project);
-    
+
+    lastPersistedMetaRef.current = {
+      projectId: project.id,
+      updatedAt: project.updatedAt,
+      tasksRef: project.tasks,
+      documentsRef: project.documents,
+      settingsRef: project.settings,
+      phasesRef: project.phases,
+      businessRulesRef: project.businessRules,
+    };
+
     // Se não há projeto anterior, apenas armazenar e retornar
     if (previousProjectRef.current === '') {
       previousProjectRef.current = currentProjectString;

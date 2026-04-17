@@ -118,6 +118,38 @@ export const compareTasksById = (a: JiraTask, b: JiraTask) => {
 export type TaskSortBy = 'id' | 'status' | 'priority' | 'createdAt' | 'title';
 export type TaskGroupBy = 'none' | 'status' | 'priority' | 'type';
 
+/** Nó mínimo para DFS de a11y (compatível com `TaskWithChildren`). */
+export type TaskTreeA11yNode = { id: string; children: TaskTreeA11yNode[] };
+
+/**
+ * Ordem DFS pré-fixada numa floresta de raízes: `posinset` 1..N e `setsize` = N em toda a seção.
+ * Evita colisões de posição quando há subtarefas (o índice “global” antigo por nível repetia valores).
+ */
+export function buildTaskTreeSectionA11y(roots: TaskTreeA11yNode[]): Map<string, { posinset: number; setsize: number }> {
+    const order: string[] = [];
+    const walk = (nodes: TaskTreeA11yNode[]) => {
+        for (const n of nodes) {
+            order.push(n.id);
+            if (n.children?.length) walk(n.children);
+        }
+    };
+    walk(roots);
+    const setsize = order.length;
+    const map = new Map<string, { posinset: number; setsize: number }>();
+    order.forEach((id, i) => map.set(id, { posinset: i + 1, setsize }));
+    return map;
+}
+
+/** Alinhado ao limite de `reduceListMotion` na lista de tarefas (≈42). */
+export const TASK_ROOT_VIRTUALIZE_MIN = 42;
+
+export const shouldVirtualizeTaskRoots = (rootCount: number): boolean => rootCount >= TASK_ROOT_VIRTUALIZE_MIN;
+
+/** Estimativa inicial de altura de uma linha virtual (raiz colapsada); `measureElement` corrige após pintura. */
+export const ESTIMATE_TASK_ROOT_ROW_PX = 128;
+
+export const TASK_LIST_VIRTUAL_OVERSCAN = 4;
+
 export const STATUS_ORDER: Record<string, number> = { 'To Do': 0, 'Blocked': 1, 'In Progress': 2, 'Done': 3 };
 export const PRIORITY_ORDER: Record<string, number> = { 'Urgente': 0, 'Alta': 1, 'Média': 2, 'Baixa': 3 };
 

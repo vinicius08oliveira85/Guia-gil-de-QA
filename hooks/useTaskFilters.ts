@@ -73,8 +73,10 @@ export function useTaskFilters(project: Project, options?: UseTaskFiltersOptions
     const filtersRestoredForProjectRef = useRef<string | null>(null);
     const lastExecutionStatusNavKeyRef = useRef(0);
 
-    const statusOptions = useMemo(() => getStatusFilterOptions(project), [project]);
-    const priorityOptions = useMemo(() => getPriorityFilterOptions(project), [project]);
+    const jiraStatuses = project.settings?.jiraStatuses;
+    const jiraPriorities = project.settings?.jiraPriorities;
+    const statusOptions = useMemo(() => getStatusFilterOptions(project), [project.tasks, jiraStatuses]);
+    const priorityOptions = useMemo(() => getPriorityFilterOptions(project), [jiraPriorities]);
 
     useLayoutEffect(() => {
         if (!project?.id) return;
@@ -136,7 +138,14 @@ export function useTaskFilters(project: Project, options?: UseTaskFiltersOptions
             sortBy,
             groupBy,
         };
-        localStorage.setItem(key, JSON.stringify(payload));
+        const t = window.setTimeout(() => {
+            try {
+                localStorage.setItem(key, JSON.stringify(payload));
+            } catch {
+                // quota ou modo privado
+            }
+        }, 280);
+        return () => clearTimeout(t);
     }, [project?.id, statusFilter, priorityFilter, typeFilter, testStatusFilter, testCaseExecutionStatusFilter, qualityFilter, searchQuery, sortBy, groupBy]);
 
     const filteredTasks = useMemo(() => {
@@ -158,7 +167,7 @@ export function useTaskFilters(project: Project, options?: UseTaskFiltersOptions
                 if (!priorityFilter.some(name => taskMatchesPriorityName(task, name, project))) return false;
             }
             if (typeFilter.length > 0 && !typeFilter.includes(task.type)) return false;
-            if (testStatusFilter.length > 0 && !testStatusFilter.includes(getEffectiveTestStatus(task, project.tasks))) return false;
+            if (testStatusFilter.length > 0 && !testStatusFilter.includes(getEffectiveTestStatus(task, tasks))) return false;
             if (
                 testCaseExecutionStatusFilter.length > 0 &&
                 !testCaseExecutionStatusFilter.some((st) => (task.testCases || []).some((tc) => tc.status === st))
@@ -185,7 +194,19 @@ export function useTaskFilters(project: Project, options?: UseTaskFiltersOptions
             }
             return true;
         });
-    }, [project, project.tasks, searchQuery, statusFilter, priorityFilter, typeFilter, testStatusFilter, testCaseExecutionStatusFilter, qualityFilter]);
+    }, [
+        project.tasks,
+        project.id,
+        jiraStatuses,
+        jiraPriorities,
+        searchQuery,
+        statusFilter,
+        priorityFilter,
+        typeFilter,
+        testStatusFilter,
+        testCaseExecutionStatusFilter,
+        qualityFilter,
+    ]);
 
     const counts = useMemo(() => {
         const allTasks = project.tasks ?? [];
@@ -208,7 +229,7 @@ export function useTaskFilters(project: Project, options?: UseTaskFiltersOptions
                 }
             }
         };
-    }, [project.tasks, project.settings?.jiraStatuses, project.settings?.jiraPriorities, project]);
+    }, [project.tasks, jiraStatuses, jiraPriorities]);
 
     const chipFiltersCount =
         statusFilter.length +

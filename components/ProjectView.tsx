@@ -126,11 +126,11 @@ export const ProjectView: React.FC<{
             previousPhasesRef.current = newPhasesString;
             // Use setTimeout to ensure update happens after render, preventing React error #130
             setTimeout(() => {
-                if (isMountedRef.current) {
-                    Promise.resolve(
-                        onUpdateProjectRef.current({ ...projectRef.current, phases: metrics.newPhases })
-                    ).catch((err) => logger.warn('Erro ao atualizar fases do projeto', 'ProjectView', err));
-                }
+                if (!isMountedRef.current) return;
+                void useProjectsStore
+                    .getState()
+                    .updateProject({ ...projectRef.current, phases: metrics.newPhases }, { silent: true })
+                    .catch((err) => logger.warn('Erro ao atualizar fases do projeto', 'ProjectView', err));
             }, 0);
         }
     }, [metrics.newPhases]);
