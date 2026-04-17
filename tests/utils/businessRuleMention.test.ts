@@ -17,12 +17,14 @@ describe('businessRuleMention', () => {
       id: '1',
       title: 'Regra A',
       description: '',
+      category: 'Geral',
       createdAt: 't',
     };
     const b: BusinessRule = {
       id: '2',
       title: 'Regra B',
       description: '',
+      category: 'Geral',
       createdAt: 't',
     };
     expect(mentionTokenForRule(a, [a, b])).toBe('@RegraA');
@@ -33,12 +35,14 @@ describe('businessRuleMention', () => {
       id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
       title: 'Mesmo',
       description: '',
+      category: 'Geral',
       createdAt: 't',
     };
     const b: BusinessRule = {
       id: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
       title: 'mesmo',
       description: '',
+      category: 'Geral',
       createdAt: 't',
     };
     expect(mentionTokenForRule(a, [a, b])).toBe('@Mesmoaaaaaaaa');

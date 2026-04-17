@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Suspense, useRef, useCallback } from 'react';
+import React, { useState, useEffect, Suspense, useRef, useCallback, useMemo } from 'react';
 import { Project, TestCase } from '../types';
 import { useProjectMetrics } from '../hooks/useProjectMetrics';
 import { PrintableReport } from './PrintableReport';
@@ -8,8 +8,12 @@ import { lazyWithRetry } from '../utils/lazyWithRetry';
 
 const TasksView = lazyWithRetry(() => import('./tasks/TasksView').then(m => ({ default: m.TasksView })));
 const DocumentsView = lazyWithRetry(() => import('./DocumentsView').then(m => ({ default: m.DocumentsView })));
-import { Breadcrumbs } from './common/Breadcrumbs';
+const BusinessRulesManager = lazyWithRetry(() =>
+    import('./project/BusinessRulesManager').then((m) => ({ default: m.BusinessRulesManager }))
+);
 import { PageTransition } from './common/PageTransition';
+import { Breadcrumbs } from './common/Breadcrumbs';
+import type { BreadcrumbItem } from './common/Breadcrumbs';
 import { SectionHeader } from './common/SectionHeader';
 import { ConfirmDialog } from './common/ConfirmDialog';
 import { useProjectsStore } from '../store/projectsStore';
@@ -18,10 +22,17 @@ import { useAutoSave } from '../hooks/useAutoSave';
 import { useOnlineStatus } from '../hooks/useOnlineStatus';
 import toast from 'react-hot-toast';
 import { Spinner } from './common/Spinner';
-import { Trash2 } from 'lucide-react';
+import { Trash2, CheckCircle2, AlertTriangle, CloudOff } from 'lucide-react';
 import { logger } from '../utils/logger';
 import { Button } from './common/Button';
 import { BackButton } from './common/BackButton';
+
+const TAB_LABELS: Record<string, string> = {
+    dashboard: 'Dashboard',
+    tasks: 'Tarefas & Testes',
+    documents: 'Documentos',
+    businessRules: 'Regras de negócio',
+};
 
 export const ProjectView: React.FC<{
   project: Project;
@@ -181,7 +192,10 @@ export const ProjectView: React.FC<{
     const prevLastSaveToSupabaseRef = useRef<boolean | null>(null);
     useEffect(() => {
         if (lastSaveToSupabase === false && prevLastSaveToSupabaseRef.current === true) {
-            toast('Salvo localmente (Supabase indisponível)', { icon: '⚠️', duration: 4000 });
+            toast('Salvo localmente (Supabase indisponível)', {
+                icon: <AlertTriangle className="text-warning" size={20} aria-hidden />,
+                duration: 4000,
+            });
         }
         prevLastSaveToSupabaseRef.current = lastSaveToSupabase;
     }, [lastSaveToSupabase]);
@@ -211,6 +225,7 @@ export const ProjectView: React.FC<{
         { id: 'dashboard', label: 'Dashboard' },
         { id: 'tasks', label: 'Tarefas & Testes' },
         { id: 'documents', label: 'Documentos' },
+        { id: 'businessRules', label: 'Regras de negócio' },
     ];
 
     const handleTabClick = useCallback((tabId: string) => {
@@ -259,149 +274,150 @@ export const ProjectView: React.FC<{
         } else if (e.key === 'End') {
             e.preventDefault();
             nextIndex = tabs.length - 1;
-        } else if (e.key >= '1' && e.key <= '3' && Number(e.key) <= tabs.length) {
+        } else if (e.key >= '1' && e.key <= '9' && Number(e.key) <= tabs.length) {
             e.preventDefault();
             nextIndex = Number(e.key) - 1;
         } else return;
         if (nextIndex !== index) setActiveTab(tabs[nextIndex].id);
     }, [activeTab, tabs]);
 
-    const tabLabels: Record<string, string> = {
-        dashboard: 'Dashboard',
-        tasks: 'Tarefas & Testes',
-        documents: 'Documentos',
-    };
+    const breadcrumbItems = useMemo((): BreadcrumbItem[] => {
+        const items: BreadcrumbItem[] = [{ label: 'Projetos', onClick: onBack }];
 
-    const getBreadcrumbItems = () => {
-        const items: { label: string; onClick?: () => void }[] = [
-            { label: 'Dashboard', onClick: onBack },
-            { label: currentProject.name, onClick: () => handleTabClick('dashboard') },
-        ];
+        const onlyProjectHome = activeTab === 'dashboard' && !breadcrumbTaskId;
+        if (onlyProjectHome) {
+            items.push({ label: currentProject.name });
+            return items;
+        }
 
-        if (activeTab === 'tasks' && breadcrumbTaskId) {
-            items.push({
-                label: breadcrumbTaskId,
-                onClick: () => scrollToTaskInList(breadcrumbTaskId),
-            });
-        } else if (activeTab !== 'dashboard') {
-            items.push({
-                label: tabLabels[activeTab] || activeTab,
-                onClick: () => handleTabClick(activeTab),
-            });
+        items.push({ label: currentProject.name, onClick: () => handleTabClick('dashboard') });
+
+        if (activeTab === 'tasks') {
+            if (breadcrumbTaskId) {
+                const task = currentProject.tasks.find((t) => t.id === breadcrumbTaskId);
+                const raw = task?.title?.trim() || 'Tarefa';
+                const label = raw.length > 56 ? `${raw.slice(0, 53)}…` : raw;
+                items.push({ label: TAB_LABELS.tasks, onClick: () => handleTabClick('tasks') });
+                items.push({ label });
+            } else {
+                items.push({ label: TAB_LABELS.tasks });
+            }
+        } else if (activeTab === 'documents') {
+            items.push({ label: TAB_LABELS.documents });
+        } else if (activeTab === 'businessRules') {
+            items.push({ label: TAB_LABELS.businessRules });
         }
 
         return items;
-    };
+    }, [onBack, currentProject.name, currentProject.tasks, activeTab, breadcrumbTaskId, handleTabClick]);
 
     return (
         <>
             <div className="w-full max-w-full mx-auto px-4 sm:px-8 py-4 sm:py-6 non-printable">
-                <div className="mb-3 flex flex-col items-stretch gap-2">
-                    <BackButton
-                        className="self-start -ml-1"
-                        onClick={onBack}
-                        aria-label="Voltar para a lista de projetos"
-                    />
-                    <Breadcrumbs
-                        items={getBreadcrumbItems()}
-                        showHome={false}
-                        className="text-sm"
-                    />
-                </div>
+                <div
+                    className="sticky z-40 -mx-4 mb-4 min-w-0 max-w-full border-b border-base-200/50 bg-base-100/70 px-4 py-2 backdrop-blur-md sm:-mx-8 sm:px-8"
+                    style={{ top: 'var(--app-header-h, 4.5rem)' }}
+                >
+                    <div className="mb-1.5 flex min-w-0 flex-col gap-1 sm:flex-row sm:flex-wrap sm:items-center sm:gap-1.5">
+                        <BackButton
+                            className="self-start -ml-1 sm:shrink-0"
+                            onClick={onBack}
+                            aria-label="Voltar para a lista de projetos"
+                        />
+                        {(supabaseAvailable || lastSaveToSupabase === false) && (
+                            <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2 text-sm sm:flex-initial" role="status" aria-live="polite" aria-atomic="true">
+                                {saveStatus === 'saving' && (
+                                    <div className="flex items-center gap-2 text-info">
+                                        <Spinner small />
+                                        <span>Salvando...</span>
+                                    </div>
+                                )}
+                                {saveStatus === 'saved' && (
+                                    <div className={`flex items-center gap-2 ${lastSaveToSupabase === false ? 'text-warning' : 'text-success'}`}>
+                                        <CheckCircle2 className="h-4 w-4 shrink-0" aria-hidden />
+                                        <span>{lastSaveToSupabase === false ? 'Salvo localmente (Supabase indisponível)' : 'Salvo'}</span>
+                                    </div>
+                                )}
+                                {saveStatus === 'error' && (
+                                    <div className="flex items-center gap-2 text-error">
+                                        <AlertTriangle className="h-4 w-4 shrink-0" aria-hidden />
+                                        <span>Erro ao salvar</span>
+                                    </div>
+                                )}
+                                {!supabaseAvailable && lastSaveToSupabase === false && saveStatus === 'idle' && (
+                                    <div className="flex items-center gap-2 text-warning">
+                                        <CloudOff className="h-4 w-4 shrink-0" aria-hidden />
+                                        <span>Salvo localmente (Supabase indisponível)</span>
+                                    </div>
+                                )}
+                                {supabaseAvailable && lastSaveToSupabase === false && saveStatus === 'idle' && (
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <span className="text-warning">Salvo localmente (nuvem indisponível)</span>
+                                        <button
+                                            type="button"
+                                            onClick={handleSaveToSupabase}
+                                            disabled={isSavingToSupabase || !isOnline}
+                                            className="btn btn-sm btn-outline btn-primary min-h-[44px] sm:min-h-0"
+                                            aria-label="Sincronizar projeto com a nuvem"
+                                            title={!isOnline ? 'É necessário estar online para sincronizar com a nuvem.' : undefined}
+                                        >
+                                            {isSavingToSupabase ? (
+                                                <>
+                                                    <Spinner small />
+                                                    <span>Salvando...</span>
+                                                </>
+                                            ) : (
+                                                'Sincronizar com a nuvem'
+                                            )}
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
 
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
-                    {/* Indicador de status de salvamento (aria-live para leitores de tela) */}
-                    {(supabaseAvailable || lastSaveToSupabase === false) && (
-                        <div className="flex items-center gap-2 text-sm" role="status" aria-live="polite" aria-atomic="true">
-                            {saveStatus === 'saving' && (
-                                <div className="flex items-center gap-2 text-info">
-                                    <Spinner small />
-                                    <span>Salvando...</span>
-                                </div>
-                            )}
-                            {saveStatus === 'saved' && (
-                                <div className={`flex items-center gap-2 ${lastSaveToSupabase === false ? 'text-warning' : 'text-success'}`}>
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" fill="currentColor"/>
-                                    </svg>
-                                    <span>{lastSaveToSupabase === false ? 'Salvo localmente (Supabase indisponível)' : 'Salvo'}</span>
-                                </div>
-                            )}
-                            {saveStatus === 'error' && (
-                                <div className="flex items-center gap-2 text-error">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor"/>
-                                    </svg>
-                                    <span>Erro ao salvar</span>
-                                </div>
-                            )}
-                            {!supabaseAvailable && lastSaveToSupabase === false && saveStatus === 'idle' && (
-                                <div className="flex items-center gap-2 text-warning">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2V8h2v6z" fill="currentColor"/>
-                                    </svg>
-                                    <span>Salvo localmente (Supabase indisponível)</span>
-                                </div>
-                            )}
-                            {supabaseAvailable && lastSaveToSupabase === false && saveStatus === 'idle' && (
-                                <div className="flex items-center gap-2 flex-wrap">
-                                    <span className="text-warning">Salvo localmente (nuvem indisponível)</span>
-                                    <button
-                                        type="button"
-                                        onClick={handleSaveToSupabase}
-                                        disabled={isSavingToSupabase || !isOnline}
-                                        className="btn btn-sm btn-outline btn-primary"
-                                        aria-label="Sincronizar projeto com a nuvem"
-                                        title={!isOnline ? 'É necessário estar online para sincronizar com a nuvem.' : undefined}
-                                    >
-                                        {isSavingToSupabase ? (
-                                            <>
-                                                <Spinner small />
-                                                <span>Salvando...</span>
-                                            </>
-                                        ) : (
-                                            'Sincronizar com a nuvem'
-                                        )}
-                                    </button>
-                                </div>
-                            )}
+                    <div className="mb-2 flex min-w-0 w-full max-w-full flex-col gap-2 xl:flex-row xl:items-start xl:gap-5">
+                        <Breadcrumbs
+                            items={breadcrumbItems}
+                            showHome={false}
+                            align="left"
+                            className="w-full min-w-0 shrink-0 xl:w-auto xl:max-w-md 2xl:max-w-lg"
+                        />
+                        <SectionHeader
+                            as="h1"
+                            align="left"
+                            fullWidth
+                            eyebrow={currentProject.settings?.jiraProjectKey ? `Jira: ${currentProject.settings.jiraProjectKey}` : 'Projeto'}
+                            title={<span className="break-words">{currentProject.name}</span>}
+                            description={
+                                currentProject.description
+                                    ? <span className="break-words">{currentProject.description}</span>
+                                    : 'Sem descrição.'
+                            }
+                            className="min-w-0 flex-1 xl:pt-0"
+                            compact
+                        />
+                    </div>
+                    {onDeleteProject && (
+                        <div className="mb-2 flex justify-end">
+                            <button
+                                type="button"
+                                onClick={() => setShowDeleteProjectConfirm(true)}
+                                className="btn btn-ghost btn-sm min-h-[44px] gap-2 text-error hover:bg-error/10 sm:min-h-0"
+                                aria-label={`Excluir projeto ${currentProject.name}`}
+                            >
+                                <Trash2 className="h-4 w-4" aria-hidden />
+                                Excluir projeto
+                            </button>
                         </div>
                     )}
-                </div>
-                
-                <SectionHeader
-                    as="h1"
-                    align="left"
-                    eyebrow={currentProject.settings?.jiraProjectKey ? `Jira: ${currentProject.settings.jiraProjectKey}` : 'Projeto'}
-                    title={<span className="break-words">{currentProject.name}</span>}
-                    description={
-                        currentProject.description
-                            ? <span className="break-words">{currentProject.description}</span>
-                            : 'Sem descrição.'
-                    }
-                    className="max-w-full mb-4"
-                    compact
-                />
-                {onDeleteProject && (
-                    <div className="flex justify-end -mt-2 mb-4">
-                        <button
-                            type="button"
-                            onClick={() => setShowDeleteProjectConfirm(true)}
-                            className="btn btn-ghost btn-sm text-error hover:bg-error/10 gap-1.5"
-                            aria-label={`Excluir projeto ${currentProject.name}`}
-                        >
-                            <Trash2 className="w-4 h-4" aria-hidden />
-                            Excluir projeto
-                        </button>
-                    </div>
-                )}
-                <div className="border-b border-base-300 pb-3 relative">
+                    <div className="relative border-b border-base-200/50 pb-2">
                     {/* Indicadores de Scroll para Mobile */}
                     {canScrollLeft && (
-                        <div className="absolute left-0 top-0 bottom-3 w-8 bg-gradient-to-r from-base-100 to-transparent pointer-events-none z-10" />
+                        <div className="absolute left-0 top-0 bottom-2 w-8 bg-gradient-to-r from-base-100 to-transparent pointer-events-none z-10" />
                     )}
                     {canScrollRight && (
-                        <div className="absolute right-0 top-0 bottom-3 w-8 bg-gradient-to-l from-base-100 to-transparent pointer-events-none z-10" />
+                        <div className="absolute right-0 top-0 bottom-2 w-8 bg-gradient-to-l from-base-100 to-transparent pointer-events-none z-10" />
                     )}
 
                     <nav
@@ -427,7 +443,8 @@ export const ProjectView: React.FC<{
                         ))}
                     </nav>
                 </div>
-                
+                </div>
+
                 <div className="mt-8">
                     <PageTransition key={activeTab}>
                         {activeTab === 'dashboard' && (
@@ -462,6 +479,13 @@ export const ProjectView: React.FC<{
                             <Suspense fallback={<LoadingSkeleton variant="card" count={3} />}>
                                 <DocumentsView project={currentProject} onUpdateProject={onUpdateProject} onNavigateToTab={handleTabClick} />
                             </Suspense>
+                            </section>
+                        )}
+                        {activeTab === 'businessRules' && (
+                            <section id="tab-panel-business-rules" role="tabpanel" aria-labelledby="tab-businessRules">
+                                <Suspense fallback={<LoadingSkeleton variant="card" count={2} />}>
+                                    <BusinessRulesManager project={currentProject} onUpdateProject={onUpdateProject} />
+                                </Suspense>
                             </section>
                         )}
                     </PageTransition>

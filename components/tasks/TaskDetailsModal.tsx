@@ -188,7 +188,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
     const safeDomId = useMemo(() => task.id.replace(/[^a-zA-Z0-9_-]/g, '_'), [task.id]);
 
     const [businessRulesLinkSearch, setBusinessRulesLinkSearch] = useState('');
-    const projectBusinessRulesList = project?.businessRules ?? [];
+    const projectBusinessRulesList = project ? project.businessRules : [];
     const filteredTaskBusinessRules = useMemo(
         () => filterBusinessRulesByQuery(projectBusinessRulesList, businessRulesLinkSearch),
         [projectBusinessRulesList, businessRulesLinkSearch]
@@ -369,16 +369,16 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                         {projectBusinessRulesList.length === 0 ? (
                             <div className="space-y-2">
                                 <p className="text-sm text-base-content/70">
-                                    Nenhuma regra cadastrada. Crie regras na aba Documentos para vinculá-las aqui e priorizá-las na geração com IA.
+                                    Nenhuma regra cadastrada. Crie regras na aba Regras de negócio do projeto e marque-as aqui para a IA usar na geração de testes e BDD.
                                 </p>
                                 {onNavigateToTab && (
                                     <Button
                                         type="button"
                                         variant="outline"
                                         size="sm"
-                                        onClick={() => onNavigateToTab('documents')}
+                                        onClick={() => onNavigateToTab('businessRules')}
                                     >
-                                        Ir para Documentos
+                                        Ir para Regras de negócio
                                     </Button>
                                 )}
                             </div>
@@ -386,7 +386,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                             <fieldset className="space-y-2 min-w-0">
                                 <legend className="sr-only">Selecionar regras de negócio aplicáveis a esta tarefa</legend>
                                 <p id={`task-br-hint-${safeDomId}`} className="text-xs text-base-content/60">
-                                    Marcadas: obrigatórias na IA; sem marcação: contexto geral. Clique no título para expandir a descrição.
+                                    Marcadas: incluídas no prompt da IA para geração de estratégias, BDD e casos. Sem marcação, a IA usa apenas título e descrição da tarefa. Clique no título para expandir a descrição.
                                 </p>
                                 {projectBusinessRulesList.length >= TASK_BR_SEARCH_MIN_COUNT && (
                                     <div className="relative">
@@ -432,7 +432,12 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                                                                 <summary
                                                                     className="flex cursor-pointer list-none items-center justify-between gap-2 py-3 pr-3 min-h-[44px] text-left text-sm font-medium text-base-content hover:bg-base-200/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/25 [&::-webkit-details-marker]:hidden"
                                                                 >
-                                                                    <span className="min-w-0 flex-1">{rule.title}</span>
+                                                                    <span className="min-w-0 flex-1 flex flex-wrap items-center gap-2">
+                                                                        <span>{rule.title}</span>
+                                                                        <span className="text-[10px] font-normal px-2 py-0.5 rounded-full bg-base-300/70 text-base-content/80 shrink-0">
+                                                                            {rule.category}
+                                                                        </span>
+                                                                    </span>
                                                                     <ChevronDown
                                                                         className="h-5 w-5 shrink-0 text-base-content/45 transition-transform group-open:rotate-180"
                                                                         aria-hidden
@@ -483,7 +488,12 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                                                         <summary
                                                             className="flex cursor-pointer list-none items-center justify-between gap-2 py-3 pr-3 min-h-[44px] text-left text-sm font-medium text-base-content hover:bg-base-200/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/25 [&::-webkit-details-marker]:hidden"
                                                         >
-                                                            <span className="min-w-0 flex-1">{rule.title}</span>
+                                                            <span className="min-w-0 flex-1 flex flex-wrap items-center gap-2">
+                                                                <span>{rule.title}</span>
+                                                                <span className="text-[10px] font-normal px-2 py-0.5 rounded-full bg-base-300/70 text-base-content/80 shrink-0">
+                                                                    {rule.category}
+                                                                </span>
+                                                            </span>
                                                             <ChevronDown
                                                                 className="h-5 w-5 shrink-0 text-base-content/45 transition-transform group-open:rotate-180"
                                                                 aria-hidden

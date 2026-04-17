@@ -1,5 +1,6 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { Project, TestCase, JiraTask } from '../types';
+import { normalizeProjectBusinessRules } from '../utils/businessRuleDefaults';
 import { logger } from '../utils/logger';
 import {
     clearSupabaseRemotePause,
@@ -749,7 +750,7 @@ export const loadProjectsFromSupabase = async (): Promise<LoadProjectsResult> =>
             const response = await callSupabaseProxy<{ projects?: Project[] }>('GET', {
                 query: { userId }
             }, loadProjectsTimeoutMs);
-            const projects = response.projects ?? [];
+            const projects = (response.projects ?? []).map((p) => normalizeProjectBusinessRules(p));
             clearSupabaseRemotePause();
             if (projects.length === 0) {
                 logger.info('Nenhum projeto encontrado no Supabase (proxy)', 'supabaseService');
@@ -865,7 +866,7 @@ export const loadProjectsFromSupabase = async (): Promise<LoadProjectsResult> =>
             clearSupabaseRemotePause();
             return { projects: [], loadFailed: false };
         }
-        const projects = data.map(row => row.data as Project);
+        const projects = data.map((row) => normalizeProjectBusinessRules(row.data as Project));
         clearSupabaseRemotePause();
         logger.info(`${projects.length} projetos carregados do Supabase via SDK`, 'supabaseService');
         return { projects, loadFailed: false };

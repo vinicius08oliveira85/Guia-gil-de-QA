@@ -1,10 +1,15 @@
 import { z } from 'zod';
+import { DEFAULT_BUSINESS_RULE_CATEGORY } from './businessRuleDefaults';
 
 // Schemas auxiliares
 export const BusinessRuleSchema = z.object({
   id: z.string().min(1),
   title: z.string().min(1),
   description: z.string(),
+  category: z
+    .string()
+    .optional()
+    .transform((c) => (c && c.trim() ? c.trim() : DEFAULT_BUSINESS_RULE_CATEGORY)),
   createdAt: z.string(),
   linkedBusinessRuleIds: z.array(z.string()).optional(),
 });
@@ -39,7 +44,7 @@ export const ProjectSchema = z.object({
   name: z.string().min(1, 'Nome do projeto é obrigatório').max(100, 'Nome muito longo'),
   description: z.string().max(1000, 'Descrição muito longa'),
   documents: z.array(ProjectDocumentSchema).default([]),
-  businessRules: z.array(BusinessRuleSchema).optional(),
+  businessRules: z.array(BusinessRuleSchema).default([]),
   tasks: z.array(z.any()).default([]), // TaskSchema é muito complexo, manter any por enquanto
   phases: z.array(PhaseSchema).default([]),
 });

@@ -62,6 +62,7 @@ function makeProject(id: string, taskCount: number, testsPerTask: number): Proje
     tasks,
     phases: [],
     documents: [],
+    businessRules: [],
   };
 }
 

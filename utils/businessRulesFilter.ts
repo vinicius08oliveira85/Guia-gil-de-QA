@@ -10,6 +10,7 @@ export function filterBusinessRulesByQuery(rules: BusinessRule[], query: string)
   return rules.filter(
     (r) =>
       r.title.toLowerCase().includes(q) ||
-      (r.description && r.description.toLowerCase().includes(q))
+      (r.description && r.description.toLowerCase().includes(q)) ||
+      (r.category && r.category.toLowerCase().includes(q))
   );
 }

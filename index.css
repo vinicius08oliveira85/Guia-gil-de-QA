@@ -5,6 +5,16 @@
 @layer base {
   :root {
     color-scheme: light dark;
+    /** Altura do header global (sticky); atualizada em runtime pelo Header para sub-cabeçalhos sticky */
+    --app-header-h: 4.5rem;
+    /* Design System Leve Saúde (referência + contraste navegação) */
+    --color-primary: #109685;
+    --color-primary-deep: #0b6156;
+  }
+
+  [data-theme='dark'] {
+    --color-primary: #2eb8a8;
+    --color-primary-deep: #7dd3c8;
   }
 
   html {
@@ -12,7 +22,7 @@
   }
 
   body {
-    @apply bg-base-100 text-base-content font-sans antialiased;
+    @apply bg-base-100 text-base-content font-body antialiased;
     text-rendering: optimizeLegibility;
     padding-bottom: env(safe-area-inset-bottom);
   }

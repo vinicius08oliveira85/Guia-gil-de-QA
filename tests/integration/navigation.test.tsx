@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from '../../App';
 import { useProjectsStore } from '../../store/projectsStore';
@@ -183,12 +183,9 @@ describe('Testes de Navegação', () => {
       await seedAndLoadApp([project]);
       useProjectsStore.setState({ selectedProjectId: project.id });
 
-      await waitFor(() => {
-        const breadcrumbs = screen.queryByRole('navigation', { name: /breadcrumb/i });
-        if (breadcrumbs) {
-          expect(breadcrumbs).toBeInTheDocument();
-        }
-      });
+      const breadcrumbs = await screen.findByRole('navigation', { name: /breadcrumb/i });
+      expect(breadcrumbs).toBeInTheDocument();
+      expect(within(breadcrumbs).getByRole('button', { name: 'Projetos' })).toBeInTheDocument();
     });
   });
 

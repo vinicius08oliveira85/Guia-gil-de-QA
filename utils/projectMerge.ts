@@ -1,5 +1,6 @@
 import { Project } from '../types';
 import { logger } from './logger';
+import { normalizeProjectBusinessRules } from './businessRuleDefaults';
 
 /**
  * Compara dois timestamps e retorna qual é mais recente
@@ -110,7 +111,7 @@ export const mergeProjects = (localProject: Project, remoteProject: Project): Pr
       createdAt: localProject.createdAt || remoteProject.createdAt,
     };
     
-    return merged;
+    return normalizeProjectBusinessRules(merged);
   }
   
   // Se um projeto é claramente mais recente, usar ele completamente
@@ -119,13 +120,13 @@ export const mergeProjects = (localProject: Project, remoteProject: Project): Pr
       `Projeto local é mais recente para ${localProject.id}, preservando versão local`,
       'projectMerge'
     );
-    return localProject;
+    return normalizeProjectBusinessRules(localProject);
   } else {
     logger.debug(
       `Projeto remoto é mais recente para ${remoteProject.id}, usando versão remota`,
       'projectMerge'
     );
-    return remoteProject;
+    return normalizeProjectBusinessRules(remoteProject);
   }
 };
 
@@ -217,6 +218,6 @@ export const mergeProjectsList = (
     }
   });
   
-  return Array.from(projectsMap.values());
+  return Array.from(projectsMap.values()).map(normalizeProjectBusinessRules);
 };
 

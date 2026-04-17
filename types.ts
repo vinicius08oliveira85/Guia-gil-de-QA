@@ -186,6 +186,8 @@ export interface BusinessRule {
   id: string;
   title: string;
   description: string;
+  /** Classificação livre (ex.: Segurança, Financeiro); legado sem valor tratado como "Geral" na normalização. */
+  category: string;
   createdAt: string;
   /** Outras regras do mesmo projeto vinculadas a esta; a UI insere `@NomeDaRegra` na descrição ao marcar. */
   linkedBusinessRuleIds?: string[];
@@ -359,7 +361,7 @@ export interface Project {
   updatedAt?: string;
   documents: ProjectDocument[];
   /** Regras de negócio definidas para o projeto (contexto IA e vínculo por tarefa). */
-  businessRules?: BusinessRule[];
+  businessRules: BusinessRule[];
   tasks: JiraTask[];
   phases: Phase[];
   shiftLeftAnalysis?: ShiftLeftAnalysis;

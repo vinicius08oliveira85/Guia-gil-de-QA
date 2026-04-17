@@ -3,8 +3,8 @@ import { filterBusinessRulesByQuery } from '../../utils/businessRulesFilter';
 import type { BusinessRule } from '../../types';
 
 const rules: BusinessRule[] = [
-  { id: '1', title: 'Login obrigatório', description: 'Usuário deve autenticar', createdAt: 'x' },
-  { id: '2', title: 'Cupom', description: 'Desconto máximo 10%', createdAt: 'x' },
+  { id: '1', title: 'Login obrigatório', description: 'Usuário deve autenticar', category: 'Segurança', createdAt: 'x' },
+  { id: '2', title: 'Cupom', description: 'Desconto máximo 10%', category: 'Financeiro', createdAt: 'x' },
 ];
 
 describe('filterBusinessRulesByQuery', () => {
@@ -25,5 +25,10 @@ describe('filterBusinessRulesByQuery', () => {
 
   it('retorna vazio quando não há match', () => {
     expect(filterBusinessRulesByQuery(rules, 'xyz')).toEqual([]);
+  });
+
+  it('filtra por categoria', () => {
+    expect(filterBusinessRulesByQuery(rules, 'financeiro')[0]?.id).toBe('2');
+    expect(filterBusinessRulesByQuery(rules, 'segurança')).toHaveLength(1);
   });
 });

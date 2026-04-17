@@ -1,6 +1,6 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
-import { Pencil, Plus, Trash2, Scale, Search, Download, Upload, ChevronDown, Link2 } from 'lucide-react';
+import { Pencil, Plus, Trash2, Scale, Download, Upload, ChevronDown, Link2 } from 'lucide-react';
 import type { BusinessRule, Project } from '../../types';
 import { filterBusinessRulesByQuery } from '../../utils/businessRulesFilter';
 import {
@@ -8,15 +8,24 @@ import {
   mentionTokenForRule,
   removeMentionFromDescription,
 } from '../../utils/businessRuleMention';
+import { DEFAULT_BUSINESS_RULE_CATEGORY } from '../../utils/businessRuleDefaults';
 import { sortBusinessRules, type BusinessRuleSortKey } from '../../utils/businessRulesSort';
 import { downloadFile, exportBusinessRulesToJSON } from '../../utils/exportService';
 import { mergeBusinessRulesInto, parseBusinessRulesImportJson } from '../../utils/businessRulesImport';
 import { Modal } from '../common/Modal';
 import { Button } from '../common/Button';
 import { ConfirmDialog } from '../common/ConfirmDialog';
+import { BusinessRulesFiltersToolbar } from './BusinessRulesFiltersToolbar';
+
+const SUGGESTED_CATEGORIES = ['Geral', 'Segurança', 'Financeiro', 'UX', 'Compliance', 'Integração'] as const;
+
+function ruleCategoryLabel(rule: BusinessRule): string {
+  const t = rule.category?.trim();
+  return t ? t : DEFAULT_BUSINESS_RULE_CATEGORY;
+}
 
 function stripRuleFromProject(project: Project, deletedRule: BusinessRule): Project {
-  const allRules = project.businessRules ?? [];
+  const allRules = project.businessRules;
   const mention = mentionTokenForRule(deletedRule, allRules);
   const businessRules = allRules
     .filter((r) => r.id !== deletedRule.id)
@@ -37,25 +46,39 @@ function stripRuleFromProject(project: Project, deletedRule: BusinessRule): Proj
   return { ...project, businessRules, tasks };
 }
 
-export const BusinessRulesPanel: React.FC<{
+export const BusinessRulesManager: React.FC<{
   project: Project;
   onUpdateProject: (project: Project) => void;
 }> = ({ project, onUpdateProject }) => {
-  const rules = project.businessRules ?? [];
+  const rules = project.businessRules;
   const [formOpen, setFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [title, setTitle] = useState('');
+  const [category, setCategory] = useState(DEFAULT_BUSINESS_RULE_CATEGORY);
   const [description, setDescription] = useState('');
   /** IDs de outras regras vinculadas; ao marcar, insere `@NomeDaRegra` na descrição. */
   const [linkedRuleIds, setLinkedRuleIds] = useState<string[]>([]);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [categoryScope, setCategoryScope] = useState<'all' | string>('all');
   const [sortBy, setSortBy] = useState<BusinessRuleSortKey>('created_desc');
 
-  const filteredRules = useMemo(
-    () => filterBusinessRulesByQuery(rules, searchQuery),
-    [rules, searchQuery]
-  );
+  const uniqueCategories = useMemo(() => {
+    const set = new Set<string>();
+    for (const r of rules) set.add(ruleCategoryLabel(r));
+    return Array.from(set).sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base' }));
+  }, [rules]);
+
+  useEffect(() => {
+    if (categoryScope === 'all') return;
+    if (!uniqueCategories.includes(categoryScope)) setCategoryScope('all');
+  }, [categoryScope, uniqueCategories]);
+
+  const filteredRules = useMemo(() => {
+    const scoped =
+      categoryScope === 'all' ? rules : rules.filter((r) => ruleCategoryLabel(r) === categoryScope);
+    return filterBusinessRulesByQuery(scoped, searchQuery);
+  }, [rules, categoryScope, searchQuery]);
 
   const displayRules = useMemo(
     () => sortBusinessRules(filteredRules, sortBy),
@@ -97,6 +120,7 @@ export const BusinessRulesPanel: React.FC<{
   const openCreate = () => {
     setEditingId(null);
     setTitle('');
+    setCategory(DEFAULT_BUSINESS_RULE_CATEGORY);
     setDescription('');
     setLinkedRuleIds([]);
     setFormOpen(true);
@@ -105,6 +129,7 @@ export const BusinessRulesPanel: React.FC<{
   const openEdit = (rule: BusinessRule) => {
     setEditingId(rule.id);
     setTitle(rule.title);
+    setCategory(rule.category?.trim() ? rule.category.trim() : DEFAULT_BUSINESS_RULE_CATEGORY);
     setDescription(rule.description);
     setLinkedRuleIds([...(rule.linkedBusinessRuleIds ?? [])]);
     setFormOpen(true);
@@ -137,7 +162,8 @@ export const BusinessRulesPanel: React.FC<{
     const t = title.trim();
     if (!t) return;
 
-    const list = [...(project.businessRules ?? [])];
+    const cat = category.trim() || DEFAULT_BUSINESS_RULE_CATEGORY;
+    const list = [...project.businessRules];
     let d = description.trim();
     const uniqueLinked = [...new Set(linkedRuleIds)];
     for (const id of uniqueLinked) {
@@ -155,6 +181,7 @@ export const BusinessRulesPanel: React.FC<{
       list[idx] = {
         ...rest,
         title: t,
+        category: cat,
         description: d,
         ...(uniqueLinked.length > 0 ? { linkedBusinessRuleIds: uniqueLinked } : {}),
       };
@@ -163,6 +190,7 @@ export const BusinessRulesPanel: React.FC<{
       const row: BusinessRule = {
         id: crypto.randomUUID(),
         title: t,
+        category: cat,
         description: d,
         createdAt: now,
       };
@@ -189,15 +217,15 @@ export const BusinessRulesPanel: React.FC<{
       className="rounded-xl border border-base-300 bg-base-200/40 backdrop-blur-sm p-4 md:p-6 space-y-4"
       aria-labelledby="business-rules-heading"
     >
-        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div>
           <h2 id="business-rules-heading" className="text-xl md:text-2xl font-bold tracking-tight text-base-content flex items-center gap-2">
             <Scale className="w-6 h-6 text-primary shrink-0" aria-hidden />
             Regras de Negócio
           </h2>
           <p className="text-sm text-base-content/70 mt-1 max-w-2xl">
-            Lista por título — clique em uma regra para expandir a descrição e as ações. Vincule regras entre si ao editar (insere{' '}
-            <code className="text-xs bg-base-300/50 px-1 rounded">@NomeDaRegra</code> na descrição) ou vincule regras às tarefas no detalhe da tarefa.
+            Defina regras por categoria e vincule-as às tarefas no detalhe da tarefa para a IA gerar BDD e casos mais assertivos. Vincule regras entre si ao editar (insere{' '}
+            <code className="text-xs bg-base-300/50 px-1 rounded">@NomeDaRegra</code> na descrição).
           </p>
         </div>
         <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto sm:shrink-0">
@@ -233,90 +261,79 @@ export const BusinessRulesPanel: React.FC<{
       </div>
 
       {rules.length === 0 ? (
-        <p className="text-sm text-base-content/60 py-2">Nenhuma regra cadastrada. Adicione a primeira para contextualizar a IA.</p>
+        <p className="text-sm text-base-content/60 py-2">
+          Nenhuma regra cadastrada. Adicione a primeira e vincule-a às tarefas para contextualizar a geração por IA.
+        </p>
       ) : (
         <>
-        <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
-          <div className="relative flex-1 min-w-0">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-base-content/40 pointer-events-none" aria-hidden />
-            <input
-              type="search"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Buscar por título ou descrição..."
-              className="input input-bordered w-full pl-10 bg-base-100 border-base-300 text-base-content min-h-[44px] rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20"
-              aria-label="Filtrar regras de negócio"
-            />
-          </div>
-          <label className="flex flex-col gap-1 sm:min-w-[200px]">
-            <span className="text-xs font-medium text-base-content/60">Ordenar por</span>
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as BusinessRuleSortKey)}
-              className="select select-bordered w-full bg-base-100 border-base-300 text-base-content min-h-[44px] rounded-xl text-sm"
-              aria-label="Ordenar lista de regras"
-            >
-              <option value="created_desc">Mais recentes</option>
-              <option value="created_asc">Mais antigas</option>
-              <option value="title_asc">Título (A–Z)</option>
-              <option value="title_desc">Título (Z–A)</option>
-            </select>
-          </label>
-        </div>
-        {displayRules.length === 0 ? (
-          <p className="text-sm text-base-content/60 py-2" role="status">
-            Nenhuma regra corresponde à busca.
-          </p>
-        ) : (
-        <ul className="space-y-2" role="list">
-          {displayRules.map((rule) => (
-            <li key={rule.id}>
-              <details className="group rounded-lg border border-base-300 bg-base-100/80 overflow-hidden open:shadow-sm">
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 min-h-[44px] text-left font-semibold text-base-content hover:bg-base-200/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-inset [&::-webkit-details-marker]:hidden">
-                  <span className="min-w-0 flex-1">{rule.title}</span>
-                  <ChevronDown
-                    className="h-5 w-5 shrink-0 text-base-content/45 transition-transform duration-200 group-open:rotate-180"
-                    aria-hidden
-                  />
-                </summary>
-                <div className="border-t border-base-300 bg-base-100/90 px-4 pb-4 pt-3 space-y-3">
-                  <p className="text-sm text-base-content/80 whitespace-pre-wrap">
-                    {rule.description.trim() ? rule.description : (
-                      <span className="italic text-base-content/50">Sem descrição</span>
-                    )}
-                  </p>
-                  {(rule.linkedBusinessRuleIds?.length ?? 0) > 0 && (
-                    <p className="text-xs text-base-content/65 flex flex-wrap gap-x-1 gap-y-0.5 items-baseline">
-                      <span className="font-medium text-base-content/75 shrink-0">Vinculada a:</span>
-                      <span>
-                        {(rule.linkedBusinessRuleIds ?? [])
-                          .map((id) => rules.find((x) => x.id === id)?.title ?? id)
-                          .join(', ')}
+          <BusinessRulesFiltersToolbar
+            searchQuery={searchQuery}
+            onSearchQueryChange={setSearchQuery}
+            categoryScope={categoryScope}
+            onCategoryScopeChange={setCategoryScope}
+            uniqueCategories={uniqueCategories}
+            sortBy={sortBy}
+            onSortByChange={setSortBy}
+          />
+          {displayRules.length === 0 ? (
+            <p className="text-sm text-base-content/60 py-2" role="status">
+              Nenhuma regra corresponde à busca ou ao filtro de categoria.
+            </p>
+          ) : (
+            <ul className="space-y-2" role="list">
+              {displayRules.map((rule) => (
+                <li key={rule.id}>
+                  <details className="group rounded-lg border border-base-300 bg-base-100/80 overflow-hidden open:shadow-sm">
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 min-h-[44px] text-left font-semibold text-base-content hover:bg-base-200/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-inset [&::-webkit-details-marker]:hidden">
+                      <span className="min-w-0 flex-1 flex flex-wrap items-center gap-2">
+                        <span>{rule.title}</span>
+                        <span className="text-xs font-normal px-2 py-0.5 rounded-full bg-base-300/60 text-base-content/80 shrink-0">
+                          {rule.category}
+                        </span>
                       </span>
-                    </p>
-                  )}
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Button type="button" variant="outline" size="sm" onClick={() => openEdit(rule)} aria-label={`Editar regra ${rule.title}`}>
-                      <Pencil className="w-4 h-4" aria-hidden />
-                      Editar
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => setDeleteId(rule.id)}
-                      aria-label={`Excluir regra ${rule.title}`}
-                    >
-                      <Trash2 className="w-4 h-4" aria-hidden />
-                      Excluir
-                    </Button>
-                  </div>
-                </div>
-              </details>
-            </li>
-          ))}
-        </ul>
-        )}
+                      <ChevronDown
+                        className="h-5 w-5 shrink-0 text-base-content/45 transition-transform duration-200 group-open:rotate-180"
+                        aria-hidden
+                      />
+                    </summary>
+                    <div className="border-t border-base-300 bg-base-100/90 px-4 pb-4 pt-3 space-y-3">
+                      <p className="text-sm text-base-content/80 whitespace-pre-wrap">
+                        {rule.description.trim() ? rule.description : (
+                          <span className="italic text-base-content/50">Sem descrição</span>
+                        )}
+                      </p>
+                      {(rule.linkedBusinessRuleIds?.length ?? 0) > 0 && (
+                        <p className="text-xs text-base-content/65 flex flex-wrap gap-x-1 gap-y-0.5 items-baseline">
+                          <span className="font-medium text-base-content/75 shrink-0">Vinculada a:</span>
+                          <span>
+                            {(rule.linkedBusinessRuleIds ?? [])
+                              .map((id) => rules.find((x) => x.id === id)?.title ?? id)
+                              .join(', ')}
+                          </span>
+                        </p>
+                      )}
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Button type="button" variant="outline" size="sm" onClick={() => openEdit(rule)} aria-label={`Editar regra ${rule.title}`}>
+                          <Pencil className="w-4 h-4" aria-hidden />
+                          Editar
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => setDeleteId(rule.id)}
+                          aria-label={`Excluir regra ${rule.title}`}
+                        >
+                          <Trash2 className="w-4 h-4" aria-hidden />
+                          Excluir
+                        </Button>
+                      </div>
+                    </div>
+                  </details>
+                </li>
+              ))}
+            </ul>
+          )}
         </>
       )}
 
@@ -338,6 +355,26 @@ export const BusinessRulesPanel: React.FC<{
               className="input input-bordered w-full bg-base-100 border-base-300 text-base-content min-h-[44px] rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20"
               autoComplete="off"
             />
+          </div>
+          <div>
+            <label htmlFor="br-category" className="block text-sm font-semibold text-base-content/70 mb-2">
+              Categoria
+            </label>
+            <input
+              id="br-category"
+              type="text"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              list="br-category-suggestions"
+              className="input input-bordered w-full bg-base-100 border-base-300 text-base-content min-h-[44px] rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20"
+              autoComplete="off"
+              placeholder={DEFAULT_BUSINESS_RULE_CATEGORY}
+            />
+            <datalist id="br-category-suggestions">
+              {SUGGESTED_CATEGORIES.map((c) => (
+                <option key={c} value={c} />
+              ))}
+            </datalist>
           </div>
           <div>
             <label htmlFor="br-desc" className="block text-sm font-semibold text-base-content/70 mb-2">

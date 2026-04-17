@@ -1,4 +1,9 @@
 import type { BusinessRule } from '../types';
+import { DEFAULT_BUSINESS_RULE_CATEGORY, normalizeBusinessRule } from './businessRuleDefaults';
+import {
+  BUSINESS_RULES_EXPORT_FORMAT_ID,
+  BUSINESS_RULES_IMPORT_MAX_FORMAT_VERSION,
+} from './businessRulesExportEnvelope';
 
 export type BusinessRulesImportParseResult =
   | { ok: true; rules: BusinessRule[]; skipped: number; sourceProject?: string }
@@ -19,6 +24,9 @@ function normalizeRule(row: unknown): BusinessRule | null {
   const description = typeof o.description === 'string' ? o.description : '';
   const createdAt =
     typeof o.createdAt === 'string' && o.createdAt.trim() ? o.createdAt.trim() : new Date().toISOString();
+  const catRaw = o.category;
+  const category =
+    typeof catRaw === 'string' && catRaw.trim() ? catRaw.trim() : DEFAULT_BUSINESS_RULE_CATEGORY;
   const linkedRaw = o.linkedBusinessRuleIds;
   const linkedBusinessRuleIds = Array.isArray(linkedRaw)
     ? linkedRaw.filter((x): x is string => typeof x === 'string' && x.trim().length > 0).map((x) => x.trim())
@@ -27,9 +35,29 @@ function normalizeRule(row: unknown): BusinessRule | null {
     id: String(o.id).trim(),
     title,
     description,
+    category,
     createdAt,
     ...(linkedBusinessRuleIds && linkedBusinessRuleIds.length > 0 ? { linkedBusinessRuleIds } : {}),
   };
+}
+
+/** Valida `format` / `formatVersion` quando presentes (legado sem campos continua válido). */
+export function validateBusinessRulesImportEnvelope(obj: Record<string, unknown>): string | null {
+  const fmt = obj.format;
+  if (fmt === undefined || fmt === null) return null;
+  if (typeof fmt !== 'string' || fmt.trim() !== BUSINESS_RULES_EXPORT_FORMAT_ID) {
+    return `Formato de arquivo não reconhecido. Se o campo "format" existir, deve ser "${BUSINESS_RULES_EXPORT_FORMAT_ID}".`;
+  }
+  const fv = obj.formatVersion;
+  if (fv === undefined || fv === null) return null;
+  if (typeof fv !== 'number' || !Number.isInteger(fv)) {
+    return 'O campo formatVersion deve ser um número inteiro.';
+  }
+  if (fv < 1) return 'formatVersion inválido.';
+  if (fv > BUSINESS_RULES_IMPORT_MAX_FORMAT_VERSION) {
+    return `Este arquivo usa formatVersion ${fv}, mas esta versão do app suporta até ${BUSINESS_RULES_IMPORT_MAX_FORMAT_VERSION}. Atualize o aplicativo para importar.`;
+  }
+  return null;
 }
 
 /**
@@ -49,6 +77,9 @@ export function parseBusinessRulesImportJson(raw: string): BusinessRulesImportPa
   if (Array.isArray(data)) {
     rows = data;
   } else if (data && typeof data === 'object' && Array.isArray((data as { businessRules?: unknown }).businessRules)) {
+    const obj = data as Record<string, unknown>;
+    const envelopeErr = validateBusinessRulesImportEnvelope(obj);
+    if (envelopeErr) return { ok: false, error: envelopeErr };
     rows = (data as { businessRules: unknown[] }).businessRules;
     const pn = (data as { projectName?: unknown }).projectName;
     if (typeof pn === 'string' && pn.trim()) sourceProject = pn.trim();
@@ -77,7 +108,7 @@ export function parseBusinessRulesImportJson(raw: string): BusinessRulesImportPa
  */
 export function mergeBusinessRulesInto(existing: BusinessRule[], incoming: BusinessRule[]): BusinessRulesMergeResult {
   const existingIdSet = new Set(existing.map((r) => r.id));
-  const map = new Map(existing.map((r) => [r.id, { ...r }]));
+  const map = new Map(existing.map((r) => [r.id, normalizeBusinessRule(r)]));
 
   const uniqueIncomingIds = new Set<string>();
   for (const inc of incoming) {
@@ -97,12 +128,13 @@ export function mergeBusinessRulesInto(existing: BusinessRule[], incoming: Busin
         ...cur,
         title: inc.title,
         description: inc.description,
+        category: inc.category?.trim() ? inc.category.trim() : cur.category,
         ...(inc.linkedBusinessRuleIds !== undefined
           ? { linkedBusinessRuleIds: inc.linkedBusinessRuleIds }
           : {}),
       });
     } else {
-      map.set(inc.id, { ...inc });
+      map.set(inc.id, normalizeBusinessRule(inc));
     }
   }
 

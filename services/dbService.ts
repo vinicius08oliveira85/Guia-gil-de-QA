@@ -1,4 +1,5 @@
 import { Phase, PhaseName, Project } from '../types';
+import { normalizeProjectBusinessRules } from '../utils/businessRuleDefaults';
 import { DB_NAME, DB_VERSION, PHASE_NAMES, STORE_NAME } from '../utils/constants';
 import {
   isSupabaseAvailable,
@@ -68,14 +69,16 @@ export const loadProjectsFromIndexedDB = async (): Promise<Project[]> => {
   });
 
   // Migrar TestCases dos projetos do IndexedDB (otimizado)
-  const migratedIndexedDBProjects = indexedDBProjects.map((project) => ({
-    ...project,
-    businessRules: project.businessRules ?? [],
-    tasks: (project.tasks || []).map((task) => ({
-      ...task,
-      testCases: migrateTestCases(task.testCases || []),
-    })),
-  }));
+  const migratedIndexedDBProjects = indexedDBProjects.map((project) =>
+    normalizeProjectBusinessRules({
+      ...project,
+      businessRules: project.businessRules ?? [],
+      tasks: (project.tasks || []).map((task) => ({
+        ...task,
+        testCases: migrateTestCases(task.testCases || []),
+      })),
+    })
+  );
 
   // Limpar casos de teste de tipos não permitidos (Bug, Epic, História)
   return cleanupTestCasesForProjects(migratedIndexedDBProjects);
@@ -95,16 +98,16 @@ export const getProjectById = async (projectId: string): Promise<Project | null>
     request.onsuccess = () => resolve(request.result);
   });
   if (!raw) return null;
-  const migrated = {
+  const migrated = normalizeProjectBusinessRules({
     ...raw,
     businessRules: raw.businessRules ?? [],
     tasks: raw.tasks.map(task => ({
       ...task,
       testCases: migrateTestCases(task.testCases || []),
     })),
-  };
+  });
   const [cleaned] = cleanupTestCasesForProjects([migrated]);
-  return cleaned ?? null;
+  return cleaned ? normalizeProjectBusinessRules(cleaned) : null;
 };
 
 /**
@@ -143,14 +146,16 @@ export const getAllProjects = async (): Promise<Project[]> => {
     }
 
     try {
-      const migratedSupabaseProjects = supabaseProjects.map((project) => ({
-        ...project,
-        businessRules: project.businessRules ?? [],
-        tasks: (project.tasks || []).map((task) => ({
-          ...task,
-          testCases: migrateTestCases(task.testCases || []),
-        })),
-      }));
+      const migratedSupabaseProjects = supabaseProjects.map((project) =>
+        normalizeProjectBusinessRules({
+          ...project,
+          businessRules: project.businessRules ?? [],
+          tasks: (project.tasks || []).map((task) => ({
+            ...task,
+            testCases: migrateTestCases(task.testCases || []),
+          })),
+        })
+      );
 
       const projectsMap = new Map<string, Project>();
       indexedDBProjects.forEach((project) => {
@@ -196,7 +201,7 @@ export const getAllProjects = async (): Promise<Project[]> => {
 };
 
 export const addProject = async (project: Project): Promise<SaveResult> => {
-  const cleanedProject = cleanupTestCasesForNonTaskTypesSync(project);
+  const cleanedProject = cleanupTestCasesForNonTaskTypesSync(normalizeProjectBusinessRules(project));
 
   const db = await openDB();
   await new Promise<void>((resolve, reject) => {
@@ -222,7 +227,7 @@ export const updateProject = async (
   project: Project,
   options?: { syncRemote?: boolean }
 ): Promise<SaveResult> => {
-  const cleanedProject = cleanupTestCasesForNonTaskTypesSync(project);
+  const cleanedProject = cleanupTestCasesForNonTaskTypesSync(normalizeProjectBusinessRules(project));
   const syncRemote = options?.syncRemote === true;
 
   const totalStrategies = cleanedProject.tasks.reduce((sum, task) => sum + (task.testStrategy?.length || 0), 0);
@@ -326,7 +331,7 @@ export const updateProject = async (
  * Aplica cleanup e migrateTestCases para manter consistência com o restante do app.
  */
 export const writeProjectToIndexedDBOnly = async (project: Project): Promise<void> => {
-  const cleaned = cleanupTestCasesForNonTaskTypesSync(project);
+  const cleaned = cleanupTestCasesForNonTaskTypesSync(normalizeProjectBusinessRules(project));
   const migrated: Project = {
     ...cleaned,
     tasks: cleaned.tasks.map(task => ({
@@ -363,12 +368,13 @@ function normalizeImportedProject(raw: unknown): Project | null {
   }
   const now = new Date().toISOString();
   const partial = raw as Partial<Project>;
-  return {
+  const base: Project = {
     ...partial,
     id: o.id.trim(),
     name: o.name,
     description: typeof o.description === 'string' ? o.description : '',
     documents: Array.isArray(o.documents) ? (o.documents as Project['documents']) : [],
+    businessRules: Array.isArray(o.businessRules) ? (o.businessRules as Project['businessRules']) : [],
     tasks: Array.isArray(o.tasks) ? (o.tasks as Project['tasks']) : [],
     phases:
       Array.isArray(o.phases) && o.phases.length > 0
@@ -377,6 +383,7 @@ function normalizeImportedProject(raw: unknown): Project | null {
     createdAt: typeof o.createdAt === 'string' ? o.createdAt : now,
     updatedAt: typeof o.updatedAt === 'string' ? o.updatedAt : now,
   };
+  return normalizeProjectBusinessRules(base);
 }
 
 function extractProjectsArray(parsed: unknown): unknown[] {

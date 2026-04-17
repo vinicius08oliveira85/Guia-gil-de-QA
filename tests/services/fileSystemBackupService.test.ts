@@ -7,7 +7,15 @@ import {
   pickBackupJsonFileViaFileSystemAccess,
 } from '../../services/fileSystemBackupService';
 
-const mockProject = { id: 'p1', name: 'Projeto A' } as Project;
+const mockProject = {
+  id: 'p1',
+  name: 'Projeto A',
+  description: '',
+  documents: [],
+  businessRules: [],
+  tasks: [],
+  phases: [],
+} as Project;
 
 const mockEnvelope: LocalBackupEnvelope = {
   backupFormatVersion: 1,

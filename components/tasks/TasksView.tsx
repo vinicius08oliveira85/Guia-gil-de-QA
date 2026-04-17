@@ -8,7 +8,7 @@ import { TaskForm } from './TaskForm';
 import { TestCaseEditorModal } from './TestCaseEditorModal';
 import { Button } from '../common/Button';
 import { ConfirmDialog } from '../common/ConfirmDialog';
-import { Zap, AlertTriangle, X, Check, Link as LinkIcon, Clock, ClipboardList, CheckCircle, Star, List, Download } from 'lucide-react';
+import { Zap, AlertTriangle, X, Check, Link as LinkIcon, Clock, ClipboardList, CheckCircle, Star, List, Download, Search } from 'lucide-react';
 import { logger } from '../../utils/logger';
 import { useProjectsStore } from '../../store/projectsStore';
 import { getFriendlyAIErrorMessage } from '../../utils/aiErrorMapper';
@@ -1580,7 +1580,7 @@ export const TasksView: React.FC<{
     return (
         <>
         <Card hoverable={false} className="p-4 sm:p-5 lg:p-6">
-            <div className="flex flex-col gap-4 sm:gap-5 mb-6 sm:mb-8">
+            <div className="mb-6 sm:mb-8 flex flex-col gap-4 rounded-xl border border-base-200/50 bg-base-100/70 p-3 backdrop-blur-md sm:gap-5 sm:p-4">
                 <TasksViewHeader
                     onAddTask={() => openTaskFormForNew()}
                     onOpenFilters={() => setIsFiltersModalOpen(true)}
@@ -1597,7 +1597,7 @@ export const TasksView: React.FC<{
                 />
 
                 <motion.div
-                    className="mb-6"
+                    className="mb-0"
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3 }}
@@ -1793,10 +1793,10 @@ export const TasksView: React.FC<{
                                     <button
                                         type="button"
                                         onClick={() => setShowExportTasksModal(true)}
-                                        className="btn btn-ghost btn-sm text-xs gap-1"
+                                        className="btn btn-outline btn-sm min-h-[44px] gap-1.5 rounded-full border-base-300 text-xs transition-all duration-200 hover:bg-base-200/50 sm:min-h-0"
                                         aria-label={`Exportar lista visível (${filteredTasks.length} tarefas)`}
                                     >
-                                        <Download className="w-3.5 h-3.5" aria-hidden />
+                                        <Download className="h-3.5 w-3.5 shrink-0" aria-hidden />
                                         Exportar lista visível {filteredTasks.length !== project.tasks.length ? `(${filteredTasks.length})` : ''}
                                     </button>
                                 </div>
@@ -1903,7 +1903,7 @@ export const TasksView: React.FC<{
                         </div>
                     ) : filteredTasks.length === 0 && project.tasks.length > 0 ? (
                         <EmptyState
-                            icon="🔍"
+                            icon={<Search className="mx-auto h-12 w-12 text-base-content/40" aria-hidden />}
                             title="Nenhuma tarefa corresponde aos filtros"
                             description="Ajuste os filtros ou a busca para ver mais tarefas."
                             action={{
@@ -1914,7 +1914,7 @@ export const TasksView: React.FC<{
                         />
                     ) : (
                         <EmptyState
-                            icon="📋"
+                            icon={<ClipboardList className="mx-auto h-12 w-12 text-base-content/40" aria-hidden />}
                             title="Nenhuma tarefa criada ainda"
                             description="Comece criando sua primeira tarefa para organizar seu trabalho de QA."
                             action={{

@@ -105,7 +105,6 @@ export const Modal: React.FC<ModalProps> = ({
 
     const isFull = size === 'full';
 
-    /** Mobile: largura total + bottom-sheet; desktop: max-width centralizado. */
     const sizeClasses: Record<NonNullable<ModalProps['size']>, string> = {
         sm: 'max-w-full sm:max-w-sm',
         md: 'max-w-full sm:max-w-md',
@@ -138,36 +137,52 @@ export const Modal: React.FC<ModalProps> = ({
                 className={
                     isFull
                         ? `${sizeClasses.full} bg-base-100 shadow-2xl border border-base-300 relative flex flex-col overflow-hidden duration-300 ease-out animate-in fade-in`
-                        : `bg-base-100 shadow-2xl border border-base-300 relative flex flex-col overflow-hidden rounded-t-2xl rounded-b-none max-h-[min(92dvh,100svh)] sm:rounded-2xl sm:rounded-b-2xl sm:max-h-[90vh] w-full max-sm:w-full max-sm:max-w-none ${sizeClasses[size]} max-sm:animate-modal-bottom-sheet-in sm:animate-in sm:fade-in sm:duration-200 sm:zoom-in-95 sm:slide-in-from-bottom-8`
+                        : `bg-base-100/95 shadow-2xl border border-base-300 relative flex flex-col overflow-hidden rounded-t-2xl rounded-b-none max-h-[min(92dvh,100svh)] sm:rounded-2xl sm:rounded-b-2xl sm:max-h-[90vh] w-full max-sm:w-full max-sm:max-w-none ${sizeClasses[size]} max-sm:animate-modal-bottom-sheet-in sm:animate-in sm:fade-in sm:duration-200 sm:zoom-in-95 sm:slide-in-from-bottom-8 max-sm:backdrop-blur-md`
                 }
                 onClick={(e) => e.stopPropagation()}
                 style={maxHeight && !isFull ? { maxHeight } : undefined}
                 tabIndex={-1}
             >
-                <button
-                    type="button"
-                    onClick={handleClose}
-                    className="absolute top-3 right-3 sm:top-4 sm:right-4 btn btn-ghost btn-circle btn-sm z-10 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
-                    aria-label="Fechar modal"
+                {/* Cabeçalho: em mobile estilo bottom sheet com grabber; sticky + mica */}
+                <div
+                    className={
+                        isFull
+                            ? 'sticky top-0 z-10 flex flex-shrink-0 flex-col gap-0 border-b border-base-200/50 bg-base-100/70 px-4 py-3 backdrop-blur-md sm:px-5 sm:py-4'
+                            : 'sticky top-0 z-10 flex flex-shrink-0 flex-col gap-0 border-b border-base-200/50 bg-base-100/70 px-3 pb-3 pt-1 backdrop-blur-md transition-all duration-200 sm:px-5 sm:pb-4 sm:pt-4'
+                    }
                 >
-                    <X size={20} />
-                </button>
-
-                <div className="sticky top-0 z-10 flex items-center justify-between gap-3 px-4 py-4 sm:px-5 sm:py-5 border-b border-base-200 flex-shrink-0 bg-base-100">
-                    <div
-                        id="modal-title"
-                        className="min-w-0 flex-1 pr-10 sm:pr-12 text-lg sm:text-xl font-semibold text-base-content text-balance"
-                    >
-                        {title}
+                    {!isFull && (
+                        <div
+                            className="mx-auto mb-2 flex h-5 w-full max-w-[120px] shrink-0 items-center justify-center sm:hidden"
+                            aria-hidden
+                        >
+                            <span className="h-1.5 w-11 rounded-full bg-base-content/20" />
+                        </div>
+                    )}
+                    <div className="flex min-h-[48px] items-start justify-between gap-3 sm:min-h-0 sm:items-center">
+                        <div
+                            id="modal-title"
+                            className="min-w-0 flex-1 pr-2 font-heading text-lg font-semibold leading-snug tracking-tight text-base-content text-balance sm:pr-4 sm:text-xl"
+                        >
+                            {title}
+                        </div>
+                        <button
+                            type="button"
+                            onClick={handleClose}
+                            className="flex h-11 w-11 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-full border border-transparent text-base-content/80 transition-all duration-200 hover:bg-base-200/90 hover:text-base-content active:scale-[0.97] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--color-primary)]"
+                            aria-label="Fechar modal"
+                        >
+                            <X className="h-5 w-5" strokeWidth={2} aria-hidden />
+                        </button>
                     </div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto overscroll-contain px-3 py-4 sm:px-6 sm:py-6 custom-scrollbar scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-transparent hover:scrollbar-thumb-primary/50 transition-colors">
+                <div className="custom-scrollbar flex-1 overflow-y-auto overscroll-contain px-3 py-4 scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-transparent hover:scrollbar-thumb-primary/50 sm:px-6 sm:py-6">
                     {children}
                 </div>
 
                 {footer && (
-                    <div className="px-3 py-3 sm:px-4 sm:py-4 border-t border-base-200 bg-base-100/50 flex-shrink-0">
+                    <div className="flex-shrink-0 border-t border-base-200/80 bg-base-100/80 px-3 py-3 backdrop-blur-sm sm:px-4 sm:py-4">
                         {footer}
                     </div>
                 )}

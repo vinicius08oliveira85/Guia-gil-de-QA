@@ -58,6 +58,7 @@ describe('useProjectsStore', () => {
           name: 'Projeto 1',
           description: 'Descrição 1',
           documents: [],
+          businessRules: [],
           tasks: [],
           phases: [],
         },
@@ -92,6 +93,7 @@ describe('useProjectsStore', () => {
           name: 'Local',
           description: '',
           documents: [],
+          businessRules: [],
           tasks: [],
           phases: [],
         },
@@ -157,6 +159,7 @@ describe('useProjectsStore', () => {
         name: 'Projeto Original',
         description: 'Descrição',
         documents: [],
+        businessRules: [],
         tasks: [],
         phases: [],
       };
@@ -179,6 +182,7 @@ describe('useProjectsStore', () => {
         name: 'Projeto',
         description: 'Descrição',
         documents: [],
+        businessRules: [],
         tasks: [],
         phases: [],
       };
@@ -217,6 +221,7 @@ describe('useProjectsStore', () => {
         name: 'Projeto',
         description: 'Descrição',
         documents: [],
+        businessRules: [],
         tasks: [],
         phases: [],
       };

@@ -123,8 +123,7 @@ export const ExpandableTabs: React.FC<ExpandableTabsProps> = ({
             onMouseLeave={() => setHoveredIndex(null)}
             transition={transition}
             className={cn(
-              "relative flex items-center justify-center rounded-full px-3 py-1.5 text-xs font-semibold transition-colors duration-300 outline-none",
-              "min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0 sm:justify-start",
+              "relative flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full px-3 py-1.5 text-xs font-semibold transition-all duration-200 outline-none sm:justify-start",
               "focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2 focus-visible:ring-offset-base-100",
               selected === index
                 ? cn("bg-primary/15", activeColor)

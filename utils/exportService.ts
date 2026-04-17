@@ -1,4 +1,8 @@
 import type { BusinessRule, JiraTask, Project } from '../types';
+import {
+  BUSINESS_RULES_EXPORT_FORMAT_ID,
+  BUSINESS_RULES_EXPORT_FORMAT_VERSION,
+} from './businessRulesExportEnvelope';
 import { format } from 'date-fns';
 import * as XLSX from 'xlsx';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
@@ -21,8 +25,12 @@ export const exportProjectToJSON = (project: Project): string => {
 export const exportBusinessRulesToJSON = (projectName: string, rules: BusinessRule[]): string => {
   return JSON.stringify(
     {
+      format: BUSINESS_RULES_EXPORT_FORMAT_ID,
+      formatVersion: BUSINESS_RULES_EXPORT_FORMAT_VERSION,
       projectName,
       exportedAt: new Date().toISOString(),
+      readme:
+        'Cada item em businessRules: id, title, description, category, createdAt (obrigatórios no app); linkedBusinessRuleIds opcional (ids de outras regras do mesmo array).',
       businessRules: rules,
     },
     null,
@@ -497,4 +505,5 @@ export const exportTasksToExcel = async (tasks: JiraTask[]): Promise<void> => {
   }
 };
 
+export { BUSINESS_RULES_EXPORT_FORMAT_VERSION } from './businessRulesExportEnvelope';
 

@@ -9,6 +9,7 @@ import {
   buildComplementaryDocumentSection,
   buildStrategyOnlyPrompt,
   buildTestCasesOnlyPrompt,
+  buildTestGenerationRolePreamble,
   formatBusinessRulesForPrompt,
   shouldGenerateTestCasesAndBdd,
 } from './testGenerationPrompts';
@@ -409,12 +410,14 @@ export class OpenAIService implements AIService {
     attachmentsContext?: string
   ): Promise<BddScenario[]> {
     const br = formatBusinessRulesForPrompt(project ?? null, task);
+    const preamble = buildTestGenerationRolePreamble(title, description, br);
     const doc = await buildComplementaryDocumentSection(project ?? null);
     const att = attachmentsContext?.trim()
       ? `\nAnexos (nomes; use só se coerente com a descrição):\n${attachmentsContext.trim()}\n`
       : '';
-    const brBlock = br ? `\n${br}\n` : '';
     const prompt = `
+${preamble}
+
 Você é especialista em BDD. Responda em português brasileiro.
 
 Objetivo: gerar cenários Gherkin **somente** para a tarefa abaixo. Não invente escopo de outras partes do projeto.
@@ -431,7 +434,7 @@ TAREFA (prioridade máxima)
 Título: ${title}
 Descrição: ${description}
 ${att}
-${brBlock}${doc}
+${doc}
 
 Responda somente com JSON válido: {"scenarios":[{"title":"","gherkin":""},...]}.
 `.trim();
