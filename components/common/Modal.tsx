@@ -123,8 +123,8 @@ export const Modal: React.FC<ModalProps> = ({
         <div
             className={
                 isFull
-                    ? 'fixed inset-0 z-[9999] flex items-stretch justify-stretch bg-black/60 backdrop-blur-sm transition-opacity duration-200 p-0'
-                    : 'fixed inset-0 z-[9999] flex items-end justify-center p-0 sm:items-center sm:p-4 md:p-6 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200'
+                    ? 'fixed inset-0 z-[9999] flex items-stretch justify-stretch bg-base-content/40 backdrop-blur-md transition-opacity duration-200 p-0'
+                    : 'fixed inset-0 z-[9999] flex items-end justify-center p-0 sm:items-center sm:p-4 md:p-6 bg-base-content/40 backdrop-blur-md animate-in fade-in duration-200'
             }
             onClick={handleClose}
             role="dialog"
@@ -182,7 +182,7 @@ export const Modal: React.FC<ModalProps> = ({
                 </div>
 
                 {footer && (
-                    <div className="flex-shrink-0 border-t border-base-200/80 bg-base-100/80 px-3 py-3 backdrop-blur-sm sm:px-4 sm:py-4">
+                    <div className="flex-shrink-0 border-t border-base-200/80 bg-base-100/90 px-3 py-3 backdrop-blur-md sm:px-4 sm:py-4 [&_.btn-primary]:rounded-full [&_button.btn]:rounded-full">
                         {footer}
                     </div>
                 )}

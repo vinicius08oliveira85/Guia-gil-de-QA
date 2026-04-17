@@ -19,6 +19,12 @@ export interface SectionHeaderProps {
    * para o título ocupar a largura disponível sem conflito de classes Tailwind.
    */
   fullWidth?: boolean;
+  /** `page`: H1 interno (text-2xl sm:text-3xl). `default`: mantém escalas compact/hero. */
+  titleSize?: 'default' | 'page';
+  /** ID do elemento de título (ex.: âncora / aria-labelledby). */
+  headingId?: string;
+  /** Cabeçalho mais baixo (ex.: sticky do projeto ao rolar). */
+  density?: 'default' | 'dense';
 }
 
 /**
@@ -35,7 +41,11 @@ export const SectionHeader = React.memo<SectionHeaderProps>(({
   className,
   compact = false,
   fullWidth = false,
+  titleSize = 'default',
+  headingId,
+  density = 'default',
 }) => {
+  const dense = density === 'dense';
   const reduceMotion = useReducedMotion();
   const isCenter = align === 'center';
   const Heading = as;
@@ -57,28 +67,49 @@ export const SectionHeader = React.memo<SectionHeaderProps>(({
         <div className={cn(isCenter ? 'flex justify-center' : 'flex justify-start')}>
           <span className={cn(
             'badge badge-outline border-primary/30 text-primary bg-primary/10',
-            compact ? 'px-2.5 py-0.5 text-[11px] leading-tight' : 'px-4 py-3'
+            compact && dense ? 'px-2 py-0 text-[10px] leading-tight' : compact ? 'px-2.5 py-0.5 text-[11px] leading-tight' : 'px-4 py-3'
           )}>
             {eyebrow}
           </span>
         </div>
       )}
 
-      <Heading className={cn(
-        'font-heading font-semibold tracking-tight text-balance text-base-content',
-        compact
-          ? 'text-[clamp(1.2rem,2.5vw,1.75rem)] leading-snug md:text-[clamp(1.3rem,2vw,1.9rem)]'
-          : 'text-[clamp(1.75rem,4vw,3rem)] sm:text-[clamp(2rem,3.5vw,3.5rem)] md:text-[clamp(2.25rem,3vw,4rem)]',
-        eyebrow ? (compact ? 'mt-1' : 'mt-4') : 'mt-0',
+      <Heading
+        id={headingId}
+        className={cn(
+        'font-heading tracking-tight text-balance text-base-content',
+        titleSize === 'page' && dense
+          ? 'text-xl font-bold leading-tight sm:text-2xl'
+          : titleSize === 'page'
+            ? 'text-2xl font-bold leading-tight sm:text-3xl'
+            : compact
+            ? 'font-semibold text-[clamp(1.2rem,2.5vw,1.75rem)] leading-snug md:text-[clamp(1.3rem,2vw,1.9rem)]'
+            : 'font-semibold text-[clamp(1.75rem,4vw,3rem)] sm:text-[clamp(2rem,3.5vw,3.5rem)] md:text-[clamp(2.25rem,3vw,4rem)]',
+        eyebrow
+          ? titleSize === 'page' && dense
+            ? 'mt-1'
+            : titleSize === 'page'
+              ? 'mt-2'
+              : compact
+                ? 'mt-1'
+                : 'mt-4'
+          : 'mt-0',
         'transition-colors duration-200'
-      )}>
+      )}
+      >
         {title}
       </Heading>
 
       {description && (
         <p className={cn(
           'font-body text-balance text-base-content/70',
-          compact ? 'mt-1 text-sm leading-snug' : 'mt-4 text-lg leading-relaxed sm:text-xl'
+          titleSize === 'page' && dense
+            ? 'mt-1 text-xs leading-snug text-base-content/70 sm:text-sm'
+            : titleSize === 'page'
+              ? 'mt-2 text-sm leading-relaxed text-base-content/70 sm:text-base'
+              : compact
+              ? 'mt-1 text-sm leading-snug text-base-content/70'
+              : 'mt-4 text-lg leading-relaxed text-base-content/70 sm:text-xl'
         )}>
           {description}
         </p>

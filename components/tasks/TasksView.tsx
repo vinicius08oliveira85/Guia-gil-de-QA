@@ -1579,8 +1579,8 @@ export const TasksView: React.FC<{
 
     return (
         <>
-        <Card hoverable={false} className="p-4 sm:p-5 lg:p-6">
-            <div className="mb-6 sm:mb-8 flex flex-col gap-4 rounded-xl border border-base-200/50 bg-base-100/70 p-3 backdrop-blur-md sm:gap-5 sm:p-4">
+        <Card hoverable={false} className="p-4 py-8 sm:p-5 sm:py-10 md:py-12 lg:p-6">
+            <div className="mb-6 sm:mb-8 flex flex-col gap-4 rounded-xl border border-base-300 bg-base-100 p-4 shadow-sm backdrop-blur-sm transition-all hover:shadow-lg sm:gap-5 sm:p-5">
                 <TasksViewHeader
                     onAddTask={() => openTaskFormForNew()}
                     onOpenFilters={() => setIsFiltersModalOpen(true)}

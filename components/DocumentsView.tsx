@@ -19,6 +19,7 @@ import { viewFileInNewTab } from '../services/fileViewerService';
 import { DocumentStatsCards } from './documents/DocumentStatsCards';
 import { DocumentCard } from './documents/DocumentCard';
 import { Search, Upload, FileText, CheckCircle2, AlertCircle } from 'lucide-react';
+import { SectionHeader } from './common/SectionHeader';
 
 interface DocumentWithMetadata extends ProjectDocument {
     uploadedAt?: string;
@@ -307,6 +308,21 @@ export const DocumentsView: React.FC<{
         handleSuccess('Documento atualizado com sucesso!');
     };
 
+    const documentsDescription = (
+        <>
+            Gerencie e analise documentos do projeto.{' '}
+            <span className="font-medium text-base-content">
+                {stats.total} documento{stats.total !== 1 ? 's' : ''} • {formatFileSize(stats.totalSize)}
+            </span>
+            {lastUpdatedText ? (
+                <span className="text-xs text-base-content/50" title="Última alteração do projeto">
+                    {' '}
+                    — Atualizado {lastUpdatedText}
+                </span>
+            ) : null}
+        </>
+    );
+
     return (
         <div className="space-y-6">
             {/* Documento de Especificação */}
@@ -315,26 +331,23 @@ export const DocumentsView: React.FC<{
                 onUpdateProject={onUpdateProject} 
             />
 
-        <section className="space-y-6" aria-labelledby="documents-section-heading">
-            <div className="flex flex-col gap-1">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div>
-                        <h2 id="documents-section-heading" className="text-2xl md:text-3xl font-bold tracking-tight text-base-content">Documentos do Projeto</h2>
-                        <p className="text-base-content/70 text-sm mt-1">
-                            Gerencie e analise documentos do projeto. <span className="font-medium">{stats.total} documento{stats.total !== 1 ? 's' : ''} • {formatFileSize(stats.totalSize)}</span>
-                        </p>
-                        {lastUpdatedText && (
-                            <p className="text-xs text-base-content/50 mt-0.5" title="Última alteração do projeto">
-                                Atualizado {lastUpdatedText}
-                            </p>
-                        )}
-                    </div>
-                    <div className="flex items-center gap-2 flex-wrap">
-                        <label className="rounded-full px-3 py-1.5 text-xs font-semibold bg-primary text-primary-content hover:bg-primary/90 transition-colors duration-300 flex items-center gap-1.5 cursor-pointer">
-                            <Upload className="w-3.5 h-3.5" aria-hidden /> Carregar
-                            <input ref={uploadInputRef} type="file" accept=".txt,.md,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar,.json,.csv,.xml,.jpg,.jpeg,.png,.gif,.webp,.svg" onChange={handleFileUpload} className="hidden" aria-label="Carregar documento" />
-                        </label>
-                    </div>
+        <section className="space-y-6 py-8 md:py-10 lg:py-12" aria-labelledby="documents-section-heading">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <SectionHeader
+                    as="h1"
+                    align="left"
+                    fullWidth
+                    titleSize="page"
+                    headingId="documents-section-heading"
+                    title="Documentos do Projeto"
+                    description={documentsDescription}
+                    className="max-w-2xl"
+                />
+                <div className="flex shrink-0 flex-wrap items-center gap-2">
+                    <label className="btn btn-primary btn-sm cursor-pointer gap-2 rounded-full px-4">
+                        <Upload className="h-4 w-4" aria-hidden /> Carregar
+                        <input ref={uploadInputRef} type="file" accept=".txt,.md,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar,.json,.csv,.xml,.jpg,.jpeg,.png,.gif,.webp,.svg" onChange={handleFileUpload} className="hidden" aria-label="Carregar documento" />
+                    </label>
                 </div>
             </div>
 

@@ -1,6 +1,7 @@
 import React from 'react';
-import { Button } from '../common/Button';
 import { Plus, Filter } from 'lucide-react';
+import { Button } from '../common/Button';
+import { SectionHeader } from '../common/SectionHeader';
 import { GeneralIAAnalysisButton } from './GeneralIAAnalysisButton';
 
 export interface TasksViewHeaderProps {
@@ -21,14 +22,15 @@ export const TasksViewHeader: React.FC<TasksViewHeaderProps> = ({
     activeFiltersCount,
 }) => (
     <div className="flex w-full flex-col items-start justify-between gap-4 md:flex-row md:items-center">
-        <div className="min-w-0 flex-shrink-0 text-left">
-            <h2 className="font-heading text-balance text-[clamp(1.25rem,2.6vw,1.875rem)] font-semibold tracking-tight text-base-content transition-colors duration-200 md:text-[clamp(1.35rem,2vw,2rem)]">
-                Tarefas & Casos de Teste
-            </h2>
-            <p className="mt-1 font-body text-sm text-base-content/70">
-                Acompanhe o progresso das atividades e resultados de QA.
-            </p>
-        </div>
+        <SectionHeader
+            as="h1"
+            align="left"
+            fullWidth
+            titleSize="page"
+            title="Tarefas & Casos de Teste"
+            description="Acompanhe o progresso das atividades e resultados de QA."
+            className="max-w-2xl"
+        />
         <div className="flex w-full flex-wrap items-center justify-start gap-2 md:w-auto md:justify-end">
             <Button
                 variant="default"
@@ -58,7 +60,7 @@ export const TasksViewHeader: React.FC<TasksViewHeaderProps> = ({
                 onClick={onOpenFilters}
                 disabled={isRunningGeneralAnalysis}
                 title={isRunningGeneralAnalysis ? 'Conclua a análise em andamento' : undefined}
-                className="flex min-h-[44px] shrink-0 items-center gap-1.5 rounded-full border border-base-300/80 px-3 text-sm transition-all duration-200 hover:border-base-300 hover:bg-base-200/60 active:scale-[0.98] sm:min-h-0"
+                className="flex min-h-[44px] shrink-0 items-center gap-1.5 rounded-full border border-base-300 px-3 text-sm transition-all duration-200 hover:bg-base-200/60 active:scale-[0.98] sm:min-h-0"
             >
                 <Filter className="h-4 w-4" aria-hidden />
                 <span>{`Filtros${activeFiltersCount > 0 ? ` (${activeFiltersCount})` : ''}`}</span>

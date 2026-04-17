@@ -19,13 +19,13 @@ const CATEGORY_LABELS: Record<string, string> = {
 };
 
 const CATEGORY_BADGE_CLASS: Record<string, string> = {
-  requisitos: 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400',
-  testes: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400',
-  arquitetura: 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400',
-  outros: 'bg-base-200 text-base-content/70',
+  requisitos: 'badge-warning badge-outline',
+  testes: 'badge-success badge-outline',
+  arquitetura: 'badge-info badge-outline',
+  outros: 'badge-ghost border border-base-300 text-base-content/80',
 };
 
-const defaultBadgeClass = 'bg-base-200 text-base-content/70';
+const defaultBadgeClass = 'badge-ghost border border-base-300 text-base-content/80';
 
 export interface DocumentCardProps {
   doc: DocumentCardDoc;
@@ -65,7 +65,7 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
 
   return (
     <article
-      className="bg-base-100 rounded-xl p-6 shadow-sm border border-base-300 hover:shadow-md transition-all"
+      className="rounded-xl border border-base-300 bg-base-100 p-5 shadow-sm transition-all hover:shadow-lg"
       aria-labelledby={`doc-title-${doc.name}`}
     >
       <div className="space-y-4">
@@ -78,16 +78,9 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
             {doc.name}
           </h3>
           <div className="flex gap-2 mt-2 flex-wrap items-center">
-            <span
-              className={`px-2 py-0.5 text-[10px] font-bold rounded uppercase ${badgeClass}`}
-            >
-              {categoryLabel}
-            </span>
+            <span className={`badge badge-sm uppercase ${badgeClass}`}>{categoryLabel}</span>
             {doc.analysis && doc.analysis.trim() !== '' && (
-              <span
-                className="px-2 py-0.5 text-[10px] font-semibold rounded bg-success/20 text-success dark:bg-success/30 dark:text-success"
-                title="Documento já analisado com IA"
-              >
+              <span className="badge badge-success badge-outline badge-sm" title="Documento já analisado com IA">
                 Com análise
               </span>
             )}

@@ -23,7 +23,7 @@ interface BreadcrumbsProps {
 }
 
 const linkBase =
-  'inline-flex min-h-[44px] max-w-full items-center gap-1.5 rounded-lg px-1.5 text-left font-heading text-sm font-medium text-[color:var(--color-primary-deep)] transition-all duration-200 hover:bg-base-200/50 hover:text-[color:var(--color-primary)] active:scale-[0.99] sm:min-h-0 sm:px-1';
+  'inline-flex min-h-[44px] max-w-full items-center gap-1.5 rounded-lg px-1.5 text-left font-heading text-sm font-medium text-primary transition-all duration-200 hover:bg-base-200/50 hover:text-primary/90 active:scale-[0.99] sm:min-h-0 sm:px-1';
 
 const currentBase =
   'inline-flex min-h-[44px] max-w-full items-center gap-1.5 truncate rounded-lg px-1.5 font-heading text-sm font-semibold text-base-content sm:min-h-0 sm:px-1';
@@ -45,7 +45,7 @@ const listContent = (
         <button
           type="button"
           onClick={onHomeClick}
-          className="win-icon-button h-11 w-11 min-h-[44px] min-w-[44px] rounded-full border border-transparent text-[color:var(--color-primary-deep)] transition-all duration-200 hover:bg-base-200/70 hover:text-[color:var(--color-primary)]"
+          className="win-icon-button h-11 w-11 min-h-[44px] min-w-[44px] rounded-full border border-transparent text-primary transition-all duration-200 hover:bg-base-200/70 hover:text-primary/90"
           aria-label="Início"
         >
           <Home className="h-4 w-4 shrink-0" aria-hidden />

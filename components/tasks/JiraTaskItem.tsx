@@ -669,7 +669,7 @@ export const JiraTaskItem: React.FC<{
                         size="panel"
                         onClick={() => setShowTestReport(true)}
                         aria-label="Gerar registro de testes"
-                        className="hover:border-brand-orange/50"
+                        className="hover:border-primary/40"
                     >
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden>
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -733,8 +733,8 @@ export const JiraTaskItem: React.FC<{
                         </div>
                     )}
                       {nextStep && (
-                          <div className="p-2.5 bg-orange-50 dark:bg-orange-950/20 border border-brand-orange/30 rounded-xl">
-                              <p className="text-[0.65rem] uppercase text-brand-orange tracking-wide">Próximo passo</p>
+                          <div className="rounded-xl border border-primary/30 bg-primary/5 p-2.5">
+                              <p className="text-[0.65rem] uppercase tracking-wide text-primary">Próximo passo</p>
                               <p className="text-[0.82rem] font-semibold text-base-content line-clamp-2">{nextStep}</p>
                           </div>
                       )}
@@ -879,7 +879,7 @@ export const JiraTaskItem: React.FC<{
                                             <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-2">Components</p>
                                             <div className="flex flex-wrap gap-2">
                                                 {task.components.map((comp) => (
-                                                    <span key={comp.id} className="text-xs px-2 py-1 bg-blue-500/20 text-blue-700 dark:text-blue-400 rounded">
+                                                    <span key={comp.id} className="badge badge-info badge-outline badge-sm font-normal">
                                                         {comp.name}
                                                     </span>
                                                 ))}
@@ -1009,22 +1009,22 @@ export const JiraTaskItem: React.FC<{
                 )}
                 {isGeneratingBdd && <div className="flex justify-center py-2"><Spinner small /></div>}
 
-                <div className="flex flex-wrap items-center justify-center gap-4 px-5 py-3 bg-base-100/90 dark:bg-base-200/90 backdrop-blur-md rounded-full border border-base-300 shadow-lg w-fit mx-auto">
+                <div className="mx-auto flex w-fit flex-wrap items-center justify-center gap-4 rounded-full border border-base-300 bg-base-100/90 px-5 py-3 shadow-lg backdrop-blur-md">
                     <button
                         type="button"
                         onClick={() => onGenerateBddScenarios(task.id)}
                         disabled={actionsDisabled}
-                        className="flex items-center gap-2 bg-blue-500/20 hover:bg-blue-500/30 dark:bg-blue-900/40 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 border border-blue-500/30 px-5 py-2.5 rounded-full font-semibold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="btn btn-outline btn-info btn-sm gap-2 rounded-full px-5 py-2.5 font-semibold disabled:cursor-not-allowed"
                     >
-                        <Sparkles className="w-4 h-4" aria-hidden />
+                        <Sparkles className="h-4 w-4" aria-hidden />
                         Gerar Cenários com IA
                     </button>
-                    <div className="h-6 w-px bg-base-300 flex-shrink-0" aria-hidden />
+                    <div className="h-6 w-px shrink-0 bg-base-300" aria-hidden />
                     <button
                         type="button"
                         onClick={() => setIsCreatingBdd(true)}
                         disabled={actionsDisabled}
-                        className="flex items-center gap-2 bg-primary hover:opacity-90 text-primary-content px-5 py-2.5 rounded-full font-semibold text-sm shadow-lg shadow-primary/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="btn btn-primary btn-sm gap-2 rounded-full px-5 py-2.5 font-semibold shadow-lg shadow-primary/20 disabled:cursor-not-allowed"
                     >
                         <PlusIcon className="w-4 h-4" aria-hidden />
                         Adicionar Cenário Manualmente
@@ -1051,7 +1051,7 @@ export const JiraTaskItem: React.FC<{
                         role="tab"
                         aria-selected={activeTestSubSection === 'strategy'}
                         onClick={() => setActiveTestSubSection('strategy')}
-                        className={`min-h-[44px] sm:min-h-0 px-3 py-2 text-xs rounded-xl font-medium transition-colors inline-flex items-center sm:px-3 sm:py-1.5 sm:text-sm ${activeTestSubSection === 'strategy' ? 'bg-brand-orange-selected text-white shadow-md shadow-brand-orange-selected/20 hover:bg-brand-orange-selected-hover' : 'text-base-content/70 hover:text-base-content hover:bg-base-200'}`}
+                        className={`min-h-[44px] sm:min-h-0 px-3 py-2 text-xs rounded-xl font-medium transition-colors inline-flex items-center sm:px-3 sm:py-1.5 sm:text-sm ${activeTestSubSection === 'strategy' ? 'bg-primary text-primary-content shadow-md shadow-primary/25 hover:bg-primary/90' : 'text-base-content/70 hover:bg-base-200 hover:text-base-content'}`}
                     >
                         Estratégia
                     </button>
@@ -1060,7 +1060,7 @@ export const JiraTaskItem: React.FC<{
                         role="tab"
                         aria-selected={activeTestSubSection === 'test-cases'}
                         onClick={() => setActiveTestSubSection('test-cases')}
-                        className={`min-h-[44px] sm:min-h-0 px-3 py-2 text-xs rounded-xl font-medium transition-colors inline-flex items-center gap-1 sm:px-3 sm:py-1.5 sm:text-sm ${activeTestSubSection === 'test-cases' ? 'bg-brand-orange-selected text-white shadow-md shadow-brand-orange-selected/20 hover:bg-brand-orange-selected-hover' : 'text-base-content/70 hover:text-base-content hover:bg-base-200'}`}
+                        className={`min-h-[44px] sm:min-h-0 px-3 py-2 text-xs rounded-xl font-medium transition-colors inline-flex items-center gap-1 sm:px-3 sm:py-1.5 sm:text-sm ${activeTestSubSection === 'test-cases' ? 'bg-primary text-primary-content shadow-md shadow-primary/25 hover:bg-primary/90' : 'text-base-content/70 hover:bg-base-200 hover:text-base-content'}`}
                     >
                         Casos de teste
                         {task.testCases?.length ? (
@@ -1459,14 +1459,16 @@ export const JiraTaskItem: React.FC<{
             <div style={indentationStyle} className="py-0.5">
                 <div
                     className={[
-                        'flex flex-wrap items-center gap-x-1.5 gap-y-0.5 sm:gap-x-2 sm:gap-y-1 px-1.5 py-1 sm:px-2 sm:py-1 md:px-2.5 md:py-1 bg-base-100 dark:bg-base-200 border rounded-xl task-card-shadow transition-all duration-200',
+                        'task-card-shadow flex flex-wrap items-center gap-x-1.5 gap-y-0.5 rounded-xl border bg-base-100 px-1.5 py-1 transition-all duration-200 hover:shadow-lg dark:bg-base-200 sm:gap-x-2 sm:gap-y-1 sm:px-2 sm:py-1 md:px-2.5 md:py-1',
                         level > 0 ? 'max-md:bg-base-200/60 max-md:dark:bg-base-300/50 max-md:border-base-300' : '',
                         isStatusDropdownOpen ? 'relative z-10' : '',
                         borderL4Class,
                         'border-base-300',
                         activeTaskId === task.id ? 'ring-2 ring-primary/40 shadow-lg' : '',
                         isSelected ? 'bg-primary/5 border-primary/40 ring-1 ring-primary/30' : '',
-                        task.isFavorite ? 'border-amber-400/60 ring-1 ring-amber-400/30 shadow-[0_0_12px_rgba(251,191,36,0.2)]' : '',
+                        task.isFavorite
+                            ? 'border-2 border-yellow-600/95 ring-2 ring-yellow-600/40 shadow-md shadow-yellow-700/25 [box-shadow:0_0_0_1px_rgba(202,138,4,0.35),0_4px_14px_-4px_rgba(161,98,7,0.4)]'
+                            : '',
                         showBulkGenerateFeedback ? 'ring-2 ring-primary/50 animate-pulse' : '',
                         isAiProcessing ? 'animate-ai-card-border' : '',
                         onOpenModal ? 'cursor-pointer hover:translate-x-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2' : '',
@@ -1499,7 +1501,10 @@ export const JiraTaskItem: React.FC<{
                                     aria-label={task.isFavorite ? 'Desmarcar favorito' : 'Marcar como favorito'}
                                 >
                                     {task.isFavorite ? (
-                                        <Star className="fill-amber-400 text-amber-400" aria-hidden />
+                                        <Star
+                                            className="fill-yellow-600 text-yellow-600 drop-shadow-[0_0_5px_rgba(202,138,4,0.75)]"
+                                            aria-hidden
+                                        />
                                     ) : (
                                         <Star className="text-base-content/40" aria-hidden />
                                     )}
@@ -1662,7 +1667,7 @@ export const JiraTaskItem: React.FC<{
                                                         }}
                                                         className="w-full flex items-center gap-2 px-3 py-2 text-left text-sm hover:bg-base-200 transition-colors"
                                                     >
-                                                        <div className="w-3 h-3 rounded-full bg-blue-500" />
+                                                        <div className="h-3 w-3 shrink-0 rounded-full bg-info" />
                                                         <span>Em Andamento</span>
                                                     </button>
                                                     <button
@@ -1674,7 +1679,7 @@ export const JiraTaskItem: React.FC<{
                                                         }}
                                                         className="w-full flex items-center gap-2 px-3 py-2 text-left text-sm hover:bg-base-200 transition-colors"
                                                     >
-                                                        <div className="w-3 h-3 rounded-full bg-green-500" />
+                                                        <div className="h-3 w-3 shrink-0 rounded-full bg-success" />
                                                         <span>Concluído</span>
                                                     </button>
                                                 </>
@@ -1953,7 +1958,7 @@ export const JiraTaskItem: React.FC<{
                                                         role="tab"
                                                         aria-selected={isActive}
                                                         aria-controls={panelId}
-                                                        className={`min-h-[44px] sm:min-h-0 px-3 py-2 text-xs rounded-xl font-medium transition-colors sm:px-3 sm:py-1.5 sm:text-sm inline-flex items-center ${isActive ? 'bg-brand-orange-selected text-white shadow-md shadow-brand-orange-selected/20 hover:bg-brand-orange-selected-hover' : 'text-base-content/70 hover:text-base-content hover:bg-base-200'}`}
+                                                        className={`inline-flex min-h-[44px] items-center rounded-xl px-3 py-2 text-xs font-medium transition-colors sm:min-h-0 sm:px-3 sm:py-1.5 sm:text-sm ${isActive ? 'bg-primary text-primary-content shadow-md shadow-primary/25 hover:bg-primary/90' : 'text-base-content/70 hover:bg-base-200 hover:text-base-content'}`}
                                                         onClick={() => setActiveSection(tab.id)}
                                                     >
                                                         <span>{tab.label}</span>

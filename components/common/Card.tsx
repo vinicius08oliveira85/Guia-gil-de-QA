@@ -2,8 +2,7 @@ import React from 'react';
 import { cn } from '../../utils/cn';
 
 /**
- * Componente Card reutilizável com estilo Windows 12 melhorado
- * Inclui glassmorphism, hover effects e animações suaves
+ * Card reutilizável alinhado ao padrão DaisyUI (modernização UI).
  * 
  * @param children - Conteúdo do card
  * @param className - Classes CSS adicionais
@@ -34,13 +33,13 @@ export const Card = React.memo<CardProps>(({
     ...rest 
 }) => {
     const variantClasses = {
-        default: 'border border-base-200 bg-base-100 shadow-sm',
-        elevated: 'border border-base-200 bg-base-100 shadow-xl shadow-base-300/20',
+        default: 'border border-base-300 bg-base-100 shadow-sm',
+        elevated: 'border border-base-300 bg-base-100 shadow-lg shadow-base-300/25',
         outlined: 'border border-base-300 bg-transparent shadow-none',
     };
 
-    const hoverClasses = hoverable 
-        ? 'transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-lg hover:shadow-base-300/30 hover:border-primary/20' 
+    const hoverClasses = hoverable
+        ? 'transition-all duration-300 ease-out hover:-translate-y-0.5 hover:shadow-xl hover:border-primary/30'
         : '';
 
     return (
@@ -48,7 +47,7 @@ export const Card = React.memo<CardProps>(({
             className={cn(
                 'w-full max-w-full',
                 'bg-base-100 text-base-content',
-                'rounded-2xl', // Mais moderno que rounded-box padrão
+                'rounded-xl',
                 'focus-within:ring-2 focus-within:ring-primary/20 focus-within:ring-offset-0',
                 variantClasses[variant],
                 hoverClasses,

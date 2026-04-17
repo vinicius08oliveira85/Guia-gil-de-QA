@@ -52,8 +52,8 @@ export const Header: React.FC<HeaderProps> = ({
     const [isSaving, setIsSaving] = useState(false);
     const [isSyncingSupabase, setIsSyncingSupabase] = useState(false);
     const [expandedButton, setExpandedButton] = useState<'jira' | 'salvar' | 'novo' | 'sync' | null>(null);
-    const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
-    const mobileDrawerRef = useRef<HTMLDivElement>(null);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const mobileMenuPanelRef = useRef<HTMLDivElement>(null);
     const mobileMenuButtonRef = useRef<HTMLButtonElement>(null);
     const headerRef = useRef<HTMLElement>(null);
 
@@ -70,7 +70,7 @@ export const Header: React.FC<HeaderProps> = ({
         handleConfirmJiraProject,
     } = useJiraSync(selectedProject ?? null, updateProject);
 
-    const closeMobileDrawer = useCallback(() => setMobileDrawerOpen(false), []);
+    const closeMobileMenu = useCallback(() => setMobileMenuOpen(false), []);
 
     useEffect(() => {
         const updateUnreadCount = () => {
@@ -87,21 +87,21 @@ export const Header: React.FC<HeaderProps> = ({
     }, []);
 
     useEffect(() => {
-        if (!mobileDrawerOpen) return;
+        if (!mobileMenuOpen) return;
         const onKey = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') closeMobileDrawer();
+            if (e.key === 'Escape') closeMobileMenu();
         };
         document.addEventListener('keydown', onKey);
         return () => document.removeEventListener('keydown', onKey);
-    }, [mobileDrawerOpen, closeMobileDrawer]);
+    }, [mobileMenuOpen, closeMobileMenu]);
 
     useEffect(() => {
-        if (!mobileDrawerOpen) return;
-        const el = mobileDrawerRef.current?.querySelector<HTMLElement>(
+        if (!mobileMenuOpen) return;
+        const el = mobileMenuPanelRef.current?.querySelector<HTMLElement>(
             'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
         );
         el?.focus();
-    }, [mobileDrawerOpen]);
+    }, [mobileMenuOpen]);
 
     /** Permite cabeçalhos sticky nas views (ex.: ProjectView) logo abaixo deste header. */
     useLayoutEffect(() => {
@@ -117,7 +117,7 @@ export const Header: React.FC<HeaderProps> = ({
         return () => {
             ro.disconnect();
         };
-    }, [mobileDrawerOpen, selectedProject?.id, showDashboardActions]);
+    }, [mobileMenuOpen, selectedProject?.id, showDashboardActions]);
 
     const getThemeIcon = () => {
         switch (theme) {
@@ -155,15 +155,15 @@ export const Header: React.FC<HeaderProps> = ({
             case 'settings':
                 onOpenSettings?.();
                 setShowNotificationDropdown(false);
-                closeMobileDrawer();
+                closeMobileMenu();
                 break;
             case 'glossary':
                 setIsGlossaryOpen(true);
-                closeMobileDrawer();
+                closeMobileMenu();
                 break;
             case 'notifications':
                 setShowNotificationDropdown(true);
-                closeMobileDrawer();
+                closeMobileMenu();
                 break;
             case 'theme':
                 toggleTheme();
@@ -276,7 +276,13 @@ export const Header: React.FC<HeaderProps> = ({
                     onExpandedChange={(expanded) => setExpandedButton(expanded ? 'jira' : null)}
                 />
                 <ExpansibleButton
-                    icon={supabaseBoltIcon}
+                    icon={
+                        isSaving ? (
+                            <Loader2 className="h-[18px] w-[18px] flex-shrink-0 animate-spin text-primary" aria-hidden />
+                        ) : (
+                            supabaseBoltIcon
+                        )
+                    }
                     label={isSaving ? 'Salvando...' : 'Salvar'}
                     onClick={handleSave}
                     disabled={isSaving}
@@ -299,7 +305,13 @@ export const Header: React.FC<HeaderProps> = ({
                     />
                 )}
                 <ExpansibleButton
-                    icon={supabaseBoltIcon}
+                    icon={
+                        isSyncingSupabase ? (
+                            <Loader2 className="h-[18px] w-[18px] flex-shrink-0 animate-spin text-primary" aria-hidden />
+                        ) : (
+                            supabaseBoltIcon
+                        )
+                    }
                     label={isSyncingSupabase ? 'Sincronizando...' : 'Sync'}
                     onClick={handleSyncSupabase}
                     disabled={isSyncingSupabase || !isSupabaseAvailable()}
@@ -355,90 +367,100 @@ export const Header: React.FC<HeaderProps> = ({
                             )}
                         </div>
 
-                        <button
-                            ref={mobileMenuButtonRef}
-                            type="button"
-                            className="win-icon-button md:hidden"
-                            aria-expanded={mobileDrawerOpen}
-                            aria-controls="header-mobile-drawer"
-                            aria-label={mobileDrawerOpen ? 'Fechar menu' : 'Abrir menu de navegação'}
-                            onClick={() => setMobileDrawerOpen((o) => !o)}
-                        >
-                            {mobileDrawerOpen ? <X className="h-5 w-5" aria-hidden /> : <Menu className="h-5 w-5" aria-hidden />}
-                        </button>
+                        <div className="relative md:hidden">
+                            <button
+                                ref={mobileMenuButtonRef}
+                                type="button"
+                                className="win-icon-button"
+                                aria-expanded={mobileMenuOpen}
+                                aria-controls="header-mobile-menu"
+                                aria-haspopup="menu"
+                                aria-label={mobileMenuOpen ? 'Fechar menu' : 'Abrir menu de navegação'}
+                                onClick={() => setMobileMenuOpen((o) => !o)}
+                            >
+                                {mobileMenuOpen ? <X className="h-5 w-5" aria-hidden /> : <Menu className="h-5 w-5" aria-hidden />}
+                            </button>
+
+                            {mobileMenuOpen && (
+                                <>
+                                    <button
+                                        type="button"
+                                        className="fixed inset-0 z-40 bg-base-content/30 backdrop-blur-sm md:hidden"
+                                        aria-label="Fechar menu"
+                                        onClick={closeMobileMenu}
+                                    />
+                                    <div
+                                        ref={mobileMenuPanelRef}
+                                        id="header-mobile-menu"
+                                        role="menu"
+                                        aria-label="Menu de navegação"
+                                        className="absolute right-0 top-full z-50 mt-1 flex max-h-[min(70vh,28rem)] w-[min(calc(100vw-2rem),20rem)] flex-col overflow-y-auto rounded-box border border-base-300 bg-base-100/95 p-2 shadow-xl backdrop-blur-md"
+                                    >
+                                        <div className="mb-1 flex items-center justify-between gap-2 border-b border-base-200/80 px-1 pb-2">
+                                            <span className="font-heading text-xs font-semibold uppercase tracking-wide text-base-content/70">
+                                                Menu
+                                            </span>
+                                            <button
+                                                type="button"
+                                                className="btn btn-ghost btn-circle btn-xs min-h-8 min-w-8"
+                                                aria-label="Fechar menu"
+                                                onClick={closeMobileMenu}
+                                            >
+                                                <X className="h-4 w-4" aria-hidden />
+                                            </button>
+                                        </div>
+
+                                        <nav className="flex flex-col gap-0.5 font-body" aria-label="Navegação principal">
+                                            {onLogoClick && (
+                                                <button
+                                                    type="button"
+                                                    role="menuitem"
+                                                    className="flex min-h-[44px] w-full items-center gap-3 rounded-lg px-3 text-left text-sm font-medium text-base-content transition-colors hover:bg-base-200/80"
+                                                    onClick={() => {
+                                                        onLogoClick();
+                                                        closeMobileMenu();
+                                                    }}
+                                                >
+                                                    <LayoutGrid className="h-5 w-5 shrink-0 text-primary" aria-hidden />
+                                                    Meus projetos
+                                                </button>
+                                            )}
+
+                                            {selectedProject && leadingContent && (
+                                                <div className="my-1 flex flex-wrap items-center gap-2 border-y border-base-200/60 py-2">
+                                                    {leadingContent}
+                                                </div>
+                                            )}
+
+                                            {!selectedProject && showDashboardActions && leadingContent && (
+                                                <div className="my-1 flex flex-wrap items-center gap-2 border-y border-base-200/60 py-2">
+                                                    {leadingContent}
+                                                </div>
+                                            )}
+
+                                            {tabs.map((tab) => {
+                                                const Icon = tab.icon;
+                                                return (
+                                                    <button
+                                                        key={tab.id}
+                                                        type="button"
+                                                        role="menuitem"
+                                                        className="flex min-h-[44px] w-full items-center gap-3 rounded-lg px-3 text-left text-sm font-medium text-base-content transition-colors hover:bg-base-200/80"
+                                                        onClick={() => handleTabChange(tab.id)}
+                                                    >
+                                                        <Icon className="h-5 w-5 shrink-0 text-primary" aria-hidden />
+                                                        {tab.title}
+                                                    </button>
+                                                );
+                                            })}
+                                        </nav>
+                                    </div>
+                                </>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
-
-            {mobileDrawerOpen && (
-                <>
-                    <button
-                        type="button"
-                        className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm transition-opacity duration-200 md:hidden"
-                        aria-label="Fechar menu"
-                        onClick={closeMobileDrawer}
-                    />
-                    <div
-                        ref={mobileDrawerRef}
-                        id="header-mobile-drawer"
-                        role="dialog"
-                        aria-modal="true"
-                        aria-label="Menu de navegação"
-                        className="fixed inset-y-0 right-0 z-50 flex w-[min(100vw-3rem,20rem)] flex-col border-l border-base-300/80 bg-base-100/85 p-4 shadow-2xl backdrop-blur-md transition-transform duration-200 ease-out md:hidden"
-                    >
-                        <div className="mb-4 flex items-center justify-between gap-2 border-b border-base-200/80 pb-3">
-                            <span className="font-heading text-sm font-semibold text-base-content">Menu</span>
-                            <button
-                                type="button"
-                                className="win-icon-button"
-                                aria-label="Fechar menu"
-                                onClick={closeMobileDrawer}
-                            >
-                                <X className="h-5 w-5" aria-hidden />
-                            </button>
-                        </div>
-
-                        <nav className="flex flex-col gap-1 font-body" aria-label="Navegação principal">
-                            {onLogoClick && (
-                                <button
-                                    type="button"
-                                    className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 text-left text-sm font-medium text-base-content transition-all duration-200 hover:bg-base-200/70 active:bg-base-300/50"
-                                    onClick={() => {
-                                        onLogoClick();
-                                        closeMobileDrawer();
-                                    }}
-                                >
-                                    <LayoutGrid className="h-5 w-5 shrink-0 text-[color:var(--color-primary-deep)]" aria-hidden />
-                                    Meus projetos
-                                </button>
-                            )}
-
-                            {selectedProject && leadingContent && (
-                                <div className="my-2 flex flex-wrap items-center gap-2 border-y border-base-200/50 py-3">{leadingContent}</div>
-                            )}
-
-                            {!selectedProject && showDashboardActions && leadingContent && (
-                                <div className="my-2 flex flex-wrap items-center gap-2 border-y border-base-200/50 py-3">{leadingContent}</div>
-                            )}
-
-                            {tabs.map((tab) => {
-                                const Icon = tab.icon;
-                                return (
-                                    <button
-                                        key={tab.id}
-                                        type="button"
-                                        className="flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 text-left text-sm font-medium text-base-content transition-all duration-200 hover:bg-base-200/70 active:bg-base-300/50"
-                                        onClick={() => handleTabChange(tab.id)}
-                                    >
-                                        <Icon className="h-5 w-5 shrink-0 text-[color:var(--color-primary-deep)]" aria-hidden />
-                                        {tab.title}
-                                    </button>
-                                );
-                            })}
-                        </nav>
-                    </div>
-                </>
-            )}
 
             {showNotificationDropdown && (
                 <>
@@ -504,9 +526,16 @@ export const Header: React.FC<HeaderProps> = ({
                             type="button"
                             onClick={handleConfirmJiraProject}
                             disabled={!selectedJiraProjectKey || isSyncingJira}
-                            className="btn btn-primary btn-sm rounded-full shadow-sm transition-all duration-200 active:scale-[0.98]"
+                            className="btn btn-primary btn-sm rounded-full shadow-sm transition-all duration-200 active:scale-[0.98] gap-2"
                         >
-                            {isSyncingJira ? 'Sincronizando...' : 'Sincronizar'}
+                            {isSyncingJira ? (
+                                <>
+                                    <Loader2 className="h-4 w-4 shrink-0 animate-spin" aria-hidden />
+                                    Sincronizando…
+                                </>
+                            ) : (
+                                'Sincronizar'
+                            )}
                         </button>
                     </div>
                 </div>
