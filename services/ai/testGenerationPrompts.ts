@@ -28,7 +28,7 @@ export function formatBusinessRulesForPrompt(project: Project | null | undefined
   // Coleta regras por categorias vinculadas
   const categoryKeys = new Set(
     (task.linkedBusinessRuleCategories ?? [])
-      .map((c) => (typeof c === 'string' ? c.trim() : ''))
+      .map((c) => String(c).trim())
       .filter(Boolean)
   );
   for (const rule of all) {

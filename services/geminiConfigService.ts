@@ -1,6 +1,10 @@
 /**
  * Serviço para gerenciar configuração da API Key do Gemini
- * Armazena a chave no localStorage seguindo o padrão do jiraService
+ * Armazena a chave no localStorage seguindo o padrão do jiraService.
+ *
+ * As chamadas HTTP à API Generative Language são feitas pelo SDK `@google/genai` em
+ * `services/ai/geminiApiWrapper.ts`, com `apiVersion: 'v1beta'` (endpoint v1beta), alinhado ao que
+ * modelos recentes costumam exigir.
  */
 
 const GEMINI_API_KEY_STORAGE_KEY = 'gemini_api_key';

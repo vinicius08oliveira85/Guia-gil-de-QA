@@ -38,7 +38,7 @@ if (API_KEY) {
 } else {
   if (!hasAnyAIKey()) {
     logger.info(
-      'As funcionalidades de IA estão desativadas por falta de configuração. Quando precisar delas, configure as chaves de API (OpenAI e/ou Gemini) no ambiente ou nas Configurações.',
+      'As funcionalidades de IA estão desativadas por falta de configuração. Você pode definir as chaves no arquivo .env (por exemplo VITE_OPENAI_API_KEY, VITE_GEMINI_API_KEY) ou na interface, em Configurações.',
       'openaiService'
     );
   }

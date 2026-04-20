@@ -8,7 +8,7 @@ import { retryWithBackoff } from '../../utils/retry';
 import { geminiRateLimiter } from '../../utils/rateLimiter';
 import { logger } from '../../utils/logger';
 import { geminiApiKeyManager } from './geminiApiKeyManager';
-import { getGeminiModelFallbackChain } from './geminiConstants';
+import { GEMINI_API_VERSION, getGeminiModelFallbackChain } from './geminiConstants';
 
 export type GeminiAppError = Error & { code?: string; status?: number; retryAfter?: number };
 
@@ -293,8 +293,8 @@ function extractRetryInfo(error: unknown): { retryAfter?: number; status?: numbe
  * @returns Resposta da API
  * @throws Erro se todas as tentativas falharem
  */
-/** Inclui margem para cold start / rede intermitente (tier gratuito, edge, etc.). */
-const GEMINI_HTTP_MAX_RETRIES = 3;
+/** Total de tentativas por modelo na mesma chamada (inclui a 1.ª). Reduzido para feedback mais rápido em instabilidade. */
+const GEMINI_HTTP_MAX_RETRIES = 2;
 
 export async function callGeminiWithRetry(
   params: GeminiGenerateContentParams
@@ -323,7 +323,7 @@ export async function callGeminiWithRetry(
   for (let modelIndex = 0; modelIndex < modelChain.length; modelIndex++) {
     const modelId = modelChain[modelIndex];
     const isAlternateModel = modelIndex > 0;
-    const effectiveMaxRetries = isAlternateModel ? 2 : GEMINI_HTTP_MAX_RETRIES;
+    const effectiveMaxRetries = GEMINI_HTTP_MAX_RETRIES;
 
     for (let keyAttempt = 0; keyAttempt < maxKeyRetries; keyAttempt++) {
       const apiKey = geminiApiKeyManager.getCurrentKey();
@@ -343,7 +343,7 @@ export async function callGeminiWithRetry(
         );
       }
 
-      const ai = new GoogleGenAI({ apiKey });
+      const ai = new GoogleGenAI({ apiKey, apiVersion: GEMINI_API_VERSION });
 
       try {
         return await retryWithBackoff(
@@ -430,7 +430,16 @@ export async function callGeminiWithRetry(
             maxDelay: isAlternateModel ? 12_000 : 180_000,
             maxTotalTimeout: isAlternateModel ? 22_000 : 45_000,
             useJitter: true,
-            isRetryable: isRetryableGeminiError,
+            /** No modelo principal, 503/404 não repetem no mesmo modelo: passa logo para `gemini-2.5-flash-lite`. */
+            isRetryable: (err) => {
+              if (modelIndex === 0) {
+                const st = extractHttpStatus(err);
+                if (st === 503 || st === 404) {
+                  return false;
+                }
+              }
+              return isRetryableGeminiError(err);
+            },
             quietRetryLogs: true,
             onRetry: (attempt, error, delay) => {
               const retryInfo = extractRetryInfo(error);

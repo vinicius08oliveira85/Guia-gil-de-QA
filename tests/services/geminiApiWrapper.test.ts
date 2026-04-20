@@ -155,7 +155,21 @@ describe('callGeminiWithRetry', () => {
     const firstModel = generateContentMock.mock.calls[0][0].model;
     const secondModel = generateContentMock.mock.calls[1][0].model;
     expect(firstModel).toBe('gemini-2.5-flash');
-    expect(secondModel).not.toBe(firstModel);
+    expect(secondModel).toBe('gemini-2.5-flash-lite');
+  });
+
+  it('404 no primeiro modelo alterna para gemini-2.5-flash-lite e pode obter sucesso', async () => {
+    generateContentMock
+      .mockRejectedValueOnce({ status: 404, message: 'Model not found' })
+      .mockResolvedValueOnce({ text: 'ok-lite' });
+
+    const result = await callGeminiWithRetry({
+      model: 'gemini-2.5-flash',
+      contents: 'x',
+    });
+
+    expect(result.text).toBe('ok-lite');
+    expect(generateContentMock.mock.calls[1][0].model).toBe('gemini-2.5-flash-lite');
   });
 });
 
