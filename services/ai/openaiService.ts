@@ -37,8 +37,9 @@ if (API_KEY) {
   });
 } else {
   if (!hasAnyAIKey()) {
-    console.info(
-      '[QA Agile Guide] Nenhuma chave de IA (OpenAI ou Gemini) está configurada. Os recursos de modelo generativo permanecem desligados até você adicionar uma chave — comportamento esperado em desenvolvimento.'
+    logger.info(
+      'As funcionalidades de IA estão desativadas por falta de configuração. Quando precisar delas, configure as chaves de API (OpenAI e/ou Gemini) no ambiente ou nas Configurações.',
+      'openaiService'
     );
   }
 }
@@ -121,7 +122,7 @@ export class OpenAIService implements AIService {
           response_format: responseFormat,
           temperature,
         }),
-      { isRetryable: isOpenAIRetryable, maxRetries: 3, initialDelay: 1000 }
+      { isRetryable: isOpenAIRetryable, maxRetries: 2, initialDelay: 2000 }
     );
 
     const content = response.choices[0]?.message?.content;

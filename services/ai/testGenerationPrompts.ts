@@ -25,6 +25,7 @@ export function formatBusinessRulesForPrompt(project: Project | null | undefined
     if (id) selectedIds.add(id);
   }
 
+  // Coleta regras por categorias vinculadas
   const categoryKeys = new Set(
     (task.linkedBusinessRuleCategories ?? [])
       .map((c) => (typeof c === 'string' ? c.trim() : ''))
@@ -48,7 +49,7 @@ export function formatBusinessRulesForPrompt(project: Project | null | undefined
 
   const header =
     '### REGRAS DE NEGÓCIO APLICÁVEIS ###\n' +
-    'Aplique cada item ao validar escopo. Não invente regras além das listadas.\n';
+    'Valide o escopo apenas com estas regras. Não invente comportamentos.\n';
 
   const lines: string[] = [];
   let used = header.length;
@@ -64,7 +65,8 @@ export function formatBusinessRulesForPrompt(project: Project | null | undefined
     const block =
       `[Regra ${i + 1}: ${r.title} — ${r.category}]\n` +
       `id: ${r.id}\n` +
-      `Descrição:\n${r.description}${refLine}`;
+      `Descrição: ${r.description}${refLine}`;
+    
     const nextLen = block.length + (lines.length ? 2 : 0);
     if (used + nextLen > BUSINESS_RULES_PROMPT_MAX_CHARS) {
       lines.push('[... demais regras omitidas por limite de tamanho ...]');
