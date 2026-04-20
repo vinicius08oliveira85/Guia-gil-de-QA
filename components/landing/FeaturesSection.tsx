@@ -104,17 +104,27 @@ export const FeaturesSection: React.FC = () => {
               whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="group relative p-6 lg:p-8 rounded-2xl bg-base-200 border border-base-300 hover:border-primary/30 transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
+              className="group relative rounded-2xl border border-base-300 bg-base-200 p-6 lg:p-8"
+              whileHover={
+                reduceMotion
+                  ? undefined
+                  : {
+                      y: -4,
+                      boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.15)',
+                      borderColor: 'rgba(59, 130, 246, 0.35)',
+                      transition: { duration: 0.22, ease: [0.16, 1, 0.3, 1] },
+                    }
+              }
             >
               {/* Ícone */}
               <div className="mb-4">
-                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 group-hover:bg-primary/20">
                   <feature.icon className={`w-6 h-6 ${feature.color}`} />
                 </div>
               </div>
 
               {/* Título */}
-              <h3 className="text-xl font-bold text-base-content mb-3 group-hover:text-primary transition-colors">
+              <h3 className="mb-3 text-xl font-bold text-base-content group-hover:text-primary">
                 {feature.title}
               </h3>
 
@@ -122,7 +132,7 @@ export const FeaturesSection: React.FC = () => {
               <p className="text-base-content/70 leading-relaxed">{feature.description}</p>
 
               {/* Decorative element on hover */}
-              <div className="absolute top-0 right-0 w-20 h-20 bg-primary/5 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="absolute right-0 top-0 h-20 w-20 rounded-full bg-primary/5 opacity-0 blur-2xl group-hover:opacity-100" />
             </motion.div>
           ))}
         </div>

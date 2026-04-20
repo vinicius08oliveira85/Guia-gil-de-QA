@@ -36,15 +36,18 @@ if (API_KEY) {
     dangerouslyAllowBrowser: true // Necessário para uso no browser
   });
 } else {
-  // Só mostrar aviso se não houver nenhuma chave de IA configurada
   if (!hasAnyAIKey()) {
-    logger.warn("OPENAI_API_KEY environment variable not set. Some features may not work.", 'openaiService');
+    console.info(
+      '[QA Agile Guide] Nenhuma chave de IA (OpenAI ou Gemini) está configurada. Os recursos de modelo generativo permanecem desligados até você adicionar uma chave — comportamento esperado em desenvolvimento.'
+    );
   }
 }
 
 const getOpenAI = () => {
   if (!openai) {
-    throw new Error("OPENAI_API_KEY não configurada. Por favor, configure a variável de ambiente VITE_OPENAI_API_KEY.");
+    throw new Error(
+      'O provedor OpenAI não está disponível: defina VITE_OPENAI_API_KEY (ou OPENAI_API_KEY) no .env para usar este serviço. Se você usa apenas o Gemini, configure a chave do Gemini nas Configurações ou no .env; este trecho do código exige cliente OpenAI.'
+    );
   }
   return openai;
 };

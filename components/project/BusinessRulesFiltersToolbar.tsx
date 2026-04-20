@@ -10,6 +10,8 @@ export type BusinessRulesFiltersToolbarProps = {
   uniqueCategories: string[];
   sortBy: BusinessRuleSortKey;
   onSortByChange: (value: BusinessRuleSortKey) => void;
+  /** Abre gestão de nomes de categoria (presets do projeto). */
+  onManageCategoriesClick?: () => void;
 };
 
 export const BusinessRulesFiltersToolbar: React.FC<BusinessRulesFiltersToolbarProps> = ({
@@ -20,6 +22,7 @@ export const BusinessRulesFiltersToolbar: React.FC<BusinessRulesFiltersToolbarPr
   uniqueCategories,
   sortBy,
   onSortByChange,
+  onManageCategoriesClick,
 }) => (
   <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:flex-wrap">
     <div className="relative flex-1 min-w-0 lg:min-w-[200px]">
@@ -37,7 +40,19 @@ export const BusinessRulesFiltersToolbar: React.FC<BusinessRulesFiltersToolbarPr
       </div>
     </div>
     <label className="flex flex-col gap-1 w-full sm:min-w-[180px] lg:w-auto">
-      <span className="text-xs font-medium text-base-content/60">Categoria</span>
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-xs font-medium text-base-content/60">Categoria</span>
+        {onManageCategoriesClick ? (
+          <button
+            type="button"
+            onClick={onManageCategoriesClick}
+            className="btn btn-ghost btn-xs h-7 min-h-0 px-2 text-xs font-medium text-primary shrink-0"
+            aria-label="Gerenciar categorias de regras de negócio"
+          >
+            Gerenciar
+          </button>
+        ) : null}
+      </div>
       <select
         value={categoryScope}
         onChange={(e) => onCategoryScopeChange(e.target.value)}

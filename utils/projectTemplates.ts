@@ -1,5 +1,6 @@
 import { Project, PhaseName } from '../types';
 import { PHASE_NAMES } from './constants';
+import { DEFAULT_BUSINESS_RULE_CATEGORY_PRESETS } from './businessRuleCategoryPresets';
 
 export interface ProjectTemplate {
   id: string;
@@ -228,6 +229,7 @@ export const createProjectFromTemplate = (templateId: string, projectName: strin
     description: description || template.description,
     documents: [],
     businessRules: [],
+    businessRuleCategoryPresets: [...DEFAULT_BUSINESS_RULE_CATEGORY_PRESETS],
     tasks,
     phases
   };

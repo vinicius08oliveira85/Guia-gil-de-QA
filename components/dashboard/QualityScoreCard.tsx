@@ -214,7 +214,7 @@ export const QualityScoreCard: React.FC<QualityScoreCardProps> = React.memo(({
           <div className="relative h-2.5 bg-base-300/50 rounded-full overflow-hidden">
             <motion.div
               className={cn(
-                'h-full rounded-full transition-all duration-1000 ease-out',
+                'h-full rounded-full',
                 config.ringColor.replace('stroke-', 'bg-'),
                 'shadow-[0_0_8px_currentColor]'
               )}

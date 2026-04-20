@@ -1,5 +1,5 @@
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useId, useRef } from 'react';
 import { X } from 'lucide-react';
 import { createPortal } from 'react-dom';
 
@@ -31,6 +31,9 @@ export const Modal: React.FC<ModalProps> = ({
     ariaDescribedBy,
 }) => {
     const previousActiveElementRef = useRef<HTMLElement | null>(null);
+    const reactId = useId();
+    const contentId = `${reactId}-modal-content`;
+    const titleId = `${reactId}-modal-title`;
 
     const handleClose = () => {
         onClose();
@@ -72,12 +75,12 @@ export const Modal: React.FC<ModalProps> = ({
     useEffect(() => {
         if (!isOpen) return;
         previousActiveElementRef.current = document.activeElement as HTMLElement | null;
-        const content = document.getElementById('modal-content');
+        const content = document.getElementById(contentId);
         requestAnimationFrame(() => content?.focus());
 
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.key !== 'Tab') return;
-            const contentEl = document.getElementById('modal-content');
+            const contentEl = document.getElementById(contentId);
             if (!contentEl || !contentEl.contains(document.activeElement)) return;
             const focusables = contentEl.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR);
             const list = Array.from(focusables).filter((el) => !el.hasAttribute('disabled') && el.offsetParent != null);
@@ -99,7 +102,7 @@ export const Modal: React.FC<ModalProps> = ({
         };
         document.addEventListener('keydown', handleKeyDown, true);
         return () => document.removeEventListener('keydown', handleKeyDown, true);
-    }, [isOpen]);
+    }, [isOpen, contentId]);
 
     if (!isOpen) return null;
 
@@ -129,11 +132,11 @@ export const Modal: React.FC<ModalProps> = ({
             onClick={handleClose}
             role="dialog"
             aria-modal="true"
-            aria-labelledby="modal-title"
+            aria-labelledby={titleId}
             aria-describedby={ariaDescribedBy ?? undefined}
         >
             <div
-                id="modal-content"
+                id={contentId}
                 className={
                     isFull
                         ? `${sizeClasses.full} bg-base-100 shadow-2xl border border-base-300 relative flex flex-col overflow-hidden duration-300 ease-out animate-in fade-in`
@@ -161,7 +164,7 @@ export const Modal: React.FC<ModalProps> = ({
                     )}
                     <div className="flex min-h-[48px] items-start justify-between gap-3 sm:min-h-0 sm:items-center">
                         <div
-                            id="modal-title"
+                            id={titleId}
                             className="min-w-0 flex-1 pr-2 font-heading text-lg font-semibold leading-snug tracking-tight text-base-content text-balance sm:pr-4 sm:text-xl"
                         >
                             {title}

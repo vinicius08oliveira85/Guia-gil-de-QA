@@ -98,8 +98,7 @@ export const SectionHeader = React.memo<SectionHeaderProps>(({
               : compact
                 ? 'mt-1'
                 : 'mt-4'
-          : 'mt-0',
-        'transition-colors duration-200'
+          : 'mt-0'
       )}
       >
         {title}

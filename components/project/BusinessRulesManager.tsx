@@ -16,13 +16,14 @@ import { Modal } from '../common/Modal';
 import { Button } from '../common/Button';
 import { ConfirmDialog } from '../common/ConfirmDialog';
 import { BusinessRulesFiltersToolbar } from './BusinessRulesFiltersToolbar';
+import { BusinessRuleCategoryPresetsModal } from './BusinessRuleCategoryPresetsModal';
+import {
+  businessRuleCategoryLabel,
+  getMergedBusinessRuleCategories,
+} from '../../utils/businessRuleCategoryPresets';
 
-const SUGGESTED_CATEGORIES = ['Geral', 'Segurança', 'Financeiro', 'UX', 'Compliance', 'Integração'] as const;
-
-function ruleCategoryLabel(rule: BusinessRule): string {
-  const t = rule.category?.trim();
-  return t ? t : DEFAULT_BUSINESS_RULE_CATEGORY;
-}
+/** Valor sentinela do `<select>` de categoria quando o nome não está na lista unida do projeto. */
+const BR_CATEGORY_SELECT_OTHER = '__br_category_other__';
 
 function stripRuleFromProject(project: Project, deletedRule: BusinessRule): Project {
   const allRules = project.businessRules;
@@ -62,12 +63,17 @@ export const BusinessRulesManager: React.FC<{
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryScope, setCategoryScope] = useState<'all' | string>('all');
   const [sortBy, setSortBy] = useState<BusinessRuleSortKey>('created_desc');
+  const [categoriesModalOpen, setCategoriesModalOpen] = useState(false);
 
-  const uniqueCategories = useMemo(() => {
-    const set = new Set<string>();
-    for (const r of rules) set.add(ruleCategoryLabel(r));
-    return Array.from(set).sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base' }));
-  }, [rules]);
+  const uniqueCategories = useMemo(
+    () => getMergedBusinessRuleCategories(project, rules),
+    [project, rules]
+  );
+
+  const categorySelectValue = useMemo(
+    () => (uniqueCategories.includes(category) ? category : BR_CATEGORY_SELECT_OTHER),
+    [uniqueCategories, category]
+  );
 
   useEffect(() => {
     if (categoryScope === 'all') return;
@@ -76,7 +82,7 @@ export const BusinessRulesManager: React.FC<{
 
   const filteredRules = useMemo(() => {
     const scoped =
-      categoryScope === 'all' ? rules : rules.filter((r) => ruleCategoryLabel(r) === categoryScope);
+      categoryScope === 'all' ? rules : rules.filter((r) => businessRuleCategoryLabel(r) === categoryScope);
     return filterBusinessRulesByQuery(scoped, searchQuery);
   }, [rules, categoryScope, searchQuery]);
 
@@ -139,6 +145,13 @@ export const BusinessRulesManager: React.FC<{
     if (!editingId) return rules;
     return rules.filter((r) => r.id !== editingId);
   }, [rules, editingId]);
+
+  const linkableRulesSorted = useMemo(
+    () => [...linkableRules].sort((a, b) => a.title.localeCompare(b.title, 'pt-BR', { sensitivity: 'base' })),
+    [linkableRules]
+  );
+
+  const quickLinkSelectRef = useRef<HTMLSelectElement>(null);
 
   const handleToggleLinkRule = useCallback(
     (otherId: string, checked: boolean) => {
@@ -260,21 +273,23 @@ export const BusinessRulesManager: React.FC<{
         </div>
       </div>
 
+      <BusinessRulesFiltersToolbar
+        searchQuery={searchQuery}
+        onSearchQueryChange={setSearchQuery}
+        categoryScope={categoryScope}
+        onCategoryScopeChange={setCategoryScope}
+        uniqueCategories={uniqueCategories}
+        sortBy={sortBy}
+        onSortByChange={setSortBy}
+        onManageCategoriesClick={() => setCategoriesModalOpen(true)}
+      />
+
       {rules.length === 0 ? (
         <p className="text-sm text-base-content/60 py-2">
           Nenhuma regra cadastrada. Adicione a primeira e vincule-a às tarefas para contextualizar a geração por IA.
         </p>
       ) : (
         <>
-          <BusinessRulesFiltersToolbar
-            searchQuery={searchQuery}
-            onSearchQueryChange={setSearchQuery}
-            categoryScope={categoryScope}
-            onCategoryScopeChange={setCategoryScope}
-            uniqueCategories={uniqueCategories}
-            sortBy={sortBy}
-            onSortByChange={setSortBy}
-          />
           {displayRules.length === 0 ? (
             <p className="text-sm text-base-content/60 py-2" role="status">
               Nenhuma regra corresponde à busca ou ao filtro de categoria.
@@ -288,7 +303,7 @@ export const BusinessRulesManager: React.FC<{
                       <span className="min-w-0 flex-1 flex flex-wrap items-center gap-2">
                         <span>{rule.title}</span>
                         <span className="text-xs font-normal px-2 py-0.5 rounded-full bg-base-300/60 text-base-content/80 shrink-0">
-                          {rule.category}
+                          {businessRuleCategoryLabel(rule)}
                         </span>
                       </span>
                       <ChevronDown
@@ -360,21 +375,38 @@ export const BusinessRulesManager: React.FC<{
             <label htmlFor="br-category" className="block text-sm font-semibold text-base-content/70 mb-2">
               Categoria
             </label>
-            <input
+            <select
               id="br-category"
-              type="text"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              list="br-category-suggestions"
-              className="input input-bordered w-full bg-base-100 border-base-300 text-base-content min-h-[44px] rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20"
-              autoComplete="off"
-              placeholder={DEFAULT_BUSINESS_RULE_CATEGORY}
-            />
-            <datalist id="br-category-suggestions">
-              {SUGGESTED_CATEGORIES.map((c) => (
-                <option key={c} value={c} />
+              value={categorySelectValue}
+              onChange={(e) => {
+                const v = e.target.value;
+                if (v === BR_CATEGORY_SELECT_OTHER) {
+                  setCategory((prev) => (uniqueCategories.includes(prev) ? '' : prev));
+                } else {
+                  setCategory(v);
+                }
+              }}
+              className="select select-bordered w-full bg-base-100 border-base-300 text-base-content min-h-[44px] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+            >
+              {uniqueCategories.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
               ))}
-            </datalist>
+              <option value={BR_CATEGORY_SELECT_OTHER}>Outra…</option>
+            </select>
+            {categorySelectValue === BR_CATEGORY_SELECT_OTHER && (
+              <input
+                id="br-category-custom"
+                type="text"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="input input-bordered w-full bg-base-100 border-base-300 text-base-content min-h-[44px] rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 mt-2"
+                autoComplete="off"
+                placeholder="Digite o nome da categoria"
+                aria-label="Nome da categoria personalizada"
+              />
+            )}
           </div>
           <div>
             <label htmlFor="br-desc" className="block text-sm font-semibold text-base-content/70 mb-2">
@@ -398,6 +430,35 @@ export const BusinessRulesManager: React.FC<{
                 Ao marcar, inclui <code className="text-xs bg-base-200 px-1 rounded">@NomeDaRegra</code> na descrição (nome derivado do
                 título; títulos iguais no projeto ganham sufixo para diferenciar).
               </p>
+              <label htmlFor="br-quick-link-rule" className="block text-xs font-medium text-base-content/60 mb-1">
+                Escolher regra existente
+              </label>
+              <select
+                ref={quickLinkSelectRef}
+                id="br-quick-link-rule"
+                defaultValue=""
+                onChange={() => {
+                  const el = quickLinkSelectRef.current;
+                  if (!el) return;
+                  const id = el.value;
+                  el.value = '';
+                  if (!id) return;
+                  if (!linkedRuleIds.includes(id)) handleToggleLinkRule(id, true);
+                }}
+                className="select select-bordered w-full bg-base-100 border-base-300 text-base-content min-h-[44px] rounded-xl text-sm mb-3"
+                aria-label="Vincular rapidamente escolhendo uma regra existente na lista"
+              >
+                <option value="">Selecione uma regra para vincular…</option>
+                {linkableRulesSorted.map((r) => {
+                  const linked = linkedRuleIds.includes(r.id);
+                  return (
+                    <option key={r.id} value={r.id} disabled={linked}>
+                      {r.title} ({businessRuleCategoryLabel(r)})
+                      {linked ? ' — já vinculada' : ''}
+                    </option>
+                  );
+                })}
+              </select>
               <ul
                 className="max-h-48 overflow-y-auto rounded-lg border border-base-300 divide-y divide-base-300 bg-base-100/80"
                 role="list"
@@ -447,6 +508,14 @@ export const BusinessRulesManager: React.FC<{
         confirmText="Excluir"
         cancelText="Cancelar"
         variant="danger"
+      />
+
+      <BusinessRuleCategoryPresetsModal
+        isOpen={categoriesModalOpen}
+        onClose={() => setCategoriesModalOpen(false)}
+        project={project}
+        rules={rules}
+        onUpdateProject={onUpdateProject}
       />
     </section>
   );

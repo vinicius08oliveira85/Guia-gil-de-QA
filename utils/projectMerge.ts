@@ -105,6 +105,10 @@ export const mergeProjects = (localProject: Project, remoteProject: Project): Pr
       // Preservar tags e settings do mais recente
       tags: timestampComparison >= 0 ? localProject.tags : remoteProject.tags,
       settings: timestampComparison >= 0 ? localProject.settings : remoteProject.settings,
+      businessRuleCategoryPresets:
+        timestampComparison >= 0
+          ? localProject.businessRuleCategoryPresets
+          : remoteProject.businessRuleCategoryPresets,
       
       // Atualizar timestamp para o mais recente
       updatedAt: timestampComparison >= 0 ? localUpdated : remoteUpdated,

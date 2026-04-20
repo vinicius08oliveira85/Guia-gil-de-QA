@@ -15,8 +15,12 @@ export function normalizeBusinessRule(rule: BusinessRuleInput): BusinessRule {
 
 /** Garante `businessRules` sempre definido e cada regra com `category`. */
 export function normalizeProjectBusinessRules(project: Project): Project {
-  return {
+  const next: Project = {
     ...project,
     businessRules: (project.businessRules ?? []).map(normalizeBusinessRule),
   };
+  if (next.businessRuleCategoryPresets?.length === 0) {
+    delete next.businessRuleCategoryPresets;
+  }
+  return next;
 }

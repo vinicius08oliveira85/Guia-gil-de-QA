@@ -45,6 +45,7 @@ export const ProjectSchema = z.object({
   description: z.string().max(1000, 'Descrição muito longa'),
   documents: z.array(ProjectDocumentSchema).default([]),
   businessRules: z.array(BusinessRuleSchema).default([]),
+  businessRuleCategoryPresets: z.array(z.string()).optional(),
   tasks: z.array(z.any()).default([]), // TaskSchema é muito complexo, manter any por enquanto
   phases: z.array(PhaseSchema).default([]),
 });

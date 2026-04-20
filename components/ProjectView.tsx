@@ -14,7 +14,6 @@ const BusinessRulesManager = lazyWithRetry(() =>
 import { PageTransition } from './common/PageTransition';
 import { Breadcrumbs } from './common/Breadcrumbs';
 import type { BreadcrumbItem } from './common/Breadcrumbs';
-import { SectionHeader } from './common/SectionHeader';
 import { ConfirmDialog } from './common/ConfirmDialog';
 import { useProjectsStore } from '../store/projectsStore';
 import { isSupabaseAvailable } from '../services/supabaseService';
@@ -318,103 +317,137 @@ export const ProjectView: React.FC<{
                     className="sticky z-40 -mx-4 mb-2 min-w-0 max-w-full border-b border-base-200/50 bg-base-100/80 px-4 py-1 backdrop-blur-md sm:-mx-8 sm:px-8"
                     style={{ top: 'var(--app-header-h, 4.5rem)' }}
                 >
-                    <div className="flex min-w-0 flex-col gap-0.5">
-                    <div className="flex min-w-0 flex-col gap-0 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-2 sm:gap-y-0">
-                        <BackButton
-                            className="self-start -ml-1 sm:shrink-0 sm:min-h-0 sm:h-7 sm:py-0 sm:leading-tight"
-                            onClick={onBack}
-                            aria-label="Voltar para a lista de projetos"
-                        />
-                        {(supabaseAvailable || lastSaveToSupabase === false) && (
-                            <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2 text-sm sm:flex-initial" role="status" aria-live="polite" aria-atomic="true">
-                                {saveStatus === 'saving' && (
-                                    <div className="flex items-center gap-2 text-info">
-                                        <Spinner small />
-                                        <span>Salvando...</span>
+                    <div className="flex min-w-0 flex-col gap-1">
+                        {/* Linha 1: voltar + trilho | estado + excluir */}
+                        <div className="flex min-w-0 flex-wrap items-center justify-between gap-x-2 gap-y-1">
+                            <div className="flex min-w-0 max-w-full flex-1 flex-wrap items-center gap-x-2 gap-y-1 sm:flex-nowrap sm:items-center">
+                                <BackButton
+                                    className="shrink-0 -ml-1 sm:min-h-0 sm:h-7 sm:py-0 sm:leading-tight"
+                                    onClick={onBack}
+                                    aria-label="Voltar para a lista de projetos"
+                                />
+                                <div className="min-w-0 max-w-full flex-1 overflow-x-auto sm:overflow-visible">
+                                    <Breadcrumbs
+                                        items={breadcrumbItems}
+                                        showHome={false}
+                                        align="left"
+                                        dense
+                                        className="w-full min-w-0 max-w-full"
+                                    />
+                                </div>
+                            </div>
+                            <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+                                {(supabaseAvailable || lastSaveToSupabase === false) && (
+                                    <div
+                                        className="flex max-w-full flex-wrap items-center justify-end gap-2 text-sm"
+                                        role="status"
+                                        aria-live="polite"
+                                        aria-atomic="true"
+                                    >
+                                        {saveStatus === 'saving' && (
+                                            <div className="flex items-center gap-2 text-info">
+                                                <Spinner small />
+                                                <span>Salvando...</span>
+                                            </div>
+                                        )}
+                                        {saveStatus === 'saved' && (
+                                            <div
+                                                className={`flex items-center gap-2 ${lastSaveToSupabase === false ? 'text-warning' : 'text-success'}`}
+                                            >
+                                                <CheckCircle2 className="h-4 w-4 shrink-0" aria-hidden />
+                                                <span>
+                                                    {lastSaveToSupabase === false
+                                                        ? 'Salvo localmente (Supabase indisponível)'
+                                                        : 'Salvo'}
+                                                </span>
+                                            </div>
+                                        )}
+                                        {saveStatus === 'error' && (
+                                            <div className="flex items-center gap-2 text-error">
+                                                <AlertTriangle className="h-4 w-4 shrink-0" aria-hidden />
+                                                <span>Erro ao salvar</span>
+                                            </div>
+                                        )}
+                                        {!supabaseAvailable && lastSaveToSupabase === false && saveStatus === 'idle' && (
+                                            <div className="flex items-center gap-2 text-warning">
+                                                <CloudOff className="h-4 w-4 shrink-0" aria-hidden />
+                                                <span>Salvo localmente (Supabase indisponível)</span>
+                                            </div>
+                                        )}
+                                        {supabaseAvailable && lastSaveToSupabase === false && saveStatus === 'idle' && (
+                                            <div className="flex flex-wrap items-center justify-end gap-2">
+                                                <span className="max-w-[12rem] truncate text-warning sm:max-w-none">
+                                                    Salvo localmente (nuvem indisponível)
+                                                </span>
+                                                <button
+                                                    type="button"
+                                                    onClick={handleSaveToSupabase}
+                                                    disabled={isSavingToSupabase || !isOnline}
+                                                    className="btn btn-sm btn-outline btn-primary min-h-[44px] sm:min-h-0"
+                                                    aria-label="Sincronizar projeto com a nuvem"
+                                                    title={
+                                                        !isOnline
+                                                            ? 'É necessário estar online para sincronizar com a nuvem.'
+                                                            : undefined
+                                                    }
+                                                >
+                                                    {isSavingToSupabase ? (
+                                                        <>
+                                                            <Spinner small />
+                                                            <span>Salvando...</span>
+                                                        </>
+                                                    ) : (
+                                                        'Sincronizar com a nuvem'
+                                                    )}
+                                                </button>
+                                            </div>
+                                        )}
                                     </div>
                                 )}
-                                {saveStatus === 'saved' && (
-                                    <div className={`flex items-center gap-2 ${lastSaveToSupabase === false ? 'text-warning' : 'text-success'}`}>
-                                        <CheckCircle2 className="h-4 w-4 shrink-0" aria-hidden />
-                                        <span>{lastSaveToSupabase === false ? 'Salvo localmente (Supabase indisponível)' : 'Salvo'}</span>
-                                    </div>
-                                )}
-                                {saveStatus === 'error' && (
-                                    <div className="flex items-center gap-2 text-error">
-                                        <AlertTriangle className="h-4 w-4 shrink-0" aria-hidden />
-                                        <span>Erro ao salvar</span>
-                                    </div>
-                                )}
-                                {!supabaseAvailable && lastSaveToSupabase === false && saveStatus === 'idle' && (
-                                    <div className="flex items-center gap-2 text-warning">
-                                        <CloudOff className="h-4 w-4 shrink-0" aria-hidden />
-                                        <span>Salvo localmente (Supabase indisponível)</span>
-                                    </div>
-                                )}
-                                {supabaseAvailable && lastSaveToSupabase === false && saveStatus === 'idle' && (
-                                    <div className="flex flex-wrap items-center gap-2">
-                                        <span className="text-warning">Salvo localmente (nuvem indisponível)</span>
-                                        <button
-                                            type="button"
-                                            onClick={handleSaveToSupabase}
-                                            disabled={isSavingToSupabase || !isOnline}
-                                            className="btn btn-sm btn-outline btn-primary min-h-[44px] sm:min-h-0"
-                                            aria-label="Sincronizar projeto com a nuvem"
-                                            title={!isOnline ? 'É necessário estar online para sincronizar com a nuvem.' : undefined}
-                                        >
-                                            {isSavingToSupabase ? (
-                                                <>
-                                                    <Spinner small />
-                                                    <span>Salvando...</span>
-                                                </>
-                                            ) : (
-                                                'Sincronizar com a nuvem'
-                                            )}
-                                        </button>
-                                    </div>
+                                {onDeleteProject && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowDeleteProjectConfirm(true)}
+                                        className="btn btn-ghost btn-xs min-h-[40px] gap-1.5 text-error hover:bg-error/10 sm:min-h-0 sm:h-7 sm:gap-1 sm:py-0 sm:leading-tight"
+                                        aria-label={`Excluir projeto ${currentProject.name}`}
+                                    >
+                                        <Trash2 className="h-4 w-4" aria-hidden />
+                                        Excluir projeto
+                                    </button>
                                 )}
                             </div>
-                        )}
-                    </div>
-
-                    <div className="flex min-w-0 w-full max-w-full flex-col gap-0.5 xl:flex-row xl:items-start xl:gap-4">
-                        <Breadcrumbs
-                            items={breadcrumbItems}
-                            showHome={false}
-                            align="left"
-                            dense
-                            className="w-full min-w-0 shrink-0 xl:w-auto xl:max-w-md 2xl:max-w-lg"
-                        />
-                        <SectionHeader
-                            as="h1"
-                            align="left"
-                            fullWidth
-                            titleSize="page"
-                            density="dense"
-                            eyebrow={currentProject.settings?.jiraProjectKey ? `Jira: ${currentProject.settings.jiraProjectKey}` : 'Projeto'}
-                            title={<span className="break-words">{currentProject.name}</span>}
-                            description={
-                                currentProject.description
-                                    ? <span className="break-words">{currentProject.description}</span>
-                                    : 'Sem descrição.'
-                            }
-                            className="min-w-0 flex-1 xl:pt-0"
-                            compact
-                        />
-                    </div>
-                    {onDeleteProject && (
-                        <div className="flex justify-end sm:-mt-0.5">
-                            <button
-                                type="button"
-                                onClick={() => setShowDeleteProjectConfirm(true)}
-                                className="btn btn-ghost btn-xs min-h-[40px] gap-1.5 text-error hover:bg-error/10 sm:min-h-0 sm:h-7 sm:gap-1 sm:py-0 sm:leading-tight"
-                                aria-label={`Excluir projeto ${currentProject.name}`}
-                            >
-                                <Trash2 className="h-4 w-4" aria-hidden />
-                                Excluir projeto
-                            </button>
                         </div>
-                    )}
+
+                        {/* Linha 2: badge Jira + título + descrição (uma linha; truncagem para cabeçalho total = 2 linhas) */}
+                        <div className="flex min-w-0 flex-nowrap items-center gap-x-2 overflow-hidden">
+                            <span className="badge badge-outline shrink-0 border-primary/30 bg-primary/10 px-2 py-0 text-[10px] font-medium leading-none text-primary">
+                                {currentProject.settings?.jiraProjectKey
+                                    ? `Jira: ${currentProject.settings.jiraProjectKey}`
+                                    : 'Projeto'}
+                            </span>
+                            <h1
+                                id="project-view-title"
+                                className="min-w-0 max-w-[55%] flex-1 basis-0 truncate font-heading text-xl font-bold leading-tight tracking-tight text-base-content sm:max-w-none sm:text-2xl"
+                                title={currentProject.name}
+                            >
+                                {currentProject.name}
+                            </h1>
+                            <span className="hidden shrink-0 text-base-content/35 sm:inline" aria-hidden="true">
+                                ·
+                            </span>
+                            <span
+                                className="min-w-0 flex-1 basis-0 truncate text-left text-xs leading-tight text-base-content/70 sm:text-sm"
+                                title={
+                                    currentProject.description?.trim()
+                                        ? currentProject.description
+                                        : 'Sem descrição.'
+                                }
+                            >
+                                {currentProject.description?.trim()
+                                    ? currentProject.description
+                                    : 'Sem descrição.'}
+                            </span>
+                        </div>
                     </div>
                     <div className="relative mt-0.5 border-b border-base-200/50 pb-0.5">
                     {/* Indicadores de Scroll para Mobile */}
@@ -451,7 +484,7 @@ export const ProjectView: React.FC<{
                 </div>
 
                 <div className="mt-8">
-                    <PageTransition key={activeTab}>
+                    <PageTransition transitionKey={activeTab}>
                         {activeTab === 'dashboard' && (
                             <section id="tab-panel-dashboard" role="tabpanel" aria-labelledby="tab-dashboard">
                             <Suspense fallback={<LoadingSkeleton variant="card" count={3} />}>

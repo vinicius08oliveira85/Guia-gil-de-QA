@@ -3,29 +3,30 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 interface PageTransitionProps {
   children: React.ReactNode;
-  key?: string;
+  /** Chave para o AnimatePresence (ex.: id da aba). Não use a prop especial `key` do React aqui. */
+  transitionKey: string;
   className?: string;
 }
 
 /**
  * Componente para animações de transição de página
- * 
+ *
  * @example
  * ```tsx
- * <PageTransition key={activeTab}>
+ * <PageTransition transitionKey={activeTab}>
  *   <Component />
  * </PageTransition>
  * ```
  */
-export const PageTransition: React.FC<PageTransitionProps> = ({ 
-  children, 
-  key,
-  className = '' 
+export const PageTransition: React.FC<PageTransitionProps> = ({
+  children,
+  transitionKey,
+  className = '',
 }) => {
   return (
     <AnimatePresence mode="wait">
       <motion.div
-        key={key}
+        key={transitionKey}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -20 }}

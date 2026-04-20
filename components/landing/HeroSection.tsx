@@ -73,7 +73,8 @@ export const HeroSection: React.FC = () => {
             initial={reduceMotion ? false : { opacity: 0, y: 30 }}
             animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
-            className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12"
+            className="mb-12 flex flex-col items-center justify-center sm:flex-row"
+            style={{ gap: '1rem' }}
           >
             <button
               onClick={handleGetStarted}
@@ -95,7 +96,8 @@ export const HeroSection: React.FC = () => {
             initial={reduceMotion ? false : { opacity: 0, y: 30 }}
             animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
-            className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-16"
+            className="mt-16 grid grid-cols-1 sm:grid-cols-3"
+            style={{ gap: '1.5rem' }}
           >
             {[
               { icon: Zap, text: 'Templates e padrões', color: 'text-primary' },
@@ -107,7 +109,18 @@ export const HeroSection: React.FC = () => {
                 initial={reduceMotion ? false : { opacity: 0, y: 20 }}
                 animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.5 + index * 0.1 }}
-                className="flex flex-col items-center gap-3 p-6 rounded-2xl bg-base-200/50 backdrop-blur-sm border border-base-300 hover:border-primary/30 transition-all duration-300 hover:shadow-lg"
+                className="flex flex-col items-center rounded-2xl border border-base-300 bg-base-200/50 p-6 backdrop-blur-sm"
+                style={{ gap: '0.75rem' }}
+                whileHover={
+                  reduceMotion
+                    ? undefined
+                    : {
+                          y: -2,
+                          boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.08)',
+                          borderColor: 'rgba(59, 130, 246, 0.35)',
+                          transition: { duration: 0.2, ease: [0.16, 1, 0.3, 1] },
+                      }
+                }
               >
                 <feature.icon className={`w-8 h-8 ${feature.color}`} />
                 <span className="text-base-content font-medium">{feature.text}</span>

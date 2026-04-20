@@ -16,6 +16,7 @@ import { migrateTestCases } from '../utils/testCaseMigration';
 import { cleanupTestCasesForProjects } from '../utils/testCaseCleanup';
 import { mergeProjectsList } from '../utils/projectMerge';
 import { createProjectFromTemplate } from '../utils/projectTemplates';
+import { DEFAULT_BUSINESS_RULE_CATEGORY_PRESETS } from '../utils/businessRuleCategoryPresets';
 import { PHASE_NAMES } from '../utils/constants';
 import { addAuditLog } from '../utils/auditLog';
 import { logger } from '../utils/logger';
@@ -339,6 +340,7 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
           description,
           documents: [],
           businessRules: [],
+          businessRuleCategoryPresets: [...DEFAULT_BUSINESS_RULE_CATEGORY_PRESETS],
           tasks: [],
           phases: PHASE_NAMES.map(name => ({ name, status: 'Não Iniciado' })),
           createdAt: now,

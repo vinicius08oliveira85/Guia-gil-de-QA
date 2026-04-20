@@ -362,6 +362,8 @@ export interface Project {
   documents: ProjectDocument[];
   /** Regras de negócio definidas para o projeto (contexto IA e vínculo por tarefa). */
   businessRules: BusinessRule[];
+  /** Nomes de categoria sugeridos no projeto (filtro, datalist); união com categorias já usadas nas regras. */
+  businessRuleCategoryPresets?: string[];
   tasks: JiraTask[];
   phases: Phase[];
   shiftLeftAnalysis?: ShiftLeftAnalysis;

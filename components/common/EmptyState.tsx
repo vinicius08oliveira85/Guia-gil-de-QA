@@ -154,7 +154,8 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
 
       {/* Ações */}
       <motion.div 
-        className="flex gap-3 flex-wrap justify-center"
+        className="flex flex-wrap justify-center"
+        style={{ gap: '0.75rem' }}
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}

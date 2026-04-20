@@ -1,6 +1,6 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
-import { JiraTask, BddScenario, TestCaseDetailLevel, Project, TestCase, BusinessRule } from '../../types';
+import { JiraTask, BddScenario, TestCaseDetailLevel, Project, TestCase } from '../../types';
 import { Modal } from '../common/Modal';
 import { Spinner } from '../common/Spinner';
 import { PlusIcon, RefreshIcon } from '../common/Icons';
@@ -27,7 +27,7 @@ import { fetchJiraAttachmentAsDataUrl } from '../../utils/jiraAttachmentFetch';
 import { TaskWithChildren } from './JiraTaskItem';
 import { TaskLinksView } from './TaskLinksView';
 import { getTaskDependents } from '../../utils/dependencyService';
-import { filterBusinessRulesByQuery } from '../../utils/businessRulesFilter';
+import { TaskBusinessRulesLinker } from './TaskBusinessRulesLinker';
 import { FileViewer } from '../common/FileViewer';
 import { ImageModal } from '../common/ImageModal';
 import { canViewInBrowser, detectFileType } from '../../services/fileViewerService';
@@ -37,15 +37,12 @@ import { Button } from '../common/Button';
 import { BackButton } from '../common/BackButton';
 import { Badge } from '../common/Badge';
 import { useJiraAttachmentViewer } from '../../hooks/useJiraAttachmentViewer';
-import { BarChart3, ClipboardList, Sparkles, Wrench, Link, Paperclip, Timer, Download, ChevronLeft, ChevronRight, Search, ChevronDown } from 'lucide-react';
+import { BarChart3, ClipboardList, Sparkles, Wrench, Link, Paperclip, Timer, Download, ChevronLeft, ChevronRight } from 'lucide-react';
 
-type DetailSection = 'overview' | 'bdd' | 'tests' | 'planning' | 'collaboration';
+type DetailSection = 'overview' | 'bdd' | 'tests' | 'businessRules' | 'planning' | 'collaboration';
 type TestSubSection = 'strategy' | 'test-cases';
 
 const CARD_TITLE_CLASS = 'text-sm sm:text-base font-bold text-base-content flex items-center gap-2';
-
-/** Exibe campo de busca ao vincular regras quando há muitas entradas. */
-const TASK_BR_SEARCH_MIN_COUNT = 5;
 
 /** Resolve o MIME type de um anexo pelo nome do arquivo */
 function resolveMimeType(filename: string): string | undefined {
@@ -187,26 +184,6 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
     const hasTests = task.testCases && task.testCases.length > 0;
     const safeDomId = useMemo(() => task.id.replace(/[^a-zA-Z0-9_-]/g, '_'), [task.id]);
 
-    const [businessRulesLinkSearch, setBusinessRulesLinkSearch] = useState('');
-    const projectBusinessRulesList = project ? project.businessRules : [];
-    const filteredTaskBusinessRules = useMemo(
-        () => filterBusinessRulesByQuery(projectBusinessRulesList, businessRulesLinkSearch),
-        [projectBusinessRulesList, businessRulesLinkSearch]
-    );
-
-    /** Vinculadas à tarefa mas ocultas pelo filtro de busca (evidência de que o vínculo continua valendo). */
-    const linkedBusinessRulesHiddenByFilter = useMemo((): BusinessRule[] => {
-        const q = businessRulesLinkSearch.trim();
-        if (!q) return [];
-        const linked = new Set(task.linkedBusinessRuleIds ?? []);
-        const visible = new Set(filteredTaskBusinessRules.map((r) => r.id));
-        return projectBusinessRulesList.filter((r) => linked.has(r.id) && !visible.has(r.id));
-    }, [businessRulesLinkSearch, filteredTaskBusinessRules, projectBusinessRulesList, task.linkedBusinessRuleIds]);
-
-    useEffect(() => {
-        setBusinessRulesLinkSearch('');
-    }, [task.id]);
-
     const jiraAttachmentItems = useMemo(() => {
         const jiraConfig = getJiraConfig();
         const jiraUrl = jiraConfig?.url ?? '';
@@ -233,6 +210,12 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
         }
 
         if (project && onUpdateProject) {
+            const brLinkedCount = (task.linkedBusinessRuleIds ?? []).length;
+            tabs.push({
+                id: 'businessRules',
+                label: 'Regras de negócio',
+                badge: brLinkedCount > 0 ? brLinkedCount : undefined,
+            });
             const dependentsCount = getTaskDependents(task.id, project).length;
             const planningBadge = (task.dependencies?.length || 0) + dependentsCount + (task.attachments?.length || 0) + (task.checklist?.length || 0) + (task.estimatedHours ? 1 : 0);
             tabs.push({ id: 'planning', label: 'Planejamento', badge: planningBadge });
@@ -255,7 +238,8 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
         project,
         onUpdateProject,
         onAddComment,
-        project?.tasks
+        project?.tasks,
+        task.linkedBusinessRuleIds,
     ]);
 
     const prevActiveSectionRef = useRef<DetailSection>(activeSection);
@@ -281,10 +265,14 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
             if (next !== activeSection) setActiveSection(next);
             return;
         }
+        if (activeSection === 'businessRules' && (!project || !onUpdateProject)) {
+            setActiveSection(sectionTabs[0]?.id ?? 'overview');
+            return;
+        }
         if ((activeSection === 'tests' || activeSection === 'bdd') && task.type !== 'Tarefa' && task.type !== 'Bug') {
             setActiveSection('overview');
         }
-    }, [isOpen, sectionTabs, activeSection, task.type]);
+    }, [isOpen, sectionTabs, activeSection, task.type, project, onUpdateProject]);
 
     const handleSaveScenario = (scenario: Omit<BddScenario, 'id'>) => {
         onSaveBddScenario(task.id, scenario, editingBddScenario?.id);
@@ -297,26 +285,23 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
         setIsCreatingBdd(false);
     };
 
-    const handleToggleBusinessRule = useCallback(
-        (ruleId: string, checked: boolean) => {
-            if (!onUpdateProject || !project) return;
-            const ids = new Set(task.linkedBusinessRuleIds ?? []);
-            if (checked) ids.add(ruleId);
-            else ids.delete(ruleId);
-            const linkedBusinessRuleIds = [...ids];
-            onUpdateProject({
-                ...project,
-                tasks: project.tasks.map((t) => (t.id === task.id ? { ...t, linkedBusinessRuleIds } : t)),
-            });
-        },
-        [onUpdateProject, project, task.id]
-    );
-
     const hasJiraSidebarFields = !!(
         task.dueDate || task.timeTracking || task.components || task.fixVersions ||
         task.environment || task.reporter || task.watchers || task.issueLinks ||
         task.jiraAttachments?.length
     );
+
+    const renderBusinessRulesSection = () => {
+        if (!project || !onUpdateProject) return null;
+        return (
+            <TaskBusinessRulesLinker
+                task={task}
+                project={project}
+                onUpdateProject={onUpdateProject}
+                onNavigateToTab={onNavigateToTab}
+            />
+        );
+    };
 
     const renderOverviewSection = () => (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -356,164 +341,6 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                             </div>
                         )}
                     </div>
-                )}
-
-                {project && onUpdateProject && (
-                    <section
-                        className="rounded-xl border border-base-300 bg-base-100/60 p-4 space-y-3"
-                        aria-labelledby={`task-br-heading-${safeDomId}`}
-                    >
-                        <h3 id={`task-br-heading-${safeDomId}`} className={CARD_TITLE_CLASS}>
-                            Regras de negócio
-                        </h3>
-                        {projectBusinessRulesList.length === 0 ? (
-                            <div className="space-y-2">
-                                <p className="text-sm text-base-content/70">
-                                    Nenhuma regra cadastrada. Crie regras na aba Regras de negócio do projeto e marque-as aqui para a IA usar na geração de testes e BDD.
-                                </p>
-                                {onNavigateToTab && (
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={() => onNavigateToTab('businessRules')}
-                                    >
-                                        Ir para Regras de negócio
-                                    </Button>
-                                )}
-                            </div>
-                        ) : (
-                            <fieldset className="space-y-2 min-w-0">
-                                <legend className="sr-only">Selecionar regras de negócio aplicáveis a esta tarefa</legend>
-                                <p id={`task-br-hint-${safeDomId}`} className="text-xs text-base-content/60">
-                                    Marcadas: incluídas no prompt da IA para geração de estratégias, BDD e casos. Sem marcação, a IA usa apenas título e descrição da tarefa. Clique no título para expandir a descrição.
-                                </p>
-                                {projectBusinessRulesList.length >= TASK_BR_SEARCH_MIN_COUNT && (
-                                    <div className="relative">
-                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-base-content/40 pointer-events-none" aria-hidden />
-                                        <input
-                                            type="search"
-                                            value={businessRulesLinkSearch}
-                                            onChange={(e) => setBusinessRulesLinkSearch(e.target.value)}
-                                            placeholder="Filtrar regras..."
-                                            className="input input-bordered w-full pl-10 bg-base-100 border-base-300 text-base-content text-sm min-h-[44px] rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20"
-                                            aria-label="Filtrar lista de regras de negócio"
-                                        />
-                                    </div>
-                                )}
-                                {linkedBusinessRulesHiddenByFilter.length > 0 && (
-                                    <div
-                                        className="rounded-lg border border-primary/40 bg-primary/5 p-3 space-y-2"
-                                        role="region"
-                                        aria-label="Regras vinculadas ocultas pelo filtro"
-                                    >
-                                        <p className="text-xs font-semibold text-primary">
-                                            Vinculadas a esta tarefa (fora do filtro — permanecem ativas na IA)
-                                        </p>
-                                        <ul className="space-y-2 max-h-48 overflow-y-auto pr-1" role="list">
-                                            {linkedBusinessRulesHiddenByFilter.map((rule) => {
-                                                return (
-                                                    <li key={`br-hidden-${rule.id}`}>
-                                                        <div className="flex rounded-lg border border-primary/30 bg-base-100/90 overflow-hidden">
-                                                            <label
-                                                                className="flex items-start p-3 shrink-0 cursor-pointer"
-                                                                htmlFor={`br-cb-hidden-${safeDomId}-${rule.id}`}
-                                                            >
-                                                                <input
-                                                                    id={`br-cb-hidden-${safeDomId}-${rule.id}`}
-                                                                    type="checkbox"
-                                                                    className="checkbox checkbox-primary mt-0.5 shrink-0"
-                                                                    checked
-                                                                    onChange={(e) => handleToggleBusinessRule(rule.id, e.target.checked)}
-                                                                    aria-label={`Desvincular regra: ${rule.title}`}
-                                                                />
-                                                            </label>
-                                                            <details className="group flex-1 min-w-0 border-l border-primary/25">
-                                                                <summary
-                                                                    className="flex cursor-pointer list-none items-center justify-between gap-2 py-3 pr-3 min-h-[44px] text-left text-sm font-medium text-base-content hover:bg-base-200/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/25 [&::-webkit-details-marker]:hidden"
-                                                                >
-                                                                    <span className="min-w-0 flex-1 flex flex-wrap items-center gap-2">
-                                                                        <span>{rule.title}</span>
-                                                                        <span className="text-[10px] font-normal px-2 py-0.5 rounded-full bg-base-300/70 text-base-content/80 shrink-0">
-                                                                            {rule.category}
-                                                                        </span>
-                                                                    </span>
-                                                                    <ChevronDown
-                                                                        className="h-5 w-5 shrink-0 text-base-content/45 transition-transform group-open:rotate-180"
-                                                                        aria-hidden
-                                                                    />
-                                                                </summary>
-                                                                <div className="pb-3 pr-3 text-sm text-base-content/75 whitespace-pre-wrap border-t border-base-300/60 pt-2">
-                                                                    {rule.description.trim() ? rule.description : (
-                                                                        <span className="italic text-base-content/50">Sem descrição</span>
-                                                                    )}
-                                                                </div>
-                                                            </details>
-                                                        </div>
-                                                    </li>
-                                                );
-                                            })}
-                                        </ul>
-                                    </div>
-                                )}
-                                {filteredTaskBusinessRules.length === 0 && businessRulesLinkSearch.trim() && linkedBusinessRulesHiddenByFilter.length === 0 ? (
-                                    <p className="text-sm text-base-content/60 py-1" role="status">
-                                        Nenhuma regra corresponde à busca.
-                                    </p>
-                                ) : filteredTaskBusinessRules.length > 0 ? (
-                                <ul
-                                    className="max-h-48 overflow-y-auto space-y-2 pr-1"
-                                    role="list"
-                                    aria-label="Lista de regras de negócio do projeto"
-                                >
-                                    {filteredTaskBusinessRules.map((rule) => {
-                                        const checked = (task.linkedBusinessRuleIds ?? []).includes(rule.id);
-                                        return (
-                                            <li key={rule.id}>
-                                                <div className="flex rounded-lg border border-base-300 bg-base-200/50 overflow-hidden hover:bg-base-200/70">
-                                                    <label
-                                                        className="flex items-start p-3 shrink-0 cursor-pointer"
-                                                        htmlFor={`br-cb-${safeDomId}-${rule.id}`}
-                                                    >
-                                                        <input
-                                                            id={`br-cb-${safeDomId}-${rule.id}`}
-                                                            type="checkbox"
-                                                            className="checkbox checkbox-primary mt-0.5 shrink-0"
-                                                            checked={checked}
-                                                            onChange={(e) => handleToggleBusinessRule(rule.id, e.target.checked)}
-                                                            aria-label={`${checked ? 'Desmarcar' : 'Marcar'} vínculo da regra: ${rule.title}`}
-                                                        />
-                                                    </label>
-                                                    <details className="group flex-1 min-w-0 border-l border-base-300">
-                                                        <summary
-                                                            className="flex cursor-pointer list-none items-center justify-between gap-2 py-3 pr-3 min-h-[44px] text-left text-sm font-medium text-base-content hover:bg-base-200/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/25 [&::-webkit-details-marker]:hidden"
-                                                        >
-                                                            <span className="min-w-0 flex-1 flex flex-wrap items-center gap-2">
-                                                                <span>{rule.title}</span>
-                                                                <span className="text-[10px] font-normal px-2 py-0.5 rounded-full bg-base-300/70 text-base-content/80 shrink-0">
-                                                                    {rule.category}
-                                                                </span>
-                                                            </span>
-                                                            <ChevronDown
-                                                                className="h-5 w-5 shrink-0 text-base-content/45 transition-transform group-open:rotate-180"
-                                                                aria-hidden
-                                                            />
-                                                        </summary>
-                                                        <div className="pb-3 pr-3 text-sm text-base-content/75 whitespace-pre-wrap border-t border-base-300/60 pt-2">
-                                                            {rule.description.trim() ? rule.description : (
-                                                                <span className="italic text-base-content/50">Sem descrição</span>
-                                                            )}
-                                                        </div>
-                                                    </details>
-                                                </div>
-                                            </li>
-                                        );
-                                    })}
-                                </ul>
-                                ) : null}
-                            </fieldset>
-                        )}
-                    </section>
                 )}
 
                 {(task.type === 'Tarefa' || task.type === 'Bug') && (task.testCases?.length > 0 || (task.testStrategy?.length ?? 0) > 0) && (
@@ -1056,6 +883,8 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                 return renderBddSection();
             case 'tests':
                 return renderTestsSection();
+            case 'businessRules':
+                return renderBusinessRulesSection();
             case 'planning':
                 return renderPlanningSection();
             case 'collaboration':

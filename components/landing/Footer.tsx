@@ -85,7 +85,7 @@ export const Footer: React.FC = () => {
                     transition={{ duration: 0.3, delay: index * 0.1 }}
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.95 }}
-                    className="w-10 h-10 rounded-full bg-base-300 flex items-center justify-center text-base-content/70 hover:text-primary hover:bg-primary/10 transition-colors"
+                    className="flex h-10 w-10 items-center justify-center rounded-full bg-base-300 text-base-content/70 hover:bg-primary/10 hover:text-primary"
                   >
                     <social.icon className="w-5 h-5" />
                   </motion.a>

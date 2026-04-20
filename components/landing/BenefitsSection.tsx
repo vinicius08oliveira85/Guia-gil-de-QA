@@ -136,7 +136,16 @@ export const BenefitsSection: React.FC = () => {
               whileInView={reduceMotion ? undefined : { opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.5 + index * 0.1 }}
-              className="text-center p-6 rounded-2xl bg-base-200 border border-base-300 hover:border-primary/30 transition-all duration-300"
+              className="rounded-2xl border border-base-300 bg-base-200 p-6 text-center"
+              whileHover={
+                reduceMotion
+                  ? undefined
+                  : {
+                      borderColor: 'rgba(59, 130, 246, 0.35)',
+                      boxShadow: '0 14px 28px -8px rgba(0, 0, 0, 0.12)',
+                      transition: { duration: 0.2, ease: [0.16, 1, 0.3, 1] },
+                    }
+              }
             >
               <stat.icon className="w-8 h-8 text-primary mx-auto mb-3" />
               <div className="text-3xl md:text-4xl font-bold text-base-content mb-2">{stat.value}</div>

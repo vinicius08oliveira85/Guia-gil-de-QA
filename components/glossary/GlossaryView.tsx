@@ -4,6 +4,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Modal } from '../common/Modal';
 import { SectionHeader } from '../common/SectionHeader';
 
+/** Sombras / anéis em rgba fixo (evita conflito com Tailwind transition + layout do FM). */
+const TERM_CARD_HOVER_SHADOW =
+    '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(14, 109, 253, 0.28)';
+const STATS_PANEL_HOVER_SHADOW = '0 14px 28px -6px rgba(0, 0, 0, 0.14)';
+const STAT_TILE_HOVER_SHADOW = '0 8px 20px -6px rgba(0, 0, 0, 0.1)';
+
 export const GlossaryView: React.FC = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState<GlossaryTerm['category'] | 'Todos'>('Todos');
@@ -120,7 +126,8 @@ export const GlossaryView: React.FC = () => {
             </div>
 
             <motion.div 
-                className="grid grid-cols-1 gap-4 lg:grid-cols-2"
+                className="grid grid-cols-1 lg:grid-cols-2"
+                style={{ gap: '1rem' }}
                 initial="hidden"
                 animate="visible"
                 variants={{
@@ -137,36 +144,37 @@ export const GlossaryView: React.FC = () => {
                             <motion.div
                                 key={`${term.term}-${index}`}
                                 onClick={() => setSelectedTerm(term)}
-                                className="group relative cursor-pointer overflow-hidden rounded-xl border border-base-300 bg-base-100 p-5 transition-all duration-300 hover:border-primary/30 hover:shadow-lg"
+                                className="group relative cursor-pointer overflow-hidden rounded-xl border border-base-300 bg-base-100 p-5"
                                 variants={{
-                                    hidden: { opacity: 0, y: 20, scale: 0.95 },
-                                    visible: { 
-                                        opacity: 1, 
-                                        y: 0, 
-                                        scale: 1,
+                                    hidden: { opacity: 0, y: 20, scale: 0.98 },
+                                    visible: {
+                                        opacity: 1,
+                                        y: 0,
+                                        scale: 1.0,
                                         transition: {
                                             duration: 0.3,
-                                            ease: 'easeOut',
+                                            ease: [0.16, 1, 0.3, 1],
                                         },
                                     },
                                 }}
-                                whileHover={{ y: -2 }}
+                                whileHover={{
+                                    y: -2,
+                                    boxShadow: TERM_CARD_HOVER_SHADOW,
+                                    transition: { duration: 0.2, ease: [0.16, 1, 0.3, 1] },
+                                }}
                             >
                                 <div
-                                    className={`pointer-events-none absolute inset-0 bg-gradient-to-br opacity-0 transition-opacity duration-300 group-hover:opacity-100 ${categoryGradientClass(term.category)}`}
+                                    className={`pointer-events-none absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-100 ${categoryGradientClass(term.category)}`}
                                 />
                                 
                                 <div className="relative z-10">
                                     <div className="flex items-start justify-between mb-3">
-                                        <h3 className="text-lg font-semibold text-base-content flex-1 group-hover:text-primary transition-colors duration-200">
+                                        <h3 className="text-lg font-semibold text-base-content flex-1 group-hover:text-primary">
                                             {term.term}
                                         </h3>
-                                        <motion.span
-                                            className={`badge badge-sm ${categoryBadgeClass(term.category)}`}
-                                            whileHover={{ scale: 1.05 }}
-                                        >
+                                        <span className={`badge badge-sm ${categoryBadgeClass(term.category)}`}>
                                             {term.category}
-                                        </motion.span>
+                                        </span>
                                     </div>
                                     <p className="text-base-content/70 text-sm line-clamp-2 leading-relaxed mb-3">
                                         {term.definition}
@@ -174,9 +182,9 @@ export const GlossaryView: React.FC = () => {
                                     {term.relatedTerms && term.relatedTerms.length > 0 && (
                                         <div className="mt-3 flex flex-wrap gap-1.5 pt-3 border-t border-base-300/50">
                                             {term.relatedTerms.slice(0, 3).map((related, idx) => (
-                                                <span 
-                                                    key={idx} 
-                                                    className="text-xs text-primary font-medium hover:text-primary-focus transition-colors"
+                                                <span
+                                                    key={idx}
+                                                    className="text-xs text-primary font-medium hover:text-primary-focus"
                                                 >
                                                     #{related}
                                                 </span>
@@ -257,18 +265,24 @@ export const GlossaryView: React.FC = () => {
             </Modal>
 
             {/* Estatísticas */}
-            <motion.div 
-                className="mt-8 rounded-xl border border-base-300 bg-base-100 p-6 transition-all duration-300 hover:border-primary/30 hover:shadow-lg"
+            <motion.div
+                className="mt-8 rounded-xl border border-base-300 bg-base-100 p-6"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
+                whileHover={{
+                    boxShadow: STATS_PANEL_HOVER_SHADOW,
+                    borderColor: 'rgba(14, 109, 253, 0.32)',
+                    transition: { duration: 0.22, ease: [0.16, 1, 0.3, 1] },
+                }}
             >
                 <h3 className="text-lg font-semibold text-base-content mb-5 flex items-center gap-2">
                     <span>📊</span>
                     Estatísticas do Glossário
                 </h3>
                 <motion.div 
-                    className="grid grid-cols-2 md:grid-cols-4 gap-4"
+                    className="grid grid-cols-2 md:grid-cols-4"
+                    style={{ gap: '1rem' }}
                     initial="hidden"
                     animate="visible"
                     variants={{
@@ -282,14 +296,20 @@ export const GlossaryView: React.FC = () => {
                     {categories.map(category => {
                         const count = getTermsByCategory(category).length;
                         return (
-                            <motion.div 
-                                key={category} 
-                                className="text-center p-4 bg-base-200/50 rounded-xl hover:bg-base-200 transition-colors duration-200 border border-base-300/50 hover:border-primary/30 group"
+                            <motion.div
+                                key={category}
+                                className="group text-center rounded-xl border border-base-300/50 bg-base-200/50 p-4"
                                 variants={{
                                     hidden: { opacity: 0, scale: 0.9 },
                                     visible: { opacity: 1, scale: 1 },
                                 }}
-                                whileHover={{ scale: 1.05 }}
+                                whileHover={{
+                                    scale: 1.05,
+                                    filter: 'brightness(1.06)',
+                                    boxShadow: STAT_TILE_HOVER_SHADOW,
+                                    borderColor: 'rgba(14, 109, 253, 0.35)',
+                                    transition: { duration: 0.2, ease: [0.16, 1, 0.3, 1] },
+                                }}
                             >
                                 <div className="text-3xl font-bold text-primary mb-1">{count}</div>
                                 <div className="text-sm font-medium text-base-content/70 uppercase tracking-wider">{category}</div>

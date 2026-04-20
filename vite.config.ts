@@ -1,7 +1,57 @@
-import { defineConfig } from 'vite';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import { visualizer } from 'rollup-plugin-visualizer';
 import { VitePWA } from 'vite-plugin-pwa';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+/** Em `vite` puro, `/api/*` é encaminhado ao Vercel (3000). Sem `vercel dev`, `/api/manifest` quebrava o PWA. */
+function devApiManifestPlugin(): Plugin {
+  return {
+    name: 'dev-api-manifest',
+    enforce: 'pre',
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        const pathname = (req.url ?? '').split('?')[0] ?? '';
+        if (pathname !== '/api/manifest') {
+          next();
+          return;
+        }
+        if (req.method !== 'GET' && req.method !== 'HEAD') {
+          next();
+          return;
+        }
+        try {
+          const file = path.resolve(__dirname, 'public', 'manifest.json');
+          const body = fs.readFileSync(file, 'utf-8');
+          JSON.parse(body);
+          res.statusCode = 200;
+          res.setHeader('Content-Type', 'application/manifest+json');
+          res.setHeader('Cache-Control', 'public, max-age=0');
+          res.end(body);
+        } catch {
+          const fallback: Record<string, unknown> = {
+            name: 'QA Agile Guide',
+            short_name: 'QA Guide',
+            description: 'Ferramenta de gestão de projetos de QA',
+            start_url: '/',
+            display: 'standalone',
+            background_color: '#ffffff',
+            theme_color: '#0E6DFD',
+            icons: [],
+          };
+          res.statusCode = 200;
+          res.setHeader('Content-Type', 'application/manifest+json');
+          res.setHeader('Cache-Control', 'no-cache');
+          res.end(JSON.stringify(fallback));
+        }
+      });
+    },
+  };
+}
 
 export default defineConfig({
   server: {
@@ -18,6 +68,7 @@ export default defineConfig({
     },
   },
   plugins: [
+    devApiManifestPlugin(),
     react(),
     VitePWA({
       registerType: 'autoUpdate',
