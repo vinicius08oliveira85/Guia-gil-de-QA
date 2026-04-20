@@ -210,7 +210,18 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
         }
 
         if (project && onUpdateProject) {
-            const brLinkedCount = (task.linkedBusinessRuleIds ?? []).length;
+            const idSet = new Set((task.linkedBusinessRuleIds ?? []).filter(Boolean));
+            const catSet = new Set(
+                (task.linkedBusinessRuleCategories ?? [])
+                    .map((c) => (typeof c === 'string' ? c.trim() : ''))
+                    .filter(Boolean)
+            );
+            for (const r of project.businessRules ?? []) {
+                if (catSet.has((r.category ?? '').trim())) {
+                    idSet.add(r.id);
+                }
+            }
+            const brLinkedCount = idSet.size;
             tabs.push({
                 id: 'businessRules',
                 label: 'Regras de negócio',
@@ -240,6 +251,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
         onAddComment,
         project?.tasks,
         task.linkedBusinessRuleIds,
+        task.linkedBusinessRuleCategories,
     ]);
 
     const prevActiveSectionRef = useRef<DetailSection>(activeSection);

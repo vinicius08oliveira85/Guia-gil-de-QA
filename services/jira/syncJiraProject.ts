@@ -643,6 +643,7 @@ export const syncJiraProject = async (
                     // O testStatus é completamente independente do status do Jira
                     testStatus: oldTask.testStatus, // ✅ Preservar status de teste independente do Jira
                     linkedBusinessRuleIds: oldTask.linkedBusinessRuleIds,
+                    linkedBusinessRuleCategories: oldTask.linkedBusinessRuleCategories,
                     // Preservar createdAt se já existe (não sobrescrever com data do Jira se já foi criado localmente)
                     createdAt: oldTask.createdAt || task.createdAt,
                 };

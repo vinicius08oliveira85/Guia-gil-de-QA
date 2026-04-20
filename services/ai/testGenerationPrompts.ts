@@ -8,18 +8,43 @@ export const TASK_GEN_MAX_DOC_CHARS = 3200;
 export const BUSINESS_RULES_PROMPT_MAX_CHARS = 4000;
 
 /**
- * Somente regras cujos ids estão em `task.linkedBusinessRuleIds` (assertividade).
- * Sem tarefa ou sem vínculos: retorna string vazia (não envia todas as regras do projeto).
+ * Monta o bloco de regras para o prompt a partir de:
+ * - `task.linkedBusinessRuleIds` (regras individuais), e
+ * - `task.linkedBusinessRuleCategories` (todas as regras do projeto nessas categorias),
+ * unindo por `id` sem duplicar e respeitando {@link BUSINESS_RULES_PROMPT_MAX_CHARS}.
  */
 export function formatBusinessRulesForPrompt(project: Project | null | undefined, task?: JiraTask | null): string {
   if (!task) return '';
   const all = project?.businessRules ?? [];
-  const linkedIds = (task.linkedBusinessRuleIds ?? []).filter(Boolean);
-  if (linkedIds.length === 0) return '';
+  if (all.length === 0) return '';
 
   const byId = new Map(all.map((r) => [r.id, r]));
-  const items = linkedIds.map((id) => byId.get(id)).filter((r): r is BusinessRule => !!r);
+
+  const selectedIds = new Set<string>();
+  for (const id of task.linkedBusinessRuleIds ?? []) {
+    if (id) selectedIds.add(id);
+  }
+
+  const categoryKeys = new Set(
+    (task.linkedBusinessRuleCategories ?? [])
+      .map((c) => (typeof c === 'string' ? c.trim() : ''))
+      .filter(Boolean)
+  );
+  for (const rule of all) {
+    const cat = (rule.category ?? '').trim();
+    if (categoryKeys.has(cat)) {
+      selectedIds.add(rule.id);
+    }
+  }
+
+  if (selectedIds.size === 0) return '';
+
+  const items = Array.from(selectedIds)
+    .map((id) => byId.get(id))
+    .filter((r): r is BusinessRule => !!r);
   if (items.length === 0) return '';
+
+  items.sort((a, b) => a.category.localeCompare(b.category, 'pt-BR') || a.title.localeCompare(b.title, 'pt-BR'));
 
   const header =
     '### REGRAS DE NEGÓCIO APLICÁVEIS ###\n' +

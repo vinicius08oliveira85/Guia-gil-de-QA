@@ -59,6 +59,35 @@ describe('formatBusinessRulesForPrompt', () => {
     expect(formatBusinessRulesForPrompt(project, minimalTask())).toBe('');
   });
 
+  it('com linkedBusinessRuleCategories inclui todas as regras da categoria', () => {
+    const project = baseProject([
+      { id: 'a', title: 'A1', description: 'd1', category: 'Geral', createdAt: '1' },
+      { id: 'b', title: 'B1', description: 'd2', category: 'Segurança', createdAt: '2' },
+      { id: 'c', title: 'C1', description: 'd3', category: 'Geral', createdAt: '3' },
+    ]);
+    const task = minimalTask({ linkedBusinessRuleCategories: ['Geral'] });
+    const out = formatBusinessRulesForPrompt(project, task);
+    expect(out).toContain('id: a');
+    expect(out).toContain('id: c');
+    expect(out).not.toContain('id: b');
+  });
+
+  it('união de ids e categorias deduplica por id', () => {
+    const project = baseProject([
+      { id: 'a', title: 'R1', description: 'd', category: 'Geral', createdAt: '1' },
+      { id: 'b', title: 'R2', description: 'd', category: 'Geral', createdAt: '2' },
+    ]);
+    const task = minimalTask({
+      linkedBusinessRuleIds: ['a'],
+      linkedBusinessRuleCategories: ['Geral'],
+    });
+    const out = formatBusinessRulesForPrompt(project, task);
+    expect(out).toContain('id: a');
+    expect(out).toContain('id: b');
+    const idOccurrences = (out.match(/id: a/g) ?? []).length;
+    expect(idOccurrences).toBe(1);
+  });
+
   it('respeita limite aproximado de caracteres', () => {
     const huge = 'x'.repeat(BUSINESS_RULES_PROMPT_MAX_CHARS + 500);
     const project = baseProject([

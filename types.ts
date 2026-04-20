@@ -170,6 +170,8 @@ export interface JiraTask {
   jiraCustomFields?: { [key: string]: any }; // Campos customizados do Jira
   /** IDs de regras de negócio do projeto vinculadas a esta tarefa (geração de testes/BDD). */
   linkedBusinessRuleIds?: string[];
+  /** Categorias inteiras cujas regras do projeto entram no prompt (união com vínculos por id, sem duplicar id). */
+  linkedBusinessRuleCategories?: string[];
 }
 
 // Ferramentas sugeridas para testes
