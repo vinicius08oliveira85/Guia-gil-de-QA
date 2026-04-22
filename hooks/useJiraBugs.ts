@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef, useLayoutEffect } from 'react';
 import { Project } from '../types';
 import { getJiraConfig } from '../services/jiraService';
 import { syncBugsFromJira } from '../services/jiraBugsService';
@@ -12,6 +12,11 @@ export const useJiraBugs = (project: Project) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const { updateProject } = useProjectsStore();
+  const projectRef = useRef(project);
+
+  useLayoutEffect(() => {
+    projectRef.current = project;
+  }, [project]);
 
   const projectKey = project.settings?.jiraProjectKey;
 
@@ -27,15 +32,17 @@ export const useJiraBugs = (project: Project) => {
       return;
     }
 
+    const latestProject = projectRef.current;
+
     setIsLoading(true);
     setError(null);
 
     try {
-      const { updatedBugs, newBugs } = await syncBugsFromJira(projectKey, project.tasks);
+      const { updatedBugs, newBugs } = await syncBugsFromJira(projectKey, latestProject.tasks);
 
       if (updatedBugs.length > 0 || newBugs.length > 0) {
         // Criar um Map de tarefas existentes para atualização eficiente
-        const tasksMap = new Map(project.tasks.map(t => [t.id, t]));
+        const tasksMap = new Map(latestProject.tasks.map(t => [t.id, t]));
         
         // Atualizar bugs existentes
         updatedBugs.forEach(bug => {
@@ -48,7 +55,7 @@ export const useJiraBugs = (project: Project) => {
         });
 
         const updatedProject: Project = {
-          ...project,
+          ...latestProject,
           tasks: Array.from(tasksMap.values()),
         };
 
@@ -70,7 +77,7 @@ export const useJiraBugs = (project: Project) => {
     } finally {
       setIsLoading(false);
     }
-  }, [project, projectKey, updateProject]);
+  }, [projectKey, updateProject]);
 
   // Sincronizar automaticamente quando o projeto carregar (se configurado)
   useEffect(() => {
@@ -84,7 +91,7 @@ export const useJiraBugs = (project: Project) => {
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [projectKey, syncBugs]); // Apenas quando projectKey mudar
+  }, [projectKey, syncBugs]);
 
   return {
     syncBugs,

@@ -51,14 +51,14 @@ export const ProjectView: React.FC<{
     const [isDeletingProject, setIsDeletingProject] = useState(false);
     const [isSavingToSupabase, setIsSavingToSupabase] = useState(false);
     const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
-    const { saveProjectToSupabase, getSelectedProject, lastSaveToSupabase } = useProjectsStore();
+    const saveProjectToSupabase = useProjectsStore((s) => s.saveProjectToSupabase);
+    const lastSaveToSupabase = useProjectsStore((s) => s.lastSaveToSupabase);
+    const storeProject = useProjectsStore((s) => s.projects.find((p) => p.id === project.id));
     const supabaseAvailable = isSupabaseAvailable();
     const isOnline = useOnlineStatus();
-    
-    // IMPORTANTE: Sempre usar o projeto mais recente do store em vez de apenas o prop
-    // Isso garante que temos a versão mais atualizada, especialmente após sincronizações
-    const storeProject = getSelectedProject();
-    const currentProject = storeProject || project; // Fallback para prop se store não tiver
+
+    // Projeto mais recente do store (mesmo id do prop); fallback ao prop se ainda não estiver na lista
+    const currentProject = storeProject ?? project;
     
     const metrics = useProjectMetrics(currentProject);
     const previousPhasesRef = useRef<string>('');

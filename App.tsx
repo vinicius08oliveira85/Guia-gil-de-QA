@@ -72,6 +72,7 @@ const App: React.FC = () => {
         showSettings,
         setShowSettings,
         selectProject,
+        isLoading,
     });
 
     // Carregar projetos ao montar

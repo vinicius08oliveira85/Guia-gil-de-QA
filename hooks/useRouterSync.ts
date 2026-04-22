@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 import { Project } from '../types';
 
 interface UseRouterSyncOptions {
@@ -7,6 +7,8 @@ interface UseRouterSyncOptions {
   showSettings: boolean;
   setShowSettings: (value: boolean) => void;
   selectProject: (projectId: string | null) => void;
+  /** Enquanto true, não sincroniza estado → URL (evita replaceState no mesmo tick antes da hidratação URL → estado). */
+  isLoading?: boolean;
 }
 
 type ParsedRoute =
@@ -44,8 +46,8 @@ function isSelectedProjectValid(selectedProjectId: string, projects: Project[]):
 
 /**
  * Sincroniza o "roteamento" da SPA (Dashboard/Projeto/Settings) com a URL via History API.
- * - URL -> estado: mount + popstate
- * - estado -> URL: pushState
+ * - URL → estado: mount + popstate (useLayoutEffect; normalização com replaceState quando necessário)
+ * - Estado → URL: replaceState (evita empilhar entradas no histórico a cada troca de projeto/aba interna)
  *
  * Convenção:
  * - Dashboard: /
@@ -58,17 +60,19 @@ export function useRouterSync({
   showSettings,
   setShowSettings,
   selectProject,
+  isLoading = false,
 }: UseRouterSyncOptions): void {
   const latestStateRef = useRef<{ selectedProjectId: string | null; showSettings: boolean }>({
     selectedProjectId,
     showSettings,
   });
 
-  useEffect(() => {
+  // Layout: ref alinhada ao React antes de aplicar a URL (e antes dos efeitos passivos que espelham estado na URL).
+  useLayoutEffect(() => {
     latestStateRef.current = { selectedProjectId, showSettings };
   }, [selectedProjectId, showSettings]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (typeof window === 'undefined') return;
 
     const applyLocationToState = () => {
@@ -124,9 +128,10 @@ export function useRouterSync({
     }
   }, [projects, selectProject, selectedProjectId, showSettings]);
 
-  // Estado -> URL: pushState só quando realmente mudou.
+  // Estado → URL: replaceState só quando a query canônica difere (não empilha histórico como pushState).
   useEffect(() => {
     if (typeof window === 'undefined') return;
+    if (isLoading) return;
 
     const desired: ParsedRoute =
       showSettings
@@ -138,8 +143,8 @@ export function useRouterSync({
     const desiredSearch = buildCanonicalSearch(desired);
     if (window.location.search === desiredSearch) return;
 
-    window.history.pushState({}, '', toRelativeUrlWithSearch(desiredSearch));
-  }, [selectedProjectId, showSettings]);
+    window.history.replaceState({}, '', toRelativeUrlWithSearch(desiredSearch));
+  }, [selectedProjectId, showSettings, isLoading]);
 }
 
 
