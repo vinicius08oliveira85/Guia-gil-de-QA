@@ -11,6 +11,7 @@ import { autoBackupBeforeOperation } from './backupService';
 import { migrateTestCases } from '../utils/testCaseMigration';
 import { logger } from '../utils/logger';
 import { cleanupTestCasesForProjects, cleanupTestCasesForNonTaskTypesSync } from '../utils/testCaseCleanup';
+import { withAcyclicTaskParents } from '../utils/taskParentCycle';
 
 /** Versão do envelope JSON de backup (independente do DB_VERSION do IndexedDB). */
 export const BACKUP_EXPORT_FORMAT_VERSION = 1;
@@ -81,7 +82,9 @@ export const loadProjectsFromIndexedDB = async (): Promise<Project[]> => {
   );
 
   // Limpar casos de teste de tipos não permitidos (Bug, Epic, História)
-  return cleanupTestCasesForProjects(migratedIndexedDBProjects);
+  return cleanupTestCasesForProjects(migratedIndexedDBProjects).map((p) =>
+    withAcyclicTaskParents(p, { silent: true })
+  );
 };
 
 /**
@@ -107,7 +110,8 @@ export const getProjectById = async (projectId: string): Promise<Project | null>
     })),
   });
   const [cleaned] = cleanupTestCasesForProjects([migrated]);
-  return cleaned ? normalizeProjectBusinessRules(cleaned) : null;
+  if (!cleaned) return null;
+  return withAcyclicTaskParents(normalizeProjectBusinessRules(cleaned), { silent: true });
 };
 
 /**
@@ -177,7 +181,7 @@ export const getAllProjects = async (): Promise<Project[]> => {
         );
       }
 
-      return cleanedProjects;
+      return cleanedProjects.map((p) => withAcyclicTaskParents(p, { silent: true }));
     } catch (mergeError) {
       const message = mergeError instanceof Error ? mergeError.message : String(mergeError);
       const stack = mergeError instanceof Error ? mergeError.stack : undefined;
@@ -201,7 +205,9 @@ export const getAllProjects = async (): Promise<Project[]> => {
 };
 
 export const addProject = async (project: Project): Promise<SaveResult> => {
-  const cleanedProject = cleanupTestCasesForNonTaskTypesSync(normalizeProjectBusinessRules(project));
+  const cleanedProject = withAcyclicTaskParents(
+    cleanupTestCasesForNonTaskTypesSync(normalizeProjectBusinessRules(project))
+  );
 
   const db = await openDB();
   await new Promise<void>((resolve, reject) => {
@@ -227,7 +233,9 @@ export const updateProject = async (
   project: Project,
   options?: { syncRemote?: boolean }
 ): Promise<SaveResult> => {
-  const cleanedProject = cleanupTestCasesForNonTaskTypesSync(normalizeProjectBusinessRules(project));
+  const cleanedProject = withAcyclicTaskParents(
+    cleanupTestCasesForNonTaskTypesSync(normalizeProjectBusinessRules(project))
+  );
   const syncRemote = options?.syncRemote === true;
 
   const totalStrategies = cleanedProject.tasks.reduce((sum, task) => sum + (task.testStrategy?.length || 0), 0);
@@ -342,11 +350,13 @@ export const writeProjectToIndexedDBOnly = async (project: Project): Promise<voi
   const [toWrite] = cleanupTestCasesForProjects([migrated]);
   if (!toWrite) return;
 
+  const toPersist = withAcyclicTaskParents(toWrite);
+
   const db = await openDB();
   await new Promise<void>((resolve, reject) => {
     const transaction = db.transaction(STORE_NAME, 'readwrite');
     const store = transaction.objectStore(STORE_NAME);
-    const request = store.put(toWrite);
+    const request = store.put(toPersist);
     request.onerror = () => reject(request.error);
     request.onsuccess = () => resolve();
   });
@@ -383,7 +393,7 @@ function normalizeImportedProject(raw: unknown): Project | null {
     createdAt: typeof o.createdAt === 'string' ? o.createdAt : now,
     updatedAt: typeof o.updatedAt === 'string' ? o.updatedAt : now,
   };
-  return normalizeProjectBusinessRules(base);
+  return withAcyclicTaskParents(normalizeProjectBusinessRules(base));
 }
 
 function extractProjectsArray(parsed: unknown): unknown[] {

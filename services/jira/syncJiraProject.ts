@@ -16,6 +16,7 @@ import { mergeTestCases } from '../../utils/testCaseMerge';
 import { parseJiraDescriptionHTML } from '../../utils/jiraDescriptionParser';
 import { getJiraStatusColor } from '../../utils/jiraStatusColors';
 import { logger } from '../../utils/logger';
+import { normalizeTasksParentIdsAcyclic } from '../../utils/taskParentCycle';
 
 export const syncJiraProject = async (
     config: JiraConfig,
@@ -957,11 +958,13 @@ export const syncJiraProject = async (
         ...newStatuses,
     ];
 
+    const tasksNormalized = normalizeTasksParentIdsAcyclic(updatedTasks);
+
     // IMPORTANTE: Retornar projeto baseado em projectToUse (do store), não no project passado como parâmetro
     // Isso garante que todos os campos do projeto (não apenas tasks) venham do store com os dados mais recentes
     return {
         ...projectToUse,
-        tasks: updatedTasks,
+        tasks: tasksNormalized,
         settings: {
             ...projectToUse.settings,
             jiraStatuses: mergedJiraStatuses.length > 0 ? mergedJiraStatuses : projectToUse.settings?.jiraStatuses,

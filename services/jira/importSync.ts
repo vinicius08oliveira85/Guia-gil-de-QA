@@ -14,6 +14,7 @@ import {
 import { loadTestStatusesByJiraKeys } from '../supabaseService';
 import { parseJiraDescriptionHTML } from '../../utils/jiraDescriptionParser';
 import { logger } from '../../utils/logger';
+import { normalizeTasksParentIdsAcyclic } from '../../utils/taskParentCycle';
 
 export const importJiraProject = async (
     config: JiraConfig,
@@ -219,13 +220,15 @@ export const importJiraProject = async (
         return task;
     }));
 
+    const tasksNormalized = normalizeTasksParentIdsAcyclic(tasks);
+
     const project: Project = {
         id: `jira-${jiraProject.id}-${Date.now()}`,
         name: jiraProject.name,
         description: jiraProject.description || `Projeto importado do Jira: ${jiraProjectKey}`,
         documents: [],
         businessRules: [],
-        tasks: tasks,
+        tasks: tasksNormalized,
         phases: [],
         tags: [],
         settings: {
@@ -428,7 +431,7 @@ export const addNewJiraTasks = async (
         return task;
     }));
 
-    const allTasks = [...project.tasks, ...newTasks];
+    const allTasks = normalizeTasksParentIdsAcyclic([...project.tasks, ...newTasks]);
 
     return {
         project: {

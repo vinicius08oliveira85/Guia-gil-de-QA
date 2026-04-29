@@ -18,6 +18,7 @@ import { mergeTestCases } from '../../utils/testCaseMerge';
 import { parseJiraDescriptionHTML } from '../../utils/jiraDescriptionParser';
 import { isValidJiraKey } from '../../utils/jiraFieldMapper';
 import { logger } from '../../utils/logger';
+import { normalizeTasksParentIdsAcyclic } from '../../utils/taskParentCycle';
 
 export const updateJiraIssue = async (
     config: JiraConfig,
@@ -260,5 +261,5 @@ export const updateSingleTaskFromJira = async (
     const newTasks = project.tasks.some(t => t.id === key)
         ? project.tasks.map(t => t.id === key ? finalTask : t)
         : [...project.tasks, finalTask];
-    return { ...project, tasks: newTasks };
+    return { ...project, tasks: normalizeTasksParentIdsAcyclic(newTasks) };
 };

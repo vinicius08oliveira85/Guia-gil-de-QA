@@ -39,6 +39,7 @@ import { FileExportModal } from '../common/FileExportModal';
 import {
     buildAttachmentsContextForTask,
     buildTaskTreeSectionA11y,
+    parentLinkCreatesCycle,
     taskMatchesStatusName,
     taskMatchesPriorityName,
     getEffectiveTestStatus,
@@ -73,6 +74,9 @@ export const TasksView: React.FC<{
     const [generatingTestsTaskId, setGeneratingTestsTaskId] = useState<string | null>(null);
     const [generatingBddTaskId, setGeneratingBddTaskId] = useState<string | null>(null);
     const [generatingAllTaskId, setGeneratingAllTaskId] = useState<string | null>(null);
+
+    /** Evita spam de log ao reconstruir a árvore com o mesmo ciclo parentId. */
+    const parentCycleWarnedRef = useRef(new Set<string>());
 
     /** Garante uma única operação Gemini por vez na tela de tarefas (evita 429 por paralelismo). */
     const geminiOpQueueRef = useRef(Promise.resolve());
@@ -135,6 +139,10 @@ export const TasksView: React.FC<{
         executionStatusNavKey: tasksExecutionNavKey,
         executionStatusNavStatuses: tasksExecutionNavStatuses,
     });
+
+    useEffect(() => {
+        parentCycleWarnedRef.current.clear();
+    }, [project.id]);
 
     const [failModalState, setFailModalState] = useState<{
         isOpen: boolean;
@@ -1433,8 +1441,22 @@ export const TasksView: React.FC<{
         const tree: TaskWithChildren[] = [];
 
         for (const task of taskMap.values()) {
-            if (task.parentId && taskMap.has(task.parentId)) {
-                taskMap.get(task.parentId)!.children.push(task);
+            const pid = task.parentId?.trim();
+            if (pid && taskMap.has(pid)) {
+                if (parentLinkCreatesCycle(taskMap, task.id, pid)) {
+                    const warnKey = `${project.id}\0${task.id}\0${pid}`;
+                    if (!parentCycleWarnedRef.current.has(warnKey)) {
+                        parentCycleWarnedRef.current.add(warnKey);
+                        logger.warn(
+                            'Ciclo ou parentId inconsistente na hierarquia de tarefas; exibindo como raiz.',
+                            'TasksView',
+                            { projectId: project.id, taskId: task.id, parentId: pid }
+                        );
+                    }
+                    tree.push(task);
+                } else {
+                    taskMap.get(pid)!.children.push(task);
+                }
             } else {
                 tree.push(task);
             }
@@ -1449,7 +1471,7 @@ export const TasksView: React.FC<{
         };
         sortChildrenRecursive(tree);
         return tree;
-    }, [filteredTasks, taskComparator]);
+    }, [filteredTasks, taskComparator, project.id]);
 
     const favoriteRoots = useMemo(() => taskTree.filter(t => t.isFavorite), [taskTree]);
     const otherRoots = useMemo(() => taskTree.filter(t => !t.isFavorite), [taskTree]);

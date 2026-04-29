@@ -118,6 +118,13 @@ export const compareTasksById = (a: JiraTask, b: JiraTask) => {
 export type TaskSortBy = 'id' | 'status' | 'priority' | 'createdAt' | 'title';
 export type TaskGroupBy = 'none' | 'status' | 'priority' | 'type';
 
+export {
+    parentLinkCreatesCycle,
+    normalizeTasksParentIdsAcyclic,
+    withAcyclicTaskParents,
+    type TaskFlatNode,
+} from '../../utils/taskParentCycle';
+
 /** Nó mínimo para DFS de a11y (compatível com `TaskWithChildren`). */
 export type TaskTreeA11yNode = { id: string; children: TaskTreeA11yNode[] };
 
