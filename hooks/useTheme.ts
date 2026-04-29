@@ -28,8 +28,13 @@ export const useTheme = () => {
 
     root.setAttribute('data-theme', themeToApply);
 
-    // Remover classes legadas para evitar conflitos com CSS antigo (cleanup está em andamento).
-    root.classList.remove('light', 'dark', 'leve-saude');
+    // Remover classes legadas; `dark` do Tailwind alinha `dark:` com `data-theme="dark"`.
+    root.classList.remove('light', 'leve-saude');
+    if (themeToApply === 'dark') {
+        root.classList.add('dark');
+    } else {
+        root.classList.remove('dark');
+    }
 
     localStorage.setItem('theme', theme);
   }, [theme]);

@@ -223,8 +223,9 @@ export default defineConfig({
   ].filter(Boolean),
   resolve: {
     alias: {
-      '@': new URL('.', import.meta.url).pathname,
-    }
+      // fileURL/pathname quebra resolução no Windows; alinhar ao tsconfig paths "@/*"
+      '@': path.resolve(__dirname),
+    },
   },
   build: {
     target: 'esnext',

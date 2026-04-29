@@ -103,6 +103,30 @@ export const Header: React.FC<HeaderProps> = ({
         el?.focus();
     }, [mobileMenuOpen]);
 
+    /** Navegação inferior mobile (`FloatingNav` no App). */
+    useEffect(() => {
+        const onNotifications = () => {
+            setShowNotificationDropdown(true);
+            closeMobileMenu();
+        };
+        const onGlossary = () => {
+            setIsGlossaryOpen(true);
+            closeMobileMenu();
+        };
+        const onSettings = () => {
+            onOpenSettings?.();
+            closeMobileMenu();
+        };
+        window.addEventListener('floating-nav-notifications', onNotifications);
+        window.addEventListener('floating-nav-glossary', onGlossary);
+        window.addEventListener('floating-nav-settings', onSettings);
+        return () => {
+            window.removeEventListener('floating-nav-notifications', onNotifications);
+            window.removeEventListener('floating-nav-glossary', onGlossary);
+            window.removeEventListener('floating-nav-settings', onSettings);
+        };
+    }, [onOpenSettings, closeMobileMenu]);
+
     /** Permite cabeçalhos sticky nas views (ex.: ProjectView) logo abaixo deste header. */
     useLayoutEffect(() => {
         const el = headerRef.current;

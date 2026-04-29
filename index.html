@@ -24,7 +24,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600;700&family=Lora:wght@400;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Poppins:wght@500;600;700&display=swap"
       rel="stylesheet"
     />
 
@@ -56,7 +56,12 @@
         }
         
         document.documentElement.setAttribute("data-theme", themeToApply);
-        document.documentElement.classList.remove("light", "dark", "leve-saude");
+        document.documentElement.classList.remove("light", "leve-saude");
+        if (themeToApply === "dark") {
+          document.documentElement.classList.add("dark");
+        } else {
+          document.documentElement.classList.remove("dark");
+        }
       })();
     </script>
   </body>

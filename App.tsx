@@ -21,6 +21,7 @@ import { lazyWithRetry } from './utils/lazyWithRetry';
 import { logger } from './utils/logger';
 import { useRouterSync } from './hooks/useRouterSync';
 import { isSupabaseAvailable } from './services/supabaseService';
+import { FloatingNav } from '@/components/ui/floating-nav';
 
 // Code splitting - Lazy loading de componentes pesados
 const ProjectView = lazyWithRetry(() => import('./components/ProjectView').then(m => ({ default: m.ProjectView })));
@@ -319,7 +320,39 @@ const App: React.FC = () => {
                 )}
 
 
-                <main id="main-content">
+                {isMobile && (
+                    <FloatingNav
+                        onNavigate={(index) => {
+                            switch (index) {
+                                case 0:
+                                    handleGoToDashboard();
+                                    break;
+                                case 1:
+                                    window.dispatchEvent(new CustomEvent('open-global-search'));
+                                    break;
+                                case 2:
+                                    window.dispatchEvent(new CustomEvent('floating-nav-notifications'));
+                                    break;
+                                case 3:
+                                    window.dispatchEvent(new CustomEvent('floating-nav-settings'));
+                                    break;
+                                case 4:
+                                    window.dispatchEvent(new CustomEvent('floating-nav-glossary'));
+                                    break;
+                                case 5:
+                                    setShowAdvancedSearch(true);
+                                    break;
+                                case 6:
+                                    window.dispatchEvent(new CustomEvent('floating-nav-settings'));
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }}
+                    />
+                )}
+
+                <main id="main-content" className={isMobile ? 'pb-28' : undefined}>
                     {storeError && (
                         <div className="container mx-auto px-4 py-3">
                             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-3 rounded-lg bg-error/10 border border-error/30 text-error-content" role="alert">
