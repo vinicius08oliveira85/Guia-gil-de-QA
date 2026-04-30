@@ -50,6 +50,7 @@
     --shadow-offset-y: 2px;
     --sidebar-primary: #000000;
     --muted-foreground: #525252;
+    --text-secondary: var(--muted-foreground);
     --accent-foreground: #1e69dc;
     --popover-foreground: #000000;
     --primary-foreground: #ffffff;
@@ -102,6 +103,7 @@
     --shadow-offset-y: 2px;
     --sidebar-primary: #8c5cff;
     --muted-foreground: #a0a0a0;
+    --text-secondary: var(--muted-foreground);
     --accent-foreground: #79c0ff;
     --popover-foreground: #f0f0f0;
     --primary-foreground: #ffffff;

@@ -8,8 +8,7 @@ import { ListChecks, CheckCircle2, AlertTriangle, Percent, Loader2 } from 'lucid
 import { useProjectsStore } from '../../store/projectsStore';
 import { useDashboardMetrics } from '../../hooks/useDashboardMetrics';
 import { DashboardStatCard } from './DashboardStatCard';
-import { DashboardTaskStatusPieChart } from './charts/DashboardTaskStatusPieChart';
-import { DashboardMemberWorkloadBarChart } from './charts/DashboardMemberWorkloadBarChart';
+import { ProjectDashboard } from './ProjectDashboard';
 import { RecentActivity } from './RecentActivity';
 import { QADashboardHeaderToolbar } from './QADashboardHeaderToolbar';
 
@@ -174,20 +173,11 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo((props) => {
         )}
       </div>
 
-      {/* Gráficos: 1 col mobile, 2 cols desktop */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
-        {showLoadingBanner && !filteredProject.tasks?.length ? (
-          <>
-            <div className="min-h-[280px] rounded-xl border border-base-300 bg-base-200/30 animate-pulse" />
-            <div className="min-h-[280px] rounded-xl border border-base-300 bg-base-200/30 animate-pulse" />
-          </>
-        ) : (
-          <>
-            <DashboardTaskStatusPieChart data={dashboardMetrics.statusPieData} />
-            <DashboardMemberWorkloadBarChart data={dashboardMetrics.workloadByMember} />
-          </>
-        )}
-      </div>
+      {/* Painel de indicadores (Mica/Glass): mesmos dados do projeto filtrado */}
+      <ProjectDashboard
+        project={filteredProject}
+        isLoading={showLoadingBanner && !filteredProject.tasks?.length}
+      />
 
       {!showLoadingBanner && dashboardMetrics.totalTasks === 0 && (
         <div className="rounded-xl border border-dashed border-base-300 bg-base-200/20 px-4 py-6 text-center text-sm text-base-content/70">
