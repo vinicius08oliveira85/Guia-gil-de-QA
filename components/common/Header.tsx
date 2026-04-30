@@ -26,7 +26,7 @@ import { useProjectsStore } from '../../store/projectsStore';
 import { useJiraSync } from '../../hooks/useJiraSync';
 import { isSupabaseAvailable } from '../../services/supabaseService';
 import toast from 'react-hot-toast';
-import { NavigationMenuDrawer, NavigationMenuHamburger } from './NavigationMenu';
+import { NavigationMenuDrawer, NavigationMenuHamburger, NavigationMenuRail } from './NavigationMenu';
 import type { NavigationMenuItem } from './NavigationMenu';
 
 interface HeaderProps {
@@ -59,7 +59,12 @@ export const Header: React.FC<HeaderProps> = ({
     const headerRef = useRef<HTMLElement>(null);
     const mobileMenuDomId = useId().replace(/:/g, '');
 
-    const { saveProjectToSupabase, getSelectedProject, syncProjectsFromSupabase, updateProject } = useProjectsStore();
+    const saveProjectToSupabase = useProjectsStore((s) => s.saveProjectToSupabase);
+    const getSelectedProject = useProjectsStore((s) => s.getSelectedProject);
+    const syncProjectsFromSupabase = useProjectsStore((s) => s.syncProjectsFromSupabase);
+    const updateProject = useProjectsStore((s) => s.updateProject);
+    const selectProject = useProjectsStore((s) => s.selectProject);
+    const selectedProjectId = useProjectsStore((s) => s.selectedProjectId);
     const selectedProject = getSelectedProject();
     const {
         handleSyncJira,
@@ -73,6 +78,12 @@ export const Header: React.FC<HeaderProps> = ({
     } = useJiraSync(selectedProject ?? null, updateProject);
 
     const closeMobileMenu = useCallback(() => setMobileMenuOpen(false), []);
+
+    /** Lista principal de projetos: limpa seleção no store e reutiliza o handler do App (URL / settings). */
+    const goToProjectsList = useCallback(() => {
+        selectProject(null);
+        onLogoClick?.();
+    }, [selectProject, onLogoClick]);
 
     const utilityMenuRef = useRef<HTMLDetailsElement>(null);
     const closeUtilityMenu = useCallback(() => {
@@ -268,7 +279,7 @@ export const Header: React.FC<HeaderProps> = ({
                 id: 'projects',
                 label: 'Meus projetos',
                 icon: <LayoutGrid className="h-5 w-5" aria-hidden />,
-                onClick: () => onLogoClick(),
+                onClick: goToProjectsList,
             },
         ];
         if (showDashboardActions && onOpenCreateModal) {
@@ -292,11 +303,24 @@ export const Header: React.FC<HeaderProps> = ({
         return items;
     }, [
         onLogoClick,
+        goToProjectsList,
         showDashboardActions,
         onOpenCreateModal,
         isSyncingSupabase,
         handleSyncSupabase,
     ]);
+
+    const mainNavRailItems = useMemo((): NavigationMenuItem[] => {
+        if (!onLogoClick) return [];
+        return [
+            {
+                id: 'projects',
+                label: 'Projetos',
+                icon: <LayoutGrid className="h-4 w-4" aria-hidden />,
+                onClick: goToProjectsList,
+            },
+        ];
+    }, [onLogoClick, goToProjectsList]);
 
     const logoContent = (
         <>
@@ -381,7 +405,7 @@ export const Header: React.FC<HeaderProps> = ({
                     {onLogoClick ? (
                         <button
                             type="button"
-                            onClick={onLogoClick}
+                            onClick={goToProjectsList}
                             className="flex min-h-[44px] min-w-0 flex-1 cursor-pointer items-center gap-2 rounded-xl border border-transparent bg-transparent p-1 text-left transition-all duration-200 hover:border-base-300/60 hover:bg-base-200/40 sm:min-h-0 sm:gap-3 sm:p-0"
                             aria-label="Voltar para Meus Projetos"
                         >
@@ -425,6 +449,13 @@ export const Header: React.FC<HeaderProps> = ({
                                     )}
                                 </button>
                             </div>
+                        )}
+                        {mainNavRailItems.length > 0 && (
+                            <NavigationMenuRail
+                                items={mainNavRailItems}
+                                currentId={selectedProjectId == null ? 'projects' : undefined}
+                                className="shrink-0 border-l border-base-300/40 pl-2"
+                            />
                         )}
                         <div className="relative hidden md:block">
                             <ExpandableTabs

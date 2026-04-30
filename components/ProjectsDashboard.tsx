@@ -189,7 +189,7 @@ export const ProjectsDashboard: React.FC<{
 
     return (
         <>
-        <div className="min-h-[calc(100vh-4rem)] bg-gradient-to-b from-base-100 to-base-200/60">
+        <div className="animate-fade-in min-h-[calc(100vh-4rem)] bg-gradient-to-b from-base-100 to-base-200/60">
             <div className="w-full max-w-full mx-auto px-4 sm:px-8 py-4 sm:py-6">
                 {/* Header */}
                 <div className="mb-6 sm:mb-7 lg:mb-8 lg:pt-0.5">

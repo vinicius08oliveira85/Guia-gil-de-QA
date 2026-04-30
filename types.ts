@@ -20,6 +20,8 @@ export interface TestCase {
 
 export type TestCaseDetailLevel = 'Resumido' | 'Padrão' | 'Detalhado';
 
+export type AppViewMode = 'dashboard' | 'project_detail' | 'settings';
+
 export type JiraTaskType = 'Epic' | 'História' | 'Tarefa' | 'Bug';
 
 export type BugSeverity = 'Crítico' | 'Alto' | 'Médio' | 'Baixo';
@@ -168,6 +170,8 @@ export interface JiraTask {
   issueLinks?: Array<{ id: string; type: string; relatedKey: string; direction: 'inward' | 'outward' }>;
   jiraAttachments?: Array<{ id: string; filename: string; size: number; created: string; author: string }>;
   jiraCustomFields?: { [key: string]: any }; // Campos customizados do Jira
+  isTechnicalDebt?: boolean; // Flag para o indicador de Débito Técnico
+  isCriticalPath?: boolean; // Flag para o indicador de Funcionalidades Críticas (LGPD/Segurança)
   /** IDs de regras de negócio do projeto vinculadas a esta tarefa (geração de testes/BDD). */
   linkedBusinessRuleIds?: string[];
   /** Categorias inteiras cujas regras do projeto entram no prompt (união com vínculos por id, sem duplicar id). */

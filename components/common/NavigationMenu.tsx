@@ -51,6 +51,18 @@ export const NavigationMenuDrawer: React.FC<NavigationMenuDrawerProps> = ({
     el?.focus();
   }, [open, panelRef]);
 
+  /** Fecha a gaveta ao passar de mobile para desktop (Tailwind `md` = 768px). */
+  useEffect(() => {
+    if (!open) return;
+    const mq = window.matchMedia('(min-width: 768px)');
+    const closeIfDesktop = () => {
+      if (mq.matches) onOpenChange(false);
+    };
+    closeIfDesktop();
+    mq.addEventListener('change', closeIfDesktop);
+    return () => mq.removeEventListener('change', closeIfDesktop);
+  }, [open, onOpenChange]);
+
   if (!open) return null;
 
   return (

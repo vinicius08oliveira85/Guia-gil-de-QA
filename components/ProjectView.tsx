@@ -37,7 +37,7 @@ export const ProjectView: React.FC<{
   onUpdateProject: (project: Project) => void | Promise<void>;
   onBack: () => void;
   onDeleteProject?: (projectId: string) => void | Promise<void>;
-}> = ({ project, onUpdateProject, onBack, onDeleteProject }) => {
+}> = ({ project, onUpdateProject, onBack: _onBack, onDeleteProject }) => {
     const [activeTab, setActiveTab] = useState('dashboard');
     const [initialTaskId, setInitialTaskId] = useState<string | undefined>(undefined);
     /** Deep link do Dashboard: filtrar tarefas com casos em certos status (ex.: falhas). */
@@ -52,6 +52,9 @@ export const ProjectView: React.FC<{
     const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
     const saveProjectToSupabase = useProjectsStore((s) => s.saveProjectToSupabase);
     const lastSaveToSupabase = useProjectsStore((s) => s.lastSaveToSupabase);
+    const projects = useProjectsStore((s) => s.projects);
+    const storeLoading = useProjectsStore((s) => s.isLoading);
+    const selectProject = useProjectsStore((s) => s.selectProject);
     const storeProject = useProjectsStore((s) => s.projects.find((p) => p.id === project.id));
     const supabaseAvailable = isSupabaseAvailable();
     const isOnline = useOnlineStatus();
@@ -111,6 +114,25 @@ export const ProjectView: React.FC<{
             isMountedRef.current = false;
         };
     }, []);
+
+    /** Projeto removido do store (sync, exclusão ou ID inválido após refresh): avisa e volta à listagem. */
+    const projectMissingNotifiedRef = useRef(false);
+    useEffect(() => {
+        projectMissingNotifiedRef.current = false;
+    }, [project.id]);
+
+    useEffect(() => {
+        if (storeLoading) return;
+        const existsInStore = projects.some((p) => p.id === project.id);
+        if (existsInStore) {
+            projectMissingNotifiedRef.current = false;
+            return;
+        }
+        if (projectMissingNotifiedRef.current) return;
+        projectMissingNotifiedRef.current = true;
+        toast.error('Projeto não encontrado ou foi removido. Voltando para a listagem de projetos.');
+        selectProject(null);
+    }, [storeLoading, projects, project.id, selectProject]);
 
     useEffect(() => {
         // Update project state only if the calculated phases have changed
@@ -280,7 +302,7 @@ export const ProjectView: React.FC<{
     }, [activeTab, tabs]);
 
     const breadcrumbItems = useMemo((): BreadcrumbItem[] => {
-        const items: BreadcrumbItem[] = [{ label: 'Projetos', onClick: onBack }];
+        const items: BreadcrumbItem[] = [{ label: 'Projetos', onClick: () => selectProject(null) }];
 
         const onlyProjectHome = activeTab === 'dashboard' && !breadcrumbTaskId;
         if (onlyProjectHome) {
@@ -307,11 +329,11 @@ export const ProjectView: React.FC<{
         }
 
         return items;
-    }, [onBack, currentProject.name, currentProject.tasks, activeTab, breadcrumbTaskId, handleTabClick]);
+    }, [selectProject, currentProject.name, currentProject.tasks, activeTab, breadcrumbTaskId, handleTabClick]);
 
     return (
         <>
-            <div className="w-full max-w-full mx-auto px-4 py-3 sm:px-8 sm:py-4 non-printable">
+            <div className="animate-fade-in w-full max-w-full mx-auto px-4 py-3 sm:px-8 sm:py-4 non-printable">
                 <div
                     className="sticky z-40 -mx-4 mb-2 min-w-0 max-w-full border-b border-base-200/50 bg-base-100/80 px-4 py-1 backdrop-blur-md sm:-mx-8 sm:px-8"
                     style={{ top: 'var(--app-header-h, 4.5rem)' }}

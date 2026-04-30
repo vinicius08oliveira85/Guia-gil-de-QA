@@ -25,6 +25,7 @@ import { EmptyState } from '../common/EmptyState';
 import { getJiraConfig, syncTaskToJira, fetchJiraTaskFormDataByKey, updateSingleTaskFromJira } from '../../services/jiraService';
 import { GeneralIAAnalysisButton } from './GeneralIAAnalysisButton';
 import { TasksViewHeader } from './TasksViewHeader';
+import { TaskMetricsHeader } from './TaskMetricsHeader';
 import { TasksViewSearch } from './TasksViewSearch';
 import { TasksViewFiltersModalContent } from './TasksViewFiltersModal';
 import { TasksViewList } from './TasksViewList';
@@ -1682,6 +1683,15 @@ export const TasksView: React.FC<{
                     searchQuery={searchQuery}
                     onSearchChange={setSearchQuery}
                     searchInputRef={searchInputRef}
+                />
+
+                <TaskMetricsHeader
+                    tasks={project.tasks}
+                    metricsTasks={
+                        activeFiltersCount > 0 || searchQuery.trim().length > 0
+                            ? filteredTasks
+                            : undefined
+                    }
                 />
 
                 <motion.div
