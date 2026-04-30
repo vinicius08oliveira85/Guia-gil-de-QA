@@ -22,25 +22,25 @@ export const ProjectsDashboardHeader: React.FC<ProjectsDashboardHeaderProps> = (
   const showIndicatorStrip = showStatusRow && Boolean(lastActivityText);
 
   return (
-    <div className="relative isolate overflow-hidden rounded-2xl border border-base-300/60 bg-gradient-to-br from-base-100 via-base-100 to-base-200/25 px-4 py-5 shadow-sm shadow-base-content/[0.03] ring-1 ring-base-content/[0.02] sm:px-6 sm:py-6">
+    <div className="relative isolate overflow-hidden rounded-xl border border-base-300/70 bg-gradient-to-br from-base-100 via-base-100 to-base-200/30 px-3 py-3 shadow-sm shadow-base-content/[0.04] ring-1 ring-base-content/[0.04] sm:px-5 sm:py-4">
       <div
-        className="pointer-events-none absolute inset-0 opacity-[0.35] sm:opacity-100"
+        className="pointer-events-none absolute inset-0 opacity-[0.4] sm:opacity-100"
         aria-hidden
       >
-        <div className="absolute -right-8 -top-12 h-40 w-40 rounded-full bg-primary/[0.06] blur-2xl" />
-        <div className="absolute -bottom-8 left-1/3 h-32 w-32 rounded-full bg-secondary/[0.05] blur-2xl" />
+        <div className="absolute -right-6 -top-10 h-32 w-32 rounded-full bg-primary/[0.07] blur-2xl" />
+        <div className="absolute -bottom-6 left-1/3 h-24 w-24 rounded-full bg-secondary/[0.06] blur-2xl" />
       </div>
 
       <section
         aria-labelledby={headingId}
-        className="relative z-[1] flex flex-col gap-4 sm:gap-5"
+        className="relative z-[1] flex flex-col gap-2.5 sm:gap-3"
       >
         {/* Linha 1: título + busca (fixo) | meta com rolagem horizontal no mobile */}
-        <div className="flex min-w-0 flex-nowrap items-center gap-x-4 gap-y-2 sm:gap-x-6 sm:gap-y-2">
-          <div className="flex min-w-0 shrink-0 items-center gap-2 sm:gap-3">
+        <div className="flex min-w-0 flex-nowrap items-center gap-x-3 gap-y-2 sm:gap-x-5 sm:gap-y-2">
+          <div className="flex min-w-0 shrink-0 items-center gap-2 sm:gap-2.5">
             <h1
               id={headingId}
-              className="text-2xl font-bold tracking-tight text-base-content md:text-3xl md:tracking-tight"
+              className="text-xl font-bold tracking-tight text-base-content sm:text-2xl md:text-[1.65rem] md:tracking-tight"
             >
               Meus Projetos
             </h1>
@@ -62,12 +62,12 @@ export const ProjectsDashboardHeader: React.FC<ProjectsDashboardHeaderProps> = (
             <span className="shrink-0 badge badge-sm border-primary/25 bg-primary/10 font-semibold tracking-wide text-primary shadow-sm">
               Workspace
             </span>
-            <span className="shrink-0 text-sm text-base-content/55">
+            <span className="shrink-0 text-sm font-medium text-base-content/75">
               {projectCount} {projectCount === 1 ? 'projeto' : 'projetos'}
             </span>
             {showSort && (
               <div className="flex shrink-0 min-h-[44px] items-center gap-2 sm:min-h-0">
-                <span className="text-xs font-medium text-base-content/50">Ordenar</span>
+                <span className="text-xs font-medium text-base-content/65">Ordenar</span>
                 <select
                   value={sortBy}
                   onChange={(e) => onSortByChange(e.target.value as ProjectsDashboardSortBy)}
@@ -83,8 +83,8 @@ export const ProjectsDashboardHeader: React.FC<ProjectsDashboardHeaderProps> = (
         </div>
 
         {/* Linha 2: descrição | indicadores (rolagem horizontal no mobile quando necessário) */}
-        <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
-          <p className="max-w-2xl text-sm leading-relaxed text-base-content/70 sm:flex-1 sm:min-w-[14rem]">
+        <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+          <p className="max-w-2xl text-sm leading-snug text-base-content/80 sm:flex-1 sm:min-w-[14rem] sm:leading-relaxed">
             Crie, organize e acompanhe o QA por projeto — templates, métricas e integrações opcionais quando fizer
             sentido.
           </p>
@@ -92,11 +92,11 @@ export const ProjectsDashboardHeader: React.FC<ProjectsDashboardHeaderProps> = (
             <div
               role="group"
               aria-label="Indicadores de atividade do workspace"
-              className="flex max-w-full flex-nowrap items-center gap-2 overflow-x-auto overflow-y-hidden pb-0.5 [-webkit-overflow-scrolling:touch] [scrollbar-width:thin] sm:flex-wrap sm:overflow-visible sm:gap-3 sm:pb-0"
+              className="flex max-w-full flex-nowrap items-center gap-2 overflow-x-auto overflow-y-hidden pb-0.5 [-webkit-overflow-scrolling:touch] [scrollbar-width:thin] sm:flex-wrap sm:overflow-visible sm:gap-2 sm:pb-0"
             >
               {lastActivityText && (
                 <span
-                  className="inline-flex shrink-0 items-center rounded-lg border border-base-300/40 bg-base-200/20 px-3 py-1.5 text-xs text-base-content/65 sm:text-sm"
+                  className="inline-flex shrink-0 items-center rounded-lg border border-base-300/50 bg-base-200/35 px-2.5 py-1 text-xs font-medium text-base-content/85 sm:text-sm"
                   title="Última alteração em qualquer projeto"
                 >
                   Última atividade: {lastActivityText}

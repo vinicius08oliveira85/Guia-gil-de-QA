@@ -186,13 +186,15 @@ export const ProjectsDashboard: React.FC<{
     const taskWorkflowBuckets = useMemo(() => computeTaskWorkflowBuckets(projects), [projects]);
     const taskDonePercentGlobal = useMemo(() => computeTaskDonePercent(projects), [projects]);
     const projectsTestAlertList = useMemo(() => computeProjectsWithTestExecutionAlerts(projects), [projects]);
+    const showWorkspaceAlerts =
+        projectsNeedingAttention.length > 0 || projectsTestAlertList.length > 0;
 
     return (
         <>
         <div className="animate-fade-in min-h-[calc(100vh-4rem)] bg-gradient-to-b from-base-100 to-base-200/60">
-            <div className="w-full max-w-full mx-auto px-4 sm:px-8 py-4 sm:py-6">
+            <div className="mx-auto w-full max-w-full px-3 py-3 sm:px-6 sm:py-4">
                 {/* Header */}
-                <div className="mb-6 sm:mb-7 lg:mb-8 lg:pt-0.5">
+                <div className="mb-3 sm:mb-4 lg:pt-0.5">
                     <ProjectsDashboardHeader
                         projectCount={projects.length}
                         sortBy={sortBy}
@@ -202,8 +204,8 @@ export const ProjectsDashboard: React.FC<{
                 </div>
 
                 {projects.length > 0 && (
-                    <div className="relative isolate mb-6 space-y-5 overflow-hidden rounded-3xl border border-base-300/60 bg-gradient-to-b from-base-100/95 to-base-200/20 p-5 shadow-md shadow-base-content/[0.04] ring-1 ring-base-content/[0.03] sm:space-y-6 sm:p-6">
-                        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" aria-hidden />
+                    <div className="relative isolate mb-4 space-y-3 overflow-hidden rounded-2xl border border-base-300/65 bg-gradient-to-b from-base-100/95 to-base-200/25 p-3 shadow-md shadow-base-content/[0.05] ring-1 ring-base-content/[0.04] sm:space-y-3.5 sm:p-4">
+                        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/25 to-transparent" aria-hidden />
                         <WorkspaceDaisyStats
                             projectCount={projects.length}
                             testSuccessPercent={workspaceTestMetrics.testSuccessPercent}
@@ -212,37 +214,57 @@ export const ProjectsDashboard: React.FC<{
                             supabaseAvailable={isSupabaseAvailable()}
                             supabaseLoadFailed={supabaseLoadFailed}
                         />
-                        <p className="relative z-[1] rounded-xl border border-base-300/40 bg-base-200/25 px-3 py-2 text-xs leading-relaxed text-base-content/65 sm:text-[13px]">
-                            Eficiência de execução (casos com status ≠ Não executado):{' '}
-                            <strong className="font-semibold tabular-nums text-base-content">
+                        <p className="relative z-[1] flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 rounded-lg border border-base-300/45 bg-base-200/30 px-2.5 py-1.5 text-sm leading-snug text-base-content/80 sm:px-3">
+                            <span className="font-medium text-base-content/85">Eficiência de execução</span>
+                            <span className="text-base-content/70">(≠ Não executado):</span>
+                            <strong className="font-bold tabular-nums text-base-content">
                                 {workspaceTestMetrics.executionEfficiencyPercent}%
                             </strong>
                             {workspaceTestMetrics.totalTestCases > 0 && (
-                                <span className="text-base-content/50">
-                                    {' '}
+                                <span className="text-base-content/72">
                                     · {workspaceTestMetrics.executedTestCases}/{workspaceTestMetrics.totalTestCases}{' '}
                                     casos
                                 </span>
                             )}
                         </p>
-                        {(projectsNeedingAttention.length > 0 || projectsTestAlertList.length > 0) && (
-                            <WorkspaceAlertsPanel
-                                healthProjects={projectsNeedingAttention}
-                                testExecutionAlertProjects={projectsTestAlertList}
-                                onSelectProject={onSelectProject}
-                                listFilterNeedsAttention={quickFilter === 'needsAttention'}
-                                onToggleListFilterNeedsAttention={() =>
-                                    setQuickFilter(quickFilter === 'needsAttention' ? 'all' : 'needsAttention')
-                                }
-                            />
-                        )}
-                        <div className="relative z-[1]">
-                            <TaskStatusDistributionBar buckets={taskWorkflowBuckets} />
+                        <div
+                            className={cn(
+                                'relative z-[1] flex min-h-0 flex-col gap-3',
+                                showWorkspaceAlerts &&
+                                    'lg:grid lg:grid-cols-12 lg:items-stretch lg:gap-4 lg:min-h-[12rem]'
+                            )}
+                        >
+                            {showWorkspaceAlerts && (
+                                <div className="flex min-h-0 min-w-0 flex-col lg:col-span-5 lg:h-full">
+                                    <WorkspaceAlertsPanel
+                                        healthProjects={projectsNeedingAttention}
+                                        testExecutionAlertProjects={projectsTestAlertList}
+                                        onSelectProject={onSelectProject}
+                                        listFilterNeedsAttention={quickFilter === 'needsAttention'}
+                                        onToggleListFilterNeedsAttention={() =>
+                                            setQuickFilter(
+                                                quickFilter === 'needsAttention' ? 'all' : 'needsAttention'
+                                            )
+                                        }
+                                        className="h-full"
+                                    />
+                                </div>
+                            )}
+                            <div
+                                className={cn(
+                                    'min-h-0 min-w-0',
+                                    showWorkspaceAlerts ? 'lg:col-span-7' : 'lg:col-span-12'
+                                )}
+                            >
+                                <TaskStatusDistributionBar
+                                    buckets={taskWorkflowBuckets}
+                                    className={showWorkspaceAlerts ? 'h-full lg:min-h-[11rem]' : ''}
+                                />
+                            </div>
                         </div>
+                        <ConsolidatedMetrics projects={projects} variant="embedded" />
                     </div>
                 )}
-
-                {projects.length > 0 && <ConsolidatedMetrics projects={projects} />}
 
                 {/* Filtros rápidos */}
                 {projects.length > 1 && (
@@ -337,10 +359,10 @@ export const ProjectsDashboard: React.FC<{
                 onCreateBusyChange={setIsCreateSubmitting}
             />
 
-            <div className="mt-8">
+            <div className="mt-5 sm:mt-6">
                 {filteredProjects.length > 0 ? (
                     <div
-                        className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-6 lg:grid-cols-3"
+                        className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 md:gap-5 lg:grid-cols-3"
                         role="list"
                         aria-label="Lista de projetos"
                     >

@@ -54,16 +54,16 @@ export const WorkspaceAlertsPanel: React.FC<WorkspaceAlertsPanelProps> = ({
 
   const tabBtnClass = (active: boolean) =>
     cn(
-      'inline-flex min-h-[44px] flex-1 items-center justify-center gap-1.5 rounded-lg px-2 py-2 text-xs font-semibold transition-colors sm:min-h-0 sm:flex-none sm:px-4 sm:text-sm',
+      'inline-flex min-h-[44px] flex-1 items-center justify-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-colors sm:min-h-0 sm:flex-none sm:px-3 sm:text-sm',
       active
         ? 'bg-base-200 text-base-content shadow-sm ring-1 ring-base-300/60'
-        : 'text-base-content/60 hover:bg-base-200/50 hover:text-base-content'
+        : 'text-base-content/70 hover:bg-base-200/55 hover:text-base-content'
     );
 
   return (
     <div
       className={cn(
-        'relative z-[1] rounded-2xl border border-base-300/70 bg-base-100/70 p-3 shadow-sm ring-1 ring-base-content/[0.02] sm:p-4',
+        'relative z-[1] flex h-full min-h-0 w-full flex-col overflow-hidden rounded-xl border border-base-300/70 bg-base-100/80 p-2.5 shadow-sm ring-1 ring-base-content/[0.03] sm:p-3',
         className
       )}
       role="region"
@@ -72,7 +72,7 @@ export const WorkspaceAlertsPanel: React.FC<WorkspaceAlertsPanelProps> = ({
       <div
         role="tablist"
         aria-label="Tipo de alerta"
-        className="mb-3 flex flex-wrap gap-1.5 border-b border-base-300/50 pb-2 sm:gap-2"
+        className="mb-2 flex shrink-0 flex-wrap gap-1 border-b border-base-300/50 pb-1.5 sm:gap-1.5 sm:pb-2"
       >
         {healthCount > 0 && (
           <button
@@ -114,18 +114,24 @@ export const WorkspaceAlertsPanel: React.FC<WorkspaceAlertsPanelProps> = ({
           role="tabpanel"
           aria-labelledby={tabHealthId}
           hidden={tab !== 'health'}
-          className={cn(tab !== 'health' && 'hidden')}
+          className={cn(
+            'flex min-h-0 flex-1 flex-col overflow-hidden',
+            tab !== 'health' && 'hidden'
+          )}
         >
-          <p className="mb-2 text-xs leading-snug text-base-content/70 sm:text-sm">
+          <p className="mb-1.5 shrink-0 text-xs leading-snug text-base-content/80 sm:text-[13px]">
             Critério: 2 ou mais bugs abertos, ou taxa de sucesso dos testes abaixo de 70% com casos já executados.
           </p>
-          <ul className="m-0 mb-3 grid list-none grid-cols-2 gap-2 p-0 sm:grid-cols-3 sm:gap-2.5">
+          <ul
+            className="m-0 grid min-h-0 flex-1 list-none grid-cols-2 gap-1.5 overflow-y-auto overscroll-contain p-0 pr-0.5 [scrollbar-gutter:stable] sm:grid-cols-3 sm:gap-2"
+            aria-label="Projetos com alerta de saúde"
+          >
             {healthProjects.map((p) => (
               <li key={p.id} className="min-w-0">
                 <button
                   type="button"
                   onClick={() => onSelectProject(p.id)}
-                  className="w-full truncate rounded-xl border border-warning/25 bg-base-100 px-2.5 py-2 text-left text-xs font-medium text-base-content transition-colors hover:border-warning/45 hover:bg-warning/5 sm:px-3 sm:text-sm"
+                  className="w-full truncate rounded-lg border border-warning/30 bg-base-100 px-2 py-1.5 text-left text-xs font-medium text-base-content transition-colors hover:border-warning/50 hover:bg-warning/5 sm:px-2.5 sm:text-sm"
                   title={p.name}
                 >
                   {p.name}
@@ -133,17 +139,19 @@ export const WorkspaceAlertsPanel: React.FC<WorkspaceAlertsPanelProps> = ({
               </li>
             ))}
           </ul>
-          <button
-            type="button"
-            onClick={onToggleListFilterNeedsAttention}
-            className={cn(
-              'btn btn-xs w-full sm:w-auto',
-              listFilterNeedsAttention ? 'btn-warning btn-outline' : 'btn-outline'
-            )}
-            aria-pressed={listFilterNeedsAttention}
-          >
-            {listFilterNeedsAttention ? 'Ver todos os projetos na grade' : 'Filtrar grade: só estes projetos'}
-          </button>
+          <div className="shrink-0 pt-2">
+            <button
+              type="button"
+              onClick={onToggleListFilterNeedsAttention}
+              className={cn(
+                'btn btn-xs w-full sm:w-auto',
+                listFilterNeedsAttention ? 'btn-warning btn-outline' : 'btn-outline'
+              )}
+              aria-pressed={listFilterNeedsAttention}
+            >
+              {listFilterNeedsAttention ? 'Ver todos os projetos na grade' : 'Filtrar grade: só estes projetos'}
+            </button>
+          </div>
         </div>
       )}
 
@@ -153,16 +161,22 @@ export const WorkspaceAlertsPanel: React.FC<WorkspaceAlertsPanelProps> = ({
           role="tabpanel"
           aria-labelledby={tabTestsId}
           hidden={tab !== 'tests'}
-          className={cn(tab !== 'tests' && 'hidden')}
+          className={cn(
+            'flex min-h-0 flex-1 flex-col overflow-hidden',
+            tab !== 'tests' && 'hidden'
+          )}
         >
-          <div className="mb-2 flex items-start gap-2">
-            <AlertOctagon className="mt-0.5 h-5 w-5 shrink-0 text-error" aria-hidden />
-            <p className="text-xs leading-snug text-base-content/75 sm:text-sm">
+          <div className="mb-1.5 flex shrink-0 items-start gap-2">
+            <AlertOctagon className="mt-0.5 h-4 w-4 shrink-0 text-error sm:h-5 sm:w-5" aria-hidden />
+            <p className="text-xs leading-snug text-base-content/80 sm:text-[13px]">
               Projetos com ao menos um caso de teste em status <strong>Falhou</strong> ou{' '}
               <strong>Bloqueado</strong>.
             </p>
           </div>
-          <ul className="m-0 flex flex-wrap gap-2 p-0">
+          <ul
+            className="m-0 flex min-h-0 flex-1 flex-wrap content-start gap-2 overflow-y-auto overscroll-contain p-0 pr-0.5 [scrollbar-gutter:stable]"
+            aria-label="Projetos com falha ou bloqueio em testes"
+          >
             {testExecutionAlertProjects.map((p) => (
               <li key={p.id}>
                 <button
