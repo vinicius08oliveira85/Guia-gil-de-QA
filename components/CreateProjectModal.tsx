@@ -18,6 +18,8 @@ export interface CreateProjectModalProps {
     onCreateProject: (name: string, description: string, templateId?: string) => Promise<void>;
     onOpenSettings?: () => void;
     onProjectImported?: (project: Project) => void;
+    /** Sinaliza criação em andamento (ex.: botão “Novo Projeto” no dashboard). */
+    onCreateBusyChange?: (busy: boolean) => void;
 }
 
 export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
@@ -26,6 +28,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
     onCreateProject,
     onOpenSettings,
     onProjectImported,
+    onCreateBusyChange,
 }) => {
     const [showTemplates, setShowTemplates] = useState(false);
     const [showJiraImport, setShowJiraImport] = useState(false);
@@ -142,9 +145,14 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
 
     const handleCreate = useCallback(async () => {
         if (!newName.trim()) return;
-        await onCreateProject(newName.trim(), newDesc.trim(), selectedTemplate);
-        handleClose();
-    }, [newName, newDesc, selectedTemplate, onCreateProject, handleClose]);
+        onCreateBusyChange?.(true);
+        try {
+            await onCreateProject(newName.trim(), newDesc.trim(), selectedTemplate);
+            handleClose();
+        } finally {
+            onCreateBusyChange?.(false);
+        }
+    }, [newName, newDesc, selectedTemplate, onCreateProject, handleClose, onCreateBusyChange]);
 
     const handleImportFromFile = useCallback(async (project: Project) => {
         await importProject(project);

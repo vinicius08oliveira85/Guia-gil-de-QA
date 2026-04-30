@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
+import { GridPattern } from '@/components/ui/grid-pattern';
 import { initializePWA } from './utils/pwa';
 
 const rootElement = document.getElementById('root');
@@ -26,7 +27,14 @@ try {
   const root = ReactDOM.createRoot(rootElement);
   root.render(
     <React.StrictMode>
-      <App />
+      <div className="relative min-h-dvh">
+        <div className="pointer-events-none fixed inset-0 z-0" aria-hidden>
+          <GridPattern />
+        </div>
+        <div className="relative z-[1] min-h-dvh">
+          <App />
+        </div>
+      </div>
     </React.StrictMode>
   );
 } catch (err) {

@@ -24,7 +24,6 @@ import { Spinner } from './common/Spinner';
 import { Trash2, CheckCircle2, AlertTriangle, CloudOff } from 'lucide-react';
 import { logger } from '../utils/logger';
 import { Button } from './common/Button';
-import { BackButton } from './common/BackButton';
 
 const TAB_LABELS: Record<string, string> = {
     dashboard: 'Dashboard',
@@ -321,11 +320,6 @@ export const ProjectView: React.FC<{
                         {/* Linha 1: voltar + trilho | estado + excluir */}
                         <div className="flex min-w-0 flex-wrap items-center justify-between gap-x-2 gap-y-1">
                             <div className="flex min-w-0 max-w-full flex-1 flex-wrap items-center gap-x-2 gap-y-1 sm:flex-nowrap sm:items-center">
-                                <BackButton
-                                    className="shrink-0 -ml-1 sm:min-h-0 sm:h-7 sm:py-0 sm:leading-tight"
-                                    onClick={onBack}
-                                    aria-label="Voltar para a lista de projetos"
-                                />
                                 <div className="min-w-0 max-w-full flex-1 overflow-x-auto sm:overflow-visible">
                                     <Breadcrumbs
                                         items={breadcrumbItems}
@@ -346,7 +340,7 @@ export const ProjectView: React.FC<{
                                     >
                                         {saveStatus === 'saving' && (
                                             <div className="flex items-center gap-2 text-info">
-                                                <Spinner small />
+                                                <Spinner size="sm" />
                                                 <span>Salvando...</span>
                                             </div>
                                         )}
@@ -393,7 +387,7 @@ export const ProjectView: React.FC<{
                                                 >
                                                     {isSavingToSupabase ? (
                                                         <>
-                                                            <Spinner small />
+                                                            <Spinner size="sm" />
                                                             <span>Salvando...</span>
                                                         </>
                                                     ) : (
@@ -452,27 +446,29 @@ export const ProjectView: React.FC<{
                     <div className="relative mt-0.5 border-b border-base-200/50 pb-0.5">
                     {/* Indicadores de Scroll para Mobile */}
                     {canScrollLeft && (
-                        <div className="absolute left-0 top-0 bottom-0.5 w-8 bg-gradient-to-r from-base-100 to-transparent pointer-events-none z-10" />
+                        <div className="pointer-events-none absolute bottom-0.5 left-0 top-0 z-10 w-8 bg-gradient-to-r from-base-100 to-transparent" aria-hidden />
                     )}
                     {canScrollRight && (
-                        <div className="absolute right-0 top-0 bottom-0.5 w-8 bg-gradient-to-l from-base-100 to-transparent pointer-events-none z-10" />
+                        <div className="pointer-events-none absolute bottom-0.5 right-0 top-0 z-10 w-8 bg-gradient-to-l from-base-100 to-transparent" aria-hidden />
                     )}
 
                     <nav
                         ref={tabsRef}
-                        className="tabs tabs-boxed overflow-x-auto w-full flex-nowrap gap-0.5 scroll-smooth no-scrollbar p-0.5 snap-x snap-mandatory sm:gap-1"
-                        aria-label="Navegação de abas"
+                        className="tabs tabs-boxed no-scrollbar w-full flex-nowrap gap-0.5 overflow-x-auto scroll-smooth p-0.5 snap-x snap-mandatory sm:gap-1"
+                        aria-label="Seções do projeto"
                         role="tablist"
+                        aria-orientation="horizontal"
+                        onKeyDown={handleTabKeyDown}
                     >
                         {tabs.map(tab => (
                             <button
                                 key={tab.id}
                                 type="button"
                                 onClick={() => handleTabClick(tab.id)}
-                                onKeyDown={handleTabKeyDown}
-                                className={`tab whitespace-nowrap flex-shrink-0 snap-start px-3 py-2 text-sm min-h-[40px] sm:min-h-0 sm:py-1.5 ${activeTab === tab.id ? 'tab-active' : ''}`}
+                                className={`tab min-h-[40px] flex-shrink-0 snap-start whitespace-nowrap px-3 py-2 text-sm sm:min-h-0 sm:py-1.5 ${activeTab === tab.id ? 'tab-active' : ''}`}
                                 id={`tab-${tab.id}`}
                                 role="tab"
+                                tabIndex={activeTab === tab.id ? 0 : -1}
                                 aria-selected={activeTab === tab.id}
                                 aria-controls={`tab-panel-${tab.id}`}
                             >
@@ -480,6 +476,11 @@ export const ProjectView: React.FC<{
                             </button>
                         ))}
                     </nav>
+                    {canScrollRight && (
+                        <p className="mt-1 text-center text-[11px] text-base-content/55 md:hidden" aria-live="polite">
+                            Deslize as abas para ver mais seções
+                        </p>
+                    )}
                 </div>
                 </div>
 
@@ -520,7 +521,7 @@ export const ProjectView: React.FC<{
                             </section>
                         )}
                         {activeTab === 'businessRules' && (
-                            <section id="tab-panel-business-rules" role="tabpanel" aria-labelledby="tab-businessRules">
+                            <section id="tab-panel-businessRules" role="tabpanel" aria-labelledby="tab-businessRules">
                                 <Suspense fallback={<LoadingSkeleton variant="card" count={2} />}>
                                     <BusinessRulesManager project={currentProject} onUpdateProject={onUpdateProject} />
                                 </Suspense>

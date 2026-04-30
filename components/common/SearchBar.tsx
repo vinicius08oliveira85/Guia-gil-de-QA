@@ -69,10 +69,16 @@ export const SearchBar: React.FC<SearchBarProps> = ({
     }
   };
 
+  const inputId = 'global-search-input';
+
   return (
     <div className="relative w-full max-w-2xl">
+      <label htmlFor={inputId} className="sr-only">
+        Buscar em projetos, tarefas, documentos e casos de teste
+      </label>
       <div className="relative">
         <input
+          id={inputId}
           ref={inputRef}
           type="text"
           value={searchQuery}

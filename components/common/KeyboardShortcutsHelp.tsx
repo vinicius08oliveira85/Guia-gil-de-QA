@@ -28,14 +28,6 @@ export const KeyboardShortcutsHelp: React.FC = () => {
 
   return (
     <>
-      <button
-        onClick={() => setIsOpen(true)}
-        className="fixed bottom-4 right-4 p-3 bg-accent text-white rounded-full shadow-lg hover:bg-accent-light transition-colors z-50"
-        title="Atalhos de teclado (Ctrl+?)"
-      >
-        ⌨️
-      </button>
-
       <Modal isOpen={isOpen} onClose={() => setIsOpen(false)} title="Atalhos de Teclado">
         <div className="space-y-4">
           <p className="text-text-secondary text-sm mb-4">

@@ -4,118 +4,93 @@ import { cn } from '../../utils/cn';
 
 export interface BreadcrumbItem {
   label: string;
-  href?: string;
   onClick?: () => void;
   icon?: React.ReactNode;
 }
 
-interface BreadcrumbsProps {
+export interface BreadcrumbsProps {
   items: BreadcrumbItem[];
   className?: string;
+  /** Exibe “Início” como primeiro item (requer `onHomeClick`). */
   showHome?: boolean;
   onHomeClick?: () => void;
-  align?: 'left' | 'center';
-  /** Menos espaço vertical entre itens quebrados em várias linhas (ex.: cabeçalho de projeto). */
   dense?: boolean;
-  /**
-   * Quando true, renderiza sem `<nav>` e com `aria-hidden` — use só para réplica visual
-   * junto ao título (o landmark real permanece no Header).
-   */
-  presentation?: boolean;
+  align?: 'left' | 'center' | 'right';
 }
 
-const linkBase =
-  'inline-flex min-h-[44px] max-w-full items-center gap-1.5 rounded-lg px-1.5 text-left font-heading text-sm font-medium text-primary transition-all duration-200 hover:bg-base-200/50 hover:text-primary/90 active:scale-[0.99] sm:min-h-0 sm:px-1';
+export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
+  items,
+  className,
+  showHome = false,
+  onHomeClick,
+  dense,
+  align = 'left',
+}) => {
+  const list: BreadcrumbItem[] =
+    showHome && onHomeClick
+      ? [{ label: 'Início', icon: <Home className="h-3.5 w-3.5" aria-hidden />, onClick: onHomeClick }, ...items]
+      : items;
 
-const currentBase =
-  'inline-flex min-h-[44px] max-w-full items-center gap-1.5 truncate rounded-lg px-1.5 font-heading text-sm font-semibold text-base-content sm:min-h-0 sm:px-1';
-
-const listContent = (
-  items: BreadcrumbItem[],
-  showHome: boolean | undefined,
-  onHomeClick: (() => void) | undefined,
-  align: 'left' | 'center',
-  dense?: boolean
-) => (
-  <ol
-    className={cn(
-      'flex min-w-0 flex-wrap items-center gap-x-0.5 text-balance text-sm text-base-content/70',
-      dense ? 'gap-y-0 leading-tight' : 'gap-y-0.5 leading-snug',
-      align === 'center' && 'justify-center'
-    )}
-  >
-    {showHome && (
-      <li className="flex min-w-0 items-center">
-        <button
-          type="button"
-          onClick={onHomeClick}
-          className="win-icon-button h-11 w-11 min-h-[44px] min-w-[44px] rounded-full border border-transparent text-primary transition-all duration-200 hover:bg-base-200/70 hover:text-primary/90"
-          aria-label="Início"
-        >
-          <Home className="h-4 w-4 shrink-0" aria-hidden />
-        </button>
-        {items.length > 0 && (
-          <span className="mx-0.5 flex shrink-0 text-base-content/30" aria-hidden>
-            <ChevronRight className="h-4 w-4" />
-          </span>
+  return (
+    <nav
+      className={cn(
+        'min-w-0',
+        align === 'center' && 'flex justify-center',
+        align === 'right' && 'flex justify-end',
+        className
+      )}
+      aria-label="Trilha de navegação"
+    >
+      <ol
+        className={cn(
+          'flex min-w-0 flex-wrap items-center gap-x-1 gap-y-0.5 text-sm',
+          dense && 'text-xs',
+          align === 'left' && 'justify-start'
         )}
-      </li>
-    )}
-
-    {items.map((item, index) => {
-      const isLast = index === items.length - 1;
-
-      return (
-        <li key={`${item.label}-${index}`} className="flex min-w-0 max-w-full items-center">
-          {index > 0 && (
-            <span className="mx-0.5 flex shrink-0 text-base-content/30" aria-hidden>
-              <ChevronRight className="h-4 w-4" />
-            </span>
-          )}
-          {item.href && !isLast ? (
-            <a href={item.href} className={linkBase} aria-current={undefined}>
-              {item.icon}
-              <span className="truncate">{item.label}</span>
-            </a>
-          ) : item.onClick && !isLast ? (
-            <button type="button" onClick={item.onClick} className={linkBase}>
-              {item.icon}
-              <span className="truncate">{item.label}</span>
-            </button>
-          ) : (
-            <span className={currentBase} aria-current={isLast ? 'page' : undefined}>
-              {item.icon}
-              <span className="truncate">{item.label}</span>
-            </span>
-          )}
-        </li>
-      );
-    })}
-  </ol>
-);
-
-/**
- * Breadcrumbs com separadores Lucide, tipografia Poppins e alvo de toque ≥44px (mobile).
- */
-export const Breadcrumbs: React.FC<BreadcrumbsProps> = React.memo(
-  ({ items, className, showHome = true, onHomeClick, align: alignProp = 'left', dense = false, presentation = false }) => {
-    const align: 'left' | 'center' = alignProp === 'center' ? 'center' : 'left';
-    const inner = listContent(items, showHome, onHomeClick, align, dense);
-
-    if (presentation) {
-      return (
-        <div className={cn('min-w-0 font-heading', className)} aria-hidden="true">
-          {inner}
-        </div>
-      );
-    }
-
-    return (
-      <nav className={cn('min-w-0 font-heading', className)} aria-label="Breadcrumb">
-        {inner}
-      </nav>
-    );
-  }
-);
-
-Breadcrumbs.displayName = 'Breadcrumbs';
+        itemScope
+        itemType="https://schema.org/BreadcrumbList"
+      >
+        {list.map((item, index) => (
+          <li
+            key={`${item.label}-${index}`}
+            className="flex min-w-0 items-center gap-1"
+            itemProp="itemListElement"
+            itemScope
+            itemType="https://schema.org/ListItem"
+          >
+            {index > 0 && <ChevronRight className="h-3.5 w-3.5 shrink-0 text-base-content/40" aria-hidden />}
+            {item.onClick ? (
+              <button
+                type="button"
+                onClick={item.onClick}
+                className={cn(
+                  'inline-flex min-h-[44px] max-w-full min-w-0 items-center gap-1 rounded-lg px-1.5 py-1 text-left font-medium text-base-content/80 underline-offset-2 transition-colors hover:bg-base-200/70 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 sm:min-h-0 sm:py-0.5',
+                  dense && 'font-normal'
+                )}
+                itemProp="item"
+              >
+                {item.icon}
+                <span className="truncate" itemProp="name">
+                  {item.label}
+                </span>
+              </button>
+            ) : (
+              <span
+                className={cn(
+                  'inline-flex max-w-full min-w-0 items-center gap-1 truncate px-1.5 font-semibold text-base-content',
+                  dense && 'font-medium'
+                )}
+                itemProp="name"
+                aria-current="page"
+              >
+                {item.icon}
+                <span className="truncate">{item.label}</span>
+              </span>
+            )}
+            <meta itemProp="position" content={String(index + 1)} />
+          </li>
+        ))}
+      </ol>
+    </nav>
+  );
+};

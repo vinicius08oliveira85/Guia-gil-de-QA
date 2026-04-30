@@ -1,18 +1,30 @@
 import React from 'react';
+import { cn } from '../../utils/cn';
 
-/** Fallback para spinner visível quando tema/CSS ainda não carregou (evita tela branca) */
-const SPINNER_FALLBACK = '#451e44';
+export interface SpinnerProps {
+  size?: 'sm' | 'md' | 'lg';
+  /** Atalho equivalente a `size="sm"` (compatível com usos existentes). */
+  small?: boolean;
+  className?: string;
+}
 
-export const Spinner: React.FC<{ small?: boolean }> = React.memo(({ small }) => (
-    <div className={`relative ${small ? 'h-5 w-5' : 'h-10 w-10'}`}>
-        <div className="absolute inset-0 rounded-full border border-base-content/10" />
-        <div
-            className={`animate-spin rounded-full border-2 border-transparent ${small ? 'h-5 w-5' : 'h-10 w-10'} border-t-2 border-l-2`}
-            style={{
-                borderTopColor: `var(--a, var(--p, var(--bc, ${SPINNER_FALLBACK})))`,
-                borderLeftColor: `var(--a, var(--p, var(--bc, ${SPINNER_FALLBACK})))`,
-                opacity: 0.85,
-            }}
-        />
-    </div>
-));
+export const Spinner: React.FC<SpinnerProps> = ({ size = 'md', small, className }) => {
+  const resolved = small ? 'sm' : size;
+  const sizeClasses = {
+    sm: 'h-4 w-4 border-2',
+    md: 'h-6 w-6 border-2',
+    lg: 'h-8 w-8 border-[3px]',
+  };
+
+  return (
+    <span
+      className={cn(
+        'inline-block animate-spin rounded-full border-solid border-current border-r-transparent text-primary',
+        sizeClasses[resolved],
+        className
+      )}
+      role="status"
+      aria-label="Carregando"
+    />
+  );
+};

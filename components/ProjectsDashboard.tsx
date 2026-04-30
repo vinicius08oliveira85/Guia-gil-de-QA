@@ -1,11 +1,10 @@
-import React, { useMemo, useState, useCallback } from 'react';
+import React, { useMemo, useState, useCallback, useEffect, useRef } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Project } from '../types';
-import { ConfirmDialog } from './common/ConfirmDialog';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { useLocalStorage } from '../hooks/useLocalStorage';
-import { Plus, Search, AlertTriangle, Bug, Loader2 } from 'lucide-react';
+import { AlertTriangle, Bug, Loader2 } from 'lucide-react';
 import { ProjectCard } from './common/ProjectCard';
 import { ConsolidatedMetrics } from './common/ConsolidatedMetrics';
 import { useErrorHandler } from '../hooks/useErrorHandler';
@@ -21,9 +20,11 @@ import {
   computeTaskDonePercent,
   computeProjectsWithTestExecutionAlerts,
 } from '../utils/workspaceAnalytics';
+import { ProjectsDashboardHeader } from './projectsDashboard/ProjectsDashboardHeader';
 import { WorkspaceDaisyStats } from './projectsDashboard/WorkspaceDaisyStats';
 import { TaskStatusDistributionBar } from './projectsDashboard/TaskStatusDistributionBar';
-import { ProjectsTestHealthWidget } from './projectsDashboard/ProjectsTestHealthWidget';
+import { WorkspaceAlertsPanel } from './projectsDashboard/WorkspaceAlertsPanel';
+import { useAriaLive } from '../hooks/useAriaLive';
 
 type QuickFilter = 'all' | 'withBugs' | 'needsAttention';
 
@@ -42,10 +43,10 @@ export const ProjectsDashboard: React.FC<{
     projects: Project[];
     onSelectProject: (id: string) => void;
     onCreateProject: (name: string, description: string, templateId?: string) => Promise<void>;
-    onDeleteProject: (id: string) => Promise<void>;
     onOpenSettings?: () => void;
-}> = ({ projects, onSelectProject, onCreateProject, onDeleteProject, onOpenSettings }) => {
+}> = ({ projects, onSelectProject, onCreateProject, onOpenSettings }) => {
     const [isCreating, setIsCreating] = useState(false);
+    const [isCreateSubmitting, setIsCreateSubmitting] = useState(false);
     const [retryCooldownUntil, setRetryCooldownUntil] = useState<number | null>(null);
     const [syncBannerDismissed, setSyncBannerDismissed] = useState(false);
     const [sortBy, setSortBy] = useLocalStorage<'name' | 'updatedAt'>('projectsSortBy', 'name');
@@ -56,13 +57,9 @@ export const ProjectsDashboard: React.FC<{
     // Esquema API removido - removido showSchemaModal
     
     const isMobile = useIsMobile();
-    const [deleteModalState, setDeleteModalState] = useState<{ isOpen: boolean; project: Project | null }>({
-        isOpen: false,
-        project: null,
-    });
-    const [isDeletingProject, setIsDeletingProject] = useState(false);
     const { handleError, handleSuccess } = useErrorHandler();
     const { supabaseLoadFailed, supabaseLoadError, loadProjects, isLoading, lastSaveToSupabase } = useProjectsStore();
+    const { announce } = useAriaLive();
 
     // Função para navegar para uma tarefa específica
     const handleNavigateToTask = useCallback((projectId: string, taskId: string) => {
@@ -85,23 +82,6 @@ export const ProjectsDashboard: React.FC<{
     React.useEffect(() => {
         if (!supabaseLoadFailed) setSyncBannerDismissed(false);
     }, [supabaseLoadFailed, isLoading]);
-
-    const handleDelete = async () => {
-        if (!deleteModalState.project) return;
-        setIsDeletingProject(true);
-        try {
-            await onDeleteProject(deleteModalState.project.id);
-            setDeleteModalState({ isOpen: false, project: null });
-        } finally {
-            setIsDeletingProject(false);
-        }
-    };
-    
-    const openDeleteModal = (project: Project, e: React.MouseEvent) => {
-        e.stopPropagation(); // Prevent card's onClick from firing
-        setDeleteModalState({ isOpen: true, project });
-    };
-
 
     /** Erros que merecem destaque vermelho: 5xx, timeout e cold start (mensagem local-first). */
     const isSyncServerError = Boolean(
@@ -140,6 +120,47 @@ export const ProjectsDashboard: React.FC<{
         return sortedProjects;
     }, [sortedProjects, quickFilter]);
 
+    const filterAriaReady = useRef(false);
+    const prevQuickFilter = useRef<QuickFilter | undefined>(undefined);
+    useEffect(() => {
+        if (!filterAriaReady.current) {
+            filterAriaReady.current = true;
+            prevQuickFilter.current = quickFilter;
+            return;
+        }
+        if (prevQuickFilter.current === quickFilter) return;
+        prevQuickFilter.current = quickFilter;
+        const n = filteredProjects.length;
+        const countPhrase = `${n} ${n === 1 ? 'projeto' : 'projetos'}.`;
+        const map: Record<QuickFilter, string> = {
+            all: `Filtro de projetos: todos. ${countPhrase}`,
+            withBugs: `Filtro de projetos: com bugs abertos. ${countPhrase}`,
+            needsAttention: `Filtro de projetos: precisam de atenção. ${countPhrase}`,
+        };
+        announce(map[quickFilter], 'polite');
+    }, [quickFilter, filteredProjects.length, announce]);
+
+    const sortAriaReady = useRef(false);
+    const prevSortBy = useRef<'name' | 'updatedAt' | undefined>(undefined);
+    useEffect(() => {
+        if (projects.length <= 1) return;
+        if (!sortAriaReady.current) {
+            sortAriaReady.current = true;
+            prevSortBy.current = sortBy;
+            return;
+        }
+        if (prevSortBy.current === sortBy) return;
+        prevSortBy.current = sortBy;
+        const n = filteredProjects.length;
+        const countPhrase = `${n} ${n === 1 ? 'projeto' : 'projetos'} na lista.`;
+        announce(
+            sortBy === 'name'
+                ? `Ordenação: nome do projeto. ${countPhrase}`
+                : `Ordenação: última atualização. ${countPhrase}`,
+            'polite'
+        );
+    }, [sortBy, projects.length, filteredProjects.length, announce]);
+
     const lastActivity = useMemo(() => {
         if (projects.length === 0) return null;
         const dates = projects.map(p => new Date(p.updatedAt || p.createdAt || 0).getTime());
@@ -171,90 +192,18 @@ export const ProjectsDashboard: React.FC<{
         <div className="min-h-[calc(100vh-4rem)] bg-gradient-to-b from-base-100 to-base-200/60">
             <div className="w-full max-w-full mx-auto px-4 sm:px-8 py-4 sm:py-6">
                 {/* Header */}
-                <div className="flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between">
-                    <div className="space-y-1.5">
-                        <div className="inline-flex items-center gap-2 flex-wrap">
-                            <span className="badge badge-outline badge-sm border-primary/30 text-primary bg-primary/10">
-                                Workspace
-                            </span>
-                            <span className="text-sm text-base-content/60 hidden sm:inline">
-                                {projects.length} {projects.length === 1 ? 'projeto' : 'projetos'}
-                            </span>
-                            {projects.length > 1 && (
-                                <div className="flex items-center gap-1.5">
-                                    <span className="text-xs text-base-content/60">Ordenar:</span>
-                                    <select
-                                        value={sortBy}
-                                        onChange={(e) => handleSortByChange(e.target.value as 'name' | 'updatedAt')}
-                                        className="select select-bordered select-sm py-1 min-h-[44px] sm:min-h-8 sm:h-8 text-xs rounded-lg"
-                                        aria-label="Ordenar projetos por"
-                                    >
-                                        <option value="name">Nome</option>
-                                        <option value="updatedAt">Última atualização</option>
-                                    </select>
-                                </div>
-                            )}
-                        </div>
-
-                        <div className="flex items-center gap-2 flex-wrap">
-                            <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-base-content">
-                                Meus Projetos
-                            </h1>
-                            <button
-                                type="button"
-                                onClick={() => window.dispatchEvent(new CustomEvent('open-global-search'))}
-                                className="btn btn-ghost btn-sm btn-circle min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
-                                aria-label="Abrir busca (Ctrl+K)"
-                            >
-                                <Search className="w-4 h-4" aria-hidden />
-                            </button>
-                        </div>
-                        <p className="text-sm text-base-content/70 max-w-full">
-                            Crie, organize e acompanhe o QA por projeto — templates, métricas e integrações opcionais quando fizer sentido.
-                        </p>
-                        {/* Indicadores: última atividade + projetos com atenção */}
-                        {projects.length > 0 && (
-                            <div className="flex flex-wrap items-center gap-3 mt-3 text-sm">
-                                {lastActivityText && (
-                                    <span className="text-base-content/60" title="Última alteração em qualquer projeto">
-                                        Última atividade: {lastActivityText}
-                                    </span>
-                                )}
-                                {projectsNeedingAttention.length > 0 && (
-                                    <button
-                                        type="button"
-                                        onClick={() => setQuickFilter(quickFilter === 'needsAttention' ? 'all' : 'needsAttention')}
-                                        className={cn(
-                                            'inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 font-medium transition-colors',
-                                            quickFilter === 'needsAttention'
-                                                ? 'bg-warning/20 text-warning border border-warning/40'
-                                                : 'bg-warning/10 text-warning-content border border-warning/20 hover:bg-warning/20'
-                                        )}
-                                        aria-pressed={quickFilter === 'needsAttention'}
-                                        aria-label={`${projectsNeedingAttention.length} projetos precisam de atenção. Clique para filtrar.`}
-                                    >
-                                        <AlertTriangle className="w-4 h-4" aria-hidden />
-                                        {projectsNeedingAttention.length} {projectsNeedingAttention.length === 1 ? 'projeto com atenção' : 'projetos com atenção'}
-                                    </button>
-                                )}
-                            </div>
-                        )}
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-2 justify-start lg:justify-end">
-                        <button
-                            type="button"
-                            onClick={() => setIsCreating(true)}
-                            className="btn btn-primary btn-sm gap-1.5 rounded-full"
-                        >
-                            <Plus className="w-4 h-4" aria-hidden />
-                            Novo Projeto
-                        </button>
-                    </div>
+                <div className="mb-6 sm:mb-7 lg:mb-8 lg:pt-0.5">
+                    <ProjectsDashboardHeader
+                        projectCount={projects.length}
+                        sortBy={sortBy}
+                        onSortByChange={handleSortByChange}
+                        lastActivityText={lastActivityText}
+                    />
                 </div>
 
                 {projects.length > 0 && (
-                    <div className="space-y-4 mb-6">
+                    <div className="relative isolate mb-6 space-y-5 overflow-hidden rounded-3xl border border-base-300/60 bg-gradient-to-b from-base-100/95 to-base-200/20 p-5 shadow-md shadow-base-content/[0.04] ring-1 ring-base-content/[0.03] sm:space-y-6 sm:p-6">
+                        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" aria-hidden />
                         <WorkspaceDaisyStats
                             projectCount={projects.length}
                             testSuccessPercent={workspaceTestMetrics.testSuccessPercent}
@@ -263,9 +212,9 @@ export const ProjectsDashboard: React.FC<{
                             supabaseAvailable={isSupabaseAvailable()}
                             supabaseLoadFailed={supabaseLoadFailed}
                         />
-                        <p className="text-xs text-base-content/60 -mt-1 px-1">
+                        <p className="relative z-[1] rounded-xl border border-base-300/40 bg-base-200/25 px-3 py-2 text-xs leading-relaxed text-base-content/65 sm:text-[13px]">
                             Eficiência de execução (casos com status ≠ Não executado):{' '}
-                            <strong className="text-base-content">
+                            <strong className="font-semibold tabular-nums text-base-content">
                                 {workspaceTestMetrics.executionEfficiencyPercent}%
                             </strong>
                             {workspaceTestMetrics.totalTestCases > 0 && (
@@ -276,12 +225,19 @@ export const ProjectsDashboard: React.FC<{
                                 </span>
                             )}
                         </p>
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                            <TaskStatusDistributionBar buckets={taskWorkflowBuckets} />
-                            <ProjectsTestHealthWidget
-                                alertProjects={projectsTestAlertList}
+                        {(projectsNeedingAttention.length > 0 || projectsTestAlertList.length > 0) && (
+                            <WorkspaceAlertsPanel
+                                healthProjects={projectsNeedingAttention}
+                                testExecutionAlertProjects={projectsTestAlertList}
                                 onSelectProject={onSelectProject}
+                                listFilterNeedsAttention={quickFilter === 'needsAttention'}
+                                onToggleListFilterNeedsAttention={() =>
+                                    setQuickFilter(quickFilter === 'needsAttention' ? 'all' : 'needsAttention')
+                                }
                             />
+                        )}
+                        <div className="relative z-[1]">
+                            <TaskStatusDistributionBar buckets={taskWorkflowBuckets} />
                         </div>
                     </div>
                 )}
@@ -333,37 +289,6 @@ export const ProjectsDashboard: React.FC<{
                     </div>
                 )}
 
-                {/* Card Precisa de atenção: lista de projetos em risco */}
-                {projects.length > 0 && projectsNeedingAttention.length > 0 && (
-                    <section
-                        className="mb-6 p-4 rounded-2xl bg-warning/10 border border-warning/30"
-                        aria-labelledby="needs-attention-heading"
-                    >
-                        <h2 id="needs-attention-heading" className="text-sm font-bold text-warning-content/90 uppercase tracking-widest flex items-center gap-2 mb-3">
-                            <AlertTriangle className="w-4 h-4" aria-hidden />
-                            Precisa de atenção
-                        </h2>
-                        <p className="text-sm text-base-content/80 mb-3">
-                            {projectsNeedingAttention.length === 1
-                                ? '1 projeto com bugs em destaque ou taxa de sucesso baixa.'
-                                : `${projectsNeedingAttention.length} projetos com bugs em destaque ou taxa de sucesso baixa.`}
-                        </p>
-                        <ul className="flex flex-wrap gap-2">
-                            {projectsNeedingAttention.map(p => (
-                                <li key={p.id}>
-                                    <button
-                                        type="button"
-                                        onClick={() => onSelectProject(p.id)}
-                                        className="text-left px-3 py-2 rounded-xl bg-base-100 border border-warning/20 hover:border-warning/50 hover:bg-warning/5 transition-colors text-sm font-medium text-base-content"
-                                    >
-                                        {p.name}
-                                    </button>
-                                </li>
-                            ))}
-                        </ul>
-                    </section>
-                )}
-
                 {/* Com projetos no workspace: banner não depende do filtro (evita sumir quando o filtro zera a lista) */}
                 {supabaseLoadFailed && projects.length > 0 && !syncBannerDismissed && (
                     <div
@@ -409,34 +334,29 @@ export const ProjectsDashboard: React.FC<{
                 onCreateProject={onCreateProject}
                 onOpenSettings={onOpenSettings}
                 onProjectImported={(project) => onSelectProject(project.id)}
-            />
-
-<ConfirmDialog
-                isOpen={deleteModalState.isOpen}
-                onClose={() => setDeleteModalState({ isOpen: false, project: null })}
-                onConfirm={handleDelete}
-                title={`Excluir "${deleteModalState.project?.name}"`}
-                message="Você tem certeza que deseja excluir este projeto? Todos os dados associados (tarefas, documentos, análises) serão perdidos permanentemente. Esta ação não pode ser desfeita."
-                confirmText="Sim, Excluir"
-                cancelText="Cancelar"
-                variant="danger"
-                isLoading={isDeletingProject}
+                onCreateBusyChange={setIsCreateSubmitting}
             />
 
             <div className="mt-8">
                 {filteredProjects.length > 0 ? (
-                    <div className="space-y-4" role="list" aria-label="Lista de projetos">
+                    <div
+                        className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-6 lg:grid-cols-3"
+                        role="list"
+                        aria-label="Lista de projetos"
+                    >
                         {filteredProjects.map((p, index) => (
                             <div
                                 key={p.id}
+                                className="min-h-0"
                                 role="listitem"
                                 aria-posinset={index + 1}
                                 aria-setsize={filteredProjects.length}
                             >
                                 <ProjectCard
                                     project={p}
+                                    layout="grid"
+                                    className="h-full"
                                     onSelect={() => onSelectProject(p.id)}
-                                    onDelete={() => setDeleteModalState({ isOpen: true, project: p })}
                                     onTaskClick={(taskId) => handleNavigateToTask(p.id, taskId)}
                                 />
                             </div>

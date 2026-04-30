@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from 'react';
+import { cn } from '../../utils/cn';
 
-interface TocItem {
+export interface TocItem {
   id: string;
   label: string;
   level: number;
 }
 
-interface TableOfContentsProps {
+export interface TableOfContentsProps {
   items: TocItem[];
   className?: string;
 }
 
-export const TableOfContents: React.FC<TableOfContentsProps> = ({ items, className = '' }) => {
+export const TableOfContents: React.FC<TableOfContentsProps> = ({ items, className }) => {
   const [activeId, setActiveId] = useState<string>('');
 
   useEffect(() => {
@@ -38,24 +39,28 @@ export const TableOfContents: React.FC<TableOfContentsProps> = ({ items, classNa
 
   return (
     <nav
-      className={`mica p-4 rounded-lg sticky top-24 ${className}`}
-      aria-label="Sumário"
+      className={cn(
+        'sticky top-24 rounded-xl border border-base-300/60 bg-base-100/90 p-4 shadow-sm backdrop-blur-sm',
+        className
+      )}
+      aria-label="Sumário da página"
     >
-      <h3 className="text-sm font-semibold text-text-primary mb-3">Sumário</h3>
+      <h3 className="mb-3 text-sm font-semibold text-base-content">Sumário</h3>
       <ol className="space-y-1 text-sm">
         {items.map((item) => (
-          <li key={item.id} style={{ paddingLeft: `${(item.level - 1) * 1}rem` }}>
+          <li key={item.id} style={{ paddingLeft: `${Math.max(0, item.level - 1) * 0.75}rem` }}>
             <a
               href={`#${item.id}`}
               onClick={(e) => {
                 e.preventDefault();
                 document.getElementById(item.id)?.scrollIntoView({ behavior: 'smooth' });
               }}
-              className={`block py-1 px-2 rounded transition-colors ${
+              className={cn(
+                'block rounded-lg px-2 py-1 transition-colors',
                 activeId === item.id
-                  ? 'text-accent bg-accent/10'
-                  : 'text-text-secondary hover:text-text-primary hover:bg-surface-hover'
-              }`}
+                  ? 'bg-primary/10 font-medium text-primary'
+                  : 'text-base-content/70 hover:bg-base-200/80 hover:text-base-content'
+              )}
             >
               {item.label}
             </a>

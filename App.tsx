@@ -1,5 +1,5 @@
 
-import React, { useState, useCallback, useMemo, useEffect, Suspense } from 'react';
+import React, { useState, useCallback, useMemo, useEffect, useRef, Suspense } from 'react';
 import { Toaster } from 'react-hot-toast';
 import { Project } from './types';
 import { Header } from './components/common/Header';
@@ -22,6 +22,8 @@ import { logger } from './utils/logger';
 import { useRouterSync } from './hooks/useRouterSync';
 import { isSupabaseAvailable } from './services/supabaseService';
 import { FloatingNav } from '@/components/ui/floating-nav';
+import { OnboardingGuide } from './components/onboarding/OnboardingGuide';
+import { useAriaLive } from './hooks/useAriaLive';
 
 // Code splitting - Lazy loading de componentes pesados
 const ProjectView = lazyWithRetry(() => import('./components/ProjectView').then(m => ({ default: m.ProjectView })));
@@ -65,7 +67,74 @@ const App: React.FC = () => {
     const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
     const [showSettings, setShowSettings] = useState(false);
     const { handleError, handleSuccess } = useErrorHandler();
-    const { searchQuery, setSearchQuery, searchResults } = useSearch(projects);
+    const { searchQuery, setSearchQuery, debouncedSearchQuery, searchResults } = useSearch(projects);
+    const { announce } = useAriaLive();
+
+    /** Evita anúncio duplicado na primeira renderização após o loading. */
+    const ariaNavReady = useRef(false);
+    const prevSelectedProjectId = useRef<string | null | undefined>(undefined);
+    const prevShowSettings = useRef<boolean | undefined>(undefined);
+
+    useEffect(() => {
+        if (isLoading) return;
+        if (!ariaNavReady.current) {
+            ariaNavReady.current = true;
+            prevSelectedProjectId.current = selectedProjectId;
+            prevShowSettings.current = showSettings;
+            return;
+        }
+        if (prevShowSettings.current !== showSettings) {
+            prevShowSettings.current = showSettings;
+            if (showSettings) {
+                announce('Configurações abertas.', 'polite');
+            } else {
+                announce('Saindo das configurações.', 'polite');
+            }
+        }
+    }, [isLoading, showSettings, announce]);
+
+    useEffect(() => {
+        if (isLoading || showSettings) return;
+        if (!ariaNavReady.current) return;
+        if (prevSelectedProjectId.current === selectedProjectId) return;
+        prevSelectedProjectId.current = selectedProjectId;
+        if (selectedProjectId) {
+            const p = projects.find((x) => x.id === selectedProjectId);
+            announce(p ? `Projeto aberto: ${p.name}.` : 'Projeto selecionado.', 'polite');
+        } else {
+            announce('Lista de projetos.', 'polite');
+        }
+    }, [isLoading, showSettings, selectedProjectId, projects, announce]);
+
+    const searchAnnounceReady = useRef(false);
+    const prevDebouncedSearch = useRef<string>('');
+    useEffect(() => {
+        if (isLoading) return;
+        if (!showSearch) {
+            searchAnnounceReady.current = false;
+            prevDebouncedSearch.current = '';
+            return;
+        }
+        if (!searchAnnounceReady.current) {
+            searchAnnounceReady.current = true;
+            prevDebouncedSearch.current = debouncedSearchQuery;
+            return;
+        }
+        if (prevDebouncedSearch.current === debouncedSearchQuery) return;
+        prevDebouncedSearch.current = debouncedSearchQuery;
+        const trimmed = debouncedSearchQuery.trim();
+        if (!trimmed) {
+            announce('Busca limpa.', 'polite');
+            return;
+        }
+        const n = searchResults.length;
+        announce(
+            n === 0
+                ? 'Nenhum resultado para a busca.'
+                : `${n} resultado${n === 1 ? '' : 's'} encontrado${n === 1 ? '' : 's'}.`,
+            'polite'
+        );
+    }, [isLoading, showSearch, debouncedSearchQuery, searchResults.length, announce]);
 
     useRouterSync({
         selectedProjectId,
@@ -211,6 +280,11 @@ const App: React.FC = () => {
         }
     }, [selectProject]);
 
+    const closeGlobalSearch = useCallback(() => {
+        setShowSearch(false);
+        setSearchQuery('');
+    }, []);
+
     useKeyboardShortcuts([
         {
             ...SHORTCUTS.SEARCH,
@@ -218,10 +292,7 @@ const App: React.FC = () => {
         },
         {
             ...SHORTCUTS.ESCAPE,
-            action: () => {
-                setShowSearch(false);
-                setSearchQuery('');
-            }
+            action: closeGlobalSearch
         }
     ]);
 
@@ -255,9 +326,11 @@ const App: React.FC = () => {
     return (
         <ErrorBoundary>
             <div className="min-h-screen font-sans text-text-primary">
+                <div id="aria-live-region" className="sr-only" aria-live="polite" aria-atomic="true" />
                 <a href="#main-content" className="skip-link" tabIndex={0}>
                     Pular para o conteúdo principal
                 </a>
+                <OnboardingGuide />
                 <Toaster
                     position={isMobile ? "top-center" : "top-right"}
                     toastOptions={{
@@ -292,7 +365,15 @@ const App: React.FC = () => {
                 />
                 <OfflineBanner />
                 {showSearch && (
-                    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/30 backdrop-blur pt-20 p-4">
+                    <div
+                        role="dialog"
+                        aria-modal="true"
+                        aria-label="Busca global"
+                        className="fixed inset-0 z-50 flex items-start justify-center bg-black/30 backdrop-blur pt-20 p-4"
+                        onClick={(e) => {
+                            if (e.target === e.currentTarget) closeGlobalSearch();
+                        }}
+                    >
                         <div className="w-full max-w-2xl">
                             <SearchBar
                                 searchQuery={searchQuery}
@@ -393,7 +474,6 @@ const App: React.FC = () => {
                                 projects={projects} 
                                 onSelectProject={selectProject} 
                                 onCreateProject={handleCreateProject}
-                                onDeleteProject={handleDeleteProject}
                                 onOpenSettings={() => setShowSettings(true)}
                             />
                         </Suspense>

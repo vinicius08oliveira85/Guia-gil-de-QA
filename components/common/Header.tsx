@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef, useCallback, useMemo, useId } from 'react';
 import { NotificationBell } from './NotificationBell';
 import { ExpandableTabs } from './ExpandableTabs';
 import { ExpansibleButton } from './ExpansibleButton';
@@ -15,9 +15,8 @@ import {
     Plus,
     Loader2,
     ChevronLeft,
-    Menu,
-    X,
     LayoutGrid,
+    MoreVertical,
 } from 'lucide-react';
 import { Project } from '../../types';
 import { getUnreadCount } from '../../utils/notificationService';
@@ -27,6 +26,8 @@ import { useProjectsStore } from '../../store/projectsStore';
 import { useJiraSync } from '../../hooks/useJiraSync';
 import { isSupabaseAvailable } from '../../services/supabaseService';
 import toast from 'react-hot-toast';
+import { NavigationMenuDrawer, NavigationMenuHamburger } from './NavigationMenu';
+import type { NavigationMenuItem } from './NavigationMenu';
 
 interface HeaderProps {
     onProjectImported?: (project: Project) => void;
@@ -51,11 +52,12 @@ export const Header: React.FC<HeaderProps> = ({
     const [isGlossaryOpen, setIsGlossaryOpen] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [isSyncingSupabase, setIsSyncingSupabase] = useState(false);
-    const [expandedButton, setExpandedButton] = useState<'jira' | 'salvar' | 'novo' | 'sync' | null>(null);
+    const [expandedButton, setExpandedButton] = useState<'jira' | 'salvar' | null>(null);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const mobileMenuPanelRef = useRef<HTMLDivElement>(null);
     const mobileMenuButtonRef = useRef<HTMLButtonElement>(null);
     const headerRef = useRef<HTMLElement>(null);
+    const mobileMenuDomId = useId().replace(/:/g, '');
 
     const { saveProjectToSupabase, getSelectedProject, syncProjectsFromSupabase, updateProject } = useProjectsStore();
     const selectedProject = getSelectedProject();
@@ -71,6 +73,11 @@ export const Header: React.FC<HeaderProps> = ({
     } = useJiraSync(selectedProject ?? null, updateProject);
 
     const closeMobileMenu = useCallback(() => setMobileMenuOpen(false), []);
+
+    const utilityMenuRef = useRef<HTMLDetailsElement>(null);
+    const closeUtilityMenu = useCallback(() => {
+        if (utilityMenuRef.current) utilityMenuRef.current.open = false;
+    }, []);
 
     useEffect(() => {
         const updateUnreadCount = () => {
@@ -180,17 +187,21 @@ export const Header: React.FC<HeaderProps> = ({
                 onOpenSettings?.();
                 setShowNotificationDropdown(false);
                 closeMobileMenu();
+                closeUtilityMenu();
                 break;
             case 'glossary':
                 setIsGlossaryOpen(true);
                 closeMobileMenu();
+                closeUtilityMenu();
                 break;
             case 'notifications':
                 setShowNotificationDropdown(true);
                 closeMobileMenu();
+                closeUtilityMenu();
                 break;
             case 'theme':
                 toggleTheme();
+                closeUtilityMenu();
                 break;
         }
     };
@@ -249,6 +260,43 @@ export const Header: React.FC<HeaderProps> = ({
             />
         </svg>
     );
+
+    const mobileDrawerItems = useMemo((): NavigationMenuItem[] => {
+        if (!onLogoClick) return [];
+        const items: NavigationMenuItem[] = [
+            {
+                id: 'projects',
+                label: 'Meus projetos',
+                icon: <LayoutGrid className="h-5 w-5" aria-hidden />,
+                onClick: () => onLogoClick(),
+            },
+        ];
+        if (showDashboardActions && onOpenCreateModal) {
+            items.push({
+                id: 'new-project',
+                label: 'Novo projeto',
+                icon: <Plus className="h-5 w-5" aria-hidden />,
+                onClick: () => onOpenCreateModal(),
+            });
+        }
+        if (showDashboardActions) {
+            items.push({
+                id: 'sync-supabase',
+                label: isSyncingSupabase ? 'Sincronizando…' : 'Sincronizar com a nuvem',
+                icon: supabaseBoltIcon,
+                onClick: () => {
+                    void handleSyncSupabase();
+                },
+            });
+        }
+        return items;
+    }, [
+        onLogoClick,
+        showDashboardActions,
+        onOpenCreateModal,
+        isSyncingSupabase,
+        handleSyncSupabase,
+    ]);
 
     const logoContent = (
         <>
@@ -315,36 +363,11 @@ export const Header: React.FC<HeaderProps> = ({
                     onExpandedChange={(expanded) => setExpandedButton(expanded ? 'salvar' : null)}
                 />
             </>
-        ) : showDashboardActions ? (
-            <>
-                {onOpenCreateModal && (
-                    <ExpansibleButton
-                        icon={<Plus className="h-[18px] w-[18px] flex-shrink-0" aria-hidden />}
-                        label="Novo"
-                        onClick={onOpenCreateModal}
-                        ariaLabel="Criar novo projeto"
-                        isExpanded={expandedButton === 'novo'}
-                        onExpandedChange={(expanded) => setExpandedButton(expanded ? 'novo' : null)}
-                        className="bg-primary text-primary-content hover:bg-primary/90"
-                    />
-                )}
-                <ExpansibleButton
-                    icon={
-                        isSyncingSupabase ? (
-                            <Loader2 className="h-[18px] w-[18px] flex-shrink-0 animate-spin text-primary" aria-hidden />
-                        ) : (
-                            supabaseBoltIcon
-                        )
-                    }
-                    label={isSyncingSupabase ? 'Sincronizando...' : 'Sync'}
-                    onClick={handleSyncSupabase}
-                    disabled={isSyncingSupabase || !isSupabaseAvailable()}
-                    ariaLabel="Sincronizar projetos do Supabase"
-                    title={!isSupabaseAvailable() ? 'Supabase não está configurado. Configure VITE_SUPABASE_PROXY_URL.' : undefined}
-                    isExpanded={expandedButton === 'sync'}
-                    onExpandedChange={(expanded) => setExpandedButton(expanded ? 'sync' : null)}
-                />
-            </>
+        ) : undefined;
+
+    const mobileLeadingSlot =
+        leadingContent && (selectedProject || (!selectedProject && showDashboardActions)) ? (
+            <div className="flex flex-wrap items-center gap-2">{leadingContent}</div>
         ) : undefined;
 
     return (
@@ -370,6 +393,39 @@ export const Header: React.FC<HeaderProps> = ({
                     )}
 
                     <div className="relative flex shrink-0 items-center gap-2">
+                        {showDashboardActions && (
+                            <div className="hidden shrink-0 flex-col items-stretch gap-1 border-r border-base-300/50 pr-2 md:flex md:flex-row md:items-center md:gap-1">
+                                {onOpenCreateModal && (
+                                    <button
+                                        type="button"
+                                        onClick={onOpenCreateModal}
+                                        className="btn btn-ghost btn-sm whitespace-nowrap font-medium"
+                                    >
+                                        Novo projeto
+                                    </button>
+                                )}
+                                <button
+                                    type="button"
+                                    onClick={() => void handleSyncSupabase()}
+                                    disabled={isSyncingSupabase || !isSupabaseAvailable()}
+                                    className="btn btn-ghost btn-sm whitespace-nowrap font-medium"
+                                    title={
+                                        !isSupabaseAvailable()
+                                            ? 'Supabase não está configurado. Configure VITE_SUPABASE_PROXY_URL.'
+                                            : undefined
+                                    }
+                                >
+                                    {isSyncingSupabase ? (
+                                        <span className="inline-flex items-center gap-1">
+                                            <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin" aria-hidden />
+                                            Sincronizando…
+                                        </span>
+                                    ) : (
+                                        'Sincronizar'
+                                    )}
+                                </button>
+                            </div>
+                        )}
                         <div className="relative hidden md:block">
                             <ExpandableTabs
                                 className="flex flex-wrap items-center gap-2"
@@ -391,96 +447,45 @@ export const Header: React.FC<HeaderProps> = ({
                             )}
                         </div>
 
-                        <div className="relative md:hidden">
-                            <button
-                                ref={mobileMenuButtonRef}
-                                type="button"
-                                className="win-icon-button"
-                                aria-expanded={mobileMenuOpen}
-                                aria-controls="header-mobile-menu"
-                                aria-haspopup="menu"
-                                aria-label={mobileMenuOpen ? 'Fechar menu' : 'Abrir menu de navegação'}
-                                onClick={() => setMobileMenuOpen((o) => !o)}
-                            >
-                                {mobileMenuOpen ? <X className="h-5 w-5" aria-hidden /> : <Menu className="h-5 w-5" aria-hidden />}
-                            </button>
-
-                            {mobileMenuOpen && (
-                                <>
-                                    <button
-                                        type="button"
-                                        className="fixed inset-0 z-40 bg-base-content/30 backdrop-blur-sm md:hidden"
-                                        aria-label="Fechar menu"
-                                        onClick={closeMobileMenu}
-                                    />
-                                    <div
-                                        ref={mobileMenuPanelRef}
-                                        id="header-mobile-menu"
-                                        role="menu"
-                                        aria-label="Menu de navegação"
-                                        className="absolute right-0 top-full z-50 mt-1 flex max-h-[min(70vh,28rem)] w-[min(calc(100vw-2rem),20rem)] flex-col overflow-y-auto rounded-box border border-base-300 bg-base-100/95 p-2 shadow-xl backdrop-blur-md"
-                                    >
-                                        <div className="mb-1 flex items-center justify-between gap-2 border-b border-base-200/80 px-1 pb-2">
-                                            <span className="font-heading text-xs font-semibold uppercase tracking-wide text-base-content/70">
-                                                Menu
-                                            </span>
-                                            <button
-                                                type="button"
-                                                className="btn btn-ghost btn-circle btn-xs min-h-8 min-w-8"
-                                                aria-label="Fechar menu"
-                                                onClick={closeMobileMenu}
-                                            >
-                                                <X className="h-4 w-4" aria-hidden />
-                                            </button>
-                                        </div>
-
-                                        <nav className="flex flex-col gap-0.5 font-body" aria-label="Navegação principal">
-                                            {onLogoClick && (
+                        <div className="relative flex shrink-0 items-center gap-1 md:hidden">
+                            <details ref={utilityMenuRef} className="dropdown dropdown-end">
+                                <summary className="win-icon-button list-none [&::-webkit-details-marker]:hidden [&::marker]:hidden">
+                                    <span className="sr-only">Mais opções: configurações, glossário, notificações e tema</span>
+                                    <MoreVertical className="h-5 w-5" aria-hidden />
+                                </summary>
+                                <ul className="dropdown-content menu menu-sm z-[70] mt-2 w-56 rounded-box border border-base-300 bg-base-100 p-2 shadow-xl">
+                                    {tabs.map((tab) => {
+                                        const Icon = tab.icon;
+                                        return (
+                                            <li key={tab.id}>
                                                 <button
                                                     type="button"
-                                                    role="menuitem"
-                                                    className="flex min-h-[44px] w-full items-center gap-3 rounded-lg px-3 text-left text-sm font-medium text-base-content transition-colors hover:bg-base-200/80"
-                                                    onClick={() => {
-                                                        onLogoClick();
-                                                        closeMobileMenu();
-                                                    }}
+                                                    className="flex min-h-[44px] w-full items-center gap-2 rounded-lg text-left font-medium"
+                                                    onClick={() => handleTabChange(tab.id)}
                                                 >
-                                                    <LayoutGrid className="h-5 w-5 shrink-0 text-primary" aria-hidden />
-                                                    Meus projetos
+                                                    <Icon className="h-5 w-5 shrink-0 text-primary" aria-hidden />
+                                                    {tab.title}
                                                 </button>
-                                            )}
-
-                                            {selectedProject && leadingContent && (
-                                                <div className="my-1 flex flex-wrap items-center gap-2 border-y border-base-200/60 py-2">
-                                                    {leadingContent}
-                                                </div>
-                                            )}
-
-                                            {!selectedProject && showDashboardActions && leadingContent && (
-                                                <div className="my-1 flex flex-wrap items-center gap-2 border-y border-base-200/60 py-2">
-                                                    {leadingContent}
-                                                </div>
-                                            )}
-
-                                            {tabs.map((tab) => {
-                                                const Icon = tab.icon;
-                                                return (
-                                                    <button
-                                                        key={tab.id}
-                                                        type="button"
-                                                        role="menuitem"
-                                                        className="flex min-h-[44px] w-full items-center gap-3 rounded-lg px-3 text-left text-sm font-medium text-base-content transition-colors hover:bg-base-200/80"
-                                                        onClick={() => handleTabChange(tab.id)}
-                                                    >
-                                                        <Icon className="h-5 w-5 shrink-0 text-primary" aria-hidden />
-                                                        {tab.title}
-                                                    </button>
-                                                );
-                                            })}
-                                        </nav>
-                                    </div>
-                                </>
-                            )}
+                                            </li>
+                                        );
+                                    })}
+                                </ul>
+                            </details>
+                            <NavigationMenuHamburger
+                                open={mobileMenuOpen}
+                                onOpenChange={setMobileMenuOpen}
+                                triggerRef={mobileMenuButtonRef}
+                                controlsId={mobileMenuDomId}
+                            />
+                            <NavigationMenuDrawer
+                                open={mobileMenuOpen}
+                                onOpenChange={setMobileMenuOpen}
+                                items={mobileDrawerItems}
+                                panelRef={mobileMenuPanelRef}
+                                menuId={mobileMenuDomId}
+                                title="Navegação"
+                                leadingSlot={mobileLeadingSlot}
+                            />
                         </div>
                     </div>
                 </div>

@@ -256,8 +256,8 @@ describe('Testes de Integração End-to-End', () => {
       render(<App />);
       await waitForStoreState((state) => state.projects.some((p) => p.id === project.id));
 
-      const verDetalhes = await screen.findByRole('link', { name: /ver detalhes de projeto com doc/i }, { timeout: 8000 });
-      await user.click(verDetalhes);
+      const cardProjeto = await screen.findByRole('button', { name: /Abrir projeto: Projeto com Doc/i }, { timeout: 8000 });
+      await user.click(cardProjeto);
 
       await waitFor(() => {
         expect(screen.getByRole('tab', { name: /documentos/i })).toBeInTheDocument();
@@ -305,8 +305,8 @@ describe('Testes de Integração End-to-End', () => {
       render(<App />);
       await waitForStoreState((state) => state.projects.some((p) => p.id === project.id));
 
-      const verDetalhes = await screen.findByRole('link', { name: /ver detalhes de projeto docs/i }, { timeout: 8000 });
-      await user.click(verDetalhes);
+      const cardProjeto = await screen.findByRole('button', { name: /Abrir projeto: Projeto Docs/i }, { timeout: 8000 });
+      await user.click(cardProjeto);
       await waitFor(() => expect(screen.getByRole('tab', { name: /documentos/i })).toBeInTheDocument(), { timeout: 15_000 });
       const documentsTab = screen.getByRole('tab', { name: /documentos/i });
       await user.click(documentsTab);
@@ -337,12 +337,8 @@ describe('Testes de Integração End-to-End', () => {
       render(<App />);
       await waitForStoreState((state) => state.projects.some((p) => p.id === project.id));
 
-      const verDetalhes = await screen.findByRole(
-        'link',
-        { name: /ver detalhes de projeto categorias/i },
-        { timeout: 8000 }
-      );
-      await user.click(verDetalhes);
+      const cardProjeto = await screen.findByRole('button', { name: /Abrir projeto: Projeto Categorias/i }, { timeout: 8000 });
+      await user.click(cardProjeto);
       await waitFor(() => expect(screen.getByRole('tab', { name: /documentos/i })).toBeInTheDocument(), { timeout: 15_000 });
       const documentsTab = screen.getByRole('tab', { name: /documentos/i });
       await user.click(documentsTab);

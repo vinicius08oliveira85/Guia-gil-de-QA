@@ -97,6 +97,7 @@ export const useSearch = (projects: Project[]) => {
   return {
     searchQuery,
     setSearchQuery,
+    debouncedSearchQuery,
     searchResults,
     hasResults: searchResults.length > 0
   };
