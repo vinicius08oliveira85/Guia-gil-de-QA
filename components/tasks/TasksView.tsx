@@ -1668,8 +1668,8 @@ export const TasksView: React.FC<{
 
     return (
         <>
-        <Card hoverable={false} className="p-4 py-8 sm:p-5 sm:py-10 md:py-12 lg:p-6">
-            <div className="mb-6 sm:mb-8 flex flex-col gap-4 rounded-xl border border-base-300 bg-base-100 p-4 shadow-sm backdrop-blur-sm transition-all hover:shadow-lg sm:gap-5 sm:p-5">
+        <Card hoverable={false} className="p-3 py-4 sm:p-4 sm:py-6 lg:p-5">
+            <div className="tasks-panel-scope mb-tasks-panel-loose flex flex-col gap-tasks-panel rounded-xl border border-base-300/80 bg-base-100/95 p-3 shadow-sm backdrop-blur-md transition-all hover:shadow-md sm:p-4">
                 <TasksViewHeader
                     onAddTask={() => openTaskFormForNew()}
                     onOpenFilters={() => setIsFiltersModalOpen(true)}
@@ -1704,7 +1704,7 @@ export const TasksView: React.FC<{
                 </motion.div>
             </div>
 
-            <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-tasks-panel-loose">
                 <Modal
                     isOpen={isFiltersModalOpen}
                     onClose={() => setIsFiltersModalOpen(false)}

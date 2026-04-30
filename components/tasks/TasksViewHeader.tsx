@@ -21,15 +21,16 @@ export const TasksViewHeader: React.FC<TasksViewHeaderProps> = ({
     analysisProgress,
     activeFiltersCount,
 }) => (
-    <div className="flex w-full flex-col items-start justify-between gap-4 md:flex-row md:items-center">
+    <div className="flex w-full flex-col items-start justify-between gap-tasks-panel-tight md:flex-row md:items-center md:gap-tasks-panel-loose">
         <SectionHeader
             as="h1"
             align="left"
             fullWidth
+            compact
             titleSize="page"
             density="dense"
             title="Tarefas & Casos de Teste"
-            description="Acompanhe o progresso das atividades e resultados de QA."
+            description="Progresso das atividades e resultados de QA."
             className="max-w-2xl"
         />
         <div className="flex w-full flex-wrap items-center justify-start gap-2 md:w-auto md:justify-end">

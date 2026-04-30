@@ -9,6 +9,13 @@
     color-scheme: light dark;
     /** Altura do header global (sticky); atualizada em runtime pelo Header para sub-cabeçalhos sticky */
     --app-header-h: 4.5rem;
+    /**
+     * Ritmo vertical da aba Tarefas e painéis densos alinhados.
+     * Ajuste aqui para propagar em todo o escopo que use `gap-tasks-panel*` / `mb-tasks-panel*`.
+     */
+    --tasks-panel-gap: 0.75rem;
+    --tasks-panel-gap-tight: 0.5rem;
+    --tasks-panel-gap-loose: 1rem;
     /* Design System Leve Saúde (referência + contraste navegação) */
     --color-primary: #109685;
     --color-primary-deep: #0b6156;
@@ -215,6 +222,45 @@
   }
   .line-clamp-3 {
     -webkit-line-clamp: 3;
+  }
+
+  /**
+   * Marca ancestral semântico: filhos podem usar `gap-tasks-panel*` / `mb-tasks-panel*`.
+   * Tokens: `--tasks-panel-gap` | `--tasks-panel-gap-tight` | `--tasks-panel-gap-loose` em `:root`.
+   */
+  .tasks-panel-scope {
+    isolation: isolate;
+  }
+
+  .gap-tasks-panel {
+    gap: var(--tasks-panel-gap);
+  }
+  .gap-tasks-panel-tight {
+    gap: var(--tasks-panel-gap-tight);
+  }
+  .gap-tasks-panel-loose {
+    gap: var(--tasks-panel-gap-loose);
+  }
+  @media (min-width: 768px) {
+    .md\:gap-tasks-panel-loose {
+      gap: var(--tasks-panel-gap-loose);
+    }
+  }
+  @media (min-width: 1280px) {
+    .xl\:gap-tasks-panel {
+      gap: var(--tasks-panel-gap);
+    }
+  }
+  .mb-tasks-panel {
+    margin-bottom: var(--tasks-panel-gap);
+  }
+  .mb-tasks-panel-loose {
+    margin-bottom: var(--tasks-panel-gap-loose);
+  }
+  @media (min-width: 640px) {
+    .sm\:mb-tasks-panel-loose {
+      margin-bottom: var(--tasks-panel-gap-loose);
+    }
   }
 
   @keyframes fade-in {

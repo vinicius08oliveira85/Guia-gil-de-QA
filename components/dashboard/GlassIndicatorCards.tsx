@@ -83,7 +83,7 @@ function SmallIndicatorCard({ item }: { item: SmallIndicatorItem }) {
   const isClickable = !!item.onClick;
   return (
     <div
-      className={`glass bg-white/60 dark:bg-slate-800/40 p-6 rounded-xl relative overflow-hidden group transition-all duration-300 ${isClickable ? 'cursor-pointer hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-primary/30' : ''} ${item.isActive ? 'ring-2 ring-primary/50 shadow-md' : ''}`}
+      className={`glass relative overflow-hidden rounded-lg border border-base-200/60 bg-white/70 p-3 shadow-sm transition-all duration-200 dark:border-base-300/40 dark:bg-slate-800/45 sm:p-3.5 ${isClickable ? 'group cursor-pointer hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary/30' : ''} ${item.isActive ? 'ring-2 ring-primary/45 shadow-md' : ''}`}
       role={isClickable ? 'button' : 'article'}
       tabIndex={isClickable ? 0 : undefined}
       aria-label={isClickable ? `${item.label}: ${item.value} ${item.modifier}. Clique para filtrar.` : `${item.label}: ${item.value} ${item.modifier}`}
@@ -94,23 +94,15 @@ function SmallIndicatorCard({ item }: { item: SmallIndicatorItem }) {
         className={`absolute -right-4 -top-4 w-24 h-24 rounded-full blur-2xl transition-colors ${config.orbBg} group-hover:opacity-80`}
         aria-hidden
       />
-      <div className="flex justify-between items-start mb-4">
-        <span
-          className={`text-xs font-semibold uppercase tracking-wide ${config.labelColor}`}
-        >
-          {item.label}
-        </span>
-        <div className={`p-2 rounded-lg ${config.iconBg} ${config.glowClass}`}>
-          <Icon className={`w-5 h-5 ${config.iconColor}`} aria-hidden />
+      <div className="mb-2 flex items-start justify-between gap-2">
+        <span className={`text-xs font-bold uppercase tracking-wide ${config.labelColor}`}>{item.label}</span>
+        <div className={`rounded-md p-1.5 ${config.iconBg} ${config.glowClass}`}>
+          <Icon className={`h-4 w-4 ${config.iconColor}`} aria-hidden />
         </div>
       </div>
-      <div className="flex items-baseline gap-2">
-        <span className={`text-3xl font-bold ${config.valueColor}`}>
-          {item.value}
-        </span>
-        <span className="text-xs text-base-content/60 font-normal">
-          {item.modifier}
-        </span>
+      <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+        <span className={`text-2xl font-bold tabular-nums sm:text-3xl ${config.valueColor}`}>{item.value}</span>
+        <span className="text-xs font-medium text-base-content/70 sm:text-sm">{item.modifier}</span>
       </div>
     </div>
   );
@@ -144,7 +136,7 @@ export function ExecutionAutomationCard({
 
   return (
     <div
-      className="glass bg-white/60 dark:bg-slate-800/40 p-8 rounded-xl relative overflow-hidden"
+      className="glass relative overflow-hidden rounded-xl border border-base-200/60 bg-white/75 p-4 shadow-sm dark:border-base-300/40 dark:bg-slate-800/50 sm:p-5"
       role="region"
       aria-label="Execução de Testes e Automatizados"
     >
@@ -153,37 +145,35 @@ export function ExecutionAutomationCard({
         style={{ backgroundColor: PRIMARY_COLOR }}
         aria-hidden
       />
-      <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-        <div className="lg:col-span-8 space-y-8">
-          <div className="flex items-center justify-between flex-wrap gap-4">
-            <div className="flex items-center gap-4">
+      <div className="relative z-10 grid grid-cols-1 items-center gap-4 lg:grid-cols-12 lg:gap-5">
+        <div className="space-y-3 lg:col-span-8">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex min-w-0 items-center gap-3">
               <div
-                className="p-3 rounded-xl border border-orange-500/20 bg-orange-500/15 dark:bg-orange-500/20"
+                className="shrink-0 rounded-lg border border-orange-500/25 bg-orange-500/12 p-2 dark:bg-orange-500/18"
                 aria-hidden
               >
-                <ListChecks className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+                <ListChecks className="h-5 w-5 text-orange-600 dark:text-orange-400" />
               </div>
-              <div>
-                <h3 className="text-xl font-bold text-base-content">
-                  Execução de Testes
-                </h3>
-                <p className="text-sm text-base-content/70 font-medium">
+              <div className="min-w-0">
+                <h3 className="text-lg font-bold leading-tight text-base-content sm:text-xl">Execução de Testes</h3>
+                <p className="truncate text-sm font-medium text-base-content/75" title={projectName}>
                   {projectName}
                 </p>
               </div>
             </div>
-            <div className="text-right">
+            <div className="shrink-0 text-right">
               <span
-                className="text-2xl font-bold text-orange-600 dark:text-orange-500 animate-pulse-subtle"
+                className="text-xl font-bold tabular-nums text-orange-600 animate-pulse-subtle dark:text-orange-500 sm:text-2xl"
                 aria-label={`${executionPercent}% de execução`}
               >
                 {executionPercent}%
               </span>
             </div>
           </div>
-          <div className="space-y-3">
+          <div className="space-y-2">
             <div
-              className="h-4 w-full bg-base-200/80 dark:bg-base-300/80 rounded-full overflow-hidden border border-base-300 dark:border-base-300"
+              className="h-3 w-full overflow-hidden rounded-full border border-base-300/80 bg-base-200/90 dark:border-base-300 dark:bg-base-300/80"
               role="progressbar"
               aria-valuenow={executionPercent}
               aria-valuemin={0}
@@ -195,23 +185,19 @@ export function ExecutionAutomationCard({
                 style={{ width: `${executionPercent}%` }}
               />
             </div>
-            <div className="flex justify-between text-xs font-medium text-base-content/70 uppercase tracking-wide">
-              <span>
-                {executedTestCases} casos executados
-              </span>
-              <span>Total de {totalTestCases} casos</span>
+            <div className="flex flex-wrap justify-between gap-x-2 text-xs font-semibold uppercase tracking-wide text-base-content/75">
+              <span>{executedTestCases} executados</span>
+              <span>Total {totalTestCases}</span>
             </div>
           </div>
           {executionTrend != null && executionTrend !== '' && (
-            <p className="text-xs text-base-content/60">
-              {executionTrend}
-            </p>
+            <p className="text-sm text-base-content/65">{executionTrend}</p>
           )}
         </div>
-        <div className="lg:col-span-4 flex justify-center lg:justify-end items-center border-t lg:border-t-0 lg:border-l border-base-300 pt-8 lg:pt-0 lg:pl-8">
-          <div className="flex items-center gap-6">
-            <div className="relative w-24 h-24 flex items-center justify-center">
-              <svg className="w-full h-full -rotate-90" aria-hidden>
+        <div className="flex items-center justify-center border-t border-base-300/70 pt-4 lg:col-span-4 lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0">
+          <div className="flex items-center gap-4 sm:gap-5">
+            <div className="relative flex h-20 w-20 shrink-0 items-center justify-center sm:h-[5.25rem] sm:w-[5.25rem]">
+              <svg className="h-full w-full -rotate-90" viewBox="0 0 96 96" aria-hidden>
                 <circle
                   className="text-base-200 dark:text-base-300"
                   cx="48"
@@ -234,25 +220,21 @@ export function ExecutionAutomationCard({
                 />
               </svg>
               <span
-                className="absolute text-lg font-bold text-base-content"
+                className="absolute text-base font-bold tabular-nums text-base-content sm:text-lg"
                 aria-label={`${automationRatio}% automatizados`}
               >
                 {automationRatio}%
               </span>
             </div>
-            <div>
-              <span className="text-xs font-semibold uppercase tracking-wide text-base-content/70 block mb-1">
+            <div className="min-w-0">
+              <span className="mb-0.5 block text-xs font-bold uppercase tracking-wide text-base-content/75">
                 Automação
               </span>
-              <span className="text-xl font-bold text-base-content">
-                Automatizados
-              </span>
+              <span className="text-lg font-bold text-base-content">Automatizados</span>
               {automationTrend != null && automationTrend !== '' && (
-                <div className="flex items-center gap-1 mt-1">
-                  <TrendingUp className="w-4 h-4 text-success shrink-0" aria-hidden />
-                  <span className="text-xs text-success font-medium">
-                    {automationTrend}
-                  </span>
+                <div className="mt-1 flex items-center gap-1">
+                  <TrendingUp className="h-4 w-4 shrink-0 text-success" aria-hidden />
+                  <span className="text-xs font-semibold text-success sm:text-sm">{automationTrend}</span>
                 </div>
               )}
             </div>
@@ -270,8 +252,8 @@ export interface GlassIndicatorCardsProps {
 
 export function GlassIndicatorCards({ items, execution }: GlassIndicatorCardsProps) {
   return (
-    <div className="space-y-8">
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
+    <div className="flex flex-col gap-tasks-panel-loose">
+      <div className="grid grid-cols-1 gap-tasks-panel sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
         {items.map((item, index) => (
           <SmallIndicatorCard key={`${item.label}-${index}`} item={item} />
         ))}

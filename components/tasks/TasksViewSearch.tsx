@@ -11,10 +11,10 @@ export const TasksViewSearch: React.FC<TasksViewSearchProps> = ({
     onSearchChange,
     searchInputRef,
 }) => (
-    <div className="mb-6 lg:mb-8">
+    <div className="mb-tasks-panel sm:mb-tasks-panel-loose">
         <label
             htmlFor="quick-task-search"
-            className="text-sm font-medium text-base-content/80 mb-2 flex items-center gap-2"
+            className="mb-1.5 flex items-center gap-2 text-sm font-semibold text-base-content"
             title="Atalho: Ctrl+Shift+F (ou Cmd+Shift+F no Mac)"
         >
             <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -33,7 +33,7 @@ export const TasksViewSearch: React.FC<TasksViewSearchProps> = ({
                 value={searchQuery}
                 onChange={(e) => onSearchChange(e.target.value)}
                 placeholder="Digite ID, título ou palavra-chave..."
-                className="input input-bordered w-full pl-10 pr-12 py-3 h-auto min-h-[48px] bg-base-100 border-base-300 text-base-content placeholder:text-base-content/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all rounded-xl shadow-sm"
+                className="input input-bordered h-auto min-h-[44px] w-full rounded-lg border-base-300 bg-base-100 py-2 pl-10 pr-12 text-base text-base-content placeholder:text-base-content/55 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 sm:min-h-[42px]"
                 title="Atalho: Ctrl+Shift+F (ou Cmd+Shift+F no Mac)"
                 aria-label="Busca rápida por tarefa ou teste. Atalho: Ctrl+Shift+F"
             />
@@ -48,8 +48,8 @@ export const TasksViewSearch: React.FC<TasksViewSearchProps> = ({
                 </button>
             )}
         </div>
-        <p className="text-xs text-base-content/70 mt-2">
-            Filtre tarefas e casos instantaneamente sem precisar abrir o painel completo de filtros. Atalho: Ctrl+Shift+F.
+        <p className="mt-1.5 text-sm leading-snug text-base-content/75">
+            Filtro instantâneo na lista. Atalho: Ctrl+Shift+F (Windows) ou Cmd+Shift+F (Mac).
         </p>
     </div>
 );
