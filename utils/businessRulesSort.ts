@@ -8,7 +8,10 @@ export type BusinessRuleSortKey =
   | 'category_asc'
   | 'category_desc';
 
-export function sortBusinessRules(rules: BusinessRule[], sort: BusinessRuleSortKey): BusinessRule[] {
+export function sortBusinessRules(
+  rules: BusinessRule[],
+  sort: BusinessRuleSortKey
+): BusinessRule[] {
   const copy = [...rules];
   copy.sort((a, b) => {
     switch (sort) {

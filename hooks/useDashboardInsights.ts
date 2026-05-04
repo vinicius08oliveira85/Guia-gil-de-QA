@@ -1,88 +1,92 @@
 import { useState, useCallback, useEffect } from 'react';
 import { Project } from '../types';
-import { 
-    generateDashboardInsightsAnalysis, 
-    generateCompleteDashboardAnalysis,
-    markDashboardInsightsAsOutdated 
+import {
+  generateDashboardInsightsAnalysis,
+  generateCompleteDashboardAnalysis,
+  markDashboardInsightsAsOutdated,
 } from '../services/ai/dashboardInsightsService';
 import { useErrorHandler } from './useErrorHandler';
 
 /**
  * Hook para gerenciar análise de insights do dashboard com IA
  */
-export function useDashboardInsights(project: Project, onUpdateProject?: (project: Project) => void, _autoGenerate: boolean = false) {
-    const [isGenerating, setIsGenerating] = useState(false);
-    const { handleError, handleSuccess } = useErrorHandler();
+export function useDashboardInsights(
+  project: Project,
+  onUpdateProject?: (project: Project) => void,
+  _autoGenerate: boolean = false
+) {
+  const [isGenerating, setIsGenerating] = useState(false);
+  const { handleError, handleSuccess } = useErrorHandler();
 
-    // Marcar análise como desatualizada quando o projeto muda
-    useEffect(() => {
-        if (onUpdateProject && project.dashboardInsightsAnalysis) {
-            const updatedProject = markDashboardInsightsAsOutdated(project);
-            const insightsChanged = updatedProject.dashboardInsightsAnalysis?.isOutdated !== project.dashboardInsightsAnalysis?.isOutdated;
-            
-            if (insightsChanged) {
-                onUpdateProject(updatedProject);
-            }
-        }
-         
-    }, [
-        project.tasks.length,
-        project.tasks.map(t => `${t.id}-${t.status}-${t.title}`).join(','),
-        project.metricsHistory?.length || 0,
-    ]);
+  // Marcar análise como desatualizada quando o projeto muda
+  useEffect(() => {
+    if (onUpdateProject && project.dashboardInsightsAnalysis) {
+      const updatedProject = markDashboardInsightsAsOutdated(project);
+      const insightsChanged =
+        updatedProject.dashboardInsightsAnalysis?.isOutdated !==
+        project.dashboardInsightsAnalysis?.isOutdated;
 
-    // Geração automática removida - apenas manual através do botão
+      if (insightsChanged) {
+        onUpdateProject(updatedProject);
+      }
+    }
+  }, [
+    project.tasks.length,
+    project.tasks.map(t => `${t.id}-${t.status}-${t.title}`).join(','),
+    project.metricsHistory?.length || 0,
+  ]);
 
-    const generateInsightsAnalysis = useCallback(async () => {
-        setIsGenerating(true);
-        try {
-            const analysis = await generateDashboardInsightsAnalysis(project);
-            
-            if (onUpdateProject) {
-                onUpdateProject({
-                    ...project,
-                    dashboardInsightsAnalysis: analysis,
-                });
-            }
-            
-            handleSuccess('Análise de insights gerada com sucesso!');
-            return analysis;
-        } catch (error) {
-            handleError(error, 'Erro ao gerar análise de insights');
-            throw error;
-        } finally {
-            setIsGenerating(false);
-        }
-    }, [project, onUpdateProject, handleError, handleSuccess]);
+  // Geração automática removida - apenas manual através do botão
 
-    const generateCompleteAnalysis = useCallback(async () => {
-        setIsGenerating(true);
-        try {
-            const { sdlcAnalysis, insightsAnalysis } = await generateCompleteDashboardAnalysis(project);
-            
-            if (onUpdateProject) {
-                onUpdateProject({
-                    ...project,
-                    sdlcPhaseAnalysis: sdlcAnalysis,
-                    dashboardInsightsAnalysis: insightsAnalysis,
-                });
-            }
-            
-            handleSuccess('Análise completa gerada com sucesso!');
-            return { sdlcAnalysis, insightsAnalysis };
-        } catch (error) {
-            handleError(error, 'Erro ao gerar análise completa');
-            throw error;
-        } finally {
-            setIsGenerating(false);
-        }
-    }, [project, onUpdateProject, handleError, handleSuccess]);
+  const generateInsightsAnalysis = useCallback(async () => {
+    setIsGenerating(true);
+    try {
+      const analysis = await generateDashboardInsightsAnalysis(project);
 
-    return {
-        insightsAnalysis: project.dashboardInsightsAnalysis || null,
-        isGenerating,
-        generateInsightsAnalysis,
-        generateCompleteAnalysis,
-    };
+      if (onUpdateProject) {
+        onUpdateProject({
+          ...project,
+          dashboardInsightsAnalysis: analysis,
+        });
+      }
+
+      handleSuccess('Análise de insights gerada com sucesso!');
+      return analysis;
+    } catch (error) {
+      handleError(error, 'Erro ao gerar análise de insights');
+      throw error;
+    } finally {
+      setIsGenerating(false);
+    }
+  }, [project, onUpdateProject, handleError, handleSuccess]);
+
+  const generateCompleteAnalysis = useCallback(async () => {
+    setIsGenerating(true);
+    try {
+      const { sdlcAnalysis, insightsAnalysis } = await generateCompleteDashboardAnalysis(project);
+
+      if (onUpdateProject) {
+        onUpdateProject({
+          ...project,
+          sdlcPhaseAnalysis: sdlcAnalysis,
+          dashboardInsightsAnalysis: insightsAnalysis,
+        });
+      }
+
+      handleSuccess('Análise completa gerada com sucesso!');
+      return { sdlcAnalysis, insightsAnalysis };
+    } catch (error) {
+      handleError(error, 'Erro ao gerar análise completa');
+      throw error;
+    } finally {
+      setIsGenerating(false);
+    }
+  }, [project, onUpdateProject, handleError, handleSuccess]);
+
+  return {
+    insightsAnalysis: project.dashboardInsightsAnalysis || null,
+    isGenerating,
+    generateInsightsAnalysis,
+    generateCompleteAnalysis,
+  };
 }
-

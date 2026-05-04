@@ -39,9 +39,7 @@ export const useFilters = (project: Project) => {
 
     // Filtro por tags
     if (filters.tags && filters.tags.length > 0) {
-      tasks = tasks.filter(t => 
-        t.tags && filters.tags!.some(tag => t.tags!.includes(tag))
-      );
+      tasks = tasks.filter(t => t.tags && filters.tags!.some(tag => t.tags!.includes(tag)));
     }
 
     // Filtro por prioridade
@@ -83,24 +81,27 @@ export const useFilters = (project: Project) => {
     // Filtro por busca
     if (filters.searchQuery) {
       const query = filters.searchQuery.toLowerCase();
-      tasks = tasks.filter(t =>
-        (t.id || '').toLowerCase().includes(query) ||
-        (t.title || '').toLowerCase().includes(query) ||
-        (t.description || '').toLowerCase().includes(query)
+      tasks = tasks.filter(
+        t =>
+          (t.id || '').toLowerCase().includes(query) ||
+          (t.title || '').toLowerCase().includes(query) ||
+          (t.description || '').toLowerCase().includes(query)
       );
     }
 
     // Filtro por casos de teste
     if (filters.hasTestCases !== undefined) {
-      tasks = tasks.filter(t => 
+      tasks = tasks.filter(t =>
         filters.hasTestCases ? (t.testCases?.length || 0) > 0 : (t.testCases?.length || 0) === 0
       );
     }
 
     // Filtro por BDD scenarios
     if (filters.hasBddScenarios !== undefined) {
-      tasks = tasks.filter(t => 
-        filters.hasBddScenarios ? (t.bddScenarios?.length || 0) > 0 : (t.bddScenarios?.length || 0) === 0
+      tasks = tasks.filter(t =>
+        filters.hasBddScenarios
+          ? (t.bddScenarios?.length || 0) > 0
+          : (t.bddScenarios?.length || 0) === 0
       );
     }
 
@@ -147,10 +148,7 @@ export const useFilters = (project: Project) => {
     setFilters({});
   };
 
-  const updateFilter = <K extends keyof FilterOptions>(
-    key: K,
-    value: FilterOptions[K]
-  ) => {
+  const updateFilter = <K extends keyof FilterOptions>(key: K, value: FilterOptions[K]) => {
     setFilters(prev => ({ ...prev, [key]: value }));
   };
 
@@ -163,16 +161,14 @@ export const useFilters = (project: Project) => {
     });
   };
 
-  const activeFiltersCount = Object.keys(filters).filter(
-    key => {
-      const value = filters[key as keyof FilterOptions];
-      if (Array.isArray(value)) return value.length > 0;
-      if (value && typeof value === 'object') {
-        return Object.keys(value).length > 0;
-      }
-      return value !== undefined && value !== '';
+  const activeFiltersCount = Object.keys(filters).filter(key => {
+    const value = filters[key as keyof FilterOptions];
+    if (Array.isArray(value)) return value.length > 0;
+    if (value && typeof value === 'object') {
+      return Object.keys(value).length > 0;
     }
-  ).length;
+    return value !== undefined && value !== '';
+  }).length;
 
   return {
     filters,
@@ -180,7 +176,6 @@ export const useFilters = (project: Project) => {
     updateFilter,
     clearFilters,
     removeFilter,
-    activeFiltersCount
+    activeFiltersCount,
   };
 };
-

@@ -76,7 +76,8 @@ export default defineConfig({
       manifest: {
         name: 'QA Agile Guide',
         short_name: 'QA Guide',
-        description: 'Ferramenta de gestão de projetos de QA seguindo metodologias ágeis e práticas de DevOps',
+        description:
+          'Ferramenta de gestão de projetos de QA seguindo metodologias ágeis e práticas de DevOps',
         theme_color: '#0E6DFD',
         background_color: '#ffffff',
         display: 'standalone',
@@ -88,26 +89,26 @@ export default defineConfig({
             src: '/icons/icon-192x192.png',
             sizes: '192x192',
             type: 'image/png',
-            purpose: 'any'
+            purpose: 'any',
           },
           {
             src: '/icons/icon-512x512.png',
             sizes: '512x512',
             type: 'image/png',
-            purpose: 'any'
+            purpose: 'any',
           },
           {
             src: '/icons/icon-maskable-192x192.png',
             sizes: '192x192',
             type: 'image/png',
-            purpose: 'maskable'
+            purpose: 'maskable',
           },
           {
             src: '/icons/icon-maskable-512x512.png',
             sizes: '512x512',
             type: 'image/png',
-            purpose: 'maskable'
-          }
+            purpose: 'maskable',
+          },
         ],
         shortcuts: [
           {
@@ -115,17 +116,17 @@ export default defineConfig({
             short_name: 'Novo',
             description: 'Criar um novo projeto de QA',
             url: '/projects/new',
-            icons: [{ src: '/icons/icon-192x192.png', sizes: '192x192' }]
+            icons: [{ src: '/icons/icon-192x192.png', sizes: '192x192' }],
           },
           {
             name: 'Dashboard',
             short_name: 'Dashboard',
             description: 'Ver dashboard de projetos',
             url: '/dashboard',
-            icons: [{ src: '/icons/icon-192x192.png', sizes: '192x192' }]
-          }
+            icons: [{ src: '/icons/icon-192x192.png', sizes: '192x192' }],
+          },
         ],
-        categories: ['productivity', 'business', 'developer']
+        categories: ['productivity', 'business', 'developer'],
       },
       workbox: {
         // Não precachear JS/HTML: evita SW servir bundles antigos (lógica Gemini/rate limit desatualizada).
@@ -162,12 +163,12 @@ export default defineConfig({
               cacheName: 'google-fonts-cache',
               expiration: {
                 maxEntries: 10,
-                maxAgeSeconds: 60 * 60 * 24 * 365 // 1 ano
+                maxAgeSeconds: 60 * 60 * 24 * 365, // 1 ano
               },
               cacheableResponse: {
-                statuses: [0, 200]
-              }
-            }
+                statuses: [0, 200],
+              },
+            },
           },
           {
             urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
@@ -176,12 +177,12 @@ export default defineConfig({
               cacheName: 'gstatic-fonts-cache',
               expiration: {
                 maxEntries: 10,
-                maxAgeSeconds: 60 * 60 * 24 * 365 // 1 ano
+                maxAgeSeconds: 60 * 60 * 24 * 365, // 1 ano
               },
               cacheableResponse: {
-                statuses: [0, 200]
-              }
-            }
+                statuses: [0, 200],
+              },
+            },
           },
           {
             urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
@@ -190,10 +191,10 @@ export default defineConfig({
               cacheName: 'supabase-api-cache',
               expiration: {
                 maxEntries: 50,
-                maxAgeSeconds: 60 * 5 // 5 minutos
+                maxAgeSeconds: 60 * 5, // 5 minutos
               },
-              networkTimeoutSeconds: 10
-            }
+              networkTimeoutSeconds: 10,
+            },
           },
           {
             urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/,
@@ -202,24 +203,25 @@ export default defineConfig({
               cacheName: 'images-cache',
               expiration: {
                 maxEntries: 100,
-                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 dias
-              }
-            }
-          }
-        ]
+                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 dias
+              },
+            },
+          },
+        ],
       },
       devOptions: {
         enabled: true,
-        type: 'module'
-      }
+        type: 'module',
+      },
     }),
     // Bundle analyzer (apenas em build de análise)
-    process.env.ANALYZE === 'true' && visualizer({
-      open: true,
-      filename: 'dist/stats.html',
-      gzipSize: true,
-      brotliSize: true,
-    }),
+    process.env.ANALYZE === 'true' &&
+      visualizer({
+        open: true,
+        filename: 'dist/stats.html',
+        gzipSize: true,
+        brotliSize: true,
+      }),
   ].filter(Boolean),
   resolve: {
     alias: {

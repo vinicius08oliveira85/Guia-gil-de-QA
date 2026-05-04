@@ -35,7 +35,10 @@ export const ProjectAnalysesBoard: React.FC<ProjectAnalysesBoardProps> = ({
   const [selectedAnalysis, setSelectedAnalysis] = useState<ProjectFullAnalysis | null>(null);
 
   const sortedAnalyses = useMemo(
-    () => [...analyses].sort((x, y) => new Date(y.generatedAt).getTime() - new Date(x.generatedAt).getTime()),
+    () =>
+      [...analyses].sort(
+        (x, y) => new Date(y.generatedAt).getTime() - new Date(x.generatedAt).getTime()
+      ),
     [analyses]
   );
 
@@ -51,8 +54,9 @@ export const ProjectAnalysesBoard: React.FC<ProjectAnalysesBoardProps> = ({
       {analyses.length === 0 ? (
         <div className="bg-base-100 rounded-xl border border-base-300 p-6 text-center space-y-4">
           <p className="text-base-content/70 text-sm">
-            Nenhuma análise completa do projeto ainda. Você pode gerar a análise ampla (documentos, tarefas, testes e
-            indicadores) ou começar só pela estratégia de QA com Gemini (Shift Left + pirâmide de testes).
+            Nenhuma análise completa do projeto ainda. Você pode gerar a análise ampla (documentos,
+            tarefas, testes e indicadores) ou começar só pela estratégia de QA com Gemini (Shift
+            Left + pirâmide de testes).
           </p>
           <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-2">
             {onGenerateStrategyWithGemini && (
@@ -159,7 +163,10 @@ export const ProjectAnalysesBoard: React.FC<ProjectAnalysesBoardProps> = ({
         }
       >
         {selectedAnalysis && (
-          <div id="analysis-modal-content" className="space-y-6 overflow-y-auto scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-transparent hover:scrollbar-thumb-primary/50 transition-colors pr-2">
+          <div
+            id="analysis-modal-content"
+            className="space-y-6 overflow-y-auto scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-transparent hover:scrollbar-thumb-primary/50 transition-colors pr-2"
+          >
             <p className="text-xs text-base-content/60">
               Gerada em: {new Date(selectedAnalysis.generatedAt).toLocaleString('pt-BR')}
             </p>

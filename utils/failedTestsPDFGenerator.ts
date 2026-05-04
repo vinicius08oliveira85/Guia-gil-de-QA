@@ -67,7 +67,7 @@ function drawBox(
       color: backgroundColor,
     });
   }
-  
+
   // Borda
   if (borderColor) {
     page.drawRectangle({
@@ -95,7 +95,7 @@ function drawSeverityBadge(
   const badgeWidth = 60;
   const badgeHeight = 18;
   const padding = 4;
-  
+
   // Fundo do badge
   page.drawRectangle({
     x,
@@ -106,7 +106,7 @@ function drawSeverityBadge(
     borderColor: colors.text,
     borderWidth: 0.5,
   });
-  
+
   // Texto do badge
   const severityText = severity.length > 8 ? severity.substring(0, 8) : severity;
   page.drawText(severityText, {
@@ -116,7 +116,7 @@ function drawSeverityBadge(
     font: boldFont,
     color: colors.white,
   });
-  
+
   return badgeWidth + 10;
 }
 
@@ -137,7 +137,7 @@ function drawSummaryCard(
 ): void {
   // Box do card
   drawBox(page, x, y, width, height, colors.lightGray, colors.mediumGray, 1);
-  
+
   // Título
   page.drawText(title, {
     x: x + 8,
@@ -146,7 +146,7 @@ function drawSummaryCard(
     font: font,
     color: colors.textLight,
   });
-  
+
   // Valor
   page.drawText(value, {
     x: x + 8,
@@ -198,16 +198,33 @@ function drawTable(
   let currentPage = page;
   let currentY = y;
   const tableWidth = columns.reduce((sum, col) => sum + col.width, 0);
-  
+
   // Verificar espaço para header da tabela
-  const headerCheck = checkAndBreakPage(pdfDoc, currentPage, currentY, minY + tableHeaderHeight, headerHeight, margin, pageHeight);
+  const headerCheck = checkAndBreakPage(
+    pdfDoc,
+    currentPage,
+    currentY,
+    minY + tableHeaderHeight,
+    headerHeight,
+    margin,
+    pageHeight
+  );
   currentPage = headerCheck.page;
   currentY = headerCheck.yPosition;
-  
+
   // Header da tabela
-  drawBox(currentPage, x, currentY, tableWidth, tableHeaderHeight, colors.primaryDark, colors.primary, 1);
+  drawBox(
+    currentPage,
+    x,
+    currentY,
+    tableWidth,
+    tableHeaderHeight,
+    colors.primaryDark,
+    colors.primary,
+    1
+  );
   let currentX = x;
-  columns.forEach((col) => {
+  columns.forEach(col => {
     currentPage.drawText(col.header, {
       x: currentX + 5,
       y: currentY - tableHeaderHeight + 8,
@@ -218,19 +235,36 @@ function drawTable(
     currentX += col.width;
   });
   currentY -= tableHeaderHeight;
-  
+
   // Linhas
   rows.forEach((row, rowIndex) => {
     // Verificar se precisa quebrar página antes de desenhar linha
-    const lineCheck = checkAndBreakPage(pdfDoc, currentPage, currentY, minY + rowHeight, headerHeight, margin, pageHeight);
+    const lineCheck = checkAndBreakPage(
+      pdfDoc,
+      currentPage,
+      currentY,
+      minY + rowHeight,
+      headerHeight,
+      margin,
+      pageHeight
+    );
     if (lineCheck.page !== currentPage) {
       // Nova página criada - redesenhar header da tabela
       currentPage = lineCheck.page;
       currentY = lineCheck.yPosition;
-      
-      drawBox(currentPage, x, currentY, tableWidth, tableHeaderHeight, colors.primaryDark, colors.primary, 1);
+
+      drawBox(
+        currentPage,
+        x,
+        currentY,
+        tableWidth,
+        tableHeaderHeight,
+        colors.primaryDark,
+        colors.primary,
+        1
+      );
       currentX = x;
-      columns.forEach((col) => {
+      columns.forEach(col => {
         currentPage.drawText(col.header, {
           x: currentX + 5,
           y: currentY - tableHeaderHeight + 8,
@@ -244,10 +278,10 @@ function drawTable(
     } else {
       currentY = lineCheck.yPosition;
     }
-    
+
     const bgColor = rowIndex % 2 === 0 ? colors.white : colors.lightGray;
     drawBox(currentPage, x, currentY, tableWidth, rowHeight, bgColor, colors.mediumGray, 0.5);
-    
+
     currentX = x;
     row.forEach((cell, cellIndex) => {
       const cellText = wrapText(cell || '', columns[cellIndex].width - 10, font, 9)[0] || '';
@@ -260,10 +294,10 @@ function drawTable(
       });
       currentX += columns[cellIndex].width;
     });
-    
+
     currentY -= rowHeight;
   });
-  
+
   return { page: currentPage, yPosition: currentY };
 }
 
@@ -284,7 +318,7 @@ function drawHorizontalBar(
   boldFont: any
 ): void {
   const barWidth = maxValue > 0 ? (value / maxValue) * (width - 120) : 0;
-  
+
   // Barra
   page.drawRectangle({
     x: x + 100,
@@ -293,7 +327,7 @@ function drawHorizontalBar(
     height: barHeight - 2,
     color: color,
   });
-  
+
   // Label
   page.drawText(label, {
     x: x + 5,
@@ -302,7 +336,7 @@ function drawHorizontalBar(
     font: font,
     color: colors.text,
   });
-  
+
   // Valor
   page.drawText(value.toString(), {
     x: x + 105 + barWidth,
@@ -316,13 +350,7 @@ function drawHorizontalBar(
 /**
  * Desenha título de seção destacado
  */
-function drawSectionTitle(
-  page: PDFPage,
-  title: string,
-  x: number,
-  y: number,
-  boldFont: any
-): void {
+function drawSectionTitle(page: PDFPage, title: string, x: number, y: number, boldFont: any): void {
   page.drawText(title, {
     x: x,
     y: y,
@@ -345,7 +373,7 @@ function drawHeader(
 ): void {
   const headerHeight = 30;
   const headerColor = colors.primaryDark;
-  
+
   // Fundo do header
   page.drawRectangle({
     x: 0,
@@ -354,7 +382,7 @@ function drawHeader(
     height: headerHeight,
     color: headerColor,
   });
-  
+
   // Nome do projeto
   page.drawText(projectName, {
     x: 50,
@@ -363,7 +391,7 @@ function drawHeader(
     font: boldFont,
     color: colors.white,
   });
-  
+
   // Número da página
   page.drawText(`Página ${pageNumber} de ${totalPages}`, {
     x: 495,
@@ -377,12 +405,7 @@ function drawHeader(
 /**
  * Desenha rodapé melhorado
  */
-function drawFooter(
-  page: PDFPage,
-  projectName: string,
-  generatedAt: Date,
-  font: any
-): void {
+function drawFooter(page: PDFPage, projectName: string, generatedAt: Date, font: any): void {
   const footerText = `${projectName} - Gerado em ${format(generatedAt, 'dd/MM/yyyy HH:mm')}`;
   page.drawText(footerText, {
     x: 50,
@@ -408,12 +431,15 @@ function calculateBugStatistics(failedTests: FailedTestData[], analysisText: str
     byTask: new Map<string, number>(),
     byEnvironment: new Map<string, number>(),
   };
-  
+
   // Analisar texto para severidade
   const severityMatch = analysisText.match(/Severidade:\s*([^\n]+)/gi);
   if (severityMatch) {
     severityMatch.forEach(match => {
-      const severity = match.replace(/Severidade:\s*/i, '').trim().toLowerCase();
+      const severity = match
+        .replace(/Severidade:\s*/i, '')
+        .trim()
+        .toLowerCase();
       if (severity.includes('crítico') || severity.includes('critico')) {
         stats.bySeverity.crítico++;
       } else if (severity.includes('alto')) {
@@ -425,12 +451,12 @@ function calculateBugStatistics(failedTests: FailedTestData[], analysisText: str
       }
     });
   }
-  
+
   // Agrupar por tarefa
   failedTests.forEach(ft => {
     const taskId = ft.task.id;
     stats.byTask.set(taskId, (stats.byTask.get(taskId) || 0) + 1);
-    
+
     if (ft.testCase.testEnvironment) {
       stats.byEnvironment.set(
         ft.testCase.testEnvironment,
@@ -438,7 +464,7 @@ function calculateBugStatistics(failedTests: FailedTestData[], analysisText: str
       );
     }
   });
-  
+
   return stats;
 }
 
@@ -483,7 +509,7 @@ export async function generateFailedTestsPDF(
       height: headerHeight,
       color: colors.primaryDark,
     });
-    
+
     page.drawText('QA AGILE GUIDE', {
       x: margin,
       y: pageHeight - headerHeight + 8,
@@ -566,8 +592,17 @@ export async function generateFailedTestsPDF(
 
     // Informações do projeto em box
     const infoBoxHeight = 120;
-    drawBox(page, margin, yPosition, pageWidth - 2 * margin, infoBoxHeight, colors.lightGray, colors.mediumGray, 1);
-    
+    drawBox(
+      page,
+      margin,
+      yPosition,
+      pageWidth - 2 * margin,
+      infoBoxHeight,
+      colors.lightGray,
+      colors.mediumGray,
+      1
+    );
+
     yPosition -= 20;
     page.drawText('Informações do Projeto', {
       x: margin + 10,
@@ -634,7 +669,7 @@ export async function generateFailedTestsPDF(
     page = pdfDoc.addPage([pageWidth, pageHeight]);
     currentPageIndex = 1;
     yPosition = pageHeight - margin - headerHeight;
-    
+
     // Header será desenhado no final
 
     page.drawText('SUMÁRIO', {
@@ -656,7 +691,15 @@ export async function generateFailedTestsPDF(
     ];
 
     sections.forEach((section, index) => {
-      const sectionCheck = checkAndBreakPage(pdfDoc, page, yPosition, minYPosition, headerHeight, margin, pageHeight);
+      const sectionCheck = checkAndBreakPage(
+        pdfDoc,
+        page,
+        yPosition,
+        minYPosition,
+        headerHeight,
+        margin,
+        pageHeight
+      );
       if (sectionCheck.page !== page) {
         currentPageIndex++;
       }
@@ -674,12 +717,14 @@ export async function generateFailedTestsPDF(
     });
 
     // ========== RESUMO EXECUTIVO MELHORADO ==========
-    const executiveSummaryMatch = analysisText.match(/RESUMO EXECUTIVO\s*-+\s*([\s\S]*?)(?=ANÁLISE DOS BUGS|BUGS IDENTIFICADOS|PRIORIZAÇÃO|MÉTRICAS|$)/i);
+    const executiveSummaryMatch = analysisText.match(
+      /RESUMO EXECUTIVO\s*-+\s*([\s\S]*?)(?=ANÁLISE DOS BUGS|BUGS IDENTIFICADOS|PRIORIZAÇÃO|MÉTRICAS|$)/i
+    );
     if (executiveSummaryMatch) {
       page = pdfDoc.addPage([pageWidth, pageHeight]);
       currentPageIndex++;
       yPosition = pageHeight - margin - headerHeight;
-      
+
       // Header será atualizado no final com número correto de páginas
       tableOfContents.push({ title: 'Resumo Executivo', page: currentPageIndex + 1 });
 
@@ -688,23 +733,31 @@ export async function generateFailedTestsPDF(
 
       const summaryText = executiveSummaryMatch[1].trim();
       const summaryParagraphs = summaryText.split(/\n\s*\n/).filter(p => p.trim());
-      
+
       summaryParagraphs.forEach(paragraph => {
         const paragraphLines = wrapText(paragraph.trim(), pageWidth - 2 * margin, font, 11);
-        
-        paragraphLines.forEach((line) => {
-          const lineCheck = checkAndBreakPage(pdfDoc, page, yPosition, minYPosition, headerHeight, margin, pageHeight);
+
+        paragraphLines.forEach(line => {
+          const lineCheck = checkAndBreakPage(
+            pdfDoc,
+            page,
+            yPosition,
+            minYPosition,
+            headerHeight,
+            margin,
+            pageHeight
+          );
           if (lineCheck.page !== page) {
             currentPageIndex++;
           }
           page = lineCheck.page;
           yPosition = lineCheck.yPosition;
-          
+
           // Destacar números importantes
           const hasNumber = /\d+/.test(line);
           const textColor = hasNumber ? colors.primary : colors.text;
           const textFont = hasNumber ? boldFont : font;
-          
+
           page.drawText(line, {
             x: margin,
             y: yPosition,
@@ -714,7 +767,7 @@ export async function generateFailedTestsPDF(
           });
           yPosition -= lineHeight + 2;
         });
-        
+
         // Espaço entre parágrafos
         yPosition -= 8;
       });
@@ -725,7 +778,7 @@ export async function generateFailedTestsPDF(
     page = pdfDoc.addPage([pageWidth, pageHeight]);
     currentPageIndex++;
     yPosition = pageHeight - margin - headerHeight;
-    
+
     // Header será desenhado no final
     tableOfContents.push({ title: 'Métricas e Estatísticas', page: currentPageIndex + 1 });
 
@@ -734,7 +787,15 @@ export async function generateFailedTestsPDF(
 
     // Tabela de bugs por tarefa primeiro
     if (stats.byTask.size > 0) {
-      const tableCheck = checkAndBreakPage(pdfDoc, page, yPosition, minYPosition + 100, headerHeight, margin, pageHeight);
+      const tableCheck = checkAndBreakPage(
+        pdfDoc,
+        page,
+        yPosition,
+        minYPosition + 100,
+        headerHeight,
+        margin,
+        pageHeight
+      );
       if (tableCheck.page !== page) {
         currentPageIndex++;
       }
@@ -753,11 +814,7 @@ export async function generateFailedTestsPDF(
       const taskRows: string[][] = [];
       stats.byTask.forEach((count, taskId) => {
         const task = failedTests.find(ft => ft.task.id === taskId)?.task;
-        taskRows.push([
-          taskId,
-          task?.title || 'Sem título',
-          count.toString(),
-        ]);
+        taskRows.push([taskId, task?.title || 'Sem título', count.toString()]);
       });
 
       const taskColumns = [
@@ -766,7 +823,20 @@ export async function generateFailedTestsPDF(
         { header: 'Bugs', width: 80 },
       ];
 
-      const taskTableResult = drawTable(pdfDoc, page, margin, yPosition, taskColumns, taskRows, font, boldFont, minYPosition, headerHeight, margin, pageHeight);
+      const taskTableResult = drawTable(
+        pdfDoc,
+        page,
+        margin,
+        yPosition,
+        taskColumns,
+        taskRows,
+        font,
+        boldFont,
+        minYPosition,
+        headerHeight,
+        margin,
+        pageHeight
+      );
       page = taskTableResult.page;
       yPosition = taskTableResult.yPosition;
       yPosition -= sectionSpacing;
@@ -781,7 +851,15 @@ export async function generateFailedTestsPDF(
     ].filter(item => item.value > 0);
 
     if (severityData.length > 0) {
-      const barChartCheck = checkAndBreakPage(pdfDoc, page, yPosition, minYPosition + (severityData.length * 30) + 50, headerHeight, margin, pageHeight);
+      const barChartCheck = checkAndBreakPage(
+        pdfDoc,
+        page,
+        yPosition,
+        minYPosition + severityData.length * 30 + 50,
+        headerHeight,
+        margin,
+        pageHeight
+      );
       if (barChartCheck.page !== page) {
         currentPageIndex++;
       }
@@ -802,18 +880,38 @@ export async function generateFailedTestsPDF(
       const barSpacing = 5;
       const chartWidth = pageWidth - 2 * margin;
 
-      severityData.forEach((item) => {
-        const barCheck = checkAndBreakPage(pdfDoc, page, yPosition, minYPosition + barHeight + 10, headerHeight, margin, pageHeight);
+      severityData.forEach(item => {
+        const barCheck = checkAndBreakPage(
+          pdfDoc,
+          page,
+          yPosition,
+          minYPosition + barHeight + 10,
+          headerHeight,
+          margin,
+          pageHeight
+        );
         if (barCheck.page !== page) {
           currentPageIndex++;
         }
         page = barCheck.page;
         yPosition = barCheck.yPosition;
 
-        drawHorizontalBar(page, item.label, item.value, maxSeverity, item.color, margin, yPosition, chartWidth, barHeight, font, boldFont);
+        drawHorizontalBar(
+          page,
+          item.label,
+          item.value,
+          maxSeverity,
+          item.color,
+          margin,
+          yPosition,
+          chartWidth,
+          barHeight,
+          font,
+          boldFont
+        );
         yPosition -= barHeight + barSpacing;
       });
-      
+
       yPosition -= sectionSpacing;
     }
 
@@ -821,7 +919,7 @@ export async function generateFailedTestsPDF(
     page = pdfDoc.addPage([pageWidth, pageHeight]);
     currentPageIndex++;
     yPosition = pageHeight - margin - headerHeight;
-    
+
     // Header será desenhado no final
     tableOfContents.push({ title: 'Tabela de Bugs', page: currentPageIndex + 1 });
 
@@ -842,7 +940,9 @@ export async function generateFailedTestsPDF(
     failedTests.forEach((ft, index) => {
       // Extrair severidade do texto de análise se disponível
       let severity = 'N/A';
-      const severityMatch = analysisText.match(new RegExp(`(?:Bug|Teste)\\s*${index + 1}[\\s\\S]*?Severidade:\\s*([^\\n]+)`, 'i'));
+      const severityMatch = analysisText.match(
+        new RegExp(`(?:Bug|Teste)\\s*${index + 1}[\\s\\S]*?Severidade:\\s*([^\\n]+)`, 'i')
+      );
       if (severityMatch) {
         severity = severityMatch[1].trim();
       }
@@ -850,7 +950,8 @@ export async function generateFailedTestsPDF(
       bugTableRows.push([
         ft.testCase.id || `TC-${index + 1}`,
         ft.task.id,
-        ft.testCase.description.substring(0, 45) + (ft.testCase.description.length > 45 ? '...' : ''),
+        ft.testCase.description.substring(0, 45) +
+          (ft.testCase.description.length > 45 ? '...' : ''),
         severity,
         ft.testCase.priority || 'N/A',
         ft.testCase.testEnvironment || 'N/A',
@@ -858,14 +959,37 @@ export async function generateFailedTestsPDF(
       ]);
     });
 
-    const bugTableResult = drawTable(pdfDoc, page, margin, yPosition, bugTableColumns, bugTableRows, font, boldFont, minYPosition, headerHeight, margin, pageHeight);
+    const bugTableResult = drawTable(
+      pdfDoc,
+      page,
+      margin,
+      yPosition,
+      bugTableColumns,
+      bugTableRows,
+      font,
+      boldFont,
+      minYPosition,
+      headerHeight,
+      margin,
+      pageHeight
+    );
     page = bugTableResult.page;
     yPosition = bugTableResult.yPosition;
 
     // ========== ANÁLISE DETALHADA DOS BUGS ==========
-    const bugsSectionMatch = analysisText.match(/ANÁLISE DOS BUGS\s*-+\s*([\s\S]*?)(?=PRIORIZAÇÃO|PRÓXIMOS PASSOS|$)/i);
-    
-    const bugsCheck = checkAndBreakPage(pdfDoc, page, yPosition, minYPosition + 100, headerHeight, margin, pageHeight);
+    const bugsSectionMatch = analysisText.match(
+      /ANÁLISE DOS BUGS\s*-+\s*([\s\S]*?)(?=PRIORIZAÇÃO|PRÓXIMOS PASSOS|$)/i
+    );
+
+    const bugsCheck = checkAndBreakPage(
+      pdfDoc,
+      page,
+      yPosition,
+      minYPosition + 100,
+      headerHeight,
+      margin,
+      pageHeight
+    );
     if (bugsCheck.page !== page) {
       currentPageIndex++;
     }
@@ -879,26 +1003,46 @@ export async function generateFailedTestsPDF(
       yPosition -= 40;
 
       const bugsText = bugsSectionMatch[1];
-      const groupMatches = bugsText.match(/Grupo\s*\d+:\s*([^\n]+)\n([\s\S]*?)(?=Grupo\s*\d+:|PRIORIZAÇÃO|PRÓXIMOS PASSOS|$)/gi);
-      
+      const groupMatches = bugsText.match(
+        /Grupo\s*\d+:\s*([^\n]+)\n([\s\S]*?)(?=Grupo\s*\d+:|PRIORIZAÇÃO|PRÓXIMOS PASSOS|$)/gi
+      );
+
       if (groupMatches) {
         groupMatches.forEach((groupMatch, index) => {
           const groupLines = groupMatch.split('\n').filter(l => l.trim());
-          const groupTitle = groupLines[0]?.replace(/^Grupo\s*\d+:\s*/i, '') || `Grupo ${index + 1}`;
-          
+          const groupTitle =
+            groupLines[0]?.replace(/^Grupo\s*\d+:\s*/i, '') || `Grupo ${index + 1}`;
+
           // Box para o grupo
           const boxHeight = 150;
-          
+
           // Verificar espaço antes de desenhar box
-          const boxCheck = checkAndBreakPage(pdfDoc, page, yPosition, minYPosition + boxHeight, headerHeight, margin, pageHeight);
+          const boxCheck = checkAndBreakPage(
+            pdfDoc,
+            page,
+            yPosition,
+            minYPosition + boxHeight,
+            headerHeight,
+            margin,
+            pageHeight
+          );
           if (boxCheck.page !== page) {
             currentPageIndex++;
           }
           page = boxCheck.page;
           yPosition = boxCheck.yPosition;
-          
-          drawBox(page, margin, yPosition, pageWidth - 2 * margin, boxHeight, colors.lightGray, colors.primary, 2);
-          
+
+          drawBox(
+            page,
+            margin,
+            yPosition,
+            pageWidth - 2 * margin,
+            boxHeight,
+            colors.lightGray,
+            colors.primary,
+            2
+          );
+
           yPosition -= 20;
           page.drawText(`Grupo ${index + 1}: ${groupTitle}`, {
             x: margin + 10,
@@ -911,7 +1055,15 @@ export async function generateFailedTestsPDF(
 
           // Detalhes do grupo
           groupLines.slice(1).forEach(line => {
-            const lineCheck = checkAndBreakPage(pdfDoc, page, yPosition, minYPosition, headerHeight, margin, pageHeight);
+            const lineCheck = checkAndBreakPage(
+              pdfDoc,
+              page,
+              yPosition,
+              minYPosition,
+              headerHeight,
+              margin,
+              pageHeight
+            );
             if (lineCheck.page !== page) {
               currentPageIndex++;
             }
@@ -964,7 +1116,15 @@ export async function generateFailedTestsPDF(
               yPosition -= lineHeight + 3;
               const wrapped = wrapText(impact, pageWidth - 2 * margin - 30, font, 10);
               wrapped.forEach(wrappedLine => {
-                const lineCheck = checkAndBreakPage(pdfDoc, page, yPosition, minYPosition, headerHeight, margin, pageHeight);
+                const lineCheck = checkAndBreakPage(
+                  pdfDoc,
+                  page,
+                  yPosition,
+                  minYPosition,
+                  headerHeight,
+                  margin,
+                  pageHeight
+                );
                 if (lineCheck.page !== page) {
                   currentPageIndex++;
                 }
@@ -993,7 +1153,15 @@ export async function generateFailedTestsPDF(
               yPosition -= lineHeight + 3;
               const wrapped = wrapText(technical, pageWidth - 2 * margin - 30, font, 10);
               wrapped.forEach(wrappedLine => {
-                const lineCheck = checkAndBreakPage(pdfDoc, page, yPosition, minYPosition, headerHeight, margin, pageHeight);
+                const lineCheck = checkAndBreakPage(
+                  pdfDoc,
+                  page,
+                  yPosition,
+                  minYPosition,
+                  headerHeight,
+                  margin,
+                  pageHeight
+                );
                 if (lineCheck.page !== page) {
                   currentPageIndex++;
                 }
@@ -1022,7 +1190,15 @@ export async function generateFailedTestsPDF(
               yPosition -= lineHeight + 3;
               const wrapped = wrapText(recommendation, pageWidth - 2 * margin - 30, font, 10);
               wrapped.forEach(wrappedLine => {
-                const lineCheck = checkAndBreakPage(pdfDoc, page, yPosition, minYPosition, headerHeight, margin, pageHeight);
+                const lineCheck = checkAndBreakPage(
+                  pdfDoc,
+                  page,
+                  yPosition,
+                  minYPosition,
+                  headerHeight,
+                  margin,
+                  pageHeight
+                );
                 if (lineCheck.page !== page) {
                   currentPageIndex++;
                 }
@@ -1039,10 +1215,25 @@ export async function generateFailedTestsPDF(
                 yPosition -= lineHeight;
               });
               yPosition -= 3;
-            } else if (trimmedLine.startsWith('-') && !trimmedLine.startsWith('- Quantidade') && !trimmedLine.startsWith('- Severidade') && !trimmedLine.startsWith('- Impacto') && !trimmedLine.startsWith('- Descrição') && !trimmedLine.startsWith('- Recomendação')) {
+            } else if (
+              trimmedLine.startsWith('-') &&
+              !trimmedLine.startsWith('- Quantidade') &&
+              !trimmedLine.startsWith('- Severidade') &&
+              !trimmedLine.startsWith('- Impacto') &&
+              !trimmedLine.startsWith('- Descrição') &&
+              !trimmedLine.startsWith('- Recomendação')
+            ) {
               const wrapped = wrapText(trimmedLine, pageWidth - 2 * margin - 30, font, 10);
               wrapped.forEach(wrappedLine => {
-                const lineCheck = checkAndBreakPage(pdfDoc, page, yPosition, minYPosition, headerHeight, margin, pageHeight);
+                const lineCheck = checkAndBreakPage(
+                  pdfDoc,
+                  page,
+                  yPosition,
+                  minYPosition,
+                  headerHeight,
+                  margin,
+                  pageHeight
+                );
                 if (lineCheck.page !== page) {
                   currentPageIndex++;
                 }
@@ -1078,25 +1269,45 @@ export async function generateFailedTestsPDF(
             estimatedHeight += 30;
           }
           const bugBoxHeight = Math.min(estimatedHeight, 250);
-          
+
           // Verificar espaço antes de desenhar box
-          const bugCheck = checkAndBreakPage(pdfDoc, page, yPosition, minYPosition + bugBoxHeight, headerHeight, margin, pageHeight);
+          const bugCheck = checkAndBreakPage(
+            pdfDoc,
+            page,
+            yPosition,
+            minYPosition + bugBoxHeight,
+            headerHeight,
+            margin,
+            pageHeight
+          );
           if (bugCheck.page !== page) {
             currentPageIndex++;
           }
           page = bugCheck.page;
           yPosition = bugCheck.yPosition;
-          
-          drawBox(page, margin, yPosition, pageWidth - 2 * margin, bugBoxHeight, colors.lightGray, colors.primary, 1);
-          
+
+          drawBox(
+            page,
+            margin,
+            yPosition,
+            pageWidth - 2 * margin,
+            bugBoxHeight,
+            colors.lightGray,
+            colors.primary,
+            1
+          );
+
           yPosition -= 20;
-          page.drawText(`Bug ${index + 1}: ${ft.testCase.description.substring(0, 60)}${ft.testCase.description.length > 60 ? '...' : ''}`, {
-            x: margin + 10,
-            y: yPosition,
-            size: 12,
-            font: boldFont,
-            color: colors.primary,
-          });
+          page.drawText(
+            `Bug ${index + 1}: ${ft.testCase.description.substring(0, 60)}${ft.testCase.description.length > 60 ? '...' : ''}`,
+            {
+              x: margin + 10,
+              y: yPosition,
+              size: 12,
+              font: boldFont,
+              color: colors.primary,
+            }
+          );
           yPosition -= 25;
 
           // Informações do teste com melhor formatação
@@ -1112,7 +1323,7 @@ export async function generateFailedTestsPDF(
           taskWrapped.forEach((line, lineIndex) => {
             page.drawText(line, {
               x: margin + 70,
-              y: yPosition - (lineIndex * 14),
+              y: yPosition - lineIndex * 14,
               size: 10,
               font: font,
               color: colors.text,
@@ -1140,7 +1351,9 @@ export async function generateFailedTestsPDF(
 
           // Extrair e exibir severidade se disponível
           let severity = 'N/A';
-          const severityMatch = analysisText.match(new RegExp(`(?:Bug|Teste)\\s*${index + 1}[\\s\\S]*?Severidade:\\s*([^\\n]+)`, 'i'));
+          const severityMatch = analysisText.match(
+            new RegExp(`(?:Bug|Teste)\\s*${index + 1}[\\s\\S]*?Severidade:\\s*([^\\n]+)`, 'i')
+          );
           if (severityMatch) {
             severity = severityMatch[1].trim();
             page.drawText('Severidade:', {
@@ -1198,7 +1411,15 @@ export async function generateFailedTestsPDF(
               const stepText = `${stepIndex + 1}. ${step}`;
               const wrapped = wrapText(stepText, pageWidth - 2 * margin - 30, font, 9);
               wrapped.forEach(line => {
-                const lineCheck = checkAndBreakPage(pdfDoc, page, yPosition, minYPosition, headerHeight, margin, pageHeight);
+                const lineCheck = checkAndBreakPage(
+                  pdfDoc,
+                  page,
+                  yPosition,
+                  minYPosition,
+                  headerHeight,
+                  margin,
+                  pageHeight
+                );
                 if (lineCheck.page !== page) {
                   currentPageIndex++;
                 }
@@ -1228,9 +1449,22 @@ export async function generateFailedTestsPDF(
               color: colors.success,
             });
             yPosition -= 15;
-            const expectedWrapped = wrapText(ft.testCase.expectedResult, pageWidth - 2 * margin - 30, font, 9);
+            const expectedWrapped = wrapText(
+              ft.testCase.expectedResult,
+              pageWidth - 2 * margin - 30,
+              font,
+              9
+            );
             expectedWrapped.forEach(line => {
-              const lineCheck = checkAndBreakPage(pdfDoc, page, yPosition, minYPosition, headerHeight, margin, pageHeight);
+              const lineCheck = checkAndBreakPage(
+                pdfDoc,
+                page,
+                yPosition,
+                minYPosition,
+                headerHeight,
+                margin,
+                pageHeight
+              );
               if (lineCheck.page !== page) {
                 currentPageIndex++;
               }
@@ -1257,9 +1491,22 @@ export async function generateFailedTestsPDF(
               color: colors.error,
             });
             yPosition -= 15;
-            const observedWrapped = wrapText(ft.testCase.observedResult, pageWidth - 2 * margin - 30, font, 9);
+            const observedWrapped = wrapText(
+              ft.testCase.observedResult,
+              pageWidth - 2 * margin - 30,
+              font,
+              9
+            );
             observedWrapped.forEach(line => {
-              const lineCheck = checkAndBreakPage(pdfDoc, page, yPosition, minYPosition, headerHeight, margin, pageHeight);
+              const lineCheck = checkAndBreakPage(
+                pdfDoc,
+                page,
+                yPosition,
+                minYPosition,
+                headerHeight,
+                margin,
+                pageHeight
+              );
               if (lineCheck.page !== page) {
                 currentPageIndex++;
               }
@@ -1283,9 +1530,19 @@ export async function generateFailedTestsPDF(
     }
 
     // ========== PRIORIZAÇÃO MELHORADA ==========
-    const prioritizationMatch = analysisText.match(/PRIORIZAÇÃO\s*-+\s*([\s\S]*?)(?=PRÓXIMOS PASSOS|$)/i);
+    const prioritizationMatch = analysisText.match(
+      /PRIORIZAÇÃO\s*-+\s*([\s\S]*?)(?=PRÓXIMOS PASSOS|$)/i
+    );
     if (prioritizationMatch) {
-      const priorCheck = checkAndBreakPage(pdfDoc, page, yPosition, minYPosition + 50, headerHeight, margin, pageHeight);
+      const priorCheck = checkAndBreakPage(
+        pdfDoc,
+        page,
+        yPosition,
+        minYPosition + 50,
+        headerHeight,
+        margin,
+        pageHeight
+      );
       if (priorCheck.page !== page) {
         currentPageIndex++;
       }
@@ -1305,9 +1562,17 @@ export async function generateFailedTestsPDF(
 
       const prioritizationText = prioritizationMatch[1].trim();
       const prioritizationLines = wrapText(prioritizationText, pageWidth - 2 * margin, font, 11);
-      
+
       prioritizationLines.forEach(line => {
-        const lineCheck = checkAndBreakPage(pdfDoc, page, yPosition, minYPosition, headerHeight, margin, pageHeight);
+        const lineCheck = checkAndBreakPage(
+          pdfDoc,
+          page,
+          yPosition,
+          minYPosition,
+          headerHeight,
+          margin,
+          pageHeight
+        );
         if (lineCheck.page !== page) {
           currentPageIndex++;
         }
@@ -1327,7 +1592,15 @@ export async function generateFailedTestsPDF(
     // ========== PRÓXIMOS PASSOS ==========
     const nextStepsMatch = analysisText.match(/PRÓXIMOS PASSOS\s*-+\s*([\s\S]*?)$/i);
     if (nextStepsMatch) {
-      const stepsCheck = checkAndBreakPage(pdfDoc, page, yPosition, minYPosition + 50, headerHeight, margin, pageHeight);
+      const stepsCheck = checkAndBreakPage(
+        pdfDoc,
+        page,
+        yPosition,
+        minYPosition + 50,
+        headerHeight,
+        margin,
+        pageHeight
+      );
       if (stepsCheck.page !== page) {
         currentPageIndex++;
       }
@@ -1347,23 +1620,40 @@ export async function generateFailedTestsPDF(
 
       const nextStepsText = nextStepsMatch[1].trim();
       const nextStepsLines = nextStepsText.split('\n').filter(l => l.trim());
-      
+
       nextStepsLines.forEach((line, index) => {
         const stepBoxHeight = 35;
-        
+
         // Verificar espaço antes de desenhar box
-        const stepCheck = checkAndBreakPage(pdfDoc, page, yPosition, minYPosition + stepBoxHeight, headerHeight, margin, pageHeight);
+        const stepCheck = checkAndBreakPage(
+          pdfDoc,
+          page,
+          yPosition,
+          minYPosition + stepBoxHeight,
+          headerHeight,
+          margin,
+          pageHeight
+        );
         if (stepCheck.page !== page) {
           currentPageIndex++;
         }
         page = stepCheck.page;
         yPosition = stepCheck.yPosition;
-        
+
         const trimmedLine = line.trim().replace(/^\d+\.\s*/, '');
-        
+
         // Box para cada passo
-        drawBox(page, margin, yPosition, pageWidth - 2 * margin, stepBoxHeight, colors.lightGray, colors.primary, 1);
-        
+        drawBox(
+          page,
+          margin,
+          yPosition,
+          pageWidth - 2 * margin,
+          stepBoxHeight,
+          colors.lightGray,
+          colors.primary,
+          1
+        );
+
         page.drawText(`${index + 1}.`, {
           x: margin + 10,
           y: yPosition - 20,
@@ -1371,18 +1661,18 @@ export async function generateFailedTestsPDF(
           font: boldFont,
           color: colors.primary,
         });
-        
+
         const wrapped = wrapText(trimmedLine, pageWidth - 2 * margin - 40, font, 10);
         wrapped.forEach((wrappedLine, lineIndex) => {
           page.drawText(wrappedLine, {
             x: margin + 35,
-            y: yPosition - 20 - (lineIndex * 14),
+            y: yPosition - 20 - lineIndex * 14,
             size: 10,
             font: font,
             color: colors.text,
           });
         });
-        
+
         yPosition -= stepBoxHeight + 10;
       });
     }
@@ -1391,26 +1681,26 @@ export async function generateFailedTestsPDF(
     const finalTotalPages = pdfDoc.getPageCount();
     for (let i = 0; i < finalTotalPages; i++) {
       const currentPage = pdfDoc.getPage(i);
-      
+
       // Pular capa (página 0)
       if (i > 0) {
         drawHeader(currentPage, project.name, i + 1, finalTotalPages, font, boldFont);
       }
-      
+
       drawFooter(currentPage, project.name, generatedAt, font);
     }
-    
+
     // Atualizar números de página no sumário com total correto
     const finalTocPage = pdfDoc.getPage(1);
     let finalTocY = pageHeight - margin - headerHeight - 40;
-    
+
     sections.forEach((section, index) => {
       const tocItem = tableOfContents.find(item => item.title === section);
       if (tocItem) {
         const pageText = `${index + 1}. ${section}`;
         const pageNumText = `... ${tocItem.page}`;
         const pageNumWidth = boldFont.widthOfTextAtSize(pageNumText, 11);
-        
+
         // Desenhar fundo branco para sobrescrever texto anterior
         finalTocPage.drawRectangle({
           x: margin + 15,
@@ -1419,7 +1709,7 @@ export async function generateFailedTestsPDF(
           height: 20,
           color: colors.white,
         });
-        
+
         finalTocPage.drawText(pageText, {
           x: margin + 20,
           y: finalTocY,
@@ -1427,7 +1717,7 @@ export async function generateFailedTestsPDF(
           font: font,
           color: colors.text,
         });
-        
+
         finalTocPage.drawText(pageNumText, {
           x: pageWidth - margin - pageNumWidth,
           y: finalTocY,
@@ -1435,7 +1725,7 @@ export async function generateFailedTestsPDF(
           font: boldFont,
           color: colors.primary,
         });
-        
+
         finalTocY -= 25;
       }
     });
@@ -1446,7 +1736,9 @@ export async function generateFailedTestsPDF(
     const fileName = `${project.name}_relatorio_bugs_${format(generatedAt, 'yyyy-MM-dd')}.pdf`;
     saveAs(blob, fileName);
   } catch (error) {
-    throw new Error(`Erro ao gerar PDF: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+    throw new Error(
+      `Erro ao gerar PDF: ${error instanceof Error ? error.message : 'Erro desconhecido'}`
+    );
   }
 }
 

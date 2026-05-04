@@ -41,4 +41,3 @@ describe('ErrorBoundary', () => {
     expect(screen.getByText(/Ops! Algo deu errado/i)).toBeInTheDocument();
   });
 });
-

@@ -25,7 +25,10 @@ const STEPS = [
 ] as const;
 
 export const OnboardingGuide: React.FC<OnboardingGuideProps> = ({ forceOpen = false, onClose }) => {
-  const [completed, setCompleted] = useLocalStorage<boolean>('qa-agile-onboarding-completed', false);
+  const [completed, setCompleted] = useLocalStorage<boolean>(
+    'qa-agile-onboarding-completed',
+    false
+  );
   const [isOpen, setIsOpen] = useState(!completed);
   const [step, setStep] = useState(0);
 
@@ -65,7 +68,11 @@ export const OnboardingGuide: React.FC<OnboardingGuideProps> = ({ forceOpen = fa
             Agora não
           </button>
           {!isLast ? (
-            <button type="button" className="btn btn-primary rounded-full" onClick={() => setStep((s) => s + 1)}>
+            <button
+              type="button"
+              className="btn btn-primary rounded-full"
+              onClick={() => setStep(s => s + 1)}
+            >
               Próximo
             </button>
           ) : (

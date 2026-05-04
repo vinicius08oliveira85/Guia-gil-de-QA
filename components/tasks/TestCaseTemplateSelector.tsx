@@ -15,27 +15,28 @@ export const TestCaseTemplateSelector: React.FC<TestCaseTemplateSelectorProps> =
   onClose,
   selectedTaskId,
   availableTasks = [],
-  onSelectTask
+  onSelectTask,
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const categories = ['all', ...Array.from(new Set(TEST_CASE_TEMPLATES.map(t => t.category)))];
 
-  const filteredTemplates = selectedCategory === 'all'
-    ? TEST_CASE_TEMPLATES
-    : TEST_CASE_TEMPLATES.filter(t => t.category === selectedCategory);
+  const filteredTemplates =
+    selectedCategory === 'all'
+      ? TEST_CASE_TEMPLATES
+      : TEST_CASE_TEMPLATES.filter(t => t.category === selectedCategory);
 
   const needsTaskSelection = !selectedTaskId && availableTasks.length > 0 && onSelectTask;
 
   const getCategoryIcon = (category: string) => {
     const icons: Record<string, string> = {
-      'Functional': '⚙️',
-      'Integration': '🔌',
-      'Performance': '⚡',
-      'Security': '🔒',
-      'Usability': '👤',
-      'Regression': '🔄',
-      'Smoke': '💨',
-      'E2E': '🎯'
+      Functional: '⚙️',
+      Integration: '🔌',
+      Performance: '⚡',
+      Security: '🔒',
+      Usability: '👤',
+      Regression: '🔄',
+      Smoke: '💨',
+      E2E: '🎯',
     };
     return icons[category] || '📋';
   };
@@ -65,8 +66,18 @@ export const TestCaseTemplateSelector: React.FC<TestCaseTemplateSelectorProps> =
                     <p className="text-sm text-text-secondary truncate">{task.title}</p>
                   </div>
                   {selectedTaskId === task.id && (
-                    <svg className="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    <svg
+                      className="w-5 h-5 text-accent"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
                     </svg>
                   )}
                 </div>
@@ -152,10 +163,19 @@ export const TestCaseTemplateSelector: React.FC<TestCaseTemplateSelectorProps> =
               </div>
             </div>
             <div className="text-xs text-text-secondary space-y-1 mb-3">
-              <p><strong className="text-text-primary">Descrição do teste:</strong> {template.testCase.description}</p>
-              <p><strong className="text-text-primary">Passos:</strong> {template.testCase.steps.length} passos</p>
+              <p>
+                <strong className="text-text-primary">Descrição do teste:</strong>{' '}
+                {template.testCase.description}
+              </p>
+              <p>
+                <strong className="text-text-primary">Passos:</strong>{' '}
+                {template.testCase.steps.length} passos
+              </p>
               {template.testCase.expectedResult && (
-                <p><strong className="text-text-primary">Resultado esperado:</strong> {template.testCase.expectedResult}</p>
+                <p>
+                  <strong className="text-text-primary">Resultado esperado:</strong>{' '}
+                  {template.testCase.expectedResult}
+                </p>
               )}
             </div>
             <div className="flex flex-wrap gap-1.5 mt-3 pt-3 border-t border-surface-border">
@@ -174,4 +194,3 @@ export const TestCaseTemplateSelector: React.FC<TestCaseTemplateSelectorProps> =
     </div>
   );
 };
-

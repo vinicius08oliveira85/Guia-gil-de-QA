@@ -8,9 +8,9 @@ interface GeneralAnalysisCardProps {
   onRefresh?: () => void;
 }
 
-export const GeneralAnalysisCard: React.FC<GeneralAnalysisCardProps> = ({ 
-  analysis, 
-  onRefresh 
+export const GeneralAnalysisCard: React.FC<GeneralAnalysisCardProps> = ({
+  analysis,
+  onRefresh,
 }) => {
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['summary']));
 
@@ -31,19 +31,25 @@ export const GeneralAnalysisCard: React.FC<GeneralAnalysisCardProps> = ({
       case 'Crítico':
         return { box: 'bg-error/10 border-error/30', badge: 'badge badge-error badge-outline' };
       case 'Alto':
-        return { box: 'bg-warning/10 border-warning/30', badge: 'badge badge-warning badge-outline' };
+        return {
+          box: 'bg-warning/10 border-warning/30',
+          badge: 'badge badge-warning badge-outline',
+        };
       case 'Médio':
         return { box: 'bg-info/10 border-info/30', badge: 'badge badge-info badge-outline' };
       case 'Baixo':
-        return { box: 'bg-success/10 border-success/30', badge: 'badge badge-success badge-outline' };
+        return {
+          box: 'bg-success/10 border-success/30',
+          badge: 'badge badge-success badge-outline',
+        };
       default:
         return { box: 'bg-base-200 border-base-300', badge: 'badge badge-neutral badge-outline' };
     }
   }, [analysis.riskCalculation.overallRisk]);
 
-  const SectionHeader: React.FC<{ 
-    title: string; 
-    icon: string; 
+  const SectionHeader: React.FC<{
+    title: string;
+    icon: string;
     count?: number;
     sectionKey: string;
   }> = ({ title, icon, count, sectionKey }) => (
@@ -56,9 +62,7 @@ export const GeneralAnalysisCard: React.FC<GeneralAnalysisCardProps> = ({
         <span className="text-2xl">{icon}</span>
         <span className="font-semibold text-base-content text-lg">{title}</span>
         {count !== undefined && (
-          <span className="badge badge-outline badge-sm text-primary">
-            {count}
-          </span>
+          <span className="badge badge-outline badge-sm text-primary">{count}</span>
         )}
       </div>
       <svg
@@ -80,7 +84,9 @@ export const GeneralAnalysisCard: React.FC<GeneralAnalysisCardProps> = ({
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="text-2xl sm:text-3xl font-bold tracking-tight text-base-content mb-2">Análise Geral IA</h3>
+          <h3 className="text-2xl sm:text-3xl font-bold tracking-tight text-base-content mb-2">
+            Análise Geral IA
+          </h3>
           <p className="text-sm text-base-content/70">
             Gerada em {format(new Date(analysis.generatedAt), "dd/MM/yyyy 'às' HH:mm")}
           </p>
@@ -93,22 +99,37 @@ export const GeneralAnalysisCard: React.FC<GeneralAnalysisCardProps> = ({
             title="Atualizar análise"
             aria-label="Atualizar análise geral"
           >
-            <svg className="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            <svg
+              className="w-5 h-5 text-primary"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+              />
             </svg>
           </button>
         )}
       </div>
 
       {/* Risk Badge */}
-      <div className={cn('mb-6 p-5 rounded-xl border', overallRiskBadge.box)} role="alert" aria-live="polite">
+      <div
+        className={cn('mb-6 p-5 rounded-xl border', overallRiskBadge.box)}
+        role="alert"
+        aria-live="polite"
+      >
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-semibold mb-2 uppercase tracking-wide">Risco Geral do Projeto</p>
-            <p className="text-2xl font-bold mb-1">{analysis.riskCalculation.overallRisk}</p>
-            <p className="text-sm opacity-80">
-              Score: {analysis.riskCalculation.riskScore}/100
+            <p className="text-sm font-semibold mb-2 uppercase tracking-wide">
+              Risco Geral do Projeto
             </p>
+            <p className="text-2xl font-bold mb-1">{analysis.riskCalculation.overallRisk}</p>
+            <p className="text-sm opacity-80">Score: {analysis.riskCalculation.riskScore}/100</p>
           </div>
           <div className="text-4xl" aria-hidden="true">
             {analysis.riskCalculation.overallRisk === 'Crítico' && '🚨'}
@@ -133,9 +154,9 @@ export const GeneralAnalysisCard: React.FC<GeneralAnalysisCardProps> = ({
 
       {/* Detected Problems */}
       <div className="mb-6">
-        <SectionHeader 
-          title="Problemas Detectados" 
-          icon="🔍" 
+        <SectionHeader
+          title="Problemas Detectados"
+          icon="🔍"
           count={analysis.detectedProblems.length}
           sectionKey="problems"
         />
@@ -155,9 +176,9 @@ export const GeneralAnalysisCard: React.FC<GeneralAnalysisCardProps> = ({
 
       {/* Risk Factors */}
       <div className="mb-6">
-        <SectionHeader 
-          title="Fatores de Risco" 
-          icon="⚡" 
+        <SectionHeader
+          title="Fatores de Risco"
+          icon="⚡"
           count={analysis.riskCalculation.riskFactors.length}
           sectionKey="riskFactors"
         />
@@ -167,7 +188,7 @@ export const GeneralAnalysisCard: React.FC<GeneralAnalysisCardProps> = ({
               <div
                 key={idx}
                 className={cn(
-                  "p-4 rounded-xl border transition-all hover:opacity-90",
+                  'p-4 rounded-xl border transition-all hover:opacity-90',
                   factor.impact === 'Alto'
                     ? 'bg-error/10 border-error/20'
                     : factor.impact === 'Médio'
@@ -177,18 +198,22 @@ export const GeneralAnalysisCard: React.FC<GeneralAnalysisCardProps> = ({
               >
                 <div className="flex items-start justify-between mb-2">
                   <p className="font-semibold text-base-content text-base">{factor.factor}</p>
-                  <span className={cn(
-                    "badge badge-outline badge-sm",
-                    factor.impact === 'Alto'
-                      ? 'badge-error'
-                      : factor.impact === 'Médio'
-                        ? 'badge-warning'
-                        : 'badge-info'
-                  )}>
+                  <span
+                    className={cn(
+                      'badge badge-outline badge-sm',
+                      factor.impact === 'Alto'
+                        ? 'badge-error'
+                        : factor.impact === 'Médio'
+                          ? 'badge-warning'
+                          : 'badge-info'
+                    )}
+                  >
                     {factor.impact}
                   </span>
                 </div>
-                <p className="text-base text-base-content/70 leading-relaxed">{factor.description}</p>
+                <p className="text-base text-base-content/70 leading-relaxed">
+                  {factor.description}
+                </p>
               </div>
             ))}
           </div>
@@ -197,9 +222,9 @@ export const GeneralAnalysisCard: React.FC<GeneralAnalysisCardProps> = ({
 
       {/* Missing Items */}
       <div className="mb-6">
-        <SectionHeader 
-          title="Itens Faltantes" 
-          icon="📋" 
+        <SectionHeader
+          title="Itens Faltantes"
+          icon="📋"
           count={analysis.missingItems.length}
           sectionKey="missingItems"
         />
@@ -220,20 +245,19 @@ export const GeneralAnalysisCard: React.FC<GeneralAnalysisCardProps> = ({
 
       {/* BDD Suggestions */}
       <div className="mb-6">
-        <SectionHeader 
-          title="Sugestões de Cenários BDD" 
-          icon="🧪" 
+        <SectionHeader
+          title="Sugestões de Cenários BDD"
+          icon="🧪"
           count={analysis.bddSuggestions.length}
           sectionKey="bddSuggestions"
         />
         {expandedSections.has('bddSuggestions') && (
           <div className="mt-4 space-y-4">
             {analysis.bddSuggestions.map((suggestion, idx) => (
-              <div
-                key={idx}
-                className="p-5 bg-base-200 border border-base-300 rounded-xl"
-              >
-                <p className="font-semibold text-base-content mb-3 text-lg">{suggestion.taskTitle}</p>
+              <div key={idx} className="p-5 bg-base-200 border border-base-300 rounded-xl">
+                <p className="font-semibold text-base-content mb-3 text-lg">
+                  {suggestion.taskTitle}
+                </p>
                 <div className="space-y-2">
                   {suggestion.scenarios.map((scenario, sIdx) => (
                     <div
@@ -252,9 +276,9 @@ export const GeneralAnalysisCard: React.FC<GeneralAnalysisCardProps> = ({
 
       {/* QA Improvements */}
       <div className="mb-6">
-        <SectionHeader 
-          title="Melhorias de QA" 
-          icon="✨" 
+        <SectionHeader
+          title="Melhorias de QA"
+          icon="✨"
           count={analysis.qaImprovements.length}
           sectionKey="qaImprovements"
         />
@@ -278,11 +302,11 @@ export const GeneralAnalysisCard: React.FC<GeneralAnalysisCardProps> = ({
         <div className="mt-4 p-4 bg-warning/10 border border-warning/30 rounded-xl animate-pulse">
           <p className="text-sm text-warning flex items-center gap-2">
             <span>⚠️</span>
-            Esta análise pode estar desatualizada. Execute uma nova análise para obter resultados atualizados.
+            Esta análise pode estar desatualizada. Execute uma nova análise para obter resultados
+            atualizados.
           </p>
         </div>
       )}
     </div>
   );
 };
-

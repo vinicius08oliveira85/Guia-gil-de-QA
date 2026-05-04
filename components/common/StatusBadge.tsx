@@ -28,7 +28,8 @@ const getStatusConfig = (): Record<StatusType, StatusConfig> => ({
   },
   warning: {
     icon: AlertCircle,
-    classNames: 'badge-warning text-warning-content border-warning-content/60 bg-warning-content/20',
+    classNames:
+      'badge-warning text-warning-content border-warning-content/60 bg-warning-content/20',
     role: 'alert',
   },
   info: {
@@ -38,7 +39,8 @@ const getStatusConfig = (): Record<StatusType, StatusConfig> => ({
   },
   pending: {
     icon: Clock,
-    classNames: 'badge-warning text-warning-content border-warning-content/60 bg-warning-content/20',
+    classNames:
+      'badge-warning text-warning-content border-warning-content/60 bg-warning-content/20',
     role: 'status',
   },
   default: {
@@ -117,8 +119,8 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
     return (
       <span
         className={cn(
-          "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium cursor-default whitespace-nowrap",
-          "transition-colors hover:opacity-80",
+          'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium cursor-default whitespace-nowrap',
+          'transition-colors hover:opacity-80',
           dismissibleStatusStyles[status],
           className
         )}
@@ -126,9 +128,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
         aria-live={config.role === 'alert' ? 'assertive' : 'polite'}
         aria-label={label}
       >
-        {!hideIcon && (
-          <IconComponent className="h-3 w-3 flex-shrink-0" aria-hidden="true" />
-        )}
+        {!hideIcon && <IconComponent className="h-3 w-3 flex-shrink-0" aria-hidden="true" />}
         <span className="truncate">{children}</span>
         <button
           type="button"
@@ -152,7 +152,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
   return (
     <span
       className={cn(
-        "badge inline-flex items-center gap-1 font-medium cursor-default whitespace-nowrap",
+        'badge inline-flex items-center gap-1 font-medium cursor-default whitespace-nowrap',
         BADGE_SIZE_CLASSES[size],
         config.classNames,
         className

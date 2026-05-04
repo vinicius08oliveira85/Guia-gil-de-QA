@@ -18,7 +18,7 @@ interface QualityKPIsProps {
 
 /**
  * Componente que exibe KPIs de qualidade do projeto
- * 
+ *
  * @example
  * ```tsx
  * <QualityKPIs project={project} />
@@ -28,9 +28,10 @@ export const QualityKPIs = React.memo<QualityKPIsProps>(({ project, className })
   const metrics = useProjectMetrics(project);
 
   // Calcular taxa de defeitos
-  const defectRate = metrics.totalTestCases > 0
-    ? Math.round((metrics.failedTestCases / metrics.totalTestCases) * 100 * 10) / 10
-    : 0;
+  const defectRate =
+    metrics.totalTestCases > 0
+      ? Math.round((metrics.failedTestCases / metrics.totalTestCases) * 100 * 10) / 10
+      : 0;
 
   // Calcular tempo médio de execução (simulado - em produção viria de dados reais)
   const avgExecutionTime = 12.4; // minutos
@@ -44,20 +45,22 @@ export const QualityKPIs = React.memo<QualityKPIsProps>(({ project, className })
 
     const passRateScore = metrics.testPassRate;
     const coverageScore = metrics.testCoverage;
-    const defectRateScore = Math.max(0, 100 - (defectRate * 10)); // Inverter: menos defeitos = melhor
+    const defectRateScore = Math.max(0, 100 - defectRate * 10); // Inverter: menos defeitos = melhor
     const automationScore = metrics.automationRatio;
 
     const score = Math.round(
       passRateScore * passRateWeight +
-      coverageScore * coverageWeight +
-      defectRateScore * defectRateWeight +
-      automationScore * automationWeight
+        coverageScore * coverageWeight +
+        defectRateScore * defectRateWeight +
+        automationScore * automationWeight
     );
 
     return Math.min(100, Math.max(0, score));
   }, [metrics, defectRate]);
 
-  const getQualityBadge = (score: number): { text: string; variant: 'success' | 'warning' | 'error' | 'info' } => {
+  const getQualityBadge = (
+    score: number
+  ): { text: string; variant: 'success' | 'warning' | 'error' | 'info' } => {
     if (score >= 90) return { text: 'Excelente', variant: 'success' };
     if (score >= 75) return { text: 'Bom', variant: 'info' };
     if (score >= 60) return { text: 'Regular', variant: 'warning' };
@@ -81,7 +84,9 @@ export const QualityKPIs = React.memo<QualityKPIsProps>(({ project, className })
                 <CheckCircle2 className="h-4 w-4 text-success" aria-hidden="true" />
                 <span className="text-sm font-medium text-base-content">Taxa de Aprovação</span>
               </div>
-              <span className="text-sm font-semibold text-base-content">{metrics.testPassRate}%</span>
+              <span className="text-sm font-semibold text-base-content">
+                {metrics.testPassRate}%
+              </span>
             </div>
             <ProgressIndicator
               value={metrics.testPassRate}
@@ -117,7 +122,9 @@ export const QualityKPIs = React.memo<QualityKPIsProps>(({ project, className })
                 <TrendingUp className="h-4 w-4 text-primary" aria-hidden="true" />
                 <span className="text-sm font-medium text-base-content">Cobertura</span>
               </div>
-              <span className="text-sm font-semibold text-base-content">{metrics.testCoverage}%</span>
+              <span className="text-sm font-semibold text-base-content">
+                {metrics.testCoverage}%
+              </span>
             </div>
             <ProgressIndicator
               value={metrics.testCoverage}
@@ -133,17 +140,13 @@ export const QualityKPIs = React.memo<QualityKPIsProps>(({ project, className })
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <Clock className="h-4 w-4 text-base-content/60" aria-hidden="true" />
-                <span className="text-sm font-medium text-base-content">Tempo Médio de Execução</span>
+                <span className="text-sm font-medium text-base-content">
+                  Tempo Médio de Execução
+                </span>
               </div>
               <span className="text-sm font-semibold text-base-content">{avgExecutionTime}m</span>
             </div>
-            <ProgressIndicator
-              value={65}
-              max={100}
-              color="blue"
-              showPercentage={false}
-              size="sm"
-            />
+            <ProgressIndicator value={65} max={100} color="blue" showPercentage={false} size="sm" />
           </div>
 
           {/* Overall Quality Score */}
@@ -163,4 +166,3 @@ export const QualityKPIs = React.memo<QualityKPIsProps>(({ project, className })
 });
 
 QualityKPIs.displayName = 'QualityKPIs';
-

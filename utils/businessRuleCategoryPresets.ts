@@ -35,11 +35,14 @@ export function getMergedBusinessRuleCategories(project: Project, rules: Busines
   return Array.from(set).sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base' }));
 }
 
-export function addCategoryPreset(project: Project, rawName: string): { project: Project; error?: 'empty' | 'duplicate' } {
+export function addCategoryPreset(
+  project: Project,
+  rawName: string
+): { project: Project; error?: 'empty' | 'duplicate' } {
   const name = rawName.trim();
   if (!name) return { project, error: 'empty' };
   const current = effectiveCategoryPresets(project);
-  if (current.some((c) => c.trim().toLowerCase() === name.toLowerCase())) {
+  if (current.some(c => c.trim().toLowerCase() === name.toLowerCase())) {
     return { project, error: 'duplicate' };
   }
   return { project: { ...project, businessRuleCategoryPresets: [...current, name] } };
@@ -47,7 +50,7 @@ export function addCategoryPreset(project: Project, rawName: string): { project:
 
 export function removeCategoryPreset(project: Project, name: string): Project {
   const current = effectiveCategoryPresets(project);
-  const next = current.filter((c) => c !== name);
+  const next = current.filter(c => c !== name);
   if (next.length === 0) {
     const { businessRuleCategoryPresets: _removed, ...rest } = project;
     return rest as Project;
@@ -63,19 +66,18 @@ export function renameCategoryPreset(
   const newName = rawNewName.trim();
   if (!newName) return { project, error: 'empty' };
   const current = effectiveCategoryPresets(project);
-  if (
-    newName !== oldName &&
-    current.some((c) => c.trim().toLowerCase() === newName.toLowerCase())
-  ) {
+  if (newName !== oldName && current.some(c => c.trim().toLowerCase() === newName.toLowerCase())) {
     return { project, error: 'duplicate' };
   }
-  const nextPresets = [...new Set(current.map((c) => (c === oldName ? newName : c)))];
-  const businessRules = project.businessRules.map((r) =>
-    businessRuleCategoryLabel(r) === oldName ? normalizeBusinessRule({ ...r, category: newName }) : r
+  const nextPresets = [...new Set(current.map(c => (c === oldName ? newName : c)))];
+  const businessRules = project.businessRules.map(r =>
+    businessRuleCategoryLabel(r) === oldName
+      ? normalizeBusinessRule({ ...r, category: newName })
+      : r
   );
   return { project: { ...project, businessRuleCategoryPresets: nextPresets, businessRules } };
 }
 
 export function countRulesInCategory(rules: BusinessRule[], categoryName: string): number {
-  return rules.filter((r) => businessRuleCategoryLabel(r) === categoryName).length;
+  return rules.filter(r => businessRuleCategoryLabel(r) === categoryName).length;
 }

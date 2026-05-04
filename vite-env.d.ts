@@ -1,6 +1,18 @@
 /// <reference types="vite/client" />
 /// <reference types="vitest/globals" />
 
+/** File System Access API (Chromium) — usado em backup local. */
+interface Window {
+  showSaveFilePicker?: (options?: {
+    suggestedName?: string;
+    types?: Array<{ description: string; accept: Record<string, string[]> }>;
+  }) => Promise<FileSystemFileHandle>;
+  showOpenFilePicker?: (options?: {
+    multiple?: boolean;
+    types?: Array<{ description: string; accept: Record<string, string[]> }>;
+  }) => Promise<FileSystemFileHandle[]>;
+}
+
 interface ImportMetaEnv {
   readonly DEV: boolean;
   readonly PROD: boolean;
@@ -16,4 +28,3 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
-

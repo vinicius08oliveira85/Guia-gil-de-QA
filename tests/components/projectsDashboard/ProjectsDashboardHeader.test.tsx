@@ -57,7 +57,9 @@ describe('ProjectsDashboardHeader', () => {
     render(<ProjectsDashboardHeader {...baseProps} />);
     await user.click(screen.getByRole('button', { name: /Abrir busca/i }));
     expect(spy).toHaveBeenCalled();
-    const evt = spy.mock.calls.find((c) => c[0] instanceof CustomEvent)?.[0] as CustomEvent | undefined;
+    const evt = spy.mock.calls.find(c => c[0] instanceof CustomEvent)?.[0] as
+      | CustomEvent
+      | undefined;
     expect(evt?.type).toBe('open-global-search');
     spy.mockRestore();
   });

@@ -51,10 +51,7 @@ export function renderWithProviders(
   const { initialProjects, selectedProjectId, ...renderOptions } = options || {};
 
   const Wrapper = ({ children }: { children: React.ReactNode }) => (
-    <TestWrapper
-      initialProjects={initialProjects}
-      selectedProjectId={selectedProjectId}
-    >
+    <TestWrapper initialProjects={initialProjects} selectedProjectId={selectedProjectId}>
       {children}
     </TestWrapper>
   );
@@ -71,23 +68,26 @@ export async function waitForCondition(
   interval = 100
 ): Promise<void> {
   const startTime = Date.now();
-  
+
   while (Date.now() - startTime < timeout) {
     if (condition()) {
       return;
     }
     await new Promise(resolve => setTimeout(resolve, interval));
   }
-  
+
   throw new Error(`Condição não foi satisfeita após ${timeout}ms`);
 }
 
 /**
  * Simula navegação entre telas
  */
-export function simulateNavigation(target: 'landing' | 'dashboard' | 'project', projectId?: string) {
+export function simulateNavigation(
+  target: 'landing' | 'dashboard' | 'project',
+  projectId?: string
+) {
   const store = useProjectsStore.getState();
-  
+
   switch (target) {
     case 'landing':
       store.selectProject(null);
@@ -180,4 +180,3 @@ export function getTextContent(element: HTMLElement | null): string {
   if (!element) return '';
   return element.textContent?.replace(/\s+/g, ' ').trim() || '';
 }
-

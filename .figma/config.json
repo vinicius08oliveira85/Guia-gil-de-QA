@@ -2,14 +2,6 @@
   "fileKey": "",
   "syncInterval": 3600000,
   "autoSync": false,
-  "tokenCategories": [
-    "color",
-    "spacing",
-    "borderRadius",
-    "typography",
-    "shadow",
-    "transition"
-  ],
+  "tokenCategories": ["color", "spacing", "borderRadius", "typography", "shadow", "transition"],
   "notes": "Configure o fileKey do seu arquivo Figma aqui. Você pode obter o fileKey da URL do Figma: https://www.figma.com/file/{FILE_KEY}/..."
 }
-

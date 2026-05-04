@@ -17,7 +17,7 @@ export const StatsSummary: React.FC<StatsSummaryProps> = ({
   selectedTests,
   filteredTests,
   criticalTests,
-  environments
+  environments,
 }) => {
   return (
     <div className="flex items-center gap-md flex-wrap text-sm">
@@ -30,7 +30,7 @@ export const StatsSummary: React.FC<StatsSummaryProps> = ({
           <span className="text-base-content/50">({totalTests} total)</span>
         )}
       </div>
-      
+
       {criticalTests > 0 && (
         <div className="flex items-center gap-xs">
           <span className="w-2 h-2 rounded-full bg-error"></span>
@@ -38,7 +38,7 @@ export const StatsSummary: React.FC<StatsSummaryProps> = ({
           <span className="font-semibold text-error">{criticalTests}</span>
         </div>
       )}
-      
+
       {environments > 0 && (
         <div className="flex items-center gap-xs">
           <span className="text-base-content/70">Ambientes:</span>
@@ -48,4 +48,3 @@ export const StatsSummary: React.FC<StatsSummaryProps> = ({
     </div>
   );
 };
-

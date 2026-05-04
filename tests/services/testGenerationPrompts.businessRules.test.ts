@@ -49,13 +49,17 @@ describe('formatBusinessRulesForPrompt', () => {
   });
 
   it('com linked ids inexistentes retorna vazio', () => {
-    const project = baseProject([{ id: 'a', title: 'R1', description: 'D1', category: 'Geral', createdAt: 'x' }]);
+    const project = baseProject([
+      { id: 'a', title: 'R1', description: 'D1', category: 'Geral', createdAt: 'x' },
+    ]);
     const task = minimalTask({ linkedBusinessRuleIds: ['missing'] });
     expect(formatBusinessRulesForPrompt(project, task)).toBe('');
   });
 
   it('sem vínculos na tarefa não envia regras do projeto', () => {
-    const project = baseProject([{ id: 'x', title: 'G1', description: 'dg', category: 'Geral', createdAt: 'x' }]);
+    const project = baseProject([
+      { id: 'x', title: 'G1', description: 'dg', category: 'Geral', createdAt: 'x' },
+    ]);
     expect(formatBusinessRulesForPrompt(project, minimalTask())).toBe('');
   });
 
@@ -94,7 +98,10 @@ describe('formatBusinessRulesForPrompt', () => {
       { id: '1', title: 'T', description: huge, category: 'Geral', createdAt: 'x' },
       { id: '2', title: 'T2', description: 'small', category: 'Geral', createdAt: 'x' },
     ]);
-    const out = formatBusinessRulesForPrompt(project, minimalTask({ linkedBusinessRuleIds: ['1', '2'] }));
+    const out = formatBusinessRulesForPrompt(
+      project,
+      minimalTask({ linkedBusinessRuleIds: ['1', '2'] })
+    );
     expect(out.length).toBeLessThanOrEqual(BUSINESS_RULES_PROMPT_MAX_CHARS + 800);
     expect(out).toContain('omitidas por limite');
   });

@@ -36,13 +36,13 @@ export const TimeTracker: React.FC<TimeTrackerProps> = ({ task, onUpdate }) => {
     if (startTime) {
       const totalMinutes = Math.floor((Date.now() - startTime) / 60000);
       const currentActual = task.actualHours || 0;
-      const newActual = currentActual + (totalMinutes / 60);
-      
+      const newActual = currentActual + totalMinutes / 60;
+
       onUpdate({
         ...task,
-        actualHours: Math.round(newActual * 100) / 100
+        actualHours: Math.round(newActual * 100) / 100,
       });
-      
+
       setIsRunning(false);
       setStartTime(null);
       setElapsedTime(0);
@@ -56,9 +56,7 @@ export const TimeTracker: React.FC<TimeTrackerProps> = ({ task, onUpdate }) => {
     setElapsedTime(0);
   };
 
-  const displayTime = isRunning && startTime 
-    ? Math.floor(elapsedTime / 1000)
-    : 0;
+  const displayTime = isRunning && startTime ? Math.floor(elapsedTime / 1000) : 0;
 
   const hours = Math.floor(displayTime / 3600);
   const minutes = Math.floor((displayTime % 3600) / 60);
@@ -67,11 +65,10 @@ export const TimeTracker: React.FC<TimeTrackerProps> = ({ task, onUpdate }) => {
   return (
     <div className="p-4 bg-surface border border-surface-border rounded-lg">
       <h4 className="text-sm font-semibold text-text-primary mb-3">Rastreador de Tempo</h4>
-      
+
       <div className="text-center mb-4">
         <div className="text-3xl font-bold text-accent mb-2">
-          {String(hours).padStart(2, '0')}:
-          {String(minutes).padStart(2, '0')}:
+          {String(hours).padStart(2, '0')}:{String(minutes).padStart(2, '0')}:
           {String(seconds).padStart(2, '0')}
         </div>
         {task.actualHours && (
@@ -109,4 +106,3 @@ export const TimeTracker: React.FC<TimeTrackerProps> = ({ task, onUpdate }) => {
     </div>
   );
 };
-

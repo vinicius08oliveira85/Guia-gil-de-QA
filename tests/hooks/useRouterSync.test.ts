@@ -52,7 +52,7 @@ describe('useRouterSync', () => {
     );
 
     const callsForStateToUrl = replaceSpy.mock.calls.filter(
-      (c) => typeof c[2] === 'string' && String(c[2]).startsWith('/')
+      c => typeof c[2] === 'string' && String(c[2]).startsWith('/')
     );
     expect(callsForStateToUrl.length).toBe(0);
   });

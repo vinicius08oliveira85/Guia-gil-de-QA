@@ -1,12 +1,4 @@
-import {
-  endOfWeek,
-  format,
-  isValid,
-  parseISO,
-  startOfDay,
-  startOfWeek,
-  subWeeks,
-} from 'date-fns';
+import { endOfWeek, format, isValid, parseISO, startOfDay, startOfWeek, subWeeks } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import type { JiraTask } from '../types';
 
@@ -70,7 +62,10 @@ export function computeTaskCompletionStats(tasks: JiraTask[]): TaskCompletionSta
   return { total, completed, completionPercent };
 }
 
-export function computeOverdueTaskCount(tasks: JiraTask[], referenceDate: Date = new Date()): number {
+export function computeOverdueTaskCount(
+  tasks: JiraTask[],
+  referenceDate: Date = new Date()
+): number {
   return tasks.reduce((n, t) => n + (isTaskOverdue(t, referenceDate) ? 1 : 0), 0);
 }
 
@@ -128,7 +123,7 @@ export function computeDeliveryEvolutionSeries(
     const ws = subWeeks(currentWeekStart, numberOfWeeks - 1 - w);
     const we = endOfWeek(ws, { weekStartsOn: 1 });
     const weekKey = format(ws, 'yyyy-MM-dd');
-    const label = format(ws, "d MMM", { locale: ptBR });
+    const label = format(ws, 'd MMM', { locale: ptBR });
     let concludedCount = 0;
     for (const t of tasks) {
       if (!t.completedAt) continue;
@@ -165,14 +160,14 @@ export function computeProjectDashboardDeterministicMetrics(
     countsByStatus[t.status] = (countsByStatus[t.status] ?? 0) + 1;
   }
 
-  const statusDistribution: NamedCount[] = STATUS_ORDER.map((status) => ({
+  const statusDistribution: NamedCount[] = STATUS_ORDER.map(status => ({
     name: status,
     value: countsByStatus[status],
     fill: STATUS_FILL[status],
   }));
 
   const deliveryEvolution = computeDeliveryEvolutionSeries(list, weeks, now);
-  const hasDeliveryData = list.some((t) => {
+  const hasDeliveryData = list.some(t => {
     if (!t.completedAt) return false;
     return isValid(parseISO(t.completedAt));
   });

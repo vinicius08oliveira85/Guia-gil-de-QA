@@ -109,7 +109,9 @@ describe('fileSystemBackupService', () => {
 
   describe('pickBackupJsonFileViaFileSystemAccess', () => {
     it('retorna unsupported sem as APIs', async () => {
-      await expect(pickBackupJsonFileViaFileSystemAccess()).resolves.toEqual({ status: 'unsupported' });
+      await expect(pickBackupJsonFileViaFileSystemAccess()).resolves.toEqual({
+        status: 'unsupported',
+      });
     });
 
     it('retorna cancelled em AbortError', async () => {
@@ -117,17 +119,16 @@ describe('fileSystemBackupService', () => {
       const abort = new DOMException('aborted', 'AbortError');
       vi.stubGlobal('showOpenFilePicker', vi.fn().mockRejectedValue(abort));
 
-      await expect(pickBackupJsonFileViaFileSystemAccess()).resolves.toEqual({ status: 'cancelled' });
+      await expect(pickBackupJsonFileViaFileSystemAccess()).resolves.toEqual({
+        status: 'cancelled',
+      });
     });
 
     it('retorna file com File lido do handle', async () => {
       vi.stubGlobal('showSaveFilePicker', vi.fn());
       const file = new File(['{"projects":[]}'], 'backup.json', { type: 'application/json' });
       const getFile = vi.fn().mockResolvedValue(file);
-      vi.stubGlobal(
-        'showOpenFilePicker',
-        vi.fn().mockResolvedValue([{ getFile }])
-      );
+      vi.stubGlobal('showOpenFilePicker', vi.fn().mockResolvedValue([{ getFile }]));
 
       await expect(pickBackupJsonFileViaFileSystemAccess()).resolves.toEqual({
         status: 'file',
@@ -140,7 +141,9 @@ describe('fileSystemBackupService', () => {
       vi.stubGlobal('showSaveFilePicker', vi.fn());
       vi.stubGlobal('showOpenFilePicker', vi.fn().mockResolvedValue([]));
 
-      await expect(pickBackupJsonFileViaFileSystemAccess()).resolves.toEqual({ status: 'cancelled' });
+      await expect(pickBackupJsonFileViaFileSystemAccess()).resolves.toEqual({
+        status: 'cancelled',
+      });
     });
   });
 });

@@ -17,7 +17,7 @@ interface TestPhaseProgressProps {
 
 /**
  * Componente que exibe o progresso das fases de teste do projeto
- * 
+ *
  * @example
  * ```tsx
  * <TestPhaseProgress project={project} />
@@ -50,7 +50,7 @@ export const TestPhaseProgress = React.memo<TestPhaseProgressProps>(({ project, 
         {phases.map((phase, index) => {
           const status = getPhaseStatus(phase.status);
           const progress = getPhaseProgress(phase.status, index);
-          
+
           return (
             <div key={phase.name} className="space-y-2">
               <div className="flex items-center justify-between">
@@ -67,7 +67,11 @@ export const TestPhaseProgress = React.memo<TestPhaseProgressProps>(({ project, 
                   <div>
                     <p className="text-sm font-medium text-base-content">{phase.name}</p>
                     <p className="text-xs text-base-content/60">
-                      {status === 'completed' ? 'Concluída' : status === 'active' ? 'Em andamento' : 'Não iniciada'}
+                      {status === 'completed'
+                        ? 'Concluída'
+                        : status === 'active'
+                          ? 'Em andamento'
+                          : 'Não iniciada'}
                     </p>
                   </div>
                 </div>
@@ -75,19 +79,15 @@ export const TestPhaseProgress = React.memo<TestPhaseProgressProps>(({ project, 
                   <span className="text-sm font-medium text-base-content">{progress}%</span>
                   <Badge
                     variant={
-                      status === 'completed' 
-                        ? 'success' 
-                        : status === 'active' 
-                        ? 'info' 
-                        : 'default'
+                      status === 'completed' ? 'success' : status === 'active' ? 'info' : 'default'
                     }
                     size="sm"
                   >
-                    {status === 'completed' 
-                      ? 'Concluída' 
-                      : status === 'active' 
-                      ? 'Em Andamento' 
-                      : 'Pendente'}
+                    {status === 'completed'
+                      ? 'Concluída'
+                      : status === 'active'
+                        ? 'Em Andamento'
+                        : 'Pendente'}
                   </Badge>
                 </div>
               </div>
@@ -107,4 +107,3 @@ export const TestPhaseProgress = React.memo<TestPhaseProgressProps>(({ project, 
 });
 
 TestPhaseProgress.displayName = 'TestPhaseProgress';
-

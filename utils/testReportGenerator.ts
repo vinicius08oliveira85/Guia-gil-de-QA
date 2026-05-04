@@ -37,9 +37,7 @@ export function generateTestReport(
   const concise = options.concise ?? false;
   const lines: string[] = [];
   const allTestCases = task.testCases || [];
-  const executedTestCases = allTestCases.filter(
-    tc => tc.status !== 'Not Run'
-  );
+  const executedTestCases = allTestCases.filter(tc => tc.status !== 'Not Run');
 
   if (concise) {
     return generateConciseReport(task, executedTestCases, allTestCases, generatedAt);
@@ -104,7 +102,9 @@ export function generateTestReport(
       if (testCase.observedResult && testCase.observedResult.trim()) {
         if (format === 'markdown') {
           lines.push('');
-          lines.push(`   **Resultado Encontrado:** <span style="color: red;">${testCase.observedResult}</span>`);
+          lines.push(
+            `   **Resultado Encontrado:** <span style="color: red;">${testCase.observedResult}</span>`
+          );
         } else {
           lines.push('');
           lines.push(`   RESULTADO ENCONTRADO: ${testCase.observedResult}`);
@@ -149,13 +149,18 @@ function buildStrategyMap(
     executedStrategies.forEach(strategyName => {
       if (!strategyMap.has(strategyName)) {
         const strategyIndex = task.testStrategy?.findIndex(s => s.testType === strategyName);
-        const strategy = strategyIndex !== undefined && strategyIndex >= 0
-          ? task.testStrategy![strategyIndex]
-          : undefined;
+        const strategy =
+          strategyIndex !== undefined && strategyIndex >= 0
+            ? task.testStrategy![strategyIndex]
+            : undefined;
 
         const toolsSet = new Set<string>();
         if (includeTools) {
-          if (strategyIndex !== undefined && strategyIndex >= 0 && task.strategyTools?.[strategyIndex]) {
+          if (
+            strategyIndex !== undefined &&
+            strategyIndex >= 0 &&
+            task.strategyTools?.[strategyIndex]
+          ) {
             task.strategyTools[strategyIndex].forEach(tool => toolsSet.add(tool));
           }
           if (testCase.toolsUsed?.length) {
@@ -172,12 +177,16 @@ function buildStrategyMap(
         strategyMap.set(strategyName, {
           testType: strategyName,
           description: strategy?.description || strategyName,
-          tools: toolsSet
+          tools: toolsSet,
         });
       } else if (includeTools) {
         const existing = strategyMap.get(strategyName)!;
         const strategyIndex = task.testStrategy?.findIndex(s => s.testType === strategyName);
-        if (strategyIndex !== undefined && strategyIndex >= 0 && task.strategyTools?.[strategyIndex]) {
+        if (
+          strategyIndex !== undefined &&
+          strategyIndex >= 0 &&
+          task.strategyTools?.[strategyIndex]
+        ) {
           task.strategyTools[strategyIndex].forEach(tool => existing.tools.add(tool));
         }
         if (testCase.toolsUsed?.length) {
@@ -223,8 +232,9 @@ function generateConciseReport(
   const approved = allTestCases.filter(tc => tc.status === 'Passed').length;
   const failed = allTestCases.filter(tc => tc.status === 'Failed').length;
   const notRun = allTestCases.filter(tc => tc.status === 'Not Run').length;
-  lines.push(`Resumo: ${total} total | Aprovados: ${approved} | Reprovados: ${failed} | Não executados: ${notRun}`);
+  lines.push(
+    `Resumo: ${total} total | Aprovados: ${approved} | Reprovados: ${failed} | Não executados: ${notRun}`
+  );
   lines.push(`Concluído em: ${formatDateTime(generatedAt)}`);
   return lines.join('\n');
 }
-

@@ -1,9 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-export default async function handler(
-  req: VercelRequest,
-  res: VercelResponse
-): Promise<void> {
+export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
   // Permitir apenas requisições POST
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method not allowed' });
@@ -23,18 +20,18 @@ export default async function handler(
   try {
     // Criar credenciais Basic Auth
     const credentials = Buffer.from(`${email}:${apiToken}`).toString('base64');
-    
+
     // Se o endpoint contém /secure/attachment/, é uma imagem/anexo binário
     const isAttachment = endpoint.includes('/secure/attachment/') || isBinary;
-    
+
     // Construir URL: se for attachment, usar URL direta; senão, usar REST API
-    const jiraUrl = isAttachment 
+    const jiraUrl = isAttachment
       ? `${url.replace(/\/$/, '')}/${endpoint.startsWith('/') ? endpoint.slice(1) : endpoint}`
       : `${url.replace(/\/$/, '')}/rest/api/3/${endpoint}`;
 
     // Headers apropriados para binário ou JSON
     const headers: Record<string, string> = {
-      'Authorization': `Basic ${credentials}`,
+      Authorization: `Basic ${credentials}`,
     };
 
     if (isAttachment) {
@@ -57,8 +54,8 @@ export default async function handler(
 
     if (!response.ok) {
       const errorText = await response.text();
-      res.status(response.status).json({ 
-        error: `Jira API Error (${response.status}): ${errorText}` 
+      res.status(response.status).json({
+        error: `Jira API Error (${response.status}): ${errorText}`,
       });
       return;
     }
@@ -67,11 +64,11 @@ export default async function handler(
     if (isAttachment) {
       const blob = await response.blob();
       const contentType = response.headers.get('content-type') || 'application/octet-stream';
-      
+
       res.setHeader('Content-Type', contentType);
       res.setHeader('Content-Length', blob.size.toString());
       res.setHeader('Cache-Control', 'public, max-age=3600'); // Cache de 1 hora
-      
+
       const buffer = await blob.arrayBuffer();
       res.status(200).send(Buffer.from(buffer));
       return;
@@ -82,17 +79,17 @@ export default async function handler(
     res.status(200).json(data);
   } catch (error) {
     clearTimeout(timeoutId);
-    
+
     if (error instanceof Error && error.name === 'AbortError') {
-      res.status(504).json({ 
-        error: 'Timeout: A requisição ao Jira demorou mais de 60 segundos' 
+      res.status(504).json({
+        error: 'Timeout: A requisição ao Jira demorou mais de 60 segundos',
       });
       return;
     }
-    
+
     console.error('Jira proxy error:', error);
-    res.status(500).json({ 
-      error: error instanceof Error ? error.message : 'Internal server error' 
+    res.status(500).json({
+      error: error instanceof Error ? error.message : 'Internal server error',
     });
   }
 }

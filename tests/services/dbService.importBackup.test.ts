@@ -9,7 +9,7 @@ vi.mock('../../utils/logger', () => ({
   },
 }));
 
-vi.mock('../../services/supabaseService', async (importOriginal) => {
+vi.mock('../../services/supabaseService', async importOriginal => {
   const actual = await importOriginal<typeof import('../../services/supabaseService')>();
   return {
     ...actual,

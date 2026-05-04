@@ -201,4 +201,3 @@ export function createMockProjects(count: number): Project[] {
     })
   );
 }
-

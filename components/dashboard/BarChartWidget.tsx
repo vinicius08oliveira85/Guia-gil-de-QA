@@ -5,78 +5,85 @@ import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 type BarChartWidgetProps = {
-    title: string;
-    data: { label: string; value: number; color: string }[];
-    rawData: { label: string; value: number; color: string }[];
-    className?: string;
-    onBarClick?: (label: string, value: number) => void;
-    interactive?: boolean;
-    /** Data da última atualização do projeto (ex.: project.updatedAt); quando fornecida, exibe "Atualizado há X" */
-    updatedAt?: string;
+  title: string;
+  data: { label: string; value: number; color: string }[];
+  rawData: { label: string; value: number; color: string }[];
+  className?: string;
+  onBarClick?: (label: string, value: number) => void;
+  interactive?: boolean;
+  /** Data da última atualização do projeto (ex.: project.updatedAt); quando fornecida, exibe "Atualizado há X" */
+  updatedAt?: string;
 };
 
 export const BarChartWidget: React.FC<BarChartWidgetProps> = ({
-    title,
-    data,
-    rawData,
-    className = '',
-    onBarClick,
-    interactive = false,
-    updatedAt,
+  title,
+  data,
+  rawData,
+  className = '',
+  onBarClick,
+  interactive = false,
+  updatedAt,
 }) => {
-    const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-    const updatedLabel = updatedAt
-        ? `Atualizado ${formatDistanceToNow(new Date(updatedAt), { addSuffix: true, locale: ptBR })}`
-        : 'Atualizado';
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const updatedLabel = updatedAt
+    ? `Atualizado ${formatDistanceToNow(new Date(updatedAt), { addSuffix: true, locale: ptBR })}`
+    : 'Atualizado';
 
-    return (
-        <Card className={cn('!p-4 sm:!p-6', className)}>
-            <div className="flex items-center justify-between gap-4">
-                <h4 className="text-base font-semibold text-base-content text-[clamp(1rem,2vw,1.3rem)]">{title}</h4>
-                <span className="text-xs text-base-content/60">{updatedLabel}</span>
+  return (
+    <Card className={cn('!p-4 sm:!p-6', className)}>
+      <div className="flex items-center justify-between gap-4">
+        <h4 className="text-base font-semibold text-base-content text-[clamp(1rem,2vw,1.3rem)]">
+          {title}
+        </h4>
+        <span className="text-xs text-base-content/60">{updatedLabel}</span>
+      </div>
+      <div className="mt-4 space-y-4">
+        {data.map((item, index) => (
+          <div
+            key={item.label}
+            className={cn(interactive && 'cursor-pointer', 'transition-all')}
+            onClick={() => interactive && onBarClick?.(item.label, rawData[index].value)}
+            onMouseEnter={() => interactive && setHoveredIndex(index)}
+            onMouseLeave={() => interactive && setHoveredIndex(null)}
+          >
+            <div className="flex items-center justify-between text-[clamp(0.78rem,1.6vw,0.9rem)] text-base-content/70">
+              <span
+                className={cn(
+                  interactive && hoveredIndex === index && 'text-primary font-semibold',
+                  'transition-all'
+                )}
+              >
+                {item.label}
+              </span>
+              <span
+                className={cn(
+                  'font-semibold text-base-content',
+                  interactive && hoveredIndex === index && 'text-primary scale-110',
+                  'transition-all'
+                )}
+              >
+                {rawData[index].value}
+              </span>
             </div>
-            <div className="mt-4 space-y-4">
-                {data.map((item, index) => (
-                    <div 
-                        key={item.label}
-                        className={cn(
-                            interactive && 'cursor-pointer',
-                            "transition-all"
-                        )}
-                        onClick={() => interactive && onBarClick?.(item.label, rawData[index].value)}
-                        onMouseEnter={() => interactive && setHoveredIndex(index)}
-                        onMouseLeave={() => interactive && setHoveredIndex(null)}
-                    >
-                        <div className="flex items-center justify-between text-[clamp(0.78rem,1.6vw,0.9rem)] text-base-content/70">
-                            <span className={cn(
-                                interactive && hoveredIndex === index && "text-primary font-semibold",
-                                "transition-all"
-                            )}>{item.label}</span>
-                            <span className={cn(
-                                "font-semibold text-base-content",
-                                interactive && hoveredIndex === index && "text-primary scale-110",
-                                "transition-all"
-                            )}>{rawData[index].value}</span>
-                        </div>
-                        <div className="mt-1 h-2 rounded-full bg-base-200 overflow-hidden">
-                            <div
-                                className={cn(
-                                    `h-2 rounded-full ${item.color}`,
-                                    "transition-all",
-                                    interactive && hoveredIndex === index && "h-3 shadow-lg",
-                                    interactive && hoveredIndex === index && "ring-2 ring-primary/20"
-                                )}
-                                style={{ width: `${Math.min(100, Math.max(0, item.value))}%` }}
-                                role="progressbar"
-                                aria-valuenow={Math.round(item.value)}
-                                aria-valuemin={0}
-                                aria-valuemax={100}
-                                aria-label={item.label}
-                            />
-                        </div>
-                    </div>
-                ))}
+            <div className="mt-1 h-2 rounded-full bg-base-200 overflow-hidden">
+              <div
+                className={cn(
+                  `h-2 rounded-full ${item.color}`,
+                  'transition-all',
+                  interactive && hoveredIndex === index && 'h-3 shadow-lg',
+                  interactive && hoveredIndex === index && 'ring-2 ring-primary/20'
+                )}
+                style={{ width: `${Math.min(100, Math.max(0, item.value))}%` }}
+                role="progressbar"
+                aria-valuenow={Math.round(item.value)}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-label={item.label}
+              />
             </div>
-        </Card>
-    );
+          </div>
+        ))}
+      </div>
+    </Card>
+  );
 };

@@ -30,8 +30,8 @@ export const DashboardShiftLeftInsights: React.FC<DashboardShiftLeftInsightsProp
           <h4 className="text-base font-semibold text-base-content">Insights de IA (Shift Left)</h4>
         </div>
         <p className="text-sm text-base-content/65">
-          Nenhuma recomendação salva ainda. Use &quot;Gerar estratégia com Gemini&quot; no dashboard para criar a análise Shift
-          Left e preencher este painel.
+          Nenhuma recomendação salva ainda. Use &quot;Gerar estratégia com Gemini&quot; no dashboard
+          para criar a análise Shift Left e preencher este painel.
         </p>
       </Card>
     );
@@ -43,7 +43,9 @@ export const DashboardShiftLeftInsights: React.FC<DashboardShiftLeftInsightsProp
         <Sparkles className="w-5 h-5 text-primary shrink-0" aria-hidden />
         <div>
           <h4 className="text-base font-semibold text-base-content">Insights de IA</h4>
-          <p className="text-xs text-base-content/60">Três recomendações mais recentes (Shift Left)</p>
+          <p className="text-xs text-base-content/60">
+            Três recomendações mais recentes (Shift Left)
+          </p>
         </div>
       </div>
       <ul className="space-y-3">

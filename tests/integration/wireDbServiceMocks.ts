@@ -10,7 +10,9 @@ type Mocks = ReturnType<typeof createDbMocks>;
 
 /** Liga os mocks de `dbService` ao `MockIndexedDB` / `MockSupabase` do teste. */
 export function wireDbServiceMocks(mocks: Mocks): void {
-  vi.mocked(dbService.loadProjectsFromIndexedDB).mockImplementation(() => mocks.mockIndexedDB.loadProjects());
+  vi.mocked(dbService.loadProjectsFromIndexedDB).mockImplementation(() =>
+    mocks.mockIndexedDB.loadProjects()
+  );
 
   vi.mocked(dbService.getProjectById).mockImplementation(async (id: string) => {
     const p = await mocks.mockIndexedDB.getProject(id);
@@ -48,6 +50,6 @@ export function wireDbServiceMocks(mocks: Mocks): void {
 /** Liga `loadProjectsFromSupabase` ao mock em memória (quando Supabase está “disponível”). */
 export function wireSupabaseLoadMock(mocks: Mocks): void {
   vi.mocked(supabaseService.loadProjectsFromSupabase).mockImplementation(() =>
-    mocks.mockSupabase.loadProjects().then((projects) => ({ projects, loadFailed: false as const }))
+    mocks.mockSupabase.loadProjects().then(projects => ({ projects, loadFailed: false as const }))
   );
 }

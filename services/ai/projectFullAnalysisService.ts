@@ -34,7 +34,8 @@ function aggregateTestExecutionForContext(tasks: Project['tasks']) {
       else if (tc.status === 'Failed') failed++;
       else if (tc.status === 'Not Run') notRun++;
       else if (tc.status === 'Blocked') blocked++;
-      const s = tc.executedStrategy || 'Não definida';
+      const rawStrategy = tc.executedStrategy;
+      const s = Array.isArray(rawStrategy) ? rawStrategy.join(', ') : rawStrategy || 'Não definida';
       testStrategiesCount.set(s, (testStrategiesCount.get(s) || 0) + 1);
     }
   }
@@ -47,7 +48,10 @@ function buildFullContext(project: Project): string {
   const tasks = project.tasks || [];
   const { passed, failed, notRun, blocked, testStrategiesCount, totalTestCases } =
     aggregateTestExecutionForContext(tasks);
-  const tasksByType = { tarefa: tasks.filter(t => t.type === 'Tarefa').length, bug: tasks.filter(t => t.type === 'Bug').length };
+  const tasksByType = {
+    tarefa: tasks.filter(t => t.type === 'Tarefa').length,
+    bug: tasks.filter(t => t.type === 'Bug').length,
+  };
   const taskStatus = {
     toDo: tasks.filter(t => t.type !== 'Bug' && t.status === 'To Do').length,
     inProgress: tasks.filter(t => t.type !== 'Bug' && t.status === 'In Progress').length,
@@ -56,9 +60,10 @@ function buildFullContext(project: Project): string {
   };
   const testExecution = { passed, failed, notRun, blocked };
   const totalStrategies = tasks.reduce((acc, t) => acc + (t.testStrategy?.length ?? 0), 0);
-  const defectRate = metrics.totalTestCases > 0
-    ? Math.round((metrics.failedTestCases / metrics.totalTestCases) * 100)
-    : 0;
+  const defectRate =
+    metrics.totalTestCases > 0
+      ? Math.round((metrics.failedTestCases / metrics.totalTestCases) * 100)
+      : 0;
   const qualityMetrics = {
     coverage: metrics.testCoverage,
     passRate: metrics.testPassRate,
@@ -84,32 +89,36 @@ function buildFullContext(project: Project): string {
   const phasesInfo = (project.phases || []).map(p => ({ name: p.name, status: p.status }));
   const currentPhaseProgress = project.sdlcPhaseAnalysis?.progressPercentage ?? 0;
 
-  return JSON.stringify({
-    projectName: project.name,
-    projectDescription: normalizeSnippet(project.description, MAX_DOCUMENTS_SNIPPET_CHARS),
-    documentsCount: (project.documents || []).length,
-    documents: documentsInfo,
-    tasksCount: tasks.length,
-    tasksByType,
-    taskStatus,
-    tasksSummary,
-    totalTestCases,
-    testExecution,
-    testStrategiesCount: Object.fromEntries(testStrategiesCount),
-    totalStrategies,
-    qualityScore,
-    qualityMetrics,
-    alerts: alerts.slice(0, 10),
-    phases: phasesInfo,
-    currentPhase: metrics.currentPhase,
-    currentPhaseProgress,
-    kpis: {
-      passRate: metrics.testPassRate,
-      testCoverage: metrics.testCoverage,
-      openBugs: metrics.openVsClosedBugs?.open ?? 0,
-      closedBugs: metrics.openVsClosedBugs?.closed ?? 0,
+  return JSON.stringify(
+    {
+      projectName: project.name,
+      projectDescription: normalizeSnippet(project.description, MAX_DOCUMENTS_SNIPPET_CHARS),
+      documentsCount: (project.documents || []).length,
+      documents: documentsInfo,
+      tasksCount: tasks.length,
+      tasksByType,
+      taskStatus,
+      tasksSummary,
+      totalTestCases,
+      testExecution,
+      testStrategiesCount: Object.fromEntries(testStrategiesCount),
+      totalStrategies,
+      qualityScore,
+      qualityMetrics,
+      alerts: alerts.slice(0, 10),
+      phases: phasesInfo,
+      currentPhase: metrics.currentPhase,
+      currentPhaseProgress,
+      kpis: {
+        passRate: metrics.testPassRate,
+        testCoverage: metrics.testCoverage,
+        openBugs: metrics.openVsClosedBugs?.open ?? 0,
+        closedBugs: metrics.openVsClosedBugs?.closed ?? 0,
+      },
     },
-  }, null, 2);
+    null,
+    2
+  );
 }
 
 const projectFullAnalysisSchema = {

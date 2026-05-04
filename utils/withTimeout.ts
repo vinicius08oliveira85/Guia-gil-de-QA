@@ -6,11 +6,7 @@ const DEFAULT_TIMEOUT_MESSAGE = 'Operação excedeu o tempo limite.';
  * @param ms Timeout em milissegundos
  * @param message Mensagem de erro em caso de timeout (opcional)
  */
-export function withTimeout<T>(
-  promise: Promise<T>,
-  ms: number,
-  message?: string
-): Promise<T> {
+export function withTimeout<T>(promise: Promise<T>, ms: number, message?: string): Promise<T> {
   return Promise.race([
     promise,
     new Promise<never>((_, reject) =>

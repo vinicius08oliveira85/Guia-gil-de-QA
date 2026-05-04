@@ -38,6 +38,7 @@ Você precisa criar os seguintes arquivos:
 ## Nota sobre Ícones Maskable
 
 Ícones maskable são necessários para Android. Eles devem ter:
+
 - Padding de ~10% ao redor do conteúdo
 - Conteúdo importante centralizado
 - Formato PNG com transparência
@@ -49,4 +50,3 @@ Você precisa criar os seguintes arquivos:
 O PWA não funcionará completamente até que os ícones sejam adicionados.
 
 Veja `docs/PWA_SETUP.md` para mais detalhes.
-

@@ -81,7 +81,9 @@ export const NavigationMenuDrawer: React.FC<NavigationMenuDrawerProps> = ({
         className="absolute right-0 top-full z-50 mt-1 flex max-h-[min(70vh,28rem)] w-[min(calc(100vw-2rem),20rem)] flex-col overflow-y-auto rounded-box border border-base-300 bg-base-100/95 p-2 shadow-xl backdrop-blur-md md:hidden"
       >
         <div className="mb-1 flex items-center justify-between gap-2 border-b border-base-200/80 px-1 pb-2">
-          <span className="font-heading text-xs font-semibold uppercase tracking-wide text-base-content/70">{title}</span>
+          <span className="font-heading text-xs font-semibold uppercase tracking-wide text-base-content/70">
+            {title}
+          </span>
           <button
             type="button"
             className="btn btn-circle btn-ghost btn-xs min-h-8 min-w-8"
@@ -93,7 +95,7 @@ export const NavigationMenuDrawer: React.FC<NavigationMenuDrawerProps> = ({
         </div>
         {leadingSlot ? <div className="border-b border-base-200/60 py-2">{leadingSlot}</div> : null}
         <ul className="menu menu-sm rounded-box p-0 font-body" role="none">
-          {items.map((item) => (
+          {items.map(item => (
             <li key={item.id} role="none">
               <button
                 type="button"
@@ -149,9 +151,16 @@ export interface NavigationMenuRailProps {
 }
 
 /** Menu horizontal (desktop) — itens como pills. */
-export const NavigationMenuRail: React.FC<NavigationMenuRailProps> = ({ items, currentId, className }) => (
-  <nav className={cn('hidden flex-wrap items-center gap-1 md:flex', className)} aria-label="Menu principal">
-    {items.map((item) => (
+export const NavigationMenuRail: React.FC<NavigationMenuRailProps> = ({
+  items,
+  currentId,
+  className,
+}) => (
+  <nav
+    className={cn('hidden flex-wrap items-center gap-1 md:flex', className)}
+    aria-label="Menu principal"
+  >
+    {items.map(item => (
       <button
         key={item.id}
         type="button"
@@ -180,7 +189,12 @@ export const NavigationMenu: React.FC<{
   const menuId = useId().replace(/:/g, '');
   return (
     <div className="relative md:hidden">
-      <NavigationMenuHamburger open={isOpen} onOpenChange={setIsOpen} triggerRef={triggerRef} controlsId={menuId} />
+      <NavigationMenuHamburger
+        open={isOpen}
+        onOpenChange={setIsOpen}
+        triggerRef={triggerRef}
+        controlsId={menuId}
+      />
       <NavigationMenuDrawer
         open={isOpen}
         onOpenChange={setIsOpen}

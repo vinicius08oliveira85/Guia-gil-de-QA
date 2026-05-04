@@ -1,7 +1,12 @@
 import { JiraTask } from '../../types';
 import { getTaskStatusCategory } from '../../utils/jiraStatusCategorizer';
 
-const STORY_POINTS_KEYS = ['Story Points', 'story points', 'Story points', 'customfield_10016'] as const;
+const STORY_POINTS_KEYS = [
+  'Story Points',
+  'story points',
+  'Story points',
+  'customfield_10016',
+] as const;
 
 /** Extrai pontos ou horas estimadas como unidade de carga (prioriza Story Points do Jira). */
 export function parseStoryPointsFromCustomFields(task: JiraTask): number | null {
@@ -77,8 +82,8 @@ export function computeRegressionDensity(tasks: JiraTask[]): {
   ratioVsStories: number;
   alertHigh: boolean;
 } {
-  const bugs = tasks.filter((t) => t.type === 'Bug');
-  const stories = tasks.filter((t) => t.type === 'História');
+  const bugs = tasks.filter(t => t.type === 'Bug');
+  const stories = tasks.filter(t => t.type === 'História');
   const anchor = getCeremonyAnchorDate(tasks);
   let regressionBugCount = 0;
   if (anchor) {
@@ -91,7 +96,8 @@ export function computeRegressionDensity(tasks: JiraTask[]): {
   }
   const storyCount = stories.length;
   const bugCount = bugs.length;
-  const ratioVsStories = storyCount > 0 ? regressionBugCount / storyCount : regressionBugCount > 0 ? 1 : 0;
+  const ratioVsStories =
+    storyCount > 0 ? regressionBugCount / storyCount : regressionBugCount > 0 ? 1 : 0;
   const alertHigh =
     (regressionBugCount >= 3 && ratioVsStories >= 0.2) ||
     (storyCount === 0 && regressionBugCount >= 2) ||
@@ -121,7 +127,7 @@ export function isCriticalRiskTask(task: JiraTask): boolean {
 }
 
 export function countOpenCriticalRiskTasks(tasks: JiraTask[]): number {
-  return tasks.filter((t) => {
+  return tasks.filter(t => {
     if (!isCriticalRiskTask(t)) return false;
     return !isDoneLikeCategory(t);
   }).length;

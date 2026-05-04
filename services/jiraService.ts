@@ -14,11 +14,11 @@ export * from './jira';
  * (Wrapper que injeta getLatestProject para o módulo jira não depender do store.)
  */
 export async function syncJiraProject(
-    config: JiraConfig,
-    project: Project,
-    jiraProjectKey: string
+  config: JiraConfig,
+  project: Project,
+  jiraProjectKey: string
 ): Promise<Project> {
-    return jira.syncJiraProject(config, project, jiraProjectKey, () =>
-        useProjectsStore.getState().projects.find(p => p.id === project.id)
-    );
+  return jira.syncJiraProject(config, project, jiraProjectKey, () =>
+    useProjectsStore.getState().projects.find(p => p.id === project.id)
+  );
 }

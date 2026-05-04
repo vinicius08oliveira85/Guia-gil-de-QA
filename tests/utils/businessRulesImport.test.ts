@@ -28,7 +28,9 @@ describe('parseBusinessRulesImportJson', () => {
   });
 
   it('aceita array direto', () => {
-    const json = JSON.stringify([{ id: 'b', title: 'X', description: '', createdAt: '', category: 'UX' }]);
+    const json = JSON.stringify([
+      { id: 'b', title: 'X', description: '', createdAt: '', category: 'UX' },
+    ]);
     const r = parseBusinessRulesImportJson(json);
     expect(r.ok).toBe(true);
     if (r.ok) {
@@ -99,18 +101,24 @@ describe('validateBusinessRulesImportEnvelope', () => {
 });
 
 describe('mergeBusinessRulesInto', () => {
-  const e: BusinessRule[] = [{ id: '1', title: 'A', description: 'a', category: 'Geral', createdAt: 't1' }];
+  const e: BusinessRule[] = [
+    { id: '1', title: 'A', description: 'a', category: 'Geral', createdAt: 't1' },
+  ];
 
   it('adiciona novas ao final', () => {
-    const incoming: BusinessRule[] = [{ id: '2', title: 'B', description: 'b', category: 'Geral', createdAt: 't2' }];
+    const incoming: BusinessRule[] = [
+      { id: '2', title: 'B', description: 'b', category: 'Geral', createdAt: 't2' },
+    ];
     const { merged, addedCount, updatedCount } = mergeBusinessRulesInto(e, incoming);
     expect(addedCount).toBe(1);
     expect(updatedCount).toBe(0);
-    expect(merged.map((r) => r.id)).toEqual(['1', '2']);
+    expect(merged.map(r => r.id)).toEqual(['1', '2']);
   });
 
   it('atualiza por id e preserva ordem', () => {
-    const incoming: BusinessRule[] = [{ id: '1', title: 'A2', description: 'a2', category: 'Segurança', createdAt: 't99' }];
+    const incoming: BusinessRule[] = [
+      { id: '1', title: 'A2', description: 'a2', category: 'Segurança', createdAt: 't99' },
+    ];
     const { merged, addedCount, updatedCount } = mergeBusinessRulesInto(e, incoming);
     expect(updatedCount).toBe(1);
     expect(addedCount).toBe(0);

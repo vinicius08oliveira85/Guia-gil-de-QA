@@ -107,21 +107,24 @@ export const BusinessRuleCategoryPresetsModal: React.FC<BusinessRuleCategoryPres
           <div className="flex gap-2 items-start">
             <Tags className="w-5 h-5 text-primary shrink-0 mt-0.5" aria-hidden />
             <p className="text-sm text-base-content/75">
-              Estes nomes aparecem no filtro e como sugestões ao criar regras. Remover da lista não altera
-              categorias já gravadas nas regras. Renomear atualiza também todas as regras que usavam o nome
-              anterior.
+              Estes nomes aparecem no filtro e como sugestões ao criar regras. Remover da lista não
+              altera categorias já gravadas nas regras. Renomear atualiza também todas as regras que
+              usavam o nome anterior.
             </p>
           </div>
 
-          <ul className="rounded-lg border border-base-300 divide-y divide-base-300 max-h-56 overflow-y-auto bg-base-100/80" role="list">
-            {sortedPresets.map((name) => (
+          <ul
+            className="rounded-lg border border-base-300 divide-y divide-base-300 max-h-56 overflow-y-auto bg-base-100/80"
+            role="list"
+          >
+            {sortedPresets.map(name => (
               <li key={name} className="px-3 py-2 flex flex-wrap items-center gap-2">
                 {editingName === name ? (
                   <>
                     <input
                       type="text"
                       value={editDraft}
-                      onChange={(e) => setEditDraft(e.target.value)}
+                      onChange={e => setEditDraft(e.target.value)}
                       className="input input-bordered input-sm flex-1 min-w-[120px] bg-base-100 border-base-300 rounded-lg"
                       aria-label={`Novo nome para ${name}`}
                     />
@@ -134,11 +137,23 @@ export const BusinessRuleCategoryPresetsModal: React.FC<BusinessRuleCategoryPres
                   </>
                 ) : (
                   <>
-                    <span className="text-sm font-medium text-base-content flex-1 min-w-0">{name}</span>
-                    <Button type="button" variant="outline" size="sm" onClick={() => startEdit(name)}>
+                    <span className="text-sm font-medium text-base-content flex-1 min-w-0">
+                      {name}
+                    </span>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => startEdit(name)}
+                    >
                       Editar
                     </Button>
-                    <Button type="button" variant="destructive" size="sm" onClick={() => setDeleteTarget(name)}>
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => setDeleteTarget(name)}
+                    >
                       Excluir
                     </Button>
                   </>
@@ -149,20 +164,28 @@ export const BusinessRuleCategoryPresetsModal: React.FC<BusinessRuleCategoryPres
 
           <div className="flex flex-col sm:flex-row gap-2 sm:items-end">
             <div className="flex-1 min-w-0">
-              <label htmlFor="new-category-preset" className="block text-xs font-medium text-base-content/60 mb-1">
+              <label
+                htmlFor="new-category-preset"
+                className="block text-xs font-medium text-base-content/60 mb-1"
+              >
                 Nova categoria
               </label>
               <input
                 id="new-category-preset"
                 type="text"
                 value={newName}
-                onChange={(e) => setNewName(e.target.value)}
+                onChange={e => setNewName(e.target.value)}
                 placeholder="Ex.: Performance"
                 className="input input-bordered w-full bg-base-100 border-base-300 text-base-content min-h-[44px] rounded-xl"
                 autoComplete="off"
               />
             </div>
-            <Button type="button" variant="default" className="w-full sm:w-auto shrink-0" onClick={handleAdd}>
+            <Button
+              type="button"
+              variant="default"
+              className="w-full sm:w-auto shrink-0"
+              onClick={handleAdd}
+            >
               Adicionar
             </Button>
           </div>

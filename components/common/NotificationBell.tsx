@@ -1,7 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { X } from 'lucide-react';
-import { getNotifications, getUnreadCount, markAsRead, markAllAsRead, deleteNotification, restoreNotification, Notification } from '../../utils/notificationService';
+import {
+  getNotifications,
+  getUnreadCount,
+  markAsRead,
+  markAllAsRead,
+  deleteNotification,
+  restoreNotification,
+  Notification,
+} from '../../utils/notificationService';
 
 interface NotificationBellProps {
   onClick?: () => void;
@@ -10,19 +18,19 @@ interface NotificationBellProps {
   showButton?: boolean;
 }
 
-export const NotificationBell: React.FC<NotificationBellProps> = ({ 
-  onClick, 
+export const NotificationBell: React.FC<NotificationBellProps> = ({
+  onClick,
   isOpen: externalIsOpen,
   onClose,
-  showButton = true 
+  showButton = true,
 }) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [internalIsOpen, setInternalIsOpen] = useState(false);
-  
+
   // Usar isOpen externo se fornecido, senão usar estado interno
   const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen;
-  
+
   const setIsOpen = (value: boolean) => {
     if (externalIsOpen === undefined) {
       setInternalIsOpen(value);
@@ -75,7 +83,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
     setUnreadCount(getUnreadCount());
 
     toast(
-      (t) => (
+      t => (
         <span className="flex items-center gap-3">
           Notificação excluída
           <button
@@ -97,18 +105,25 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
 
   const getNotificationIcon = (type: Notification['type']) => {
     switch (type) {
-      case 'bug_created': return '🐛';
-      case 'test_failed': return '❌';
-      case 'deadline': return '⏰';
-      case 'task_assigned': return '📋';
-      case 'comment_added': return '💬';
-      case 'task_completed': return '✅';
-      default: return '🔔';
+      case 'bug_created':
+        return '🐛';
+      case 'test_failed':
+        return '❌';
+      case 'deadline':
+        return '⏰';
+      case 'task_assigned':
+        return '📋';
+      case 'comment_added':
+        return '💬';
+      case 'task_completed':
+        return '✅';
+      default:
+        return '🔔';
     }
   };
 
   return (
-      <div className="relative">
+    <div className="relative">
       {showButton && (
         <button
           onClick={() => {
@@ -129,36 +144,33 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
       )}
 
       {isOpen && (
-          <>
-            {showButton && (
-              <div
-                className="fixed inset-0 z-40"
-                onClick={() => setIsOpen(false)}
-              />
-            )}
-            <div className={`${showButton ? 'absolute right-0 mt-3' : 'relative'} w-80 bg-base-100 border border-base-300 rounded-[var(--rounded-box)] shadow-2xl z-50 max-h-96 overflow-hidden flex flex-col`}>
-              <div className="p-4 border-b border-base-300 flex items-center justify-between gap-2">
-                <h3 className="font-semibold text-base-content">Notificações</h3>
-                <div className="flex items-center gap-1">
-                  {unreadCount > 0 && (
-                    <button
-                      onClick={handleMarkAllAsRead}
-                      className="btn btn-ghost btn-xs rounded-full"
-                      type="button"
-                    >
-                      Marcar todas como lidas
-                    </button>
-                  )}
+        <>
+          {showButton && <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />}
+          <div
+            className={`${showButton ? 'absolute right-0 mt-3' : 'relative'} w-80 bg-base-100 border border-base-300 rounded-[var(--rounded-box)] shadow-2xl z-50 max-h-96 overflow-hidden flex flex-col`}
+          >
+            <div className="p-4 border-b border-base-300 flex items-center justify-between gap-2">
+              <h3 className="font-semibold text-base-content">Notificações</h3>
+              <div className="flex items-center gap-1">
+                {unreadCount > 0 && (
                   <button
+                    onClick={handleMarkAllAsRead}
+                    className="btn btn-ghost btn-xs rounded-full"
                     type="button"
-                    onClick={() => setIsOpen(false)}
-                    aria-label="Fechar notificações"
-                    className="btn btn-ghost btn-xs btn-circle"
                   >
-                    <X className="w-3.5 h-3.5" />
+                    Marcar todas como lidas
                   </button>
-                </div>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setIsOpen(false)}
+                  aria-label="Fechar notificações"
+                  className="btn btn-ghost btn-xs btn-circle"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
               </div>
+            </div>
             <div className="overflow-y-auto flex-1">
               {notifications.length > 0 ? (
                 notifications.map(notification => (
@@ -190,7 +202,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
                         </p>
                       </div>
                       <button
-                        onClick={(e) => {
+                        onClick={e => {
                           e.stopPropagation();
                           handleDelete(notification);
                         }}
@@ -207,7 +219,9 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
                 <div className="p-8 text-center">
                   <p className="text-3xl mb-2">🔔</p>
                   <p className="text-sm font-medium text-base-content/70">Nenhuma notificação</p>
-                  <p className="text-xs text-base-content/50 mt-1">Você será notificado quando houver atualizações importantes.</p>
+                  <p className="text-xs text-base-content/50 mt-1">
+                    Você será notificado quando houver atualizações importantes.
+                  </p>
                 </div>
               )}
             </div>
@@ -217,4 +231,3 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
     </div>
   );
 };
-

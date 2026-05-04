@@ -1,8 +1,8 @@
-import * as React from "react";
-import { AnimatePresence, motion } from "framer-motion";
-import { useOnClickOutside } from "usehooks-ts";
-import { cn } from "../../utils/cn";
-import { LucideIcon } from "lucide-react";
+import * as React from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { useOnClickOutside } from 'usehooks-ts';
+import { cn } from '../../utils/cn';
+import { LucideIcon } from 'lucide-react';
 
 interface Tab {
   id: string;
@@ -12,7 +12,7 @@ interface Tab {
 }
 
 interface Separator {
-  type: "separator";
+  type: 'separator';
   title?: never;
   icon?: never;
 }
@@ -33,30 +33,30 @@ interface ExpandableTabsProps {
 const buttonVariants = {
   initial: {
     gap: 0,
-    paddingLeft: ".5rem",
-    paddingRight: ".5rem",
+    paddingLeft: '.5rem',
+    paddingRight: '.5rem',
   },
   animate: (isSelected: boolean) => ({
-    gap: isSelected ? ".5rem" : 0,
-    paddingLeft: isSelected ? ".75rem" : ".5rem",
-    paddingRight: isSelected ? ".75rem" : ".5rem",
+    gap: isSelected ? '.5rem' : 0,
+    paddingLeft: isSelected ? '.75rem' : '.5rem',
+    paddingRight: isSelected ? '.75rem' : '.5rem',
   }),
 };
 
 const spanVariants = {
   initial: { width: 0, opacity: 0 },
-  animate: { width: "auto", opacity: 1 },
+  animate: { width: 'auto', opacity: 1 },
   exit: { width: 0, opacity: 0 },
 };
 
-const transition = { delay: 0.1, type: "spring", bounce: 0, duration: 0.6 };
+const transition = { delay: 0.1, type: 'spring', bounce: 0, duration: 0.6 };
 
 /**
  * Componente ExpandableTabs com efeito de expansão animado
- * 
+ *
  * @example
  * ```tsx
- * <ExpandableTabs 
+ * <ExpandableTabs
  *   tabs={[
  *     { title: "Settings", icon: Settings },
  *     { title: "Notifications", icon: Bell }
@@ -68,7 +68,7 @@ const transition = { delay: 0.1, type: "spring", bounce: 0, duration: 0.6 };
 export const ExpandableTabs: React.FC<ExpandableTabsProps> = ({
   tabs,
   className,
-  activeColor = "text-primary",
+  activeColor = 'text-primary',
   onChange,
   leadingContent,
   onOutsideClick,
@@ -88,15 +88,13 @@ export const ExpandableTabs: React.FC<ExpandableTabsProps> = ({
     onChange?.(id);
   };
 
-  const Separator = () => (
-    <div className="mx-0.5 h-[20px] w-px bg-base-200" aria-hidden="true" />
-  );
+  const Separator = () => <div className="mx-0.5 h-[20px] w-px bg-base-200" aria-hidden="true" />;
 
   return (
     <div
       ref={outsideClickRef}
       className={cn(
-        "flex flex-wrap items-center gap-1.5 rounded-full border border-base-300 bg-base-100/70 p-0.5 shadow-sm backdrop-blur",
+        'flex flex-wrap items-center gap-1.5 rounded-full border border-base-300 bg-base-100/70 p-0.5 shadow-sm backdrop-blur',
         className
       )}
     >
@@ -105,7 +103,7 @@ export const ExpandableTabs: React.FC<ExpandableTabsProps> = ({
         <div className="mx-0.5 h-[20px] w-px bg-base-200" aria-hidden="true" />
       )}
       {tabs.map((tab, index) => {
-        if (tab.type === "separator") {
+        if (tab.type === 'separator') {
           return <Separator key={`separator-${index}`} />;
         }
 
@@ -123,11 +121,11 @@ export const ExpandableTabs: React.FC<ExpandableTabsProps> = ({
             onMouseLeave={() => setHoveredIndex(null)}
             transition={transition}
             className={cn(
-              "relative flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full px-3 py-1.5 text-xs font-semibold outline-none sm:justify-start",
-              "focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2 focus-visible:ring-offset-base-100",
+              'relative flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full px-3 py-1.5 text-xs font-semibold outline-none sm:justify-start',
+              'focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2 focus-visible:ring-offset-base-100',
               selected === index
-                ? cn("bg-primary/15", activeColor)
-                : "text-base-content/70 hover:bg-base-200/80 hover:text-base-content hover:ring-2 hover:ring-primary/20"
+                ? cn('bg-primary/15', activeColor)
+                : 'text-base-content/70 hover:bg-base-200/80 hover:text-base-content hover:ring-2 hover:ring-primary/20'
             )}
             aria-label={tab.title}
             aria-pressed={selected === index}

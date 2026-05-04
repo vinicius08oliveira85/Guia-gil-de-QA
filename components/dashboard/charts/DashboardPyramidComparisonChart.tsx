@@ -40,7 +40,7 @@ export const DashboardPyramidComparisonChart: React.FC<DashboardPyramidCompariso
 }) => {
   const chartBusy = isLoading || isRefreshingIdeal;
   const refreshDisabled = chartBusy || refreshLocked;
-  const data = rows.map((r) => ({
+  const data = rows.map(r => ({
     name: r.level,
     ideal: r.idealPercent,
     atual: r.currentPercent,
@@ -53,7 +53,8 @@ export const DashboardPyramidComparisonChart: React.FC<DashboardPyramidCompariso
         <div className="min-w-0 flex-1">
           <h4 className="text-base font-semibold text-base-content">Pirâmide de testes</h4>
           <p className="text-xs text-base-content/60 mt-0.5">
-            Comparativo entre a distribuição ideal sugerida pela IA e os casos de teste criados no projeto.
+            Comparativo entre a distribuição ideal sugerida pela IA e os casos de teste criados no
+            projeto.
           </p>
         </div>
         {onRefreshIdeal && (
@@ -94,7 +95,7 @@ export const DashboardPyramidComparisonChart: React.FC<DashboardPyramidCompariso
               <YAxis
                 domain={[0, 100]}
                 tick={{ fill: 'hsl(var(--bc) / 0.6)', fontSize: 11 }}
-                tickFormatter={(v) => `${v}%`}
+                tickFormatter={v => `${v}%`}
                 width={40}
               />
               <Tooltip
@@ -104,11 +105,23 @@ export const DashboardPyramidComparisonChart: React.FC<DashboardPyramidCompariso
                   borderRadius: 8,
                 }}
                 formatter={(value: number, name: string) => [`${value}%`, name]}
-                labelFormatter={(label) => `Nível: ${label}`}
+                labelFormatter={label => `Nível: ${label}`}
               />
               <Legend wrapperStyle={{ fontSize: 12 }} />
-              <Bar dataKey="ideal" name="Ideal (IA)" fill="hsl(var(--p))" radius={[4, 4, 0, 0]} maxBarSize={36} />
-              <Bar dataKey="atual" name="Atual (casos)" fill="hsl(var(--s))" radius={[4, 4, 0, 0]} maxBarSize={36} />
+              <Bar
+                dataKey="ideal"
+                name="Ideal (IA)"
+                fill="hsl(var(--p))"
+                radius={[4, 4, 0, 0]}
+                maxBarSize={36}
+              />
+              <Bar
+                dataKey="atual"
+                name="Atual (casos)"
+                fill="hsl(var(--s))"
+                radius={[4, 4, 0, 0]}
+                maxBarSize={36}
+              />
             </BarChart>
           </ResponsiveContainer>
         )}

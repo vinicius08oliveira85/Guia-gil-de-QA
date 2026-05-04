@@ -67,10 +67,7 @@ export const ConsolidatedMetrics = React.memo<ConsolidatedMetricsProps>(
           )}
         >
           <div
-            className={cn(
-              cell,
-              'border-success/20 bg-success/[0.06] hover:border-success/35'
-            )}
+            className={cn(cell, 'border-success/20 bg-success/[0.06] hover:border-success/35')}
             role="group"
             aria-label={`Testes totais executados: ${consolidated.totalTestsExecuted}`}
           >
@@ -107,7 +104,9 @@ export const ConsolidatedMetrics = React.memo<ConsolidatedMetricsProps>(
               <p className="text-xl font-bold tabular-nums tracking-tight text-base-content sm:text-2xl">
                 {consolidated.totalTasks}
               </p>
-              <p className="text-[11px] leading-snug text-base-content/72 sm:text-xs">Mapeadas globalmente</p>
+              <p className="text-[11px] leading-snug text-base-content/72 sm:text-xs">
+                Mapeadas globalmente
+              </p>
             </div>
           </div>
           <div
@@ -119,11 +118,15 @@ export const ConsolidatedMetrics = React.memo<ConsolidatedMetricsProps>(
               <Bug className="h-5 w-5" aria-hidden="true" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-base-content/78">Bugs ativos</p>
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-base-content/78">
+                Bugs ativos
+              </p>
               <p className="text-xl font-bold tabular-nums tracking-tight text-base-content sm:text-2xl">
                 {consolidated.openBugs}
               </p>
-              <p className="text-[11px] leading-snug text-base-content/72 sm:text-xs">Aguardando correção</p>
+              <p className="text-[11px] leading-snug text-base-content/72 sm:text-xs">
+                Aguardando correção
+              </p>
             </div>
           </div>
         </div>

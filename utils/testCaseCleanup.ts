@@ -18,7 +18,7 @@ interface CleanupResult {
  * Remove casos de teste e cenários BDD de tarefas que não são do tipo "Tarefa" ou "Bug"
  * Apenas tarefas do tipo "Tarefa" e "Bug" podem ter casos de teste e cenários BDD
  * Epic e História não devem ter casos de teste nem cenários BDD
- * 
+ *
  * @param project Projeto a ser limpo
  * @param createBackupBeforeCleanup Se true, cria backup antes de limpar (padrão: true)
  * @returns Resultado da limpeza com informações sobre o que foi removido
@@ -51,7 +51,7 @@ export async function cleanupTestCasesForNonTaskTypes(
     return {
       project,
       removedItems: [],
-      backupId
+      backupId,
     };
   }
 
@@ -61,7 +61,7 @@ export async function cleanupTestCasesForNonTaskTypes(
       const testCasesCount = task.testCases?.length || 0;
       const bddScenariosCount = task.bddScenarios?.length || 0;
       const needsCleanup = testCasesCount > 0 || bddScenariosCount > 0;
-      
+
       if (needsCleanup) {
         // Registrar o que será removido
         removedItems.push({
@@ -69,7 +69,7 @@ export async function cleanupTestCasesForNonTaskTypes(
           taskTitle: task.title,
           taskType: task.type,
           testCasesCount,
-          bddScenariosCount
+          bddScenariosCount,
         });
 
         logger.info(
@@ -80,7 +80,7 @@ export async function cleanupTestCasesForNonTaskTypes(
         return {
           ...task,
           testCases: [],
-          bddScenarios: []
+          bddScenarios: [],
         };
       }
     }
@@ -89,14 +89,14 @@ export async function cleanupTestCasesForNonTaskTypes(
 
   const cleanedProject: Project = {
     ...project,
-    tasks: cleanedTasks
+    tasks: cleanedTasks,
   };
 
   // Log resumo da limpeza
   if (removedItems.length > 0) {
     const totalTestCases = removedItems.reduce((sum, item) => sum + item.testCasesCount, 0);
     const totalBddScenarios = removedItems.reduce((sum, item) => sum + item.bddScenariosCount, 0);
-    
+
     logger.info(
       `Limpeza concluída: ${removedItems.length} tarefas limpas, ${totalTestCases} casos de teste e ${totalBddScenarios} cenários BDD removidos${backupId ? ` (backup: ${backupId})` : ''}`,
       'testCaseCleanup'
@@ -108,7 +108,7 @@ export async function cleanupTestCasesForNonTaskTypes(
   return {
     project: cleanedProject,
     removedItems,
-    backupId
+    backupId,
   };
 }
 
@@ -117,20 +117,21 @@ export async function cleanupTestCasesForNonTaskTypes(
  * Remove casos de teste e cenários BDD de tarefas que não são do tipo "Tarefa" ou "Bug"
  * Apenas tarefas do tipo "Tarefa" e "Bug" podem ter casos de teste e cenários BDD
  * Epic e História não devem ter casos de teste nem cenários BDD
- * 
+ *
  * @deprecated Use a versão assíncrona com backup
  */
 export function cleanupTestCasesForNonTaskTypesSync(project: Project): Project {
   const cleanedTasks = project.tasks.map((task: JiraTask) => {
     if (task.type !== 'Tarefa' && task.type !== 'Bug') {
-      const needsCleanup = (task.testCases && task.testCases.length > 0) || 
-                          (task.bddScenarios && task.bddScenarios.length > 0);
-      
+      const needsCleanup =
+        (task.testCases && task.testCases.length > 0) ||
+        (task.bddScenarios && task.bddScenarios.length > 0);
+
       if (needsCleanup) {
         return {
           ...task,
           testCases: [],
-          bddScenarios: []
+          bddScenarios: [],
         };
       }
     }
@@ -139,7 +140,7 @@ export function cleanupTestCasesForNonTaskTypesSync(project: Project): Project {
 
   return {
     ...project,
-    tasks: cleanedTasks
+    tasks: cleanedTasks,
   };
 }
 
@@ -154,7 +155,7 @@ export async function cleanupTestCasesForProjectsAsync(
   const results = await Promise.all(
     projects.map(project => cleanupTestCasesForNonTaskTypes(project, createBackupBeforeCleanup))
   );
-  
+
   return results.map(result => result.project);
 }
 
@@ -166,4 +167,3 @@ export async function cleanupTestCasesForProjectsAsync(
 export function cleanupTestCasesForProjects(projects: Project[]): Project[] {
   return projects.map(project => cleanupTestCasesForNonTaskTypesSync(project));
 }
-

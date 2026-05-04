@@ -28,16 +28,18 @@ function normalizeStrategy(s: string): string {
 export function classifyTestCasePyramidLevel(tc: TestCase): PyramidLevelName {
   const parts = [...(tc.strategies || []), tc.testSuite || '', tc.title || '', tc.description || '']
     .filter(Boolean)
-    .map((x) => normalizeStrategy(String(x)));
+    .map(x => normalizeStrategy(String(x)));
 
   const blob = parts.join(' ');
 
-  const isUnit = parts.some((p) =>
+  const isUnit = parts.some(p =>
     /\bunit\b|unitario|unitário|caixa branca|white box|componente isolado/.test(p)
   );
-  const isE2e = parts.some((p) =>
-    /\be2e\b|endtoend|end-to-end|aceitacao|aceitação|aceitacao|fluxo completo|jornada|uat|smoke global/.test(p) ||
-    /teste e2e|e2e automatizado/.test(p)
+  const isE2e = parts.some(
+    p =>
+      /\be2e\b|endtoend|end-to-end|aceitacao|aceitação|aceitacao|fluxo completo|jornada|uat|smoke global/.test(
+        p
+      ) || /teste e2e|e2e automatizado/.test(p)
   );
 
   if (isUnit && !isE2e) return 'Unitário';
@@ -82,11 +84,10 @@ export function buildPyramidComparisonRows(
     }
   }
 
-  return LEVELS.map((level) => {
+  return LEVELS.map(level => {
     const currentCount = counts[level];
     const currentPercent = total > 0 ? Math.round((currentCount / total) * 1000) / 10 : 0;
     const idealPercent = idealByLevel.get(level) ?? 0;
     return { level, idealPercent, currentPercent, currentCount };
   });
 }
-

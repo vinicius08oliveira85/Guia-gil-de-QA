@@ -34,8 +34,12 @@ vi.mock('../../utils/auditLog', () => ({
 }));
 
 function setupPersistenceSupabaseDbMocks(mocks: ReturnType<typeof createDbMocks>) {
-  vi.mocked(dbService.loadProjectsFromIndexedDB).mockImplementation(() => mocks.mockIndexedDB.loadProjects());
-  vi.mocked(dbService.getProjectById).mockImplementation((id: string) => mocks.mockIndexedDB.getProject(id));
+  vi.mocked(dbService.loadProjectsFromIndexedDB).mockImplementation(() =>
+    mocks.mockIndexedDB.loadProjects()
+  );
+  vi.mocked(dbService.getProjectById).mockImplementation((id: string) =>
+    mocks.mockIndexedDB.getProject(id)
+  );
   vi.mocked(dbService.addProject).mockImplementation(async (project: Project) => {
     await mocks.mockIndexedDB.saveProject(project);
     await mocks.mockSupabase.saveProject(project);
@@ -57,7 +61,7 @@ function setupPersistenceSupabaseDbMocks(mocks: ReturnType<typeof createDbMocks>
     await mocks.mockIndexedDB.saveProject(project);
   });
   vi.mocked(supabaseService.loadProjectsFromSupabase).mockImplementation(() =>
-    mocks.mockSupabase.loadProjects().then((projects) => ({ projects, loadFailed: false }))
+    mocks.mockSupabase.loadProjects().then(projects => ({ projects, loadFailed: false }))
   );
 }
 
@@ -131,7 +135,9 @@ describe('Importação de projetos', () => {
     expect(state.projects.find(p => p.id === newProject.id)?.name).toBe('Importado Novo');
     const fromIndexedDB = await mocks.mockIndexedDB.getProject(newProject.id);
     expect(fromIndexedDB).toBeDefined();
-    expect(dbService.addProject).toHaveBeenCalledWith(expect.objectContaining({ id: newProject.id }));
+    expect(dbService.addProject).toHaveBeenCalledWith(
+      expect.objectContaining({ id: newProject.id })
+    );
   });
 
   it('deve importar projeto com id já existente no state usando updateProject (sem ConstraintError)', async () => {
@@ -161,7 +167,9 @@ describe('Importação de projetos', () => {
     });
     const state = useProjectsStore.getState();
     expect(state.projects.find(p => p.id === existing.id)?.description).toBe('Nova descrição');
-    expect(dbService.updateProject).toHaveBeenCalledWith(expect.objectContaining({ id: existing.id, name: 'Existente Atualizado' }));
+    expect(dbService.updateProject).toHaveBeenCalledWith(
+      expect.objectContaining({ id: existing.id, name: 'Existente Atualizado' })
+    );
   });
 
   it('deve importar projeto com id já existente apenas no IndexedDB (não no state) usando updateProject', async () => {
@@ -187,9 +195,13 @@ describe('Importação de projetos', () => {
 
     await waitForStoreState(state => state.projects.some(p => p.id === existing.id));
     const state = useProjectsStore.getState();
-    expect(state.projects.find(p => p.id === existing.id)?.name).toBe('Atualizado via getProjectById');
+    expect(state.projects.find(p => p.id === existing.id)?.name).toBe(
+      'Atualizado via getProjectById'
+    );
     expect(dbService.getProjectById).toHaveBeenCalledWith(existing.id);
-    expect(dbService.updateProject).toHaveBeenCalledWith(expect.objectContaining({ id: existing.id, name: 'Atualizado via getProjectById' }));
+    expect(dbService.updateProject).toHaveBeenCalledWith(
+      expect.objectContaining({ id: existing.id, name: 'Atualizado via getProjectById' })
+    );
   });
 });
 

@@ -20,56 +20,54 @@ interface DashboardStatCardProps {
  * Card de estatística do dashboard (grid superior): ícone, valor, variação % e label.
  * Layout horizontal alinhado ao design de referência.
  */
-export const DashboardStatCard = React.memo<DashboardStatCardProps>(({
-  title,
-  value,
-  changePercent,
-  trend = 'neutral',
-  icon: Icon,
-  className,
-  onClick,
-}) => {
-  const changeColor =
-    trend === 'up'
-      ? 'text-success'
-      : trend === 'down'
-        ? 'text-error'
-        : 'text-base-content/60';
+export const DashboardStatCard = React.memo<DashboardStatCardProps>(
+  ({ title, value, changePercent, trend = 'neutral', icon: Icon, className, onClick }) => {
+    const changeColor =
+      trend === 'up' ? 'text-success' : trend === 'down' ? 'text-error' : 'text-base-content/60';
 
-  const isClickable = !!onClick;
+    const isClickable = !!onClick;
 
-  const handleClick = () => {
-    onClick?.();
-  };
+    const handleClick = () => {
+      onClick?.();
+    };
 
-  return (
-    <div
-      role={isClickable ? 'button' : undefined}
-      tabIndex={isClickable ? 0 : undefined}
-      onClick={isClickable ? handleClick : undefined}
-      onKeyDown={isClickable ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleClick(); } } : undefined}
-      className={cn(
-        'bg-base-100 px-5 py-4 rounded-xl shadow-sm border border-base-300 flex items-center gap-4',
-        isClickable && 'cursor-pointer hover:ring-2 hover:ring-primary/20 hover:scale-[1.02] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/30',
-        className
-      )}
-    >
-      <div className="p-2 bg-primary/10 text-primary rounded-lg shrink-0">
-        <Icon className="text-xl w-5 h-5" aria-hidden="true" />
-      </div>
-      <div className="min-w-0">
-        <div className="flex items-baseline gap-2">
-          <span className="text-xl font-bold text-base-content">{value}</span>
-          {changePercent != null && (
-            <span className={cn('text-[10px] font-medium', changeColor)}>
-              {changePercent}
-            </span>
-          )}
+    return (
+      <div
+        role={isClickable ? 'button' : undefined}
+        tabIndex={isClickable ? 0 : undefined}
+        onClick={isClickable ? handleClick : undefined}
+        onKeyDown={
+          isClickable
+            ? e => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  handleClick();
+                }
+              }
+            : undefined
+        }
+        className={cn(
+          'bg-base-100 px-5 py-4 rounded-xl shadow-sm border border-base-300 flex items-center gap-4',
+          isClickable &&
+            'cursor-pointer hover:ring-2 hover:ring-primary/20 hover:scale-[1.02] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/30',
+          className
+        )}
+      >
+        <div className="p-2 bg-primary/10 text-primary rounded-lg shrink-0">
+          <Icon className="text-xl w-5 h-5" aria-hidden="true" />
         </div>
-        <p className="text-base-content/70 text-xs">{title}</p>
+        <div className="min-w-0">
+          <div className="flex items-baseline gap-2">
+            <span className="text-xl font-bold text-base-content">{value}</span>
+            {changePercent != null && (
+              <span className={cn('text-[10px] font-medium', changeColor)}>{changePercent}</span>
+            )}
+          </div>
+          <p className="text-base-content/70 text-xs">{title}</p>
+        </div>
       </div>
-    </div>
-  );
-});
+    );
+  }
+);
 
 DashboardStatCard.displayName = 'DashboardStatCard';

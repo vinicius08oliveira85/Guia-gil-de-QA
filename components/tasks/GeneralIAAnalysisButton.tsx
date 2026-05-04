@@ -3,12 +3,12 @@ import { Spinner } from '../common/Spinner';
 import { cn } from '../../utils/cn';
 
 interface GeneralIAAnalysisButtonProps {
-  onAnalyze: () => Promise<void>;
+  onAnalyze: () => void | Promise<void>;
   isAnalyzing?: boolean;
   progress?: {
     current: number;
     total: number;
-    message: string;
+    message?: string;
     estimatedSeconds?: number;
   } | null;
 }
@@ -27,14 +27,18 @@ export const GeneralIAAnalysisButton: React.FC<GeneralIAAnalysisButtonProps> = (
     }
   };
 
-  const stepLabel = isAnalyzing && progress && progress.total > 0 ? `Etapa ${progress.current} de ${progress.total}` : null;
+  const stepLabel =
+    isAnalyzing && progress && progress.total > 0
+      ? `Etapa ${progress.current} de ${progress.total}`
+      : null;
   const estimatedLabel =
     isAnalyzing && progress?.estimatedSeconds != null
       ? progress.estimatedSeconds < 60
         ? `~${progress.estimatedSeconds}s`
         : `~${Math.ceil(progress.estimatedSeconds / 60)} min`
       : null;
-  const defaultTooltip = 'Executa análise de risco e recomendações e pode gerar BDD e casos de teste para tarefas sem eles.';
+  const defaultTooltip =
+    'Executa análise de risco e recomendações e pode gerar BDD e casos de teste para tarefas sem eles.';
 
   return (
     <div className="flex flex-col items-start gap-1">
@@ -69,14 +73,16 @@ export const GeneralIAAnalysisButton: React.FC<GeneralIAAnalysisButtonProps> = (
           </svg>
         )}
         <span>
-          {isAnalyzing ? (progress?.message ? progress.message : 'Analisando…') : 'Análise geral com IA'}
+          {isAnalyzing
+            ? progress?.message
+              ? progress.message
+              : 'Analisando…'
+            : 'Análise geral com IA'}
         </span>
       </button>
       {isAnalyzing && progress && (
         <div className="flex flex-col gap-0.5 w-full" aria-live="polite">
-          {stepLabel && (
-            <span className="text-[10px] text-base-content/60">{stepLabel}</span>
-          )}
+          {stepLabel && <span className="text-[10px] text-base-content/60">{stepLabel}</span>}
           {progress.total > 0 && (
             <div className="w-full h-1 bg-base-300 rounded-full overflow-hidden">
               <div

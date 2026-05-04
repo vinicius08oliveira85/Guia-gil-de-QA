@@ -14,7 +14,7 @@ export const buildDependencyGraph = (project: Project): Map<string, DependencyGr
     graph.set(task.id, {
       taskId: task.id,
       dependencies: task.dependencies || [],
-      dependents: []
+      dependents: [],
     });
   });
 
@@ -44,7 +44,11 @@ export const getTaskDependents = (taskId: string, project: Project): JiraTask[] 
   return project.tasks.filter(t => t.dependencies?.includes(taskId));
 };
 
-export const canAddDependency = (taskId: string, dependencyId: string, project: Project): { canAdd: boolean; reason?: string } => {
+export const canAddDependency = (
+  taskId: string,
+  dependencyId: string,
+  project: Project
+): { canAdd: boolean; reason?: string } => {
   if (taskId === dependencyId) {
     return { canAdd: false, reason: 'Uma tarefa não pode depender de si mesma' };
   }
@@ -52,11 +56,11 @@ export const canAddDependency = (taskId: string, dependencyId: string, project: 
   // Verificar dependência circular
   const graph = buildDependencyGraph(project);
   const visited = new Set<string>();
-  
+
   const hasCircularDependency = (currentId: string, targetId: string): boolean => {
     if (currentId === targetId) return true;
     if (visited.has(currentId)) return false;
-    
+
     visited.add(currentId);
     const node = graph.get(currentId);
     if (!node) return false;
@@ -66,7 +70,7 @@ export const canAddDependency = (taskId: string, dependencyId: string, project: 
 
   // Se adicionarmos esta dependência, ela criaria um ciclo?
   const wouldCreateCycle = hasCircularDependency(dependencyId, taskId);
-  
+
   if (wouldCreateCycle) {
     return { canAdd: false, reason: 'Esta dependência criaria um ciclo circular' };
   }
@@ -93,7 +97,11 @@ export const addDependency = (taskId: string, dependencyId: string, project: Pro
   return { ...project, tasks: updatedTasks };
 };
 
-export const removeDependency = (taskId: string, dependencyId: string, project: Project): Project => {
+export const removeDependency = (
+  taskId: string,
+  dependencyId: string,
+  project: Project
+): Project => {
   const updatedTasks = project.tasks.map(task => {
     if (task.id === taskId) {
       const dependencies = (task.dependencies || []).filter(id => id !== dependencyId);
@@ -108,7 +116,7 @@ export const removeDependency = (taskId: string, dependencyId: string, project: 
 export const getBlockedTasks = (project: Project): JiraTask[] => {
   return project.tasks.filter(task => {
     if (!task.dependencies || task.dependencies.length === 0) return false;
-    
+
     const dependencyTasks = getTaskDependencies(task.id, project);
     return dependencyTasks.some(dep => dep.status !== 'Done');
   });
@@ -117,9 +125,8 @@ export const getBlockedTasks = (project: Project): JiraTask[] => {
 export const getReadyTasks = (project: Project): JiraTask[] => {
   return project.tasks.filter(task => {
     if (!task.dependencies || task.dependencies.length === 0) return true;
-    
+
     const dependencyTasks = getTaskDependencies(task.id, project);
     return dependencyTasks.every(dep => dep.status === 'Done');
   });
 };
-

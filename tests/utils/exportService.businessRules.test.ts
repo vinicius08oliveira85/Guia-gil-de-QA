@@ -8,7 +8,9 @@ import type { BusinessRule } from '../../types';
 
 describe('exportBusinessRulesToJSON', () => {
   it('gera JSON com metadados e array businessRules', () => {
-    const rules: BusinessRule[] = [{ id: '1', title: 'T', description: 'D', category: 'Geral', createdAt: 'x' }];
+    const rules: BusinessRule[] = [
+      { id: '1', title: 'T', description: 'D', category: 'Geral', createdAt: 'x' },
+    ];
     const json = exportBusinessRulesToJSON('Meu Projeto', rules);
     const parsed = JSON.parse(json) as {
       format: string;

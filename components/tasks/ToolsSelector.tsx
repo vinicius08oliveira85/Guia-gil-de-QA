@@ -10,17 +10,17 @@ interface ToolsSelectorProps {
 }
 
 const toolDescriptions: Record<SuggestedTool, string> = {
-  'Postman': 'API Testing',
-  'Insomnia': 'API Testing',
-  'DBeaver': 'para acesso ao banco de dados',
-  'Kibana': 'para análise de logs'
+  Postman: 'API Testing',
+  Insomnia: 'API Testing',
+  DBeaver: 'para acesso ao banco de dados',
+  Kibana: 'para análise de logs',
 };
 
 export const ToolsSelector: React.FC<ToolsSelectorProps> = ({
   selectedTools,
   onToolsChange,
   label = 'Ferramentas Utilizadas',
-  compact = false
+  compact = false,
 }) => {
   const handleToolToggle = (tool: string) => {
     if (selectedTools.includes(tool)) {
@@ -45,7 +45,9 @@ export const ToolsSelector: React.FC<ToolsSelectorProps> = ({
   return (
     <div className={`space-y-3 ${compact ? 'space-y-2' : ''}`}>
       {label ? (
-        <label className={`block font-semibold text-base-content/70 ${compact ? 'text-xs' : 'text-sm'}`}>
+        <label
+          className={`block font-semibold text-base-content/70 ${compact ? 'text-xs' : 'text-sm'}`}
+        >
           {label}
         </label>
       ) : null}
@@ -104,7 +106,12 @@ export const ToolsSelector: React.FC<ToolsSelectorProps> = ({
                   title="Remover"
                 >
                   <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
                   </svg>
                 </button>
               </div>
@@ -118,13 +125,13 @@ export const ToolsSelector: React.FC<ToolsSelectorProps> = ({
         <input
           type="text"
           placeholder="Adicionar ferramenta customizada..."
-          onKeyDown={(e) => {
+          onKeyDown={e => {
             if (e.key === 'Enter') {
               handleCustomToolAdd(e.currentTarget.value);
               e.currentTarget.value = '';
             }
           }}
-          onBlur={(e) => {
+          onBlur={e => {
             if (e.target.value.trim()) {
               handleCustomToolAdd(e.target.value);
               e.target.value = '';
@@ -139,4 +146,3 @@ export const ToolsSelector: React.FC<ToolsSelectorProps> = ({
     </div>
   );
 };
-

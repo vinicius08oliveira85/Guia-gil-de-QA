@@ -1,13 +1,13 @@
 import { create } from 'zustand';
 import { Project, JiraTask } from '../types';
-import { 
+import {
   loadProjectsFromIndexedDB,
   getProjectById,
-  addProject, 
-  updateProject as updateProjectInDatabase, 
+  addProject,
+  updateProject as updateProjectInDatabase,
   deleteProject,
   saveProjectToSupabaseOnly,
-  writeProjectToIndexedDBOnly
+  writeProjectToIndexedDBOnly,
 } from '../services/dbService';
 import { loadProjectsFromSupabase, isSupabaseAvailable } from '../services/supabaseService';
 import { clearSupabaseRemotePause } from '../services/supabaseCircuitBreaker';
@@ -40,11 +40,18 @@ interface ProjectsState {
   syncProjectsFromSupabase: () => Promise<void>;
   saveProjectToSupabase: (projectId: string) => Promise<void>;
   createProject: (name: string, description: string, templateId?: string) => Promise<Project>;
-  updateProject: (project: Project, options?: { silent?: boolean; syncRemote?: boolean }) => Promise<void>;
+  updateProject: (
+    project: Project,
+    options?: { silent?: boolean; syncRemote?: boolean }
+  ) => Promise<void>;
   deleteProject: (projectId: string) => Promise<void>;
   selectProject: (projectId: string | null) => void;
   addTaskToProject: (projectId: string, task: JiraTask) => Promise<void>;
-  updateTaskInProject: (projectId: string, taskId: string, updates: Partial<JiraTask>) => Promise<void>;
+  updateTaskInProject: (
+    projectId: string,
+    taskId: string,
+    updates: Partial<JiraTask>
+  ) => Promise<void>;
   deleteTaskFromProject: (projectId: string, taskId: string) => Promise<void>;
   getSelectedProject: () => Project | undefined;
   importProject: (project: Project) => Promise<void>;
@@ -73,7 +80,10 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
             'ProjectsStore'
           );
         } else {
-          logger.info(`Projetos carregados do IndexedDB: ${indexedDBProjects.length}`, 'ProjectsStore');
+          logger.info(
+            `Projetos carregados do IndexedDB: ${indexedDBProjects.length}`,
+            'ProjectsStore'
+          );
         }
       } catch (error) {
         logger.error('Erro ao carregar do IndexedDB', 'ProjectsStore', error);
@@ -99,21 +109,29 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
       if (!isSupabaseAvailable()) return;
 
       loadProjectsFromSupabase()
-        .then(async (result) => {
+        .then(async result => {
           const currentProjects = get().projects;
           const supabaseProjects = result.projects;
           let finalProjects: Project[];
 
           if (supabaseProjects.length > 0 && currentProjects.length > 0) {
             try {
-              const projectsToBackup = currentProjects.filter((p) =>
-                supabaseProjects.some((sp) => sp.id === p.id)
+              const projectsToBackup = currentProjects.filter(p =>
+                supabaseProjects.some(sp => sp.id === p.id)
               );
               if (projectsToBackup.length > 0) {
                 await Promise.all(
-                  projectsToBackup.map((project) =>
-                    createBackup(project, 'MERGE', 'Backup automático antes de merge Supabase/IndexedDB').catch(
-                      (err) => logger.warn(`Erro ao criar backup antes de merge para ${project.id}`, 'ProjectsStore', err)
+                  projectsToBackup.map(project =>
+                    createBackup(
+                      project,
+                      'MERGE',
+                      'Backup automático antes de merge Supabase/IndexedDB'
+                    ).catch(err =>
+                      logger.warn(
+                        `Erro ao criar backup antes de merge para ${project.id}`,
+                        'ProjectsStore',
+                        err
+                      )
                     )
                   )
                 );
@@ -121,10 +139,10 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
             } catch {
               logger.warn('Erro ao criar backups antes de merge (continuando)', 'ProjectsStore');
             }
-            const migratedSupabaseProjects = supabaseProjects.map((project) => ({
+            const migratedSupabaseProjects = supabaseProjects.map(project => ({
               ...project,
               businessRules: project.businessRules ?? [],
-              tasks: (project.tasks || []).map((task) => ({
+              tasks: (project.tasks || []).map(task => ({
                 ...task,
                 testCases: migrateTestCases(task.testCases || []),
               })),
@@ -137,16 +155,19 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
               'ProjectsStore'
             );
           } else if (supabaseProjects.length > 0) {
-            const migratedSupabaseProjects = supabaseProjects.map((project) => ({
+            const migratedSupabaseProjects = supabaseProjects.map(project => ({
               ...project,
               businessRules: project.businessRules ?? [],
-              tasks: (project.tasks || []).map((task) => ({
+              tasks: (project.tasks || []).map(task => ({
                 ...task,
                 testCases: migrateTestCases(task.testCases || []),
               })),
             }));
             finalProjects = cleanupTestCasesForProjects(migratedSupabaseProjects);
-            logger.info(`Projetos atualizados do Supabase: ${finalProjects.length}`, 'ProjectsStore');
+            logger.info(
+              `Projetos atualizados do Supabase: ${finalProjects.length}`,
+              'ProjectsStore'
+            );
           } else {
             finalProjects = currentProjects;
           }
@@ -160,7 +181,7 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
             toast(result.errorMessage, { duration: 5000, id: 'supabase-sync-degraded' });
           }
         })
-        .catch((err) => {
+        .catch(err => {
           logger.warn('Erro ao sincronizar Supabase em background', 'ProjectsStore', err);
           set({
             supabaseLoadFailed: true,
@@ -207,8 +228,8 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
         businessRules: project.businessRules ?? [],
         tasks: (project.tasks || []).map(task => ({
           ...task,
-          testCases: migrateTestCases(task.testCases || [])
-        }))
+          testCases: migrateTestCases(task.testCases || []),
+        })),
       }));
 
       const state = get();
@@ -224,13 +245,23 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
           migratedSupabaseProjects.some(sp => sp.id === p.id)
         );
         if (projectsToBackup.length > 0) {
-          logger.debug(`Criando backups antes de sync para ${projectsToBackup.length} projetos`, 'ProjectsStore');
+          logger.debug(
+            `Criando backups antes de sync para ${projectsToBackup.length} projetos`,
+            'ProjectsStore'
+          );
           await Promise.all(
             projectsToBackup.map(project =>
-              createBackup(project, 'SYNC', 'Backup automático antes de sincronização Supabase')
-                .catch(err => {
-                  logger.warn(`Erro ao criar backup antes de sync para ${project.id}`, 'ProjectsStore', err);
-                })
+              createBackup(
+                project,
+                'SYNC',
+                'Backup automático antes de sincronização Supabase'
+              ).catch(err => {
+                logger.warn(
+                  `Erro ao criar backup antes de sync para ${project.id}`,
+                  'ProjectsStore',
+                  err
+                );
+              })
             )
           );
         }
@@ -242,7 +273,11 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
       await Promise.all(
         cleanedProjects.map(project =>
           writeProjectToIndexedDBOnly(project).catch(err => {
-            logger.warn(`Erro ao persistir projeto ${project.id} no IndexedDB após sync`, 'ProjectsStore', err);
+            logger.warn(
+              `Erro ao persistir projeto ${project.id} no IndexedDB após sync`,
+              'ProjectsStore',
+              err
+            );
           })
         )
       );
@@ -252,14 +287,25 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
         supabaseLoadFailed: false,
         supabaseLoadError: null,
       });
-      logger.info(`Projetos sincronizados do Supabase (fonte da verdade): ${cleanedProjects.length} (${migratedSupabaseProjects.length} do Supabase + ${localOnly.length} só locais)`, 'ProjectsStore');
+      logger.info(
+        `Projetos sincronizados do Supabase (fonte da verdade): ${cleanedProjects.length} (${migratedSupabaseProjects.length} do Supabase + ${localOnly.length} só locais)`,
+        'ProjectsStore'
+      );
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       // Log mais detalhado para erros CORS ou timeout
       if (errorMessage.includes('CORS') || errorMessage.includes('cors')) {
-        logger.warn('Erro CORS ao sincronizar projetos do Supabase. Configure VITE_SUPABASE_PROXY_URL.', 'ProjectsStore', error);
+        logger.warn(
+          'Erro CORS ao sincronizar projetos do Supabase. Configure VITE_SUPABASE_PROXY_URL.',
+          'ProjectsStore',
+          error
+        );
       } else if (errorMessage.includes('Timeout') || errorMessage.includes('timeout')) {
-        logger.warn('Timeout ao sincronizar projetos do Supabase. Usando cache local.', 'ProjectsStore', error);
+        logger.warn(
+          'Timeout ao sincronizar projetos do Supabase. Usando cache local.',
+          'ProjectsStore',
+          error
+        );
       } else {
         logger.warn('Erro ao sincronizar projetos do Supabase', 'ProjectsStore', error);
       }
@@ -269,8 +315,8 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
 
   saveProjectToSupabase: async (projectId: string) => {
     const state = get();
-    const project = state.projects.find((p) => p.id === projectId);
-    
+    const project = state.projects.find(p => p.id === projectId);
+
     if (!project) {
       throw new Error('Projeto não encontrado');
     }
@@ -288,23 +334,27 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
       set({ lastSaveToSupabase: true });
       logger.debug(`Projeto "${project.name}" salvo no Supabase`, 'ProjectsStore');
     } catch (error) {
-      const errorObj = error instanceof Error ? error : new Error('Erro ao salvar projeto no Supabase');
+      const errorObj =
+        error instanceof Error ? error : new Error('Erro ao salvar projeto no Supabase');
       const errorMessage = errorObj.message.toLowerCase();
-      
+
       // Verificar se é erro de rede - não logar como error se for
-      const isNetworkErr = errorMessage.includes('timeout') || 
-                          errorMessage.includes('connection reset') ||
-                          errorMessage.includes('err_timed_out') ||
-                          errorMessage.includes('err_connection_reset') ||
-                          errorMessage.includes('err_name_not_resolved') ||
-                          errorMessage.includes('failed to fetch') ||
-                          errorMessage.includes('network');
-      
+      const isNetworkErr =
+        errorMessage.includes('timeout') ||
+        errorMessage.includes('connection reset') ||
+        errorMessage.includes('err_timed_out') ||
+        errorMessage.includes('err_connection_reset') ||
+        errorMessage.includes('err_name_not_resolved') ||
+        errorMessage.includes('failed to fetch') ||
+        errorMessage.includes('network');
+
       // Tratamento específico para erro 413 (Payload Too Large) ou mensagem de projeto muito grande
-      if (errorMessage.includes('413') || 
-          errorMessage.includes('payload muito grande') || 
-          errorMessage.includes('content too large') ||
-          errorMessage.includes('muito grande')) {
+      if (
+        errorMessage.includes('413') ||
+        errorMessage.includes('payload muito grande') ||
+        errorMessage.includes('content too large') ||
+        errorMessage.includes('muito grande')
+      ) {
         logger.debug(
           `Projeto "${project.name}" muito grande para Supabase. Salvo apenas localmente.`,
           'ProjectsStore'
@@ -313,13 +363,17 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
         // O projeto já está salvo localmente
         return;
       }
-      
+
       // Se for erro de rede, não lançar erro (evita loop) - apenas logar debug
       if (isNetworkErr) {
-        logger.debug('Erro de rede ao salvar projeto no Supabase. Projeto salvo apenas localmente.', 'ProjectsStore', errorObj);
+        logger.debug(
+          'Erro de rede ao salvar projeto no Supabase. Projeto salvo apenas localmente.',
+          'ProjectsStore',
+          errorObj
+        );
         return; // Não lançar erro para evitar loop
       }
-      
+
       logger.warn('Erro ao salvar projeto no Supabase', 'ProjectsStore', errorObj);
       throw errorObj;
     }
@@ -329,10 +383,14 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
     try {
       logger.debug(`Criando projeto: ${name}`, 'ProjectsStore', { templateId });
       let newProject: Project;
-      
+
       const now = new Date().toISOString();
       if (templateId) {
-        newProject = { ...createProjectFromTemplate(templateId, name, description), createdAt: now, updatedAt: now };
+        newProject = {
+          ...createProjectFromTemplate(templateId, name, description),
+          createdAt: now,
+          updatedAt: now,
+        };
       } else {
         newProject = {
           id: `proj-${Date.now()}`,
@@ -349,7 +407,7 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
       }
 
       const result = await addProject(newProject);
-      set((state) => ({
+      set(state => ({
         projects: [...state.projects, newProject],
         lastSaveToSupabase: result.savedToSupabase,
       }));
@@ -358,15 +416,15 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
         action: 'CREATE',
         entityType: 'project',
         entityId: newProject.id,
-        entityName: newProject.name
+        entityName: newProject.name,
       });
-      
+
       logger.info(`Projeto criado: ${newProject.id}`, 'ProjectsStore');
       return newProject;
     } catch (error) {
       const errorObj = error instanceof Error ? error : new Error('Erro ao criar projeto');
       logger.error('Erro ao criar projeto', 'ProjectsStore', errorObj);
-      set({ 
+      set({
         error: errorObj,
       });
       throw error;
@@ -376,36 +434,47 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
   updateProject: async (project: Project, options?: { silent?: boolean; syncRemote?: boolean }) => {
     try {
       const state = get();
-      const oldProject = state.projects.find((p) => p.id === project.id);
-      
+      const oldProject = state.projects.find(p => p.id === project.id);
+
       logger.debug('updateProject chamado no store', 'ProjectsStore', {
         projectId: project.id,
         temProjetoAntigo: !!oldProject,
-        silent: options?.silent || false
+        silent: options?.silent || false,
       });
-      
+
       // PROTEÇÃO: Verificar se há perda de status executados ao substituir projeto
       let finalProject = project;
       if (oldProject) {
-        logger.debug('Verificando perda de status executados ao substituir projeto', 'ProjectsStore', {
-          projectId: project.id,
-          totalStatusNoProjetoAntigo: oldProject.tasks.flatMap(t => (t.testCases || []).filter(tc => tc.status !== 'Not Run')).length,
-          totalStatusNoProjetoNovo: project.tasks.flatMap(t => (t.testCases || []).filter(tc => tc.status !== 'Not Run')).length
-        });
+        logger.debug(
+          'Verificando perda de status executados ao substituir projeto',
+          'ProjectsStore',
+          {
+            projectId: project.id,
+            totalStatusNoProjetoAntigo: oldProject.tasks.flatMap(t =>
+              (t.testCases || []).filter(tc => tc.status !== 'Not Run')
+            ).length,
+            totalStatusNoProjetoNovo: project.tasks.flatMap(t =>
+              (t.testCases || []).filter(tc => tc.status !== 'Not Run')
+            ).length,
+          }
+        );
         // Criar mapa de status executados do projeto antigo
-        const oldStatusMap = new Map<string, { taskId: string; testCaseId: string; status: string }>();
+        const oldStatusMap = new Map<
+          string,
+          { taskId: string; testCaseId: string; status: string }
+        >();
         oldProject.tasks.forEach(task => {
           (task.testCases || []).forEach(tc => {
             if (tc.id && tc.status !== 'Not Run') {
               oldStatusMap.set(`${task.id}-${tc.id}`, {
                 taskId: task.id,
                 testCaseId: tc.id,
-                status: tc.status
+                status: tc.status,
               });
             }
           });
         });
-        
+
         // Verificar se algum status foi perdido no novo projeto
         let statusPerdidos = 0;
         const restoredTasks = project.tasks.map(task => {
@@ -414,26 +483,41 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
             if (oldStatus && tc.status === 'Not Run') {
               // Status executado foi perdido - restaurar do projeto antigo
               statusPerdidos++;
-              logger.warn(`Status perdido detectado em updateProject do store: taskId=${task.id}, testCaseId=${tc.id}. Restaurando status "${oldStatus.status}" do projeto antigo`, 'ProjectsStore');
+              logger.warn(
+                `Status perdido detectado em updateProject do store: taskId=${task.id}, testCaseId=${tc.id}. Restaurando status "${oldStatus.status}" do projeto antigo`,
+                'ProjectsStore'
+              );
               return { ...tc, status: oldStatus.status as typeof tc.status };
             }
             return tc;
           });
           return { ...task, testCases: restoredTestCases };
         });
-        
+
         if (statusPerdidos > 0) {
-          logger.warn(`PROTEÇÃO EM updateProject: ${statusPerdidos} status foram perdidos e restaurados do projeto antigo`, 'ProjectsStore', {
-            statusRestaurados: statusPerdidos,
-            totalStatusNoProjetoAntigo: oldStatusMap.size,
-            totalStatusNoProjetoNovo: project.tasks.flatMap(t => (t.testCases || []).filter(tc => tc.status !== 'Not Run')).length
-          });
+          logger.warn(
+            `PROTEÇÃO EM updateProject: ${statusPerdidos} status foram perdidos e restaurados do projeto antigo`,
+            'ProjectsStore',
+            {
+              statusRestaurados: statusPerdidos,
+              totalStatusNoProjetoAntigo: oldStatusMap.size,
+              totalStatusNoProjetoNovo: project.tasks.flatMap(t =>
+                (t.testCases || []).filter(tc => tc.status !== 'Not Run')
+              ).length,
+            }
+          );
           finalProject = { ...project, tasks: restoredTasks };
         } else {
-          logger.debug('PROTEÇÃO EM updateProject: Todos os status foram preservados', 'ProjectsStore', {
-            totalStatusNoProjetoAntigo: oldStatusMap.size,
-            totalStatusNoProjetoNovo: project.tasks.flatMap(t => (t.testCases || []).filter(tc => tc.status !== 'Not Run')).length
-          });
+          logger.debug(
+            'PROTEÇÃO EM updateProject: Todos os status foram preservados',
+            'ProjectsStore',
+            {
+              totalStatusNoProjetoAntigo: oldStatusMap.size,
+              totalStatusNoProjetoNovo: project.tasks.flatMap(t =>
+                (t.testCases || []).filter(tc => tc.status !== 'Not Run')
+              ).length,
+            }
+          );
         }
       }
 
@@ -447,10 +531,8 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
       const result = await updateProjectInDatabase(finalProject, {
         syncRemote,
       });
-      set((state) => ({
-        projects: state.projects.map((p) =>
-          p.id === finalProject.id ? finalProject : p
-        ),
+      set(state => ({
+        projects: state.projects.map(p => (p.id === finalProject.id ? finalProject : p)),
         lastSaveToSupabase: syncRemote
           ? result.savedToSupabase
           : isSupabaseAvailable()
@@ -466,12 +548,12 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
           entityName: project.name,
           changes: {
             name: { old: oldProject.name, new: project.name },
-            description: { old: oldProject.description, new: project.description }
-          }
+            description: { old: oldProject.description, new: project.description },
+          },
         });
       }
     } catch (error) {
-      set({ 
+      set({
         error: error instanceof Error ? error : new Error('Erro ao atualizar projeto'),
       });
       throw error;
@@ -481,27 +563,25 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
   deleteProject: async (projectId: string) => {
     try {
       const state = get();
-      const project = state.projects.find((p) => p.id === projectId);
-      
+      const project = state.projects.find(p => p.id === projectId);
+
       // Criar backup automático antes de deletar
       if (project) {
-        const backupId = await autoBackupBeforeOperation(
-          projectId,
-          'DELETE',
-          () => state.projects.find((p) => p.id === projectId)
+        const backupId = await autoBackupBeforeOperation(projectId, 'DELETE', () =>
+          state.projects.find(p => p.id === projectId)
         );
-        
+
         if (backupId) {
           logger.info(`Backup criado antes de deletar projeto: ${backupId}`, 'ProjectsStore');
         }
       }
-      
+
       await deleteProject(projectId);
-      set((state) => ({
-        projects: state.projects.filter((p) => p.id !== projectId),
+      set(state => ({
+        projects: state.projects.filter(p => p.id !== projectId),
         selectedProjectId: state.selectedProjectId === projectId ? null : state.selectedProjectId,
       }));
-      
+
       if (project) {
         addAuditLog({
           action: 'DELETE',
@@ -509,12 +589,12 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
           entityId: projectId,
           entityName: project.name,
           changes: {
-            backupId: { old: undefined, new: 'backup-created' }
-          }
+            backupId: { old: undefined, new: 'backup-created' },
+          },
         });
       }
     } catch (error) {
-      set({ 
+      set({
         error: error instanceof Error ? error : new Error('Erro ao deletar projeto'),
       });
       throw error;
@@ -527,7 +607,7 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
 
   addTaskToProject: async (projectId: string, task: JiraTask) => {
     const state = get();
-    const project = state.projects.find((p) => p.id === projectId);
+    const project = state.projects.find(p => p.id === projectId);
     if (!project) {
       throw new Error('Projeto não encontrado');
     }
@@ -542,16 +622,14 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
 
   updateTaskInProject: async (projectId: string, taskId: string, updates: Partial<JiraTask>) => {
     const state = get();
-    const project = state.projects.find((p) => p.id === projectId);
+    const project = state.projects.find(p => p.id === projectId);
     if (!project) {
       throw new Error('Projeto não encontrado');
     }
 
     const updatedProject: Project = {
       ...project,
-      tasks: project.tasks.map((task) =>
-        task.id === taskId ? { ...task, ...updates } : task
-      ),
+      tasks: project.tasks.map(task => (task.id === taskId ? { ...task, ...updates } : task)),
     };
 
     await get().updateProject(updatedProject);
@@ -559,25 +637,23 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
 
   deleteTaskFromProject: async (projectId: string, taskId: string) => {
     const state = get();
-    const project = state.projects.find((p) => p.id === projectId);
+    const project = state.projects.find(p => p.id === projectId);
     if (!project) {
       throw new Error('Projeto não encontrado');
     }
 
     // Criar backup automático antes de deletar tarefa
-    const backupId = await autoBackupBeforeOperation(
-      projectId,
-      'DELETE_TASK',
-      () => state.projects.find((p) => p.id === projectId)
+    const backupId = await autoBackupBeforeOperation(projectId, 'DELETE_TASK', () =>
+      state.projects.find(p => p.id === projectId)
     );
-    
+
     if (backupId) {
       logger.debug(`Backup criado antes de deletar tarefa: ${backupId}`, 'ProjectsStore');
     }
 
     const updatedProject: Project = {
       ...project,
-      tasks: project.tasks.filter((task) => task.id !== taskId),
+      tasks: project.tasks.filter(task => task.id !== taskId),
     };
 
     await get().updateProject(updatedProject);
@@ -585,23 +661,23 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
 
   getSelectedProject: () => {
     const state = get();
-    return state.projects.find((p) => p.id === state.selectedProjectId);
+    return state.projects.find(p => p.id === state.selectedProjectId);
   },
 
   importProject: async (project: Project) => {
     try {
       const state = get();
-      const existsInState = state.projects.some((p) => p.id === project.id);
+      const existsInState = state.projects.some(p => p.id === project.id);
       const existingInDb = await getProjectById(project.id);
       const exists = existsInState || existingInDb != null;
 
       if (exists) {
         const result = await updateProjectInDatabase(project);
-        set((s) => {
-          const inList = s.projects.some((p) => p.id === project.id);
+        set(s => {
+          const inList = s.projects.some(p => p.id === project.id);
           return {
             projects: inList
-              ? s.projects.map((p) => (p.id === project.id ? project : p))
+              ? s.projects.map(p => (p.id === project.id ? project : p))
               : [...s.projects, project],
             lastSaveToSupabase: result.savedToSupabase,
           };
@@ -614,7 +690,7 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
         });
       } else {
         const result = await addProject(project);
-        set((s) => ({
+        set(s => ({
           projects: [...s.projects, project],
           lastSaveToSupabase: result.savedToSupabase,
         }));

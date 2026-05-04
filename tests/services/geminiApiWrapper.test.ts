@@ -47,12 +47,14 @@ vi.mock('../../utils/retry', () => ({
 
 describe('isGeminiRateLimitOrQuotaError', () => {
   it('retorna true para códigos normalizados do wrapper', () => {
-    expect(isGeminiRateLimitOrQuotaError(Object.assign(new Error('x'), { code: 'GEMINI_RATE_LIMITED' }))).toBe(
-      true
-    );
-    expect(isGeminiRateLimitOrQuotaError(Object.assign(new Error('x'), { code: 'GEMINI_QUOTA_EXCEEDED' }))).toBe(
-      true
-    );
+    expect(
+      isGeminiRateLimitOrQuotaError(Object.assign(new Error('x'), { code: 'GEMINI_RATE_LIMITED' }))
+    ).toBe(true);
+    expect(
+      isGeminiRateLimitOrQuotaError(
+        Object.assign(new Error('x'), { code: 'GEMINI_QUOTA_EXCEEDED' })
+      )
+    ).toBe(true);
   });
 
   it('retorna true para HTTP 429 do SDK (antes ou depois do retry)', () => {
@@ -87,7 +89,10 @@ describe('callGeminiWithRetry', () => {
   });
 
   it('429 com "quota" na mensagem (comum na API Google para RPM) não invalida a key; retorna GEMINI_RATE_LIMITED', async () => {
-    generateContentMock.mockRejectedValueOnce({ status: 429, message: 'quota exceeded for generate_content' });
+    generateContentMock.mockRejectedValueOnce({
+      status: 429,
+      message: 'quota exceeded for generate_content',
+    });
 
     await expect(
       callGeminiWithRetry({ model: 'gemini-2.0-flash', contents: 'conteudo de teste' })
@@ -176,16 +181,19 @@ describe('callGeminiWithRetry', () => {
 describe('isGeminiTemporaryServiceError', () => {
   it('retorna true para código GEMINI_TEMP_UNAVAILABLE', () => {
     expect(
-      isGeminiTemporaryServiceError(Object.assign(new Error('x'), { code: 'GEMINI_TEMP_UNAVAILABLE' }))
+      isGeminiTemporaryServiceError(
+        Object.assign(new Error('x'), { code: 'GEMINI_TEMP_UNAVAILABLE' })
+      )
     ).toBe(true);
   });
 
   it('retorna true para HTTP 503', () => {
-    expect(isGeminiTemporaryServiceError({ status: 503, message: 'Service Unavailable' })).toBe(true);
+    expect(isGeminiTemporaryServiceError({ status: 503, message: 'Service Unavailable' })).toBe(
+      true
+    );
   });
 
   it('retorna false para 429', () => {
     expect(isGeminiTemporaryServiceError({ status: 429, message: 'quota' })).toBe(false);
   });
 });
-

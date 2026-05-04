@@ -14,10 +14,10 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
 
 /**
  * Componente Input melhorado com feedback visual
- * 
+ *
  * @example
  * ```tsx
- * <Input 
+ * <Input
  *   label="Nome do Projeto"
  *   placeholder="Digite o nome..."
  *   error="Campo obrigatório"
@@ -26,21 +26,24 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
  * ```
  */
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ 
-    label, 
-    error, 
-    success, 
-    helperText, 
-    leftIcon, 
-    rightIcon,
-    variant = 'default',
-    className,
-    id,
-    ...props 
-  }, ref) => {
+  (
+    {
+      label,
+      error,
+      success,
+      helperText,
+      leftIcon,
+      rightIcon,
+      variant = 'default',
+      className,
+      id,
+      ...props
+    },
+    ref
+  ) => {
     const reactId = React.useId();
     const inputId = id || `input-${reactId.replace(/[:]/g, '')}`;
-    
+
     const variantClasses = {
       default: 'input-bordered bg-base-100',
       outlined: 'input-bordered bg-base-100',
@@ -64,55 +67,53 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="w-full">
         {label && (
-          <label 
+          <label
             htmlFor={inputId}
             className="block text-sm font-medium text-base-content/70 mb-1.5"
           >
             {label}
           </label>
         )}
-        
+
         <div className="relative">
           {leftIcon && (
             <div className="absolute left-3 top-1/2 -translate-y-1/2 text-base-content/60 pointer-events-none">
               {leftIcon}
             </div>
           )}
-          
+
           <input
             ref={ref}
             id={inputId}
             className={baseInputClasses}
             aria-invalid={error ? 'true' : 'false'}
             aria-describedby={
-              error ? `${inputId}-error` : 
-              helperText ? `${inputId}-helper` : 
-              undefined
+              error ? `${inputId}-error` : helperText ? `${inputId}-helper` : undefined
             }
             {...props}
           />
-          
+
           {rightIcon && !error && !success && (
             <div className="absolute right-3 top-1/2 -translate-y-1/2 text-base-content/60 pointer-events-none">
               {rightIcon}
             </div>
           )}
-          
+
           {error && (
             <div className="absolute right-3 top-1/2 -translate-y-1/2 text-error pointer-events-none">
               <AlertCircle className="w-4 h-4" />
             </div>
           )}
-          
+
           {success && !error && (
             <div className="absolute right-3 top-1/2 -translate-y-1/2 text-success pointer-events-none">
               <CheckCircle2 className="w-4 h-4" />
             </div>
           )}
         </div>
-        
+
         {error && (
-          <p 
+          <p
             id={`${inputId}-error`}
             className="mt-1.5 text-sm text-error flex items-center gap-1"
             role="alert"
@@ -121,12 +122,9 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             {error}
           </p>
         )}
-        
+
         {helperText && !error && (
-          <p 
-            id={`${inputId}-helper`}
-            className="mt-1.5 text-sm text-base-content/70"
-          >
+          <p id={`${inputId}-helper`} className="mt-1.5 text-sm text-base-content/70">
             {helperText}
           </p>
         )}
@@ -136,4 +134,3 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
 );
 
 Input.displayName = 'Input';
-

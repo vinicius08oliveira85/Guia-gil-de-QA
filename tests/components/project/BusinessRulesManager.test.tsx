@@ -18,9 +18,27 @@ describe('BusinessRulesManager', () => {
     const user = userEvent.setup();
     const project = createMockProject({
       businessRules: [
-        { id: '1', title: 'Zebra', description: 'd', category: 'Geral', createdAt: '2020-01-03T00:00:00.000Z' },
-        { id: '2', title: 'Alpha-seg', description: 'd', category: 'Segurança', createdAt: '2020-01-01T00:00:00.000Z' },
-        { id: '3', title: 'Beta-seg', description: 'd', category: 'Segurança', createdAt: '2020-01-02T00:00:00.000Z' },
+        {
+          id: '1',
+          title: 'Zebra',
+          description: 'd',
+          category: 'Geral',
+          createdAt: '2020-01-03T00:00:00.000Z',
+        },
+        {
+          id: '2',
+          title: 'Alpha-seg',
+          description: 'd',
+          category: 'Segurança',
+          createdAt: '2020-01-01T00:00:00.000Z',
+        },
+        {
+          id: '3',
+          title: 'Beta-seg',
+          description: 'd',
+          category: 'Segurança',
+          createdAt: '2020-01-02T00:00:00.000Z',
+        },
       ],
     });
 
@@ -37,7 +55,7 @@ describe('BusinessRulesManager', () => {
 
     await user.selectOptions(screen.getByLabelText('Ordenar lista de regras'), 'title_asc');
     const summaries = container.querySelectorAll('li > details > summary');
-    const texts = [...summaries].map((s) => s.textContent ?? '');
+    const texts = [...summaries].map(s => s.textContent ?? '');
     expect(texts[0]).toContain('Alpha-seg');
     expect(texts[1]).toContain('Beta-seg');
   });
@@ -46,21 +64,35 @@ describe('BusinessRulesManager', () => {
     const user = userEvent.setup();
     const project = createMockProject({
       businessRules: [
-        { id: '1', title: 'Só Esta', description: 'x', category: 'Geral', createdAt: '2020-01-01T00:00:00.000Z' },
+        {
+          id: '1',
+          title: 'Só Esta',
+          description: 'x',
+          category: 'Geral',
+          createdAt: '2020-01-01T00:00:00.000Z',
+        },
       ],
     });
 
     render(<BusinessRulesManager project={project} onUpdateProject={() => {}} />);
 
     await user.type(screen.getByLabelText('Filtrar regras de negócio'), 'inexistente');
-    expect(screen.getByRole('status')).toHaveTextContent(/Nenhuma regra corresponde à busca ou ao filtro de categoria/);
+    expect(screen.getByRole('status')).toHaveTextContent(
+      /Nenhuma regra corresponde à busca ou ao filtro de categoria/
+    );
   });
 
   it('categoria é um select nativo com opções do projeto', async () => {
     const user = userEvent.setup();
     const project = createMockProject({
       businessRules: [
-        { id: '1', title: 'Regra Um', description: 'd', category: 'Geral', createdAt: '2020-01-01T00:00:00.000Z' },
+        {
+          id: '1',
+          title: 'Regra Um',
+          description: 'd',
+          category: 'Geral',
+          createdAt: '2020-01-01T00:00:00.000Z',
+        },
       ],
     });
     render(<BusinessRulesManager project={project} onUpdateProject={() => {}} />);
@@ -78,8 +110,20 @@ describe('BusinessRulesManager', () => {
     const user = userEvent.setup();
     const project = createMockProject({
       businessRules: [
-        { id: 'a', title: 'Alfa', description: 'd1', category: 'Geral', createdAt: '2020-01-01T00:00:00.000Z' },
-        { id: 'b', title: 'Beta', description: 'd2', category: 'Segurança', createdAt: '2020-01-02T00:00:00.000Z' },
+        {
+          id: 'a',
+          title: 'Alfa',
+          description: 'd1',
+          category: 'Geral',
+          createdAt: '2020-01-01T00:00:00.000Z',
+        },
+        {
+          id: 'b',
+          title: 'Beta',
+          description: 'd2',
+          category: 'Segurança',
+          createdAt: '2020-01-02T00:00:00.000Z',
+        },
       ],
     });
 
@@ -102,7 +146,9 @@ describe('BusinessRulesManager', () => {
     const project = createMockProject({ businessRules: [] });
     render(<BusinessRulesManager project={project} onUpdateProject={onUpdate} />);
 
-    await user.click(screen.getByRole('button', { name: /Gerenciar categorias de regras de negócio/i }));
+    await user.click(
+      screen.getByRole('button', { name: /Gerenciar categorias de regras de negócio/i })
+    );
     expect(screen.getByText('Gerenciar categorias')).toBeInTheDocument();
 
     await user.type(screen.getByLabelText(/Nova categoria/i), 'MinhaCategoria');

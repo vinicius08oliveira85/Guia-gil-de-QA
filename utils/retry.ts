@@ -35,11 +35,13 @@ function isRetryableError(error: unknown): boolean {
     if (error.message.includes('429') || error.message.includes('Too Many Requests')) {
       return true;
     }
-    
+
     // Verificar se é erro de rede temporário
-    if (error.message.includes('ECONNRESET') || 
-        error.message.includes('ETIMEDOUT') ||
-        error.message.includes('ENOTFOUND')) {
+    if (
+      error.message.includes('ECONNRESET') ||
+      error.message.includes('ETIMEDOUT') ||
+      error.message.includes('ENOTFOUND')
+    ) {
       return true;
     }
   }
@@ -62,11 +64,11 @@ function getRetryAfterDelay(error: unknown): number | null {
   if (typeof error === 'object' && error !== null) {
     const err = error as Record<string, unknown>;
     const retryAfter = err.retryAfter || err['retry-after'];
-    
+
     if (typeof retryAfter === 'number') {
       return retryAfter * 1000; // Converter segundos para milissegundos
     }
-    
+
     if (typeof retryAfter === 'string') {
       const parsed = parseInt(retryAfter, 10);
       if (!isNaN(parsed)) {
@@ -74,7 +76,7 @@ function getRetryAfterDelay(error: unknown): number | null {
       }
     }
   }
-  
+
   return null;
 }
 
@@ -90,16 +92,16 @@ function calculateDelay(
 ): number {
   // Backoff exponencial: initialDelay * (backoffMultiplier ^ attempt)
   let delay = initialDelay * Math.pow(backoffMultiplier, attempt - 1);
-  
+
   // Limitar ao máximo
   delay = Math.min(delay, maxDelay);
-  
+
   // Adicionar jitter aleatório (0-30% do delay) para evitar thundering herd
   if (useJitter) {
     const jitter = delay * 0.3 * Math.random();
     delay = delay + jitter;
   }
-  
+
   return Math.floor(delay);
 }
 
@@ -112,7 +114,7 @@ function sleep(ms: number): Promise<void> {
 
 /**
  * Executa uma função com retry automático e backoff exponencial
- * 
+ *
  * @param fn Função assíncrona a ser executada
  * @param options Opções de retry
  * @returns Resultado da função
@@ -137,49 +139,48 @@ export async function retryWithBackoff<T>(
   let lastError: unknown;
   const startTime = Date.now();
   let totalElapsedTime = 0;
-  
+
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       return await fn();
     } catch (error) {
       lastError = error;
-      
+
       // Se não é um erro recuperável, não tenta novamente
       if (!isRetryable(error)) {
-        logger.warn(
-          'Erro não recuperável, não será feito retry',
-          'retryWithBackoff',
-          { error, attempt }
-        );
+        logger.warn('Erro não recuperável, não será feito retry', 'retryWithBackoff', {
+          error,
+          attempt,
+        });
         throw error;
       }
-      
+
       // Se é a última tentativa, não espera e lança o erro
       if (attempt === maxRetries) {
-        logger.error(
-          `Todas as tentativas falharam (${maxRetries})`,
-          'retryWithBackoff',
-          { error, attempt: maxRetries, totalElapsedTime }
-        );
+        logger.error(`Todas as tentativas falharam (${maxRetries})`, 'retryWithBackoff', {
+          error,
+          attempt: maxRetries,
+          totalElapsedTime,
+        });
         throw error;
       }
-      
+
       // Verificar se há header Retry-After
       const retryAfterDelay = getRetryAfterDelay(error);
-      
+
       // Detectar se é erro 503 e usar delay maior
       let effectiveInitialDelay = initialDelay;
       let effectiveMaxDelay = maxDelay;
       const errorStatus = (error as { status?: number })?.status;
-      
+
       if (errorStatus === 503) {
         effectiveInitialDelay = 5000;
         effectiveMaxDelay = 60000;
-        logger.debug(
-          'Erro 503 detectado, usando delay aumentado',
-          'retryWithBackoff',
-          { attempt, initialDelay: effectiveInitialDelay, maxDelay: effectiveMaxDelay }
-        );
+        logger.debug('Erro 503 detectado, usando delay aumentado', 'retryWithBackoff', {
+          attempt,
+          initialDelay: effectiveInitialDelay,
+          maxDelay: effectiveMaxDelay,
+        });
       } else if (errorStatus === 429) {
         // TPM/RPM: esperar ~1 min entre tentativas (tier gratuito costuma precisar disso)
         effectiveInitialDelay = Math.max(initialDelay, 60_000);
@@ -190,11 +191,17 @@ export async function retryWithBackoff<T>(
           { attempt, initialDelay: effectiveInitialDelay, maxDelay: effectiveMaxDelay }
         );
       }
-      
-      const delay = retryAfterDelay 
+
+      const delay = retryAfterDelay
         ? Math.min(retryAfterDelay, effectiveMaxDelay)
-        : calculateDelay(attempt, effectiveInitialDelay, backoffMultiplier, effectiveMaxDelay, useJitter);
-      
+        : calculateDelay(
+            attempt,
+            effectiveInitialDelay,
+            backoffMultiplier,
+            effectiveMaxDelay,
+            useJitter
+          );
+
       // Verificar timeout máximo total
       totalElapsedTime = Date.now() - startTime;
       if (totalElapsedTime + delay > maxTotalTimeout) {
@@ -204,14 +211,15 @@ export async function retryWithBackoff<T>(
         if (errorStatus) {
           timeoutError.status = errorStatus;
         }
-        logger.error(
-          'Timeout máximo total excedido durante retry',
-          'retryWithBackoff',
-          { attempt, totalElapsedTime, maxTotalTimeout, errorStatus }
-        );
+        logger.error('Timeout máximo total excedido durante retry', 'retryWithBackoff', {
+          attempt,
+          totalElapsedTime,
+          maxTotalTimeout,
+          errorStatus,
+        });
         throw timeoutError;
       }
-      
+
       const retryPayload = {
         error,
         attempt,
@@ -231,18 +239,17 @@ export async function retryWithBackoff<T>(
           retryPayload
         );
       }
-      
+
       // Chamar callback de retry se fornecido
       if (onRetry) {
         onRetry(attempt, error, delay);
       }
-      
+
       // Aguardar antes da próxima tentativa
       await sleep(delay);
     }
   }
-  
+
   // Este ponto não deveria ser alcançado, mas TypeScript exige
   throw lastError;
 }
-

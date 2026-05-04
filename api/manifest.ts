@@ -2,10 +2,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import fs from 'fs';
 import path from 'path';
 
-export default async function handler(
-  req: VercelRequest,
-  res: VercelResponse
-): Promise<void> {
+export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void> {
   // Permitir apenas requisições GET
   if (req.method !== 'GET') {
     res.status(405).json({ error: 'Method not allowed' });
@@ -15,24 +12,24 @@ export default async function handler(
   try {
     // Em produção no Vercel, o Vite copia public/ para a raiz de dist/
     // Em desenvolvimento local, estão em public/
-    const publicPath = process.env.VERCEL 
+    const publicPath = process.env.VERCEL
       ? path.join(process.cwd(), 'dist', 'manifest.json')
       : path.join(process.cwd(), 'public', 'manifest.json');
-    
+
     // Tentar ler o arquivo
     const manifestContent = fs.readFileSync(publicPath, 'utf-8');
     const manifest = JSON.parse(manifestContent);
-    
+
     // Configurar headers apropriados
     res.setHeader('Content-Type', 'application/manifest+json');
     res.setHeader('Cache-Control', 'public, max-age=3600');
     res.setHeader('Access-Control-Allow-Origin', '*');
-    
+
     res.status(200).json(manifest);
     return;
   } catch (error) {
     console.error('Erro ao carregar manifest.json:', error);
-    
+
     // Se o arquivo não existir, retornar um manifest básico
     const fallbackManifest = {
       name: 'QA Agile Guide',
@@ -42,13 +39,12 @@ export default async function handler(
       display: 'standalone',
       background_color: '#ffffff',
       theme_color: '#0E6DFD',
-      icons: []
+      icons: [],
     };
-    
+
     res.setHeader('Content-Type', 'application/manifest+json');
     res.setHeader('Cache-Control', 'no-cache');
     res.status(200).json(fallbackManifest);
     return;
   }
 }
-

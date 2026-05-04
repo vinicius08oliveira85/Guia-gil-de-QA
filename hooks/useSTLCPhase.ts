@@ -6,32 +6,31 @@ import { detectCurrentSTLCPhase, getSTLCPhaseOrder } from '../utils/stlcPhaseDet
  * Hook para gerenciar a fase STLC atual do projeto
  */
 export function useSTLCPhase(project: Project) {
-    const currentPhase = useMemo(() => {
-        return detectCurrentSTLCPhase(project);
-    }, [project]);
+  const currentPhase = useMemo(() => {
+    return detectCurrentSTLCPhase(project);
+  }, [project]);
 
-    const phaseOrder = useMemo(() => {
-        return getSTLCPhaseOrder(currentPhase);
-    }, [currentPhase]);
+  const phaseOrder = useMemo(() => {
+    return getSTLCPhaseOrder(currentPhase);
+  }, [currentPhase]);
 
-    const isPhase = (phase: STLCPhaseName): boolean => {
-        return currentPhase === phase;
-    };
+  const isPhase = (phase: STLCPhaseName): boolean => {
+    return currentPhase === phase;
+  };
 
-    const isPhaseBefore = (phase: STLCPhaseName): boolean => {
-        return getSTLCPhaseOrder(currentPhase) < getSTLCPhaseOrder(phase);
-    };
+  const isPhaseBefore = (phase: STLCPhaseName): boolean => {
+    return getSTLCPhaseOrder(currentPhase) < getSTLCPhaseOrder(phase);
+  };
 
-    const isPhaseAfter = (phase: STLCPhaseName): boolean => {
-        return getSTLCPhaseOrder(currentPhase) > getSTLCPhaseOrder(phase);
-    };
+  const isPhaseAfter = (phase: STLCPhaseName): boolean => {
+    return getSTLCPhaseOrder(currentPhase) > getSTLCPhaseOrder(phase);
+  };
 
-    return {
-        currentPhase,
-        phaseOrder,
-        isPhase,
-        isPhaseBefore,
-        isPhaseAfter,
-    };
+  return {
+    currentPhase,
+    phaseOrder,
+    isPhase,
+    isPhaseBefore,
+    isPhaseAfter,
+  };
 }
-

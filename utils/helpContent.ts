@@ -4,21 +4,21 @@
  */
 
 export const helpContent = {
-    project: {
-        create: {
-            title: 'Criar Projeto',
-            content: `Um projeto é o container principal para organizar suas atividades de QA.
+  project: {
+    create: {
+      title: 'Criar Projeto',
+      content: `Um projeto é o container principal para organizar suas atividades de QA.
 
 **O que incluir:**
 • Nome claro e descritivo
 • Descrição dos objetivos
 • Template (opcional) para começar rapidamente
 
-**Dica:** Use templates para projetos comuns como "Aplicação Web" ou "API REST" para ter uma estrutura inicial pronta.`
-        },
-        dashboard: {
-            title: 'Dashboard do Projeto',
-            content: `O dashboard mostra uma visão geral do seu projeto.
+**Dica:** Use templates para projetos comuns como "Aplicação Web" ou "API REST" para ter uma estrutura inicial pronta.`,
+    },
+    dashboard: {
+      title: 'Dashboard do Projeto',
+      content: `O dashboard mostra uma visão geral do seu projeto.
 
 **Métricas principais:**
 • Total de tarefas e status
@@ -29,13 +29,13 @@ export const helpContent = {
 **Como usar:**
 • Use os filtros de período para ver progresso ao longo do tempo
 • Clique nos gráficos para mais detalhes
-• Acompanhe o Score de Saúde do projeto`
-        }
+• Acompanhe o Score de Saúde do projeto`,
     },
-    task: {
-        create: {
-            title: 'Criar Tarefa',
-            content: `Tarefas representam funcionalidades ou bugs que precisam ser testados.
+  },
+  task: {
+    create: {
+      title: 'Criar Tarefa',
+      content: `Tarefas representam funcionalidades ou bugs que precisam ser testados.
 
 **Tipos de Tarefa:**
 • **História**: Nova funcionalidade
@@ -46,12 +46,12 @@ export const helpContent = {
 **Campos importantes:**
 • **Descrição**: Detalhe o que precisa ser testado
 • **Tags**: Use para categorizar (ex: "login", "pagamento")
-• **Prioridade**: Ajude a focar no que é mais importante`
-        },
-        fields: {
-            id: {
-                title: 'ID da Tarefa',
-                content: `O ID é um identificador único para sua tarefa.
+• **Prioridade**: Ajude a focar no que é mais importante`,
+    },
+    fields: {
+      id: {
+        title: 'ID da Tarefa',
+        content: `O ID é um identificador único para sua tarefa.
 
 **Formato recomendado:** PROJ-123 ou TASK-001
 
@@ -60,11 +60,11 @@ export const helpContent = {
 • LOGIN-001 (tarefa relacionada a login)
 • BUG-042 (bug número 42)
 
-**Dica:** Use um padrão consistente para facilitar a busca e organização.`
-            },
-            title: {
-                title: 'Título da Tarefa',
-                content: `O título deve ser claro e descritivo.
+**Dica:** Use um padrão consistente para facilitar a busca e organização.`,
+      },
+      title: {
+        title: 'Título da Tarefa',
+        content: `O título deve ser claro e descritivo.
 
 **Bom exemplo:**
 • "Implementar login com email e senha"
@@ -76,11 +76,11 @@ export const helpContent = {
 • "Corrigir bug" (não especifica qual bug)
 • "Teste" (não explica o que testar)
 
-**Dica:** O título deve permitir que qualquer pessoa entenda rapidamente o que precisa ser feito.`
-            },
-            type: {
-                title: 'Tipo de Tarefa',
-                content: `Escolha o tipo que melhor descreve sua tarefa:
+**Dica:** O título deve permitir que qualquer pessoa entenda rapidamente o que precisa ser feito.`,
+      },
+      type: {
+        title: 'Tipo de Tarefa',
+        content: `Escolha o tipo que melhor descreve sua tarefa:
 
 **Epic:** Grupo grande de funcionalidades relacionadas
 • Exemplo: "Sistema de Autenticação" (contém várias histórias)
@@ -95,11 +95,11 @@ export const helpContent = {
 
 **Bug:** Defeito encontrado no sistema
 • Exemplo: "Botão de salvar não funciona"
-• Sempre deve ter severidade definida`
-            },
-            priority: {
-                title: 'Prioridade',
-                content: `A prioridade indica a importância da tarefa:
+• Sempre deve ter severidade definida`,
+      },
+      priority: {
+        title: 'Prioridade',
+        content: `A prioridade indica a importância da tarefa:
 
 **Urgente:** Deve ser feito imediatamente
 • Bloqueia outras tarefas
@@ -117,11 +117,11 @@ export const helpContent = {
 • Melhorias ou nice-to-have
 • Sem impacto imediato
 
-**Dica:** Priorize baseado no impacto no negócio, não apenas na dificuldade técnica.`
-            },
-            severity: {
-                title: 'Severidade (apenas para Bugs)',
-                content: `A severidade indica o impacto do bug:
+**Dica:** Priorize baseado no impacto no negócio, não apenas na dificuldade técnica.`,
+      },
+      severity: {
+        title: 'Severidade (apenas para Bugs)',
+        content: `A severidade indica o impacto do bug:
 
 **Crítico:** Sistema inutilizável
 • Aplicativo não inicia
@@ -141,11 +141,11 @@ export const helpContent = {
 • Texto incorreto
 • Melhoria de UX
 
-**Dica:** Combine severidade com prioridade. Um bug crítico geralmente é urgente.`
-            },
-            parentId: {
-                title: 'Vincular ao Epic',
-                content: `Epics agrupam várias histórias relacionadas.
+**Dica:** Combine severidade com prioridade. Um bug crítico geralmente é urgente.`,
+      },
+      parentId: {
+        title: 'Vincular ao Epic',
+        content: `Epics agrupam várias histórias relacionadas.
 
 **Quando usar:**
 • Sua tarefa faz parte de uma funcionalidade maior
@@ -159,11 +159,11 @@ export const helpContent = {
 **Como escolher:**
 • Selecione o Epic que melhor descreve o grupo
 • Se não houver Epic, deixe "Nenhum"
-• Você pode criar um Epic depois se necessário`
-            },
-            owner: {
-                title: 'Dono (Owner)',
-                content: `O Owner é quem define os requisitos e aceita o trabalho.
+• Você pode criar um Epic depois se necessário`,
+      },
+      owner: {
+        title: 'Dono (Owner)',
+        content: `O Owner é quem define os requisitos e aceita o trabalho.
 
 **Product:** Gerente de Produto ou Product Owner
 • Define o que deve ser feito
@@ -180,11 +180,11 @@ export const helpContent = {
 • Aceita se implementação está correta
 • Responsável pela solução técnica
 
-**Dica:** O Owner geralmente é quem vai validar se a tarefa está completa.`
-            },
-            assignee: {
-                title: 'Responsável (Assignee)',
-                content: `O Assignee é quem vai executar a tarefa.
+**Dica:** O Owner geralmente é quem vai validar se a tarefa está completa.`,
+      },
+      assignee: {
+        title: 'Responsável (Assignee)',
+        content: `O Assignee é quem vai executar a tarefa.
 
 **Product:** Product Owner ou Analista de Negócios
 • Geralmente para tarefas de requisitos
@@ -200,11 +200,11 @@ export const helpContent = {
 • Correção de bugs
 • Configurações técnicas
 
-**Dica:** O Assignee é quem está trabalhando ativamente na tarefa agora.`
-            },
-            description: {
-                title: 'Descrição da Tarefa',
-                content: `A descrição deve explicar detalhadamente o que precisa ser feito.
+**Dica:** O Assignee é quem está trabalhando ativamente na tarefa agora.`,
+      },
+      description: {
+        title: 'Descrição da Tarefa',
+        content: `A descrição deve explicar detalhadamente o que precisa ser feito.
 
 **O que incluir:**
 • Contexto: Por que isso é necessário?
@@ -226,12 +226,11 @@ export const helpContent = {
 **Critérios de aceite:**
 - Login funciona com email válido
 - Erro exibido para email inválido
-- Senha oculta durante digitação"`
-
-            },
-            tags: {
-                title: 'Tags',
-                content: `Tags ajudam a categorizar e encontrar tarefas rapidamente.
+- Senha oculta durante digitação"`,
+      },
+      tags: {
+        title: 'Tags',
+        content: `Tags ajudam a categorizar e encontrar tarefas rapidamente.
 
 **Como usar:**
 • Use tags para agrupar tarefas relacionadas
@@ -243,12 +242,12 @@ export const helpContent = {
 • Filtros por categoria
 • Visualização de áreas do sistema
 
-**Dica:** Crie tags consistentes. Use "login" ao invés de "login" e "Login" (duplicados).`
-            }
-        },
-        testCases: {
-            title: 'Casos de Teste',
-            content: `Casos de teste são passos específicos para validar uma funcionalidade.
+**Dica:** Crie tags consistentes. Use "login" ao invés de "login" e "Login" (duplicados).`,
+      },
+    },
+    testCases: {
+      title: 'Casos de Teste',
+      content: `Casos de teste são passos específicos para validar uma funcionalidade.
 
 **Estrutura:**
 • **Descrição**: O que está sendo testado
@@ -260,11 +259,11 @@ export const helpContent = {
 • **Passou**: Teste executado com sucesso
 • **Falhou**: Teste encontrou um problema
 
-**Dica:** Use a IA para gerar casos de teste automaticamente, mas sempre revise e ajuste conforme necessário.`
-        },
-        bdd: {
-            title: 'Cenários BDD',
-            content: `BDD (Behavior Driven Development) usa linguagem de negócio para descrever comportamentos.
+**Dica:** Use a IA para gerar casos de teste automaticamente, mas sempre revise e ajuste conforme necessário.`,
+    },
+    bdd: {
+      title: 'Cenários BDD',
+      content: `BDD (Behavior Driven Development) usa linguagem de negócio para descrever comportamentos.
 
 **Sintaxe Gherkin:**
 • **Dado**: Estado inicial (pré-condições)
@@ -284,13 +283,13 @@ Então devo ser redirecionado para o dashboard
 **Benefícios:**
 • Facilita comunicação entre equipes
 • Documenta comportamento do sistema
-• Serve como base para automação`
-        }
+• Serve como base para automação`,
     },
-    metrics: {
-        coverage: {
-            title: 'Cobertura de Testes',
-            content: `Cobertura mede quanto do seu código está protegido por testes.
+  },
+  metrics: {
+    coverage: {
+      title: 'Cobertura de Testes',
+      content: `Cobertura mede quanto do seu código está protegido por testes.
 
 **Tipos:**
 • **Cobertura de Código**: Percentual de linhas testadas
@@ -298,11 +297,11 @@ Então devo ser redirecionado para o dashboard
 
 **Meta ideal:** 80%+ de cobertura de código
 
-**Importante:** Cobertura alta não garante qualidade. Foque em testes que realmente validam comportamento importante.`
-        },
-        passRate: {
-            title: 'Taxa de Passagem',
-            content: `Taxa de passagem mostra quantos testes estão passando.
+**Importante:** Cobertura alta não garante qualidade. Foque em testes que realmente validam comportamento importante.`,
+    },
+    passRate: {
+      title: 'Taxa de Passagem',
+      content: `Taxa de passagem mostra quantos testes estão passando.
 
 **Cálculo:** (Testes que Passaram / Total de Testes) × 100
 
@@ -311,13 +310,13 @@ Então devo ser redirecionado para o dashboard
 • **80-95%**: Bom, mas alguns problemas
 • **<80%**: Precisa atenção, muitos problemas
 
-**Dica:** Acompanhe a tendência ao longo do tempo. Se está caindo, pode indicar regressões.`
-        }
+**Dica:** Acompanhe a tendência ao longo do tempo. Se está caindo, pode indicar regressões.`,
     },
-    phases: {
-        sdlc: {
-            title: 'Ciclo de Vida (SDLC)',
-            content: `SDLC (Software Development Life Cycle) são as fases do desenvolvimento.
+  },
+  phases: {
+    sdlc: {
+      title: 'Ciclo de Vida (SDLC)',
+      content: `SDLC (Software Development Life Cycle) são as fases do desenvolvimento.
 
 **Fases principais:**
 1. **Request**: Cliente solicita funcionalidade
@@ -330,11 +329,11 @@ Então devo ser redirecionado para o dashboard
 8. **Operate**: Operação
 9. **Monitor**: Monitoramento
 
-**QA em todas as fases:** QA não deve estar apenas na fase de Teste. Participe desde o início para prevenir problemas.`
-        },
-        shiftLeft: {
-            title: 'Shift Left Testing',
-            content: `Shift Left é mover atividades de teste para mais cedo no ciclo.
+**QA em todas as fases:** QA não deve estar apenas na fase de Teste. Participe desde o início para prevenir problemas.`,
+    },
+    shiftLeft: {
+      title: 'Shift Left Testing',
+      content: `Shift Left é mover atividades de teste para mais cedo no ciclo.
 
 **Benefícios:**
 • Encontrar bugs mais cedo (mais barato)
@@ -348,12 +347,12 @@ Então devo ser redirecionado para o dashboard
 • Testes unitários durante Development
 • Testes de integração antes de Release
 
-**Resultado:** Menos bugs em produção, maior qualidade.`
-        }
+**Resultado:** Menos bugs em produção, maior qualidade.`,
     },
-    glossary: {
-        title: 'Glossário de Termos',
-        content: `O glossário contém mais de 150 termos de QA.
+  },
+  glossary: {
+    title: 'Glossário de Termos',
+    content: `O glossário contém mais de 150 termos de QA.
 
 **Como usar:**
 • Busque por termos específicos
@@ -367,7 +366,6 @@ Então devo ser redirecionado para o dashboard
 • Metodologias: Agile, Scrum, etc.
 • Ferramentas: Ferramentas populares
 • Métricas: KPIs e indicadores
-• Processos: Fluxos e procedimentos`
-    }
+• Processos: Fluxos e procedimentos`,
+  },
 };
-

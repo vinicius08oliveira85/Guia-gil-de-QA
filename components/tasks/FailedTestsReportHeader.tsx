@@ -25,7 +25,7 @@ export const FailedTestsReportHeader: React.FC<FailedTestsReportHeaderProps> = (
   onSelectAll,
   onDeselectAll,
   hasSelectedTests,
-  canSelectAll
+  canSelectAll,
 }) => {
   return (
     <div className="sticky top-0 z-10 bg-base-100 border-b border-base-300 px-md py-sm backdrop-blur-sm bg-base-100/95">
@@ -37,7 +37,7 @@ export const FailedTestsReportHeader: React.FC<FailedTestsReportHeaderProps> = (
           criticalTests={criticalTests}
           environments={environments}
         />
-        
+
         <div className="flex items-center gap-xs">
           {hasSelectedTests && (
             <button
@@ -64,4 +64,3 @@ export const FailedTestsReportHeader: React.FC<FailedTestsReportHeaderProps> = (
     </div>
   );
 };
-

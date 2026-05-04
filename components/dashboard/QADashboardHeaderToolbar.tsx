@@ -43,11 +43,13 @@ export const QADashboardHeaderToolbar: React.FC<QADashboardHeaderToolbarProps> =
         <div className="min-w-0">
           <div className="flex items-center gap-2 mb-2">
             <ClipboardCheck className="h-6 w-6 text-primary shrink-0" aria-hidden />
-            <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-base-content">Dashboard</h2>
+            <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-base-content">
+              Dashboard
+            </h2>
           </div>
           <p className="text-base-content/70 text-sm max-w-2xl">
-            Indicadores calculados a partir das tarefas do projeto (status, prazos e responsáveis). Respeita os filtros
-            abaixo.
+            Indicadores calculados a partir das tarefas do projeto (status, prazos e responsáveis).
+            Respeita os filtros abaixo.
           </p>
           {lastUpdatedText && (
             <p className="text-xs text-base-content/50 mt-1" title="Última alteração do projeto">
@@ -85,7 +87,7 @@ export const QADashboardHeaderToolbar: React.FC<QADashboardHeaderToolbarProps> =
                   Período: {periodLabel(filters.period)}
                   <button
                     type="button"
-                    onClick={() => onFiltersChange((prev) => ({ ...prev, period: 'all' }))}
+                    onClick={() => onFiltersChange(prev => ({ ...prev, period: 'all' }))}
                     className="btn btn-ghost btn-xs rounded-full p-0.5"
                     aria-label="Remover filtro período"
                   >
@@ -93,7 +95,7 @@ export const QADashboardHeaderToolbar: React.FC<QADashboardHeaderToolbarProps> =
                   </button>
                 </span>
               )}
-              {(filters.taskType ?? []).map((t) => (
+              {(filters.taskType ?? []).map(t => (
                 <span
                   key={t}
                   className="inline-flex items-center gap-1 rounded-full pl-2.5 pr-1 py-1 text-xs bg-base-200 border border-base-300"
@@ -102,9 +104,9 @@ export const QADashboardHeaderToolbar: React.FC<QADashboardHeaderToolbarProps> =
                   <button
                     type="button"
                     onClick={() =>
-                      onFiltersChange((prev) => ({
+                      onFiltersChange(prev => ({
                         ...prev,
-                        taskType: prev.taskType?.filter((x) => x !== t) ?? [],
+                        taskType: prev.taskType?.filter(x => x !== t) ?? [],
                       }))
                     }
                     className="btn btn-ghost btn-xs rounded-full p-0.5"
@@ -114,7 +116,7 @@ export const QADashboardHeaderToolbar: React.FC<QADashboardHeaderToolbarProps> =
                   </button>
                 </span>
               ))}
-              {(filters.testStatus ?? []).map((s) => (
+              {(filters.testStatus ?? []).map(s => (
                 <span
                   key={s}
                   className="inline-flex items-center gap-1 rounded-full pl-2.5 pr-1 py-1 text-xs bg-base-200 border border-base-300"
@@ -123,9 +125,9 @@ export const QADashboardHeaderToolbar: React.FC<QADashboardHeaderToolbarProps> =
                   <button
                     type="button"
                     onClick={() =>
-                      onFiltersChange((prev) => ({
+                      onFiltersChange(prev => ({
                         ...prev,
-                        testStatus: prev.testStatus?.filter((x) => x !== s) ?? [],
+                        testStatus: prev.testStatus?.filter(x => x !== s) ?? [],
                       }))
                     }
                     className="btn btn-ghost btn-xs rounded-full p-0.5"
@@ -135,7 +137,7 @@ export const QADashboardHeaderToolbar: React.FC<QADashboardHeaderToolbarProps> =
                   </button>
                 </span>
               ))}
-              {(filters.phase ?? []).map((p) => (
+              {(filters.phase ?? []).map(p => (
                 <span
                   key={p}
                   className="inline-flex items-center gap-1 rounded-full pl-2.5 pr-1 py-1 text-xs bg-base-200 border border-base-300"
@@ -144,9 +146,9 @@ export const QADashboardHeaderToolbar: React.FC<QADashboardHeaderToolbarProps> =
                   <button
                     type="button"
                     onClick={() =>
-                      onFiltersChange((prev) => ({
+                      onFiltersChange(prev => ({
                         ...prev,
-                        phase: prev.phase?.filter((x) => x !== p) ?? [],
+                        phase: prev.phase?.filter(x => x !== p) ?? [],
                       }))
                     }
                     className="btn btn-ghost btn-xs rounded-full p-0.5"
@@ -162,7 +164,7 @@ export const QADashboardHeaderToolbar: React.FC<QADashboardHeaderToolbarProps> =
           <div className="relative md:hidden ml-auto">
             <button
               type="button"
-              onClick={() => setShowActionsMenu((v) => !v)}
+              onClick={() => setShowActionsMenu(v => !v)}
               className="rounded-full px-3 py-1.5 text-xs font-semibold text-base-content/70 hover:bg-base-200 border border-base-300 flex items-center gap-1.5"
               aria-expanded={showActionsMenu}
               aria-label="Menu de ações"
@@ -172,7 +174,11 @@ export const QADashboardHeaderToolbar: React.FC<QADashboardHeaderToolbarProps> =
             </button>
             {showActionsMenu && (
               <>
-                <div className="fixed inset-0 z-10" aria-hidden onClick={() => setShowActionsMenu(false)} />
+                <div
+                  className="fixed inset-0 z-10"
+                  aria-hidden
+                  onClick={() => setShowActionsMenu(false)}
+                />
                 <div className="absolute right-0 top-full mt-1 z-20 py-1 rounded-xl border border-base-300 bg-base-100 shadow-lg min-w-[180px]">
                   <button
                     type="button"

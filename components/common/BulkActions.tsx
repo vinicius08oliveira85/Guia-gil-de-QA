@@ -20,16 +20,18 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
   onUpdateProject,
   onClearSelection,
   onProjectCreated,
-  onEditTask
+  onEditTask,
 }) => {
   const { handleSuccess, handleError } = useErrorHandler();
   const { createProject } = useProjectsStore();
   const [showModal, setShowModal] = useState(false);
-  const [action, setAction] = useState<'status' | 'tag' | 'assignee' | 'create-project' | null>(null);
+  const [action, setAction] = useState<'status' | 'tag' | 'assignee' | 'create-project' | null>(
+    null
+  );
   const [statusValue, setStatusValue] = useState<'To Do' | 'In Progress' | 'Done'>('To Do');
   const [tagValue, setTagValue] = useState('');
   const [assigneeValue, setAssigneeValue] = useState<'Product' | 'QA' | 'Dev'>('QA');
-  
+
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   // Estados para criação de projeto
@@ -38,12 +40,12 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
   const [selectedTasksForProject, setSelectedTasksForProject] = useState<Set<string>>(new Set());
   const [projectName, setProjectName] = useState('');
   const [projectDescription, setProjectDescription] = useState('');
-  
+
   // Converter selectedTasks para array se for Set
   const selectedTasksArray = useMemo(() => {
     return selectedTasks instanceof Set ? Array.from(selectedTasks) : selectedTasks;
   }, [selectedTasks]);
-  
+
   // Obter tasks selecionadas
   const selectedTasksData = useMemo(() => {
     return (project.tasks || []).filter(task => selectedTasksArray.includes(task.id));
@@ -61,9 +63,7 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
 
   const handleBulkStatusChange = () => {
     const updatedTasks = (project.tasks || []).map(task =>
-      selectedTasksArray.includes(task.id)
-        ? { ...task, status: statusValue }
-        : task
+      selectedTasksArray.includes(task.id) ? { ...task, status: statusValue } : task
     );
     onUpdateProject({ ...project, tasks: updatedTasks });
     handleSuccess(`${selectedTasksArray.length} tarefas atualizadas`);
@@ -86,7 +86,7 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
       }
       return task;
     });
-    
+
     onUpdateProject({ ...project, tasks: updatedTasks });
     handleSuccess(`Tag "${tagValue}" adicionada a ${selectedTasksArray.length} tarefas`);
     setShowModal(false);
@@ -96,9 +96,7 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
 
   const handleBulkAssigneeChange = () => {
     const updatedTasks = (project.tasks || []).map(task =>
-      selectedTasksArray.includes(task.id)
-        ? { ...task, assignee: assigneeValue }
-        : task
+      selectedTasksArray.includes(task.id) ? { ...task, assignee: assigneeValue } : task
     );
     onUpdateProject({ ...project, tasks: updatedTasks });
     handleSuccess(`${selectedTasksArray.length} tarefas atribuídas`);
@@ -182,13 +180,16 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
 
     try {
       // Obter tasks selecionadas
-      const tasksToInclude = (project.tasks || []).filter(task => 
+      const tasksToInclude = (project.tasks || []).filter(task =>
         selectedTasksForProject.has(task.id)
       );
 
       // Criar novo projeto
-      const createdProject = await createProject(projectName.trim(), projectDescription.trim() || '');
-      
+      const createdProject = await createProject(
+        projectName.trim(),
+        projectDescription.trim() || ''
+      );
+
       // Atualizar o projeto criado com as tasks
       const updatedProject = {
         ...createdProject,
@@ -200,13 +201,15 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
 
       await useProjectsStore.getState().updateProject(updatedProject);
 
-      handleSuccess(`Projeto "${projectName}" criado com ${selectedTasksForProject.size} tarefa(s)!`);
+      handleSuccess(
+        `Projeto "${projectName}" criado com ${selectedTasksForProject.size} tarefa(s)!`
+      );
       setShowProjectNameModal(false);
       setProjectName('');
       setProjectDescription('');
       setSelectedTasksForProject(new Set());
       onClearSelection();
-      
+
       if (onProjectCreated) {
         onProjectCreated(updatedProject.id);
       }
@@ -222,7 +225,8 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
       <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50">
         <div className="bg-accent text-white px-4 sm:px-6 py-3 rounded-lg shadow-lg flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
           <span className="font-semibold">
-            {selectedTasksArray.length} tarefa{selectedTasksArray.length > 1 ? 's' : ''} selecionada{selectedTasksArray.length > 1 ? 's' : ''}
+            {selectedTasksArray.length} tarefa{selectedTasksArray.length > 1 ? 's' : ''} selecionada
+            {selectedTasksArray.length > 1 ? 's' : ''}
           </span>
           <div className="flex flex-wrap justify-center gap-2">
             <button
@@ -318,7 +322,7 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
               </label>
               <select
                 value={statusValue}
-                onChange={(e) => setStatusValue(e.target.value as any)}
+                onChange={e => setStatusValue(e.target.value as any)}
                 className="w-full px-3 py-2 bg-surface border border-surface-border rounded-md text-text-primary"
               >
                 <option value="To Do">A Fazer</option>
@@ -339,7 +343,7 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
               <input
                 type="text"
                 value={tagValue}
-                onChange={(e) => setTagValue(e.target.value)}
+                onChange={e => setTagValue(e.target.value)}
                 placeholder="Ex: crítico, regressão..."
                 className="w-full px-3 py-2 bg-surface border border-surface-border rounded-md text-text-primary"
               />
@@ -356,7 +360,7 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
               </label>
               <select
                 value={assigneeValue}
-                onChange={(e) => setAssigneeValue(e.target.value as any)}
+                onChange={e => setAssigneeValue(e.target.value as any)}
                 className="w-full px-3 py-2 bg-surface border border-surface-border rounded-md text-text-primary"
               >
                 <option value="Product">Produto</option>
@@ -382,7 +386,8 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
       >
         <div className="space-y-4">
           <p className="text-sm text-text-secondary">
-            Selecione as tarefas que deseja incluir no novo projeto. Você pode selecionar ou desmarcar tarefas.
+            Selecione as tarefas que deseja incluir no novo projeto. Você pode selecionar ou
+            desmarcar tarefas.
           </p>
           <div className="max-h-96 overflow-y-auto space-y-2 border border-surface-border rounded-lg p-3">
             {selectedTasksData.map(task => (
@@ -450,7 +455,7 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
             <input
               type="text"
               value={projectName}
-              onChange={(e) => setProjectName(e.target.value)}
+              onChange={e => setProjectName(e.target.value)}
               placeholder="Ex: Projeto de Testes - Sprint 1"
               className="w-full px-3 py-2 bg-surface border border-surface-border rounded-md text-text-primary"
               autoFocus
@@ -462,14 +467,16 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
             </label>
             <textarea
               value={projectDescription}
-              onChange={(e) => setProjectDescription(e.target.value)}
+              onChange={e => setProjectDescription(e.target.value)}
               placeholder="Descreva o objetivo deste projeto..."
               rows={4}
               className="w-full px-3 py-2 bg-surface border border-surface-border rounded-md text-text-primary resize-none"
             />
           </div>
           <div className="text-xs text-text-secondary">
-            <p>O projeto será criado com {selectedTasksForProject.size} tarefa(s) selecionada(s).</p>
+            <p>
+              O projeto será criado com {selectedTasksForProject.size} tarefa(s) selecionada(s).
+            </p>
           </div>
           <div className="flex justify-end gap-2 pt-2 border-t border-surface-border">
             <button

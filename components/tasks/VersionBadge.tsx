@@ -18,7 +18,7 @@ interface VersionBadgeProps {
 /**
  * Componente Badge para exibir versão do projeto
  * Destaca visualmente tags de versão (V1, V2, etc.)
- * 
+ *
  * @example
  * ```tsx
  * <VersionBadge version="V1" />
@@ -29,7 +29,7 @@ export const VersionBadge: React.FC<VersionBadgeProps> = ({
   version,
   size = 'md',
   className = '',
-  showIcon = true
+  showIcon = true,
 }) => {
   // Escala alinhada com BADGE_SIZE_CLASSES; altura definida via padding (sem h-* fixo)
   const sizeClasses = {
@@ -90,20 +90,15 @@ interface VersionBadgesProps {
 export const VersionBadges: React.FC<VersionBadgesProps> = ({
   versions,
   size = 'md',
-  className = ''
+  className = '',
 }) => {
   if (versions.length === 0) return null;
 
   return (
     <div className={`flex flex-wrap items-center gap-1.5 ${className}`}>
       {versions.map((version, index) => (
-        <VersionBadge
-          key={`${version}-${index}`}
-          version={version}
-          size={size}
-        />
+        <VersionBadge key={`${version}-${index}`} version={version} size={size} />
       ))}
     </div>
   );
 };
-

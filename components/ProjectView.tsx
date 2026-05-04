@@ -6,10 +6,14 @@ import { LoadingSkeleton } from './common/LoadingSkeleton';
 import { QADashboard } from './dashboard/QADashboard';
 import { lazyWithRetry } from '../utils/lazyWithRetry';
 
-const TasksView = lazyWithRetry(() => import('./tasks/TasksView').then(m => ({ default: m.TasksView })));
-const DocumentsView = lazyWithRetry(() => import('./DocumentsView').then(m => ({ default: m.DocumentsView })));
+const TasksView = lazyWithRetry(() =>
+  import('./tasks/TasksView').then(m => ({ default: m.TasksView }))
+);
+const DocumentsView = lazyWithRetry(() =>
+  import('./DocumentsView').then(m => ({ default: m.DocumentsView }))
+);
 const BusinessRulesManager = lazyWithRetry(() =>
-    import('./project/BusinessRulesManager').then((m) => ({ default: m.BusinessRulesManager }))
+  import('./project/BusinessRulesManager').then(m => ({ default: m.BusinessRulesManager }))
 );
 import { PageTransition } from './common/PageTransition';
 import { Breadcrumbs } from './common/Breadcrumbs';
@@ -26,10 +30,10 @@ import { logger } from '../utils/logger';
 import { Button } from './common/Button';
 
 const TAB_LABELS: Record<string, string> = {
-    dashboard: 'Dashboard',
-    tasks: 'Tarefas & Testes',
-    documents: 'Documentos',
-    businessRules: 'Regras de negócio',
+  dashboard: 'Dashboard',
+  tasks: 'Tarefas & Testes',
+  documents: 'Documentos',
+  businessRules: 'Regras de negócio',
 };
 
 export const ProjectView: React.FC<{
@@ -38,542 +42,582 @@ export const ProjectView: React.FC<{
   onBack: () => void;
   onDeleteProject?: (projectId: string) => void | Promise<void>;
 }> = ({ project, onUpdateProject, onBack: _onBack, onDeleteProject }) => {
-    const [activeTab, setActiveTab] = useState('dashboard');
-    const [initialTaskId, setInitialTaskId] = useState<string | undefined>(undefined);
-    /** Deep link do Dashboard: filtrar tarefas com casos em certos status (ex.: falhas). */
-    const [tasksExecutionNavKey, setTasksExecutionNavKey] = useState(0);
-    const [tasksExecutionNavStatuses, setTasksExecutionNavStatuses] = useState<TestCase['status'][]>([]);
-    /** Tarefa com detalhes inline ou modal aberto — terceiro nível do breadcrumb. */
-    const [breadcrumbTaskId, setBreadcrumbTaskId] = useState<string | null>(null);
-    const [isPrinting, setIsPrinting] = useState(false);
-    const [showDeleteProjectConfirm, setShowDeleteProjectConfirm] = useState(false);
-    const [isDeletingProject, setIsDeletingProject] = useState(false);
-    const [isSavingToSupabase, setIsSavingToSupabase] = useState(false);
-    const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
-    const saveProjectToSupabase = useProjectsStore((s) => s.saveProjectToSupabase);
-    const lastSaveToSupabase = useProjectsStore((s) => s.lastSaveToSupabase);
-    const projects = useProjectsStore((s) => s.projects);
-    const storeLoading = useProjectsStore((s) => s.isLoading);
-    const selectProject = useProjectsStore((s) => s.selectProject);
-    const storeProject = useProjectsStore((s) => s.projects.find((p) => p.id === project.id));
-    const supabaseAvailable = isSupabaseAvailable();
-    const isOnline = useOnlineStatus();
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [initialTaskId, setInitialTaskId] = useState<string | undefined>(undefined);
+  /** Deep link do Dashboard: filtrar tarefas com casos em certos status (ex.: falhas). */
+  const [tasksExecutionNavKey, setTasksExecutionNavKey] = useState(0);
+  const [tasksExecutionNavStatuses, setTasksExecutionNavStatuses] = useState<TestCase['status'][]>(
+    []
+  );
+  /** Tarefa com detalhes inline ou modal aberto — terceiro nível do breadcrumb. */
+  const [breadcrumbTaskId, setBreadcrumbTaskId] = useState<string | null>(null);
+  const [isPrinting, setIsPrinting] = useState(false);
+  const [showDeleteProjectConfirm, setShowDeleteProjectConfirm] = useState(false);
+  const [isDeletingProject, setIsDeletingProject] = useState(false);
+  const [isSavingToSupabase, setIsSavingToSupabase] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const saveProjectToSupabase = useProjectsStore(s => s.saveProjectToSupabase);
+  const lastSaveToSupabase = useProjectsStore(s => s.lastSaveToSupabase);
+  const projects = useProjectsStore(s => s.projects);
+  const storeLoading = useProjectsStore(s => s.isLoading);
+  const selectProject = useProjectsStore(s => s.selectProject);
+  const storeProject = useProjectsStore(s => s.projects.find(p => p.id === project.id));
+  const supabaseAvailable = isSupabaseAvailable();
+  const isOnline = useOnlineStatus();
 
-    // Projeto mais recente do store (mesmo id do prop); fallback ao prop se ainda não estiver na lista
-    const currentProject = storeProject ?? project;
-    
-    const metrics = useProjectMetrics(currentProject);
-    const previousPhasesRef = useRef<string>('');
-    const isMountedRef = useRef(true);
-    const projectRef = useRef(currentProject);
-    const onUpdateProjectRef = useRef(onUpdateProject);
-    
-    // Estado e Refs para indicadores de scroll nas abas
-    const tabsRef = useRef<HTMLDivElement>(null);
-    const [canScrollLeft, setCanScrollLeft] = useState(false);
-    const [canScrollRight, setCanScrollRight] = useState(false);
+  // Projeto mais recente do store (mesmo id do prop); fallback ao prop se ainda não estiver na lista
+  const currentProject = storeProject ?? project;
 
-    const checkScroll = useCallback(() => {
-        if (!tabsRef.current) return;
-        const { scrollLeft, scrollWidth, clientWidth } = tabsRef.current;
-        setCanScrollLeft(scrollLeft > 0);
-        // Pequena margem de erro para precisão de float
-        setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1);
-    }, []);
+  const metrics = useProjectMetrics(currentProject);
+  const previousPhasesRef = useRef<string>('');
+  const isMountedRef = useRef(true);
+  const projectRef = useRef(currentProject);
+  const onUpdateProjectRef = useRef(onUpdateProject);
 
-    // Monitorar scroll e resize para atualizar indicadores
-    useEffect(() => {
-        checkScroll();
-        const tabsElement = tabsRef.current;
-        if (!tabsElement) return;
+  // Estado e Refs para indicadores de scroll nas abas
+  const tabsRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
 
-        tabsElement.addEventListener('scroll', checkScroll);
-        window.addEventListener('resize', checkScroll);
-        return () => {
-            tabsElement.removeEventListener('scroll', checkScroll);
-            window.removeEventListener('resize', checkScroll);
-        };
-    }, [checkScroll, activeTab]);
-    
-    // Auto-save: IndexedDB automático; Supabase apenas pelo botão Salvar (ou sync manual)
-    useAutoSave({
-        project: currentProject,
-        debounceMs: 300,
-        disabled: false,
+  const checkScroll = useCallback(() => {
+    if (!tabsRef.current) return;
+    const { scrollLeft, scrollWidth, clientWidth } = tabsRef.current;
+    setCanScrollLeft(scrollLeft > 0);
+    // Pequena margem de erro para precisão de float
+    setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1);
+  }, []);
+
+  // Monitorar scroll e resize para atualizar indicadores
+  useEffect(() => {
+    checkScroll();
+    const tabsElement = tabsRef.current;
+    if (!tabsElement) return;
+
+    tabsElement.addEventListener('scroll', checkScroll);
+    window.addEventListener('resize', checkScroll);
+    return () => {
+      tabsElement.removeEventListener('scroll', checkScroll);
+      window.removeEventListener('resize', checkScroll);
+    };
+  }, [checkScroll, activeTab]);
+
+  // Auto-save: IndexedDB automático; Supabase apenas pelo botão Salvar (ou sync manual)
+  useAutoSave({
+    project: currentProject,
+    debounceMs: 300,
+    disabled: false,
+  });
+
+  // Keep refs updated - usar currentProject (do store) em vez de apenas project prop
+  useEffect(() => {
+    projectRef.current = currentProject;
+    onUpdateProjectRef.current = onUpdateProject;
+  }, [currentProject, onUpdateProject]);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  /** Projeto removido do store (sync, exclusão ou ID inválido após refresh): avisa e volta à listagem. */
+  const projectMissingNotifiedRef = useRef(false);
+  useEffect(() => {
+    projectMissingNotifiedRef.current = false;
+  }, [project.id]);
+
+  useEffect(() => {
+    if (storeLoading) return;
+    const existsInStore = projects.some(p => p.id === project.id);
+    if (existsInStore) {
+      projectMissingNotifiedRef.current = false;
+      return;
+    }
+    if (projectMissingNotifiedRef.current) return;
+    projectMissingNotifiedRef.current = true;
+    toast.error('Projeto não encontrado ou foi removido. Voltando para a listagem de projetos.');
+    selectProject(null);
+  }, [storeLoading, projects, project.id, selectProject]);
+
+  useEffect(() => {
+    // Update project state only if the calculated phases have changed
+    if (!metrics.newPhases || !isMountedRef.current) return;
+
+    const newPhasesString = JSON.stringify(metrics.newPhases);
+    const currentPhasesString = JSON.stringify(projectRef.current.phases);
+
+    // Only update if phases actually changed and component is still mounted
+    if (newPhasesString !== previousPhasesRef.current && newPhasesString !== currentPhasesString) {
+      previousPhasesRef.current = newPhasesString;
+      // Use setTimeout to ensure update happens after render, preventing React error #130
+      setTimeout(() => {
+        if (!isMountedRef.current) return;
+        void useProjectsStore
+          .getState()
+          .updateProject({ ...projectRef.current, phases: metrics.newPhases }, { silent: true })
+          .catch(err => logger.warn('Erro ao atualizar fases do projeto', 'ProjectView', err));
+      }, 0);
+    }
+  }, [metrics.newPhases]);
+
+  useEffect(() => {
+    if (!isPrinting) {
+      return;
+    }
+
+    const originalTitle = document.title;
+    document.title = `Relatorio_${currentProject.name.replace(/\s/g, '_')}`;
+    const timer = setTimeout(() => {
+      window.print();
+      setIsPrinting(false);
+      document.title = originalTitle;
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [isPrinting, currentProject.name]);
+
+  const handlePrint = () => {
+    setIsPrinting(true);
+  };
+
+  const handleSaveToSupabase = async () => {
+    if (!supabaseAvailable) {
+      toast.error('Supabase não está configurado. Configure VITE_SUPABASE_PROXY_URL.');
+      return;
+    }
+
+    setIsSavingToSupabase(true);
+    setSaveStatus('saving');
+    try {
+      await saveProjectToSupabase(currentProject.id);
+      setSaveStatus('saved');
+      toast.success(`Projeto "${currentProject.name}" salvo no Supabase com sucesso!`);
+      // Resetar status após 2 segundos
+      setTimeout(() => {
+        if (saveStatus === 'saved') {
+          setSaveStatus('idle');
+        }
+      }, 2000);
+    } catch (error) {
+      setSaveStatus('error');
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      toast.error(`Erro ao salvar no Supabase: ${errorMessage}`);
+      // Resetar status de erro após 3 segundos
+      setTimeout(() => {
+        if (saveStatus === 'error') {
+          setSaveStatus('idle');
+        }
+      }, 3000);
+    } finally {
+      setIsSavingToSupabase(false);
+    }
+  };
+
+  // Toast quando um salvamento esperado na nuvem ficou apenas local (transição true -> false)
+  const prevLastSaveToSupabaseRef = useRef<boolean | null>(null);
+  useEffect(() => {
+    if (lastSaveToSupabase === false && prevLastSaveToSupabaseRef.current === true) {
+      toast('Salvo localmente (Supabase indisponível)', {
+        icon: <AlertTriangle className="text-warning" size={20} aria-hidden />,
+        duration: 4000,
+      });
+    }
+    prevLastSaveToSupabaseRef.current = lastSaveToSupabase;
+  }, [lastSaveToSupabase]);
+
+  // Monitorar mudanças no projeto para atualizar status de salvamento
+  useEffect(() => {
+    if (supabaseAvailable && saveStatus === 'saved') {
+      // Quando projeto muda, resetar status para indicar que precisa salvar novamente
+      setSaveStatus('idle');
+    }
+  }, [currentProject, supabaseAvailable]);
+
+  // Verificar taskIdToFocus na montagem e ao mudar de projeto
+  useEffect(() => {
+    const taskIdToFocus = sessionStorage.getItem('taskIdToFocus');
+    if (taskIdToFocus) {
+      // Limpar o sessionStorage
+      sessionStorage.removeItem('taskIdToFocus');
+      // Navegar para a aba de tarefas
+      setActiveTab('tasks');
+      // Passar o taskId para o TasksView
+      setInitialTaskId(taskIdToFocus);
+    }
+  }, [currentProject.id]);
+
+  const tabs: Array<{ id: string; label: string }> = [
+    { id: 'dashboard', label: 'Dashboard' },
+    { id: 'tasks', label: 'Tarefas & Testes' },
+    { id: 'documents', label: 'Documentos' },
+    { id: 'businessRules', label: 'Regras de negócio' },
+  ];
+
+  const handleTabClick = useCallback((tabId: string) => {
+    setActiveTab(tabId);
+  }, []);
+
+  const handleNavigateToTasksWithExecutionStatuses = useCallback(
+    (statuses: TestCase['status'][]) => {
+      setTasksExecutionNavStatuses(statuses);
+      setTasksExecutionNavKey(k => k + 1);
+      setActiveTab('tasks');
+    },
+    []
+  );
+
+  const handleTaskDetailsOpenChange = useCallback((taskId: string, isOpen: boolean) => {
+    if (isOpen) setBreadcrumbTaskId(taskId);
+    else setBreadcrumbTaskId(prev => (prev === taskId ? null : prev));
+  }, []);
+
+  useEffect(() => {
+    if (activeTab !== 'tasks') setBreadcrumbTaskId(null);
+  }, [activeTab]);
+
+  const scrollToTaskInList = useCallback((taskId: string) => {
+    setActiveTab('tasks');
+    setInitialTaskId(taskId);
+    const safe =
+      typeof CSS !== 'undefined' && typeof CSS.escape === 'function'
+        ? CSS.escape(taskId)
+        : taskId.replace(/["\\]/g, '');
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        document
+          .querySelector(`[data-task-id="${safe}"]`)
+          ?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      });
     });
+  }, []);
 
-    // Keep refs updated - usar currentProject (do store) em vez de apenas project prop
-    useEffect(() => {
-        projectRef.current = currentProject;
-        onUpdateProjectRef.current = onUpdateProject;
-    }, [currentProject, onUpdateProject]);
+  const handleTabKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      const index = tabs.findIndex(t => t.id === activeTab);
+      if (index < 0) return;
+      let nextIndex = index;
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+        e.preventDefault();
+        nextIndex = (index + 1) % tabs.length;
+      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        nextIndex = (index - 1 + tabs.length) % tabs.length;
+      } else if (e.key === 'Home') {
+        e.preventDefault();
+        nextIndex = 0;
+      } else if (e.key === 'End') {
+        e.preventDefault();
+        nextIndex = tabs.length - 1;
+      } else if (e.key >= '1' && e.key <= '9' && Number(e.key) <= tabs.length) {
+        e.preventDefault();
+        nextIndex = Number(e.key) - 1;
+      } else return;
+      if (nextIndex !== index) setActiveTab(tabs[nextIndex].id);
+    },
+    [activeTab, tabs]
+  );
 
-    useEffect(() => {
-        isMountedRef.current = true;
-        return () => {
-            isMountedRef.current = false;
-        };
-    }, []);
+  const breadcrumbItems = useMemo((): BreadcrumbItem[] => {
+    const items: BreadcrumbItem[] = [{ label: 'Projetos', onClick: () => selectProject(null) }];
 
-    /** Projeto removido do store (sync, exclusão ou ID inválido após refresh): avisa e volta à listagem. */
-    const projectMissingNotifiedRef = useRef(false);
-    useEffect(() => {
-        projectMissingNotifiedRef.current = false;
-    }, [project.id]);
+    const onlyProjectHome = activeTab === 'dashboard' && !breadcrumbTaskId;
+    if (onlyProjectHome) {
+      items.push({ label: currentProject.name });
+      return items;
+    }
 
-    useEffect(() => {
-        if (storeLoading) return;
-        const existsInStore = projects.some((p) => p.id === project.id);
-        if (existsInStore) {
-            projectMissingNotifiedRef.current = false;
-            return;
-        }
-        if (projectMissingNotifiedRef.current) return;
-        projectMissingNotifiedRef.current = true;
-        toast.error('Projeto não encontrado ou foi removido. Voltando para a listagem de projetos.');
-        selectProject(null);
-    }, [storeLoading, projects, project.id, selectProject]);
+    items.push({ label: currentProject.name, onClick: () => handleTabClick('dashboard') });
 
-    useEffect(() => {
-        // Update project state only if the calculated phases have changed
-        if (!metrics.newPhases || !isMountedRef.current) return;
-        
-        const newPhasesString = JSON.stringify(metrics.newPhases);
-        const currentPhasesString = JSON.stringify(projectRef.current.phases);
-        
-        // Only update if phases actually changed and component is still mounted
-        if (newPhasesString !== previousPhasesRef.current && newPhasesString !== currentPhasesString) {
-            previousPhasesRef.current = newPhasesString;
-            // Use setTimeout to ensure update happens after render, preventing React error #130
-            setTimeout(() => {
-                if (!isMountedRef.current) return;
-                void useProjectsStore
-                    .getState()
-                    .updateProject({ ...projectRef.current, phases: metrics.newPhases }, { silent: true })
-                    .catch((err) => logger.warn('Erro ao atualizar fases do projeto', 'ProjectView', err));
-            }, 0);
-        }
-    }, [metrics.newPhases]);
+    if (activeTab === 'tasks') {
+      if (breadcrumbTaskId) {
+        const task = currentProject.tasks.find(t => t.id === breadcrumbTaskId);
+        const raw = task?.title?.trim() || 'Tarefa';
+        const label = raw.length > 56 ? `${raw.slice(0, 53)}…` : raw;
+        items.push({ label: TAB_LABELS.tasks, onClick: () => handleTabClick('tasks') });
+        items.push({ label });
+      } else {
+        items.push({ label: TAB_LABELS.tasks });
+      }
+    } else if (activeTab === 'documents') {
+      items.push({ label: TAB_LABELS.documents });
+    } else if (activeTab === 'businessRules') {
+      items.push({ label: TAB_LABELS.businessRules });
+    }
 
-    useEffect(() => {
-        if (!isPrinting) {
-            return;
-        }
+    return items;
+  }, [
+    selectProject,
+    currentProject.name,
+    currentProject.tasks,
+    activeTab,
+    breadcrumbTaskId,
+    handleTabClick,
+  ]);
 
-        const originalTitle = document.title;
-        document.title = `Relatorio_${currentProject.name.replace(/\s/g, '_')}`;
-        const timer = setTimeout(() => {
-            window.print();
-            setIsPrinting(false);
-            document.title = originalTitle;
-        }, 300);
-
-        return () => clearTimeout(timer);
-    }, [isPrinting, currentProject.name]);
-    
-    const handlePrint = () => {
-        setIsPrinting(true);
-    };
-
-    const handleSaveToSupabase = async () => {
-        if (!supabaseAvailable) {
-            toast.error('Supabase não está configurado. Configure VITE_SUPABASE_PROXY_URL.');
-            return;
-        }
-
-        setIsSavingToSupabase(true);
-        setSaveStatus('saving');
-        try {
-            await saveProjectToSupabase(currentProject.id);
-            setSaveStatus('saved');
-            toast.success(`Projeto "${currentProject.name}" salvo no Supabase com sucesso!`);
-            // Resetar status após 2 segundos
-            setTimeout(() => {
-                if (saveStatus === 'saved') {
-                    setSaveStatus('idle');
-                }
-            }, 2000);
-        } catch (error) {
-            setSaveStatus('error');
-            const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
-            toast.error(`Erro ao salvar no Supabase: ${errorMessage}`);
-            // Resetar status de erro após 3 segundos
-            setTimeout(() => {
-                if (saveStatus === 'error') {
-                    setSaveStatus('idle');
-                }
-            }, 3000);
-        } finally {
-            setIsSavingToSupabase(false);
-        }
-    };
-    
-    // Toast quando um salvamento esperado na nuvem ficou apenas local (transição true -> false)
-    const prevLastSaveToSupabaseRef = useRef<boolean | null>(null);
-    useEffect(() => {
-        if (lastSaveToSupabase === false && prevLastSaveToSupabaseRef.current === true) {
-            toast('Salvo localmente (Supabase indisponível)', {
-                icon: <AlertTriangle className="text-warning" size={20} aria-hidden />,
-                duration: 4000,
-            });
-        }
-        prevLastSaveToSupabaseRef.current = lastSaveToSupabase;
-    }, [lastSaveToSupabase]);
-
-    // Monitorar mudanças no projeto para atualizar status de salvamento
-    useEffect(() => {
-        if (supabaseAvailable && saveStatus === 'saved') {
-            // Quando projeto muda, resetar status para indicar que precisa salvar novamente
-            setSaveStatus('idle');
-        }
-    }, [currentProject, supabaseAvailable]);
-
-    // Verificar taskIdToFocus na montagem e ao mudar de projeto
-    useEffect(() => {
-        const taskIdToFocus = sessionStorage.getItem('taskIdToFocus');
-        if (taskIdToFocus) {
-            // Limpar o sessionStorage
-            sessionStorage.removeItem('taskIdToFocus');
-            // Navegar para a aba de tarefas
-            setActiveTab('tasks');
-            // Passar o taskId para o TasksView
-            setInitialTaskId(taskIdToFocus);
-        }
-    }, [currentProject.id]);
-    
-    const tabs: Array<{ id: string; label: string }> = [
-        { id: 'dashboard', label: 'Dashboard' },
-        { id: 'tasks', label: 'Tarefas & Testes' },
-        { id: 'documents', label: 'Documentos' },
-        { id: 'businessRules', label: 'Regras de negócio' },
-    ];
-
-    const handleTabClick = useCallback((tabId: string) => {
-        setActiveTab(tabId);
-    }, []);
-
-    const handleNavigateToTasksWithExecutionStatuses = useCallback((statuses: TestCase['status'][]) => {
-        setTasksExecutionNavStatuses(statuses);
-        setTasksExecutionNavKey((k) => k + 1);
-        setActiveTab('tasks');
-    }, []);
-
-    const handleTaskDetailsOpenChange = useCallback((taskId: string, isOpen: boolean) => {
-        if (isOpen) setBreadcrumbTaskId(taskId);
-        else setBreadcrumbTaskId((prev) => (prev === taskId ? null : prev));
-    }, []);
-
-    useEffect(() => {
-        if (activeTab !== 'tasks') setBreadcrumbTaskId(null);
-    }, [activeTab]);
-
-    const scrollToTaskInList = useCallback((taskId: string) => {
-        setActiveTab('tasks');
-        setInitialTaskId(taskId);
-        const safe = typeof CSS !== 'undefined' && typeof CSS.escape === 'function' ? CSS.escape(taskId) : taskId.replace(/["\\]/g, '');
-        requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-                document.querySelector(`[data-task-id="${safe}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            });
-        });
-    }, []);
-
-    const handleTabKeyDown = useCallback((e: React.KeyboardEvent) => {
-        const index = tabs.findIndex(t => t.id === activeTab);
-        if (index < 0) return;
-        let nextIndex = index;
-        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-            e.preventDefault();
-            nextIndex = (index + 1) % tabs.length;
-        } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-            e.preventDefault();
-            nextIndex = (index - 1 + tabs.length) % tabs.length;
-        } else if (e.key === 'Home') {
-            e.preventDefault();
-            nextIndex = 0;
-        } else if (e.key === 'End') {
-            e.preventDefault();
-            nextIndex = tabs.length - 1;
-        } else if (e.key >= '1' && e.key <= '9' && Number(e.key) <= tabs.length) {
-            e.preventDefault();
-            nextIndex = Number(e.key) - 1;
-        } else return;
-        if (nextIndex !== index) setActiveTab(tabs[nextIndex].id);
-    }, [activeTab, tabs]);
-
-    const breadcrumbItems = useMemo((): BreadcrumbItem[] => {
-        const items: BreadcrumbItem[] = [{ label: 'Projetos', onClick: () => selectProject(null) }];
-
-        const onlyProjectHome = activeTab === 'dashboard' && !breadcrumbTaskId;
-        if (onlyProjectHome) {
-            items.push({ label: currentProject.name });
-            return items;
-        }
-
-        items.push({ label: currentProject.name, onClick: () => handleTabClick('dashboard') });
-
-        if (activeTab === 'tasks') {
-            if (breadcrumbTaskId) {
-                const task = currentProject.tasks.find((t) => t.id === breadcrumbTaskId);
-                const raw = task?.title?.trim() || 'Tarefa';
-                const label = raw.length > 56 ? `${raw.slice(0, 53)}…` : raw;
-                items.push({ label: TAB_LABELS.tasks, onClick: () => handleTabClick('tasks') });
-                items.push({ label });
-            } else {
-                items.push({ label: TAB_LABELS.tasks });
-            }
-        } else if (activeTab === 'documents') {
-            items.push({ label: TAB_LABELS.documents });
-        } else if (activeTab === 'businessRules') {
-            items.push({ label: TAB_LABELS.businessRules });
-        }
-
-        return items;
-    }, [selectProject, currentProject.name, currentProject.tasks, activeTab, breadcrumbTaskId, handleTabClick]);
-
-    return (
-        <>
-            <div className="animate-fade-in w-full max-w-full mx-auto px-4 py-3 sm:px-8 sm:py-4 non-printable">
-                <div
-                    className="sticky z-40 -mx-4 mb-2 min-w-0 max-w-full border-b border-base-200/50 bg-base-100/80 px-4 py-1 backdrop-blur-md sm:-mx-8 sm:px-8"
-                    style={{ top: 'var(--app-header-h, 4.5rem)' }}
-                >
-                    <div className="flex min-w-0 flex-col gap-1">
-                        {/* Linha 1: voltar + trilho | estado + excluir */}
-                        <div className="flex min-w-0 flex-wrap items-center justify-between gap-x-2 gap-y-1">
-                            <div className="flex min-w-0 max-w-full flex-1 flex-wrap items-center gap-x-2 gap-y-1 sm:flex-nowrap sm:items-center">
-                                <div className="min-w-0 max-w-full flex-1 overflow-x-auto sm:overflow-visible">
-                                    <Breadcrumbs
-                                        items={breadcrumbItems}
-                                        showHome={false}
-                                        align="left"
-                                        dense
-                                        className="w-full min-w-0 max-w-full"
-                                    />
-                                </div>
-                            </div>
-                            <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
-                                {(supabaseAvailable || lastSaveToSupabase === false) && (
-                                    <div
-                                        className="flex max-w-full flex-wrap items-center justify-end gap-2 text-sm"
-                                        role="status"
-                                        aria-live="polite"
-                                        aria-atomic="true"
-                                    >
-                                        {saveStatus === 'saving' && (
-                                            <div className="flex items-center gap-2 text-info">
-                                                <Spinner size="sm" />
-                                                <span>Salvando...</span>
-                                            </div>
-                                        )}
-                                        {saveStatus === 'saved' && (
-                                            <div
-                                                className={`flex items-center gap-2 ${lastSaveToSupabase === false ? 'text-warning' : 'text-success'}`}
-                                            >
-                                                <CheckCircle2 className="h-4 w-4 shrink-0" aria-hidden />
-                                                <span>
-                                                    {lastSaveToSupabase === false
-                                                        ? 'Salvo localmente (Supabase indisponível)'
-                                                        : 'Salvo'}
-                                                </span>
-                                            </div>
-                                        )}
-                                        {saveStatus === 'error' && (
-                                            <div className="flex items-center gap-2 text-error">
-                                                <AlertTriangle className="h-4 w-4 shrink-0" aria-hidden />
-                                                <span>Erro ao salvar</span>
-                                            </div>
-                                        )}
-                                        {!supabaseAvailable && lastSaveToSupabase === false && saveStatus === 'idle' && (
-                                            <div className="flex items-center gap-2 text-warning">
-                                                <CloudOff className="h-4 w-4 shrink-0" aria-hidden />
-                                                <span>Salvo localmente (Supabase indisponível)</span>
-                                            </div>
-                                        )}
-                                        {supabaseAvailable && lastSaveToSupabase === false && saveStatus === 'idle' && (
-                                            <div className="flex flex-wrap items-center justify-end gap-2">
-                                                <span className="max-w-[12rem] truncate text-warning sm:max-w-none">
-                                                    Salvo localmente (nuvem indisponível)
-                                                </span>
-                                                <button
-                                                    type="button"
-                                                    onClick={handleSaveToSupabase}
-                                                    disabled={isSavingToSupabase || !isOnline}
-                                                    className="btn btn-sm btn-outline btn-primary min-h-[44px] sm:min-h-0"
-                                                    aria-label="Sincronizar projeto com a nuvem"
-                                                    title={
-                                                        !isOnline
-                                                            ? 'É necessário estar online para sincronizar com a nuvem.'
-                                                            : undefined
-                                                    }
-                                                >
-                                                    {isSavingToSupabase ? (
-                                                        <>
-                                                            <Spinner size="sm" />
-                                                            <span>Salvando...</span>
-                                                        </>
-                                                    ) : (
-                                                        'Sincronizar com a nuvem'
-                                                    )}
-                                                </button>
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-                                {onDeleteProject && (
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowDeleteProjectConfirm(true)}
-                                        className="btn btn-ghost btn-xs min-h-[40px] gap-1.5 text-error hover:bg-error/10 sm:min-h-0 sm:h-7 sm:gap-1 sm:py-0 sm:leading-tight"
-                                        aria-label={`Excluir projeto ${currentProject.name}`}
-                                    >
-                                        <Trash2 className="h-4 w-4" aria-hidden />
-                                        Excluir projeto
-                                    </button>
-                                )}
-                            </div>
+  return (
+    <>
+      <div className="animate-fade-in w-full max-w-full mx-auto px-4 py-3 sm:px-8 sm:py-4 non-printable">
+        <div
+          className="sticky z-40 -mx-4 mb-2 min-w-0 max-w-full border-b border-base-200/50 bg-base-100/80 px-4 py-1 backdrop-blur-md sm:-mx-8 sm:px-8"
+          style={{ top: 'var(--app-header-h, 4.5rem)' }}
+        >
+          <div className="flex min-w-0 flex-col gap-1">
+            {/* Linha 1: voltar + trilho | estado + excluir */}
+            <div className="flex min-w-0 flex-wrap items-center justify-between gap-x-2 gap-y-1">
+              <div className="flex min-w-0 max-w-full flex-1 flex-wrap items-center gap-x-2 gap-y-1 sm:flex-nowrap sm:items-center">
+                <div className="min-w-0 max-w-full flex-1 overflow-x-auto sm:overflow-visible">
+                  <Breadcrumbs
+                    items={breadcrumbItems}
+                    showHome={false}
+                    align="left"
+                    dense
+                    className="w-full min-w-0 max-w-full"
+                  />
+                </div>
+              </div>
+              <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+                {(supabaseAvailable || lastSaveToSupabase === false) && (
+                  <div
+                    className="flex max-w-full flex-wrap items-center justify-end gap-2 text-sm"
+                    role="status"
+                    aria-live="polite"
+                    aria-atomic="true"
+                  >
+                    {saveStatus === 'saving' && (
+                      <div className="flex items-center gap-2 text-info">
+                        <Spinner size="sm" />
+                        <span>Salvando...</span>
+                      </div>
+                    )}
+                    {saveStatus === 'saved' && (
+                      <div
+                        className={`flex items-center gap-2 ${lastSaveToSupabase === false ? 'text-warning' : 'text-success'}`}
+                      >
+                        <CheckCircle2 className="h-4 w-4 shrink-0" aria-hidden />
+                        <span>
+                          {lastSaveToSupabase === false
+                            ? 'Salvo localmente (Supabase indisponível)'
+                            : 'Salvo'}
+                        </span>
+                      </div>
+                    )}
+                    {saveStatus === 'error' && (
+                      <div className="flex items-center gap-2 text-error">
+                        <AlertTriangle className="h-4 w-4 shrink-0" aria-hidden />
+                        <span>Erro ao salvar</span>
+                      </div>
+                    )}
+                    {!supabaseAvailable &&
+                      lastSaveToSupabase === false &&
+                      saveStatus === 'idle' && (
+                        <div className="flex items-center gap-2 text-warning">
+                          <CloudOff className="h-4 w-4 shrink-0" aria-hidden />
+                          <span>Salvo localmente (Supabase indisponível)</span>
                         </div>
-
-                        {/* Linha 2: badge Jira + título + descrição (uma linha; truncagem para cabeçalho total = 2 linhas) */}
-                        <div className="flex min-w-0 flex-nowrap items-center gap-x-2 overflow-hidden">
-                            <span className="badge badge-outline shrink-0 border-primary/30 bg-primary/10 px-2 py-0 text-[10px] font-medium leading-none text-primary">
-                                {currentProject.settings?.jiraProjectKey
-                                    ? `Jira: ${currentProject.settings.jiraProjectKey}`
-                                    : 'Projeto'}
-                            </span>
-                            <h1
-                                id="project-view-title"
-                                className="min-w-0 max-w-[55%] flex-1 basis-0 truncate font-heading text-xl font-bold leading-tight tracking-tight text-base-content sm:max-w-none sm:text-2xl"
-                                title={currentProject.name}
-                            >
-                                {currentProject.name}
-                            </h1>
-                            <span className="hidden shrink-0 text-base-content/35 sm:inline" aria-hidden="true">
-                                ·
-                            </span>
-                            <span
-                                className="min-w-0 flex-1 basis-0 truncate text-left text-xs leading-tight text-base-content/70 sm:text-sm"
-                                title={
-                                    currentProject.description?.trim()
-                                        ? currentProject.description
-                                        : 'Sem descrição.'
-                                }
-                            >
-                                {currentProject.description?.trim()
-                                    ? currentProject.description
-                                    : 'Sem descrição.'}
-                            </span>
-                        </div>
-                    </div>
-                    <div className="relative mt-0.5 border-b border-base-200/50 pb-0.5">
-                    {/* Indicadores de Scroll para Mobile */}
-                    {canScrollLeft && (
-                        <div className="pointer-events-none absolute bottom-0.5 left-0 top-0 z-10 w-8 bg-gradient-to-r from-base-100 to-transparent" aria-hidden />
+                      )}
+                    {supabaseAvailable && lastSaveToSupabase === false && saveStatus === 'idle' && (
+                      <div className="flex flex-wrap items-center justify-end gap-2">
+                        <span className="max-w-[12rem] truncate text-warning sm:max-w-none">
+                          Salvo localmente (nuvem indisponível)
+                        </span>
+                        <button
+                          type="button"
+                          onClick={handleSaveToSupabase}
+                          disabled={isSavingToSupabase || !isOnline}
+                          className="btn btn-sm btn-outline btn-primary min-h-[44px] sm:min-h-0"
+                          aria-label="Sincronizar projeto com a nuvem"
+                          title={
+                            !isOnline
+                              ? 'É necessário estar online para sincronizar com a nuvem.'
+                              : undefined
+                          }
+                        >
+                          {isSavingToSupabase ? (
+                            <>
+                              <Spinner size="sm" />
+                              <span>Salvando...</span>
+                            </>
+                          ) : (
+                            'Sincronizar com a nuvem'
+                          )}
+                        </button>
+                      </div>
                     )}
-                    {canScrollRight && (
-                        <div className="pointer-events-none absolute bottom-0.5 right-0 top-0 z-10 w-8 bg-gradient-to-l from-base-100 to-transparent" aria-hidden />
-                    )}
-
-                    <nav
-                        ref={tabsRef}
-                        className="tabs tabs-boxed no-scrollbar w-full flex-nowrap gap-0.5 overflow-x-auto scroll-smooth p-0.5 snap-x snap-mandatory sm:gap-1"
-                        aria-label="Seções do projeto"
-                        role="tablist"
-                        aria-orientation="horizontal"
-                        onKeyDown={handleTabKeyDown}
-                    >
-                        {tabs.map(tab => (
-                            <button
-                                key={tab.id}
-                                type="button"
-                                onClick={() => handleTabClick(tab.id)}
-                                className={`tab min-h-[40px] flex-shrink-0 snap-start whitespace-nowrap px-3 py-2 text-sm sm:min-h-0 sm:py-1.5 ${activeTab === tab.id ? 'tab-active' : ''}`}
-                                id={`tab-${tab.id}`}
-                                role="tab"
-                                tabIndex={activeTab === tab.id ? 0 : -1}
-                                aria-selected={activeTab === tab.id}
-                                aria-controls={`tab-panel-${tab.id}`}
-                            >
-                                {tab.label}
-                            </button>
-                        ))}
-                    </nav>
-                    {canScrollRight && (
-                        <p className="mt-1 text-center text-[11px] text-base-content/55 md:hidden" aria-live="polite">
-                            Deslize as abas para ver mais seções
-                        </p>
-                    )}
-                </div>
-                </div>
-
-                <div className="mt-8">
-                    <PageTransition transitionKey={activeTab}>
-                        {activeTab === 'dashboard' && (
-                            <section id="tab-panel-dashboard" role="tabpanel" aria-labelledby="tab-dashboard">
-                            <Suspense fallback={<LoadingSkeleton variant="card" count={3} />}>
-                                <QADashboard 
-                                    project={currentProject} 
-                                    onUpdateProject={onUpdateProject}
-                                    onNavigateToTab={(tabId) => handleTabClick(tabId)}
-                                    onNavigateToTasksWithExecutionStatuses={handleNavigateToTasksWithExecutionStatuses}
-                                />
-                            </Suspense>
-                            </section>
-                        )}
-                        {activeTab === 'tasks' && (
-                            <section id="tab-panel-tasks" role="tabpanel" aria-labelledby="tab-tasks">
-                            <Suspense fallback={<LoadingSkeleton variant="task" count={5} />}>
-                                <TasksView 
-                                    project={currentProject} 
-                                    onUpdateProject={onUpdateProject}
-                                    onNavigateToTab={(tabId) => handleTabClick(tabId)}
-                                    initialTaskId={initialTaskId}
-                                    onTaskDetailsOpenChange={handleTaskDetailsOpenChange}
-                                    tasksExecutionNavKey={tasksExecutionNavKey}
-                                    tasksExecutionNavStatuses={tasksExecutionNavStatuses}
-                                />
-                            </Suspense>
-                            </section>
-                        )}
-                        {activeTab === 'documents' && (
-                            <section id="tab-panel-documents" role="tabpanel" aria-labelledby="tab-documents">
-                            <Suspense fallback={<LoadingSkeleton variant="card" count={3} />}>
-                                <DocumentsView project={currentProject} onUpdateProject={onUpdateProject} onNavigateToTab={handleTabClick} />
-                            </Suspense>
-                            </section>
-                        )}
-                        {activeTab === 'businessRules' && (
-                            <section id="tab-panel-businessRules" role="tabpanel" aria-labelledby="tab-businessRules">
-                                <Suspense fallback={<LoadingSkeleton variant="card" count={2} />}>
-                                    <BusinessRulesManager project={currentProject} onUpdateProject={onUpdateProject} />
-                                </Suspense>
-                            </section>
-                        )}
-                    </PageTransition>
-                </div>
+                  </div>
+                )}
+                {onDeleteProject && (
+                  <button
+                    type="button"
+                    onClick={() => setShowDeleteProjectConfirm(true)}
+                    className="btn btn-ghost btn-xs min-h-[40px] gap-1.5 text-error hover:bg-error/10 sm:min-h-0 sm:h-7 sm:gap-1 sm:py-0 sm:leading-tight"
+                    aria-label={`Excluir projeto ${currentProject.name}`}
+                  >
+                    <Trash2 className="h-4 w-4" aria-hidden />
+                    Excluir projeto
+                  </button>
+                )}
+              </div>
             </div>
-            {onDeleteProject && (
-                <ConfirmDialog
-                    isOpen={showDeleteProjectConfirm}
-                    onClose={() => setShowDeleteProjectConfirm(false)}
-                    onConfirm={async () => {
-                        setIsDeletingProject(true);
-                        try {
-                            await onDeleteProject(currentProject.id);
-                            setShowDeleteProjectConfirm(false);
-                        } finally {
-                            setIsDeletingProject(false);
-                        }
-                    }}
-                    title={`Excluir "${currentProject.name}"`}
-                    message="Você tem certeza que deseja excluir este projeto? Todos os dados associados (tarefas, documentos, análises) serão perdidos permanentemente. Esta ação não pode ser desfeita."
-                    confirmText="Sim, Excluir"
-                    cancelText="Cancelar"
-                    variant="danger"
-                    isLoading={isDeletingProject}
-                />
+
+            {/* Linha 2: badge Jira + título + descrição (uma linha; truncagem para cabeçalho total = 2 linhas) */}
+            <div className="flex min-w-0 flex-nowrap items-center gap-x-2 overflow-hidden">
+              <span className="badge badge-outline shrink-0 border-primary/30 bg-primary/10 px-2 py-0 text-[10px] font-medium leading-none text-primary">
+                {currentProject.settings?.jiraProjectKey
+                  ? `Jira: ${currentProject.settings.jiraProjectKey}`
+                  : 'Projeto'}
+              </span>
+              <h1
+                id="project-view-title"
+                className="min-w-0 max-w-[55%] flex-1 basis-0 truncate font-heading text-xl font-bold leading-tight tracking-tight text-base-content sm:max-w-none sm:text-2xl"
+                title={currentProject.name}
+              >
+                {currentProject.name}
+              </h1>
+              <span className="hidden shrink-0 text-base-content/35 sm:inline" aria-hidden="true">
+                ·
+              </span>
+              <span
+                className="min-w-0 flex-1 basis-0 truncate text-left text-xs leading-tight text-base-content/70 sm:text-sm"
+                title={
+                  currentProject.description?.trim() ? currentProject.description : 'Sem descrição.'
+                }
+              >
+                {currentProject.description?.trim() ? currentProject.description : 'Sem descrição.'}
+              </span>
+            </div>
+          </div>
+          <div className="relative mt-0.5 border-b border-base-200/50 pb-0.5">
+            {/* Indicadores de Scroll para Mobile */}
+            {canScrollLeft && (
+              <div
+                className="pointer-events-none absolute bottom-0.5 left-0 top-0 z-10 w-8 bg-gradient-to-r from-base-100 to-transparent"
+                aria-hidden
+              />
             )}
-            {isPrinting && <PrintableReport project={currentProject} metrics={metrics} />}
-        </>
-    );
+            {canScrollRight && (
+              <div
+                className="pointer-events-none absolute bottom-0.5 right-0 top-0 z-10 w-8 bg-gradient-to-l from-base-100 to-transparent"
+                aria-hidden
+              />
+            )}
+
+            <nav
+              ref={tabsRef}
+              className="tabs tabs-boxed no-scrollbar w-full flex-nowrap gap-0.5 overflow-x-auto scroll-smooth p-0.5 snap-x snap-mandatory sm:gap-1"
+              aria-label="Seções do projeto"
+              role="tablist"
+              aria-orientation="horizontal"
+              onKeyDown={handleTabKeyDown}
+            >
+              {tabs.map(tab => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => handleTabClick(tab.id)}
+                  className={`tab min-h-[40px] flex-shrink-0 snap-start whitespace-nowrap px-3 py-2 text-sm sm:min-h-0 sm:py-1.5 ${activeTab === tab.id ? 'tab-active' : ''}`}
+                  id={`tab-${tab.id}`}
+                  role="tab"
+                  tabIndex={activeTab === tab.id ? 0 : -1}
+                  aria-selected={activeTab === tab.id}
+                  aria-controls={`tab-panel-${tab.id}`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </nav>
+            {canScrollRight && (
+              <p
+                className="mt-1 text-center text-[11px] text-base-content/55 md:hidden"
+                aria-live="polite"
+              >
+                Deslize as abas para ver mais seções
+              </p>
+            )}
+          </div>
+        </div>
+
+        <div className="mt-8">
+          <PageTransition transitionKey={activeTab}>
+            {activeTab === 'dashboard' && (
+              <section id="tab-panel-dashboard" role="tabpanel" aria-labelledby="tab-dashboard">
+                <Suspense fallback={<LoadingSkeleton variant="card" count={3} />}>
+                  <QADashboard
+                    project={currentProject}
+                    onUpdateProject={onUpdateProject}
+                    onNavigateToTab={tabId => handleTabClick(tabId)}
+                    onNavigateToTasksWithExecutionStatuses={
+                      handleNavigateToTasksWithExecutionStatuses
+                    }
+                  />
+                </Suspense>
+              </section>
+            )}
+            {activeTab === 'tasks' && (
+              <section id="tab-panel-tasks" role="tabpanel" aria-labelledby="tab-tasks">
+                <Suspense fallback={<LoadingSkeleton variant="task" count={5} />}>
+                  <TasksView
+                    project={currentProject}
+                    onUpdateProject={onUpdateProject}
+                    onNavigateToTab={tabId => handleTabClick(tabId)}
+                    initialTaskId={initialTaskId}
+                    onTaskDetailsOpenChange={handleTaskDetailsOpenChange}
+                    tasksExecutionNavKey={tasksExecutionNavKey}
+                    tasksExecutionNavStatuses={tasksExecutionNavStatuses}
+                  />
+                </Suspense>
+              </section>
+            )}
+            {activeTab === 'documents' && (
+              <section id="tab-panel-documents" role="tabpanel" aria-labelledby="tab-documents">
+                <Suspense fallback={<LoadingSkeleton variant="card" count={3} />}>
+                  <DocumentsView
+                    project={currentProject}
+                    onUpdateProject={onUpdateProject}
+                    onNavigateToTab={handleTabClick}
+                  />
+                </Suspense>
+              </section>
+            )}
+            {activeTab === 'businessRules' && (
+              <section
+                id="tab-panel-businessRules"
+                role="tabpanel"
+                aria-labelledby="tab-businessRules"
+              >
+                <Suspense fallback={<LoadingSkeleton variant="card" count={2} />}>
+                  <BusinessRulesManager
+                    project={currentProject}
+                    onUpdateProject={onUpdateProject}
+                  />
+                </Suspense>
+              </section>
+            )}
+          </PageTransition>
+        </div>
+      </div>
+      {onDeleteProject && (
+        <ConfirmDialog
+          isOpen={showDeleteProjectConfirm}
+          onClose={() => setShowDeleteProjectConfirm(false)}
+          onConfirm={async () => {
+            setIsDeletingProject(true);
+            try {
+              await onDeleteProject(currentProject.id);
+              setShowDeleteProjectConfirm(false);
+            } finally {
+              setIsDeletingProject(false);
+            }
+          }}
+          title={`Excluir "${currentProject.name}"`}
+          message="Você tem certeza que deseja excluir este projeto? Todos os dados associados (tarefas, documentos, análises) serão perdidos permanentemente. Esta ação não pode ser desfeita."
+          confirmText="Sim, Excluir"
+          cancelText="Cancelar"
+          variant="danger"
+          isLoading={isDeletingProject}
+        />
+      )}
+      {isPrinting && <PrintableReport project={currentProject} metrics={metrics} />}
+    </>
+  );
 };

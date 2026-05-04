@@ -39,7 +39,7 @@ Retorne apenas o texto resumido, sem introduções ou explicações.`;
   try {
     const response = await callGeminiWithRetry({
       model: GEMINI_DEFAULT_MODEL,
-      contents: prompt
+      contents: prompt,
     });
     return response.text.trim();
   } catch (error) {

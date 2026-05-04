@@ -1,4 +1,3 @@
-
 export interface TestCase {
   id: string;
   /** Título curto (opcional). Alguns fluxos usam a própria description como título. */
@@ -46,7 +45,7 @@ export interface TaskTestStatusRecord {
   created_at?: string;
 }
 
-export type STLCPhaseName = 
+export type STLCPhaseName =
   | 'Análise de Requisitos'
   | 'Planejamento de Testes'
   | 'Desenvolvimento de Casos de Teste'
@@ -135,6 +134,8 @@ export interface JiraTask {
   /** Nome original da prioridade no Jira (ex: "High", "Highest", "Medium"). */
   jiraPriority?: string;
   createdAt?: string; // ISO string
+  /** Última atualização conhecida (ex.: sync Jira); opcional para tarefas legadas. */
+  updatedAt?: string;
   completedAt?: string; // ISO string
   owner?: TeamRole;
   assignee?: TeamRole;
@@ -167,8 +168,19 @@ export interface JiraTask {
   /** Responsável no Jira (nome/e-mail). Exibido na UI; assignee continua sendo o papel para filtros/export. */
   jiraAssignee?: { displayName: string; emailAddress?: string };
   watchers?: { watchCount: number; isWatching: boolean };
-  issueLinks?: Array<{ id: string; type: string; relatedKey: string; direction: 'inward' | 'outward' }>;
-  jiraAttachments?: Array<{ id: string; filename: string; size: number; created: string; author: string }>;
+  issueLinks?: Array<{
+    id: string;
+    type: string;
+    relatedKey: string;
+    direction: 'inward' | 'outward';
+  }>;
+  jiraAttachments?: Array<{
+    id: string;
+    filename: string;
+    size: number;
+    created: string;
+    author: string;
+  }>;
   jiraCustomFields?: { [key: string]: any }; // Campos customizados do Jira
   isTechnicalDebt?: boolean; // Flag para o indicador de Débito Técnico
   isCriticalPath?: boolean; // Flag para o indicador de Funcionalidades Críticas (LGPD/Segurança)
@@ -179,14 +191,9 @@ export interface JiraTask {
 }
 
 // Ferramentas sugeridas para testes
-export const SUGGESTED_TOOLS = [
-  'Postman',
-  'Insomnia',
-  'DBeaver',
-  'Kibana'
-] as const;
+export const SUGGESTED_TOOLS = ['Postman', 'Insomnia', 'DBeaver', 'Kibana'] as const;
 
-export type SuggestedTool = typeof SUGGESTED_TOOLS[number];
+export type SuggestedTool = (typeof SUGGESTED_TOOLS)[number];
 
 export interface BusinessRule {
   id: string;
@@ -202,6 +209,8 @@ export interface BusinessRule {
 export interface ProjectDocument {
   name: string;
   content: string;
+  /** Classificação opcional (ex.: requisito, especificação). */
+  category?: string;
   analysis?: string;
 }
 

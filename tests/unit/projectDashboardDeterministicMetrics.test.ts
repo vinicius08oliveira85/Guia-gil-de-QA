@@ -20,10 +20,7 @@ const baseTask = (overrides: Partial<JiraTask>): JiraTask => ({
 
 describe('projectDashboardDeterministicMetrics', () => {
   it('computes completion and percent', () => {
-    const tasks = [
-      baseTask({ id: 'a', status: 'Done' }),
-      baseTask({ id: 'b', status: 'To Do' }),
-    ];
+    const tasks = [baseTask({ id: 'a', status: 'Done' }), baseTask({ id: 'b', status: 'To Do' })];
     expect(computeTaskCompletionStats(tasks)).toEqual({
       total: 2,
       completed: 1,
@@ -56,7 +53,7 @@ describe('projectDashboardDeterministicMetrics', () => {
     const m = computeProjectDashboardDeterministicMetrics(undefined);
     expect(m.completion.total).toBe(0);
     expect(m.overdueCount).toBe(0);
-    expect(m.statusDistribution.every((s) => s.value === 0)).toBe(true);
+    expect(m.statusDistribution.every(s => s.value === 0)).toBe(true);
     expect(m.hasDeliveryData).toBe(false);
     expect(m.priorityDistribution.length).toBe(0);
     expect(m.assigneeDistribution.length).toBe(0);

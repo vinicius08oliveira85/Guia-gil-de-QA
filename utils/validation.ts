@@ -9,7 +9,7 @@ export const BusinessRuleSchema = z.object({
   category: z
     .string()
     .optional()
-    .transform((c) => (c && c.trim() ? c.trim() : DEFAULT_BUSINESS_RULE_CATEGORY)),
+    .transform(c => (c && c.trim() ? c.trim() : DEFAULT_BUSINESS_RULE_CATEGORY)),
   createdAt: z.string(),
   linkedBusinessRuleIds: z.array(z.string()).optional(),
 });
@@ -52,7 +52,10 @@ export const ProjectSchema = z.object({
 
 export const TaskSchema = z.object({
   id: z.string().min(3, 'ID deve ter pelo menos 3 caracteres').max(50, 'ID muito longo'),
-  title: z.string().min(5, 'Título deve ter pelo menos 5 caracteres').max(200, 'Título muito longo'),
+  title: z
+    .string()
+    .min(5, 'Título deve ter pelo menos 5 caracteres')
+    .max(200, 'Título muito longo'),
   description: z.string().max(5000, 'Descrição muito longa').optional(),
   status: z.enum(['To Do', 'In Progress', 'Done', 'Blocked']).default('To Do'),
   type: z.enum(['Epic', 'História', 'Tarefa', 'Bug']),
@@ -93,5 +96,3 @@ export const validateTestCase = (data: unknown) => {
 export const validateBddScenario = (data: unknown) => {
   return BddScenarioSchema.safeParse(data);
 };
-
-

@@ -7,7 +7,9 @@ describe('normalizeStrategyReferences', () => {
       { testType: 'Teste Funcional', description: '', howToExecute: [], tools: '' },
       { testType: 'Teste de API', description: '', howToExecute: [], tools: '' },
     ];
-    expect(normalizeStrategyReferences(['Teste Funcional', 'Inventado'], allowed)).toEqual(['Teste Funcional']);
+    expect(normalizeStrategyReferences(['Teste Funcional', 'Inventado'], allowed)).toEqual([
+      'Teste Funcional',
+    ]);
   });
 
   it('usa o primeiro tipo permitido quando a IA não retornou nenhum válido', () => {

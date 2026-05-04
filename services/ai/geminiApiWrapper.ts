@@ -96,17 +96,23 @@ function isInvalidApiKeyError(error: unknown): boolean {
   if (status === 429) {
     return false;
   }
-  
+
   // Status 403 (Forbidden) pode indicar API key inválida ou sem permissões
   if (status === 403) {
     return true;
   }
-  
+
   const errorMessage = getErrorMessage(error).toLowerCase();
-  
+
   // Palavras-chave que indicam API key inválida
-  const invalidKeyKeywords = ['forbidden', 'invalid api key', 'unauthorized', 'permission denied', 'api key not valid'];
-  
+  const invalidKeyKeywords = [
+    'forbidden',
+    'invalid api key',
+    'unauthorized',
+    'permission denied',
+    'api key not valid',
+  ];
+
   return invalidKeyKeywords.some(keyword => errorMessage.includes(keyword));
 }
 
@@ -117,22 +123,22 @@ function getErrorMessage(error: unknown): string {
   if (error instanceof Error) {
     return error.message;
   }
-  
+
   if (typeof error === 'object' && error !== null) {
     const err = error as Record<string, unknown>;
-    
+
     // Tentar extrair mensagem de diferentes formatos
     if (typeof err.message === 'string') {
       return err.message;
     }
-    
+
     if (typeof err.error === 'object' && err.error !== null) {
       const innerError = err.error as Record<string, unknown>;
       if (typeof innerError.message === 'string') {
         return innerError.message;
       }
     }
-    
+
     // Tentar stringify se for objeto
     try {
       return JSON.stringify(error);
@@ -140,7 +146,7 @@ function getErrorMessage(error: unknown): string {
       return String(error);
     }
   }
-  
+
   return String(error);
 }
 
@@ -160,21 +166,25 @@ function isRetryableGeminiError(error: unknown): boolean {
     if (message.includes('429') || message.includes('too many requests')) {
       return true;
     }
-    
+
     // Erros de rede temporários
-    if (message.includes('econnreset') || 
-        message.includes('etimedout') ||
-        message.includes('enotfound') ||
-        message.includes('network') ||
-        message.includes('timeout')) {
+    if (
+      message.includes('econnreset') ||
+      message.includes('etimedout') ||
+      message.includes('enotfound') ||
+      message.includes('network') ||
+      message.includes('timeout')
+    ) {
       return true;
     }
-    
+
     // Erros de servidor (5xx)
-    if (message.includes('500') || 
-        message.includes('502') || 
-        message.includes('503') || 
-        message.includes('504')) {
+    if (
+      message.includes('500') ||
+      message.includes('502') ||
+      message.includes('503') ||
+      message.includes('504')
+    ) {
       return true;
     }
   }
@@ -218,14 +228,14 @@ function isRetryableGeminiError(error: unknown): boolean {
 function extractHttpStatus(error: unknown): number | null {
   if (typeof error === 'object' && error !== null) {
     const err = error as Record<string, unknown>;
-    
+
     // Tentar extrair status de diferentes formatos
     const status = err.status || err.statusCode || err.code;
-    
+
     if (typeof status === 'number') {
       return status;
     }
-    
+
     // Tentar extrair de response.status se disponível
     if (typeof err.response === 'object' && err.response !== null) {
       const response = err.response as Record<string, unknown>;
@@ -235,14 +245,14 @@ function extractHttpStatus(error: unknown): number | null {
       }
     }
   }
-  
+
   // Tentar extrair de mensagem de erro (incluindo 403, 429, 5xx)
   const errorMessage = getErrorMessage(error);
   const statusMatch = errorMessage.match(/\b(40[0-9]|429|50[0-9]|503)\b/);
   if (statusMatch) {
     return parseInt(statusMatch[1], 10);
   }
-  
+
   return null;
 }
 
@@ -251,19 +261,18 @@ function extractHttpStatus(error: unknown): number | null {
  */
 function extractRetryInfo(error: unknown): { retryAfter?: number; status?: number } {
   const info: { retryAfter?: number; status?: number } = {};
-  
+
   // Extrair status HTTP
   const status = extractHttpStatus(error);
   if (status) {
     info.status = status;
   }
-  
+
   if (typeof error === 'object' && error !== null) {
     const err = error as Record<string, unknown>;
 
     // Tentar extrair Retry-After de diferentes formatos
-    let retryAfter: unknown =
-      err.retryAfter ?? err['retry-after'] ?? err.retry_after;
+    let retryAfter: unknown = err.retryAfter ?? err['retry-after'] ?? err.retry_after;
 
     if (retryAfter === undefined && typeof err.response === 'object' && err.response !== null) {
       const headers = (err.response as Record<string, unknown>).headers;
@@ -282,13 +291,13 @@ function extractRetryInfo(error: unknown): { retryAfter?: number; status?: numbe
       }
     }
   }
-  
+
   return info;
 }
 
 /**
  * Chama a API Gemini com rate limiting, retry automático e fallback de API keys
- * 
+ *
  * @param params Parâmetros para generateContent
  * @returns Resposta da API
  * @throws Erro se todas as tentativas falharem
@@ -350,16 +359,12 @@ export async function callGeminiWithRetry(
           async () => {
             await geminiRateLimiter.acquire();
 
-            logger.debug(
-              'Chamando API Gemini',
-              'callGeminiWithRetry',
-              {
-                model: modelId,
-                keyAttempt: keyAttempt + 1,
-                modelIndex: modelIndex + 1,
-                modelsInChain: modelChain.length,
-              }
-            );
+            logger.debug('Chamando API Gemini', 'callGeminiWithRetry', {
+              model: modelId,
+              keyAttempt: keyAttempt + 1,
+              modelIndex: modelIndex + 1,
+              modelsInChain: modelChain.length,
+            });
 
             try {
               const response = await ai.models.generateContent({
@@ -368,11 +373,10 @@ export async function callGeminiWithRetry(
                 config: params.config,
               });
 
-              logger.debug(
-                'Resposta recebida da API Gemini',
-                'callGeminiWithRetry',
-                { model: modelId, textLength: response.text?.length || 0 }
-              );
+              logger.debug('Resposta recebida da API Gemini', 'callGeminiWithRetry', {
+                model: modelId,
+                textLength: response.text?.length || 0,
+              });
 
               const text = response.text ?? '';
               return { text };
@@ -381,8 +385,7 @@ export async function callGeminiWithRetry(
               const retryInfo = extractRetryInfo(error);
 
               if (status === 429) {
-                const enrichedError =
-                  error instanceof Error ? error : new Error(String(error));
+                const enrichedError = error instanceof Error ? error : new Error(String(error));
                 (enrichedError as GeminiAppError).status = retryInfo.status ?? 429;
                 if (retryInfo.retryAfter != null) {
                   (enrichedError as GeminiAppError).retryAfter = retryInfo.retryAfter;
@@ -404,9 +407,7 @@ export async function callGeminiWithRetry(
                 );
               }
 
-              const enrichedError = error instanceof Error
-                ? error
-                : new Error(String(error));
+              const enrichedError = error instanceof Error ? error : new Error(String(error));
 
               if (retryInfo.status) {
                 (enrichedError as GeminiAppError).status = retryInfo.status;
@@ -431,7 +432,7 @@ export async function callGeminiWithRetry(
             maxTotalTimeout: isAlternateModel ? 22_000 : 45_000,
             useJitter: true,
             /** No modelo principal, 503/404 não repetem no mesmo modelo: passa logo para `gemini-2.5-flash-lite`. */
-            isRetryable: (err) => {
+            isRetryable: err => {
               if (modelIndex === 0) {
                 const st = extractHttpStatus(err);
                 if (st === 503 || st === 404) {
@@ -447,7 +448,13 @@ export async function callGeminiWithRetry(
               logger.debug(
                 `Retry silencioso ${attempt}/${effectiveMaxRetries} Gemini após ${delay}ms${statusInfo}`,
                 'callGeminiWithRetry',
-                { attempt, delay, keyAttempt: keyAttempt + 1, model: modelId, status: retryInfo.status }
+                {
+                  attempt,
+                  delay,
+                  keyAttempt: keyAttempt + 1,
+                  model: modelId,
+                  status: retryInfo.status,
+                }
               );
             },
           }

@@ -18,7 +18,7 @@ export const ChecklistView: React.FC<ChecklistViewProps> = ({
   onEditItem,
   onDeleteItem,
   showProgress = true,
-  showValidation = true
+  showValidation = true,
 }) => {
   const progress = getChecklistProgress(checklist);
   const validation = canMoveToNextPhase(checklist);
@@ -64,7 +64,8 @@ export const ChecklistView: React.FC<ChecklistViewProps> = ({
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-semibold text-base-content">Progresso</span>
             <span className="text-sm text-base-content/70">
-              {progress.completed} / {progress.total} ({Math.round((progress.completed / progress.total) * 100)}%)
+              {progress.completed} / {progress.total} (
+              {Math.round((progress.completed / progress.total) * 100)}%)
             </span>
           </div>
           <div className="w-full bg-base-200 rounded-full h-2">
@@ -89,9 +90,7 @@ export const ChecklistView: React.FC<ChecklistViewProps> = ({
               <div className="font-semibold text-warning mb-1">
                 Não é possível avançar para a próxima fase
               </div>
-              <div className="text-sm text-base-content/70">
-                Itens obrigatórios pendentes:
-              </div>
+              <div className="text-sm text-base-content/70">Itens obrigatórios pendentes:</div>
               <ul className="list-disc list-inside mt-1 text-sm text-base-content/70">
                 {validation.missingRequired.map((item, idx) => (
                   <li key={idx}>{item}</li>
@@ -118,7 +117,7 @@ export const ChecklistView: React.FC<ChecklistViewProps> = ({
           <div
             key={item.id}
             className={cn(
-              "group flex items-start gap-3 p-3 rounded-xl border transition-all duration-200",
+              'group flex items-start gap-3 p-3 rounded-xl border transition-all duration-200',
               item.checked
                 ? 'bg-base-100/50 border-base-200 opacity-75'
                 : 'bg-base-100 border-base-200 hover:border-primary/30 hover:shadow-sm hover:bg-base-100'
@@ -136,14 +135,16 @@ export const ChecklistView: React.FC<ChecklistViewProps> = ({
                   ref={inputRef}
                   type="text"
                   value={editingText}
-                  onChange={(e) => setEditingText(e.target.value)}
+                  onChange={e => setEditingText(e.target.value)}
                   onBlur={handleSaveEdit}
                   onKeyDown={handleKeyDown}
                   className="input input-sm w-full bg-base-200"
                 />
               ) : (
                 <div className="flex items-center gap-2">
-                  <span className={`text-sm transition-all duration-200 ${item.checked ? 'line-through text-base-content/50' : 'text-base-content font-medium'}`}>
+                  <span
+                    className={`text-sm transition-all duration-200 ${item.checked ? 'line-through text-base-content/50' : 'text-base-content font-medium'}`}
+                  >
                     {item.text}
                   </span>
                   {item.required && (
@@ -181,9 +182,7 @@ export const ChecklistView: React.FC<ChecklistViewProps> = ({
       </div>
 
       {checklist.length === 0 && (
-        <p className="text-center text-base-content/70 py-4">
-          Nenhum item no checklist
-        </p>
+        <p className="text-center text-base-content/70 py-4">Nenhum item no checklist</p>
       )}
     </div>
   );

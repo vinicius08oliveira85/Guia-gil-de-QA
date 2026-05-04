@@ -27,8 +27,16 @@ export const resolveConfiguredAIProvider = (): AIProvider => {
     return 'gemini';
   }
 
-  const geminiEnvKey = (import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.GEMINI_API_KEY || '').trim();
-  const openaiKey = (import.meta.env.VITE_OPENAI_API_KEY || import.meta.env.OPENAI_API_KEY || '').trim();
+  const geminiEnvKey = (
+    import.meta.env.VITE_GEMINI_API_KEY ||
+    import.meta.env.GEMINI_API_KEY ||
+    ''
+  ).trim();
+  const openaiKey = (
+    import.meta.env.VITE_OPENAI_API_KEY ||
+    import.meta.env.OPENAI_API_KEY ||
+    ''
+  ).trim();
 
   if (openaiKey) {
     return 'openai';
@@ -64,14 +72,14 @@ const createAIService = (provider: AIProvider): AIService => {
  */
 export const getAIService = (provider?: AIProvider): AIService => {
   const selectedProvider = provider || getConfiguredProvider();
-  
+
   // Se o provedor mudou ou ainda não foi inicializado, cria uma nova instância
   if (!currentService || currentProvider !== selectedProvider) {
     currentService = createAIService(selectedProvider);
     currentProvider = selectedProvider;
     logger.info(`AI Service inicializado com provedor: ${selectedProvider}`, 'aiServiceFactory');
   }
-  
+
   return currentService;
 };
 
@@ -99,4 +107,3 @@ export const invalidateAIServiceCache = (): void => {
   currentService = null;
   currentProvider = null;
 };
-

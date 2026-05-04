@@ -18,7 +18,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
   onAddComment,
   onEditComment,
   onDeleteComment,
-  currentUser = 'Você'
+  currentUser = 'Você',
 }) => {
   const [newComment, setNewComment] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -81,7 +81,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
         {/* Formulário de novo comentário - mesma formatação da descrição */}
         <textarea
           value={newComment}
-          onChange={(e) => setNewComment(e.target.value)}
+          onChange={e => setNewComment(e.target.value)}
           placeholder="Adicionar comentário..."
           rows={3}
           className="w-full px-3 py-2 bg-surface border border-surface-border rounded-md text-text-primary placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-accent text-base-content/80"
@@ -107,7 +107,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
               <div className="space-y-2 text-base-content/80">
                 <textarea
                   value={editContent}
-                  onChange={(e) => setEditContent(e.target.value)}
+                  onChange={e => setEditContent(e.target.value)}
                   rows={3}
                   className="w-full px-3 py-2 bg-surface border border-surface-border rounded-md text-text-primary"
                 />
@@ -140,30 +140,30 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
                       {formatCommentDate(comment.createdAt)}
                     </span>
                   </div>
-                  {comment.author === currentUser && !comment.fromJira && (onEditComment || onDeleteComment) && (
-                    <div className="flex gap-2">
-                      {onEditComment && (
-                        <button
-                          onClick={() => handleStartEdit(comment)}
-                          className="text-sm text-text-secondary hover:text-text-primary"
-                        >
-                          Editar
-                        </button>
-                      )}
-                      {onDeleteComment && (
-                        <button
-                          onClick={() => setPendingDeleteCommentId(comment.id)}
-                          className="text-sm text-red-700 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300"
-                        >
-                          Excluir
-                        </button>
-                      )}
-                    </div>
-                  )}
+                  {comment.author === currentUser &&
+                    !comment.fromJira &&
+                    (onEditComment || onDeleteComment) && (
+                      <div className="flex gap-2">
+                        {onEditComment && (
+                          <button
+                            onClick={() => handleStartEdit(comment)}
+                            className="text-sm text-text-secondary hover:text-text-primary"
+                          >
+                            Editar
+                          </button>
+                        )}
+                        {onDeleteComment && (
+                          <button
+                            onClick={() => setPendingDeleteCommentId(comment.id)}
+                            className="text-sm text-red-700 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300"
+                          >
+                            Excluir
+                          </button>
+                        )}
+                      </div>
+                    )}
                   {comment.fromJira && (
-                    <span className="text-xs text-text-secondary italic">
-                      Sincronizado do Jira
-                    </span>
+                    <span className="text-xs text-text-secondary italic">Sincronizado do Jira</span>
                   )}
                 </div>
                 {comment.content.includes('<') ? (
@@ -215,4 +215,3 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
     </div>
   );
 };
-

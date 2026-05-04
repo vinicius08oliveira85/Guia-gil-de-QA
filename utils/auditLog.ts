@@ -32,12 +32,12 @@ export const addAuditLog = (
   try {
     const logs = getAuditLogs();
     logs.unshift(logEntry);
-    
+
     // Manter apenas os últimos 1000 logs
     if (logs.length > 1000) {
       logs.pop();
     }
-    
+
     localStorage.setItem(STORAGE_KEY, JSON.stringify(logs));
   } catch (error) {
     logger.error('Error saving audit log', 'auditLog', error);
@@ -78,9 +78,7 @@ export const getAuditLogsWithBackup = (): AuditLogEntry[] => {
 export const getEntityHistory = (entityId: string): AuditLogEntry[] => {
   const logs = getAuditLogsByEntity(entityId);
   // Ordenar por timestamp (mais recente primeiro)
-  return logs.sort((a, b) => 
-    new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-  );
+  return logs.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 };
 
 export const clearAuditLogs = () => {

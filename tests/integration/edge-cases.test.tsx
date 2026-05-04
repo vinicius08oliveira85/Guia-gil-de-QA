@@ -41,30 +41,26 @@ describe('Testes de Edge Cases e Erros', () => {
     it('deve usar IndexedDB como fallback quando Supabase está offline', async () => {
       // Configurar Supabase para falhar
       mocks.mockSupabase.setShouldFail(true, new Error('Network error'));
-      
+
       const project = createMockProject();
       await mocks.mockIndexedDB.saveProject(project);
-      
+
       const store = useProjectsStore.getState();
-      
+
       // Carregar projetos (deve usar IndexedDB)
       await store.loadProjects();
-      
+
       await store.syncProjectsFromSupabase();
       expect(useProjectsStore.getState().projects.length).toBeGreaterThan(0);
     });
 
-    it(
-      'deve tratar timeout durante sincronização',
-      async () => {
-        mocks.mockSupabase.setDelay(10000);
-        mocks.mockSupabase.setShouldFail(true, new Error('Timeout'));
-        const store = useProjectsStore.getState();
-        await store.syncProjectsFromSupabase();
-        expect(useProjectsStore.getState().projects).toBeDefined();
-      },
-      15_000
-    );
+    it('deve tratar timeout durante sincronização', async () => {
+      mocks.mockSupabase.setDelay(10000);
+      mocks.mockSupabase.setShouldFail(true, new Error('Timeout'));
+      const store = useProjectsStore.getState();
+      await store.syncProjectsFromSupabase();
+      expect(useProjectsStore.getState().projects).toBeDefined();
+    }, 15_000);
 
     it('deve exibir mensagens de erro apropriadas', async () => {
       mocks.mockSupabase.setShouldFail(true, new Error('Erro de conexão com Supabase'));
@@ -77,7 +73,7 @@ describe('Testes de Edge Cases e Erros', () => {
   describe('5.2 Dados Corrompidos', () => {
     it('deve tratar projetos com estrutura inválida', async () => {
       const store = useProjectsStore.getState();
-      
+
       // Tentar criar projeto com dados inválidos
       // O store deve validar e rejeitar ou corrigir
       try {
@@ -100,9 +96,9 @@ describe('Testes de Edge Cases e Erros', () => {
         phases: [],
         // Estrutura antiga pode ter campos diferentes
       } as any;
-      
+
       await mocks.mockIndexedDB.saveProject(oldProject);
-      
+
       const store = useProjectsStore.getState();
       await store.loadProjects();
       expect(useProjectsStore.getState().projects.some(p => p.id === 'old-proj')).toBe(true);
@@ -172,7 +168,7 @@ describe('Testes de Edge Cases e Erros', () => {
       const store = useProjectsStore.getState();
       await store.saveProjectToSupabase(largeProject.id);
       const indexedDBProjects = await mocks.mockIndexedDB.loadProjects();
-      expect(indexedDBProjects.some((p) => p.id === largeProject.id)).toBe(true);
+      expect(indexedDBProjects.some(p => p.id === largeProject.id)).toBe(true);
     });
 
     it('deve lidar com muitos projetos (> 100)', async () => {
@@ -215,4 +211,3 @@ describe('Testes de Edge Cases e Erros', () => {
     });
   });
 });
-

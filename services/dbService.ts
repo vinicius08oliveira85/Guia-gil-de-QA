@@ -10,7 +10,10 @@ import {
 import { autoBackupBeforeOperation } from './backupService';
 import { migrateTestCases } from '../utils/testCaseMigration';
 import { logger } from '../utils/logger';
-import { cleanupTestCasesForProjects, cleanupTestCasesForNonTaskTypesSync } from '../utils/testCaseCleanup';
+import {
+  cleanupTestCasesForProjects,
+  cleanupTestCasesForNonTaskTypesSync,
+} from '../utils/testCaseCleanup';
 import { withAcyclicTaskParents } from '../utils/taskParentCycle';
 
 /** Versão do envelope JSON de backup (independente do DB_VERSION do IndexedDB). */
@@ -37,7 +40,7 @@ const openDB = (): Promise<IDBDatabase> => {
       resolve(db);
     };
 
-    request.onupgradeneeded = (event) => {
+    request.onupgradeneeded = event => {
       const dbInstance = (event.target as IDBOpenDBRequest).result;
       if (!dbInstance.objectStoreNames.contains(STORE_NAME)) {
         dbInstance.createObjectStore(STORE_NAME, { keyPath: 'id' });
@@ -49,7 +52,7 @@ const openDB = (): Promise<IDBDatabase> => {
 export type SaveResult = { savedToSupabase: boolean };
 
 const defaultPhasesForImport = (): Phase[] =>
-  PHASE_NAMES.map((name) => ({
+  PHASE_NAMES.map(name => ({
     name: name as PhaseName,
     status: 'Não Iniciado',
   }));
@@ -70,11 +73,11 @@ export const loadProjectsFromIndexedDB = async (): Promise<Project[]> => {
   });
 
   // Migrar TestCases dos projetos do IndexedDB (otimizado)
-  const migratedIndexedDBProjects = indexedDBProjects.map((project) =>
+  const migratedIndexedDBProjects = indexedDBProjects.map(project =>
     normalizeProjectBusinessRules({
       ...project,
       businessRules: project.businessRules ?? [],
-      tasks: (project.tasks || []).map((task) => ({
+      tasks: (project.tasks || []).map(task => ({
         ...task,
         testCases: migrateTestCases(task.testCases || []),
       })),
@@ -82,7 +85,7 @@ export const loadProjectsFromIndexedDB = async (): Promise<Project[]> => {
   );
 
   // Limpar casos de teste de tipos não permitidos (Bug, Epic, História)
-  return cleanupTestCasesForProjects(migratedIndexedDBProjects).map((p) =>
+  return cleanupTestCasesForProjects(migratedIndexedDBProjects).map(p =>
     withAcyclicTaskParents(p, { silent: true })
   );
 };
@@ -138,7 +141,11 @@ export const getAllProjects = async (): Promise<Project[]> => {
   }
 
   try {
-    const { projects: supabaseProjects, loadFailed, errorMessage } = await loadProjectsFromSupabase();
+    const {
+      projects: supabaseProjects,
+      loadFailed,
+      errorMessage,
+    } = await loadProjectsFromSupabase();
 
     if (loadFailed) {
       logger.warn(
@@ -150,11 +157,11 @@ export const getAllProjects = async (): Promise<Project[]> => {
     }
 
     try {
-      const migratedSupabaseProjects = supabaseProjects.map((project) =>
+      const migratedSupabaseProjects = supabaseProjects.map(project =>
         normalizeProjectBusinessRules({
           ...project,
           businessRules: project.businessRules ?? [],
-          tasks: (project.tasks || []).map((task) => ({
+          tasks: (project.tasks || []).map(task => ({
             ...task,
             testCases: migrateTestCases(task.testCases || []),
           })),
@@ -162,10 +169,10 @@ export const getAllProjects = async (): Promise<Project[]> => {
       );
 
       const projectsMap = new Map<string, Project>();
-      indexedDBProjects.forEach((project) => {
+      indexedDBProjects.forEach(project => {
         projectsMap.set(project.id, project);
       });
-      migratedSupabaseProjects.forEach((project) => {
+      migratedSupabaseProjects.forEach(project => {
         projectsMap.set(project.id, project);
       });
 
@@ -181,7 +188,7 @@ export const getAllProjects = async (): Promise<Project[]> => {
         );
       }
 
-      return cleanedProjects.map((p) => withAcyclicTaskParents(p, { silent: true }));
+      return cleanedProjects.map(p => withAcyclicTaskParents(p, { silent: true }));
     } catch (mergeError) {
       const message = mergeError instanceof Error ? mergeError.message : String(mergeError);
       const stack = mergeError instanceof Error ? mergeError.stack : undefined;
@@ -238,8 +245,14 @@ export const updateProject = async (
   );
   const syncRemote = options?.syncRemote === true;
 
-  const totalStrategies = cleanedProject.tasks.reduce((sum, task) => sum + (task.testStrategy?.length || 0), 0);
-  const totalExecutedStrategies = cleanedProject.tasks.reduce((sum, task) => sum + (task.executedStrategies?.length || 0), 0);
+  const totalStrategies = cleanedProject.tasks.reduce(
+    (sum, task) => sum + (task.testStrategy?.length || 0),
+    0
+  );
+  const totalExecutedStrategies = cleanedProject.tasks.reduce(
+    (sum, task) => sum + (task.executedStrategies?.length || 0),
+    0
+  );
   if (totalStrategies > 0 || totalExecutedStrategies > 0) {
     logger.debug(
       `Salvando projeto com ${totalStrategies} estratégias de teste e ${totalExecutedStrategies} estratégias executadas`,
@@ -262,11 +275,14 @@ export const updateProject = async (
 
   const lastNetworkError = recentNetworkErrors.get(cleanedProject.id);
   const now = Date.now();
-  const shouldSkipSupabase = lastNetworkError && (now - lastNetworkError) < networkErrorCooldownMs;
+  const shouldSkipSupabase = lastNetworkError && now - lastNetworkError < networkErrorCooldownMs;
 
   if (isSupabaseAvailable()) {
     if (shouldSkipSupabase) {
-      logger.debug(`Projeto "${cleanedProject.name}" em cooldown, salvando localmente primeiro e tentando Supabase em background`, 'dbService');
+      logger.debug(
+        `Projeto "${cleanedProject.name}" em cooldown, salvando localmente primeiro e tentando Supabase em background`,
+        'dbService'
+      );
       const db = await openDB();
       await new Promise<void>((resolve, reject) => {
         const transaction = db.transaction(STORE_NAME, 'readwrite');
@@ -275,18 +291,29 @@ export const updateProject = async (
         request.onerror = () => reject(request.error);
         request.onsuccess = () => resolve();
       });
-      saveProjectToSupabase(cleanedProject).then(() => {
-        recentNetworkErrors.delete(cleanedProject.id);
-        logger.debug(`Projeto "${cleanedProject.name}" salvo no Supabase após cooldown`, 'dbService');
-      }).catch((error) => {
-        const errorMessage = error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
-        const isNetworkErr = errorMessage.includes('timeout') || errorMessage.includes('connection reset') ||
-          errorMessage.includes('err_timed_out') || errorMessage.includes('err_connection_reset') ||
-          errorMessage.includes('err_name_not_resolved') || errorMessage.includes('failed to fetch') || errorMessage.includes('network');
-        if (isNetworkErr) {
-          recentNetworkErrors.set(cleanedProject.id, Date.now());
-        }
-      });
+      saveProjectToSupabase(cleanedProject)
+        .then(() => {
+          recentNetworkErrors.delete(cleanedProject.id);
+          logger.debug(
+            `Projeto "${cleanedProject.name}" salvo no Supabase após cooldown`,
+            'dbService'
+          );
+        })
+        .catch(error => {
+          const errorMessage =
+            error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
+          const isNetworkErr =
+            errorMessage.includes('timeout') ||
+            errorMessage.includes('connection reset') ||
+            errorMessage.includes('err_timed_out') ||
+            errorMessage.includes('err_connection_reset') ||
+            errorMessage.includes('err_name_not_resolved') ||
+            errorMessage.includes('failed to fetch') ||
+            errorMessage.includes('network');
+          if (isNetworkErr) {
+            recentNetworkErrors.set(cleanedProject.id, Date.now());
+          }
+        });
       return { savedToSupabase: false };
     }
 
@@ -304,15 +331,25 @@ export const updateProject = async (
       });
       return { savedToSupabase: true };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
-      const isNetworkErr = errorMessage.includes('timeout') || errorMessage.includes('connection reset') ||
-        errorMessage.includes('err_timed_out') || errorMessage.includes('err_connection_reset') ||
-        errorMessage.includes('err_name_not_resolved') || errorMessage.includes('failed to fetch') || errorMessage.includes('network');
+      const errorMessage =
+        error instanceof Error ? error.message.toLowerCase() : String(error).toLowerCase();
+      const isNetworkErr =
+        errorMessage.includes('timeout') ||
+        errorMessage.includes('connection reset') ||
+        errorMessage.includes('err_timed_out') ||
+        errorMessage.includes('err_connection_reset') ||
+        errorMessage.includes('err_name_not_resolved') ||
+        errorMessage.includes('failed to fetch') ||
+        errorMessage.includes('network');
       if (isNetworkErr) {
         recentNetworkErrors.set(cleanedProject.id, now);
-        logger.debug('Erro de rede ao salvar no Supabase, usando apenas IndexedDB (cooldown ativado)', 'dbService');
+        logger.debug(
+          'Erro de rede ao salvar no Supabase, usando apenas IndexedDB (cooldown ativado)',
+          'dbService'
+        );
       } else {
-        const isLocalOnlyOrTooBig = errorMessage.includes('salvo apenas localmente') || errorMessage.includes('muito grande');
+        const isLocalOnlyOrTooBig =
+          errorMessage.includes('salvo apenas localmente') || errorMessage.includes('muito grande');
         if (isLocalOnlyOrTooBig) {
           logger.debug('Erro ao salvar no Supabase, usando apenas IndexedDB', 'dbService', error);
         } else {
@@ -384,7 +421,9 @@ function normalizeImportedProject(raw: unknown): Project | null {
     name: o.name,
     description: typeof o.description === 'string' ? o.description : '',
     documents: Array.isArray(o.documents) ? (o.documents as Project['documents']) : [],
-    businessRules: Array.isArray(o.businessRules) ? (o.businessRules as Project['businessRules']) : [],
+    businessRules: Array.isArray(o.businessRules)
+      ? (o.businessRules as Project['businessRules'])
+      : [],
     tasks: Array.isArray(o.tasks) ? (o.tasks as Project['tasks']) : [],
     phases:
       Array.isArray(o.phases) && o.phases.length > 0
@@ -400,7 +439,11 @@ function extractProjectsArray(parsed: unknown): unknown[] {
   if (Array.isArray(parsed)) {
     return parsed;
   }
-  if (parsed && typeof parsed === 'object' && Array.isArray((parsed as { projects?: unknown }).projects)) {
+  if (
+    parsed &&
+    typeof parsed === 'object' &&
+    Array.isArray((parsed as { projects?: unknown }).projects)
+  ) {
     return (parsed as { projects: unknown[] }).projects;
   }
   throw new Error(
@@ -532,9 +575,7 @@ export const importProjectsFromBackup = async (
 
   logger.info(
     `Importação de backup concluída: ${imported} projeto(s) gravados, ${skipped} ignorado(s)` +
-      (trySyncRemote
-        ? `; Supabase: ${supabaseSynced} ok, ${supabaseSyncFailed} falha(s)`
-        : ''),
+      (trySyncRemote ? `; Supabase: ${supabaseSynced} ok, ${supabaseSyncFailed} falha(s)` : ''),
     'dbService'
   );
   return { imported, skipped, supabaseSynced, supabaseSyncFailed };
@@ -548,67 +589,70 @@ export const saveProjectToSupabaseOnly = async (project: Project): Promise<void>
   if (!isSupabaseAvailable()) {
     throw new Error('Supabase não está disponível. Configure VITE_SUPABASE_PROXY_URL.');
   }
-  
+
   await saveProjectToSupabase(project);
 };
 
 export const deleteProject = async (projectId: string): Promise<void> => {
-    // Criar backup automático antes de deletar
-    // Carregar projeto do IndexedDB para criar backup
-    try {
-        const db = await openDB();
-        const project = await new Promise<Project | null>((resolve, reject) => {
-            const transaction = db.transaction(STORE_NAME, 'readonly');
-            const store = transaction.objectStore(STORE_NAME);
-            const request = store.get(projectId);
-            
-            request.onerror = () => reject(request.error);
-            request.onsuccess = () => resolve(request.result || null);
-        });
-        
-        if (project) {
-            const backupId = await autoBackupBeforeOperation(
-                projectId,
-                'DELETE',
-                () => project
-            );
-            
-            if (backupId) {
-                logger.debug(`Backup criado antes de deletar projeto no dbService: ${backupId}`, 'dbService');
-            }
-        }
-    } catch (error) {
-        logger.warn('Erro ao criar backup antes de deletar (continuando com delete)', 'dbService', error);
-        // Continuar com delete mesmo se backup falhar
-    }
-    
-    // Tentar Supabase primeiro se disponível
-    if (isSupabaseAvailable()) {
-        try {
-            await deleteProjectFromSupabase(projectId);
-            // Também deletar do IndexedDB
-            const db = await openDB();
-            return new Promise((resolve, reject) => {
-                const transaction = db.transaction(STORE_NAME, 'readwrite');
-                const store = transaction.objectStore(STORE_NAME);
-                const request = store.delete(projectId);
-                request.onerror = () => reject(request.error);
-                request.onsuccess = () => resolve();
-            });
-        } catch (error) {
-            logger.warn('Erro ao deletar do Supabase, usando apenas IndexedDB', 'dbService', error);
-            // Continuar para fallback IndexedDB
-        }
-    }
-    
-    // Fallback para IndexedDB
+  // Criar backup automático antes de deletar
+  // Carregar projeto do IndexedDB para criar backup
+  try {
     const db = await openDB();
-    return new Promise((resolve, reject) => {
+    const project = await new Promise<Project | null>((resolve, reject) => {
+      const transaction = db.transaction(STORE_NAME, 'readonly');
+      const store = transaction.objectStore(STORE_NAME);
+      const request = store.get(projectId);
+
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => resolve(request.result || null);
+    });
+
+    if (project) {
+      const backupId = await autoBackupBeforeOperation(projectId, 'DELETE', () => project);
+
+      if (backupId) {
+        logger.debug(
+          `Backup criado antes de deletar projeto no dbService: ${backupId}`,
+          'dbService'
+        );
+      }
+    }
+  } catch (error) {
+    logger.warn(
+      'Erro ao criar backup antes de deletar (continuando com delete)',
+      'dbService',
+      error
+    );
+    // Continuar com delete mesmo se backup falhar
+  }
+
+  // Tentar Supabase primeiro se disponível
+  if (isSupabaseAvailable()) {
+    try {
+      await deleteProjectFromSupabase(projectId);
+      // Também deletar do IndexedDB
+      const db = await openDB();
+      return new Promise((resolve, reject) => {
         const transaction = db.transaction(STORE_NAME, 'readwrite');
         const store = transaction.objectStore(STORE_NAME);
         const request = store.delete(projectId);
-
         request.onerror = () => reject(request.error);
         request.onsuccess = () => resolve();
-    });
+      });
+    } catch (error) {
+      logger.warn('Erro ao deletar do Supabase, usando apenas IndexedDB', 'dbService', error);
+      // Continuar para fallback IndexedDB
+    }
+  }
+
+  // Fallback para IndexedDB
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(STORE_NAME, 'readwrite');
+    const store = transaction.objectStore(STORE_NAME);
+    const request = store.delete(projectId);
+
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => resolve();
+  });
 };

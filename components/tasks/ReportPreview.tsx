@@ -14,7 +14,7 @@ interface ReportPreviewProps {
 export const ReportPreview: React.FC<ReportPreviewProps> = ({
   reportText,
   format,
-  onFormatChange
+  onFormatChange,
 }) => {
   type ReportSection = { title: string; content: string; startLine: number };
   type DraftSection = { title: string; content: string[]; startLine: number };
@@ -23,40 +23,43 @@ export const ReportPreview: React.FC<ReportPreviewProps> = ({
   const sections = useMemo(() => {
     const lines = reportText.split('\n');
     const result: ReportSection[] = [];
-    
+
     let currentSection: DraftSection | null = null;
-    
+
     for (let idx = 0; idx < lines.length; idx++) {
       const line = lines[idx];
       // Detectar cabeçalhos
-      if (line.startsWith('RELATÓRIO DE TESTES REPROVADOS') || 
-          line.startsWith('# RELATÓRIO DE TESTES REPROVADOS')) {
+      if (
+        line.startsWith('RELATÓRIO DE TESTES REPROVADOS') ||
+        line.startsWith('# RELATÓRIO DE TESTES REPROVADOS')
+      ) {
         if (currentSection) {
           result.push({
             title: currentSection.title,
             content: currentSection.content.join('\n'),
-            startLine: currentSection.startLine
+            startLine: currentSection.startLine,
           });
         }
         currentSection = { title: 'Cabeçalho', content: [line], startLine: idx };
-      } else if (line.startsWith('FILTROS APLICADOS') || 
-                 line.startsWith('## FILTROS APLICADOS') ||
-                 line.startsWith('FILTROS APLICADOS:')) {
+      } else if (
+        line.startsWith('FILTROS APLICADOS') ||
+        line.startsWith('## FILTROS APLICADOS') ||
+        line.startsWith('FILTROS APLICADOS:')
+      ) {
         if (currentSection) {
           result.push({
             title: currentSection.title,
             content: currentSection.content.join('\n'),
-            startLine: currentSection.startLine
+            startLine: currentSection.startLine,
           });
         }
         currentSection = { title: 'Filtros Aplicados', content: [line], startLine: idx };
-      } else if (line.startsWith('TESTES REPROVADOS') || 
-                 line.startsWith('## TESTES REPROVADOS')) {
+      } else if (line.startsWith('TESTES REPROVADOS') || line.startsWith('## TESTES REPROVADOS')) {
         if (currentSection) {
           result.push({
             title: currentSection.title,
             content: currentSection.content.join('\n'),
-            startLine: currentSection.startLine
+            startLine: currentSection.startLine,
           });
         }
         currentSection = { title: 'Testes Reprovados', content: [line], startLine: idx };
@@ -64,24 +67,26 @@ export const ReportPreview: React.FC<ReportPreviewProps> = ({
         currentSection.content.push(line);
       }
     }
-    
+
     if (currentSection) {
       result.push({
         title: currentSection.title,
         content: currentSection.content.join('\n'),
-        startLine: currentSection.startLine
+        startLine: currentSection.startLine,
       });
     }
-    
+
     // Se não encontrou seções, retornar tudo como uma seção
     if (result.length === 0) {
-      return [{
-        title: 'Relatório Completo',
-        content: reportText,
-        startLine: 0
-      }];
+      return [
+        {
+          title: 'Relatório Completo',
+          content: reportText,
+          startLine: 0,
+        },
+      ];
     }
-    
+
     return result;
   }, [reportText]);
 
@@ -121,27 +126,22 @@ export const ReportPreview: React.FC<ReportPreviewProps> = ({
       {/* Preview com seções colapsáveis */}
       <div className="flex-1 overflow-y-auto space-y-sm">
         {sections.map((section, idx) => (
-          <CollapsibleSection
-            key={idx}
-            title={section.title}
-            defaultExpanded={idx === 0}
-          >
+          <CollapsibleSection key={idx} title={section.title} defaultExpanded={idx === 0}>
             <div className="flex items-center justify-between mb-xs">
               <span className="text-xs text-base-content/70">
                 {section.content.split('\n').length} linhas
               </span>
-              <CopySectionButton
-                text={section.content}
-                sectionName={section.title}
-              />
+              <CopySectionButton text={section.content} sectionName={section.title} />
             </div>
-            <pre className={`
+            <pre
+              className={`
               w-full p-sm rounded-lg
               bg-base-200 border border-base-300
               text-xs font-mono text-base-content
               overflow-x-auto
               ${format === 'markdown' ? 'whitespace-pre-wrap' : ''}
-            `}>
+            `}
+            >
               {section.content}
             </pre>
           </CollapsibleSection>
@@ -150,4 +150,3 @@ export const ReportPreview: React.FC<ReportPreviewProps> = ({
     </div>
   );
 };
-

@@ -32,96 +32,104 @@ export interface SectionHeaderProps {
  * Padrão v0-like para cabeçalhos de seção: eyebrow opcional + título + descrição.
  * Inclui animação sutil e respeita prefers-reduced-motion.
  */
-export const SectionHeader = React.memo<SectionHeaderProps>(({
-  eyebrow,
-  title,
-  description,
-  align = 'center',
-  as = 'h2',
-  className,
-  compact = false,
-  fullWidth = false,
-  titleSize = 'default',
-  headingId,
-  density = 'default',
-}) => {
-  const dense = density === 'dense';
-  const reduceMotion = useReducedMotion();
-  const isCenter = align === 'center';
-  const Heading = as;
+export const SectionHeader = React.memo<SectionHeaderProps>(
+  ({
+    eyebrow,
+    title,
+    description,
+    align = 'center',
+    as = 'h2',
+    className,
+    compact = false,
+    fullWidth = false,
+    titleSize = 'default',
+    headingId,
+    density = 'default',
+  }) => {
+    const dense = density === 'dense';
+    const reduceMotion = useReducedMotion();
+    const isCenter = align === 'center';
+    const Heading = as;
 
-  return (
-    <motion.div
-      initial={reduceMotion ? false : { opacity: 0, y: 18 }}
-      whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-64px' }}
-      transition={{ duration: 0.5, ease: 'easeOut' }}
-      className={cn(
-        'min-w-0 w-full',
-        !fullWidth && 'max-w-3xl',
-        isCenter ? 'mx-auto text-center' : 'text-left',
-        className
-      )}
-    >
-      {eyebrow && (
-        <div
+    return (
+      <motion.div
+        initial={reduceMotion ? false : { opacity: 0, y: 18 }}
+        whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: '-64px' }}
+        transition={{ duration: 0.5, ease: 'easeOut' }}
+        className={cn(
+          'min-w-0 w-full',
+          !fullWidth && 'max-w-3xl',
+          isCenter ? 'mx-auto text-center' : 'text-left',
+          className
+        )}
+      >
+        {eyebrow && (
+          <div
+            className={cn(
+              isCenter ? 'flex justify-center' : 'flex justify-start',
+              dense && titleSize === 'page' && 'leading-none'
+            )}
+          >
+            <span
+              className={cn(
+                'badge badge-outline border-primary/30 text-primary bg-primary/10',
+                compact && dense
+                  ? 'px-2 py-0 text-[10px] leading-none'
+                  : compact
+                    ? 'px-2.5 py-0.5 text-[11px] leading-tight'
+                    : 'px-4 py-3'
+              )}
+            >
+              {eyebrow}
+            </span>
+          </div>
+        )}
+
+        <Heading
+          id={headingId}
           className={cn(
-            isCenter ? 'flex justify-center' : 'flex justify-start',
-            dense && titleSize === 'page' && 'leading-none'
+            'font-heading tracking-tight text-balance text-base-content',
+            titleSize === 'page' && dense
+              ? 'text-xl font-bold leading-tight sm:text-2xl'
+              : titleSize === 'page'
+                ? 'text-2xl font-bold leading-tight sm:text-3xl'
+                : compact
+                  ? 'font-semibold text-[clamp(1.2rem,2.5vw,1.75rem)] leading-snug md:text-[clamp(1.3rem,2vw,1.9rem)]'
+                  : 'font-semibold text-[clamp(1.75rem,4vw,3rem)] sm:text-[clamp(2rem,3.5vw,3.5rem)] md:text-[clamp(2.25rem,3vw,4rem)]',
+            eyebrow
+              ? titleSize === 'page' && dense
+                ? 'mt-0.5'
+                : titleSize === 'page'
+                  ? 'mt-2'
+                  : compact
+                    ? 'mt-1'
+                    : 'mt-4'
+              : 'mt-0'
           )}
         >
-          <span className={cn(
-            'badge badge-outline border-primary/30 text-primary bg-primary/10',
-            compact && dense ? 'px-2 py-0 text-[10px] leading-none' : compact ? 'px-2.5 py-0.5 text-[11px] leading-tight' : 'px-4 py-3'
-          )}>
-            {eyebrow}
-          </span>
-        </div>
-      )}
+          {title}
+        </Heading>
 
-      <Heading
-        id={headingId}
-        className={cn(
-        'font-heading tracking-tight text-balance text-base-content',
-        titleSize === 'page' && dense
-          ? 'text-xl font-bold leading-tight sm:text-2xl'
-          : titleSize === 'page'
-            ? 'text-2xl font-bold leading-tight sm:text-3xl'
-            : compact
-            ? 'font-semibold text-[clamp(1.2rem,2.5vw,1.75rem)] leading-snug md:text-[clamp(1.3rem,2vw,1.9rem)]'
-            : 'font-semibold text-[clamp(1.75rem,4vw,3rem)] sm:text-[clamp(2rem,3.5vw,3.5rem)] md:text-[clamp(2.25rem,3vw,4rem)]',
-        eyebrow
-          ? titleSize === 'page' && dense
-            ? 'mt-0.5'
-            : titleSize === 'page'
-              ? 'mt-2'
-              : compact
-                ? 'mt-1'
-                : 'mt-4'
-          : 'mt-0'
-      )}
-      >
-        {title}
-      </Heading>
-
-      {description && (
-        <p className={cn(
-          'font-body text-balance text-base-content/70',
-          titleSize === 'page' && dense
-            ? 'mt-0.5 text-xs leading-tight text-base-content/70 sm:text-sm'
-            : titleSize === 'page'
-              ? 'mt-2 text-sm leading-relaxed text-base-content/70 sm:text-base'
-              : compact
-              ? 'mt-1 text-sm leading-snug text-base-content/70'
-              : 'mt-4 text-lg leading-relaxed text-base-content/70 sm:text-xl'
-        )}>
-          {description}
-        </p>
-      )}
-    </motion.div>
-  );
-});
+        {description && (
+          <p
+            className={cn(
+              'font-body text-balance text-base-content/70',
+              titleSize === 'page' && dense
+                ? 'mt-0.5 text-xs leading-tight text-base-content/70 sm:text-sm'
+                : titleSize === 'page'
+                  ? 'mt-2 text-sm leading-relaxed text-base-content/70 sm:text-base'
+                  : compact
+                    ? 'mt-1 text-sm leading-snug text-base-content/70'
+                    : 'mt-4 text-lg leading-relaxed text-base-content/70 sm:text-xl'
+            )}
+          >
+            {description}
+          </p>
+        )}
+      </motion.div>
+    );
+  }
+);
 
 SectionHeader.displayName = 'SectionHeader';
-
-

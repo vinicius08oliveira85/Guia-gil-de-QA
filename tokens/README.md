@@ -45,4 +45,3 @@ Os tokens seguem o formato W3C Design Tokens:
 - Use kebab-case para nomes de tokens
 - Organize por categoria (color, spacing, typography, etc.)
 - Mantenha valores semânticos quando possível
-

@@ -6,123 +6,150 @@ export const TASK_ID_REGEX = /^([A-Z]+)-(\d+)/i;
 
 /** Monta texto de contexto dos anexos da tarefa para enriquecer prompts de IA. */
 export function buildAttachmentsContextForTask(task: JiraTask): string {
-    const names: string[] = [];
-    (task.attachments || []).forEach((a) => names.push(a.name));
-    (task.jiraAttachments || []).forEach((a) => names.push(a.filename));
-    if (names.length === 0) return '';
-    return `A tarefa possui os seguintes anexos (podem conter requisitos, especificações ou evidências relevantes): ${names.join(', ')}.`;
+  const names: string[] = [];
+  (task.attachments || []).forEach(a => names.push(a.name));
+  (task.jiraAttachments || []).forEach(a => names.push(a.filename));
+  if (names.length === 0) return '';
+  return `A tarefa possui os seguintes anexos (podem conter requisitos, especificações ou evidências relevantes): ${names.join(', ')}.`;
 }
 
-export const mapJiraStatusToTaskStatus = (jiraStatus: string | undefined | null): 'To Do' | 'In Progress' | 'Done' => {
-    if (!jiraStatus) return 'To Do';
-    const status = jiraStatus.toLowerCase();
-    if (status.includes('done') || status.includes('resolved') || status.includes('closed') ||
-        status.includes('concluído') || status.includes('concluido') || status.includes('finalizado') ||
-        status.includes('resolvido') || status.includes('fechado')) return 'Done';
-    if (status.includes('progress') || status.includes('in progress') ||
-        status.includes('em andamento') || status.includes('andamento') ||
-        status.includes('em desenvolvimento') || status.includes('desenvolvimento')) return 'In Progress';
-    return 'To Do';
+export const mapJiraStatusToTaskStatus = (
+  jiraStatus: string | undefined | null
+): 'To Do' | 'In Progress' | 'Done' => {
+  if (!jiraStatus) return 'To Do';
+  const status = jiraStatus.toLowerCase();
+  if (
+    status.includes('done') ||
+    status.includes('resolved') ||
+    status.includes('closed') ||
+    status.includes('concluído') ||
+    status.includes('concluido') ||
+    status.includes('finalizado') ||
+    status.includes('resolvido') ||
+    status.includes('fechado')
+  )
+    return 'Done';
+  if (
+    status.includes('progress') ||
+    status.includes('in progress') ||
+    status.includes('em andamento') ||
+    status.includes('andamento') ||
+    status.includes('em desenvolvimento') ||
+    status.includes('desenvolvimento')
+  )
+    return 'In Progress';
+  return 'To Do';
 };
 
 export const getStatusFilterOptions = (project: Project): string[] => {
-    const jiraStatuses = project?.settings?.jiraStatuses;
-    const configuredNames = jiraStatuses?.length
-        ? jiraStatuses.map(s => (typeof s === 'string' ? s : s.name))
-        : [];
+  const jiraStatuses = project?.settings?.jiraStatuses;
+  const configuredNames = jiraStatuses?.length
+    ? jiraStatuses.map(s => (typeof s === 'string' ? s : s.name))
+    : [];
 
-    // Safety net: inclui jiraStatus presentes nas tasks mas ausentes da lista configurada
-    // (ex.: status criados no Jira após a importação inicial e ainda não persistidos em settings)
-    const configuredSet = new Set(configuredNames);
-    const extraFromTasks: string[] = [];
-    (project.tasks || []).forEach(t => {
-        if (t.jiraStatus && !configuredSet.has(t.jiraStatus)) {
-            configuredSet.add(t.jiraStatus);
-            extraFromTasks.push(t.jiraStatus);
-        }
-    });
+  // Safety net: inclui jiraStatus presentes nas tasks mas ausentes da lista configurada
+  // (ex.: status criados no Jira após a importação inicial e ainda não persistidos em settings)
+  const configuredSet = new Set(configuredNames);
+  const extraFromTasks: string[] = [];
+  (project.tasks || []).forEach(t => {
+    if (t.jiraStatus && !configuredSet.has(t.jiraStatus)) {
+      configuredSet.add(t.jiraStatus);
+      extraFromTasks.push(t.jiraStatus);
+    }
+  });
 
-    const allOptions = [...configuredNames, ...extraFromTasks];
-    return allOptions.length > 0 ? allOptions : ['A Fazer', 'Em Andamento', 'Concluído'];
+  const allOptions = [...configuredNames, ...extraFromTasks];
+  return allOptions.length > 0 ? allOptions : ['A Fazer', 'Em Andamento', 'Concluído'];
 };
 
 export const PT_STATUS_TO_CATEGORY: Record<string, 'To Do' | 'In Progress' | 'Done'> = {
-    'A Fazer': 'To Do',
-    'Em Andamento': 'In Progress',
-    'Concluído': 'Done',
+  'A Fazer': 'To Do',
+  'Em Andamento': 'In Progress',
+  Concluído: 'Done',
 };
 
-export const taskMatchesStatusName = (task: JiraTask, statusName: string, project: Project): boolean => {
-    const display = getDisplayStatus(task);
-    if (display === statusName) return true;
-    const jiraStatuses = project?.settings?.jiraStatuses;
-    if (jiraStatuses && jiraStatuses.length > 0) {
-        const category = mapJiraStatusToTaskStatus(statusName);
-        return !task.jiraStatus && task.status === category;
-    }
-    const category = PT_STATUS_TO_CATEGORY[statusName];
-    return category !== undefined && task.status === category;
+export const taskMatchesStatusName = (
+  task: JiraTask,
+  statusName: string,
+  project: Project
+): boolean => {
+  const display = getDisplayStatus(task);
+  if (display === statusName) return true;
+  const jiraStatuses = project?.settings?.jiraStatuses;
+  if (jiraStatuses && jiraStatuses.length > 0) {
+    const category = mapJiraStatusToTaskStatus(statusName);
+    return !task.jiraStatus && task.status === category;
+  }
+  const category = PT_STATUS_TO_CATEGORY[statusName];
+  return category !== undefined && task.status === category;
 };
 
-export const mapJiraPriorityToTaskPriority = (jiraPriority: string | undefined | null): 'Baixa' | 'Média' | 'Alta' | 'Urgente' => {
-    if (!jiraPriority) return 'Média';
-    const p = jiraPriority.toLowerCase();
-    if (p.includes('highest') || p.includes('urgent')) return 'Urgente';
-    if (p.includes('high')) return 'Alta';
-    if (p.includes('low') || p.includes('lowest')) return 'Baixa';
-    return 'Média';
+export const mapJiraPriorityToTaskPriority = (
+  jiraPriority: string | undefined | null
+): 'Baixa' | 'Média' | 'Alta' | 'Urgente' => {
+  if (!jiraPriority) return 'Média';
+  const p = jiraPriority.toLowerCase();
+  if (p.includes('highest') || p.includes('urgent')) return 'Urgente';
+  if (p.includes('high')) return 'Alta';
+  if (p.includes('low') || p.includes('lowest')) return 'Baixa';
+  return 'Média';
 };
 
 export const getPriorityFilterOptions = (project: Project): string[] => {
-    const jiraPriorities = project?.settings?.jiraPriorities;
-    if (jiraPriorities && jiraPriorities.length > 0) return jiraPriorities.map(p => typeof p === 'string' ? p : p.name);
-    return ['Baixa', 'Média', 'Alta', 'Urgente'];
+  const jiraPriorities = project?.settings?.jiraPriorities;
+  if (jiraPriorities && jiraPriorities.length > 0)
+    return jiraPriorities.map(p => (typeof p === 'string' ? p : p.name));
+  return ['Baixa', 'Média', 'Alta', 'Urgente'];
 };
 
-export const taskMatchesPriorityName = (task: JiraTask, priorityName: string, project: Project): boolean => {
-    if (task.jiraPriority === priorityName) return true;
-    const jiraPriorities = project?.settings?.jiraPriorities;
-    if (jiraPriorities && jiraPriorities.length > 0) {
-        const category = mapJiraPriorityToTaskPriority(priorityName);
-        return !task.jiraPriority && (task.priority || 'Média') === category;
-    }
-    return (task.priority || 'Sem Prioridade') === priorityName;
+export const taskMatchesPriorityName = (
+  task: JiraTask,
+  priorityName: string,
+  project: Project
+): boolean => {
+  if (task.jiraPriority === priorityName) return true;
+  const jiraPriorities = project?.settings?.jiraPriorities;
+  if (jiraPriorities && jiraPriorities.length > 0) {
+    const category = mapJiraPriorityToTaskPriority(priorityName);
+    return !task.jiraPriority && (task.priority || 'Média') === category;
+  }
+  return (task.priority || 'Sem Prioridade') === priorityName;
 };
 
 export const getEffectiveTestStatus = (task: JiraTask, allTasks: JiraTask[]): TaskTestStatus => {
-    return task.testStatus ?? calculateTaskTestStatus(task, allTasks);
+  return task.testStatus ?? calculateTaskTestStatus(task, allTasks);
 };
 
 export const TEST_STATUS_FILTER_OPTIONS: { value: TaskTestStatus; label: string }[] = [
-    { value: 'testar', label: 'Testar' },
-    { value: 'testando', label: 'Testando' },
-    { value: 'pendente', label: 'Pendente' },
-    { value: 'teste_concluido', label: 'Teste Concluído' },
+  { value: 'testar', label: 'Testar' },
+  { value: 'testando', label: 'Testando' },
+  { value: 'pendente', label: 'Pendente' },
+  { value: 'teste_concluido', label: 'Teste Concluído' },
 ];
 
 export const parseTaskId = (taskId: string) => {
-    if (!taskId) return { prefix: '', number: Number.MAX_SAFE_INTEGER };
-    const match = taskId.match(TASK_ID_REGEX);
-    if (match) return { prefix: match[1].toUpperCase(), number: parseInt(match[2], 10) };
-    return { prefix: taskId.toUpperCase(), number: Number.MAX_SAFE_INTEGER };
+  if (!taskId) return { prefix: '', number: Number.MAX_SAFE_INTEGER };
+  const match = taskId.match(TASK_ID_REGEX);
+  if (match) return { prefix: match[1].toUpperCase(), number: parseInt(match[2], 10) };
+  return { prefix: taskId.toUpperCase(), number: Number.MAX_SAFE_INTEGER };
 };
 
 export const compareTasksById = (a: JiraTask, b: JiraTask) => {
-    const parsedA = parseTaskId(a.id);
-    const parsedB = parseTaskId(b.id);
-    if (parsedA.prefix !== parsedB.prefix) return parsedA.prefix.localeCompare(parsedB.prefix);
-    if (parsedA.number !== parsedB.number) return parsedA.number - parsedB.number;
-    return a.title.localeCompare(b.title);
+  const parsedA = parseTaskId(a.id);
+  const parsedB = parseTaskId(b.id);
+  if (parsedA.prefix !== parsedB.prefix) return parsedA.prefix.localeCompare(parsedB.prefix);
+  if (parsedA.number !== parsedB.number) return parsedA.number - parsedB.number;
+  return a.title.localeCompare(b.title);
 };
 
 export type TaskSortBy = 'id' | 'status' | 'priority' | 'createdAt' | 'title';
 export type TaskGroupBy = 'none' | 'status' | 'priority' | 'type';
 
 export {
-    parentLinkCreatesCycle,
-    normalizeTasksParentIdsAcyclic,
-    withAcyclicTaskParents,
-    type TaskFlatNode,
+  parentLinkCreatesCycle,
+  normalizeTasksParentIdsAcyclic,
+  withAcyclicTaskParents,
+  type TaskFlatNode,
 } from '../../utils/taskParentCycle';
 
 /** Nó mínimo para DFS de a11y (compatível com `TaskWithChildren`). */
@@ -132,63 +159,74 @@ export type TaskTreeA11yNode = { id: string; children: TaskTreeA11yNode[] };
  * Ordem DFS pré-fixada numa floresta de raízes: `posinset` 1..N e `setsize` = N em toda a seção.
  * Evita colisões de posição quando há subtarefas (o índice “global” antigo por nível repetia valores).
  */
-export function buildTaskTreeSectionA11y(roots: TaskTreeA11yNode[]): Map<string, { posinset: number; setsize: number }> {
-    const order: string[] = [];
-    const walk = (nodes: TaskTreeA11yNode[]) => {
-        for (const n of nodes) {
-            order.push(n.id);
-            if (n.children?.length) walk(n.children);
-        }
-    };
-    walk(roots);
-    const setsize = order.length;
-    const map = new Map<string, { posinset: number; setsize: number }>();
-    order.forEach((id, i) => map.set(id, { posinset: i + 1, setsize }));
-    return map;
+export function buildTaskTreeSectionA11y(
+  roots: TaskTreeA11yNode[]
+): Map<string, { posinset: number; setsize: number }> {
+  const order: string[] = [];
+  const walk = (nodes: TaskTreeA11yNode[]) => {
+    for (const n of nodes) {
+      order.push(n.id);
+      if (n.children?.length) walk(n.children);
+    }
+  };
+  walk(roots);
+  const setsize = order.length;
+  const map = new Map<string, { posinset: number; setsize: number }>();
+  order.forEach((id, i) => map.set(id, { posinset: i + 1, setsize }));
+  return map;
 }
 
 /** Alinhado ao limite de `reduceListMotion` na lista de tarefas (≈42). */
 export const TASK_ROOT_VIRTUALIZE_MIN = 42;
 
-export const shouldVirtualizeTaskRoots = (rootCount: number): boolean => rootCount >= TASK_ROOT_VIRTUALIZE_MIN;
+export const shouldVirtualizeTaskRoots = (rootCount: number): boolean =>
+  rootCount >= TASK_ROOT_VIRTUALIZE_MIN;
 
 /** Estimativa inicial de altura de uma linha virtual (raiz colapsada); `measureElement` corrige após pintura. */
 export const ESTIMATE_TASK_ROOT_ROW_PX = 128;
 
 export const TASK_LIST_VIRTUAL_OVERSCAN = 4;
 
-export const STATUS_ORDER: Record<string, number> = { 'To Do': 0, 'Blocked': 1, 'In Progress': 2, 'Done': 3 };
-export const PRIORITY_ORDER: Record<string, number> = { 'Urgente': 0, 'Alta': 1, 'Média': 2, 'Baixa': 3 };
+export const STATUS_ORDER: Record<string, number> = {
+  'To Do': 0,
+  Blocked: 1,
+  'In Progress': 2,
+  Done: 3,
+};
+export const PRIORITY_ORDER: Record<string, number> = { Urgente: 0, Alta: 1, Média: 2, Baixa: 3 };
 
 export function getTaskComparator(sortBy: TaskSortBy): (a: JiraTask, b: JiraTask) => number {
-    return (a, b) => {
-        switch (sortBy) {
-            case 'id': return compareTasksById(a, b);
-            case 'status': {
-                const orderA = STATUS_ORDER[a.status] ?? 99;
-                const orderB = STATUS_ORDER[b.status] ?? 99;
-                if (orderA !== orderB) return orderA - orderB;
-                return compareTasksById(a, b);
-            }
-            case 'priority': {
-                const orderA = PRIORITY_ORDER[a.priority ?? ''] ?? 99;
-                const orderB = PRIORITY_ORDER[b.priority ?? ''] ?? 99;
-                if (orderA !== orderB) return orderA - orderB;
-                return compareTasksById(a, b);
-            }
-            case 'createdAt': {
-                const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-                const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-                if (dateB !== dateA) return dateB - dateA;
-                return compareTasksById(a, b);
-            }
-            case 'title': {
-                const cmp = (a.title ?? '').localeCompare(b.title ?? '', undefined, { sensitivity: 'base' });
-                if (cmp !== 0) return cmp;
-                return compareTasksById(a, b);
-            }
-            default:
-                return compareTasksById(a, b);
-        }
-    };
+  return (a, b) => {
+    switch (sortBy) {
+      case 'id':
+        return compareTasksById(a, b);
+      case 'status': {
+        const orderA = STATUS_ORDER[a.status] ?? 99;
+        const orderB = STATUS_ORDER[b.status] ?? 99;
+        if (orderA !== orderB) return orderA - orderB;
+        return compareTasksById(a, b);
+      }
+      case 'priority': {
+        const orderA = PRIORITY_ORDER[a.priority ?? ''] ?? 99;
+        const orderB = PRIORITY_ORDER[b.priority ?? ''] ?? 99;
+        if (orderA !== orderB) return orderA - orderB;
+        return compareTasksById(a, b);
+      }
+      case 'createdAt': {
+        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        if (dateB !== dateA) return dateB - dateA;
+        return compareTasksById(a, b);
+      }
+      case 'title': {
+        const cmp = (a.title ?? '').localeCompare(b.title ?? '', undefined, {
+          sensitivity: 'base',
+        });
+        if (cmp !== 0) return cmp;
+        return compareTasksById(a, b);
+      }
+      default:
+        return compareTasksById(a, b);
+    }
+  };
 }

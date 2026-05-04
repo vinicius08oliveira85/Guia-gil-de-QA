@@ -23,7 +23,11 @@ export const DocumentStatsCards: React.FC<DocumentStatsCardsProps> = ({
   onCategorySelect,
 }) => {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" role="list" aria-label="Contagem de documentos por categoria">
+    <div
+      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+      role="list"
+      aria-label="Contagem de documentos por categoria"
+    >
       {CATEGORIES.map(({ id, label, bgClass, icon: Icon }) => {
         const count = categoryCounts[id] ?? 0;
         const isSelected = selectedCategory === id;
@@ -34,10 +38,20 @@ export const DocumentStatsCards: React.FC<DocumentStatsCardsProps> = ({
             role={isClickable ? 'button' : 'listitem'}
             tabIndex={isClickable ? 0 : undefined}
             onClick={isClickable ? () => onCategorySelect(isSelected ? 'all' : id) : undefined}
-            onKeyDown={isClickable ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onCategorySelect?.(isSelected ? 'all' : id); } } : undefined}
+            onKeyDown={
+              isClickable
+                ? e => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      onCategorySelect?.(isSelected ? 'all' : id);
+                    }
+                  }
+                : undefined
+            }
             className={cn(
               `${bgClass} p-6 rounded-[12px] text-white relative overflow-hidden group transition-all`,
-              isClickable && 'cursor-pointer hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white/50',
+              isClickable &&
+                'cursor-pointer hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white/50',
               isSelected && 'ring-2 ring-primary ring-offset-2 ring-offset-base-100'
             )}
             aria-label={`${label}: ${count} documento(s)${isClickable ? '. Clique para filtrar.' : ''}`}

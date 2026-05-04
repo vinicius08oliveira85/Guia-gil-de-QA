@@ -1,5 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { getGeminiModelFallbackChain, GEMINI_DEFAULT_MODEL } from '../../services/ai/geminiConstants';
+import {
+  getGeminiModelFallbackChain,
+  GEMINI_DEFAULT_MODEL,
+} from '../../services/ai/geminiConstants';
 
 describe('getGeminiModelFallbackChain', () => {
   it('coloca o modelo preferido primeiro, depois só gemini-2.5-flash-lite, sem duplicatas', () => {

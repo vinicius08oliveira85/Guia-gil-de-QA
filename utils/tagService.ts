@@ -14,24 +14,24 @@ export const DEFAULT_TAGS = [
   'frontend',
   'backend',
   'mobile',
-  'web'
+  'web',
 ] as const;
 
 export const TAG_COLORS: Record<string, string> = {
-  'crítico': '#ef4444',
-  'regressão': '#f59e0b',
-  'smoke': '#10b981',
-  'e2e': '#3b82f6',
-  'automação': '#8b5cf6',
-  'manual': '#ec4899',
-  'performance': 'rgb(251 76 0)',
-  'segurança': '#dc2626',
-  'usabilidade': '#06b6d4',
-  'api': '#6366f1',
-  'frontend': '#14b8a6',
-  'backend': '#64748b',
-  'mobile': '#a855f7',
-  'web': '#0ea5e9'
+  crítico: '#ef4444',
+  regressão: '#f59e0b',
+  smoke: '#10b981',
+  e2e: '#3b82f6',
+  automação: '#8b5cf6',
+  manual: '#ec4899',
+  performance: 'rgb(251 76 0)',
+  segurança: '#dc2626',
+  usabilidade: '#06b6d4',
+  api: '#6366f1',
+  frontend: '#14b8a6',
+  backend: '#64748b',
+  mobile: '#a855f7',
+  web: '#0ea5e9',
 };
 
 export const getTagColor = (tag: string): string => {
@@ -40,15 +40,15 @@ export const getTagColor = (tag: string): string => {
 
 export const getAllTagsFromProject = (project: Project): string[] => {
   const tags = new Set<string>();
-  
+
   project.tasks.forEach(task => {
     task.tags?.forEach(tag => tags.add(tag));
   });
-  
+
   if (project.tags) {
     project.tags.forEach(tag => tags.add(tag));
   }
-  
+
   return Array.from(tags).sort();
 };
 
@@ -67,7 +67,7 @@ export const addTagToTask = (task: JiraTask, tag: string): JiraTask => {
 export const removeTagFromTask = (task: JiraTask, tag: string): JiraTask => {
   return {
     ...task,
-    tags: task.tags?.filter(t => t !== tag) || []
+    tags: task.tags?.filter(t => t !== tag) || [],
   };
 };
 
@@ -78,10 +78,9 @@ export const removeTagFromTask = (task: JiraTask, tag: string): JiraTask => {
  */
 export const getTaskVersions = (task: JiraTask): string[] => {
   if (!task.tags || task.tags.length === 0) return [];
-  
+
   return task.tags
     .filter(tag => /^V\d+/i.test(tag.trim()))
     .map(tag => tag.trim().toUpperCase())
     .sort();
 };
-

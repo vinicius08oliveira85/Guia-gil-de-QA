@@ -119,7 +119,7 @@ export const LocalDataManagement: React.FC<LocalDataManagementProps> = ({ onImpo
             Exporte ou restaure todos os projetos deste dispositivo. Em navegadores compatíveis
             (Chrome, Edge), você escolhe onde salvar ou de qual arquivo carregar o JSON; nos demais,
             o navegador usa download e seletor de arquivo padrão. Útil quando o Supabase está
-            indisponível ou para migrar de máquina.             A importação substitui projetos com o mesmo ID.
+            indisponível ou para migrar de máquina. A importação substitui projetos com o mesmo ID.
           </p>
         </div>
       </div>
@@ -129,14 +129,14 @@ export const LocalDataManagement: React.FC<LocalDataManagementProps> = ({ onImpo
           type="checkbox"
           className="checkbox checkbox-primary checkbox-sm mt-0.5 shrink-0"
           checked={syncAfterImport}
-          onChange={(e) => setSyncAfterImport(e.target.checked)}
+          onChange={e => setSyncAfterImport(e.target.checked)}
           aria-describedby="sync-after-import-hint"
         />
         <span className="text-sm text-base-content/90 leading-snug">
           <span className="font-medium text-base-content">Enviar ao Supabase após importar</span>
           <span id="sync-after-import-hint" className="block text-base-content/65 mt-0.5">
-            Opcional: só aplica se o Supabase estiver configurado. Útil para alinhar a nuvem com o backup
-            restaurado; desmarque se quiser manter apenas cópia local.
+            Opcional: só aplica se o Supabase estiver configurado. Útil para alinhar a nuvem com o
+            backup restaurado; desmarque se quiser manter apenas cópia local.
           </span>
         </span>
       </label>

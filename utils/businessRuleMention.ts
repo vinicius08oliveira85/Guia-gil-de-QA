@@ -11,7 +11,7 @@ export function slugifyBusinessRuleTitleForMention(title: string): string {
     .trim()
     .split(/\s+/)
     .filter(Boolean)
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
     .join('');
   return parts || 'Regra';
 }
@@ -22,7 +22,7 @@ export function mentionTokenForRule(
 ): string {
   const base = slugifyBusinessRuleTitleForMention(rule.title);
   const dup = allRules.some(
-    (r) => r.id !== rule.id && slugifyBusinessRuleTitleForMention(r.title) === base
+    r => r.id !== rule.id && slugifyBusinessRuleTitleForMention(r.title) === base
   );
   const suffix = dup ? rule.id.replace(/-/g, '').slice(0, 8) : '';
   return `@${base}${suffix}`;

@@ -277,9 +277,9 @@ export const validateProjectIntegrity = (project: Project): IntegrityCheckResult
   }
 
   const hasCriticalIssues = issues.some(issue => issue.severity === 'critical');
-  const canAutoFix = !hasCriticalIssues && issues.every(issue => 
-    issue.type === 'missing_field' || issue.type === 'inconsistent_data'
-  );
+  const canAutoFix =
+    !hasCriticalIssues &&
+    issues.every(issue => issue.type === 'missing_field' || issue.type === 'inconsistent_data');
 
   return {
     isValid: issues.length === 0,
@@ -416,7 +416,10 @@ export const validateAndFixProject = async (
 
   // Se pode corrigir automaticamente, tentar corrigir
   if (checkResult.canAutoFix) {
-    logger.info('Tentando corrigir problemas de integridade automaticamente', 'dataIntegrityService');
+    logger.info(
+      'Tentando corrigir problemas de integridade automaticamente',
+      'dataIntegrityService'
+    );
     const fixedProject = autoFixIntegrityIssues(project);
     const fixedCheckResult = validateProjectIntegrity(fixedProject);
 
@@ -437,8 +440,11 @@ export const validateAndFixProject = async (
 
   // Se não pode corrigir ou correção falhou, tentar restaurar do backup
   if (checkResult.issues.some(issue => issue.severity === 'critical')) {
-    logger.warn('Problemas críticos detectados, tentando restaurar do backup', 'dataIntegrityService');
-    
+    logger.warn(
+      'Problemas críticos detectados, tentando restaurar do backup',
+      'dataIntegrityService'
+    );
+
     try {
       // Tentar restaurar do backup mais recente
       const restoredProject = await restoreBackup(projectId, 'latest');
@@ -464,11 +470,10 @@ export const validateAndFixProject = async (
     'Não foi possível corrigir ou restaurar projeto, retornando projeto original',
     'dataIntegrityService'
   );
-  
+
   return {
     project,
     wasFixed: false,
     restoredFromBackup: false,
   };
 };
-

@@ -3,116 +3,114 @@ import { Card } from '../common/Card';
 import { Project } from '../../types';
 
 interface ProgressTrendsCardProps {
-    project: Project;
-    cumulativeProgress: Array<{ date: number; series: number[] }>;
+  project: Project;
+  cumulativeProgress: Array<{ date: number; series: number[] }>;
 }
 
 export const ProgressTrendsCard: React.FC<ProgressTrendsCardProps> = ({ project }) => {
-    const period = 7; // Período fixo de 7 dias
-    
-    const tasks = project.tasks || [];
-    const allTestCases = tasks.flatMap(t => t.testCases || []);
+  const period = 7; // Período fixo de 7 dias
 
-    // Calcular métricas
-    const trends = useMemo(() => {
-        const sortedTasks = [...tasks].sort((a, b) => 
-            new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime()
-        );
+  const tasks = project.tasks || [];
+  const allTestCases = tasks.flatMap(t => t.testCases || []);
 
-        // Dias baseado no período
-        const days = Array.from({ length: period }, (_, i) => {
-            const date = new Date();
-            date.setDate(date.getDate() - (period - 1 - i));
-            date.setHours(0, 0, 0, 0);
-            return date.getTime();
-        });
-
-        const tasksByDay = days.map(day => {
-            const dayStart = day;
-            const dayEnd = day + (24 * 60 * 60 * 1000);
-            return {
-                date: day,
-                created: sortedTasks.filter(t => {
-                    const created = new Date(t.createdAt || 0).getTime();
-                    return created >= dayStart && created < dayEnd;
-                }).length,
-                completed: sortedTasks.filter(t => {
-                    const completed = t.completedAt ? new Date(t.completedAt).getTime() : 0;
-                    return completed >= dayStart && completed < dayEnd;
-                }).length,
-            };
-        });
-
-        // Calcular velocidade média
-        const totalCompleted = tasksByDay.reduce((sum, day) => sum + day.completed, 0);
-        const averageVelocity = totalCompleted / period;
-
-        // Calcular taxa de conclusão
-        const totalCreated = tasksByDay.reduce((sum, day) => sum + day.created, 0);
-        const totalCompletedSum = tasksByDay.reduce((sum, day) => sum + day.completed, 0);
-        const completionRate = totalCreated > 0 ? (totalCompletedSum / totalCreated) * 100 : 0;
-
-        return {
-            averageVelocity: Math.round(averageVelocity * 10) / 10,
-            totalCreated,
-            totalCompleted: totalCompletedSum,
-            completionRate: Math.round(completionRate),
-            testsExecuted: allTestCases.filter(tc => tc.status !== 'Not Run').length,
-        };
-    }, [tasks, allTestCases, period]);
-
-    return (
-        <Card className="p-5 border border-base-300 hover:border-primary/30 hover:shadow-md transition-all duration-200">
-            {/* Cards de Métricas */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="p-4 rounded-xl bg-primary/10 border border-primary/20 hover:border-primary/40 transition-all group">
-                    <div className="flex items-center justify-between mb-2">
-                        <span className="text-2xl">📝</span>
-                        <span className="text-xs text-base-content/50 group-hover:text-base-content/70 transition-colors">
-                            Últimos {period}d
-                        </span>
-                    </div>
-                    <p className="text-xs text-base-content/70 mb-1">Tarefas Criadas</p>
-                    <p className="text-2xl font-bold text-base-content">{trends.totalCreated}</p>
-                </div>
-
-                <div className="p-4 rounded-xl bg-success/10 border border-success/20 hover:border-success/40 transition-all group">
-                    <div className="flex items-center justify-between mb-2">
-                        <span className="text-2xl">✅</span>
-                        <span className="text-xs text-base-content/50 group-hover:text-base-content/70 transition-colors">
-                            Últimos {period}d
-                        </span>
-                    </div>
-                    <p className="text-xs text-base-content/70 mb-1">Tarefas Concluídas</p>
-                    <p className="text-2xl font-bold text-base-content">{trends.totalCompleted}</p>
-                    <p className="text-xs text-success mt-1">
-                        {trends.completionRate}% de conclusão
-                    </p>
-                </div>
-
-                <div className="p-4 rounded-xl bg-info/10 border border-info/20 hover:border-info/40 transition-all group">
-                    <div className="flex items-center justify-between mb-2">
-                        <span className="text-2xl">⚡</span>
-                        <span className="text-xs text-base-content/50 group-hover:text-base-content/70 transition-colors">
-                            Média diária
-                        </span>
-                    </div>
-                    <p className="text-xs text-base-content/70 mb-1">Velocidade</p>
-                    <p className="text-2xl font-bold text-base-content">{trends.averageVelocity}</p>
-                    <p className="text-xs text-base-content/60 mt-1">tarefas/dia</p>
-                </div>
-
-                <div className="p-4 rounded-xl bg-accent/10 border border-accent/20 hover:border-accent/40 transition-all group">
-                    <div className="flex items-center justify-between mb-2">
-                        <span className="text-2xl">🧪</span>
-                        <span className="text-xs text-base-content/50 group-hover:text-base-content/70 transition-colors">
-                            Total
-                        </span>
-                    </div>
-                    <p className="text-xs text-base-content/70 mb-1">Testes Executados</p>
-                    <p className="text-2xl font-bold text-base-content">{trends.testsExecuted}</p>
-                </div>
-            </div>
-        </Card>
+  // Calcular métricas
+  const trends = useMemo(() => {
+    const sortedTasks = [...tasks].sort(
+      (a, b) => new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime()
     );
+
+    // Dias baseado no período
+    const days = Array.from({ length: period }, (_, i) => {
+      const date = new Date();
+      date.setDate(date.getDate() - (period - 1 - i));
+      date.setHours(0, 0, 0, 0);
+      return date.getTime();
+    });
+
+    const tasksByDay = days.map(day => {
+      const dayStart = day;
+      const dayEnd = day + 24 * 60 * 60 * 1000;
+      return {
+        date: day,
+        created: sortedTasks.filter(t => {
+          const created = new Date(t.createdAt || 0).getTime();
+          return created >= dayStart && created < dayEnd;
+        }).length,
+        completed: sortedTasks.filter(t => {
+          const completed = t.completedAt ? new Date(t.completedAt).getTime() : 0;
+          return completed >= dayStart && completed < dayEnd;
+        }).length,
+      };
+    });
+
+    // Calcular velocidade média
+    const totalCompleted = tasksByDay.reduce((sum, day) => sum + day.completed, 0);
+    const averageVelocity = totalCompleted / period;
+
+    // Calcular taxa de conclusão
+    const totalCreated = tasksByDay.reduce((sum, day) => sum + day.created, 0);
+    const totalCompletedSum = tasksByDay.reduce((sum, day) => sum + day.completed, 0);
+    const completionRate = totalCreated > 0 ? (totalCompletedSum / totalCreated) * 100 : 0;
+
+    return {
+      averageVelocity: Math.round(averageVelocity * 10) / 10,
+      totalCreated,
+      totalCompleted: totalCompletedSum,
+      completionRate: Math.round(completionRate),
+      testsExecuted: allTestCases.filter(tc => tc.status !== 'Not Run').length,
+    };
+  }, [tasks, allTestCases, period]);
+
+  return (
+    <Card className="p-5 border border-base-300 hover:border-primary/30 hover:shadow-md transition-all duration-200">
+      {/* Cards de Métricas */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="p-4 rounded-xl bg-primary/10 border border-primary/20 hover:border-primary/40 transition-all group">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-2xl">📝</span>
+            <span className="text-xs text-base-content/50 group-hover:text-base-content/70 transition-colors">
+              Últimos {period}d
+            </span>
+          </div>
+          <p className="text-xs text-base-content/70 mb-1">Tarefas Criadas</p>
+          <p className="text-2xl font-bold text-base-content">{trends.totalCreated}</p>
+        </div>
+
+        <div className="p-4 rounded-xl bg-success/10 border border-success/20 hover:border-success/40 transition-all group">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-2xl">✅</span>
+            <span className="text-xs text-base-content/50 group-hover:text-base-content/70 transition-colors">
+              Últimos {period}d
+            </span>
+          </div>
+          <p className="text-xs text-base-content/70 mb-1">Tarefas Concluídas</p>
+          <p className="text-2xl font-bold text-base-content">{trends.totalCompleted}</p>
+          <p className="text-xs text-success mt-1">{trends.completionRate}% de conclusão</p>
+        </div>
+
+        <div className="p-4 rounded-xl bg-info/10 border border-info/20 hover:border-info/40 transition-all group">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-2xl">⚡</span>
+            <span className="text-xs text-base-content/50 group-hover:text-base-content/70 transition-colors">
+              Média diária
+            </span>
+          </div>
+          <p className="text-xs text-base-content/70 mb-1">Velocidade</p>
+          <p className="text-2xl font-bold text-base-content">{trends.averageVelocity}</p>
+          <p className="text-xs text-base-content/60 mt-1">tarefas/dia</p>
+        </div>
+
+        <div className="p-4 rounded-xl bg-accent/10 border border-accent/20 hover:border-accent/40 transition-all group">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-2xl">🧪</span>
+            <span className="text-xs text-base-content/50 group-hover:text-base-content/70 transition-colors">
+              Total
+            </span>
+          </div>
+          <p className="text-xs text-base-content/70 mb-1">Testes Executados</p>
+          <p className="text-2xl font-bold text-base-content">{trends.testsExecuted}</p>
+        </div>
+      </div>
+    </Card>
+  );
 };

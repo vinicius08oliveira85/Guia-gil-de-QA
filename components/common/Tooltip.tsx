@@ -25,7 +25,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
   position = 'top',
   delay = 300,
   disabled = false,
-  ariaLabel
+  ariaLabel,
 }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
@@ -92,7 +92,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
     switch (position) {
       case 'top':
         top = triggerRect.top + scrollY - tooltipRect.height - spacing;
-        left = triggerRect.left + scrollX + (triggerRect.width / 2) - (tooltipRect.width / 2);
+        left = triggerRect.left + scrollX + triggerRect.width / 2 - tooltipRect.width / 2;
         // Se sair da tela em cima, mudar para bottom
         if (top < scrollY) {
           top = triggerRect.bottom + scrollY + spacing;
@@ -100,14 +100,14 @@ export const Tooltip: React.FC<TooltipProps> = ({
         break;
       case 'bottom':
         top = triggerRect.bottom + scrollY + spacing;
-        left = triggerRect.left + scrollX + (triggerRect.width / 2) - (tooltipRect.width / 2);
+        left = triggerRect.left + scrollX + triggerRect.width / 2 - tooltipRect.width / 2;
         // Se sair da tela embaixo, mudar para top
         if (top + tooltipRect.height > scrollY + viewportHeight) {
           top = triggerRect.top + scrollY - tooltipRect.height - spacing;
         }
         break;
       case 'left':
-        top = triggerRect.top + scrollY + (triggerRect.height / 2) - (tooltipRect.height / 2);
+        top = triggerRect.top + scrollY + triggerRect.height / 2 - tooltipRect.height / 2;
         left = triggerRect.left + scrollX - tooltipRect.width - spacing;
         // Se sair da tela à esquerda, mudar para right
         if (left < scrollX) {
@@ -115,7 +115,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
         }
         break;
       case 'right':
-        top = triggerRect.top + scrollY + (triggerRect.height / 2) - (tooltipRect.height / 2);
+        top = triggerRect.top + scrollY + triggerRect.height / 2 - tooltipRect.height / 2;
         left = triggerRect.right + scrollX + spacing;
         // Se sair da tela à direita, mudar para left
         if (left + tooltipRect.width > scrollX + viewportWidth) {
@@ -165,7 +165,11 @@ export const Tooltip: React.FC<TooltipProps> = ({
         onMouseLeave={handleMouseLeave}
         onFocus={handleFocus}
         onBlur={handleBlur}
-        aria-label={!childIsInteractive ? (ariaLabel || (typeof content === 'string' ? content : undefined)) : undefined}
+        aria-label={
+          !childIsInteractive
+            ? ariaLabel || (typeof content === 'string' ? content : undefined)
+            : undefined
+        }
         tabIndex={disabled || childIsInteractive ? undefined : 0}
         className="inline-flex"
       >
@@ -181,7 +185,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
               top: `${tooltipPosition.top}px`,
               left: `${tooltipPosition.left}px`,
               backgroundColor: 'var(--tooltip-bg)',
-              maxWidth: '320px'
+              maxWidth: '320px',
             }}
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -195,4 +199,3 @@ export const Tooltip: React.FC<TooltipProps> = ({
     </>
   );
 };
-

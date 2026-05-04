@@ -31,17 +31,19 @@ vi.mock('../../utils/auditLog', () => ({
 
 vi.mock('../../services/geminiService', () => ({
   analyzeDocumentContent: vi.fn(() => Promise.resolve('<p>Análise mock</p>')),
-  generateTaskFromDocument: vi.fn(() => Promise.resolve({
-    task: {
-      title: 'Tarefa gerada do documento',
-      description: 'Descrição mock',
-      type: 'Tarefa',
-      priority: 'Média',
+  generateTaskFromDocument: vi.fn(() =>
+    Promise.resolve({
+      task: {
+        title: 'Tarefa gerada do documento',
+        description: 'Descrição mock',
+        type: 'Tarefa',
+        priority: 'Média',
+        testCases: [],
+      },
+      strategy: [],
       testCases: [],
-    },
-    strategy: [],
-    testCases: [],
-  })),
+    })
+  ),
 }));
 
 vi.mock('../../services/ai/generalAnalysisService', () => ({
@@ -83,8 +85,10 @@ describe('Testes de Integração End-to-End', () => {
 
       await useProjectsStore.getState().createProject('Projeto E2E', 'Descrição do projeto E2E');
 
-      await waitForStoreState((state) => state.projects.length > 0);
-      const createdProject = useProjectsStore.getState().projects.find((p) => p.name === 'Projeto E2E');
+      await waitForStoreState(state => state.projects.length > 0);
+      const createdProject = useProjectsStore
+        .getState()
+        .projects.find(p => p.name === 'Projeto E2E');
       expect(createdProject).toBeDefined();
       if (!createdProject) return;
 
@@ -105,7 +109,9 @@ describe('Testes de Integração End-to-End', () => {
 
       await useProjectsStore.getState().addTaskToProject(createdProject.id, task);
 
-      const updatedProject = useProjectsStore.getState().projects.find((p) => p.id === createdProject.id);
+      const updatedProject = useProjectsStore
+        .getState()
+        .projects.find(p => p.id === createdProject.id);
       expect(updatedProject?.tasks).toHaveLength(1);
 
       useProjectsStore.getState().selectProject(null);
@@ -117,8 +123,8 @@ describe('Testes de Integração End-to-End', () => {
       resetStore();
       await useProjectsStore.getState().loadProjects();
 
-      await waitForStoreState((state) => state.projects.length > 0);
-      const reloadedProject = useProjectsStore.getState().projects.find((p) => p.id === projectId);
+      await waitForStoreState(state => state.projects.length > 0);
+      const reloadedProject = useProjectsStore.getState().projects.find(p => p.id === projectId);
       expect(reloadedProject).toBeDefined();
       expect(reloadedProject?.name).toBe('Projeto E2E');
       expect(reloadedProject?.tasks).toHaveLength(1);
@@ -134,7 +140,9 @@ describe('Testes de Integração End-to-End', () => {
 
       await useProjectsStore.getState().importProject(importedProject);
 
-      expect(useProjectsStore.getState().projects.some((p) => p.id === importedProject.id)).toBe(true);
+      expect(useProjectsStore.getState().projects.some(p => p.id === importedProject.id)).toBe(
+        true
+      );
 
       useProjectsStore.getState().selectProject(importedProject.id);
       expect(useProjectsStore.getState().selectedProjectId).toBe(importedProject.id);
@@ -146,11 +154,11 @@ describe('Testes de Integração End-to-End', () => {
       await useProjectsStore.getState().updateProject(updated);
 
       await useProjectsStore.getState().saveProjectToSupabase(importedProject.id);
-      
+
       // Verificar que foi salvo no Supabase
       const supabaseProjects = await mocks.mockSupabase.loadProjects();
       expect(supabaseProjects.some(p => p.id === importedProject.id)).toBe(true);
-      
+
       // 6. Verificar persistência em ambos storages
       const indexedDBProjects = await mocks.mockIndexedDB.loadProjects();
       expect(indexedDBProjects.some(p => p.id === importedProject.id)).toBe(true);
@@ -160,9 +168,9 @@ describe('Testes de Integração End-to-End', () => {
   describe('3.3 Fluxo: Múltiplos Projetos', () => {
     it('deve criar múltiplos projetos e navegar entre eles sem misturar dados', async () => {
       const project1 = await useProjectsStore.getState().createProject('Projeto 1', 'Descrição 1');
-      await new Promise((r) => setTimeout(r, 50));
+      await new Promise(r => setTimeout(r, 50));
       const project2 = await useProjectsStore.getState().createProject('Projeto 2', 'Descrição 2');
-      await new Promise((r) => setTimeout(r, 50));
+      await new Promise(r => setTimeout(r, 50));
       const project3 = await useProjectsStore.getState().createProject('Projeto 3', 'Descrição 3');
 
       expect(useProjectsStore.getState().projects).toHaveLength(3);
@@ -177,14 +185,14 @@ describe('Testes de Integração End-to-End', () => {
       expect(useProjectsStore.getState().selectedProjectId).toBe(project3.id);
 
       const { projects } = useProjectsStore.getState();
-      const proj1 = projects.find((p) => p.id === project1.id);
-      const proj2 = projects.find((p) => p.id === project2.id);
-      const proj3 = projects.find((p) => p.id === project3.id);
-      
+      const proj1 = projects.find(p => p.id === project1.id);
+      const proj2 = projects.find(p => p.id === project2.id);
+      const proj3 = projects.find(p => p.id === project3.id);
+
       expect(proj1?.name).toBe('Projeto 1');
       expect(proj2?.name).toBe('Projeto 2');
       expect(proj3?.name).toBe('Projeto 3');
-      
+
       // 4. Adicionar tarefa em um projeto específico
       const task: JiraTask = {
         id: 'task-1',
@@ -195,15 +203,15 @@ describe('Testes de Integração End-to-End', () => {
         priority: 'Média',
         testCases: [],
       };
-      
+
       await useProjectsStore.getState().addTaskToProject(project1.id, task);
 
-      const updatedProj1 = useProjectsStore.getState().projects.find((p) => p.id === project1.id);
-      const updatedProj2 = useProjectsStore.getState().projects.find((p) => p.id === project2.id);
-      
+      const updatedProj1 = useProjectsStore.getState().projects.find(p => p.id === project1.id);
+      const updatedProj2 = useProjectsStore.getState().projects.find(p => p.id === project2.id);
+
       expect(updatedProj1?.tasks).toHaveLength(1);
       expect(updatedProj2?.tasks).toHaveLength(0);
-      
+
       // 5. Verificar persistência individual
       const indexedDBProjects = await mocks.mockIndexedDB.loadProjects();
       expect(indexedDBProjects).toHaveLength(3);
@@ -216,10 +224,13 @@ describe('Testes de Integração End-to-End', () => {
     it('deve excluir projeto a partir da ProjectView e voltar para a lista', async () => {
       const user = userEvent.setup();
 
-      const project = createMockProject({ name: 'Projeto para Excluir', description: 'Será excluído' });
+      const project = createMockProject({
+        name: 'Projeto para Excluir',
+        description: 'Será excluído',
+      });
       await mocks.mockIndexedDB.saveProject(project);
       render(<App />);
-      await waitForStoreState((state) => state.projects.some((p) => p.id === project.id));
+      await waitForStoreState(state => state.projects.some(p => p.id === project.id));
 
       useProjectsStore.getState().selectProject(project.id);
 
@@ -227,14 +238,18 @@ describe('Testes de Integração End-to-End', () => {
         expect(screen.getByText(/Projeto para Excluir/i)).toBeInTheDocument();
       });
 
-      const deleteButton = await screen.findByRole('button', { name: /excluir projeto/i }, { timeout: 8000 });
+      const deleteButton = await screen.findByRole(
+        'button',
+        { name: /excluir projeto/i },
+        { timeout: 8000 }
+      );
       await user.click(deleteButton);
 
       const confirmButton = await screen.findByRole('button', { name: /sim, excluir/i });
       await user.click(confirmButton);
 
       await waitFor(() => {
-        expect(useProjectsStore.getState().projects.some((p) => p.id === project.id)).toBe(false);
+        expect(useProjectsStore.getState().projects.some(p => p.id === project.id)).toBe(false);
         expect(useProjectsStore.getState().selectedProjectId).toBeNull();
       });
 
@@ -254,19 +269,28 @@ describe('Testes de Integração End-to-End', () => {
       });
       await mocks.mockIndexedDB.saveProject(project);
       render(<App />);
-      await waitForStoreState((state) => state.projects.some((p) => p.id === project.id));
+      await waitForStoreState(state => state.projects.some(p => p.id === project.id));
 
-      const cardProjeto = await screen.findByRole('button', { name: /Abrir projeto: Projeto com Doc/i }, { timeout: 8000 });
+      const cardProjeto = await screen.findByRole(
+        'button',
+        { name: /Abrir projeto: Projeto com Doc/i },
+        { timeout: 8000 }
+      );
       await user.click(cardProjeto);
 
-      await waitFor(() => {
-        expect(screen.getByRole('tab', { name: /documentos/i })).toBeInTheDocument();
-      }, { timeout: 15_000 });
+      await waitFor(
+        () => {
+          expect(screen.getByRole('tab', { name: /documentos/i })).toBeInTheDocument();
+        },
+        { timeout: 15_000 }
+      );
       const documentsTab = screen.getByRole('tab', { name: /documentos/i });
       await user.click(documentsTab);
       await waitFor(
         () => {
-          expect(screen.getByRole('heading', { name: /Documentos do Projeto/i })).toBeInTheDocument();
+          expect(
+            screen.getByRole('heading', { name: /Documentos do Projeto/i })
+          ).toBeInTheDocument();
         },
         { timeout: 45_000 }
       );
@@ -283,9 +307,15 @@ describe('Testes de Integração End-to-End', () => {
       );
       await waitFor(
         () => {
-          const updatedProject = useProjectsStore.getState().projects.find(p => p.id === project.id);
+          const updatedProject = useProjectsStore
+            .getState()
+            .projects.find(p => p.id === project.id);
           expect(updatedProject?.tasks?.length).toBeGreaterThanOrEqual(1);
-          expect(updatedProject?.tasks?.some(t => t.title?.includes('Tarefa gerada') || t.title?.includes('documento'))).toBe(true);
+          expect(
+            updatedProject?.tasks?.some(
+              t => t.title?.includes('Tarefa gerada') || t.title?.includes('documento')
+            )
+          ).toBe(true);
         },
         { timeout: 70000 }
       );
@@ -303,16 +333,29 @@ describe('Testes de Integração End-to-End', () => {
       });
       await mocks.mockIndexedDB.saveProject(project);
       render(<App />);
-      await waitForStoreState((state) => state.projects.some((p) => p.id === project.id));
+      await waitForStoreState(state => state.projects.some(p => p.id === project.id));
 
-      const cardProjeto = await screen.findByRole('button', { name: /Abrir projeto: Projeto Docs/i }, { timeout: 8000 });
+      const cardProjeto = await screen.findByRole(
+        'button',
+        { name: /Abrir projeto: Projeto Docs/i },
+        { timeout: 8000 }
+      );
       await user.click(cardProjeto);
-      await waitFor(() => expect(screen.getByRole('tab', { name: /documentos/i })).toBeInTheDocument(), { timeout: 15_000 });
+      await waitFor(
+        () => expect(screen.getByRole('tab', { name: /documentos/i })).toBeInTheDocument(),
+        { timeout: 15_000 }
+      );
       const documentsTab = screen.getByRole('tab', { name: /documentos/i });
       await user.click(documentsTab);
-      await waitFor(() => expect(screen.getByRole('heading', { name: /Documentos do Projeto/i })).toBeInTheDocument(), {
-        timeout: 45_000,
-      });
+      await waitFor(
+        () =>
+          expect(
+            screen.getByRole('heading', { name: /Documentos do Projeto/i })
+          ).toBeInTheDocument(),
+        {
+          timeout: 45_000,
+        }
+      );
 
       const filtrarSemAnalise = screen.getByRole('button', { name: /filtrar.*\d+.*sem análise/i });
       await user.click(filtrarSemAnalise);
@@ -335,16 +378,29 @@ describe('Testes de Integração End-to-End', () => {
       });
       await mocks.mockIndexedDB.saveProject(project);
       render(<App />);
-      await waitForStoreState((state) => state.projects.some((p) => p.id === project.id));
+      await waitForStoreState(state => state.projects.some(p => p.id === project.id));
 
-      const cardProjeto = await screen.findByRole('button', { name: /Abrir projeto: Projeto Categorias/i }, { timeout: 8000 });
+      const cardProjeto = await screen.findByRole(
+        'button',
+        { name: /Abrir projeto: Projeto Categorias/i },
+        { timeout: 8000 }
+      );
       await user.click(cardProjeto);
-      await waitFor(() => expect(screen.getByRole('tab', { name: /documentos/i })).toBeInTheDocument(), { timeout: 15_000 });
+      await waitFor(
+        () => expect(screen.getByRole('tab', { name: /documentos/i })).toBeInTheDocument(),
+        { timeout: 15_000 }
+      );
       const documentsTab = screen.getByRole('tab', { name: /documentos/i });
       await user.click(documentsTab);
-      await waitFor(() => expect(screen.getByRole('heading', { name: /Documentos do Projeto/i })).toBeInTheDocument(), {
-        timeout: 45_000,
-      });
+      await waitFor(
+        () =>
+          expect(
+            screen.getByRole('heading', { name: /Documentos do Projeto/i })
+          ).toBeInTheDocument(),
+        {
+          timeout: 45_000,
+        }
+      );
 
       const requisitosCard = screen.getByRole('button', {
         name: /REQUISITOS: \d+ documento\(s\)\. Clique para filtrar\./i,
@@ -362,4 +418,3 @@ describe('Testes de Integração End-to-End', () => {
     });
   });
 });
-

@@ -23,13 +23,17 @@ function normalizeRule(row: unknown): BusinessRule | null {
   const title = o.title.trim() || '(sem título)';
   const description = typeof o.description === 'string' ? o.description : '';
   const createdAt =
-    typeof o.createdAt === 'string' && o.createdAt.trim() ? o.createdAt.trim() : new Date().toISOString();
+    typeof o.createdAt === 'string' && o.createdAt.trim()
+      ? o.createdAt.trim()
+      : new Date().toISOString();
   const catRaw = o.category;
   const category =
     typeof catRaw === 'string' && catRaw.trim() ? catRaw.trim() : DEFAULT_BUSINESS_RULE_CATEGORY;
   const linkedRaw = o.linkedBusinessRuleIds;
   const linkedBusinessRuleIds = Array.isArray(linkedRaw)
-    ? linkedRaw.filter((x): x is string => typeof x === 'string' && x.trim().length > 0).map((x) => x.trim())
+    ? linkedRaw
+        .filter((x): x is string => typeof x === 'string' && x.trim().length > 0)
+        .map(x => x.trim())
     : undefined;
   return {
     id: String(o.id).trim(),
@@ -76,7 +80,11 @@ export function parseBusinessRulesImportJson(raw: string): BusinessRulesImportPa
 
   if (Array.isArray(data)) {
     rows = data;
-  } else if (data && typeof data === 'object' && Array.isArray((data as { businessRules?: unknown }).businessRules)) {
+  } else if (
+    data &&
+    typeof data === 'object' &&
+    Array.isArray((data as { businessRules?: unknown }).businessRules)
+  ) {
     const obj = data as Record<string, unknown>;
     const envelopeErr = validateBusinessRulesImportEnvelope(obj);
     if (envelopeErr) return { ok: false, error: envelopeErr };
@@ -84,7 +92,10 @@ export function parseBusinessRulesImportJson(raw: string): BusinessRulesImportPa
     const pn = (data as { projectName?: unknown }).projectName;
     if (typeof pn === 'string' && pn.trim()) sourceProject = pn.trim();
   } else {
-    return { ok: false, error: 'Formato esperado: { "businessRules": [...] } ou um array de regras.' };
+    return {
+      ok: false,
+      error: 'Formato esperado: { "businessRules": [...] } ou um array de regras.',
+    };
   }
 
   const rules: BusinessRule[] = [];
@@ -106,9 +117,12 @@ export function parseBusinessRulesImportJson(raw: string): BusinessRulesImportPa
  * Mescla por `id`: atualiza título/descrição se já existir (mantém `createdAt` local);
  * regras novas são acrescentadas ao final na ordem do arquivo importado.
  */
-export function mergeBusinessRulesInto(existing: BusinessRule[], incoming: BusinessRule[]): BusinessRulesMergeResult {
-  const existingIdSet = new Set(existing.map((r) => r.id));
-  const map = new Map(existing.map((r) => [r.id, normalizeBusinessRule(r)]));
+export function mergeBusinessRulesInto(
+  existing: BusinessRule[],
+  incoming: BusinessRule[]
+): BusinessRulesMergeResult {
+  const existingIdSet = new Set(existing.map(r => r.id));
+  const map = new Map(existing.map(r => [r.id, normalizeBusinessRule(r)]));
 
   const uniqueIncomingIds = new Set<string>();
   for (const inc of incoming) {
@@ -146,8 +160,8 @@ export function mergeBusinessRulesInto(existing: BusinessRule[], incoming: Busin
     newIdsInOrder.push(inc.id);
   }
 
-  const head = existing.map((e) => map.get(e.id)!).filter(Boolean) as BusinessRule[];
-  const tail = newIdsInOrder.map((id) => map.get(id)!).filter(Boolean) as BusinessRule[];
+  const head = existing.map(e => map.get(e.id)!).filter(Boolean) as BusinessRule[];
+  const tail = newIdsInOrder.map(id => map.get(id)!).filter(Boolean) as BusinessRule[];
 
   return { merged: [...head, ...tail], updatedCount, addedCount };
 }

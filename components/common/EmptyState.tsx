@@ -45,7 +45,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   tips,
   helpContent,
   helpText,
-  illustration
+  illustration,
 }) => {
   const description = descriptionProp ?? message;
   const wrapperClass = compact
@@ -53,21 +53,27 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
     : 'flex flex-col items-center justify-center py-16 px-4 text-center max-w-xl mx-auto';
   const iconWrapperClass = compact ? 'mb-1' : 'mb-6';
   const iconSizeClass = compact ? 'text-2xl' : 'text-6xl';
-  const titleWrapperClass = compact ? 'flex items-center gap-2 mb-0.5' : 'flex items-center gap-2 mb-3';
-  const titleClass = compact ? 'text-xs font-semibold tracking-tight text-base-content' : 'text-xl sm:text-2xl font-semibold tracking-tight text-base-content';
-  const descClass = compact ? 'text-base-content/70 max-w-md mb-0 text-xs' : 'text-base-content/70 max-w-md mb-6';
+  const titleWrapperClass = compact
+    ? 'flex items-center gap-2 mb-0.5'
+    : 'flex items-center gap-2 mb-3';
+  const titleClass = compact
+    ? 'text-xs font-semibold tracking-tight text-base-content'
+    : 'text-xl sm:text-2xl font-semibold tracking-tight text-base-content';
+  const descClass = compact
+    ? 'text-base-content/70 max-w-md mb-0 text-xs'
+    : 'text-base-content/70 max-w-md mb-6';
 
   return (
-    <motion.div 
+    <motion.div
       className={wrapperClass}
-      role="status" 
+      role="status"
       aria-live="polite"
       initial={{ opacity: 0, y: compact ? 8 : 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: compact ? 0.2 : 0.4 }}
     >
       {/* Ícone ou ilustração */}
-      <motion.div 
+      <motion.div
         className={iconWrapperClass}
         aria-hidden="true"
         initial={{ scale: 0.8, opacity: 0 }}
@@ -84,21 +90,19 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
       </motion.div>
 
       {/* Título */}
-      <motion.div 
+      <motion.div
         className={titleWrapperClass}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: compact ? 0.1 : 0.2 }}
       >
         <h3 className={titleClass}>{title}</h3>
-        {helpContent && (
-          <HelpTooltip title={helpContent.title} content={helpContent.content} />
-        )}
+        {helpContent && <HelpTooltip title={helpContent.title} content={helpContent.content} />}
       </motion.div>
 
       {/* Descrição */}
       {description && (
-        <motion.p 
+        <motion.p
           className={descClass}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -127,7 +131,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
 
       {/* Dica única */}
       {tip && (
-        <motion.div 
+        <motion.div
           className="bg-primary/10 border border-primary/30 rounded-xl p-4 mb-6 max-w-md"
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -139,10 +143,9 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
         </motion.div>
       )}
 
-
       {/* Texto de ajuda */}
       {helpText && (
-        <motion.p 
+        <motion.p
           className="text-xs text-base-content/70 max-w-md mb-6"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -153,7 +156,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
       )}
 
       {/* Ações */}
-      <motion.div 
+      <motion.div
         className="flex flex-wrap justify-center"
         style={{ gap: '0.75rem' }}
         initial={{ opacity: 0, y: 10 }}
@@ -184,4 +187,3 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
     </motion.div>
   );
 };
-

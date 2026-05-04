@@ -34,7 +34,7 @@ describe('Testes de Persistência de Dados', () => {
     resetStore();
     mocks = createDbMocks();
     mocks.reset();
-    
+
     wireDbServiceMocks(mocks);
     wireSupabaseLoadMock(mocks);
   });
@@ -42,9 +42,9 @@ describe('Testes de Persistência de Dados', () => {
   describe('2.1 Persistência IndexedDB', () => {
     it('deve salvar projeto no IndexedDB ao criar', async () => {
       const store = useProjectsStore.getState();
-      
+
       const project = await store.createProject('Novo Projeto', 'Descrição');
-      
+
       // Verificar que foi salvo no mock IndexedDB
       const savedProject = await mocks.mockIndexedDB.getProject(project.id);
       expect(savedProject).toBeDefined();
@@ -106,10 +106,10 @@ describe('Testes de Persistência de Dados', () => {
     it('deve atualizar projeto no Supabase', async () => {
       const project = createMockProject();
       await mocks.mockSupabase.saveProject(project);
-      
+
       const updated = { ...project, name: 'Atualizado no Supabase' };
       await mocks.mockSupabase.updateProject(updated);
-      
+
       const savedProjects = await mocks.mockSupabase.loadProjects();
       const savedProject = savedProjects.find(p => p.id === project.id);
       expect(savedProject?.name).toBe('Atualizado no Supabase');
@@ -118,9 +118,9 @@ describe('Testes de Persistência de Dados', () => {
     it('deve deletar projeto do Supabase', async () => {
       const project = createMockProject();
       await mocks.mockSupabase.saveProject(project);
-      
+
       await mocks.mockSupabase.deleteProject(project.id);
-      
+
       const savedProjects = await mocks.mockSupabase.loadProjects();
       expect(savedProjects.find(p => p.id === project.id)).toBeUndefined();
     });
@@ -230,4 +230,3 @@ describe('Testes de Persistência de Dados', () => {
     });
   });
 });
-

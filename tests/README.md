@@ -41,4 +41,3 @@ npm run test:coverage
 Meta: > 70% de cobertura
 
 Execute `npm run test:coverage` para ver o relatório de cobertura.
-

@@ -37,7 +37,10 @@ export const TaskStatusDistributionBar: React.FC<TaskStatusDistributionBarProps>
       )}
       aria-labelledby="task-dist-heading"
     >
-      <h2 id="task-dist-heading" className="text-xs font-bold uppercase tracking-wide text-base-content/85">
+      <h2
+        id="task-dist-heading"
+        className="text-xs font-bold uppercase tracking-wide text-base-content/85"
+      >
         Status das tarefas (global)
       </h2>
       <p className="mt-0.5 text-xs leading-snug text-base-content/75">
@@ -48,11 +51,14 @@ export const TaskStatusDistributionBar: React.FC<TaskStatusDistributionBarProps>
         role="img"
         aria-label={`Tarefas: ${buckets.todo} a fazer, ${buckets.inProgress} em progresso, ${buckets.done} concluídas, de ${buckets.total} no total`}
       >
-        {segments.map((s) =>
+        {segments.map(s =>
           s.pct > 0 ? (
             <div
               key={s.key}
-              className={cn('h-full cursor-default transition-[filter] duration-150 hover:brightness-95', s.className)}
+              className={cn(
+                'h-full cursor-default transition-[filter] duration-150 hover:brightness-95',
+                s.className
+              )}
               style={{ width: `${s.pct}%` }}
               title={`${s.label}: ${s.pct.toFixed(1)}%`}
             />
@@ -61,15 +67,25 @@ export const TaskStatusDistributionBar: React.FC<TaskStatusDistributionBarProps>
       </div>
       <ul className="mt-2.5 flex flex-wrap gap-x-3 gap-y-1 text-xs text-base-content/80 sm:gap-x-4">
         <li>
-          <span className="mr-1 inline-block h-2 w-2 rounded-full bg-base-content/28 align-middle" aria-hidden />
+          <span
+            className="mr-1 inline-block h-2 w-2 rounded-full bg-base-content/28 align-middle"
+            aria-hidden
+          />
           A fazer: <strong className="font-semibold text-base-content">{buckets.todo}</strong>
         </li>
         <li>
-          <span className="mr-1 inline-block h-2 w-2 rounded-full bg-info align-middle" aria-hidden />
-          Em progresso: <strong className="font-semibold text-base-content">{buckets.inProgress}</strong>
+          <span
+            className="mr-1 inline-block h-2 w-2 rounded-full bg-info align-middle"
+            aria-hidden
+          />
+          Em progresso:{' '}
+          <strong className="font-semibold text-base-content">{buckets.inProgress}</strong>
         </li>
         <li>
-          <span className="mr-1 inline-block h-2 w-2 rounded-full bg-success align-middle" aria-hidden />
+          <span
+            className="mr-1 inline-block h-2 w-2 rounded-full bg-success align-middle"
+            aria-hidden
+          />
           Concluído: <strong className="font-semibold text-base-content">{buckets.done}</strong>
         </li>
         <li className="font-medium text-base-content/65">Total: {buckets.total}</li>

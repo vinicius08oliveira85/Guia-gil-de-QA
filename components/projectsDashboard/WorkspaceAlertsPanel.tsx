@@ -120,13 +120,14 @@ export const WorkspaceAlertsPanel: React.FC<WorkspaceAlertsPanelProps> = ({
           )}
         >
           <p className="mb-1.5 shrink-0 text-xs leading-snug text-base-content/80 sm:text-[13px]">
-            Critério: 2 ou mais bugs abertos, ou taxa de sucesso dos testes abaixo de 70% com casos já executados.
+            Critério: 2 ou mais bugs abertos, ou taxa de sucesso dos testes abaixo de 70% com casos
+            já executados.
           </p>
           <ul
             className="m-0 grid min-h-0 flex-1 list-none grid-cols-2 gap-1.5 overflow-y-auto overscroll-contain p-0 pr-0.5 [scrollbar-gutter:stable] sm:grid-cols-3 sm:gap-2"
             aria-label="Projetos com alerta de saúde"
           >
-            {healthProjects.map((p) => (
+            {healthProjects.map(p => (
               <li key={p.id} className="min-w-0">
                 <button
                   type="button"
@@ -149,7 +150,9 @@ export const WorkspaceAlertsPanel: React.FC<WorkspaceAlertsPanelProps> = ({
               )}
               aria-pressed={listFilterNeedsAttention}
             >
-              {listFilterNeedsAttention ? 'Ver todos os projetos na grade' : 'Filtrar grade: só estes projetos'}
+              {listFilterNeedsAttention
+                ? 'Ver todos os projetos na grade'
+                : 'Filtrar grade: só estes projetos'}
             </button>
           </div>
         </div>
@@ -167,7 +170,10 @@ export const WorkspaceAlertsPanel: React.FC<WorkspaceAlertsPanelProps> = ({
           )}
         >
           <div className="mb-1.5 flex shrink-0 items-start gap-2">
-            <AlertOctagon className="mt-0.5 h-4 w-4 shrink-0 text-error sm:h-5 sm:w-5" aria-hidden />
+            <AlertOctagon
+              className="mt-0.5 h-4 w-4 shrink-0 text-error sm:h-5 sm:w-5"
+              aria-hidden
+            />
             <p className="text-xs leading-snug text-base-content/80 sm:text-[13px]">
               Projetos com ao menos um caso de teste em status <strong>Falhou</strong> ou{' '}
               <strong>Bloqueado</strong>.
@@ -177,7 +183,7 @@ export const WorkspaceAlertsPanel: React.FC<WorkspaceAlertsPanelProps> = ({
             className="m-0 flex min-h-0 flex-1 flex-wrap content-start gap-2 overflow-y-auto overscroll-contain p-0 pr-0.5 [scrollbar-gutter:stable]"
             aria-label="Projetos com falha ou bloqueio em testes"
           >
-            {testExecutionAlertProjects.map((p) => (
+            {testExecutionAlertProjects.map(p => (
               <li key={p.id}>
                 <button
                   type="button"

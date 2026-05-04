@@ -22,10 +22,14 @@ interface StatusBadgeProps {
  * Estilos para cada variante
  */
 const variantStyles: Record<StatusVariant, string> = {
-  connected: 'bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400 border-emerald-500/20',
-  disconnected: 'bg-destructive/10 text-destructive dark:bg-destructive/20 dark:text-destructive-foreground border-destructive/20',
-  configured: 'bg-blue-500/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 border-blue-500/20',
-  warning: 'bg-amber-500/10 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400 border-amber-500/20',
+  connected:
+    'bg-emerald-500/10 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400 border-emerald-500/20',
+  disconnected:
+    'bg-destructive/10 text-destructive dark:bg-destructive/20 dark:text-destructive-foreground border-destructive/20',
+  configured:
+    'bg-blue-500/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 border-blue-500/20',
+  warning:
+    'bg-amber-500/10 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400 border-amber-500/20',
 };
 
 /**
@@ -50,10 +54,10 @@ const ariaLabels: Record<StatusVariant, string> = {
 
 /**
  * Componente StatusBadge com indicador visual (dot)
- * 
+ *
  * Exibe um badge de status com um indicador circular colorido antes do texto.
  * Suporta diferentes variantes semânticas e dark mode.
- * 
+ *
  * @example
  * ```tsx
  * <StatusBadge variant="connected">Conectado</StatusBadge>
@@ -74,14 +78,10 @@ export const StatusBadge = React.memo<StatusBadgeProps>(({ variant, children, cl
       aria-label={`Status: ${label}`}
       role="status"
     >
-      <span
-        className={cn('h-1.5 w-1.5 rounded-full', dotStyles[variant])}
-        aria-hidden="true"
-      />
+      <span className={cn('h-1.5 w-1.5 rounded-full', dotStyles[variant])} aria-hidden="true" />
       {children}
     </span>
   );
 });
 
 StatusBadge.displayName = 'StatusBadge';
-

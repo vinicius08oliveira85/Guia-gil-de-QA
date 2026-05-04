@@ -25,17 +25,13 @@ export function computeOpenBugsByModule(tasks: JiraTask[]): { label: string; cou
 export function countBugsWithReopenLinks(tasks: JiraTask[]): number {
   const reopenRe = /reopen|reopened|reabert|reaberto|re-open/i;
   return tasks.filter(
-    (t) =>
-      t.type === 'Bug' &&
-      (t.issueLinks?.some((l) => reopenRe.test(l.type)) ?? false)
+    t => t.type === 'Bug' && (t.issueLinks?.some(l => reopenRe.test(l.type)) ?? false)
   ).length;
 }
 
 /** Lead time médio (dias) entre criação e conclusão para bugs fechados. */
 export function averageBugLeadTimeDays(tasks: JiraTask[]): number | null {
-  const closed = tasks.filter(
-    (t) => t.type === 'Bug' && t.completedAt && t.createdAt
-  );
+  const closed = tasks.filter(t => t.type === 'Bug' && t.completedAt && t.createdAt);
   if (closed.length === 0) return null;
   let sum = 0;
   for (const b of closed) {
@@ -55,7 +51,7 @@ export function computeStoryWorkflow(tasks: JiraTask[]): {
   done: number;
   total: number;
 } {
-  const stories = tasks.filter((t) => t.type === 'História');
+  const stories = tasks.filter(t => t.type === 'História');
   let todo = 0;
   let inProgress = 0;
   let done = 0;
@@ -70,7 +66,7 @@ export function computeStoryWorkflow(tasks: JiraTask[]): {
 
 /** Uma série por semana (índice 0 = mais antigo, último = semana mais recente): bugs criados. */
 export function defectCreatedPerWeekSeries(tasks: JiraTask[], weekCount = 10): number[] {
-  const bugs = tasks.filter((t) => t.type === 'Bug' && t.createdAt);
+  const bugs = tasks.filter(t => t.type === 'Bug' && t.createdAt);
   const series: number[] = [];
   const now = Date.now();
   for (let i = weekCount - 1; i >= 0; i--) {

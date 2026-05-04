@@ -19,8 +19,8 @@ export function parentLinkCreatesCycle(
     if (cur === taskId) return true;
     if (visited.has(cur)) return true;
     visited.add(cur);
-    const node = taskById.get(cur)!;
-    const next = node.parentId?.trim();
+    const node: TaskFlatNode = taskById.get(cur)!;
+    const next: string | undefined = node.parentId?.trim();
     cur = next ? next : null;
   }
   return false;
@@ -34,10 +34,10 @@ export function normalizeTasksParentIdsAcyclic(
   tasks: JiraTask[],
   options?: { silent?: boolean }
 ): JiraTask[] {
-  const flat: TaskFlatNode[] = tasks.map((t) => ({ id: t.id, parentId: t.parentId }));
-  const map = new Map(flat.map((n) => [n.id, n]));
+  const flat: TaskFlatNode[] = tasks.map(t => ({ id: t.id, parentId: t.parentId }));
+  const map = new Map(flat.map(n => [n.id, n]));
   let cleared = 0;
-  const result = tasks.map((t) => {
+  const result = tasks.map(t => {
     const pid = t.parentId?.trim();
     if (!pid || !map.has(pid)) return t;
     if (parentLinkCreatesCycle(map, t.id, pid)) {
@@ -58,10 +58,7 @@ export function normalizeTasksParentIdsAcyclic(
 }
 
 /** Garante `project.tasks` acíclico sem clonar o projeto quando já está ok. */
-export function withAcyclicTaskParents(
-  project: Project,
-  options?: { silent?: boolean }
-): Project {
+export function withAcyclicTaskParents(project: Project, options?: { silent?: boolean }): Project {
   if (!project.tasks?.length) return project;
   const normalized = normalizeTasksParentIdsAcyclic(project.tasks, options);
   if (normalized === project.tasks) return project;

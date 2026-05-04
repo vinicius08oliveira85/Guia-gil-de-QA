@@ -1,5 +1,14 @@
 import React, { useMemo } from 'react';
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis, Cell } from 'recharts';
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+  Cell,
+} from 'recharts';
 import { Card } from '../../common/Card';
 import { cn } from '../../../utils/cn';
 import type { Project, TestCase } from '../../../types';
@@ -49,7 +58,9 @@ export const DashboardFailuresChart: React.FC<DashboardFailuresChartProps> = ({
     <Card
       className={cn(
         '!p-4 sm:!p-6',
-        clickable && hasFailures && 'cursor-pointer hover:ring-2 hover:ring-primary/25 transition-shadow',
+        clickable &&
+          hasFailures &&
+          'cursor-pointer hover:ring-2 hover:ring-primary/25 transition-shadow',
         className
       )}
       role={clickable && hasFailures ? 'button' : undefined}
@@ -57,7 +68,7 @@ export const DashboardFailuresChart: React.FC<DashboardFailuresChartProps> = ({
       onClick={clickable && hasFailures ? handleClick : undefined}
       onKeyDown={
         clickable && hasFailures
-          ? (e) => {
+          ? e => {
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
                 handleClick();
@@ -69,7 +80,9 @@ export const DashboardFailuresChart: React.FC<DashboardFailuresChartProps> = ({
     >
       <div className="flex items-start justify-between gap-2 mb-2">
         <div>
-          <h4 className="text-base font-semibold text-base-content">Resultado dos casos de teste</h4>
+          <h4 className="text-base font-semibold text-base-content">
+            Resultado dos casos de teste
+          </h4>
           <p className="text-xs text-base-content/60 mt-0.5">
             {clickable && hasFailures
               ? 'Clique no gráfico para abrir a lista de tarefas filtrada por falhas.'
@@ -82,7 +95,11 @@ export const DashboardFailuresChart: React.FC<DashboardFailuresChartProps> = ({
           <BarChart data={rows} margin={{ top: 8, right: 8, left: 0, bottom: 4 }}>
             <CartesianGrid strokeDasharray="3 3" className="stroke-base-300" />
             <XAxis dataKey="name" tick={{ fill: 'hsl(var(--bc) / 0.7)', fontSize: 11 }} />
-            <YAxis allowDecimals={false} tick={{ fill: 'hsl(var(--bc) / 0.6)', fontSize: 11 }} width={36} />
+            <YAxis
+              allowDecimals={false}
+              tick={{ fill: 'hsl(var(--bc) / 0.6)', fontSize: 11 }}
+              width={36}
+            />
             <Tooltip
               contentStyle={{
                 background: 'hsl(var(--b1))',
@@ -91,7 +108,7 @@ export const DashboardFailuresChart: React.FC<DashboardFailuresChartProps> = ({
               }}
             />
             <Bar dataKey="value" radius={[4, 4, 0, 0]} maxBarSize={48}>
-              {rows.map((entry) => (
+              {rows.map(entry => (
                 <Cell
                   key={entry.key}
                   fill={

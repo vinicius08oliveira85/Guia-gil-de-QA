@@ -30,10 +30,11 @@ export const useMetricsHistory = (project: Project, period: 'week' | 'month' = '
     }
 
     const totalTasks = project.tasks?.length ?? 0;
-    const totalStrategies = project.tasks?.reduce((acc, t) => acc + (t.testStrategy?.length ?? 0), 0) ?? 0;
-    const activePhasesCount = metrics.newPhases?.filter(
-      p => p.status === 'Em Andamento' || p.status === 'Concluído'
-    ).length ?? 0;
+    const totalStrategies =
+      project.tasks?.reduce((acc, t) => acc + (t.testStrategy?.length ?? 0), 0) ?? 0;
+    const activePhasesCount =
+      metrics.newPhases?.filter(p => p.status === 'Em Andamento' || p.status === 'Concluído')
+        .length ?? 0;
 
     const snapshot = createMetricsSnapshot(
       metrics.totalTestCases,
@@ -55,7 +56,6 @@ export const useMetricsHistory = (project: Project, period: 'week' | 'month' = '
     updateProject(updatedProject).catch(error => {
       logger.error('Erro ao salvar snapshot de métricas', 'useMetricsHistory', error);
     });
-     
   }, [project.id]); // Apenas quando o projeto mudar (evitar loop infinito)
 
   // Obter métricas do período atual e anterior
@@ -79,4 +79,3 @@ export const useMetricsHistory = (project: Project, period: 'week' | 'month' = '
     history: project.metricsHistory || [],
   };
 };
-

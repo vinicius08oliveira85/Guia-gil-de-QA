@@ -40,7 +40,7 @@ export class FigmaService {
 
   constructor(apiToken?: string) {
     this.apiToken = apiToken || process.env.VITE_FIGMA_API_TOKEN || '';
-    
+
     if (!this.apiToken) {
       logger.warn('Figma API token não configurado. Configure VITE_FIGMA_API_TOKEN');
     }
@@ -68,14 +68,11 @@ export class FigmaService {
    */
   async getLocalVariables(fileKey: string): Promise<FigmaVariable[]> {
     try {
-      const response = await axios.get(
-        `${this.baseUrl}/files/${fileKey}/variables/local`,
-        {
-          headers: {
-            'X-Figma-Token': this.apiToken,
-          },
-        }
-      );
+      const response = await axios.get(`${this.baseUrl}/files/${fileKey}/variables/local`, {
+        headers: {
+          'X-Figma-Token': this.apiToken,
+        },
+      });
       return response.data.meta?.variables || [];
     } catch (error) {
       logger.error('Erro ao buscar variáveis do Figma', 'FigmaService', error);
@@ -126,7 +123,7 @@ export class FigmaService {
   convertVariablesToTokens(variables: FigmaVariable[]): Record<string, unknown> {
     const tokens: Record<string, unknown> = {};
 
-    variables.forEach((variable) => {
+    variables.forEach(variable => {
       const path = variable.name.split('/');
       let current = tokens;
 
@@ -156,20 +153,20 @@ export class FigmaService {
   private convertFigmaValue(value: unknown, type: string): string | number {
     if (typeof value === 'object' && value !== null) {
       const figmaValue = value as Record<string, unknown>;
-      
+
       if (type === 'COLOR') {
         const r = (figmaValue.r as number) * 255;
         const g = (figmaValue.g as number) * 255;
         const b = (figmaValue.b as number) * 255;
         const a = figmaValue.a as number | undefined;
-        
+
         if (a !== undefined && a < 1) {
           return `rgba(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)}, ${a})`;
         }
         return `rgb(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)})`;
       }
     }
-    
+
     return String(value);
   }
 
@@ -197,4 +194,3 @@ export class FigmaService {
  * Instância singleton do serviço
  */
 export const figmaService = new FigmaService();
-

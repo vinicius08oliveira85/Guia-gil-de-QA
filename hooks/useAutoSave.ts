@@ -55,10 +55,10 @@ export const useAutoSave = ({
     }
 
     // Mudanças em status de casos de teste
-    const oldTestStatuses = oldProject.tasks.flatMap(t => 
+    const oldTestStatuses = oldProject.tasks.flatMap(t =>
       (t.testCases || []).map(tc => ({ taskId: t.id, testCaseId: tc.id, status: tc.status }))
     );
-    const newTestStatuses = newProject.tasks.flatMap(t => 
+    const newTestStatuses = newProject.tasks.flatMap(t =>
       (t.testCases || []).map(tc => ({ taskId: t.id, testCaseId: tc.id, status: tc.status }))
     );
     if (JSON.stringify(oldTestStatuses) !== JSON.stringify(newTestStatuses)) {
@@ -69,30 +69,33 @@ export const useAutoSave = ({
         );
         return !oldStatus || oldStatus.status !== newStatus.status;
       });
-      
+
       const statusChanges = changedStatuses.filter(s => s.status !== 'Not Run').length;
-      
+
       logger.debug(`Mudança crítica detectada: status de testes alterados`, 'useAutoSave', {
         totalMudancas: changedStatuses.length,
         mudancasComStatus: statusChanges,
         exemplo: changedStatuses.slice(0, 3).map(s => ({
           taskId: s.taskId,
           testCaseId: s.testCaseId,
-          novoStatus: s.status
-        }))
+          novoStatus: s.status,
+        })),
       });
-      
+
       return true;
     }
 
     // Mudanças em análises
-    if (oldProject.shiftLeftAnalysis !== newProject.shiftLeftAnalysis ||
-        oldProject.testPyramidAnalysis !== newProject.testPyramidAnalysis ||
-        oldProject.generalIAAnalysis !== newProject.generalIAAnalysis ||
-        oldProject.dashboardOverviewAnalysis !== newProject.dashboardOverviewAnalysis ||
-        oldProject.dashboardInsightsAnalysis !== newProject.dashboardInsightsAnalysis ||
-        oldProject.sdlcPhaseAnalysis !== newProject.sdlcPhaseAnalysis ||
-        (oldProject.projectFullAnalyses?.length ?? 0) !== (newProject.projectFullAnalyses?.length ?? 0)) {
+    if (
+      oldProject.shiftLeftAnalysis !== newProject.shiftLeftAnalysis ||
+      oldProject.testPyramidAnalysis !== newProject.testPyramidAnalysis ||
+      oldProject.generalIAAnalysis !== newProject.generalIAAnalysis ||
+      oldProject.dashboardOverviewAnalysis !== newProject.dashboardOverviewAnalysis ||
+      oldProject.dashboardInsightsAnalysis !== newProject.dashboardInsightsAnalysis ||
+      oldProject.sdlcPhaseAnalysis !== newProject.sdlcPhaseAnalysis ||
+      (oldProject.projectFullAnalyses?.length ?? 0) !==
+        (newProject.projectFullAnalyses?.length ?? 0)
+    ) {
       return true;
     }
 
@@ -109,24 +112,27 @@ export const useAutoSave = ({
   /**
    * Persiste o projeto localmente (IndexedDB), sem enviar ao Supabase.
    */
-  const saveProject = useCallback(async (projectToSave: Project) => {
-    if (isSavingRef.current) {
-      logger.debug('Salvamento já em progresso, aguardando...', 'useAutoSave');
-      return;
-    }
+  const saveProject = useCallback(
+    async (projectToSave: Project) => {
+      if (isSavingRef.current) {
+        logger.debug('Salvamento já em progresso, aguardando...', 'useAutoSave');
+        return;
+      }
 
-    try {
-      isSavingRef.current = true;
-      logger.debug(`Auto-save: salvando projeto "${projectToSave.name}"`, 'useAutoSave');
-      await updateProject(projectToSave, { silent: true });
-      logger.debug(`Auto-save: projeto "${projectToSave.name}" salvo com sucesso`, 'useAutoSave');
-    } catch (error) {
-      logger.warn('Erro no auto-save (projeto salvo localmente)', 'useAutoSave', error);
-      // Não lançar erro - projeto já está salvo localmente
-    } finally {
-      isSavingRef.current = false;
-    }
-  }, [updateProject]);
+      try {
+        isSavingRef.current = true;
+        logger.debug(`Auto-save: salvando projeto "${projectToSave.name}"`, 'useAutoSave');
+        await updateProject(projectToSave, { silent: true });
+        logger.debug(`Auto-save: projeto "${projectToSave.name}" salvo com sucesso`, 'useAutoSave');
+      } catch (error) {
+        logger.warn('Erro no auto-save (projeto salvo localmente)', 'useAutoSave', error);
+        // Não lançar erro - projeto já está salvo localmente
+      } finally {
+        isSavingRef.current = false;
+      }
+    },
+    [updateProject]
+  );
 
   /**
    * Efeito que monitora mudanças no projeto
@@ -239,34 +245,36 @@ export const useAutoSave = ({
    * Força o salvamento imediato do projeto e aguarda conclusão
    * Útil quando precisamos garantir que o projeto está salvo antes de uma operação crítica
    */
-  const forceSaveAndWait = useCallback(async (projectToSave: Project): Promise<void> => {
-    // Limpar timeout pendente se houver
-    if (saveTimeoutRef.current) {
-      clearTimeout(saveTimeoutRef.current);
-      saveTimeoutRef.current = null;
-    }
+  const forceSaveAndWait = useCallback(
+    async (projectToSave: Project): Promise<void> => {
+      // Limpar timeout pendente se houver
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+        saveTimeoutRef.current = null;
+      }
 
-    // Aguardar salvamento em progresso se houver
-    let waitCount = 0;
-    while (isSavingRef.current && waitCount < 50) {
-      await new Promise(resolve => setTimeout(resolve, 100));
-      waitCount++;
-    }
+      // Aguardar salvamento em progresso se houver
+      let waitCount = 0;
+      while (isSavingRef.current && waitCount < 50) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+        waitCount++;
+      }
 
-    // Forçar salvamento imediato
-    await saveProject(projectToSave);
-    
-    // Aguardar conclusão
-    waitCount = 0;
-    while (isSavingRef.current && waitCount < 50) {
-      await new Promise(resolve => setTimeout(resolve, 100));
-      waitCount++;
-    }
-  }, [saveProject]);
+      // Forçar salvamento imediato
+      await saveProject(projectToSave);
+
+      // Aguardar conclusão
+      waitCount = 0;
+      while (isSavingRef.current && waitCount < 50) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+        waitCount++;
+      }
+    },
+    [saveProject]
+  );
 
   // Retornar função para forçar salvamento (opcional, para uso externo)
   return {
     forceSaveAndWait,
   };
 };
-

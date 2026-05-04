@@ -8,34 +8,40 @@ interface ChangeHistoryProps {
   project: Project;
 }
 
-export const ChangeHistory: React.FC<ChangeHistoryProps> = ({
-  project
-}) => {
+export const ChangeHistory: React.FC<ChangeHistoryProps> = ({ project }) => {
   const [filter, setFilter] = useState<'all' | 'CREATE' | 'UPDATE' | 'DELETE'>('all');
-  
+
   const logs = useMemo(() => {
     const allLogs = getAuditLogs();
     const projectLogs = allLogs.filter(log => log.entityId === project.id);
-    
+
     if (filter === 'all') return projectLogs;
     return projectLogs.filter(log => log.action === filter);
   }, [project.id, filter]);
 
   const getActionIcon = (action: string) => {
     switch (action) {
-      case 'CREATE': return '➕';
-      case 'UPDATE': return '✏️';
-      case 'DELETE': return '🗑️';
-      default: return '📝';
+      case 'CREATE':
+        return '➕';
+      case 'UPDATE':
+        return '✏️';
+      case 'DELETE':
+        return '🗑️';
+      default:
+        return '📝';
     }
   };
 
   const getActionColor = (action: string): 'default' | 'success' | 'warning' | 'error' | 'info' => {
     switch (action) {
-      case 'CREATE': return 'success';
-      case 'UPDATE': return 'info';
-      case 'DELETE': return 'error';
-      default: return 'default';
+      case 'CREATE':
+        return 'success';
+      case 'UPDATE':
+        return 'info';
+      case 'DELETE':
+        return 'error';
+      default:
+        return 'default';
     }
   };
 
@@ -72,9 +78,7 @@ export const ChangeHistory: React.FC<ChangeHistoryProps> = ({
                   <span className="text-2xl">{getActionIcon(log.action)}</span>
                   <div>
                     <div className="flex items-center gap-2">
-                      <Badge variant={getActionColor(log.action)}>
-                        {log.action}
-                      </Badge>
+                      <Badge variant={getActionColor(log.action)}>{log.action}</Badge>
                       <span className="text-text-primary font-semibold">{log.entityName}</span>
                     </div>
                     <div className="text-sm text-text-secondary mt-1">
@@ -82,34 +86,30 @@ export const ChangeHistory: React.FC<ChangeHistoryProps> = ({
                     </div>
                   </div>
                 </div>
-                <span className="text-xs text-text-secondary">
-                  {formatDateTime(log.timestamp)}
-                </span>
+                <span className="text-xs text-text-secondary">{formatDateTime(log.timestamp)}</span>
               </div>
-              
+
               {log.changes && Object.keys(log.changes).length > 0 && (
                 <div className="mt-3 pt-3 border-t border-surface-border">
                   <div className="text-sm text-text-secondary mb-2">Mudanças:</div>
                   <div className="space-y-1">
-                    {log.changes && Object.entries(log.changes).map(([field, change]: [string, any]) => (
-                      <div key={field} className="text-sm">
-                        <span className="text-text-primary font-semibold">{field}:</span>
-                        <span className="text-red-400 line-through ml-2">{change.old}</span>
-                        <span className="text-green-400 ml-2">→ {change.new}</span>
-                      </div>
-                    ))}
+                    {log.changes &&
+                      Object.entries(log.changes).map(([field, change]: [string, any]) => (
+                        <div key={field} className="text-sm">
+                          <span className="text-text-primary font-semibold">{field}:</span>
+                          <span className="text-red-400 line-through ml-2">{change.old}</span>
+                          <span className="text-green-400 ml-2">→ {change.new}</span>
+                        </div>
+                      ))}
                   </div>
                 </div>
               )}
             </div>
           ))
         ) : (
-          <div className="text-center py-8 text-text-secondary">
-            Nenhum histórico disponível
-          </div>
+          <div className="text-center py-8 text-text-secondary">Nenhum histórico disponível</div>
         )}
       </div>
     </div>
   );
 };
-

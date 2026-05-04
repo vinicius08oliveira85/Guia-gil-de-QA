@@ -41,7 +41,7 @@ function toRelativeUrlWithSearch(search: string): string {
 }
 
 function isSelectedProjectValid(selectedProjectId: string, projects: Project[]): boolean {
-  return projects.some((p) => p.id === selectedProjectId);
+  return projects.some(p => p.id === selectedProjectId);
 }
 
 /**
@@ -133,12 +133,11 @@ export function useRouterSync({
     if (typeof window === 'undefined') return;
     if (isLoading) return;
 
-    const desired: ParsedRoute =
-      showSettings
-        ? { type: 'settings' }
-        : selectedProjectId
-          ? { type: 'project', projectId: selectedProjectId }
-          : { type: 'dashboard' };
+    const desired: ParsedRoute = showSettings
+      ? { type: 'settings' }
+      : selectedProjectId
+        ? { type: 'project', projectId: selectedProjectId }
+        : { type: 'dashboard' };
 
     const desiredSearch = buildCanonicalSearch(desired);
     if (window.location.search === desiredSearch) return;
@@ -146,5 +145,3 @@ export function useRouterSync({
     window.history.replaceState({}, '', toRelativeUrlWithSearch(desiredSearch));
   }, [selectedProjectId, showSettings, isLoading]);
 }
-
-

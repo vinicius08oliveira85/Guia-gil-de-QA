@@ -11,26 +11,25 @@ interface ProjectComparisonProps {
 
 export const ProjectComparison: React.FC<ProjectComparisonProps> = ({
   projects,
-  onProjectSelect
+  onProjectSelect,
 }) => {
   const [selectedProjects, setSelectedProjects] = useState<string[]>([]);
 
   const toggleProject = (projectId: string) => {
     setSelectedProjects(prev =>
-      prev.includes(projectId)
-        ? prev.filter(id => id !== projectId)
-        : [...prev, projectId]
+      prev.includes(projectId) ? prev.filter(id => id !== projectId) : [...prev, projectId]
     );
   };
 
-  const projectsToCompare = useMemo(() => 
-    projects.filter(p => selectedProjects.includes(p.id)),
-  [projects, selectedProjects]);
+  const projectsToCompare = useMemo(
+    () => projects.filter(p => selectedProjects.includes(p.id)),
+    [projects, selectedProjects]
+  );
 
   const projectsWithMetrics = useMemo(() => {
     return projectsToCompare.map(project => ({
       project,
-      metrics: calculateProjectMetrics(project)
+      metrics: calculateProjectMetrics(project),
     }));
   }, [projectsToCompare]);
 
@@ -125,7 +124,13 @@ export const ProjectComparison: React.FC<ProjectComparisonProps> = ({
                 {projectsWithMetrics.map(({ project, metrics }) => (
                   <td key={project.id} className="p-3">
                     <Badge
-                      variant={metrics.testPassRate >= 80 ? 'success' : metrics.testPassRate >= 60 ? 'warning' : 'error'}
+                      variant={
+                        metrics.testPassRate >= 80
+                          ? 'success'
+                          : metrics.testPassRate >= 60
+                            ? 'warning'
+                            : 'error'
+                      }
                     >
                       {Math.round(metrics.testPassRate)}%
                     </Badge>

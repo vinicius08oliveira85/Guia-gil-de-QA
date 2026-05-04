@@ -28,7 +28,14 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
 }) => {
   const list: BreadcrumbItem[] =
     showHome && onHomeClick
-      ? [{ label: 'Início', icon: <Home className="h-3.5 w-3.5" aria-hidden />, onClick: onHomeClick }, ...items]
+      ? [
+          {
+            label: 'Início',
+            icon: <Home className="h-3.5 w-3.5" aria-hidden />,
+            onClick: onHomeClick,
+          },
+          ...items,
+        ]
       : items;
 
   return (
@@ -58,7 +65,9 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
             itemScope
             itemType="https://schema.org/ListItem"
           >
-            {index > 0 && <ChevronRight className="h-3.5 w-3.5 shrink-0 text-base-content/40" aria-hidden />}
+            {index > 0 && (
+              <ChevronRight className="h-3.5 w-3.5 shrink-0 text-base-content/40" aria-hidden />
+            )}
             {item.onClick ? (
               <button
                 type="button"

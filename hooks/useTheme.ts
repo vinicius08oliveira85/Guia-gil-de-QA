@@ -31,9 +31,9 @@ export const useTheme = () => {
     // Remover classes legadas; `dark` do Tailwind alinha `dark:` com `data-theme="dark"`.
     root.classList.remove('light', 'leve-saude');
     if (themeToApply === 'dark') {
-        root.classList.add('dark');
+      root.classList.add('dark');
     } else {
-        root.classList.remove('dark');
+      root.classList.remove('dark');
     }
 
     localStorage.setItem('theme', theme);
@@ -53,4 +53,3 @@ export const useTheme = () => {
 
   return { theme, setTheme, toggleTheme, isOnlyLightSupported };
 };
-

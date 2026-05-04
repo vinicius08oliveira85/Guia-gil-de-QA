@@ -31,7 +31,7 @@ export const AnalysisSection: React.FC<AnalysisSectionProps> = ({
   filters,
   emptyState,
   count,
-  subtitle
+  subtitle,
 }) => {
   const [expanded, setExpanded] = useState(defaultExpanded);
   const [showFilters, setShowFilters] = useState(false);
@@ -72,7 +72,12 @@ export const AnalysisSection: React.FC<AnalysisSectionProps> = ({
                 title="Visualização em lista"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 6h16M4 12h16M4 18h16"
+                  />
                 </svg>
               </button>
               <button
@@ -121,7 +126,12 @@ export const AnalysisSection: React.FC<AnalysisSectionProps> = ({
               viewBox="0 0 24 24"
               stroke="currentColor"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 9l-7 7-7-7"
+              />
             </svg>
           </button>
         </div>
@@ -140,12 +150,12 @@ export const AnalysisSection: React.FC<AnalysisSectionProps> = ({
           {hasContent ? (
             <div
               className={cn(
-                "transition-all",
+                'transition-all',
                 viewMode === 'grid'
-                  ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                  ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'
                   : viewMode === 'list'
-                  ? "space-y-4"
-                  : "space-y-6"
+                    ? 'space-y-4'
+                    : 'space-y-6'
               )}
             >
               {children}
@@ -154,9 +164,7 @@ export const AnalysisSection: React.FC<AnalysisSectionProps> = ({
             emptyState && (
               <div className="flex flex-col items-center justify-center py-16 text-center">
                 <span className="text-7xl mb-6">{emptyState.icon}</span>
-                <h4 className="text-xl font-semibold text-base-content mb-3">
-                  {emptyState.title}
-                </h4>
+                <h4 className="text-xl font-semibold text-base-content mb-3">{emptyState.title}</h4>
                 <p className="text-base text-base-content/70 max-w-md leading-relaxed">
                   {emptyState.description}
                 </p>
@@ -168,4 +176,3 @@ export const AnalysisSection: React.FC<AnalysisSectionProps> = ({
     </div>
   );
 };
-

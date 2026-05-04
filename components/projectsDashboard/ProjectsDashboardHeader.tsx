@@ -70,7 +70,7 @@ export const ProjectsDashboardHeader: React.FC<ProjectsDashboardHeaderProps> = (
                 <span className="text-xs font-medium text-base-content/65">Ordenar</span>
                 <select
                   value={sortBy}
-                  onChange={(e) => onSortByChange(e.target.value as ProjectsDashboardSortBy)}
+                  onChange={e => onSortByChange(e.target.value as ProjectsDashboardSortBy)}
                   className="select select-bordered select-sm h-9 min-h-[44px] rounded-xl border-base-300/80 bg-base-100/90 py-1 text-xs shadow-sm backdrop-blur-sm transition-[box-shadow,border-color] focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20 sm:min-h-8 sm:h-8 sm:rounded-lg"
                   aria-label="Ordenar projetos por"
                 >
@@ -85,8 +85,8 @@ export const ProjectsDashboardHeader: React.FC<ProjectsDashboardHeaderProps> = (
         {/* Linha 2: descrição | indicadores (rolagem horizontal no mobile quando necessário) */}
         <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
           <p className="max-w-2xl text-sm leading-snug text-base-content/80 sm:flex-1 sm:min-w-[14rem] sm:leading-relaxed">
-            Crie, organize e acompanhe o QA por projeto — templates, métricas e integrações opcionais quando fizer
-            sentido.
+            Crie, organize e acompanhe o QA por projeto — templates, métricas e integrações
+            opcionais quando fizer sentido.
           </p>
           {showIndicatorStrip && (
             <div

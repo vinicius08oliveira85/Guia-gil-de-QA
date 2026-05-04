@@ -1,6 +1,14 @@
 import React, { useMemo } from 'react';
 import { Card } from '../../common/Card';
-import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
 import { Project } from '../../../types';
 import { useProjectMetrics } from '../../../hooks/useProjectMetrics';
 import { cn } from '../../../utils/cn';
@@ -36,7 +44,7 @@ const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload, label })
   if (active && payload && payload.length) {
     // Calcular total de testes
     const total = payload.reduce((sum, entry) => sum + (entry.value || 0), 0);
-    
+
     // Mapear nomes para português
     const nameMap: Record<string, string> = {
       passed: 'Aprovados',
@@ -45,12 +53,14 @@ const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload, label })
     };
 
     return (
-      <div className={cn(
-        'rounded-lg border border-base-300',
-        'bg-base-100 shadow-lg',
-        'p-4 min-w-[200px]',
-        'backdrop-blur-sm'
-      )}>
+      <div
+        className={cn(
+          'rounded-lg border border-base-300',
+          'bg-base-100 shadow-lg',
+          'p-4 min-w-[200px]',
+          'backdrop-blur-sm'
+        )}
+      >
         <p className="mb-3 font-semibold text-base-content text-sm border-b border-base-300 pb-2">
           {label}
         </p>
@@ -64,12 +74,8 @@ const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload, label })
                   style={{ backgroundColor: entry.color }}
                   aria-hidden="true"
                 />
-                <span className="text-xs text-base-content/70 flex-1">
-                  {displayName}:
-                </span>
-                <span className="font-semibold text-base-content text-sm">
-                  {entry.value || 0}
-                </span>
+                <span className="text-xs text-base-content/70 flex-1">{displayName}:</span>
+                <span className="font-semibold text-base-content text-sm">{entry.value || 0}</span>
               </div>
             );
           })}
@@ -90,7 +96,7 @@ const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload, label })
 
 /**
  * Gráfico de área mostrando status de execução de testes ao longo do tempo
- * 
+ *
  * @example
  * ```tsx
  * <TestExecutionChart project={project} />
@@ -104,12 +110,12 @@ export const TestExecutionChart = React.memo<TestExecutionChartProps>(({ project
     const history = project.metricsHistory || [];
     const days = 7;
     const data = [];
-    
+
     // Se temos histórico, usar os últimos 7 dias
     if (history.length > 0) {
       const recentHistory = history.slice(0, Math.min(days, history.length));
       const dayNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-      
+
       for (let i = 0; i < days; i++) {
         const historyItem = recentHistory[i];
         if (historyItem) {
@@ -134,11 +140,11 @@ export const TestExecutionChart = React.memo<TestExecutionChartProps>(({ project
       // Se não há histórico, criar dados baseados nas métricas atuais
       const dayNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
       const today = new Date();
-      
+
       for (let i = 0; i < days; i++) {
         const dayIndex = (today.getDay() - (days - 1 - i) + 7) % 7;
         // Distribuir os dados atuais proporcionalmente
-        const factor = 0.7 + (Math.random() * 0.6); // Variação de 70% a 130%
+        const factor = 0.7 + Math.random() * 0.6; // Variação de 70% a 130%
         data.push({
           date: dayNames[dayIndex] || `Dia ${i + 1}`,
           passed: Math.round(metrics.passedTestCases * factor),
@@ -147,7 +153,7 @@ export const TestExecutionChart = React.memo<TestExecutionChartProps>(({ project
         });
       }
     }
-    
+
     return data.reverse(); // Mais antigo primeiro
   }, [project.metricsHistory, metrics]);
 
@@ -165,10 +171,7 @@ export const TestExecutionChart = React.memo<TestExecutionChartProps>(({ project
         </div>
         <div className="h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart
-              data={chartData}
-              margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
-            >
+            <AreaChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
               <defs>
                 <linearGradient id="passedGradient" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor={passedColor} stopOpacity={0.6} />
@@ -183,41 +186,37 @@ export const TestExecutionChart = React.memo<TestExecutionChartProps>(({ project
                   <stop offset="95%" stopColor={pendingColor} stopOpacity={0.1} />
                 </linearGradient>
               </defs>
-              <CartesianGrid 
-                strokeDasharray="3 3" 
-                stroke="hsl(var(--bc) / 0.1)" 
-                opacity={0.3}
-              />
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--bc) / 0.1)" opacity={0.3} />
               <XAxis
                 dataKey="date"
-                tick={{ 
-                  fill: 'hsl(var(--bc) / 0.7)', 
-                  fontSize: 12 
+                tick={{
+                  fill: 'hsl(var(--bc) / 0.7)',
+                  fontSize: 12,
                 }}
                 stroke="hsl(var(--bc) / 0.3)"
               />
               <YAxis
-                tick={{ 
-                  fill: 'hsl(var(--bc) / 0.7)', 
-                  fontSize: 12 
+                tick={{
+                  fill: 'hsl(var(--bc) / 0.7)',
+                  fontSize: 12,
                 }}
                 stroke="hsl(var(--bc) / 0.3)"
                 label={{
                   value: 'Quantidade de Testes',
                   angle: -90,
                   position: 'insideLeft',
-                  style: { 
-                    fill: 'hsl(var(--bc) / 0.7)', 
-                    fontSize: 12 
+                  style: {
+                    fill: 'hsl(var(--bc) / 0.7)',
+                    fontSize: 12,
                   },
                 }}
               />
               <Tooltip
                 content={<CustomTooltip />}
-                cursor={{ 
-                  stroke: 'hsl(var(--bc) / 0.2)', 
+                cursor={{
+                  stroke: 'hsl(var(--bc) / 0.2)',
                   strokeWidth: 1,
-                  strokeDasharray: '5 5'
+                  strokeDasharray: '5 5',
                 }}
               />
               <Area

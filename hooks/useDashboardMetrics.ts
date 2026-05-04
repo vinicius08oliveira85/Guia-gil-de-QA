@@ -50,8 +50,8 @@ export function useDashboardMetrics(project: Project): DashboardMetrics {
     const m = computeProjectDashboardDeterministicMetrics(tasks);
 
     const statusPieData: DashboardPieSlice[] = m.statusDistribution
-      .filter((s) => s.value > 0)
-      .map((s) => ({
+      .filter(s => s.value > 0)
+      .map(s => ({
         name: s.name,
         value: s.value,
         fill: s.fill ?? 'oklch(var(--p))',
@@ -60,7 +60,10 @@ export function useDashboardMetrics(project: Project): DashboardMetrics {
     const workloadByMember: DashboardMemberBarRow[] = m.assigneeDistribution.map((row, i) => ({
       name: row.name,
       value: row.value,
-      fill: row.name === 'Outros' ? 'oklch(var(--bc) / 0.35)' : MEMBER_BAR_FILLS[i % MEMBER_BAR_FILLS.length],
+      fill:
+        row.name === 'Outros'
+          ? 'oklch(var(--bc) / 0.35)'
+          : MEMBER_BAR_FILLS[i % MEMBER_BAR_FILLS.length],
     }));
 
     return {

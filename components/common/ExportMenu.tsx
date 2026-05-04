@@ -6,7 +6,7 @@ import {
   exportProjectToCSV,
   exportTestCasesToCSV,
   generateProjectReport,
-  downloadFile
+  downloadFile,
 } from '../../utils/exportService';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 
@@ -25,7 +25,10 @@ export const ExportMenu: React.FC<ExportMenuProps> = ({ project, onClose }) => {
       toast.success('Projeto exportado como JSON com sucesso!');
       onClose();
     } catch (error) {
-      handleError(error instanceof Error ? error : new Error('Erro ao exportar JSON'), 'Exportar JSON');
+      handleError(
+        error instanceof Error ? error : new Error('Erro ao exportar JSON'),
+        'Exportar JSON'
+      );
     }
   };
 
@@ -36,7 +39,10 @@ export const ExportMenu: React.FC<ExportMenuProps> = ({ project, onClose }) => {
       toast.success('Tarefas exportadas como CSV com sucesso!');
       onClose();
     } catch (error) {
-      handleError(error instanceof Error ? error : new Error('Erro ao exportar CSV'), 'Exportar CSV');
+      handleError(
+        error instanceof Error ? error : new Error('Erro ao exportar CSV'),
+        'Exportar CSV'
+      );
     }
   };
 
@@ -47,7 +53,10 @@ export const ExportMenu: React.FC<ExportMenuProps> = ({ project, onClose }) => {
       toast.success('Casos de teste exportados como CSV com sucesso!');
       onClose();
     } catch (error) {
-      handleError(error instanceof Error ? error : new Error('Erro ao exportar casos de teste'), 'Exportar CSV');
+      handleError(
+        error instanceof Error ? error : new Error('Erro ao exportar casos de teste'),
+        'Exportar CSV'
+      );
     }
   };
 
@@ -58,7 +67,10 @@ export const ExportMenu: React.FC<ExportMenuProps> = ({ project, onClose }) => {
       toast.success('Relatório gerado em Markdown com sucesso!');
       onClose();
     } catch (error) {
-      handleError(error instanceof Error ? error : new Error('Erro ao gerar relatório'), 'Gerar relatório');
+      handleError(
+        error instanceof Error ? error : new Error('Erro ao gerar relatório'),
+        'Gerar relatório'
+      );
     }
   };
 
@@ -110,4 +122,3 @@ export const ExportMenu: React.FC<ExportMenuProps> = ({ project, onClose }) => {
     </div>
   );
 };
-

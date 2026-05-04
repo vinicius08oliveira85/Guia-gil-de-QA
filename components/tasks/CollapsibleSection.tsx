@@ -14,7 +14,7 @@ export const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
   title,
   children,
   defaultExpanded = true,
-  icon
+  icon,
 }) => {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
 
@@ -40,12 +40,7 @@ export const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
         </svg>
       </button>
-      {isExpanded && (
-        <div className="p-sm">
-          {children}
-        </div>
-      )}
+      {isExpanded && <div className="p-sm">{children}</div>}
     </div>
   );
 };
-

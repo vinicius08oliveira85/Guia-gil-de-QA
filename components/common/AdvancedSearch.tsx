@@ -11,29 +11,37 @@ interface AdvancedSearchProps {
 export const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
   projects,
   onResultSelect,
-  onClose
+  onClose,
 }) => {
   const { searchQuery, setSearchQuery, searchResults } = useSearch(projects);
 
   const getTypeIcon = (type: SearchResult['type']) => {
     switch (type) {
-      case 'project': return '📁';
-      case 'task': return '📋';
-      case 'document': return '📄';
-      case 'testcase': return '✅';
-      default: return '🔍';
+      case 'project':
+        return '📁';
+      case 'task':
+        return '📋';
+      case 'document':
+        return '📄';
+      case 'testcase':
+        return '✅';
+      default:
+        return '🔍';
     }
   };
-  
+
   // Filtrar resultados baseado na query
   const filteredResults = useMemo(() => {
     if (!searchQuery.trim()) return [];
-    
+
     const query = searchQuery.toLowerCase();
     const operators = {
       'status:': (result: any) => {
         const status = query.split('status:')[1]?.split(' ')[0];
-        return result.type === 'task' && (result.status ?? '').toLowerCase().includes((status ?? '').toLowerCase());
+        return (
+          result.type === 'task' &&
+          (result.status ?? '').toLowerCase().includes((status ?? '').toLowerCase())
+        );
       },
       'type:': (result: any) => {
         const type = query.split('type:')[1]?.split(' ')[0];
@@ -41,30 +49,31 @@ export const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
       },
       'tag:': (result: any) => {
         const tag = query.split('tag:')[1]?.split(' ')[0];
-        return result.tags?.some((t: string) => (t ?? '').toLowerCase().includes((tag ?? '').toLowerCase()));
+        return result.tags?.some((t: string) =>
+          (t ?? '').toLowerCase().includes((tag ?? '').toLowerCase())
+        );
       },
       'project:': (result: any) => {
         const projectName = query.split('project:')[1]?.split(' ')[0];
         return (result.projectName ?? '').toLowerCase().includes((projectName ?? '').toLowerCase());
-      }
+      },
     };
-    
+
     // Verificar se há operadores
     const hasOperator = Object.keys(operators).some(op => query.includes(op));
-    
+
     if (hasOperator) {
       return searchResults.filter(result => {
-        return Object.entries(operators).some(([op, fn]) => 
-          query.includes(op) && fn(result)
-        );
+        return Object.entries(operators).some(([op, fn]) => query.includes(op) && fn(result));
       });
     }
-    
+
     // Busca normal
-    return searchResults.filter(result =>
-      result.title?.toLowerCase().includes(query) ||
-      result.description?.toLowerCase().includes(query) ||
-      result.id?.toLowerCase().includes(query)
+    return searchResults.filter(
+      result =>
+        result.title?.toLowerCase().includes(query) ||
+        result.description?.toLowerCase().includes(query) ||
+        result.id?.toLowerCase().includes(query)
     );
   }, [searchQuery, searchResults]);
 
@@ -82,7 +91,7 @@ export const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
               ✕
             </button>
           </div>
-          
+
           <div className="space-y-2">
             <label htmlFor="advanced-search-input" className="sr-only">
               Buscar por status, tipo, tag, projeto ou texto livre
@@ -91,23 +100,52 @@ export const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
               id="advanced-search-input"
               type="text"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={e => setSearchQuery(e.target.value)}
               placeholder="Buscar... (use: status:, type:, tag:, project:)"
               aria-describedby="search-operators-description"
               className="input input-bordered w-full"
               autoFocus
             />
-            
-            <div id="search-operators-description" className="space-y-1 text-xs text-base-content/70">
-              <div><strong>Operadores disponíveis:</strong></div>
-              <div>• <code className="rounded-md bg-base-200 px-1.5 py-0.5 text-base-content">status:done</code> - Filtrar por status</div>
-              <div>• <code className="rounded-md bg-base-200 px-1.5 py-0.5 text-base-content">type:bug</code> - Filtrar por tipo</div>
-              <div>• <code className="rounded-md bg-base-200 px-1.5 py-0.5 text-base-content">tag:crítico</code> - Filtrar por tag</div>
-              <div>• <code className="rounded-md bg-base-200 px-1.5 py-0.5 text-base-content">project:nome</code> - Filtrar por projeto</div>
+
+            <div
+              id="search-operators-description"
+              className="space-y-1 text-xs text-base-content/70"
+            >
+              <div>
+                <strong>Operadores disponíveis:</strong>
+              </div>
+              <div>
+                •{' '}
+                <code className="rounded-md bg-base-200 px-1.5 py-0.5 text-base-content">
+                  status:done
+                </code>{' '}
+                - Filtrar por status
+              </div>
+              <div>
+                •{' '}
+                <code className="rounded-md bg-base-200 px-1.5 py-0.5 text-base-content">
+                  type:bug
+                </code>{' '}
+                - Filtrar por tipo
+              </div>
+              <div>
+                •{' '}
+                <code className="rounded-md bg-base-200 px-1.5 py-0.5 text-base-content">
+                  tag:crítico
+                </code>{' '}
+                - Filtrar por tag
+              </div>
+              <div>
+                •{' '}
+                <code className="rounded-md bg-base-200 px-1.5 py-0.5 text-base-content">
+                  project:nome
+                </code>{' '}
+                - Filtrar por projeto
+              </div>
             </div>
           </div>
         </div>
-        
+
         <div className="p-4 max-h-[60vh] sm:max-h-96 overflow-y-auto">
           {filteredResults.length > 0 ? (
             <div className="space-y-2">
@@ -127,9 +165,7 @@ export const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
                         <span className="text-lg">{getTypeIcon(result.type)}</span>
                         <span className="font-semibold text-base-content">{result.title}</span>
                         {result.type && (
-                          <span className="badge badge-outline badge-sm">
-                            {result.type}
-                          </span>  
+                          <span className="badge badge-outline badge-sm">{result.type}</span>
                         )}
                       </div>
                       {result.description && (
@@ -149,13 +185,9 @@ export const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
               ))}
             </div>
           ) : searchQuery.trim() ? (
-            <div className="py-8 text-center text-base-content/70">
-              Nenhum resultado encontrado
-            </div>
+            <div className="py-8 text-center text-base-content/70">Nenhum resultado encontrado</div>
           ) : (
-            <div className="py-8 text-center text-base-content/70">
-              Digite para buscar...
-            </div>
+            <div className="py-8 text-center text-base-content/70">Digite para buscar...</div>
           )}
         </div>
       </div>

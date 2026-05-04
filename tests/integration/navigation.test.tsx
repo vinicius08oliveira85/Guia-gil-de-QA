@@ -67,7 +67,8 @@ describe('Testes de Navegação', () => {
       await seedAndLoadApp(projects);
 
       const projectCard =
-        screen.getByText(projects[0].name).closest('div[role="button"]') || screen.getByText(projects[0].name);
+        screen.getByText(projects[0].name).closest('div[role="button"]') ||
+        screen.getByText(projects[0].name);
       await userEvent.click(projectCard);
 
       await waitFor(() => {
@@ -199,7 +200,7 @@ describe('Testes de Navegação', () => {
         await waitFor(() => {
           expect(useProjectsStore.getState().selectedProjectId).toBe(projects[i].id);
         });
-        await new Promise((resolve) => setTimeout(resolve, 50));
+        await new Promise(resolve => setTimeout(resolve, 50));
       }
 
       expect(useProjectsStore.getState().selectedProjectId).toBe(projects[2].id);
@@ -230,4 +231,3 @@ describe('Testes de Navegação', () => {
     });
   });
 });
-

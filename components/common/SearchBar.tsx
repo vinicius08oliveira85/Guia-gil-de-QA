@@ -14,7 +14,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   onSearchChange,
   searchResults,
   onSelectResult,
-  placeholder = 'Buscar projetos, tarefas, documentos... (Ctrl+K)'
+  placeholder = 'Buscar projetos, tarefas, documentos... (Ctrl+K)',
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -61,11 +61,16 @@ export const SearchBar: React.FC<SearchBarProps> = ({
 
   const getTypeIcon = (type: SearchResult['type']) => {
     switch (type) {
-      case 'project': return '📁';
-      case 'task': return '📋';
-      case 'document': return '📄';
-      case 'testcase': return '✅';
-      default: return '🔍';
+      case 'project':
+        return '📁';
+      case 'task':
+        return '📋';
+      case 'document':
+        return '📄';
+      case 'testcase':
+        return '✅';
+      default:
+        return '🔍';
     }
   };
 
@@ -82,7 +87,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           ref={inputRef}
           type="text"
           value={searchQuery}
-          onChange={(e) => {
+          onChange={e => {
             onSearchChange(e.target.value);
             setIsOpen(true);
             setSelectedIndex(0);
@@ -91,7 +96,9 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           placeholder={placeholder}
           className="input input-bordered w-full px-4 py-2 pl-10 bg-base-100 border-base-300 text-base-content placeholder:text-base-content/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
         />
-        <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-base-content/60">🔍</span>
+        <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-base-content/60">
+          🔍
+        </span>
         {searchQuery && (
           <button
             type="button"
@@ -131,7 +138,9 @@ export const SearchBar: React.FC<SearchBarProps> = ({
                   <div className="font-semibold text-base-content truncate">{result.title}</div>
                   <div className="text-sm text-base-content/70 truncate">{result.description}</div>
                   {result.projectName && (
-                    <div className="text-xs text-base-content/70 mt-1">Projeto: {result.projectName}</div>
+                    <div className="text-xs text-base-content/70 mt-1">
+                      Projeto: {result.projectName}
+                    </div>
                   )}
                 </div>
               </div>
@@ -148,4 +157,3 @@ export const SearchBar: React.FC<SearchBarProps> = ({
     </div>
   );
 };
-

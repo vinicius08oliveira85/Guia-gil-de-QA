@@ -41,7 +41,7 @@ describe('dataIntegrityService — impressão digital sem stringify completo', (
 
     const result = validateProjectIntegrity(project);
 
-    const serializedRootProject = stringifySpy.mock.calls.some((args) => args[0] === project);
+    const serializedRootProject = stringifySpy.mock.calls.some(args => args[0] === project);
     expect(serializedRootProject).toBe(false);
 
     expect(result).toHaveProperty('issues');

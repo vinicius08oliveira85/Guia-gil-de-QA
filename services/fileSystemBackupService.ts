@@ -2,7 +2,10 @@ import { buildLocalBackupData, BACKUP_EXPORT_FORMAT_VERSION } from './dbService'
 import { DB_VERSION } from '../utils/constants';
 import { logger } from '../utils/logger';
 
-const JSON_PICKER_TYPES: FilePickerAcceptType[] = [
+/** Tipagem mínima da File System Access API (evita dependência de versões do lib DOM). */
+type JsonFilePickerAcceptType = { description: string; accept: Record<string, string[]> };
+
+const JSON_PICKER_TYPES: JsonFilePickerAcceptType[] = [
   { description: 'Backup JSON (QA Agile Guide)', accept: { 'application/json': ['.json'] } },
 ];
 
@@ -64,10 +67,14 @@ export async function exportLocalBackupViaFileSystemAccess(): Promise<
     throw error;
   }
 
-  logger.info(`Backup local exportado (File System Access): ${backupData.projects.length} projeto(s)`, 'fileSystemBackup', {
-    backupFormatVersion: BACKUP_EXPORT_FORMAT_VERSION,
-    dbVersion: DB_VERSION,
-  });
+  logger.info(
+    `Backup local exportado (File System Access): ${backupData.projects.length} projeto(s)`,
+    'fileSystemBackup',
+    {
+      backupFormatVersion: BACKUP_EXPORT_FORMAT_VERSION,
+      dbVersion: DB_VERSION,
+    }
+  );
 
   return 'saved';
 }

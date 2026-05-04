@@ -1,13 +1,13 @@
 import React, { useState, useMemo } from 'react';
 import { Project, JiraTask } from '../../types';
-import { 
-  getTaskDependencies, 
-  getTaskDependents, 
-  canAddDependency, 
-  addDependency, 
+import {
+  getTaskDependencies,
+  getTaskDependents,
+  canAddDependency,
+  addDependency,
   removeDependency,
   getBlockedTasks,
-  getReadyTasks
+  getReadyTasks,
 } from '../../utils/dependencyService';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import { cn } from '../../utils/cn';
@@ -23,18 +23,15 @@ export const DependencyManager: React.FC<DependencyManagerProps> = ({
   task,
   project,
   onUpdateProject,
-  onClose
+  onClose,
 }) => {
   const { handleError, handleSuccess } = useErrorHandler();
   const [selectedTaskId, setSelectedTaskId] = useState<string>('');
 
   const dependencies = useMemo(() => getTaskDependencies(task.id, project), [task.id, project]);
   const dependents = useMemo(() => getTaskDependents(task.id, project), [task.id, project]);
-  const availableTasks = useMemo(() => 
-    project.tasks.filter(t => 
-      t.id !== task.id && 
-      !(task.dependencies || []).includes(t.id)
-    ), 
+  const availableTasks = useMemo(
+    () => project.tasks.filter(t => t.id !== task.id && !(task.dependencies || []).includes(t.id)),
     [project.tasks, task]
   );
   const blockedTasks = useMemo(() => getBlockedTasks(project), [project]);
@@ -79,11 +76,7 @@ export const DependencyManager: React.FC<DependencyManagerProps> = ({
     <div className="space-y-4 p-5">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-base-content">Dependências da Tarefa</h3>
-        <button 
-          type="button"
-          onClick={onClose} 
-          className="btn btn-ghost btn-sm btn-circle"
-        >
+        <button type="button" onClick={onClose} className="btn btn-ghost btn-sm btn-circle">
           ✕
         </button>
       </div>
@@ -93,7 +86,9 @@ export const DependencyManager: React.FC<DependencyManagerProps> = ({
         {isBlocked && (
           <div className="flex items-center gap-2 text-warning">
             <span>⚠️</span>
-            <span className="font-semibold">Esta tarefa está bloqueada por dependências não concluídas</span>
+            <span className="font-semibold">
+              Esta tarefa está bloqueada por dependências não concluídas
+            </span>
           </div>
         )}
         {isReady && !isBlocked && (
@@ -117,15 +112,17 @@ export const DependencyManager: React.FC<DependencyManagerProps> = ({
             {dependencies.map(dep => {
               const depTask = project.tasks.find(t => t.id === dep.id);
               if (!depTask) return null;
-              
+
               const isCompleted = depTask.status === 'Done';
-              
+
               return (
                 <div
                   key={dep.id}
                   className={cn(
-                    "p-3 rounded-xl border flex items-center justify-between transition-all",
-                    isCompleted ? "border-success/30 bg-success/10" : "border-warning/30 bg-warning/10"
+                    'p-3 rounded-xl border flex items-center justify-between transition-all',
+                    isCompleted
+                      ? 'border-success/30 bg-success/10'
+                      : 'border-warning/30 bg-warning/10'
                   )}
                 >
                   <div className="flex-1">
@@ -135,7 +132,12 @@ export const DependencyManager: React.FC<DependencyManagerProps> = ({
                       <span className="text-base-content/70">{depTask.title}</span>
                     </div>
                     <div className="text-sm text-base-content/70 mt-1">
-                      Status: {depTask.status === 'Done' ? 'Concluída' : depTask.status === 'In Progress' ? 'Em Andamento' : 'A Fazer'}
+                      Status:{' '}
+                      {depTask.status === 'Done'
+                        ? 'Concluída'
+                        : depTask.status === 'In Progress'
+                          ? 'Em Andamento'
+                          : 'A Fazer'}
                     </div>
                   </div>
                   <button
@@ -161,7 +163,7 @@ export const DependencyManager: React.FC<DependencyManagerProps> = ({
         <div className="flex gap-2">
           <select
             value={selectedTaskId}
-            onChange={(e) => setSelectedTaskId(e.target.value)}
+            onChange={e => setSelectedTaskId(e.target.value)}
             className="select select-bordered flex-1 bg-base-100 border-base-300 text-base-content"
           >
             <option value="">Selecione uma tarefa...</option>
@@ -192,12 +194,9 @@ export const DependencyManager: React.FC<DependencyManagerProps> = ({
             {dependents.map(dep => {
               const depTask = project.tasks.find(t => t.id === dep.id);
               if (!depTask) return null;
-              
+
               return (
-                <div
-                  key={dep.id}
-                  className="p-3 rounded-lg border border-base-300 bg-base-100"
-                >
+                <div key={dep.id} className="p-3 rounded-lg border border-base-300 bg-base-100">
                   <span className="font-semibold text-base-content">{depTask.id}</span>
                   <span className="text-base-content/70 ml-2">{depTask.title}</span>
                 </div>
@@ -209,4 +208,3 @@ export const DependencyManager: React.FC<DependencyManagerProps> = ({
     </div>
   );
 };
-

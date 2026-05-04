@@ -75,7 +75,7 @@ export function computeTaskDonePercent(projects: Project[]): number {
 
 /** Projetos que possuem ao menos um caso Failed ou Blocked. */
 export function computeProjectsWithTestExecutionAlerts(projects: Project[]): Project[] {
-  return (projects || []).filter((p) => {
+  return (projects || []).filter(p => {
     for (const t of p.tasks ?? []) {
       for (const tc of t.testCases ?? []) {
         if (tc.status === 'Failed' || tc.status === 'Blocked') return true;
@@ -89,6 +89,6 @@ export function computeProjectsWithTestExecutionAlerts(projects: Project[]): Pro
 export function computePhaseCompletionPercent(project: Project): number {
   const phases = project.phases ?? [];
   if (phases.length === 0) return 0;
-  const completed = phases.filter((ph) => ph.status === 'Concluído').length;
+  const completed = phases.filter(ph => ph.status === 'Concluído').length;
   return Math.round((completed / phases.length) * 1000) / 10;
 }

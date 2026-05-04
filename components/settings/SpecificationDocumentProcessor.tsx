@@ -58,9 +58,14 @@ export const SpecificationDocumentProcessor: React.FC<SpecificationDocumentProce
       invalidateContextCache(project.id);
       setIsProcessed(true);
       setDocumentSize(content.length);
-      handleSuccess('Documento de especificação processado com sucesso! O contexto será usado em todas as análises de IA.');
+      handleSuccess(
+        'Documento de especificação processado com sucesso! O contexto será usado em todas as análises de IA.'
+      );
     } catch (error) {
-      handleError(error instanceof Error ? error : new Error('Erro ao processar documento'), 'Processar documento');
+      handleError(
+        error instanceof Error ? error : new Error('Erro ao processar documento'),
+        'Processar documento'
+      );
     } finally {
       setIsProcessing(false);
       event.target.value = '';
@@ -74,9 +79,14 @@ export const SpecificationDocumentProcessor: React.FC<SpecificationDocumentProce
       invalidateContextCache(project.id);
       setIsProcessed(false);
       setDocumentSize(null);
-      handleSuccess('Documento de especificação removido. As análises de IA não usarão mais o contexto do documento.');
+      handleSuccess(
+        'Documento de especificação removido. As análises de IA não usarão mais o contexto do documento.'
+      );
     } catch (error) {
-      handleError(error instanceof Error ? error : new Error('Erro ao remover documento'), 'Remover documento');
+      handleError(
+        error instanceof Error ? error : new Error('Erro ao remover documento'),
+        'Remover documento'
+      );
     }
   };
 
@@ -91,7 +101,10 @@ export const SpecificationDocumentProcessor: React.FC<SpecificationDocumentProce
 
   return (
     <section className={cardClass} aria-labelledby="spec-doc-heading">
-      <h2 id="spec-doc-heading" className="text-2xl md:text-3xl font-bold tracking-tight text-base-content mb-2">
+      <h2
+        id="spec-doc-heading"
+        className="text-2xl md:text-3xl font-bold tracking-tight text-base-content mb-2"
+      >
         Documento de Especificação
       </h2>
 
@@ -146,7 +159,8 @@ export const SpecificationDocumentProcessor: React.FC<SpecificationDocumentProce
               !
             </span>
             <p className="text-amber-800 dark:text-amber-200 text-sm font-medium">
-              Nenhum documento processado. As análises de IA funcionarão sem o contexto do documento de especificação.
+              Nenhum documento processado. As análises de IA funcionarão sem o contexto do documento
+              de especificação.
             </p>
           </div>
           <label className="bg-[#4f46e5] hover:bg-[#4338ca] text-white px-5 py-2.5 rounded-[12px] font-medium flex items-center gap-2 transition-all hover-glow cursor-pointer inline-flex">
@@ -171,7 +185,8 @@ export const SpecificationDocumentProcessor: React.FC<SpecificationDocumentProce
             />
           </label>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-3">
-            Selecione um documento de especificação do projeto (.docx) para que a IA use seu conteúdo nas análises.
+            Selecione um documento de especificação do projeto (.docx) para que a IA use seu
+            conteúdo nas análises.
           </p>
         </>
       )}

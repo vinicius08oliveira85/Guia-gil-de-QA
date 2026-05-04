@@ -17,7 +17,7 @@ export const KeyboardShortcutsHelp: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  const formatKey = (shortcut: typeof DEFAULT_SHORTCUTS[0]) => {
+  const formatKey = (shortcut: (typeof DEFAULT_SHORTCUTS)[0]) => {
     const parts: string[] = [];
     if (shortcut.ctrl) parts.push('Ctrl');
     if (shortcut.shift) parts.push('Shift');
@@ -48,7 +48,9 @@ export const KeyboardShortcutsHelp: React.FC = () => {
           </div>
           <div className="mt-4 p-3 bg-accent/10 border border-accent/30 rounded-lg">
             <p className="text-sm text-text-secondary">
-              💡 <strong>Dica:</strong> Pressione <kbd className="px-1 py-0.5 bg-black/20 rounded text-xs">Ctrl + ?</kbd> a qualquer momento para ver esta ajuda.
+              💡 <strong>Dica:</strong> Pressione{' '}
+              <kbd className="px-1 py-0.5 bg-black/20 rounded text-xs">Ctrl + ?</kbd> a qualquer
+              momento para ver esta ajuda.
             </p>
           </div>
         </div>
@@ -56,4 +58,3 @@ export const KeyboardShortcutsHelp: React.FC = () => {
     </>
   );
 };
-

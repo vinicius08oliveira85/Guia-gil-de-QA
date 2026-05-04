@@ -33,7 +33,7 @@ interface QADashboardProps {
  * Dashboard do projeto orientado a dados reais das tarefas (sem geração por IA).
  * Dados: `Project` / `JiraTask` em `types.ts`; leitura via store (`useProjectsStore`) e props.
  */
-export const QADashboard: React.FC<QADashboardProps> = React.memo((props) => {
+export const QADashboard: React.FC<QADashboardProps> = React.memo(props => {
   const { project, onNavigateToTab, syncLoading, syncError } = props;
   const { projects, selectedProjectId, isLoading, error } = useProjectsStore();
 
@@ -41,7 +41,7 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo((props) => {
   const displayError = syncError !== undefined ? syncError : error;
 
   const liveProject = useMemo(() => {
-    const fromStore = projects.find((p) => p.id === selectedProjectId);
+    const fromStore = projects.find(p => p.id === selectedProjectId);
     if (fromStore && fromStore.id === project.id) return fromStore;
     return project;
   }, [projects, selectedProjectId, project]);
@@ -58,13 +58,13 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo((props) => {
     let filteredTasks = [...(liveProject.tasks ?? [])];
 
     if (dashboardFilters.taskType && dashboardFilters.taskType.length > 0) {
-      filteredTasks = filteredTasks.filter((task) => dashboardFilters.taskType!.includes(task.type));
+      filteredTasks = filteredTasks.filter(task => dashboardFilters.taskType!.includes(task.type));
     }
 
     if (dashboardFilters.testStatus && dashboardFilters.testStatus.length > 0) {
-      filteredTasks = filteredTasks.filter((task) => {
+      filteredTasks = filteredTasks.filter(task => {
         const testCases = task.testCases || [];
-        return testCases.some((tc) => dashboardFilters.testStatus!.includes(tc.status));
+        return testCases.some(tc => dashboardFilters.testStatus!.includes(tc.status));
       });
     }
 
@@ -130,7 +130,7 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo((props) => {
       >
         {showLoadingBanner && !filteredProject.tasks?.length ? (
           <>
-            {[0, 1, 2, 3].map((k) => (
+            {[0, 1, 2, 3].map(k => (
               <div
                 key={k}
                 className="h-[88px] rounded-xl border border-base-300 bg-base-200/40 animate-pulse"
@@ -181,8 +181,8 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo((props) => {
 
       {!showLoadingBanner && dashboardMetrics.totalTasks === 0 && (
         <div className="rounded-xl border border-dashed border-base-300 bg-base-200/20 px-4 py-6 text-center text-sm text-base-content/70">
-          Nenhuma tarefa no escopo atual. Crie tarefas na aba <strong>Tarefas</strong> ou ajuste os filtros do
-          dashboard.
+          Nenhuma tarefa no escopo atual. Crie tarefas na aba <strong>Tarefas</strong> ou ajuste os
+          filtros do dashboard.
         </div>
       )}
 

@@ -34,7 +34,10 @@ export const CTASection: React.FC = () => {
   };
 
   return (
-    <section id="cta-section" className="py-20 md:py-32 bg-gradient-to-br from-primary/10 via-secondary/5 to-accent/10 scroll-mt-24">
+    <section
+      id="cta-section"
+      className="py-20 md:py-32 bg-gradient-to-br from-primary/10 via-secondary/5 to-accent/10 scroll-mt-24"
+    >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
           <SectionHeader
@@ -63,7 +66,8 @@ export const CTASection: React.FC = () => {
             >
               <h3 className="text-2xl font-bold text-base-content mb-4">Acesse o Dashboard</h3>
               <p className="text-base-content/70 mb-6">
-                Crie seu primeiro projeto e comece com templates. Funciona localmente e pode sincronizar com Supabase quando configurado.
+                Crie seu primeiro projeto e comece com templates. Funciona localmente e pode
+                sincronizar com Supabase quando configurado.
               </p>
               <button
                 onClick={handleGetStarted}
@@ -94,7 +98,7 @@ export const CTASection: React.FC = () => {
                 <input
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={e => setEmail(e.target.value)}
                   placeholder="seu@email.com"
                   required
                   className="input input-bordered w-full rounded-full"
@@ -131,7 +135,10 @@ export const CTASection: React.FC = () => {
               'Integração Jira (opcional)',
               'Sync Supabase (opcional)',
             ].map((feature, index) => (
-              <div key={index} className="flex items-center justify-center gap-2 text-sm text-base-content/70">
+              <div
+                key={index}
+                className="flex items-center justify-center gap-2 text-sm text-base-content/70"
+              >
                 <CheckCircle2 className="w-4 h-4 text-success" />
                 <span>{feature}</span>
               </div>
@@ -142,4 +149,3 @@ export const CTASection: React.FC = () => {
     </section>
   );
 };
-

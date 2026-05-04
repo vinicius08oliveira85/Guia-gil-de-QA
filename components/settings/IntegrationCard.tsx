@@ -31,10 +31,10 @@ interface IntegrationCardProps {
 
 /**
  * Componente IntegrationCard - Card reutilizável para exibir integrações
- * 
+ *
  * Exibe informações sobre uma integração (Jira, Supabase, etc.) com status,
  * ícone, descrição e botões de ação.
- * 
+ *
  * @example
  * ```tsx
  * <IntegrationCard
@@ -48,79 +48,72 @@ interface IntegrationCardProps {
  * />
  * ```
  */
-export const IntegrationCard = React.memo<IntegrationCardProps>(({
-  name,
-  description,
-  icon,
-  status,
-  statusLabel,
-  onConnect,
-  onConfigure,
-  onDisconnect,
-  className,
-}) => {
-  const isConnected = status === 'connected' || status === 'configured';
+export const IntegrationCard = React.memo<IntegrationCardProps>(
+  ({
+    name,
+    description,
+    icon,
+    status,
+    statusLabel,
+    onConnect,
+    onConfigure,
+    onDisconnect,
+    className,
+  }) => {
+    const isConnected = status === 'connected' || status === 'configured';
 
-  return (
-    <Card className={cn('p-6 hover:border-primary/20 transition-colors', className)}>
-      <div className="flex items-start gap-4">
-        {/* Ícone da integração */}
-        <div className="shrink-0 h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
-          {icon}
-        </div>
+    return (
+      <Card className={cn('p-6 hover:border-primary/20 transition-colors', className)}>
+        <div className="flex items-start gap-4">
+          {/* Ícone da integração */}
+          <div className="shrink-0 h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
+            {icon}
+          </div>
 
-        {/* Conteúdo principal */}
-        <div className="flex-1 min-w-0">
-          {/* Header com nome e status */}
-          <div className="flex items-start justify-between gap-4 mb-2">
-            <div className="flex-1 min-w-0">
-              <h3 className="text-lg font-semibold text-base-content">{name}</h3>
-              <p className="text-sm text-base-content/70 mt-1 leading-relaxed">{description}</p>
+          {/* Conteúdo principal */}
+          <div className="flex-1 min-w-0">
+            {/* Header com nome e status */}
+            <div className="flex items-start justify-between gap-4 mb-2">
+              <div className="flex-1 min-w-0">
+                <h3 className="text-lg font-semibold text-base-content">{name}</h3>
+                <p className="text-sm text-base-content/70 mt-1 leading-relaxed">{description}</p>
+              </div>
+              <StatusBadge variant={status}>{statusLabel}</StatusBadge>
             </div>
-            <StatusBadge variant={status}>{statusLabel}</StatusBadge>
-          </div>
 
-          {/* Botões de ação */}
-          <div className="flex items-center gap-2 mt-4 flex-wrap">
-            {!isConnected ? (
-              <Button
-                onClick={onConnect}
-                size="sm"
-                className="flex items-center gap-1"
-              >
-                Conectar
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            ) : (
-              <>
-                {onConfigure && (
-                  <Button
-                    onClick={onConfigure}
-                    variant="outline"
-                    size="sm"
-                    className="flex items-center gap-2"
-                  >
-                    <Settings className="h-4 w-4" />
-                    Configurar
-                  </Button>
-                )}
-                {onDisconnect && (
-                  <Button
-                    onClick={onDisconnect}
-                    variant="ghost"
-                    size="sm"
-                  >
-                    Desconectar
-                  </Button>
-                )}
-              </>
-            )}
+            {/* Botões de ação */}
+            <div className="flex items-center gap-2 mt-4 flex-wrap">
+              {!isConnected ? (
+                <Button onClick={onConnect} size="sm" className="flex items-center gap-1">
+                  Conectar
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              ) : (
+                <>
+                  {onConfigure && (
+                    <Button
+                      onClick={onConfigure}
+                      variant="outline"
+                      size="sm"
+                      className="flex items-center gap-2"
+                    >
+                      <Settings className="h-4 w-4" />
+                      Configurar
+                    </Button>
+                  )}
+                  {onDisconnect && (
+                    <Button onClick={onDisconnect} variant="ghost" size="sm">
+                      Desconectar
+                    </Button>
+                  )}
+                </>
+              )}
+            </div>
           </div>
         </div>
-      </div>
-    </Card>
-  );
-});
+      </Card>
+    );
+  }
+);
 
 IntegrationCard.displayName = 'IntegrationCard';
-

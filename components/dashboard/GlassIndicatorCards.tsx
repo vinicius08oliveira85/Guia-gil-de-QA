@@ -86,22 +86,39 @@ function SmallIndicatorCard({ item }: { item: SmallIndicatorItem }) {
       className={`glass relative overflow-hidden rounded-lg border border-base-200/60 bg-white/70 p-3 shadow-sm transition-all duration-200 dark:border-base-300/40 dark:bg-slate-800/45 sm:p-3.5 ${isClickable ? 'group cursor-pointer hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary/30' : ''} ${item.isActive ? 'ring-2 ring-primary/45 shadow-md' : ''}`}
       role={isClickable ? 'button' : 'article'}
       tabIndex={isClickable ? 0 : undefined}
-      aria-label={isClickable ? `${item.label}: ${item.value} ${item.modifier}. Clique para filtrar.` : `${item.label}: ${item.value} ${item.modifier}`}
+      aria-label={
+        isClickable
+          ? `${item.label}: ${item.value} ${item.modifier}. Clique para filtrar.`
+          : `${item.label}: ${item.value} ${item.modifier}`
+      }
       onClick={item.onClick}
-      onKeyDown={isClickable && item.onClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); item.onClick!(); } } : undefined}
+      onKeyDown={
+        isClickable && item.onClick
+          ? e => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                item.onClick!();
+              }
+            }
+          : undefined
+      }
     >
       <div
         className={`absolute -right-4 -top-4 w-24 h-24 rounded-full blur-2xl transition-colors ${config.orbBg} group-hover:opacity-80`}
         aria-hidden
       />
       <div className="mb-2 flex items-start justify-between gap-2">
-        <span className={`text-xs font-bold uppercase tracking-wide ${config.labelColor}`}>{item.label}</span>
+        <span className={`text-xs font-bold uppercase tracking-wide ${config.labelColor}`}>
+          {item.label}
+        </span>
         <div className={`rounded-md p-1.5 ${config.iconBg} ${config.glowClass}`}>
           <Icon className={`h-4 w-4 ${config.iconColor}`} aria-hidden />
         </div>
       </div>
       <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-        <span className={`text-2xl font-bold tabular-nums sm:text-3xl ${config.valueColor}`}>{item.value}</span>
+        <span className={`text-2xl font-bold tabular-nums sm:text-3xl ${config.valueColor}`}>
+          {item.value}
+        </span>
         <span className="text-xs font-medium text-base-content/70 sm:text-sm">{item.modifier}</span>
       </div>
     </div>
@@ -128,9 +145,7 @@ export function ExecutionAutomationCard({
   automationTrend,
 }: ExecutionAutomationProps) {
   const executionPercent =
-    totalTestCases > 0
-      ? Math.round((executedTestCases / totalTestCases) * 100)
-      : 0;
+    totalTestCases > 0 ? Math.round((executedTestCases / totalTestCases) * 100) : 0;
   const circumference = 2 * Math.PI * 40;
   const strokeDashoffset = circumference - (automationRatio / 100) * circumference;
 
@@ -156,8 +171,13 @@ export function ExecutionAutomationCard({
                 <ListChecks className="h-5 w-5 text-orange-600 dark:text-orange-400" />
               </div>
               <div className="min-w-0">
-                <h3 className="text-lg font-bold leading-tight text-base-content sm:text-xl">Execução de Testes</h3>
-                <p className="truncate text-sm font-medium text-base-content/75" title={projectName}>
+                <h3 className="text-lg font-bold leading-tight text-base-content sm:text-xl">
+                  Execução de Testes
+                </h3>
+                <p
+                  className="truncate text-sm font-medium text-base-content/75"
+                  title={projectName}
+                >
                   {projectName}
                 </p>
               </div>
@@ -234,7 +254,9 @@ export function ExecutionAutomationCard({
               {automationTrend != null && automationTrend !== '' && (
                 <div className="mt-1 flex items-center gap-1">
                   <TrendingUp className="h-4 w-4 shrink-0 text-success" aria-hidden />
-                  <span className="text-xs font-semibold text-success sm:text-sm">{automationTrend}</span>
+                  <span className="text-xs font-semibold text-success sm:text-sm">
+                    {automationTrend}
+                  </span>
                 </div>
               )}
             </div>

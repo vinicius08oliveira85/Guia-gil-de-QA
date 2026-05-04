@@ -120,7 +120,10 @@ describe('useProjectsStore', () => {
       const state = useProjectsStore.getState();
       expect(state.projects).toEqual(mockProjects);
       expect(state.supabaseLoadError).toBe(msg);
-      expect(vi.mocked(toast)).toHaveBeenCalledWith(msg, expect.objectContaining({ id: 'supabase-sync-degraded' }));
+      expect(vi.mocked(toast)).toHaveBeenCalledWith(
+        msg,
+        expect.objectContaining({ id: 'supabase-sync-degraded' })
+      );
     });
   });
 
@@ -128,10 +131,7 @@ describe('useProjectsStore', () => {
     it('deve criar projeto sem template', async () => {
       vi.mocked(dbService.addProject).mockResolvedValue({ savedToSupabase: true });
 
-      const created = await useProjectsStore.getState().createProject(
-        'Novo Projeto',
-        'Descrição'
-      );
+      const created = await useProjectsStore.getState().createProject('Novo Projeto', 'Descrição');
 
       expect(created.name).toBe('Novo Projeto');
       expect(created.description).toBe('Descrição');
@@ -141,11 +141,9 @@ describe('useProjectsStore', () => {
     it('deve criar projeto com template', async () => {
       vi.mocked(dbService.addProject).mockResolvedValue({ savedToSupabase: true });
 
-      const created = await useProjectsStore.getState().createProject(
-        'Projeto Template',
-        'Descrição',
-        'web-app'
-      );
+      const created = await useProjectsStore
+        .getState()
+        .createProject('Projeto Template', 'Descrição', 'web-app');
 
       expect(created.name).toBe('Projeto Template');
       expect(dbService.addProject).toHaveBeenCalled();
@@ -187,7 +185,7 @@ describe('useProjectsStore', () => {
         phases: [],
       };
 
-      useProjectsStore.setState({ 
+      useProjectsStore.setState({
         projects: [project],
         selectedProjectId: 'proj-1',
       });
@@ -241,4 +239,3 @@ describe('useProjectsStore', () => {
     });
   });
 });
-
