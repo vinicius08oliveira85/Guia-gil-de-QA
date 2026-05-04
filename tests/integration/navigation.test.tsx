@@ -184,7 +184,9 @@ describe('Testes de Navegação', () => {
       await seedAndLoadApp([project]);
       useProjectsStore.setState({ selectedProjectId: project.id });
 
-      const breadcrumbs = await screen.findByRole('navigation', { name: /breadcrumb/i });
+      const breadcrumbs = await screen.findByRole('navigation', {
+        name: /trilha de navegação|breadcrumb/i,
+      });
       expect(breadcrumbs).toBeInTheDocument();
       expect(within(breadcrumbs).getByRole('button', { name: 'Projetos' })).toBeInTheDocument();
     });
