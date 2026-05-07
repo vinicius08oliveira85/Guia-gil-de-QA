@@ -12,8 +12,17 @@ export const PHASE_NAMES = [
 ] as const;
 
 export const DB_NAME = 'QAProjectsDB';
-export const DB_VERSION = 1;
+/**
+ * Versão do schema IndexedDB. Incrementar a cada mudança de stores/índices.
+ *
+ * Histórico:
+ * - 1: store inicial `projects`
+ * - 2: novo store `testGenerationCache` (persiste artefatos gerados pela IA por taskId)
+ */
+export const DB_VERSION = 2;
 export const STORE_NAME = 'projects';
+/** Object store que persiste o cache de `TestGenerationArtifacts` por `taskId`. */
+export const TEST_GENERATION_CACHE_STORE = 'testGenerationCache';
 
 export const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 export const ALLOWED_FILE_TYPES = [

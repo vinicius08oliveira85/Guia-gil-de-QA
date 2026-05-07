@@ -6,8 +6,8 @@ import { format } from 'date-fns';
 interface FailedTestData {
   testCase: {
     id: string;
-    description: string;
-    steps: string[];
+    action: string;
+    parameters?: string;
     expectedResult: string;
     observedResult?: string;
     priority?: string;
@@ -947,11 +947,11 @@ export async function generateFailedTestsPDF(
         severity = severityMatch[1].trim();
       }
 
+      const summary = ft.testCase.action || '';
       bugTableRows.push([
         ft.testCase.id || `TC-${index + 1}`,
         ft.task.id,
-        ft.testCase.description.substring(0, 45) +
-          (ft.testCase.description.length > 45 ? '...' : ''),
+        summary.substring(0, 45) + (summary.length > 45 ? '...' : ''),
         severity,
         ft.testCase.priority || 'N/A',
         ft.testCase.testEnvironment || 'N/A',
@@ -1259,8 +1259,21 @@ export async function generateFailedTestsPDF(
         failedTests.forEach((ft, index) => {
           // Calcular altura dinâmica do box baseado no conteúdo
           let estimatedHeight = 100; // Base
-          if (ft.testCase.steps && ft.testCase.steps.length > 0) {
-            estimatedHeight += ft.testCase.steps.length * 20;
+          const actionPreview = wrapText(
+            ft.testCase.action || '',
+            pageWidth - 2 * margin - 30,
+            font,
+            9
+          );
+          estimatedHeight += actionPreview.length * 14 + 24;
+          if (ft.testCase.parameters?.trim()) {
+            const paramPreview = wrapText(
+              ft.testCase.parameters,
+              pageWidth - 2 * margin - 30,
+              font,
+              9
+            );
+            estimatedHeight += paramPreview.length * 14 + 28;
           }
           if (ft.testCase.expectedResult) {
             estimatedHeight += 30;
@@ -1299,7 +1312,7 @@ export async function generateFailedTestsPDF(
 
           yPosition -= 20;
           page.drawText(
-            `Bug ${index + 1}: ${ft.testCase.description.substring(0, 60)}${ft.testCase.description.length > 60 ? '...' : ''}`,
+            `Bug ${index + 1}: ${(ft.testCase.action || '').substring(0, 60)}${(ft.testCase.action || '').length > 60 ? '...' : ''}`,
             {
               x: margin + 10,
               y: yPosition,
@@ -1397,9 +1410,50 @@ export async function generateFailedTestsPDF(
             yPosition -= 18;
           }
 
-          // Passos
-          if (ft.testCase.steps && ft.testCase.steps.length > 0) {
-            page.drawText('Passos para Reproduzir:', {
+          // Ação e parâmetros do roteiro
+          page.drawText('Ação necessária:', {
+            x: margin + 15,
+            y: yPosition,
+            size: 10,
+            font: boldFont,
+            color: colors.text,
+          });
+          yPosition -= 18;
+          const actionWrapped = wrapText(
+            ft.testCase.action || '—',
+            pageWidth - 2 * margin - 30,
+            font,
+            9
+          );
+          actionWrapped.forEach(line => {
+            const lineCheck = checkAndBreakPage(
+              pdfDoc,
+              page,
+              yPosition,
+              minYPosition,
+              headerHeight,
+              margin,
+              pageHeight
+            );
+            if (lineCheck.page !== page) {
+              currentPageIndex++;
+            }
+            page = lineCheck.page;
+            yPosition = lineCheck.yPosition;
+            if (yPosition < minYPosition) return;
+            page.drawText(line, {
+              x: margin + 25,
+              y: yPosition,
+              size: 9,
+              font: font,
+              color: colors.text,
+            });
+            yPosition -= 14;
+          });
+          yPosition -= 6;
+
+          if (ft.testCase.parameters?.trim()) {
+            page.drawText('Parâmetros necessários:', {
               x: margin + 15,
               y: yPosition,
               size: 10,
@@ -1407,34 +1461,36 @@ export async function generateFailedTestsPDF(
               color: colors.text,
             });
             yPosition -= 18;
-            ft.testCase.steps.forEach((step, stepIndex) => {
-              const stepText = `${stepIndex + 1}. ${step}`;
-              const wrapped = wrapText(stepText, pageWidth - 2 * margin - 30, font, 9);
-              wrapped.forEach(line => {
-                const lineCheck = checkAndBreakPage(
-                  pdfDoc,
-                  page,
-                  yPosition,
-                  minYPosition,
-                  headerHeight,
-                  margin,
-                  pageHeight
-                );
-                if (lineCheck.page !== page) {
-                  currentPageIndex++;
-                }
-                page = lineCheck.page;
-                yPosition = lineCheck.yPosition;
-                if (yPosition < minYPosition) return;
-                page.drawText(line, {
-                  x: margin + 25,
-                  y: yPosition,
-                  size: 9,
-                  font: font,
-                  color: colors.text,
-                });
-                yPosition -= 14;
+            const paramWrapped = wrapText(
+              ft.testCase.parameters,
+              pageWidth - 2 * margin - 30,
+              font,
+              9
+            );
+            paramWrapped.forEach(line => {
+              const lineCheck = checkAndBreakPage(
+                pdfDoc,
+                page,
+                yPosition,
+                minYPosition,
+                headerHeight,
+                margin,
+                pageHeight
+              );
+              if (lineCheck.page !== page) {
+                currentPageIndex++;
+              }
+              page = lineCheck.page;
+              yPosition = lineCheck.yPosition;
+              if (yPosition < minYPosition) return;
+              page.drawText(line, {
+                x: margin + 25,
+                y: yPosition,
+                size: 9,
+                font: font,
+                color: colors.text,
               });
+              yPosition -= 14;
             });
             yPosition -= 5;
           }
@@ -1483,7 +1539,7 @@ export async function generateFailedTestsPDF(
           }
 
           if (ft.testCase.observedResult) {
-            page.drawText('Resultado Observado:', {
+            page.drawText('Resultado obtido:', {
               x: margin + 15,
               y: yPosition,
               size: 10,

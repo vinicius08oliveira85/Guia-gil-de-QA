@@ -10,6 +10,7 @@ import {
   type TaskSortBy,
   type TaskGroupBy,
 } from '../components/tasks/tasksViewHelpers';
+import { testCaseLooksAutomated } from '../utils/testCaseMigration';
 
 const TASKS_FILTERS_STORAGE_KEY = 'tasks_filters';
 
@@ -213,8 +214,8 @@ export function useTaskFilters(
       if (qualityFilter.length > 0) {
         const hasBDD = task.bddScenarios && task.bddScenarios.length > 0;
         const hasTestCases = task.testCases && task.testCases.length > 0;
-        const hasAutomated = task.testCases?.some(tc => tc.isAutomated);
-        const hasManual = task.testCases?.some(tc => !tc.isAutomated);
+        const hasAutomated = task.testCases?.some(tc => testCaseLooksAutomated(tc));
+        const hasManual = task.testCases?.some(tc => !testCaseLooksAutomated(tc));
         const matchesQuality = qualityFilter.some(filter => {
           switch (filter) {
             case 'with-bdd':
@@ -274,9 +275,9 @@ export function useTaskFilters(
           case 'without-tests':
             return allTasks.filter(t => !t.testCases?.length).length;
           case 'automated':
-            return allTasks.filter(t => t.testCases?.some(tc => tc.isAutomated)).length;
+            return allTasks.filter(t => t.testCases?.some(tc => testCaseLooksAutomated(tc))).length;
           case 'manual':
-            return allTasks.filter(t => t.testCases?.some(tc => !tc.isAutomated)).length;
+            return allTasks.filter(t => t.testCases?.some(tc => !testCaseLooksAutomated(tc))).length;
           default:
             return 0;
         }

@@ -10,6 +10,7 @@ import {
   TaskTestStatus,
 } from '../../types';
 import { getAIService } from '../../services/ai/aiServiceFactory';
+import { generateTestArtifactsForTask } from '../../services/ai/testCaseGenerationService';
 import { Card } from '../common/Card';
 import { Modal } from '../common/Modal';
 import { TaskForm } from './TaskForm';
@@ -66,7 +67,6 @@ import { useProjectMetrics } from '../../hooks/useProjectMetrics';
 import { useTaskFilters } from '../../hooks/useTaskFilters';
 import { GlassIndicatorCards } from '../dashboard/GlassIndicatorCards';
 import { getDisplayStatus } from '../../utils/taskHelpers';
-import { normalizeExecutedStrategy } from '../../utils/testCaseMigration';
 import { FileExportModal } from '../common/FileExportModal';
 import {
   buildAttachmentsContextForTask,
@@ -82,6 +82,7 @@ import {
   type TaskSortBy,
   type TaskGroupBy,
 } from './tasksViewHelpers';
+import { testCaseLooksAutomated } from '../../utils/testCaseMigration';
 import { VirtualizedTaskRootList, shouldVirtualizeTaskRoots } from './VirtualizedTaskRootList';
 
 export const TasksView: React.FC<{
@@ -439,19 +440,20 @@ export const TasksView: React.FC<{
             return;
           }
 
-          const aiService = getAIService();
           const attachmentsContext = buildAttachmentsContextForTask(task);
-          const { strategy, testCases } = await aiService.generateTestCasesForTask(
-            task.title,
-            task.description,
-            task.bddScenarios,
-            detailLevel,
-            task.type,
-            project,
-            task,
-            attachmentsContext || undefined
-          );
-          const updatedTask = { ...task, testStrategy: strategy, testCases };
+          const { strategy, testCases, snapshotHash, generatedAt } =
+            await generateTestArtifactsForTask(task, {
+              detailLevel,
+              project,
+              attachmentsContext: attachmentsContext || undefined,
+            });
+          const updatedTask = {
+            ...task,
+            testStrategy: strategy,
+            testCases,
+            testCasesSnapshotHash: snapshotHash,
+            testCasesGeneratedAt: generatedAt,
+          };
           const newTasks = project.tasks.map(t => (t.id === updatedTask.id ? updatedTask : t));
           onUpdateProject({ ...project, tasks: newTasks });
           propagateTaskUpdate(updatedTask);
@@ -484,24 +486,22 @@ export const TasksView: React.FC<{
             return;
           }
 
-          const aiService = getAIService();
           const attachmentsContext = buildAttachmentsContextForTask(task);
-          const { strategy, testCases, bddScenarios } = await aiService.generateTestCasesForTask(
-            task.title,
-            task.description,
-            undefined,
-            detailLevel,
-            task.type,
-            project,
-            task,
-            attachmentsContext || undefined
-          );
+          const { strategy, testCases, bddScenarios, snapshotHash, generatedAt } =
+            await generateTestArtifactsForTask(task, {
+              detailLevel,
+              project,
+              attachmentsContext: attachmentsContext || undefined,
+              regenerateBdd: true,
+            });
 
           const updatedTask = {
             ...task,
             bddScenarios,
             testStrategy: strategy,
             testCases,
+            testCasesSnapshotHash: snapshotHash,
+            testCasesGeneratedAt: generatedAt,
           };
 
           const newTasks = project.tasks.map(t => (t.id === updatedTask.id ? updatedTask : t));
@@ -572,7 +572,9 @@ export const TasksView: React.FC<{
     if (!testCase) return;
 
     const updatedTestCases = task.testCases.map(tc =>
-      tc.id === testCaseId ? { ...tc, status: 'Failed' as const, observedResult } : tc
+      tc.id === testCaseId
+        ? { ...tc, status: 'Failed' as const, observedResult: observedResult ?? '' }
+        : tc
     );
     const updatedTask = { ...task, testCases: updatedTestCases };
 
@@ -604,20 +606,11 @@ export const TasksView: React.FC<{
   }, [failModalState, project, onUpdateProject, handleSuccess]);
 
   const handleTestCaseStatusChange = useCallback(
-    (taskId: string, testCaseId: string, status: 'Passed' | 'Failed') => {
+    (taskId: string, testCaseId: string, status: TestCase['status']) => {
       const task = project.tasks.find(t => t.id === taskId);
       if (!task) return;
 
-      if (status === 'Passed') {
-        const updatedTestCases = task.testCases.map(tc =>
-          tc.id === testCaseId ? { ...tc, status } : tc
-        );
-        const updatedTask = { ...task, testCases: updatedTestCases };
-        const newTasks = project.tasks.map(t => (t.id === taskId ? updatedTask : t));
-        onUpdateProject({ ...project, tasks: newTasks });
-        propagateTaskUpdate(updatedTask);
-      } else {
-        // status === 'Failed'
+      if (status === 'Failed') {
         setFailModalState({
           isOpen: true,
           taskId,
@@ -625,39 +618,27 @@ export const TasksView: React.FC<{
           observedResult: '',
           createBug: true,
         });
+        return;
       }
-    },
-    [project, onUpdateProject]
-  );
 
-  const handleToggleTestCaseAutomated = useCallback(
-    (taskId: string, testCaseId: string, isAutomated: boolean) => {
-      const task = project.tasks.find(t => t.id === taskId);
-      if (!task) return;
-
-      const originalTestCases = task.testCases || [];
-      const updatedTestCases = originalTestCases.map(tc =>
-        tc.id === testCaseId ? { ...tc, isAutomated } : tc
+      const updatedTestCases = task.testCases.map(tc =>
+        tc.id === testCaseId ? { ...tc, status } : tc
       );
       const updatedTask = { ...task, testCases: updatedTestCases };
-
-      onUpdateProject({
-        ...project,
-        tasks: project.tasks.map(t => (t.id === taskId ? updatedTask : t)),
-      });
+      const newTasks = project.tasks.map(t => (t.id === taskId ? updatedTask : t));
+      onUpdateProject({ ...project, tasks: newTasks });
       propagateTaskUpdate(updatedTask);
     },
     [project, onUpdateProject]
   );
 
-  const handleExecutedStrategyChange = useCallback(
-    (taskId: string, testCaseId: string, strategies: string[]) => {
+  const handleTestCaseObservedResultChange = useCallback(
+    (taskId: string, testCaseId: string, value: string) => {
       const task = project.tasks.find(t => t.id === taskId);
       if (!task) return;
 
-      const originalTestCases = task.testCases || [];
-      const updatedTestCases = originalTestCases.map(tc =>
-        tc.id === testCaseId ? { ...tc, executedStrategy: strategies } : tc
+      const updatedTestCases = (task.testCases || []).map(tc =>
+        tc.id === testCaseId ? { ...tc, observedResult: value } : tc
       );
       const updatedTask = { ...task, testCases: updatedTestCases };
 
@@ -675,25 +656,6 @@ export const TasksView: React.FC<{
       const task = project.tasks.find(t => t.id === taskId);
       if (!task) return;
       const updatedTask = { ...task, toolsUsed: tools };
-      onUpdateProject({
-        ...project,
-        tasks: project.tasks.map(t => (t.id === taskId ? updatedTask : t)),
-      });
-      propagateTaskUpdate(updatedTask);
-    },
-    [project, onUpdateProject]
-  );
-
-  const handleTestCaseToolsChange = useCallback(
-    (taskId: string, testCaseId: string, tools: string[]) => {
-      const task = project.tasks.find(t => t.id === taskId);
-      if (!task) return;
-
-      const updatedTestCases = (task.testCases || []).map(tc =>
-        tc.id === testCaseId ? { ...tc, toolsUsed: tools } : tc
-      );
-      const updatedTask = { ...task, testCases: updatedTestCases };
-
       onUpdateProject({
         ...project,
         tasks: project.tasks.map(t => (t.id === taskId ? updatedTask : t)),
@@ -782,8 +744,7 @@ export const TasksView: React.FC<{
         ...testCase,
         id: crypto.randomUUID?.() ?? `tc-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
         status: 'Not Run',
-        isAutomated: false,
-        observedResult: undefined,
+        observedResult: '',
       };
       const updatedTasks = project.tasks.map(t => {
         if (t.id !== taskId) return t;
@@ -803,49 +764,22 @@ export const TasksView: React.FC<{
       const task = project.tasks.find(t => t.id === taskId);
       if (!task) return;
 
-      const strategy = task.testStrategy?.[strategyIndex];
-      const testType = strategy?.testType;
-
       const currentExecuted = task.executedStrategies || [];
-      let newExecuted: number[];
-      let updatedTestCases = task.testCases || [];
-
-      if (executed) {
-        newExecuted = currentExecuted.includes(strategyIndex)
+      const newExecuted = executed
+        ? currentExecuted.includes(strategyIndex)
           ? currentExecuted
-          : [...currentExecuted, strategyIndex];
-      } else {
-        newExecuted = currentExecuted.filter(idx => idx !== strategyIndex);
-      }
-
-      if (testType) {
-        updatedTestCases = (task.testCases || []).map(testCase => {
-          const hasStrategy = (testCase.strategies || []).includes(testType);
-          if (!hasStrategy) return testCase;
-
-          const current = normalizeExecutedStrategy(testCase.executedStrategy);
-          if (executed) {
-            if (current.includes(testType)) return testCase;
-            return { ...testCase, executedStrategy: [...current, testType] };
-          }
-          const newExecutedStrategy = current.filter(s => s !== testType);
-          return {
-            ...testCase,
-            executedStrategy: newExecutedStrategy.length > 0 ? newExecutedStrategy : undefined,
-          };
-        });
-      }
+          : [...currentExecuted, strategyIndex]
+        : currentExecuted.filter(idx => idx !== strategyIndex);
 
       let updatedTask: JiraTask;
       if (executed) {
-        updatedTask = { ...task, executedStrategies: newExecuted, testCases: updatedTestCases };
+        updatedTask = { ...task, executedStrategies: newExecuted };
       } else {
         const strategyTools = { ...(task.strategyTools || {}) };
         delete strategyTools[strategyIndex];
         updatedTask = {
           ...task,
           executedStrategies: newExecuted,
-          testCases: updatedTestCases,
           strategyTools: Object.keys(strategyTools).length > 0 ? strategyTools : undefined,
         };
       }
@@ -1117,17 +1051,12 @@ export const TasksView: React.FC<{
               const currentTask = taskIndex !== -1 ? updatedTasks[taskIndex] : task;
 
               const attachmentsContext = buildAttachmentsContextForTask(currentTask);
-              const { strategy, testCases } = await withTimeout(
-                aiService.generateTestCasesForTask(
-                  currentTask.title,
-                  currentTask.description || '',
-                  currentTask.bddScenarios || [], // Garantir que seja array
-                  'Padrão',
-                  currentTask.type,
+              const { strategy, testCases, snapshotHash, generatedAt } = await withTimeout(
+                generateTestArtifactsForTask(currentTask, {
+                  detailLevel: 'Padrão',
                   project,
-                  currentTask,
-                  attachmentsContext || undefined
-                ),
+                  attachmentsContext: attachmentsContext || undefined,
+                }),
                 60000
               );
 
@@ -1141,6 +1070,8 @@ export const TasksView: React.FC<{
                       : strategy,
                   testCases:
                     existingTestCases.length > 0 ? [...existingTestCases, ...testCases] : testCases,
+                  testCasesSnapshotHash: snapshotHash,
+                  testCasesGeneratedAt: generatedAt,
                 };
               }
               testCaseGenerationResults.push({ taskId: task.id, success: true });
@@ -1575,7 +1506,7 @@ export const TasksView: React.FC<{
 
       const automatedTests = tasksWithCorrectedStatus.reduce((acc, t) => {
         if (!t || !t.testCases || !Array.isArray(t.testCases)) return acc;
-        return acc + t.testCases.filter(tc => tc && tc.isAutomated).length;
+        return acc + t.testCases.filter(tc => tc && testCaseLooksAutomated(tc)).length;
       }, 0);
 
       return {
@@ -1924,16 +1855,10 @@ export const TasksView: React.FC<{
               onTestCaseStatusChange={(testCaseId, status) =>
                 handleTestCaseStatusChange(task.id, testCaseId, status)
               }
-              onToggleTestCaseAutomated={(testCaseId, isAutomated) =>
-                handleToggleTestCaseAutomated(task.id, testCaseId, isAutomated)
-              }
-              onExecutedStrategyChange={(testCaseId, strategies) =>
-                handleExecutedStrategyChange(task.id, testCaseId, strategies)
+              onTestCaseObservedResultChange={(testCaseId, value) =>
+                handleTestCaseObservedResultChange(task.id, testCaseId, value)
               }
               onTaskToolsChange={tools => handleTaskToolsChange(task.id, tools)}
-              onTestCaseToolsChange={(testCaseId, tools) =>
-                handleTestCaseToolsChange(task.id, testCaseId, tools)
-              }
               onStrategyExecutedChange={(strategyIndex, executed) =>
                 handleStrategyExecutedChange(task.id, strategyIndex, executed)
               }
@@ -1989,10 +1914,8 @@ export const TasksView: React.FC<{
       updatingFromJiraTaskId,
       handleUpdateTaskFromJira,
       handleTestCaseStatusChange,
-      handleToggleTestCaseAutomated,
-      handleExecutedStrategyChange,
+      handleTestCaseObservedResultChange,
       handleTaskToolsChange,
-      handleTestCaseToolsChange,
       handleStrategyExecutedChange,
       handleStrategyToolsChange,
       handleDeleteTask,
@@ -2466,7 +2389,7 @@ export const TasksView: React.FC<{
               htmlFor="observed-result"
               className="block text-sm font-medium text-base-content/70 mb-1"
             >
-              Resultado Encontrado (O que aconteceu de errado?)
+              Resultado obtido (O que aconteceu de errado?)
             </label>
             <textarea
               id="observed-result"
@@ -2554,16 +2477,10 @@ export const TasksView: React.FC<{
           onTestCaseStatusChange={(testCaseId, status) =>
             handleTestCaseStatusChange(modalTask.id, testCaseId, status)
           }
-          onToggleTestCaseAutomated={(testCaseId, isAutomated) =>
-            handleToggleTestCaseAutomated(modalTask.id, testCaseId, isAutomated)
-          }
-          onExecutedStrategyChange={(testCaseId, strategies) =>
-            handleExecutedStrategyChange(modalTask.id, testCaseId, strategies)
+          onTestCaseObservedResultChange={(testCaseId, value) =>
+            handleTestCaseObservedResultChange(modalTask.id, testCaseId, value)
           }
           onTaskToolsChange={tools => handleTaskToolsChange(modalTask.id, tools)}
-          onTestCaseToolsChange={(testCaseId, tools) =>
-            handleTestCaseToolsChange(modalTask.id, testCaseId, tools)
-          }
           onStrategyExecutedChange={(strategyIndex, executed) =>
             handleStrategyExecutedChange(modalTask.id, strategyIndex, executed)
           }

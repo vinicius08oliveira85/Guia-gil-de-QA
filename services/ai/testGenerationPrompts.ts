@@ -166,10 +166,10 @@ Priorize: verificação da correção, regressão em áreas relacionadas, cenár
 
 function detailLevelBlock(detailLevel: TestCaseDetailLevel): string {
   return `
-Nível de detalhe dos passos nos casos de teste (quando aplicável): ${detailLevel}
-- Resumido: 3–5 passos por caso.
-- Padrão: 5–8 passos.
-- Detalhado: 8+ passos, com dados e verificações intermediárias.
+Nível de detalhe do campo "action" (roteiro em texto): ${detailLevel}
+- Resumido: ação objetiva, poucas linhas.
+- Padrão: ação com passos numerados quando necessário.
+- Detalhado: roteiro longo com verificações intermediárias e dados explícitos.
 `;
 }
 
@@ -289,11 +289,16 @@ Você é um analista de QA sênior. Responda em português brasileiro.
 Objetivo: gerar APENAS casos de teste em JSON (testCases). Não gere estratégias nem BDD.
 
 Regras de aderência:
-- Cada caso deve validar comportamento descrito na tarefa (título + descrição). Não invente módulos, APIs ou telas ausentes do texto.
-- Cada caso deve listar em "strategies" um ou mais destes tipos EXATAMENTE como na lista permitida: ${allowedTypes.length ? allowedTypes.map(t => `"${t}"`).join(', ') : '(use strings coerentes com as estratégias fornecidas abaixo)'}.
-- isAutomated: true somente para regressão repetitiva, fluxos estáveis ou checagens objetivas; false para exploratório, usabilidade ou cenários que exigem julgamento humano.
+- Analise a descrição da tarefa e os cenários BDD abaixo. Para cada caso de teste, extraia:
+  - **action**: a ação necessária para validar o comportamento (o roteiro executável). Se precisar de vários passos, escreva-os numerados dentro deste único campo (não use array de passos separado).
+  - **parameters**: dados de entrada, massa de dados, pré-requisitos técnicos, contas, URLs, payloads, ambientes — tudo que o executor precisa preparar. Se não houver nada específico, use exatamente o texto "—".
+  - **expectedResult**: resultado esperado objetivo e verificável.
+- NÃO inclua campo de resultado obtido na execução (isso é preenchido pelo humano na UI).
+- Não invente módulos, APIs ou telas ausentes do texto da tarefa ou dos BDD.
 
-Campos por caso: description, steps[], expectedResult, strategies[], isAutomated, preconditions (string, pode ser vazia), testSuite, testEnvironment, priority (Baixa|Média|Alta|Urgente).
+Campos por objeto em testCases (somente estes três): action (string), parameters (string), expectedResult (string).
+
+Tipos de estratégia já definidos (use apenas como referência de cobertura; não repita como campo no JSON): ${allowedTypes.length ? allowedTypes.map(t => `"${t}"`).join(', ') : '(alinhe mentalmente às estratégias abaixo).'}.
 
 ${detailLevelBlock(detailLevel)}
 

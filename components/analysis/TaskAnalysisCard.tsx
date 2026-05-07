@@ -2,6 +2,8 @@ import React, { useMemo, useState } from 'react';
 import { TaskIAAnalysis, JiraTask } from '../../types';
 import { format } from 'date-fns';
 import { cn } from '../../utils/cn';
+import { isAnalysisOutdated } from '../../utils/analysisFreshness';
+import { getTaskIaAnalysisSnapshotHash } from '../../services/ai/generalAnalysisService';
 
 interface TaskAnalysisCardProps {
   analysis: TaskIAAnalysis;
@@ -17,6 +19,13 @@ export const TaskAnalysisCard: React.FC<TaskAnalysisCardProps> = ({
   compact = false,
 }) => {
   const [expanded, setExpanded] = useState(!compact);
+
+  const contentStale = useMemo(() => {
+    if (task) {
+      return isAnalysisOutdated(analysis, getTaskIaAnalysisSnapshotHash(task));
+    }
+    return analysis.isOutdated === true;
+  }, [analysis, task]);
 
   const riskBadgeClass = useMemo(() => {
     switch (analysis.riskLevel) {
@@ -38,7 +47,7 @@ export const TaskAnalysisCard: React.FC<TaskAnalysisCardProps> = ({
       className={cn(
         'p-5 bg-base-100 border rounded-xl transition-all',
         expanded ? 'shadow-lg border-primary/30' : 'shadow-sm border-base-300',
-        analysis.isOutdated ? 'bg-warning/5 border-warning/30' : undefined
+        contentStale ? 'bg-warning/5 border-warning/30' : undefined
       )}
     >
       {/* Header */}
@@ -198,7 +207,7 @@ export const TaskAnalysisCard: React.FC<TaskAnalysisCardProps> = ({
               <span>
                 Gerada em {format(new Date(analysis.generatedAt), "dd/MM/yyyy 'às' HH:mm")}
               </span>
-              {analysis.isOutdated && (
+              {contentStale && (
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-warning/10 text-warning border border-warning/30 animate-pulse">
                   ⚠️ Desatualizada
                 </span>

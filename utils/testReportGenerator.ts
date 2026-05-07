@@ -1,5 +1,4 @@
 import { JiraTask, TestCase } from '../types';
-import { normalizeExecutedStrategy } from './testCaseMigration';
 
 export type TestReportFormat = 'text' | 'markdown';
 
@@ -55,7 +54,7 @@ export function generateTestReport(
     lines.push('ESTRATÉGIAS REALIZADAS:');
     lines.push('');
 
-    const strategyMap = buildStrategyMap(task, executedTestCases, includeTools);
+    const strategyMap = buildStrategyMap(task, includeTools);
     const sortedStrategies = Array.from(strategyMap.values()).sort((a, b) =>
       a.testType.localeCompare(b.testType)
     );
@@ -90,24 +89,28 @@ export function generateTestReport(
     executedTestCases.forEach((testCase, index) => {
       const statusEmoji = testCase.status === 'Passed' ? '✅' : '❌';
       const statusLabel = testCase.status === 'Passed' ? 'Aprovado' : 'Reprovado';
-      const description = testCase.description || `Teste ${index + 1}`;
-
-      const executedStrategies = normalizeExecutedStrategy(testCase.executedStrategy);
-      const testType = executedStrategies.length > 0 ? executedStrategies[0] : 'Não especificado';
+      const description = testCase.action || `Teste ${index + 1}`;
 
       lines.push(`${index + 1}. ${description} - Status: ${statusEmoji} ${statusLabel}`);
       lines.push('');
-      lines.push(`   Testes Executados: ${testType}`);
+      if (testCase.parameters?.trim()) {
+        lines.push(`   Parâmetros necessários: ${testCase.parameters}`);
+        lines.push('');
+      }
+      if (testCase.expectedResult?.trim()) {
+        lines.push(`   Resultado esperado: ${testCase.expectedResult}`);
+        lines.push('');
+      }
 
       if (testCase.observedResult && testCase.observedResult.trim()) {
         if (format === 'markdown') {
           lines.push('');
           lines.push(
-            `   **Resultado Encontrado:** <span style="color: red;">${testCase.observedResult}</span>`
+            `   **Resultado obtido:** <span style="color: red;">${testCase.observedResult}</span>`
           );
         } else {
           lines.push('');
-          lines.push(`   RESULTADO ENCONTRADO: ${testCase.observedResult}`);
+          lines.push(`   RESULTADO OBTIDO: ${testCase.observedResult}`);
         }
       }
 
@@ -136,63 +139,28 @@ export function generateTestReport(
 
 type StrategyEntry = { testType: string; description: string; tools: Set<string> };
 
-function buildStrategyMap(
-  task: JiraTask,
-  executedTestCases: TestCase[],
-  includeTools: boolean
-): Map<string, StrategyEntry> {
+function buildStrategyMap(task: JiraTask, includeTools: boolean): Map<string, StrategyEntry> {
   const strategyMap = new Map<string, StrategyEntry>();
 
-  executedTestCases.forEach(testCase => {
-    const executedStrategies = normalizeExecutedStrategy(testCase.executedStrategy);
-
-    executedStrategies.forEach(strategyName => {
-      if (!strategyMap.has(strategyName)) {
-        const strategyIndex = task.testStrategy?.findIndex(s => s.testType === strategyName);
-        const strategy =
-          strategyIndex !== undefined && strategyIndex >= 0
-            ? task.testStrategy![strategyIndex]
-            : undefined;
-
-        const toolsSet = new Set<string>();
-        if (includeTools) {
-          if (
-            strategyIndex !== undefined &&
-            strategyIndex >= 0 &&
-            task.strategyTools?.[strategyIndex]
-          ) {
-            task.strategyTools[strategyIndex].forEach(tool => toolsSet.add(tool));
-          }
-          if (testCase.toolsUsed?.length) {
-            testCase.toolsUsed.forEach(tool => toolsSet.add(tool));
-          }
-          if (toolsSet.size === 0 && strategy?.tools) {
-            strategy.tools.split(',').forEach(tool => {
-              const t = tool.trim();
-              if (t) toolsSet.add(t);
-            });
-          }
-        }
-
-        strategyMap.set(strategyName, {
-          testType: strategyName,
-          description: strategy?.description || strategyName,
-          tools: toolsSet,
-        });
-      } else if (includeTools) {
-        const existing = strategyMap.get(strategyName)!;
-        const strategyIndex = task.testStrategy?.findIndex(s => s.testType === strategyName);
-        if (
-          strategyIndex !== undefined &&
-          strategyIndex >= 0 &&
-          task.strategyTools?.[strategyIndex]
-        ) {
-          task.strategyTools[strategyIndex].forEach(tool => existing.tools.add(tool));
-        }
-        if (testCase.toolsUsed?.length) {
-          testCase.toolsUsed.forEach(tool => existing.tools.add(tool));
-        }
+  (task.testStrategy || []).forEach((strategyRow, strategyIndex) => {
+    const strategyName = strategyRow.testType || `Estratégia ${strategyIndex + 1}`;
+    const toolsSet = new Set<string>();
+    if (includeTools) {
+      if (task.strategyTools?.[strategyIndex]) {
+        task.strategyTools[strategyIndex].forEach(tool => toolsSet.add(tool));
       }
+      if (toolsSet.size === 0 && strategyRow.tools) {
+        strategyRow.tools.split(',').forEach(tool => {
+          const t = tool.trim();
+          if (t) toolsSet.add(t);
+        });
+      }
+    }
+
+    strategyMap.set(strategyName, {
+      testType: strategyName,
+      description: strategyRow.description || strategyName,
+      tools: toolsSet,
     });
   });
 
@@ -210,16 +178,16 @@ function generateConciseReport(
   lines.push('');
 
   if (executedTestCases.length > 0) {
-    const strategyNames = new Set<string>();
-    executedTestCases.forEach(tc => {
-      normalizeExecutedStrategy(tc.executedStrategy).forEach(s => strategyNames.add(s));
-    });
-    lines.push('Estratégias: ' + Array.from(strategyNames).sort().join(', '));
+    const strategyNames = (task.testStrategy || []).map(s => s.testType).filter(Boolean);
+    lines.push(
+      'Estratégias (tarefa): ' +
+        (strategyNames.length > 0 ? strategyNames.join(', ') : 'Não definidas na tarefa')
+    );
     lines.push('');
     lines.push('Casos de teste:');
     executedTestCases.forEach((tc, index) => {
       const status = tc.status === 'Passed' ? 'Aprovado' : 'Reprovado';
-      const desc = tc.description || `Teste ${index + 1}`;
+      const desc = tc.action || `Teste ${index + 1}`;
       const result = tc.observedResult?.trim() ? ` [${tc.observedResult}]` : '';
       lines.push(`${index + 1}. ${desc} – ${status}${result}`);
     });

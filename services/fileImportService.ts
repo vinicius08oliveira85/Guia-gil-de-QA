@@ -1,6 +1,7 @@
 import * as XLSX from 'xlsx';
 import { Project, JiraTask, TestCase, ProjectDocument, JiraTaskType, TeamRole } from '../types';
 import { logger } from '../utils/logger';
+import { migrateTestCase } from '../utils/testCaseMigration';
 
 const MAX_DOCUMENT_SIZE = 50 * 1024 * 1024; // 50MB
 
@@ -334,52 +335,94 @@ export const importTestCasesFromExcel = async (
       const row = data[i] as Record<string, any>;
 
       try {
-        const testCase: TestCase = {
+        const rawDesc =
+          row['Ação necessária'] ||
+          row['Ação'] ||
+          row['Descrição'] ||
+          row['Descricao'] ||
+          row['Description'] ||
+          row['description'];
+
+        if (options.validateData && (!rawDesc || String(rawDesc).trim() === '')) {
+          warnings.push(`Linha ${i + 2}: Caso de teste sem ação/descrição, pulado`);
+          continue;
+        }
+
+        const stepsRaw = row['Passos'] || row['Steps'] || row['steps'];
+        const steps =
+          stepsRaw != null && String(stepsRaw).trim() !== ''
+            ? String(stepsRaw)
+                .split(';')
+                .map((s: string) => s.trim())
+                .filter(Boolean)
+            : [];
+
+        const legacyRow: Record<string, unknown> = {
           id: row['ID'] || row['id'] || `tc-${Date.now()}-${i}`,
-          description:
-            row['Descrição'] ||
-            row['Descricao'] ||
-            row['Description'] ||
-            row['description'] ||
-            `Caso de teste ${i + 1}`,
-          steps:
-            row['Passos'] || row['Steps'] || row['steps']
-              ? String(row['Passos'] || row['Steps'] || row['steps'])
-                  .split(';')
-                  .map((s: string) => s.trim())
-              : [],
+          description: String(
+            rawDesc !== undefined && rawDesc !== null && String(rawDesc).trim() !== ''
+              ? rawDesc
+              : `Caso de teste ${i + 1}`
+          ),
+          steps,
           expectedResult:
             row['Resultado Esperado'] || row['Expected Result'] || row['expectedResult'] || '',
-          status: (row['Status'] || row['status'] || 'Not Run') as TestCase['status'],
-          isAutomated:
-            row['Automatizado'] === 'Sim' ||
-            row['Automated'] === 'Yes' ||
-            row['isAutomated'] === true,
           observedResult:
-            row['Resultado Observado'] || row['Observed Result'] || row['observedResult'],
-          toolsUsed:
-            row['Ferramentas'] || row['Tools']
-              ? String(row['Ferramentas'] || row['Tools'])
-                  .split(',')
-                  .map((t: string) => t.trim())
-              : [],
+            row['Resultado Observado'] ||
+            row['Resultado obtido'] ||
+            row['Observed Result'] ||
+            row['observedResult'] ||
+            '',
+          status: (row['Status'] || row['status'] || 'Not Run') as TestCase['status'],
           preconditions: row['Pré-condições'] || row['Preconditions'] || row['preconditions'],
           testSuite: row['Suite'] || row['testSuite'],
           testEnvironment: row['Ambiente'] || row['Environment'] || row['testEnvironment'],
-          priority: (row['Prioridade'] ||
-            row['Priority'] ||
-            row['priority'] ||
-            'Média') as TestCase['priority'],
         };
 
-        if (options.validateData) {
-          if (!testCase.description || testCase.description.trim() === '') {
-            warnings.push(`Linha ${i + 2}: Caso de teste sem descrição, pulado`);
-            continue;
-          }
+        const extraParams = [
+          row['Parâmetros necessários'] || row['Parâmetros'] || row['Parameters'],
+          row['Ferramentas'] || row['Tools'],
+          row['Automatizado'] === 'Sim' || row['Automated'] === 'Yes'
+            ? 'Importação: indicado como automatizado na planilha'
+            : '',
+        ]
+          .filter(Boolean)
+          .map(String);
+
+        if (extraParams.length > 0) {
+          legacyRow.parameters = extraParams.join('\n');
         }
 
-        testCases.push(testCase);
+        const structEnv =
+          row['Ambiente (estruturado)'] || row['Ambiente filtro'] || row['Ambiente ID'];
+        if (structEnv != null && String(structEnv).trim() !== '') {
+          legacyRow.environment = String(structEnv).trim();
+        }
+        const structSuite =
+          row['Suíte (estruturado)'] || row['Suite (estruturado)'] || row['Suíte ID'];
+        if (structSuite != null && String(structSuite).trim() !== '') {
+          legacyRow.suite = String(structSuite).trim();
+        }
+
+        const execCell = row['Tipo execução'] || row['Execução'] || row['executionKind'];
+        if (typeof execCell === 'string') {
+          const v = execCell.toLowerCase().trim();
+          if (v.includes('misto') || v === 'mixed') legacyRow.executionKind = 'mixed';
+          else if (v.includes('automat') || v === 'automated') legacyRow.executionKind = 'automated';
+          else if (v.includes('manual')) legacyRow.executionKind = 'manual';
+        }
+
+        let tc = migrateTestCase(legacyRow);
+        const extra =
+          typeof legacyRow.parameters === 'string' ? legacyRow.parameters.trim() : '';
+        if (extra) {
+          const base = tc.parameters && tc.parameters !== '—' ? tc.parameters : '';
+          tc = {
+            ...tc,
+            parameters: [base, extra].filter(Boolean).join('\n\n'),
+          };
+        }
+        testCases.push(tc);
       } catch (error) {
         warnings.push(
           `Linha ${i + 2}: Erro ao processar caso de teste - ${error instanceof Error ? error.message : 'Erro desconhecido'}`

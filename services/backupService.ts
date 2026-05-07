@@ -90,8 +90,8 @@ const calculateProjectSize = (project: Project): number => {
       for (const tc of t.testCases || []) {
         n += 128;
         addStr(tc.id, 200);
-        addStr(tc.description, 50_000);
-        for (const step of tc.steps || []) addStr(step, 20_000);
+        addStr(tc.action, 50_000);
+        addStr(tc.parameters, 50_000);
         addStr(tc.expectedResult, 20_000);
         addStr(tc.observedResult, 20_000);
       }

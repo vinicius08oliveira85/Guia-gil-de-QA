@@ -275,29 +275,22 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({ isOpen, onClos
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0 flex-1">
                           <p className="text-sm font-medium text-base-content">
-                            {testCase.description || `Teste ${index + 1}`}
+                            {testCase.action || `Teste ${index + 1}`}
                           </p>
-                          {testCase.executedStrategy && (
-                            <p className="text-xs text-base-content/70 mt-1">
-                              {Array.isArray(testCase.executedStrategy)
-                                ? testCase.executedStrategy.join(', ')
-                                : testCase.executedStrategy}
+                          {testCase.parameters?.trim() ? (
+                            <p className="text-xs text-base-content/70 mt-1 whitespace-pre-wrap">
+                              {testCase.parameters}
                             </p>
-                          )}
+                          ) : null}
                         </div>
                         <Badge variant={statusData.variant} size="sm">
                           {statusData.label}
                         </Badge>
                       </div>
-                      {testCase.toolsUsed && testCase.toolsUsed.length > 0 && (
-                        <p className="text-xs text-base-content/70 mt-2">
-                          Ferramentas: {testCase.toolsUsed.join(', ')}
-                        </p>
-                      )}
                       {testCase.observedResult && testCase.observedResult.trim() && (
                         <div className="mt-2">
                           <p className="text-xs font-medium text-base-content/70 mb-0.5">
-                            Resultado Encontrado:
+                            Resultado obtido:
                           </p>
                           <p className="text-xs text-error whitespace-pre-wrap">
                             {testCase.observedResult}

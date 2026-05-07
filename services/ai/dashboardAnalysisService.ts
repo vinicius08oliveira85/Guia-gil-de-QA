@@ -5,6 +5,7 @@ import { calculateProjectMetrics } from '../../hooks/useProjectMetrics';
 import { getFormattedContext } from './documentContextService';
 import { callGeminiWithRetry } from './geminiApiWrapper';
 import { GEMINI_DEFAULT_MODEL } from './geminiConstants';
+import { hashString } from '../../utils/hash';
 import { logger } from '../../utils/logger';
 
 const CACHE_TTL_MS = 1000 * 60 * 5; // 5 minutos
@@ -13,16 +14,6 @@ const analysisCache = new Map<
   string,
   { snapshotHash: string; expiresAt: number; analysis: DashboardOverviewAnalysis }
 >();
-
-const hashString = (value: string): string => {
-  let hash = 0;
-  for (let i = 0; i < value.length; i++) {
-    const chr = value.charCodeAt(i);
-    hash = (hash << 5) - hash + chr;
-    hash |= 0; // Convert to 32bit integer
-  }
-  return hash.toString(36);
-};
 
 const createProjectSnapshot = (project: Project): string => {
   const metrics = calculateProjectMetrics(project);
@@ -84,6 +75,11 @@ const createProjectSnapshot = (project: Project): string => {
 
   return JSON.stringify(snapshot);
 };
+
+/** Hash do snapshot atual para comparar com `DashboardOverviewAnalysis.snapshotHash`. */
+export function getDashboardOverviewSnapshotHash(project: Project): string {
+  return hashString(createProjectSnapshot(project));
+}
 
 const overviewAnalysisSchema = {
   type: Type.OBJECT,
@@ -239,6 +235,7 @@ Respeite o schema JSON fornecido.
       ...parsedResponse,
       generatedAt: new Date().toISOString(),
       isOutdated: false,
+      snapshotHash,
     };
 
     // Salvar no cache

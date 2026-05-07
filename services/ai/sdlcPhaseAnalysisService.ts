@@ -4,6 +4,7 @@ import { calculateProjectMetrics } from '../../hooks/useProjectMetrics';
 import { getFormattedContext } from './documentContextService';
 import { callGeminiWithRetry } from './geminiApiWrapper';
 import { GEMINI_DEFAULT_MODEL } from './geminiConstants';
+import { hashString } from '../../utils/hash';
 import { logger } from '../../utils/logger';
 
 const CACHE_TTL_MS = 1000 * 60 * 10; // 10 minutos
@@ -12,16 +13,6 @@ const analysisCache = new Map<
   string,
   { snapshotHash: string; expiresAt: number; analysis: SDLCPhaseAnalysis }
 >();
-
-const hashString = (value: string): string => {
-  let hash = 0;
-  for (let i = 0; i < value.length; i++) {
-    const chr = value.charCodeAt(i);
-    hash = (hash << 5) - hash + chr;
-    hash |= 0;
-  }
-  return hash.toString(36);
-};
 
 const createPhaseSnapshot = (project: Project): string => {
   const metrics = calculateProjectMetrics(project);
@@ -54,6 +45,11 @@ const createPhaseSnapshot = (project: Project): string => {
 
   return JSON.stringify(snapshot);
 };
+
+/** Hash do snapshot atual para comparar com `SDLCPhaseAnalysis.snapshotHash`. */
+export function getSdlcPhaseAnalysisSnapshotHash(project: Project): string {
+  return hashString(createPhaseSnapshot(project));
+}
 
 const sdlcPhaseAnalysisSchema = {
   type: Type.OBJECT,
@@ -314,6 +310,7 @@ Respeite o schema JSON fornecido.
       progressPercentage, // Usar o valor calculado, não o da IA
       generatedAt: new Date().toISOString(),
       isOutdated: false,
+      snapshotHash,
     };
 
     // Salvar no cache

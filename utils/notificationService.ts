@@ -132,7 +132,7 @@ export const notifyTestFailed = (testCase: TestCase, task: JiraTask, project: Pr
   return createNotification({
     type: 'test_failed',
     title: 'Teste Falhou',
-    message: `Caso de teste falhou na tarefa ${task.id}: ${testCase.description.substring(0, 50)}`,
+    message: `Caso de teste falhou na tarefa ${task.id}: ${testCase.action.substring(0, 50)}`,
     projectId: project.id,
     projectName: project.name,
     entityId: task.id,

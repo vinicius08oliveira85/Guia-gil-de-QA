@@ -83,34 +83,26 @@ export const mergeTestCases = (
       // IMPORTANTE: Status usa lógica especial para preservar status salvos quando existente é "Not Run"
       const finalStatus = determineStatus(primaryTestCase, secondary);
 
+      const primaryAction =
+        primaryTestCase.action?.trim() && primaryTestCase.action !== '—'
+          ? primaryTestCase.action
+          : '';
+      const primaryParams =
+        primaryTestCase.parameters?.trim() && primaryTestCase.parameters !== '—'
+          ? primaryTestCase.parameters
+          : '';
+
       return {
-        ...primaryTestCase, // Priorizar dados prioritários (mais recentes)
-        // Usar secundários apenas se campos prioritários estiverem vazios
-        description: primaryTestCase.description || secondary.description,
-        steps: primaryTestCase.steps?.length > 0 ? primaryTestCase.steps : secondary.steps,
+        ...primaryTestCase,
+        action: primaryAction || secondary.action,
+        parameters: primaryParams || secondary.parameters,
         expectedResult: primaryTestCase.expectedResult || secondary.expectedResult,
-        title: primaryTestCase.title || secondary.title,
-        // Status: usar lógica especial para preservar status salvos
-        status: finalStatus,
-        // Outros campos: priorizar prioritários, usar secundários como fallback
         observedResult: primaryTestCase.observedResult || secondary.observedResult,
-        isAutomated:
-          primaryTestCase.isAutomated !== undefined
-            ? primaryTestCase.isAutomated
-            : secondary.isAutomated,
-        toolsUsed:
-          primaryTestCase.toolsUsed && primaryTestCase.toolsUsed.length > 0
-            ? primaryTestCase.toolsUsed
-            : secondary.toolsUsed,
-        preconditions: primaryTestCase.preconditions || secondary.preconditions,
-        testSuite: primaryTestCase.testSuite || secondary.testSuite,
-        testEnvironment: primaryTestCase.testEnvironment || secondary.testEnvironment,
-        priority: primaryTestCase.priority || secondary.priority,
-        strategies:
-          primaryTestCase.strategies && primaryTestCase.strategies.length > 0
-            ? primaryTestCase.strategies
-            : secondary.strategies,
-        executedStrategy: primaryTestCase.executedStrategy || secondary.executedStrategy,
+        status: finalStatus,
+        executionKind: primaryTestCase.executionKind ?? secondary.executionKind,
+        environment:
+          primaryTestCase.environment?.trim() || secondary.environment?.trim() || undefined,
+        suite: primaryTestCase.suite?.trim() || secondary.suite?.trim() || undefined,
       };
     }
 

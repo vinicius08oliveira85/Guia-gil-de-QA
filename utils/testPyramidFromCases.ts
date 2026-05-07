@@ -26,7 +26,7 @@ function normalizeStrategy(s: string): string {
  * Padrão: Integração (maioria dos fluxos manuais).
  */
 export function classifyTestCasePyramidLevel(tc: TestCase): PyramidLevelName {
-  const parts = [...(tc.strategies || []), tc.testSuite || '', tc.title || '', tc.description || '']
+  const parts = [tc.parameters || '', tc.action || '']
     .filter(Boolean)
     .map(x => normalizeStrategy(String(x)));
 

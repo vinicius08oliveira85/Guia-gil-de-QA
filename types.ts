@@ -1,20 +1,23 @@
+/** Como o caso é executado; opcional — se ausente, métricas usam heurística de texto (`testCaseLooksAutomated`). */
+export type TestCaseExecutionKind = 'manual' | 'automated' | 'mixed';
+
+/**
+ * Roteiro de teste por caso (execução manual / evidência).
+ * Dados legados são convertidos em `migrateTestCase`.
+ */
 export interface TestCase {
   id: string;
-  /** Título curto (opcional). Alguns fluxos usam a própria description como título. */
-  title?: string;
-  description: string;
-  steps: string[];
+  action: string;
+  parameters: string;
   expectedResult: string;
+  observedResult: string;
   status: 'Not Run' | 'Passed' | 'Failed' | 'Blocked';
-  strategies?: string[];
-  executedStrategy?: string | string[]; // Suporta string (legado) ou array (novo formato)
-  isAutomated?: boolean;
-  observedResult?: string;
-  toolsUsed?: string[]; // Ferramentas utilizadas neste caso de teste
-  preconditions?: string; // Précondições
-  testSuite?: string; // Suite de teste
-  testEnvironment?: string; // Ambiente de teste
-  priority?: 'Baixa' | 'Média' | 'Alta' | 'Urgente'; // Prioridade do caso de teste
+  /** Opcional: auditoria explícita (substitui heurística quando definido). */
+  executionKind?: TestCaseExecutionKind;
+  /** Opcional: ambiente para filtros/relatórios (alternativa a linha `Ambiente:` em `parameters`). */
+  environment?: string;
+  /** Opcional: suíte para filtros/relatórios (alternativa a linha `Suíte:` em `parameters`). */
+  suite?: string;
 }
 
 export type TestCaseDetailLevel = 'Resumido' | 'Padrão' | 'Detalhado';
@@ -76,6 +79,12 @@ export interface TaskIAAnalysis {
   qaImprovements: string[];
   generatedAt: string;
   isOutdated?: boolean;
+  /**
+   * Hash determinístico do snapshot da tarefa que originou esta análise.
+   * Permite detectar `isOutdated` comparando com o hash recalculado a partir
+   * do estado atual (ver `utils/analysisFreshness.ts`).
+   */
+  snapshotHash?: string;
 }
 
 export interface TestIAAnalysis {
@@ -87,6 +96,8 @@ export interface TestIAAnalysis {
   suggestions: string[];
   generatedAt: string;
   isOutdated?: boolean;
+  /** Hash determinístico do snapshot do teste que originou esta análise. */
+  snapshotHash?: string;
 }
 
 export interface GeneralIAAnalysis {
@@ -112,6 +123,8 @@ export interface GeneralIAAnalysis {
   testAnalyses: TestIAAnalysis[];
   generatedAt: string;
   isOutdated?: boolean;
+  /** Hash determinístico do snapshot do projeto que originou esta análise. */
+  snapshotHash?: string;
 }
 
 export interface JiraTask {
@@ -188,6 +201,17 @@ export interface JiraTask {
   linkedBusinessRuleIds?: string[];
   /** Categorias inteiras cujas regras do projeto entram no prompt (união com vínculos por id, sem duplicar id). */
   linkedBusinessRuleCategories?: string[];
+  /**
+   * ISO date da última geração de casos de teste com IA.
+   * Usado pela UI para exibir "última geração em ...".
+   */
+  testCasesGeneratedAt?: string;
+  /**
+   * Hash do snapshot da tarefa no momento da última geração de casos de teste.
+   * Permite detectar `isTestCasesOutdated` mesmo após reload (cache em memória vazio).
+   * Calculado por `services/ai/testCaseGenerationService.ts`.
+   */
+  testCasesSnapshotHash?: string;
 }
 
 // Ferramentas sugeridas para testes
@@ -266,6 +290,8 @@ export interface DashboardOverviewAnalysis {
   recommendations: string[]; // Recomendações
   generatedAt: string;
   isOutdated?: boolean;
+  /** Hash determinístico do snapshot do projeto que originou esta análise. */
+  snapshotHash?: string;
 }
 
 /** Análise IA completa do projeto (documentos, tarefas, testes, indicadores e fases) — salva no Supabase com o projeto */
@@ -327,6 +353,8 @@ export interface DashboardInsightsAnalysis {
   };
   generatedAt: string;
   isOutdated?: boolean;
+  /** Hash determinístico do snapshot do projeto que originou esta análise. */
+  snapshotHash?: string;
 }
 
 export interface SDLCPhaseAnalysis {
@@ -346,6 +374,8 @@ export interface SDLCPhaseAnalysis {
   progressPercentage: number; // Percentual de conclusão da fase atual (0-100)
   generatedAt: string;
   isOutdated?: boolean;
+  /** Hash determinístico do snapshot do projeto que originou esta análise. */
+  snapshotHash?: string;
 }
 
 export interface MetricsSnapshot {

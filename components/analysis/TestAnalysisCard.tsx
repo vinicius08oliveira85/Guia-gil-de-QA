@@ -2,6 +2,8 @@ import React, { useMemo, useState } from 'react';
 import { TestIAAnalysis, TestCase, JiraTask } from '../../types';
 import { format } from 'date-fns';
 import { cn } from '../../utils/cn';
+import { isAnalysisOutdated } from '../../utils/analysisFreshness';
+import { getTestIaAnalysisSnapshotHash } from '../../services/ai/generalAnalysisService';
 
 interface TestAnalysisCardProps {
   analysis: TestIAAnalysis;
@@ -19,6 +21,13 @@ export const TestAnalysisCard: React.FC<TestAnalysisCardProps> = ({
   compact = false,
 }) => {
   const [expanded, setExpanded] = useState(!compact);
+
+  const contentStale = useMemo(() => {
+    if (task && testCase) {
+      return isAnalysisOutdated(analysis, getTestIaAnalysisSnapshotHash(task, testCase));
+    }
+    return analysis.isOutdated === true;
+  }, [analysis, task, testCase]);
 
   const statusBadgeClass = useMemo(() => {
     if (!testCase) return 'badge badge-neutral badge-outline';
@@ -39,7 +48,7 @@ export const TestAnalysisCard: React.FC<TestAnalysisCardProps> = ({
       className={cn(
         'p-5 bg-base-100 border rounded-xl transition-all',
         expanded ? 'shadow-lg border-primary/30' : 'shadow-sm border-base-300',
-        analysis.isOutdated ? 'bg-warning/5 border-warning/30' : undefined
+        contentStale ? 'bg-warning/5 border-warning/30' : undefined
       )}
     >
       {/* Header */}
@@ -48,7 +57,7 @@ export const TestAnalysisCard: React.FC<TestAnalysisCardProps> = ({
           {testCase ? (
             <div>
               <h4 className="font-semibold text-base-content mb-1 line-clamp-1">
-                {testCase.description}
+                {testCase.action}
               </h4>
               {task && onTaskClick ? (
                 <button
@@ -156,7 +165,7 @@ export const TestAnalysisCard: React.FC<TestAnalysisCardProps> = ({
               <span>
                 Gerada em {format(new Date(analysis.generatedAt), "dd/MM/yyyy 'às' HH:mm")}
               </span>
-              {analysis.isOutdated && (
+              {contentStale && (
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-warning/10 text-warning border border-warning/30 animate-pulse">
                   ⚠️ Desatualizada
                 </span>

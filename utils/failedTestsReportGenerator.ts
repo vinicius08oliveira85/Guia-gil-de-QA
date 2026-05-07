@@ -1,5 +1,5 @@
 import { Project, JiraTask, TestCase } from '../types';
-import { normalizeExecutedStrategy } from './testCaseMigration';
+import { getTestCaseEnvironment, getTestCaseSuite } from './testCaseMigration';
 
 export type FailedTestsReportFormat = 'text' | 'markdown';
 
@@ -67,26 +67,27 @@ function applyFilters(
     filtered = filtered.filter(ft => ft.task.id === filters.taskId);
   }
 
-  // Filtro por prioridade
+  // Filtro por prioridade (da tarefa Jira)
   if (filters.priorities && filters.priorities.length > 0) {
     filtered = filtered.filter(
-      ft => ft.testCase.priority && filters.priorities!.includes(ft.testCase.priority)
+      ft => ft.task.priority && filters.priorities!.includes(ft.task.priority)
     );
   }
 
-  // Filtro por ambiente
+  // Filtro por ambiente (campo estruturado ou linha legada em parâmetros)
   if (filters.environments && filters.environments.length > 0) {
-    filtered = filtered.filter(
-      ft =>
-        ft.testCase.testEnvironment && filters.environments!.includes(ft.testCase.testEnvironment)
-    );
+    filtered = filtered.filter(ft => {
+      const env = getTestCaseEnvironment(ft.testCase);
+      return !!env && filters.environments!.includes(env);
+    });
   }
 
-  // Filtro por suite
+  // Filtro por suíte
   if (filters.suites && filters.suites.length > 0) {
-    filtered = filtered.filter(
-      ft => ft.testCase.testSuite && filters.suites!.includes(ft.testCase.testSuite)
-    );
+    filtered = filtered.filter(ft => {
+      const suite = getTestCaseSuite(ft.testCase);
+      return !!suite && filters.suites!.includes(suite);
+    });
   }
 
   return filtered;
@@ -180,13 +181,13 @@ export function generateFailedTestsReport(
   } else {
     filteredTests.forEach((failedTest, index) => {
       const { testCase, task } = failedTest;
-      const description = testCase.description || `Teste ${index + 1}`;
+      const titleLine = testCase.action || `Teste ${index + 1}`;
 
       // Número do teste
       if (format === 'markdown') {
-        lines.push(`### ${index + 1}. ${description}`);
+        lines.push(`### ${index + 1}. ${titleLine}`);
       } else {
-        lines.push(`${index + 1}. ${description}`);
+        lines.push(`${index + 1}. ${titleLine}`);
       }
       lines.push('');
 
@@ -194,31 +195,18 @@ export function generateFailedTestsReport(
       lines.push(`   Tarefa: ${task.id} - ${task.title || 'Sem título'}`);
       lines.push(`   Status: ❌ Reprovado`);
 
-      if (testCase.priority) {
-        lines.push(`   Prioridade: ${testCase.priority}`);
-      }
-
-      if (testCase.testEnvironment) {
-        lines.push(`   Ambiente: ${testCase.testEnvironment}`);
-      }
-
-      if (testCase.testSuite) {
-        lines.push(`   Suite: ${testCase.testSuite}`);
+      if (task.priority) {
+        lines.push(`   Prioridade (tarefa): ${task.priority}`);
       }
 
       lines.push('');
 
-      // Passos
-      if (testCase.steps && testCase.steps.length > 0) {
+      if (testCase.parameters?.trim()) {
         if (format === 'markdown') {
-          lines.push('   **Passos:**');
+          lines.push(`   **Parâmetros necessários:** ${testCase.parameters}`);
         } else {
-          lines.push('   Passos:');
+          lines.push(`   Parâmetros necessários: ${testCase.parameters}`);
         }
-        lines.push('');
-        testCase.steps.forEach(step => {
-          lines.push(`   - ${step}`);
-        });
         lines.push('');
       }
 
@@ -232,35 +220,14 @@ export function generateFailedTestsReport(
         lines.push('');
       }
 
-      // Resultado observado
+      // Resultado obtido
       if (testCase.observedResult && testCase.observedResult.trim()) {
         if (format === 'markdown') {
           lines.push(
-            `   **Resultado Observado:** <span style="color: red;">${testCase.observedResult}</span>`
+            `   **Resultado obtido:** <span style="color: red;">${testCase.observedResult}</span>`
           );
         } else {
-          lines.push(`   Resultado Observado: ${testCase.observedResult}`);
-        }
-        lines.push('');
-      }
-
-      // Estratégia executada
-      const executedStrategies = normalizeExecutedStrategy(testCase.executedStrategy);
-      if (executedStrategies.length > 0) {
-        if (format === 'markdown') {
-          lines.push(`   **Estratégia Executada:** ${executedStrategies.join(', ')}`);
-        } else {
-          lines.push(`   Estratégia Executada: ${executedStrategies.join(', ')}`);
-        }
-        lines.push('');
-      }
-
-      // Ferramentas
-      if (testCase.toolsUsed && testCase.toolsUsed.length > 0) {
-        if (format === 'markdown') {
-          lines.push(`   **Ferramentas:** ${testCase.toolsUsed.join(', ')}`);
-        } else {
-          lines.push(`   Ferramentas: ${testCase.toolsUsed.join(', ')}`);
+          lines.push(`   Resultado obtido: ${testCase.observedResult}`);
         }
         lines.push('');
       }
@@ -305,7 +272,7 @@ export function generateFailedTestsReport(
   // Distribuição por prioridade
   const byPriority = new Map<string, number>();
   filteredTests.forEach(ft => {
-    const priority = ft.testCase.priority || 'Não especificada';
+    const priority = ft.task.priority || 'Não especificada';
     const count = byPriority.get(priority) || 0;
     byPriority.set(priority, count + 1);
   });
@@ -326,7 +293,8 @@ export function generateFailedTestsReport(
   // Distribuição por ambiente
   const byEnvironment = new Map<string, number>();
   filteredTests.forEach(ft => {
-    const env = ft.testCase.testEnvironment || 'Não especificado';
+    const env =
+      getTestCaseEnvironment(ft.testCase) || 'Não especificado no roteiro';
     const count = byEnvironment.get(env) || 0;
     byEnvironment.set(env, count + 1);
   });

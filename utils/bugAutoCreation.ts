@@ -13,13 +13,12 @@ const DEFAULT_RULES: BugCreationRules = {
 };
 
 export const determineBugSeverity = (
-  testCase: TestCase,
+  _testCase: TestCase,
   task: JiraTask,
   rules: BugCreationRules = DEFAULT_RULES
 ): BugSeverity => {
-  // Verificar tags do caso de teste
-  const testTags = testCase.strategies || [];
-  const hasCriticalTag = testTags.some(tag =>
+  const taskTags = task.tags || [];
+  const hasCriticalTag = taskTags.some(tag =>
     rules.criticalTestTags?.some(ct => tag.toLowerCase().includes(ct.toLowerCase()))
   );
 
@@ -27,8 +26,6 @@ export const determineBugSeverity = (
     return 'Crítico';
   }
 
-  // Verificar tags da tarefa
-  const taskTags = task.tags || [];
   const hasHighSeverityTag = taskTags.some(tag =>
     rules.highSeverityTags?.some(hst => tag.toLowerCase().includes(hst.toLowerCase()))
   );
@@ -37,12 +34,10 @@ export const determineBugSeverity = (
     return 'Alto';
   }
 
-  // Verificar tipo de teste
-  if (testCase.strategies?.some(s => s.toLowerCase().includes('segurança'))) {
+  if (taskTags.some(t => t.toLowerCase().includes('segurança'))) {
     return 'Alto';
   }
 
-  // Verificar prioridade da tarefa
   if (task.priority === 'Urgente' || task.priority === 'Alta') {
     return 'Alto';
   }
@@ -57,30 +52,28 @@ export const createBugFromFailedTest = (
   rules?: BugCreationRules
 ): JiraTask => {
   const severity = determineBugSeverity(testCase, task, rules);
+  const actionPreview = testCase.action.slice(0, 80);
 
   const bugDescription = `Este bug foi gerado automaticamente devido à falha do caso de teste.
 
 **Tarefa Original:** ${task.id} - ${task.title}
-**Caso de Teste:** ${testCase.description}
 
-**Passos para Reproduzir:**
-${testCase.steps.map((step, idx) => `${idx + 1}. ${step}`).join('\n')}
+**Ação / roteiro:**
+${testCase.action}
+
+**Parâmetros:**
+${testCase.parameters}
 
 **Resultado Esperado:**
 ${testCase.expectedResult}
 
-**Resultado Encontrado:**
+**Resultado Obtido:**
 ${observedResult || 'Nenhum resultado encontrado foi fornecido.'}
-
-**Estratégias de Teste:**
-${testCase.strategies?.join(', ') || 'N/A'}
-
-**Automatizado:** ${testCase.isAutomated ? 'Sim' : 'Não'}
 `;
 
   return {
     id: `BUG-${task.id}-${Date.now().toString().slice(-4)}`,
-    title: `BUG: Falha no teste - ${testCase.description.substring(0, 50)}${testCase.description.length > 50 ? '...' : ''}`,
+    title: `BUG: Falha no teste - ${actionPreview}${testCase.action.length > 80 ? '...' : ''}`,
     description: bugDescription,
     type: 'Bug',
     status: 'To Do',
@@ -92,11 +85,8 @@ ${testCase.strategies?.join(', ') || 'N/A'}
     createdAt: new Date().toISOString(),
     owner: 'QA',
     assignee: 'Dev',
-    tags: [
-      ...(task.tags || []),
-      'bug-automático',
-      'teste-falhado',
-      ...(testCase.strategies || []).map(s => s.toLowerCase().replace(/\s+/g, '-')),
-    ].filter((tag, index, self) => self.indexOf(tag) === index),
+    tags: [...(task.tags || []), 'bug-automático', 'teste-falhado'].filter(
+      (tag, index, self) => self.indexOf(tag) === index
+    ),
   };
 };

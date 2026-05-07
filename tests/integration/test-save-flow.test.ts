@@ -38,12 +38,12 @@ describe('Fluxo de Salvamento de Casos de Teste', () => {
       // Simular criação de caso de teste via modal
       const newTestCase: TestCase = {
         id: 'tc-new-' + Date.now(),
-        description: 'Novo caso de teste criado via modal',
-        steps: ['Passo 1: Acessar sistema', 'Passo 2: Preencher formulário'],
+        action:
+          '1. Acessar sistema\n2. Preencher formulário',
+        parameters: 'Pré-condições: usuário logado',
         expectedResult: 'Formulário preenchido com sucesso',
+        observedResult: '',
         status: 'Not Run',
-        preconditions: 'Usuário logado',
-        priority: 'Alta',
       };
 
       // Simular handleSaveTestCase do TasksView
@@ -64,28 +64,25 @@ describe('Fluxo de Salvamento de Casos de Teste', () => {
       expect(savedProject).toBeDefined();
       expect(savedProject?.tasks[0].testCases).toHaveLength(1);
       expect(savedProject?.tasks[0].testCases[0].id).toBe(newTestCase.id);
-      expect(savedProject?.tasks[0].testCases[0].description).toBe(newTestCase.description);
+      expect(savedProject?.tasks[0].testCases[0].action).toBe(newTestCase.action);
       expect(savedProject?.tasks[0].testCases[0].status).toBe('Not Run');
-      expect(savedProject?.tasks[0].testCases[0].priority).toBe('Alta');
     });
 
     it('deve salvar caso de teste com todas as propriedades', async () => {
       const completeTestCase: TestCase = {
         id: 'tc-complete-' + Date.now(),
-        title: 'Título do Teste',
-        description: 'Descrição completa do caso de teste',
-        steps: ['Passo 1', 'Passo 2', 'Passo 3'],
+        action:
+          'Descrição completa do caso de teste\n\n1. Passo 1\n2. Passo 2\n3. Passo 3',
+        parameters: [
+          'Pré-condições: Pré-condições do teste',
+          'Suíte: Suite de Testes',
+          'Ambiente: Ambiente de Teste',
+          'Estratégias (legado): Estratégia 1, Estratégia 2',
+          'Ferramentas usadas na execução: Postman, Selenium',
+        ].join('\n'),
         expectedResult: 'Resultado esperado detalhado',
-        status: 'Passed',
-        strategies: ['Estratégia 1', 'Estratégia 2'],
-        executedStrategy: ['Estratégia executada'],
-        isAutomated: true,
         observedResult: 'Resultado observado',
-        toolsUsed: ['Postman', 'Selenium'],
-        preconditions: 'Pré-condições do teste',
-        testSuite: 'Suite de Testes',
-        testEnvironment: 'Ambiente de Teste',
-        priority: 'Urgente',
+        status: 'Passed',
       };
 
       const updatedTask = {
@@ -101,19 +98,11 @@ describe('Fluxo de Salvamento de Casos de Teste', () => {
       const savedTestCase = savedProject?.tasks[0].testCases[0];
 
       expect(savedTestCase).toBeDefined();
-      expect(savedTestCase?.title).toBe('Título do Teste');
-      expect(savedTestCase?.description).toBe('Descrição completa do caso de teste');
-      expect(savedTestCase?.steps).toHaveLength(3);
+      expect(savedTestCase?.action).toContain('Descrição completa do caso de teste');
+      expect(savedTestCase?.parameters).toContain('Suite de Testes');
+      expect(savedTestCase?.parameters).toContain('Postman');
       expect(savedTestCase?.status).toBe('Passed');
-      expect(savedTestCase?.strategies).toEqual(['Estratégia 1', 'Estratégia 2']);
-      expect(savedTestCase?.executedStrategy).toEqual(['Estratégia executada']);
-      expect(savedTestCase?.isAutomated).toBe(true);
       expect(savedTestCase?.observedResult).toBe('Resultado observado');
-      expect(savedTestCase?.toolsUsed).toEqual(['Postman', 'Selenium']);
-      expect(savedTestCase?.preconditions).toBe('Pré-condições do teste');
-      expect(savedTestCase?.testSuite).toBe('Suite de Testes');
-      expect(savedTestCase?.testEnvironment).toBe('Ambiente de Teste');
-      expect(savedTestCase?.priority).toBe('Urgente');
     });
   });
 
@@ -122,9 +111,10 @@ describe('Fluxo de Salvamento de Casos de Teste', () => {
       // Criar caso de teste inicial
       const originalTestCase: TestCase = {
         id: 'tc-edit-001',
-        description: 'Caso de teste original',
-        steps: ['Passo original'],
+        action: 'Passo original',
+        parameters: '—',
         expectedResult: 'Resultado original',
+        observedResult: '',
         status: 'Not Run',
       };
 
@@ -135,8 +125,7 @@ describe('Fluxo de Salvamento de Casos de Teste', () => {
       // Simular edição via modal (handleSaveTestCase)
       const updatedTestCase: TestCase = {
         ...originalTestCase,
-        description: 'Caso de teste atualizado',
-        steps: ['Passo atualizado 1', 'Passo atualizado 2'],
+        action: '1. Passo atualizado 1\n2. Passo atualizado 2',
         expectedResult: 'Resultado atualizado',
         status: 'Passed',
         observedResult: 'Resultado observado após execução',
@@ -158,8 +147,7 @@ describe('Fluxo de Salvamento de Casos de Teste', () => {
       const savedTestCase = savedProject?.tasks[0].testCases.find(tc => tc.id === 'tc-edit-001');
 
       expect(savedTestCase).toBeDefined();
-      expect(savedTestCase?.description).toBe('Caso de teste atualizado');
-      expect(savedTestCase?.steps).toHaveLength(2);
+      expect(savedTestCase?.action).toContain('Passo atualizado');
       expect(savedTestCase?.status).toBe('Passed');
       expect(savedTestCase?.observedResult).toBe('Resultado observado após execução');
     });
@@ -167,17 +155,19 @@ describe('Fluxo de Salvamento de Casos de Teste', () => {
     it('deve preservar outros casos de teste ao editar um', async () => {
       const testCase1: TestCase = {
         id: 'tc-multi-1',
-        description: 'Caso de teste 1',
-        steps: ['Passo 1'],
+        action: 'Passo 1',
+        parameters: '—',
         expectedResult: 'Resultado 1',
+        observedResult: '',
         status: 'Passed',
       };
 
       const testCase2: TestCase = {
         id: 'tc-multi-2',
-        description: 'Caso de teste 2',
-        steps: ['Passo 2'],
+        action: 'Passo 2',
+        parameters: '—',
         expectedResult: 'Resultado 2',
+        observedResult: 'falhou',
         status: 'Failed',
       };
 
@@ -212,7 +202,7 @@ describe('Fluxo de Salvamento de Casos de Teste', () => {
 
       expect(saved1?.status).toBe('Blocked'); // Atualizado
       expect(saved2?.status).toBe('Failed'); // Preservado
-      expect(saved2?.description).toBe('Caso de teste 2'); // Preservado
+      expect(saved2?.action).toBe('Passo 2'); // Preservado
     });
   });
 
@@ -220,9 +210,10 @@ describe('Fluxo de Salvamento de Casos de Teste', () => {
     it('deve persistir dados após múltiplas atualizações', async () => {
       let currentTestCase: TestCase = {
         id: 'tc-persist-001',
-        description: 'Versão inicial',
-        steps: ['Passo 1'],
+        action: 'Passo 1',
+        parameters: '—',
         expectedResult: 'Resultado inicial',
+        observedResult: '',
         status: 'Not Run',
       };
 
@@ -266,12 +257,11 @@ describe('Fluxo de Salvamento de Casos de Teste', () => {
     it('deve manter dados mesmo após recarregar do Supabase', async () => {
       const testCase: TestCase = {
         id: 'tc-reload-001',
-        description: 'Caso de teste para recarregamento',
-        steps: ['Passo 1', 'Passo 2'],
+        action: '1. Passo 1\n2. Passo 2',
+        parameters: 'Ferramentas usadas na execução: Postman',
         expectedResult: 'Resultado esperado',
+        observedResult: '',
         status: 'Passed',
-        toolsUsed: ['Postman'],
-        priority: 'Alta',
       };
 
       testTask.testCases = [testCase];
@@ -286,17 +276,17 @@ describe('Fluxo de Salvamento de Casos de Teste', () => {
       expect(reloadedProject?.tasks[0].testCases).toHaveLength(1);
       expect(reloadedProject?.tasks[0].testCases[0].id).toBe('tc-reload-001');
       expect(reloadedProject?.tasks[0].testCases[0].status).toBe('Passed');
-      expect(reloadedProject?.tasks[0].testCases[0].toolsUsed).toEqual(['Postman']);
-      expect(reloadedProject?.tasks[0].testCases[0].priority).toBe('Alta');
+      expect(reloadedProject?.tasks[0].testCases[0].parameters).toContain('Postman');
     });
   });
 
   describe('Validação de Dados', () => {
     it('deve rejeitar caso de teste sem ID', async () => {
       const invalidTestCase = {
-        description: 'Caso sem ID',
-        steps: ['Passo 1'],
+        action: 'Passo 1',
+        parameters: '',
         expectedResult: 'Resultado',
+        observedResult: '',
         status: 'Not Run' as const,
       };
 
@@ -309,12 +299,11 @@ describe('Fluxo de Salvamento de Casos de Teste', () => {
     it('deve preservar arrays vazios quando apropriado', async () => {
       const testCase: TestCase = {
         id: 'tc-empty-arrays',
-        description: 'Caso com arrays vazios',
-        steps: ['Passo 1'],
+        action: 'Passo 1',
+        parameters: '—',
         expectedResult: 'Resultado',
+        observedResult: '',
         status: 'Not Run',
-        strategies: [],
-        toolsUsed: [],
       };
 
       testTask.testCases = [testCase];
@@ -327,7 +316,7 @@ describe('Fluxo de Salvamento de Casos de Teste', () => {
 
       // Arrays vazios podem ser undefined após sanitização
       expect(savedTestCase).toBeDefined();
-      expect(savedTestCase?.description).toBe('Caso com arrays vazios');
+      expect(savedTestCase?.action).toBe('Passo 1');
     });
   });
 });

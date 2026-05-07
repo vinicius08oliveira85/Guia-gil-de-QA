@@ -10,6 +10,7 @@ import {
 import { getFormattedContext } from './documentContextService';
 import { callGeminiWithRetry } from './geminiApiWrapper';
 import { GEMINI_DEFAULT_MODEL } from './geminiConstants';
+import { hashString } from '../../utils/hash';
 import { logger } from '../../utils/logger';
 
 const CACHE_TTL_MS = 1000 * 60 * 5; // 5 minutos
@@ -57,12 +58,12 @@ interface TestSnapshot {
   id: string;
   taskId: string;
   taskTitle: string;
+  /** Trecho normalizado da ação (roteiro). */
   description: string;
   expectedResult: string;
   status: TestCase['status'];
-  priority?: string;
+  /** Linhas não vazias na ação (substitui contagem de passos antigos). */
   stepsCount: number;
-  isAutomated: boolean;
   issues: string[];
 }
 
@@ -81,7 +82,7 @@ interface ProjectMetrics {
   tests: {
     total: number;
     byStatus: Record<string, number>;
-    missingSteps: number;
+    missingAction: number;
     missingExpectedResult: number;
     automated: number;
   };
@@ -99,15 +100,6 @@ const normalizeText = (value?: string, maxLength: number = TEXT_SNIPPET_LENGTH):
   return `${sanitized.slice(0, maxLength)}…`;
 };
 
-const hashString = (value: string): string => {
-  let hash = 0;
-  for (let i = 0; i < value.length; i++) {
-    const chr = value.charCodeAt(i);
-    hash = (hash << 5) - hash + chr;
-    hash |= 0; // Convert to 32bit integer
-  }
-  return hash.toString(36);
-};
 
 const getRiskLevelFromScore = (score: number): TaskIAAnalysis['riskLevel'] => {
   if (score >= 80) return 'Crítico';
@@ -183,10 +175,15 @@ const calculateTaskSnapshot = (task: JiraTask): TaskSnapshot => {
 
 const calculateTestSnapshot = (task: JiraTask, testCase: TestCase): TestSnapshot => {
   const issues: string[] = [];
-  if (!testCase.steps || testCase.steps.length === 0) {
-    issues.push('Passos não detalhados');
+  const actionLines = testCase.action
+    ? testCase.action.split(/\r?\n/).filter(l => l.trim()).length
+    : 0;
+  const stepsCount = actionLines > 0 ? actionLines : testCase.action?.trim() ? 1 : 0;
+
+  if (!testCase.action?.trim()) {
+    issues.push('Ação não detalhada');
   }
-  if (!testCase.expectedResult) {
+  if (!testCase.expectedResult?.trim()) {
     issues.push('Resultado esperado ausente');
   }
   if (testCase.status === 'Failed') {
@@ -200,12 +197,10 @@ const calculateTestSnapshot = (task: JiraTask, testCase: TestCase): TestSnapshot
     id: testCase.id,
     taskId: task.id,
     taskTitle: task.title,
-    description: normalizeText(testCase.description, 180),
+    description: normalizeText(testCase.action, 180),
     expectedResult: normalizeText(testCase.expectedResult, 180),
     status: testCase.status,
-    priority: testCase.priority,
-    stepsCount: testCase.steps?.length || 0,
-    isAutomated: testCase.isAutomated || false,
+    stepsCount,
     issues,
   };
 };
@@ -214,22 +209,20 @@ const calculateTestSnapshot = (task: JiraTask, testCase: TestCase): TestSnapshot
 const aggregateTestsMetricsFromTasks = (tasks: JiraTask[]): ProjectMetrics['tests'] => {
   const byStatus: Record<string, number> = {};
   let total = 0;
-  let missingSteps = 0;
+  let missingAction = 0;
   let missingExpectedResult = 0;
-  let automated = 0;
 
   for (const task of tasks) {
     for (const tc of task.testCases || []) {
       total++;
       const st = tc.status;
       byStatus[st] = (byStatus[st] || 0) + 1;
-      if (!tc.steps?.length) missingSteps++;
+      if (!tc.action?.trim()) missingAction++;
       if (!tc.expectedResult?.trim()) missingExpectedResult++;
-      if (tc.isAutomated) automated++;
     }
   }
 
-  return { total, byStatus, missingSteps, missingExpectedResult, automated };
+  return { total, byStatus, missingAction, missingExpectedResult, automated: 0 };
 };
 
 const buildProjectMetrics = (
@@ -317,8 +310,8 @@ const buildQualitySignals = (metrics: ProjectMetrics, tasks: TaskSnapshot[]): st
   if (metrics.tasks.withFailedTests > 0) {
     signals.push(`${metrics.tasks.withFailedTests} tarefa(s) com testes falhando.`);
   }
-  if (metrics.tests.missingSteps > 0) {
-    signals.push(`${metrics.tests.missingSteps} caso(s) de teste sem passos descritos.`);
+  if (metrics.tests.missingAction > 0) {
+    signals.push(`${metrics.tests.missingAction} caso(s) de teste sem ação descrita.`);
   }
   if (metrics.tests.missingExpectedResult > 0) {
     signals.push(`${metrics.tests.missingExpectedResult} caso(s) sem resultado esperado.`);
@@ -360,6 +353,14 @@ const selectPriorityTests = (tests: TestSnapshot[]): TestSnapshot[] => {
     .sort((a, b) => testSnapshotPriorityScore(b) - testSnapshotPriorityScore(a))
     .slice(0, MAX_AI_TESTS);
 };
+
+/** Hash determinístico de um TaskSnapshot, usado em `TaskIAAnalysis.snapshotHash`. */
+const computeTaskSnapshotHash = (snapshot: TaskSnapshot): string =>
+  hashString(JSON.stringify(snapshot));
+
+/** Hash determinístico de um TestSnapshot, usado em `TestIAAnalysis.snapshotHash`. */
+const computeTestSnapshotHash = (snapshot: TestSnapshot): string =>
+  hashString(JSON.stringify(snapshot));
 
 const buildTaskHeuristicAnalysis = (snapshot: TaskSnapshot): TaskIAAnalysis => {
   const missingItems: string[] = [];
@@ -408,6 +409,7 @@ const buildTaskHeuristicAnalysis = (snapshot: TaskSnapshot): TaskIAAnalysis => {
     qaImprovements,
     generatedAt: new Date().toISOString(),
     isOutdated: false,
+    snapshotHash: computeTaskSnapshotHash(snapshot),
   };
 };
 
@@ -422,7 +424,7 @@ const buildTestHeuristicAnalysis = (snapshot: TestSnapshot): TestIAAnalysis => {
     suggestions.push('Reexecutar o teste em ambiente controlado e registrar evidências.');
   }
   if (snapshot.stepsCount === 0) {
-    suggestions.push('Detalhar passos executáveis para padronizar a execução.');
+    suggestions.push('Detalhar a ação executável no roteiro para padronizar a execução.');
   }
   if (!snapshot.expectedResult) {
     suggestions.push('Documentar o resultado esperado para facilitar a validação.');
@@ -431,7 +433,7 @@ const buildTestHeuristicAnalysis = (snapshot: TestSnapshot): TestIAAnalysis => {
     suggestions.push('Monitorar o teste em regressões futuras.');
   }
 
-  const coverage = `Cobertura baseada em ${snapshot.stepsCount} passo(s) documentado(s).`;
+  const coverage = `Roteiro com ${snapshot.stepsCount} linha(s) de ação documentada(s).`;
 
   return {
     testId: snapshot.id,
@@ -442,6 +444,7 @@ const buildTestHeuristicAnalysis = (snapshot: TestSnapshot): TestIAAnalysis => {
     suggestions,
     generatedAt: new Date().toISOString(),
     isOutdated: false,
+    snapshotHash: computeTestSnapshotHash(snapshot),
   };
 };
 
@@ -644,36 +647,75 @@ const generalAnalysisSchema = {
   ],
 };
 
+/** Monta o payload e hash usados na análise geral (API e UI de freshness). */
+function buildGeneralIaAnalysisSnapshot(project: Project): {
+  snapshotHash: string;
+  snapshotJsonCompact: string;
+  taskSnapshots: TaskSnapshot[];
+  priorityTests: TestSnapshot[];
+  tasksForContext: JiraTask[];
+} {
+  const tasksForContext = project.tasks.slice(0, MAX_TASKS_IN_CONTEXT);
+  const taskSnapshots = tasksForContext.map(calculateTaskSnapshot);
+  const testsMetrics = aggregateTestsMetricsFromTasks(tasksForContext);
+  const testSnapshotsPool = collectTestSnapshotsForPool(tasksForContext, MAX_TEST_SNAPSHOT_POOL);
+
+  const metrics = buildProjectMetrics(taskSnapshots, testsMetrics);
+  const qualitySignals = buildQualitySignals(metrics, taskSnapshots);
+  const priorityTasks = selectPriorityTasks(taskSnapshots);
+  const priorityTests = selectPriorityTests(testSnapshotsPool);
+
+  const snapshotPayload = {
+    project: {
+      id: project.id,
+      name: project.name,
+      description: normalizeText(project.description, 400),
+      tags: project.tags || [],
+    },
+    metrics,
+    qualitySignals,
+    priorityTasks,
+    priorityTests,
+  };
+
+  const snapshotJsonCompact = JSON.stringify(snapshotPayload);
+  const snapshotHash = hashString(snapshotJsonCompact);
+
+  return {
+    snapshotHash,
+    snapshotJsonCompact,
+    taskSnapshots,
+    priorityTests,
+    tasksForContext,
+  };
+}
+
+/** Hash atual do projeto para comparar com `GeneralIAAnalysis.snapshotHash` (freshness na UI). */
+export function getGeneralIAAnalysisSnapshotHash(project: Project): string {
+  return buildGeneralIaAnalysisSnapshot(project).snapshotHash;
+}
+
+/** Hash do snapshot de tarefa usado em `TaskIAAnalysis.snapshotHash`. */
+export function getTaskIaAnalysisSnapshotHash(task: JiraTask): string {
+  return computeTaskSnapshotHash(calculateTaskSnapshot(task));
+}
+
+/** Hash do snapshot de teste usado em `TestIAAnalysis.snapshotHash`. */
+export function getTestIaAnalysisSnapshotHash(task: JiraTask, testCase: TestCase): string {
+  return computeTestSnapshotHash(calculateTestSnapshot(task, testCase));
+}
+
 /**
  * Gera uma análise geral consolidada de todas as tarefas e testes do projeto
  */
 export async function generateGeneralIAAnalysis(project: Project): Promise<GeneralIAAnalysis> {
   try {
-    const tasksForContext = project.tasks.slice(0, MAX_TASKS_IN_CONTEXT);
-    const taskSnapshots = tasksForContext.map(calculateTaskSnapshot);
-    const testsMetrics = aggregateTestsMetricsFromTasks(tasksForContext);
-    const testSnapshotsPool = collectTestSnapshotsForPool(tasksForContext, MAX_TEST_SNAPSHOT_POOL);
-
-    const metrics = buildProjectMetrics(taskSnapshots, testsMetrics);
-    const qualitySignals = buildQualitySignals(metrics, taskSnapshots);
-    const priorityTasks = selectPriorityTasks(taskSnapshots);
-    const priorityTests = selectPriorityTests(testSnapshotsPool);
-
-    const snapshotPayload = {
-      project: {
-        id: project.id,
-        name: project.name,
-        description: normalizeText(project.description, 400),
-        tags: project.tags || [],
-      },
-      metrics,
-      qualitySignals,
-      priorityTasks,
+    const {
+      snapshotHash,
+      snapshotJsonCompact,
+      taskSnapshots,
       priorityTests,
-    };
-
-    const snapshotJsonCompact = JSON.stringify(snapshotPayload);
-    const snapshotHash = hashString(snapshotJsonCompact);
+    } = buildGeneralIaAnalysisSnapshot(project);
     const cacheKey = `general-ia-analysis:${project.id}`;
 
     const cached = getCachedAnalysis(cacheKey, snapshotHash);
@@ -754,6 +796,7 @@ OBSERVAÇÕES IMPORTANTES:
           qaImprovements: aiAnalysis.qaImprovements || [],
           generatedAt: new Date().toISOString(),
           isOutdated: false,
+          snapshotHash: computeTaskSnapshotHash(snapshot),
         };
       }
 
@@ -772,6 +815,7 @@ OBSERVAÇÕES IMPORTANTES:
           suggestions: aiAnalysis.suggestions || [],
           generatedAt: new Date().toISOString(),
           isOutdated: false,
+          snapshotHash: computeTestSnapshotHash(snapshot),
         };
       }
 
@@ -796,6 +840,7 @@ OBSERVAÇÕES IMPORTANTES:
       testAnalyses: finalTestAnalyses,
       generatedAt: new Date().toISOString(),
       isOutdated: false,
+      snapshotHash,
     };
 
     setCachedAnalysis(cacheKey, snapshotHash, analysis);

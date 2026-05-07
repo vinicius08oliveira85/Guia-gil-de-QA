@@ -26,9 +26,10 @@ describe('Estrutura de Dados no Supabase', () => {
     it('deve salvar casos de teste relacionados à tarefa', async () => {
       const testCase: TestCase = {
         id: 'tc-001',
-        description: 'Caso de teste de exemplo',
-        steps: ['Passo 1', 'Passo 2'],
+        action: 'Caso de teste de exemplo\n\n1. Passo 1\n2. Passo 2',
+        parameters: '—',
         expectedResult: 'Resultado esperado',
+        observedResult: '',
         status: 'Not Run',
       };
 
@@ -54,23 +55,27 @@ describe('Estrutura de Dados no Supabase', () => {
       expect(savedProject?.tasks).toHaveLength(1);
       expect(savedProject?.tasks[0].testCases).toHaveLength(1);
       expect(savedProject?.tasks[0].testCases[0].id).toBe('tc-001');
-      expect(savedProject?.tasks[0].testCases[0].description).toBe('Caso de teste de exemplo');
+      expect(savedProject?.tasks[0].testCases[0].action).toBe(
+        'Caso de teste de exemplo\n\n1. Passo 1\n2. Passo 2'
+      );
     });
 
     it('deve preservar múltiplos casos de teste na mesma tarefa', async () => {
       const testCases: TestCase[] = [
         {
           id: 'tc-001',
-          description: 'Caso 1',
-          steps: ['Passo 1'],
+          action: 'Caso 1\n\n1. Passo 1',
+          parameters: '—',
           expectedResult: 'Resultado 1',
+          observedResult: '',
           status: 'Passed',
         },
         {
           id: 'tc-002',
-          description: 'Caso 2',
-          steps: ['Passo 1'],
+          action: 'Caso 2\n\n1. Passo 1',
+          parameters: '—',
           expectedResult: 'Resultado 2',
+          observedResult: '',
           status: 'Failed',
         },
       ];
@@ -172,9 +177,10 @@ describe('Estrutura de Dados no Supabase', () => {
         testCases: [
           {
             id: 'tc-a-001',
-            description: 'Teste da tarefa A',
-            steps: ['Passo 1'],
+            action: 'Teste da tarefa A\n\n1. Passo 1',
+            parameters: '—',
             expectedResult: 'Resultado A',
+            observedResult: '',
             status: 'Not Run',
           },
         ],
@@ -189,9 +195,10 @@ describe('Estrutura de Dados no Supabase', () => {
         testCases: [
           {
             id: 'tc-b-001',
-            description: 'Teste da tarefa B',
-            steps: ['Passo 1'],
+            action: 'Teste da tarefa B\n\n1. Passo 1',
+            parameters: '—',
             expectedResult: 'Resultado B',
+            observedResult: '',
             status: 'Not Run',
           },
         ],
@@ -211,11 +218,11 @@ describe('Estrutura de Dados no Supabase', () => {
 
       expect(savedTask1?.testCases).toHaveLength(1);
       expect(savedTask1?.testCases[0].id).toBe('tc-a-001');
-      expect(savedTask1?.testCases[0].description).toBe('Teste da tarefa A');
+      expect(savedTask1?.testCases[0].action).toContain('Teste da tarefa A');
 
       expect(savedTask2?.testCases).toHaveLength(1);
       expect(savedTask2?.testCases[0].id).toBe('tc-b-001');
-      expect(savedTask2?.testCases[0].description).toBe('Teste da tarefa B');
+      expect(savedTask2?.testCases[0].action).toContain('Teste da tarefa B');
 
       // Verificar que não há mistura de dados
       expect(savedTask1?.testCases[0].id).not.toBe('tc-b-001');
@@ -232,9 +239,10 @@ describe('Estrutura de Dados no Supabase', () => {
         testCases: [
           {
             id: 'tc-x-001',
-            description: 'Teste X',
-            steps: ['Passo 1'],
+            action: 'Teste X\n\n1. Passo 1',
+            parameters: '—',
             expectedResult: 'Resultado X',
+            observedResult: '',
             status: 'Not Run',
           },
         ],
@@ -301,9 +309,10 @@ describe('Estrutura de Dados no Supabase', () => {
         testCases: [
           {
             id: 'tc-verify-001',
-            description: 'Caso de teste',
-            steps: ['Passo 1'],
+            action: 'Caso de teste\n\n1. Passo 1',
+            parameters: '—',
             expectedResult: 'Resultado',
+            observedResult: '',
             status: 'Passed',
           },
         ],
@@ -346,9 +355,10 @@ describe('Estrutura de Dados no Supabase', () => {
         testCases: [
           {
             id: 'tc-rel-1',
-            description: 'Teste 1',
-            steps: ['Passo 1'],
+            action: 'Teste 1\n\n1. Passo 1',
+            parameters: '—',
             expectedResult: 'Resultado',
+            observedResult: '',
             status: 'Not Run',
           },
         ],
@@ -363,9 +373,10 @@ describe('Estrutura de Dados no Supabase', () => {
         testCases: [
           {
             id: 'tc-rel-2',
-            description: 'Teste 2',
-            steps: ['Passo 1'],
+            action: 'Teste 2\n\n1. Passo 1',
+            parameters: '—',
             expectedResult: 'Resultado',
+            observedResult: '',
             status: 'Not Run',
           },
         ],

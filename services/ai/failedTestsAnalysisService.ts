@@ -3,7 +3,6 @@ import { callGeminiWithRetry } from './geminiApiWrapper';
 import { GEMINI_DEFAULT_MODEL } from './geminiConstants';
 import { getAIService } from './aiServiceFactory';
 import { logger } from '../../utils/logger';
-import { normalizeExecutedStrategy } from '../../utils/testCaseMigration';
 
 interface FailedTestWithTask {
   testCase: TestCase;
@@ -41,24 +40,17 @@ export async function generateFailedTestsAnalysisForPO(
     }
 
     // Preparar dados dos testes reprovados para a IA
-    const testsData = failedTests.map((ft, index) => {
-      const executedStrategies = normalizeExecutedStrategy(ft.testCase.executedStrategy);
-      return {
-        index: index + 1,
-        testId: ft.testCase.id,
-        testDescription: ft.testCase.description || 'Sem descrição',
-        taskId: ft.task.id,
-        taskTitle: ft.task.title || 'Sem título',
-        steps: ft.testCase.steps || [],
-        expectedResult: ft.testCase.expectedResult || '',
-        observedResult: ft.testCase.observedResult || '',
-        priority: ft.testCase.priority || 'Média',
-        environment: ft.testCase.testEnvironment || 'Não especificado',
-        suite: ft.testCase.testSuite || 'Não especificado',
-        strategies: executedStrategies,
-        toolsUsed: ft.testCase.toolsUsed || [],
-      };
-    });
+    const testsData = failedTests.map((ft, index) => ({
+      index: index + 1,
+      testId: ft.testCase.id,
+      action: ft.testCase.action || '—',
+      parameters: ft.testCase.parameters || '',
+      expectedResult: ft.testCase.expectedResult || '',
+      observedResult: ft.testCase.observedResult || '',
+      taskPriority: ft.task.priority || 'Média',
+      taskId: ft.task.id,
+      taskTitle: ft.task.title || 'Sem título',
+    }));
 
     const projectContext = {
       name: project.name,
@@ -209,7 +201,7 @@ function generateManualAnalysis(project: Project, failedTests: FailedTestWithTas
   );
 
   // Identificar padrões básicos
-  const severities = failedTests.map(ft => determineSeverity(ft.testCase));
+  const severities = failedTests.map(ft => determineSeverity(ft.testCase, ft.task));
   const criticalCount = severities.filter(s => s === 'Crítico').length;
   const highCount = severities.filter(s => s === 'Alto').length;
 
@@ -234,7 +226,7 @@ function generateManualAnalysis(project: Project, failedTests: FailedTestWithTas
   // Agrupar por tarefa
   bugsByTask.forEach((bugs, taskId) => {
     const task = bugs[0].task;
-    const severitiesInGroup = bugs.map(ft => determineSeverity(ft.testCase));
+    const severitiesInGroup = bugs.map(ft => determineSeverity(ft.testCase, ft.task));
     const maxSeverity = severitiesInGroup.includes('Crítico')
       ? 'Crítico'
       : severitiesInGroup.includes('Alto')
@@ -259,7 +251,7 @@ function generateManualAnalysis(project: Project, failedTests: FailedTestWithTas
         .join('; ');
       if (observedResults) {
         lines.push(
-          `- Resultado Observado: ${observedResults.substring(0, 200)}${observedResults.length > 200 ? '...' : ''}`
+          `- Resultado obtido: ${observedResults.substring(0, 200)}${observedResults.length > 200 ? '...' : ''}`
         );
         lines.push('');
       }
@@ -304,8 +296,11 @@ function generateManualAnalysis(project: Project, failedTests: FailedTestWithTas
 /**
  * Determina severidade baseada em critérios do teste
  */
-function determineSeverity(testCase: TestCase): 'Crítico' | 'Alto' | 'Médio' | 'Baixo' {
-  const priority = testCase.priority;
+function determineSeverity(
+  _testCase: TestCase,
+  task: JiraTask
+): 'Crítico' | 'Alto' | 'Médio' | 'Baixo' {
+  const priority = task.priority;
 
   if (priority === 'Urgente') return 'Crítico';
   if (priority === 'Alta') return 'Alto';

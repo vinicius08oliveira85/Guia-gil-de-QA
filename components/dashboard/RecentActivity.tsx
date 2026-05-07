@@ -65,7 +65,7 @@ export const RecentActivity = React.memo<RecentActivityProps>(({ project, classN
             : tc.status === 'Failed'
               ? 'Caso de Teste Falhou'
               : 'Caso de Teste Executado',
-        description: `${task.title}: ${tc.description?.substring(0, 50)}${tc.description && tc.description.length > 50 ? '...' : ''}`,
+        description: `${task.title}: ${tc.action?.substring(0, 50)}${tc.action && tc.action.length > 50 ? '...' : ''}`,
         time: timeStr,
         icon: tc.status === 'Passed' ? CheckCircle2 : tc.status === 'Failed' ? XCircle : Clock,
         iconColor:

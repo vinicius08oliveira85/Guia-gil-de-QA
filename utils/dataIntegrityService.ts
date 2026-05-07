@@ -1,4 +1,5 @@
 import { Project, JiraTask, TestCase } from '../types';
+import { migrateTestCase } from './testCaseMigration';
 import { logger } from './logger';
 import { restoreBackup } from '../services/backupService';
 
@@ -200,23 +201,21 @@ const validateTestCase = (
     });
   }
 
-  if (!testCase.description || testCase.description.trim() === '') {
+  if (!testCase.action || testCase.action.trim() === '') {
     issues.push({
       type: 'missing_field',
       severity: 'medium',
-      path: `${path}.description`,
-      message: `Caso de teste ${testCaseIndex} sem descrição`,
+      path: `${path}.action`,
+      message: `Caso de teste ${testCaseIndex} sem ação`,
     });
   }
 
-  if (!Array.isArray(testCase.steps)) {
+  if (typeof testCase.observedResult !== 'string') {
     issues.push({
       type: 'invalid_data',
-      severity: 'medium',
-      path: `${path}.steps`,
-      message: `steps não é um array no caso de teste ${testCaseIndex}`,
-      expected: 'array',
-      actual: typeof testCase.steps,
+      severity: 'low',
+      path: `${path}.observedResult`,
+      message: `observedResult deve ser string no caso de teste ${testCaseIndex}`,
     });
   }
 
@@ -353,37 +352,8 @@ export const autoFixIntegrityIssues = (project: Project): Project => {
       fixedTask.testCases = [];
     }
 
-    // Corrigir casos de teste
-    fixedTask.testCases = fixedTask.testCases.map((testCase, tcIndex) => {
-      const fixedTestCase = { ...testCase };
-
-      // Corrigir ID faltante
-      if (!fixedTestCase.id) {
-        fixedTestCase.id = `test-${Date.now()}-${index}-${tcIndex}`;
-      }
-
-      // Corrigir descrição faltante
-      if (!fixedTestCase.description || fixedTestCase.description.trim() === '') {
-        fixedTestCase.description = 'Caso de teste sem descrição';
-      }
-
-      // Garantir que steps é um array
-      if (!Array.isArray(fixedTestCase.steps)) {
-        fixedTestCase.steps = [];
-      }
-
-      // Corrigir resultado esperado faltante
-      if (!fixedTestCase.expectedResult || fixedTestCase.expectedResult.trim() === '') {
-        fixedTestCase.expectedResult = 'Resultado esperado não especificado';
-      }
-
-      // Corrigir status faltante
-      if (!fixedTestCase.status) {
-        fixedTestCase.status = 'Not Run';
-      }
-
-      return fixedTestCase;
-    });
+    // Corrigir casos de teste (unifica formato legado → roteiro action/parameters)
+    fixedTask.testCases = fixedTask.testCases.map(tc => migrateTestCase(tc));
 
     return fixedTask;
   });

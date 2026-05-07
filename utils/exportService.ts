@@ -18,6 +18,7 @@ import {
   WidthType,
 } from 'docx';
 import { saveAs } from 'file-saver';
+import { testCaseLooksAutomated } from './testCaseMigration';
 
 /**
  * Exporta o projeto completo para JSON (round-trip com importProjectFromJSON).
@@ -91,10 +92,15 @@ export const exportTestCasesToCSV = (tasks: JiraTask[]): string => {
     'Tarefa ID',
     'Tarefa Título',
     'Caso de Teste ID',
-    'Descrição',
+    'Ação necessária',
+    'Parâmetros necessários',
+    'Resultado esperado',
+    'Resultado obtido',
     'Status',
-    'Automatizado',
-    'Estratégias',
+    'Tipo execução',
+    'Ambiente',
+    'Suíte',
+    'Automatizado (estimado)',
   ];
   const rows: string[] = [headers.join(',')];
 
@@ -104,10 +110,15 @@ export const exportTestCasesToCSV = (tasks: JiraTask[]): string => {
         task.id,
         `"${task.title.replace(/"/g, '""')}"`,
         tc.id,
-        `"${tc.description.replace(/"/g, '""')}"`,
+        `"${tc.action.replace(/"/g, '""')}"`,
+        `"${tc.parameters.replace(/"/g, '""')}"`,
+        `"${(tc.expectedResult || '').replace(/"/g, '""')}"`,
+        `"${(tc.observedResult || '').replace(/"/g, '""')}"`,
         tc.status,
-        tc.isAutomated ? 'Sim' : 'Não',
-        `"${(tc.strategies || []).join('; ')}"`,
+        tc.executionKind || '',
+        `"${(tc.environment || '').replace(/"/g, '""')}"`,
+        `"${(tc.suite || '').replace(/"/g, '""')}"`,
+        testCaseLooksAutomated(tc) ? 'Sim' : 'Não',
       ];
       rows.push(row.join(','));
     });
@@ -126,7 +137,7 @@ export const generateProjectReport = (project: Project): string => {
   const executedTestCases = testCases.filter(tc => tc.status !== 'Not Run').length;
   const passedTestCases = testCases.filter(tc => tc.status === 'Passed').length;
   const failedTestCases = testCases.filter(tc => tc.status === 'Failed').length;
-  const automatedTestCases = testCases.filter(tc => tc.isAutomated).length;
+  const automatedTestCases = testCases.filter(tc => testCaseLooksAutomated(tc)).length;
 
   const report = `
 # Relatório do Projeto: ${project.name}
@@ -266,12 +277,15 @@ export const exportProjectToExcel = async (project: Project): Promise<void> => {
           'Tarefa ID': task.id,
           'Tarefa Título': task.title,
           'Caso de Teste ID': tc.id,
-          Descrição: tc.description,
+          'Ação necessária': tc.action,
+          'Parâmetros necessários': tc.parameters,
+          'Resultado esperado': tc.expectedResult || '',
+          'Resultado obtido': tc.observedResult || '',
           Status: tc.status,
-          Automatizado: tc.isAutomated ? 'Sim' : 'Não',
-          'Resultado Esperado': tc.expectedResult || '',
-          'Resultado Observado': tc.observedResult || '',
-          Prioridade: tc.priority || '',
+          'Tipo execução': tc.executionKind || '',
+          Ambiente: tc.environment || '',
+          Suíte: tc.suite || '',
+          'Automatizado (estimado)': testCaseLooksAutomated(tc) ? 'Sim' : 'Não',
         });
       });
     });

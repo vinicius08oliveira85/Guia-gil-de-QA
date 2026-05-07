@@ -24,7 +24,7 @@ import {
   formatBusinessRulesForPrompt,
   shouldGenerateTestCasesAndBdd,
 } from './testGenerationPrompts';
-import { normalizeStrategyReferences } from './testGenerationValidators';
+import { migrateTestCase } from '../../utils/testCaseMigration';
 import { logger } from '../../utils/logger';
 import { retryWithBackoff } from '../../utils/retry';
 import { getGeminiConfig } from '../geminiConfigService';
@@ -107,15 +107,11 @@ type OpenAiStrategyRow = {
 type OpenAiBddRow = { title?: string; gherkin?: string };
 
 type OpenAiTestCaseRow = {
+  action?: string;
+  parameters?: string;
+  expectedResult?: string;
   description?: string;
   steps?: string[];
-  expectedResult?: string;
-  strategies?: string[];
-  isAutomated?: boolean;
-  preconditions?: string;
-  testSuite?: string;
-  testEnvironment?: string;
-  priority?: string;
 };
 
 export class OpenAIService implements AIService {
@@ -171,28 +167,21 @@ export class OpenAIService implements AIService {
 
   private mapTestCasesFromResponse(
     items: unknown[],
-    strategy: TestStrategy[],
+    _strategy: TestStrategy[],
     baseTs: number
   ): TestCase[] {
-    return (items as OpenAiTestCaseRow[]).map((item, index) => ({
-      id: `tc-${baseTs}-${index}`,
-      description: item.description ?? '',
-      steps: Array.isArray(item.steps) ? item.steps : [],
-      expectedResult: item.expectedResult ?? '',
-      status: 'Not Run' as const,
-      strategies: normalizeStrategyReferences(item.strategies, strategy),
-      isAutomated: typeof item.isAutomated === 'boolean' ? item.isAutomated : false,
-      preconditions: item.preconditions || undefined,
-      testSuite: item.testSuite || undefined,
-      testEnvironment: item.testEnvironment || undefined,
-      priority:
-        item.priority === 'Baixa' ||
-        item.priority === 'Média' ||
-        item.priority === 'Alta' ||
-        item.priority === 'Urgente'
-          ? item.priority
-          : undefined,
-    }));
+    return (items as OpenAiTestCaseRow[]).map((item, index) =>
+      migrateTestCase({
+        id: `tc-${baseTs}-${index}`,
+        action: item.action,
+        parameters: item.parameters,
+        expectedResult: item.expectedResult,
+        observedResult: '',
+        status: 'Not Run',
+        description: item.description,
+        steps: item.steps,
+      })
+    );
   }
 
   /** Mesmo pipeline em 3 chamadas do Gemini, com temperatura mais baixa para aderência. */

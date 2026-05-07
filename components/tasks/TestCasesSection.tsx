@@ -29,12 +29,9 @@ const STATUS_LABEL: Record<TestCase['status'], string> = {
 const SORT_OPTIONS = [
   { value: 'default', label: 'Padrão' },
   { value: 'status', label: 'Status' },
-  { value: 'priority', label: 'Prioridade' },
-  { value: 'description', label: 'Descrição (A–Z)' },
+  { value: 'action', label: 'Ação (A–Z)' },
 ] as const;
 type SortBy = (typeof SORT_OPTIONS)[number]['value'];
-
-const PRIORITY_ORDER: Record<string, number> = { Urgente: 0, Alta: 1, Média: 2, Baixa: 3 };
 
 function getTestCaseStats(cases: TestCase[]) {
   const total = cases.length;
@@ -42,22 +39,14 @@ function getTestCaseStats(cases: TestCase[]) {
   const passed = cases.filter(c => c.status === 'Passed').length;
   const failed = cases.filter(c => c.status === 'Failed').length;
   const blocked = cases.filter(c => c.status === 'Blocked').length;
-  const automated = cases.filter(c => c.isAutomated).length;
-  const executed = passed + failed;
-  return { total, notRun, passed, failed, blocked, automated, executed };
+  const executed = passed + failed + blocked;
+  return { total, notRun, passed, failed, blocked, executed };
 }
 
 function matchesSearch(tc: TestCase, q: string): boolean {
   if (!q.trim()) return true;
   const lower = q.trim().toLowerCase();
-  const text = [
-    tc.description,
-    tc.expectedResult,
-    tc.preconditions,
-    tc.observedResult,
-    (tc.steps || []).join(' '),
-    (tc.strategies || []).join(' '),
-  ]
+  const text = [tc.action, tc.parameters, tc.expectedResult, tc.observedResult]
     .filter(Boolean)
     .join(' ')
     .toLowerCase();
@@ -69,10 +58,8 @@ export interface TestCasesSectionProps {
   isGenerating?: boolean;
   onGenerateTests?: (taskId: string, detailLevel: TestCaseDetailLevel) => Promise<void>;
   detailLevel?: TestCaseDetailLevel;
-  onTestCaseStatusChange: (testCaseId: string, status: 'Passed' | 'Failed') => void;
-  onToggleTestCaseAutomated: (testCaseId: string, isAutomated: boolean) => void;
-  onExecutedStrategyChange: (testCaseId: string, strategies: string[]) => void;
-  onTestCaseToolsChange?: (testCaseId: string, tools: string[]) => void;
+  onTestCaseStatusChange: (testCaseId: string, status: TestCase['status']) => void;
+  onObservedResultChange?: (testCaseId: string, value: string) => void;
   onEditTestCase?: (taskId: string, testCase: TestCase) => void;
   onDeleteTestCase?: (taskId: string, testCaseId: string) => void;
   onDuplicateTestCase?: (taskId: string, testCase: TestCase) => void;
@@ -85,9 +72,7 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
   onGenerateTests,
   detailLevel = 'Padrão',
   onTestCaseStatusChange,
-  onToggleTestCaseAutomated,
-  onExecutedStrategyChange,
-  onTestCaseToolsChange,
+  onObservedResultChange,
   onEditTestCase,
   onDeleteTestCase,
   onDuplicateTestCase,
@@ -95,8 +80,6 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
 }) => {
   const cases = task.testCases || [];
   const [statusFilter, setStatusFilter] = useState<TestCase['status'][]>([]);
-  const [automatedFilter, setAutomatedFilter] = useState<'all' | boolean>('all');
-  const [strategyFilter, setStrategyFilter] = useState<string>('all');
   const [searchInput, setSearchInput] = useState('');
   const [debouncedSearch] = useDebounceValue(searchInput, 300);
   const [sortBy, setSortBy] = useState<SortBy>('default');
@@ -106,19 +89,11 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
   const [detailsOpenOverride, setDetailsOpenOverride] = useState<boolean | null>(null);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
-  const strategies = useMemo(() => {
-    const set = new Set<string>();
-    cases.forEach(c => (c.strategies || []).forEach(s => set.add(s)));
-    return Array.from(set).sort();
-  }, [cases]);
-
   const stats = useMemo(() => getTestCaseStats(cases), [cases]);
 
   const filteredAndSorted = useMemo(() => {
     let list = cases.filter(tc => {
       if (statusFilter.length > 0 && !statusFilter.includes(tc.status)) return false;
-      if (automatedFilter !== 'all' && !!tc.isAutomated !== automatedFilter) return false;
-      if (strategyFilter !== 'all' && !(tc.strategies || []).includes(strategyFilter)) return false;
       if (!matchesSearch(tc, debouncedSearch)) return false;
       return true;
     });
@@ -131,29 +106,18 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
         Passed: 3,
       };
       list = [...list].sort((a, b) => order[a.status] - order[b.status]);
-    } else if (sortBy === 'priority') {
-      list = [...list].sort((a, b) => {
-        const pa = PRIORITY_ORDER[a.priority || ''] ?? 4;
-        const pb = PRIORITY_ORDER[b.priority || ''] ?? 4;
-        return pa - pb;
-      });
-    } else if (sortBy === 'description') {
-      list = [...list].sort((a, b) => a.description.localeCompare(b.description, 'pt-BR'));
+    } else if (sortBy === 'action') {
+      list = [...list].sort((a, b) => a.action.localeCompare(b.action, 'pt-BR'));
     }
 
     return list;
-  }, [cases, statusFilter, automatedFilter, strategyFilter, debouncedSearch, sortBy]);
+  }, [cases, statusFilter, debouncedSearch, sortBy]);
 
   const activeFiltersCount =
-    statusFilter.length +
-    (automatedFilter !== 'all' ? 1 : 0) +
-    (strategyFilter !== 'all' ? 1 : 0) +
-    (debouncedSearch.trim() ? 1 : 0);
+    statusFilter.length + (debouncedSearch.trim() ? 1 : 0);
 
   const clearAllFilters = useCallback(() => {
     setStatusFilter([]);
-    setAutomatedFilter('all');
-    setStrategyFilter('all');
     setSearchInput('');
   }, []);
 
@@ -194,29 +158,20 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
         isActive: statusFilter.includes('Failed'),
       },
       {
-        label: 'Autom.',
-        value: stats.automated,
-        onClick: () => setAutomatedFilter(p => (p === true ? 'all' : true)),
-        isActive: automatedFilter === true,
+        label: 'Bloqueados',
+        value: stats.blocked,
+        status: 'Blocked' as const,
+        onClick: () => toggleStatusFilter('Blocked'),
+        isActive: statusFilter.includes('Blocked'),
       },
     ],
-    [stats, statusFilter, automatedFilter, toggleStatusFilter]
+    [stats, statusFilter, toggleStatusFilter]
   );
 
   const handleApproveSelected = useCallback(() => {
     selectedIds.forEach(id => onTestCaseStatusChange(id, 'Passed'));
     setSelectedIds(new Set());
   }, [selectedIds, onTestCaseStatusChange]);
-
-  const handleMarkAutomatedSelected = useCallback(() => {
-    selectedIds.forEach(id => onToggleTestCaseAutomated(id, true));
-    setSelectedIds(new Set());
-  }, [selectedIds, onToggleTestCaseAutomated]);
-
-  const handleUnmarkAutomatedSelected = useCallback(() => {
-    selectedIds.forEach(id => onToggleTestCaseAutomated(id, false));
-    setSelectedIds(new Set());
-  }, [selectedIds, onToggleTestCaseAutomated]);
 
   const toggleSelect = useCallback((id: string) => {
     setSelectedIds(prev => {
@@ -386,34 +341,6 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
                     <span className="text-xs">{STATUS_LABEL[s]}</span>
                   </label>
                 ))}
-                <select
-                  value={automatedFilter === 'all' ? 'all' : automatedFilter ? 'yes' : 'no'}
-                  onChange={e => {
-                    const v = e.target.value;
-                    setAutomatedFilter(v === 'all' ? 'all' : v === 'yes');
-                  }}
-                  className="select select-bordered select-sm text-xs w-auto"
-                  aria-label="Filtrar por automatizado"
-                >
-                  <option value="all">Automatizado: Todos</option>
-                  <option value="yes">Sim</option>
-                  <option value="no">Não</option>
-                </select>
-                {strategies.length > 0 && (
-                  <select
-                    value={strategyFilter}
-                    onChange={e => setStrategyFilter(e.target.value)}
-                    className="select select-bordered select-sm text-xs w-auto max-w-[180px]"
-                    aria-label="Filtrar por estratégia"
-                  >
-                    <option value="all">Estratégia: Todas</option>
-                    {strategies.map(s => (
-                      <option key={s} value={s}>
-                        {s}
-                      </option>
-                    ))}
-                  </select>
-                )}
               </div>
             )}
 
@@ -436,32 +363,6 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
                     </button>
                   </span>
                 ))}
-                {automatedFilter !== 'all' && (
-                  <span className="badge badge-primary badge-outline gap-1 pr-1 py-1.5 text-xs">
-                    Autom.: {automatedFilter ? 'Sim' : 'Não'}
-                    <button
-                      type="button"
-                      onClick={() => setAutomatedFilter('all')}
-                      className="btn btn-ghost btn-xs btn-circle p-0 min-h-0 h-4 w-4"
-                      aria-label="Remover filtro automatizado"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  </span>
-                )}
-                {strategyFilter !== 'all' && (
-                  <span className="badge badge-primary badge-outline gap-1 pr-1 py-1.5 text-xs">
-                    {strategyFilter}
-                    <button
-                      type="button"
-                      onClick={() => setStrategyFilter('all')}
-                      className="btn btn-ghost btn-xs btn-circle p-0 min-h-0 h-4 w-4"
-                      aria-label="Remover filtro estratégia"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  </span>
-                )}
                 {debouncedSearch.trim() && (
                   <span className="badge badge-primary badge-outline gap-1 pr-1 py-1.5 text-xs">
                     Busca
@@ -553,20 +454,6 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
               </button>
               <button
                 type="button"
-                onClick={handleMarkAutomatedSelected}
-                className="btn btn-primary btn-xs"
-              >
-                Marcar automatizados
-              </button>
-              <button
-                type="button"
-                onClick={handleUnmarkAutomatedSelected}
-                className="btn btn-ghost btn-xs"
-              >
-                Desmarcar automatizados
-              </button>
-              <button
-                type="button"
                 onClick={() => setSelectedIds(new Set())}
                 className="btn btn-ghost btn-xs"
               >
@@ -595,10 +482,8 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
               key={tc.id}
               testCase={tc}
               onStatusChange={status => onTestCaseStatusChange(tc.id, status)}
-              onToggleAutomated={isAutomated => onToggleTestCaseAutomated(tc.id, isAutomated)}
-              onExecutedStrategyChange={strategies => onExecutedStrategyChange(tc.id, strategies)}
-              onToolsChange={
-                onTestCaseToolsChange ? tools => onTestCaseToolsChange(tc.id, tools) : undefined
+              onObservedResultChange={
+                onObservedResultChange ? v => onObservedResultChange(tc.id, v) : undefined
               }
               onEdit={onEditTestCase ? () => onEditTestCase(task.id, tc) : undefined}
               onDelete={onDeleteTestCase ? () => onDeleteTestCase(task.id, tc.id) : undefined}

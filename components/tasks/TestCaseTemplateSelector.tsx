@@ -164,12 +164,12 @@ export const TestCaseTemplateSelector: React.FC<TestCaseTemplateSelectorProps> =
             </div>
             <div className="text-xs text-text-secondary space-y-1 mb-3">
               <p>
-                <strong className="text-text-primary">Descrição do teste:</strong>{' '}
-                {template.testCase.description}
+                <strong className="text-text-primary">Ação necessária:</strong>{' '}
+                {template.testCase.action}
               </p>
               <p>
-                <strong className="text-text-primary">Passos:</strong>{' '}
-                {template.testCase.steps.length} passos
+                <strong className="text-text-primary">Parâmetros necessários:</strong>{' '}
+                {template.testCase.parameters}
               </p>
               {template.testCase.expectedResult && (
                 <p>

@@ -12,6 +12,7 @@ import {
 import { Card } from '../../common/Card';
 import { cn } from '../../../utils/cn';
 import type { Project } from '../../../types';
+import { getTestCaseEnvironment } from '../../../utils/testCaseMigration';
 
 const COLORS = [
   'hsl(var(--p))',
@@ -35,7 +36,8 @@ export const DashboardEnvironmentBarChart: React.FC<DashboardEnvironmentBarChart
     const map = new Map<string, number>();
     for (const task of project.tasks || []) {
       for (const tc of task.testCases || []) {
-        const env = (tc.testEnvironment || '').trim() || 'Não definido';
+        const env =
+          getTestCaseEnvironment(tc) || 'Não especificado no roteiro';
         map.set(env, (map.get(env) ?? 0) + 1);
       }
     }

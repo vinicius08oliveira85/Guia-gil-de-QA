@@ -32,7 +32,7 @@ import {
   formatBusinessRulesForPrompt,
   shouldGenerateTestCasesAndBdd,
 } from './testGenerationPrompts';
-import { normalizeStrategyReferences } from './testGenerationValidators';
+import { migrateTestCase } from '../../utils/testCaseMigration';
 
 const geminiTestStrategyItemSchema = {
   type: Type.OBJECT,
@@ -89,43 +89,35 @@ const geminiBddArrayProperty = {
 const geminiTestCaseItemSchema = {
   type: Type.OBJECT,
   properties: {
-    description: { type: Type.STRING, description: 'Descrição concisa do caso de teste.' },
-    steps: {
-      type: Type.ARRAY,
-      items: { type: Type.STRING },
-      description: 'Lista de passos para executar o teste.',
-    },
-    expectedResult: { type: Type.STRING, description: 'Resultado esperado após os passos.' },
-    strategies: {
-      type: Type.ARRAY,
-      items: { type: Type.STRING },
+    action: {
+      type: Type.STRING,
       description:
-        'Lista de testType das estratégias geradas que se aplicam a este caso (ex.: ["Teste Funcional"]).',
+        'Ação necessária — o que executar para validar o comportamento. Inclua passos numerados aqui se precisar (roteiro em texto corrido).',
     },
-    isAutomated: {
-      type: Type.BOOLEAN,
+    parameters: {
+      type: Type.STRING,
       description:
-        'True se o caso for bom candidato à automação (regressivo, repetitivo, baseado em dados); false caso contrário.',
+        'Parâmetros necessários: dados de entrada, massa de dados, pré-requisitos técnicos, contas, ambientes. Use "—" se não houver.',
     },
-    preconditions: {
+    expectedResult: {
       type: Type.STRING,
-      description: 'Pré-condições necessárias; vazio se não houver.',
+      description: 'Resultado esperado objetivo após executar a ação com os parâmetros indicados.',
     },
-    testSuite: {
+    executionKind: {
       type: Type.STRING,
-      description: 'Nome da suite de teste (ex: Login, Pagamento).',
+      description:
+        'Opcional: manual, automated ou mixed. Omitir para inferir pelo texto (métricas de automação).',
     },
-    testEnvironment: {
+    environment: {
       type: Type.STRING,
-      description: 'Ambiente(s) de execução (ex: Chrome / API).',
+      description: 'Opcional: ambiente estruturado (ex.: Homologação) para filtros; pode coexistir com texto em parameters.',
     },
-    priority: {
+    suite: {
       type: Type.STRING,
-      enum: ['Baixa', 'Média', 'Alta', 'Urgente'],
-      description: 'Prioridade do caso de teste.',
+      description: 'Opcional: suíte estruturada para filtros e relatórios.',
     },
   },
-  required: ['description', 'steps', 'expectedResult', 'strategies', 'isAutomated'],
+  required: ['action', 'parameters', 'expectedResult'],
 };
 
 const geminiTestCasesArrayProperty = {
@@ -172,15 +164,12 @@ type GeminiStrategyRow = {
 type GeminiBddRow = { title?: string; gherkin?: string };
 
 type GeminiTestCaseRow = {
+  action?: string;
+  parameters?: string;
+  expectedResult?: string;
+  /** Campos legados aceitos pelo migrateTestCase */
   description?: string;
   steps?: string[];
-  expectedResult?: string;
-  strategies?: string[];
-  isAutomated?: boolean;
-  preconditions?: string;
-  testSuite?: string;
-  testEnvironment?: string;
-  priority?: string;
 };
 
 export class GeminiService implements AIService {
@@ -203,28 +192,21 @@ export class GeminiService implements AIService {
 
   private mapTestCasesFromResponse(
     items: unknown[],
-    strategy: TestStrategy[],
+    _strategy: TestStrategy[],
     baseTs: number
   ): TestCase[] {
-    return (items as GeminiTestCaseRow[]).map((item, index) => ({
-      id: `tc-${baseTs}-${index}`,
-      description: item.description ?? '',
-      steps: Array.isArray(item.steps) ? item.steps : [],
-      expectedResult: item.expectedResult ?? '',
-      status: 'Not Run' as const,
-      strategies: normalizeStrategyReferences(item.strategies, strategy),
-      isAutomated: typeof item.isAutomated === 'boolean' ? item.isAutomated : false,
-      preconditions: item.preconditions || undefined,
-      testSuite: item.testSuite || undefined,
-      testEnvironment: item.testEnvironment || undefined,
-      priority:
-        item.priority === 'Baixa' ||
-        item.priority === 'Média' ||
-        item.priority === 'Alta' ||
-        item.priority === 'Urgente'
-          ? item.priority
-          : undefined,
-    }));
+    return (items as GeminiTestCaseRow[]).map((item, index) =>
+      migrateTestCase({
+        id: `tc-${baseTs}-${index}`,
+        action: item.action,
+        parameters: item.parameters,
+        expectedResult: item.expectedResult,
+        observedResult: '',
+        status: 'Not Run',
+        description: item.description,
+        steps: item.steps,
+      })
+    );
   }
 
   /**

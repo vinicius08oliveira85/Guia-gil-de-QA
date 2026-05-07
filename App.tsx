@@ -56,6 +56,34 @@ const App: React.FC = () => {
     }
   }, []);
 
+  /** Remove entradas expiradas do cache de geração de testes (IndexedDB), em idle ou após breve atraso. */
+  useEffect(() => {
+    const run = () => {
+      void import('./services/ai/testCaseGenerationCachePersistence').then(m =>
+        m.cleanupExpiredTestGenerationCacheEntries()
+      );
+    };
+    if (typeof window === 'undefined') return undefined;
+
+    let idleId: number | undefined;
+    let timeoutId: number | undefined;
+
+    if (typeof window.requestIdleCallback === 'function') {
+      idleId = window.requestIdleCallback(run, { timeout: 10_000 });
+    } else {
+      timeoutId = window.setTimeout(run, 3_000);
+    }
+
+    return () => {
+      if (idleId !== undefined && typeof window.cancelIdleCallback === 'function') {
+        window.cancelIdleCallback(idleId);
+      }
+      if (timeoutId !== undefined) {
+        window.clearTimeout(timeoutId);
+      }
+    };
+  }, []);
+
   // Estado global do store
   const {
     projects,

@@ -1,18 +1,30 @@
 import React, { useMemo, useState } from 'react';
-import { GeneralIAAnalysis } from '../../types';
+import { GeneralIAAnalysis, Project } from '../../types';
 import { format } from 'date-fns';
 import { cn } from '../../utils/cn';
+import { isAnalysisOutdated } from '../../utils/analysisFreshness';
+import { getGeneralIAAnalysisSnapshotHash } from '../../services/ai/generalAnalysisService';
 
 interface GeneralAnalysisCardProps {
   analysis: GeneralIAAnalysis;
   onRefresh?: () => void;
+  /** Quando informado, o estado “desatualizada” usa `snapshotHash` vs snapshot atual do projeto. */
+  project?: Project;
 }
 
 export const GeneralAnalysisCard: React.FC<GeneralAnalysisCardProps> = ({
   analysis,
   onRefresh,
+  project,
 }) => {
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['summary']));
+
+  const contentStale = useMemo(() => {
+    if (project) {
+      return isAnalysisOutdated(analysis, getGeneralIAAnalysisSnapshotHash(project));
+    }
+    return analysis.isOutdated === true;
+  }, [analysis, project]);
 
   const toggleSection = (section: string) => {
     setExpandedSections(prev => {
@@ -82,11 +94,18 @@ export const GeneralAnalysisCard: React.FC<GeneralAnalysisCardProps> = ({
   return (
     <div className="p-6 bg-base-100 border border-base-300 rounded-xl shadow-sm">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-6 gap-3 flex-wrap">
         <div>
-          <h3 className="text-2xl sm:text-3xl font-bold tracking-tight text-base-content mb-2">
-            Análise Geral IA
-          </h3>
+          <div className="flex flex-wrap items-center gap-2 mb-2">
+            <h3 className="text-2xl sm:text-3xl font-bold tracking-tight text-base-content">
+              Análise Geral IA
+            </h3>
+            {contentStale && (
+              <span className="badge badge-warning badge-outline badge-sm whitespace-nowrap">
+                Base desatualizada
+              </span>
+            )}
+          </div>
           <p className="text-sm text-base-content/70">
             Gerada em {format(new Date(analysis.generatedAt), "dd/MM/yyyy 'às' HH:mm")}
           </p>
@@ -298,7 +317,7 @@ export const GeneralAnalysisCard: React.FC<GeneralAnalysisCardProps> = ({
       </div>
 
       {/* Outdated indicator */}
-      {analysis.isOutdated && (
+      {contentStale && (
         <div className="mt-4 p-4 bg-warning/10 border border-warning/30 rounded-xl animate-pulse">
           <p className="text-sm text-warning flex items-center gap-2">
             <span>⚠️</span>

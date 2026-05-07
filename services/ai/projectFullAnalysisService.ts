@@ -24,7 +24,7 @@ function aggregateTestExecutionForContext(tasks: Project['tasks']) {
   let failed = 0;
   let notRun = 0;
   let blocked = 0;
-  const testStrategiesCount = new Map<string, number>();
+  const caseStatusDistribution = new Map<string, number>();
   let totalTestCases = 0;
 
   for (const t of tasks || []) {
@@ -34,19 +34,17 @@ function aggregateTestExecutionForContext(tasks: Project['tasks']) {
       else if (tc.status === 'Failed') failed++;
       else if (tc.status === 'Not Run') notRun++;
       else if (tc.status === 'Blocked') blocked++;
-      const rawStrategy = tc.executedStrategy;
-      const s = Array.isArray(rawStrategy) ? rawStrategy.join(', ') : rawStrategy || 'Não definida';
-      testStrategiesCount.set(s, (testStrategiesCount.get(s) || 0) + 1);
+      caseStatusDistribution.set(tc.status, (caseStatusDistribution.get(tc.status) || 0) + 1);
     }
   }
 
-  return { passed, failed, notRun, blocked, testStrategiesCount, totalTestCases };
+  return { passed, failed, notRun, blocked, caseStatusDistribution, totalTestCases };
 }
 
 function buildFullContext(project: Project): string {
   const metrics = calculateProjectMetrics(project);
   const tasks = project.tasks || [];
-  const { passed, failed, notRun, blocked, testStrategiesCount, totalTestCases } =
+  const { passed, failed, notRun, blocked, caseStatusDistribution, totalTestCases } =
     aggregateTestExecutionForContext(tasks);
   const tasksByType = {
     tarefa: tasks.filter(t => t.type === 'Tarefa').length,
@@ -101,7 +99,7 @@ function buildFullContext(project: Project): string {
       tasksSummary,
       totalTestCases,
       testExecution,
-      testStrategiesCount: Object.fromEntries(testStrategiesCount),
+      caseStatusDistribution: Object.fromEntries(caseStatusDistribution),
       totalStrategies,
       qualityScore,
       qualityMetrics,

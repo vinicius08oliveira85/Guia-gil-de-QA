@@ -11,6 +11,7 @@ import {
 } from '../utils/jiraStatusCategorizer';
 import { getDisplayStatus } from '../utils/taskHelpers';
 import { estimateTaskComplexity } from '../utils/estimationService';
+import { testCaseLooksAutomated } from '../utils/testCaseMigration';
 
 const phaseNamesInOrder: PhaseName[] = [...PHASE_NAMES];
 
@@ -33,7 +34,7 @@ const aggregateTestCaseCounts = (tasks: JiraTask[]) => {
       totalTestCases++;
       if (tc.status !== 'Not Run') executedTestCases++;
       if (tc.status === 'Passed') passedTestCases++;
-      if (tc.isAutomated) automatedTestCases++;
+      if (testCaseLooksAutomated(tc)) automatedTestCases++;
       if (tc.status === 'Failed') failedTestCases++;
       if (tc.status === 'Blocked') blockedTestCases++;
       if (tc.status === 'Not Run') notRunTestCases++;

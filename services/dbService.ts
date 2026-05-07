@@ -1,6 +1,12 @@
 import { Phase, PhaseName, Project } from '../types';
 import { normalizeProjectBusinessRules } from '../utils/businessRuleDefaults';
-import { DB_NAME, DB_VERSION, PHASE_NAMES, STORE_NAME } from '../utils/constants';
+import {
+  DB_NAME,
+  DB_VERSION,
+  PHASE_NAMES,
+  STORE_NAME,
+  TEST_GENERATION_CACHE_STORE,
+} from '../utils/constants';
 import {
   isSupabaseAvailable,
   saveProjectToSupabase,
@@ -19,7 +25,7 @@ import { withAcyclicTaskParents } from '../utils/taskParentCycle';
 /** Versão do envelope JSON de backup (independente do DB_VERSION do IndexedDB). */
 export const BACKUP_EXPORT_FORMAT_VERSION = 1;
 
-let db: IDBDatabase;
+let db: IDBDatabase | undefined;
 
 const openDB = (): Promise<IDBDatabase> => {
   return new Promise((resolve, reject) => {
@@ -29,6 +35,13 @@ const openDB = (): Promise<IDBDatabase> => {
 
     const request = indexedDB.open(DB_NAME, DB_VERSION);
 
+    request.onblocked = () => {
+      logger.warn(
+        'IndexedDB: upgrade bloqueado — outra aba ou processo mantém o banco aberto. Feche outras instâncias do app para concluir a migração.',
+        'dbService'
+      );
+    };
+
     request.onerror = () => {
       const error = request.error || new Error('Erro desconhecido ao abrir banco de dados');
       logger.error('Erro ao abrir banco de dados IndexedDB', 'dbService', error);
@@ -36,7 +49,16 @@ const openDB = (): Promise<IDBDatabase> => {
     };
 
     request.onsuccess = () => {
-      db = request.result;
+      const opened = request.result;
+      opened.onversionchange = () => {
+        logger.warn(
+          'IndexedDB: nova versão solicitada; fechando conexão atual para permitir o upgrade.',
+          'dbService'
+        );
+        opened.close();
+        db = undefined;
+      };
+      db = opened;
       resolve(db);
     };
 
@@ -44,6 +66,9 @@ const openDB = (): Promise<IDBDatabase> => {
       const dbInstance = (event.target as IDBOpenDBRequest).result;
       if (!dbInstance.objectStoreNames.contains(STORE_NAME)) {
         dbInstance.createObjectStore(STORE_NAME, { keyPath: 'id' });
+      }
+      if (!dbInstance.objectStoreNames.contains(TEST_GENERATION_CACHE_STORE)) {
+        dbInstance.createObjectStore(TEST_GENERATION_CACHE_STORE, { keyPath: 'taskId' });
       }
     };
   });

@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { Project, JiraTask, TestCase } from '../types';
+import { testCaseLooksAutomated } from '../utils/testCaseMigration';
 
 export interface QualityMetrics {
   // Semáforo
@@ -69,8 +70,7 @@ const isEscapedDefect = (bug: JiraTask): boolean => {
  * Detecta testes flaky baseado em padrões de execução
  */
 const isFlakyTest = (testCase: TestCase, allTestCases: TestCase[]): boolean => {
-  // Apenas considerar testes automatizados
-  if (!testCase.isAutomated) {
+  if (!testCaseLooksAutomated(testCase)) {
     return false;
   }
 
@@ -90,7 +90,10 @@ const isFlakyTest = (testCase: TestCase, allTestCases: TestCase[]): boolean => {
   // Verificar se há outros testes com mesma descrição que tiveram resultados diferentes
   // Isso indica que o teste pode ser flaky (passou em uma execução, falhou em outra)
   const similarTests = allTestCases.filter(
-    tc => tc.id !== testCase.id && tc.description === testCase.description && tc.isAutomated
+    tc =>
+      tc.id !== testCase.id &&
+      tc.action === testCase.action &&
+      testCaseLooksAutomated(tc)
   );
 
   if (similarTests.length > 0) {
@@ -130,7 +133,7 @@ export const calculateQualityMetrics = (project: Project): QualityMetrics => {
 
   // Semáforo: Status da Regressão Automática
   const allTestCases: TestCase[] = tasks.flatMap(t => t.testCases || []);
-  const automatedTests = allTestCases.filter(tc => tc.isAutomated === true);
+  const automatedTests = allTestCases.filter(tc => testCaseLooksAutomated(tc));
   const automatedFailed = automatedTests.filter(
     tc => tc.status === 'Failed' || tc.status === 'Not Run'
   );
@@ -274,7 +277,9 @@ export const calculateQualityMetrics = (project: Project): QualityMetrics => {
   }));
 
   // Flaky Tests
-  const flakyTests = allTestCases.filter(tc => tc.isAutomated && isFlakyTest(tc, allTestCases));
+  const flakyTests = allTestCases.filter(tc =>
+    testCaseLooksAutomated(tc) && isFlakyTest(tc, allTestCases)
+  );
   const flakyTestsPercentage =
     automatedTests.length > 0 ? (flakyTests.length / automatedTests.length) * 100 : 0;
 

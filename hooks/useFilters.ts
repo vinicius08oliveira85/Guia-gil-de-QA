@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Project } from '../types';
+import { testCaseLooksAutomated } from '../utils/testCaseMigration';
 
 export interface FilterOptions {
   status?: ('To Do' | 'In Progress' | 'Blocked' | 'Done')[];
@@ -105,10 +106,10 @@ export const useFilters = (project: Project) => {
       );
     }
 
-    // Filtro por automação
+    // Filtro por automação (heurística em action/parameters — sem flag dedicada no roteiro)
     if (filters.isAutomated !== undefined) {
       tasks = tasks.filter(t => {
-        const hasAutomated = t.testCases?.some(tc => tc.isAutomated);
+        const hasAutomated = t.testCases?.some(tc => testCaseLooksAutomated(tc));
         return filters.isAutomated ? hasAutomated : !hasAutomated;
       });
     }
@@ -135,8 +136,7 @@ export const useFilters = (project: Project) => {
         const strategyTypes = (t.testStrategy || [])
           .map(strategy => strategy?.testType)
           .filter((type): type is string => Boolean(type));
-        const testCaseTypes = (t.testCases || []).flatMap(tc => tc.strategies || []);
-        const combinedTypes = new Set([...strategyTypes, ...testCaseTypes]);
+        const combinedTypes = new Set([...strategyTypes]);
         return filters.requiredTestTypes!.some(type => combinedTypes.has(type));
       });
     }

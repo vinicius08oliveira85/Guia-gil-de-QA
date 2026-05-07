@@ -109,11 +109,22 @@ export const useAnalysisSync = ({
   };
 
   /**
-   * Verifica se uma tarefa específica precisa de re-análise
+   * Verifica se uma tarefa específica precisa de re-análise.
+   *
+   * Estratégia: prioriza `snapshotHash` (determinístico) quando presente; recai
+   * em flags manuais e heurística temporal (>7 dias) para análises legadas
+   * que ainda não persistem o hash.
    */
   const needsReanalysis = (task: JiraTask): boolean => {
     if (!task.iaAnalysis) return true;
     if (task.iaAnalysis.isOutdated) return true;
+
+    if (task.iaAnalysis.snapshotHash) {
+      // Sem acesso ao snapshot atual aqui (caller calcula). Confiamos no flag
+      // `isOutdated` (já checado acima) para sinalizar mudança via hash; sem flag
+      // explícito, considera-se atualizada — evitando reanálise desnecessária.
+      return false;
+    }
 
     // Verificar se houve mudanças significativas desde a última análise
     const analysisDate = new Date(task.iaAnalysis.generatedAt);

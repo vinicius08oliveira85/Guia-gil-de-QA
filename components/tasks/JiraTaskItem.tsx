@@ -82,6 +82,7 @@ import { logger } from '../../utils/logger';
 import { Button } from '../common/Button';
 import { Badge } from '../common/Badge';
 import { useJiraAttachmentViewer } from '../../hooks/useJiraAttachmentViewer';
+import { TestCasesFreshnessIndicator } from './TestCasesFreshnessIndicator';
 
 // Componente para renderizar descrição com formatação rica do Jira
 const DescriptionRenderer: React.FC<{
@@ -168,11 +169,9 @@ const TeamRoleBadge: React.FC<{ role: TeamRole }> = ({ role }) => {
 
 export const JiraTaskItem: React.FC<{
   task: TaskWithChildren;
-  onTestCaseStatusChange: (testCaseId: string, status: 'Passed' | 'Failed') => void;
-  onToggleTestCaseAutomated: (testCaseId: string, isAutomated: boolean) => void;
-  onExecutedStrategyChange: (testCaseId: string, strategies: string[]) => void;
+  onTestCaseStatusChange: (testCaseId: string, status: TestCase['status']) => void;
+  onTestCaseObservedResultChange?: (testCaseId: string, value: string) => void;
   onTaskToolsChange?: (tools: string[]) => void;
-  onTestCaseToolsChange?: (testCaseId: string, tools: string[]) => void;
   onStrategyExecutedChange?: (strategyIndex: number, executed: boolean) => void;
   onStrategyToolsChange?: (strategyIndex: number, tools: string[]) => void;
   onDelete: (taskId: string) => void;
@@ -218,10 +217,8 @@ export const JiraTaskItem: React.FC<{
   ({
     task,
     onTestCaseStatusChange,
-    onToggleTestCaseAutomated,
-    onExecutedStrategyChange,
+    onTestCaseObservedResultChange,
     onTaskToolsChange,
-    onTestCaseToolsChange,
     onStrategyExecutedChange,
     onStrategyToolsChange,
     onDelete,
@@ -577,70 +574,18 @@ export const JiraTaskItem: React.FC<{
         }
       });
 
+      const aggregateType =
+        (task.testStrategy || []).find(s => s.testType)?.testType || 'Testes Gerais';
+
       (task.testCases || []).forEach(testCase => {
-        const fallbackType = (task.testStrategy ?? [])[0]?.testType || 'Testes Gerais';
-        const associatedTypes =
-          testCase.strategies && testCase.strategies.length > 0
-            ? testCase.strategies
-            : [fallbackType];
-
-        // Normalizar executedStrategy para array
-        const executedStrategies = testCase.executedStrategy
-          ? Array.isArray(testCase.executedStrategy)
-            ? testCase.executedStrategy.filter(s => s && s.trim() !== '')
-            : [testCase.executedStrategy].filter(s => s && s.trim() !== '')
-          : [];
-
-        // Verificar quais estratégias da task estão marcadas como "Realizada" no toggle
-        // (usado apenas como fallback se não houver executedStrategy no testCase)
-        const taskExecutedStrategyTypes = new Set<string>();
-        (task.testStrategy || []).forEach((strategy, index) => {
-          if (strategy?.testType && task.executedStrategies?.includes(index)) {
-            taskExecutedStrategyTypes.add(strategy.testType);
-          }
-        });
-
-        // Se há estratégias selecionadas no seletor, usar apenas essas
-        // Se não há, usar o toggle da task como fallback
-        const hasExecutedStrategies = executedStrategies.length > 0;
-
-        associatedTypes.forEach(type => {
-          if (!type) return;
-          const entry = ensureType(type);
-          entry.total += 1;
-
-          let isExecuted = false;
-
-          if (hasExecutedStrategies) {
-            // Se há estratégias selecionadas no seletor, contar APENAS para essas
-            const isInExecutedStrategies = executedStrategies.some(
-              es => es.trim().toLowerCase() === type.trim().toLowerCase()
-            );
-
-            if (isInExecutedStrategies) {
-              // Se a estratégia está selecionada, considerar executado
-              // O status do testCase (Passed/Failed) só confirma, mas não é obrigatório
-              isExecuted = true;
-            }
-          } else {
-            // Fallback: se não há estratégias selecionadas, usar o toggle da task
-            // Mas só se o status não for 'Not Run' (para evitar contar testes não executados)
-            const isInTaskStrategy = taskExecutedStrategyTypes.has(type);
-            const hasStatus = testCase.status !== 'Not Run';
-
-            if (isInTaskStrategy && hasStatus) {
-              isExecuted = true;
-            }
-          }
-
-          if (isExecuted) {
-            entry.executed += 1;
-          }
-
-          if (testCase.status === 'Failed') {
-            entry.failed += 1;
-          }
-        });
+        const entry = ensureType(aggregateType);
+        entry.total += 1;
+        if (testCase.status !== 'Not Run') {
+          entry.executed += 1;
+        }
+        if (testCase.status === 'Failed') {
+          entry.failed += 1;
+        }
       });
 
       return Array.from(typeMap.entries())
@@ -1396,9 +1341,7 @@ export const JiraTaskItem: React.FC<{
               onGenerateTests={onGenerateTests}
               detailLevel={detailLevel}
               onTestCaseStatusChange={onTestCaseStatusChange}
-              onToggleTestCaseAutomated={onToggleTestCaseAutomated}
-              onExecutedStrategyChange={onExecutedStrategyChange}
-              onTestCaseToolsChange={onTestCaseToolsChange}
+              onObservedResultChange={onTestCaseObservedResultChange}
               onEditTestCase={onEditTestCase}
               onDeleteTestCase={onDeleteTestCase}
               onDuplicateTestCase={onDuplicateTestCase}
@@ -1857,12 +1800,22 @@ export const JiraTaskItem: React.FC<{
                   {getDisplayStatusLabel(task, project)}
                 </span>
               </div>
-              <span
-                className="text-sm font-semibold text-base-content min-w-0 flex-1 basis-full sm:basis-0 line-clamp-1"
-                title={displayTitle}
-              >
-                {displayTitle}
-              </span>
+              <div className="flex min-w-0 flex-1 basis-full sm:basis-0 items-center gap-1">
+                <span
+                  className="text-sm font-semibold text-base-content min-w-0 flex-1 line-clamp-1"
+                  title={displayTitle}
+                >
+                  {displayTitle}
+                </span>
+                {(task.type === 'Tarefa' || task.type === 'Bug') && (
+                  <TestCasesFreshnessIndicator
+                    task={task}
+                    variant="compact"
+                    isGenerating={isGeneratingTests || !!isGeneratingAll || isGenerating}
+                    className="inline-flex shrink-0"
+                  />
+                )}
+              </div>
             </div>
 
             <div

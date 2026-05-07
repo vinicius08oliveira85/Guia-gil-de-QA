@@ -77,7 +77,7 @@ export const TestCard: React.FC<TestCardProps> = ({
           }
         }
       }}
-      aria-label={`Teste: ${testCase.description || 'Sem descrição'}`}
+      aria-label={`Teste: ${testCase.action || 'Sem ação definida'}`}
       aria-pressed={isSelected}
     >
       <div className="p-sm">
@@ -89,7 +89,7 @@ export const TestCard: React.FC<TestCardProps> = ({
             onChange={onToggle}
             onClick={e => e.stopPropagation()}
             className="test-checkbox checkbox checkbox-sm mt-1"
-            aria-label={`Selecionar teste: ${testCase.description || 'Sem descrição'}`}
+            aria-label={`Selecionar teste: ${testCase.action || 'Sem ação definida'}`}
           />
 
           {/* Conteúdo */}
@@ -103,29 +103,29 @@ export const TestCard: React.FC<TestCardProps> = ({
                   aria-label="Teste falhado"
                 ></span>
 
-                {/* Prioridade dot */}
-                {testCase.priority && (
+                {/* Prioridade dot (tarefa) */}
+                {task.priority && (
                   <span
-                    className={`w-2 h-2 rounded-full ${getPriorityDotColor(testCase.priority)} flex-shrink-0`}
-                    aria-label={`Prioridade: ${testCase.priority}`}
+                    className={`w-2 h-2 rounded-full ${getPriorityDotColor(task.priority)} flex-shrink-0`}
+                    aria-label={`Prioridade da tarefa: ${task.priority}`}
                   ></span>
                 )}
 
-                {/* Descrição */}
+                {/* Ação do roteiro */}
                 <p className="text-sm font-medium text-base-content truncate font-mono">
-                  {testCase.description || 'Sem descrição'}
+                  {testCase.action || 'Sem ação definida'}
                 </p>
               </div>
 
-              {/* Badge de prioridade (pill v0) */}
-              {testCase.priority && (
+              {/* Badge de prioridade da tarefa */}
+              {task.priority && (
                 <Badge
                   appearance="pill"
-                  variant={getPriorityVariant(testCase.priority)}
+                  variant={getPriorityVariant(task.priority)}
                   size="sm"
                   className="flex-shrink-0"
                 >
-                  {testCase.priority}
+                  {task.priority}
                 </Badge>
               )}
             </div>
@@ -135,15 +135,12 @@ export const TestCard: React.FC<TestCardProps> = ({
               {task.id} - {task.title || 'Sem título'}
             </p>
 
-            {/* Ambiente e Suite */}
-            <div className="flex items-center gap-xs flex-wrap">
-              {testCase.testEnvironment && (
-                <span className="text-xs text-base-content/60">🌐 {testCase.testEnvironment}</span>
-              )}
-              {testCase.testSuite && (
-                <span className="text-xs text-base-content/60">📦 {testCase.testSuite}</span>
-              )}
-            </div>
+            {/* Trechos úteis dos parâmetros */}
+            {testCase.parameters?.trim() ? (
+              <p className="text-xs text-base-content/60 line-clamp-2 whitespace-pre-wrap">
+                {testCase.parameters}
+              </p>
+            ) : null}
 
             {/* Detalhes expandidos */}
             {isExpanded && (
@@ -151,7 +148,7 @@ export const TestCard: React.FC<TestCardProps> = ({
                 {testCase.observedResult && (
                   <div>
                     <p className="text-xs font-semibold text-base-content/70 mb-xs">
-                      Resultado Observado:
+                      Resultado obtido:
                     </p>
                     <p className="text-xs text-base-content/80 font-mono bg-base-200 p-xs rounded">
                       {testCase.observedResult}
@@ -159,23 +156,21 @@ export const TestCard: React.FC<TestCardProps> = ({
                   </div>
                 )}
 
-                {testCase.steps && testCase.steps.length > 0 && (
+                {testCase.parameters?.trim() ? (
                   <div>
-                    <p className="text-xs font-semibold text-base-content/70 mb-xs">Passos:</p>
-                    <ol className="text-xs text-base-content/80 space-y-xs list-decimal list-inside">
-                      {testCase.steps.map((step, idx) => (
-                        <li key={idx} className="font-mono">
-                          {step}
-                        </li>
-                      ))}
-                    </ol>
+                    <p className="text-xs font-semibold text-base-content/70 mb-xs">
+                      Parâmetros necessários:
+                    </p>
+                    <p className="text-xs text-base-content/80 font-mono bg-base-200 p-xs rounded whitespace-pre-wrap">
+                      {testCase.parameters}
+                    </p>
                   </div>
-                )}
+                ) : null}
 
                 {testCase.expectedResult && (
                   <div>
                     <p className="text-xs font-semibold text-base-content/70 mb-xs">
-                      Resultado Esperado:
+                      Resultado esperado:
                     </p>
                     <p className="text-xs text-base-content/80 font-mono bg-base-200 p-xs rounded">
                       {testCase.expectedResult}
@@ -187,7 +182,7 @@ export const TestCard: React.FC<TestCardProps> = ({
 
             {/* Botão expandir/colapsar */}
             {(testCase.observedResult ||
-              (testCase.steps && testCase.steps.length > 0) ||
+              testCase.parameters?.trim() ||
               testCase.expectedResult) && (
               <button
                 type="button"

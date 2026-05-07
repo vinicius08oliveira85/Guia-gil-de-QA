@@ -17,6 +17,11 @@ export interface TestCaseTemplate {
   tags: string[];
 }
 
+function stepsToAction(title: string, steps: string[]): string {
+  const numbered = steps.map((s, i) => `${i + 1}. ${s}`).join('\n');
+  return `${title}\n\n${numbered}`;
+}
+
 export const TEST_CASE_TEMPLATES: TestCaseTemplate[] = [
   {
     id: 'login-flow',
@@ -25,16 +30,16 @@ export const TEST_CASE_TEMPLATES: TestCaseTemplate[] = [
     category: 'Functional',
     tags: ['autenticação', 'login', 'crítico'],
     testCase: {
-      description: 'Validar login com credenciais válidas',
-      steps: [
+      action: stepsToAction('Validar login com credenciais válidas', [
         'Acessar a página de login',
         'Inserir email válido',
         'Inserir senha válida',
         'Clicar em "Entrar"',
-      ],
+      ]),
+      parameters:
+        'Conta de teste com permissões conhecidas; ambiente de homologação; navegador atualizado.',
       expectedResult: 'Usuário é autenticado e redirecionado para o dashboard',
-      strategies: ['Teste Funcional', 'Teste de Usabilidade'],
-      isAutomated: true,
+      observedResult: '',
     },
   },
   {
@@ -44,15 +49,15 @@ export const TEST_CASE_TEMPLATES: TestCaseTemplate[] = [
     category: 'Functional',
     tags: ['validação', 'formulário'],
     testCase: {
-      description: 'Validar campos obrigatórios do formulário',
-      steps: [
+      action: stepsToAction('Validar campos obrigatórios do formulário', [
         'Acessar o formulário',
         'Tentar submeter sem preencher campos obrigatórios',
         'Verificar mensagens de erro',
-      ],
-      expectedResult: 'Mensagens de erro são exibidas para campos obrigatórios não preenchidos',
-      strategies: ['Teste Funcional', 'Teste de Validação'],
-      isAutomated: true,
+      ]),
+      parameters: '—',
+      expectedResult:
+        'Mensagens de erro são exibidas para campos obrigatórios não preenchidos',
+      observedResult: '',
     },
   },
   {
@@ -62,16 +67,15 @@ export const TEST_CASE_TEMPLATES: TestCaseTemplate[] = [
     category: 'Integration',
     tags: ['api', 'contrato', 'integração'],
     testCase: {
-      description: 'Validar contrato da API',
-      steps: [
+      action: stepsToAction('Validar contrato da API', [
         'Fazer requisição GET para endpoint',
         'Validar status code 200',
         'Validar estrutura do JSON de resposta',
         'Validar tipos de dados dos campos',
-      ],
+      ]),
+      parameters: 'Token/credenciais de API; URL base; coleção Postman ou equivalente.',
       expectedResult: 'API retorna resposta válida conforme contrato definido',
-      strategies: ['Teste de Integração', 'Teste de Contrato'],
-      isAutomated: true,
+      observedResult: '',
     },
   },
   {
@@ -81,16 +85,16 @@ export const TEST_CASE_TEMPLATES: TestCaseTemplate[] = [
     category: 'Performance',
     tags: ['performance', 'carga', 'stress'],
     testCase: {
-      description: 'Validar comportamento sob carga',
-      steps: [
+      action: stepsToAction('Validar comportamento sob carga', [
         'Configurar teste de carga com 100 usuários simultâneos',
         'Executar requisições por 5 minutos',
         'Monitorar tempo de resposta',
         'Verificar taxa de erro',
-      ],
-      expectedResult: 'Sistema mantém tempo de resposta abaixo de 2s e taxa de erro abaixo de 1%',
-      strategies: ['Teste de Performance', 'Teste de Carga'],
-      isAutomated: true,
+      ]),
+      parameters: 'Ferramenta de carga (ex.: JMeter); perfil de usuários; SLA acordado.',
+      expectedResult:
+        'Sistema mantém tempo de resposta abaixo de 2s e taxa de erro abaixo de 1%',
+      observedResult: '',
     },
   },
   {
@@ -100,15 +104,14 @@ export const TEST_CASE_TEMPLATES: TestCaseTemplate[] = [
     category: 'Security',
     tags: ['segurança', 'autenticação', 'owasp'],
     testCase: {
-      description: 'Validar proteção contra força bruta',
-      steps: [
+      action: stepsToAction('Validar proteção contra força bruta', [
         'Tentar fazer login com senha incorreta 5 vezes',
         'Verificar bloqueio de conta',
         'Tentar fazer login após bloqueio',
-      ],
+      ]),
+      parameters: 'Conta de teste dedicada; política de bloqueio documentada.',
       expectedResult: 'Conta é bloqueada após 5 tentativas falhadas',
-      strategies: ['Teste de Segurança', 'Teste de Autenticação'],
-      isAutomated: true,
+      observedResult: '',
     },
   },
   {
@@ -118,18 +121,17 @@ export const TEST_CASE_TEMPLATES: TestCaseTemplate[] = [
     category: 'E2E',
     tags: ['e2e', 'jornada', 'fluxo-completo'],
     testCase: {
-      description: 'Validar jornada completa do usuário',
-      steps: [
+      action: stepsToAction('Validar jornada completa do usuário', [
         'Acessar aplicação',
         'Fazer login',
         'Navegar para funcionalidade principal',
         'Executar ação principal',
         'Verificar resultado',
         'Fazer logout',
-      ],
+      ]),
+      parameters: 'Dados de usuário de ponta a ponta; ambiente estável.',
       expectedResult: 'Jornada completa é executada sem erros',
-      strategies: ['Teste E2E', 'Teste de Regressão'],
-      isAutomated: true,
+      observedResult: '',
     },
   },
   {
@@ -139,15 +141,14 @@ export const TEST_CASE_TEMPLATES: TestCaseTemplate[] = [
     category: 'Smoke',
     tags: ['smoke', 'regressão', 'rápido'],
     testCase: {
-      description: 'Validar funcionalidades críticas após deploy',
-      steps: [
+      action: stepsToAction('Validar funcionalidades críticas após deploy', [
         'Verificar se aplicação carrega',
         'Verificar login funciona',
         'Verificar funcionalidade principal acessível',
-      ],
+      ]),
+      parameters: '—',
       expectedResult: 'Funcionalidades críticas estão operacionais',
-      strategies: ['Teste de Regressão', 'Smoke Test'],
-      isAutomated: true,
+      observedResult: '',
     },
   },
   {
@@ -157,16 +158,15 @@ export const TEST_CASE_TEMPLATES: TestCaseTemplate[] = [
     category: 'Usability',
     tags: ['usabilidade', 'acessibilidade', 'ux'],
     testCase: {
-      description: 'Validar acessibilidade da interface',
-      steps: [
+      action: stepsToAction('Validar acessibilidade da interface', [
         'Navegar usando apenas teclado',
         'Verificar contraste de cores',
         'Verificar labels de campos',
         'Testar com leitor de tela',
-      ],
+      ]),
+      parameters: 'Checklist WCAG aplicável; leitor de tela (NVDA/JAWS/VoiceOver).',
       expectedResult: 'Interface é acessível e utilizável',
-      strategies: ['Teste de Usabilidade', 'Teste de Acessibilidade'],
-      isAutomated: false,
+      observedResult: '',
     },
   },
 ];
@@ -189,6 +189,5 @@ export const createTestCaseFromTemplate = (templateId: string): TestCase => {
     id: `tc-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
     ...template.testCase,
     status: 'Not Run',
-    isAutomated: false,
   };
 };

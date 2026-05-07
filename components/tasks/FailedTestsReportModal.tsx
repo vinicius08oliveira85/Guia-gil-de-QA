@@ -19,6 +19,7 @@ import { BulkActionsToolbar } from './BulkActionsToolbar';
 import { EmptyState } from '../common/EmptyState';
 import { ReportPreview } from './ReportPreview';
 import { ActionMenu } from './ActionMenu';
+import { getTestCaseEnvironment, getTestCaseSuite } from '../../utils/testCaseMigration';
 
 interface FailedTestWithTask {
   testCase: TestCase;
@@ -89,34 +90,37 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
     // Aplicar filtros
     if (filters.priorities.length > 0) {
       filtered = filtered.filter(
-        ft => ft.testCase.priority && filters.priorities.includes(ft.testCase.priority)
+        ft => ft.task.priority && filters.priorities.includes(ft.task.priority)
       );
     }
 
     if (filters.environments.length > 0) {
-      filtered = filtered.filter(
-        ft =>
-          ft.testCase.testEnvironment && filters.environments.includes(ft.testCase.testEnvironment)
-      );
+      filtered = filtered.filter(ft => {
+        const env = getTestCaseEnvironment(ft.testCase);
+        return !!env && filters.environments.includes(env);
+      });
     }
 
     if (filters.suites.length > 0) {
-      filtered = filtered.filter(
-        ft => ft.testCase.testSuite && filters.suites.includes(ft.testCase.testSuite)
-      );
+      filtered = filtered.filter(ft => {
+        const suite = getTestCaseSuite(ft.testCase);
+        return !!suite && filters.suites.includes(suite);
+      });
     }
 
     // Aplicar busca
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(ft => {
-        const description = (ft.testCase.description || '').toLowerCase();
+        const action = (ft.testCase.action || '').toLowerCase();
+        const parameters = (ft.testCase.parameters || '').toLowerCase();
         const taskTitle = (ft.task.title || '').toLowerCase();
         const taskId = (ft.task.id || '').toLowerCase();
         const observedResult = (ft.testCase.observedResult || '').toLowerCase();
 
         return (
-          description.includes(query) ||
+          action.includes(query) ||
+          parameters.includes(query) ||
           taskTitle.includes(query) ||
           taskId.includes(query) ||
           observedResult.includes(query)
@@ -131,8 +135,8 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
   const availablePriorities = useMemo(() => {
     const priorities = new Set<string>();
     allFailedTests.forEach(ft => {
-      if (ft.testCase.priority) {
-        priorities.add(ft.testCase.priority);
+      if (ft.task.priority) {
+        priorities.add(ft.task.priority);
       }
     });
     return Array.from(priorities).sort();
@@ -141,8 +145,9 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
   const availableEnvironments = useMemo(() => {
     const environments = new Set<string>();
     allFailedTests.forEach(ft => {
-      if (ft.testCase.testEnvironment) {
-        environments.add(ft.testCase.testEnvironment);
+      const env = getTestCaseEnvironment(ft.testCase);
+      if (env) {
+        environments.add(env);
       }
     });
     return Array.from(environments).sort();
@@ -151,8 +156,9 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
   const availableSuites = useMemo(() => {
     const suites = new Set<string>();
     allFailedTests.forEach(ft => {
-      if (ft.testCase.testSuite) {
-        suites.add(ft.testCase.testSuite);
+      const suite = getTestCaseSuite(ft.testCase);
+      if (suite) {
+        suites.add(suite);
       }
     });
     return Array.from(suites).sort();
@@ -334,12 +340,13 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
         testsToInclude.map(ft => ({
           testCase: {
             id: ft.testCase.id,
-            description: ft.testCase.description,
-            steps: ft.testCase.steps || [],
+            action: ft.testCase.action,
+            parameters: ft.testCase.parameters,
             expectedResult: ft.testCase.expectedResult,
             observedResult: ft.testCase.observedResult,
-            priority: ft.testCase.priority,
-            testEnvironment: ft.testCase.testEnvironment,
+            priority: ft.task.priority,
+            testEnvironment: getTestCaseEnvironment(ft.testCase),
+            testSuite: getTestCaseSuite(ft.testCase),
           },
           task: {
             id: ft.task.id,
@@ -413,14 +420,15 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
 
   // Estatísticas para o header
   const criticalTests = useMemo(() => {
-    return filteredTests.filter(ft => ft.testCase.priority === 'Urgente').length;
+    return filteredTests.filter(ft => ft.task.priority === 'Urgente').length;
   }, [filteredTests]);
 
   const uniqueEnvironments = useMemo(() => {
     const envs = new Set<string>();
     filteredTests.forEach(ft => {
-      if (ft.testCase.testEnvironment) {
-        envs.add(ft.testCase.testEnvironment);
+      const env = getTestCaseEnvironment(ft.testCase);
+      if (env) {
+        envs.add(env);
       }
     });
     return envs.size;

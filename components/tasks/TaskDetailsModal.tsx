@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { JiraTask, BddScenario, TestCaseDetailLevel, Project, TestCase } from '../../types';
+import { TestCasesFreshnessIndicator } from './TestCasesFreshnessIndicator';
 import { Modal } from '../common/Modal';
 import { Spinner } from '../common/Spinner';
 import { PlusIcon, RefreshIcon } from '../common/Icons';
@@ -126,11 +127,9 @@ interface TaskDetailsModalProps {
   task: TaskWithChildren;
   isOpen: boolean;
   onClose: () => void;
-  onTestCaseStatusChange: (testCaseId: string, status: 'Passed' | 'Failed') => void;
-  onToggleTestCaseAutomated: (testCaseId: string, isAutomated: boolean) => void;
-  onExecutedStrategyChange: (testCaseId: string, strategies: string[]) => void;
+  onTestCaseStatusChange: (testCaseId: string, status: TestCase['status']) => void;
+  onTestCaseObservedResultChange?: (testCaseId: string, value: string) => void;
   onTaskToolsChange?: (tools: string[]) => void;
-  onTestCaseToolsChange?: (testCaseId: string, tools: string[]) => void;
   onStrategyExecutedChange?: (strategyIndex: number, executed: boolean) => void;
   onStrategyToolsChange?: (strategyIndex: number, tools: string[]) => void;
   onGenerateTests: (taskId: string, detailLevel: TestCaseDetailLevel) => Promise<void>;
@@ -166,10 +165,8 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
   isOpen,
   onClose,
   onTestCaseStatusChange,
-  onToggleTestCaseAutomated,
-  onExecutedStrategyChange,
+  onTestCaseObservedResultChange,
   onTaskToolsChange,
-  onTestCaseToolsChange,
   onStrategyExecutedChange,
   onStrategyToolsChange,
   onGenerateTests,
@@ -864,9 +861,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
             onGenerateTests={onGenerateTests}
             detailLevel={detailLevel}
             onTestCaseStatusChange={onTestCaseStatusChange}
-            onToggleTestCaseAutomated={onToggleTestCaseAutomated}
-            onExecutedStrategyChange={onExecutedStrategyChange}
-            onTestCaseToolsChange={onTestCaseToolsChange}
+            onObservedResultChange={onTestCaseObservedResultChange}
             onEditTestCase={onEditTestCase}
             onDeleteTestCase={onDeleteTestCase}
             onDuplicateTestCase={onDuplicateTestCase}
@@ -928,6 +923,9 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                   <Spinner small />
                   <span className="text-sm text-base-content/70">Gerando...</span>
                 </div>
+              )}
+              {hasTests && (
+                <TestCasesFreshnessIndicator task={task} isGenerating={isGenerating} />
               )}
             </div>
           </div>

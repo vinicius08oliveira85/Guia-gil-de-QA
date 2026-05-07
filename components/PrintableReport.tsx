@@ -245,22 +245,38 @@ export const PrintableReport: React.FC<{ project: Project; metrics: ReportMetric
                           fontSize: '12px',
                         }}
                       >
-                        <p style={{ margin: 0, fontWeight: 'bold' }}>{tc.description}</p>
+                        <p style={{ margin: 0, fontWeight: 'bold' }}>Ação: {tc.action}</p>
                         <div style={{ marginTop: '5px' }}>
-                          <strong style={{ display: 'block', marginBottom: '2px' }}>Passos:</strong>
-                          <ul
-                            style={{ margin: '0', paddingLeft: '20px', listStyleType: 'decimal' }}
-                          >
-                            {tc.steps.map((step, i) => (
-                              <li key={i}>{step}</li>
-                            ))}
-                          </ul>
+                          {tc.parameters?.trim() ? (
+                            <>
+                              <strong style={{ display: 'block', marginBottom: '2px' }}>
+                                Parâmetros necessários:
+                              </strong>
+                              <p style={{ margin: '0 0 8px', whiteSpace: 'pre-wrap' }}>
+                                {tc.parameters}
+                              </p>
+                            </>
+                          ) : null}
                           <strong
                             style={{ display: 'block', marginTop: '8px', marginBottom: '2px' }}
                           >
-                            Resultado Esperado:
+                            Resultado esperado:
                           </strong>
                           <p style={{ margin: 0 }}>{tc.expectedResult}</p>
+                          {tc.observedResult?.trim() ? (
+                            <>
+                              <strong
+                                style={{
+                                  display: 'block',
+                                  marginTop: '8px',
+                                  marginBottom: '2px',
+                                }}
+                              >
+                                Resultado obtido:
+                              </strong>
+                              <p style={{ margin: 0 }}>{tc.observedResult}</p>
+                            </>
+                          ) : null}
                         </div>
                       </div>
                     ))}

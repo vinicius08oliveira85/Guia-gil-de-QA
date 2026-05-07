@@ -6,7 +6,12 @@ import '@testing-library/jest-dom/vitest';
 // Lazy-loaded routes (ProjectsDashboard, ProjectView) costumam levar >1s no Vitest em suíte cheia.
 configure({ asyncUtilTimeout: 30_000 });
 import 'fake-indexeddb/auto';
-import { DB_NAME, DB_VERSION, STORE_NAME } from '../utils/constants';
+import {
+  DB_NAME,
+  DB_VERSION,
+  STORE_NAME,
+  TEST_GENERATION_CACHE_STORE,
+} from '../utils/constants';
 
 // Mock framer-motion para evitar ReferenceError/IntersectionObserver em jsdom (SectionHeader, etc.)
 vi.mock('framer-motion', () => {
@@ -101,6 +106,16 @@ afterEach(async () => {
       ensureStore: db => {
         if (!db.objectStoreNames.contains(STORE_NAME)) {
           db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+        }
+      },
+    }),
+    clearIndexedDbStore({
+      dbName: DB_NAME,
+      dbVersion: DB_VERSION,
+      storeName: TEST_GENERATION_CACHE_STORE,
+      ensureStore: db => {
+        if (!db.objectStoreNames.contains(TEST_GENERATION_CACHE_STORE)) {
+          db.createObjectStore(TEST_GENERATION_CACHE_STORE, { keyPath: 'taskId' });
         }
       },
     }),

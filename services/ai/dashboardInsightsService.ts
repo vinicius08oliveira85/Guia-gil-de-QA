@@ -6,7 +6,9 @@ import { getFormattedContext } from './documentContextService';
 import { generateSDLCPhaseAnalysis } from './sdlcPhaseAnalysisService';
 import { callGeminiWithRetry } from './geminiApiWrapper';
 import { GEMINI_DEFAULT_MODEL } from './geminiConstants';
+import { hashString } from '../../utils/hash';
 import { logger } from '../../utils/logger';
+import { testCaseLooksAutomated } from '../../utils/testCaseMigration';
 
 const CACHE_TTL_MS = 1000 * 60 * 10; // 10 minutos
 
@@ -14,16 +16,6 @@ const analysisCache = new Map<
   string,
   { snapshotHash: string; expiresAt: number; analysis: DashboardInsightsAnalysis }
 >();
-
-const hashString = (value: string): string => {
-  let hash = 0;
-  for (let i = 0; i < value.length; i++) {
-    const chr = value.charCodeAt(i);
-    hash = (hash << 5) - hash + chr;
-    hash |= 0;
-  }
-  return hash.toString(36);
-};
 
 const createMetricsSnapshot = (project: Project): string => {
   const metrics = calculateProjectMetrics(project);
@@ -67,6 +59,11 @@ const createMetricsSnapshot = (project: Project): string => {
 
   return JSON.stringify(snapshot);
 };
+
+/** Hash do snapshot atual para comparar com `DashboardInsightsAnalysis.snapshotHash`. */
+export function getDashboardInsightsSnapshotHash(project: Project): string {
+  return hashString(createMetricsSnapshot(project));
+}
 
 const insightsAnalysisSchema = {
   type: Type.OBJECT,
@@ -317,6 +314,7 @@ Respeite o schema JSON fornecido.
       ...parsedResponse,
       generatedAt: new Date().toISOString(),
       isOutdated: false,
+      snapshotHash,
     };
 
     // Salvar no cache
@@ -349,9 +347,9 @@ function prepareTasksAndTestsData(project: Project) {
     priority: task.priority,
     testCases:
       task.testCases?.map(tc => ({
-        title: tc.title,
+        summary: tc.action.slice(0, 120),
         status: tc.status,
-        isAutomated: tc.isAutomated || false,
+        looksAutomated: testCaseLooksAutomated(tc),
       })) || [],
     bddScenarios: task.bddScenarios?.length || 0,
     hasBddScenarios: (task.bddScenarios?.length || 0) > 0,
@@ -385,7 +383,7 @@ function prepareTasksAndTestsData(project: Project) {
       tasksWithBdd: tasks.filter(t => t.hasBddScenarios).length,
       totalTestCases: tasks.reduce((sum, t) => sum + t.testCases.length, 0),
       automatedTestCases: tasks.reduce(
-        (sum, t) => sum + t.testCases.filter(tc => tc.isAutomated).length,
+        (sum, t) => sum + t.testCases.filter(tc => tc.looksAutomated).length,
         0
       ),
       failedTestCases: tasks.reduce(

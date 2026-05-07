@@ -242,6 +242,7 @@ export const AnalysisView: React.FC<{
         <GeneralAnalysisCard
           analysis={project.generalIAAnalysis}
           onRefresh={handleRefreshGeneralAnalysis}
+          project={project}
         />
       )}
 
@@ -341,7 +342,7 @@ export const AnalysisView: React.FC<{
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <h5 className="font-semibold text-base-content mb-1 line-clamp-1">
-                          {testCase.description}
+                          {testCase.action}
                         </h5>
                         <p className="text-xs text-base-content/70">
                           Tarefa: {task.title} • Status: {testCase.status}
@@ -363,14 +364,6 @@ export const AnalysisView: React.FC<{
             </div>
           )}
         </AnalysisSection>
-      )}
-
-      {/* Análise Geral */}
-      {project.generalIAAnalysis && (
-        <GeneralAnalysisCard
-          analysis={project.generalIAAnalysis}
-          onRefresh={handleRefreshGeneralAnalysis}
-        />
       )}
 
       {/* Análises Recentes */}
