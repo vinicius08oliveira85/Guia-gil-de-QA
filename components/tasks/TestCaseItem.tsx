@@ -4,11 +4,64 @@ import { getTestCaseEnvironment, getTestCaseSuite } from '../../utils/testCaseMi
 import {
   parseTestCaseActionSteps,
   stripLeadingStepIndex,
+  structureTestCaseExpected,
+  structureTestCaseParameters,
+  type RoteiroFieldView,
 } from '../../utils/testCaseActionDisplay';
 import { ChevronDownIcon, EditIcon, ListIcon, TrashIcon } from '../common/Icons';
 import { Copy } from 'lucide-react';
 
 const ACTION_TRUNCATE_LINES = 4;
+
+const ROTEIRO_BLOCK_CLASS =
+  'text-xs text-base-content bg-base-200/50 p-3 rounded-lg border border-base-300/50';
+
+function RoteiroStructuredBody({ view }: { view: RoteiroFieldView }) {
+  if (view.kind === 'plain') {
+    return (
+      <p className="whitespace-pre-wrap leading-relaxed break-words [overflow-wrap:anywhere]">
+        {view.text}
+      </p>
+    );
+  }
+
+  if (view.kind === 'parameters') {
+    return (
+      <dl className="space-y-3">
+        {view.rows.map((row, i) => (
+          <div
+            key={`${i}-${row.key}`}
+            className="grid gap-1 sm:grid-cols-[minmax(8rem,auto)_1fr] sm:gap-x-3 sm:items-baseline"
+          >
+            <dt className="font-semibold text-primary/90 shrink-0">{row.key}</dt>
+            <dd className="text-base-content/90 leading-relaxed [overflow-wrap:anywhere]">
+              {row.value}
+            </dd>
+          </div>
+        ))}
+      </dl>
+    );
+  }
+
+  const ListTag = view.listStyle === 'decimal' ? 'ol' : 'ul';
+  const listClass =
+    view.listStyle === 'decimal'
+      ? 'list-decimal list-outside ml-5 space-y-2 pl-1 marker:font-semibold marker:text-primary'
+      : 'list-disc list-outside ml-4 space-y-2 pl-1 marker:text-primary';
+
+  return (
+    <ListTag className={listClass}>
+      {view.items.map((item, i) => (
+        <li
+          key={`roteiro-li-${i}`}
+          className="leading-relaxed break-words pl-0.5 [overflow-wrap:anywhere]"
+        >
+          {item}
+        </li>
+      ))}
+    </ListTag>
+  );
+}
 
 export const TestCaseItem: React.FC<{
   testCase: TestCase;
@@ -67,6 +120,16 @@ export const TestCaseItem: React.FC<{
     hasStructuredSteps && !actionExpanded && isActionLong
       ? actionSteps.slice(0, ACTION_TRUNCATE_LINES)
       : actionSteps;
+
+  const parametersView = useMemo(
+    () => structureTestCaseParameters(testCase.parameters || ''),
+    [testCase.parameters]
+  );
+
+  const expectedView = useMemo(
+    () => structureTestCaseExpected(testCase.expectedResult || ''),
+    [testCase.expectedResult]
+  );
 
   const metaChips = useMemo(() => {
     const env = getTestCaseEnvironment(testCase);
@@ -237,17 +300,17 @@ export const TestCaseItem: React.FC<{
               <h3 className="text-[10px] font-bold text-base-content/70 uppercase tracking-widest mb-1">
                 Parâmetros necessários
               </h3>
-              <p className="text-xs text-base-content bg-base-200/50 p-2.5 rounded whitespace-pre-wrap">
-                {testCase.parameters || '—'}
-              </p>
+              <div className={ROTEIRO_BLOCK_CLASS}>
+                <RoteiroStructuredBody view={parametersView} />
+              </div>
             </div>
             <div>
               <h3 className="text-[10px] font-bold text-base-content/70 uppercase tracking-widest mb-1">
                 Resultado esperado
               </h3>
-              <p className="text-xs text-base-content bg-base-200/50 p-2.5 rounded whitespace-pre-wrap">
-                {testCase.expectedResult || '—'}
-              </p>
+              <div className={ROTEIRO_BLOCK_CLASS}>
+                <RoteiroStructuredBody view={expectedView} />
+              </div>
             </div>
             <div>
               <label className="text-[10px] font-bold text-base-content/70 uppercase tracking-widest mb-1 block">

@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
   parseTestCaseActionSteps,
   stripLeadingStepIndex,
+  structureTestCaseExpected,
+  structureTestCaseParameters,
 } from '../../utils/testCaseActionDisplay';
 
 describe('parseTestCaseActionSteps', () => {
@@ -38,5 +40,42 @@ describe('stripLeadingStepIndex', () => {
 
   it('mantém texto se não houver índice', () => {
     expect(stripLeadingStepIndex('Sem número')).toBe('Sem número');
+  });
+});
+
+describe('structureTestCaseParameters', () => {
+  it('extrai pares rótulo/valor em linha única com pontos entre itens', () => {
+    const raw =
+      "Tela: 'Mapa de Internação'. Nº da Guia: '3368023'. Paciente: JUSSARA LUCIA DA SILVA. Dados de preenchimento para Leito do Dia: Válidos e completos (ex: Leito, Data Internação, etc.).";
+    const v = structureTestCaseParameters(raw);
+    expect(v.kind).toBe('parameters');
+    if (v.kind === 'parameters') {
+      expect(v.rows).toHaveLength(4);
+      expect(v.rows[0]).toEqual({ key: 'Tela', value: "'Mapa de Internação'" });
+      expect(v.rows[1].key).toBe('Nº da Guia');
+      expect(v.rows[2].key).toBe('Paciente');
+      expect(v.rows[3].key).toBe('Dados de preenchimento para Leito do Dia');
+    }
+  });
+
+  it('mantém texto simples quando não há padrão de parâmetros', () => {
+    const v = structureTestCaseParameters('Texto sem dois pontos');
+    expect(v.kind).toBe('plain');
+    if (v.kind === 'plain') expect(v.text).toBe('Texto sem dois pontos');
+  });
+});
+
+describe('structureTestCaseExpected', () => {
+  it('divide em cláusulas após ponto quando a próxima frase começa com padrão comum', () => {
+    const raw =
+      "O registro do 'Leito do Dia' deve ser salvo com sucesso e a guia '3368023' deve ser atualizada corretamente. O sistema NÃO deve apresentar a mensagem de erro impeditiva.";
+    const v = structureTestCaseExpected(raw);
+    expect(v.kind).toBe('ordered');
+    if (v.kind === 'ordered') {
+      expect(v.listStyle).toBe('disc');
+      expect(v.items).toHaveLength(2);
+      expect(v.items[0]).toMatch(/corretamente\.?$/);
+      expect(v.items[1]).toMatch(/^O sistema NÃO/);
+    }
   });
 });
