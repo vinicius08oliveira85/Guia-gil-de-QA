@@ -339,9 +339,15 @@ async function warmCacheFromPersistence(
   return entry.artifacts;
 }
 
+/** Texto mínimo quando a IA omite um campo obrigatório do roteiro (ação / resultado esperado). */
+const PLACEHOLDER_ACTION = '[Ação necessária não gerada — edite o roteiro]';
+const PLACEHOLDER_EXPECTED =
+  '[Resultado esperado não gerado — edite o roteiro]';
+
 /**
  * Normaliza saída da IA para o roteiro: `migrateTestCase` cobre legado;
- * na geração, `observedResult` fica sempre vazio e o status inicial é `Not Run`.
+ * na geração, `action`, `parameters` e `expectedResult` são sempre strings não vazias
+ * (com placeholders quando necessário), `observedResult` é sempre "" e o status é `Not Run`.
  */
 function normalizeTestCases(raw: unknown[]): TestCase[] {
   if (!Array.isArray(raw)) return [];
@@ -353,9 +359,19 @@ function normalizeTestCases(raw: unknown[]): TestCase[] {
       typeof r.id === 'string' && r.id.trim()
         ? r.id.trim()
         : generateTestCaseId(baseTimestamp, index);
-    const migrated = migrateTestCase({ ...r, id });
+    const { observedResult: _ignored, ...restForMigrate } = r;
+    const migrated = migrateTestCase({ ...restForMigrate, id });
+
+    const action = String(migrated.action ?? '').trim() || PLACEHOLDER_ACTION;
+    const parameters = String(migrated.parameters ?? '').trim() || '—';
+    const expectedResult =
+      String(migrated.expectedResult ?? '').trim() || PLACEHOLDER_EXPECTED;
+
     return {
       ...migrated,
+      action,
+      parameters,
+      expectedResult,
       observedResult: '',
       status: 'Not Run' as const,
     };

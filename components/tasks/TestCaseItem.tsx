@@ -314,7 +314,7 @@ export const TestCaseItem: React.FC<{
             </div>
             <div>
               <label className="text-[10px] font-bold text-base-content/70 uppercase tracking-widest mb-1 block">
-                Resultado obtido
+                Resultado Obtido
               </label>
               <textarea
                 value={testCase.observedResult}

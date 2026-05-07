@@ -224,10 +224,10 @@ export function generateFailedTestsReport(
       if (testCase.observedResult && testCase.observedResult.trim()) {
         if (format === 'markdown') {
           lines.push(
-            `   **Resultado obtido:** <span style="color: red;">${testCase.observedResult}</span>`
+            `   **Resultado Obtido:** <span style="color: red;">${testCase.observedResult}</span>`
           );
         } else {
-          lines.push(`   Resultado obtido: ${testCase.observedResult}`);
+          lines.push(`   Resultado Obtido: ${testCase.observedResult}`);
         }
         lines.push('');
       }

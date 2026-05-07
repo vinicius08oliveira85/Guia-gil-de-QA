@@ -1539,7 +1539,7 @@ export async function generateFailedTestsPDF(
           }
 
           if (ft.testCase.observedResult) {
-            page.drawText('Resultado obtido:', {
+            page.drawText('Resultado Obtido:', {
               x: margin + 15,
               y: yPosition,
               size: 10,

@@ -128,7 +128,7 @@ export class OpenAIService implements AIService {
             {
               role: 'system',
               content:
-                'Você é um especialista em garantia de qualidade de software (QA) e análise de projetos. Sempre responda em português brasileiro.',
+                'Você é um especialista em garantia de qualidade de software (QA) e análise de projetos. Sempre responda em português brasileiro. Em casos de teste JSON, use somente as chaves action (Ação necessária), parameters (Parâmetros necessários) e expectedResult (Resultado esperado); nunca preencha observedResult (Resultado Obtido).',
             },
             {
               role: 'user',
@@ -170,18 +170,19 @@ export class OpenAIService implements AIService {
     _strategy: TestStrategy[],
     baseTs: number
   ): TestCase[] {
-    return (items as OpenAiTestCaseRow[]).map((item, index) =>
-      migrateTestCase({
+    return (items as OpenAiTestCaseRow[]).map((item, index) => {
+      const parameters =
+        (item.parameters && String(item.parameters).trim()) ||
+        (Array.isArray(item.steps) ? item.steps.join('\n') : '');
+      return {
         id: `tc-${baseTs}-${index}`,
-        action: item.action,
-        parameters: item.parameters,
-        expectedResult: item.expectedResult,
+        action: (item.action || item.description || '').trim(),
+        parameters: parameters.trim(),
+        expectedResult: (item.expectedResult || '').trim(),
         observedResult: '',
-        status: 'Not Run',
-        description: item.description,
-        steps: item.steps,
-      })
-    );
+        status: 'Not Run' as const,
+      } as TestCase;
+    });
   }
 
   /** Mesmo pipeline em 3 chamadas do Gemini, com temperatura mais baixa para aderência. */

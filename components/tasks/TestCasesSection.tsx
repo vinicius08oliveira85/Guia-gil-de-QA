@@ -29,7 +29,7 @@ const STATUS_LABEL: Record<TestCase['status'], string> = {
 const SORT_OPTIONS = [
   { value: 'default', label: 'Padrão' },
   { value: 'status', label: 'Status' },
-  { value: 'action', label: 'Ação (A–Z)' },
+  { value: 'action', label: 'Ação necessária (A–Z)' },
 ] as const;
 type SortBy = (typeof SORT_OPTIONS)[number]['value'];
 

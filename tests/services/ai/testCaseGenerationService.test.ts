@@ -137,6 +137,36 @@ describe('testCaseGenerationService.generateTestCasesForTask', () => {
     expect(result[0].parameters).toBe('—');
   });
 
+  it('descarta observedResult enviado pela IA na geração inicial', async () => {
+    mockGenerate.mockResolvedValueOnce({
+      strategy: [],
+      bddScenarios: [],
+      testCases: [
+        {
+          id: 'tc-obs',
+          action: 'Executar fluxo',
+          parameters: '—',
+          expectedResult: 'Sucesso',
+          observedResult: 'conteúdo inválido da IA',
+        },
+      ],
+    });
+    const result = await generateTestCasesForTask(buildTask());
+    expect(result[0].observedResult).toBe('');
+  });
+
+  it('usa placeholder quando expectedResult vem vazio da IA', async () => {
+    mockGenerate.mockResolvedValueOnce({
+      strategy: [],
+      bddScenarios: [],
+      testCases: [
+        { id: 'tc-exp', action: 'Passo', parameters: '—', expectedResult: '', status: 'Not Run' },
+      ],
+    });
+    const result = await generateTestCasesForTask(buildTask());
+    expect(result[0].expectedResult).toMatch(/Resultado esperado não gerado/);
+  });
+
   it('blinda contra testCases não-array do retorno da IA', async () => {
     mockGenerate.mockResolvedValueOnce({
       strategy: [],

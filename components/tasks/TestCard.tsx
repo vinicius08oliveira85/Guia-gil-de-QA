@@ -111,10 +111,15 @@ export const TestCard: React.FC<TestCardProps> = ({
                   ></span>
                 )}
 
-                {/* Ação do roteiro */}
-                <p className="text-sm font-medium text-base-content truncate font-mono">
-                  {testCase.action || 'Sem ação definida'}
-                </p>
+                {/* Roteiro: ação (campo action) */}
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] font-bold uppercase tracking-wide text-base-content/50">
+                    Ação necessária
+                  </p>
+                  <p className="text-sm font-medium text-base-content truncate font-mono">
+                    {testCase.action || 'Sem ação definida'}
+                  </p>
+                </div>
               </div>
 
               {/* Badge de prioridade da tarefa */}
@@ -148,7 +153,7 @@ export const TestCard: React.FC<TestCardProps> = ({
                 {testCase.observedResult && (
                   <div>
                     <p className="text-xs font-semibold text-base-content/70 mb-xs">
-                      Resultado obtido:
+                      Resultado Obtido:
                     </p>
                     <p className="text-xs text-base-content/80 font-mono bg-base-200 p-xs rounded">
                       {testCase.observedResult}

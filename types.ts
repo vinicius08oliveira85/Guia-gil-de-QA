@@ -4,6 +4,12 @@ export type TestCaseExecutionKind = 'manual' | 'automated' | 'mixed';
 /**
  * Roteiro de teste por caso (execução manual / evidência).
  * Dados legados são convertidos em `migrateTestCase`.
+ *
+ * Convenção de rótulos (UI, exportação e prompts de IA):
+ * - `action` → **Ação necessária** (passo a passo do que executar)
+ * - `parameters` → **Parâmetros necessários** (massa de dados, pré-condições, inputs)
+ * - `expectedResult` → **Resultado esperado**
+ * - `observedResult` → **Resultado Obtido** (preenchido na execução; a geração por IA deve deixar vazio)
  */
 export interface TestCase {
   id: string;

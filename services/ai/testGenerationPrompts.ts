@@ -166,7 +166,7 @@ Priorize: verificação da correção, regressão em áreas relacionadas, cenár
 
 function detailLevelBlock(detailLevel: TestCaseDetailLevel): string {
   return `
-Nível de detalhe do campo "action" (roteiro em texto): ${detailLevel}
+Nível de detalhe do campo JSON \`action\` (rótulo na UI: **Ação necessária** — roteiro em texto): ${detailLevel}
 - Resumido: ação objetiva, poucas linhas.
 - Padrão: ação com passos numerados quando necessário.
 - Detalhado: roteiro longo com verificações intermediárias e dados explícitos.
@@ -288,15 +288,14 @@ Você é um analista de QA sênior. Responda em português brasileiro.
 
 Objetivo: gerar APENAS casos de teste em JSON (testCases). Não gere estratégias nem BDD.
 
-Regras de aderência:
-- Analise a descrição da tarefa e os cenários BDD abaixo. Para cada caso de teste, extraia:
-  - **action**: a ação necessária para validar o comportamento (o roteiro executável). Se precisar de vários passos, escreva-os numerados dentro deste único campo (não use array de passos separado).
-  - **parameters**: dados de entrada, massa de dados, pré-requisitos técnicos, contas, URLs, payloads, ambientes — tudo que o executor precisa preparar. Se não houver nada específico, use exatamente o texto "—".
-  - **expectedResult**: resultado esperado objetivo e verificável.
-- NÃO inclua campo de resultado obtido na execução (isso é preenchido pelo humano na UI).
+Regras de aderência (roteiro padronizado — use exatamente estes nomes de chave JSON):
+- **action** (*Ação necessária*): o que executar, em passo a passo quando couber (um único string; passos numerados 1. 2. … no mesmo campo, sem array de passos separado).
+- **parameters** (*Parâmetros necessários*): massa de dados, pré-condições, inputs e contexto técnico que o executor precisa preparar. Se não houver nada específico, use exatamente o texto "—".
+- **expectedResult** (*Resultado esperado*): critérios objetivos e verificáveis de sucesso após executar a ação com esses parâmetros.
+- **Proibido**: preencher **Resultado Obtido** / \`observedResult\` / "resultado obtido" / qualquer campo equivalente — isso é exclusivo do executor humano na aplicação. Não inclua essas chaves no JSON.
 - Não invente módulos, APIs ou telas ausentes do texto da tarefa ou dos BDD.
 
-Campos por objeto em testCases (somente estes três): action (string), parameters (string), expectedResult (string).
+Campos por objeto em testCases (obrigatórios, todos string): apenas \`action\`, \`parameters\` e \`expectedResult\`. Opcionalmente \`executionKind\`, \`environment\`, \`suite\` quando fizer sentido.
 
 Tipos de estratégia já definidos (use apenas como referência de cobertura; não repita como campo no JSON): ${allowedTypes.length ? allowedTypes.map(t => `"${t}"`).join(', ') : '(alinhe mentalmente às estratégias abaixo).'}.
 

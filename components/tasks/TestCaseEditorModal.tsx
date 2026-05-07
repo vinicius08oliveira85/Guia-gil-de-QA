@@ -98,7 +98,7 @@ export const TestCaseEditorModal: React.FC<TestCaseEditorModalProps> = ({
 
         <div>
           <label className="block text-xs font-semibold text-base-content/70 mb-1">
-            Resultado obtido
+            Resultado Obtido
           </label>
           <textarea
             value={observedResult}

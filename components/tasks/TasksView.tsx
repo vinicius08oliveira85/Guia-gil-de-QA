@@ -2389,7 +2389,7 @@ export const TasksView: React.FC<{
               htmlFor="observed-result"
               className="block text-sm font-medium text-base-content/70 mb-1"
             >
-              Resultado obtido (O que aconteceu de errado?)
+              Resultado Obtido (O que aconteceu de errado?)
             </label>
             <textarea
               id="observed-result"

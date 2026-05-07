@@ -106,7 +106,7 @@ export function generateTestReport(
         if (format === 'markdown') {
           lines.push('');
           lines.push(
-            `   **Resultado obtido:** <span style="color: red;">${testCase.observedResult}</span>`
+            `   **Resultado Obtido:** <span style="color: red;">${testCase.observedResult}</span>`
           );
         } else {
           lines.push('');

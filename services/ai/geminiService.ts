@@ -92,16 +92,17 @@ const geminiTestCaseItemSchema = {
     action: {
       type: Type.STRING,
       description:
-        'Ação necessária — o que executar para validar o comportamento. Inclua passos numerados aqui se precisar (roteiro em texto corrido).',
+        'Ação necessária (campo JSON `action`): o que executar, em passo a passo quando couber (texto corrido; use passos numerados 1. 2. … separados por espaço ou quebra de linha).',
     },
     parameters: {
       type: Type.STRING,
       description:
-        'Parâmetros necessários: dados de entrada, massa de dados, pré-requisitos técnicos, contas, ambientes. Use "—" se não houver.',
+        'Parâmetros necessários (campo JSON `parameters`): massa de dados, pré-condições, inputs e contexto técnico que o executor precisa. Use exatamente "—" se não houver nada a declarar.',
     },
     expectedResult: {
       type: Type.STRING,
-      description: 'Resultado esperado objetivo após executar a ação com os parâmetros indicados.',
+      description:
+        'Resultado esperado (campo JSON `expectedResult`): critérios objetivos e verificáveis de sucesso após executar a ação com os parâmetros indicados.',
     },
     executionKind: {
       type: Type.STRING,
@@ -122,6 +123,8 @@ const geminiTestCaseItemSchema = {
 
 const geminiTestCasesArrayProperty = {
   type: Type.ARRAY,
+  description:
+    'Casos de teste. Cada objeto deve conter APENAS os campos obrigatórios action, parameters e expectedResult, mais opcionalmente executionKind, environment e suite. NUNCA inclua observedResult, "resultado obtido" nem qualquer outro campo — o executor humano preenche isso na aplicação.',
   items: geminiTestCaseItemSchema,
 };
 
@@ -195,18 +198,19 @@ export class GeminiService implements AIService {
     _strategy: TestStrategy[],
     baseTs: number
   ): TestCase[] {
-    return (items as GeminiTestCaseRow[]).map((item, index) =>
-      migrateTestCase({
+    return (items as GeminiTestCaseRow[]).map((item, index) => {
+      const parameters =
+        (item.parameters && String(item.parameters).trim()) ||
+        (Array.isArray(item.steps) ? item.steps.join('\n') : '');
+      return {
         id: `tc-${baseTs}-${index}`,
-        action: item.action,
-        parameters: item.parameters,
-        expectedResult: item.expectedResult,
+        action: (item.action || item.description || '').trim(),
+        parameters: parameters.trim(),
+        expectedResult: (item.expectedResult || '').trim(),
         observedResult: '',
-        status: 'Not Run',
-        description: item.description,
-        steps: item.steps,
-      })
-    );
+        status: 'Not Run' as const,
+      } as TestCase;
+    });
   }
 
   /**

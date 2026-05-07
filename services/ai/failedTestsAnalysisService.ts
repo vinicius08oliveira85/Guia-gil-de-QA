@@ -251,7 +251,7 @@ function generateManualAnalysis(project: Project, failedTests: FailedTestWithTas
         .join('; ');
       if (observedResults) {
         lines.push(
-          `- Resultado obtido: ${observedResults.substring(0, 200)}${observedResults.length > 200 ? '...' : ''}`
+          `- Resultado Obtido: ${observedResults.substring(0, 200)}${observedResults.length > 200 ? '...' : ''}`
         );
         lines.push('');
       }

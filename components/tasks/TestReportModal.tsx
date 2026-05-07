@@ -290,7 +290,7 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({ isOpen, onClos
                       {testCase.observedResult && testCase.observedResult.trim() && (
                         <div className="mt-2">
                           <p className="text-xs font-medium text-base-content/70 mb-0.5">
-                            Resultado obtido:
+                            Resultado Obtido:
                           </p>
                           <p className="text-xs text-error whitespace-pre-wrap">
                             {testCase.observedResult}

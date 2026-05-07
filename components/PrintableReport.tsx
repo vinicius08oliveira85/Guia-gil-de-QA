@@ -245,7 +245,7 @@ export const PrintableReport: React.FC<{ project: Project; metrics: ReportMetric
                           fontSize: '12px',
                         }}
                       >
-                        <p style={{ margin: 0, fontWeight: 'bold' }}>Ação: {tc.action}</p>
+                        <p style={{ margin: 0, fontWeight: 'bold' }}>Ação necessária: {tc.action}</p>
                         <div style={{ marginTop: '5px' }}>
                           {tc.parameters?.trim() ? (
                             <>
@@ -272,7 +272,7 @@ export const PrintableReport: React.FC<{ project: Project; metrics: ReportMetric
                                   marginBottom: '2px',
                                 }}
                               >
-                                Resultado obtido:
+                                Resultado Obtido:
                               </strong>
                               <p style={{ margin: 0 }}>{tc.observedResult}</p>
                             </>

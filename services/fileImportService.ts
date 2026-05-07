@@ -369,6 +369,7 @@ export const importTestCasesFromExcel = async (
             row['Resultado Esperado'] || row['Expected Result'] || row['expectedResult'] || '',
           observedResult:
             row['Resultado Observado'] ||
+            row['Resultado Obtido'] ||
             row['Resultado obtido'] ||
             row['Observed Result'] ||
             row['observedResult'] ||
