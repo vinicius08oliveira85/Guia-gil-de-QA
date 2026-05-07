@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { JiraTask, Project, BusinessRule } from '../../types';
+import { useProjectsStore } from '../../store/projectsStore';
 import { Button } from '../common/Button';
 import { filterBusinessRulesByQuery } from '../../utils/businessRulesFilter';
 import { Search, ChevronDown } from 'lucide-react';
@@ -63,9 +64,11 @@ export const TaskBusinessRulesLinker: React.FC<TaskBusinessRulesLinkerProps> = (
   const handleToggleCategory = useCallback(
     (category: string, checked: boolean) => {
       const key = category.trim();
+      const latest = useProjectsStore.getState().projects.find(p => p.id === project.id);
+      if (!latest) return;
       onUpdateProject({
-        ...project,
-        tasks: project.tasks.map(t => {
+        ...latest,
+        tasks: latest.tasks.map(t => {
           if (t.id !== task.id) return t;
           const next = new Set(
             (t.linkedBusinessRuleCategories ?? [])
@@ -81,21 +84,27 @@ export const TaskBusinessRulesLinker: React.FC<TaskBusinessRulesLinkerProps> = (
         }),
       });
     },
-    [onUpdateProject, project, task.id]
+    [onUpdateProject, project.id, task.id]
   );
 
   const handleToggle = useCallback(
     (ruleId: string, checked: boolean) => {
-      const ids = new Set(task.linkedBusinessRuleIds ?? []);
+      const latest = useProjectsStore.getState().projects.find(p => p.id === project.id);
+      if (!latest) return;
+      const currentTask = latest.tasks.find(t => t.id === task.id);
+      if (!currentTask) return;
+      const ids = new Set(currentTask.linkedBusinessRuleIds ?? []);
       if (checked) ids.add(ruleId);
       else ids.delete(ruleId);
       const linkedBusinessRuleIds = [...ids];
       onUpdateProject({
-        ...project,
-        tasks: project.tasks.map(t => (t.id === task.id ? { ...t, linkedBusinessRuleIds } : t)),
+        ...latest,
+        tasks: latest.tasks.map(t =>
+          t.id === task.id ? { ...t, linkedBusinessRuleIds } : t
+        ),
       });
     },
-    [onUpdateProject, project, task.id]
+    [onUpdateProject, project.id, task.id]
   );
 
   return (

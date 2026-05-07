@@ -1,6 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { TestCase } from '../../types';
 import { getTestCaseEnvironment, getTestCaseSuite } from '../../utils/testCaseMigration';
+import {
+  parseTestCaseActionSteps,
+  stripLeadingStepIndex,
+} from '../../utils/testCaseActionDisplay';
 import { ChevronDownIcon, EditIcon, ListIcon, TrashIcon } from '../common/Icons';
 import { Copy } from 'lucide-react';
 
@@ -47,9 +51,22 @@ export const TestCaseItem: React.FC<{
 
   const effectiveDetailsOpen =
     detailsOpenOverride !== undefined ? detailsOpenOverride : detailsOpen;
-  const actionText = testCase.action || '—';
-  const isActionLong =
-    actionText.split(/\n/).length > ACTION_TRUNCATE_LINES || actionText.length > 360;
+
+  const actionSteps = useMemo(() => {
+    const parsed = parseTestCaseActionSteps(testCase.action || '');
+    return parsed.length === 0 ? ['—'] : parsed;
+  }, [testCase.action]);
+
+  const hasStructuredSteps = actionSteps.length > 1;
+  const actionText = actionSteps.join('\n');
+  const isActionLong = hasStructuredSteps
+    ? actionSteps.length > ACTION_TRUNCATE_LINES || actionText.length > 360
+    : actionText.split(/\n/).length > ACTION_TRUNCATE_LINES || actionText.length > 360;
+
+  const visibleActionSteps =
+    hasStructuredSteps && !actionExpanded && isActionLong
+      ? actionSteps.slice(0, ACTION_TRUNCATE_LINES)
+      : actionSteps;
 
   const metaChips = useMemo(() => {
     const env = getTestCaseEnvironment(testCase);
@@ -131,12 +148,29 @@ export const TestCaseItem: React.FC<{
         <p className="text-[10px] font-bold text-base-content/60 uppercase tracking-widest">
           Ação necessária
         </p>
-        <p
-          className={`text-base font-semibold text-base-content leading-snug break-words whitespace-pre-wrap ${!actionExpanded && isActionLong ? 'line-clamp-4' : ''}`}
-          title={actionText}
-        >
-          {actionText}
-        </p>
+        {hasStructuredSteps ? (
+          <ol
+            className="list-decimal list-outside ml-5 space-y-2 pl-1 text-base font-semibold leading-snug marker:font-bold marker:text-primary"
+            title={testCase.action || undefined}
+            aria-label="Passos da ação"
+          >
+            {visibleActionSteps.map((step, i) => (
+              <li
+                key={`action-step-${i}`}
+                className="break-words pl-0.5 text-base-content [overflow-wrap:anywhere]"
+              >
+                {stripLeadingStepIndex(step)}
+              </li>
+            ))}
+          </ol>
+        ) : (
+          <p
+            className={`text-base font-semibold text-base-content leading-snug break-words whitespace-pre-wrap ${!actionExpanded && isActionLong ? 'line-clamp-4' : ''}`}
+            title={actionText}
+          >
+            {actionSteps[0]}
+          </p>
+        )}
         {isActionLong && !actionExpanded && (
           <button
             type="button"
