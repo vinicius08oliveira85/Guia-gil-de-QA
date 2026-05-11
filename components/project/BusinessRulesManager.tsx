@@ -18,12 +18,19 @@ import {
 import { Modal } from '../common/Modal';
 import { Button } from '../common/Button';
 import { ConfirmDialog } from '../common/ConfirmDialog';
+import { Card } from '../common/Card';
+import { SectionHeader } from '../common/SectionHeader';
+import { EmptyState } from '../common/EmptyState';
+import { Badge } from '../common/Badge';
+import { SafeMarkdown } from '../common/SafeMarkdown';
 import { BusinessRulesFiltersToolbar } from './BusinessRulesFiltersToolbar';
 import { BusinessRuleCategoryPresetsModal } from './BusinessRuleCategoryPresetsModal';
 import {
+  badgeVariantForBusinessRuleCategory,
   businessRuleCategoryLabel,
   getMergedBusinessRuleCategories,
 } from '../../utils/businessRuleCategoryPresets';
+import { cn } from '../../utils/cn';
 
 /** Valor sentinela do `<select>` de categoria quando o nome não está na lista unida do projeto. */
 const BR_CATEGORY_SELECT_OTHER = '__br_category_other__';
@@ -237,160 +244,223 @@ export const BusinessRulesManager: React.FC<{
     setDeleteId(null);
   };
 
+  const clearFilters = () => {
+    setSearchQuery('');
+    setCategoryScope('all');
+  };
+
   return (
-    <section
-      className="rounded-xl border border-base-300 bg-base-200/40 backdrop-blur-sm p-4 md:p-6 space-y-4"
-      aria-labelledby="business-rules-heading"
-    >
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-        <div>
-          <h2
-            id="business-rules-heading"
-            className="text-xl md:text-2xl font-bold tracking-tight text-base-content flex items-center gap-2"
-          >
-            <Scale className="w-6 h-6 text-primary shrink-0" aria-hidden />
-            Regras de Negócio
-          </h2>
-          <p className="text-sm text-base-content/70 mt-1 max-w-2xl">
-            Defina regras por categoria e vincule-as às tarefas no detalhe da tarefa para a IA gerar
-            BDD e casos mais assertivos. Vincule regras entre si ao editar (insere{' '}
-            <code className="text-xs bg-base-300/50 px-1 rounded">@NomeDaRegra</code> na descrição).
-          </p>
-        </div>
-        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto sm:shrink-0">
-          <input
-            ref={importInputRef}
-            id="business-rules-import-json"
-            type="file"
-            accept="application/json,.json"
-            className="hidden"
-            aria-label="Importar regras de negócio de arquivo JSON"
-            onChange={handleImportFile}
-          />
-          <Button
-            type="button"
-            variant="outline"
-            size="default"
-            className="w-full sm:w-auto"
-            onClick={() => importInputRef.current?.click()}
-            title="Mescla regras a partir de JSON (mesmo id atualiza título/descrição)"
-          >
-            <Upload className="w-4 h-4" aria-hidden />
-            Importar JSON
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="default"
-            className="w-full sm:w-auto"
-            onClick={handleExportJson}
-            title="Exporta todas as regras do projeto em JSON"
-          >
-            <Download className="w-4 h-4" aria-hidden />
-            Exportar JSON
-          </Button>
-          <Button
-            type="button"
-            variant="default"
-            size="default"
-            className="w-full sm:w-auto"
-            onClick={openCreate}
-          >
-            <Plus className="w-4 h-4" aria-hidden />
-            Nova regra
-          </Button>
-        </div>
+    <>
+      <div className="space-y-6 py-8 md:py-10 lg:py-12">
+        <Card hoverable={false} className="p-3 py-4 sm:p-4 sm:py-6 lg:p-5">
+          <div className="tasks-panel-scope flex flex-col gap-tasks-panel-loose">
+            <div
+              className="flex flex-col gap-4 rounded-xl border border-base-300/80 bg-base-100/95 p-3 shadow-sm backdrop-blur-md sm:p-4"
+              aria-labelledby="business-rules-heading"
+            >
+              <div className="border-b border-base-300/80 pb-4">
+                <SectionHeader
+                  as="h1"
+                  align="left"
+                  fullWidth
+                  titleSize="page"
+                  density="dense"
+                  headingId="business-rules-heading"
+                  title={
+                    <span className="inline-flex items-center gap-2.5">
+                      <Scale className="h-7 w-7 shrink-0 text-primary" aria-hidden />
+                      <span>Regras de negócio</span>
+                    </span>
+                  }
+                  description={
+                    <>
+                      Defina regras por categoria e vincule-as às tarefas no detalhe da tarefa para a
+                      IA gerar BDD e casos mais assertivos. Ao editar, você pode vincular regras entre
+                      si — insere{' '}
+                      <code className="rounded bg-base-300/60 px-1.5 py-0.5 text-xs font-mono">
+                        @NomeDaRegra
+                      </code>{' '}
+                      na descrição.
+                    </>
+                  }
+                  className="max-w-3xl"
+                />
+              </div>
+
+              <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
+                <input
+                  ref={importInputRef}
+                  id="business-rules-import-json"
+                  type="file"
+                  accept="application/json,.json"
+                  className="hidden"
+                  aria-label="Importar regras de negócio de arquivo JSON"
+                  onChange={handleImportFile}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="w-full rounded-full sm:w-auto"
+                  onClick={() => importInputRef.current?.click()}
+                  title="Mescla regras a partir de JSON (mesmo id atualiza título/descrição)"
+                >
+                  <Upload className="h-4 w-4" aria-hidden />
+                  Importar JSON
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="w-full rounded-full sm:w-auto"
+                  onClick={handleExportJson}
+                  title="Exporta todas as regras do projeto em JSON"
+                >
+                  <Download className="h-4 w-4" aria-hidden />
+                  Exportar JSON
+                </Button>
+                <Button
+                  type="button"
+                  variant="default"
+                  size="sm"
+                  className="w-full rounded-full px-5 shadow-md shadow-primary/15 sm:w-auto"
+                  onClick={openCreate}
+                >
+                  <Plus className="h-4 w-4" aria-hidden />
+                  Nova regra
+                </Button>
+              </div>
+
+              <BusinessRulesFiltersToolbar
+                searchQuery={searchQuery}
+                onSearchQueryChange={setSearchQuery}
+                categoryScope={categoryScope}
+                onCategoryScopeChange={setCategoryScope}
+                uniqueCategories={uniqueCategories}
+                sortBy={sortBy}
+                onSortByChange={setSortBy}
+                onManageCategoriesClick={() => setCategoriesModalOpen(true)}
+              />
+            </div>
+
+            <div className="flex flex-col gap-tasks-panel">
+              {rules.length === 0 ? (
+                <EmptyState
+                  title="Nenhuma regra cadastrada"
+                  description="Adicione a primeira regra e vincule-a às tarefas no detalhe da tarefa para contextualizar a geração por IA."
+                  icon="⚖️"
+                  action={{
+                    label: 'Nova regra',
+                    onClick: openCreate,
+                    variant: 'primary',
+                  }}
+                />
+              ) : displayRules.length === 0 ? (
+                <EmptyState
+                  compact
+                  title="Nenhum resultado"
+                  description="Nenhuma regra corresponde à busca ou ao filtro de categoria."
+                  secondaryAction={{
+                    label: 'Limpar filtros',
+                    onClick: clearFilters,
+                  }}
+                />
+              ) : (
+                <ul className="space-y-3" role="list" aria-label="Lista de regras de negócio">
+                  {displayRules.map(rule => {
+                    const catLabel = businessRuleCategoryLabel(rule);
+                    const badgeVariant = badgeVariantForBusinessRuleCategory(catLabel);
+                    return (
+                      <li key={rule.id}>
+                        <Card hoverable={false} className="overflow-hidden p-0 shadow-sm">
+                          <details className="group open:shadow-md">
+                            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 min-h-[44px] text-left transition-colors hover:bg-base-200/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-inset [&::-webkit-details-marker]:hidden">
+                              <span className="min-w-0 flex-1">
+                                <span className="block border-b border-transparent pb-1 text-base font-bold tracking-tight text-base-content group-open:border-base-300/80">
+                                  {rule.title}
+                                </span>
+                                <span className="mt-2 inline-flex flex-wrap items-center gap-2">
+                                  <Badge variant={badgeVariant} size="sm" appearance="pill">
+                                    <span className="normal-case">{catLabel}</span>
+                                  </Badge>
+                                </span>
+                              </span>
+                              <ChevronDown
+                                className="h-5 w-5 shrink-0 text-base-content/45 transition-transform duration-200 group-open:rotate-180"
+                                aria-hidden
+                              />
+                            </summary>
+                            <div className="space-y-4 border-t border-base-300/80 bg-base-200/40 px-4 py-4 sm:px-5">
+                              <div>
+                                <p className="text-[10px] font-bold uppercase tracking-widest text-base-content/60 mb-2">
+                                  Descrição
+                                </p>
+                                {rule.description.trim() ? (
+                                  <SafeMarkdown
+                                    source={rule.description}
+                                    className={cn(
+                                      'jira-rich-content prose-headings:font-heading prose-headings:text-base-content',
+                                      'rounded-xl border border-base-300 bg-base-100/90 px-4 py-4 shadow-inner sm:px-5 sm:py-5',
+                                      'prose-h2:border-b prose-h2:border-base-300/80 prose-h2:pb-2 prose-h2:mb-3',
+                                      'prose-h3:border-b prose-h3:border-base-200 prose-h3:pb-1.5 prose-h3:mb-2',
+                                      'prose-p:leading-relaxed prose-strong:text-base-content',
+                                      'prose-ul:list-disc prose-ul:pl-6 prose-ol:list-decimal prose-ol:pl-6'
+                                    )}
+                                  />
+                                ) : (
+                                  <p className="rounded-xl border border-dashed border-base-300/80 bg-base-100/80 px-4 py-6 text-center text-sm italic text-base-content/50">
+                                    Sem descrição
+                                  </p>
+                                )}
+                              </div>
+                              {(rule.linkedBusinessRuleIds?.length ?? 0) > 0 && (
+                                <div>
+                                  <p className="text-[10px] font-bold uppercase tracking-widest text-base-content/60 mb-1.5">
+                                    Vinculada a
+                                  </p>
+                                  <p className="text-sm leading-relaxed text-base-content/85">
+                                    {(rule.linkedBusinessRuleIds ?? [])
+                                      .map(id => rules.find(x => x.id === id)?.title ?? id)
+                                      .join(', ')}
+                                  </p>
+                                </div>
+                              )}
+                              <div className="flex flex-wrap items-center gap-2 border-t border-base-300/60 pt-4">
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  className="rounded-full gap-1.5"
+                                  onClick={() => openEdit(rule)}
+                                  aria-label={`Editar regra ${rule.title}`}
+                                >
+                                  <Pencil className="h-4 w-4" aria-hidden />
+                                  Editar
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  className="rounded-full gap-1.5 border-error/40 text-error hover:border-error/55 hover:bg-error/10"
+                                  onClick={() => setDeleteId(rule.id)}
+                                  aria-label={`Excluir regra ${rule.title}`}
+                                >
+                                  <Trash2 className="h-4 w-4" aria-hidden />
+                                  Excluir
+                                </Button>
+                              </div>
+                            </div>
+                          </details>
+                        </Card>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </div>
+          </div>
+        </Card>
       </div>
-
-      <BusinessRulesFiltersToolbar
-        searchQuery={searchQuery}
-        onSearchQueryChange={setSearchQuery}
-        categoryScope={categoryScope}
-        onCategoryScopeChange={setCategoryScope}
-        uniqueCategories={uniqueCategories}
-        sortBy={sortBy}
-        onSortByChange={setSortBy}
-        onManageCategoriesClick={() => setCategoriesModalOpen(true)}
-      />
-
-      {rules.length === 0 ? (
-        <p className="text-sm text-base-content/60 py-2">
-          Nenhuma regra cadastrada. Adicione a primeira e vincule-a às tarefas para contextualizar a
-          geração por IA.
-        </p>
-      ) : (
-        <>
-          {displayRules.length === 0 ? (
-            <p className="text-sm text-base-content/60 py-2" role="status">
-              Nenhuma regra corresponde à busca ou ao filtro de categoria.
-            </p>
-          ) : (
-            <ul className="space-y-2" role="list">
-              {displayRules.map(rule => (
-                <li key={rule.id}>
-                  <details className="group rounded-lg border border-base-300 bg-base-100/80 overflow-hidden open:shadow-sm">
-                    <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 min-h-[44px] text-left font-semibold text-base-content hover:bg-base-200/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-inset [&::-webkit-details-marker]:hidden">
-                      <span className="min-w-0 flex-1 flex flex-wrap items-center gap-2">
-                        <span>{rule.title}</span>
-                        <span className="text-xs font-normal px-2 py-0.5 rounded-full bg-base-300/60 text-base-content/80 shrink-0">
-                          {businessRuleCategoryLabel(rule)}
-                        </span>
-                      </span>
-                      <ChevronDown
-                        className="h-5 w-5 shrink-0 text-base-content/45 transition-transform duration-200 group-open:rotate-180"
-                        aria-hidden
-                      />
-                    </summary>
-                    <div className="border-t border-base-300 bg-base-100/90 px-4 pb-4 pt-3 space-y-3">
-                      <p className="text-sm text-base-content/80 whitespace-pre-wrap">
-                        {rule.description.trim() ? (
-                          rule.description
-                        ) : (
-                          <span className="italic text-base-content/50">Sem descrição</span>
-                        )}
-                      </p>
-                      {(rule.linkedBusinessRuleIds?.length ?? 0) > 0 && (
-                        <p className="text-xs text-base-content/65 flex flex-wrap gap-x-1 gap-y-0.5 items-baseline">
-                          <span className="font-medium text-base-content/75 shrink-0">
-                            Vinculada a:
-                          </span>
-                          <span>
-                            {(rule.linkedBusinessRuleIds ?? [])
-                              .map(id => rules.find(x => x.id === id)?.title ?? id)
-                              .join(', ')}
-                          </span>
-                        </p>
-                      )}
-                      <div className="flex flex-wrap items-center gap-2">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => openEdit(rule)}
-                          aria-label={`Editar regra ${rule.title}`}
-                        >
-                          <Pencil className="w-4 h-4" aria-hidden />
-                          Editar
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => setDeleteId(rule.id)}
-                          aria-label={`Excluir regra ${rule.title}`}
-                        >
-                          <Trash2 className="w-4 h-4" aria-hidden />
-                          Excluir
-                        </Button>
-                      </div>
-                    </div>
-                  </details>
-                </li>
-              ))}
-            </ul>
-          )}
-        </>
-      )}
 
       <Modal
         isOpen={formOpen}
@@ -401,7 +471,7 @@ export const BusinessRulesManager: React.FC<{
           <div>
             <label
               htmlFor="br-title"
-              className="block text-sm font-semibold text-base-content/70 mb-2"
+              className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-base-content/60"
             >
               Título
             </label>
@@ -417,7 +487,7 @@ export const BusinessRulesManager: React.FC<{
           <div>
             <label
               htmlFor="br-category"
-              className="block text-sm font-semibold text-base-content/70 mb-2"
+              className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-base-content/60"
             >
               Categoria
             </label>
@@ -457,7 +527,7 @@ export const BusinessRulesManager: React.FC<{
           <div>
             <label
               htmlFor="br-desc"
-              className="block text-sm font-semibold text-base-content/70 mb-2"
+              className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-base-content/60"
             >
               Descrição
             </label>
@@ -470,10 +540,10 @@ export const BusinessRulesManager: React.FC<{
             />
           </div>
           {linkableRules.length > 0 && (
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <Link2 className="w-4 h-4 text-primary shrink-0" aria-hidden />
-                <span className="block text-sm font-semibold text-base-content/70">
+            <div className="border-t border-base-200/80 pt-4">
+              <div className="mb-2 flex items-center gap-2">
+                <Link2 className="h-4 w-4 shrink-0 text-primary" aria-hidden />
+                <span className="text-[10px] font-bold uppercase tracking-widest text-base-content/60">
                   Vincular a outras regras
                 </span>
               </div>
@@ -549,14 +619,21 @@ export const BusinessRulesManager: React.FC<{
               </ul>
             </div>
           )}
-          <div className="flex justify-end gap-2 flex-wrap">
-            <Button type="button" variant="ghost" size="default" onClick={() => setFormOpen(false)}>
+          <div className="flex flex-wrap justify-end gap-2 border-t border-base-200/80 pt-4">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="rounded-full px-5"
+              onClick={() => setFormOpen(false)}
+            >
               Cancelar
             </Button>
             <Button
               type="button"
               variant="default"
-              size="default"
+              size="sm"
+              className="rounded-full px-6 shadow-md shadow-primary/15"
               onClick={handleSave}
               disabled={!title.trim()}
             >
@@ -584,6 +661,6 @@ export const BusinessRulesManager: React.FC<{
         rules={rules}
         onUpdateProject={onUpdateProject}
       />
-    </section>
+    </>
   );
 };

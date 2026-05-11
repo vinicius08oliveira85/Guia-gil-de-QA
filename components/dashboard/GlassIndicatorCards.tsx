@@ -24,6 +24,7 @@ export interface SmallIndicatorItem {
   isActive?: boolean;
 }
 
+/** Temas alinhados à paleta DaisyUI (primary, warning, info, success, error) — sem cores hex soltas. */
 const themeConfig: Record<
   IndicatorColorTheme,
   {
@@ -36,43 +37,43 @@ const themeConfig: Record<
   }
 > = {
   orange: {
-    orbBg: 'bg-orange-500/10 dark:bg-orange-500/5',
-    labelColor: 'text-orange-600 dark:text-orange-400/80',
-    valueColor: 'text-orange-600 dark:text-orange-500',
-    iconBg: 'bg-orange-100 dark:bg-orange-500/20',
-    iconColor: 'text-orange-600 dark:text-orange-400',
+    orbBg: 'bg-primary/10 dark:bg-primary/5',
+    labelColor: 'text-primary',
+    valueColor: 'text-primary',
+    iconBg: 'border border-primary/25 bg-primary/10 dark:bg-primary/15',
+    iconColor: 'text-primary',
     glowClass: 'glow-orange',
   },
   yellow: {
-    orbBg: 'bg-yellow-500/10 dark:bg-yellow-500/5',
-    labelColor: 'text-yellow-600 dark:text-yellow-400/80',
-    valueColor: 'text-yellow-600 dark:text-yellow-400',
-    iconBg: 'bg-yellow-100 dark:bg-yellow-500/20',
-    iconColor: 'text-yellow-600 dark:text-yellow-400',
+    orbBg: 'bg-warning/10 dark:bg-warning/5',
+    labelColor: 'text-warning',
+    valueColor: 'text-warning',
+    iconBg: 'border border-warning/25 bg-warning/10 dark:bg-warning/15',
+    iconColor: 'text-warning',
     glowClass: 'glow-yellow',
   },
   blue: {
-    orbBg: 'bg-blue-500/10 dark:bg-blue-500/5',
-    labelColor: 'text-blue-600 dark:text-blue-400/80',
-    valueColor: 'text-blue-600 dark:text-blue-500',
-    iconBg: 'bg-blue-100 dark:bg-blue-500/20',
-    iconColor: 'text-blue-600 dark:text-blue-400',
+    orbBg: 'bg-info/10 dark:bg-info/5',
+    labelColor: 'text-info',
+    valueColor: 'text-info',
+    iconBg: 'border border-info/25 bg-info/10 dark:bg-info/15',
+    iconColor: 'text-info',
     glowClass: 'glow-blue',
   },
   emerald: {
-    orbBg: 'bg-emerald-500/10 dark:bg-emerald-500/5',
-    labelColor: 'text-emerald-600 dark:text-emerald-400/80',
-    valueColor: 'text-emerald-600 dark:text-emerald-500',
-    iconBg: 'bg-emerald-100 dark:bg-emerald-500/20',
-    iconColor: 'text-emerald-600 dark:text-emerald-400',
+    orbBg: 'bg-success/10 dark:bg-success/5',
+    labelColor: 'text-success',
+    valueColor: 'text-success',
+    iconBg: 'border border-success/25 bg-success/10 dark:bg-success/15',
+    iconColor: 'text-success',
     glowClass: 'glow-green',
   },
   red: {
-    orbBg: 'bg-red-500/10 dark:bg-red-500/5',
-    labelColor: 'text-red-600 dark:text-red-400/80',
-    valueColor: 'text-red-600 dark:text-red-500',
-    iconBg: 'bg-red-100 dark:bg-red-500/20',
-    iconColor: 'text-red-600 dark:text-red-400',
+    orbBg: 'bg-error/10 dark:bg-error/5',
+    labelColor: 'text-error',
+    valueColor: 'text-error',
+    iconBg: 'border border-error/25 bg-error/10 dark:bg-error/15',
+    iconColor: 'text-error',
     glowClass: 'glow-red',
   },
 };
@@ -83,7 +84,7 @@ function SmallIndicatorCard({ item }: { item: SmallIndicatorItem }) {
   const isClickable = !!item.onClick;
   return (
     <div
-      className={`glass relative overflow-hidden rounded-lg border border-base-200/60 bg-white/70 p-3 shadow-sm transition-all duration-200 dark:border-base-300/40 dark:bg-slate-800/45 sm:p-3.5 ${isClickable ? 'group cursor-pointer hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary/30' : ''} ${item.isActive ? 'ring-2 ring-primary/45 shadow-md' : ''}`}
+      className={`relative overflow-hidden rounded-xl border border-base-300/80 bg-base-100/95 p-3 shadow-sm backdrop-blur-sm transition-all duration-200 dark:border-base-300/60 dark:bg-base-200/50 sm:p-3.5 ${isClickable ? 'group cursor-pointer hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary/30' : ''} ${item.isActive ? 'shadow-md ring-2 ring-primary/40' : ''}`}
       role={isClickable ? 'button' : 'article'}
       tabIndex={isClickable ? 0 : undefined}
       aria-label={
@@ -108,7 +109,7 @@ function SmallIndicatorCard({ item }: { item: SmallIndicatorItem }) {
         aria-hidden
       />
       <div className="mb-2 flex items-start justify-between gap-2">
-        <span className={`text-xs font-bold uppercase tracking-wide ${config.labelColor}`}>
+        <span className={`text-[10px] font-bold uppercase tracking-widest ${config.labelColor}`}>
           {item.label}
         </span>
         <div className={`rounded-md p-1.5 ${config.iconBg} ${config.glowClass}`}>
@@ -134,8 +135,6 @@ export interface ExecutionAutomationProps {
   automationTrend?: string;
 }
 
-const PRIMARY_COLOR = '#FF6B35';
-
 export function ExecutionAutomationCard({
   executedTestCases,
   totalTestCases,
@@ -151,13 +150,12 @@ export function ExecutionAutomationCard({
 
   return (
     <div
-      className="glass relative overflow-hidden rounded-xl border border-base-200/60 bg-white/75 p-4 shadow-sm dark:border-base-300/40 dark:bg-slate-800/50 sm:p-5"
+      className="relative overflow-hidden rounded-xl border border-base-300/80 bg-base-100/95 p-4 shadow-sm backdrop-blur-sm dark:border-base-300/60 dark:bg-base-200/40 sm:p-5"
       role="region"
       aria-label="Execução de Testes e Automatizados"
     >
       <div
-        className="absolute -left-10 bottom-0 w-64 h-64 rounded-full blur-3xl opacity-30"
-        style={{ backgroundColor: PRIMARY_COLOR }}
+        className="absolute -left-10 bottom-0 h-64 w-64 rounded-full bg-primary/20 blur-3xl opacity-40 dark:bg-primary/25"
         aria-hidden
       />
       <div className="relative z-10 grid grid-cols-1 items-center gap-4 lg:grid-cols-12 lg:gap-5">
@@ -165,13 +163,13 @@ export function ExecutionAutomationCard({
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-3">
               <div
-                className="shrink-0 rounded-lg border border-orange-500/25 bg-orange-500/12 p-2 dark:bg-orange-500/18"
+                className="shrink-0 rounded-lg border border-primary/25 bg-primary/10 p-2 dark:bg-primary/15"
                 aria-hidden
               >
-                <ListChecks className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+                <ListChecks className="h-5 w-5 text-primary" />
               </div>
               <div className="min-w-0">
-                <h3 className="text-lg font-bold leading-tight text-base-content sm:text-xl">
+                <h3 className="font-heading text-lg font-bold leading-tight text-base-content sm:text-xl">
                   Execução de Testes
                 </h3>
                 <p
@@ -184,7 +182,7 @@ export function ExecutionAutomationCard({
             </div>
             <div className="shrink-0 text-right">
               <span
-                className="text-xl font-bold tabular-nums text-orange-600 animate-pulse-subtle dark:text-orange-500 sm:text-2xl"
+                className="text-xl font-bold tabular-nums text-primary animate-pulse-subtle sm:text-2xl"
                 aria-label={`${executionPercent}% de execução`}
               >
                 {executionPercent}%
@@ -201,7 +199,7 @@ export function ExecutionAutomationCard({
               aria-label={`Progresso: ${executionPercent}%, ${executedTestCases} de ${totalTestCases} casos executados`}
             >
               <div
-                className="h-full bg-gradient-to-r from-orange-500 via-orange-400 to-orange-500 rounded-full transition-all duration-500 shadow-[0_0_15px_rgba(255,107,53,0.3)]"
+                className="h-full rounded-full bg-gradient-to-r from-primary via-primary/90 to-primary transition-all duration-500 shadow-md shadow-primary/20"
                 style={{ width: `${executionPercent}%` }}
               />
             </div>
@@ -228,7 +226,7 @@ export function ExecutionAutomationCard({
                   strokeWidth="8"
                 />
                 <circle
-                  className="text-orange-500 glow-orange transition-all duration-1000 ease-out"
+                  className="text-primary transition-all duration-1000 ease-out"
                   cx="48"
                   cy="48"
                   fill="transparent"
@@ -269,7 +267,8 @@ export function ExecutionAutomationCard({
 
 export interface GlassIndicatorCardsProps {
   items: SmallIndicatorItem[];
-  execution: ExecutionAutomationProps;
+  /** Se omitido, mostra apenas a grade de indicadores compactos (sem o bloco Execução/Automação). */
+  execution?: ExecutionAutomationProps;
 }
 
 export function GlassIndicatorCards({ items, execution }: GlassIndicatorCardsProps) {
@@ -280,7 +279,7 @@ export function GlassIndicatorCards({ items, execution }: GlassIndicatorCardsPro
           <SmallIndicatorCard key={`${item.label}-${index}`} item={item} />
         ))}
       </div>
-      <ExecutionAutomationCard {...execution} />
+      {execution != null ? <ExecutionAutomationCard {...execution} /> : null}
     </div>
   );
 }

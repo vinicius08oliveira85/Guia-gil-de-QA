@@ -54,7 +54,7 @@ describe('BusinessRulesManager', () => {
     expect(screen.getByText('Beta-seg')).toBeInTheDocument();
 
     await user.selectOptions(screen.getByLabelText('Ordenar lista de regras'), 'title_asc');
-    const summaries = container.querySelectorAll('li > details > summary');
+    const summaries = container.querySelectorAll('li details > summary');
     const texts = [...summaries].map(s => s.textContent ?? '');
     expect(texts[0]).toContain('Alpha-seg');
     expect(texts[1]).toContain('Beta-seg');

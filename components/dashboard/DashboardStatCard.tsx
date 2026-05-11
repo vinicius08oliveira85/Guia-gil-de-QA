@@ -1,6 +1,7 @@
 import React from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '../../utils/cn';
+import { Card } from '../common/Card';
 
 export type TrendType = 'up' | 'down' | 'neutral';
 
@@ -32,7 +33,9 @@ export const DashboardStatCard = React.memo<DashboardStatCardProps>(
     };
 
     return (
-      <div
+      <Card
+        hoverable={isClickable}
+        variant="default"
         role={isClickable ? 'button' : undefined}
         tabIndex={isClickable ? 0 : undefined}
         onClick={isClickable ? handleClick : undefined}
@@ -47,25 +50,29 @@ export const DashboardStatCard = React.memo<DashboardStatCardProps>(
             : undefined
         }
         className={cn(
-          'bg-base-100 px-5 py-4 rounded-xl shadow-sm border border-base-300 flex items-center gap-4',
+          'p-4 sm:p-5',
           isClickable &&
-            'cursor-pointer hover:ring-2 hover:ring-primary/20 hover:scale-[1.02] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/30',
+            'cursor-pointer hover:scale-[1.02] hover:ring-2 hover:ring-primary/25 focus:outline-none focus:ring-2 focus:ring-primary/35 motion-reduce:transition-none motion-reduce:hover:scale-100',
           className
         )}
       >
-        <div className="p-2 bg-primary/10 text-primary rounded-lg shrink-0">
-          <Icon className="text-xl w-5 h-5" aria-hidden="true" />
-        </div>
-        <div className="min-w-0">
-          <div className="flex items-baseline gap-2">
-            <span className="text-xl font-bold text-base-content">{value}</span>
-            {changePercent != null && (
-              <span className={cn('text-[10px] font-medium', changeColor)}>{changePercent}</span>
-            )}
+        <div className="flex items-center gap-4">
+          <div className="shrink-0 rounded-lg bg-primary/10 p-2 text-primary">
+            <Icon className="h-5 w-5 text-xl" aria-hidden="true" />
           </div>
-          <p className="text-base-content/70 text-xs">{title}</p>
+          <div className="min-w-0">
+            <div className="flex items-baseline gap-2">
+              <span className="font-heading text-xl font-bold tabular-nums text-base-content">
+                {value}
+              </span>
+              {changePercent != null && (
+                <span className={cn('text-[10px] font-medium', changeColor)}>{changePercent}</span>
+              )}
+            </div>
+            <p className="text-xs text-base-content/70">{title}</p>
+          </div>
         </div>
-      </div>
+      </Card>
     );
   }
 );

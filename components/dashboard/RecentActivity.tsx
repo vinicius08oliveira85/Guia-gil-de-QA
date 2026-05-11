@@ -4,6 +4,7 @@ import { Project } from '../../types';
 import { useProjectMetrics } from '../../hooks/useProjectMetrics';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { Card } from '../common/Card';
 
 /**
  * Props do componente RecentActivity
@@ -121,9 +122,16 @@ export const RecentActivity = React.memo<RecentActivityProps>(({ project, classN
 
   return (
     <div className={className} role="region" aria-label="Atividades recentes">
-      <div className="bg-base-100 rounded-2xl shadow-sm border border-base-300 p-6">
-        <h3 className="font-bold text-lg text-base-content mb-4">Atividades Recentes</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <Card hoverable={false} variant="default" className="overflow-hidden p-4 sm:p-6">
+        <div className="mb-5 border-b border-base-300/80 pb-3">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-base-content/55">
+            Linha do tempo
+          </p>
+          <h2 className="font-heading mt-1 text-lg font-bold tracking-tight text-base-content sm:text-xl">
+            Atividades recentes
+          </h2>
+        </div>
+        <ul className="grid grid-cols-1 gap-6 md:grid-cols-3">
           {activities.map(activity => {
             const Icon = activity.icon;
             const iconBg =
@@ -133,26 +141,24 @@ export const RecentActivity = React.memo<RecentActivityProps>(({ project, classN
                   ? 'bg-error/20 text-error'
                   : 'bg-base-200 text-base-content/60';
             return (
-              <div key={activity.id} className="flex gap-3 items-start">
+              <li key={activity.id} className="flex items-start gap-3">
                 <div
-                  className={`rounded-full w-8 h-8 flex items-center justify-center shrink-0 mt-0.5 ${iconBg}`}
+                  className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${iconBg}`}
                 >
-                  <Icon className="w-4 h-4" aria-hidden="true" />
+                  <Icon className="h-4 w-4" aria-hidden="true" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-bold text-base-content">{activity.title}</p>
-                  <p className="text-xs text-base-content/70 line-clamp-1 mt-0.5">
+                  <p className="text-sm font-semibold text-base-content">{activity.title}</p>
+                  <p className="mt-0.5 line-clamp-2 text-xs leading-relaxed text-base-content/75">
                     {activity.description}
                   </p>
-                  <span className="text-[10px] text-base-content/60 mt-1 block">
-                    {activity.time}
-                  </span>
+                  <span className="mt-1 block text-[10px] text-base-content/55">{activity.time}</span>
                 </div>
-              </div>
+              </li>
             );
           })}
-        </div>
-      </div>
+        </ul>
+      </Card>
     </div>
   );
 });

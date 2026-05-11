@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Spinner } from '../common/Spinner';
+import { Button, buttonVariants } from '../common/Button';
+import { cn } from '../../utils/cn';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import {
   processAndSaveDocument,
@@ -96,41 +98,55 @@ export const SpecificationDocumentProcessor: React.FC<SpecificationDocumentProce
     return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   };
 
-  const cardClass =
-    'bg-white dark:bg-slate-800 rounded-[12px] p-6 soft-shadow border border-slate-100 dark:border-slate-700';
-
   return (
-    <section className={cardClass} aria-labelledby="spec-doc-heading">
-      <h2
-        id="spec-doc-heading"
-        className="text-2xl md:text-3xl font-bold tracking-tight text-base-content mb-2"
-      >
-        Documento de Especificação
-      </h2>
+    <section
+      className="mb-tasks-panel-loose rounded-xl border border-base-300/80 bg-base-100/95 p-4 shadow-sm backdrop-blur-sm sm:p-5"
+      aria-labelledby="spec-doc-heading"
+    >
+      <div className="border-b border-base-300/80 pb-3">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-base-content/60">
+          Contexto de IA
+        </p>
+        <h2 id="spec-doc-heading" className="mt-1 text-lg font-bold tracking-tight text-base-content">
+          Documento de especificação
+        </h2>
+      </div>
 
       {isProcessed ? (
-        <>
-          <div className="bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-800 rounded-[12px] p-4 flex items-center gap-3 mb-6">
-            <CheckCircle2 className="w-6 h-6 text-green-500 flex-shrink-0" aria-hidden />
-            <p className="text-green-700 dark:text-green-400 text-sm font-medium">
-              Documento processado e disponível para uso nas análises de IA
+        <div className="mt-4 space-y-4">
+          <div className="flex items-start gap-3 rounded-xl border border-success/25 bg-success/10 px-4 py-3">
+            <CheckCircle2 className="h-5 w-5 shrink-0 text-success" aria-hidden />
+            <p className="text-sm font-medium leading-snug text-base-content">
+              Documento processado e disponível para uso nas análises de IA.
             </p>
           </div>
-          <div className="relative w-full h-3 bg-slate-100 dark:bg-slate-700 rounded-full mb-2 overflow-hidden">
-            <div className="progress-gradient h-full w-full rounded-full" aria-hidden />
+          <div className="relative h-2 overflow-hidden rounded-full bg-base-300/80">
+            <div
+              className="h-full w-full rounded-full bg-success/70"
+              role="progressbar"
+              aria-valuenow={100}
+              aria-valuemin={0}
+              aria-valuemax={100}
+            />
           </div>
-          <div className="flex justify-end mb-6">
-            <span className="text-xs font-semibold text-slate-500">100%</span>
+          <div className="flex justify-end">
+            <span className="text-xs font-semibold text-base-content/55">100%</span>
           </div>
           {documentSize != null && (
-            <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
+            <p className="text-xs text-base-content/60">
               Conteúdo processado: {formatSize(documentSize)}
             </p>
           )}
-          <div className="flex gap-3">
-            <label className="bg-[#4f46e5] hover:bg-[#4338ca] text-white px-5 py-2.5 rounded-[12px] font-medium flex items-center gap-2 transition-all hover-glow cursor-pointer">
-              <RefreshCw className="w-5 h-5" aria-hidden />
-              Reprocessar Documento
+          <div className="flex flex-wrap gap-2">
+            <label
+              className={cn(
+                buttonVariants({ variant: 'default', size: 'sm' }),
+                'cursor-pointer rounded-full px-4 shadow-md shadow-primary/15 sm:min-h-0',
+                isProcessing && 'pointer-events-none opacity-60'
+              )}
+            >
+              <RefreshCw className="h-4 w-4" aria-hidden />
+              Reprocessar documento
               <input
                 type="file"
                 accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
@@ -140,30 +156,38 @@ export const SpecificationDocumentProcessor: React.FC<SpecificationDocumentProce
                 aria-label="Selecionar novo arquivo .docx para reprocessar"
               />
             </label>
-            <button
+            <Button
               type="button"
+              variant="outline"
+              size="sm"
+              className="rounded-full px-4"
               onClick={handleClear}
               disabled={isProcessing}
-              className="border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 px-5 py-2.5 rounded-[12px] font-medium flex items-center gap-2 transition-all"
               aria-label="Remover documento de especificação"
             >
-              <Trash2 className="w-5 h-5" aria-hidden />
+              <Trash2 className="h-4 w-4" aria-hidden />
               Remover
-            </button>
+            </Button>
           </div>
-        </>
+        </div>
       ) : (
-        <>
-          <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800 rounded-[12px] p-4 flex items-center gap-3 mb-6">
-            <span className="text-amber-600 dark:text-amber-400 text-xl font-medium" aria-hidden>
+        <div className="mt-4 space-y-4">
+          <div className="flex items-start gap-3 rounded-xl border border-warning/30 bg-warning/10 px-4 py-3">
+            <span className="text-lg font-bold text-warning" aria-hidden>
               !
             </span>
-            <p className="text-amber-800 dark:text-amber-200 text-sm font-medium">
+            <p className="text-sm font-medium leading-snug text-base-content">
               Nenhum documento processado. As análises de IA funcionarão sem o contexto do documento
               de especificação.
             </p>
           </div>
-          <label className="bg-[#4f46e5] hover:bg-[#4338ca] text-white px-5 py-2.5 rounded-[12px] font-medium flex items-center gap-2 transition-all hover-glow cursor-pointer inline-flex">
+          <label
+            className={cn(
+              buttonVariants({ variant: 'default', size: 'sm' }),
+              'cursor-pointer rounded-full px-4 shadow-md shadow-primary/15 sm:min-h-0',
+              isProcessing && 'pointer-events-none opacity-60'
+            )}
+          >
             {isProcessing ? (
               <>
                 <Spinner small />
@@ -171,8 +195,8 @@ export const SpecificationDocumentProcessor: React.FC<SpecificationDocumentProce
               </>
             ) : (
               <>
-                <Upload className="w-5 h-5" aria-hidden />
-                <span>Processar Documento .docx</span>
+                <Upload className="h-4 w-4" aria-hidden />
+                <span>Processar documento .docx</span>
               </>
             )}
             <input
@@ -184,11 +208,11 @@ export const SpecificationDocumentProcessor: React.FC<SpecificationDocumentProce
               aria-label="Selecionar arquivo .docx de especificação"
             />
           </label>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-3">
-            Selecione um documento de especificação do projeto (.docx) para que a IA use seu
-            conteúdo nas análises.
+          <p className="text-xs text-base-content/55">
+            Selecione um documento de especificação do projeto (.docx) para que a IA use seu conteúdo
+            nas análises.
           </p>
-        </>
+        </div>
       )}
     </section>
   );

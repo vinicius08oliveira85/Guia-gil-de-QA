@@ -3,20 +3,47 @@ import { FileText, TestTube, Compass, File } from 'lucide-react';
 import { cn } from '../../utils/cn';
 
 const CATEGORIES = [
-  { id: 'requisitos', label: 'REQUISITOS', bgClass: 'bg-brand-purple', icon: FileText },
-  { id: 'testes', label: 'TESTES', bgClass: 'bg-brand-orange', icon: TestTube },
-  { id: 'arquitetura', label: 'ARQUITETURA', bgClass: 'bg-brand-blue', icon: Compass },
-  { id: 'outros', label: 'OUTROS', bgClass: 'bg-slate-500 dark:bg-slate-600', icon: File },
+  {
+    id: 'requisitos',
+    label: 'Requisitos',
+    icon: FileText,
+    borderLeft: 'border-l-purple-500',
+    titleColor: 'text-purple-600 dark:text-purple-400',
+    iconBg: 'bg-purple-500/15 text-purple-600 dark:text-purple-400',
+  },
+  {
+    id: 'testes',
+    label: 'Testes',
+    icon: TestTube,
+    borderLeft: 'border-l-emerald-500',
+    titleColor: 'text-emerald-600 dark:text-emerald-400',
+    iconBg: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400',
+  },
+  {
+    id: 'arquitetura',
+    label: 'Arquitetura',
+    icon: Compass,
+    borderLeft: 'border-l-sky-500',
+    titleColor: 'text-sky-600 dark:text-sky-400',
+    iconBg: 'bg-sky-500/15 text-sky-600 dark:text-sky-400',
+  },
+  {
+    id: 'outros',
+    label: 'Outros',
+    icon: File,
+    borderLeft: 'border-l-base-content/35',
+    titleColor: 'text-base-content/80',
+    iconBg: 'bg-base-300/50 text-base-content/70',
+  },
 ] as const;
 
 export interface DocumentStatsCardsProps {
   categoryCounts: Record<string, number>;
-  /** Categoria atualmente selecionada no filtro; quando igual ao id do card, destaca o card */
   selectedCategory?: string;
-  /** Ao clicar no card, aplica filtro por essa categoria (id ou 'all' para limpar) */
   onCategorySelect?: (categoryId: string) => void;
 }
 
+/** Cards de contagem alinhados ao painel Tarefas/Dashboard: borda, sombra suave, base-100. */
 export const DocumentStatsCards: React.FC<DocumentStatsCardsProps> = ({
   categoryCounts,
   selectedCategory = 'all',
@@ -24,11 +51,11 @@ export const DocumentStatsCards: React.FC<DocumentStatsCardsProps> = ({
 }) => {
   return (
     <div
-      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+      className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4"
       role="list"
       aria-label="Contagem de documentos por categoria"
     >
-      {CATEGORIES.map(({ id, label, bgClass, icon: Icon }) => {
+      {CATEGORIES.map(({ id, label, icon: Icon, borderLeft, titleColor, iconBg }) => {
         const count = categoryCounts[id] ?? 0;
         const isSelected = selectedCategory === id;
         const isClickable = !!onCategorySelect;
@@ -49,22 +76,37 @@ export const DocumentStatsCards: React.FC<DocumentStatsCardsProps> = ({
                 : undefined
             }
             className={cn(
-              `${bgClass} p-6 rounded-[12px] text-white relative overflow-hidden group transition-all`,
+              'relative overflow-hidden rounded-xl border border-base-300/80 bg-base-100/95 p-4 shadow-sm backdrop-blur-sm transition-all duration-200',
+              'border-l-4',
+              borderLeft,
               isClickable &&
-                'cursor-pointer hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white/50',
-              isSelected && 'ring-2 ring-primary ring-offset-2 ring-offset-base-100'
+                'cursor-pointer hover:-translate-y-0.5 hover:shadow-md hover:border-primary/35 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/30',
+              isSelected && 'ring-2 ring-primary/40 shadow-md'
             )}
             aria-label={`${label}: ${count} documento(s)${isClickable ? '. Clique para filtrar.' : ''}`}
             aria-pressed={isClickable ? isSelected : undefined}
           >
-            <div className="relative z-10">
-              <p className="text-[10px] font-bold tracking-widest uppercase opacity-80">{label}</p>
-              <p className="text-4xl font-bold mt-1">{count}</p>
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <p
+                  className={cn(
+                    'text-[10px] font-bold uppercase tracking-widest text-base-content/55',
+                    titleColor
+                  )}
+                >
+                  {label}
+                </p>
+                <p className="mt-1 text-3xl font-bold tabular-nums text-base-content">{count}</p>
+              </div>
+              <div
+                className={cn(
+                  'flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-base-200',
+                  iconBg
+                )}
+              >
+                <Icon className="h-5 w-5" aria-hidden />
+              </div>
             </div>
-            <Icon
-              className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 opacity-20 transition-transform group-hover:scale-110"
-              aria-hidden
-            />
           </div>
         );
       })}

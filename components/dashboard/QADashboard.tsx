@@ -3,6 +3,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Project, TestCase } from '../../types';
 import { FileExportModal } from '../common/FileExportModal';
+import { EmptyState } from '../common/EmptyState';
 import { DashboardFiltersModal, DashboardFilters } from './DashboardFiltersModal';
 import { ListChecks, CheckCircle2, AlertTriangle, Percent, Loader2 } from 'lucide-react';
 import { useProjectsStore } from '../../store/projectsStore';
@@ -11,6 +12,7 @@ import { DashboardStatCard } from './DashboardStatCard';
 import { ProjectDashboard } from './ProjectDashboard';
 import { RecentActivity } from './RecentActivity';
 import { QADashboardHeaderToolbar } from './QADashboardHeaderToolbar';
+import { Card } from '../common/Card';
 
 interface QADashboardProps {
   project: Project;
@@ -95,10 +97,10 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(props => {
   const goTasks = onNavigateToTab ? () => onNavigateToTab('tasks') : undefined;
 
   return (
-    <div className="space-y-6" role="main" aria-label="Dashboard do projeto">
+    <div className="space-y-6 py-8 md:py-10 lg:py-12" role="main" aria-label="Dashboard do projeto">
       {showLoadingBanner && (
         <div
-          className="flex items-center gap-2 rounded-lg border border-base-300 bg-base-200/40 px-3 py-2 text-sm text-base-content/70"
+          className="flex items-center gap-2 rounded-xl border border-base-300/80 bg-base-100/95 px-4 py-3 text-sm text-base-content/80 shadow-sm backdrop-blur-sm"
           role="status"
           aria-live="polite"
         >
@@ -114,79 +116,93 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(props => {
         </div>
       )}
 
-      <QADashboardHeaderToolbar
-        lastUpdatedText={lastUpdatedText}
-        activeFiltersCount={activeFiltersCount}
-        filters={dashboardFilters}
-        onFiltersChange={setDashboardFilters}
-        onOpenFiltersModal={() => setShowFilters(true)}
-        onOpenExportModal={() => setShowExportModal(true)}
-      />
+      <Card hoverable={false} className="p-3 py-4 sm:p-4 sm:py-6 lg:p-5">
+        <div className="tasks-panel-scope flex flex-col gap-tasks-panel-loose">
+          <div className="rounded-xl border border-base-300/80 bg-base-100/95 p-3 shadow-sm backdrop-blur-md sm:p-4">
+            <QADashboardHeaderToolbar
+              lastUpdatedText={lastUpdatedText}
+              activeFiltersCount={activeFiltersCount}
+              filters={dashboardFilters}
+              onFiltersChange={setDashboardFilters}
+              onOpenFiltersModal={() => setShowFilters(true)}
+              onOpenExportModal={() => setShowExportModal(true)}
+            />
+          </div>
 
-      {/* KPIs principais: grid 1 col mobile → 4 desktop */}
-      <div
-        className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4"
-        aria-label="Indicadores principais de tarefas"
-      >
-        {showLoadingBanner && !filteredProject.tasks?.length ? (
-          <>
-            {[0, 1, 2, 3].map(k => (
-              <div
-                key={k}
-                className="h-[88px] rounded-xl border border-base-300 bg-base-200/40 animate-pulse"
-                aria-hidden
-              />
-            ))}
-          </>
-        ) : (
-          <>
-            <DashboardStatCard
-              title="Total de tarefas"
-              value={dashboardMetrics.totalTasks}
-              icon={ListChecks}
-              onClick={goTasks}
-            />
-            <DashboardStatCard
-              title="Concluídas"
-              value={dashboardMetrics.completedTasks}
-              icon={CheckCircle2}
-              onClick={goTasks}
-            />
-            <DashboardStatCard
-              title="Atrasadas"
-              value={dashboardMetrics.overdueTasks}
-              icon={AlertTriangle}
-              className={
-                dashboardMetrics.overdueTasks > 0 ? 'border-error/40 bg-error/5' : undefined
+          {/* KPIs principais: grid 1 col mobile → 4 desktop */}
+          <div
+            className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4"
+            aria-label="Indicadores principais de tarefas"
+          >
+            {showLoadingBanner && !filteredProject.tasks?.length ? (
+              <>
+                {[0, 1, 2, 3].map(k => (
+                  <div
+                    key={k}
+                    className="h-[92px] animate-pulse rounded-xl border border-base-300/80 bg-base-200/50"
+                    aria-hidden
+                  />
+                ))}
+              </>
+            ) : (
+              <>
+                <DashboardStatCard
+                  title="Total de tarefas"
+                  value={dashboardMetrics.totalTasks}
+                  icon={ListChecks}
+                  onClick={goTasks}
+                />
+                <DashboardStatCard
+                  title="Concluídas"
+                  value={dashboardMetrics.completedTasks}
+                  icon={CheckCircle2}
+                  onClick={goTasks}
+                />
+                <DashboardStatCard
+                  title="Atrasadas"
+                  value={dashboardMetrics.overdueTasks}
+                  icon={AlertTriangle}
+                  className={
+                    dashboardMetrics.overdueTasks > 0 ? 'border-error/40 bg-error/5' : undefined
+                  }
+                  onClick={goTasks}
+                />
+                <DashboardStatCard
+                  title="Eficiência"
+                  value={
+                    dashboardMetrics.totalTasks === 0
+                      ? '—'
+                      : `${dashboardMetrics.efficiencyPercent}%`
+                  }
+                  icon={Percent}
+                  onClick={goTasks}
+                />
+              </>
+            )}
+          </div>
+
+          <ProjectDashboard
+            project={filteredProject}
+            isLoading={showLoadingBanner && !filteredProject.tasks?.length}
+          />
+
+          {!showLoadingBanner && dashboardMetrics.totalTasks === 0 && (
+            <EmptyState
+              compact
+              title="Nenhuma tarefa no escopo"
+              description="Crie tarefas na aba Tarefas ou ajuste os filtros do dashboard."
+              icon="📊"
+              secondaryAction={
+                onNavigateToTab
+                  ? { label: 'Ir para Tarefas', onClick: () => onNavigateToTab('tasks') }
+                  : undefined
               }
-              onClick={goTasks}
             />
-            <DashboardStatCard
-              title="Eficiência"
-              value={
-                dashboardMetrics.totalTasks === 0 ? '—' : `${dashboardMetrics.efficiencyPercent}%`
-              }
-              icon={Percent}
-              onClick={goTasks}
-            />
-          </>
-        )}
-      </div>
+          )}
 
-      {/* Painel de indicadores (Mica/Glass): mesmos dados do projeto filtrado */}
-      <ProjectDashboard
-        project={filteredProject}
-        isLoading={showLoadingBanner && !filteredProject.tasks?.length}
-      />
-
-      {!showLoadingBanner && dashboardMetrics.totalTasks === 0 && (
-        <div className="rounded-xl border border-dashed border-base-300 bg-base-200/20 px-4 py-6 text-center text-sm text-base-content/70">
-          Nenhuma tarefa no escopo atual. Crie tarefas na aba <strong>Tarefas</strong> ou ajuste os
-          filtros do dashboard.
+          <RecentActivity project={filteredProject} />
         </div>
-      )}
-
-      <RecentActivity project={filteredProject} />
+      </Card>
 
       <FileExportModal
         isOpen={showExportModal}

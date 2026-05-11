@@ -1,6 +1,8 @@
 import React from 'react';
 import { Eye, ExternalLink, Bot, Wand2, Pencil, Trash2 } from 'lucide-react';
 import { Spinner } from '../common/Spinner';
+import { Card } from '../common/Card';
+import { Button } from '../common/Button';
 
 export interface DocumentCardDoc {
   name: string;
@@ -40,7 +42,7 @@ export interface DocumentCardProps {
 }
 
 const actionBtnClass =
-  'flex flex-col items-center gap-1.5 group p-0 border-0 bg-transparent cursor-pointer rounded-lg text-base-content/70 hover:text-base-content transition-colors duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50';
+  'rounded-full gap-1.5 shadow-sm sm:min-h-0 [&_svg]:h-4 [&_svg]:w-4';
 
 export const DocumentCard: React.FC<DocumentCardProps> = ({
   doc,
@@ -65,20 +67,17 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
       : '';
 
   return (
-    <article
-      className="rounded-xl border border-base-300 bg-base-100 p-5 shadow-sm transition-all hover:shadow-lg"
-      aria-labelledby={`doc-title-${doc.name}`}
-    >
-      <div className="space-y-4">
+    <Card hoverable className="overflow-hidden p-4 sm:p-5">
+      <article className="space-y-4" aria-labelledby={`doc-title-${doc.name}`}>
         <div>
           <h3
             id={`doc-title-${doc.name}`}
-            className="font-bold text-base-content truncate"
+            className="border-b border-base-300/80 pb-2 text-base font-bold tracking-tight text-base-content"
             title={doc.name}
           >
             {doc.name}
           </h3>
-          <div className="flex gap-2 mt-2 flex-wrap items-center">
+          <div className="mt-3 flex flex-wrap items-center gap-2">
             <span className={`badge badge-sm uppercase ${badgeClass}`}>{categoryLabel}</span>
             {doc.analysis && doc.analysis.trim() !== '' && (
               <span
@@ -90,88 +89,84 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
             )}
           </div>
         </div>
-        <p className="text-xs text-base-content/70">{metaText}</p>
-        <div className="grid grid-cols-6 gap-2 pt-4 border-t border-base-300">
-          <button
+        <p className="text-xs leading-relaxed text-base-content/70">{metaText}</p>
+        <div
+          className="flex flex-wrap gap-2 border-t border-base-300 pt-4"
+          role="group"
+          aria-label="Ações do documento"
+        >
+          <Button
             type="button"
+            variant="outline"
+            size="sm"
             className={actionBtnClass}
             onClick={onView}
             aria-label="Ver documento"
           >
-            <div className="p-2 rounded-lg transition-colors duration-300 group-hover:bg-base-200">
-              <Eye className="w-[18px] h-[18px] text-current" aria-hidden />
-            </div>
-            <span className="text-[10px] font-medium text-inherit">Ver</span>
-          </button>
-          <button
+            <Eye aria-hidden />
+            Ver
+          </Button>
+          <Button
             type="button"
+            variant="outline"
+            size="sm"
             className={actionBtnClass}
             onClick={onPreview}
             aria-label="Abrir preview"
           >
-            <div className="p-2 rounded-lg transition-colors duration-300 group-hover:bg-base-200">
-              <ExternalLink className="w-[18px] h-[18px] text-current" aria-hidden />
-            </div>
-            <span className="text-[10px] font-medium text-inherit">Preview</span>
-          </button>
-          <button
+            <ExternalLink aria-hidden />
+            Preview
+          </Button>
+          <Button
             type="button"
-            className={actionBtnClass}
+            variant="default"
+            size="sm"
+            className={`${actionBtnClass} shadow-primary/20`}
             onClick={onAnalyze}
             disabled={loadingState === 'analyze'}
             title="Analisa o conteúdo do documento com IA."
             aria-label="Analisar com IA"
           >
-            <div className="p-2 rounded-lg transition-colors duration-300 group-hover:bg-base-200">
-              {loadingState === 'analyze' ? (
-                <Spinner small />
-              ) : (
-                <Bot className="w-[18px] h-[18px] text-current" aria-hidden />
-              )}
-            </div>
-            <span className="text-[10px] font-medium text-inherit">Analisar</span>
-          </button>
-          <button
+            {loadingState === 'analyze' ? <Spinner small /> : <Bot aria-hidden />}
+            Analisar
+          </Button>
+          <Button
             type="button"
-            className={actionBtnClass}
+            variant="default"
+            size="sm"
+            className={`${actionBtnClass} shadow-primary/20`}
             onClick={onGenerate}
             disabled={loadingState === 'generate'}
             title="Gera uma tarefa a partir do documento com IA."
             aria-label="Gerar tarefa"
           >
-            <div className="p-2 rounded-lg transition-colors duration-300 group-hover:bg-base-200">
-              {loadingState === 'generate' ? (
-                <Spinner small />
-              ) : (
-                <Wand2 className="w-[18px] h-[18px] text-current" aria-hidden />
-              )}
-            </div>
-            <span className="text-[10px] font-medium text-inherit">Gerar</span>
-          </button>
-          <button
+            {loadingState === 'generate' ? <Spinner small /> : <Wand2 aria-hidden />}
+            Gerar
+          </Button>
+          <Button
             type="button"
+            variant="outline"
+            size="sm"
             className={actionBtnClass}
             onClick={onEdit}
             aria-label="Editar documento"
           >
-            <div className="p-2 rounded-lg transition-colors duration-300 group-hover:bg-base-200">
-              <Pencil className="w-[18px] h-[18px] text-current" aria-hidden />
-            </div>
-            <span className="text-[10px] font-medium text-inherit">Editar</span>
-          </button>
-          <button
+            <Pencil aria-hidden />
+            Editar
+          </Button>
+          <Button
             type="button"
-            className={actionBtnClass}
+            variant="outline"
+            size="sm"
+            className={`${actionBtnClass} border-error/40 text-error hover:border-error/55 hover:bg-error/10`}
             onClick={onRemove}
             aria-label="Remover documento"
           >
-            <div className="p-2 rounded-lg transition-colors duration-300 group-hover:bg-base-200">
-              <Trash2 className="w-[18px] h-[18px] text-current" aria-hidden />
-            </div>
-            <span className="text-[10px] font-medium text-inherit">Remover</span>
-          </button>
+            <Trash2 aria-hidden />
+            Remover
+          </Button>
         </div>
-      </div>
-    </article>
+      </article>
+    </Card>
   );
 };

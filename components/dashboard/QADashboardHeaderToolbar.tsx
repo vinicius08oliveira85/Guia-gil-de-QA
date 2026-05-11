@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ClipboardCheck, Download, Filter, ChevronDown, X } from 'lucide-react';
 import type { DashboardFilters } from './DashboardFiltersModal';
+import { Button } from '../common/Button';
 
 export interface QADashboardHeaderToolbarProps {
   lastUpdatedText: string | null;
@@ -39,45 +40,49 @@ export const QADashboardHeaderToolbar: React.FC<QADashboardHeaderToolbarProps> =
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-        <div className="min-w-0">
-          <div className="flex items-center gap-2 mb-2">
-            <ClipboardCheck className="h-6 w-6 text-primary shrink-0" aria-hidden />
-            <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-base-content">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div className="min-w-0 border-b border-base-300/70 pb-4 lg:border-0 lg:pb-0">
+          <div className="mb-2 flex items-center gap-2">
+            <ClipboardCheck className="h-7 w-7 shrink-0 text-primary" aria-hidden />
+            <h1 className="font-heading text-2xl font-bold tracking-tight text-base-content md:text-3xl">
               Dashboard
-            </h2>
+            </h1>
           </div>
-          <p className="text-base-content/70 text-sm max-w-2xl">
+          <p className="max-w-2xl text-sm text-base-content/75 sm:text-base">
             Indicadores calculados a partir das tarefas do projeto (status, prazos e responsáveis).
-            Respeita os filtros abaixo.
+            Respeita os filtros aplicados.
           </p>
           {lastUpdatedText && (
-            <p className="text-xs text-base-content/50 mt-1" title="Última alteração do projeto">
+            <p className="mt-1 text-xs text-base-content/55" title="Última alteração do projeto">
               Projeto atualizado {lastUpdatedText}
             </p>
           )}
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap w-full lg:w-auto">
-          <div className="hidden md:flex items-center gap-2">
-            <button
+        <div className="flex w-full flex-wrap items-center gap-2 lg:w-auto lg:justify-end">
+          <div className="hidden items-center gap-2 md:flex">
+            <Button
               type="button"
+              variant="outline"
+              size="sm"
+              className="rounded-full px-4"
               onClick={onOpenFiltersModal}
-              className="rounded-full px-3 py-1.5 text-xs font-semibold text-base-content/70 hover:bg-base-200 hover:text-base-content transition-colors flex items-center gap-1.5 border border-transparent"
               aria-label="Filtrar dados do dashboard"
             >
-              <Filter className="w-3.5 h-3.5" aria-hidden />
-              <span>{`Filtrar${activeFiltersCount > 0 ? ` (${activeFiltersCount})` : ''}`}</span>
-            </button>
-            <button
+              <Filter className="h-4 w-4" aria-hidden />
+              {`Filtrar${activeFiltersCount > 0 ? ` (${activeFiltersCount})` : ''}`}
+            </Button>
+            <Button
               type="button"
+              variant="outline"
+              size="sm"
+              className="rounded-full px-4"
               onClick={onOpenExportModal}
-              className="rounded-full px-3 py-1.5 text-xs font-semibold text-base-content/70 hover:bg-base-200 hover:text-base-content transition-colors flex items-center gap-1.5 border border-transparent"
               aria-label="Exportar dados do projeto"
             >
-              <Download className="w-3.5 h-3.5" aria-hidden />
-              <span>Exportar</span>
-            </button>
+              <Download className="h-4 w-4" aria-hidden />
+              Exportar
+            </Button>
           </div>
 
           {activeFiltersCount > 0 && (
@@ -161,17 +166,19 @@ export const QADashboardHeaderToolbar: React.FC<QADashboardHeaderToolbarProps> =
             </div>
           )}
 
-          <div className="relative md:hidden ml-auto">
-            <button
+          <div className="relative ml-auto md:hidden">
+            <Button
               type="button"
+              variant="outline"
+              size="sm"
+              className="rounded-full px-4"
               onClick={() => setShowActionsMenu(v => !v)}
-              className="rounded-full px-3 py-1.5 text-xs font-semibold text-base-content/70 hover:bg-base-200 border border-base-300 flex items-center gap-1.5"
               aria-expanded={showActionsMenu}
               aria-label="Menu de ações"
             >
               <span>Ações</span>
-              <ChevronDown className="w-3.5 h-3.5" aria-hidden />
-            </button>
+              <ChevronDown className="h-4 w-4" aria-hidden />
+            </Button>
             {showActionsMenu && (
               <>
                 <div

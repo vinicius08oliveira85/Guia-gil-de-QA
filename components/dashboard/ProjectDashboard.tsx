@@ -239,16 +239,18 @@ type InsightCardProps = {
 function InsightCard({ title, subtitle, children, className, hint }: InsightCardProps) {
   const card = (
     <Card
-      variant="outlined"
+      variant="default"
       hoverable={false}
-      className={cn('mica glass hover-glow w-full p-4 sm:p-5', CARD_HOVER, className)}
+      className={cn(
+        'w-full overflow-hidden border-base-300/80 bg-base-100/95 p-4 shadow-sm backdrop-blur-sm sm:p-5',
+        CARD_HOVER,
+        className
+      )}
     >
-      <header className="mb-3 space-y-0.5">
-        <h3 className="text-sm font-semibold tracking-tight text-base-content">{title}</h3>
+      <header className="mb-4 space-y-1 border-b border-base-300/70 pb-3">
+        <h3 className="font-heading text-sm font-semibold tracking-tight text-base-content">{title}</h3>
         {subtitle ? (
-          <p className="text-xs leading-snug" style={LABEL_STYLE}>
-            {subtitle}
-          </p>
+          <p className="text-xs leading-snug text-base-content/65">{subtitle}</p>
         ) : null}
       </header>
       {children}
@@ -292,7 +294,7 @@ export const ProjectDashboard: React.FC<ProjectDashboardProps> = React.memo(
           {Array.from({ length: 9 }).map((_, i) => (
             <div
               key={i}
-              className="mica glass h-36 w-full animate-pulse rounded-xl border border-base-200"
+              className="h-36 w-full animate-pulse rounded-xl border border-base-300/80 bg-base-200/50 shadow-inner"
             />
           ))}
         </div>

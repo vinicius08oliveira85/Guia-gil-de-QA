@@ -81,3 +81,27 @@ export function renameCategoryPreset(
 export function countRulesInCategory(rules: BusinessRule[], categoryName: string): number {
   return rules.filter(r => businessRuleCategoryLabel(r) === categoryName).length;
 }
+
+/** Variantes do `Badge` para colorir categorias de forma estável (mesmo nome → mesma cor). */
+const CATEGORY_BADGE_VARIANTS = [
+  'primary',
+  'secondary',
+  'accent',
+  'info',
+  'success',
+  'warning',
+] as const;
+
+export type BusinessRuleCategoryBadgeVariant = (typeof CATEGORY_BADGE_VARIANTS)[number];
+
+export function badgeVariantForBusinessRuleCategory(
+  categoryLabel: string
+): BusinessRuleCategoryBadgeVariant {
+  const s = categoryLabel.trim().toLowerCase();
+  let h = 0;
+  for (let i = 0; i < s.length; i++) {
+    h = ((h << 5) - h + s.charCodeAt(i)) | 0;
+  }
+  const idx = Math.abs(h) % CATEGORY_BADGE_VARIANTS.length;
+  return CATEGORY_BADGE_VARIANTS[idx];
+}

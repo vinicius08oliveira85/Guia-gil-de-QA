@@ -23,6 +23,10 @@ import { DocumentStatsCards } from './documents/DocumentStatsCards';
 import { DocumentCard } from './documents/DocumentCard';
 import { Search, Upload, FileText, CheckCircle2, AlertCircle } from 'lucide-react';
 import { SectionHeader } from './common/SectionHeader';
+import { Card } from './common/Card';
+import { Button, buttonVariants } from './common/Button';
+import { cn } from '../utils/cn';
+import { DocumentAnalysisBody } from './documents/DocumentAnalysisBody';
 
 interface DocumentWithMetadata extends ProjectDocument {
   uploadedAt?: string;
@@ -353,40 +357,46 @@ export const DocumentsView: React.FC<{
 
   return (
     <div className="space-y-6 py-8 md:py-10 lg:py-12">
-      {/* Documento de Especificação */}
-      <SpecificationDocumentProcessor project={project} onUpdateProject={onUpdateProject} />
+      <Card hoverable={false} className="p-3 py-4 sm:p-4 sm:py-6 lg:p-5">
+        <SpecificationDocumentProcessor project={project} onUpdateProject={onUpdateProject} />
 
-      <section className="space-y-6" aria-labelledby="documents-section-heading">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <SectionHeader
-            as="h1"
-            align="left"
-            fullWidth
-            titleSize="page"
-            density="dense"
-            headingId="documents-section-heading"
-            title="Documentos do Projeto"
-            description={documentsDescription}
-            className="max-w-2xl"
-          />
-          <div className="flex shrink-0 flex-wrap items-center gap-2">
-            <label className="btn btn-primary btn-sm cursor-pointer gap-2 rounded-full px-4">
-              <Upload className="h-4 w-4" aria-hidden /> Carregar
-              <input
-                ref={uploadInputRef}
-                type="file"
-                accept=".txt,.md,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar,.json,.csv,.xml,.jpg,.jpeg,.png,.gif,.webp,.svg"
-                onChange={handleFileUpload}
-                className="hidden"
-                aria-label="Carregar documento"
+        <section className="tasks-panel-scope space-y-6" aria-labelledby="documents-section-heading">
+          <div className="flex flex-col gap-4 rounded-xl border border-base-300/80 bg-base-100/95 p-3 shadow-sm backdrop-blur-md sm:p-4">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <SectionHeader
+                as="h1"
+                align="left"
+                fullWidth
+                titleSize="page"
+                density="dense"
+                headingId="documents-section-heading"
+                title="Documentos do Projeto"
+                description={documentsDescription}
+                className="max-w-2xl"
               />
-            </label>
-          </div>
-        </div>
+              <div className="flex shrink-0 flex-wrap items-center gap-2">
+                <label
+                  className={cn(
+                    buttonVariants({ variant: 'default', size: 'sm' }),
+                    'cursor-pointer rounded-full px-4 shadow-md shadow-primary/15 sm:min-h-0'
+                  )}
+                >
+                  <Upload className="h-4 w-4" aria-hidden /> Carregar
+                  <input
+                    ref={uploadInputRef}
+                    type="file"
+                    accept=".txt,.md,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar,.json,.csv,.xml,.jpg,.jpeg,.png,.gif,.webp,.svg"
+                    onChange={handleFileUpload}
+                    className="hidden"
+                    aria-label="Carregar documento"
+                  />
+                </label>
+              </div>
+            </div>
 
         {/* Faixa de resumo: totais e indicadores */}
         {stats.total > 0 && (
-          <div className="flex flex-wrap items-center gap-4 py-3 px-4 rounded-xl bg-base-200/50 border border-base-300">
+          <div className="flex flex-wrap items-center gap-4 rounded-xl border border-base-300/70 bg-base-200/40 px-4 py-3">
             <span className="text-xs font-semibold text-base-content/70 uppercase tracking-widest">
               Resumo
             </span>
@@ -412,7 +422,7 @@ export const DocumentsView: React.FC<{
           </div>
         )}
 
-        {/* Ações rápidas */}
+            {/* Ações rápidas */}
         {stats.total > 0 && (
           <div className="flex flex-wrap items-center gap-2">
             {stats.withoutAnalysisCount > 0 && (
@@ -450,12 +460,12 @@ export const DocumentsView: React.FC<{
           </div>
         )}
 
-        <DocumentStatsCards
-          categoryCounts={stats.categoryCounts}
-          selectedCategory={selectedCategory}
-          onCategorySelect={setSelectedCategory}
-        />
-        {stats.total > 0 && (
+            <DocumentStatsCards
+              categoryCounts={stats.categoryCounts}
+              selectedCategory={selectedCategory}
+              onCategorySelect={setSelectedCategory}
+            />
+            {stats.total > 0 && (
           <div className="flex flex-wrap items-center gap-4">
             <div className="relative flex-1 min-w-[300px]">
               <Search
@@ -528,9 +538,11 @@ export const DocumentsView: React.FC<{
               )}
             </div>
           </div>
-        )}
+            )}
+          </div>
 
-        {/* Lista de Documentos */}
+          {/* Lista de Documentos */}
+          <div className="flex flex-col gap-tasks-panel-loose">
         {filteredDocuments.length > 0 ? (
           <div
             className="grid grid-cols-1 md:grid-cols-2 gap-6"
@@ -596,7 +608,9 @@ export const DocumentsView: React.FC<{
             }
           />
         )}
-      </section>
+          </div>
+        </section>
+      </Card>
 
       {/* Modal de Preview */}
       {showPreview && selectedDoc && (
@@ -665,12 +679,11 @@ export const DocumentsView: React.FC<{
               )}
             </div>
             {selectedDoc.analysis && (
-              <div>
-                <h4 className="text-sm font-semibold text-base-content/70 mb-2">Análise IA</h4>
-                <div
-                  className="prose max-w-none bg-base-200 p-4 rounded-lg"
-                  dangerouslySetInnerHTML={{ __html: selectedDoc.analysis }}
-                />
+              <div className="space-y-2">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-base-content/60">
+                  Análise IA
+                </p>
+                <DocumentAnalysisBody html={selectedDoc.analysis} />
               </div>
             )}
           </div>
@@ -708,10 +721,12 @@ export const DocumentsView: React.FC<{
           onClose={() => setAnalysisResult(null)}
           title={`Análise de ${analysisResult.name}`}
         >
-          <div
-            className="prose max-w-none"
-            dangerouslySetInnerHTML={{ __html: analysisResult.content }}
-          />
+          <div className="space-y-3">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-base-content/60">
+              Resultado da análise
+            </p>
+            <DocumentAnalysisBody html={analysisResult.content} />
+          </div>
         </Modal>
       )}
 
@@ -745,21 +760,13 @@ export const DocumentsView: React.FC<{
                 className="textarea textarea-bordered w-full bg-base-100 border-base-300 text-base-content font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               />
             </div>
-            <div className="flex justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => setEditingDoc(null)}
-                className="btn btn-ghost rounded-full px-5"
-              >
+            <div className="flex justify-end gap-2 border-t border-base-200/80 pt-4">
+              <Button variant="ghost" size="sm" className="rounded-full px-5" onClick={() => setEditingDoc(null)}>
                 Cancelar
-              </button>
-              <button
-                type="button"
-                onClick={handleSaveEdit}
-                className="btn btn-primary rounded-full px-6"
-              >
+              </Button>
+              <Button variant="default" size="sm" className="rounded-full px-6 shadow-md shadow-primary/15" onClick={handleSaveEdit}>
                 Salvar
-              </button>
+              </Button>
             </div>
           </div>
         </Modal>

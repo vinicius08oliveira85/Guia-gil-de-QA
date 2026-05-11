@@ -57,7 +57,6 @@ import {
 } from '../../services/jiraService';
 import { GeneralIAAnalysisButton } from './GeneralIAAnalysisButton';
 import { TasksViewHeader } from './TasksViewHeader';
-import { TaskMetricsHeader } from './TaskMetricsHeader';
 import { TasksViewSearch } from './TasksViewSearch';
 import { TasksViewFiltersModalContent } from './TasksViewFiltersModal';
 import { TasksViewList } from './TasksViewList';
@@ -1434,7 +1433,6 @@ export const TasksView: React.FC<{
 
   const stats = useMemo(() => {
     try {
-      // Validação robusta de dados
       if (!project || !project.tasks || !Array.isArray(project.tasks)) {
         return {
           total: 0,
@@ -1450,21 +1448,14 @@ export const TasksView: React.FC<{
 
       const total = project.tasks.length;
 
-      // Corrigir status baseado no jiraStatus quando disponível
-      // Isso corrige tarefas que foram importadas antes da correção do mapeamento
       const tasksWithCorrectedStatus = project.tasks
         .map(task => {
           try {
-            // Validar que task existe e tem propriedades necessárias
             if (!task || typeof task !== 'object') {
               return null;
             }
-
-            // Se a tarefa tem jiraStatus e o status atual não corresponde ao mapeamento correto, corrigir
             if (task.jiraStatus) {
               const correctStatus = mapJiraStatusToTaskStatus(task.jiraStatus);
-              // Só corrigir se o status atual for diferente do correto
-              // Isso preserva mudanças manuais do usuário que não têm jiraStatus
               if (task.status !== correctStatus) {
                 return { ...task, status: correctStatus };
               }
@@ -1475,10 +1466,10 @@ export const TasksView: React.FC<{
               taskError,
               taskId: task?.id,
             });
-            return task; // Retornar tarefa original em caso de erro
+            return task;
           }
         })
-        .filter((task): task is JiraTask => task !== null); // Filtrar nulls
+        .filter((task): task is JiraTask => task !== null);
 
       const pending = tasksWithCorrectedStatus.filter(
         task => task && task.status === 'To Do'
@@ -1533,11 +1524,6 @@ export const TasksView: React.FC<{
       };
     }
   }, [project?.tasks]);
-
-  const testExecutionRate =
-    stats.totalTests > 0 ? Math.round((stats.executedTests / stats.totalTests) * 100) : 0;
-  const automationRate =
-    stats.totalTests > 0 ? Math.round((stats.automatedTests / stats.totalTests) * 100) : 0;
 
   const toDoLabel = useMemo(
     () =>
@@ -1674,21 +1660,6 @@ export const TasksView: React.FC<{
       setTestCaseExecutionStatusFilter,
     ]
   );
-
-  const executionProps = useMemo(() => {
-    const executionTrendText =
-      stats.totalTests > 0 ? `${stats.executedTests} de ${stats.totalTests} executados` : '';
-    const automationTrendText =
-      stats.totalTests > 0 ? `${stats.automatedTests} de ${stats.totalTests} casos` : '';
-    return {
-      executedTestCases: stats.executedTests,
-      totalTestCases: stats.totalTests,
-      automationRatio: automationRate,
-      projectName: project?.name ?? 'Projeto',
-      executionTrend: executionTrendText,
-      automationTrend: automationTrendText,
-    };
-  }, [stats.executedTests, stats.totalTests, stats.automatedTests, automationRate, project?.name]);
 
   const taskComparator = useMemo(() => getTaskComparator(sortBy), [sortBy]);
 
@@ -2000,20 +1971,13 @@ export const TasksView: React.FC<{
             searchInputRef={searchInputRef}
           />
 
-          <TaskMetricsHeader
-            tasks={project.tasks}
-            metricsTasks={
-              activeFiltersCount > 0 || searchQuery.trim().length > 0 ? filteredTasks : undefined
-            }
-          />
-
           <motion.div
             className="mb-0"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
           >
-            <GlassIndicatorCards items={indicatorItems} execution={executionProps} />
+            <GlassIndicatorCards items={indicatorItems} />
           </motion.div>
         </div>
 
