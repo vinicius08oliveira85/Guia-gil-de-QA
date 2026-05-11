@@ -23,6 +23,7 @@ import {
   buildTestGenerationRolePreamble,
   formatBusinessRulesForPrompt,
   shouldGenerateTestCasesAndBdd,
+  TEST_CASE_VISUAL_FORMAT_INSTRUCTIONS,
 } from './testGenerationPrompts';
 import { migrateTestCase } from '../../utils/testCaseMigration';
 import { logger } from '../../utils/logger';
@@ -127,8 +128,12 @@ export class OpenAIService implements AIService {
           messages: [
             {
               role: 'system',
-              content:
-                'Você é um especialista em garantia de qualidade de software (QA) e análise de projetos. Sempre responda em português brasileiro. Em casos de teste JSON, use somente as chaves action (Ação necessária), parameters (Parâmetros necessários) e expectedResult (Resultado esperado); nunca preencha observedResult (Resultado Obtido).',
+              content: [
+                'Você é um especialista em QA (Sênior). Sempre responda em português brasileiro.',
+                'Ao gerar casos de teste em JSON, siga rigorosamente a formatação visual do roteiro:',
+                TEST_CASE_VISUAL_FORMAT_INSTRUCTIONS,
+                'Nunca preencha observedResult, resultado obtido nem campos equivalentes.',
+              ].join('\n'),
             },
             {
               role: 'user',

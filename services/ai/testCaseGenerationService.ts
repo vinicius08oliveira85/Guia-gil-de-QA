@@ -345,6 +345,30 @@ const PLACEHOLDER_EXPECTED =
   '[Resultado esperado não gerado — edite o roteiro]';
 
 /**
+ * Alguns modelos devolvem `\` + `n` literal em vez de newline dentro da string (após JSON.parse).
+ * Só corrige quando **ainda não há** quebras reais — assim não alteramos texto já bem formatado.
+ * O lookahead exige próximo passo numerado (`N. `) ou marcador (`-` / `•`), evitando substituir
+ * sequências como `\n` em `C:\notes\...` (onde `\` + `n` faz parte do caminho).
+ */
+function decodeMisescapedNewlinesWhenFlat(value: string): string {
+  if (value.includes('\n')) return value;
+  let v = value.replace(/\\n(?=\s*\d+\.\s)/g, '\n');
+  v = v.replace(/\\n(?=\s*[•\-])/gu, '\n');
+  return v;
+}
+
+/**
+ * Preserva quebras de linha internas vindas da IA (JSON), apenas normaliza CRLF/CR para LF,
+ * opcionalmente converte `\n` literais mal escapados entre passos/marcadores, e remove espaços
+ * só no início/fim — não colapsa linhas em branco intermediárias.
+ */
+function normalizeAiMultilineField(value: string): string {
+  let v = value.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  v = decodeMisescapedNewlinesWhenFlat(v);
+  return v.trim();
+}
+
+/**
  * Normaliza saída da IA para o roteiro: `migrateTestCase` cobre legado;
  * na geração, `action`, `parameters` e `expectedResult` são sempre strings não vazias
  * (com placeholders quando necessário), `observedResult` é sempre "" e o status é `Not Run`.
@@ -362,10 +386,13 @@ function normalizeTestCases(raw: unknown[]): TestCase[] {
     const { observedResult: _ignored, ...restForMigrate } = r;
     const migrated = migrateTestCase({ ...restForMigrate, id });
 
-    const action = String(migrated.action ?? '').trim() || PLACEHOLDER_ACTION;
-    const parameters = String(migrated.parameters ?? '').trim() || '—';
+    const action =
+      normalizeAiMultilineField(String(migrated.action ?? '')) || PLACEHOLDER_ACTION;
+    const parameters =
+      normalizeAiMultilineField(String(migrated.parameters ?? '')) || '—';
     const expectedResult =
-      String(migrated.expectedResult ?? '').trim() || PLACEHOLDER_EXPECTED;
+      normalizeAiMultilineField(String(migrated.expectedResult ?? '')) ||
+      PLACEHOLDER_EXPECTED;
 
     return {
       ...migrated,

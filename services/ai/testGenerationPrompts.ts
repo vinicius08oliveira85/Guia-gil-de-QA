@@ -9,6 +9,24 @@ import type {
 } from '../../types';
 import { getDocumentContext } from './documentContextService';
 
+/**
+ * Regras de formatação visual dos campos do roteiro (casos de teste).
+ * Mantidas alinhadas às descrições de schema em `geminiService` / mensagem de sistema em `openaiService`.
+ */
+export const TEST_CASE_VISUAL_FORMAT_INSTRUCTIONS = [
+  '**action** (*Ação necessária*): OBRIGATÓRIO usar lista numerada no formato `1. Passo`, `2. Passo`, etc., com **quebras de linha reais** entre cada item (no JSON do modelo, use o escape `\\n` para newline — não escreva o texto literal "\\\\n" nem junte todos os passos em uma única linha).',
+  '**parameters** (*Parâmetros necessários*): quando houver várias massas de dados, pré-condições ou dados de entrada, use **lista com marcadores** (`-` ou `•`), **um item por linha**. Um único critério pode ser uma linha sem marcador.',
+  '**expectedResult** (*Resultado esperado*): quando houver vários critérios ou verificações, use **lista com marcadores** (`-` ou `•`), **um critério por linha**.',
+].join('\n');
+
+/** Bloco pronto para injetar em prompts de geração de casos de teste. */
+export const TEST_CASE_VISUAL_FORMAT_PROMPT_SECTION = `
+═══════════════════════════════════════════════════════════════
+FORMATAÇÃO VISUAL OBRIGATÓRIA (roteiro legível e validável)
+═══════════════════════════════════════════════════════════════
+${TEST_CASE_VISUAL_FORMAT_INSTRUCTIONS}
+`.trim();
+
 /** Tamanho máximo do trecho de especificação injetado após o bloco da tarefa (evita documento “engolir” a tarefa). */
 export const TASK_GEN_MAX_DOC_CHARS = 3200;
 
@@ -167,9 +185,9 @@ Priorize: verificação da correção, regressão em áreas relacionadas, cenár
 function detailLevelBlock(detailLevel: TestCaseDetailLevel): string {
   return `
 Nível de detalhe do campo JSON \`action\` (rótulo na UI: **Ação necessária** — roteiro em texto): ${detailLevel}
-- Resumido: ação objetiva, poucas linhas.
-- Padrão: ação com passos numerados quando necessário.
-- Detalhado: roteiro longo com verificações intermediárias e dados explícitos.
+- Resumido: poucos passos numerados (sempre com lista \`1.\` … \`2.\` … e \\n entre linhas), linguagem objetiva.
+- Padrão: roteiro completo com passos numerados obrigatórios e quebras de linha entre cada passo.
+- Detalhado: roteiro extenso, passos numerados, verificações intermediárias e dados explícitos; **parameters**/**expectedResult** com marcadores quando houver múltiplos itens.
 `;
 }
 
@@ -289,11 +307,13 @@ Você é um analista de QA sênior. Responda em português brasileiro.
 Objetivo: gerar APENAS casos de teste em JSON (testCases). Não gere estratégias nem BDD.
 
 Regras de aderência (roteiro padronizado — use exatamente estes nomes de chave JSON):
-- **action** (*Ação necessária*): o que executar, em passo a passo quando couber (um único string; passos numerados 1. 2. … no mesmo campo, sem array de passos separado).
-- **parameters** (*Parâmetros necessários*): massa de dados, pré-condições, inputs e contexto técnico que o executor precisa preparar. Se não houver nada específico, use exatamente o texto "—".
-- **expectedResult** (*Resultado esperado*): critérios objetivos e verificáveis de sucesso após executar a ação com esses parâmetros.
+- **action** (*Ação necessária*): roteiro executável em um único string (sem array de passos). **Sempre** formato lista numerada (\`1.\`, \`2.\`, …) com quebra de linha real entre cada passo.
+- **parameters** (*Parâmetros necessários*): massa de dados, pré-condições, inputs e contexto técnico. Com vários itens, use marcadores (\`-\` ou \`•\`) um por linha. Se não houver nada específico, use exatamente o texto "—".
+- **expectedResult** (*Resultado esperado*): critérios objetivos de sucesso; com várias verificações, use marcadores (\`-\` ou \`•\`) um por linha.
 - **Proibido**: preencher **Resultado Obtido** / \`observedResult\` / "resultado obtido" / qualquer campo equivalente — isso é exclusivo do executor humano na aplicação. Não inclua essas chaves no JSON.
 - Não invente módulos, APIs ou telas ausentes do texto da tarefa ou dos BDD.
+
+${TEST_CASE_VISUAL_FORMAT_PROMPT_SECTION}
 
 Campos por objeto em testCases (obrigatórios, todos string): apenas \`action\`, \`parameters\` e \`expectedResult\`. Opcionalmente \`executionKind\`, \`environment\`, \`suite\` quando fizer sentido.
 

@@ -8,6 +8,7 @@ import {
   TestCase,
 } from '../../types';
 import { getFormattedContext } from './documentContextService';
+import { TEST_CASE_VISUAL_FORMAT_INSTRUCTIONS } from './testGenerationPrompts';
 import { callGeminiWithRetry } from './geminiApiWrapper';
 import { GEMINI_DEFAULT_MODEL } from './geminiConstants';
 import { hashString } from '../../utils/hash';
@@ -617,7 +618,8 @@ const generalAnalysisSchema = {
           summary: { type: Type.STRING, description: 'Resumo da análise do teste.' },
           coverage: {
             type: Type.STRING,
-            description: 'Avaliação da cobertura e qualidade do teste.',
+            description:
+              'Avaliação da cobertura e qualidade do roteiro do teste. Prefira listas com marcadores (- ou •) quando houver vários pontos. Ao comentar action/parameters/expectedResult, valorize roteiros que já usem passos numerados com quebras de linha e marcadores para múltiplos critérios.',
           },
           detectedProblems: {
             type: Type.ARRAY,
@@ -754,6 +756,8 @@ OBSERVAÇÕES IMPORTANTES:
 - Foque em recomendações acionáveis e priorizadas.
 - Utilize o idioma português.
 - Não faça referência a tarefas/testes que não estejam presentes no contexto.
+- Ao sugerir melhorias em casos de teste (quando aplicável), alinhe-se a esta padronização de roteiro:
+${TEST_CASE_VISUAL_FORMAT_INSTRUCTIONS}
     `.slice(0, MAX_PROMPT_LENGTH);
 
     const response = await callGeminiWithRetry({

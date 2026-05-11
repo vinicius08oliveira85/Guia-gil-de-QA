@@ -167,6 +167,49 @@ describe('testCaseGenerationService.generateTestCasesForTask', () => {
     expect(result[0].expectedResult).toMatch(/Resultado esperado não gerado/);
   });
 
+  it('converte \\n literal entre passos numerados em quebras de linha reais', async () => {
+    const flat =
+      '1. Abrir o sistema\\n2. Fazer login\\n3. Validar painel';
+    mockGenerate.mockResolvedValueOnce({
+      strategy: [],
+      bddScenarios: [],
+      testCases: [
+        {
+          id: 'tc-nl',
+          action: flat,
+          parameters: '- dado A\\n- dado B',
+          expectedResult: '• ok 1\\n• ok 2',
+          status: 'Not Run',
+        },
+      ],
+    });
+    const result = await generateTestCasesForTask(buildTask());
+    expect(result[0].action.split('\n')).toHaveLength(3);
+    expect(result[0].action).toContain('1. Abrir');
+    expect(result[0].parameters.split('\n')).toHaveLength(2);
+    expect(result[0].expectedResult.split('\n')).toHaveLength(2);
+  });
+
+  it('não interpreta \\n dentro de caminho Windows (ex.: C:\\notes) como nova linha', async () => {
+    const withWinPath = '1. Abrir o arquivo em C:\\notes\\relatorio.txt';
+    mockGenerate.mockResolvedValueOnce({
+      strategy: [],
+      bddScenarios: [],
+      testCases: [
+        {
+          id: 'tc-path',
+          action: withWinPath,
+          parameters: '—',
+          expectedResult: 'Documento exibido.',
+          status: 'Not Run',
+        },
+      ],
+    });
+    const result = await generateTestCasesForTask(buildTask());
+    expect(result[0].action.split('\n')).toHaveLength(1);
+    expect(result[0].action).toContain('C:\\notes\\relatorio');
+  });
+
   it('blinda contra testCases não-array do retorno da IA', async () => {
     mockGenerate.mockResolvedValueOnce({
       strategy: [],

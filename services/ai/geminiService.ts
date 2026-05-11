@@ -92,17 +92,17 @@ const geminiTestCaseItemSchema = {
     action: {
       type: Type.STRING,
       description:
-        'Ação necessária (campo JSON `action`): o que executar, em passo a passo quando couber (texto corrido; use passos numerados 1. 2. … separados por espaço ou quebra de linha).',
+        'Ação necessária: roteiro executável. OBRIGATÓRIO usar lista numerada (ex.: 1. Passo A, 2. Passo B) com quebras de linha REAIS entre cada item — no JSON da resposta, cada quebra deve ser o caractere newline (escape \\n na string), nunca um único parágrafo sem numeração quando houver mais de um passo.',
     },
     parameters: {
       type: Type.STRING,
       description:
-        'Parâmetros necessários (campo JSON `parameters`): massa de dados, pré-condições, inputs e contexto técnico que o executor precisa. Use exatamente "—" se não houver nada a declarar.',
+        'Parâmetros necessários: massas de dados, pré-condições e contexto. Se houver múltiplos itens ou massas, use OBRIGATORIAMENTE lista com marcadores (- ou •), um item por linha. Um único valor pode ser uma linha só. Use "—" se não houver parâmetros.',
     },
     expectedResult: {
       type: Type.STRING,
       description:
-        'Resultado esperado (campo JSON `expectedResult`): critérios objetivos e verificáveis de sucesso após executar a ação com os parâmetros indicados.',
+        'Resultado esperado: critérios de sucesso verificáveis. Se houver múltiplos critérios ou verificações, use OBRIGATORIAMENTE lista com marcadores (- ou •), um critério por linha.',
     },
     executionKind: {
       type: Type.STRING,
@@ -124,7 +124,7 @@ const geminiTestCaseItemSchema = {
 const geminiTestCasesArrayProperty = {
   type: Type.ARRAY,
   description:
-    'Casos de teste. Cada objeto deve conter APENAS os campos obrigatórios action, parameters e expectedResult, mais opcionalmente executionKind, environment e suite. NUNCA inclua observedResult, "resultado obtido" nem qualquer outro campo — o executor humano preenche isso na aplicação.',
+    'Casos de teste com estrutura visual profissional: action sempre com passos numerados e \\n entre linhas; parameters e expectedResult com marcadores (- ou •) quando houver vários itens. Cada objeto deve conter APENAS action, parameters e expectedResult, mais opcionalmente executionKind, environment e suite. NUNCA inclua observedResult nem equivalentes.',
   items: geminiTestCaseItemSchema,
 };
 
