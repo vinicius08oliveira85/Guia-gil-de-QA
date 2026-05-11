@@ -57,11 +57,11 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
     ? 'flex items-center gap-2 mb-0.5'
     : 'flex items-center gap-2 mb-3';
   const titleClass = compact
-    ? 'text-xs font-semibold tracking-tight text-base-content'
-    : 'text-xl sm:text-2xl font-semibold tracking-tight text-base-content';
+    ? 'font-heading text-xs font-semibold tracking-tight text-base-content'
+    : 'font-heading text-xl font-semibold tracking-tight text-base-content sm:text-2xl';
   const descClass = compact
-    ? 'text-base-content/70 max-w-md mb-0 text-xs'
-    : 'text-base-content/70 max-w-md mb-6';
+    ? 'font-body text-base-content/70 max-w-md mb-0 text-xs'
+    : 'font-body text-base-content/70 max-w-md mb-6';
 
   return (
     <motion.div
@@ -132,7 +132,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
       {/* Dica única */}
       {tip && (
         <motion.div
-          className="bg-primary/10 border border-primary/30 rounded-xl p-4 mb-6 max-w-md"
+          className="mb-6 max-w-md rounded-[var(--rounded-box)] border border-primary/30 bg-primary/10 p-4"
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.4 }}

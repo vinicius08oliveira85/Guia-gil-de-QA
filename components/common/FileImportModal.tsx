@@ -216,11 +216,11 @@ export const FileImportModal: React.FC<FileImportModalProps> = React.memo(
 
     return (
       <Modal isOpen={isOpen} onClose={onClose} title="Importar Arquivo" size="md">
-        <div className="p-4 space-y-4">
+        <div className="space-y-4 p-4 font-body">
           {/* Seleção de tipo de importação */}
           {importType === 'auto' && (
             <div>
-              <label className="block text-sm font-medium text-text-primary mb-2">
+              <label className="mb-2 block text-sm font-medium text-base-content">
                 Tipo de Importação
               </label>
               <div className="grid grid-cols-2 gap-2">
@@ -253,7 +253,7 @@ export const FileImportModal: React.FC<FileImportModalProps> = React.memo(
           )}
 
           {/* Informações sobre o tipo selecionado */}
-          <div className="text-sm text-text-secondary">
+          <div className="text-sm text-base-content/75">
             {selectedType === 'project' && <p>Importe um projeto completo de um arquivo JSON.</p>}
             {selectedType === 'tasks' && (
               <p>Importe tarefas de um arquivo Excel (.xlsx, .xls) ou CSV.</p>
@@ -294,13 +294,13 @@ export const FileImportModal: React.FC<FileImportModalProps> = React.memo(
 
           {/* Resultado da importação */}
           {importResult && !importResult.success && (
-            <div className="p-3 bg-red-500/10 border border-red-500/20 rounded text-sm text-red-600">
+            <div className="rounded-[var(--rounded-box)] border border-error/30 bg-error/10 p-3 text-sm text-error">
               <strong>Erro:</strong> {importResult.error}
             </div>
           )}
 
           {importResult && importResult.warnings && importResult.warnings.length > 0 && (
-            <div className="p-3 bg-yellow-500/10 border border-yellow-500/20 rounded text-sm text-yellow-600">
+            <div className="rounded-[var(--rounded-box)] border border-warning/30 bg-warning/10 p-3 text-sm text-warning">
               <strong>Avisos:</strong>
               <ul className="list-disc list-inside mt-1">
                 {importResult.warnings.map((warning, index) => (

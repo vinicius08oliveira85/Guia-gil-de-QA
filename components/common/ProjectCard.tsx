@@ -230,8 +230,8 @@ export const ProjectCard = React.memo<ProjectCardProps>(
           }
         }}
         className={cn(
-          'group relative isolate cursor-pointer overflow-hidden rounded-2xl border border-base-300/75',
-          'bg-gradient-to-br from-base-100/95 via-base-100/90 to-base-200/40 backdrop-blur-[2px]',
+          'group relative isolate cursor-pointer overflow-hidden rounded-[var(--rounded-box)] border border-base-300/80',
+          'bg-base-200/95 backdrop-blur-[2px] dark:bg-base-300/40',
           'p-3 shadow-sm shadow-base-content/[0.04] ring-1 ring-base-content/[0.04] sm:p-3.5',
           isGrid
             ? 'flex h-full min-h-0 flex-col gap-2.5 motion-reduce:transition-none sm:gap-3'
@@ -270,13 +270,13 @@ export const ProjectCard = React.memo<ProjectCardProps>(
           <div className="min-w-0 flex-1">
             <h3
               className={cn(
-                'line-clamp-2 text-balance text-sm font-bold uppercase leading-snug tracking-tight text-base-content sm:tracking-wide',
+                'font-heading line-clamp-2 text-balance text-sm font-bold uppercase leading-snug tracking-tight text-base-content sm:tracking-wide',
                 isGrid && 'sm:line-clamp-2'
               )}
             >
               {project.name}
             </h3>
-            <p className="mt-0.5 text-xs font-medium text-base-content/72">{jiraLabel}</p>
+            <p className="mt-0.5 font-body text-xs font-medium text-base-content/72">{jiraLabel}</p>
             <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1">
               {openBugsCount > 0 && (
                 <span

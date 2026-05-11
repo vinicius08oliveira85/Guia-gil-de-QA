@@ -22,6 +22,7 @@ import { useRouterSync } from './hooks/useRouterSync';
 import { isSupabaseAvailable } from './services/supabaseService';
 import { FloatingNav } from '@/components/ui/floating-nav';
 import { OnboardingGuide } from './components/onboarding/OnboardingGuide';
+import { ProjectsDashboardSkeleton } from './components/projectsDashboard/ProjectsDashboardSkeleton';
 import { useAriaLive } from './hooks/useAriaLive';
 
 // Code splitting - Lazy loading de componentes pesados
@@ -369,9 +370,8 @@ const App: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex flex-col justify-center items-center gap-4 bg-base-100 text-base-content">
-        <Spinner />
-        <p className="text-base text-base-content/80">Carregando…</p>
+      <div className="min-h-screen bg-base-100 text-base-content">
+        <ProjectsDashboardSkeleton />
       </div>
     );
   }
@@ -545,13 +545,7 @@ const App: React.FC = () => {
               />
             </Suspense>
           ) : (
-            <Suspense
-              fallback={
-                <div className="container mx-auto p-4 sm:p-6">
-                  <LoadingSkeleton variant="card" count={3} />
-                </div>
-              }
-            >
+            <Suspense fallback={<ProjectsDashboardSkeleton />}>
               <ProjectsDashboard
                 projects={projects}
                 onSelectProject={selectProject}

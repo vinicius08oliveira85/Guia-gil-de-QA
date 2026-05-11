@@ -42,7 +42,7 @@ export const Card = React.memo<CardProps>(
         className={cn(
           'w-full max-w-full',
           'bg-base-100 text-base-content',
-          'rounded-xl',
+          'rounded-[var(--rounded-box)]',
           'focus-within:ring-2 focus-within:ring-primary/20 focus-within:ring-offset-0',
           variantClasses[variant],
           hoverClasses,

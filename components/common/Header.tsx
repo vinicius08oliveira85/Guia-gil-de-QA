@@ -474,8 +474,9 @@ export const Header: React.FC<HeaderProps> = ({
                   <button
                     type="button"
                     onClick={onOpenCreateModal}
-                    className="btn btn-ghost btn-sm whitespace-nowrap font-medium"
+                    className="btn btn-primary btn-sm gap-1.5 whitespace-nowrap rounded-full shadow-sm"
                   >
+                    <Plus className="h-4 w-4 shrink-0" aria-hidden />
                     Novo projeto
                   </button>
                 )}

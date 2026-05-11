@@ -22,7 +22,7 @@ export const ProjectsDashboardHeader: React.FC<ProjectsDashboardHeaderProps> = (
   const showIndicatorStrip = showStatusRow && Boolean(lastActivityText);
 
   return (
-    <div className="relative isolate overflow-hidden rounded-xl border border-base-300/70 bg-gradient-to-br from-base-100 via-base-100 to-base-200/30 px-3 py-3 shadow-sm shadow-base-content/[0.04] ring-1 ring-base-content/[0.04] sm:px-5 sm:py-4">
+    <div className="relative isolate overflow-hidden rounded-[var(--rounded-box)] border border-base-300/70 bg-base-100 px-3 py-3 shadow-sm shadow-base-content/[0.04] ring-1 ring-base-content/[0.04] sm:px-5 sm:py-4">
       <div
         className="pointer-events-none absolute inset-0 opacity-[0.4] sm:opacity-100"
         aria-hidden
@@ -40,7 +40,7 @@ export const ProjectsDashboardHeader: React.FC<ProjectsDashboardHeaderProps> = (
           <div className="flex min-w-0 shrink-0 items-center gap-2 sm:gap-2.5">
             <h1
               id={headingId}
-              className="text-xl font-bold tracking-tight text-base-content sm:text-2xl md:text-[1.65rem] md:tracking-tight"
+              className="font-heading text-2xl font-bold tracking-tight text-base-content sm:text-3xl md:text-[1.65rem] md:tracking-tight"
             >
               Meus Projetos
             </h1>
@@ -84,7 +84,7 @@ export const ProjectsDashboardHeader: React.FC<ProjectsDashboardHeaderProps> = (
 
         {/* Linha 2: descrição | indicadores (rolagem horizontal no mobile quando necessário) */}
         <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-          <p className="max-w-2xl text-sm leading-snug text-base-content/80 sm:flex-1 sm:min-w-[14rem] sm:leading-relaxed">
+          <p className="max-w-2xl font-body text-sm leading-snug text-base-content/80 sm:flex-1 sm:min-w-[14rem] sm:leading-relaxed">
             Crie, organize e acompanhe o QA por projeto — templates, métricas e integrações
             opcionais quando fizer sentido.
           </p>

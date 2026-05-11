@@ -60,7 +60,7 @@ export const WorkspaceDaisyStats: React.FC<WorkspaceDaisyStatsProps> = ({
   }
 
   const statCard =
-    'group flex min-h-[4rem] w-full flex-row items-center gap-2.5 rounded-xl border border-base-300/65 bg-base-100/90 px-2.5 py-2 text-left shadow-sm ring-1 ring-base-content/[0.03] backdrop-blur-sm transition-[box-shadow,transform,border-color] duration-200 hover:-translate-y-px hover:border-primary/25 hover:shadow-md motion-reduce:transform-none sm:min-h-[4.25rem] sm:gap-3 sm:px-3 sm:py-2.5';
+    'group flex min-h-[4rem] w-full flex-row items-center gap-2.5 rounded-[var(--rounded-box)] border border-base-300/65 bg-base-200/90 px-2.5 py-2 text-left shadow-sm ring-1 ring-base-content/[0.03] backdrop-blur-sm transition-[box-shadow,transform,border-color] duration-200 hover:-translate-y-px hover:border-primary/25 hover:shadow-md motion-reduce:transform-none sm:min-h-[4.25rem] sm:gap-3 sm:px-3 sm:py-2.5 dark:bg-base-200/50';
 
   const statTitle =
     'text-[11px] font-semibold uppercase tracking-wide text-base-content/78 sm:text-xs sm:tracking-wider';

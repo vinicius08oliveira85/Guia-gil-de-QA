@@ -50,7 +50,7 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
     >
       <ol
         className={cn(
-          'flex min-w-0 flex-wrap items-center gap-x-1 gap-y-0.5 text-sm',
+          'font-body flex min-w-0 flex-wrap items-center gap-x-1 gap-y-0.5 text-sm',
           dense && 'text-xs',
           align === 'left' && 'justify-start'
         )}
@@ -86,7 +86,7 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
             ) : (
               <span
                 className={cn(
-                  'inline-flex max-w-full min-w-0 items-center gap-1 truncate px-1.5 font-semibold text-base-content',
+                  'font-heading inline-flex max-w-full min-w-0 items-center gap-1 truncate px-1.5 font-semibold text-base-content',
                   dense && 'font-medium'
                 )}
                 itemProp="name"

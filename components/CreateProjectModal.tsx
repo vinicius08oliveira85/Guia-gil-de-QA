@@ -227,22 +227,25 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
         <div className="space-y-4">
           {!showTemplates && !showJiraImport ? (
             <>
-              <p id="create-project-desc" className="text-sm text-base-content/70">
+              <p
+                id="create-project-desc"
+                className="font-body text-sm text-base-content/70"
+              >
                 Crie um projeto do zero, use um template ou importe do Jira ou de um arquivo.
               </p>
               <div className="space-y-3">
                 <button
                   onClick={() => setShowTemplates(true)}
                   type="button"
-                  className="w-full rounded-2xl border-2 border-dashed border-base-300 bg-base-100 p-4 text-left transition-colors hover:border-primary/40 hover:bg-base-200/40"
+                  className="w-full rounded-[var(--rounded-box)] border-2 border-dashed border-base-300 bg-base-200/50 p-4 text-left transition-colors hover:border-primary/40 hover:bg-base-300/30 dark:bg-base-200/30"
                 >
                   <div className="flex items-start gap-3">
                     <span className="text-xl" aria-hidden>
                       📋
                     </span>
                     <div className="space-y-0.5">
-                      <p className="font-semibold">Usar Template</p>
-                      <p className="text-sm text-base-content/70">
+                      <p className="font-heading font-semibold">Usar Template</p>
+                      <p className="font-body text-sm text-base-content/70">
                         Recomendado para começar mais rápido com um checklist inicial.
                       </p>
                     </div>
@@ -255,15 +258,15 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
                     else setJiraConfigStatus('missing');
                   }}
                   type="button"
-                  className="w-full rounded-2xl border-2 border-dashed border-base-300 bg-base-100 p-4 text-left transition-colors hover:border-primary/40 hover:bg-base-200/40"
+                  className="w-full rounded-[var(--rounded-box)] border-2 border-dashed border-base-300 bg-base-200/50 p-4 text-left transition-colors hover:border-primary/40 hover:bg-base-300/30 dark:bg-base-200/30"
                 >
                   <div className="flex items-start gap-3">
                     <span className="text-xl" aria-hidden>
                       🔗
                     </span>
                     <div className="space-y-0.5">
-                      <p className="font-semibold">Importar do Jira</p>
-                      <p className="text-sm text-base-content/70">
+                      <p className="font-heading font-semibold">Importar do Jira</p>
+                      <p className="font-body text-sm text-base-content/70">
                         Importe um projeto existente do Jira com todas as tarefas e casos de teste.
                       </p>
                     </div>
@@ -272,15 +275,15 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
                 <button
                   onClick={() => setShowFileImportModal(true)}
                   type="button"
-                  className="w-full rounded-2xl border-2 border-dashed border-base-300 bg-base-100 p-4 text-left transition-colors hover:border-primary/40 hover:bg-base-200/40"
+                  className="w-full rounded-[var(--rounded-box)] border-2 border-dashed border-base-300 bg-base-200/50 p-4 text-left transition-colors hover:border-primary/40 hover:bg-base-300/30 dark:bg-base-200/30"
                 >
                   <div className="flex items-start gap-3">
                     <span className="text-xl" aria-hidden>
                       📁
                     </span>
                     <div className="space-y-0.5">
-                      <p className="font-semibold">Importar de arquivo</p>
-                      <p className="text-sm text-base-content/70">
+                      <p className="font-heading font-semibold">Importar de arquivo</p>
+                      <p className="font-body text-sm text-base-content/70">
                         Importe um projeto a partir de um arquivo JSON exportado anteriormente.
                       </p>
                     </div>
@@ -348,7 +351,10 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
                   </div>
                 </div>
               )}
-              <Card className="p-4 sm:p-6" hoverable={false}>
+              <Card
+                className="border-base-300/80 bg-base-200/70 p-4 sm:p-6 dark:bg-base-200/45"
+                hoverable={false}
+              >
                 <div className="space-y-4">
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <label className="block text-sm font-medium text-base-content">

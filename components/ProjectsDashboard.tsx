@@ -202,8 +202,8 @@ export const ProjectsDashboard: React.FC<{
 
   return (
     <>
-      <div className="animate-fade-in min-h-[calc(100vh-4rem)] bg-gradient-to-b from-base-100 to-base-200/60">
-        <div className="mx-auto w-full max-w-full px-3 py-3 sm:px-6 sm:py-4">
+      <div className="animate-fade-in min-h-[calc(100vh-4rem)] bg-base-100 font-body">
+        <div className="tasks-panel-scope mx-auto w-full max-w-full px-3 py-3 sm:px-6 sm:py-4">
           {/* Header */}
           <div className="mb-3 sm:mb-4 lg:pt-0.5">
             <ProjectsDashboardHeader
@@ -215,7 +215,7 @@ export const ProjectsDashboard: React.FC<{
           </div>
 
           {projects.length > 0 && (
-            <div className="relative isolate mb-4 space-y-3 overflow-hidden rounded-2xl border border-base-300/65 bg-gradient-to-b from-base-100/95 to-base-200/25 p-3 shadow-md shadow-base-content/[0.05] ring-1 ring-base-content/[0.04] sm:space-y-3.5 sm:p-4">
+            <div className="relative isolate mb-4 space-y-3 overflow-hidden rounded-[var(--rounded-box)] border border-base-300/65 bg-base-100 p-3 shadow-md shadow-base-content/[0.05] ring-1 ring-base-content/[0.04] sm:space-y-3.5 sm:p-4">
               <div
                 className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/25 to-transparent"
                 aria-hidden
@@ -381,7 +381,7 @@ export const ProjectsDashboard: React.FC<{
           <div className="mt-5 sm:mt-6">
             {filteredProjects.length > 0 ? (
               <div
-                className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 md:gap-5 lg:grid-cols-3"
+                className="grid grid-cols-1 gap-tasks-panel md:grid-cols-2 lg:grid-cols-3"
                 role="list"
                 aria-label="Lista de projetos"
               >
@@ -449,20 +449,22 @@ export const ProjectsDashboard: React.FC<{
                   </div>
                 )}
                 {projects.length === 0 ? (
-                  <EmptyState
-                    icon="🚀"
-                    title="Nenhum projeto ainda"
-                    description="Crie um projeto para organizar tarefas, testes, documentos e métricas em um fluxo único."
-                    action={{
-                      label: 'Criar Primeiro Projeto',
-                      onClick: () => setIsCreating(true),
-                      variant: 'primary',
-                    }}
-                    tip="Você pode criar um projeto do zero, usar um template ou importar do Jira se estiver configurado."
-                  />
+                  <div className="rounded-[var(--rounded-box)] border border-base-300/80 bg-base-100 p-4 shadow-sm sm:p-8">
+                    <EmptyState
+                      icon="🚀"
+                      title="Nenhum projeto ainda"
+                      description="Crie um projeto para organizar tarefas, testes, documentos e métricas em um fluxo único."
+                      action={{
+                        label: 'Criar Primeiro Projeto',
+                        onClick: () => setIsCreating(true),
+                        variant: 'primary',
+                      }}
+                      tip="Você pode criar um projeto do zero, usar um template ou importar do Jira se estiver configurado."
+                    />
+                  </div>
                 ) : (
                   <div
-                    className="rounded-2xl border border-base-300/80 bg-base-100 p-4 sm:p-5 text-center"
+                    className="rounded-[var(--rounded-box)] border border-base-300/80 bg-base-200/40 p-4 text-center sm:p-5 dark:bg-base-200/20"
                     role="status"
                     aria-live="polite"
                   >

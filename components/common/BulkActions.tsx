@@ -222,44 +222,48 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
 
   return (
     <>
-      <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50">
-        <div className="bg-accent text-white px-4 sm:px-6 py-3 rounded-lg shadow-lg flex flex-col sm:flex-row items-center gap-3 sm:gap-4">
-          <span className="font-semibold">
+      <div className="fixed bottom-4 left-1/2 z-50 w-[min(100%-1.5rem,42rem)] -translate-x-1/2 px-0 sm:w-[min(100%-2rem,48rem)]">
+        <div className="flex flex-col gap-3 rounded-[var(--rounded-box)] border border-base-300 bg-base-100/95 px-3 py-3 shadow-2xl ring-1 ring-base-content/[0.04] backdrop-blur-md sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:px-4 sm:py-3.5">
+          <span className="text-center font-heading text-sm font-semibold tabular-nums text-base-content sm:min-w-0 sm:flex-1 sm:text-left">
             {selectedTasksArray.length} tarefa{selectedTasksArray.length > 1 ? 's' : ''} selecionada
             {selectedTasksArray.length > 1 ? 's' : ''}
           </span>
-          <div className="flex flex-wrap justify-center gap-2">
+          <div className="flex flex-wrap justify-center gap-1.5 sm:justify-end sm:gap-2">
             <button
+              type="button"
               onClick={() => {
                 setAction('status');
                 setShowModal(true);
               }}
-              className="px-3 py-1 bg-white/20 hover:bg-white/30 rounded text-sm"
+              className="btn btn-ghost btn-sm min-h-[44px] rounded-full border border-transparent hover:border-base-300 sm:min-h-8"
             >
               Alterar Status
             </button>
             <button
+              type="button"
               onClick={() => {
                 setAction('tag');
                 setShowModal(true);
               }}
-              className="px-3 py-1 bg-white/20 hover:bg-white/30 rounded text-sm"
+              className="btn btn-ghost btn-sm min-h-[44px] rounded-full border border-transparent hover:border-base-300 sm:min-h-8"
             >
               Adicionar Tag
             </button>
             <button
+              type="button"
               onClick={() => {
                 setAction('assignee');
                 setShowModal(true);
               }}
-              className="px-3 py-1 bg-white/20 hover:bg-white/30 rounded text-sm"
+              className="btn btn-ghost btn-sm min-h-[44px] rounded-full border border-transparent hover:border-base-300 sm:min-h-8"
             >
               Atribuir
             </button>
             {hasSelectedNonFavorited && (
               <button
+                type="button"
                 onClick={handleBulkFavorite}
-                className="px-3 py-1 bg-white/20 hover:bg-white/30 rounded text-sm"
+                className="btn btn-ghost btn-sm min-h-[44px] rounded-full border border-transparent hover:border-base-300 sm:min-h-8"
                 aria-label="Favoritar tarefas selecionadas"
               >
                 Favoritar
@@ -267,38 +271,43 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
             )}
             {hasSelectedFavorited && (
               <button
+                type="button"
                 onClick={handleBulkUnfavorite}
-                className="px-3 py-1 bg-white/20 hover:bg-white/30 rounded text-sm"
+                className="btn btn-ghost btn-sm min-h-[44px] rounded-full border border-transparent hover:border-base-300 sm:min-h-8"
                 aria-label="Desfavoritar tarefas selecionadas"
               >
                 Desfavoritar
               </button>
             )}
             <button
+              type="button"
               onClick={handleCreateProjectClick}
-              className="px-3 py-1 bg-white/20 hover:bg-white/30 rounded text-sm font-semibold"
+              className="btn btn-primary btn-sm min-h-[44px] rounded-full shadow-sm sm:min-h-8"
             >
               Criar Projeto
             </button>
             {onEditTask && (
               <button
+                type="button"
                 onClick={handleBulkEdit}
-                className="px-3 py-1 bg-white/20 hover:bg-white/30 rounded text-sm"
+                className="btn btn-ghost btn-sm min-h-[44px] rounded-full border border-transparent hover:border-base-300 sm:min-h-8"
                 aria-label="Editar tarefa selecionada"
               >
                 Editar
               </button>
             )}
             <button
+              type="button"
               onClick={handleBulkDelete}
-              className="px-3 py-1 bg-white/20 hover:bg-white/30 rounded text-sm"
+              className="btn btn-ghost btn-sm min-h-[44px] rounded-full text-error hover:border-error/30 hover:bg-error/10 sm:min-h-8"
               aria-label="Excluir tarefas selecionadas"
             >
               Excluir
             </button>
             <button
+              type="button"
               onClick={onClearSelection}
-              className="px-3 py-1 bg-white/20 hover:bg-white/30 rounded text-sm"
+              className="btn btn-outline btn-sm min-h-[44px] rounded-full border-base-300 sm:min-h-8"
             >
               Limpar
             </button>
@@ -314,63 +323,80 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
         }}
         title={`Ação em Lote - ${selectedTasksArray.length} tarefas`}
       >
-        <div className="space-y-4">
+        <div className="space-y-4 font-body">
           {action === 'status' && (
-            <>
-              <label className="block text-sm font-medium text-text-secondary mb-1">
-                Novo Status
+            <div className="form-control w-full">
+              <label className="label py-0" htmlFor="bulk-status-select">
+                <span className="label-text font-medium text-base-content">Novo status</span>
               </label>
               <select
+                id="bulk-status-select"
                 value={statusValue}
-                onChange={e => setStatusValue(e.target.value as any)}
-                className="w-full px-3 py-2 bg-surface border border-surface-border rounded-md text-text-primary"
+                onChange={e => setStatusValue(e.target.value as 'To Do' | 'In Progress' | 'Done')}
+                className="select select-bordered w-full bg-base-100"
               >
                 <option value="To Do">A Fazer</option>
                 <option value="In Progress">Em Andamento</option>
                 <option value="Done">Concluído</option>
               </select>
-              <button onClick={handleBulkStatusChange} className="btn btn-primary w-full">
-                Aplicar Status
+              <button
+                type="button"
+                onClick={handleBulkStatusChange}
+                className="btn btn-primary mt-2 w-full rounded-full"
+              >
+                Aplicar status
               </button>
-            </>
+            </div>
           )}
 
           {action === 'tag' && (
-            <>
-              <label className="block text-sm font-medium text-text-secondary mb-1">
-                Tag para Adicionar
+            <div className="form-control w-full">
+              <label className="label py-0" htmlFor="bulk-tag-input">
+                <span className="label-text font-medium text-base-content">Tag para adicionar</span>
               </label>
               <input
+                id="bulk-tag-input"
                 type="text"
                 value={tagValue}
                 onChange={e => setTagValue(e.target.value)}
                 placeholder="Ex: crítico, regressão..."
-                className="w-full px-3 py-2 bg-surface border border-surface-border rounded-md text-text-primary"
+                className="input input-bordered w-full bg-base-100"
               />
-              <button onClick={handleBulkTagAdd} className="btn btn-primary w-full">
-                Adicionar Tag
+              <button
+                type="button"
+                onClick={handleBulkTagAdd}
+                className="btn btn-primary mt-2 w-full rounded-full"
+              >
+                Adicionar tag
               </button>
-            </>
+            </div>
           )}
 
           {action === 'assignee' && (
-            <>
-              <label className="block text-sm font-medium text-text-secondary mb-1">
-                Atribuir a
+            <div className="form-control w-full">
+              <label className="label py-0" htmlFor="bulk-assignee-select">
+                <span className="label-text font-medium text-base-content">Atribuir a</span>
               </label>
               <select
+                id="bulk-assignee-select"
                 value={assigneeValue}
-                onChange={e => setAssigneeValue(e.target.value as any)}
-                className="w-full px-3 py-2 bg-surface border border-surface-border rounded-md text-text-primary"
+                onChange={e =>
+                  setAssigneeValue(e.target.value as 'Product' | 'QA' | 'Dev')
+                }
+                className="select select-bordered w-full bg-base-100"
               >
                 <option value="Product">Produto</option>
                 <option value="QA">QA</option>
                 <option value="Dev">Desenvolvimento</option>
               </select>
-              <button onClick={handleBulkAssigneeChange} className="btn btn-primary w-full">
+              <button
+                type="button"
+                onClick={handleBulkAssigneeChange}
+                className="btn btn-primary mt-2 w-full rounded-full"
+              >
                 Atribuir
               </button>
-            </>
+            </div>
           )}
         </div>
       </Modal>
@@ -384,39 +410,39 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
         }}
         title="Selecionar Tarefas para o Projeto"
       >
-        <div className="space-y-4">
-          <p className="text-sm text-text-secondary">
+        <div className="space-y-4 font-body">
+          <p className="text-sm text-base-content/75">
             Selecione as tarefas que deseja incluir no novo projeto. Você pode selecionar ou
             desmarcar tarefas.
           </p>
-          <div className="max-h-96 overflow-y-auto space-y-2 border border-surface-border rounded-lg p-3">
+          <div className="max-h-96 space-y-2 overflow-y-auto rounded-[var(--rounded-box)] border border-base-300 bg-base-200/50 p-3 dark:bg-base-200/30">
             {selectedTasksData.map(task => (
               <label
                 key={task.id}
-                className="flex items-start gap-3 p-3 rounded-lg hover:bg-surface-hover cursor-pointer border border-surface-border"
+                className="flex cursor-pointer items-start gap-3 rounded-[var(--rounded-box)] border border-base-300 bg-base-100 p-3 hover:bg-base-200/70 dark:hover:bg-base-300/40"
               >
                 <input
                   type="checkbox"
                   checked={selectedTasksForProject.has(task.id)}
                   onChange={() => handleTaskToggle(task.id)}
-                  className="mt-1 h-4 w-4 rounded border-surface-border text-accent focus:ring-accent"
+                  className="checkbox checkbox-primary checkbox-sm mt-1 shrink-0"
                 />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xs font-semibold px-2 py-0.5 rounded bg-accent/10 text-accent">
+                <div className="min-w-0 flex-1">
+                  <div className="mb-1 flex items-center gap-2">
+                    <span className="rounded-md bg-primary/12 px-2 py-0.5 text-xs font-semibold text-primary">
                       {task.type}
                     </span>
-                    <span className="text-sm font-medium text-text-primary">{task.id}</span>
+                    <span className="text-sm font-medium text-base-content">{task.id}</span>
                   </div>
-                  <p className="text-sm font-semibold text-text-primary mb-1">{task.title}</p>
+                  <p className="mb-1 text-sm font-semibold text-base-content">{task.title}</p>
                   {task.description && (
-                    <p className="text-xs text-text-secondary line-clamp-2">{task.description}</p>
+                    <p className="line-clamp-2 text-xs text-base-content/70">{task.description}</p>
                   )}
                 </div>
               </label>
             ))}
           </div>
-          <div className="flex justify-end gap-2 pt-2 border-t border-surface-border">
+          <div className="flex justify-end gap-2 border-t border-base-300 pt-2">
             <button
               onClick={() => {
                 setShowTaskSelectionModal(false);
@@ -447,38 +473,42 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
         }}
         title="Criar Novo Projeto"
       >
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-text-secondary mb-1">
-              Nome do Projeto <span className="text-red-500">*</span>
+        <div className="space-y-4 font-body">
+          <div className="form-control w-full">
+            <label className="label py-0" htmlFor="bulk-new-project-name">
+              <span className="label-text font-medium text-base-content">
+                Nome do Projeto <span className="text-error">*</span>
+              </span>
             </label>
             <input
+              id="bulk-new-project-name"
               type="text"
               value={projectName}
               onChange={e => setProjectName(e.target.value)}
               placeholder="Ex: Projeto de Testes - Sprint 1"
-              className="w-full px-3 py-2 bg-surface border border-surface-border rounded-md text-text-primary"
+              className="input input-bordered w-full bg-base-100"
               autoFocus
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-text-secondary mb-1">
-              Descrição (opcional)
+          <div className="form-control w-full">
+            <label className="label py-0" htmlFor="bulk-new-project-desc">
+              <span className="label-text font-medium text-base-content">Descrição (opcional)</span>
             </label>
             <textarea
+              id="bulk-new-project-desc"
               value={projectDescription}
               onChange={e => setProjectDescription(e.target.value)}
               placeholder="Descreva o objetivo deste projeto..."
               rows={4}
-              className="w-full px-3 py-2 bg-surface border border-surface-border rounded-md text-text-primary resize-none"
+              className="textarea textarea-bordered w-full resize-none bg-base-100"
             />
           </div>
-          <div className="text-xs text-text-secondary">
+          <div className="text-xs text-base-content/70">
             <p>
               O projeto será criado com {selectedTasksForProject.size} tarefa(s) selecionada(s).
             </p>
           </div>
-          <div className="flex justify-end gap-2 pt-2 border-t border-surface-border">
+          <div className="flex justify-end gap-2 border-t border-base-300 pt-2">
             <button
               onClick={() => {
                 setShowProjectNameModal(false);
