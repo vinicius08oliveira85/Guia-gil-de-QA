@@ -1668,7 +1668,9 @@ export const JiraTaskItem: React.FC<{
         <div style={indentationStyle} className="py-0.5">
           <div
             className={[
-              'task-card-shadow flex flex-wrap items-center gap-x-2 gap-y-1 rounded-[1.4rem] border bg-base-200 px-2 py-2 transition-colors duration-200 hover:bg-base-300 sm:gap-x-2 sm:gap-y-1 sm:px-3 sm:py-2 md:px-3 md:py-2',
+              'task-card-shadow rounded-[1.4rem] border bg-base-200 px-2 py-2 transition-colors duration-200 hover:bg-base-300 sm:px-3 sm:py-2 md:px-3 md:py-2',
+              'max-md:grid max-md:grid-cols-[auto_minmax(0,1fr)_auto] max-md:grid-rows-[auto_auto] max-md:items-start max-md:gap-x-2 max-md:gap-y-1',
+              'md:flex md:flex-wrap md:items-center md:gap-x-2 md:gap-y-1',
               level > 0
                 ? 'max-md:bg-base-200/60 max-md:dark:bg-base-300/50 max-md:border-base-300'
                 : '',
@@ -1694,8 +1696,8 @@ export const JiraTaskItem: React.FC<{
             aria-busy={isAiProcessing}
             title={isAiProcessing && aiPhaseMessage ? aiPhaseMessage : undefined}
           >
-            <div className="flex flex-1 min-w-0 order-1 w-full sm:w-auto flex-wrap sm:flex-nowrap items-center gap-x-1.5 gap-y-1">
-              <div className="flex items-center gap-1 shrink-0">
+            <div className="max-md:contents md:flex md:flex-nowrap md:flex-1 md:min-w-0 md:order-1 md:w-auto md:items-center md:gap-x-1.5 md:gap-y-1">
+              <div className="flex max-md:col-start-1 max-md:row-start-1 max-md:self-center items-center gap-1 shrink-0">
                 {onToggleSelect && (
                   <input
                     type="checkbox"
@@ -1762,7 +1764,7 @@ export const JiraTaskItem: React.FC<{
                 ) : null}
               </div>
               <div
-                className="inline-flex flex-nowrap items-center gap-x-1 rounded-md border border-base-300/70 bg-base-300/30 px-1.5 py-0.5 shrink-0 max-w-[min(100%,24rem)] min-w-0 overflow-x-auto font-body text-[10px] leading-tight text-muted [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+                className="inline-flex max-md:col-start-2 max-md:row-start-1 max-md:self-center max-md:min-w-0 flex-nowrap items-center gap-x-1 rounded-md border border-base-300/70 bg-base-300/30 px-1.5 py-0.5 shrink-0 max-w-[min(100%,24rem)] min-w-0 overflow-x-auto font-body text-[10px] leading-tight text-muted [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
                 role="group"
                 aria-label="Metadados da tarefa"
               >
@@ -1793,9 +1795,9 @@ export const JiraTaskItem: React.FC<{
                   {getDisplayStatusLabel(task, project)}
                 </span>
               </div>
-              <div className="flex min-w-0 flex-1 basis-full sm:basis-0 items-center gap-1">
+              <div className="flex min-w-0 flex-1 basis-full sm:basis-0 items-center gap-1 max-md:col-span-3 max-md:col-start-1 max-md:row-start-2 max-md:basis-auto max-md:w-full max-md:min-w-0 max-md:items-start">
                 <span
-                  className="font-heading text-sm sm:text-base font-semibold text-base-content min-w-0 flex-1 truncate overflow-hidden whitespace-nowrap"
+                  className="font-heading text-sm sm:text-base font-semibold text-base-content min-w-0 flex-1 max-md:line-clamp-2 max-md:whitespace-normal max-md:break-words max-md:leading-snug md:truncate md:overflow-hidden md:whitespace-nowrap"
                   title={displayTitle}
                 >
                   {displayTitle}
@@ -1812,7 +1814,11 @@ export const JiraTaskItem: React.FC<{
             </div>
 
             <div
-              className="flex items-center gap-2 flex-shrink-0 w-full sm:w-auto sm:ml-auto order-2 justify-end flex-wrap sm:flex-nowrap sm:gap-2"
+              className={cn(
+                'order-2 flex flex-shrink-0 items-center justify-end gap-2 sm:ml-auto sm:gap-2',
+                'w-full flex-wrap sm:w-auto sm:flex-nowrap',
+                'max-md:col-start-3 max-md:row-start-1 max-md:w-auto max-md:max-w-full max-md:min-w-0 max-md:self-center max-md:justify-self-end max-md:flex-nowrap max-md:overflow-x-auto max-md:[scrollbar-width:thin]'
+              )}
               onClick={e => e.stopPropagation()}
             >
               <div className="hidden md:flex md:flex-wrap md:items-center md:gap-2 md:flex-shrink-0">
