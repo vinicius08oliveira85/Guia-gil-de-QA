@@ -1,3 +1,62 @@
+import type { TestCase } from '../types';
+import { getTestCaseEnvironment, getTestCaseSuite } from './testCaseMigration';
+
+function collapseOneLine(s: string): string {
+  return s.replace(/\r?\n+/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+function isPlaceholderOrEmptyExpected(s: string): boolean {
+  const t = s.trim();
+  if (!t || t === '—') return true;
+  if (/^\[/i.test(t) && /não gerado|nao gerado/i.test(t)) return true;
+  return false;
+}
+
+function clampListTitle(s: string, max = 118): string {
+  const t = s.trim();
+  if (!t) return '';
+  if (t.length <= max) return t;
+  const cut = t.slice(0, max - 1);
+  const lastSpace = cut.lastIndexOf(' ');
+  const base = (lastSpace > 40 ? cut.slice(0, lastSpace) : cut).trim();
+  return `${base}…`;
+}
+
+/**
+ * Título de uma linha na listagem do roteiro: descreve **o que se valida** (resultado esperado,
+ * parâmetros ou suíte/ambiente), sem repetir o primeiro passo da ação.
+ */
+export function getTestCaseListTitle(testCase: TestCase): string {
+  const exp = testCase.expectedResult || '';
+
+  if (!isPlaceholderOrEmptyExpected(exp)) {
+    const lines = exp.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+    const firstBullet = lines.find(l => /^[•\-]\s*\S/.test(l));
+    if (firstBullet) {
+      const t = collapseOneLine(firstBullet.replace(/^[•\-]\s*/, ''));
+      const c = clampListTitle(t);
+      if (c) return c;
+    }
+
+    const one = collapseOneLine(exp);
+    const c = clampListTitle(one);
+    if (c) return c;
+  }
+
+  const params = (testCase.parameters || '').trim();
+  if (params && params !== '—') {
+    const c = clampListTitle(collapseOneLine(params));
+    if (c.length >= 8) return c;
+  }
+
+  const suite = getTestCaseSuite(testCase);
+  if (suite) return clampListTitle(`Teste — ${suite}`);
+  const env = getTestCaseEnvironment(testCase);
+  if (env) return clampListTitle(`Teste — ${env}`);
+
+  return 'Caso de teste';
+}
+
 /**
  * Normaliza texto de ação de caso de teste em passos para exibição.
  * Cobre listas numeradas em várias linhas e passos colados na mesma linha (ex.: "...'.2. Informe...").

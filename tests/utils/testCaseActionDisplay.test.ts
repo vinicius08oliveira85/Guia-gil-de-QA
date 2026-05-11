@@ -1,10 +1,26 @@
 import { describe, expect, it } from 'vitest';
+import type { TestCase } from '../../types';
 import {
+  getTestCaseListTitle,
   parseTestCaseActionSteps,
   stripLeadingStepIndex,
   structureTestCaseExpected,
   structureTestCaseParameters,
 } from '../../utils/testCaseActionDisplay';
+
+function tc(partial: Partial<TestCase> & Pick<TestCase, 'id'>): TestCase {
+  return {
+    id: partial.id,
+    action: partial.action ?? '—',
+    parameters: partial.parameters ?? '—',
+    expectedResult: partial.expectedResult ?? '',
+    observedResult: partial.observedResult ?? '',
+    status: partial.status ?? 'Not Run',
+    environment: partial.environment,
+    suite: partial.suite,
+    executionKind: partial.executionKind,
+  };
+}
 
 describe('parseTestCaseActionSteps', () => {
   it('divide passos colados após ponto final antes do próximo índice', () => {
@@ -62,6 +78,48 @@ describe('structureTestCaseParameters', () => {
     const v = structureTestCaseParameters('Texto sem dois pontos');
     expect(v.kind).toBe('plain');
     if (v.kind === 'plain') expect(v.text).toBe('Texto sem dois pontos');
+  });
+});
+
+describe('getTestCaseListTitle', () => {
+  it('prioriza a primeira verificação em bullet do resultado esperado', () => {
+    const t = tc({
+      id: '1',
+      action: '1. Acesse o painel.\n2. Observe o TMI.',
+      expectedResult: '• O TMI exibe o valor consolidado.\n• Não há erro de carregamento.',
+      parameters: '—',
+    });
+    expect(getTestCaseListTitle(t)).toMatch(/TMI exibe/i);
+    expect(getTestCaseListTitle(t)).not.toMatch(/^1\.\s*Acesse/);
+  });
+
+  it('usa resultado esperado em texto corrido quando não há bullet', () => {
+    const t = tc({
+      id: '2',
+      action: '1. Passo longo repetido.',
+      expectedResult: 'O sistema deve exibir a lista de pacientes internados.',
+      parameters: '—',
+    });
+    expect(getTestCaseListTitle(t)).toContain('lista de pacientes');
+  });
+
+  it('com placeholder de resultado, usa parâmetros ou suíte', () => {
+    const fromParams = tc({
+      id: '3',
+      action: '1. Ignorado no título.',
+      expectedResult: '[Resultado esperado não gerado — edite o roteiro]',
+      parameters: "Tela: 'Indicadores'. Nº da Guia: '1'.",
+    });
+    expect(getTestCaseListTitle(fromParams)).toMatch(/Tela|Guia/i);
+
+    const fromSuite = tc({
+      id: '4',
+      action: '1. Passo.',
+      expectedResult: '',
+      parameters: '—',
+      suite: 'Regressão APP',
+    });
+    expect(getTestCaseListTitle(fromSuite)).toContain('Regressão APP');
   });
 });
 

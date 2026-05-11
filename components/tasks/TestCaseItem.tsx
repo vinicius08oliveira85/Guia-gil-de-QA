@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { TestCase } from '../../types';
 import { getTestCaseEnvironment, getTestCaseSuite } from '../../utils/testCaseMigration';
 import {
+  getTestCaseListTitle,
   parseTestCaseActionSteps,
   stripLeadingStepIndex,
   structureTestCaseExpected,
@@ -112,14 +113,14 @@ export const TestCaseItem: React.FC<{
   const hasStructuredSteps = actionSteps.length > 1;
 
   /** Uma única linha na lista (truncável); texto completo em title / roteiro expandido. */
-  const actionOneLine = useMemo(
-    () =>
-      (testCase.action || '')
-        .replace(/\r?\n+/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim() || '—',
-    [testCase.action]
-  );
+  const listTitle = useMemo(() => getTestCaseListTitle(testCase), [testCase]);
+
+  const listRowTitleAttr = useMemo(() => {
+    const parts = [listTitle, testCase.action?.trim() ? `Ação necessária:\n${testCase.action}` : ''].filter(
+      Boolean
+    );
+    return parts.join('\n\n');
+  }, [listTitle, testCase.action]);
 
   const parametersView = useMemo(
     () => structureTestCaseParameters(testCase.parameters || ''),
@@ -190,10 +191,10 @@ export const TestCaseItem: React.FC<{
 
         <p
           className="font-heading min-w-0 flex-1 truncate text-sm text-base-content sm:text-base"
-          title={testCase.action || undefined}
+          title={listRowTitleAttr || undefined}
         >
-          <span className="sr-only">Ação necessária: </span>
-          {actionOneLine}
+          <span className="sr-only">Título do roteiro: </span>
+          {listTitle}
         </p>
 
         {metaLine ? (
