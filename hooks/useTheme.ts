@@ -11,26 +11,24 @@ export const useTheme = () => {
   useEffect(() => {
     const root = document.documentElement;
 
-    // Determinar qual tema aplicar
+    // Determinar qual tema aplicar (DaisyUI: `dim` = identidade escura com primary #8c5cff em tailwind.config.js)
     let themeToApply: string = 'light';
     if (theme === 'auto') {
-      // Usar preferência do sistema para modo automático
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      themeToApply = prefersDark ? 'dark' : 'light';
+      themeToApply = prefersDark ? 'dim' : 'light';
     } else if (theme === 'dark') {
-      themeToApply = 'dark';
+      themeToApply = 'dim';
     } else if (theme === 'light') {
       themeToApply = 'light';
     } else {
-      // Para outros temas (leve-saude), manter light por enquanto
       themeToApply = 'light';
     }
 
     root.setAttribute('data-theme', themeToApply);
 
-    // Remover classes legadas; `dark` do Tailwind alinha `dark:` com `data-theme="dark"`.
+    // Classe `dark` no elemento raiz ativa variantes Tailwind `dark:`; `data-theme="dim"` aplica tokens DaisyUI Dim.
     root.classList.remove('light', 'leve-saude');
-    if (themeToApply === 'dark') {
+    if (themeToApply === 'dim') {
       root.classList.add('dark');
     } else {
       root.classList.remove('dark');

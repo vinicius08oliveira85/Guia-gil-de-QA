@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useJiraImage } from '../../hooks/useJiraImage';
 import { ImageIcon, AlertCircle } from 'lucide-react';
+import { cn } from '../../utils/cn';
 
 interface JiraImageProps {
   src: string;
@@ -101,16 +102,14 @@ export const JiraImage: React.FC<JiraImageProps> = ({
     return (
       <div
         ref={containerRef}
-        className={`jira-image-placeholder ${className}`}
+        className={cn(
+          'jira-image-placeholder flex items-center justify-center rounded-[1.4rem] bg-base-200',
+          className
+        )}
         style={{
           width: width || '100%',
           height: height || 'auto',
           minHeight: height ? undefined : '200px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: 'var(--base-200, #e5e7eb)',
-          borderRadius: '0.5rem',
         }}
       >
         <ImageIcon className="w-12 h-12 text-base-content/20" />
@@ -123,16 +122,14 @@ export const JiraImage: React.FC<JiraImageProps> = ({
     return (
       <div
         ref={containerRef}
-        className={`jira-image-loading ${className}`}
+        className={cn(
+          'jira-image-loading flex items-center justify-center rounded-[1.4rem] bg-base-200',
+          className
+        )}
         style={{
           width: width || '100%',
           height: height || 'auto',
           minHeight: height ? undefined : '200px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: 'var(--base-200, #e5e7eb)',
-          borderRadius: '0.5rem',
         }}
       >
         <div className="animate-pulse flex items-center justify-center">
@@ -147,19 +144,14 @@ export const JiraImage: React.FC<JiraImageProps> = ({
     return (
       <div
         ref={containerRef}
-        className={`jira-image-error ${className}`}
+        className={cn(
+          'jira-image-error flex flex-col items-center justify-center gap-2 rounded-[1.4rem] bg-base-200 p-4',
+          className
+        )}
         style={{
           width: width || '100%',
           height: height || 'auto',
           minHeight: height ? undefined : '200px',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: 'var(--base-200, #e5e7eb)',
-          borderRadius: '0.5rem',
-          padding: '1rem',
-          gap: '0.5rem',
         }}
       >
         <AlertCircle className="w-8 h-8 text-error" />
@@ -192,7 +184,7 @@ export const JiraImage: React.FC<JiraImageProps> = ({
         ref={imageRef}
         src={objectUrl}
         alt={alt}
-        className="jira-image max-w-full h-auto rounded-md"
+        className="jira-image h-auto max-w-full rounded-[1.4rem]"
         style={{
           width: width || '100%',
           height: height || 'auto',

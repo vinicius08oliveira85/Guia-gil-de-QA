@@ -313,47 +313,29 @@ export const JiraTaskItem: React.FC<{
     const safeDomId = useMemo(() => task.id.replace(/[^a-zA-Z0-9_-]/g, '_'), [task.id]);
     const detailsRegionId = `task-details-${safeDomId}`;
     const childrenRegionId = `task-children-${safeDomId}`;
-    // Cores customizadas para tipos de tarefa
-    const taskTypeColors = {
-      Epic: '#451e44',
-      História: '#009764',
-      Bug: '#e50006',
-      Tarefa: '#193ab7',
-    };
-
-    const typeAccent = useMemo(() => {
-      const color = taskTypeColors[task.type as keyof typeof taskTypeColors];
-      if (color) {
-        return { backgroundColor: color };
-      }
-      return { backgroundColor: '#6b7280' }; // cinza padrão
-    }, [task.type]);
-
-    const typeBadgeStyle = useMemo(() => {
-      const color = taskTypeColors[task.type as keyof typeof taskTypeColors];
-      if (color) {
-        return { backgroundColor: color, color: '#ffffff', borderColor: color };
-      }
-      return {};
-    }, [task.type]);
-
     const taskTypeNorm = (task.type || '').toLowerCase();
 
     /** Título do card: apenas o título da própria tarefa (sem prefixo Epic/História). */
     const displayTitle = task.title;
 
-    const borderL4Class = useMemo(() => {
-      if (['tarefa', 'task'].includes(taskTypeNorm)) return 'border-l-4 border-blue-600';
-      if (taskTypeNorm === 'bug') return 'border-l-4 border-error';
-      if (['história', 'story'].includes(taskTypeNorm)) return 'border-l-4 border-success';
-      if (taskTypeNorm === 'epic') return 'border-l-4 border-secondary';
-      return 'border-l-4 border-base-300';
-    }, [taskTypeNorm]);
+    /**
+     * Acento vertical à esquerda (não contorna o card inteiro).
+     * Favorito = dourado e tem precedência sobre o tipo.
+     */
+    const taskCardLeftAccentClass = useMemo(() => {
+      if (task.isFavorite) return 'border-l-4 border-l-amber-500';
+      if (taskTypeNorm === 'epic') return 'border-l-4 jira-task-epic-left-accent';
+      if (['tarefa', 'task'].includes(taskTypeNorm))
+        return 'border-l-4 border-l-[color:var(--chart-4)]';
+      if (taskTypeNorm === 'bug') return 'border-l-4 border-l-error';
+      if (['história', 'story'].includes(taskTypeNorm)) return 'border-l-4 border-l-success';
+      return 'border-l-4 border-l-base-300';
+    }, [taskTypeNorm, task.isFavorite]);
     const typeBadgeClass = useMemo(() => {
-      if (['tarefa', 'task'].includes(taskTypeNorm)) return 'bg-blue-600 text-white';
+      if (['tarefa', 'task'].includes(taskTypeNorm)) return 'bg-info text-info-content';
       if (taskTypeNorm === 'bug') return 'bg-error text-error-content';
       if (['história', 'story'].includes(taskTypeNorm)) return 'bg-success text-success-content';
-      if (taskTypeNorm === 'epic') return 'bg-secondary text-secondary-content';
+      if (taskTypeNorm === 'epic') return 'bg-primary text-primary-content';
       return 'bg-base-300 text-base-content';
     }, [taskTypeNorm]);
 
@@ -361,7 +343,7 @@ export const JiraTaskItem: React.FC<{
       if (['tarefa', 'task'].includes(taskTypeNorm)) return 'info';
       if (taskTypeNorm === 'bug') return 'error';
       if (['história', 'story'].includes(taskTypeNorm)) return 'success';
-      if (taskTypeNorm === 'epic') return 'secondary';
+      if (taskTypeNorm === 'epic') return 'primary';
       return 'neutral';
     }, [taskTypeNorm]);
 
@@ -1254,7 +1236,7 @@ export const JiraTaskItem: React.FC<{
         <div className="space-y-3">
           {/* Sub-abas de Testes */}
           <div
-            className="flex flex-wrap gap-1.5 p-1 bg-base-200 rounded-xl w-full md:w-fit overflow-x-auto"
+            className="flex w-full flex-wrap gap-1 overflow-x-auto rounded-[1.4rem] border border-base-300 bg-base-200/60 p-1 md:w-fit"
             role="tablist"
             aria-label="Sub-abas de testes"
           >
@@ -1263,7 +1245,7 @@ export const JiraTaskItem: React.FC<{
               role="tab"
               aria-selected={activeTestSubSection === 'strategy'}
               onClick={() => setActiveTestSubSection('strategy')}
-              className={`min-h-[44px] sm:min-h-0 px-3 py-2 text-xs rounded-xl font-medium transition-colors inline-flex items-center sm:px-3 sm:py-1.5 sm:text-sm ${activeTestSubSection === 'strategy' ? 'bg-primary text-primary-content shadow-md shadow-primary/25 hover:bg-primary/90' : 'text-base-content/70 hover:bg-base-200 hover:text-base-content'}`}
+              className={`min-h-[44px] sm:min-h-0 inline-flex items-center rounded-[1.4rem] px-3 py-2 font-heading text-xs font-medium transition-colors duration-200 sm:px-4 sm:py-2 sm:text-sm ${activeTestSubSection === 'strategy' ? 'bg-primary text-primary-content shadow-sm hover:bg-primary/90' : 'text-base-content/75 hover:bg-base-300/70 hover:text-base-content'}`}
             >
               Estratégia
             </button>
@@ -1272,12 +1254,12 @@ export const JiraTaskItem: React.FC<{
               role="tab"
               aria-selected={activeTestSubSection === 'test-cases'}
               onClick={() => setActiveTestSubSection('test-cases')}
-              className={`min-h-[44px] sm:min-h-0 px-3 py-2 text-xs rounded-xl font-medium transition-colors inline-flex items-center gap-1 sm:px-3 sm:py-1.5 sm:text-sm ${activeTestSubSection === 'test-cases' ? 'bg-primary text-primary-content shadow-md shadow-primary/25 hover:bg-primary/90' : 'text-base-content/70 hover:bg-base-200 hover:text-base-content'}`}
+              className={`min-h-[44px] sm:min-h-0 inline-flex items-center gap-1 rounded-[1.4rem] px-3 py-2 font-heading text-xs font-medium transition-colors duration-200 sm:px-4 sm:py-2 sm:text-sm ${activeTestSubSection === 'test-cases' ? 'bg-primary text-primary-content shadow-sm hover:bg-primary/90' : 'text-base-content/75 hover:bg-base-300/70 hover:text-base-content'}`}
             >
               Casos de teste
               {task.testCases?.length ? (
                 <span
-                  className={`ml-1 px-1.5 py-0.5 rounded-md text-xs font-medium ${activeTestSubSection === 'test-cases' ? 'bg-white/20' : 'bg-base-300 text-base-content'}`}
+                  className={`ml-1 rounded-[0.65rem] px-1.5 py-0.5 font-body text-xs font-medium ${activeTestSubSection === 'test-cases' ? 'bg-primary-content/20 text-primary-content' : 'bg-base-300 text-base-content'}`}
                 >
                   {task.testCases.length}
                 </span>
@@ -1688,13 +1670,11 @@ export const JiraTaskItem: React.FC<{
                 ? 'max-md:bg-base-200/60 max-md:dark:bg-base-300/50 max-md:border-base-300'
                 : '',
               isStatusDropdownOpen ? 'relative z-10' : '',
-              borderL4Class,
               'border-base-300',
               activeTaskId === task.id ? 'ring-2 ring-primary/40 shadow-lg' : '',
               isSelected ? 'bg-primary/5 border-primary/40 ring-1 ring-primary/30' : '',
-              task.isFavorite
-                ? 'border-2 border-yellow-600/95 ring-2 ring-yellow-600/40 shadow-md shadow-yellow-700/25 [box-shadow:0_0_0_1px_rgba(202,138,4,0.35),0_4px_14px_-4px_rgba(161,98,7,0.4)]'
-                : '',
+              task.isFavorite ? 'ring-1 ring-amber-500/35' : '',
+              taskCardLeftAccentClass,
               showBulkGenerateFeedback ? 'ring-2 ring-primary/50 animate-pulse' : '',
               isAiProcessing ? 'animate-ai-card-border' : '',
               onOpenModal
@@ -1793,7 +1773,10 @@ export const JiraTaskItem: React.FC<{
                   appearance="pill"
                   variant={typeBadgeVariant}
                   size="xs"
-                  className="shrink-0 uppercase tracking-wide text-[10px] leading-tight min-h-0 h-4 py-0 px-1"
+                  className={cn(
+                    'h-4 min-h-0 shrink-0 px-1 py-0 text-[10px] font-bold uppercase leading-tight tracking-wide',
+                    task.type === 'Epic' && 'jira-task-epic-type-pill'
+                  )}
                 >
                   {task.type}
                 </Badge>
@@ -1940,10 +1923,13 @@ export const JiraTaskItem: React.FC<{
                     e.stopPropagation();
                     setIsStatusDropdownOpen(!isStatusDropdownOpen);
                   }}
-                  className="rounded-full px-3 py-2 sm:py-1.5 sm:px-4 min-h-[44px] sm:min-h-0 text-[10px] sm:text-xs font-bold min-w-0 sm:min-w-[120px] justify-between inline-flex items-center gap-2 bg-emerald-600 dark:bg-emerald-700 text-white border-0 shrink-0"
+                  className="inline-flex min-h-[44px] min-w-0 shrink-0 items-center justify-between gap-2 rounded-full border-0 bg-primary px-3 py-2 text-[10px] font-bold text-primary-content sm:min-h-0 sm:min-w-[120px] sm:px-4 sm:py-1.5 sm:text-xs"
                   style={
                     currentStatusColor
-                      ? { backgroundColor: currentStatusColor, color: statusTextColor || '#fff' }
+                      ? {
+                          backgroundColor: currentStatusColor,
+                          color: statusTextColor || 'oklch(var(--pc))',
+                        }
                       : undefined
                   }
                   aria-haspopup="true"
@@ -1959,7 +1945,7 @@ export const JiraTaskItem: React.FC<{
                   />
                 </button>
                 {isStatusDropdownOpen && (
-                  <div className="absolute right-0 mt-1 z-50 w-40 sm:w-48 max-w-[calc(100vw-2rem)] bg-base-100 border border-base-300 rounded-xl shadow-lg overflow-hidden">
+                  <div className="absolute right-0 z-50 mt-1 max-w-[calc(100vw-2rem)] w-40 overflow-hidden rounded-[1.4rem] border border-base-300 bg-base-100 shadow-lg sm:w-48">
                     {project?.settings?.jiraStatuses && project.settings.jiraStatuses.length > 0 ? (
                       project.settings.jiraStatuses.map(status => {
                         const statusName = typeof status === 'string' ? status : status.name;
@@ -1985,14 +1971,16 @@ export const JiraTaskItem: React.FC<{
                             style={
                               isSelected
                                 ? {
-                                    borderLeft: `3px solid ${statusColor || '#6b7280'}`,
+                                    borderLeft: `3px solid ${statusColor || 'oklch(var(--b3))'}`,
                                   }
                                 : {}
                             }
                           >
                             <div
-                              className="w-3 h-3 rounded-full flex-shrink-0"
-                              style={{ backgroundColor: statusColor || '#6b7280' }}
+                              className="h-3 w-3 shrink-0 rounded-full"
+                              style={{
+                                backgroundColor: statusColor || 'oklch(var(--b3))',
+                              }}
                             />
                             <span>{statusName}</span>
                           </button>
@@ -2009,7 +1997,7 @@ export const JiraTaskItem: React.FC<{
                           }}
                           className="w-full flex items-center gap-2 px-3 py-2 text-left text-sm hover:bg-base-200 transition-colors"
                         >
-                          <div className="w-3 h-3 rounded-full bg-gray-400" />
+                          <div className="h-3 w-3 shrink-0 rounded-full bg-base-content/35" />
                           <span>A Fazer</span>
                         </button>
                         <button
@@ -2142,7 +2130,9 @@ export const JiraTaskItem: React.FC<{
                             >
                               <span
                                 className="h-3 w-3 shrink-0 rounded-full"
-                                style={{ backgroundColor: statusColor || '#6b7280' }}
+                                style={{
+                                  backgroundColor: statusColor || 'oklch(var(--b3))',
+                                }}
                                 aria-hidden
                               />
                               {statusName}
@@ -2479,7 +2469,7 @@ export const JiraTaskItem: React.FC<{
 
                   <div className="flex flex-col gap-1.5 md:flex-row md:items-center md:justify-between">
                     <div
-                      className="flex flex-wrap gap-1.5 p-1 bg-base-200 rounded-xl w-full md:w-fit overflow-x-auto"
+                      className="flex w-full flex-wrap gap-1 overflow-x-auto rounded-[1.4rem] border border-base-300 bg-base-200/60 p-1 md:w-fit"
                       role="tablist"
                       aria-label="Seções da tarefa"
                     >
@@ -2495,13 +2485,13 @@ export const JiraTaskItem: React.FC<{
                             role="tab"
                             aria-selected={isActive}
                             aria-controls={panelId}
-                            className={`inline-flex min-h-[44px] items-center rounded-xl px-3 py-2 text-xs font-medium transition-colors sm:min-h-0 sm:px-3 sm:py-1.5 sm:text-sm ${isActive ? 'bg-primary text-primary-content shadow-md shadow-primary/25 hover:bg-primary/90' : 'text-base-content/70 hover:bg-base-200 hover:text-base-content'}`}
+                            className={`inline-flex min-h-[44px] items-center rounded-[1.4rem] px-3 py-2 font-heading text-xs font-medium transition-colors duration-200 sm:min-h-0 sm:px-4 sm:py-2 sm:text-sm ${isActive ? 'bg-primary text-primary-content shadow-sm hover:bg-primary/90' : 'text-base-content/75 hover:bg-base-300/70 hover:text-base-content'}`}
                             onClick={() => setActiveSection(tab.id)}
                           >
                             <span>{tab.label}</span>
                             {typeof tab.badge === 'number' && tab.badge > 0 ? (
                               <span
-                                className={`ml-2 px-1.5 py-0.5 rounded-md text-xs font-medium ${isActive ? 'bg-white/20' : 'bg-base-300 text-base-content'}`}
+                                className={`ml-2 rounded-[0.65rem] px-1.5 py-0.5 font-body text-xs font-medium ${isActive ? 'bg-primary-content/20 text-primary-content' : 'bg-base-300 text-base-content'}`}
                               >
                                 {tab.badge}
                               </span>

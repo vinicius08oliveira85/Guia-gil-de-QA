@@ -28,6 +28,7 @@ import { Spinner } from './common/Spinner';
 import { Trash2, CheckCircle2, AlertTriangle, CloudOff } from 'lucide-react';
 import { logger } from '../utils/logger';
 import { Button } from './common/Button';
+import { cn } from '../utils/cn';
 
 const TAB_LABELS: Record<string, string> = {
   dashboard: 'Dashboard',
@@ -504,7 +505,7 @@ export const ProjectView: React.FC<{
 
             <nav
               ref={tabsRef}
-              className="tabs tabs-boxed no-scrollbar w-full flex-nowrap gap-0.5 overflow-x-auto scroll-smooth p-0.5 snap-x snap-mandatory sm:gap-1"
+              className="no-scrollbar flex w-full flex-nowrap gap-1 overflow-x-auto scroll-smooth rounded-[1.4rem] border border-base-300 bg-base-200/60 p-1.5 snap-x snap-mandatory sm:gap-1.5"
               aria-label="Seções do projeto"
               role="tablist"
               aria-orientation="horizontal"
@@ -515,7 +516,12 @@ export const ProjectView: React.FC<{
                   key={tab.id}
                   type="button"
                   onClick={() => handleTabClick(tab.id)}
-                  className={`tab min-h-[40px] flex-shrink-0 snap-start whitespace-nowrap px-3 py-2 text-sm sm:min-h-0 sm:py-1.5 ${activeTab === tab.id ? 'tab-active' : ''}`}
+                  className={cn(
+                    'min-h-[40px] flex-shrink-0 snap-start whitespace-nowrap rounded-[1.4rem] px-4 py-2 font-heading text-sm transition-colors duration-200 sm:min-h-0 sm:py-2',
+                    activeTab === tab.id
+                      ? 'bg-primary text-primary-content shadow-sm'
+                      : 'bg-transparent text-base-content/75 hover:bg-base-300/70 hover:text-base-content'
+                  )}
                   id={`tab-${tab.id}`}
                   role="tab"
                   tabIndex={activeTab === tab.id ? 0 : -1}

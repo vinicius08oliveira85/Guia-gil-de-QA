@@ -27,10 +27,11 @@ interface ProjectActivityCardProps {
   className?: string;
 }
 
+/** Anéis de métrica: alinhados a `--chart-*` do tema em `index.css`. */
 const METRIC_COLORS = {
-  Testes: '#2CD758', // Verde
-  Tarefas: '#007AFF', // Azul
-  Sucesso: '#FF9500', // Laranja
+  Testes: 'var(--chart-1)',
+  Tarefas: 'var(--chart-4)',
+  Sucesso: 'var(--chart-3)',
 } as const;
 
 interface MetricRingProps {
@@ -299,7 +300,8 @@ export const ProjectActivityCard: React.FC<ProjectActivityCardProps> = ({
       {/* gap-2 em mobile, gap-3/4 em desktop para não quebrar layout de 4 colunas */}
       <div className="grid grid-cols-3 gap-2 md:gap-4 items-end justify-items-center mb-4 sm:mb-6 flex-1">
         {metrics.map(metric => {
-          const color = METRIC_COLORS[metric.label as keyof typeof METRIC_COLORS] || '#007AFF';
+          const color =
+            METRIC_COLORS[metric.label as keyof typeof METRIC_COLORS] || 'var(--chart-2)';
 
           return (
             <MetricRing

@@ -157,16 +157,18 @@ export const TestExecutionChart = React.memo<TestExecutionChartProps>(({ project
     return data.reverse(); // Mais antigo primeiro
   }, [project.metricsHistory, metrics]);
 
-  // Cores explícitas para garantir correspondência com a legenda
-  const passedColor = '#22c55e'; // Verde (green-500) - corresponde a bg-success
-  const failedColor = '#ef4444'; // Vermelho (red-500) - corresponde a bg-error
-  const pendingColor = '#f59e0b'; // Amarelo/Laranja (amber-500) - corresponde a bg-warning
+  /** Cores do gráfico alinhadas a `index.css` (tema dim: --chart-*, --destructive). */
+  const passedColor = 'var(--chart-1)';
+  const failedColor = 'var(--destructive)';
+  const pendingColor = 'var(--chart-3)';
 
   return (
     <Card className={className} hoverable>
       <div className="p-6">
         <div className="mb-4">
-          <h3 className="text-lg font-semibold text-base-content">Status de Execução de Testes</h3>
+          <h3 className="font-heading text-lg font-semibold text-base-content">
+            Status de Execução de Testes
+          </h3>
           <p className="text-sm text-base-content/70">Resultados diários dos últimos 7 dias</p>
         </div>
         <div className="h-[300px]">

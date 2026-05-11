@@ -22,13 +22,36 @@ interface TaskLinksViewProps {
   onOpenTask?: (task: JiraTask) => void;
 }
 
-// Cores para tipos de tarefa
-const taskTypeColors: Record<string, string> = {
-  Epic: '#8B5CF6',
-  História: '#3B82F6',
-  Tarefa: '#10B981',
-  Bug: '#EF4444',
-};
+/** Faixa lateral / badge por tipo — tokens Daisy (tema Dim). */
+function taskTypeStripeClass(type: string): string {
+  switch (type) {
+    case 'Epic':
+      return 'bg-primary';
+    case 'História':
+      return 'bg-success';
+    case 'Tarefa':
+      return 'bg-info';
+    case 'Bug':
+      return 'bg-error';
+    default:
+      return 'bg-base-300';
+  }
+}
+
+function taskTypeBadgeClass(type: string): string {
+  switch (type) {
+    case 'Epic':
+      return 'badge badge-sm border-0 bg-primary text-primary-content';
+    case 'História':
+      return 'badge badge-sm border-0 bg-success text-success-content';
+    case 'Tarefa':
+      return 'badge badge-sm border-0 bg-info text-info-content';
+    case 'Bug':
+      return 'badge badge-sm border-0 bg-error text-error-content';
+    default:
+      return 'badge badge-sm border-0 bg-base-300 text-base-content';
+  }
+}
 
 // Cores para status
 const getStatusColor = (status: string) => {
@@ -122,15 +145,16 @@ export const TaskLinksView: React.FC<TaskLinksViewProps> = ({
   const renderTaskCard = (relatedTask: JiraTask, isDependency: boolean) => {
     const statusColor = getStatusColor(relatedTask.status);
     const statusIcon = getStatusIcon(relatedTask.status);
-    const typeColor = taskTypeColors[relatedTask.type] || '#6b7280';
+    const stripeClass = taskTypeStripeClass(relatedTask.type);
+    const typeBadgeClasses = taskTypeBadgeClass(relatedTask.type);
     const isHovered = hoveredCardId === relatedTask.id;
 
     return (
       <div
         key={relatedTask.id}
         className={cn(
-          'group relative p-4 rounded-xl border-2 transition-all duration-200',
-          'hover:shadow-lg hover:scale-[1.02] cursor-pointer',
+          'group relative cursor-pointer rounded-[1.4rem] border-2 p-4 transition-all duration-200',
+          'hover:scale-[1.02] hover:shadow-lg',
           statusColor,
           isHovered && 'ring-2 ring-primary/50'
         )}
@@ -149,8 +173,7 @@ export const TaskLinksView: React.FC<TaskLinksViewProps> = ({
       >
         {/* Barra lateral colorida por tipo */}
         <div
-          className="absolute left-0 top-0 bottom-0 w-1 rounded-l-xl"
-          style={{ backgroundColor: typeColor }}
+          className={cn('absolute bottom-0 left-0 top-0 w-1 rounded-l-[1.4rem]', stripeClass)}
           aria-hidden="true"
         />
 
@@ -161,12 +184,7 @@ export const TaskLinksView: React.FC<TaskLinksViewProps> = ({
               <span className="font-mono text-sm font-semibold text-base-content">
                 {relatedTask.id}
               </span>
-              <span
-                className="badge badge-sm text-white border-0"
-                style={{ backgroundColor: typeColor }}
-              >
-                {relatedTask.type}
-              </span>
+              <span className={typeBadgeClasses}>{relatedTask.type}</span>
             </div>
 
             <h4 className="font-semibold text-base-content mb-2 line-clamp-2">
@@ -222,7 +240,7 @@ export const TaskLinksView: React.FC<TaskLinksViewProps> = ({
       {(isBlocked || isReady) && (
         <div
           className={cn(
-            'px-2 py-1.5 rounded-lg border',
+            'rounded-[1.4rem] border px-2 py-1.5',
             isBlocked ? 'border-warning/40 bg-warning/10' : 'border-success/40 bg-success/10'
           )}
         >

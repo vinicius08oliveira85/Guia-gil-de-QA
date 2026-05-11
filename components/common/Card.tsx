@@ -28,8 +28,8 @@ type CardProps = React.HTMLAttributes<HTMLElement> & {
 export const Card = React.memo<CardProps>(
   ({ children, className = '', variant = 'default', hoverable = true, ...rest }) => {
     const variantClasses = {
-      default: 'border border-base-300 bg-base-100 shadow-sm',
-      elevated: 'border border-base-300 bg-base-100 shadow-lg shadow-base-300/25',
+      default: 'border border-base-300 bg-base-200 shadow-sm',
+      elevated: 'border border-base-300 bg-base-200 shadow-lg shadow-base-300/30',
       outlined: 'border border-base-300 bg-transparent shadow-none',
     };
 
@@ -41,8 +41,8 @@ export const Card = React.memo<CardProps>(
       <section
         className={cn(
           'w-full max-w-full',
-          'bg-base-100 text-base-content',
-          'rounded-[var(--rounded-box)]',
+          'text-base-content',
+          'rounded-[1.4rem]',
           'focus-within:ring-2 focus-within:ring-primary/20 focus-within:ring-offset-0',
           variantClasses[variant],
           hoverClasses,

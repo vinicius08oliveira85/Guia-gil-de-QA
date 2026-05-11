@@ -115,7 +115,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 aria-label="Voltar"
               />
               <div className="flex-1 min-w-0">
-                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-base-content">
+                <h1 className="font-heading text-2xl font-bold tracking-tight text-base-content sm:text-3xl">
                   Configurações
                 </h1>
                 <p className="text-sm text-base-content/70 mt-2 max-w-2xl leading-relaxed">
@@ -126,11 +126,11 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
             {/* Tab Navigation melhorada */}
             <div
-              className="border-b border-base-300"
+              className="rounded-[1.4rem] border border-base-300 bg-base-200/50 p-1.5"
               role="tablist"
               aria-label="Abas de configurações"
             >
-              <nav className="flex gap-1 overflow-x-auto no-scrollbar">
+              <nav className="no-scrollbar flex gap-1 overflow-x-auto">
                 {tabs.map(tab => {
                   const Icon = tab.icon;
                   const isActive = activeTab === tab.id;
@@ -141,11 +141,11 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                       onClick={() => setActiveTab(tab.id)}
                       onKeyDown={handleTabKeyDown}
                       className={cn(
-                        'inline-flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap',
-                        'hover:text-base-content focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2',
+                        'inline-flex items-center gap-2 whitespace-nowrap rounded-[1.4rem] px-4 py-3 font-heading text-sm transition-colors duration-200',
+                        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-base-100',
                         isActive
-                          ? 'border-primary text-primary'
-                          : 'border-transparent text-base-content/70 hover:border-base-300'
+                          ? 'bg-primary text-primary-content shadow-sm'
+                          : 'text-base-content/75 hover:bg-base-300/70 hover:text-base-content'
                       )}
                       role="tab"
                       aria-selected={isActive}

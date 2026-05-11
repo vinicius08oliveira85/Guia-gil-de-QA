@@ -141,8 +141,8 @@ export const Modal: React.FC<ModalProps> = ({
         id={contentId}
         className={
           isFull
-            ? `${sizeClasses.full} bg-base-100 shadow-2xl border border-base-300 relative flex flex-col overflow-hidden duration-300 ease-out animate-in fade-in`
-            : `bg-base-100/95 shadow-2xl border border-base-300 relative flex flex-col overflow-hidden rounded-t-[var(--rounded-box)] rounded-b-none max-h-[min(92dvh,100svh)] sm:rounded-[var(--rounded-box)] sm:rounded-b-[var(--rounded-box)] sm:max-h-[90vh] w-full max-sm:w-full max-sm:max-w-none ${sizeClasses[size]} max-sm:animate-modal-bottom-sheet-in sm:animate-in sm:fade-in sm:duration-200 sm:zoom-in-95 sm:slide-in-from-bottom-8 max-sm:backdrop-blur-md`
+            ? `${sizeClasses.full} bg-base-200 shadow-2xl border border-base-300 relative flex flex-col overflow-hidden duration-300 ease-out animate-in fade-in`
+            : `bg-base-200/95 shadow-2xl shadow-black/20 border border-base-300 relative flex flex-col overflow-hidden backdrop-blur-md rounded-t-[1.4rem] rounded-b-none max-h-[min(92dvh,100svh)] sm:rounded-[1.4rem] sm:max-h-[90vh] w-full max-sm:w-full max-sm:max-w-none ${sizeClasses[size]} max-sm:animate-modal-bottom-sheet-in sm:animate-in sm:fade-in sm:duration-200 sm:zoom-in-95 sm:slide-in-from-bottom-8`
         }
         onClick={e => e.stopPropagation()}
         style={maxHeight && !isFull ? { maxHeight } : undefined}
@@ -152,8 +152,8 @@ export const Modal: React.FC<ModalProps> = ({
         <div
           className={
             isFull
-              ? 'sticky top-0 z-10 flex flex-shrink-0 flex-col gap-0 border-b border-base-200/50 bg-base-100/70 px-4 py-3 backdrop-blur-md sm:px-5 sm:py-4'
-              : 'sticky top-0 z-10 flex flex-shrink-0 flex-col gap-0 border-b border-base-200/50 bg-base-100/70 px-3 pb-3 pt-1 backdrop-blur-md transition-all duration-200 sm:px-5 sm:pb-4 sm:pt-4'
+              ? 'sticky top-0 z-10 flex flex-shrink-0 flex-col gap-0 border-b border-base-300/50 bg-base-200/80 px-4 py-3 backdrop-blur-md sm:px-5 sm:py-4'
+              : 'sticky top-0 z-10 flex flex-shrink-0 flex-col gap-0 border-b border-base-300/50 bg-base-200/80 px-3 pb-3 pt-1 backdrop-blur-md transition-all duration-200 sm:px-5 sm:pb-4 sm:pt-4'
           }
         >
           {!isFull && (
@@ -182,12 +182,12 @@ export const Modal: React.FC<ModalProps> = ({
           </div>
         </div>
 
-        <div className="custom-scrollbar flex-1 overflow-y-auto overscroll-contain px-3 py-4 scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-transparent hover:scrollbar-thumb-primary/50 sm:px-6 sm:py-6">
+        <div className="custom-scrollbar flex-1 overflow-y-auto overscroll-contain bg-base-200/40 px-3 py-4 scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-transparent hover:scrollbar-thumb-primary/50 sm:px-6 sm:py-6">
           {children}
         </div>
 
         {footer && (
-          <div className="flex-shrink-0 border-t border-base-200/80 bg-base-100/90 px-3 py-3 backdrop-blur-md sm:px-4 sm:py-4 [&_.btn-primary]:rounded-full [&_button.btn]:rounded-full">
+          <div className="flex-shrink-0 border-t border-base-300/60 bg-base-200/85 px-3 py-3 backdrop-blur-md sm:px-4 sm:py-4 [&_.btn-primary]:rounded-[1.4rem] [&_button.btn]:rounded-[1.4rem]">
             {footer}
           </div>
         )}

@@ -116,17 +116,14 @@ export const QualityMetricsChart = React.memo<QualityMetricsChartProps>(
         .filter(item => item.phase); // Remover fases vazias
     }, [project.phases, project.tasks, metrics.totalTestCases]);
 
-    // Cores explícitas e distintas para melhor visualização
-    // Primary (azul) para Cobertura
-    const coverageColor = '#3b82f6'; // Blue-500
-    // Success (verde) para Qualidade
-    const qualityColor = '#10b981'; // Emerald-500
+    const coverageColor = 'var(--chart-4)';
+    const qualityColor = 'var(--chart-1)';
 
     return (
       <Card className={className} hoverable>
         <div className="p-6">
           <div className="mb-4">
-            <h3 className="text-lg font-semibold text-base-content">
+            <h3 className="font-heading text-lg font-semibold text-base-content">
               Métricas de Qualidade por Fase
             </h3>
             <p className="text-sm text-base-content/70">Cobertura e qualidade por fase de teste</p>

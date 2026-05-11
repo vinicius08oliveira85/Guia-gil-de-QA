@@ -100,8 +100,8 @@ export const QuickActions: React.FC<QuickActionsProps> = ({ task, project, onUpd
               <span
                 className={`font-semibold ${
                   estimation.actualHours <= estimation.estimatedHours
-                    ? 'text-green-700 dark:text-green-400'
-                    : 'text-orange-700 dark:text-orange-400'
+                    ? 'text-success'
+                    : 'text-warning'
                 }`}
               >
                 {estimation.actualHours}h
@@ -116,8 +116,8 @@ export const QuickActions: React.FC<QuickActionsProps> = ({ task, project, onUpd
           {task.tags.slice(0, 3).map(tag => (
             <span
               key={tag}
-              className="px-2 py-0.5 text-xs rounded text-white"
-              style={{ backgroundColor: `var(--tag-${tag}, #64748b)` }}
+              className="rounded-[0.65rem] px-2 py-0.5 text-xs text-base-content"
+              style={{ backgroundColor: `var(--tag-${tag}, var(--muted))` }}
             >
               {tag}
             </span>

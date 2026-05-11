@@ -12,7 +12,7 @@ export const EpicIcon: React.FC<{ className?: string }> = ({ className = '' }) =
     height={ICON_SIZE}
     viewBox="0 0 24 24"
     fill="currentColor"
-    className={`text-[#5E4DB2] dark:text-[#7B68EE] ${className}`}
+    className={`text-primary ${className}`}
   >
     <path d="M12 2L2 7l10 5 10-5-10-5z" />
   </svg>
@@ -26,7 +26,7 @@ export const StoryIcon: React.FC<{ className?: string }> = ({ className = '' }) 
     height={ICON_SIZE}
     viewBox="0 0 24 24"
     fill="currentColor"
-    className={`text-[#14892C] dark:text-[#4BCE97] ${className}`}
+    className={`text-success ${className}`}
   >
     <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
   </svg>
@@ -44,7 +44,7 @@ export const TaskIcon: React.FC<{ className?: string }> = ({ className = '' }) =
     strokeWidth="2.5"
     strokeLinecap="round"
     strokeLinejoin="round"
-    className={`text-[#0052CC] dark:text-[#2684FF] ${className}`}
+    className={`text-info ${className}`}
   >
     <circle cx="12" cy="12" r="10" />
     <path d="m9 12 2 2 4-4" />
@@ -59,7 +59,7 @@ export const BugIcon: React.FC<{ className?: string }> = ({ className = '' }) =>
     height={ICON_SIZE}
     viewBox="0 0 24 24"
     fill="currentColor"
-    className={`text-[#DE350B] dark:text-[#FF5630] ${className}`}
+    className={`text-error ${className}`}
   >
     <path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.87-3.13-7-7-7z" />
     <circle cx="9" cy="9" r="1.5" fill="currentColor" />
@@ -169,7 +169,7 @@ export const InfoIcon: React.FC<BasicIconProps> = ({ className }) => (
     strokeWidth="2"
     strokeLinecap="round"
     strokeLinejoin="round"
-    className={className || 'text-gray-500 hover:text-gray-300'}
+    className={className || 'text-base-content/50 hover:text-base-content'}
   >
     <circle cx="12" cy="12" r="10"></circle>
     <line x1="12" y1="16" x2="12" y2="12"></line>
@@ -279,35 +279,31 @@ export const FilterIcon: React.FC<BasicIconProps> = ({ className }) => (
 
 export const TaskTypeIcon: React.FC<{ type: JiraTaskType; className?: string }> = React.memo(
   ({ type, className = '' }) => {
-    // Cores oficiais do Jira para tipos de tarefa
+    // Cores semânticas do tema Dim (DaisyUI) por tipo de tarefa
     const typeConfig = {
       Epic: {
         icon: EpicIcon,
-        color: 'text-[#5E4DB2] dark:text-[#7B68EE]',
-        bgColor: 'bg-[#5E4DB2]/10 dark:bg-[#7B68EE]/20',
-        borderColor: 'border-[#5E4DB2]/20 dark:border-[#7B68EE]/30',
-        hoverColor: 'hover:bg-[#5E4DB2]/20 dark:hover:bg-[#7B68EE]/30',
+        bgColor: 'bg-primary/10',
+        borderColor: 'border-primary/20',
+        hoverColor: 'hover:bg-primary/20',
       },
       História: {
         icon: StoryIcon,
-        color: 'text-[#14892C] dark:text-[#4BCE97]',
-        bgColor: 'bg-[#14892C]/10 dark:bg-[#4BCE97]/20',
-        borderColor: 'border-[#14892C]/20 dark:border-[#4BCE97]/30',
-        hoverColor: 'hover:bg-[#14892C]/20 dark:hover:bg-[#4BCE97]/30',
+        bgColor: 'bg-success/10',
+        borderColor: 'border-success/20',
+        hoverColor: 'hover:bg-success/20',
       },
       Tarefa: {
         icon: TaskIcon,
-        color: 'text-[#0052CC] dark:text-[#2684FF]',
-        bgColor: 'bg-[#0052CC]/10 dark:bg-[#2684FF]/20',
-        borderColor: 'border-[#0052CC]/20 dark:border-[#2684FF]/30',
-        hoverColor: 'hover:bg-[#0052CC]/20 dark:hover:bg-[#2684FF]/30',
+        bgColor: 'bg-info/10',
+        borderColor: 'border-info/20',
+        hoverColor: 'hover:bg-info/20',
       },
       Bug: {
         icon: BugIcon,
-        color: 'text-[#DE350B] dark:text-[#FF5630]',
-        bgColor: 'bg-[#DE350B]/10 dark:bg-[#FF5630]/20',
-        borderColor: 'border-[#DE350B]/20 dark:border-[#FF5630]/30',
-        hoverColor: 'hover:bg-[#DE350B]/20 dark:hover:bg-[#FF5630]/30',
+        bgColor: 'bg-error/10',
+        borderColor: 'border-error/20',
+        hoverColor: 'hover:bg-error/20',
       },
     };
 
@@ -319,7 +315,7 @@ export const TaskTypeIcon: React.FC<{ type: JiraTaskType; className?: string }> 
     return (
       <div
         className={`
-                group relative flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border 
+                group relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border 
                 backdrop-blur-sm transition-all duration-300
                 ${config.bgColor}
                 ${config.borderColor}
@@ -336,10 +332,10 @@ export const TaskTypeIcon: React.FC<{ type: JiraTaskType; className?: string }> 
 export const TaskStatusIcon: React.FC<{ status: 'To Do' | 'In Progress' | 'Done' | 'Blocked' }> =
   React.memo(({ status }) => {
     const statusMap = {
-      'To Do': { icon: <circle cx="12" cy="12" r="10" />, color: 'text-gray-500' },
+      'To Do': { icon: <circle cx="12" cy="12" r="10" />, color: 'text-base-content/45' },
       'In Progress': {
         icon: <path d="M21 12a9 9 0 1 1-6.219-8.56" />,
-        color: 'text-yellow-700 dark:text-yellow-400 animate-spin',
+        color: 'text-warning animate-spin',
       },
       Done: {
         icon: (
@@ -348,7 +344,7 @@ export const TaskStatusIcon: React.FC<{ status: 'To Do' | 'In Progress' | 'Done'
             <polyline points="22 4 12 14.01 9 11.01" />
           </>
         ),
-        color: 'text-green-700 dark:text-green-400',
+        color: 'text-success',
       },
       Blocked: {
         icon: (
@@ -357,7 +353,7 @@ export const TaskStatusIcon: React.FC<{ status: 'To Do' | 'In Progress' | 'Done'
             <line x1="8" y1="16" x2="16" y2="8" />
           </>
         ),
-        color: 'text-red-700 dark:text-red-400',
+        color: 'text-error',
       },
     };
     const { icon, color } = statusMap[status];
@@ -380,10 +376,7 @@ export const TaskStatusIcon: React.FC<{ status: 'To Do' | 'In Progress' | 'Done'
     );
   });
 
-/**
- * Ícone específico para "Iniciar teste" (In Progress)
- * Cor amarela escura: #ffd300
- */
+/** Ícone para "Iniciar teste" (em progresso) — cor semântica `warning`. */
 export const StartTestIcon = React.memo(() => {
   return (
     <svg
@@ -392,11 +385,11 @@ export const StartTestIcon = React.memo(() => {
       height={ICON_SIZE}
       viewBox="0 0 24 24"
       fill="none"
-      stroke="#ffd300"
+      stroke="currentColor"
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className="animate-spin"
+      className="animate-spin text-warning"
     >
       <path d="M21 12a9 9 0 1 1-6.219-8.56" />
     </svg>
@@ -405,10 +398,7 @@ export const StartTestIcon = React.memo(() => {
 
 StartTestIcon.displayName = 'StartTestIcon';
 
-/**
- * Ícone específico para "Concluído o teste" (Done)
- * Cor verde: #00875a
- */
+/** Ícone para teste concluído — cor semântica `success`. */
 export const CompleteTestIcon = React.memo(() => {
   return (
     <svg
@@ -417,11 +407,11 @@ export const CompleteTestIcon = React.memo(() => {
       height={ICON_SIZE}
       viewBox="0 0 24 24"
       fill="none"
-      stroke="#00875a"
+      stroke="currentColor"
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className="animate-spin"
+      className="animate-spin text-success"
     >
       <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
       <polyline points="22 4 12 14.01 9 11.01" />
@@ -431,10 +421,7 @@ export const CompleteTestIcon = React.memo(() => {
 
 CompleteTestIcon.displayName = 'CompleteTestIcon';
 
-/**
- * Ícone específico para "To Do" (não iniciado)
- * Cor vermelha: #dc2626
- */
+/** Ícone para teste não iniciado — cor semântica `error` (destaque de atenção). */
 export const ToDoTestIcon = React.memo(() => {
   return (
     <svg
@@ -443,11 +430,11 @@ export const ToDoTestIcon = React.memo(() => {
       height={ICON_SIZE}
       viewBox="0 0 24 24"
       fill="none"
-      stroke="#dc2626"
+      stroke="currentColor"
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className="animate-spin"
+      className="animate-spin text-error"
     >
       <circle cx="12" cy="12" r="10" />
     </svg>

@@ -361,11 +361,21 @@ function decodeMisescapedNewlinesWhenFlat(value: string): string {
  * Nunca colapsa espaços ou newlines no meio do texto (`replace(/\s+/g, ' ')` é propositalmente evitado).
  *
  * @remarks
+ * **Atenção**: Para a UI de "uma linha", o componente de frontend deve utilizar CSS truncate.
+ * Esta função preserva os \n para que, em modais de detalhe, a estrutura de lista 
+ * numerada seja mantida, enquanto na listagem compacta o CSS cuida da exibição em linha única.
+ *
  * **Ponto único de normalização** para `action`, `parameters` e `expectedResult` após o parse do
  * JSON da IA. Serviços (`geminiService` / `openaiService`) não devem aplicar `.trim()` nesses
  * campos — evita dupla normalização e preserva intenção até aqui. É crítica para o roteiro
  * legível na UI (listas numeradas, bullets `•`). Mantenha testes cobrindo literais `\\n`,
  * caminhos Windows, CRLF e campos vazios (ver `testCaseGenerationService.test.ts`).
+ *
+ * **Desempenho**: custo O(n) em relação ao tamanho da string (poucas passagens lineares e regexes
+ * ancoradas em `decodeMisescapedNewlinesWhenFlat`). Evite encadear mais transformações pesadas
+ * aqui ou chamar esta função em loop quente sem necessidade; se precisar de formato “uma linha”
+ * para exibição, faça isso na camada de UI (CSS `truncate` / `line-clamp`) ou num adaptador de
+ * view, e não colapsando newlines nesta função.
  */
 function normalizeAiMultilineField(value: string): string {
   let v = value

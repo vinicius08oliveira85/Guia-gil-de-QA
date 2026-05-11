@@ -20,12 +20,19 @@ export const Confetti: React.FC<ConfettiProps> = ({ show, duration = 3000 }) => 
 
   if (!isVisible) return null;
 
+  const palette = [
+    'var(--chart-1)',
+    'var(--chart-4)',
+    'var(--chart-2)',
+    'var(--destructive)',
+    'var(--chart-3)',
+  ] as const;
   const confettiPieces = Array.from({ length: 50 }, (_, i) => ({
     id: i,
     left: Math.random() * 100,
     delay: Math.random() * duration,
     duration: Math.random() * 2000 + 1000,
-    color: ['#14B8A6', '#3B82F6', '#8B5CF6', '#EC4899', '#F59E0B'][Math.floor(Math.random() * 5)],
+    color: palette[Math.floor(Math.random() * palette.length)],
   }));
 
   return (

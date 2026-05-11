@@ -16,6 +16,9 @@
     --tasks-panel-gap: 0.75rem;
     --tasks-panel-gap-tight: 0.5rem;
     --tasks-panel-gap-loose: 1rem;
+    /** Epic (listagem): badge + faixa esquerda do card — mesma cor roxo escuro */
+    --jira-task-epic-accent: #3d2a63;
+    --jira-task-epic-accent-border: #2a1c45;
     /* Design System Leve Saúde (referência + contraste navegação) */
     --color-primary: #109685;
     --color-primary-deep: #0b6156;
@@ -430,6 +433,24 @@
   }
   .skip-link:focus {
     transform: translateY(0);
+  }
+
+  /**
+   * Epic na listagem (`JiraTaskItem`): badge + acento esquerdo do card na mesma paleta
+   * (tokens `--jira-task-epic-*` em `:root`; independe do `primary` laranja do tema Daisy `light`).
+   */
+  .jira-task-epic-type-pill {
+    background-color: var(--jira-task-epic-accent) !important;
+    color: #f4efff !important;
+    border: 1px solid var(--jira-task-epic-accent-border) !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  }
+
+  /** Faixa esquerda do card Epic = mesma cor de fundo do badge Epic */
+  .jira-task-epic-left-accent {
+    border-left-width: 4px !important;
+    border-left-style: solid !important;
+    border-left-color: var(--jira-task-epic-accent) !important;
   }
 
   /* Prose mínimo para markdown (sem typography plugin) */

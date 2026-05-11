@@ -287,7 +287,7 @@ export const Header: React.FC<HeaderProps> = ({
     >
       <path
         d="M21.362 9.354H12V.396a.396.396 0 0 0-.716-.233L2.203 12.424l-.401.562a1.04 1.04 0 0 0 .836 1.659H12v8.959a.396.396 0 0 0 .724.229l9.075-12.476.401-.562a1.04 1.04 0 0 0-.838-1.66Z"
-        fill="#3ECF8E"
+        fill="var(--chart-1)"
       />
     </svg>
   );
@@ -382,27 +382,27 @@ export const Header: React.FC<HeaderProps> = ({
             >
               <defs>
                 <linearGradient id="jiraGradientHeader" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#2684FF" />
-                  <stop offset="100%" stopColor="#0052CC" />
+                  <stop offset="0%" stopColor="var(--chart-4)" />
+                  <stop offset="100%" stopColor="var(--color-primary-deep)" />
                 </linearGradient>
               </defs>
               <path
                 d="M2 13 L2 20 L9 20 L9 17 L5 17 L5 13 Z"
-                fill="#0052CC"
+                fill="var(--chart-4)"
                 opacity="0.2"
                 transform="translate(1 1)"
               />
               <path d="M2 13 L2 20 L9 20 L9 17 L5 17 L5 13 Z" fill="url(#jiraGradientHeader)" />
               <path
                 d="M6 9 L6 16 L13 16 L13 13 L9 13 L9 9 Z"
-                fill="#0052CC"
+                fill="var(--chart-4)"
                 opacity="0.2"
                 transform="translate(1 1)"
               />
               <path d="M6 9 L6 16 L13 16 L13 13 L9 13 L9 9 Z" fill="url(#jiraGradientHeader)" />
               <path
                 d="M10 5 L10 12 L17 12 L17 9 L13 9 L13 5 Z"
-                fill="#0052CC"
+                fill="var(--chart-4)"
                 opacity="0.2"
                 transform="translate(1 1)"
               />

@@ -378,7 +378,7 @@ const App: React.FC = () => {
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen font-sans text-text-primary">
+      <div className="min-h-screen bg-base-100 font-body text-base-content">
         <div id="aria-live-region" className="sr-only" aria-live="polite" aria-atomic="true" />
         <a href="#main-content" className="skip-link" tabIndex={0}>
           Pular para o conteúdo principal

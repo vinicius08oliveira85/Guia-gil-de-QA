@@ -14,7 +14,7 @@ interface ButtonLeveProps extends React.ButtonHTMLAttributes<HTMLButtonElement> 
  * Botão Leve Saúde - Componente de botão seguindo a identidade visual
  *
  * Variantes:
- * - primary: Botão principal (verde #109685)
+ * - primary: Botão principal (token `--color-primary` / tema Daisy)
  * - secondary: Botão secundário com borda
  * - ghost: Botão transparente apenas com texto
  *
