@@ -50,6 +50,22 @@ describe('useErrorHandler', () => {
     );
   });
 
+  it('HTTP 429 sem code exibe mensagem amigável da IA', () => {
+    const { result } = renderHook(() => useErrorHandler());
+
+    act(() => {
+      result.current.handleError({ status: 429 }, 'API');
+    });
+
+    expect(toast.error).toHaveBeenCalledWith(
+      expect.stringMatching(/429|Limite|IA/i),
+      expect.objectContaining({
+        duration: 8000,
+        position: 'top-right',
+      })
+    );
+  });
+
   it('deve exibir mensagem amigável e id estável para GEMINI_RATE_LIMITED', () => {
     const { result } = renderHook(() => useErrorHandler());
     const err = new Error('Muitas requisições') as Error & { code?: string; status?: number };

@@ -1,4 +1,10 @@
 /** @type {import('tailwindcss').Config} */
+/**
+ * Tema Tailwind + DaisyUI. Espaçamentos semânticos de painel (`gap-tasks-panel*`) e raios do app
+ * vivem em `index.css` como variáveis (`--tasks-panel-gap`, `--rounded-box`, …), não duplicados aqui.
+ * Tokens gerados pelo Style Dictionary entram via CSS vars em `index.css`; `tokens/tailwind.config.tokens.js`
+ * existe para builds que mesclam cores/fontes quando disponíveis.
+ */
 
 // Tenta importar tokens gerados (opcional - fallback para valores padrão)
 // Nota: Se tokens não existirem, usa valores padrão do CSS

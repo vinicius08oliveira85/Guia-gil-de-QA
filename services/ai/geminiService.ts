@@ -33,6 +33,10 @@ import {
   shouldGenerateTestCasesAndBdd,
 } from './testGenerationPrompts';
 import { migrateTestCase } from '../../utils/testCaseMigration';
+import {
+  coalesceParametersFromAiRow,
+  type AiRawTestCaseRow,
+} from './mapAiTestCaseRows';
 
 const geminiTestStrategyItemSchema = {
   type: Type.OBJECT,
@@ -166,14 +170,7 @@ type GeminiStrategyRow = {
 
 type GeminiBddRow = { title?: string; gherkin?: string };
 
-type GeminiTestCaseRow = {
-  action?: string;
-  parameters?: string;
-  expectedResult?: string;
-  /** Campos legados aceitos pelo migrateTestCase */
-  description?: string;
-  steps?: string[];
-};
+type GeminiTestCaseRow = AiRawTestCaseRow;
 
 export class GeminiService implements AIService {
   private mapStrategyFromResponse(items: unknown[]): TestStrategy[] {
@@ -199,14 +196,12 @@ export class GeminiService implements AIService {
     baseTs: number
   ): TestCase[] {
     return (items as GeminiTestCaseRow[]).map((item, index) => {
-      const parameters =
-        (item.parameters && String(item.parameters).trim()) ||
-        (Array.isArray(item.steps) ? item.steps.join('\n') : '');
+      const parameters = coalesceParametersFromAiRow(item);
       return {
         id: `tc-${baseTs}-${index}`,
-        action: (item.action || item.description || '').trim(),
-        parameters: parameters.trim(),
-        expectedResult: (item.expectedResult || '').trim(),
+        action: item.action || item.description || '',
+        parameters,
+        expectedResult: item.expectedResult || '',
         observedResult: '',
         status: 'Not Run' as const,
       } as TestCase;
@@ -454,10 +449,9 @@ export class GeminiService implements AIService {
       // Histórias não devem ter casos de teste, apenas estratégias
       const testCases: TestCase[] = [];
 
-      const strategy: TestStrategy[] = parsedResponse.strategy.map((item: any) => ({
-        ...item,
-        howToExecute: item.howToExecute,
-      }));
+      const strategy = this.mapStrategyFromResponse(
+        Array.isArray(parsedResponse.strategy) ? parsedResponse.strategy : []
+      );
 
       return {
         task: {
@@ -675,10 +669,7 @@ Responda somente com JSON válido: {"scenarios":[{"title":"","gherkin":""},...]}
         throw new Error('Resposta da IA com estrutura inválida para cenários BDD.');
       }
 
-      return parsedResponse.scenarios.map((sc: any, index: number) => ({
-        ...sc,
-        id: `bdd-${Date.now()}-${index}`,
-      }));
+      return this.mapBddFromResponse(parsedResponse.scenarios, Date.now());
     } catch (error) {
       if (
         (isGeminiRateLimitOrQuotaError(error) || isGeminiTemporaryServiceError(error)) &&

@@ -359,6 +359,13 @@ function decodeMisescapedNewlinesWhenFlat(value: string): string {
  * Preserva quebras de linha internas vindas da IA: normaliza finais de linha (CRLF, CR, separadores
  * Unicode), corrige `\n` literais típicos de JSON mal gerado, e faz trim só nas extremidades.
  * Nunca colapsa espaços ou newlines no meio do texto (`replace(/\s+/g, ' ')` é propositalmente evitado).
+ *
+ * @remarks
+ * **Ponto único de normalização** para `action`, `parameters` e `expectedResult` após o parse do
+ * JSON da IA. Serviços (`geminiService` / `openaiService`) não devem aplicar `.trim()` nesses
+ * campos — evita dupla normalização e preserva intenção até aqui. É crítica para o roteiro
+ * legível na UI (listas numeradas, bullets `•`). Mantenha testes cobrindo literais `\\n`,
+ * caminhos Windows, CRLF e campos vazios (ver `testCaseGenerationService.test.ts`).
  */
 function normalizeAiMultilineField(value: string): string {
   let v = value

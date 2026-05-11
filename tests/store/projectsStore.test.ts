@@ -30,9 +30,19 @@ vi.mock('react-hot-toast', () => ({
   default: Object.assign(vi.fn(), { dismiss: vi.fn(), promise: vi.fn() }),
 }));
 
+vi.mock('../../services/ai/generalAnalysisService', () => ({
+  getGeneralIAAnalysisSnapshotHash: vi.fn(() => 'snapshot-default'),
+  invalidateGeneralAnalysisCache: vi.fn(),
+}));
+
+import * as generalAnalysisService from '../../services/ai/generalAnalysisService';
+
 describe('useProjectsStore', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(generalAnalysisService.getGeneralIAAnalysisSnapshotHash).mockImplementation(
+      () => 'snapshot-default'
+    );
     vi.mocked(supabaseService.isSupabaseAvailable).mockReturnValue(false);
     vi.mocked(supabaseService.loadProjectsFromSupabase).mockResolvedValue({
       projects: [],
@@ -171,6 +181,49 @@ describe('useProjectsStore', () => {
       const state = useProjectsStore.getState();
       expect(state.projects[0].name).toBe('Projeto Atualizado');
     });
+
+    it('invalida cache de análise geral quando o snapshot do projeto muda', async () => {
+      const project: Project = {
+        id: 'proj-1',
+        name: 'Antes',
+        description: 'Descrição',
+        documents: [],
+        businessRules: [],
+        tasks: [],
+        phases: [],
+      };
+      useProjectsStore.setState({ projects: [project] });
+      vi.mocked(dbService.updateProject).mockResolvedValue({ savedToSupabase: true });
+
+      vi.mocked(generalAnalysisService.getGeneralIAAnalysisSnapshotHash)
+        .mockReturnValueOnce('hash-antigo')
+        .mockReturnValueOnce('hash-novo');
+
+      await useProjectsStore
+        .getState()
+        .updateProject({ ...project, name: 'Depois' });
+
+      expect(generalAnalysisService.invalidateGeneralAnalysisCache).toHaveBeenCalledWith('proj-1');
+    });
+
+    it('não invalida cache quando o snapshot do projeto permanece igual', async () => {
+      const project: Project = {
+        id: 'proj-1',
+        name: 'Igual',
+        description: 'Descrição',
+        documents: [],
+        businessRules: [],
+        tasks: [],
+        phases: [],
+      };
+      useProjectsStore.setState({ projects: [project] });
+      vi.mocked(dbService.updateProject).mockResolvedValue({ savedToSupabase: true });
+      vi.mocked(generalAnalysisService.getGeneralIAAnalysisSnapshotHash).mockReturnValue('mesmo-hash');
+
+      await useProjectsStore.getState().updateProject({ ...project });
+
+      expect(generalAnalysisService.invalidateGeneralAnalysisCache).not.toHaveBeenCalled();
+    });
   });
 
   describe('deleteProject', () => {
@@ -196,6 +249,7 @@ describe('useProjectsStore', () => {
       const state = useProjectsStore.getState();
       expect(state.projects).toHaveLength(0);
       expect(state.selectedProjectId).toBeNull();
+      expect(generalAnalysisService.invalidateGeneralAnalysisCache).toHaveBeenCalledWith('proj-1');
     });
   });
 

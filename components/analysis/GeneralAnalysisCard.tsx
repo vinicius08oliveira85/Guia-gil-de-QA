@@ -4,6 +4,7 @@ import { format } from 'date-fns';
 import { cn } from '../../utils/cn';
 import { isAnalysisOutdated } from '../../utils/analysisFreshness';
 import { getGeneralIAAnalysisSnapshotHash } from '../../services/ai/generalAnalysisService';
+import { SafeMarkdown } from '../common/SafeMarkdown';
 
 interface GeneralAnalysisCardProps {
   analysis: GeneralIAAnalysis;
@@ -164,9 +165,10 @@ export const GeneralAnalysisCard: React.FC<GeneralAnalysisCardProps> = ({
         <SectionHeader title="Resumo Geral" icon="📊" sectionKey="summary" />
         {expandedSections.has('summary') && (
           <div className="mt-4 p-6 bg-base-200 rounded-xl border border-base-300 hover:border-primary/30 transition-all">
-            <p className="text-base-content whitespace-pre-wrap leading-relaxed text-base">
-              {analysis.summary}
-            </p>
+            <SafeMarkdown
+              source={analysis.summary}
+              className="leading-relaxed text-base"
+            />
           </div>
         )}
       </div>

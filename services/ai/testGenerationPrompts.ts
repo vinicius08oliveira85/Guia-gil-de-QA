@@ -19,6 +19,13 @@ export const TEST_CASE_VISUAL_FORMAT_INSTRUCTIONS = [
   '**expectedResult** (*Resultado esperado*): com **vários** critérios de verificação, use **bullet points com •**, **um critério por linha**. Critério único pode ser uma linha só.',
 ].join('\n');
 
+/** Rodapés JSON das três fases (evita divergência de texto entre funções). */
+export const PHASE_JSON_FOOTERS = {
+  strategy: `Responda somente com JSON válido no formato: {"strategy":[...]}.`,
+  bddScenarios: `Responda somente com JSON válido: {"bddScenarios":[{"title":"","gherkin":""},...]}.`,
+  testCases: `Responda somente com JSON válido: {"testCases":[...]}.`,
+} as const;
+
 /** Bloco pronto para injetar em prompts de geração de casos de teste. */
 export const TEST_CASE_VISUAL_FORMAT_PROMPT_SECTION = `
 ═══════════════════════════════════════════════════════════════
@@ -239,7 +246,7 @@ ${taskHeaderBlock(title, description, taskType, attachmentsContext)}
 ${bug}
 ${doc}
 
-Responda somente com JSON válido no formato: {"strategy":[...]}.
+${PHASE_JSON_FOOTERS.strategy}
 `.trim();
 }
 
@@ -277,7 +284,7 @@ ${taskHeaderBlock(title, description, taskType, attachmentsContext)}
 ${bug}
 ${doc}
 
-Responda somente com JSON válido: {"bddScenarios":[{"title":"","gherkin":""},...]}.
+${PHASE_JSON_FOOTERS.bddScenarios}
 `.trim();
 }
 
@@ -331,6 +338,6 @@ ${taskHeaderBlock(title, description, taskType, attachmentsContext)}
 ${bug}
 ${doc}
 
-Responda somente com JSON válido: {"testCases":[...]}.
+${PHASE_JSON_FOOTERS.testCases}
 `.trim();
 }

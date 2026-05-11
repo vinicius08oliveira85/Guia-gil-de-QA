@@ -468,7 +468,11 @@ const setCachedAnalysis = (key: string, hash: string, analysis: GeneralIAAnalysi
   });
 };
 
-/** Remove o cache de análise geral do projeto para forçar nova análise na próxima abertura. Chamar ao salvar/editar tarefa ou caso de teste. */
+/**
+ * Remove a entrada em memória da análise geral do projeto (mesmo `snapshotHash` antigo).
+ * O fluxo por snapshot já evita exibir análise obsoleta; esta chamada libera RAM de modo previsível.
+ * O store invalida quando `getGeneralIAAnalysisSnapshotHash` muda ou ao excluir o projeto.
+ */
 export function invalidateGeneralAnalysisCache(projectId: string): void {
   generalAnalysisCache.delete(`general-ia-analysis:${projectId}`);
 }
@@ -772,14 +776,14 @@ ${TEST_CASE_VISUAL_FORMAT_INSTRUCTIONS}
 
     const parsedResponse = JSON.parse(response.text.trim());
 
-    const aiTaskAnalysesMap = new Map<string, any>(
+    const aiTaskAnalysesMap = new Map<string, TaskIAAnalysis>(
       (parsedResponse.taskAnalyses || []).map((analysis: TaskIAAnalysis) => [
         analysis.taskId,
         analysis,
       ])
     );
 
-    const aiTestAnalysesMap = new Map<string, any>(
+    const aiTestAnalysesMap = new Map<string, TestIAAnalysis>(
       (parsedResponse.testAnalyses || []).map((analysis: TestIAAnalysis) => [
         analysis.testId,
         analysis,

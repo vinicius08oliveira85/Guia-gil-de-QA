@@ -33,7 +33,7 @@ import {
 } from 'lucide-react';
 import { logger } from '../../utils/logger';
 import { useProjectsStore } from '../../store/projectsStore';
-import { getFriendlyAIErrorMessage } from '../../utils/aiErrorMapper';
+import { toToastableAiError } from '../../utils/aiErrorMapper';
 import { withTimeout } from '../../utils/withTimeout';
 import { JiraTaskItem, TaskWithChildren } from './JiraTaskItem';
 import { TaskDetailsModal } from './TaskDetailsModal';
@@ -212,8 +212,7 @@ export const TasksView: React.FC<{
 
   const notifyAiError = useCallback(
     (error: unknown, context: string) => {
-      const friendlyMessage = getFriendlyAIErrorMessage(error);
-      handleError(new Error(friendlyMessage), context);
+      handleError(toToastableAiError(error), context);
     },
     [handleError]
   );
@@ -1171,7 +1170,7 @@ export const TasksView: React.FC<{
             `ou processe em lotes menores. O timeout é adaptativo (${timeoutSeconds}s base + 5s por tarefa, máximo 180s).`;
           handleError(new Error(errorMsg), 'Executar análise geral com IA');
         } else {
-          handleError(error, 'Executar análise geral com IA');
+          notifyAiError(error, 'Executar análise geral com IA');
         }
       } finally {
         setIsRunningGeneralAnalysis(false);
@@ -1183,6 +1182,7 @@ export const TasksView: React.FC<{
     onUpdateProject,
     handleError,
     handleSuccess,
+    notifyAiError,
     onNavigateToTab,
     enqueueGeminiOperation,
   ]);

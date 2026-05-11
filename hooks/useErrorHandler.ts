@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import toast from 'react-hot-toast';
 import { logger } from '../utils/logger';
-import { getFriendlyAIErrorMessage } from '../utils/aiErrorMapper';
+import { extractHttpStatus, getFriendlyAIErrorMessage } from '../utils/aiErrorMapper';
 
 /**
  * Interface para erros customizados da aplicação
@@ -58,10 +58,13 @@ export const useErrorHandler = () => {
       }
     }
 
+    const httpStatus = extractHttpStatus(error);
     const isAiCoded =
       typeof errorCode === 'string' &&
       (errorCode.startsWith('GEMINI_') || errorCode.startsWith('OPENAI_'));
-    const displayMessage = isAiCoded ? getFriendlyAIErrorMessage(error) : errorMessage;
+    const useFriendlyAiMessage =
+      isAiCoded || httpStatus === 429 || httpStatus === 503 || httpStatus === 502;
+    const displayMessage = useFriendlyAiMessage ? getFriendlyAIErrorMessage(error) : errorMessage;
 
     // Log estruturado usando logger centralizado
     logger.error(errorMessage, context, error);
@@ -70,7 +73,8 @@ export const useErrorHandler = () => {
       errorCode === 'GEMINI_RATE_LIMITED' ||
       errorCode === 'GEMINI_QUOTA_EXCEEDED' ||
       errorCode === 'OPENAI_RATE_LIMIT' ||
-      errorCode === 'OPENAI_QUOTA_EXCEEDED';
+      errorCode === 'OPENAI_QUOTA_EXCEEDED' ||
+      httpStatus === 429;
 
     toast.error(displayMessage, {
       duration: rateOrQuota ? 8000 : 5000,

@@ -1,12 +1,14 @@
 {
+  "id": "/",
   "name": "QA Agile Guide",
   "short_name": "QA Guide",
   "description": "Ferramenta de gestão de projetos de QA seguindo metodologias ágeis e práticas de DevOps",
+  "lang": "pt-BR",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#0E6DFD",
+  "theme_color": "#fb4c00",
   "orientation": "any",
   "icons": [
     {
@@ -35,7 +37,6 @@
     }
   ],
   "categories": ["productivity", "business", "developer"],
-  "screenshots": [],
   "shortcuts": [
     {
       "name": "Novo Projeto",

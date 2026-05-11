@@ -20,7 +20,10 @@ import { DEFAULT_BUSINESS_RULE_CATEGORY_PRESETS } from '../utils/businessRuleCat
 import { PHASE_NAMES } from '../utils/constants';
 import { addAuditLog } from '../utils/auditLog';
 import { logger } from '../utils/logger';
-import { invalidateGeneralAnalysisCache } from '../services/ai/generalAnalysisService';
+import {
+  getGeneralIAAnalysisSnapshotHash,
+  invalidateGeneralAnalysisCache,
+} from '../services/ai/generalAnalysisService';
 import toast from 'react-hot-toast';
 
 interface ProjectsState {
@@ -523,8 +526,12 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
 
       finalProject = { ...finalProject, updatedAt: new Date().toISOString() };
 
-      if (oldProject && oldProject.tasks !== finalProject.tasks) {
-        invalidateGeneralAnalysisCache(finalProject.id);
+      if (oldProject) {
+        const prevSnapshot = getGeneralIAAnalysisSnapshotHash(oldProject);
+        const nextSnapshot = getGeneralIAAnalysisSnapshotHash(finalProject);
+        if (prevSnapshot !== nextSnapshot) {
+          invalidateGeneralAnalysisCache(finalProject.id);
+        }
       }
 
       const syncRemote = options?.syncRemote === true;
@@ -577,6 +584,7 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
       }
 
       await deleteProject(projectId);
+      invalidateGeneralAnalysisCache(projectId);
       set(state => ({
         projects: state.projects.filter(p => p.id !== projectId),
         selectedProjectId: state.selectedProjectId === projectId ? null : state.selectedProjectId,

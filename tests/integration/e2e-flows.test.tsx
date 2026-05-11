@@ -61,6 +61,7 @@ vi.mock('../../services/ai/generalAnalysisService', () => ({
       isOutdated: false,
     })
   ),
+  getGeneralIAAnalysisSnapshotHash: vi.fn(() => 'mock-snapshot-hash'),
   invalidateGeneralAnalysisCache: vi.fn(),
 }));
 

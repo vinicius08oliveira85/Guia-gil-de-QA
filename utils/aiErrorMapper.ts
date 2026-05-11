@@ -26,6 +26,14 @@ const codeToMessage: Record<string, string> = {
   OPENAI_SERVICE_ERROR: 'Serviço de IA indisponível no momento. Tente novamente em alguns minutos.',
 };
 
+/** Extrai HTTP status de erros de API (Gemini/OpenAI/fetch). */
+export function extractHttpStatus(error: unknown): number | undefined {
+  if (!error || typeof error !== 'object') return undefined;
+  const e = error as { status?: unknown; statusCode?: unknown };
+  const s = e.status ?? e.statusCode;
+  return typeof s === 'number' ? s : undefined;
+}
+
 export const getFriendlyAIErrorMessage = (error: unknown): string => {
   if (!error) {
     return fallbackMessage;
@@ -74,3 +82,23 @@ export const getFriendlyAIErrorMessage = (error: unknown): string => {
 
   return fallbackMessage;
 };
+
+/**
+ * Constrói um `Error` com mensagem amigável preservando `code`/`status` para toasts
+ * (duração, id) e para `useErrorHandler`.
+ */
+export function toToastableAiError(error: unknown): Error {
+  const message = getFriendlyAIErrorMessage(error);
+  const err = new Error(message);
+  if (error && typeof error === 'object') {
+    const e = error as { code?: unknown };
+    if (typeof e.code === 'string') {
+      (err as GeminiAppError).code = e.code;
+    }
+    const st = extractHttpStatus(error);
+    if (st !== undefined) {
+      (err as GeminiAppError).status = st;
+    }
+  }
+  return err;
+}
