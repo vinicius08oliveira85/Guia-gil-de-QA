@@ -14,9 +14,9 @@ import { getDocumentContext } from './documentContextService';
  * Mantidas alinhadas às descrições de schema em `geminiService` / mensagem de sistema em `openaiService`.
  */
 export const TEST_CASE_VISUAL_FORMAT_INSTRUCTIONS = [
-  '**action** (*Ação necessária*): OBRIGATÓRIO usar lista numerada no formato `1. Passo`, `2. Passo`, etc., com **quebras de linha reais** entre cada item (no JSON do modelo, use o escape `\\n` para newline — não escreva o texto literal "\\\\n" nem junte todos os passos em uma única linha).',
-  '**parameters** (*Parâmetros necessários*): quando houver várias massas de dados, pré-condições ou dados de entrada, use **lista com marcadores** (`-` ou `•`), **um item por linha**. Um único critério pode ser uma linha sem marcador.',
-  '**expectedResult** (*Resultado esperado*): quando houver vários critérios ou verificações, use **lista com marcadores** (`-` ou `•`), **um critério por linha**.',
+  '**action** (*Ação necessária*): OBRIGATÓRIO usar lista numerada (`1.`, `2.`, `3.` …) com **quebras de linha reais** (`\\n` no JSON da string) entre cada passo — nunca um único parágrafo contínuo quando houver mais de um passo.',
+  '**parameters** (*Parâmetros necessários*): com **vários** itens (massas, pré-condições, dados), use **bullet points com o caractere •** (U+2022), **um item por linha**. Item único pode ser uma linha sem marcador.',
+  '**expectedResult** (*Resultado esperado*): com **vários** critérios de verificação, use **bullet points com •**, **um critério por linha**. Critério único pode ser uma linha só.',
 ].join('\n');
 
 /** Bloco pronto para injetar em prompts de geração de casos de teste. */
@@ -185,9 +185,9 @@ Priorize: verificação da correção, regressão em áreas relacionadas, cenár
 function detailLevelBlock(detailLevel: TestCaseDetailLevel): string {
   return `
 Nível de detalhe do campo JSON \`action\` (rótulo na UI: **Ação necessária** — roteiro em texto): ${detailLevel}
-- Resumido: poucos passos numerados (sempre com lista \`1.\` … \`2.\` … e \\n entre linhas), linguagem objetiva.
-- Padrão: roteiro completo com passos numerados obrigatórios e quebras de linha entre cada passo.
-- Detalhado: roteiro extenso, passos numerados, verificações intermediárias e dados explícitos; **parameters**/**expectedResult** com marcadores quando houver múltiplos itens.
+- Resumido: poucos passos numerados (sempre \`1.\` … \`2.\` … com \\n entre linhas), linguagem objetiva.
+- Padrão: roteiro completo com passos numerados e quebra de linha entre cada passo.
+- Detalhado: roteiro extenso com verificações intermediárias; **parameters** e **expectedResult** com linhas iniciadas por **•** quando houver vários pontos.
 `;
 }
 
@@ -308,8 +308,8 @@ Objetivo: gerar APENAS casos de teste em JSON (testCases). Não gere estratégia
 
 Regras de aderência (roteiro padronizado — use exatamente estes nomes de chave JSON):
 - **action** (*Ação necessária*): roteiro executável em um único string (sem array de passos). **Sempre** formato lista numerada (\`1.\`, \`2.\`, …) com quebra de linha real entre cada passo.
-- **parameters** (*Parâmetros necessários*): massa de dados, pré-condições, inputs e contexto técnico. Com vários itens, use marcadores (\`-\` ou \`•\`) um por linha. Se não houver nada específico, use exatamente o texto "—".
-- **expectedResult** (*Resultado esperado*): critérios objetivos de sucesso; com várias verificações, use marcadores (\`-\` ou \`•\`) um por linha.
+- **parameters** (*Parâmetros necessários*): massa de dados, pré-condições, inputs e contexto técnico. Com **vários** itens, cada linha DEVE começar com **•** (bullet Unicode). Se não houver nada específico, use exatamente o texto "—".
+- **expectedResult** (*Resultado esperado*): critérios de sucesso; com **várias** verificações, cada linha DEVE começar com **•**.
 - **Proibido**: preencher **Resultado Obtido** / \`observedResult\` / "resultado obtido" / qualquer campo equivalente — isso é exclusivo do executor humano na aplicação. Não inclua essas chaves no JSON.
 - Não invente módulos, APIs ou telas ausentes do texto da tarefa ou dos BDD.
 

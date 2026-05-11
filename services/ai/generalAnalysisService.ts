@@ -619,7 +619,7 @@ const generalAnalysisSchema = {
           coverage: {
             type: Type.STRING,
             description:
-              'Avaliação da cobertura e qualidade do roteiro do teste. Prefira listas com marcadores (- ou •) quando houver vários pontos. Ao comentar action/parameters/expectedResult, valorize roteiros que já usem passos numerados com quebras de linha e marcadores para múltiplos critérios.',
+              'Cobertura e qualidade do roteiro em Markdown ENXUTO: use **negrito** para lacunas ou riscos críticos; listas (`-`, `•` ou numeradas) para achados; evite parágrafos longos — prefira vários blocos curtos com linhas em branco entre eles.',
           },
           detectedProblems: {
             type: Type.ARRAY,
@@ -748,7 +748,7 @@ INSTRUÇÕES:
 3. Para cada entrada em priorityTasks:
    - Produza um item em taskAnalyses seguindo o schema (resumo, problemas, nível de risco, score, itens faltantes, sugestões BDD, melhorias de QA).
 4. Para cada entrada em priorityTests:
-   - Produza um item em testAnalyses com cobertura, problemas e recomendações.
+   - Produza um item em testAnalyses; no campo **coverage** use Markdown (listas, **negrito**), texto escaneável; evite parágrafos densos.
 5. Gere missingItems, bddSuggestions e qaImprovements alinhados ao contexto.
 6. Respeite o schema informado (JSON puro, sem texto adicional).
 
@@ -758,6 +758,7 @@ OBSERVAÇÕES IMPORTANTES:
 - Não faça referência a tarefas/testes que não estejam presentes no contexto.
 - Ao sugerir melhorias em casos de teste (quando aplicável), alinhe-se a esta padronização de roteiro:
 ${TEST_CASE_VISUAL_FORMAT_INSTRUCTIONS}
+- Em **testAnalyses[].coverage**, priorize Markdown estruturado (listas e **negrito**); não escreva um único parágrafo longo.
     `.slice(0, MAX_PROMPT_LENGTH);
 
     const response = await callGeminiWithRetry({

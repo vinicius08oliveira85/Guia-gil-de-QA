@@ -4,6 +4,7 @@ import { format } from 'date-fns';
 import { cn } from '../../utils/cn';
 import { isAnalysisOutdated } from '../../utils/analysisFreshness';
 import { getTestIaAnalysisSnapshotHash } from '../../services/ai/generalAnalysisService';
+import { SafeMarkdown } from '../common/SafeMarkdown';
 
 interface TestAnalysisCardProps {
   analysis: TestIAAnalysis;
@@ -56,7 +57,7 @@ export const TestAnalysisCard: React.FC<TestAnalysisCardProps> = ({
         <div className="flex-1">
           {testCase ? (
             <div>
-              <h4 className="font-semibold text-base-content mb-1 line-clamp-1">
+              <h4 className="font-semibold text-base-content mb-1 line-clamp-4 whitespace-pre-wrap break-words">
                 {testCase.action}
               </h4>
               {task && onTaskClick ? (
@@ -94,8 +95,8 @@ export const TestAnalysisCard: React.FC<TestAnalysisCardProps> = ({
 
       {/* Coverage */}
       <div className="mb-3 p-3 bg-base-200 rounded-lg border border-base-300 hover:border-primary/30 transition-all">
-        <p className="text-xs font-semibold text-base-content/70 mb-1">Cobertura</p>
-        <p className="text-sm text-base-content">{analysis.coverage}</p>
+        <p className="text-xs font-semibold text-base-content/70 mb-2">Cobertura</p>
+        <SafeMarkdown source={analysis.coverage} className="text-sm" />
       </div>
 
       {/* Expand/Collapse */}

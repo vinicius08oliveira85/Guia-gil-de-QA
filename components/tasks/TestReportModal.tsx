@@ -274,7 +274,7 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({ isOpen, onClos
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0 flex-1">
-                          <p className="text-sm font-medium text-base-content">
+                          <p className="text-sm font-medium text-base-content whitespace-pre-wrap break-words">
                             {testCase.action || `Teste ${index + 1}`}
                           </p>
                           {testCase.parameters?.trim() ? (

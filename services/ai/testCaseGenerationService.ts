@@ -346,24 +346,26 @@ const PLACEHOLDER_EXPECTED =
 
 /**
  * Alguns modelos devolvem `\` + `n` literal em vez de newline dentro da string (após JSON.parse).
- * Só corrige quando **ainda não há** quebras reais — assim não alteramos texto já bem formatado.
- * O lookahead exige próximo passo numerado (`N. `) ou marcador (`-` / `•`), evitando substituir
- * sequências como `\n` em `C:\notes\...` (onde `\` + `n` faz parte do caminho).
+ * Substitui apenas onde o trecho seguinte indica lista numerada ou marcador (`-` / `•`), para não
+ * alterar sequências como `\n` em `C:\notes\...`.
  */
 function decodeMisescapedNewlinesWhenFlat(value: string): string {
-  if (value.includes('\n')) return value;
   let v = value.replace(/\\n(?=\s*\d+\.\s)/g, '\n');
   v = v.replace(/\\n(?=\s*[•\-])/gu, '\n');
   return v;
 }
 
 /**
- * Preserva quebras de linha internas vindas da IA (JSON), apenas normaliza CRLF/CR para LF,
- * opcionalmente converte `\n` literais mal escapados entre passos/marcadores, e remove espaços
- * só no início/fim — não colapsa linhas em branco intermediárias.
+ * Preserva quebras de linha internas vindas da IA: normaliza finais de linha (CRLF, CR, separadores
+ * Unicode), corrige `\n` literais típicos de JSON mal gerado, e faz trim só nas extremidades.
+ * Nunca colapsa espaços ou newlines no meio do texto (`replace(/\s+/g, ' ')` é propositalmente evitado).
  */
 function normalizeAiMultilineField(value: string): string {
-  let v = value.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  let v = value
+    .replace(/\r\n/g, '\n')
+    .replace(/\r/g, '\n')
+    .replace(/\u2028/g, '\n')
+    .replace(/\u2029/g, '\n');
   v = decodeMisescapedNewlinesWhenFlat(v);
   return v.trim();
 }

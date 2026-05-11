@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import type { TestCase, TestCaseExecutionKind } from '../../types';
 import { Modal } from '../common/Modal';
+import { SafeMarkdown } from '../common/SafeMarkdown';
 
 interface TestCaseEditorModalProps {
   testCase: TestCase;
@@ -27,6 +28,8 @@ export const TestCaseEditorModal: React.FC<TestCaseEditorModalProps> = ({
   );
   const [environment, setEnvironment] = useState(testCase.environment ?? '');
   const [suite, setSuite] = useState(testCase.suite ?? '');
+  /** Prévia renderizada com Markdown sanitizado; o persistido continua sendo texto puro. */
+  const [previewMarkdown, setPreviewMarkdown] = useState(false);
 
   useEffect(() => {
     setAction(testCase.action);
@@ -61,6 +64,22 @@ export const TestCaseEditorModal: React.FC<TestCaseEditorModalProps> = ({
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={`Editar caso de teste: ${previewTitle}`} size="xl">
       <div className="space-y-4">
+        <label className="flex cursor-pointer items-start gap-2 rounded-lg border border-base-300 bg-base-200/40 p-3 text-sm text-base-content">
+          <input
+            type="checkbox"
+            className="checkbox checkbox-sm mt-0.5"
+            checked={previewMarkdown}
+            onChange={e => setPreviewMarkdown(e.target.checked)}
+          />
+          <span>
+            <span className="font-semibold">Pré-visualizar como Markdown</span>
+            <span className="block text-xs text-base-content/70 mt-0.5">
+              Somente leitura abaixo de cada campo. O valor salvo permanece texto puro (listas numeradas,
+              quebras de linha e, se quiser, sintaxe **negrito** / listas Markdown).
+            </span>
+          </span>
+        </label>
+
         <div>
           <label className="block text-xs font-semibold text-base-content/70 mb-1">
             Ação necessária
@@ -68,9 +87,15 @@ export const TestCaseEditorModal: React.FC<TestCaseEditorModalProps> = ({
           <textarea
             value={action}
             onChange={e => setAction(e.target.value)}
-            className="textarea textarea-bordered w-full bg-base-100 border-base-300 text-base-content min-h-[120px]"
+            className="textarea textarea-bordered w-full bg-base-100 border-base-300 text-base-content min-h-[120px] font-mono whitespace-pre-wrap"
             placeholder="Descreva o que deve ser executado (roteiro)."
           />
+          {previewMarkdown && (
+            <div className="mt-2 rounded-lg border border-base-300 bg-base-200/50 p-3 text-xs">
+              <p className="font-semibold text-base-content/70 mb-2">Prévia</p>
+              <SafeMarkdown source={action} className="text-sm" />
+            </div>
+          )}
         </div>
 
         <div>
@@ -80,9 +105,15 @@ export const TestCaseEditorModal: React.FC<TestCaseEditorModalProps> = ({
           <textarea
             value={parameters}
             onChange={e => setParameters(e.target.value)}
-            className="textarea textarea-bordered w-full bg-base-100 border-base-300 text-base-content min-h-[88px]"
+            className="textarea textarea-bordered w-full bg-base-100 border-base-300 text-base-content min-h-[88px] font-mono whitespace-pre-wrap"
             placeholder="Dados de entrada, massa, ambientes, contas…"
           />
+          {previewMarkdown && (
+            <div className="mt-2 rounded-lg border border-base-300 bg-base-200/50 p-3 text-xs">
+              <p className="font-semibold text-base-content/70 mb-2">Prévia</p>
+              <SafeMarkdown source={parameters} className="text-sm" />
+            </div>
+          )}
         </div>
 
         <div>
@@ -92,8 +123,14 @@ export const TestCaseEditorModal: React.FC<TestCaseEditorModalProps> = ({
           <textarea
             value={expectedResult}
             onChange={e => setExpectedResult(e.target.value)}
-            className="textarea textarea-bordered w-full bg-base-100 border-base-300 text-base-content min-h-[88px]"
+            className="textarea textarea-bordered w-full bg-base-100 border-base-300 text-base-content min-h-[88px] font-mono whitespace-pre-wrap"
           />
+          {previewMarkdown && (
+            <div className="mt-2 rounded-lg border border-base-300 bg-base-200/50 p-3 text-xs">
+              <p className="font-semibold text-base-content/70 mb-2">Prévia</p>
+              <SafeMarkdown source={expectedResult} className="text-sm" />
+            </div>
+          )}
         </div>
 
         <div>
@@ -103,9 +140,15 @@ export const TestCaseEditorModal: React.FC<TestCaseEditorModalProps> = ({
           <textarea
             value={observedResult}
             onChange={e => setObservedResult(e.target.value)}
-            className="textarea textarea-bordered w-full bg-base-100 border-base-300 text-base-content min-h-[88px]"
+            className="textarea textarea-bordered w-full bg-base-100 border-base-300 text-base-content min-h-[88px] font-mono whitespace-pre-wrap"
             placeholder="Preencha após a execução."
           />
+          {previewMarkdown && (
+            <div className="mt-2 rounded-lg border border-base-300 bg-base-200/50 p-3 text-xs">
+              <p className="font-semibold text-base-content/70 mb-2">Prévia</p>
+              <SafeMarkdown source={observedResult} className="text-sm" />
+            </div>
+          )}
         </div>
 
         <div className="rounded-lg border border-base-300 bg-base-200/30 p-3 space-y-3">

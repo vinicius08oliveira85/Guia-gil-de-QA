@@ -162,20 +162,20 @@ export const TestCaseTemplateSelector: React.FC<TestCaseTemplateSelectorProps> =
                 <span className="text-xl">{getCategoryIcon(template.category)}</span>
               </div>
             </div>
-            <div className="text-xs text-text-secondary space-y-1 mb-3">
-              <p>
+            <div className="text-xs text-text-secondary space-y-2 mb-3">
+              <div className="whitespace-pre-wrap break-words">
                 <strong className="text-text-primary">Ação necessária:</strong>{' '}
                 {template.testCase.action}
-              </p>
-              <p>
+              </div>
+              <div className="whitespace-pre-wrap break-words">
                 <strong className="text-text-primary">Parâmetros necessários:</strong>{' '}
                 {template.testCase.parameters}
-              </p>
+              </div>
               {template.testCase.expectedResult && (
-                <p>
+                <div className="whitespace-pre-wrap break-words">
                   <strong className="text-text-primary">Resultado esperado:</strong>{' '}
                   {template.testCase.expectedResult}
-                </p>
+                </div>
               )}
             </div>
             <div className="flex flex-wrap gap-1.5 mt-3 pt-3 border-t border-surface-border">

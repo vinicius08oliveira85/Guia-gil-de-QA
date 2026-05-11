@@ -92,17 +92,17 @@ const geminiTestCaseItemSchema = {
     action: {
       type: Type.STRING,
       description:
-        'Ação necessária: roteiro executável. OBRIGATÓRIO usar lista numerada (ex.: 1. Passo A, 2. Passo B) com quebras de linha REAIS entre cada item — no JSON da resposta, cada quebra deve ser o caractere newline (escape \\n na string), nunca um único parágrafo sem numeração quando houver mais de um passo.',
+        'Ação necessária: roteiro executável. OBRIGATÓRIO lista numerada 1. 2. 3. com caracteres newline REAIS entre cada passo (no JSON use \\n dentro da string). Proibido empilhar todos os passos numa única linha.',
     },
     parameters: {
       type: Type.STRING,
       description:
-        'Parâmetros necessários: massas de dados, pré-condições e contexto. Se houver múltiplos itens ou massas, use OBRIGATORIAMENTE lista com marcadores (- ou •), um item por linha. Um único valor pode ser uma linha só. Use "—" se não houver parâmetros.',
+        'Parâmetros e massa de dados. Se houver MÚLTIPLOS itens, cada linha DEVE iniciar com o bullet Unicode • (U+2022). Um item pode ficar sem marcador. Use "—" se vazio.',
     },
     expectedResult: {
       type: Type.STRING,
       description:
-        'Resultado esperado: critérios de sucesso verificáveis. Se houver múltiplos critérios ou verificações, use OBRIGATORIAMENTE lista com marcadores (- ou •), um critério por linha.',
+        'Resultado esperado. Se houver MÚLTIPLAS verificações, cada linha DEVE iniciar com • (bullet). Uma única verificação pode ser texto corrido curto.',
     },
     executionKind: {
       type: Type.STRING,
@@ -124,7 +124,7 @@ const geminiTestCaseItemSchema = {
 const geminiTestCasesArrayProperty = {
   type: Type.ARRAY,
   description:
-    'Casos de teste com estrutura visual profissional: action sempre com passos numerados e \\n entre linhas; parameters e expectedResult com marcadores (- ou •) quando houver vários itens. Cada objeto deve conter APENAS action, parameters e expectedResult, mais opcionalmente executionKind, environment e suite. NUNCA inclua observedResult nem equivalentes.',
+    'Casos de teste: action com lista numerada e quebras \\n reais; parameters e expectedResult com linhas iniciadas por • quando houver vários pontos. Campos obrigatórios action, parameters, expectedResult; opcionais executionKind, environment, suite. NUNCA observedResult.',
   items: geminiTestCaseItemSchema,
 };
 

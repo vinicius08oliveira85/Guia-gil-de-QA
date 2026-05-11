@@ -116,7 +116,7 @@ export const TestCard: React.FC<TestCardProps> = ({
                   <p className="text-[10px] font-bold uppercase tracking-wide text-base-content/50">
                     Ação necessária
                   </p>
-                  <p className="text-sm font-medium text-base-content truncate font-mono">
+                  <p className="text-sm font-medium text-base-content font-mono line-clamp-4 whitespace-pre-wrap break-words">
                     {testCase.action || 'Sem ação definida'}
                   </p>
                 </div>
@@ -177,7 +177,7 @@ export const TestCard: React.FC<TestCardProps> = ({
                     <p className="text-xs font-semibold text-base-content/70 mb-xs">
                       Resultado esperado:
                     </p>
-                    <p className="text-xs text-base-content/80 font-mono bg-base-200 p-xs rounded">
+                    <p className="text-xs text-base-content/80 font-mono bg-base-200 p-xs rounded whitespace-pre-wrap break-words">
                       {testCase.expectedResult}
                     </p>
                   </div>

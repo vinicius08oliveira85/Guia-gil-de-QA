@@ -341,7 +341,7 @@ export const AnalysisView: React.FC<{
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <h5 className="font-semibold text-base-content mb-1 line-clamp-1">
+                        <h5 className="font-semibold text-base-content mb-1 line-clamp-4 whitespace-pre-wrap break-words">
                           {testCase.action}
                         </h5>
                         <p className="text-xs text-base-content/70">

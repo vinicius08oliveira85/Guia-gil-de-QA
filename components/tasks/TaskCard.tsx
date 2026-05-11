@@ -156,7 +156,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onStartTest, onComplet
             {/* Você pode renderizar a lista de casos de teste aqui */}
             <ul className="space-y-1 text-sm list-disc list-inside">
               {task.testCases.map(tc => (
-                <li key={tc.id} className="text-base-content/80">
+                <li key={tc.id} className="text-base-content/80 whitespace-pre-wrap break-words">
                   {tc.action} - <strong>{tc.status}</strong>
                 </li>
               ))}
