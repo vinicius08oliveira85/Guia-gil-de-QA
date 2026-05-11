@@ -381,7 +381,7 @@ export const ProjectsDashboard: React.FC<{
           <div className="mt-5 sm:mt-6">
             {filteredProjects.length > 0 ? (
               <div
-                className="grid grid-cols-1 gap-tasks-panel md:grid-cols-2 lg:grid-cols-3"
+                className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
                 role="list"
                 aria-label="Lista de projetos"
               >
@@ -395,7 +395,6 @@ export const ProjectsDashboard: React.FC<{
                   >
                     <ProjectCard
                       project={p}
-                      layout="grid"
                       className="h-full"
                       onSelect={() => onSelectProject(p.id)}
                       onTaskClick={taskId => handleNavigateToTask(p.id, taskId)}
