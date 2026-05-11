@@ -9,12 +9,18 @@ import {
   type RoteiroFieldView,
 } from '../../utils/testCaseActionDisplay';
 import { ChevronDownIcon, EditIcon, ListIcon, TrashIcon } from '../common/Icons';
-import { Copy } from 'lucide-react';
-
-const ACTION_TRUNCATE_LINES = 4;
+import { Copy, MoreVertical } from 'lucide-react';
+import { cn } from '../../utils/cn';
 
 const ROTEIRO_BLOCK_CLASS =
   'text-xs text-base-content bg-base-200/50 p-3 rounded-lg border border-base-300/50';
+
+const STATUS_EMOJI: Record<TestCase['status'], string> = {
+  'Not Run': '○',
+  Passed: '✅',
+  Failed: '❌',
+  Blocked: '⚠️',
+};
 
 function RoteiroStructuredBody({ view }: { view: RoteiroFieldView }) {
   if (view.kind === 'plain') {
@@ -86,12 +92,6 @@ export const TestCaseItem: React.FC<{
   selected,
   onToggleSelect,
 }) => {
-  const statusBadgeClassName: Record<TestCase['status'], string> = {
-    'Not Run': 'badge badge-ghost badge-xs',
-    Passed: 'badge badge-success badge-xs',
-    Failed: 'badge badge-error badge-xs',
-    Blocked: 'badge badge-warning badge-xs',
-  };
   const statusLabel: Record<TestCase['status'], string> = {
     'Not Run': 'Não Executado',
     Passed: 'Aprovado',
@@ -100,7 +100,6 @@ export const TestCaseItem: React.FC<{
   };
 
   const [detailsOpen, setDetailsOpen] = useState(() => testCase.status === 'Failed');
-  const [actionExpanded, setActionExpanded] = useState(false);
 
   const effectiveDetailsOpen =
     detailsOpenOverride !== undefined ? detailsOpenOverride : detailsOpen;
@@ -111,15 +110,16 @@ export const TestCaseItem: React.FC<{
   }, [testCase.action]);
 
   const hasStructuredSteps = actionSteps.length > 1;
-  const actionText = actionSteps.join('\n');
-  const isActionLong = hasStructuredSteps
-    ? actionSteps.length > ACTION_TRUNCATE_LINES || actionText.length > 360
-    : actionText.split(/\n/).length > ACTION_TRUNCATE_LINES || actionText.length > 360;
 
-  const visibleActionSteps =
-    hasStructuredSteps && !actionExpanded && isActionLong
-      ? actionSteps.slice(0, ACTION_TRUNCATE_LINES)
-      : actionSteps;
+  /** Uma única linha na lista (truncável); texto completo em title / roteiro expandido. */
+  const actionOneLine = useMemo(
+    () =>
+      (testCase.action || '')
+        .replace(/\r?\n+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim() || '—',
+    [testCase.action]
+  );
 
   const parametersView = useMemo(
     () => structureTestCaseParameters(testCase.parameters || ''),
@@ -145,6 +145,14 @@ export const TestCaseItem: React.FC<{
     return { env, suite, execLabel };
   }, [testCase]);
 
+  const metaLine = useMemo(() => {
+    const parts: string[] = [];
+    if (metaChips.execLabel) parts.push(metaChips.execLabel);
+    if (metaChips.env) parts.push(`Amb. ${metaChips.env}`);
+    if (metaChips.suite) parts.push(`Suíte ${metaChips.suite}`);
+    return parts.join(' · ');
+  }, [metaChips]);
+
   useEffect(() => {
     if (testCase.status === 'Failed') {
       setDetailsOpen(true);
@@ -152,130 +160,199 @@ export const TestCaseItem: React.FC<{
   }, [testCase.status]);
 
   return (
-    <div className="rounded-2xl border border-base-300 bg-base-100 p-3 transition-colors hover:border-primary/30 space-y-2">
-      <div className="flex flex-wrap items-center justify-between gap-1.5">
-        <div className="flex flex-wrap items-center gap-1.5">
-          {onBatchSelect && onToggleSelect && (
-            <label className="label cursor-pointer gap-1.5 py-0 pr-2 border-r border-base-300">
-              <input
-                type="checkbox"
-                checked={!!selected}
-                onChange={onToggleSelect}
-                className="checkbox checkbox-sm"
-                aria-label="Selecionar caso de teste para ações em lote"
-              />
-            </label>
-          )}
-          <span
-            className={`${statusBadgeClassName[testCase.status]} text-[10px] font-bold tracking-wider`}
+    <div
+      className={cn(
+        'rounded-[1.4rem] border border-base-300 bg-base-200 py-2 px-3 transition-colors duration-200 hover:bg-base-300',
+        selected && 'ring-1 ring-primary/40 ring-offset-2 ring-offset-base-200'
+      )}
+    >
+      <div className="flex min-w-0 items-center gap-2 md:gap-2">
+        {onBatchSelect && onToggleSelect && (
+          <label className="label shrink-0 cursor-pointer gap-1 py-0">
+            <input
+              type="checkbox"
+              checked={!!selected}
+              onChange={onToggleSelect}
+              className="checkbox checkbox-sm"
+              aria-label="Selecionar caso de teste para ações em lote"
+            />
+          </label>
+        )}
+
+        <span
+          className="flex h-8 w-8 shrink-0 items-center justify-center text-lg leading-none"
+          title={statusLabel[testCase.status]}
+          aria-hidden
+        >
+          <span className="sr-only">{statusLabel[testCase.status]}</span>
+          {STATUS_EMOJI[testCase.status]}
+        </span>
+
+        <p
+          className="font-heading min-w-0 flex-1 truncate text-sm text-base-content sm:text-base"
+          title={testCase.action || undefined}
+        >
+          <span className="sr-only">Ação necessária: </span>
+          {actionOneLine}
+        </p>
+
+        {metaLine ? (
+          <p
+            className="font-body text-muted hidden max-w-[min(12rem,28vw)] shrink-0 truncate text-xs md:block"
+            title={metaLine}
           >
-            {statusLabel[testCase.status]}
-          </span>
-        </div>
-        <div className="flex items-center gap-1">
+            {metaLine}
+          </p>
+        ) : null}
+
+        <div className="hidden shrink-0 items-center gap-0.5 border-l border-base-300/70 pl-2 md:flex">
           {onEdit && (
             <button
               type="button"
               onClick={onEdit}
-              className="btn btn-ghost btn-sm btn-circle"
+              className="btn btn-ghost btn-xs btn-circle min-h-8 min-w-8"
               aria-label="Editar caso de teste"
             >
-              <EditIcon className="w-4 h-4" />
+              <EditIcon className="h-4 w-4" />
             </button>
           )}
           {onDuplicate && (
             <button
               type="button"
               onClick={onDuplicate}
-              className="btn btn-ghost btn-sm btn-circle"
+              className="btn btn-ghost btn-xs btn-circle min-h-8 min-w-8"
               aria-label="Duplicar caso de teste"
               title="Duplicar"
             >
-              <Copy className="w-4 h-4" />
+              <Copy className="h-4 w-4" />
             </button>
           )}
           {onDelete && (
             <button
               type="button"
               onClick={onDelete}
-              className="btn btn-ghost btn-sm btn-circle text-error"
+              className="btn btn-ghost btn-xs btn-circle min-h-8 min-w-8 text-error"
               aria-label="Excluir caso de teste"
             >
-              <TrashIcon className="w-4 h-4" />
+              <TrashIcon className="h-4 w-4" />
             </button>
           )}
         </div>
-      </div>
 
-      <div className="min-w-0 space-y-1">
-        <p className="text-[10px] font-bold text-base-content/60 uppercase tracking-widest">
-          Ação necessária
-        </p>
-        {hasStructuredSteps ? (
-          <ol
-            className="list-decimal list-outside ml-5 space-y-2 pl-1 text-base font-semibold leading-snug marker:font-bold marker:text-primary"
-            title={testCase.action || undefined}
-            aria-label="Passos da ação"
-          >
-            {visibleActionSteps.map((step, i) => (
-              <li
-                key={`action-step-${i}`}
-                className="break-words pl-0.5 text-base-content [overflow-wrap:anywhere]"
-              >
-                {stripLeadingStepIndex(step)}
-              </li>
-            ))}
-          </ol>
-        ) : (
-          <p
-            className={`text-base font-semibold text-base-content leading-snug break-words whitespace-pre-wrap ${!actionExpanded && isActionLong ? 'line-clamp-4' : ''}`}
-            title={actionText}
-          >
-            {actionSteps[0]}
-          </p>
-        )}
-        {isActionLong && !actionExpanded && (
+        <div
+          className="hidden shrink-0 items-center gap-0.5 border-l border-base-300/70 pl-2 md:flex"
+          role="group"
+          aria-label="Marcar resultado da execução"
+        >
           <button
             type="button"
-            onClick={() => setActionExpanded(true)}
-            className="btn btn-ghost btn-xs mt-0.5 text-primary hover:bg-primary/10"
+            onClick={() => onStatusChange('Passed')}
+            title="Aprovar"
+            aria-label="Marcar como Aprovado"
+            className={cn(
+              'btn btn-xs min-h-8 min-w-8 rounded-full px-0 font-normal',
+              testCase.status === 'Passed' ? 'btn-success' : 'btn-ghost border border-success/40 text-success'
+            )}
           >
-            Ver mais
+            ✅
           </button>
-        )}
-        {(metaChips.execLabel || metaChips.env || metaChips.suite) && (
-          <div
-            className="flex flex-wrap gap-1.5 pt-1.5 border-t border-base-200/80 mt-1.5"
-            aria-label="Metadados do roteiro"
+          <button
+            type="button"
+            onClick={() => onStatusChange('Failed')}
+            title="Reprovar"
+            aria-label="Marcar como Reprovado"
+            className={cn(
+              'btn btn-xs min-h-8 min-w-8 rounded-full px-0 font-normal',
+              testCase.status === 'Failed' ? 'btn-error' : 'btn-ghost border border-error/40 text-error'
+            )}
           >
-            {metaChips.execLabel && (
-              <span className="inline-flex items-center rounded-md border border-base-300/80 bg-base-200/50 px-2 py-0.5 text-[10px] font-semibold text-base-content/85">
-                {metaChips.execLabel}
-              </span>
+            ❌
+          </button>
+          <button
+            type="button"
+            onClick={() => onStatusChange('Blocked')}
+            title="Bloquear"
+            aria-label="Marcar como Bloqueado"
+            className={cn(
+              'btn btn-xs min-h-8 min-w-8 rounded-full px-0 font-normal',
+              testCase.status === 'Blocked'
+                ? 'btn-warning'
+                : 'btn-ghost border border-warning/40 text-warning'
             )}
-            {metaChips.env && (
-              <span
-                className="inline-flex items-center rounded-md border border-base-300/60 bg-base-100 px-2 py-0.5 text-[10px] text-base-content/75 max-w-full truncate"
-                title={metaChips.env}
-              >
-                <span className="text-base-content/50 font-medium mr-1">Ambiente</span>
-                {metaChips.env}
-              </span>
-            )}
-            {metaChips.suite && (
-              <span
-                className="inline-flex items-center rounded-md border border-base-300/60 bg-base-100 px-2 py-0.5 text-[10px] text-base-content/75 max-w-full truncate"
-                title={metaChips.suite}
-              >
-                <span className="text-base-content/50 font-medium mr-1">Suíte</span>
-                {metaChips.suite}
-              </span>
-            )}
+          >
+            ⚠️
+          </button>
+        </div>
+
+        <div className="dropdown dropdown-end shrink-0 md:hidden">
+          <div
+            tabIndex={0}
+            role="button"
+            className="btn btn-ghost btn-xs btn-circle min-h-8 min-w-8"
+            aria-label="Mais ações do caso de teste"
+          >
+            <MoreVertical className="h-4 w-4" aria-hidden />
           </div>
-        )}
+          <ul
+            tabIndex={0}
+            className="dropdown-content menu z-[60] mt-1 w-56 rounded-[1rem] border border-base-300 bg-base-100 p-2 shadow-lg"
+          >
+            {onEdit && (
+              <li>
+                <button type="button" className="font-body" onClick={onEdit}>
+                  <EditIcon className="h-4 w-4" /> Editar
+                </button>
+              </li>
+            )}
+            {onDuplicate && (
+              <li>
+                <button type="button" className="font-body" onClick={onDuplicate}>
+                  <Copy className="h-4 w-4" /> Duplicar
+                </button>
+              </li>
+            )}
+            {onDelete && (
+              <li>
+                <button type="button" className="font-body text-error" onClick={onDelete}>
+                  <TrashIcon className="h-4 w-4" /> Excluir
+                </button>
+              </li>
+            )}
+            <li className="menu-title mt-1">
+              <span className="font-body text-xs font-normal text-muted">Execução</span>
+            </li>
+            <li>
+              <button
+                type="button"
+                className={cn('font-body', testCase.status === 'Passed' && 'active')}
+                onClick={() => onStatusChange('Passed')}
+              >
+                ✅ Aprovar
+              </button>
+            </li>
+            <li>
+              <button
+                type="button"
+                className={cn('font-body', testCase.status === 'Failed' && 'active')}
+                onClick={() => onStatusChange('Failed')}
+              >
+                ❌ Reprovar
+              </button>
+            </li>
+            <li>
+              <button
+                type="button"
+                className={cn('font-body', testCase.status === 'Blocked' && 'active')}
+                onClick={() => onStatusChange('Blocked')}
+              >
+                ⚠️ Bloquear
+              </button>
+            </li>
+          </ul>
+        </div>
       </div>
 
-      <div className="bg-base-100 border border-base-300 rounded-lg overflow-hidden shadow-sm">
+      <div className="mt-2 overflow-hidden rounded-[1rem] border border-base-300 bg-base-100">
         <button
           type="button"
           onClick={() => {
@@ -283,21 +360,46 @@ export const TestCaseItem: React.FC<{
               setDetailsOpen(o => !o);
             }
           }}
-          className="w-full flex items-center justify-between px-3 py-2 hover:bg-base-200/50 transition-colors text-left"
+          className="flex w-full items-center justify-between px-3 py-2 text-left transition-colors duration-200 hover:bg-base-200"
           aria-expanded={effectiveDetailsOpen}
         >
-          <div className="flex items-center gap-2 min-w-0">
-            <ListIcon className="w-4 h-4 text-base-content/70 flex-shrink-0" />
-            <span className="text-xs font-semibold text-base-content">Roteiro completo</span>
+          <div className="flex min-w-0 items-center gap-2">
+            <ListIcon className="h-4 w-4 shrink-0 text-base-content/70" />
+            <span className="font-heading text-xs font-semibold text-base-content">
+              Roteiro completo
+            </span>
           </div>
           <ChevronDownIcon
-            className={`w-4 h-4 text-base-content/70 flex-shrink-0 transition-transform ${effectiveDetailsOpen ? 'rotate-180' : ''}`}
+            className={`h-4 w-4 shrink-0 text-base-content/70 transition-transform duration-200 ${effectiveDetailsOpen ? 'rotate-180' : ''}`}
           />
         </button>
         {effectiveDetailsOpen && (
-          <div className="px-3 pb-3 pt-0 space-y-3 border-t border-base-200">
+          <div className="space-y-3 border-t border-base-300 px-3 pb-3 pt-2">
             <div>
-              <h3 className="text-[10px] font-bold text-base-content/70 uppercase tracking-widest mb-1">
+              <h3 className="mb-1 font-body text-[10px] font-bold uppercase tracking-widest text-muted">
+                Ação necessária
+              </h3>
+              <div className={ROTEIRO_BLOCK_CLASS}>
+                {hasStructuredSteps ? (
+                  <ol className="list-decimal list-outside ml-5 space-y-2 pl-1 text-sm font-medium leading-snug marker:font-bold marker:text-primary">
+                    {actionSteps.map((step, i) => (
+                      <li
+                        key={`action-step-${i}`}
+                        className="break-words pl-0.5 text-base-content [overflow-wrap:anywhere]"
+                      >
+                        {stripLeadingStepIndex(step)}
+                      </li>
+                    ))}
+                  </ol>
+                ) : (
+                  <p className="whitespace-pre-wrap text-sm leading-relaxed text-base-content">
+                    {actionSteps[0]}
+                  </p>
+                )}
+              </div>
+            </div>
+            <div>
+              <h3 className="mb-1 font-body text-[10px] font-bold uppercase tracking-widest text-muted">
                 Parâmetros necessários
               </h3>
               <div className={ROTEIRO_BLOCK_CLASS}>
@@ -305,7 +407,7 @@ export const TestCaseItem: React.FC<{
               </div>
             </div>
             <div>
-              <h3 className="text-[10px] font-bold text-base-content/70 uppercase tracking-widest mb-1">
+              <h3 className="mb-1 font-body text-[10px] font-bold uppercase tracking-widest text-muted">
                 Resultado esperado
               </h3>
               <div className={ROTEIRO_BLOCK_CLASS}>
@@ -313,52 +415,19 @@ export const TestCaseItem: React.FC<{
               </div>
             </div>
             <div>
-              <label className="text-[10px] font-bold text-base-content/70 uppercase tracking-widest mb-1 block">
-                Resultado Obtido
+              <label className="mb-1 block font-body text-[10px] font-bold uppercase tracking-widest text-muted">
+                Resultado obtido
               </label>
               <textarea
                 value={testCase.observedResult}
                 onChange={e => onObservedResultChange?.(e.target.value)}
                 disabled={!onObservedResultChange}
                 placeholder="Preencha durante a execução com o comportamento observado."
-                className="textarea textarea-bordered textarea-sm w-full bg-base-100 border-base-300 text-xs min-h-[72px]"
+                className="textarea textarea-bordered textarea-sm w-full border-base-300 bg-base-100 text-xs min-h-[72px]"
               />
             </div>
           </div>
         )}
-      </div>
-
-      <div className="flex flex-wrap items-center justify-end gap-1.5 pt-1">
-        <button
-          type="button"
-          onClick={() => onStatusChange('Passed')}
-          title="Marcar como Aprovado"
-          className={`btn btn-xs rounded-lg text-[10px] px-2 py-0.5 min-h-0 ${
-            testCase.status === 'Passed' ? 'btn-success' : 'btn-outline btn-success'
-          }`}
-        >
-          {testCase.status === 'Passed' ? '✓ Aprovado' : 'Aprovar'}
-        </button>
-        <button
-          type="button"
-          onClick={() => onStatusChange('Failed')}
-          title="Marcar como Reprovado"
-          className={`btn btn-xs rounded-lg text-[10px] px-2 py-0.5 min-h-0 ${
-            testCase.status === 'Failed' ? 'btn-error' : 'btn-outline btn-error'
-          }`}
-        >
-          {testCase.status === 'Failed' ? '✗ Reprovado' : 'Reprovar'}
-        </button>
-        <button
-          type="button"
-          onClick={() => onStatusChange('Blocked')}
-          title="Marcar como Bloqueado"
-          className={`btn btn-xs rounded-lg text-[10px] px-2 py-0.5 min-h-0 ${
-            testCase.status === 'Blocked' ? 'btn-warning' : 'btn-outline btn-warning'
-          }`}
-        >
-          {testCase.status === 'Blocked' ? '⊘ Bloqueado' : 'Bloquear'}
-        </button>
       </div>
     </div>
   );

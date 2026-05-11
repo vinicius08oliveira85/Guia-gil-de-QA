@@ -1683,7 +1683,7 @@ export const JiraTaskItem: React.FC<{
         <div style={indentationStyle} className="py-0.5">
           <div
             className={[
-              'task-card-shadow flex flex-wrap items-center gap-x-1.5 gap-y-0.5 rounded-xl border bg-base-100 px-1.5 py-1 transition-all duration-200 hover:shadow-lg dark:bg-base-200 sm:gap-x-2 sm:gap-y-1 sm:px-2 sm:py-1 md:px-2.5 md:py-1',
+              'task-card-shadow flex flex-wrap items-center gap-x-2 gap-y-1 rounded-[1.4rem] border bg-base-200 px-2 py-2 transition-colors duration-200 hover:bg-base-300 sm:gap-x-2 sm:gap-y-1 sm:px-3 sm:py-2 md:px-3 md:py-2',
               level > 0
                 ? 'max-md:bg-base-200/60 max-md:dark:bg-base-300/50 max-md:border-base-300'
                 : '',
@@ -1779,14 +1779,14 @@ export const JiraTaskItem: React.FC<{
                 ) : null}
               </div>
               <div
-                className="inline-flex flex-nowrap items-center gap-x-1 rounded-md border border-base-300/70 bg-base-200/40 px-1.5 py-0.5 shrink-0 max-w-[min(100%,24rem)] min-w-0 overflow-x-auto text-[10px] leading-tight [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+                className="inline-flex flex-nowrap items-center gap-x-1 rounded-md border border-base-300/70 bg-base-300/30 px-1.5 py-0.5 shrink-0 max-w-[min(100%,24rem)] min-w-0 overflow-x-auto font-body text-[10px] leading-tight text-muted [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
                 role="group"
                 aria-label="Metadados da tarefa"
               >
-                <span className="font-mono text-[10px] text-base-content/80 tabular-nums shrink-0">
+                <span className="font-mono tabular-nums shrink-0">
                   {task.id}
                 </span>
-                <span className="text-[10px] text-base-content/40 shrink-0" aria-hidden>
+                <span className="shrink-0 opacity-60" aria-hidden>
                   ·
                 </span>
                 <Badge
@@ -1797,11 +1797,11 @@ export const JiraTaskItem: React.FC<{
                 >
                   {task.type}
                 </Badge>
-                <span className="text-[10px] text-base-content/40 shrink-0" aria-hidden>
+                <span className="shrink-0 opacity-60" aria-hidden>
                   ·
                 </span>
                 <span
-                  className="text-[10px] text-base-content/65 truncate min-w-0 max-w-[4.5rem] sm:max-w-[10rem]"
+                  className="truncate min-w-0 max-w-[4.5rem] sm:max-w-[10rem]"
                   title={getDisplayStatusLabel(task, project)}
                 >
                   {getDisplayStatusLabel(task, project)}
@@ -1809,7 +1809,7 @@ export const JiraTaskItem: React.FC<{
               </div>
               <div className="flex min-w-0 flex-1 basis-full sm:basis-0 items-center gap-1">
                 <span
-                  className="text-sm font-semibold text-base-content min-w-0 flex-1 line-clamp-1"
+                  className="font-heading text-sm sm:text-base font-semibold text-base-content min-w-0 flex-1 truncate overflow-hidden whitespace-nowrap"
                   title={displayTitle}
                 >
                   {displayTitle}
