@@ -1628,7 +1628,8 @@ export const JiraTaskItem: React.FC<{
         target.closest('input') ||
         target.closest('select') ||
         target.closest('a') ||
-        target.closest('[role="button"]')
+        target.closest('[role="button"]') ||
+        target.closest('.dropdown')
       ) {
         return;
       }
@@ -1669,7 +1670,7 @@ export const JiraTaskItem: React.FC<{
           <div
             className={[
               'task-card-shadow rounded-[1.4rem] border bg-base-200 px-2 py-2 transition-colors duration-200 hover:bg-base-300 sm:px-3 sm:py-2 md:px-3 md:py-2',
-              'max-md:grid max-md:grid-cols-[auto_minmax(0,1fr)_auto] max-md:grid-rows-[auto_auto] max-md:items-start max-md:gap-x-2 max-md:gap-y-1',
+              'max-md:grid max-md:grid-cols-[auto_minmax(0,1fr)_auto] max-md:grid-rows-[auto_auto] max-md:items-start max-md:gap-x-2 max-md:gap-y-1 max-md:overflow-visible',
               'md:flex md:flex-wrap md:items-center md:gap-x-2 md:gap-y-1',
               level > 0
                 ? 'max-md:bg-base-200/60 max-md:dark:bg-base-300/50 max-md:border-base-300'
@@ -1817,7 +1818,8 @@ export const JiraTaskItem: React.FC<{
               className={cn(
                 'order-2 flex flex-shrink-0 items-center justify-end gap-2 sm:ml-auto sm:gap-2',
                 'w-full flex-wrap sm:w-auto sm:flex-nowrap',
-                'max-md:col-start-3 max-md:row-start-1 max-md:w-auto max-md:max-w-full max-md:min-w-0 max-md:self-center max-md:justify-self-end max-md:flex-nowrap max-md:overflow-x-auto max-md:[scrollbar-width:thin]'
+                /* Sem overflow-x no mobile: recorta o menu absoluto do Daisy (⋮ parece “morto”). */
+                'max-md:col-start-3 max-md:row-start-1 max-md:z-20 max-md:w-auto max-md:max-w-full max-md:min-w-0 max-md:self-center max-md:justify-self-end max-md:flex-nowrap max-md:overflow-visible'
               )}
               onClick={e => e.stopPropagation()}
             >
@@ -2041,7 +2043,7 @@ export const JiraTaskItem: React.FC<{
               </div>
 
               <div
-                className="dropdown dropdown-end md:hidden shrink-0"
+                className="dropdown dropdown-end md:hidden relative z-30 shrink-0 overflow-visible"
                 onClick={e => e.stopPropagation()}
               >
                 <div
