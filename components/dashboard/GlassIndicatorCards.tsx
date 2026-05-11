@@ -11,7 +11,14 @@ import {
 import type { LucideIcon } from 'lucide-react';
 
 /** Tokens semânticos DaisyUI expostos na API pública dos indicadores. */
-export type IndicatorColorTheme = 'primary' | 'warning' | 'info' | 'success' | 'error';
+export type IndicatorColorTheme =
+  | 'primary'
+  | 'warning'
+  /** Mesma família do warning, com texto `*-content` no tema claro (melhor contraste em cards glass). */
+  | 'warningContrast'
+  | 'info'
+  | 'success'
+  | 'error';
 
 export interface SmallIndicatorItem {
   label: string;
@@ -51,6 +58,15 @@ const themeConfig: Record<
     valueColor: 'text-warning',
     iconBg: 'border border-warning/25 bg-warning/10 dark:bg-warning/15',
     iconColor: 'text-warning',
+    glowClass: 'glow-warning',
+  },
+  warningContrast: {
+    orbBg: 'bg-warning/10 dark:bg-warning/5',
+    labelColor: 'text-warning-content dark:text-warning',
+    valueColor: 'text-warning-content dark:text-warning',
+    iconBg:
+      'border border-warning/35 bg-warning/15 dark:border-warning/30 dark:bg-warning/15',
+    iconColor: 'text-warning-content dark:text-warning',
     glowClass: 'glow-warning',
   },
   info: {

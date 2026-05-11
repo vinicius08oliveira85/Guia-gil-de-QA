@@ -42,7 +42,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onStartTest, onComplet
       return { label: 'Testar', variant: 'info', icon: <Play className="w-3 h-3" /> };
     }
     if (testMetrics.executed < testMetrics.total) {
-      return { label: 'Testando', variant: 'warning', icon: <Pause className="w-3 h-3" /> };
+      return { label: 'Testando', variant: 'secondary', icon: <Pause className="w-3 h-3" /> };
     }
     return { label: 'Teste Concluído', variant: 'success', icon: <Check className="w-3 h-3" /> };
   }, [testMetrics]);
@@ -127,7 +127,11 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onStartTest, onComplet
           {testStatus.label !== 'Teste Concluído' && testStatus.label !== 'Sem Testes' && (
             <button
               className={
-                testStatus.label === 'Testar' ? 'btn btn-info btn-sm' : 'btn btn-warning btn-sm'
+                testStatus.label === 'Testar'
+                  ? 'btn btn-info btn-sm'
+                  : testStatus.label === 'Testando'
+                    ? 'btn btn-secondary btn-sm'
+                    : 'btn btn-warning btn-sm'
               }
               onClick={() => onStartTest?.(task.id)}
             >

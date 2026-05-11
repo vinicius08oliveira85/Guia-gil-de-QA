@@ -258,7 +258,7 @@ function InsightCard({ title, subtitle, children, className, hint }: InsightCard
   );
   if (!hint) return card;
   return (
-    <Tooltip content={hint} delay={220} position="top">
+    <Tooltip content={hint} delay={220} position="top" triggerClassName="block w-full min-w-0">
       <div className="block h-full w-full cursor-default">{card}</div>
     </Tooltip>
   );

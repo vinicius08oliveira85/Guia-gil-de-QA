@@ -1570,7 +1570,7 @@ export const TasksView: React.FC<{
         value: stats.pending,
         modifier: '-',
         icon: Clock,
-        colorTheme: 'warning' as const,
+        colorTheme: 'warningContrast' as const,
         onClick: () => {
           setSearchQuery('');
           setStatusFilter([toDoLabel]);

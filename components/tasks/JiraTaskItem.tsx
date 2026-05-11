@@ -79,10 +79,15 @@ import {
 } from '../../services/taskTestStatusService';
 import { useProjectsStore } from '../../store/projectsStore';
 import { logger } from '../../utils/logger';
+import { cn } from '../../utils/cn';
 import { Button } from '../common/Button';
 import { Badge } from '../common/Badge';
 import { useJiraAttachmentViewer } from '../../hooks/useJiraAttachmentViewer';
 import { TestCasesFreshnessIndicator } from './TestCasesFreshnessIndicator';
+
+/** Destaque da ação IA principal (primary + halo da marca vs chips da mesma linha). */
+const gerarTudoDestaqueClass =
+  'glow-primary shadow-lg shadow-primary/35 ring-2 ring-primary/25 ring-offset-2 ring-offset-base-100 dark:ring-offset-base-200 hover:shadow-xl hover:shadow-primary/45 hover:ring-primary/35 focus-visible:ring-primary/50 transition-[color,box-shadow,filter,background-color]';
 
 // Componente para renderizar descrição com formatação rica do Jira
 const DescriptionRenderer: React.FC<{
@@ -731,9 +736,11 @@ export const JiraTaskItem: React.FC<{
     // Classes visuais do botão de status de teste por estado
     /** Tokens semânticos DaisyUI (primary, info, success, warning) */
     const testStatusButtonVariant: Record<string, string> = {
-      testando: 'bg-info text-info-content border-info hover:bg-info/90',
+      testando:
+        'bg-secondary text-secondary-content border-secondary hover:bg-secondary/90 focus-visible:ring-secondary/40',
       teste_concluido: 'bg-success text-success-content border-success hover:bg-success/90',
-      pendente: 'bg-warning text-warning-content border-warning hover:bg-warning/90',
+      pendente:
+        'bg-neutral text-neutral-content border border-base-300 hover:bg-base-200/70 dark:border-base-content/20',
     };
     const defaultTestStatusButtonClass =
       'bg-primary text-primary-content border-primary hover:bg-primary/90';
@@ -1871,7 +1878,10 @@ export const JiraTaskItem: React.FC<{
                     handleGenerateAll(e);
                   }}
                   disabled={isGeneratingAll || isGenerating || isGeneratingBdd || isGeneratingTests}
-                  className="rounded-full px-3 py-2 sm:py-1.5 sm:px-4 min-h-[44px] sm:min-h-0 text-[10px] sm:text-xs font-bold inline-flex items-center gap-1.5 bg-primary hover:bg-primary/90 text-primary-content transition-colors shrink-0"
+                  className={cn(
+                    'rounded-full px-3 py-2 sm:py-1.5 sm:px-4 min-h-[44px] sm:min-h-0 text-[10px] sm:text-xs font-bold inline-flex items-center gap-1.5 bg-primary hover:bg-primary/90 text-primary-content shrink-0',
+                    gerarTudoDestaqueClass
+                  )}
                   title={
                     isGenerating || isGeneratingAll
                       ? aiPhaseMessage || 'Gerando…'
@@ -2079,6 +2089,7 @@ export const JiraTaskItem: React.FC<{
                         type="button"
                         variant="default"
                         size="panel"
+                        className={gerarTudoDestaqueClass}
                         onClick={handleGenerateAll}
                         disabled={
                           isGeneratingAll || isGenerating || isGeneratingBdd || isGeneratingTests

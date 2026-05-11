@@ -164,8 +164,9 @@ export default {
           "info-content": "#451e44",
           "success": "oklch(59% 0.145 163.225)",
           "success-content": "oklch(98% 0.003 247.858)",
-          "warning": "#f2f2f2",
-          "warning-content": "oklch(57% 0.245 27.325)",
+          /** Antes `#f2f2f2`: `text-warning` ficava ilegível em cards claros (warning é cor de frente no Daisy). */
+          "warning": "#ca8a04",
+          "warning-content": "#422006",
           "error": "oklch(50% 0.213 27.518)",
           "error-content": "oklch(98% 0.003 247.858)",
           "--rounded-box": "2rem",
