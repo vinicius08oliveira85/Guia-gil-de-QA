@@ -10,7 +10,8 @@ import {
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
-export type IndicatorColorTheme = 'orange' | 'yellow' | 'blue' | 'emerald' | 'red';
+/** Tokens semânticos DaisyUI expostos na API pública dos indicadores. */
+export type IndicatorColorTheme = 'primary' | 'warning' | 'info' | 'success' | 'error';
 
 export interface SmallIndicatorItem {
   label: string;
@@ -36,45 +37,45 @@ const themeConfig: Record<
     glowClass: string;
   }
 > = {
-  orange: {
+  primary: {
     orbBg: 'bg-primary/10 dark:bg-primary/5',
     labelColor: 'text-primary',
     valueColor: 'text-primary',
     iconBg: 'border border-primary/25 bg-primary/10 dark:bg-primary/15',
     iconColor: 'text-primary',
-    glowClass: 'glow-orange',
+    glowClass: 'glow-primary',
   },
-  yellow: {
+  warning: {
     orbBg: 'bg-warning/10 dark:bg-warning/5',
     labelColor: 'text-warning',
     valueColor: 'text-warning',
     iconBg: 'border border-warning/25 bg-warning/10 dark:bg-warning/15',
     iconColor: 'text-warning',
-    glowClass: 'glow-yellow',
+    glowClass: 'glow-warning',
   },
-  blue: {
+  info: {
     orbBg: 'bg-info/10 dark:bg-info/5',
     labelColor: 'text-info',
     valueColor: 'text-info',
     iconBg: 'border border-info/25 bg-info/10 dark:bg-info/15',
     iconColor: 'text-info',
-    glowClass: 'glow-blue',
+    glowClass: 'glow-info',
   },
-  emerald: {
+  success: {
     orbBg: 'bg-success/10 dark:bg-success/5',
     labelColor: 'text-success',
     valueColor: 'text-success',
     iconBg: 'border border-success/25 bg-success/10 dark:bg-success/15',
     iconColor: 'text-success',
-    glowClass: 'glow-green',
+    glowClass: 'glow-success',
   },
-  red: {
+  error: {
     orbBg: 'bg-error/10 dark:bg-error/5',
     labelColor: 'text-error',
     valueColor: 'text-error',
     iconBg: 'border border-error/25 bg-error/10 dark:bg-error/15',
     iconColor: 'text-error',
-    glowClass: 'glow-red',
+    glowClass: 'glow-error',
   },
 };
 

@@ -1563,14 +1563,14 @@ export const TasksView: React.FC<{
         value: stats.total,
         modifier: '+0%',
         icon: ClipboardList,
-        colorTheme: 'orange' as const,
+        colorTheme: 'primary' as const,
       },
       {
         label: 'Tarefas Pendentes',
         value: stats.pending,
         modifier: '-',
         icon: Clock,
-        colorTheme: 'yellow' as const,
+        colorTheme: 'warning' as const,
         onClick: () => {
           setSearchQuery('');
           setStatusFilter([toDoLabel]);
@@ -1588,7 +1588,7 @@ export const TasksView: React.FC<{
         value: stats.inProgress,
         modifier: 'active',
         icon: Zap,
-        colorTheme: 'blue' as const,
+        colorTheme: 'info' as const,
         onClick: () => {
           setSearchQuery('');
           setStatusFilter([inProgressLabel]);
@@ -1608,7 +1608,7 @@ export const TasksView: React.FC<{
         value: stats.done,
         modifier: stats.total > 0 ? `${Math.round((stats.done / stats.total) * 100)}%` : '0%',
         icon: CheckCircle,
-        colorTheme: 'emerald' as const,
+        colorTheme: 'success' as const,
         onClick: () => {
           setSearchQuery('');
           setStatusFilter([doneLabel]);
@@ -1626,7 +1626,7 @@ export const TasksView: React.FC<{
         value: stats.bugsOpen,
         modifier: (metrics.bugsBySeverity?.['Crítico'] ?? 0) > 0 ? 'Critical' : 'Abertos',
         icon: AlertTriangle,
-        colorTheme: 'red' as const,
+        colorTheme: 'error' as const,
         onClick: () => {
           setSearchQuery('');
           setTypeFilter(['Bug']);

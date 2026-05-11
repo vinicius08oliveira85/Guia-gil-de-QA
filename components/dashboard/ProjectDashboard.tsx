@@ -89,7 +89,7 @@ const ExecutionPieSvg = React.memo(function ExecutionPieSvg(props: {
         width={112}
         height={112}
         viewBox="0 0 104 104"
-        className="shrink-0 glow-blue"
+        className="shrink-0 glow-info"
         role="img"
         aria-label="Distribuição da execução de testes"
       >
@@ -139,7 +139,7 @@ const MiniSparkline = React.memo(function MiniSparkline({ values }: { values: nu
       <svg
         width={w}
         height={h}
-        className="glow-green overflow-visible"
+        className="glow-success overflow-visible"
         role="img"
         aria-label="Tendência de bugs criados por semana"
       >
@@ -193,7 +193,7 @@ function PassRateRing(props: { percent: number; tooltip: React.ReactNode }) {
         width={96}
         height={96}
         viewBox="0 0 88 88"
-        className="shrink-0 glow-green transition-transform duration-200 ease-out group-hover:scale-[1.03]"
+        className="shrink-0 glow-success transition-transform duration-200 ease-out group-hover:scale-[1.03]"
         aria-hidden
       >
         <circle cx={44} cy={44} r={r} fill="none" stroke="oklch(var(--b3) / 0.5)" strokeWidth={8} />
@@ -382,7 +382,7 @@ export const ProjectDashboard: React.FC<ProjectDashboardProps> = React.memo(
                     'inline-flex cursor-default items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-medium transition-transform duration-150 hover:scale-[1.02] motion-reduce:hover:scale-100',
                     isCritical &&
                       count > 0 &&
-                      'border-error/50 bg-error/10 animate-pulse-subtle glow-red',
+                      'border-error/50 bg-error/10 animate-pulse-subtle glow-error',
                     !isCritical &&
                       'border-base-300 bg-base-200/40 hover:border-primary/25 hover:bg-base-200/90'
                   )}
@@ -528,7 +528,7 @@ export const ProjectDashboard: React.FC<ProjectDashboardProps> = React.memo(
           hint="Bugs com issue link cujo nome sugere reabertura (ex.: Reopened). Sem link, o valor tende a 0."
         >
           <p
-            className="glow-orange w-fit text-3xl font-semibold tabular-nums transition-transform duration-200 hover:scale-105 motion-reduce:hover:scale-100"
+            className="glow-primary w-fit text-3xl font-semibold tabular-nums transition-transform duration-200 hover:scale-105 motion-reduce:hover:scale-100"
             style={PRIMARY_STYLE}
           >
             {reopenCount}
@@ -630,7 +630,7 @@ export const ProjectDashboard: React.FC<ProjectDashboardProps> = React.memo(
             }
             delay={120}
           >
-            <div className="inline-flex cursor-default items-baseline gap-2 rounded-lg border border-primary/30 bg-primary/10 px-4 py-2 glow-green transition-transform duration-200 hover:scale-[1.02] motion-reduce:hover:scale-100">
+            <div className="inline-flex cursor-default items-baseline gap-2 rounded-lg border border-primary/30 bg-primary/10 px-4 py-2 glow-success transition-transform duration-200 hover:scale-[1.02] motion-reduce:hover:scale-100">
               <span className="text-2xl font-bold tabular-nums" style={PRIMARY_STYLE}>
                 {leadDays == null
                   ? '—'

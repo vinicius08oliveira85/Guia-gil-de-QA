@@ -368,19 +368,20 @@
   .dark .glass {
     border-color: rgba(255, 255, 255, 0.05);
   }
-  .glow-orange {
+  /** Halos dos indicadores — nomes alinhados aos tokens semânticos (primary, warning, …). */
+  .glow-primary {
     filter: drop-shadow(0 0 8px rgba(255, 107, 53, 0.4));
   }
-  .glow-yellow {
+  .glow-warning {
     filter: drop-shadow(0 0 8px rgba(234, 179, 8, 0.4));
   }
-  .glow-blue {
+  .glow-info {
     filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.4));
   }
-  .glow-green {
+  .glow-success {
     filter: drop-shadow(0 0 8px rgba(34, 197, 94, 0.4));
   }
-  .glow-red {
+  .glow-error {
     filter: drop-shadow(0 0 8px rgba(239, 68, 68, 0.4));
   }
   @keyframes pulse-subtle {
