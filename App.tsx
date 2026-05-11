@@ -20,7 +20,6 @@ import { lazyWithRetry } from './utils/lazyWithRetry';
 import { logger } from './utils/logger';
 import { useRouterSync } from './hooks/useRouterSync';
 import { isSupabaseAvailable } from './services/supabaseService';
-import { FloatingNav } from '@/components/ui/floating-nav';
 import { OnboardingGuide } from './components/onboarding/OnboardingGuide';
 import { ProjectsDashboardSkeleton } from './components/projectsDashboard/ProjectsDashboardSkeleton';
 import { useAriaLive } from './hooks/useAriaLive';
@@ -461,39 +460,7 @@ const App: React.FC = () => {
           </Suspense>
         )}
 
-        {isMobile && (
-          <FloatingNav
-            onNavigate={index => {
-              switch (index) {
-                case 0:
-                  handleGoToDashboard();
-                  break;
-                case 1:
-                  window.dispatchEvent(new CustomEvent('open-global-search'));
-                  break;
-                case 2:
-                  window.dispatchEvent(new CustomEvent('floating-nav-notifications'));
-                  break;
-                case 3:
-                  window.dispatchEvent(new CustomEvent('floating-nav-settings'));
-                  break;
-                case 4:
-                  window.dispatchEvent(new CustomEvent('floating-nav-glossary'));
-                  break;
-                case 5:
-                  setShowAdvancedSearch(true);
-                  break;
-                case 6:
-                  window.dispatchEvent(new CustomEvent('floating-nav-settings'));
-                  break;
-                default:
-                  break;
-              }
-            }}
-          />
-        )}
-
-        <main id="main-content" className={isMobile ? 'pb-28' : undefined}>
+        <main id="main-content">
           {storeError && (
             <div className="container mx-auto px-4 py-3">
               <div

@@ -1661,7 +1661,10 @@ export const JiraTaskItem: React.FC<{
     }, [isAiProcessing, isGenerating, isGeneratingAll, isGeneratingBdd, isGeneratingTests]);
 
     return (
-      <div className="relative" data-task-id={task.id}>
+      <div
+        className="relative max-md:focus-within:z-[300]"
+        data-task-id={task.id}
+      >
         <div style={indentationStyle} className="py-0.5">
           <div
             className={[
@@ -2032,7 +2035,7 @@ export const JiraTaskItem: React.FC<{
               </div>
 
               <div
-                className="dropdown dropdown-end md:hidden shrink-0 z-[45]"
+                className="dropdown dropdown-end md:hidden shrink-0"
                 onClick={e => e.stopPropagation()}
               >
                 <div
@@ -2046,7 +2049,7 @@ export const JiraTaskItem: React.FC<{
                 </div>
                 <ul
                   tabIndex={0}
-                  className="dropdown-content menu z-[70] mt-1 w-64 max-w-[min(100vw-2rem,18rem)] rounded-[1.4rem] border border-base-300 bg-base-100 p-2 shadow-lg"
+                  className="dropdown-content menu z-50 mt-1 w-64 max-w-[min(100vw-2rem,18rem)] rounded-[1.4rem] border border-base-300 bg-base-100 p-2 shadow-lg"
                   onClick={e => e.stopPropagation()}
                 >
                   {isAiProcessing && aiPhaseMessage ? (
