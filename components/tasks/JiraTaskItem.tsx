@@ -1801,7 +1801,7 @@ export const JiraTaskItem: React.FC<{
               </div>
               <div className="flex min-w-0 flex-1 basis-full sm:basis-0 items-center gap-1 max-md:col-span-3 max-md:col-start-1 max-md:row-start-2 max-md:basis-auto max-md:w-full max-md:min-w-0 max-md:items-start">
                 <span
-                  className="font-heading text-sm sm:text-base font-semibold text-base-content min-w-0 flex-1 max-md:line-clamp-2 max-md:whitespace-normal max-md:break-words max-md:leading-snug md:truncate md:overflow-hidden md:whitespace-nowrap"
+                  className="font-heading text-xs sm:text-sm font-semibold text-base-content min-w-0 flex-1 max-md:line-clamp-2 max-md:whitespace-normal max-md:break-words max-md:leading-snug md:truncate md:overflow-hidden md:whitespace-nowrap"
                   title={displayTitle}
                 >
                   {displayTitle}
