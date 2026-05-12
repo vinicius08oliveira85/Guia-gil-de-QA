@@ -10,6 +10,7 @@ import {
   restoreNotification,
   Notification,
 } from '../../utils/notificationService';
+import { cn } from '../../utils/cn';
 
 interface NotificationBellProps {
   onClick?: () => void;
@@ -130,7 +131,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
             setIsOpen(!isOpen);
             onClick?.();
           }}
-          className="relative btn btn-ghost btn-sm btn-circle"
+          className="win-icon-button relative"
           aria-label="Notificações"
           type="button"
         >
@@ -147,10 +148,14 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
         <>
           {showButton && <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />}
           <div
-            className={`${showButton ? 'absolute right-0 mt-3' : 'relative'} w-80 bg-base-100 border border-base-300 rounded-[var(--rounded-box)] shadow-2xl z-50 max-h-96 overflow-hidden flex flex-col`}
+            className={cn(
+              'z-50 flex max-h-96 w-80 flex-col overflow-hidden rounded-[var(--rounded-box)] border border-[color-mix(in_srgb,var(--foreground)_12%,transparent)]',
+              'mica text-[var(--foreground)] [font-family:var(--font-sans)] tracking-[var(--letter-spacing)]',
+              showButton ? 'absolute right-0 mt-3' : 'relative'
+            )}
           >
-            <div className="p-4 border-b border-base-300 flex items-center justify-between gap-2">
-              <h3 className="font-semibold text-base-content">Notificações</h3>
+            <div className="flex items-center justify-between gap-2 border-b border-[color-mix(in_srgb,var(--foreground)_10%,transparent)] p-4">
+              <h3 className="font-semibold text-[var(--foreground)]">Notificações</h3>
               <div className="flex items-center gap-1">
                 {unreadCount > 0 && (
                   <button
@@ -165,9 +170,9 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({
                   type="button"
                   onClick={() => setIsOpen(false)}
                   aria-label="Fechar notificações"
-                  className="btn btn-ghost btn-xs btn-circle"
+                  className="win-icon-button shrink-0"
                 >
-                  <X className="w-3.5 h-3.5" />
+                  <X className="h-4 w-4" aria-hidden />
                 </button>
               </div>
             </div>

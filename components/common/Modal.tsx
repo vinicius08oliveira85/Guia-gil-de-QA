@@ -1,6 +1,7 @@
 import React, { useEffect, useId, useRef } from 'react';
 import { X } from 'lucide-react';
 import { createPortal } from 'react-dom';
+import { cn } from '../../utils/cn';
 
 const FOCUSABLE_SELECTOR =
   'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
@@ -124,12 +125,20 @@ export const Modal: React.FC<ModalProps> = ({
     full: 'max-w-none w-full h-screen max-h-full rounded-none',
   };
 
+  const overlayTint = 'bg-[color-mix(in_srgb,var(--foreground)_18%,transparent)]';
+
   const modalLayout = (
     <div
       className={
         isFull
-          ? 'fixed inset-0 z-[9999] flex items-stretch justify-stretch bg-base-content/40 backdrop-blur-md transition-opacity duration-200 p-0'
-          : 'fixed inset-0 z-[9999] flex items-end justify-center p-0 sm:items-center sm:p-4 md:p-6 bg-base-content/40 backdrop-blur-md animate-in fade-in duration-200'
+          ? cn(
+              'fixed inset-0 z-[9999] flex items-stretch justify-stretch p-0 backdrop-blur-md transition-opacity duration-200',
+              overlayTint
+            )
+          : cn(
+              'fixed inset-0 z-[9999] flex items-end justify-center p-0 backdrop-blur-md animate-in fade-in duration-200 sm:items-center sm:p-4 md:p-6',
+              overlayTint
+            )
       }
       onClick={handleClose}
       role="dialog"
@@ -141,8 +150,15 @@ export const Modal: React.FC<ModalProps> = ({
         id={contentId}
         className={
           isFull
-            ? `${sizeClasses.full} bg-base-200 shadow-2xl border border-base-300 relative flex flex-col overflow-hidden duration-300 ease-out animate-in fade-in`
-            : `bg-base-200/95 shadow-2xl shadow-black/20 border border-base-300 relative flex flex-col overflow-hidden backdrop-blur-md rounded-t-[1.4rem] rounded-b-none max-h-[min(92dvh,100svh)] sm:rounded-[1.4rem] sm:max-h-[90vh] w-full max-sm:w-full max-sm:max-w-none ${sizeClasses[size]} max-sm:animate-modal-bottom-sheet-in sm:animate-in sm:fade-in sm:duration-200 sm:zoom-in-95 sm:slide-in-from-bottom-8`
+            ? cn(
+                sizeClasses.full,
+                'mica !rounded-none relative flex flex-col overflow-hidden border border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] duration-300 ease-out animate-in fade-in'
+              )
+            : cn(
+                'mica relative flex w-full max-w-full flex-col overflow-hidden border border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] max-sm:max-w-none max-sm:animate-modal-bottom-sheet-in sm:animate-in sm:fade-in sm:duration-200 sm:zoom-in-95 sm:slide-in-from-bottom-8',
+                'rounded-t-[var(--radius)] rounded-b-none max-h-[min(92dvh,100svh-env(safe-area-inset-bottom))] sm:rounded-[var(--radius)] sm:max-h-[min(90vh,100dvh-env(safe-area-inset-top)-2rem)]',
+                sizeClasses[size]
+              )
         }
         onClick={e => e.stopPropagation()}
         style={maxHeight && !isFull ? { maxHeight } : undefined}
@@ -152,8 +168,8 @@ export const Modal: React.FC<ModalProps> = ({
         <div
           className={
             isFull
-              ? 'sticky top-0 z-10 flex flex-shrink-0 flex-col gap-0 border-b border-base-300/50 bg-base-200/80 px-4 py-3 backdrop-blur-md sm:px-5 sm:py-4'
-              : 'sticky top-0 z-10 flex flex-shrink-0 flex-col gap-0 border-b border-base-300/50 bg-base-200/80 px-3 pb-3 pt-1 backdrop-blur-md transition-all duration-200 sm:px-5 sm:pb-4 sm:pt-4'
+              ? 'sticky top-0 z-10 flex flex-shrink-0 flex-col gap-0 border-b border-[color-mix(in_srgb,var(--foreground)_10%,transparent)] bg-[color-mix(in_srgb,var(--background)_88%,transparent)] px-4 py-3 backdrop-blur-md sm:px-5 sm:py-4'
+              : 'sticky top-0 z-10 flex flex-shrink-0 flex-col gap-0 border-b border-[color-mix(in_srgb,var(--foreground)_10%,transparent)] bg-[color-mix(in_srgb,var(--background)_88%,transparent)] px-3 pb-3 pt-1 backdrop-blur-md transition-all duration-200 sm:px-5 sm:pb-4 sm:pt-4'
           }
         >
           {!isFull && (
@@ -161,20 +177,20 @@ export const Modal: React.FC<ModalProps> = ({
               className="mx-auto mb-2 flex h-5 w-full max-w-[120px] shrink-0 items-center justify-center sm:hidden"
               aria-hidden
             >
-              <span className="h-1.5 w-11 rounded-full bg-base-content/20" />
+              <span className="h-1.5 w-11 rounded-full bg-[color-mix(in_srgb,var(--foreground)_18%,transparent)]" />
             </div>
           )}
           <div className="flex min-h-[48px] items-start justify-between gap-3 sm:min-h-0 sm:items-center">
             <div
               id={titleId}
-              className="min-w-0 flex-1 pr-2 font-heading text-lg font-semibold leading-snug tracking-tight text-base-content text-balance sm:pr-4 sm:text-xl"
+              className="min-w-0 flex-1 pr-2 text-lg font-semibold leading-snug text-balance text-[var(--foreground)] sm:pr-4 sm:text-xl [font-family:var(--font-sans)] tracking-[var(--letter-spacing)]"
             >
               {title}
             </div>
             <button
               type="button"
               onClick={handleClose}
-              className="flex h-11 w-11 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-full border border-transparent text-base-content/80 transition-all duration-200 hover:bg-base-200/90 hover:text-base-content active:scale-[0.97] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--color-primary)]"
+              className="win-icon-button text-[color-mix(in_srgb,var(--foreground)_72%,transparent)] hover:bg-[color-mix(in_srgb,var(--foreground)_8%,transparent)] hover:text-[var(--foreground)]"
               aria-label="Fechar modal"
             >
               <X className="h-5 w-5" strokeWidth={2} aria-hidden />
@@ -182,12 +198,12 @@ export const Modal: React.FC<ModalProps> = ({
           </div>
         </div>
 
-        <div className="custom-scrollbar flex-1 overflow-y-auto overscroll-contain bg-base-200/40 px-3 py-4 scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-transparent hover:scrollbar-thumb-primary/50 sm:px-6 sm:py-6">
+        <div className="custom-scrollbar flex-1 overflow-y-auto overscroll-contain bg-[color-mix(in_srgb,var(--background)_92%,transparent)] px-3 py-4 text-[var(--foreground)] scrollbar-thin scrollbar-thumb-[color-mix(in_oklch,oklch(var(--p))_35%,transparent)] scrollbar-track-transparent hover:scrollbar-thumb-[color-mix(in_oklch,oklch(var(--p))_50%,transparent)] sm:px-6 sm:py-6 [font-family:var(--font-sans)] tracking-[var(--letter-spacing)]">
           {children}
         </div>
 
         {footer && (
-          <div className="flex-shrink-0 border-t border-base-300/60 bg-base-200/85 px-3 py-3 backdrop-blur-md sm:px-4 sm:py-4 [&_.btn-primary]:rounded-[1.4rem] [&_button.btn]:rounded-[1.4rem]">
+          <div className="flex-shrink-0 border-t border-[color-mix(in_srgb,var(--foreground)_10%,transparent)] bg-[color-mix(in_srgb,var(--background)_90%,transparent)] px-3 py-3 backdrop-blur-md sm:px-4 sm:py-4 [&_.btn-primary]:rounded-[var(--radius)] [&_button.btn]:rounded-[var(--radius)]">
             {footer}
           </div>
         )}

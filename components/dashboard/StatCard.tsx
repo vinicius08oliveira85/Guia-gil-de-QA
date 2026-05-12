@@ -17,33 +17,33 @@ type StatCardProps = {
 
 const accentBackground: Record<NonNullable<StatCardProps['accent']>, string> = {
   accent: 'from-primary/20 via-primary/10 to-primary/5',
-  success: 'from-emerald-500/20 via-green-500/10 to-emerald-500/5',
-  warning: 'from-orange-500/20 via-amber-500/10 to-orange-500/5',
-  danger: 'from-rose-500/20 via-red-500/10 to-rose-500/5',
+  success: 'from-success/20 via-success/10 to-success/5',
+  warning: 'from-warning/20 via-warning/10 to-warning/5',
+  danger: 'from-error/20 via-error/10 to-error/5',
   neutral: 'from-base-200/60 via-base-200/30 to-base-200/10',
 };
 
 const accentBorder: Record<NonNullable<StatCardProps['accent']>, string> = {
   accent: 'border-primary/30 group-hover:border-primary/50',
-  success: 'border-emerald-500/30 group-hover:border-emerald-500/50',
-  warning: 'border-orange-500/30 group-hover:border-orange-500/50',
-  danger: 'border-rose-500/30 group-hover:border-rose-500/50',
+  success: 'border-success/30 group-hover:border-success/50',
+  warning: 'border-warning/30 group-hover:border-warning/50',
+  danger: 'border-error/30 group-hover:border-error/50',
   neutral: 'border-base-300 group-hover:border-base-300/60',
 };
 
 const accentIconBg: Record<NonNullable<StatCardProps['accent']>, string> = {
   accent: 'bg-primary/10 group-hover:bg-primary/15',
-  success: 'bg-emerald-500/10 group-hover:bg-emerald-500/15',
-  warning: 'bg-orange-500/10 group-hover:bg-orange-500/15',
-  danger: 'bg-rose-500/10 group-hover:bg-rose-500/15',
+  success: 'bg-success/10 group-hover:bg-success/15',
+  warning: 'bg-warning/10 group-hover:bg-warning/15',
+  danger: 'bg-error/10 group-hover:bg-error/15',
   neutral: 'bg-base-200/80 group-hover:bg-base-200',
 };
 
 const accentTextColor: Record<NonNullable<StatCardProps['accent']>, string> = {
   accent: 'text-primary',
-  success: 'text-emerald-400 dark:text-emerald-300',
-  warning: 'text-orange-400 dark:text-orange-300',
-  danger: 'text-rose-400 dark:text-rose-300',
+  success: 'text-success',
+  warning: 'text-warning',
+  danger: 'text-error',
   neutral: 'text-base-content',
 };
 
@@ -101,7 +101,7 @@ export const StatCard: React.FC<StatCardProps> = ({
       transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
     >
       <motion.div
-        className="h-full group rounded-xl"
+        className="h-full group rounded-[var(--rounded-box)]"
         initial="idle"
         animate="idle"
         whileHover="hover"
@@ -162,7 +162,7 @@ export const StatCard: React.FC<StatCardProps> = ({
                   variants={iconHoverVariants}
                   initial="idle"
                   className={`
-                                    flex-shrink-0 w-12 h-12 rounded-xl ${accentIconBg[accent]} 
+                                    flex-shrink-0 w-12 h-12 rounded-[var(--radius)] ${accentIconBg[accent]} 
                                     flex items-center justify-center
                                 `}
                   style={{ transformOrigin: '50% 50%' }}
@@ -189,7 +189,7 @@ export const StatCard: React.FC<StatCardProps> = ({
                   initial={{ opacity: 0, x: -5 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.3, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                  className={`badge badge-sm rounded-full px-2.5 py-1 ${
+                  className={`badge badge-sm rounded-[var(--radius)] px-2.5 py-1 ${
                     trendIsPositive
                       ? 'badge-success bg-success/20 text-success border-success/30'
                       : 'badge-error bg-error/20 text-error border-error/30'

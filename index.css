@@ -129,18 +129,14 @@
     --sidebar-primary-foreground: #ffffff;
   }
 
-  [data-theme='dark'] body,
-  [data-theme='dim'] body {
-    font-family: var(--font-sans);
-    letter-spacing: var(--letter-spacing);
-  }
-
   html {
     scroll-behavior: smooth;
   }
 
   body {
-    @apply bg-base-100 text-base-content font-body antialiased;
+    @apply bg-base-100 text-base-content antialiased;
+    font-family: var(--font-sans);
+    letter-spacing: var(--letter-spacing);
     text-rendering: optimizeLegibility;
     padding-bottom: env(safe-area-inset-bottom);
   }
@@ -409,8 +405,17 @@
   .soft-shadow {
     box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
   }
-  .dark .soft-shadow {
+  .dark .soft-shadow,
+  [data-theme='dim'] .soft-shadow {
     box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.15);
+  }
+  /** Donut / pequenos gráficos: mais leve que `.soft-shadow` para não competir com o card. */
+  .soft-shadow-chart {
+    box-shadow: 0 2px 12px -2px rgba(0, 0, 0, 0.035);
+  }
+  .dark .soft-shadow-chart,
+  [data-theme='dim'] .soft-shadow-chart {
+    box-shadow: 0 2px 14px -2px rgba(0, 0, 0, 0.11);
   }
   .hover-glow:hover {
     box-shadow: 0 0 15px -3px rgba(79, 70, 229, 0.2);

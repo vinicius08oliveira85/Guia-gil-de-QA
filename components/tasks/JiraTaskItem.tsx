@@ -85,9 +85,9 @@ import { Badge } from '../common/Badge';
 import { useJiraAttachmentViewer } from '../../hooks/useJiraAttachmentViewer';
 import { TestCasesFreshnessIndicator } from './TestCasesFreshnessIndicator';
 
-/** Destaque da ação IA principal (primary + halo da marca vs chips da mesma linha). */
+/** Destaque da ação IA principal — halo via tokens Daisy (oklch) + animação existente. */
 const gerarTudoDestaqueClass =
-  'glow-primary shadow-lg shadow-primary/35 ring-2 ring-primary/25 ring-offset-2 ring-offset-base-100 dark:ring-offset-base-200 hover:shadow-xl hover:shadow-primary/45 hover:ring-primary/35 focus-visible:ring-primary/50 transition-[color,box-shadow,filter,background-color]';
+  'animate-ai-card-border glow-primary ring-2 ring-[color-mix(in_oklch,oklch(var(--p))_32%,transparent)] ring-offset-2 ring-offset-base-100 dark:ring-offset-base-200 hover:ring-[color-mix(in_oklch,oklch(var(--p))_45%,transparent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[oklch(var(--p))] transition-[color,box-shadow,filter,background-color]';
 
 // Componente para renderizar descrição com formatação rica do Jira
 const DescriptionRenderer: React.FC<{
@@ -731,7 +731,7 @@ export const JiraTaskItem: React.FC<{
 
     /** Ícones compactos no desktop; área tocável ≥44px no mobile (WCAG) */
     const iconTouchTargetClass =
-      'btn btn-ghost btn-circle btn-sm min-h-[44px] min-w-[44px] sm:min-h-8 sm:min-w-8 sm:h-8 sm:w-8 p-0 [&_svg]:size-[18px] sm:[&_svg]:size-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30';
+      'win-icon-button sm:!min-h-8 sm:!min-w-8 sm:!h-8 sm:!w-8 p-0 [&_svg]:size-[18px] sm:[&_svg]:size-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_oklch,oklch(var(--p))_35%,transparent)]';
 
     const renderOverviewSection = () => (
       <div className="space-y-3">
@@ -783,12 +783,12 @@ export const JiraTaskItem: React.FC<{
 
         {/* Ações de Teste */}
         {taskTestStatus && (taskTestStatus === 'testar' || taskTestStatus === 'testando') && (
-          <div className="flex items-center gap-2 p-2.5 rounded-xl bg-base-200 border border-base-300 mt-1.5">
+          <div className="flex items-center gap-2 p-2.5 rounded-[var(--radius)] bg-base-200 border border-base-300 mt-1.5">
             <p className="text-sm font-medium flex-1">Ações de Teste:</p>
             {taskTestStatus === 'testar' && (
               <button
                 type="button"
-                className="btn btn-sm btn-info rounded-xl shadow-sm"
+                className="btn btn-sm btn-info rounded-[var(--radius)] soft-shadow"
                 onClick={handleStartTest}
               >
                 <span className="mr-1">▶</span> Iniciar Teste
@@ -798,7 +798,7 @@ export const JiraTaskItem: React.FC<{
               <button
                 type="button"
                 onClick={handleCompleteTest}
-                className="btn btn-sm btn-success rounded-xl shadow-sm"
+                className="btn btn-sm btn-success rounded-[var(--radius)] soft-shadow"
               >
                 <span className="mr-1">✓</span> Concluir Teste
               </button>
@@ -814,13 +814,13 @@ export const JiraTaskItem: React.FC<{
           nextStep) && (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-2">
             {task.owner && (
-              <div className="p-2.5 bg-base-100 border border-base-300 rounded-xl">
+              <div className="p-2.5 bg-base-100 border border-base-300 rounded-[var(--radius)]">
                 <p className="text-[11px] uppercase text-base-content/60 tracking-wide">Owner</p>
                 <p className="text-sm font-semibold text-base-content">{task.owner}</p>
               </div>
             )}
             {(task.jiraAssignee?.displayName ?? task.assignee) && (
-              <div className="p-2.5 bg-base-100 border border-base-300 rounded-xl">
+              <div className="p-2.5 bg-base-100 border border-base-300 rounded-[var(--radius)]">
                 <p className="text-[11px] uppercase text-base-content/60 tracking-wide">
                   Responsável
                 </p>
@@ -830,7 +830,7 @@ export const JiraTaskItem: React.FC<{
               </div>
             )}
             {task.priority && (
-              <div className="p-2.5 bg-base-100 border border-base-300 rounded-xl">
+              <div className="p-2.5 bg-base-100 border border-base-300 rounded-[var(--radius)]">
                 <p className="text-[11px] uppercase text-base-content/60 tracking-wide">
                   Prioridade
                 </p>
@@ -838,7 +838,7 @@ export const JiraTaskItem: React.FC<{
               </div>
             )}
             {task.severity && (
-              <div className="p-2.5 bg-base-100 border border-base-300 rounded-xl">
+              <div className="p-2.5 bg-base-100 border border-base-300 rounded-[var(--radius)]">
                 <p className="text-[11px] uppercase text-base-content/60 tracking-wide">
                   Severidade
                 </p>
@@ -846,7 +846,7 @@ export const JiraTaskItem: React.FC<{
               </div>
             )}
             {nextStep && (
-              <div className="rounded-xl border border-primary/30 bg-primary/5 p-2.5">
+              <div className="rounded-[var(--radius)] border border-primary/30 bg-primary/5 p-2.5">
                 <p className="text-[0.65rem] uppercase tracking-wide text-primary">Próximo passo</p>
                 <p className="text-[0.82rem] font-semibold text-base-content line-clamp-2">
                   {nextStep}
@@ -953,7 +953,7 @@ export const JiraTaskItem: React.FC<{
                   </h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                     {task.reporter && (
-                      <div className="p-2.5 bg-base-100 border border-base-300 rounded-xl">
+                      <div className="p-2.5 bg-base-100 border border-base-300 rounded-[var(--radius)]">
                         <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-1">
                           Reporter
                         </p>
@@ -968,7 +968,7 @@ export const JiraTaskItem: React.FC<{
                       </div>
                     )}
                     {task.dueDate && (
-                      <div className="p-2.5 bg-base-100 border border-base-300 rounded-xl">
+                      <div className="p-2.5 bg-base-100 border border-base-300 rounded-[var(--radius)]">
                         <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-1">
                           Due Date
                         </p>
@@ -978,7 +978,7 @@ export const JiraTaskItem: React.FC<{
                       </div>
                     )}
                     {task.environment && (
-                      <div className="p-2.5 bg-base-100 border border-base-300 rounded-xl md:col-span-2">
+                      <div className="p-2.5 bg-base-100 border border-base-300 rounded-[var(--radius)] md:col-span-2">
                         <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-1">
                           Environment
                         </p>
@@ -995,7 +995,7 @@ export const JiraTaskItem: React.FC<{
                   <h4 className="text-sm font-semibold text-base-content/70">⏱️ Time Tracking</h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
                     {task.timeTracking.originalEstimate && (
-                      <div className="p-2.5 bg-base-100 border border-base-300 rounded-xl">
+                      <div className="p-2.5 bg-base-100 border border-base-300 rounded-[var(--radius)]">
                         <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-1">
                           Original Estimate
                         </p>
@@ -1005,7 +1005,7 @@ export const JiraTaskItem: React.FC<{
                       </div>
                     )}
                     {task.timeTracking.remainingEstimate && (
-                      <div className="p-2.5 bg-base-100 border border-base-300 rounded-xl">
+                      <div className="p-2.5 bg-base-100 border border-base-300 rounded-[var(--radius)]">
                         <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-1">
                           Remaining Estimate
                         </p>
@@ -1015,7 +1015,7 @@ export const JiraTaskItem: React.FC<{
                       </div>
                     )}
                     {task.timeTracking.timeSpent && (
-                      <div className="p-2.5 bg-base-100 border border-base-300 rounded-xl">
+                      <div className="p-2.5 bg-base-100 border border-base-300 rounded-[var(--radius)]">
                         <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-1">
                           Time Spent
                         </p>
@@ -1034,7 +1034,7 @@ export const JiraTaskItem: React.FC<{
                   <h4 className="text-sm font-semibold text-base-content/70">🧩 Organização</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                     {task.components && task.components.length > 0 && (
-                      <div className="p-2.5 bg-base-100 border border-base-300 rounded-xl">
+                      <div className="p-2.5 bg-base-100 border border-base-300 rounded-[var(--radius)]">
                         <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-2">
                           Components
                         </p>
@@ -1051,7 +1051,7 @@ export const JiraTaskItem: React.FC<{
                       </div>
                     )}
                     {task.fixVersions && task.fixVersions.length > 0 && (
-                      <div className="p-2.5 bg-base-100 border border-base-300 rounded-xl">
+                      <div className="p-2.5 bg-base-100 border border-base-300 rounded-[var(--radius)]">
                         <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-2">
                           Fix Versions
                         </p>
@@ -1076,7 +1076,7 @@ export const JiraTaskItem: React.FC<{
                 <div className="space-y-2">
                   <h4 className="text-sm font-semibold text-base-content/70">🔗 Relacionamentos</h4>
                   {task.issueLinks && task.issueLinks.length > 0 && (
-                    <div className="p-2.5 bg-base-100 border border-base-300 rounded-xl">
+                    <div className="p-2.5 bg-base-100 border border-base-300 rounded-[var(--radius)]">
                       <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-2">
                         Issue Links
                       </p>
@@ -1091,7 +1091,7 @@ export const JiraTaskItem: React.FC<{
                     </div>
                   )}
                   {task.watchers && (
-                    <div className="p-2.5 bg-base-100 border border-base-300 rounded-xl">
+                    <div className="p-2.5 bg-base-100 border border-base-300 rounded-[var(--radius)]">
                       <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-1">
                         Watchers
                       </p>
@@ -1108,7 +1108,7 @@ export const JiraTaskItem: React.FC<{
               {task.jiraAttachments && task.jiraAttachments.length > 0 && (
                 <div className="space-y-2">
                   <h4 className="text-sm font-semibold text-base-content/70">📎 Anexos do Jira</h4>
-                  <div className="p-2.5 bg-base-100 border border-base-300 rounded-xl">
+                  <div className="p-2.5 bg-base-100 border border-base-300 rounded-[var(--radius)]">
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
                       {task.jiraAttachments.map(att => {
                         const jiraConfig = getJiraConfig();
@@ -1201,12 +1201,12 @@ export const JiraTaskItem: React.FC<{
             </div>
           )}
 
-          <div className="mx-auto flex w-fit flex-wrap items-center justify-center gap-4 rounded-full border border-base-300 bg-base-100/90 px-5 py-3 shadow-lg backdrop-blur-md">
+          <div className="mica mx-auto flex w-fit flex-wrap items-center justify-center gap-4 rounded-[var(--rounded-box)] border border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] px-5 py-3">
             <button
               type="button"
               onClick={() => onGenerateBddScenarios(task.id)}
               disabled={actionsDisabled}
-              className="btn btn-outline btn-info btn-sm gap-2 rounded-full px-5 py-2.5 font-semibold disabled:cursor-not-allowed"
+              className="btn btn-outline btn-info btn-sm gap-2 rounded-[var(--radius)] px-5 py-2.5 font-semibold disabled:cursor-not-allowed"
             >
               <Sparkles className="h-4 w-4" aria-hidden />
               Gerar Cenários com IA
@@ -1216,7 +1216,7 @@ export const JiraTaskItem: React.FC<{
               type="button"
               onClick={() => setIsCreatingBdd(true)}
               disabled={actionsDisabled}
-              className="btn btn-primary btn-sm gap-2 rounded-full px-5 py-2.5 font-semibold shadow-lg shadow-primary/20 disabled:cursor-not-allowed"
+              className="btn btn-primary btn-sm gap-2 rounded-[var(--radius)] px-5 py-2.5 font-semibold ring-1 ring-[color-mix(in_oklch,oklch(var(--p))_28%,transparent)] disabled:cursor-not-allowed"
             >
               <PlusIcon className="w-4 h-4" aria-hidden />
               Adicionar Cenário Manualmente
@@ -1238,7 +1238,7 @@ export const JiraTaskItem: React.FC<{
         <div className="space-y-3">
           {/* Sub-abas de Testes */}
           <div
-            className="flex w-full flex-wrap gap-1 overflow-x-auto rounded-[1.4rem] border border-base-300 bg-base-200/60 p-1 md:w-fit"
+            className="flex w-full flex-wrap gap-1 overflow-x-auto rounded-[var(--radius)] border border-base-300 bg-base-200/60 p-1 md:w-fit"
             role="tablist"
             aria-label="Sub-abas de testes"
           >
@@ -1247,7 +1247,7 @@ export const JiraTaskItem: React.FC<{
               role="tab"
               aria-selected={activeTestSubSection === 'strategy'}
               onClick={() => setActiveTestSubSection('strategy')}
-              className={`min-h-[44px] sm:min-h-0 inline-flex items-center rounded-[1.4rem] px-3 py-2 font-heading text-xs font-medium transition-colors duration-200 sm:px-4 sm:py-2 sm:text-sm ${activeTestSubSection === 'strategy' ? 'bg-primary text-primary-content shadow-sm hover:bg-primary/90' : 'text-base-content/75 hover:bg-base-300/70 hover:text-base-content'}`}
+              className={`min-h-[44px] sm:min-h-0 inline-flex items-center rounded-[var(--radius)] px-3 py-2 font-heading text-xs font-medium transition-colors duration-200 sm:px-4 sm:py-2 sm:text-sm ${activeTestSubSection === 'strategy' ? 'bg-primary text-primary-content soft-shadow hover:bg-primary/90' : 'text-base-content/75 hover:bg-base-300/70 hover:text-base-content'}`}
             >
               Estratégia
             </button>
@@ -1256,7 +1256,7 @@ export const JiraTaskItem: React.FC<{
               role="tab"
               aria-selected={activeTestSubSection === 'test-cases'}
               onClick={() => setActiveTestSubSection('test-cases')}
-              className={`min-h-[44px] sm:min-h-0 inline-flex items-center gap-1 rounded-[1.4rem] px-3 py-2 font-heading text-xs font-medium transition-colors duration-200 sm:px-4 sm:py-2 sm:text-sm ${activeTestSubSection === 'test-cases' ? 'bg-primary text-primary-content shadow-sm hover:bg-primary/90' : 'text-base-content/75 hover:bg-base-300/70 hover:text-base-content'}`}
+              className={`min-h-[44px] sm:min-h-0 inline-flex items-center gap-1 rounded-[var(--radius)] px-3 py-2 font-heading text-xs font-medium transition-colors duration-200 sm:px-4 sm:py-2 sm:text-sm ${activeTestSubSection === 'test-cases' ? 'bg-primary text-primary-content soft-shadow hover:bg-primary/90' : 'text-base-content/75 hover:bg-base-300/70 hover:text-base-content'}`}
             >
               Casos de teste
               {task.testCases?.length ? (
@@ -1273,7 +1273,7 @@ export const JiraTaskItem: React.FC<{
           {activeTestSubSection === 'strategy' && (
             <div>
               <header className="flex items-center gap-3 mb-4">
-                <div className="p-1.5 bg-primary/10 rounded-lg">
+                <div className="rounded-[var(--radius)] bg-primary/10 p-1.5">
                   <BarChart3 className="w-5 h-5 text-primary" aria-hidden />
                 </div>
                 <h2 className="text-lg font-bold text-base-content text-balance">
@@ -1342,7 +1342,7 @@ export const JiraTaskItem: React.FC<{
           )}
 
           {/* Ferramentas (Geral) + Nível de Detalhe + Regerar com IA */}
-          <section className="mt-6 bg-base-100 border border-base-300 rounded-2xl shadow-sm overflow-hidden">
+          <section className="mt-6 bg-base-100 border border-base-300 rounded-[var(--rounded-box)] soft-shadow overflow-hidden">
             <div className="p-5 flex flex-col lg:flex-row lg:items-center gap-6">
               <div className="flex-grow">
                 {onTaskToolsChange && (
@@ -1384,7 +1384,7 @@ export const JiraTaskItem: React.FC<{
                   <button
                     type="button"
                     onClick={() => onGenerateTests(task.id, detailLevel)}
-                    className="btn btn-primary btn-sm w-full rounded-xl flex items-center justify-center gap-2"
+                    className="btn btn-primary btn-sm w-full rounded-[var(--radius)] flex items-center justify-center gap-2"
                   >
                     <Sparkles className="w-4 h-4" aria-hidden />
                     {(task.testCases?.length ?? 0) > 0 ? 'Regerar com IA' : 'Gerar com IA'}
@@ -1418,7 +1418,7 @@ export const JiraTaskItem: React.FC<{
       return (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4">
           <div className="lg:col-span-7 space-y-3 sm:space-y-4 min-w-0">
-            <section className="bg-base-100 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-base-300 shadow-sm">
+            <section className="bg-base-100 rounded-[var(--radius)] sm:rounded-[var(--rounded-box)] p-3 sm:p-4 border border-base-300 soft-shadow">
               <h2 className={cardTitleClass + ' mb-3'}>
                 <Link className="w-4 h-4 sm:w-5 sm:h-5 text-primary/70 shrink-0" aria-hidden />
                 Dependências
@@ -1426,7 +1426,7 @@ export const JiraTaskItem: React.FC<{
               <TaskLinksView task={task} project={project} onUpdateProject={onUpdateProject} />
             </section>
 
-            <section className="bg-base-100 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-base-300 shadow-sm">
+            <section className="bg-base-100 rounded-[var(--radius)] sm:rounded-[var(--rounded-box)] p-3 sm:p-4 border border-base-300 soft-shadow">
               <h2 className={cardTitleClass + ' mb-3'}>
                 <Paperclip className="w-4 h-4 sm:w-5 sm:h-5 text-primary/70 shrink-0" aria-hidden />
                 Anexos
@@ -1443,7 +1443,7 @@ export const JiraTaskItem: React.FC<{
             </section>
 
             {task.checklist && task.checklist.length > 0 && (
-              <section className="bg-base-100 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-base-300 shadow-sm">
+              <section className="bg-base-100 rounded-[var(--radius)] sm:rounded-[var(--rounded-box)] p-3 sm:p-4 border border-base-300 soft-shadow">
                 <h2 className={cardTitleClass + ' mb-3'}>Checklist</h2>
                 <ChecklistView
                   checklist={task.checklist}
@@ -1462,7 +1462,7 @@ export const JiraTaskItem: React.FC<{
           </div>
 
           <div className="lg:col-span-5 min-w-0 self-start">
-            <section className="bg-base-100 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-base-300 shadow-sm sticky top-20 lg:top-24">
+            <section className="bg-base-100 rounded-[var(--radius)] sm:rounded-[var(--rounded-box)] p-3 sm:p-4 border border-base-300 soft-shadow sticky top-20 lg:top-24">
               <h2 className={cardTitleClass + ' mb-3'}>
                 <Timer className="w-4 h-4 sm:w-5 sm:h-5 text-primary/70 shrink-0" aria-hidden />
                 Estimativas
@@ -1672,7 +1672,7 @@ export const JiraTaskItem: React.FC<{
         <div style={indentationStyle} className="py-0.5">
           <div
             className={[
-              'task-card-shadow rounded-[1.4rem] border bg-base-200 px-2 py-2 transition-colors duration-200 hover:bg-base-300 sm:px-3 sm:py-2 md:px-3 md:py-2',
+              'task-card-shadow rounded-[var(--radius)] border bg-base-200 px-2 py-2 transition-colors duration-200 hover:bg-base-300 sm:px-3 sm:py-2 md:px-3 md:py-2',
               'max-md:grid max-md:grid-cols-[auto_minmax(0,1fr)_auto] max-md:grid-rows-[auto_auto] max-md:items-start max-md:gap-x-2 max-md:gap-y-1 max-md:overflow-visible',
               'md:flex md:flex-wrap md:items-center md:gap-x-2 md:gap-y-1',
               level > 0
@@ -1680,7 +1680,7 @@ export const JiraTaskItem: React.FC<{
                 : '',
               isStatusDropdownOpen ? 'relative z-10' : '',
               'border-base-300',
-              activeTaskId === task.id ? 'ring-2 ring-primary/40 shadow-lg' : '',
+              activeTaskId === task.id ? 'ring-2 ring-primary/40 soft-shadow' : '',
               isSelected ? 'bg-primary/5 border-primary/40 ring-1 ring-primary/30' : '',
               task.isFavorite ? 'ring-1 ring-amber-500/35' : '',
               taskCardLeftAccentClass,
@@ -1750,7 +1750,7 @@ export const JiraTaskItem: React.FC<{
                       e.stopPropagation();
                       setIsChildrenOpen(!isChildrenOpen);
                     }}
-                    className="btn btn-ghost btn-xs flex items-center gap-1 min-h-[44px] min-w-[44px] sm:min-h-8 sm:min-w-8 sm:px-1 px-2 shrink-0 rounded-xl p-0 sm:py-0 [&_svg:first-child]:size-[18px] sm:[&_svg:first-child]:size-4"
+                    className="btn btn-ghost btn-xs flex items-center gap-1 min-h-[44px] min-w-[44px] sm:min-h-8 sm:min-w-8 sm:px-1 px-2 shrink-0 rounded-[var(--radius)] p-0 sm:py-0 [&_svg:first-child]:size-[18px] sm:[&_svg:first-child]:size-4"
                     aria-label={
                       isChildrenOpen
                         ? `Colapsar ${task.children.length} subtarefas de ${task.id}`
@@ -1959,7 +1959,7 @@ export const JiraTaskItem: React.FC<{
                   />
                 </button>
                 {isStatusDropdownOpen && (
-                  <div className="absolute right-0 z-50 mt-1 max-w-[calc(100vw-2rem)] w-40 overflow-hidden rounded-[1.4rem] border border-base-300 bg-base-100 shadow-lg sm:w-48">
+                  <div className="mica absolute right-0 z-50 mt-1 max-w-[calc(100vw-2rem)] w-40 overflow-hidden !rounded-[var(--rounded-box)] border border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] sm:w-48">
                     {project?.settings?.jiraStatuses && project.settings.jiraStatuses.length > 0 ? (
                       project.settings.jiraStatuses.map(status => {
                         const statusName = typeof status === 'string' ? status : status.name;
@@ -2049,18 +2049,18 @@ export const JiraTaskItem: React.FC<{
                 className="dropdown dropdown-end md:hidden relative z-30 shrink-0 overflow-visible"
                 onClick={e => e.stopPropagation()}
               >
-                <div
+                <button
+                  type="button"
                   tabIndex={0}
-                  role="button"
-                  className="btn btn-ghost btn-sm btn-circle min-h-9 min-w-9"
+                  className="win-icon-button sm:!min-h-9 sm:!min-w-9"
                   aria-label="Ações da tarefa"
                   aria-haspopup="true"
                 >
                   <MoreVertical className="h-5 w-5" aria-hidden />
-                </div>
+                </button>
                 <ul
                   tabIndex={0}
-                  className="dropdown-content menu z-50 mt-1 w-64 max-w-[min(100vw-2rem,18rem)] rounded-[1.4rem] border border-base-300 bg-base-100 p-2 shadow-lg"
+                  className="dropdown-content menu mica z-50 mt-1 w-64 max-w-[min(100vw-2rem,18rem)] !rounded-[var(--rounded-box)] border border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] p-2"
                   onClick={e => e.stopPropagation()}
                 >
                   {isAiProcessing && aiPhaseMessage ? (
@@ -2284,7 +2284,7 @@ export const JiraTaskItem: React.FC<{
                       <button
                         type="button"
                         onClick={() => onAddSubtask(task.id)}
-                        className="btn btn-ghost btn-sm gap-2 hidden md:inline-flex rounded-xl"
+                        className="btn btn-ghost btn-sm gap-2 hidden md:inline-flex rounded-[var(--radius)]"
                         aria-label="Adicionar subtarefa"
                       >
                         <PlusIcon className="w-4 h-4" aria-hidden="true" />
@@ -2295,7 +2295,7 @@ export const JiraTaskItem: React.FC<{
                     <button
                       type="button"
                       onClick={() => onEdit(task)}
-                      className="btn btn-ghost btn-sm gap-2 hidden md:inline-flex rounded-xl"
+                      className="btn btn-ghost btn-sm gap-2 hidden md:inline-flex rounded-[var(--radius)]"
                       aria-label="Editar tarefa"
                     >
                       <EditIcon className="w-4 h-4" aria-hidden="true" />
@@ -2307,7 +2307,7 @@ export const JiraTaskItem: React.FC<{
                         type="button"
                         onClick={() => onSyncToJira(task.id)}
                         disabled={isSyncing}
-                        className="btn btn-ghost btn-sm gap-2 hidden md:inline-flex rounded-xl"
+                        className="btn btn-ghost btn-sm gap-2 hidden md:inline-flex rounded-[var(--radius)]"
                         aria-label="Sincronizar tarefa com o Jira"
                       >
                         {isSyncing ? (
@@ -2323,7 +2323,7 @@ export const JiraTaskItem: React.FC<{
                         type="button"
                         onClick={() => onUpdateFromJira(task.id)}
                         disabled={isUpdatingFromJira}
-                        className="btn btn-ghost btn-sm gap-2 hidden md:inline-flex rounded-xl"
+                        className="btn btn-ghost btn-sm gap-2 hidden md:inline-flex rounded-[var(--radius)]"
                         aria-label="Atualizar tarefa do Jira"
                         title="Trazer alterações do Jira (somente esta tarefa)"
                       >
@@ -2341,7 +2341,7 @@ export const JiraTaskItem: React.FC<{
                       <button
                         type="button"
                         tabIndex={0}
-                        className="btn btn-ghost btn-sm btn-square rounded-xl min-h-[44px] min-w-[44px] sm:min-h-8 sm:min-w-8 p-0 [&_svg]:size-[18px] sm:[&_svg]:size-4"
+                        className="win-icon-button sm:!min-h-8 sm:!min-w-8"
                         aria-label="Mais ações"
                         aria-haspopup="true"
                         onClick={e => e.stopPropagation()}
@@ -2350,7 +2350,7 @@ export const JiraTaskItem: React.FC<{
                       </button>
                       <ul
                         tabIndex={0}
-                        className="dropdown-content menu bg-base-100 rounded-xl z-50 w-56 max-h-[min(70vh,24rem)] overflow-y-auto custom-scrollbar p-2 shadow-lg border border-base-300"
+                        className="dropdown-content menu mica z-50 w-56 max-h-[min(70vh,24rem)] overflow-y-auto !rounded-[var(--rounded-box)] border border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] p-2 custom-scrollbar"
                         role="menu"
                         onClick={e => e.stopPropagation()}
                       >
@@ -2483,7 +2483,7 @@ export const JiraTaskItem: React.FC<{
 
                   <div className="flex flex-col gap-1.5 md:flex-row md:items-center md:justify-between">
                     <div
-                      className="flex w-full flex-wrap gap-1 overflow-x-auto rounded-[1.4rem] border border-base-300 bg-base-200/60 p-1 md:w-fit"
+                      className="flex w-full flex-wrap gap-1 overflow-x-auto rounded-[var(--radius)] border border-base-300 bg-base-200/60 p-1 md:w-fit"
                       role="tablist"
                       aria-label="Seções da tarefa"
                     >
@@ -2499,7 +2499,7 @@ export const JiraTaskItem: React.FC<{
                             role="tab"
                             aria-selected={isActive}
                             aria-controls={panelId}
-                            className={`inline-flex min-h-[44px] items-center rounded-[1.4rem] px-3 py-2 font-heading text-xs font-medium transition-colors duration-200 sm:min-h-0 sm:px-4 sm:py-2 sm:text-sm ${isActive ? 'bg-primary text-primary-content shadow-sm hover:bg-primary/90' : 'text-base-content/75 hover:bg-base-300/70 hover:text-base-content'}`}
+                            className={`inline-flex min-h-[44px] items-center rounded-[var(--radius)] px-3 py-2 font-heading text-xs font-medium transition-colors duration-200 sm:min-h-0 sm:px-4 sm:py-2 sm:text-sm ${isActive ? 'bg-primary text-primary-content soft-shadow hover:bg-primary/90' : 'text-base-content/75 hover:bg-base-300/70 hover:text-base-content'}`}
                             onClick={() => setActiveSection(tab.id)}
                           >
                             <span>{tab.label}</span>

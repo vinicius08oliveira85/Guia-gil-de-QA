@@ -41,7 +41,7 @@ export const ProjectTrailHeader: React.FC<ProjectTrailHeaderProps> = ({
     : 'Nunca executada';
 
   return (
-    <section className="mica flex flex-col gap-6 !rounded-[var(--rounded-box)] border-0 p-5 shadow-lg sm:p-6 lg:p-8">
+    <section className="mica flex flex-col gap-6 !rounded-[var(--rounded-box)] border-0 p-5 sm:p-6 lg:p-8">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-base-content/60">

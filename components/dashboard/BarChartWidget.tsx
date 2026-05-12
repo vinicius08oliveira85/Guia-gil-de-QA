@@ -65,13 +65,14 @@ export const BarChartWidget: React.FC<BarChartWidgetProps> = ({
                 {rawData[index].value}
               </span>
             </div>
-            <div className="mt-1 h-2 rounded-full bg-base-200 overflow-hidden">
+            <div className="mt-1 h-2 overflow-hidden rounded-full bg-base-200">
               <div
                 className={cn(
                   `h-2 rounded-full ${item.color}`,
                   'transition-all',
-                  interactive && hoveredIndex === index && 'h-3 shadow-lg',
-                  interactive && hoveredIndex === index && 'ring-2 ring-primary/20'
+                  interactive &&
+                    hoveredIndex === index &&
+                    'h-3 ring-2 ring-[color-mix(in_oklch,oklch(var(--p))_25%,transparent)]'
                 )}
                 style={{ width: `${Math.min(100, Math.max(0, item.value))}%` }}
                 role="progressbar"

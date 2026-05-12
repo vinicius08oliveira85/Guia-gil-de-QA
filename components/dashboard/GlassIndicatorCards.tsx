@@ -1,10 +1,5 @@
 import React from 'react';
 import {
-  ClipboardList,
-  Clock,
-  Zap,
-  CheckCircle,
-  AlertTriangle,
   ListChecks,
   TrendingUp,
 } from 'lucide-react';
@@ -99,9 +94,15 @@ function SmallIndicatorCard({ item }: { item: SmallIndicatorItem }) {
   const config = themeConfig[item.colorTheme];
   const Icon = item.icon;
   const isClickable = !!item.onClick;
+  const interactiveClasses = isClickable
+    ? 'group cursor-pointer hover:-translate-y-0.5 hover:border-[color-mix(in_oklch,oklch(var(--p))_35%,transparent)] hover:ring-1 hover:ring-[color-mix(in_oklch,oklch(var(--p))_22%,transparent)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_oklch,oklch(var(--p))_35%,transparent)] motion-reduce:transform-none motion-reduce:hover:ring-0'
+    : '';
+  const activeClasses = item.isActive
+    ? 'ring-2 ring-[color-mix(in_oklch,oklch(var(--p))_40%,transparent)]'
+    : '';
   return (
     <div
-      className={`relative overflow-hidden rounded-xl border border-base-300/80 bg-base-100/95 p-3 shadow-sm backdrop-blur-sm transition-all duration-200 dark:border-base-300/60 dark:bg-base-200/50 sm:p-3.5 ${isClickable ? 'group cursor-pointer hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary/30' : ''} ${item.isActive ? 'shadow-md ring-2 ring-primary/40' : ''}`}
+      className={`relative overflow-hidden rounded-[var(--rounded-box)] border border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] bg-base-100/85 p-3 backdrop-blur-md soft-shadow transition-all duration-200 dark:bg-base-200/50 sm:p-3.5 ${interactiveClasses} ${activeClasses}`}
       role={isClickable ? 'button' : 'article'}
       tabIndex={isClickable ? 0 : undefined}
       aria-label={
@@ -129,7 +130,7 @@ function SmallIndicatorCard({ item }: { item: SmallIndicatorItem }) {
         <span className={`text-[10px] font-bold uppercase tracking-widest ${config.labelColor}`}>
           {item.label}
         </span>
-        <div className={`rounded-md p-1.5 ${config.iconBg} ${config.glowClass}`}>
+        <div className={`rounded-[var(--radius)] p-1.5 ${config.iconBg} ${config.glowClass}`}>
           <Icon className={`h-4 w-4 ${config.iconColor}`} aria-hidden />
         </div>
       </div>
@@ -167,7 +168,7 @@ export function ExecutionAutomationCard({
 
   return (
     <div
-      className="relative overflow-hidden rounded-xl border border-base-300/80 bg-base-100/95 p-4 shadow-sm backdrop-blur-sm dark:border-base-300/60 dark:bg-base-200/40 sm:p-5"
+      className="relative overflow-hidden rounded-[var(--rounded-box)] border border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] bg-base-100/85 p-4 backdrop-blur-md soft-shadow dark:bg-base-200/40 sm:p-5"
       role="region"
       aria-label="Execução de Testes e Automatizados"
     >
@@ -180,7 +181,7 @@ export function ExecutionAutomationCard({
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-3">
               <div
-                className="shrink-0 rounded-lg border border-primary/25 bg-primary/10 p-2 dark:bg-primary/15"
+                className="shrink-0 rounded-[var(--radius)] border border-primary/25 bg-primary/10 p-2 dark:bg-primary/15"
                 aria-hidden
               >
                 <ListChecks className="h-5 w-5 text-primary" />
@@ -207,8 +208,8 @@ export function ExecutionAutomationCard({
             </div>
           </div>
           <div className="space-y-2">
-            <div
-              className="h-3 w-full overflow-hidden rounded-full border border-base-300/80 bg-base-200/90 dark:border-base-300 dark:bg-base-300/80"
+              <div
+                className="h-3 w-full overflow-hidden rounded-full border border-[color-mix(in_srgb,var(--foreground)_10%,transparent)] bg-base-200/90 dark:bg-base-300/80"
               role="progressbar"
               aria-valuenow={executionPercent}
               aria-valuemin={0}
@@ -216,7 +217,7 @@ export function ExecutionAutomationCard({
               aria-label={`Progresso: ${executionPercent}%, ${executedTestCases} de ${totalTestCases} casos executados`}
             >
               <div
-                className="h-full rounded-full bg-gradient-to-r from-primary via-primary/90 to-primary transition-all duration-500 shadow-md shadow-primary/20"
+                className="h-full rounded-full bg-gradient-to-r from-primary via-primary/90 to-primary ring-1 ring-[color-mix(in_oklch,oklch(var(--p))_25%,transparent)] transition-all duration-500"
                 style={{ width: `${executionPercent}%` }}
               />
             </div>

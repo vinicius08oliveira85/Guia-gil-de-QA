@@ -28,13 +28,15 @@ type CardProps = React.HTMLAttributes<HTMLElement> & {
 export const Card = React.memo<CardProps>(
   ({ children, className = '', variant = 'default', hoverable = true, ...rest }) => {
     const variantClasses = {
-      default: 'border border-base-300 bg-base-200 shadow-sm',
-      elevated: 'border border-base-300 bg-base-200 shadow-lg shadow-base-300/30',
+      default:
+        'border border-base-300 bg-base-200 soft-shadow dark:border-base-300/60 dark:bg-base-200/50',
+      elevated:
+        'border border-base-300 bg-base-200 task-card-shadow dark:border-base-300/60 dark:bg-base-200/50',
       outlined: 'border border-base-300 bg-transparent shadow-none',
     };
 
     const hoverClasses = hoverable
-      ? 'transition-all duration-300 ease-out hover:-translate-y-0.5 hover:shadow-xl hover:border-primary/30'
+      ? 'transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-[color-mix(in_oklch,oklch(var(--p))_35%,transparent)] hover:ring-1 hover:ring-[color-mix(in_oklch,oklch(var(--p))_22%,transparent)] motion-reduce:transform-none motion-reduce:hover:ring-0'
       : '';
 
     return (
@@ -42,8 +44,8 @@ export const Card = React.memo<CardProps>(
         className={cn(
           'w-full max-w-full',
           'text-base-content',
-          'rounded-[1.4rem]',
-          'focus-within:ring-2 focus-within:ring-primary/20 focus-within:ring-offset-0',
+          'rounded-[var(--radius)]',
+          'focus-within:ring-2 focus-within:ring-[color-mix(in_oklch,oklch(var(--p))_35%,transparent)] focus-within:ring-offset-0',
           variantClasses[variant],
           hoverClasses,
           className

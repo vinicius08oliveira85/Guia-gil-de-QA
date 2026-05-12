@@ -28,7 +28,7 @@ export const LineChartWidget: React.FC<LineChartWidgetProps> = ({
     return (
       <Card className={`!p-4 sm:!p-6 ${className}`}>
         <h4 className="text-lg font-semibold text-base-content mb-2">{title}</h4>
-        <div className="flex h-48 items-center justify-center rounded-2xl border border-dashed border-base-300 text-base-content/60">
+        <div className="flex h-48 items-center justify-center rounded-[var(--rounded-box)] border border-dashed border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] text-base-content/60">
           Dados insuficientes para exibir o gráfico.
         </div>
       </Card>
@@ -61,14 +61,8 @@ export const LineChartWidget: React.FC<LineChartWidgetProps> = ({
           {formatDate(minDate)} — {formatDate(maxDate)}
         </span>
       </div>
-      <div className="mt-4 h-48 rounded-2xl border border-base-300 bg-base-200/50 p-3">
+      <div className="mt-4 h-48 rounded-[var(--rounded-box)] border border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] bg-base-200/50 p-3">
         <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
-          <defs>
-            <linearGradient id="chartGrid" x1="0" x2="0" y1="0" y2="1">
-              <stop offset="0%" stopColor="rgba(255,255,255,0.08)" />
-              <stop offset="100%" stopColor="rgba(255,255,255,0.02)" />
-            </linearGradient>
-          </defs>
           {[0, 25, 50, 75, 100].map(y => (
             <line
               key={y}
@@ -76,7 +70,7 @@ export const LineChartWidget: React.FC<LineChartWidgetProps> = ({
               y1={y}
               x2="100"
               y2={y}
-              stroke="rgba(255,255,255,0.08)"
+              className="stroke-base-content/12 dark:stroke-base-content/18"
               strokeWidth="0.3"
             />
           ))}

@@ -20,7 +20,7 @@ export const RadarChartWidget: React.FC<RadarChartWidgetProps> = ({
     return (
       <Card className={`!p-4 sm:!p-6 ${className}`}>
         <h4 className="text-lg font-semibold text-base-content mb-2">{title}</h4>
-        <div className="flex h-48 items-center justify-center rounded-2xl border border-dashed border-base-300 text-base-content/60">
+        <div className="flex h-48 items-center justify-center rounded-[var(--rounded-box)] border border-dashed border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] text-base-content/60">
           Nenhum módulo (Epic) encontrado.
         </div>
       </Card>
@@ -45,7 +45,7 @@ export const RadarChartWidget: React.FC<RadarChartWidgetProps> = ({
         <h4 className="text-lg font-semibold text-base-content">{title}</h4>
         <span className="text-xs text-base-content/70">Qualidade por Epic</span>
       </div>
-      <div className="mt-4 flex justify-center">
+      <div className="mt-4 flex justify-center rounded-[var(--rounded-box)] border border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] bg-base-200/50 p-3">
         <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
           {guides.map(ratio => (
             <polygon
@@ -59,11 +59,15 @@ export const RadarChartWidget: React.FC<RadarChartWidgetProps> = ({
                 })
                 .join(' ')}
               fill="none"
-              stroke="rgba(255,255,255,0.08)"
+              className="stroke-base-content/12 dark:stroke-base-content/18"
               strokeWidth="1"
             />
           ))}
-          <polygon points={points} className="fill-teal-400/20 stroke-teal-300" strokeWidth="2.5" />
+          <polygon
+            points={points}
+            className="fill-success/20 stroke-success dark:fill-success/25"
+            strokeWidth="2.5"
+          />
           {data.map((item, i) => {
             const angle = (Math.PI * 2 * i) / data.length - Math.PI / 2;
             const labelRadius = radius * 1.1;
@@ -74,7 +78,7 @@ export const RadarChartWidget: React.FC<RadarChartWidgetProps> = ({
                 key={item.module}
                 x={x}
                 y={y}
-                fill="var(--text-primary)"
+                className="fill-base-content/85"
                 fontSize="11"
                 textAnchor="middle"
                 dominantBaseline="middle"

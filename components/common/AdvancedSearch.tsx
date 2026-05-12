@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { Project } from '../../types';
 import { useSearch, type SearchResult } from '../../hooks/useSearch';
+import { cn } from '../../utils/cn';
 
 interface AdvancedSearchProps {
   projects: Project[];
@@ -78,75 +79,82 @@ export const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
   }, [searchQuery, searchResults]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/30 backdrop-blur pt-20 p-4">
-      <div className="w-full max-w-3xl rounded-[var(--rounded-box)] border border-base-300 bg-base-100 shadow-xl">
-        <div className="p-4 border-b border-base-300">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-base-content">Busca Avançada</h2>
+    <div className="fixed inset-0 z-50 flex items-start justify-center bg-[color-mix(in_srgb,var(--foreground)_22%,transparent)] p-4 pt-20 backdrop-blur-sm">
+      <div
+        className={cn(
+          'mica w-full max-w-3xl overflow-hidden rounded-[var(--rounded-box)] border border-[color-mix(in_srgb,var(--foreground)_12%,transparent)]',
+          'text-[var(--foreground)] [font-family:var(--font-sans)] tracking-[var(--letter-spacing)]'
+        )}
+      >
+        <div className="flex items-center justify-between gap-2 border-b border-[color-mix(in_srgb,var(--foreground)_10%,transparent)] p-4">
+          <div className="flex min-w-0 flex-1 items-center justify-between gap-3">
+            <h2 className="text-xl font-semibold text-[var(--foreground)]">Busca Avançada</h2>
             <button
               onClick={onClose}
-              className="btn btn-ghost btn-sm btn-circle"
+              type="button"
+              className="win-icon-button shrink-0 text-[color-mix(in_srgb,var(--foreground)_72%,transparent)] hover:bg-[color-mix(in_srgb,var(--foreground)_8%,transparent)] hover:text-[var(--foreground)]"
               aria-label="Fechar busca avançada"
             >
-              ✕
+              <span className="text-lg leading-none" aria-hidden>
+                ✕
+              </span>
             </button>
           </div>
+        </div>
+        <div className="space-y-2 border-b border-[color-mix(in_srgb,var(--foreground)_10%,transparent)] p-4">
+          <label htmlFor="advanced-search-input" className="sr-only">
+            Buscar por status, tipo, tag, projeto ou texto livre
+          </label>
+          <input
+            id="advanced-search-input"
+            type="text"
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            placeholder="Buscar... (use: status:, type:, tag:, project:)"
+            aria-describedby="search-operators-description"
+            className="input input-bordered w-full rounded-[var(--radius)]"
+            autoFocus
+          />
 
-          <div className="space-y-2">
-            <label htmlFor="advanced-search-input" className="sr-only">
-              Buscar por status, tipo, tag, projeto ou texto livre
-            </label>
-            <input
-              id="advanced-search-input"
-              type="text"
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              placeholder="Buscar... (use: status:, type:, tag:, project:)"
-              aria-describedby="search-operators-description"
-              className="input input-bordered w-full"
-              autoFocus
-            />
-
-            <div
-              id="search-operators-description"
-              className="space-y-1 text-xs text-base-content/70"
-            >
-              <div>
-                <strong>Operadores disponíveis:</strong>
-              </div>
-              <div>
-                •{' '}
-                <code className="rounded-md bg-base-200 px-1.5 py-0.5 text-base-content">
-                  status:done
-                </code>{' '}
-                - Filtrar por status
-              </div>
-              <div>
-                •{' '}
-                <code className="rounded-md bg-base-200 px-1.5 py-0.5 text-base-content">
-                  type:bug
-                </code>{' '}
-                - Filtrar por tipo
-              </div>
-              <div>
-                •{' '}
-                <code className="rounded-md bg-base-200 px-1.5 py-0.5 text-base-content">
-                  tag:crítico
-                </code>{' '}
-                - Filtrar por tag
-              </div>
-              <div>
-                •{' '}
-                <code className="rounded-md bg-base-200 px-1.5 py-0.5 text-base-content">
-                  project:nome
-                </code>{' '}
-                - Filtrar por projeto
-              </div>
+          <div
+            id="search-operators-description"
+            className="space-y-1 text-xs text-[color-mix(in_srgb,var(--foreground)_65%,transparent)]"
+          >
+            <div>
+              <strong>Operadores disponíveis:</strong>
+            </div>
+            <div>
+              •{' '}
+              <code className="rounded-md bg-[color-mix(in_srgb,var(--foreground)_8%,transparent)] px-1.5 py-0.5 text-[var(--foreground)]">
+                status:done
+              </code>{' '}
+              - Filtrar por status
+            </div>
+            <div>
+              •{' '}
+              <code className="rounded-md bg-[color-mix(in_srgb,var(--foreground)_8%,transparent)] px-1.5 py-0.5 text-[var(--foreground)]">
+                type:bug
+              </code>{' '}
+              - Filtrar por tipo
+            </div>
+            <div>
+              •{' '}
+              <code className="rounded-md bg-[color-mix(in_srgb,var(--foreground)_8%,transparent)] px-1.5 py-0.5 text-[var(--foreground)]">
+                tag:crítico
+              </code>{' '}
+              - Filtrar por tag
+            </div>
+            <div>
+              •{' '}
+              <code className="rounded-md bg-[color-mix(in_srgb,var(--foreground)_8%,transparent)] px-1.5 py-0.5 text-[var(--foreground)]">
+                project:nome
+              </code>{' '}
+              - Filtrar por projeto
             </div>
           </div>
         </div>
 
-        <div className="p-4 max-h-[60vh] sm:max-h-96 overflow-y-auto">
+        <div className="max-h-[60vh] overflow-y-auto p-4 sm:max-h-96">
           {filteredResults.length > 0 ? (
             <div className="space-y-2">
               {filteredResults.map((result, index) => (
@@ -157,7 +165,7 @@ export const AdvancedSearch: React.FC<AdvancedSearchProps> = ({
                     onClose();
                   }}
                   aria-label={`Selecionar resultado: ${result.title}, tipo ${result.type}`}
-                  className="w-full rounded-2xl border border-base-300 bg-base-100 p-3 text-left transition-colors hover:bg-base-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
+                  className="w-full rounded-[var(--radius)] border border-base-300 bg-base-100 p-3 text-left transition-colors hover:bg-base-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_oklch,oklch(var(--p))_35%,transparent)]"
                 >
                   <div className="flex items-center justify-between">
                     <div>

@@ -37,10 +37,10 @@ export const TestStrategyCard: React.FC<TestStrategyCardProps> = ({
   };
 
   return (
-    <div className="bg-base-100 rounded-2xl shadow-sm border border-base-300 overflow-hidden flex flex-col transition-shadow hover:shadow-md">
-      <div className="p-5 flex-grow">
-        <div className="flex justify-between items-start mb-3">
-          <h2 className="text-base font-bold text-brand-orange leading-tight flex-1 pr-2">
+    <div className="flex flex-col overflow-hidden rounded-[var(--rounded-box)] border border-base-300 bg-base-100 soft-shadow transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-[color-mix(in_oklch,oklch(var(--p))_35%,transparent)] hover:ring-1 hover:ring-[color-mix(in_oklch,oklch(var(--p))_22%,transparent)] motion-reduce:transform-none motion-reduce:hover:ring-0">
+      <div className="flex-grow p-5">
+        <div className="mb-3 flex items-start justify-between">
+          <h2 className="flex-1 pr-2 text-base font-bold leading-tight text-[oklch(var(--p))]">
             {strategy.testType}
           </h2>
           {onToggleExecuted && (
@@ -101,7 +101,7 @@ export const TestStrategyCard: React.FC<TestStrategyCardProps> = ({
       </div>
 
       {onToolsChange && (
-        <div className="bg-base-200/50 dark:bg-base-300/30 px-5 py-4 rounded-b-2xl border-t border-base-200">
+        <div className="rounded-b-[var(--rounded-box)] border-t border-base-200 bg-base-200/50 px-5 py-4 dark:bg-base-300/30">
           <p className="text-[10px] font-bold text-base-content/60 uppercase mb-3">
             Ferramentas Utilizadas
           </p>

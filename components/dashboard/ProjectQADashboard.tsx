@@ -10,7 +10,7 @@ import { ProgressIndicator } from '../common/ProgressIndicator';
 import { Badge } from '../common/Badge';
 import { EmptyState } from '../common/EmptyState';
 import { CompassIcon, CheckCircleIcon } from '../common/Icons';
-import { Clipboard, Zap, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { Zap, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { logger } from '../../utils/logger';
 import { getDisplayStatusLabel } from '../../utils/taskHelpers';
 import {
@@ -24,16 +24,16 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
   const [selectedPeriod, setSelectedPeriod] = useState<'all' | 'week' | 'month'>('all');
 
   const bugSeverityData = [
-    { label: 'Crítico', value: metrics.bugsBySeverity['Crítico'], color: 'bg-red-500' },
-    { label: 'Alto', value: metrics.bugsBySeverity['Alto'], color: 'bg-orange-400' },
-    { label: 'Médio', value: metrics.bugsBySeverity['Médio'], color: 'bg-yellow-400' },
-    { label: 'Baixo', value: metrics.bugsBySeverity['Baixo'], color: 'bg-blue-500' },
+    { label: 'Crítico', value: metrics.bugsBySeverity['Crítico'], color: 'bg-error' },
+    { label: 'Alto', value: metrics.bugsBySeverity['Alto'], color: 'bg-warning' },
+    { label: 'Médio', value: metrics.bugsBySeverity['Médio'], color: 'bg-warning/70' },
+    { label: 'Baixo', value: metrics.bugsBySeverity['Baixo'], color: 'bg-info' },
   ];
 
   const testExecutionData = [
-    { label: 'Criados', value: metrics.totalTestCases, color: 'bg-slate-500' },
-    { label: 'Executados', value: metrics.executedTestCases, color: 'bg-blue-500' },
-    { label: 'Aprovados', value: metrics.passedTestCases, color: 'bg-emerald-500' },
+    { label: 'Criados', value: metrics.totalTestCases, color: 'bg-neutral' },
+    { label: 'Executados', value: metrics.executedTestCases, color: 'bg-info' },
+    { label: 'Aprovados', value: metrics.passedTestCases, color: 'bg-success' },
   ];
 
   const maxExecutionValue = Math.max(...testExecutionData.map(d => d.value), 1);
@@ -242,7 +242,7 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 rounded-xl border border-base-300 bg-base-100 px-4 py-4 sm:px-6 sm:py-6 md:flex-row md:items-center md:justify-between">
+      <div className="mica flex flex-col gap-4 !rounded-[var(--rounded-box)] !shadow-none soft-shadow px-4 py-4 sm:px-6 sm:py-6 md:flex-row md:items-center md:justify-between">
         <div className="space-y-2">
           <div className="inline-flex items-center gap-2">
             <span className="badge badge-outline px-4 py-3 border-primary/30 text-primary bg-primary/10">
@@ -265,7 +265,7 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
               key={period}
               type="button"
               onClick={() => setSelectedPeriod(period)}
-              className={`btn btn-sm rounded-full transition-colors ${
+              className={`btn btn-sm rounded-[var(--radius)] transition-colors ${
                 selectedPeriod === period ? 'btn-primary' : 'btn-outline'
               }`}
               aria-pressed={selectedPeriod === period}
@@ -307,9 +307,7 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
             value={metrics.bugsBySeverity['Crítico']}
             description="Monitoramento contínuo"
             statusColor={
-              metrics.bugsBySeverity['Crítico'] > 0
-                ? 'text-red-700 dark:text-red-400'
-                : 'text-emerald-700 dark:text-emerald-400'
+              metrics.bugsBySeverity['Crítico'] > 0 ? 'text-error' : 'text-success'
             }
             icon={<AlertTriangle className="h-6 w-6" />}
             accent="danger"
@@ -322,7 +320,7 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
               <DonutChart
                 title="Cobertura consolidada"
                 percentage={metrics.testCoverage}
-                color="text-emerald-700 dark:text-emerald-400"
+                color="text-success"
                 note={`${metrics.tasksWithTestCases} tarefas com QA de ${metrics.totalTasks}`}
                 interactive={true}
                 onClick={() => {
@@ -336,7 +334,7 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
               <DonutChart
                 title="Automação x Manual"
                 percentage={metrics.automationRatio}
-                color="text-blue-700 dark:text-blue-400"
+                color="text-info"
                 note={`${metrics.automatedTestCases} automatizados (${metrics.totalTestCases} totais)`}
                 interactive={true}
                 onClick={() => {
@@ -349,7 +347,7 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
               />
             </div>
 
-            <div className="space-y-5 rounded-[var(--rounded-box)] border border-base-300 bg-base-100 p-5 shadow-sm">
+            <div className="space-y-5 rounded-[var(--rounded-box)] border border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] bg-base-100 p-5 soft-shadow">
               <div className="flex items-center justify-between gap-3">
                 <h3 className="text-lg font-semibold text-base-content">Progresso geral</h3>
                 <Badge
@@ -419,7 +417,7 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
               <DonutChart
                 title="Taxa de aprovação"
                 percentage={metrics.testPassRate}
-                color="text-emerald-700 dark:text-emerald-400"
+                color="text-success"
                 note={`${metrics.passedTestCases} de ${metrics.executedTestCases} casos passaram`}
                 interactive={true}
                 onClick={() => {
@@ -437,14 +435,14 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
                 title="Progresso cumulativo de tarefas"
                 data={metrics.cumulativeProgress}
                 series={[
-                  { name: 'Criadas', color: 'stroke-blue-500' },
-                  { name: 'Concluídas', color: 'stroke-emerald-400' },
+                  { name: 'Criadas', color: 'stroke-info' },
+                  { name: 'Concluídas', color: 'stroke-success' },
                 ]}
               />
             </div>
           </div>
           <aside className="space-y-4">
-            <div className="space-y-4 rounded-[var(--rounded-box)] border border-base-300 bg-base-100 p-5 shadow-sm">
+            <div className="space-y-4 rounded-[var(--rounded-box)] border border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] bg-base-100 p-5 soft-shadow">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-base-content">Fluxo das tarefas de QA</h3>
                 <Badge variant="info" size="sm">
@@ -478,16 +476,16 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
               </div>
             </div>
 
-            <div className="space-y-4 rounded-[var(--rounded-box)] border border-base-300 bg-base-100 p-5 shadow-sm">
+            <div className="space-y-4 rounded-[var(--rounded-box)] border border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] bg-base-100 p-5 soft-shadow">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-base-content">Alertas imediatos</h3>
-                <CheckCircleIcon className="h-5 w-5 text-emerald-700 dark:text-emerald-400" />
+                <CheckCircleIcon className="h-5 w-5 text-success" />
               </div>
               <div className="space-y-3" role="list" aria-label="Alertas de qualidade">
                 {qaAlerts.map(alert => (
                   <div
                     key={alert.label}
-                    className="flex items-center justify-between rounded-2xl border border-base-300 bg-base-100 px-3 py-2"
+                    className="flex items-center justify-between rounded-[var(--radius)] border border-[color-mix(in_srgb,var(--foreground)_10%,transparent)] bg-base-100 px-3 py-2"
                     role="listitem"
                   >
                     <div>
@@ -506,7 +504,7 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
               </div>
             </div>
 
-            <div className="space-y-4 rounded-[var(--rounded-box)] border border-base-300 bg-base-100 p-5 shadow-sm">
+            <div className="space-y-4 rounded-[var(--rounded-box)] border border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] bg-base-100 p-5 soft-shadow">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-base-content">Próximas ações de QA</h3>
                 <Badge variant="default" size="sm">
@@ -522,7 +520,7 @@ export const ProjectQADashboard: React.FC<{ project: Project }> = ({ project }) 
                   {highlightTasks.map(task => (
                     <div
                       key={task.id}
-                      className="rounded-2xl border border-base-300 bg-base-100 px-3 py-2"
+                      className="rounded-[var(--radius)] border border-[color-mix(in_srgb,var(--foreground)_10%,transparent)] bg-base-100 px-3 py-2"
                       role="listitem"
                     >
                       <div className="flex items-center justify-between text-xs uppercase tracking-[0.2em] text-base-content/70">

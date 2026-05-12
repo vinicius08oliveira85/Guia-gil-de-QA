@@ -31,12 +31,7 @@ export const DonutChart: React.FC<DonutChartProps> = ({
 
   return (
     <Card
-      className={cn(
-        '!p-4 sm:!p-6 !gap-2',
-        interactive && 'hover:shadow-lg hover:border-primary/30 transition-all',
-        interactive && 'cursor-pointer',
-        className
-      )}
+      className={cn('!p-4 sm:!p-6 !gap-2', interactive && 'cursor-pointer', className)}
       onClick={interactive ? onClick : undefined}
       onMouseEnter={() => interactive && setIsHovered(true)}
       onMouseLeave={() => interactive && setIsHovered(false)}
@@ -48,8 +43,10 @@ export const DonutChart: React.FC<DonutChartProps> = ({
         </div>
         <div
           className={cn(
-            'rounded-2xl bg-base-200 px-3 py-1 text-[clamp(0.75rem,1.8vw,0.9rem)] font-semibold text-base-content',
-            interactive && isHovered && 'ring-2 ring-primary/20'
+            'rounded-[var(--radius)] bg-base-200 px-3 py-1 text-[clamp(0.75rem,1.8vw,0.9rem)] font-semibold text-base-content',
+            interactive &&
+              isHovered &&
+              'ring-2 ring-[color-mix(in_oklch,oklch(var(--p))_25%,transparent)]'
           )}
           aria-hidden="true"
         >
@@ -57,20 +54,23 @@ export const DonutChart: React.FC<DonutChartProps> = ({
         </div>
       </div>
       <div className="relative mx-auto flex items-center justify-center">
-        <svg
+        <div
           className={cn(
-            'drop-shadow-[0_12px_35px_rgba(4,4,17,0.18)]',
-            interactive && 'transition-all',
+            'relative inline-flex shrink-0 rounded-full soft-shadow-chart',
+            interactive && 'transition-transform duration-200',
             interactive && isHovered && 'scale-105'
           )}
-          viewBox="0 0 120 120"
-          width={dimension}
-          height={dimension}
-          role="img"
-          aria-label={`${title} em ${percentage}%`}
         >
+          <svg
+            className={cn(interactive && 'transition-all')}
+            viewBox="0 0 120 120"
+            width={dimension}
+            height={dimension}
+            role="img"
+            aria-label={`${title} em ${percentage}%`}
+          >
           <circle
-            className="text-white/5"
+            className="text-base-300/50 dark:text-base-300/40"
             strokeWidth="12"
             stroke="currentColor"
             fill="transparent"
@@ -97,15 +97,15 @@ export const DonutChart: React.FC<DonutChartProps> = ({
         </svg>
         <div
           className={cn(
-            'absolute flex flex-col items-center',
-            interactive && 'transition-all',
-            interactive && isHovered && 'scale-110'
+            'pointer-events-none absolute inset-0 flex flex-col items-center justify-center',
+            interactive && 'transition-opacity'
           )}
         >
           <span className="text-[clamp(1.35rem,3vw,2rem)] font-semibold text-base-content">
             {percentage}%
           </span>
           <span className="text-xs uppercase tracking-[0.2em] text-base-content/60">Atual</span>
+        </div>
         </div>
       </div>
     </Card>
