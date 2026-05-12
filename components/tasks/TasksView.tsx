@@ -649,6 +649,25 @@ export const TasksView: React.FC<{
     [project, onUpdateProject]
   );
 
+  const handleTestCaseExecutionKindChange = useCallback(
+    (taskId: string, testCaseId: string, executionKind: TestCase['executionKind']) => {
+      const task = project.tasks.find(t => t.id === taskId);
+      if (!task) return;
+
+      const updatedTestCases = (task.testCases || []).map(tc =>
+        tc.id === testCaseId ? { ...tc, executionKind } : tc
+      );
+      const updatedTask = { ...task, testCases: updatedTestCases };
+
+      onUpdateProject({
+        ...project,
+        tasks: project.tasks.map(t => (t.id === taskId ? updatedTask : t)),
+      });
+      propagateTaskUpdate(updatedTask);
+    },
+    [project, onUpdateProject]
+  );
+
   const handleTaskToolsChange = useCallback(
     (taskId: string, tools: string[]) => {
       const task = project.tasks.find(t => t.id === taskId);
@@ -1829,6 +1848,9 @@ export const TasksView: React.FC<{
               onTestCaseObservedResultChange={(testCaseId, value) =>
                 handleTestCaseObservedResultChange(task.id, testCaseId, value)
               }
+              onTestCaseExecutionKindChange={(testCaseId, kind) =>
+                handleTestCaseExecutionKindChange(task.id, testCaseId, kind)
+              }
               onTaskToolsChange={tools => handleTaskToolsChange(task.id, tools)}
               onStrategyExecutedChange={(strategyIndex, executed) =>
                 handleStrategyExecutedChange(task.id, strategyIndex, executed)
@@ -1886,6 +1908,7 @@ export const TasksView: React.FC<{
       handleUpdateTaskFromJira,
       handleTestCaseStatusChange,
       handleTestCaseObservedResultChange,
+      handleTestCaseExecutionKindChange,
       handleTaskToolsChange,
       handleStrategyExecutedChange,
       handleStrategyToolsChange,
@@ -2443,6 +2466,9 @@ export const TasksView: React.FC<{
           }
           onTestCaseObservedResultChange={(testCaseId, value) =>
             handleTestCaseObservedResultChange(modalTask.id, testCaseId, value)
+          }
+          onTestCaseExecutionKindChange={(testCaseId, kind) =>
+            handleTestCaseExecutionKindChange(modalTask.id, testCaseId, kind)
           }
           onTaskToolsChange={tools => handleTaskToolsChange(modalTask.id, tools)}
           onStrategyExecutedChange={(strategyIndex, executed) =>

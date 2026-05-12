@@ -60,6 +60,7 @@ export interface TestCasesSectionProps {
   detailLevel?: TestCaseDetailLevel;
   onTestCaseStatusChange: (testCaseId: string, status: TestCase['status']) => void;
   onObservedResultChange?: (testCaseId: string, value: string) => void;
+  onTestCaseExecutionKindChange?: (testCaseId: string, kind: TestCase['executionKind']) => void;
   onEditTestCase?: (taskId: string, testCase: TestCase) => void;
   onDeleteTestCase?: (taskId: string, testCaseId: string) => void;
   onDuplicateTestCase?: (taskId: string, testCase: TestCase) => void;
@@ -73,6 +74,7 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
   detailLevel = 'Padrão',
   onTestCaseStatusChange,
   onObservedResultChange,
+  onTestCaseExecutionKindChange,
   onEditTestCase,
   onDeleteTestCase,
   onDuplicateTestCase,
@@ -484,6 +486,11 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
               onStatusChange={status => onTestCaseStatusChange(tc.id, status)}
               onObservedResultChange={
                 onObservedResultChange ? v => onObservedResultChange(tc.id, v) : undefined
+              }
+              onExecutionKindChange={
+                onTestCaseExecutionKindChange
+                  ? kind => onTestCaseExecutionKindChange(tc.id, kind)
+                  : undefined
               }
               onEdit={onEditTestCase ? () => onEditTestCase(task.id, tc) : undefined}
               onDelete={onDeleteTestCase ? () => onDeleteTestCase(task.id, tc.id) : undefined}

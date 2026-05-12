@@ -26,7 +26,7 @@ import {
   loadPersistedCacheEntry,
   savePersistedCacheEntry,
 } from './testCaseGenerationCachePersistence';
-import { migrateTestCase } from '../../utils/testCaseMigration';
+import { migrateTestCase, resolveExecutionKindFromRecord } from '../../utils/testCaseMigration';
 
 const LOGGER_CONTEXT = 'testCaseGenerationService';
 
@@ -413,6 +413,7 @@ function normalizeTestCases(raw: unknown[]): TestCase[] {
       normalizeAiMultilineField(String(migrated.expectedResult ?? '')) ||
       PLACEHOLDER_EXPECTED;
 
+    const kindFromRaw = resolveExecutionKindFromRecord(r);
     return {
       ...migrated,
       action,
@@ -420,6 +421,7 @@ function normalizeTestCases(raw: unknown[]): TestCase[] {
       expectedResult,
       observedResult: '',
       status: 'Not Run' as const,
+      executionKind: migrated.executionKind ?? kindFromRaw ?? 'manual',
     };
   });
 }

@@ -24,7 +24,7 @@ export const TestCaseEditorModal: React.FC<TestCaseEditorModalProps> = ({
   const [observedResult, setObservedResult] = useState(testCase.observedResult || '');
   const [status, setStatus] = useState<TestCase['status']>(testCase.status);
   const [executionKind, setExecutionKind] = useState<TestCaseExecutionKind | ''>(
-    testCase.executionKind ?? ''
+    testCase.executionKind ?? 'manual'
   );
   const [environment, setEnvironment] = useState(testCase.environment ?? '');
   const [suite, setSuite] = useState(testCase.suite ?? '');
@@ -37,7 +37,7 @@ export const TestCaseEditorModal: React.FC<TestCaseEditorModalProps> = ({
     setExpectedResult(testCase.expectedResult);
     setObservedResult(testCase.observedResult || '');
     setStatus(testCase.status);
-    setExecutionKind(testCase.executionKind ?? '');
+    setExecutionKind(testCase.executionKind ?? 'manual');
     setEnvironment(testCase.environment ?? '');
     setSuite(testCase.suite ?? '');
   }, [testCase]);
@@ -164,8 +164,8 @@ export const TestCaseEditorModal: React.FC<TestCaseEditorModalProps> = ({
               }
               className="select select-bordered w-full bg-base-100 border-base-300 text-sm"
             >
-              <option value="">Inferir pelo texto (padrão)</option>
-              <option value="manual">Manual</option>
+              <option value="manual">Manual (padrão)</option>
+              <option value="">Inferir pelo texto</option>
               <option value="automated">Automatizado</option>
               <option value="mixed">Misto</option>
             </select>

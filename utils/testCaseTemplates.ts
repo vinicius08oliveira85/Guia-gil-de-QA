@@ -189,5 +189,6 @@ export const createTestCaseFromTemplate = (templateId: string): TestCase => {
     id: `tc-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
     ...template.testCase,
     status: 'Not Run',
+    executionKind: template.testCase.executionKind ?? 'manual',
   };
 };

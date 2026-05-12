@@ -1,6 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { TestCase } from '../../types';
-import { getTestCaseEnvironment, getTestCaseSuite } from '../../utils/testCaseMigration';
+import type { TestCase, TestCaseExecutionKind } from '../../types';
+import {
+  getTestCaseEnvironment,
+  getTestCaseSuite,
+  testCaseLooksAutomated,
+} from '../../utils/testCaseMigration';
 import {
   getTestCaseListTitle,
   parseTestCaseActionSteps,
@@ -10,6 +14,7 @@ import {
   type RoteiroFieldView,
 } from '../../utils/testCaseActionDisplay';
 import { ChevronDownIcon, EditIcon, ListIcon, TrashIcon } from '../common/Icons';
+import { Badge } from '../common/Badge';
 import { Copy, MoreVertical } from 'lucide-react';
 import { cn } from '../../utils/cn';
 
@@ -74,6 +79,7 @@ export const TestCaseItem: React.FC<{
   testCase: TestCase;
   onStatusChange: (status: 'Passed' | 'Failed' | 'Blocked') => void;
   onObservedResultChange?: (value: string) => void;
+  onExecutionKindChange?: (kind: TestCase['executionKind']) => void;
   onEdit?: () => void;
   onDelete?: () => void;
   onDuplicate?: () => void;
@@ -85,6 +91,7 @@ export const TestCaseItem: React.FC<{
   testCase,
   onStatusChange,
   onObservedResultChange,
+  onExecutionKindChange,
   onEdit,
   onDelete,
   onDuplicate,
@@ -132,17 +139,30 @@ export const TestCaseItem: React.FC<{
     [testCase.expectedResult]
   );
 
+  const executionBadge = useMemo(() => {
+    const k = testCase.executionKind;
+    if (k === 'automated') return { label: 'Automatizado', variant: 'info' as const };
+    if (k === 'mixed') return { label: 'Misto', variant: 'warning' as const };
+    if (k === 'manual') return { label: 'Manual', variant: 'neutral' as const };
+    const inferredAuto = testCaseLooksAutomated(testCase);
+    if (inferredAuto) return { label: 'Automatizado (inferido)', variant: 'info' as const };
+    return { label: 'Manual (inferido)', variant: 'neutral' as const };
+  }, [testCase]);
+
   const metaChips = useMemo(() => {
     const env = getTestCaseEnvironment(testCase);
     const suite = getTestCaseSuite(testCase);
+    const k = testCase.executionKind;
     const execLabel =
-      testCase.executionKind === 'manual'
-        ? 'Execução manual'
-        : testCase.executionKind === 'automated'
-          ? 'Execução automatizada'
-          : testCase.executionKind === 'mixed'
-            ? 'Execução mista'
-            : null;
+      k === 'automated'
+        ? 'Execução automatizada'
+        : k === 'mixed'
+          ? 'Execução mista'
+          : k === 'manual'
+            ? 'Execução manual'
+            : testCaseLooksAutomated(testCase)
+              ? 'Execução inferida (automatizada)'
+              : 'Execução inferida (manual)';
     return { env, suite, execLabel };
   }, [testCase]);
 
@@ -350,6 +370,46 @@ export const TestCaseItem: React.FC<{
               </button>
             </li>
           </ul>
+        </div>
+      </div>
+
+      <div className="mt-1.5 flex min-w-0 flex-wrap items-center gap-2 px-0.5">
+        <Badge variant={executionBadge.variant} size="sm" appearance="pill" className="shrink-0">
+          <span className="normal-case tracking-normal">{executionBadge.label}</span>
+        </Badge>
+        <div className="flex min-w-0 flex-1 flex-col gap-0.5 sm:max-w-[16rem] sm:flex-initial">
+          <label
+            htmlFor={`tc-exec-kind-${testCase.id}`}
+            className="text-[10px] font-semibold uppercase tracking-wider text-base-content/60"
+          >
+            Tipo de execução
+          </label>
+          <select
+            id={`tc-exec-kind-${testCase.id}`}
+            value={testCase.executionKind ?? ''}
+            onChange={e => {
+              if (!onExecutionKindChange) return;
+              const raw = e.target.value;
+              if (raw === '') onExecutionKindChange(undefined);
+              else onExecutionKindChange(raw as TestCaseExecutionKind);
+            }}
+            disabled={!onExecutionKindChange}
+            title={
+              onExecutionKindChange
+                ? 'Manual, automatizado, misto ou inferir pelo texto do roteiro (mesma regra do editor).'
+                : 'Edição do tipo de execução indisponível neste contexto.'
+            }
+            aria-label="Tipo de execução do caso de teste"
+            className={cn(
+              'select select-bordered select-xs min-w-0 w-full border-base-300 bg-base-100 text-xs',
+              !onExecutionKindChange && 'cursor-not-allowed opacity-70'
+            )}
+          >
+            <option value="manual">Manual (padrão)</option>
+            <option value="">Inferir pelo texto</option>
+            <option value="automated">Automatizado</option>
+            <option value="mixed">Misto</option>
+          </select>
         </div>
       </div>
 

@@ -56,6 +56,9 @@ const buildAIResponse = (cases: Partial<TestCase>[]) => ({
     expectedResult: c.expectedResult ?? 'ok',
     observedResult: c.observedResult ?? '',
     status: c.status ?? 'Not Run',
+    executionKind: c.executionKind,
+    environment: c.environment,
+    suite: c.suite,
   })),
 });
 
@@ -96,9 +99,20 @@ describe('testCaseGenerationService.generateTestCasesForTask', () => {
     );
     expect(result).toHaveLength(2);
     expect(result[0].action).toContain('Login válido');
-    expect(testCaseLooksAutomated(result[0])).toBe(true);
+    expect(result[0].executionKind).toBe('manual');
+    expect(testCaseLooksAutomated(result[0])).toBe(false);
+    expect(result[1].executionKind).toBe('manual');
     expect(result.every(tc => tc.status === 'Not Run')).toBe(true);
     expect(result.every(tc => typeof tc.id === 'string' && tc.id.length > 0)).toBe(true);
+  });
+
+  it('quando a IA define executionKind automatizado, métricas reconhecem automação', async () => {
+    mockGenerate.mockResolvedValueOnce(
+      buildAIResponse([{ action: 'Chamada API', parameters: '—', executionKind: 'automated' }])
+    );
+    const result = await generateTestCasesForTask(buildTask());
+    expect(result[0].executionKind).toBe('automated');
+    expect(testCaseLooksAutomated(result[0])).toBe(true);
   });
 
   it('força status Not Run mesmo quando a IA retorna outro valor', async () => {
@@ -107,6 +121,18 @@ describe('testCaseGenerationService.generateTestCasesForTask', () => {
     );
     const result = await generateTestCasesForTask(buildTask());
     expect(result[0].status).toBe('Not Run');
+  });
+
+  it('preserva executionKind normalizado após a geração', async () => {
+    mockGenerate.mockResolvedValueOnce(
+      buildAIResponse([
+        { action: 'Fluxo manual', executionKind: 'manual' },
+        { action: 'API', executionKind: 'Automático' },
+      ])
+    );
+    const result = await generateTestCasesForTask(buildTask());
+    expect(result[0].executionKind).toBe('manual');
+    expect(result[1].executionKind).toBe('automated');
   });
 
   it('preserva ids fornecidos pela IA e gera novos para os ausentes', async () => {

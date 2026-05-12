@@ -18,7 +18,10 @@ export interface TestCase {
   expectedResult: string;
   observedResult: string;
   status: 'Not Run' | 'Passed' | 'Failed' | 'Blocked';
-  /** Opcional: auditoria explícita (substitui heurística quando definido). */
+  /**
+   * Opcional: manual, automatizado ou misto (substitui heurística de texto quando definido).
+   * @see {@link TestCaseExecutionKind}
+   */
   executionKind?: TestCaseExecutionKind;
   /** Opcional: ambiente para filtros/relatórios (alternativa a linha `Ambiente:` em `parameters`). */
   environment?: string;

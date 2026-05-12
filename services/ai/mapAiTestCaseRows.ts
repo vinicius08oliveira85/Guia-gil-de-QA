@@ -1,3 +1,5 @@
+import type { TestCaseExecutionKind } from '../../types';
+
 /**
  * Linha bruta de caso de teste no JSON retornado pela IA (Gemini / OpenAI).
  * Campos legados (`description`, `steps`) são aceitos pelo migrate em camadas acima.
@@ -8,6 +10,12 @@ export type AiRawTestCaseRow = {
   expectedResult?: string;
   description?: string;
   steps?: string[];
+  /** Valor bruto; normalizado em `resolveExecutionKindFromRecord` / `migrateTestCase`. */
+  executionKind?: TestCaseExecutionKind | string;
+  environment?: string;
+  suite?: string;
+  /** Legado / importação; interpretado junto com `executionKind`. */
+  isAutomated?: boolean;
 };
 
 /**

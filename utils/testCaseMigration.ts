@@ -2,7 +2,13 @@ import type { TestCase } from '../types';
 
 const VALID_STATUS: TestCase['status'][] = ['Not Run', 'Passed', 'Failed', 'Blocked'];
 
-function pickExecutionKind(o: Record<string, unknown>): TestCase['executionKind'] | undefined {
+/**
+ * Interpreta `executionKind` / legado `isAutomated` a partir de JSON da IA ou persistência.
+ * Único ponto de regra compartilhado com `migrateTestCase` e mapeamento pós-parse (OpenAI/Gemini).
+ */
+export function resolveExecutionKindFromRecord(
+  o: Record<string, unknown>
+): TestCase['executionKind'] | undefined {
   const k = o.executionKind;
   if (k === 'manual' || k === 'automated' || k === 'mixed') return k;
   if (typeof k === 'string') {
@@ -126,7 +132,7 @@ export function migrateTestCase(raw: unknown): TestCase {
 
   const optionalEnv = pickOptionalString(o, ['environment', 'testEnvironment']);
   const optionalSuite = pickOptionalString(o, ['suite', 'testSuite']);
-  const optionalKind = pickExecutionKind(o);
+  const optionalKind = resolveExecutionKindFromRecord(o);
 
   if (!isLegacyTestCaseShape(raw)) {
     const base: TestCase = {

@@ -4,6 +4,7 @@ import {
   testCaseLooksAutomated,
   getTestCaseEnvironment,
   getTestCaseSuite,
+  resolveExecutionKindFromRecord,
 } from '../../utils/testCaseMigration';
 import type { TestCase } from '../../types';
 
@@ -92,6 +93,15 @@ describe('migrateTestCase', () => {
         status: 'Not Run',
       }).executionKind
     ).toBe('automated');
+  });
+});
+
+describe('resolveExecutionKindFromRecord', () => {
+  it('normaliza strings e legado isAutomated', () => {
+    expect(resolveExecutionKindFromRecord({ executionKind: 'Misto' })).toBe('mixed');
+    expect(resolveExecutionKindFromRecord({ executionKind: 'MANUAL' })).toBe('manual');
+    expect(resolveExecutionKindFromRecord({ isAutomated: true })).toBe('automated');
+    expect(resolveExecutionKindFromRecord({})).toBeUndefined();
   });
 });
 

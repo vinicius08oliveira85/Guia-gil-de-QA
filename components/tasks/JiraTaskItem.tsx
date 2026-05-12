@@ -176,6 +176,7 @@ export const JiraTaskItem: React.FC<{
   task: TaskWithChildren;
   onTestCaseStatusChange: (testCaseId: string, status: TestCase['status']) => void;
   onTestCaseObservedResultChange?: (testCaseId: string, value: string) => void;
+  onTestCaseExecutionKindChange?: (testCaseId: string, kind: TestCase['executionKind']) => void;
   onTaskToolsChange?: (tools: string[]) => void;
   onStrategyExecutedChange?: (strategyIndex: number, executed: boolean) => void;
   onStrategyToolsChange?: (strategyIndex: number, tools: string[]) => void;
@@ -223,6 +224,7 @@ export const JiraTaskItem: React.FC<{
     task,
     onTestCaseStatusChange,
     onTestCaseObservedResultChange,
+    onTestCaseExecutionKindChange,
     onTaskToolsChange,
     onStrategyExecutedChange,
     onStrategyToolsChange,
@@ -1331,6 +1333,7 @@ export const JiraTaskItem: React.FC<{
               detailLevel={detailLevel}
               onTestCaseStatusChange={onTestCaseStatusChange}
               onObservedResultChange={onTestCaseObservedResultChange}
+              onTestCaseExecutionKindChange={onTestCaseExecutionKindChange}
               onEditTestCase={onEditTestCase}
               onDeleteTestCase={onDeleteTestCase}
               onDuplicateTestCase={onDuplicateTestCase}

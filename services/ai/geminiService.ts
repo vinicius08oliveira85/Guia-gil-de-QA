@@ -32,7 +32,7 @@ import {
   formatBusinessRulesForPrompt,
   shouldGenerateTestCasesAndBdd,
 } from './testGenerationPrompts';
-import { migrateTestCase } from '../../utils/testCaseMigration';
+import { migrateTestCase, resolveExecutionKindFromRecord } from '../../utils/testCaseMigration';
 import {
   coalesceParametersFromAiRow,
   type AiRawTestCaseRow,
@@ -197,14 +197,26 @@ export class GeminiService implements AIService {
   ): TestCase[] {
     return (items as GeminiTestCaseRow[]).map((item, index) => {
       const parameters = coalesceParametersFromAiRow(item);
-      return {
+      const row: Record<string, unknown> = { ...(item as object as Record<string, unknown>) };
+      const executionKind = resolveExecutionKindFromRecord(row) ?? 'manual';
+      const environment =
+        typeof row.environment === 'string' && row.environment.trim()
+          ? row.environment.trim()
+          : undefined;
+      const suite =
+        typeof row.suite === 'string' && row.suite.trim() ? row.suite.trim() : undefined;
+      const base: TestCase = {
         id: `tc-${baseTs}-${index}`,
         action: item.action || item.description || '',
         parameters,
         expectedResult: item.expectedResult || '',
         observedResult: '',
-        status: 'Not Run' as const,
-      } as TestCase;
+        status: 'Not Run',
+        executionKind,
+      };
+      if (environment) base.environment = environment;
+      if (suite) base.suite = suite;
+      return base;
     });
   }
 
