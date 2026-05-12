@@ -40,6 +40,7 @@ import {
   NavigationMenuRail,
 } from './NavigationMenu';
 import type { NavigationMenuItem } from './NavigationMenu';
+import { cn } from '../../utils/cn';
 
 interface HeaderProps {
   onProjectImported?: (project: Project) => void;
@@ -139,7 +140,7 @@ export const Header: React.FC<HeaderProps> = ({
     if (!el || typeof ResizeObserver === 'undefined') return;
     const setVar = () => {
       const h = Math.ceil(el.getBoundingClientRect().height);
-      document.documentElement.style.setProperty('--app-header-h', `${h}px`);
+      document.documentElement.style.setProperty('--app-header-sticky-offset', `${h}px`);
     };
     setVar();
     const ro = new ResizeObserver(setVar);
@@ -324,16 +325,27 @@ export const Header: React.FC<HeaderProps> = ({
         src="/Logo_Moderno_Leve-removebg-preview.png"
         alt=""
         aria-hidden="true"
-        className="h-10 w-auto flex-shrink-0 sm:h-12"
+        className="h-8 w-auto shrink-0 sm:h-9"
         loading="lazy"
         decoding="async"
         draggable={false}
       />
-      <div className="min-w-0">
-        <p className="font-heading text-balance text-sm font-semibold leading-tight text-base-content sm:text-base">
+      <div className="min-w-0 border-l-2 border-[oklch(var(--p))] pl-2.5 sm:pl-3">
+        <p
+          className={cn(
+            'text-balance text-sm font-semibold leading-tight sm:text-base',
+            '[font-family:var(--font-sans)] tracking-[var(--letter-spacing)] text-[var(--foreground)]'
+          )}
+        >
           QA Agile Guide
         </p>
-        <p className="hidden truncate font-body text-xs text-balance text-base-content/60 sm:block">
+        <p
+          className={cn(
+            'hidden truncate text-xs text-balance sm:block',
+            '[font-family:var(--font-sans)] tracking-[var(--letter-spacing)]',
+            'text-[color-mix(in_srgb,var(--foreground)_58%,transparent)]'
+          )}
+        >
           Gestão de QA ágil, métricas e automação
         </p>
       </div>
@@ -422,19 +434,48 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <header
       ref={headerRef}
-      className="relative sticky top-0 z-50 border-b border-base-200/50 bg-base-100/70 backdrop-blur-md transition-all duration-200"
+      className={cn(
+        'relative sticky top-0 z-[100] mica !rounded-none border-b overflow-x-visible overflow-y-hidden',
+        'border-[color-mix(in_srgb,var(--foreground)_10%,transparent)]',
+        'bg-[color-mix(in_srgb,var(--background)_78%,transparent)]',
+        'text-[var(--foreground)] shadow-lg',
+        'transition-[background-color,box-shadow,border-color,color] duration-300 ease-out'
+      )}
       style={{ paddingTop: 'env(safe-area-inset-top)' }}
     >
-      <div className="container mx-auto min-w-0 px-3 py-2 sm:px-4">
-        <div className="flex min-w-0 items-center justify-between gap-2 sm:gap-3">
+      <div className={cn('mx-auto w-full min-w-0 max-w-full px-3 sm:px-6')}>
+        <div
+          className={cn(
+            'box-border flex h-[var(--app-header-h)] min-h-0 min-w-0 items-center justify-between gap-2 overflow-x-visible overflow-y-hidden',
+            'sm:gap-3'
+          )}
+        >
           {onLogoClick ? (
             <button
               type="button"
               onClick={goToProjectsList}
-              className="flex min-h-[44px] min-w-0 flex-1 cursor-pointer items-center gap-2 rounded-xl border border-transparent bg-transparent p-1 text-left transition-all duration-200 hover:border-base-300/60 hover:bg-base-200/40 sm:min-h-0 sm:gap-3 sm:p-0"
+              className={cn(
+                'group flex min-h-0 min-w-0 flex-1 cursor-pointer items-center gap-2 rounded-[var(--radius)] p-1 text-left',
+                'border border-transparent bg-transparent',
+                'transition-[background-color,border-color,box-shadow] duration-200 ease-out',
+                'hover:border-[color-mix(in_srgb,var(--foreground)_14%,transparent)]',
+                'hover:bg-[color-mix(in_srgb,var(--foreground)_8%,transparent)]',
+                'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[oklch(var(--p))]',
+                'sm:min-h-0 sm:gap-3 sm:p-0'
+              )}
               aria-label="Voltar para Meus Projetos"
             >
-              <ChevronLeft className="h-5 w-5 shrink-0 text-base-content/70" aria-hidden />
+              <span
+                className={cn(
+                  'pointer-events-none flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center',
+                  'rounded-full border border-transparent transition-all duration-200',
+                  'group-hover:border-[color-mix(in_srgb,var(--foreground)_12%,transparent)]',
+                  'group-hover:bg-[color-mix(in_srgb,var(--foreground)_7%,transparent)]'
+                )}
+                aria-hidden
+              >
+                <ChevronLeft className="h-5 w-5 text-[color-mix(in_srgb,var(--foreground)_72%,transparent)] group-hover:text-[var(--foreground)]" />
+              </span>
               {logoContent}
             </button>
           ) : (
@@ -443,14 +484,18 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           )}
 
-          <div className="relative flex shrink-0 items-center gap-2">
+          <div className="relative flex min-w-0 shrink-0 items-center gap-2 overflow-x-visible">
             {showDashboardActions && (
-              <div className="hidden shrink-0 flex-col items-stretch gap-1 border-r border-base-300/50 pr-2 md:flex md:flex-row md:items-center md:gap-1">
+              <div className="hidden shrink-0 flex-col items-stretch gap-1 border-r border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] pr-2 md:flex md:flex-row md:items-center md:gap-1">
                 {onOpenCreateModal && (
                   <button
                     type="button"
                     onClick={onOpenCreateModal}
-                    className="btn btn-primary btn-sm gap-1.5 whitespace-nowrap rounded-full shadow-sm"
+                    className={cn(
+                      'btn btn-sm gap-1.5 whitespace-nowrap rounded-[var(--radius)] border-0 shadow-sm',
+                      'bg-[oklch(var(--p))] text-[oklch(var(--pc))]',
+                      'hover:bg-[color-mix(in_oklch,oklch(var(--p))_88%,oklch(var(--bc)))]'
+                    )}
                   >
                     <Plus className="h-4 w-4 shrink-0" aria-hidden />
                     Novo projeto
@@ -460,7 +505,10 @@ export const Header: React.FC<HeaderProps> = ({
                   type="button"
                   onClick={() => void handleSyncSupabase()}
                   disabled={isSyncingSupabase || !isSupabaseAvailable()}
-                  className="btn btn-ghost btn-sm whitespace-nowrap font-medium"
+                  className={cn(
+                    'btn btn-ghost btn-sm whitespace-nowrap font-medium rounded-[var(--radius)]',
+                    'hover:bg-[color-mix(in_srgb,var(--foreground)_8%,transparent)]'
+                  )}
                   title={
                     !isSupabaseAvailable()
                       ? 'Supabase não está configurado. Configure VITE_SUPABASE_PROXY_URL.'
@@ -482,10 +530,10 @@ export const Header: React.FC<HeaderProps> = ({
               <NavigationMenuRail
                 items={mainNavRailItems}
                 currentId={selectedProjectId == null ? 'projects' : undefined}
-                className="shrink-0 border-l border-base-300/40 pl-2"
+                className="shrink-0 border-l border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] pl-2"
               />
             )}
-            <div className="relative hidden md:block">
+            <div className="relative hidden overflow-visible md:block">
               <ExpandableTabs
                 className="flex flex-wrap items-center gap-2"
                 tabs={tabs}
@@ -514,17 +562,20 @@ export const Header: React.FC<HeaderProps> = ({
                   </span>
                   <MoreVertical className="h-5 w-5" aria-hidden />
                 </summary>
-                <ul className="dropdown-content menu menu-sm z-[70] mt-2 w-56 rounded-box border border-base-300 bg-base-100 p-2 shadow-xl">
+                <ul className="dropdown-content menu menu-sm z-[70] mt-2 w-56 rounded-box border border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] bg-[color-mix(in_srgb,var(--background)_96%,transparent)] p-2 text-[var(--foreground)] shadow-xl backdrop-blur-md transition-colors duration-300">
                   {tabs.map(tab => {
                     const Icon = tab.icon;
                     return (
                       <li key={tab.id}>
                         <button
                           type="button"
-                          className="flex min-h-[44px] w-full items-center gap-2 rounded-lg text-left font-medium"
+                          className={cn(
+                            'btn btn-ghost btn-sm flex min-h-[44px] w-full items-center justify-start gap-2 rounded-[var(--radius)] border-0 text-left font-medium normal-case',
+                            'hover:bg-[color-mix(in_srgb,var(--foreground)_8%,transparent)]'
+                          )}
                           onClick={() => handleTabChange(tab.id)}
                         >
-                          <Icon className="h-5 w-5 shrink-0 text-primary" aria-hidden />
+                          <Icon className="h-5 w-5 shrink-0 text-[oklch(var(--p))]" aria-hidden />
                           {tab.title}
                         </button>
                       </li>
@@ -615,7 +666,7 @@ export const Header: React.FC<HeaderProps> = ({
                 setShowJiraProjectSelector(false);
                 setSelectedJiraProjectKey('');
               }}
-              className="btn btn-outline btn-sm rounded-full transition-all duration-200 hover:bg-base-200"
+              className="btn btn-ghost btn-sm rounded-[var(--radius)] transition-colors duration-200 hover:bg-[color-mix(in_srgb,var(--foreground)_8%,transparent)]"
             >
               Cancelar
             </button>
@@ -623,7 +674,11 @@ export const Header: React.FC<HeaderProps> = ({
               type="button"
               onClick={handleConfirmJiraProject}
               disabled={!selectedJiraProjectKey || isSyncingJira}
-              className="btn btn-primary btn-sm rounded-full shadow-sm transition-all duration-200 active:scale-[0.98] gap-2"
+              className={cn(
+                'btn btn-sm gap-2 rounded-[var(--radius)] border-0 shadow-sm transition-all duration-200 active:scale-[0.98]',
+                'bg-[oklch(var(--p))] text-[oklch(var(--pc))]',
+                'hover:bg-[color-mix(in_oklch,oklch(var(--p))_88%,oklch(var(--bc)))]'
+              )}
             >
               {isSyncingJira ? (
                 <>

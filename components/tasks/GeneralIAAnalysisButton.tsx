@@ -48,9 +48,9 @@ export const GeneralIAAnalysisButton: React.FC<GeneralIAAnalysisButtonProps> = (
         disabled={isAnalyzing}
         title={defaultTooltip}
         className={cn(
-          'rounded-full px-3 py-1.5 text-xs font-semibold transition-colors duration-300 flex items-center gap-1.5',
-          'text-base-content/70 hover:bg-base-200 hover:text-base-content',
-          'disabled:opacity-50 disabled:cursor-not-allowed'
+          'btn btn-ghost btn-sm flex min-h-[44px] items-center gap-1.5 rounded-[var(--radius)] border border-base-300 px-3 text-xs font-semibold transition-colors duration-300 sm:min-h-0',
+          'text-[color-mix(in_srgb,var(--foreground)_72%,transparent)] hover:bg-[color-mix(in_srgb,var(--foreground)_8%,transparent)] hover:text-[var(--foreground)]',
+          'disabled:cursor-not-allowed disabled:opacity-50'
         )}
         aria-label={isAnalyzing ? 'Analisando' : 'Análise geral com IA'}
       >
@@ -58,7 +58,7 @@ export const GeneralIAAnalysisButton: React.FC<GeneralIAAnalysisButtonProps> = (
           <Spinner small />
         ) : (
           <svg
-            className="w-3.5 h-3.5 text-primary"
+            className="w-3.5 h-3.5 text-[oklch(var(--p))]"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"

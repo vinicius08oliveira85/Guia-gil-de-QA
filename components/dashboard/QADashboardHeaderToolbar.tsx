@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ClipboardCheck, Download, Filter, ChevronDown, X } from 'lucide-react';
 import type { DashboardFilters } from './DashboardFiltersModal';
 import { Button } from '../common/Button';
+import { cn } from '../../utils/cn';
 
 export interface QADashboardHeaderToolbarProps {
   lastUpdatedText: string | null;
@@ -38,12 +39,15 @@ export const QADashboardHeaderToolbar: React.FC<QADashboardHeaderToolbarProps> =
 }) => {
   const [showActionsMenu, setShowActionsMenu] = useState(false);
 
+  const ghostToolbarBtn =
+    'btn btn-ghost btn-sm rounded-[var(--radius)] hover:bg-[color-mix(in_srgb,var(--foreground)_8%,transparent)]';
+
   return (
-    <div className="flex flex-col gap-4">
+    <div className="mica !rounded-[var(--rounded-box)] border-0 p-4 sm:p-5">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0 border-b border-base-300/70 pb-4 lg:border-0 lg:pb-0">
           <div className="mb-2 flex items-center gap-2">
-            <ClipboardCheck className="h-7 w-7 shrink-0 text-primary" aria-hidden />
+            <ClipboardCheck className="h-7 w-7 shrink-0 text-[oklch(var(--p))]" aria-hidden />
             <h1 className="font-heading text-2xl font-bold tracking-tight text-base-content md:text-3xl">
               Dashboard
             </h1>
@@ -63,9 +67,9 @@ export const QADashboardHeaderToolbar: React.FC<QADashboardHeaderToolbarProps> =
           <div className="hidden items-center gap-2 md:flex">
             <Button
               type="button"
-              variant="outline"
+              variant="ghost"
               size="sm"
-              className="rounded-full px-4"
+              className={cn(ghostToolbarBtn, 'px-4')}
               onClick={onOpenFiltersModal}
               aria-label="Filtrar dados do dashboard"
             >
@@ -74,9 +78,9 @@ export const QADashboardHeaderToolbar: React.FC<QADashboardHeaderToolbarProps> =
             </Button>
             <Button
               type="button"
-              variant="outline"
+              variant="ghost"
               size="sm"
-              className="rounded-full px-4"
+              className={cn(ghostToolbarBtn, 'px-4')}
               onClick={onOpenExportModal}
               aria-label="Exportar dados do projeto"
             >
@@ -93,10 +97,10 @@ export const QADashboardHeaderToolbar: React.FC<QADashboardHeaderToolbarProps> =
                   <button
                     type="button"
                     onClick={() => onFiltersChange(prev => ({ ...prev, period: 'all' }))}
-                    className="btn btn-ghost btn-xs rounded-full p-0.5"
+                    className="win-icon-button"
                     aria-label="Remover filtro período"
                   >
-                    <X className="w-3 h-3" />
+                    <X className="h-3.5 w-3.5" />
                   </button>
                 </span>
               )}
@@ -114,10 +118,10 @@ export const QADashboardHeaderToolbar: React.FC<QADashboardHeaderToolbarProps> =
                         taskType: prev.taskType?.filter(x => x !== t) ?? [],
                       }))
                     }
-                    className="btn btn-ghost btn-xs rounded-full p-0.5"
+                    className="win-icon-button"
                     aria-label={`Remover filtro tipo ${t}`}
                   >
-                    <X className="w-3 h-3" />
+                    <X className="h-3.5 w-3.5" />
                   </button>
                 </span>
               ))}
@@ -135,10 +139,10 @@ export const QADashboardHeaderToolbar: React.FC<QADashboardHeaderToolbarProps> =
                         testStatus: prev.testStatus?.filter(x => x !== s) ?? [],
                       }))
                     }
-                    className="btn btn-ghost btn-xs rounded-full p-0.5"
+                    className="win-icon-button"
                     aria-label={`Remover filtro status ${s}`}
                   >
-                    <X className="w-3 h-3" />
+                    <X className="h-3.5 w-3.5" />
                   </button>
                 </span>
               ))}
@@ -156,10 +160,10 @@ export const QADashboardHeaderToolbar: React.FC<QADashboardHeaderToolbarProps> =
                         phase: prev.phase?.filter(x => x !== p) ?? [],
                       }))
                     }
-                    className="btn btn-ghost btn-xs rounded-full p-0.5"
+                    className="win-icon-button"
                     aria-label={`Remover filtro fase ${p}`}
                   >
-                    <X className="w-3 h-3" />
+                    <X className="h-3.5 w-3.5" />
                   </button>
                 </span>
               ))}
@@ -169,9 +173,9 @@ export const QADashboardHeaderToolbar: React.FC<QADashboardHeaderToolbarProps> =
           <div className="relative ml-auto md:hidden">
             <Button
               type="button"
-              variant="outline"
+              variant="ghost"
               size="sm"
-              className="rounded-full px-4"
+              className={cn(ghostToolbarBtn, 'px-4')}
               onClick={() => setShowActionsMenu(v => !v)}
               aria-expanded={showActionsMenu}
               aria-label="Menu de ações"
@@ -186,16 +190,16 @@ export const QADashboardHeaderToolbar: React.FC<QADashboardHeaderToolbarProps> =
                   aria-hidden
                   onClick={() => setShowActionsMenu(false)}
                 />
-                <div className="absolute right-0 top-full mt-1 z-20 py-1 rounded-xl border border-base-300 bg-base-100 shadow-lg min-w-[180px]">
+                <div className="absolute right-0 top-full z-20 mt-1 min-w-[180px] rounded-[var(--radius)] border border-base-300/70 bg-[color-mix(in_srgb,var(--background)_96%,transparent)] py-1 text-[var(--foreground)] shadow-lg backdrop-blur-md">
                   <button
                     type="button"
                     onClick={() => {
                       onOpenFiltersModal();
                       setShowActionsMenu(false);
                     }}
-                    className="w-full text-left px-4 py-2 text-sm hover:bg-base-200 flex items-center gap-2"
+                    className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm transition-colors hover:bg-[color-mix(in_srgb,var(--foreground)_8%,transparent)]"
                   >
-                    <Filter className="w-4 h-4" />
+                    <Filter className="h-4 w-4 shrink-0 text-[oklch(var(--p))]" />
                     {`Filtrar${activeFiltersCount > 0 ? ` (${activeFiltersCount})` : ''}`}
                   </button>
                   <button
@@ -204,9 +208,9 @@ export const QADashboardHeaderToolbar: React.FC<QADashboardHeaderToolbarProps> =
                       onOpenExportModal();
                       setShowActionsMenu(false);
                     }}
-                    className="w-full text-left px-4 py-2 text-sm hover:bg-base-200 flex items-center gap-2"
+                    className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm transition-colors hover:bg-[color-mix(in_srgb,var(--foreground)_8%,transparent)]"
                   >
-                    <Download className="w-4 h-4" />
+                    <Download className="h-4 w-4 shrink-0 text-[oklch(var(--p))]" />
                     Exportar
                   </button>
                 </div>

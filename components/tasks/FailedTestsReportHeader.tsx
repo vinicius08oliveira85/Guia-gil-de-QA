@@ -1,4 +1,5 @@
 import React from 'react';
+import { cn } from '../../utils/cn';
 import { StatsSummary } from './StatsSummary';
 
 interface FailedTestsReportHeaderProps {
@@ -28,7 +29,7 @@ export const FailedTestsReportHeader: React.FC<FailedTestsReportHeaderProps> = (
   canSelectAll,
 }) => {
   return (
-    <div className="sticky top-0 z-10 bg-base-100 border-b border-base-300 px-md py-sm backdrop-blur-sm bg-base-100/95">
+    <div className="sticky top-0 z-10 mica !rounded-none border-b border-base-300/70 px-md py-sm">
       <div className="flex items-center justify-between gap-md flex-wrap">
         <StatsSummary
           totalTests={totalTests}
@@ -43,7 +44,7 @@ export const FailedTestsReportHeader: React.FC<FailedTestsReportHeaderProps> = (
             <button
               type="button"
               onClick={onDeselectAll}
-              className="btn btn-xs btn-ghost"
+              className="btn btn-sm btn-ghost rounded-[var(--radius)] hover:bg-[color-mix(in_srgb,var(--foreground)_8%,transparent)]"
               aria-label="Desselecionar todos os testes"
             >
               Desselecionar Todos
@@ -53,7 +54,11 @@ export const FailedTestsReportHeader: React.FC<FailedTestsReportHeaderProps> = (
             <button
               type="button"
               onClick={onSelectAll}
-              className="btn btn-xs btn-primary"
+              className={cn(
+                'btn btn-sm rounded-[var(--radius)] border-0',
+                'bg-[oklch(var(--p))] text-[oklch(var(--pc))]',
+                'hover:bg-[color-mix(in_oklch,oklch(var(--p))_88%,oklch(var(--bc)))]'
+              )}
               aria-label="Selecionar todos os testes"
             >
               Selecionar Todos

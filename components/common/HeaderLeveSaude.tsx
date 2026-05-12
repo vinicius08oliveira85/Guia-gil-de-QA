@@ -22,15 +22,13 @@ export const HeaderLeveSaude = React.memo<HeaderLeveSaudeProps>(
   }) => {
     return (
       <header
-        className="leve-saude sticky top-0 z-50"
+        className="leve-saude sticky top-0 z-50 mica !rounded-none border-b border-[color-mix(in_srgb,var(--foreground)_10%,transparent)] shadow-lg transition-[background-color,box-shadow,border-color] duration-300"
         style={{
-          backgroundColor: 'var(--color-bg)',
-          borderBottom: '1px solid var(--color-border-light)',
-          boxShadow: 'var(--shadow-sm)',
+          color: 'var(--color-text)',
         }}
         role="banner"
       >
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="mx-auto box-border flex h-[var(--app-header-h)] w-full max-w-full items-center justify-between px-3 sm:px-6">
           <div className="flex items-center gap-4">
             {logoUrl && (
               <img
@@ -90,7 +88,12 @@ export const HeaderLeveSaude = React.memo<HeaderLeveSaudeProps>(
 
           {ctaLabel && (
             <div className="flex items-center gap-4">
-              <ButtonLeve variant="primary" onClick={onCtaClick} aria-label={ctaLabel}>
+              <ButtonLeve
+                variant="primary"
+                onClick={onCtaClick}
+                aria-label={ctaLabel}
+                className="rounded-[var(--radius)]"
+              >
                 {ctaLabel}
               </ButtonLeve>
             </div>

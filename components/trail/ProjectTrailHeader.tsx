@@ -1,5 +1,6 @@
 import React from 'react';
 import { Spinner } from '../common/Spinner';
+import { cn } from '../../utils/cn';
 
 interface ProjectTrailHeaderProps {
   projectName: string;
@@ -40,7 +41,7 @@ export const ProjectTrailHeader: React.FC<ProjectTrailHeaderProps> = ({
     : 'Nunca executada';
 
   return (
-    <section className="flex flex-col gap-6 rounded-[var(--rounded-box)] border border-base-300 bg-base-100 p-5 shadow-sm sm:p-6 lg:p-8">
+    <section className="mica flex flex-col gap-6 !rounded-[var(--rounded-box)] border-0 p-5 shadow-lg sm:p-6 lg:p-8">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-base-content/60">
@@ -79,7 +80,12 @@ export const ProjectTrailHeader: React.FC<ProjectTrailHeaderProps> = ({
           <button
             onClick={onAskAI}
             disabled={isAiLoading}
-            className="btn btn-primary h-12 whitespace-nowrap px-6"
+            className={cn(
+              'btn btn-sm h-12 whitespace-nowrap rounded-[var(--radius)] border-0 px-6',
+              'bg-[oklch(var(--p))] text-[oklch(var(--pc))]',
+              'hover:bg-[color-mix(in_oklch,oklch(var(--p))_88%,oklch(var(--bc)))]',
+              'disabled:opacity-50'
+            )}
           >
             {isAiLoading ? <Spinner small /> : <span aria-hidden>🧠</span>}
             {analysisOutdated ? 'Atualizar Recomendações' : 'O que posso fazer agora?'}

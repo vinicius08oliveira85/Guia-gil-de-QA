@@ -88,13 +88,21 @@ export const ExpandableTabs: React.FC<ExpandableTabsProps> = ({
     onChange?.(id);
   };
 
-  const Separator = () => <div className="mx-0.5 h-[20px] w-px bg-base-200" aria-hidden="true" />;
+  const Separator = () => (
+    <div
+      className="mx-0.5 h-[20px] w-px bg-[color-mix(in_srgb,var(--foreground)_14%,transparent)]"
+      aria-hidden="true"
+    />
+  );
 
   return (
     <div
       ref={outsideClickRef}
       className={cn(
-        'flex flex-wrap items-center gap-1.5 rounded-full border border-base-300 bg-base-100/70 p-0.5 shadow-sm backdrop-blur',
+        'flex flex-wrap items-center gap-1.5 overflow-visible rounded-[var(--radius)] border p-0.5 shadow-sm backdrop-blur-md',
+        'border-[color-mix(in_srgb,var(--foreground)_12%,transparent)]',
+        'bg-[color-mix(in_srgb,var(--background)_72%,transparent)]',
+        'transition-[background-color,border-color,box-shadow] duration-300 ease-out',
         className
       )}
     >
@@ -121,11 +129,18 @@ export const ExpandableTabs: React.FC<ExpandableTabsProps> = ({
             onMouseLeave={() => setHoveredIndex(null)}
             transition={transition}
             className={cn(
-              'relative flex min-h-[44px] min-w-[44px] items-center justify-center rounded-full px-3 py-1.5 text-xs font-semibold outline-none sm:justify-start',
-              'focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2 focus-visible:ring-offset-base-100',
+              'relative z-[1] flex min-h-[44px] min-w-[44px] shrink-0 cursor-pointer items-center justify-center gap-0',
+              'overflow-visible rounded-full border border-transparent bg-transparent px-2 text-xs font-semibold outline-none',
+              'transition-[background-color,box-shadow,color] duration-200',
+              'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[oklch(var(--p))]',
+              'sm:min-w-0 sm:justify-start sm:gap-1 sm:px-2.5',
               selected === index
-                ? cn('bg-primary/15', activeColor)
-                : 'text-base-content/70 hover:bg-base-200/80 hover:text-base-content hover:ring-2 hover:ring-primary/20'
+                ? cn('bg-[color-mix(in_srgb,var(--color-primary)_22%,transparent)]', activeColor)
+                : cn(
+                    'text-[color-mix(in_srgb,var(--foreground)_68%,transparent)]',
+                    'hover:bg-[color-mix(in_srgb,var(--foreground)_8%,transparent)] hover:text-[var(--foreground)]',
+                    'hover:ring-2 hover:ring-[color-mix(in_oklch,oklch(var(--p))_28%,transparent)]'
+                  )
             )}
             aria-label={tab.title}
             aria-pressed={selected === index}

@@ -7,8 +7,13 @@
 @layer base {
   :root {
     color-scheme: light dark;
-    /** Altura do header global (sticky); atualizada em runtime pelo Header para sub-cabeçalhos sticky */
+    /**
+     * Altura rígida da faixa de conteúdo do header global (design).
+     * Não sobrescrever em runtime — use `--app-header-sticky-offset` para o offset total (px).
+     */
     --app-header-h: 4.5rem;
+    /** Topo → abaixo do header global (incl. safe-area); atualizado pelo `Header` via ResizeObserver */
+    --app-header-sticky-offset: 4.5rem;
     /**
      * Ritmo vertical da aba Tarefas e painéis densos alinhados.
      * Ajuste aqui para propagar em todo o escopo que use `gap-tasks-panel*` / `mb-tasks-panel*`.
@@ -421,8 +426,8 @@
   .skip-link {
     position: absolute;
     left: 0.75rem;
-    top: 0.75rem;
-    z-index: 50;
+    top: max(0.75rem, env(safe-area-inset-top));
+    z-index: 200;
     transform: translateY(-160%);
     transition: transform 160ms ease;
     padding: 0.6rem 1rem;

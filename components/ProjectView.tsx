@@ -360,8 +360,8 @@ export const ProjectView: React.FC<{
     <>
       <div className="animate-fade-in w-full max-w-full mx-auto px-4 py-3 sm:px-8 sm:py-4 non-printable">
         <div
-          className="sticky z-40 -mx-4 mb-2 min-w-0 max-w-full border-b border-base-200/50 bg-base-100/80 px-4 py-1 backdrop-blur-md sm:-mx-8 sm:px-8"
-          style={{ top: 'var(--app-header-h, 4.5rem)' }}
+          className="sticky z-40 -mx-4 mb-2 min-w-0 max-w-full mica !rounded-none border-b border-base-200/50 px-4 py-1 sm:-mx-8 sm:px-8"
+          style={{ top: 'var(--app-header-sticky-offset, var(--app-header-h))' }}
         >
           <div className="flex min-w-0 flex-col gap-1">
             {/* Linha 1: voltar + trilho | estado + excluir */}
@@ -426,7 +426,7 @@ export const ProjectView: React.FC<{
                           type="button"
                           onClick={handleSaveToSupabase}
                           disabled={isSavingToSupabase || !isOnline}
-                          className="btn btn-sm btn-outline btn-primary min-h-[44px] sm:min-h-0"
+                          className="btn btn-sm btn-outline min-h-[44px] rounded-[var(--radius)] border-[oklch(var(--p))] text-[oklch(var(--p))] hover:bg-[color-mix(in_srgb,var(--foreground)_8%,transparent)] sm:min-h-0"
                           aria-label="Sincronizar projeto com a nuvem"
                           title={
                             !isOnline
@@ -451,7 +451,7 @@ export const ProjectView: React.FC<{
                   <button
                     type="button"
                     onClick={() => setShowDeleteProjectConfirm(true)}
-                    className="btn btn-ghost btn-xs min-h-[40px] gap-1.5 text-error hover:bg-error/10 sm:min-h-0 sm:h-7 sm:gap-1 sm:py-0 sm:leading-tight"
+                    className="btn btn-ghost btn-xs min-h-[40px] gap-1.5 rounded-[var(--radius)] text-error hover:bg-[color-mix(in_srgb,var(--foreground)_8%,transparent)] hover:text-error sm:min-h-0 sm:h-7 sm:gap-1 sm:py-0 sm:leading-tight"
                     aria-label={`Excluir projeto ${currentProject.name}`}
                   >
                     <Trash2 className="h-4 w-4" aria-hidden />
@@ -505,7 +505,7 @@ export const ProjectView: React.FC<{
 
             <nav
               ref={tabsRef}
-              className="no-scrollbar flex w-full flex-nowrap gap-1 overflow-x-auto scroll-smooth rounded-[1.4rem] border border-base-300 bg-base-200/60 p-1.5 snap-x snap-mandatory sm:gap-1.5"
+              className="no-scrollbar flex w-full flex-nowrap gap-1 overflow-x-auto scroll-smooth rounded-[var(--radius)] border border-base-300 bg-base-200/60 p-1.5 snap-x snap-mandatory sm:gap-1.5"
               aria-label="Seções do projeto"
               role="tablist"
               aria-orientation="horizontal"
@@ -517,10 +517,10 @@ export const ProjectView: React.FC<{
                   type="button"
                   onClick={() => handleTabClick(tab.id)}
                   className={cn(
-                    'min-h-[40px] flex-shrink-0 snap-start whitespace-nowrap rounded-[1.4rem] px-4 py-2 font-heading text-sm transition-colors duration-200 sm:min-h-0 sm:py-2',
+                    'min-h-[40px] flex-shrink-0 snap-start whitespace-nowrap rounded-[var(--radius)] px-4 py-2 font-heading text-sm transition-colors duration-200 sm:min-h-0 sm:py-2',
                     activeTab === tab.id
-                      ? 'bg-primary text-primary-content shadow-sm'
-                      : 'bg-transparent text-base-content/75 hover:bg-base-300/70 hover:text-base-content'
+                      ? 'bg-[oklch(var(--p))] text-[oklch(var(--pc))] shadow-sm'
+                      : 'bg-transparent text-base-content/75 hover:bg-[color-mix(in_srgb,var(--foreground)_10%,transparent)] hover:text-base-content'
                   )}
                   id={`tab-${tab.id}`}
                   role="tab"

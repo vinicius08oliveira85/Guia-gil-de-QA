@@ -1,5 +1,6 @@
 import React, { useId } from 'react';
 import { Search } from 'lucide-react';
+import { cn } from '../../utils/cn';
 
 export type ProjectsDashboardSortBy = 'name' | 'updatedAt';
 
@@ -22,7 +23,7 @@ export const ProjectsDashboardHeader: React.FC<ProjectsDashboardHeaderProps> = (
   const showIndicatorStrip = showStatusRow && Boolean(lastActivityText);
 
   return (
-    <div className="relative isolate overflow-hidden rounded-[var(--rounded-box)] border border-base-300/70 bg-base-100 px-3 py-3 shadow-sm shadow-base-content/[0.04] ring-1 ring-base-content/[0.04] sm:px-5 sm:py-4">
+    <div className="relative isolate overflow-hidden mica !rounded-[var(--rounded-box)] border-0 px-3 py-3 sm:px-5 sm:py-4">
       <div
         className="pointer-events-none absolute inset-0 opacity-[0.4] sm:opacity-100"
         aria-hidden
@@ -47,7 +48,10 @@ export const ProjectsDashboardHeader: React.FC<ProjectsDashboardHeaderProps> = (
             <button
               type="button"
               onClick={() => window.dispatchEvent(new CustomEvent('open-global-search'))}
-              className="btn btn-circle btn-ghost btn-sm shrink-0 min-h-[44px] min-w-[44px] rounded-xl border border-transparent hover:border-base-300/60 hover:bg-base-200/50 sm:min-h-0 sm:min-w-0 sm:rounded-lg"
+              className={cn(
+                'win-icon-button shrink-0 text-[color-mix(in_srgb,var(--foreground)_72%,transparent)]',
+                'hover:bg-[color-mix(in_srgb,var(--foreground)_8%,transparent)] hover:text-[var(--foreground)]'
+              )}
               aria-label="Abrir busca (Ctrl+K)"
             >
               <Search className="h-4 w-4" aria-hidden />
@@ -71,7 +75,7 @@ export const ProjectsDashboardHeader: React.FC<ProjectsDashboardHeaderProps> = (
                 <select
                   value={sortBy}
                   onChange={e => onSortByChange(e.target.value as ProjectsDashboardSortBy)}
-                  className="select select-bordered select-sm h-9 min-h-[44px] rounded-xl border-base-300/80 bg-base-100/90 py-1 text-xs shadow-sm backdrop-blur-sm transition-[box-shadow,border-color] focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20 sm:min-h-8 sm:h-8 sm:rounded-lg"
+                  className="select select-bordered select-sm h-9 min-h-[44px] rounded-[var(--radius)] border-base-300/80 bg-base-100/90 py-1 text-xs shadow-sm backdrop-blur-sm transition-[box-shadow,border-color] focus:border-[oklch(var(--p))]/40 focus:outline-none focus:ring-2 focus:ring-[color-mix(in_oklch,oklch(var(--p))_28%,transparent)] sm:min-h-8 sm:h-8 sm:rounded-[var(--radius)]"
                   aria-label="Ordenar projetos por"
                 >
                   <option value="name">Nome</option>

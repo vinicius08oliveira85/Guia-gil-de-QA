@@ -3,6 +3,7 @@ import { Plus, Filter } from 'lucide-react';
 import { Button } from '../common/Button';
 import { SectionHeader } from '../common/SectionHeader';
 import { GeneralIAAnalysisButton } from './GeneralIAAnalysisButton';
+import { cn } from '../../utils/cn';
 
 export interface TasksViewHeaderProps {
   onAddTask: () => void;
@@ -45,7 +46,11 @@ export const TasksViewHeader: React.FC<TasksViewHeaderProps> = ({
         onClick={onAddTask}
         disabled={isRunningGeneralAnalysis}
         title={isRunningGeneralAnalysis ? 'Conclua a análise em andamento' : undefined}
-        className="flex min-h-[44px] shrink-0 items-center gap-1.5 rounded-full px-4 text-sm font-semibold shadow-sm transition-all duration-200 active:scale-[0.98] sm:min-h-0"
+        className={cn(
+          'flex min-h-[44px] shrink-0 items-center gap-1.5 border-0 px-4 text-sm font-semibold shadow-sm transition-all duration-200 active:scale-[0.98] sm:min-h-0',
+          'rounded-[var(--radius)] bg-[oklch(var(--p))] text-[oklch(var(--pc))]',
+          'hover:bg-[color-mix(in_oklch,oklch(var(--p))_88%,oklch(var(--bc)))]'
+        )}
       >
         <Plus className="h-4 w-4" aria-hidden />
         <span>Adicionar Tarefa</span>
@@ -67,7 +72,10 @@ export const TasksViewHeader: React.FC<TasksViewHeaderProps> = ({
         onClick={onOpenFilters}
         disabled={isRunningGeneralAnalysis}
         title={isRunningGeneralAnalysis ? 'Conclua a análise em andamento' : undefined}
-        className="flex min-h-[44px] shrink-0 items-center gap-1.5 rounded-full border border-base-300 px-3 text-sm transition-all duration-200 hover:bg-base-200/60 active:scale-[0.98] sm:min-h-0"
+        className={cn(
+          'flex min-h-[44px] shrink-0 items-center gap-1.5 border border-base-300 px-3 text-sm transition-all duration-200 active:scale-[0.98] sm:min-h-0',
+          'rounded-[var(--radius)] hover:bg-[color-mix(in_srgb,var(--foreground)_8%,transparent)]'
+        )}
       >
         <Filter className="h-4 w-4" aria-hidden />
         <span>{`Filtros${activeFiltersCount > 0 ? ` (${activeFiltersCount})` : ''}`}</span>

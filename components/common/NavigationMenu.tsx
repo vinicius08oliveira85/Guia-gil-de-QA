@@ -78,7 +78,7 @@ export const NavigationMenuDrawer: React.FC<NavigationMenuDrawerProps> = ({
         id={menuId}
         role="menu"
         aria-label={title}
-        className="absolute right-0 top-full z-50 mt-1 flex max-h-[min(70vh,28rem)] w-[min(calc(100vw-2rem),20rem)] flex-col overflow-y-auto rounded-box border border-base-300 bg-base-100/95 p-2 shadow-xl backdrop-blur-md md:hidden"
+        className="absolute right-0 top-full z-50 mt-1 flex max-h-[min(70vh,28rem)] w-[min(calc(100vw-2rem),20rem)] flex-col overflow-y-auto rounded-box border border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] bg-[color-mix(in_srgb,var(--background)_94%,transparent)] p-2 text-[var(--foreground)] shadow-xl backdrop-blur-md transition-colors duration-300 md:hidden"
       >
         <div className="mb-1 flex items-center justify-between gap-2 border-b border-base-200/80 px-1 pb-2">
           <span className="font-heading text-xs font-semibold uppercase tracking-wide text-base-content/70">
@@ -86,7 +86,7 @@ export const NavigationMenuDrawer: React.FC<NavigationMenuDrawerProps> = ({
           </span>
           <button
             type="button"
-            className="btn btn-circle btn-ghost btn-xs min-h-8 min-w-8"
+            className="win-icon-button"
             aria-label="Fechar menu"
             onClick={close}
           >
@@ -100,13 +100,15 @@ export const NavigationMenuDrawer: React.FC<NavigationMenuDrawerProps> = ({
               <button
                 type="button"
                 role="menuitem"
-                className="flex min-h-[44px] w-full items-center gap-3 rounded-lg text-left text-sm font-medium text-base-content hover:bg-base-200/80"
+                className="flex min-h-[44px] w-full items-center gap-3 rounded-lg text-left text-sm font-medium text-[var(--foreground)] transition-colors duration-200 hover:bg-[color-mix(in_srgb,var(--foreground)_8%,transparent)]"
                 onClick={() => {
                   item.onClick();
                   close();
                 }}
               >
-                {item.icon ? <span className="shrink-0 text-primary">{item.icon}</span> : null}
+                {item.icon ? (
+                  <span className="shrink-0 text-[oklch(var(--p))]">{item.icon}</span>
+                ) : null}
                 {item.label}
               </button>
             </li>
@@ -166,8 +168,11 @@ export const NavigationMenuRail: React.FC<NavigationMenuRailProps> = ({
         type="button"
         onClick={item.onClick}
         className={cn(
-          'btn btn-ghost btn-sm rounded-full border border-transparent px-3',
-          currentId === item.id && 'border-primary/30 bg-primary/10 text-primary'
+          'btn btn-ghost btn-sm rounded-[var(--radius)] border border-transparent px-3 transition-colors duration-200',
+          'text-[color-mix(in_srgb,var(--foreground)_88%,transparent)]',
+          'hover:bg-[color-mix(in_srgb,var(--foreground)_8%,transparent)]',
+          currentId === item.id &&
+            'border-[color-mix(in_srgb,var(--color-primary)_35%,transparent)] bg-[color-mix(in_srgb,var(--color-primary)_14%,transparent)] text-[oklch(var(--p))]'
         )}
         aria-current={currentId === item.id ? 'page' : undefined}
       >
