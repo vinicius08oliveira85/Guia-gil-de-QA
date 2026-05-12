@@ -360,8 +360,10 @@ export const ProjectView: React.FC<{
     <>
       <div className="animate-fade-in w-full max-w-full mx-auto px-4 py-3 sm:px-8 sm:py-4 non-printable">
         <div
-          className="sticky z-40 -mx-4 mb-2 min-w-0 max-w-full mica !rounded-none border-b border-base-200/50 px-4 py-1 sm:-mx-8 sm:px-8"
-          style={{ top: 'var(--app-header-sticky-offset, var(--app-header-h))' }}
+          className={cn(
+            'mica mb-2 min-w-0 max-w-full !rounded-[var(--rounded-box)] px-3 py-1.5 sm:px-4 sm:py-2',
+            'border-[color-mix(in_srgb,var(--foreground)_12%,transparent)]'
+          )}
         >
           <div className="flex min-w-0 flex-col gap-1">
             {/* Linha 1: voltar + trilho | estado + excluir */}
@@ -488,7 +490,7 @@ export const ProjectView: React.FC<{
               </span>
             </div>
           </div>
-          <div className="relative mt-0.5 border-b border-base-200/50 pb-0.5">
+          <div className="relative mt-1 border-t border-base-200/50 pt-1.5">
             {/* Indicadores de Scroll para Mobile */}
             {canScrollLeft && (
               <div
