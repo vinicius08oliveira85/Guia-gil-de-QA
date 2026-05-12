@@ -32,7 +32,7 @@ export const TaskStatusDistributionBar: React.FC<TaskStatusDistributionBarProps>
   return (
     <section
       className={cn(
-        'flex h-full min-h-0 flex-col rounded-xl border border-base-300/65 bg-base-100/85 p-3 shadow-sm ring-1 ring-base-content/[0.02] sm:p-3.5',
+        'flex h-full min-h-0 flex-col rounded-[var(--rounded-box)] border border-base-300/65 bg-base-100/85 p-3 soft-shadow ring-1 ring-base-content/[0.02] sm:p-3.5',
         className
       )}
       aria-labelledby="task-dist-heading"

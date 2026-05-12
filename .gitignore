@@ -1,6 +1,7 @@
 # Dependencias e builds
 node_modules/
 dist/
+dev-dist/
 coverage/
 tokens/generated/
 erasebg-transformed.png

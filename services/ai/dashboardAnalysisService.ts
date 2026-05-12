@@ -7,6 +7,7 @@ import { callGeminiWithRetry } from './geminiApiWrapper';
 import { GEMINI_DEFAULT_MODEL } from './geminiConstants';
 import { hashString } from '../../utils/hash';
 import { logger } from '../../utils/logger';
+import { parseAiJsonText } from '../../utils/aiJsonParse';
 
 const CACHE_TTL_MS = 1000 * 60 * 5; // 5 minutos
 
@@ -229,7 +230,10 @@ Respeite o schema JSON fornecido.
       },
     });
 
-    const parsedResponse = JSON.parse(response.text.trim());
+    const parsedResponse = parseAiJsonText(response.text) as Omit<
+      DashboardOverviewAnalysis,
+      'generatedAt' | 'isOutdated' | 'snapshotHash'
+    >;
 
     const analysis: DashboardOverviewAnalysis = {
       ...parsedResponse,

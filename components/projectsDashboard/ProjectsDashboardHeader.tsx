@@ -63,7 +63,7 @@ export const ProjectsDashboardHeader: React.FC<ProjectsDashboardHeaderProps> = (
             aria-label="Workspace: quantidade de projetos e ordenação da lista"
             className="min-w-0 flex flex-1 flex-nowrap items-center gap-x-3 overflow-x-auto overflow-y-hidden overscroll-x-contain pb-0.5 [-webkit-overflow-scrolling:touch] [scrollbar-width:thin] sm:flex-wrap sm:overflow-visible sm:pb-0"
           >
-            <span className="shrink-0 badge badge-sm border-primary/25 bg-primary/10 font-semibold tracking-wide text-primary shadow-sm">
+            <span className="shrink-0 badge badge-sm border-primary/25 bg-primary/10 font-semibold tracking-wide text-primary ring-1 ring-primary/20">
               Workspace
             </span>
             <span className="shrink-0 text-sm font-medium text-base-content/75">
@@ -75,7 +75,7 @@ export const ProjectsDashboardHeader: React.FC<ProjectsDashboardHeaderProps> = (
                 <select
                   value={sortBy}
                   onChange={e => onSortByChange(e.target.value as ProjectsDashboardSortBy)}
-                  className="select select-bordered select-sm h-9 min-h-[44px] rounded-[var(--radius)] border-base-300/80 bg-base-100/90 py-1 text-xs shadow-sm backdrop-blur-sm transition-[box-shadow,border-color] focus:border-[oklch(var(--p))]/40 focus:outline-none focus:ring-2 focus:ring-[color-mix(in_oklch,oklch(var(--p))_28%,transparent)] sm:min-h-8 sm:h-8 sm:rounded-[var(--radius)]"
+                  className="select select-bordered select-sm h-9 min-h-[44px] rounded-[var(--radius)] border-base-300/80 bg-base-100/90 py-1 text-xs soft-shadow backdrop-blur-sm transition-[box-shadow,border-color] focus:border-[oklch(var(--p))]/40 focus:outline-none focus:ring-2 focus:ring-[color-mix(in_oklch,oklch(var(--p))_28%,transparent)] sm:min-h-8 sm:h-8 sm:rounded-[var(--radius)]"
                   aria-label="Ordenar projetos por"
                 >
                   <option value="name">Nome</option>
@@ -100,7 +100,7 @@ export const ProjectsDashboardHeader: React.FC<ProjectsDashboardHeaderProps> = (
             >
               {lastActivityText && (
                 <span
-                  className="inline-flex shrink-0 items-center rounded-lg border border-base-300/50 bg-base-200/35 px-2.5 py-1 text-xs font-medium text-base-content/85 sm:text-sm"
+                  className="inline-flex shrink-0 items-center rounded-[var(--radius)] border border-base-300/50 bg-base-200/35 px-2.5 py-1 text-xs font-medium text-base-content/85 sm:text-sm"
                   title="Última alteração em qualquer projeto"
                 >
                   Última atividade: {lastActivityText}

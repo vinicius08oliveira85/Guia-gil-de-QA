@@ -50,14 +50,12 @@ export const VersionBadge: React.FC<VersionBadgeProps> = ({
     <span
       className={`
         inline-flex items-center gap-1
-        rounded-full font-semibold
-        bg-gradient-to-br from-blue-500/20 to-indigo-500/20
-        border border-blue-400/40
-        text-blue-300
-        shadow-[0_4px_12px_rgba(59,130,246,0.15)]
+        rounded-[var(--radius)] font-semibold
+        bg-primary/15 text-primary
+        border border-primary/35
+        soft-shadow
         transition-all duration-200
-        hover:shadow-[0_6px_16px_rgba(59,130,246,0.25)]
-        hover:border-blue-400/60
+        hover:border-primary/55 hover:ring-2 hover:ring-[color-mix(in_oklch,oklch(var(--p))_25%,transparent)]
         ${sizeClasses[size]}
         ${className}
       `}

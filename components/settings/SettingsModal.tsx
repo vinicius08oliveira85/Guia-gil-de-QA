@@ -65,15 +65,15 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     <Modal isOpen={isOpen} onClose={onClose} title="Configurações" size="lg" maxHeight="90vh">
       <div className="flex flex-col h-full">
         {/* Tab Navigation */}
-        <div className="flex border-b border-surface-border mb-4 gap-4 overflow-x-auto no-scrollbar px-4 sm:px-6">
+        <div className="flex border-b border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] mb-4 gap-4 overflow-x-auto no-scrollbar px-4 sm:px-6">
           {tabs.map(tab => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`px-4 py-3 text-sm font-medium transition-colors border-b-2 -mb-px ${
                 activeTab === tab.id
-                  ? 'border-accent text-accent'
-                  : 'border-transparent text-text-secondary hover:text-text-primary hover:border-surface-border'
+                  ? 'border-[oklch(var(--p))] text-[oklch(var(--p))]'
+                  : 'border-transparent text-base-content/70 hover:text-base-content hover:border-[color-mix(in_srgb,var(--foreground)_12%,transparent)]'
               }`}
             >
               <span className="mr-2">{tab.icon}</span>

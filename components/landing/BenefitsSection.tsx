@@ -79,7 +79,7 @@ export const BenefitsSection: React.FC = () => {
                 <div
                   className={`flex-1 ${isEven ? 'md:text-left' : 'md:text-right'} text-center md:text-left`}
                 >
-                  <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-6">
+                  <div className="inline-flex items-center gap-2 px-4 py-2 rounded-[var(--radius)] bg-primary/10 border border-primary/20 mb-6">
                     <benefit.icon className={`w-5 h-5 ${benefit.color}`} />
                     <span className={`font-semibold ${benefit.color}`}>{benefit.highlight}</span>
                   </div>
@@ -104,7 +104,7 @@ export const BenefitsSection: React.FC = () => {
                 {/* Ilustração/Placeholder */}
                 <div className="flex-1 w-full">
                   <div
-                    className={`relative h-64 md:h-80 lg:h-96 rounded-3xl bg-gradient-to-br ${benefit.bgGradient} border border-base-300 overflow-hidden`}
+                    className={`relative h-64 md:h-80 lg:h-96 rounded-[var(--rounded-box)] bg-gradient-to-br ${benefit.bgGradient} border border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] overflow-hidden soft-shadow`}
                   >
                     {/* Placeholder visual - pode ser substituído por imagem real */}
                     <div className="absolute inset-0 flex items-center justify-center">
@@ -146,13 +146,12 @@ export const BenefitsSection: React.FC = () => {
               whileInView={reduceMotion ? undefined : { opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.5 + index * 0.1 }}
-              className="rounded-2xl border border-base-300 bg-base-200 p-6 text-center"
+              className="rounded-[var(--rounded-box)] border border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] bg-base-200 p-6 text-center soft-shadow transition-shadow duration-200 hover:ring-2 hover:ring-[color-mix(in_oklch,oklch(var(--p))_20%,transparent)]"
               whileHover={
                 reduceMotion
                   ? undefined
                   : {
-                      borderColor: 'rgba(59, 130, 246, 0.35)',
-                      boxShadow: '0 14px 28px -8px rgba(0, 0, 0, 0.12)',
+                      y: -2,
                       transition: { duration: 0.2, ease: [0.16, 1, 0.3, 1] },
                     }
               }

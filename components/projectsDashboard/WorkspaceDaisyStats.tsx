@@ -60,7 +60,7 @@ export const WorkspaceDaisyStats: React.FC<WorkspaceDaisyStatsProps> = ({
   }
 
   const statCard =
-    'group flex min-h-[4rem] w-full flex-row items-center gap-2.5 rounded-[var(--rounded-box)] border border-base-300/65 bg-base-200/90 px-2.5 py-2 text-left shadow-sm ring-1 ring-base-content/[0.03] backdrop-blur-sm transition-[box-shadow,transform,border-color] duration-200 hover:-translate-y-px hover:border-primary/25 hover:shadow-md motion-reduce:transform-none sm:min-h-[4.25rem] sm:gap-3 sm:px-3 sm:py-2.5 dark:bg-base-200/50';
+    'group flex min-h-[4rem] w-full flex-row items-center gap-2.5 rounded-[var(--rounded-box)] border border-base-300/65 bg-base-200/90 px-2.5 py-2 text-left soft-shadow ring-1 ring-base-content/[0.03] backdrop-blur-sm transition-[box-shadow,transform,border-color] duration-200 hover:-translate-y-px hover:border-primary/25 hover:ring-2 hover:ring-[color-mix(in_oklch,oklch(var(--p))_18%,transparent)] motion-reduce:transform-none sm:min-h-[4.25rem] sm:gap-3 sm:px-3 sm:py-2.5 dark:bg-base-200/50';
 
   const statTitle =
     'text-[11px] font-semibold uppercase tracking-wide text-base-content/78 sm:text-xs sm:tracking-wider';
@@ -77,7 +77,7 @@ export const WorkspaceDaisyStats: React.FC<WorkspaceDaisyStatsProps> = ({
       aria-label="Indicadores do workspace"
     >
       <div className={cn(statCard)}>
-        <div className="shrink-0 rounded-lg bg-primary/12 p-1.5 text-primary ring-1 ring-primary/15 transition-colors group-hover:bg-primary/18">
+        <div className="shrink-0 rounded-[var(--radius)] bg-primary/12 p-1.5 text-primary ring-1 ring-primary/15 transition-colors group-hover:bg-primary/18">
           <FolderKanban className="h-5 w-5 sm:h-5 sm:w-5" aria-hidden />
         </div>
         <div className="min-w-0 flex-1">
@@ -88,7 +88,7 @@ export const WorkspaceDaisyStats: React.FC<WorkspaceDaisyStatsProps> = ({
       </div>
 
       <div className={cn(statCard)}>
-        <div className="shrink-0 rounded-lg bg-success/12 p-1.5 text-success ring-1 ring-success/15 transition-colors group-hover:bg-success/18">
+        <div className="shrink-0 rounded-[var(--radius)] bg-success/12 p-1.5 text-success ring-1 ring-success/15 transition-colors group-hover:bg-success/18">
           <CircleCheck className="h-5 w-5" aria-hidden />
         </div>
         <div className="min-w-0 flex-1">
@@ -99,7 +99,7 @@ export const WorkspaceDaisyStats: React.FC<WorkspaceDaisyStatsProps> = ({
       </div>
 
       <div className={cn(statCard)}>
-        <div className="shrink-0 rounded-lg bg-secondary/12 p-1.5 text-secondary ring-1 ring-secondary/15 transition-colors group-hover:bg-secondary/18">
+        <div className="shrink-0 rounded-[var(--radius)] bg-secondary/12 p-1.5 text-secondary ring-1 ring-secondary/15 transition-colors group-hover:bg-secondary/18">
           <ListTodo className="h-5 w-5" aria-hidden />
         </div>
         <div className="min-w-0 flex-1">
@@ -110,7 +110,7 @@ export const WorkspaceDaisyStats: React.FC<WorkspaceDaisyStatsProps> = ({
       </div>
 
       <div className={cn(statCard)}>
-        <div className="shrink-0 rounded-lg bg-base-200/70 p-1.5 ring-1 ring-base-300/55 transition-colors group-hover:bg-base-200">
+        <div className="shrink-0 rounded-[var(--radius)] bg-base-200/70 p-1.5 ring-1 ring-base-300/55 transition-colors group-hover:bg-base-200">
           {cloudIcon}
         </div>
         <div className="min-w-0 flex-1">

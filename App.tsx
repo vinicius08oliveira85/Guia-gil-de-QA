@@ -391,19 +391,19 @@ const App: React.FC = () => {
               background: 'var(--layer-1)',
               color: 'var(--text-primary)',
               border: '1px solid var(--surface-border)',
-              boxShadow: '0 25px 60px rgba(3, 7, 23, 0.55)',
+              boxShadow: '0 25px 60px color-mix(in_srgb, var(--foreground) 48%, transparent)',
               backdropFilter: 'blur(24px) saturate(140%)',
             },
             success: {
               iconTheme: {
-                primary: '#0E6DFD',
-                secondary: '#fff',
+                primary: 'oklch(var(--su))',
+                secondary: 'oklch(100% 0 0)',
               },
             },
             error: {
               iconTheme: {
-                primary: '#FF5C70',
-                secondary: '#fff',
+                primary: 'oklch(var(--er))',
+                secondary: 'oklch(100% 0 0)',
               },
             },
           }}

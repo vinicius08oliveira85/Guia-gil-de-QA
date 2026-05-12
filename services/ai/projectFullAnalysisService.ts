@@ -5,6 +5,7 @@ import { getFormattedContext } from './documentContextService';
 import { callGeminiWithRetry } from './geminiApiWrapper';
 import { GEMINI_DEFAULT_MODEL } from './geminiConstants';
 import { logger } from '../../utils/logger';
+import { parseAiJsonText } from '../../utils/aiJsonParse';
 import { getQualityAlerts, calculateQualityScore } from '../../components/tasks/qualityMetrics';
 
 const MAX_ANALYSES_STORED = 10;
@@ -212,7 +213,7 @@ Respeite o schema JSON de resposta.
       },
     });
 
-    const parsed = JSON.parse(response.text.trim()) as Omit<ProjectFullAnalysis, 'generatedAt'>;
+    const parsed = parseAiJsonText(response.text) as Omit<ProjectFullAnalysis, 'generatedAt'>;
     const analysis: ProjectFullAnalysis = {
       ...parsed,
       generatedAt: new Date().toISOString(),

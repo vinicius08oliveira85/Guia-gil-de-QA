@@ -361,7 +361,7 @@ export const DocumentsView: React.FC<{
         <SpecificationDocumentProcessor project={project} onUpdateProject={onUpdateProject} />
 
         <section className="tasks-panel-scope space-y-6" aria-labelledby="documents-section-heading">
-          <div className="flex flex-col gap-4 rounded-xl border border-base-300/80 bg-base-100/95 p-3 shadow-sm backdrop-blur-md sm:p-4">
+          <div className="flex flex-col gap-4 rounded-[var(--rounded-box)] border border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] bg-base-100/95 p-3 soft-shadow backdrop-blur-md sm:p-4">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <SectionHeader
                 as="h1"
@@ -378,7 +378,7 @@ export const DocumentsView: React.FC<{
                 <label
                   className={cn(
                     buttonVariants({ variant: 'default', size: 'sm' }),
-                    'cursor-pointer rounded-full px-4 shadow-md shadow-primary/15 sm:min-h-0'
+                    'cursor-pointer rounded-[var(--radius)] px-4 ring-1 ring-[color-mix(in_oklch,oklch(var(--p))_22%,transparent)] sm:min-h-0'
                   )}
                 >
                   <Upload className="h-4 w-4" aria-hidden /> Carregar
@@ -396,7 +396,7 @@ export const DocumentsView: React.FC<{
 
         {/* Faixa de resumo: totais e indicadores */}
         {stats.total > 0 && (
-          <div className="flex flex-wrap items-center gap-4 rounded-xl border border-base-300/70 bg-base-200/40 px-4 py-3">
+          <div className="flex flex-wrap items-center gap-4 rounded-[var(--rounded-box)] border border-[color-mix(in_srgb,var(--foreground)_10%,transparent)] bg-base-200/40 px-4 py-3">
             <span className="text-xs font-semibold text-base-content/70 uppercase tracking-widest">
               Resumo
             </span>
@@ -451,7 +451,7 @@ export const DocumentsView: React.FC<{
                   setSelectedCategory('all');
                   setOnlyWithoutAnalysis(false);
                 }}
-                className="btn btn-sm btn-ghost rounded-full"
+                className="btn btn-sm btn-ghost rounded-[var(--radius)]"
                 aria-label="Limpar filtros"
               >
                 Limpar filtros
@@ -477,7 +477,7 @@ export const DocumentsView: React.FC<{
                 placeholder="Buscar documentos..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="input input-bordered w-full pl-10 bg-base-100 border-base-300 text-base-content placeholder:text-base-content/50 focus:outline-none focus:ring-2 focus:ring-primary/20 rounded-xl"
+                className="input input-bordered w-full pl-10 bg-base-100 border-base-300 text-base-content placeholder:text-base-content/50 focus:outline-none focus:ring-2 focus:ring-primary/20 rounded-[var(--radius)]"
                 aria-label="Buscar documentos"
               />
             </div>
@@ -485,7 +485,7 @@ export const DocumentsView: React.FC<{
               <button
                 type="button"
                 onClick={() => setSelectedCategory('all')}
-                className={`btn btn-sm rounded-full ${selectedCategory === 'all' ? 'btn-primary' : 'btn-ghost'}`}
+                className={`btn btn-sm rounded-[var(--radius)] ${selectedCategory === 'all' ? 'btn-primary' : 'btn-ghost'}`}
                 aria-pressed={selectedCategory === 'all'}
                 aria-label={`Filtrar: todas, ${stats.total} documento(s)`}
               >
@@ -499,7 +499,7 @@ export const DocumentsView: React.FC<{
                     key={cat.id}
                     type="button"
                     onClick={() => setSelectedCategory(cat.id)}
-                    className={`btn btn-sm rounded-full ${isSelected ? 'btn-primary' : 'btn-ghost'}`}
+                    className={`btn btn-sm rounded-[var(--radius)] ${isSelected ? 'btn-primary' : 'btn-ghost'}`}
                     aria-pressed={isSelected}
                     aria-label={`Filtrar por ${label}, ${stats.categoryCounts[cat.id] || 0} documento(s)`}
                   >
@@ -511,7 +511,7 @@ export const DocumentsView: React.FC<{
                 <button
                   type="button"
                   onClick={() => setOnlyWithoutAnalysis(prev => !prev)}
-                  className={`btn btn-sm rounded-full gap-1 ${onlyWithoutAnalysis ? 'btn-warning' : 'btn-ghost'}`}
+                  className={`btn btn-sm rounded-[var(--radius)] gap-1 ${onlyWithoutAnalysis ? 'btn-warning' : 'btn-ghost'}`}
                   aria-pressed={onlyWithoutAnalysis}
                   aria-label={
                     onlyWithoutAnalysis
@@ -530,7 +530,7 @@ export const DocumentsView: React.FC<{
                     setSelectedCategory('all');
                     setOnlyWithoutAnalysis(false);
                   }}
-                  className="btn btn-sm btn-ghost rounded-full"
+                  className="btn btn-sm btn-ghost rounded-[var(--radius)]"
                   aria-label="Limpar filtros"
                 >
                   Limpar filtros
@@ -636,13 +636,13 @@ export const DocumentsView: React.FC<{
                 </Badge>
               )}
             </div>
-            <div className="bg-base-200 p-4 rounded-lg max-h-96 overflow-y-auto">
+            <div className="bg-base-200 p-4 rounded-[var(--radius)] max-h-96 overflow-y-auto">
               {selectedDoc.content.startsWith('data:image/') ? (
                 <div className="space-y-4">
                   <img
                     src={selectedDoc.content}
                     alt={selectedDoc.name}
-                    className="max-w-full h-auto rounded-lg border border-base-300"
+                    className="max-w-full h-auto rounded-[var(--radius)] border border-base-300"
                   />
                   <div className="text-sm text-base-content/70">
                     <p>
@@ -660,7 +660,7 @@ export const DocumentsView: React.FC<{
                 <div className="space-y-4">
                   <iframe
                     src={selectedDoc.content}
-                    className="w-full h-96 rounded-lg border border-base-300"
+                    className="w-full h-96 rounded-[var(--radius)] border border-base-300"
                     title={selectedDoc.name}
                   />
                   <div className="text-sm text-base-content/70">
@@ -761,10 +761,10 @@ export const DocumentsView: React.FC<{
               />
             </div>
             <div className="flex justify-end gap-2 border-t border-base-200/80 pt-4">
-              <Button variant="ghost" size="sm" className="rounded-full px-5" onClick={() => setEditingDoc(null)}>
+              <Button variant="ghost" size="sm" className="rounded-[var(--radius)] px-5" onClick={() => setEditingDoc(null)}>
                 Cancelar
               </Button>
-              <Button variant="default" size="sm" className="rounded-full px-6 shadow-md shadow-primary/15" onClick={handleSaveEdit}>
+              <Button variant="default" size="sm" className="rounded-[var(--radius)] px-6 ring-1 ring-[color-mix(in_oklch,oklch(var(--p))_22%,transparent)]" onClick={handleSaveEdit}>
                 Salvar
               </Button>
             </div>

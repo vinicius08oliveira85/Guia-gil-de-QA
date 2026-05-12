@@ -185,7 +185,7 @@ export const ProcessPillars: React.FC<ProcessPillarsProps> = ({
               className={cn(
                 'flex flex-col rounded-md h-64 sm:h-80 md:h-96 w-14 sm:w-16 md:w-20 border transition-all duration-300',
                 getBorderClasses(),
-                pillar.isCurrent && 'ring-2 ring-yellow-500/50 shadow-lg shadow-yellow-500/20',
+                pillar.isCurrent && 'ring-2 ring-warning/50 shadow-lg shadow-warning/20',
                 'hover:shadow-md hover:scale-105 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 cursor-pointer touch-manipulation'
               )}
               role="listitem"
@@ -221,9 +221,9 @@ export const ProcessPillars: React.FC<ProcessPillarsProps> = ({
                   pillar.isCurrent
                     ? {
                         boxShadow: [
-                          '0 0 0px rgba(234, 179, 8, 0)',
-                          '0 0 8px rgba(234, 179, 8, 0.5)',
-                          '0 0 0px rgba(234, 179, 8, 0)',
+                          '0 0 0px color-mix(in oklch, oklch(var(--wa)) 0%, transparent)',
+                          '0 0 10px color-mix(in oklch, oklch(var(--wa)) 48%, transparent)',
+                          '0 0 0px color-mix(in oklch, oklch(var(--wa)) 0%, transparent)',
                         ],
                       }
                     : {}
@@ -296,7 +296,7 @@ export const ProcessPillars: React.FC<ProcessPillarsProps> = ({
                 {/* Badge de fase atual */}
                 {pillar.isCurrent && (
                   <motion.div
-                    className="absolute -top-1 sm:-top-2 -right-1 sm:-right-2 bg-yellow-500 text-white text-[8px] sm:text-[10px] font-bold px-1 sm:px-1.5 py-0.5 rounded-full shadow-md"
+                    className="absolute -top-1 sm:-top-2 -right-1 sm:-right-2 bg-warning text-warning-content text-[8px] sm:text-[10px] font-bold px-1 sm:px-1.5 py-0.5 rounded-[var(--radius)] soft-shadow"
                     initial={{ scale: 0, rotate: -180 }}
                     whileInView={{ scale: 1, rotate: 0 }}
                     viewport={{ once: true }}

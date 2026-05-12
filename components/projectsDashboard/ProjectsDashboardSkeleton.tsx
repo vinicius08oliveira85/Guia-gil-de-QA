@@ -1,12 +1,12 @@
 import React from 'react';
 import { cn } from '../../utils/cn';
 
-/** Placeholder alinhado ao ProjectCard minimalista (rounded-[1.4rem], badges, faixa inferior). */
+/** Placeholder alinhado ao ProjectCard minimalista (tokens de raio e sombra). */
 function SkeletonCard() {
   return (
     <div
       className={cn(
-        'relative flex flex-col gap-5 overflow-hidden rounded-[1.4rem] border border-base-300 bg-base-200/95 p-6 shadow-sm',
+        'relative flex flex-col gap-5 overflow-hidden rounded-[var(--rounded-box)] border border-base-300 bg-base-200/95 p-6 soft-shadow',
         'animate-pulse dark:bg-base-200/50'
       )}
       aria-hidden
@@ -16,7 +16,7 @@ function SkeletonCard() {
         <div className="mt-1 h-5 w-5 shrink-0 rounded bg-base-300/50" />
       </div>
       <div className="space-y-3">
-        <div className="h-6 w-4/5 max-w-[14rem] rounded-lg bg-base-300/70 dark:bg-base-300/45" />
+        <div className="h-6 w-4/5 max-w-[14rem] rounded-[var(--radius)] bg-base-300/70 dark:bg-base-300/45" />
         <div className="h-3.5 w-full rounded bg-base-300/55 dark:bg-base-300/40" />
         <div className="h-3.5 w-5/6 rounded bg-base-300/45 dark:bg-base-300/35" />
       </div>

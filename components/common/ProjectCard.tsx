@@ -100,9 +100,9 @@ export const ProjectCard = React.memo<ProjectCardProps>(
           }
         }}
         className={cn(
-          'group relative flex cursor-pointer flex-col overflow-hidden rounded-[1.4rem] border border-base-300 bg-base-200',
-          'p-6 shadow-sm shadow-base-content/[0.06] transition-[background-color,border-color,box-shadow] duration-200 ease-out',
-          'hover:bg-base-300 hover:shadow-md hover:shadow-base-content/[0.1]',
+          'group relative flex cursor-pointer flex-col overflow-hidden rounded-[var(--rounded-box)] border border-base-300 bg-base-200',
+          'p-6 soft-shadow transition-[background-color,border-color,box-shadow,transform] duration-200 ease-out',
+          'hover:bg-base-300 hover:ring-1 hover:ring-[color-mix(in_oklch,oklch(var(--p))_22%,transparent)]',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/35 focus-visible:ring-offset-2 focus-visible:ring-offset-base-100',
           /** Faixa inferior primary no hover (2px), sem saltar layout */
           'before:pointer-events-none before:absolute before:inset-x-0 before:bottom-0 before:z-[1] before:h-[2px] before:origin-bottom before:scale-y-0 before:bg-primary before:transition-transform before:duration-200 before:ease-out hover:before:scale-y-100',
@@ -114,7 +114,7 @@ export const ProjectCard = React.memo<ProjectCardProps>(
           <div className="flex items-start justify-between gap-3">
             <div
               className={cn(
-                'flex h-11 w-11 shrink-0 items-center justify-center rounded-[1rem] bg-base-100/90 text-primary shadow-sm ring-1 ring-base-300/60 transition-colors duration-200 group-hover:ring-primary/25',
+                'flex h-11 w-11 shrink-0 items-center justify-center rounded-[var(--radius)] bg-base-100/90 text-primary ring-1 ring-base-300/60 transition-colors duration-200 group-hover:ring-primary/25',
                 'dark:bg-base-100/40'
               )}
               aria-hidden

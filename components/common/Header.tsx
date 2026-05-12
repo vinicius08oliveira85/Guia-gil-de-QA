@@ -143,10 +143,14 @@ export const Header: React.FC<HeaderProps> = ({
       document.documentElement.style.setProperty('--app-header-sticky-offset', `${h}px`);
     };
     setVar();
-    const ro = new ResizeObserver(setVar);
+    const ro = new ResizeObserver(() => {
+      requestAnimationFrame(setVar);
+    });
     ro.observe(el);
+    window.addEventListener('resize', setVar);
     return () => {
       ro.disconnect();
+      window.removeEventListener('resize', setVar);
     };
   }, [mobileMenuOpen, selectedProject?.id, showDashboardActions]);
 

@@ -38,7 +38,7 @@ export const HeroSection: React.FC = () => {
             transition={{ duration: 0.5 }}
             className="mb-8"
           >
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-[var(--radius)] bg-primary/10 border border-primary/20 text-primary text-sm font-medium">
               <Sparkles className="w-4 h-4" />
               <span>Templates • métricas • exportação • integrações opcionais</span>
             </div>
@@ -79,14 +79,14 @@ export const HeroSection: React.FC = () => {
           >
             <button
               onClick={handleGetStarted}
-              className="btn btn-primary btn-lg px-8 py-4 text-lg font-semibold rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 group"
+              className="btn btn-primary btn-lg px-8 py-4 text-lg font-semibold rounded-[var(--radius)] soft-shadow transition-all duration-300 hover:scale-105 hover:ring-2 hover:ring-[color-mix(in_oklch,oklch(var(--p))_28%,transparent)] group"
             >
               Abrir Meus Projetos
               <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
             </button>
             <button
               onClick={handleLearnMore}
-              className="btn btn-outline btn-lg px-8 py-4 text-lg font-semibold rounded-full border-2 hover:bg-base-200 transition-all duration-300"
+              className="btn btn-outline btn-lg px-8 py-4 text-lg font-semibold rounded-[var(--radius)] border-2 hover:bg-base-200 transition-all duration-300"
             >
               Ver funcionalidades
             </button>
@@ -110,16 +110,13 @@ export const HeroSection: React.FC = () => {
                 initial={reduceMotion ? false : { opacity: 0, y: 20 }}
                 animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.5 + index * 0.1 }}
-                className="flex flex-col items-center rounded-2xl border border-base-300 bg-base-200/50 p-6 backdrop-blur-sm"
+                className="flex flex-col items-center rounded-[var(--rounded-box)] border border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] bg-base-200/50 p-6 backdrop-blur-sm soft-shadow transition-[transform,box-shadow] duration-200 hover:ring-2 hover:ring-[color-mix(in_oklch,oklch(var(--p))_22%,transparent)]"
                 style={{ gap: '0.75rem' }}
                 whileHover={
                   reduceMotion
                     ? undefined
                     : {
                         y: -2,
-                        boxShadow:
-                          '0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.08)',
-                        borderColor: 'rgba(59, 130, 246, 0.35)',
                         transition: { duration: 0.2, ease: [0.16, 1, 0.3, 1] },
                       }
                 }

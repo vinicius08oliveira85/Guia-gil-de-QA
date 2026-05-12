@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { Github, Twitter, Linkedin, Mail, ArrowUp } from 'lucide-react';
 
 interface FooterLink {
@@ -52,8 +52,9 @@ const socialLinks = [
  * Links organizados, redes sociais e copyright
  */
 export const Footer: React.FC = () => {
+  const reduceMotion = useReducedMotion();
   const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
   };
 
   return (
@@ -84,9 +85,9 @@ export const Footer: React.FC = () => {
                     whileInView={{ opacity: 1, scale: 1 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.3, delay: index * 0.1 }}
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="flex h-10 w-10 items-center justify-center rounded-full bg-base-300 text-base-content/70 hover:bg-primary/10 hover:text-primary"
+                    whileHover={reduceMotion ? undefined : { scale: 1.1 }}
+                    whileTap={reduceMotion ? undefined : { scale: 0.95 }}
+                    className="flex h-10 w-10 items-center justify-center rounded-[var(--radius)] bg-base-300 text-base-content/70 hover:bg-primary/10 hover:text-primary transition-colors"
                   >
                     <social.icon className="w-5 h-5" />
                   </motion.a>
@@ -135,7 +136,7 @@ export const Footer: React.FC = () => {
 
           <button
             onClick={scrollToTop}
-            className="btn btn-ghost btn-sm rounded-full"
+            className="btn btn-ghost btn-sm rounded-[var(--radius)]"
             aria-label="Voltar ao topo"
             type="button"
           >

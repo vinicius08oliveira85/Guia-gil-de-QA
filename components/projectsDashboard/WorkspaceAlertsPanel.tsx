@@ -54,16 +54,16 @@ export const WorkspaceAlertsPanel: React.FC<WorkspaceAlertsPanelProps> = ({
 
   const tabBtnClass = (active: boolean) =>
     cn(
-      'inline-flex min-h-[44px] flex-1 items-center justify-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-colors sm:min-h-0 sm:flex-none sm:px-3 sm:text-sm',
+      'inline-flex min-h-[44px] flex-1 items-center justify-center gap-1.5 rounded-[var(--radius)] px-2.5 py-1.5 text-xs font-semibold transition-colors sm:min-h-0 sm:flex-none sm:px-3 sm:text-sm',
       active
-        ? 'bg-base-200 text-base-content shadow-sm ring-1 ring-base-300/60'
+        ? 'bg-base-200 text-base-content soft-shadow ring-1 ring-base-300/60'
         : 'text-base-content/70 hover:bg-base-200/55 hover:text-base-content'
     );
 
   return (
     <div
       className={cn(
-        'relative z-[1] flex h-full min-h-0 w-full flex-col overflow-hidden rounded-xl border border-base-300/70 bg-base-100/80 p-2.5 shadow-sm ring-1 ring-base-content/[0.03] sm:p-3',
+        'relative z-[1] flex h-full min-h-0 w-full flex-col overflow-hidden rounded-[var(--rounded-box)] border border-base-300/70 bg-base-100/80 p-2.5 soft-shadow ring-1 ring-base-content/[0.03] sm:p-3',
         className
       )}
       role="region"
@@ -132,7 +132,7 @@ export const WorkspaceAlertsPanel: React.FC<WorkspaceAlertsPanelProps> = ({
                 <button
                   type="button"
                   onClick={() => onSelectProject(p.id)}
-                  className="w-full truncate rounded-lg border border-warning/30 bg-base-100 px-2 py-1.5 text-left text-xs font-medium text-base-content transition-colors hover:border-warning/50 hover:bg-warning/5 sm:px-2.5 sm:text-sm"
+                  className="w-full truncate rounded-[var(--radius)] border border-warning/30 bg-base-100 px-2 py-1.5 text-left text-xs font-medium text-base-content transition-colors hover:border-warning/50 hover:bg-warning/5 sm:px-2.5 sm:text-sm"
                   title={p.name}
                 >
                   {p.name}
@@ -188,7 +188,7 @@ export const WorkspaceAlertsPanel: React.FC<WorkspaceAlertsPanelProps> = ({
                 <button
                   type="button"
                   onClick={() => onSelectProject(p.id)}
-                  className="min-h-[44px] rounded-xl border border-error/25 bg-base-100 px-3 py-2 text-left text-sm font-medium text-base-content transition-colors hover:border-error/45 hover:bg-error/5 sm:min-h-0"
+                  className="min-h-[44px] rounded-[var(--radius)] border border-error/25 bg-base-100 px-3 py-2 text-left text-sm font-medium text-base-content transition-colors hover:border-error/45 hover:bg-error/5 sm:min-h-0"
                 >
                   {p.name}
                 </button>

@@ -9,12 +9,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Modal } from '../common/Modal';
 import { SectionHeader } from '../common/SectionHeader';
 
-/** Sombras / anéis em rgba fixo (evita conflito com Tailwind transition + layout do FM). */
-const TERM_CARD_HOVER_SHADOW =
-  '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(14, 109, 253, 0.28)';
-const STATS_PANEL_HOVER_SHADOW = '0 14px 28px -6px rgba(0, 0, 0, 0.14)';
-const STAT_TILE_HOVER_SHADOW = '0 8px 20px -6px rgba(0, 0, 0, 0.1)';
-
 export const GlossaryView: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<GlossaryTerm['category'] | 'Todos'>(
@@ -105,7 +99,7 @@ export const GlossaryView: React.FC = () => {
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             placeholder="Buscar termos…"
-            className="input input-bordered w-full rounded-xl border-base-300 bg-base-100 text-base-content placeholder:text-base-content/50 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            className="input input-bordered w-full rounded-[var(--radius)] border-base-300 bg-base-100 text-base-content placeholder:text-base-content/50 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
           />
         </div>
 
@@ -113,7 +107,7 @@ export const GlossaryView: React.FC = () => {
           <button
             type="button"
             onClick={() => setSelectedCategory('Todos')}
-            className={`btn btn-sm rounded-full transition-colors ${
+            className={`btn btn-sm rounded-[var(--radius)] transition-colors ${
               selectedCategory === 'Todos' ? 'btn-primary' : 'btn-outline'
             }`}
           >
@@ -126,7 +120,7 @@ export const GlossaryView: React.FC = () => {
                 key={category}
                 type="button"
                 onClick={() => setSelectedCategory(category)}
-                className={`btn btn-sm rounded-full transition-colors ${
+                className={`btn btn-sm rounded-[var(--radius)] transition-colors ${
                   selectedCategory === category ? 'btn-primary' : 'btn-outline'
                 }`}
               >
@@ -156,7 +150,7 @@ export const GlossaryView: React.FC = () => {
               <motion.div
                 key={`${term.term}-${index}`}
                 onClick={() => setSelectedTerm(term)}
-                className="group relative cursor-pointer overflow-hidden rounded-xl border border-base-300 bg-base-100 p-5"
+                className="group relative cursor-pointer overflow-hidden rounded-[var(--rounded-box)] border border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] bg-base-100 p-5 soft-shadow transition-[transform,box-shadow] duration-200 hover:ring-2 hover:ring-[color-mix(in_oklch,oklch(var(--p))_22%,transparent)]"
                 variants={{
                   hidden: { opacity: 0, y: 20, scale: 0.98 },
                   visible: {
@@ -171,7 +165,6 @@ export const GlossaryView: React.FC = () => {
                 }}
                 whileHover={{
                   y: -2,
-                  boxShadow: TERM_CARD_HOVER_SHADOW,
                   transition: { duration: 0.2, ease: [0.16, 1, 0.3, 1] },
                 }}
               >
@@ -247,7 +240,7 @@ export const GlossaryView: React.FC = () => {
             <button
               type="button"
               onClick={() => setSelectedTerm(null)}
-              className="btn btn-primary rounded-full px-6"
+              className="btn btn-primary rounded-[var(--radius)] px-6"
             >
               Fechar
             </button>
@@ -290,15 +283,10 @@ export const GlossaryView: React.FC = () => {
 
       {/* Estatísticas */}
       <motion.div
-        className="mt-8 rounded-xl border border-base-300 bg-base-100 p-6"
+        className="mt-8 rounded-[var(--rounded-box)] border border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] bg-base-100 p-6 soft-shadow transition-shadow duration-200 hover:ring-2 hover:ring-[color-mix(in_oklch,oklch(var(--p))_18%,transparent)]"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
-        whileHover={{
-          boxShadow: STATS_PANEL_HOVER_SHADOW,
-          borderColor: 'rgba(14, 109, 253, 0.32)',
-          transition: { duration: 0.22, ease: [0.16, 1, 0.3, 1] },
-        }}
       >
         <h3 className="text-lg font-semibold text-base-content mb-5 flex items-center gap-2">
           <span>📊</span>
@@ -322,17 +310,10 @@ export const GlossaryView: React.FC = () => {
             return (
               <motion.div
                 key={category}
-                className="group text-center rounded-xl border border-base-300/50 bg-base-200/50 p-4"
+                className="group text-center rounded-[var(--rounded-box)] border border-[color-mix(in_srgb,var(--foreground)_10%,transparent)] bg-base-200/50 p-4 soft-shadow transition-transform duration-200 hover:scale-105 hover:brightness-[1.06] hover:ring-2 hover:ring-[color-mix(in_oklch,oklch(var(--p))_20%,transparent)]"
                 variants={{
                   hidden: { opacity: 0, scale: 0.9 },
                   visible: { opacity: 1, scale: 1 },
-                }}
-                whileHover={{
-                  scale: 1.05,
-                  filter: 'brightness(1.06)',
-                  boxShadow: STAT_TILE_HOVER_SHADOW,
-                  borderColor: 'rgba(14, 109, 253, 0.35)',
-                  transition: { duration: 0.2, ease: [0.16, 1, 0.3, 1] },
                 }}
               >
                 <div className="text-3xl font-bold text-primary mb-1">{count}</div>

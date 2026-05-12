@@ -31,6 +31,7 @@ import {
   type AiRawTestCaseRow,
 } from './mapAiTestCaseRows';
 import { logger } from '../../utils/logger';
+import { parseAiJsonText } from '../../utils/aiJsonParse';
 import { retryWithBackoff } from '../../utils/retry';
 import { getGeminiConfig } from '../geminiConfigService';
 
@@ -223,7 +224,7 @@ export class OpenAIService implements AIService {
         task
       );
       const strategyJson = await this.callAPI(strategyPrompt, jsonOpts);
-      const strategyParsed = JSON.parse(strategyJson);
+      const strategyParsed = parseAiJsonText<{ strategy?: unknown }>(strategyJson);
       if (!strategyParsed || !Array.isArray(strategyParsed.strategy)) {
         logger.error('Resposta da IA com strategy inválida', 'openaiService', strategyParsed);
         throw new Error('Resposta da IA com estrutura inválida (strategy).');
@@ -248,7 +249,7 @@ export class OpenAIService implements AIService {
           task
         );
         const bddJson = await this.callAPI(bddPrompt, jsonOpts);
-        const bddParsed = JSON.parse(bddJson);
+        const bddParsed = parseAiJsonText<{ bddScenarios?: unknown }>(bddJson);
         if (!bddParsed || !Array.isArray(bddParsed.bddScenarios)) {
           logger.error('Resposta da IA com bddScenarios inválidos', 'openaiService', bddParsed);
           throw new Error('Resposta da IA com estrutura inválida (bddScenarios).');
@@ -268,7 +269,7 @@ export class OpenAIService implements AIService {
         task
       );
       const tcJson = await this.callAPI(tcPrompt, jsonOpts);
-      const tcParsed = JSON.parse(tcJson);
+      const tcParsed = parseAiJsonText<{ testCases?: unknown }>(tcJson);
       if (!tcParsed || !Array.isArray(tcParsed.testCases)) {
         logger.error('Resposta da IA com testCases inválidos', 'openaiService', tcParsed);
         throw new Error('Resposta da IA com estrutura inválida (testCases).');
@@ -351,7 +352,10 @@ export class OpenAIService implements AIService {
 
     try {
       const jsonString = await this.callAPI(prompt, { responseFormat: { type: 'json_object' } });
-      const parsedResponse = JSON.parse(jsonString);
+      const parsedResponse = parseAiJsonText(jsonString) as {
+        taskDetails?: Record<string, unknown>;
+        strategy?: unknown;
+      };
 
       // Histórias não devem ter casos de teste, apenas estratégias
       const testCases: TestCase[] = [];
@@ -362,12 +366,15 @@ export class OpenAIService implements AIService {
 
       return {
         task: {
-          ...parsedResponse.taskDetails,
+          ...(parsedResponse.taskDetails ?? {}),
           testCases: [],
           testStrategy: [],
           owner: 'Product',
           assignee: 'QA',
-        },
+        } as unknown as Omit<
+          JiraTask,
+          'id' | 'status' | 'parentId' | 'bddScenarios' | 'createdAt' | 'completedAt'
+        >,
         strategy,
         testCases,
       };
@@ -406,7 +413,9 @@ export class OpenAIService implements AIService {
 
     try {
       const jsonString = await this.callAPI(prompt, { responseFormat: { type: 'json_object' } });
-      return JSON.parse(jsonString);
+      return parseAiJsonText(jsonString) as {
+        [key in PhaseName]?: { summary: string; testTypes: string[] };
+      };
     } catch (error) {
       logger.error('Erro ao gerar plano de ciclo de vida do projeto', 'openaiService', error);
       throw new Error('Failed to communicate with the OpenAI API for project planning.');
@@ -443,8 +452,7 @@ export class OpenAIService implements AIService {
 
     try {
       const jsonString = await this.callAPI(prompt, { responseFormat: { type: 'json_object' } });
-      const parsedResponse = JSON.parse(jsonString);
-      return parsedResponse;
+      return parseAiJsonText(jsonString) as ShiftLeftAnalysis;
     } catch (error) {
       logger.error('Erro ao gerar análise Shift Left', 'openaiService', error);
       throw new Error('Failed to communicate with the OpenAI API for Shift Left analysis.');
@@ -493,7 +501,7 @@ Responda somente com JSON válido: {"scenarios":[{"title":"","gherkin":""},...]}
         responseFormat: { type: 'json_object' },
         temperature: 0.35,
       });
-      const parsedResponse = JSON.parse(jsonString);
+      const parsedResponse = parseAiJsonText<{ scenarios?: unknown }>(jsonString);
 
       if (!parsedResponse || !Array.isArray(parsedResponse.scenarios)) {
         throw new Error('Resposta da IA com estrutura inválida para cenários BDD.');
@@ -534,8 +542,7 @@ Responda somente com JSON válido: {"scenarios":[{"title":"","gherkin":""},...]}
 
     try {
       const jsonString = await this.callAPI(prompt, { responseFormat: { type: 'json_object' } });
-      const parsedResponse = JSON.parse(jsonString);
-      return parsedResponse;
+      return parseAiJsonText(jsonString) as TestPyramidAnalysis;
     } catch (error) {
       logger.error('Erro ao gerar análise Test Pyramid', 'openaiService', error);
       throw new Error('Failed to communicate with the OpenAI API for Test Pyramid analysis.');

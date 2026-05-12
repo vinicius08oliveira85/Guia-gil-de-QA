@@ -103,7 +103,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   return (
     <div className="min-h-screen flex flex-col bg-base-100">
       {/* Header melhorado */}
-      <div className="sticky top-0 z-20 border-b border-base-300 bg-base-100/95 backdrop-blur-sm">
+      <div className="sticky top-0 z-20 mica !rounded-none border-b border-[color-mix(in_srgb,var(--foreground)_10%,transparent)] !shadow-none soft-shadow">
         <div className="container mx-auto px-4 sm:px-6 py-6">
           <div className="flex flex-col gap-6">
             {/* Header com título e subtítulo */}
@@ -126,7 +126,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
             {/* Tab Navigation melhorada */}
             <div
-              className="rounded-[1.4rem] border border-base-300 bg-base-200/50 p-1.5"
+              className="rounded-[var(--rounded-box)] border border-[color-mix(in_srgb,var(--foreground)_10%,transparent)] bg-base-200/50 p-1.5"
               role="tablist"
               aria-label="Abas de configurações"
             >
@@ -141,10 +141,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                       onClick={() => setActiveTab(tab.id)}
                       onKeyDown={handleTabKeyDown}
                       className={cn(
-                        'inline-flex items-center gap-2 whitespace-nowrap rounded-[1.4rem] px-4 py-3 font-heading text-sm transition-colors duration-200',
+                        'inline-flex items-center gap-2 whitespace-nowrap rounded-[var(--radius)] px-4 py-3 font-heading text-sm transition-colors duration-200',
                         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-base-100',
                         isActive
-                          ? 'bg-primary text-primary-content shadow-sm'
+                          ? 'bg-primary text-primary-content ring-1 ring-[color-mix(in_oklch,oklch(var(--pc))_35%,transparent)]'
                           : 'text-base-content/75 hover:bg-base-300/70 hover:text-base-content'
                       )}
                       role="tab"

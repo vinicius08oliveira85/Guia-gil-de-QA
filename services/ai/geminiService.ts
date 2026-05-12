@@ -23,6 +23,7 @@ import {
 import { OpenAIService, isOpenAIEnvApiKeyConfigured } from './openaiService';
 import { GEMINI_DEFAULT_MODEL } from './geminiConstants';
 import { logger } from '../../utils/logger';
+import { parseAiJsonText } from '../../utils/aiJsonParse';
 import {
   buildBddOnlyPrompt,
   buildComplementaryDocumentSection,
@@ -266,7 +267,7 @@ export class GeminiService implements AIService {
           responseSchema: strategyOnlyResponseSchema,
         },
       });
-      const strategyParsed = JSON.parse(strategyResp.text.trim());
+      const strategyParsed = parseAiJsonText<{ strategy?: unknown }>(strategyResp.text);
       if (!strategyParsed || !Array.isArray(strategyParsed.strategy)) {
         logger.error('Resposta da IA com strategy inválida', 'geminiService', strategyParsed);
         throw new Error('Resposta da IA com estrutura inválida (strategy).');
@@ -298,7 +299,7 @@ export class GeminiService implements AIService {
             responseSchema: bddOnlyResponseSchema,
           },
         });
-        const bddParsed = JSON.parse(bddResp.text.trim());
+        const bddParsed = parseAiJsonText<{ bddScenarios?: unknown }>(bddResp.text);
         if (!bddParsed || !Array.isArray(bddParsed.bddScenarios)) {
           logger.error('Resposta da IA com bddScenarios inválidos', 'geminiService', bddParsed);
           throw new Error('Resposta da IA com estrutura inválida (bddScenarios).');
@@ -325,7 +326,7 @@ export class GeminiService implements AIService {
           responseSchema: testCasesOnlyResponseSchema,
         },
       });
-      const tcParsed = JSON.parse(tcResp.text.trim());
+      const tcParsed = parseAiJsonText<{ testCases?: unknown }>(tcResp.text);
       if (!tcParsed || !Array.isArray(tcParsed.testCases)) {
         logger.error('Resposta da IA com testCases inválidos', 'geminiService', tcParsed);
         throw new Error('Resposta da IA com estrutura inválida (testCases).');
@@ -456,7 +457,10 @@ export class GeminiService implements AIService {
         },
       });
 
-      const parsedResponse = JSON.parse(response.text.trim());
+      const parsedResponse = parseAiJsonText(response.text) as {
+        taskDetails?: Record<string, unknown>;
+        strategy?: unknown;
+      };
 
       // Histórias não devem ter casos de teste, apenas estratégias
       const testCases: TestCase[] = [];
@@ -467,12 +471,15 @@ export class GeminiService implements AIService {
 
       return {
         task: {
-          ...parsedResponse.taskDetails,
+          ...(parsedResponse.taskDetails ?? {}),
           testCases: [],
           testStrategy: [],
           owner: 'Product',
           assignee: 'QA',
-        },
+        } as unknown as Omit<
+          JiraTask,
+          'id' | 'status' | 'parentId' | 'bddScenarios' | 'createdAt' | 'completedAt'
+        >,
         strategy,
         testCases,
       };
@@ -542,7 +549,9 @@ export class GeminiService implements AIService {
           responseSchema: lifecycleResponseSchema,
         },
       });
-      return JSON.parse(response.text.trim());
+      return parseAiJsonText(response.text) as {
+        [key in PhaseName]?: { summary: string; testTypes: string[] };
+      };
     } catch (error) {
       logger.error('Erro ao gerar plano de ciclo de vida do projeto', 'geminiService', error);
       // Preservar erro original do callGeminiWithRetry que contém informações detalhadas (status, code, message)
@@ -603,8 +612,7 @@ export class GeminiService implements AIService {
           responseSchema: shiftLeftSchema,
         },
       });
-      const parsedResponse = JSON.parse(response.text.trim());
-      return parsedResponse;
+      return parseAiJsonText(response.text) as ShiftLeftAnalysis;
     } catch (error) {
       logger.error('Erro ao gerar análise Shift Left', 'geminiService', error);
       // Preservar erro original do callGeminiWithRetry que contém informações detalhadas (status, code, message)
@@ -675,7 +683,7 @@ Responda somente com JSON válido: {"scenarios":[{"title":"","gherkin":""},...]}
           responseSchema: bddSchema,
         },
       });
-      const parsedResponse = JSON.parse(response.text.trim());
+      const parsedResponse = parseAiJsonText<{ scenarios?: unknown }>(response.text);
 
       if (!parsedResponse || !Array.isArray(parsedResponse.scenarios)) {
         throw new Error('Resposta da IA com estrutura inválida para cenários BDD.');
@@ -756,8 +764,7 @@ Responda somente com JSON válido: {"scenarios":[{"title":"","gherkin":""},...]}
           responseSchema: pyramidSchema,
         },
       });
-      const parsedResponse = JSON.parse(response.text.trim());
-      return parsedResponse;
+      return parseAiJsonText(response.text) as TestPyramidAnalysis;
     } catch (error) {
       logger.error('Erro ao gerar análise Test Pyramid', 'geminiService', error);
       // Preservar erro original do callGeminiWithRetry que contém informações detalhadas (status, code, message)

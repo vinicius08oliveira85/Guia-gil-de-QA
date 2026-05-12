@@ -1342,7 +1342,7 @@ export const JiraTaskItem: React.FC<{
           )}
 
           {/* Ferramentas (Geral) + Nível de Detalhe + Regerar com IA */}
-          <section className="mt-6 bg-base-100 border border-base-300 rounded-[var(--rounded-box)] soft-shadow overflow-hidden">
+          <section className="mt-6 bg-base-100 border border-base-300 rounded-[var(--rounded-box)] task-card-shadow overflow-hidden">
             <div className="p-5 flex flex-col lg:flex-row lg:items-center gap-6">
               <div className="flex-grow">
                 {onTaskToolsChange && (
@@ -1418,7 +1418,7 @@ export const JiraTaskItem: React.FC<{
       return (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4">
           <div className="lg:col-span-7 space-y-3 sm:space-y-4 min-w-0">
-            <section className="bg-base-100 rounded-[var(--radius)] sm:rounded-[var(--rounded-box)] p-3 sm:p-4 border border-base-300 soft-shadow">
+            <section className="bg-base-100 rounded-[var(--radius)] sm:rounded-[var(--rounded-box)] p-3 sm:p-4 border border-base-300 task-card-shadow">
               <h2 className={cardTitleClass + ' mb-3'}>
                 <Link className="w-4 h-4 sm:w-5 sm:h-5 text-primary/70 shrink-0" aria-hidden />
                 Dependências
@@ -1426,7 +1426,7 @@ export const JiraTaskItem: React.FC<{
               <TaskLinksView task={task} project={project} onUpdateProject={onUpdateProject} />
             </section>
 
-            <section className="bg-base-100 rounded-[var(--radius)] sm:rounded-[var(--rounded-box)] p-3 sm:p-4 border border-base-300 soft-shadow">
+            <section className="bg-base-100 rounded-[var(--radius)] sm:rounded-[var(--rounded-box)] p-3 sm:p-4 border border-base-300 task-card-shadow">
               <h2 className={cardTitleClass + ' mb-3'}>
                 <Paperclip className="w-4 h-4 sm:w-5 sm:h-5 text-primary/70 shrink-0" aria-hidden />
                 Anexos
@@ -1443,7 +1443,7 @@ export const JiraTaskItem: React.FC<{
             </section>
 
             {task.checklist && task.checklist.length > 0 && (
-              <section className="bg-base-100 rounded-[var(--radius)] sm:rounded-[var(--rounded-box)] p-3 sm:p-4 border border-base-300 soft-shadow">
+              <section className="bg-base-100 rounded-[var(--radius)] sm:rounded-[var(--rounded-box)] p-3 sm:p-4 border border-base-300 task-card-shadow">
                 <h2 className={cardTitleClass + ' mb-3'}>Checklist</h2>
                 <ChecklistView
                   checklist={task.checklist}
@@ -1462,7 +1462,7 @@ export const JiraTaskItem: React.FC<{
           </div>
 
           <div className="lg:col-span-5 min-w-0 self-start">
-            <section className="bg-base-100 rounded-[var(--radius)] sm:rounded-[var(--rounded-box)] p-3 sm:p-4 border border-base-300 soft-shadow sticky top-20 lg:top-24">
+            <section className="bg-base-100 rounded-[var(--radius)] sm:rounded-[var(--rounded-box)] p-3 sm:p-4 border border-base-300 task-card-shadow sticky top-20 lg:top-24">
               <h2 className={cardTitleClass + ' mb-3'}>
                 <Timer className="w-4 h-4 sm:w-5 sm:h-5 text-primary/70 shrink-0" aria-hidden />
                 Estimativas
@@ -1680,7 +1680,7 @@ export const JiraTaskItem: React.FC<{
                 : '',
               isStatusDropdownOpen ? 'relative z-10' : '',
               'border-base-300',
-              activeTaskId === task.id ? 'ring-2 ring-primary/40 soft-shadow' : '',
+              activeTaskId === task.id ? 'ring-2 ring-primary/40' : '',
               isSelected ? 'bg-primary/5 border-primary/40 ring-1 ring-primary/30' : '',
               task.isFavorite ? 'ring-1 ring-amber-500/35' : '',
               taskCardLeftAccentClass,
@@ -1713,7 +1713,7 @@ export const JiraTaskItem: React.FC<{
                     className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-primary rounded-full appearance-none checked:bg-primary checked:border-primary focus:outline-none focus:ring-2 focus:ring-primary/50 cursor-pointer shrink-0"
                     style={{
                       backgroundImage: isSelected
-                        ? 'radial-gradient(circle, white 30%, transparent 30%)'
+                        ? 'radial-gradient(circle, oklch(var(--pc)) 30%, transparent 30%)'
                         : 'none',
                     }}
                     aria-label={
@@ -1735,7 +1735,7 @@ export const JiraTaskItem: React.FC<{
                   >
                     {task.isFavorite ? (
                       <Star
-                        className="fill-yellow-600 text-yellow-600 drop-shadow-[0_0_5px_rgba(202,138,4,0.75)]"
+                        className="fill-warning text-warning drop-shadow-[0_0_6px_color-mix(in_oklch,oklch(var(--wa))_45%,transparent)]"
                         aria-hidden
                       />
                     ) : (
@@ -2235,7 +2235,7 @@ export const JiraTaskItem: React.FC<{
                 animate={reduceMotion ? { opacity: 1 } : { opacity: 1, height: 'auto' }}
                 exit={reduceMotion ? { opacity: 0 } : { opacity: 0, height: 0 }}
                 transition={{ duration: reduceMotion ? 0 : 0.2 }}
-                className="overflow-visible border-t border-base-300 bg-base-100 rounded-b-2xl shadow-inner"
+                className="overflow-visible border-t border-base-300 bg-base-100 rounded-b-[var(--rounded-box)] shadow-inner"
               >
                 <div className="p-4 space-y-4">
                   {/* Barra de Ações (movida para dentro do expandir) */}

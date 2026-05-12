@@ -47,19 +47,6 @@ const accentTextColor: Record<NonNullable<StatCardProps['accent']>, string> = {
   neutral: 'text-base-content',
 };
 
-/** Sombra no hover: só valores numéricos no rgba (evita cálculos indefinidos no layout). */
-const cardHoverShadow = '0 25px 50px -12px rgba(0, 0, 0, 0.22)';
-const cardIdleShadow = '0 1px 3px 0 rgba(0, 0, 0, 0.06)';
-
-/** Superfície do cartão: hover gerenciado pelo Framer (sem transition-* do Tailwind no mesmo bloco). */
-const cardSurfaceVariants = {
-  idle: { boxShadow: cardIdleShadow },
-  hover: {
-    boxShadow: cardHoverShadow,
-    transition: { duration: 0.2, ease: [0.16, 1, 0.3, 1] },
-  },
-};
-
 const valueHoverVariants = {
   idle: { scale: 1 },
   hover: {
@@ -105,13 +92,15 @@ export const StatCard: React.FC<StatCardProps> = ({
         initial="idle"
         animate="idle"
         whileHover="hover"
-        variants={cardSurfaceVariants}
       >
         <Card
           className={`
                     p-6 relative overflow-hidden
                     border ${accentBorder[accent]}
                     cursor-pointer
+                    transition-[transform,box-shadow] duration-200 ease-out
+                    hover:-translate-y-0.5 hover:ring-2 hover:ring-[color-mix(in_oklch,oklch(var(--p))_22%,transparent)]
+                    motion-reduce:transition-none motion-reduce:hover:translate-y-0 motion-reduce:hover:ring-0
                     ${className}
                 `}
           aria-live="polite"

@@ -69,7 +69,7 @@ export const NavigationMenuDrawer: React.FC<NavigationMenuDrawerProps> = ({
     <>
       <button
         type="button"
-        className="fixed inset-0 z-40 bg-base-content/30 backdrop-blur-sm md:hidden"
+        className="fixed inset-0 z-40 bg-[color-mix(in_srgb,var(--foreground)_22%,transparent)] backdrop-blur-sm md:hidden"
         aria-label="Fechar menu"
         onClick={close}
       />
@@ -78,7 +78,11 @@ export const NavigationMenuDrawer: React.FC<NavigationMenuDrawerProps> = ({
         id={menuId}
         role="menu"
         aria-label={title}
-        className="absolute right-0 top-full z-50 mt-1 flex max-h-[min(70vh,28rem)] w-[min(calc(100vw-2rem),20rem)] flex-col overflow-y-auto rounded-box border border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] bg-[color-mix(in_srgb,var(--background)_94%,transparent)] p-2 text-[var(--foreground)] shadow-xl backdrop-blur-md transition-colors duration-300 md:hidden"
+        className={cn(
+          'absolute right-0 top-full z-50 mt-1 flex max-h-[min(70vh,28rem)] w-[min(calc(100vw-2rem),20rem)] flex-col overflow-y-auto md:hidden',
+          'mica !max-w-none !rounded-[var(--rounded-box)] !shadow-none soft-shadow',
+          'border border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] p-2 text-[var(--foreground)]'
+        )}
       >
         <div className="mb-1 flex items-center justify-between gap-2 border-b border-base-200/80 px-1 pb-2">
           <span className="font-heading text-xs font-semibold uppercase tracking-wide text-base-content/70">
@@ -100,7 +104,7 @@ export const NavigationMenuDrawer: React.FC<NavigationMenuDrawerProps> = ({
               <button
                 type="button"
                 role="menuitem"
-                className="flex min-h-[44px] w-full items-center gap-3 rounded-lg text-left text-sm font-medium text-[var(--foreground)] transition-colors duration-200 hover:bg-[color-mix(in_srgb,var(--foreground)_8%,transparent)]"
+                className="flex min-h-[44px] w-full items-center gap-3 rounded-[var(--radius)] text-left text-sm font-medium text-[var(--foreground)] transition-colors duration-200 hover:bg-[color-mix(in_srgb,var(--foreground)_8%,transparent)]"
                 onClick={() => {
                   item.onClick();
                   close();

@@ -113,21 +113,19 @@ export const FeaturesSection: React.FC = () => {
               whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="group relative rounded-2xl border border-base-300 bg-base-200 p-6 lg:p-8"
+              className="group relative rounded-[var(--rounded-box)] border border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] bg-base-200 p-6 lg:p-8 soft-shadow transition-[transform,box-shadow] duration-200 hover:ring-2 hover:ring-[color-mix(in_oklch,oklch(var(--p))_22%,transparent)]"
               whileHover={
                 reduceMotion
                   ? undefined
                   : {
                       y: -4,
-                      boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.15)',
-                      borderColor: 'rgba(59, 130, 246, 0.35)',
                       transition: { duration: 0.22, ease: [0.16, 1, 0.3, 1] },
                     }
               }
             >
               {/* Ícone */}
               <div className="mb-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 group-hover:bg-primary/20">
+                <div className="flex h-12 w-12 items-center justify-center rounded-[var(--radius)] bg-primary/10 group-hover:bg-primary/20">
                   <feature.icon className={`w-6 h-6 ${feature.color}`} />
                 </div>
               </div>
@@ -154,7 +152,7 @@ export const FeaturesSection: React.FC = () => {
           transition={{ duration: 0.6, delay: 0.3 }}
           className="mt-16 text-center"
         >
-          <div className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-primary/10 border border-primary/20 text-primary">
+          <div className="inline-flex items-center gap-2 px-6 py-3 rounded-[var(--radius)] bg-primary/10 border border-primary/20 text-primary">
             <CheckCircle2 className="w-5 h-5" />
             <span className="font-medium">E muito mais recursos aguardando você</span>
           </div>

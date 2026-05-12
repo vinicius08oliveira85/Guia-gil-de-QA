@@ -13,6 +13,7 @@ import { callGeminiWithRetry } from './geminiApiWrapper';
 import { GEMINI_DEFAULT_MODEL } from './geminiConstants';
 import { hashString } from '../../utils/hash';
 import { logger } from '../../utils/logger';
+import { parseAiJsonText } from '../../utils/aiJsonParse';
 
 const CACHE_TTL_MS = 1000 * 60 * 5; // 5 minutos
 /** Máximo de tarefas no contexto do prompt (análise geral mais rica em projetos grandes). */
@@ -774,7 +775,10 @@ ${TEST_CASE_VISUAL_FORMAT_INSTRUCTIONS}
       },
     });
 
-    const parsedResponse = JSON.parse(response.text.trim());
+    const parsedResponse = parseAiJsonText(response.text) as Partial<GeneralIAAnalysis> & {
+      taskAnalyses?: TaskIAAnalysis[];
+      testAnalyses?: TestIAAnalysis[];
+    };
 
     const aiTaskAnalysesMap = new Map<string, TaskIAAnalysis>(
       (parsedResponse.taskAnalyses || []).map((analysis: TaskIAAnalysis) => [

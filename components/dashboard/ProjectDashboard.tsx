@@ -65,8 +65,7 @@ const ExecutionPieSvg = React.memo(function ExecutionPieSvg(props: {
         key={s.label}
         d={d}
         fill={s.fill}
-        stroke="rgba(0,0,0,0.06)"
-        className="cursor-pointer dark:stroke-white/10"
+        className="cursor-pointer stroke-[color-mix(in_srgb,var(--foreground)_8%,transparent)] dark:stroke-[color-mix(in_srgb,var(--foreground)_14%,transparent)]"
         strokeWidth={hoverLabel === s.label ? 1.2 : 0.5}
         style={{
           opacity: dimmed ? 0.42 : 1,

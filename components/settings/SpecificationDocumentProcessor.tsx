@@ -100,7 +100,7 @@ export const SpecificationDocumentProcessor: React.FC<SpecificationDocumentProce
 
   return (
     <section
-      className="mb-tasks-panel-loose rounded-xl border border-base-300/80 bg-base-100/95 p-4 shadow-sm backdrop-blur-sm sm:p-5"
+      className="mb-tasks-panel-loose rounded-[var(--rounded-box)] border border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] bg-base-100/95 p-4 soft-shadow backdrop-blur-sm sm:p-5"
       aria-labelledby="spec-doc-heading"
     >
       <div className="border-b border-base-300/80 pb-3">
@@ -114,7 +114,7 @@ export const SpecificationDocumentProcessor: React.FC<SpecificationDocumentProce
 
       {isProcessed ? (
         <div className="mt-4 space-y-4">
-          <div className="flex items-start gap-3 rounded-xl border border-success/25 bg-success/10 px-4 py-3">
+          <div className="flex items-start gap-3 rounded-[var(--rounded-box)] border border-success/25 bg-success/10 px-4 py-3">
             <CheckCircle2 className="h-5 w-5 shrink-0 text-success" aria-hidden />
             <p className="text-sm font-medium leading-snug text-base-content">
               Documento processado e disponível para uso nas análises de IA.
@@ -141,7 +141,7 @@ export const SpecificationDocumentProcessor: React.FC<SpecificationDocumentProce
             <label
               className={cn(
                 buttonVariants({ variant: 'default', size: 'sm' }),
-                'cursor-pointer rounded-full px-4 shadow-md shadow-primary/15 sm:min-h-0',
+                'cursor-pointer rounded-[var(--radius)] px-4 ring-1 ring-[color-mix(in_oklch,oklch(var(--p))_22%,transparent)] sm:min-h-0',
                 isProcessing && 'pointer-events-none opacity-60'
               )}
             >
@@ -172,7 +172,7 @@ export const SpecificationDocumentProcessor: React.FC<SpecificationDocumentProce
         </div>
       ) : (
         <div className="mt-4 space-y-4">
-          <div className="flex items-start gap-3 rounded-xl border border-warning/30 bg-warning/10 px-4 py-3">
+          <div className="flex items-start gap-3 rounded-[var(--rounded-box)] border border-warning/30 bg-warning/10 px-4 py-3">
             <span className="text-lg font-bold text-warning" aria-hidden>
               !
             </span>
@@ -184,7 +184,7 @@ export const SpecificationDocumentProcessor: React.FC<SpecificationDocumentProce
           <label
             className={cn(
               buttonVariants({ variant: 'default', size: 'sm' }),
-              'cursor-pointer rounded-full px-4 shadow-md shadow-primary/15 sm:min-h-0',
+              'cursor-pointer rounded-[var(--radius)] px-4 ring-1 ring-[color-mix(in_oklch,oklch(var(--p))_22%,transparent)] sm:min-h-0',
               isProcessing && 'pointer-events-none opacity-60'
             )}
           >

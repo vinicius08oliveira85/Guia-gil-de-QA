@@ -129,6 +129,18 @@
     --sidebar-primary-foreground: #ffffff;
   }
 
+  /** Dim: reforço de contraste (texto secundário e cartões) sobre o bloco acima. */
+  [data-theme='dim'] {
+    --muted-foreground: #bab9c4;
+    --text-secondary: var(--muted-foreground);
+    --card: #222328;
+    --popover: #222328;
+    --foreground: #f4f4f8;
+    --card-foreground: #f4f4f8;
+    --popover-foreground: #f4f4f8;
+    --sidebar-foreground: #f4f4f8;
+  }
+
   html {
     scroll-behavior: smooth;
   }
@@ -307,8 +319,14 @@
 
   .task-card-shadow {
     box-shadow:
-      0 1px 3px 0 rgba(0, 0, 0, 0.05),
-      0 1px 2px 0 rgba(0, 0, 0, 0.03);
+      0 1px 3px 0 color-mix(in_srgb, var(--foreground) 5%, transparent),
+      0 1px 2px 0 color-mix(in_srgb, var(--foreground) 3%, transparent);
+  }
+  .dark .task-card-shadow,
+  [data-theme='dim'] .task-card-shadow {
+    box-shadow:
+      0 1px 3px 0 color-mix(in_srgb, var(--foreground) 14%, transparent),
+      0 1px 2px 0 color-mix(in_srgb, var(--foreground) 10%, transparent);
   }
 
   /** Feedback visual: tarefa com geração IA em andamento (glow + pulsação perceptível) */
@@ -316,14 +334,14 @@
     0%,
     100% {
       box-shadow:
-        0 1px 3px 0 rgba(0, 0, 0, 0.05),
+        0 1px 3px 0 color-mix(in_srgb, var(--foreground) 5%, transparent),
         0 0 0 1px color-mix(in oklch, oklch(var(--p)) 38%, transparent),
         0 0 12px color-mix(in oklch, oklch(var(--p)) 22%, transparent),
         0 0 28px color-mix(in oklch, oklch(var(--p)) 12%, transparent);
     }
     50% {
       box-shadow:
-        0 1px 3px 0 rgba(0, 0, 0, 0.05),
+        0 1px 3px 0 color-mix(in_srgb, var(--foreground) 5%, transparent),
         0 0 0 3px color-mix(in oklch, oklch(var(--p)) 55%, transparent),
         0 0 22px color-mix(in oklch, oklch(var(--p)) 35%, transparent),
         0 0 44px color-mix(in oklch, oklch(var(--p)) 20%, transparent);
@@ -336,7 +354,7 @@
     .animate-ai-card-border {
       animation: none;
       box-shadow:
-        0 1px 3px 0 rgba(0, 0, 0, 0.05),
+        0 1px 3px 0 color-mix(in_srgb, var(--foreground) 5%, transparent),
         0 0 0 2px color-mix(in oklch, oklch(var(--p)) 42%, transparent),
         0 0 14px color-mix(in oklch, oklch(var(--p)) 25%, transparent);
     }
@@ -366,27 +384,28 @@
   .glass {
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid color-mix(in_srgb, var(--foreground) 12%, transparent);
   }
   [data-theme='dark'] .glass,
-  .dark .glass {
-    border-color: rgba(255, 255, 255, 0.05);
+  .dark .glass,
+  [data-theme='dim'] .glass {
+    border-color: color-mix(in_srgb, var(--foreground) 10%, transparent);
   }
   /** Halos dos indicadores — nomes alinhados aos tokens semânticos (primary, warning, …). */
   .glow-primary {
-    filter: drop-shadow(0 0 8px rgba(255, 107, 53, 0.4));
+    filter: drop-shadow(0 0 8px color-mix(in oklch, oklch(var(--p)) 48%, transparent));
   }
   .glow-warning {
-    filter: drop-shadow(0 0 8px rgba(234, 179, 8, 0.4));
+    filter: drop-shadow(0 0 8px color-mix(in oklch, oklch(var(--wa)) 48%, transparent));
   }
   .glow-info {
-    filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.4));
+    filter: drop-shadow(0 0 8px color-mix(in oklch, oklch(var(--in)) 48%, transparent));
   }
   .glow-success {
-    filter: drop-shadow(0 0 8px rgba(34, 197, 94, 0.4));
+    filter: drop-shadow(0 0 8px color-mix(in oklch, oklch(var(--su)) 48%, transparent));
   }
   .glow-error {
-    filter: drop-shadow(0 0 8px rgba(239, 68, 68, 0.4));
+    filter: drop-shadow(0 0 8px color-mix(in oklch, oklch(var(--er)) 48%, transparent));
   }
   @keyframes pulse-subtle {
     0%,
@@ -403,31 +422,31 @@
 
   /* Documentos UI (referencial) */
   .soft-shadow {
-    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 20px -2px color-mix(in_srgb, var(--foreground) 6%, transparent);
   }
   .dark .soft-shadow,
   [data-theme='dim'] .soft-shadow {
-    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 20px -2px color-mix(in_srgb, var(--foreground) 16%, transparent);
   }
   /** Donut / pequenos gráficos: mais leve que `.soft-shadow` para não competir com o card. */
   .soft-shadow-chart {
-    box-shadow: 0 2px 12px -2px rgba(0, 0, 0, 0.035);
+    box-shadow: 0 2px 12px -2px color-mix(in_srgb, var(--foreground) 4%, transparent);
   }
   .dark .soft-shadow-chart,
   [data-theme='dim'] .soft-shadow-chart {
-    box-shadow: 0 2px 14px -2px rgba(0, 0, 0, 0.11);
+    box-shadow: 0 2px 14px -2px color-mix(in_srgb, var(--foreground) 12%, transparent);
   }
   .hover-glow:hover {
-    box-shadow: 0 0 15px -3px rgba(79, 70, 229, 0.2);
+    box-shadow: 0 0 15px -3px color-mix(in oklch, oklch(var(--p)) 22%, transparent);
     transform: translateY(-1px);
   }
   .progress-gradient {
-    background: linear-gradient(90deg, #6366f1 0%, rgb(251 76 0) 100%);
+    background: linear-gradient(90deg, oklch(var(--p)) 0%, oklch(var(--s)) 100%);
   }
 }
 
 @layer components {
-  /* Acessibilidade: skip link */
+  /* Acessibilidade: skip link — um controle por página para `#main-content` (não usar em cada `<a>`). */
   .skip-link {
     position: absolute;
     left: 0.75rem;
@@ -439,7 +458,7 @@
     border-radius: var(--rounded-btn);
     background: oklch(var(--p));
     color: oklch(var(--pc));
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 10px 30px color-mix(in_srgb, var(--foreground) 12%, transparent);
   }
   .skip-link:focus {
     transform: translateY(0);
@@ -453,7 +472,7 @@
     background-color: var(--jira-task-epic-accent) !important;
     color: #f4efff !important;
     border: 1px solid var(--jira-task-epic-accent-border) !important;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    box-shadow: inset 0 1px 0 color-mix(in oklch, oklch(100% 0 0) 10%, transparent);
   }
 
   /** Faixa esquerda do card Epic = mesma cor de fundo do badge Epic */

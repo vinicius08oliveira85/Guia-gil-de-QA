@@ -66,7 +66,7 @@ export const IntegrationCard = React.memo<IntegrationCardProps>(
       <Card className={cn('p-6 hover:border-primary/20 transition-colors', className)}>
         <div className="flex items-start gap-4">
           {/* Ícone da integração */}
-          <div className="shrink-0 h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
+          <div className="shrink-0 h-12 w-12 rounded-[var(--radius)] bg-primary/10 flex items-center justify-center">
             {icon}
           </div>
 
