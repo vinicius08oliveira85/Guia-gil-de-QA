@@ -9,13 +9,14 @@
  *   a reload, compartilhado entre abas). Erros na camada persistida nunca quebram o fluxo.
  */
 
-import type {
-  BddScenario,
-  JiraTask,
-  Project,
-  TestCase,
-  TestCaseDetailLevel,
-  TestStrategy,
+import {
+  normalizeTestCaseDetailLevel,
+  type BddScenario,
+  type JiraTask,
+  type Project,
+  type TestCase,
+  type TestCaseDetailLevel,
+  type TestStrategy,
 } from '../../types';
 import { hashString } from '../../utils/hash';
 import { logger } from '../../utils/logger';
@@ -57,7 +58,7 @@ interface CacheEntry {
 const cache = new Map<string, CacheEntry>();
 
 export interface GenerateTestCasesOptions {
-  /** Nível de detalhe dos passos. Default: 'Padrão'. */
+  /** Nível de detalhe dos passos. Default: **Estruturado**. */
   detailLevel?: TestCaseDetailLevel;
   /** Projeto opcional — usado para regras de negócio e contexto de documentos. */
   project?: Project | null;
@@ -131,7 +132,7 @@ export async function generateTestArtifactsForTask(
 
   try {
     const aiService = getAIService();
-    const detailLevel: TestCaseDetailLevel = options.detailLevel ?? 'Padrão';
+    const detailLevel = normalizeTestCaseDetailLevel(options.detailLevel);
     const bddInput = regenerateBdd ? undefined : task.bddScenarios;
 
     const result = await aiService.generateTestCasesForTask(
@@ -267,7 +268,9 @@ function computeSnapshotHash(task: JiraTask, options: GenerateTestCasesOptions =
     bddSignature,
     linkedIds,
     linkedCategories,
-    options.detailLevel ?? 'Padrão',
+    options.detailLevel != null
+      ? normalizeTestCaseDetailLevel(options.detailLevel)
+      : 'Estruturado',
     options.regenerateBdd ? 'regenBdd' : 'keepBdd',
   ].join('||');
 

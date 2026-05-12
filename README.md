@@ -20,6 +20,10 @@ npm run lint
 npm run test -- --run
 ```
 
+## IA — geração de casos de teste
+
+Na API interna (`AIService.generateTestCasesForTask` / `testCaseGenerationService`), o nível de detalhe dos roteiros é **`Resumido`** ou **`Estruturado`** (`TestCaseDetailLevel` em `types.ts`). Valores legados (`Padrão`, `Detalhado`) são tratados por `normalizeTestCaseDetailLevel` e mapeados para **`Estruturado`**. O texto enviado ao modelo por nível está em `services/ai/testGenerationPrompts.ts` (`detailLevelBlock`).
+
 ## Storybook (opcional)
 
 ```bash

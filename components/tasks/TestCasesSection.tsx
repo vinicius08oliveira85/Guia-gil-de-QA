@@ -71,7 +71,7 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
   task,
   isGenerating,
   onGenerateTests,
-  detailLevel = 'Padrão',
+  detailLevel = 'Estruturado',
   onTestCaseStatusChange,
   onObservedResultChange,
   onTestCaseExecutionKindChange,
@@ -195,7 +195,7 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
   if (!task.id) return null;
 
   return (
-    <div>
+    <div className="font-sans tracking-[var(--letter-spacing)] text-base-content">
       <header className="flex flex-col gap-3 mb-4">
         <div className="flex flex-wrap items-center gap-3">
           <div className="p-1.5 bg-primary/10 rounded-lg">
@@ -275,14 +275,14 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
                   placeholder="Buscar na descrição, passos ou resultado..."
                   value={searchInput}
                   onChange={e => setSearchInput(e.target.value)}
-                  className="input input-bordered input-sm w-full pl-8 text-sm"
+                  className="input input-bordered input-sm w-full rounded-[var(--radius)] bg-base-100 pl-8 text-sm text-base-content placeholder:text-base-content/50"
                   aria-label="Buscar nos casos de teste"
                 />
               </div>
               <select
                 value={sortBy}
                 onChange={e => setSortBy(e.target.value as SortBy)}
-                className="select select-bordered select-sm text-sm"
+                className="select select-bordered select-sm rounded-[var(--radius)] bg-base-100 text-sm text-base-content"
                 aria-label="Ordenar casos por"
               >
                 {SORT_OPTIONS.map(opt => (
@@ -310,20 +310,20 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
                 <button
                   type="button"
                   onClick={() => setDetailsOpenOverride(true)}
-                  className="btn btn-ghost btn-sm gap-1 text-xs"
+                  className="win-icon-button"
                   aria-label="Expandir detalhes de todos"
+                  title="Expandir detalhes"
                 >
-                  <ChevronDown className="w-4 h-4" />
-                  Expandir
+                  <ChevronDown className="h-5 w-5" aria-hidden />
                 </button>
                 <button
                   type="button"
                   onClick={() => setDetailsOpenOverride(false)}
-                  className="btn btn-ghost btn-sm gap-1 text-xs"
+                  className="win-icon-button"
                   aria-label="Recolher detalhes de todos"
+                  title="Recolher detalhes"
                 >
-                  <ChevronUp className="w-4 h-4" />
-                  Recolher
+                  <ChevronUp className="h-5 w-5" aria-hidden />
                 </button>
               </div>
             </div>

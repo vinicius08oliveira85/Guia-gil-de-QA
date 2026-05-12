@@ -29,7 +29,19 @@ export interface TestCase {
   suite?: string;
 }
 
-export type TestCaseDetailLevel = 'Resumido' | 'Padrão' | 'Detalhado';
+/** Nível de detalhe do roteiro em `action` / campos correlatos na geração por IA. */
+export type TestCaseDetailLevel = 'Resumido' | 'Estruturado';
+
+/**
+ * Normaliza valores legados (`Padrão`, `Detalhado`) ou entradas indefinidas para o tipo atual.
+ * `Padrão` e `Detalhado` mapeiam para **Estruturado** (roteiro completo + formatação rica).
+ */
+export function normalizeTestCaseDetailLevel(
+  value: TestCaseDetailLevel | string | undefined | null
+): TestCaseDetailLevel {
+  if (value === 'Resumido') return 'Resumido';
+  return 'Estruturado';
+}
 
 export type AppViewMode = 'dashboard' | 'project_detail' | 'settings';
 

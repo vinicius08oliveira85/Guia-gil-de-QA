@@ -229,7 +229,7 @@ export class GeminiService implements AIService {
     title: string,
     description: string,
     bddScenarios?: BddScenario[],
-    detailLevel: TestCaseDetailLevel = 'Padrão',
+    detailLevel: TestCaseDetailLevel = 'Estruturado',
     taskType?: JiraTaskType,
     project?: Project | null,
     task?: JiraTask | null,

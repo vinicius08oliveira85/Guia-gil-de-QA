@@ -189,13 +189,28 @@ Priorize: verificação da correção, regressão em áreas relacionadas, cenár
 `;
 }
 
-function detailLevelBlock(detailLevel: TestCaseDetailLevel): string {
+/** Bloco de prompt por nível de detalhe dos casos de teste (exportado para testes). */
+export function detailLevelBlock(detailLevel: TestCaseDetailLevel): string {
+  if (detailLevel === 'Resumido') {
+    return `
+═══════════════════════════════════════════════════════════════
+Nível de detalhe: **Resumido** (campo JSON \`action\` / **Ação necessária**)
+═══════════════════════════════════════════════════════════════
+- Gere **poucos** passos numerados (\`1.\`, \`2.\`, \`3.\` …), sempre com **quebra de linha real** (\`\\n\`) entre cada passo.
+- Linguagem **objetiva** e direta; evite passos redundantes ou verificações longas.
+- **parameters** e **expectedResult**: texto conciso; use linhas iniciadas por **•** (U+2022) somente quando houver **vários** itens distintos (um bullet por linha).
+`.trim();
+  }
+
   return `
-Nível de detalhe do campo JSON \`action\` (rótulo na UI: **Ação necessária** — roteiro em texto): ${detailLevel}
-- Resumido: poucos passos numerados (sempre \`1.\` … \`2.\` … com \\n entre linhas), linguagem objetiva.
-- Padrão: roteiro completo com passos numerados e quebra de linha entre cada passo.
-- Detalhado: roteiro extenso com verificações intermediárias; **parameters** e **expectedResult** com linhas iniciadas por **•** quando houver vários pontos.
-`;
+═══════════════════════════════════════════════════════════════
+Nível de detalhe: **Estruturado** (campo JSON \`action\` / **Ação necessária**)
+═══════════════════════════════════════════════════════════════
+- **action**: roteiro **completo** com passos numerados (\`1.\`, \`2.\`, …) e **quebra de linha real** (\`\\n\`) entre **cada** passo (nunca um único parágrafo contínuo quando houver mais de um passo).
+- Inclua **verificações intermediárias detalhadas** ao longo do roteiro (o que conferir após passos críticos, estados esperados, mensagens ou dados intermediários).
+- **parameters** e **expectedResult**: com **vários** pontos, cada linha relevante deve começar com **•** (U+2022), **um ponto por linha** (alinhado às regras globais do roteiro).
+- Aplicar **rigorosamente** cada item de \`TEST_CASE_VISUAL_FORMAT_INSTRUCTIONS\` (o mesmo texto do bloco **FORMATAÇÃO VISUAL OBRIGATÓRIA** já incluído acima neste prompt); não resuma nem omita essas regras na prática.
+`.trim();
 }
 
 export function summarizeStrategiesForPrompt(strategies: TestStrategy[], maxChars = 2800): string {

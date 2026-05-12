@@ -91,7 +91,7 @@ describe('testCaseGenerationService.generateTestCasesForTask', () => {
       task.title,
       task.description,
       task.bddScenarios,
-      'Padrão',
+      'Estruturado',
       task.type,
       null,
       task,

@@ -84,6 +84,8 @@ import { Button } from '../common/Button';
 import { Badge } from '../common/Badge';
 import { useJiraAttachmentViewer } from '../../hooks/useJiraAttachmentViewer';
 import { TestCasesFreshnessIndicator } from './TestCasesFreshnessIndicator';
+import { TestCaseDetailLevelControl } from './TestCaseDetailLevelControl';
+import { BddScenarioActionBar } from './BddScenarioActionBar';
 
 /** Destaque da ação IA principal — halo via tokens Daisy (oklch) + animação existente. */
 const gerarTudoDestaqueClass =
@@ -290,7 +292,7 @@ export const JiraTaskItem: React.FC<{
     }, [isStatusDropdownOpen]);
     const [editingBddScenario, setEditingBddScenario] = useState<BddScenario | null>(null);
     const [isCreatingBdd, setIsCreatingBdd] = useState(false);
-    const [detailLevel, setDetailLevel] = useState<TestCaseDetailLevel>('Padrão');
+    const [detailLevel, setDetailLevel] = useState<TestCaseDetailLevel>('Estruturado');
     const [isGenerating, setIsGenerating] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [showTestReport, setShowTestReport] = useState(false);
@@ -1201,27 +1203,12 @@ export const JiraTaskItem: React.FC<{
             </div>
           )}
 
-          <div className="mica mx-auto flex w-fit flex-wrap items-center justify-center gap-4 rounded-[var(--rounded-box)] border border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] px-5 py-3">
-            <button
-              type="button"
-              onClick={() => onGenerateBddScenarios(task.id)}
-              disabled={actionsDisabled}
-              className="btn btn-outline btn-info btn-sm gap-2 rounded-[var(--radius)] px-5 py-2.5 font-semibold disabled:cursor-not-allowed"
-            >
-              <Sparkles className="h-4 w-4" aria-hidden />
-              Gerar Cenários com IA
-            </button>
-            <div className="h-6 w-px shrink-0 bg-base-300" aria-hidden />
-            <button
-              type="button"
-              onClick={() => setIsCreatingBdd(true)}
-              disabled={actionsDisabled}
-              className="btn btn-primary btn-sm gap-2 rounded-[var(--radius)] px-5 py-2.5 font-semibold ring-1 ring-[color-mix(in_oklch,oklch(var(--p))_28%,transparent)] disabled:cursor-not-allowed"
-            >
-              <PlusIcon className="w-4 h-4" aria-hidden />
-              Adicionar Cenário Manualmente
-            </button>
-          </div>
+          <BddScenarioActionBar
+            onGenerate={() => onGenerateBddScenarios(task.id)}
+            onAddManual={() => setIsCreatingBdd(true)}
+            disabled={actionsDisabled}
+            className="mx-auto w-fit"
+          />
         </div>
       );
     };
@@ -1342,8 +1329,8 @@ export const JiraTaskItem: React.FC<{
           )}
 
           {/* Ferramentas (Geral) + Nível de Detalhe + Regerar com IA */}
-          <section className="mt-6 bg-base-100 border border-base-300 rounded-[var(--rounded-box)] task-card-shadow overflow-hidden">
-            <div className="p-5 flex flex-col lg:flex-row lg:items-center gap-6">
+          <section className="mt-6 mica overflow-hidden rounded-[var(--rounded-box)] border border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] soft-shadow">
+            <div className="p-5 flex flex-col lg:flex-row lg:items-center gap-6 font-sans tracking-[var(--letter-spacing)] text-base-content">
               <div className="flex-grow">
                 {onTaskToolsChange && (
                   <>
@@ -1362,29 +1349,17 @@ export const JiraTaskItem: React.FC<{
                 {!onTaskToolsChange && <div className="h-0" />}
               </div>
               <div className="lg:w-80 flex flex-col gap-4 border-t lg:border-t-0 lg:border-l border-base-200 pt-5 lg:pt-0 lg:pl-6">
-                <div>
-                  <label
-                    htmlFor={`detail-level-${task.id}`}
-                    className="block text-sm font-medium text-base-content/70 mb-1"
-                  >
-                    Nível de Detalhe
-                  </label>
-                  <select
-                    id={`detail-level-${task.id}`}
-                    value={detailLevel}
-                    onChange={e => setDetailLevel(e.target.value as TestCaseDetailLevel)}
-                    className="select select-bordered select-sm w-full bg-base-100 border-base-300 text-base-content text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                  >
-                    <option value="Padrão">Padrão</option>
-                    <option value="Resumido">Resumido</option>
-                    <option value="Detalhado">Detalhado</option>
-                  </select>
-                </div>
+                <TestCaseDetailLevelControl
+                  idPrefix={task.id}
+                  value={detailLevel}
+                  onChange={setDetailLevel}
+                  disabled={isGeneratingTests}
+                />
                 {!isGeneratingTests && (
                   <button
                     type="button"
                     onClick={() => onGenerateTests(task.id, detailLevel)}
-                    className="btn btn-primary btn-sm w-full rounded-[var(--radius)] flex items-center justify-center gap-2"
+                    className="btn btn-primary btn-sm min-h-[44px] w-full rounded-[var(--radius)] sm:min-h-0 flex items-center justify-center gap-2"
                   >
                     <Sparkles className="w-4 h-4" aria-hidden />
                     {(task.testCases?.length ?? 0) > 0 ? 'Regerar com IA' : 'Gerar com IA'}

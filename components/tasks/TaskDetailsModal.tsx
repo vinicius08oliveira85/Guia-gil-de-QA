@@ -2,9 +2,11 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { JiraTask, BddScenario, TestCaseDetailLevel, Project, TestCase } from '../../types';
 import { TestCasesFreshnessIndicator } from './TestCasesFreshnessIndicator';
+import { TestCaseDetailLevelControl } from './TestCaseDetailLevelControl';
+import { BddScenarioActionBar } from './BddScenarioActionBar';
 import { Modal } from '../common/Modal';
 import { Spinner } from '../common/Spinner';
-import { PlusIcon, RefreshIcon } from '../common/Icons';
+import { RefreshIcon } from '../common/Icons';
 import { BddScenarioForm, BddScenarioItem } from './BddScenario';
 import { TestCasesSection } from './TestCasesSection';
 import { TestStrategyCard } from './TestStrategyCard';
@@ -196,7 +198,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
   const reduceMotion = useReducedMotion();
   const [editingBddScenario, setEditingBddScenario] = useState<BddScenario | null>(null);
   const [isCreatingBdd, setIsCreatingBdd] = useState(false);
-  const [detailLevel, setDetailLevel] = useState<TestCaseDetailLevel>('Padrão');
+  const [detailLevel, setDetailLevel] = useState<TestCaseDetailLevel>('Estruturado');
   const [showTestReport, setShowTestReport] = useState(false);
   const {
     viewingJiraAttachment,
@@ -738,27 +740,12 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
           </div>
         )}
 
-        <div className="flex flex-wrap items-center justify-center gap-4 px-5 py-3 bg-base-100/90 dark:bg-base-200/90 backdrop-blur-md rounded-full border border-base-300 shadow-lg w-fit mx-auto">
-          <button
-            type="button"
-            onClick={() => onGenerateBddScenarios(task.id)}
-            disabled={actionsDisabled}
-            className="flex items-center gap-2 bg-blue-500/20 hover:bg-blue-500/30 dark:bg-blue-900/40 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 border border-blue-500/30 px-5 py-2.5 rounded-full font-semibold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <Sparkles className="w-4 h-4" aria-hidden />
-            Gerar Cenários com IA
-          </button>
-          <div className="h-6 w-px bg-base-300 flex-shrink-0" aria-hidden />
-          <button
-            type="button"
-            onClick={() => setIsCreatingBdd(true)}
-            disabled={actionsDisabled}
-            className="flex items-center gap-2 bg-primary hover:opacity-90 text-primary-content px-5 py-2.5 rounded-full font-semibold text-sm shadow-lg shadow-primary/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <PlusIcon className="w-4 h-4" aria-hidden />
-            Adicionar Cenário Manualmente
-          </button>
-        </div>
+        <BddScenarioActionBar
+          onGenerate={() => onGenerateBddScenarios(task.id)}
+          onAddManual={() => setIsCreatingBdd(true)}
+          disabled={actionsDisabled}
+          className="mx-auto w-full max-w-2xl"
+        />
       </div>
     );
   };
@@ -771,9 +758,9 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
     const canHaveTestCases = task.type === 'Tarefa' || task.type === 'Bug';
 
     return (
-      <div className="space-y-4">
+      <div className="space-y-4 font-sans tracking-[var(--letter-spacing)] text-base-content">
         <div
-          className="flex flex-wrap gap-2 p-1.5 bg-base-200 rounded-xl w-fit"
+          className="flex flex-wrap gap-2 p-1.5 mica w-fit rounded-[var(--rounded-box)] border border-[color-mix(in_srgb,var(--foreground)_10%,transparent)]"
           role="tablist"
           aria-label="Sub-abas de testes"
         >
@@ -782,7 +769,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
             role="tab"
             aria-selected={activeTestSubSection === 'strategy'}
             onClick={() => setActiveTestSubSection('strategy')}
-            className={`px-2 py-1 text-xs rounded-xl font-medium transition-colors sm:px-3 sm:py-1.5 sm:text-sm ${activeTestSubSection === 'strategy' ? 'bg-brand-orange-selected text-white shadow-md shadow-brand-orange-selected/20 hover:bg-brand-orange-selected-hover' : 'text-base-content/70 hover:text-base-content hover:bg-base-200'}`}
+            className={`min-h-[44px] rounded-[var(--radius)] px-3 py-2 text-xs font-medium transition-colors sm:min-h-0 sm:px-3 sm:py-1.5 sm:text-sm ${activeTestSubSection === 'strategy' ? 'bg-primary text-primary-content soft-shadow' : 'text-base-content/70 hover:bg-base-300/50 hover:text-base-content'}`}
           >
             Estratégia
           </button>
@@ -791,12 +778,12 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
             role="tab"
             aria-selected={activeTestSubSection === 'test-cases'}
             onClick={() => setActiveTestSubSection('test-cases')}
-            className={`px-2 py-1 text-xs rounded-xl font-medium transition-colors flex items-center gap-1 sm:px-3 sm:py-1.5 sm:text-sm ${activeTestSubSection === 'test-cases' ? 'bg-brand-orange-selected text-white shadow-md shadow-brand-orange-selected/20 hover:bg-brand-orange-selected-hover' : 'text-base-content/70 hover:text-base-content hover:bg-base-200'}`}
+            className={`flex min-h-[44px] items-center gap-1 rounded-[var(--radius)] px-3 py-2 text-xs font-medium transition-colors sm:min-h-0 sm:px-3 sm:py-1.5 sm:text-sm ${activeTestSubSection === 'test-cases' ? 'bg-primary text-primary-content soft-shadow' : 'text-base-content/70 hover:bg-base-300/50 hover:text-base-content'}`}
           >
             Casos de teste
             {task.testCases?.length ? (
               <span
-                className={`ml-1 px-1.5 py-0.5 rounded-md text-xs font-medium ${activeTestSubSection === 'test-cases' ? 'bg-white/20' : 'bg-base-300 text-base-content'}`}
+                className={`ml-1 rounded-[var(--radius)] px-1.5 py-0.5 text-xs font-medium ${activeTestSubSection === 'test-cases' ? 'bg-[color-mix(in_oklch,oklch(var(--pc))_25%,transparent)] text-primary-content' : 'bg-base-300 text-base-content'}`}
               >
                 {task.testCases.length}
               </span>
@@ -872,7 +859,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
           />
         )}
 
-        <section className="mt-6 bg-base-100 border border-base-300 rounded-2xl shadow-sm overflow-hidden">
+        <section className="mt-6 mica overflow-hidden rounded-[var(--rounded-box)] border border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] soft-shadow">
           <div className="p-5 flex flex-col lg:flex-row lg:items-center gap-6">
             <div className="flex-grow">
               {onTaskToolsChange && (
@@ -892,29 +879,17 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
               {!onTaskToolsChange && <div className="h-0" />}
             </div>
             <div className="lg:w-80 flex flex-col gap-4 border-t lg:border-t-0 lg:border-l border-base-200 pt-5 lg:pt-0 lg:pl-6">
-              <div>
-                <label
-                  htmlFor={`detail-level-${task.id}`}
-                  className="block text-sm font-medium text-base-content/70 mb-1"
-                >
-                  Nível de Detalhe
-                </label>
-                <select
-                  id={`detail-level-${task.id}`}
-                  value={detailLevel}
-                  onChange={e => setDetailLevel(e.target.value as TestCaseDetailLevel)}
-                  className="select select-bordered select-sm w-full bg-base-100 border-base-300 text-base-content text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                >
-                  <option value="Padrão">Padrão</option>
-                  <option value="Resumido">Resumido</option>
-                  <option value="Detalhado">Detalhado</option>
-                </select>
-              </div>
+              <TestCaseDetailLevelControl
+                idPrefix={task.id}
+                value={detailLevel}
+                onChange={setDetailLevel}
+                disabled={isGenerating}
+              />
               {!isGenerating && (
                 <Button
                   variant="default"
                   size="sm"
-                  className="w-full rounded-xl"
+                  className="w-full rounded-[var(--radius)]"
                   onClick={() => onGenerateTests(task.id, detailLevel)}
                 >
                   <Sparkles className="w-4 h-4" aria-hidden />

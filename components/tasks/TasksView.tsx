@@ -467,7 +467,7 @@ export const TasksView: React.FC<{
   );
 
   const handleGenerateAll = useCallback(
-    async (taskId: string, detailLevel: TestCaseDetailLevel = 'Padrão') => {
+    async (taskId: string, detailLevel: TestCaseDetailLevel = 'Estruturado') => {
       return enqueueGeminiOperation(async () => {
         setGeneratingAllTaskId(taskId);
         try {
@@ -1070,7 +1070,7 @@ export const TasksView: React.FC<{
               const attachmentsContext = buildAttachmentsContextForTask(currentTask);
               const { strategy, testCases, snapshotHash, generatedAt } = await withTimeout(
                 generateTestArtifactsForTask(currentTask, {
-                  detailLevel: 'Padrão',
+                  detailLevel: 'Estruturado',
                   project,
                   attachmentsContext: attachmentsContext || undefined,
                 }),

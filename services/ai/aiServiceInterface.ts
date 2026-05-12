@@ -12,13 +12,17 @@ import {
 } from '../../types';
 
 /**
- * Interface comum para todos os serviços de IA
+ * Interface comum para todos os serviços de IA.
+ *
+ * Geração de casos de teste (`generateTestCasesForTask`): o parâmetro `detailLevel` aceita apenas
+ * **`Resumido`** ou **`Estruturado`** (ver `TestCaseDetailLevel` e `normalizeTestCaseDetailLevel` em `types.ts`).
  */
 export interface AIService {
   generateTestCasesForTask(
     title: string,
     description: string,
     bddScenarios?: BddScenario[],
+    /** `Resumido` | `Estruturado` — controla o texto do roteiro em `action` / campos correlatos no prompt. */
     detailLevel?: TestCaseDetailLevel,
     taskType?: JiraTaskType,
     project?: Project | null,
