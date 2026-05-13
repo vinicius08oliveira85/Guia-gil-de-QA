@@ -52,12 +52,12 @@ function getStatusMeta(status: ExecutedStatus): { label: string; marker: string 
 function getCaseHeadline(testCase: TestCase, index: number): string {
   const listTitle = getTestCaseListTitle(testCase).trim();
   if (listTitle && listTitle !== 'Caso de teste') {
-    return clampText(listTitle);
+    return collapseOneLine(listTitle);
   }
 
   const expected = collapseOneLine(testCase.expectedResult || '');
   if (expected && expected !== '—') {
-    return clampText(expected);
+    return expected;
   }
 
   return `Caso de teste ${index + 1}`;

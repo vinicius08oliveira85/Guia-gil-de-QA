@@ -63,6 +63,7 @@ describe('generateTestReport', () => {
     expect(report).not.toContain('Resultado esperado');
     expect(report).not.toContain('1. Acessar o painel com perfil backoffice');
     expect(report).toContain('Card exibe a contagem correta de beneficiários após a importação.');
+    expect(report).not.toContain('Card exibe a contagem correta de beneficiários…');
   });
 
   it('gera versão resumida focada no resultado final', () => {
