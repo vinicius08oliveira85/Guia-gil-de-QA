@@ -354,7 +354,7 @@ const PLACEHOLDER_EXPECTED =
  */
 function decodeMisescapedNewlinesWhenFlat(value: string): string {
   let v = value.replace(/\\n(?=\s*\d+\.\s)/g, '\n');
-  v = v.replace(/\\n(?=\s*[•\-])/gu, '\n');
+  v = v.replace(/\\n(?=\s*[-•])/gu, '\n');
   return v;
 }
 
@@ -381,8 +381,12 @@ function decodeMisescapedNewlinesWhenFlat(value: string): string {
  * view, e não colapsando newlines nesta função.
  */
 function normalizeAiMultilineField(value: string): string {
-  let v = value
-    .replace(/\r\n/g, '\n')
+  if (!value) return '';
+
+  // Limite de segurança para evitar processamento de strings gigantes (ex: imagens coladas por engano)
+  let v = value.length > 50000 ? value.slice(0, 50000) : value;
+
+  v = v.replace(/\r\n/g, '\n')
     .replace(/\r/g, '\n')
     .replace(/\u2028/g, '\n')
     .replace(/\u2029/g, '\n');
@@ -405,7 +409,8 @@ function normalizeTestCases(raw: unknown[]): TestCase[] {
       typeof r.id === 'string' && r.id.trim()
         ? r.id.trim()
         : generateTestCaseId(baseTimestamp, index);
-    const { observedResult: _ignored, ...restForMigrate } = r;
+    const restForMigrate = { ...r };
+    delete restForMigrate.observedResult;
     const migrated = migrateTestCase({ ...restForMigrate, id });
 
     const action =

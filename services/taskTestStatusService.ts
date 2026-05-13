@@ -34,6 +34,8 @@ let supabase: SupabaseClient | null = null;
 const requestTimeoutMs = 5000; // Timeout de 5 segundos para requisições
 const maxRetries = 3; // Máximo de 3 tentativas
 const retryDelays = [1000, 2000, 4000]; // Backoff exponencial: 1s, 2s, 4s
+const MAX_TASK_STATUS_RECURSION_DEPTH = 100;
+const subtaskIndexCache = new WeakMap<readonly JiraTask[], Map<string, JiraTask[]>>();
 
 // Inicializar cliente Supabase direto se variáveis estiverem disponíveis
 if (supabaseUrl && supabaseAnonKey) {
@@ -115,7 +117,7 @@ const isNetworkError = (error: unknown): boolean => {
 /**
  * Chama o proxy do Supabase com timeout e tratamento de erros melhorado
  */
-const callSupabaseProxy = async <T = any>(
+const callSupabaseProxy = async <T = unknown>(
   method: 'GET' | 'POST' | 'PUT' | 'DELETE',
   options?: {
     body?: unknown;
@@ -423,6 +425,134 @@ const loadMultipleThroughSdk = async (taskKeys: string[]): Promise<Map<string, T
   return result;
 };
 
+const getSubtasksByParentId = (allTasks: JiraTask[]): Map<string, JiraTask[]> => {
+  if (allTasks.length === 0) {
+    return new Map();
+  }
+
+  const cached = subtaskIndexCache.get(allTasks);
+  if (cached) {
+    return cached;
+  }
+
+  const index = new Map<string, JiraTask[]>();
+  for (const currentTask of allTasks) {
+    const parentId = currentTask.parentId?.trim();
+    if (!parentId) continue;
+
+    const siblings = index.get(parentId);
+    if (siblings) {
+      siblings.push(currentTask);
+      continue;
+    }
+
+    index.set(parentId, [currentTask]);
+  }
+
+  subtaskIndexCache.set(allTasks, index);
+  return index;
+};
+
+const calculateLeafTaskTestStatus = (task: JiraTask): TaskTestStatus => {
+  const testCases = task.testCases || [];
+
+  if (testCases.length === 0) {
+    return 'testar';
+  }
+
+  const allTestsExecuted = testCases.every(tc => tc.status !== 'Not Run');
+  if (allTestsExecuted) {
+    const hasFailed = testCases.some(tc => tc.status === 'Failed');
+    return hasFailed ? 'pendente' : 'teste_concluido';
+  }
+
+  const hasFailed = testCases.some(tc => tc.status === 'Failed');
+  if (hasFailed) {
+    return 'pendente';
+  }
+
+  const hasPassed = testCases.some(tc => tc.status === 'Passed');
+  if (hasPassed) {
+    return 'testando';
+  }
+
+  return 'testar';
+};
+
+const calculateTaskTestStatusInternal = (
+  task: JiraTask,
+  subtasksByParentId: Map<string, JiraTask[]>,
+  visited: Set<string>,
+  cache: Map<string, TaskTestStatus>,
+  depth: number
+): TaskTestStatus => {
+  const taskKey = task.id?.trim();
+
+  if (taskKey) {
+    const cachedStatus = cache.get(taskKey);
+    if (cachedStatus) {
+      return cachedStatus;
+    }
+
+    if (visited.has(taskKey)) {
+      logger.warn('Ciclo detectado ao calcular status de teste da tarefa', 'taskTestStatusService', {
+        taskId: taskKey,
+      });
+      cache.set(taskKey, 'pendente');
+      return 'pendente';
+    }
+  }
+
+  if (depth >= MAX_TASK_STATUS_RECURSION_DEPTH) {
+    logger.warn(
+      'Profundidade máxima atingida ao calcular status de teste da tarefa',
+      'taskTestStatusService',
+      {
+        taskId: taskKey,
+        depth,
+      }
+    );
+    if (taskKey) {
+      cache.set(taskKey, 'pendente');
+    }
+    return 'pendente';
+  }
+
+  const nextVisited = taskKey ? new Set(visited).add(taskKey) : visited;
+
+  let status: TaskTestStatus;
+
+  if (task.type === 'Epic' || task.type === 'História') {
+    const subtasks = taskKey ? subtasksByParentId.get(taskKey) ?? [] : [];
+
+    if (subtasks.length === 0) {
+      status = 'pendente';
+    } else {
+      const subtaskStatuses = subtasks.map(subtask =>
+        calculateTaskTestStatusInternal(subtask, subtasksByParentId, nextVisited, cache, depth + 1)
+      );
+
+      if (subtaskStatuses.every(subtaskStatus => subtaskStatus === 'teste_concluido')) {
+        status = 'teste_concluido';
+      } else if (subtaskStatuses.some(subtaskStatus => subtaskStatus === 'pendente')) {
+        status = 'pendente';
+      } else if (subtaskStatuses.some(subtaskStatus => subtaskStatus === 'testando')) {
+        status = 'testando';
+      } else {
+        status = 'testar';
+      }
+    }
+  } else {
+    status = calculateLeafTaskTestStatus(task);
+  }
+
+  if (taskKey) {
+    cache.set(taskKey, status);
+  }
+
+  return status;
+};
+
 /**
  * Calcula o status de teste baseado nos testCases da task ou nas subtarefas (para Epic/História)
  *
@@ -447,85 +577,16 @@ const loadMultipleThroughSdk = async (taskKeys: string[]): Promise<Map<string, T
  */
 export const calculateTaskTestStatus = (
   task: JiraTask,
-  allTasks: JiraTask[] = [],
-  _visited: Set<string> = new Set()
+  allTasks: JiraTask[] = []
 ): TaskTestStatus => {
-  // Guarda contra referências parentId circulares que causariam STATUS_STACK_OVERFLOW
-  if (_visited.has(task.id)) {
-    return 'pendente';
-  }
-  _visited.add(task.id);
-
-  // Para Epic e História, verificar status das subtarefas
-  if (task.type === 'Epic' || task.type === 'História') {
-    const subtasks = allTasks.filter(t => t.parentId === task.id);
-
-    // Se não há subtarefas, retornar 'pendente' (conforme requisito)
-    if (subtasks.length === 0) {
-      return 'pendente';
-    }
-
-    // Calcular status de cada subtarefa recursivamente
-    const subtaskStatuses = subtasks.map(subtask =>
-      calculateTaskTestStatus(subtask, allTasks, _visited)
-    );
-
-    // Se todas as subtarefas estão 'teste_concluido', retornar 'teste_concluido'
-    const allSubtasksCompleted = subtaskStatuses.every(status => status === 'teste_concluido');
-    if (allSubtasksCompleted) {
-      return 'teste_concluido';
-    }
-
-    // Se alguma subtarefa está 'pendente' (falhou), retornar 'pendente'
-    const hasPendingSubtask = subtaskStatuses.some(status => status === 'pendente');
-    if (hasPendingSubtask) {
-      return 'pendente';
-    }
-
-    // Se alguma subtarefa está 'testando', retornar 'testando'
-    const hasTestingSubtask = subtaskStatuses.some(status => status === 'testando');
-    if (hasTestingSubtask) {
-      return 'testando';
-    }
-
-    // Caso contrário, retornar 'testar'
-    return 'testar';
-  }
-
-  // Para Tarefa e Bug, usar lógica baseada em testCases
-  const testCases = task.testCases || [];
-
-  // Se não há testCases, retornar 'testar'
-  if (testCases.length === 0) {
-    return 'testar';
-  }
-
-  // Verificar se todos os testes foram executados (nenhum 'Not Run')
-  const allTestsExecuted = testCases.every(tc => tc.status !== 'Not Run');
-
-  if (allTestsExecuted) {
-    const hasFailed = testCases.some(tc => tc.status === 'Failed');
-    if (hasFailed) {
-      return 'pendente';
-    }
-    return 'teste_concluido';
-  }
-
-  // Ainda há testes pendentes ('Not Run')
-  // Verificar se algum teste falhou
-  const hasFailed = testCases.some(tc => tc.status === 'Failed');
-  if (hasFailed) {
-    return 'pendente';
-  }
-
-  // Verificar se há testes sendo executados (alguns Passed mas não todos)
-  const hasPassed = testCases.some(tc => tc.status === 'Passed');
-  if (hasPassed) {
-    return 'testando';
-  }
-
-  // Se nenhum foi executado, retornar 'testar'
-  return 'testar';
+  const subtasksByParentId = getSubtasksByParentId(allTasks);
+  return calculateTaskTestStatusInternal(
+    task,
+    subtasksByParentId,
+    new Set<string>(),
+    new Map<string, TaskTestStatus>(),
+    0
+  );
 };
 
 /**

@@ -1,5 +1,5 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { Project, TestCase, JiraTask } from '../types';
+import { Project, TestCase } from '../types';
 import { normalizeProjectBusinessRules } from '../utils/businessRuleDefaults';
 import { logger } from '../utils/logger';
 import {
@@ -321,11 +321,12 @@ const compressData = async (data: unknown): Promise<string> => {
       offset += chunk.length;
     }
 
-    // Construir string binária elemento a elemento para evitar STATUS_STACK_OVERFLOW
-    // String.fromCharCode.apply com arrays grandes pode overflow a pilha de argumentos do V8
+    // Conversão eficiente e segura para o Stack usando processamento por chunks
+    const CHUNK_SIZE = 0x4000; // 16KB por fatia
     let binary = '';
-    for (let i = 0; i < combined.length; i++) {
-      binary += String.fromCharCode(combined[i]);
+    for (let i = 0; i < combined.length; i += CHUNK_SIZE) {
+      const chunk = combined.subarray(i, i + CHUNK_SIZE);
+      binary += String.fromCharCode(...chunk);
     }
     return btoa(binary);
   } catch (error) {
@@ -334,11 +335,16 @@ const compressData = async (data: unknown): Promise<string> => {
   }
 };
 
+/** @internal Exposto apenas para testes unitários focados em compressão segura. */
+export const __supabaseServiceForTests = {
+  compressData,
+};
+
 /**
  * Chama o proxy do Supabase com timeout e tratamento de erros melhorado
  * Timeout reduzido para 5 segundos para falhar rápido
  */
-const callSupabaseProxy = async <T = any>(
+const callSupabaseProxy = async <T = unknown>(
   method: 'GET' | 'POST' | 'DELETE',
   options?: {
     body?: unknown;

@@ -97,7 +97,9 @@ const generalAnalysisCache = new Map<
 
 const normalizeText = (value?: string, maxLength: number = TEXT_SNIPPET_LENGTH): string => {
   if (!value) return '';
-  const sanitized = value.replace(/\s+/g, ' ').trim();
+  // Evita processar strings massivas (ex: base64) com regex para prevenir STATUS_STACK_OVERFLOW
+  const truncatedInput = value.length > maxLength * 5 ? value.slice(0, maxLength * 5) : value;
+  const sanitized = truncatedInput.replace(/\s+/g, ' ').trim();
   if (sanitized.length <= maxLength) return sanitized;
   return `${sanitized.slice(0, maxLength)}…`;
 };

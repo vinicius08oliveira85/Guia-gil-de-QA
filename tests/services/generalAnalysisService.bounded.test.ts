@@ -26,6 +26,7 @@ import {
   generateGeneralIAAnalysis,
   MAX_PERSISTED_TEST_ANALYSES,
   invalidateGeneralAnalysisCache,
+  getTaskIaAnalysisSnapshotHash,
 } from '../../services/ai/generalAnalysisService';
 
 function makeTestCase(i: number, status: TestCase['status'] = 'Not Run'): TestCase {
@@ -82,5 +83,32 @@ describe('generalAnalysisService — limites de persistência', () => {
     const project = makeProject('bounded-proj-b', 10, 4);
     const analysis = await generateGeneralIAAnalysis(project);
     expect(analysis.taskAnalyses.length).toBe(10);
+  });
+
+  it('ignora a cauda de descrições gigantes após o limite seguro do snapshot', () => {
+    const stablePrefix = 'ABCD '.repeat(500);
+    const taskA: JiraTask = {
+      id: 't-huge',
+      title: 'Task enorme',
+      description: `${stablePrefix}TAIL-A-${'A'.repeat(20_000)}`,
+      status: 'To Do',
+      type: 'Tarefa',
+      testCases: [],
+    };
+    const taskB: JiraTask = {
+      ...taskA,
+      description: `${stablePrefix}TAIL-B-${'B'.repeat(20_000)}`,
+    };
+
+    expect(getTaskIaAnalysisSnapshotHash(taskA)).toBe(getTaskIaAnalysisSnapshotHash(taskB));
+  });
+
+  it('gera análise sem estourar a pilha quando a descrição contém payload gigante', async () => {
+    const project = makeProject('bounded-proj-c', 1, 1);
+    project.tasks[0].description = `data:image/png;base64,${'A'.repeat(120_000)}`;
+
+    await expect(generateGeneralIAAnalysis(project)).resolves.toMatchObject({
+      summary: 'Resumo',
+    });
   });
 });

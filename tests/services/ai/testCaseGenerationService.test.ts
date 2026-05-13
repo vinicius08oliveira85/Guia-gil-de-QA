@@ -236,6 +236,31 @@ describe('testCaseGenerationService.generateTestCasesForTask', () => {
     expect(result[0].action).toContain('C:\\notes\\relatorio');
   });
 
+  it('trunca campos multiline gigantes antes das regexes para evitar overflow', async () => {
+    const hugePayload = `Linha 1\r\n${'A'.repeat(80_000)}`;
+    mockGenerate.mockResolvedValueOnce({
+      strategy: [],
+      bddScenarios: [],
+      testCases: [
+        {
+          id: 'tc-huge',
+          action: hugePayload,
+          parameters: hugePayload,
+          expectedResult: hugePayload,
+          status: 'Not Run',
+        },
+      ],
+    });
+
+    const result = await generateTestCasesForTask(buildTask());
+
+    expect(result[0].action.length).toBeLessThanOrEqual(50_000);
+    expect(result[0].parameters.length).toBeLessThanOrEqual(50_000);
+    expect(result[0].expectedResult.length).toBeLessThanOrEqual(50_000);
+    expect(result[0].action).toContain('Linha 1\n');
+    expect(result[0].action).not.toContain('\r');
+  });
+
   it('blinda contra testCases não-array do retorno da IA', async () => {
     mockGenerate.mockResolvedValueOnce({
       strategy: [],
