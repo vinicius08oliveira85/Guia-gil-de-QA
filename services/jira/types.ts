@@ -17,6 +17,7 @@ export interface JiraIssue {
     description?: string;
     issuetype: {
       name: string;
+      iconUrl?: string;
     };
     status: {
       name: string;
@@ -149,6 +150,7 @@ export interface JiraTaskFormData {
   title: string;
   description: string;
   type: 'Epic' | 'História' | 'Tarefa' | 'Bug';
+  jiraIssueTypeIconUrl?: string;
   priority: 'Baixa' | 'Média' | 'Alta' | 'Urgente';
   parentId: string;
   owner: 'Product' | 'QA' | 'Dev';

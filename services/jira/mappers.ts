@@ -271,6 +271,7 @@ export const jiraIssueToTaskFormData = (issue: JiraIssue, config: JiraConfig): J
     title: issue.fields?.summary || 'Sem título',
     description,
     type: taskType,
+    jiraIssueTypeIconUrl: issue.fields?.issuetype?.iconUrl,
     priority: mapJiraPriorityToTaskPriority(issue.fields?.priority?.name),
     parentId,
     owner: 'Product',

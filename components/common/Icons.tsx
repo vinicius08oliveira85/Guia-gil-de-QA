@@ -67,6 +67,71 @@ export const BugIcon: React.FC<{ className?: string }> = ({ className = '' }) =>
     <path d="M12 13c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" fill="currentColor" />
   </svg>
 );
+
+interface JiraIssueTypeIconProps {
+  type: JiraTaskType;
+  iconUrl?: string;
+  className?: string;
+  size?: number;
+}
+
+const IssueTypeGlyph: React.FC<{ type: JiraTaskType; className?: string; size?: number }> = ({
+  type,
+  className = '',
+  size = 16,
+}) => {
+  const iconMap: Record<JiraTaskType, React.FC<{ className?: string }>> = {
+    Epic: EpicIcon,
+    História: StoryIcon,
+    Tarefa: TaskIcon,
+    Bug: BugIcon,
+  };
+
+  const Icon = iconMap[type];
+  return (
+    <span
+      className={`inline-flex shrink-0 items-center justify-center ${className}`}
+      style={{ width: size, height: size }}
+      aria-hidden="true"
+    >
+      <Icon className="h-full w-full" />
+    </span>
+  );
+};
+
+/** Ícone do tipo da issue preferindo a URL oficial do Jira e caindo para fallback local. */
+export const JiraIssueTypeIcon: React.FC<JiraIssueTypeIconProps> = ({
+  type,
+  iconUrl,
+  className = '',
+  size = 16,
+}) => {
+  const [failed, setFailed] = React.useState(false);
+
+  if (iconUrl && !failed) {
+    return (
+      <img
+        src={iconUrl}
+        alt=""
+        aria-hidden="true"
+        width={size}
+        height={size}
+        className={`shrink-0 object-contain ${className}`}
+        loading="eager"
+        decoding="async"
+        referrerPolicy="no-referrer"
+        onError={() => setFailed(true)}
+      />
+    );
+  }
+
+  return (
+    <span className={`inline-flex shrink-0 items-center justify-center ${className}`}>
+      <IssueTypeGlyph type={type} size={size} />
+    </span>
+  );
+};
+
 type BasicIconProps = { className?: string };
 
 export const EditIcon: React.FC<BasicIconProps> = ({ className }) => (

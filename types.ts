@@ -152,6 +152,8 @@ export interface JiraTask {
   id: string;
   title: string;
   description: string;
+  /** URL do ícone oficial do tipo da issue no Jira (quando a task veio da integração). */
+  jiraIssueTypeIconUrl?: string;
   /** Status padrão do app. "Blocked" pode ser usado por integrações/fluxos avançados. */
   status: 'To Do' | 'In Progress' | 'Done' | 'Blocked';
   jiraStatus?: string; // Status original do Jira (ex: "Em Andamento", "Concluído", etc.)

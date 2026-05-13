@@ -11,7 +11,7 @@ import {
 } from '../../types';
 import { Spinner } from '../common/Spinner';
 import {
-  TaskTypeIcon,
+  JiraIssueTypeIcon,
   TaskStatusIcon,
   StartTestIcon,
   CompleteTestIcon,
@@ -1718,6 +1718,12 @@ export const JiraTaskItem: React.FC<{
                 role="group"
                 aria-label="Metadados da tarefa"
               >
+                <JiraIssueTypeIcon
+                  type={task.type}
+                  iconUrl={task.jiraIssueTypeIconUrl}
+                  size={14}
+                  className="shrink-0"
+                />
                 <span className="font-mono tabular-nums shrink-0">
                   {task.id}
                 </span>

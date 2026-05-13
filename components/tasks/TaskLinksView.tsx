@@ -11,7 +11,7 @@ import {
 } from '../../utils/dependencyService';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import { cn } from '../../utils/cn';
-import { TaskTypeIcon } from '../common/Icons';
+import { JiraIssueTypeIcon } from '../common/Icons';
 import { EmptyState } from '../common/EmptyState';
 import { getDisplayStatusLabel } from '../../utils/taskHelpers';
 
@@ -180,7 +180,11 @@ export const TaskLinksView: React.FC<TaskLinksViewProps> = ({
         <div className="flex items-start justify-between gap-3 ml-2">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-2">
-              <TaskTypeIcon type={relatedTask.type} />
+              <JiraIssueTypeIcon
+                type={relatedTask.type}
+                iconUrl={relatedTask.jiraIssueTypeIconUrl}
+                size={16}
+              />
               <span className="font-mono text-sm font-semibold text-base-content">
                 {relatedTask.id}
               </span>

@@ -219,6 +219,7 @@ export const updateSingleTaskFromJira = async (
     id: key,
     title: issue.fields?.summary || 'Sem título',
     description,
+    jiraIssueTypeIconUrl: issue.fields?.issuetype?.iconUrl,
     status: mapJiraStatusToTaskStatus(jiraStatusName),
     jiraStatus: jiraStatusName,
     type: taskType,

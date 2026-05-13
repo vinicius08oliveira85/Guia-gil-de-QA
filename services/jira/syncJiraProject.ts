@@ -287,6 +287,7 @@ export const syncJiraProject = async (
       id: jiraKey,
       title: issue.fields?.summary || 'Sem título',
       description: description || '',
+      jiraIssueTypeIconUrl: issue.fields?.issuetype?.iconUrl,
       status: mapJiraStatusToTaskStatus(jiraStatusName),
       jiraStatus: jiraStatusName, // Sempre atualizar status original do Jira
       type: taskType,
