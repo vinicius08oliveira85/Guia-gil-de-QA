@@ -1,5 +1,6 @@
 import React from 'react';
 import { JiraTaskType } from '../../types';
+import { getJiraLastUrl } from '../../services/jira/config';
 
 const ICON_SIZE = 18;
 const CHEVRON_SIZE = 18;
@@ -51,20 +52,22 @@ export const TaskIcon: React.FC<{ className?: string }> = ({ className = '' }) =
   </svg>
 );
 
-// Ícone oficial do Jira para Bug (inseto vermelho)
+// Ícone oficial do Jira para Bug (quadrado vermelho com glifo branco)
 export const BugIcon: React.FC<{ className?: string }> = ({ className = '' }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width={ICON_SIZE}
     height={ICON_SIZE}
-    viewBox="0 0 24 24"
-    fill="currentColor"
-    className={`text-error ${className}`}
+    viewBox="0 0 16 16"
+    fill="none"
+    className={className}
+    aria-hidden="true"
   >
-    <path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.87-3.13-7-7-7z" />
-    <circle cx="9" cy="9" r="1.5" fill="currentColor" />
-    <circle cx="15" cy="9" r="1.5" fill="currentColor" />
-    <path d="M12 13c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" fill="currentColor" />
+    <rect x="1" y="1" width="14" height="14" rx="2" fill="#E5493A" />
+    <path
+      d="M11 8C11 9.657 9.657 11 8 11C6.343 11 5 9.657 5 8C5 6.343 6.343 5 8 5C9.657 5 11 6.343 11 8Z"
+      fill="#FFFFFF"
+    />
   </svg>
 );
 
@@ -74,6 +77,42 @@ interface JiraIssueTypeIconProps {
   className?: string;
   size?: number;
 }
+
+const DEFAULT_JIRA_ISSUE_TYPE_ICON_FILES: Record<JiraTaskType, string> = {
+  Epic: 'epic.svg',
+  História: 'story.svg',
+  Tarefa: 'task.svg',
+  Bug: 'bug.svg',
+};
+
+const normalizeBaseUrl = (value: string): string => value.trim().replace(/\/+$/, '');
+
+const getSafeJiraBaseUrl = (): string => {
+  if (typeof window === 'undefined') return '';
+
+  try {
+    return normalizeBaseUrl(getJiraLastUrl());
+  } catch {
+    return '';
+  }
+};
+
+const toAbsoluteJiraIconUrl = (url: string | undefined, baseUrl: string): string | undefined => {
+  const trimmed = url?.trim();
+  if (!trimmed) return undefined;
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  if (trimmed.startsWith('/') && baseUrl) return `${baseUrl}${trimmed}`;
+  return undefined;
+};
+
+const buildDefaultJiraIssueTypeIconUrl = (
+  type: JiraTaskType,
+  baseUrl: string
+): string | undefined => {
+  const fileName = DEFAULT_JIRA_ISSUE_TYPE_ICON_FILES[type];
+  if (!fileName || !baseUrl) return undefined;
+  return `${baseUrl}/images/icons/issuetypes/${fileName}`;
+};
 
 const IssueTypeGlyph: React.FC<{ type: JiraTaskType; className?: string; size?: number }> = ({
   type,
@@ -107,11 +146,22 @@ export const JiraIssueTypeIcon: React.FC<JiraIssueTypeIconProps> = ({
   size = 16,
 }) => {
   const [failed, setFailed] = React.useState(false);
+  const resolvedIconUrl = React.useMemo(() => {
+    const jiraBaseUrl = getSafeJiraBaseUrl();
+    return (
+      toAbsoluteJiraIconUrl(iconUrl, jiraBaseUrl) ??
+      buildDefaultJiraIssueTypeIconUrl(type, jiraBaseUrl)
+    );
+  }, [iconUrl, type]);
 
-  if (iconUrl && !failed) {
+  React.useEffect(() => {
+    setFailed(false);
+  }, [resolvedIconUrl]);
+
+  if (resolvedIconUrl && !failed) {
     return (
       <img
-        src={iconUrl}
+        src={resolvedIconUrl}
         alt=""
         aria-hidden="true"
         width={size}
