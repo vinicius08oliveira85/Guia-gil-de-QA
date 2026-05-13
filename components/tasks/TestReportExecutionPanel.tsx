@@ -40,7 +40,7 @@ function getStatusBadge(status: TestCase['status']) {
 }
 
 function getTestCaseHeadline(testCase: TestCase, index: number) {
-  const title = getTestCaseListTitle(testCase).trim();
+  const title = getTestCaseListTitle(testCase, { truncate: false }).trim();
   if (title && title !== 'Caso de teste') {
     return title;
   }

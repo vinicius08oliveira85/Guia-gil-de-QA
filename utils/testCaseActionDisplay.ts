@@ -22,11 +22,22 @@ function clampListTitle(s: string, max = 118): string {
   return `${base}…`;
 }
 
+interface GetTestCaseListTitleOptions {
+  truncate?: boolean;
+  maxLength?: number;
+}
+
 /**
  * Título de uma linha na listagem do roteiro: descreve **o que se valida** (resultado esperado,
  * parâmetros ou suíte/ambiente), sem repetir o primeiro passo da ação.
  */
-export function getTestCaseListTitle(testCase: TestCase): string {
+export function getTestCaseListTitle(
+  testCase: TestCase,
+  options: GetTestCaseListTitleOptions = {}
+): string {
+  const truncate = options.truncate !== false;
+  const normalizeTitle = (value: string): string =>
+    truncate ? clampListTitle(value, options.maxLength) : value.trim();
   const exp = testCase.expectedResult || '';
 
   if (!isPlaceholderOrEmptyExpected(exp)) {
@@ -34,25 +45,25 @@ export function getTestCaseListTitle(testCase: TestCase): string {
     const firstBullet = lines.find(l => /^[•\-]\s*\S/.test(l));
     if (firstBullet) {
       const t = collapseOneLine(firstBullet.replace(/^[•\-]\s*/, ''));
-      const c = clampListTitle(t);
+      const c = normalizeTitle(t);
       if (c) return c;
     }
 
     const one = collapseOneLine(exp);
-    const c = clampListTitle(one);
+    const c = normalizeTitle(one);
     if (c) return c;
   }
 
   const params = (testCase.parameters || '').trim();
   if (params && params !== '—') {
-    const c = clampListTitle(collapseOneLine(params));
+    const c = normalizeTitle(collapseOneLine(params));
     if (c.length >= 8) return c;
   }
 
   const suite = getTestCaseSuite(testCase);
-  if (suite) return clampListTitle(`Teste — ${suite}`);
+  if (suite) return normalizeTitle(`Teste — ${suite}`);
   const env = getTestCaseEnvironment(testCase);
-  if (env) return clampListTitle(`Teste — ${env}`);
+  if (env) return normalizeTitle(`Teste — ${env}`);
 
   return 'Caso de teste';
 }

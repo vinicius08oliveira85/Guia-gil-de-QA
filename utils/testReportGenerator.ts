@@ -50,7 +50,7 @@ function getStatusMeta(status: ExecutedStatus): { label: string; marker: string 
 }
 
 function getCaseHeadline(testCase: TestCase, index: number): string {
-  const listTitle = getTestCaseListTitle(testCase).trim();
+  const listTitle = getTestCaseListTitle(testCase, { truncate: false }).trim();
   if (listTitle && listTitle !== 'Caso de teste') {
     return collapseOneLine(listTitle);
   }

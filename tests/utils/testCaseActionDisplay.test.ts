@@ -121,6 +121,19 @@ describe('getTestCaseListTitle', () => {
     });
     expect(getTestCaseListTitle(fromSuite)).toContain('Regressão APP');
   });
+
+  it('permite retornar o texto completo sem truncamento quando solicitado', () => {
+    const longExpected =
+      'O card "Nº de Re-internação em até 30 dias pelo mesmo CID" deve exibir o valor calculado corretamente com base na regra de negócio definida sem perder nenhuma informação ao montar o resumo.';
+    const t = tc({
+      id: '5',
+      expectedResult: longExpected,
+      parameters: '—',
+    });
+
+    expect(getTestCaseListTitle(t)).toContain('…');
+    expect(getTestCaseListTitle(t, { truncate: false })).toBe(longExpected);
+  });
 });
 
 describe('structureTestCaseExpected', () => {
