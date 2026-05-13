@@ -10,6 +10,7 @@ import { logger } from '../../utils/logger';
 import { parseAiJsonText } from '../../utils/aiJsonParse';
 
 const CACHE_TTL_MS = 1000 * 60 * 5; // 5 minutos
+const MAX_TEXT_SNAPSHOT_INPUT = 1000;
 
 const analysisCache = new Map<
   string,
@@ -23,7 +24,9 @@ const createProjectSnapshot = (project: Project): string => {
   // Normalizar texto de documentos para snapshot
   const normalizeText = (value?: string, maxLength: number = 200): string => {
     if (!value) return '';
-    const sanitized = value.replace(/\s+/g, ' ').trim();
+    const truncatedInput =
+      value.length > MAX_TEXT_SNAPSHOT_INPUT ? value.slice(0, MAX_TEXT_SNAPSHOT_INPUT) : value;
+    const sanitized = truncatedInput.replace(/\s+/g, ' ').trim();
     if (sanitized.length <= maxLength) return sanitized;
     return `${sanitized.slice(0, maxLength)}…`;
   };

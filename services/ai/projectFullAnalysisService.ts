@@ -13,10 +13,15 @@ const MAX_ANALYSES_STORED = 10;
 const MAX_TASKS_IN_CONTEXT = 100;
 /** Máximo de caracteres por trecho de documento no contexto. */
 const MAX_DOCUMENTS_SNIPPET_CHARS = 500;
+const MAX_NORMALIZE_SNIPPET_INPUT = 2500;
 
 const normalizeSnippet = (value: string | undefined, maxLength: number): string => {
   if (!value) return '';
-  const s = value.replace(/\s+/g, ' ').trim();
+  const truncatedInput =
+    value.length > MAX_NORMALIZE_SNIPPET_INPUT
+      ? value.slice(0, MAX_NORMALIZE_SNIPPET_INPUT)
+      : value;
+  const s = truncatedInput.replace(/\s+/g, ' ').trim();
   return s.length <= maxLength ? s : `${s.slice(0, maxLength)}…`;
 };
 

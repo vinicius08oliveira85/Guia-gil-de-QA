@@ -8,6 +8,16 @@ import { JiraContentSanitizer } from './jiraContentSanitizer';
 
 /** Profundidade máxima de recursão para conversão ADF — evita stack overflow com dados aninhados. */
 const MAX_ADF_DEPTH = 50;
+/** Limite defensivo para entradas gigantes (ex.: HTML com imagens inline/base64). */
+const MAX_DESCRIPTION_INPUT_CHARS = 50_000;
+
+function capDescriptionStringInput(value: string): string {
+  if (value.length <= MAX_DESCRIPTION_INPUT_CHARS) {
+    return value;
+  }
+
+  return `${value.slice(0, MAX_DESCRIPTION_INPUT_CHARS)}…`;
+}
 
 /** Converte texto simples (markdown-like) em HTML sanitizado, estilo Jira (parágrafos, listas, negrito). */
 function plainTextToHtml(text: string): string {
@@ -69,10 +79,12 @@ export function parseJiraDescription(description: any): string {
 
   // Se já é uma string
   if (typeof description === 'string') {
+    const safeDescription = capDescriptionStringInput(description);
+
     // Se contém HTML, remove tags mas preserva quebras de linha
-    if (description.includes('<')) {
+    if (safeDescription.includes('<')) {
       // Converter quebras de linha HTML para quebras reais
-      let text = description
+      let text = safeDescription
         .replace(/<br\s*\/?>/gi, '\n')
         .replace(/<\/p>/gi, '\n\n')
         .replace(/<\/div>/gi, '\n')
@@ -94,7 +106,7 @@ export function parseJiraDescription(description: any): string {
     }
 
     // String simples, retorna como está
-    return description.trim();
+    return safeDescription.trim();
   }
 
   // Se é um objeto ADF
@@ -509,13 +521,15 @@ export function parseJiraDescriptionHTML(
 
   // Se já é uma string HTML renderizada
   if (typeof description === 'string') {
+    const safeDescription = capDescriptionStringInput(description);
+
     // Se contém HTML, preservar e sanitizar; normalizar parágrafos que são listas
-    if (description.includes('<')) {
-      html = sanitizeHTML(description);
+    if (safeDescription.includes('<')) {
+      html = sanitizeHTML(safeDescription);
       html = normalizeListParagraphs(html);
     } else {
       // String simples: tratar como markdown (parágrafos, listas, negrito) e sanitizar
-      html = plainTextToHtml(description);
+      html = plainTextToHtml(safeDescription);
     }
   } else if (typeof description === 'object') {
     // Se é um objeto ADF, converter para HTML

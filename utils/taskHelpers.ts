@@ -1,5 +1,8 @@
 import { JiraTask } from '../types';
 
+const MAX_TEST_PHASE_RECURSION_DEPTH = 100;
+const testPhaseSubtaskIndexCache = new WeakMap<readonly JiraTask[], Map<string, JiraTask[]>>();
+
 /** Mapeia nome de status (Jira ou PT) para categoria interna. Mesma lógica do jiraService. */
 const mapJiraStatusToTaskStatus = (
   jiraStatus: string | undefined | null
@@ -153,39 +156,91 @@ export const getDisplayPriorityLabel = (
  */
 export const getTestPhaseStatus = (
   task: JiraTask,
-  allTasks: JiraTask[] = [],
-  _visited: Set<string> = new Set()
+  allTasks: JiraTask[] = []
 ): 'Concluído' | 'Pendente' => {
-  // Guarda contra referências parentId circulares que causariam STATUS_STACK_OVERFLOW
-  if (_visited.has(task.id)) {
-    return 'Pendente';
-  }
-  _visited.add(task.id);
+  const getSubtasksByParentId = (tasks: JiraTask[]): Map<string, JiraTask[]> => {
+    if (tasks.length === 0) {
+      return new Map();
+    }
 
-  // Para Epic e História, verificar status das subtarefas
-  if (task.type === 'Epic' || task.type === 'História') {
-    const subtasks = allTasks.filter(t => t.parentId === task.id);
+    const cached = testPhaseSubtaskIndexCache.get(tasks);
+    if (cached) {
+      return cached;
+    }
 
-    // Se não há subtarefas, retornar 'Pendente' (conforme requisito)
-    if (subtasks.length === 0) {
+    const index = new Map<string, JiraTask[]>();
+    for (const currentTask of tasks) {
+      const parentId = currentTask.parentId?.trim();
+      if (!parentId) continue;
+
+      const siblings = index.get(parentId);
+      if (siblings) {
+        siblings.push(currentTask);
+      } else {
+        index.set(parentId, [currentTask]);
+      }
+    }
+
+    testPhaseSubtaskIndexCache.set(tasks, index);
+    return index;
+  };
+
+  const calculateInternal = (
+    currentTask: JiraTask,
+    subtasksByParentId: Map<string, JiraTask[]>,
+    visited: Set<string>,
+    cache: Map<string, 'Concluído' | 'Pendente'>,
+    depth: number
+  ): 'Concluído' | 'Pendente' => {
+    const taskKey = currentTask.id?.trim();
+
+    if (taskKey) {
+      const cached = cache.get(taskKey);
+      if (cached) {
+        return cached;
+      }
+
+      if (visited.has(taskKey) || depth >= MAX_TEST_PHASE_RECURSION_DEPTH) {
+        cache.set(taskKey, 'Pendente');
+        return 'Pendente';
+      }
+    } else if (depth >= MAX_TEST_PHASE_RECURSION_DEPTH) {
       return 'Pendente';
     }
 
-    // Verificar se todas as subtarefas retornam 'Concluído' recursivamente
-    const allSubtasksCompleted = subtasks.every(
-      subtask => getTestPhaseStatus(subtask, allTasks, _visited) === 'Concluído'
-    );
+    const nextVisited = taskKey ? new Set(visited).add(taskKey) : visited;
 
-    return allSubtasksCompleted ? 'Concluído' : 'Pendente';
-  }
+    let status: 'Concluído' | 'Pendente';
 
-  // Para Tarefa e Bug, usar lógica baseada em testCases
-  const testCases = task.testCases || [];
+    if (currentTask.type === 'Epic' || currentTask.type === 'História') {
+      const subtasks = taskKey ? subtasksByParentId.get(taskKey) ?? [] : [];
 
-  if (!testCases || testCases.length === 0) {
-    return 'Pendente';
-  }
+      if (subtasks.length === 0) {
+        status = 'Pendente';
+      } else {
+        const allSubtasksCompleted = subtasks.every(
+          subtask =>
+            calculateInternal(subtask, subtasksByParentId, nextVisited, cache, depth + 1) ===
+            'Concluído'
+        );
 
-  const allTestsRun = testCases.every(tc => tc.status !== 'Not Run');
-  return allTestsRun ? 'Concluído' : 'Pendente';
+        status = allSubtasksCompleted ? 'Concluído' : 'Pendente';
+      }
+    } else {
+      const testCases = currentTask.testCases || [];
+      status =
+        testCases.length > 0 && testCases.every(tc => tc.status !== 'Not Run')
+          ? 'Concluído'
+          : 'Pendente';
+    }
+
+    if (taskKey) {
+      cache.set(taskKey, status);
+    }
+
+    return status;
+  };
+
+  const subtasksByParentId = getSubtasksByParentId(allTasks);
+  return calculateInternal(task, subtasksByParentId, new Set<string>(), new Map(), 0);
 };
