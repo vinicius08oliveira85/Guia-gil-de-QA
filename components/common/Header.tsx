@@ -439,7 +439,7 @@ export const Header: React.FC<HeaderProps> = ({
     <header
       ref={headerRef}
       className={cn(
-        'relative sticky top-0 z-[100] mica !rounded-none border-b overflow-x-visible overflow-y-hidden',
+        'relative sticky top-0 z-[100] mica !rounded-none border-b overflow-x-visible overflow-y-visible md:overflow-y-hidden',
         'border-[color-mix(in_srgb,var(--foreground)_10%,transparent)]',
         'bg-[color-mix(in_srgb,var(--background)_78%,transparent)]',
         'text-[var(--foreground)] shadow-lg',
@@ -450,7 +450,7 @@ export const Header: React.FC<HeaderProps> = ({
       <div className={cn('mx-auto w-full min-w-0 max-w-full px-3 sm:px-6')}>
         <div
           className={cn(
-            'box-border flex h-[var(--app-header-h)] min-h-0 min-w-0 items-center justify-between gap-2 overflow-x-visible overflow-y-hidden',
+            'box-border flex h-[var(--app-header-h)] min-h-0 min-w-0 items-center justify-between gap-2 overflow-x-visible overflow-y-visible md:overflow-y-hidden',
             'sm:gap-3'
           )}
         >
@@ -558,15 +558,15 @@ export const Header: React.FC<HeaderProps> = ({
               )}
             </div>
 
-            <div className="relative flex shrink-0 items-center gap-1 md:hidden">
-              <details ref={utilityMenuRef} className="dropdown dropdown-end">
+            <div className="relative z-[110] flex shrink-0 items-center gap-1 md:hidden">
+              <details ref={utilityMenuRef} className="dropdown dropdown-end relative z-[120]">
                 <summary className="win-icon-button list-none [&::-webkit-details-marker]:hidden [&::marker]:hidden">
                   <span className="sr-only">
                     Mais opções: configurações, glossário, notificações e tema
                   </span>
                   <MoreVertical className="h-5 w-5" aria-hidden />
                 </summary>
-                <ul className="dropdown-content menu menu-sm z-[70] mt-2 w-56 rounded-box border border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] bg-[color-mix(in_srgb,var(--background)_96%,transparent)] p-2 text-[var(--foreground)] shadow-xl backdrop-blur-md transition-colors duration-300">
+                <ul className="dropdown-content menu menu-sm z-[130] mt-2 w-56 rounded-box border border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] bg-[color-mix(in_srgb,var(--background)_96%,transparent)] p-2 text-[var(--foreground)] shadow-xl backdrop-blur-md transition-colors duration-300">
                   {tabs.map(tab => {
                     const Icon = tab.icon;
                     return (
