@@ -1,18 +1,18 @@
 import { JiraTask, TestCase } from '../types';
+import { getTestCaseListTitle } from './testCaseActionDisplay';
 
-export type TestReportFormat = 'text' | 'markdown';
+export type TestReportFormat = 'text';
 
 export interface GenerateTestReportOptions {
   format?: TestReportFormat;
-  /** Exibir "Ferramentas Utilizadas" nas estratégias. Default: false. */
+  /** Mantido por compatibilidade; o registro simplificado não detalha ferramentas. */
   includeTools?: boolean;
-  /** Saída compacta: menos linhas em branco, casos em uma linha cada. Default: false. */
+  /** Saída compacta: resumo direto sem blocos longos. */
   concise?: boolean;
 }
 
-/**
- * Formata data no formato dd/MM/yyyy às HH:mm:ss
- */
+type ExecutedStatus = Exclude<TestCase['status'], 'Not Run'>;
+
 function formatDateTime(date: Date): string {
   const day = String(date.getDate()).padStart(2, '0');
   const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -23,18 +23,82 @@ function formatDateTime(date: Date): string {
   return `${day}/${month}/${year} às ${hours}:${minutes}:${seconds}`;
 }
 
-/**
- * Gera um registro de testes realizados seguindo o modelo padronizado
- */
+function collapseOneLine(value: string): string {
+  return value.replace(/\r?\n+/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+function clampText(value: string, maxLength = 180): string {
+  if (value.length <= maxLength) {
+    return value;
+  }
+
+  const truncated = value.slice(0, maxLength - 1);
+  const lastSpace = truncated.lastIndexOf(' ');
+  const safeBase = lastSpace > 48 ? truncated.slice(0, lastSpace) : truncated;
+  return `${safeBase.trim()}…`;
+}
+
+function getStatusMeta(status: ExecutedStatus): { label: string; marker: string } {
+  switch (status) {
+    case 'Passed':
+      return { label: 'Aprovado', marker: '[APROVADO]' };
+    case 'Failed':
+      return { label: 'Reprovado', marker: '[REPROVADO]' };
+    case 'Blocked':
+      return { label: 'Bloqueado', marker: '[BLOQUEADO]' };
+  }
+}
+
+function getCaseHeadline(testCase: TestCase, index: number): string {
+  const listTitle = getTestCaseListTitle(testCase).trim();
+  if (listTitle && listTitle !== 'Caso de teste') {
+    return clampText(listTitle);
+  }
+
+  const expected = collapseOneLine(testCase.expectedResult || '');
+  if (expected && expected !== '—') {
+    return clampText(expected);
+  }
+
+  return `Caso de teste ${index + 1}`;
+}
+
+function getObservedSummary(testCase: TestCase): string | null {
+  const observed = collapseOneLine(testCase.observedResult || '');
+  if (!observed) {
+    return null;
+  }
+  return clampText(observed, 220);
+}
+
+function buildExecutionCounts(allTestCases: TestCase[]) {
+  return {
+    total: allTestCases.length,
+    approved: allTestCases.filter(tc => tc.status === 'Passed').length,
+    failed: allTestCases.filter(tc => tc.status === 'Failed').length,
+    blocked: allTestCases.filter(tc => tc.status === 'Blocked').length,
+    notRun: allTestCases.filter(tc => tc.status === 'Not Run').length,
+  };
+}
+
+function getCoverageSummary(task: JiraTask): string | null {
+  const strategyNames = (task.testStrategy || [])
+    .map(strategy => collapseOneLine(strategy.testType || ''))
+    .filter(Boolean);
+
+  if (strategyNames.length === 0) {
+    return null;
+  }
+
+  return clampText(strategyNames.join(', '), 160);
+}
+
 export function generateTestReport(
   task: JiraTask,
   generatedAt: Date = new Date(),
   options: GenerateTestReportOptions = {}
 ): string {
-  const format: TestReportFormat = options.format ?? 'text';
-  const includeTools = options.includeTools ?? false;
   const concise = options.concise ?? false;
-  const lines: string[] = [];
   const allTestCases = task.testCases || [];
   const executedTestCases = allTestCases.filter(tc => tc.status !== 'Not Run');
 
@@ -42,129 +106,112 @@ export function generateTestReport(
     return generateConciseReport(task, executedTestCases, allTestCases, generatedAt);
   }
 
-  // Cabeçalho
+  const lines: string[] = [];
+  const counts = buildExecutionCounts(allTestCases);
+  const coverage = getCoverageSummary(task);
+
   lines.push(`TASK: ${task.id}`);
   lines.push('');
   lines.push(`Título: ${task.title ?? '-'}`);
   lines.push('');
+  lines.push('SÍNTESE DA EXECUÇÃO:');
   lines.push('');
-
-  // Seção ESTRATÉGIAS REALIZADAS
-  if (executedTestCases.length > 0) {
-    lines.push('ESTRATÉGIAS REALIZADAS:');
-    lines.push('');
-
-    const strategyMap = buildStrategyMap(task, includeTools);
-    const sortedStrategies = Array.from(strategyMap.values()).sort((a, b) =>
-      a.testType.localeCompare(b.testType)
-    );
-
-    sortedStrategies.forEach((strategy, index) => {
-      lines.push(`${index + 1}. ${strategy.testType}: ${strategy.description}`);
-      lines.push('');
-      if (includeTools) {
-        const toolsList = Array.from(strategy.tools).join(', ') || 'Não informado';
-        lines.push(`   Ferramentas Utilizadas: ${toolsList}`);
-        lines.push('');
-      }
-      lines.push('');
-    });
-  } else {
-    lines.push('ESTRATÉGIAS REALIZADAS:');
-    lines.push('');
-    lines.push('Nenhuma estratégia executada até o momento.');
-    lines.push('');
-    lines.push('');
+  lines.push(`Total de casos mapeados: ${counts.total}`);
+  lines.push(`Executados: ${executedTestCases.length}`);
+  lines.push(`Aprovados: ${counts.approved}`);
+  lines.push(`Reprovados: ${counts.failed}`);
+  lines.push(`Bloqueados: ${counts.blocked}`);
+  lines.push(`Não executados: ${counts.notRun}`);
+  if (coverage) {
+    lines.push(`Cobertura validada: ${coverage}`);
   }
-
-  // Seção CASOS DE TESTE
-  lines.push('CASOS DE TESTE:');
   lines.push('');
+  lines.push('RESULTADOS DOS TESTES:');
   lines.push('');
 
   if (executedTestCases.length === 0) {
     lines.push('Nenhum teste executado até o momento.');
-    lines.push('');
   } else {
     executedTestCases.forEach((testCase, index) => {
-      const statusEmoji = testCase.status === 'Passed' ? '✅' : '❌';
-      const statusLabel = testCase.status === 'Passed' ? 'Aprovado' : 'Reprovado';
-      const description = testCase.action || `Teste ${index + 1}`;
+      const statusMeta = getStatusMeta(testCase.status as ExecutedStatus);
+      lines.push(`${index + 1}. ${statusMeta.marker} ${getCaseHeadline(testCase, index)}`);
 
-      lines.push(`${index + 1}. ${description} - Status: ${statusEmoji} ${statusLabel}`);
-      lines.push('');
-      if (testCase.parameters?.trim()) {
-        lines.push(`   Parâmetros necessários: ${testCase.parameters}`);
-        lines.push('');
-      }
-      if (testCase.expectedResult?.trim()) {
-        lines.push(`   Resultado esperado: ${testCase.expectedResult}`);
-        lines.push('');
+      const observed = getObservedSummary(testCase);
+      if (observed) {
+        lines.push(`   Observação: ${observed}`);
       }
 
-      if (testCase.observedResult && testCase.observedResult.trim()) {
-        if (format === 'markdown') {
-          lines.push('');
-          lines.push(
-            `   **Resultado Obtido:** <span style="color: red;">${testCase.observedResult}</span>`
-          );
-        } else {
-          lines.push('');
-          lines.push(`   RESULTADO OBTIDO: ${testCase.observedResult}`);
-        }
-      }
-
-      lines.push('');
+      lines.push(`   Status final: ${statusMeta.label}`);
       lines.push('');
     });
   }
 
-  // Seção RESUMO
-  lines.push('RESUMO:');
-  lines.push('');
-
-  const totalTestCases = allTestCases.length;
-  const approved = allTestCases.filter(tc => tc.status === 'Passed').length;
-  const failed = allTestCases.filter(tc => tc.status === 'Failed').length;
-  const notRun = allTestCases.filter(tc => tc.status === 'Not Run').length;
-
-  lines.push(`Total de Casos de Teste: ${totalTestCases}`);
-  lines.push(`Aprovados: ${approved}`);
-  lines.push(`Reprovados: ${failed}`);
-  lines.push(`Não Executados: ${notRun}`);
   lines.push(`Concluído em: ${formatDateTime(generatedAt)}`);
-
   return lines.join('\n');
 }
 
-type StrategyEntry = { testType: string; description: string; tools: Set<string> };
+export function generateTestResultsOnlyReport(
+  task: JiraTask,
+  generatedAt: Date = new Date()
+): string {
+  const executedTestCases = (task.testCases || []).filter(tc => tc.status !== 'Not Run');
+  const lines: string[] = [];
 
-function buildStrategyMap(task: JiraTask, includeTools: boolean): Map<string, StrategyEntry> {
-  const strategyMap = new Map<string, StrategyEntry>();
+  lines.push(`RESULTADOS EXECUTADOS | ${task.id} | ${task.title ?? '-'}`);
+  lines.push('');
 
-  (task.testStrategy || []).forEach((strategyRow, strategyIndex) => {
-    const strategyName = strategyRow.testType || `Estratégia ${strategyIndex + 1}`;
-    const toolsSet = new Set<string>();
-    if (includeTools) {
-      if (task.strategyTools?.[strategyIndex]) {
-        task.strategyTools[strategyIndex].forEach(tool => toolsSet.add(tool));
-      }
-      if (toolsSet.size === 0 && strategyRow.tools) {
-        strategyRow.tools.split(',').forEach(tool => {
-          const t = tool.trim();
-          if (t) toolsSet.add(t);
-        });
-      }
-    }
-
-    strategyMap.set(strategyName, {
-      testType: strategyName,
-      description: strategyRow.description || strategyName,
-      tools: toolsSet,
+  if (executedTestCases.length === 0) {
+    lines.push('Nenhum teste executado até o momento.');
+  } else {
+    executedTestCases.forEach((testCase, index) => {
+      const statusMeta = getStatusMeta(testCase.status as ExecutedStatus);
+      const observed = getObservedSummary(testCase);
+      const suffix = observed ? ` | Observação: ${observed}` : '';
+      lines.push(`${index + 1}. ${statusMeta.label}: ${getCaseHeadline(testCase, index)}${suffix}`);
     });
-  });
+  }
 
-  return strategyMap;
+  lines.push('');
+  lines.push(`Concluído em: ${formatDateTime(generatedAt)}`);
+  return lines.join('\n');
+}
+
+export function generateTestExecutiveSummary(
+  task: JiraTask,
+  generatedAt: Date = new Date()
+): string {
+  const allTestCases = task.testCases || [];
+  const counts = buildExecutionCounts(allTestCases);
+  const coverage = getCoverageSummary(task);
+  const lines: string[] = [];
+
+  lines.push(`Resumo executivo da validação ${task.id}`);
+  lines.push(`Título: ${task.title ?? '-'}`);
+  lines.push(
+    `Status consolidado: ${counts.approved} aprovado(s), ${counts.failed} reprovado(s), ${counts.blocked} bloqueado(s) e ${counts.notRun} não executado(s).`
+  );
+
+  if (coverage) {
+    lines.push(`Cobertura validada: ${coverage}.`);
+  }
+
+  const failedOrBlocked = allTestCases.filter(
+    testCase => testCase.status === 'Failed' || testCase.status === 'Blocked'
+  );
+  if (failedOrBlocked.length > 0) {
+    lines.push('');
+    lines.push('Pontos de atenção:');
+    failedOrBlocked.slice(0, 3).forEach((testCase, index) => {
+      const statusMeta = getStatusMeta(testCase.status as ExecutedStatus);
+      const observed = getObservedSummary(testCase);
+      const suffix = observed ? ` (${observed})` : '';
+      lines.push(`- ${statusMeta.label}: ${getCaseHeadline(testCase, index)}${suffix}`);
+    });
+  }
+
+  lines.push('');
+  lines.push(`Concluído em: ${formatDateTime(generatedAt)}`);
+  return lines.join('\n');
 }
 
 function generateConciseReport(
@@ -173,36 +220,26 @@ function generateConciseReport(
   allTestCases: TestCase[],
   generatedAt: Date
 ): string {
+  const counts = buildExecutionCounts(allTestCases);
   const lines: string[] = [];
-  lines.push(`TASK: ${task.id} | Título: ${task.title ?? '-'}`);
+
+  lines.push(`TASK: ${task.id} | ${task.title ?? '-'}`);
+  lines.push(
+    `Resumo: ${counts.approved} aprovado(s) | ${counts.failed} reprovado(s) | ${counts.blocked} bloqueado(s) | ${counts.notRun} não executado(s)`
+  );
   lines.push('');
 
-  if (executedTestCases.length > 0) {
-    const strategyNames = (task.testStrategy || []).map(s => s.testType).filter(Boolean);
-    lines.push(
-      'Estratégias (tarefa): ' +
-        (strategyNames.length > 0 ? strategyNames.join(', ') : 'Não definidas na tarefa')
-    );
-    lines.push('');
-    lines.push('Casos de teste:');
-    executedTestCases.forEach((tc, index) => {
-      const status = tc.status === 'Passed' ? 'Aprovado' : 'Reprovado';
-      const desc = tc.action || `Teste ${index + 1}`;
-      const result = tc.observedResult?.trim() ? ` [${tc.observedResult}]` : '';
-      lines.push(`${index + 1}. ${desc} – ${status}${result}`);
-    });
-  } else {
+  if (executedTestCases.length === 0) {
     lines.push('Nenhum teste executado até o momento.');
+  } else {
+    executedTestCases.forEach((testCase, index) => {
+      const statusMeta = getStatusMeta(testCase.status as ExecutedStatus);
+      const observed = getObservedSummary(testCase);
+      const suffix = observed ? ` | Observação: ${observed}` : '';
+      lines.push(`- ${statusMeta.label}: ${getCaseHeadline(testCase, index)}${suffix}`);
+    });
   }
 
-  lines.push('');
-  const total = allTestCases.length;
-  const approved = allTestCases.filter(tc => tc.status === 'Passed').length;
-  const failed = allTestCases.filter(tc => tc.status === 'Failed').length;
-  const notRun = allTestCases.filter(tc => tc.status === 'Not Run').length;
-  lines.push(
-    `Resumo: ${total} total | Aprovados: ${approved} | Reprovados: ${failed} | Não executados: ${notRun}`
-  );
   lines.push(`Concluído em: ${formatDateTime(generatedAt)}`);
   return lines.join('\n');
 }
