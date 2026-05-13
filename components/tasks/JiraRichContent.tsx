@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { createRoot, Root } from 'react-dom/client';
 import { JiraImage } from '../jira/JiraImage';
 import { JiraContentSanitizer, SanitizationConfig } from '../../utils/jiraContentSanitizer';
@@ -24,14 +24,26 @@ export const JiraRichContent: React.FC<JiraRichContentProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const imageRootsRef = useRef<Map<HTMLElement, Root>>(new Map());
 
-  // Sanitizar conteúdo usando o sanitizador
-  const sanitized = JiraContentSanitizer.sanitize(html, {
-    allowImages: true,
-    allowLinks: true,
-    allowFormatting: true,
-    processJiraImages: true,
-    ...sanitizationConfig,
-  });
+  // Evita re-sanitizar conteúdo rico pesado em cada render.
+  const sanitized = useMemo(
+    () =>
+      JiraContentSanitizer.sanitize(html, {
+        allowImages: true,
+        allowLinks: true,
+        allowFormatting: true,
+        processJiraImages: true,
+        ...sanitizationConfig,
+      }),
+    [
+      html,
+      sanitizationConfig.allowFormatting,
+      sanitizationConfig.allowImages,
+      sanitizationConfig.allowLinks,
+      sanitizationConfig.processJiraImages,
+      sanitizationConfig.jiraUrl,
+      sanitizationConfig.jiraAttachments,
+    ]
+  );
 
   useEffect(() => {
     if (!containerRef.current || !sanitized.html) return;

@@ -16,6 +16,63 @@ interface UseAutoSaveOptions {
   disabled?: boolean;
 }
 
+const buildProjectFingerprint = (project: Project): string =>
+  JSON.stringify({
+    id: project.id,
+    name: project.name,
+    descriptionLength: project.description?.length ?? 0,
+    updatedAt: project.updatedAt,
+    tasks: project.tasks.map(task => ({
+      id: task.id,
+      title: task.title,
+      descriptionLength: task.description?.length ?? 0,
+      status: task.status,
+      testStatus: task.testStatus,
+      parentId: task.parentId,
+      testCases: (task.testCases || []).map(testCase => ({
+        id: testCase.id,
+        status: testCase.status,
+        actionLength: testCase.action?.length ?? 0,
+        parametersLength: testCase.parameters?.length ?? 0,
+        expectedResultLength: testCase.expectedResult?.length ?? 0,
+        observedResultLength: testCase.observedResult?.length ?? 0,
+      })),
+      bddCount: task.bddScenarios?.length ?? 0,
+      strategyCount: task.testStrategy?.length ?? 0,
+      attachmentsCount: task.jiraAttachments?.length ?? 0,
+      analysisGeneratedAt: task.iaAnalysis?.generatedAt,
+      analysisIsOutdated: task.iaAnalysis?.isOutdated,
+    })),
+    documents: (project.documents || []).map(doc => ({
+      name: doc.name,
+      category: doc.category,
+      contentLength: doc.content?.length ?? 0,
+      analysisLength: doc.analysis?.length ?? 0,
+    })),
+    phases: (project.phases || []).map(phase => ({
+      name: phase.name,
+      status: phase.status,
+      summaryLength: phase.summary?.length ?? 0,
+    })),
+    businessRules: (project.businessRules || []).map(rule => ({
+      id: rule.id,
+      name: rule.name,
+      descriptionLength: rule.description?.length ?? 0,
+    })),
+    settingsFingerprint: JSON.stringify(project.settings ?? {}),
+    analysisFingerprint: {
+      general: project.generalIAAnalysis?.generatedAt,
+      generalOutdated: project.generalIAAnalysis?.isOutdated,
+      dashboard: project.dashboardOverviewAnalysis?.generatedAt,
+      dashboardOutdated: project.dashboardOverviewAnalysis?.isOutdated,
+      dashboardInsights: project.dashboardInsightsAnalysis?.generatedAt,
+      dashboardInsightsOutdated: project.dashboardInsightsAnalysis?.isOutdated,
+      sdlc: project.sdlcPhaseAnalysis?.generatedAt,
+      sdlcOutdated: project.sdlcPhaseAnalysis?.isOutdated,
+      fullAnalysesCount: project.projectFullAnalyses?.length ?? 0,
+    },
+  });
+
 /**
  * Hook que monitora mudanças no projeto e persiste automaticamente no IndexedDB.
  * A nuvem (Supabase) só é atualizada quando o usuário usa o botão Salvar / sincronização explícita.
@@ -166,8 +223,8 @@ export const useAutoSave = ({
       return;
     }
 
-    // Serializar projeto atual para comparação (custo alto — só após falha do atalho acima)
-    const currentProjectString = JSON.stringify(project);
+    // Fingerprint resumido evita serializar payloads gigantes (ex.: base64 em descrições/documentos).
+    const currentProjectString = buildProjectFingerprint(project);
 
     lastPersistedMetaRef.current = {
       projectId: project.id,

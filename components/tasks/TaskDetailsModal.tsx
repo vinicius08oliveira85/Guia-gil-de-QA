@@ -93,30 +93,9 @@ const DescriptionRenderer: React.FC<{
   const jiraConfig = getJiraConfig();
   const jiraUrl = jiraConfig?.url;
 
-  let htmlContent = '';
-
-  if (typeof description === 'string') {
-    if (description.includes('<')) {
-      htmlContent = description;
-      if (
-        jiraUrl &&
-        jiraAttachments &&
-        jiraAttachments.length > 0 &&
-        /<img[^>]*src=["'][^"']*\.(png|jpg|jpeg|gif|webp)["']/i.test(htmlContent)
-      ) {
-        const hasFileNames = /<img[^>]*src=["'](?!https?:\/\/|data:)([^"']+)["']/i.test(
-          htmlContent
-        );
-        if (hasFileNames) {
-          htmlContent = parseJiraDescriptionHTML(description, jiraUrl, jiraAttachments);
-        }
-      }
-    } else {
-      htmlContent = parseJiraDescriptionHTML(description, jiraUrl, jiraAttachments);
-    }
-  } else {
-    htmlContent = parseJiraDescriptionHTML(description, jiraUrl, jiraAttachments);
-  }
+  // Sempre passar pelo parser/sanitizador central para aplicar limites defensivos
+  // antes de renderizar HTML rico nesta tela de detalhe.
+  const htmlContent = parseJiraDescriptionHTML(description, jiraUrl, jiraAttachments);
 
   if (!htmlContent || htmlContent.trim() === '') {
     return <p className="text-base-content/70 italic">Sem descrição</p>;

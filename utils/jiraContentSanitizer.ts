@@ -29,10 +29,27 @@ export interface SanitizedContent {
   linkCount: number;
 }
 
+const MAX_INLINE_DATA_IMAGE_CHARS = 16_000;
+
 /**
  * Serviço para sanitizar e processar conteúdo do Jira de forma segura
  */
 export class JiraContentSanitizer {
+  private static stripOversizedInlineImages(html: string): string {
+    return html.replace(
+      /<img([^>]*)\ssrc=["'](data:image\/[^"']+)["']([^>]*)>/gi,
+      (match, before, src, after) => {
+        if (src.length <= MAX_INLINE_DATA_IMAGE_CHARS) {
+          return match;
+        }
+
+        const altMatch = `${before} ${after}`.match(/alt=["']([^"']*)["']/i);
+        const safeAlt = altMatch?.[1]?.trim() || 'imagem inline';
+        return `<span class="jira-inline-image-omitted" data-inline-image-omitted="true">[${this.escapeHTML(safeAlt)} omitida por tamanho excessivo]</span>`;
+      }
+    );
+  }
+
   /**
    * Sanitiza HTML do Jira, processando imagens e links de forma segura
    */
@@ -42,6 +59,7 @@ export class JiraContentSanitizer {
     }
 
     let processedHtml = html;
+    processedHtml = this.stripOversizedInlineImages(processedHtml);
     let imageCount = 0;
     let linkCount = 0;
     const allowImages = config.allowImages !== false;

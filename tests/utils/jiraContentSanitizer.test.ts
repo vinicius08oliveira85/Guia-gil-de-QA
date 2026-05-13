@@ -120,6 +120,19 @@ describe('JiraContentSanitizer', () => {
       expect(result.html).toContain('data:image/png');
     });
 
+    it('remove imagens inline base64 gigantes antes da sanitização pesada', () => {
+      const html = `<p>Antes</p><img alt="evidência" src="data:image/png;base64,${'A'.repeat(80_000)}" /><p>Depois</p>`;
+      const result = JiraContentSanitizer.sanitize(html, {
+        processJiraImages: true,
+        jiraUrl: 'https://jira.example.com',
+      });
+
+      expect(result.html).not.toContain('data:image/png;base64');
+      expect(result.html).toContain('omitida por tamanho excessivo');
+      expect(result.html).toContain('Antes');
+      expect(result.html).toContain('Depois');
+    });
+
     it('deve escapar caracteres HTML perigosos', () => {
       const html = '<img src="test.png" alt="<script>alert(\'xss\')</script>" />';
       const attachments = [{ id: '123', filename: 'test.png', size: 1024 }];

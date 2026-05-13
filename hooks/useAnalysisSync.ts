@@ -66,8 +66,13 @@ export const useAnalysisSync = ({
         })),
       };
 
-      // Só atualiza se realmente mudou algo
-      if (JSON.stringify(project) !== JSON.stringify(updatedProject)) {
+      const shouldUpdateGeneralAnalysis =
+        Boolean(project.generalIAAnalysis) && project.generalIAAnalysis?.isOutdated !== true;
+      const shouldUpdateAnyTaskAnalysis = project.tasks.some(
+        task => Boolean(task.iaAnalysis) && task.iaAnalysis?.isOutdated !== true
+      );
+
+      if (shouldUpdateGeneralAnalysis || shouldUpdateAnyTaskAnalysis) {
         onUpdateProject(updatedProject);
       }
     }
