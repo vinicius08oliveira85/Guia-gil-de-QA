@@ -1,74 +1,75 @@
 import React from 'react';
+import { Bookmark, Bug, CheckSquare, Zap } from 'lucide-react';
 import { JiraTaskType } from '../../types';
-import { getJiraLastUrl } from '../../services/jira/config';
 
 const ICON_SIZE = 18;
 const CHEVRON_SIZE = 18;
+const ISSUE_TYPE_STROKE_WIDTH = 2.5;
 
-// Ícone oficial do Jira para Epic (losango roxo)
-export const EpicIcon: React.FC<{ className?: string }> = ({ className = '' }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width={ICON_SIZE}
-    height={ICON_SIZE}
-    viewBox="0 0 24 24"
-    fill="currentColor"
-    className={`text-primary ${className}`}
-  >
-    <path d="M12 2L2 7l10 5 10-5-10-5z" />
-  </svg>
+const ISSUE_TYPE_COLORS: Record<JiraTaskType, string> = {
+  Bug: '#E54937',
+  Epic: '#904EE2',
+  História: '#63BA3C',
+  Tarefa: '#4BADE8',
+};
+
+type IssueTypeBaseIconProps = {
+  className?: string;
+  size?: number;
+};
+
+// Epic usa raio roxo para refletir a identidade visual pedida.
+export const EpicIcon: React.FC<IssueTypeBaseIconProps> = ({
+  className = '',
+  size = ICON_SIZE,
+}) => (
+  <Zap
+    size={size}
+    strokeWidth={ISSUE_TYPE_STROKE_WIDTH}
+    className={className}
+    style={{ color: ISSUE_TYPE_COLORS.Epic, fill: ISSUE_TYPE_COLORS.Epic }}
+    aria-hidden="true"
+  />
 );
 
 // Ícone oficial do Jira para Story (bookmark verde)
-export const StoryIcon: React.FC<{ className?: string }> = ({ className = '' }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width={ICON_SIZE}
-    height={ICON_SIZE}
-    viewBox="0 0 24 24"
-    fill="currentColor"
-    className={`text-success ${className}`}
-  >
-    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-  </svg>
-);
-
-// Ícone oficial do Jira para Task (círculo azul com checkmark)
-export const TaskIcon: React.FC<{ className?: string }> = ({ className = '' }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width={ICON_SIZE}
-    height={ICON_SIZE}
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2.5"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className={`text-info ${className}`}
-  >
-    <circle cx="12" cy="12" r="10" />
-    <path d="m9 12 2 2 4-4" />
-  </svg>
-);
-
-// Ícone oficial do Jira para Bug (quadrado vermelho com glifo branco)
-export const BugIcon: React.FC<{ className?: string }> = ({ className = '' }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width={ICON_SIZE}
-    height={ICON_SIZE}
-    viewBox="0 0 16 16"
-    fill="none"
+export const StoryIcon: React.FC<IssueTypeBaseIconProps> = ({
+  className = '',
+  size = ICON_SIZE,
+}) => (
+  <Bookmark
+    size={size}
+    strokeWidth={ISSUE_TYPE_STROKE_WIDTH}
     className={className}
+    style={{ color: ISSUE_TYPE_COLORS.História, fill: ISSUE_TYPE_COLORS.História }}
     aria-hidden="true"
-  >
-    <rect x="1" y="1" width="14" height="14" rx="2" fill="#E5493A" />
-    <path
-      d="M11 8C11 9.657 9.657 11 8 11C6.343 11 5 9.657 5 8C5 6.343 6.343 5 8 5C9.657 5 11 6.343 11 8Z"
-      fill="#FFFFFF"
-    />
-  </svg>
+  />
+);
+
+export const TaskIcon: React.FC<IssueTypeBaseIconProps> = ({
+  className = '',
+  size = ICON_SIZE,
+}) => (
+  <CheckSquare
+    size={size}
+    strokeWidth={ISSUE_TYPE_STROKE_WIDTH}
+    className={className}
+    style={{ color: ISSUE_TYPE_COLORS.Tarefa }}
+    aria-hidden="true"
+  />
+);
+
+export const BugIcon: React.FC<IssueTypeBaseIconProps> = ({
+  className = '',
+  size = ICON_SIZE,
+}) => (
+  <Bug
+    size={size}
+    strokeWidth={ISSUE_TYPE_STROKE_WIDTH}
+    className={className}
+    style={{ color: ISSUE_TYPE_COLORS.Bug }}
+    aria-hidden="true"
+  />
 );
 
 interface JiraIssueTypeIconProps {
@@ -78,48 +79,12 @@ interface JiraIssueTypeIconProps {
   size?: number;
 }
 
-const DEFAULT_JIRA_ISSUE_TYPE_ICON_FILES: Record<JiraTaskType, string> = {
-  Epic: 'epic.svg',
-  História: 'story.svg',
-  Tarefa: 'task.svg',
-  Bug: 'bug.svg',
-};
-
-const normalizeBaseUrl = (value: string): string => value.trim().replace(/\/+$/, '');
-
-const getSafeJiraBaseUrl = (): string => {
-  if (typeof window === 'undefined') return '';
-
-  try {
-    return normalizeBaseUrl(getJiraLastUrl());
-  } catch {
-    return '';
-  }
-};
-
-const toAbsoluteJiraIconUrl = (url: string | undefined, baseUrl: string): string | undefined => {
-  const trimmed = url?.trim();
-  if (!trimmed) return undefined;
-  if (/^https?:\/\//i.test(trimmed)) return trimmed;
-  if (trimmed.startsWith('/') && baseUrl) return `${baseUrl}${trimmed}`;
-  return undefined;
-};
-
-const buildDefaultJiraIssueTypeIconUrl = (
-  type: JiraTaskType,
-  baseUrl: string
-): string | undefined => {
-  const fileName = DEFAULT_JIRA_ISSUE_TYPE_ICON_FILES[type];
-  if (!fileName || !baseUrl) return undefined;
-  return `${baseUrl}/images/icons/issuetypes/${fileName}`;
-};
-
 const IssueTypeGlyph: React.FC<{ type: JiraTaskType; className?: string; size?: number }> = ({
   type,
   className = '',
   size = 16,
 }) => {
-  const iconMap: Record<JiraTaskType, React.FC<{ className?: string }>> = {
+  const iconMap: Record<JiraTaskType, React.FC<IssueTypeBaseIconProps>> = {
     Epic: EpicIcon,
     História: StoryIcon,
     Tarefa: TaskIcon,
@@ -133,54 +98,21 @@ const IssueTypeGlyph: React.FC<{ type: JiraTaskType; className?: string; size?: 
       style={{ width: size, height: size }}
       aria-hidden="true"
     >
-      <Icon className="h-full w-full" />
+      <Icon className="h-full w-full" size={size} />
     </span>
   );
 };
 
-/** Ícone do tipo da issue preferindo a URL oficial do Jira e caindo para fallback local. */
+/** Fonte única dos ícones de issue type padronizados visualmente para toda a UI. */
 export const JiraIssueTypeIcon: React.FC<JiraIssueTypeIconProps> = ({
   type,
-  iconUrl,
   className = '',
   size = 16,
-}) => {
-  const [failed, setFailed] = React.useState(false);
-  const resolvedIconUrl = React.useMemo(() => {
-    const jiraBaseUrl = getSafeJiraBaseUrl();
-    return (
-      toAbsoluteJiraIconUrl(iconUrl, jiraBaseUrl) ??
-      buildDefaultJiraIssueTypeIconUrl(type, jiraBaseUrl)
-    );
-  }, [iconUrl, type]);
-
-  React.useEffect(() => {
-    setFailed(false);
-  }, [resolvedIconUrl]);
-
-  if (resolvedIconUrl && !failed) {
-    return (
-      <img
-        src={resolvedIconUrl}
-        alt=""
-        aria-hidden="true"
-        width={size}
-        height={size}
-        className={`shrink-0 object-contain ${className}`}
-        loading="eager"
-        decoding="async"
-        referrerPolicy="no-referrer"
-        onError={() => setFailed(true)}
-      />
-    );
-  }
-
-  return (
-    <span className={`inline-flex shrink-0 items-center justify-center ${className}`}>
-      <IssueTypeGlyph type={type} size={size} />
-    </span>
-  );
-};
+}) => (
+  <span className={`inline-flex shrink-0 items-center justify-center ${className}`}>
+    <IssueTypeGlyph type={type} size={size} />
+  </span>
+);
 
 type BasicIconProps = { className?: string };
 
