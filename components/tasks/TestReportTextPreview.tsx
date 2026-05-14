@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { AlertTriangle, CheckCircle2, Clock3, XCircle } from 'lucide-react';
 import { Badge } from '../common/Badge';
 
 interface TestReportTextPreviewProps {
@@ -8,9 +9,16 @@ interface TestReportTextPreviewProps {
 }
 
 type PreviewStatus = 'Aprovado' | 'Reprovado' | 'Bloqueado';
+type PreviewSummaryMetrics = {
+  approved: number;
+  failed: number;
+  blocked: number;
+  notRun: number;
+};
 
 type PreviewRow =
   | { type: 'meta'; label: string; value: string }
+  | { type: 'summary'; metrics: PreviewSummaryMetrics }
   | { type: 'section'; title: string }
   | { type: 'status'; status: PreviewStatus; content: string; details: string[] }
   | { type: 'text'; content: string }
@@ -19,25 +27,63 @@ type PreviewRow =
 function getStatusStyles(status: PreviewStatus) {
   if (status === 'Aprovado') {
     return {
+      Icon: CheckCircle2,
       badgeVariant: 'success' as const,
       cardClass: 'border border-success/25 bg-success/10',
       textClass: 'text-success',
+      iconClass: 'text-success',
+      iconChipClass: 'bg-success/15 text-success',
     };
   }
 
   if (status === 'Bloqueado') {
     return {
+      Icon: AlertTriangle,
       badgeVariant: 'warning' as const,
       cardClass: 'border border-warning/25 bg-warning/10',
       textClass: 'text-warning',
+      iconClass: 'text-warning',
+      iconChipClass: 'bg-warning/15 text-warning',
     };
   }
 
   return {
+    Icon: XCircle,
     badgeVariant: 'error' as const,
     cardClass: 'border border-error/25 bg-error/10',
     textClass: 'text-error',
+    iconClass: 'text-error',
+    iconChipClass: 'bg-error/15 text-error',
   };
+}
+
+function getSummaryMetricStyles(type: keyof PreviewSummaryMetrics) {
+  switch (type) {
+    case 'approved':
+      return {
+        label: 'Aprovados',
+        Icon: CheckCircle2,
+        className: 'border-success/25 bg-success/10 text-success',
+      };
+    case 'failed':
+      return {
+        label: 'Reprovados',
+        Icon: XCircle,
+        className: 'border-error/25 bg-error/10 text-error',
+      };
+    case 'blocked':
+      return {
+        label: 'Bloqueados',
+        Icon: AlertTriangle,
+        className: 'border-warning/25 bg-warning/10 text-warning',
+      };
+    case 'notRun':
+      return {
+        label: 'Não executados',
+        Icon: Clock3,
+        className: 'border-base-300 bg-base-200/70 text-base-content/70',
+      };
+  }
 }
 
 function parseReportRows(reportText: string): PreviewRow[] {
@@ -78,13 +124,32 @@ function parseReportRows(reportText: string): PreviewRow[] {
       continue;
     }
 
+    const conciseSummaryMatch = line.match(
+      /^Resumo:\s+(\d+)\s+aprovado\(s\)\s+\|\s+(\d+)\s+reprovado\(s\)\s+\|\s+(\d+)\s+bloqueado\(s\)\s+\|\s+(\d+)\s+n(?:ã|a)o executado\(s\)$/i
+    );
+    if (conciseSummaryMatch) {
+      flushActiveStatus();
+      rows.push({
+        type: 'summary',
+        metrics: {
+          approved: Number(conciseSummaryMatch[1]),
+          failed: Number(conciseSummaryMatch[2]),
+          blocked: Number(conciseSummaryMatch[3]),
+          notRun: Number(conciseSummaryMatch[4]),
+        },
+      });
+      continue;
+    }
+
     if (/^[A-ZÁÀÂÃÉÈÊÍÌÎÓÒÔÕÚÙÛÇ0-9 ]+:$/.test(line)) {
       flushActiveStatus();
       rows.push({ type: 'section', title: line.replace(/:$/, '') });
       continue;
     }
 
-    const structuredStatusMatch = line.match(/^\d+\.\s+\[(APROVADO|REPROVADO|BLOQUEADO)\]\s+(.+)$/);
+    const structuredStatusMatch = line.match(
+      /^\d+\.\s+\[(APROVADO|REPROVADO|BLOQUEADO)(?:\s+[^\]]+)?\]\s+(.+)$/
+    );
     if (structuredStatusMatch) {
       flushActiveStatus();
       const mappedStatus =
@@ -103,7 +168,9 @@ function parseReportRows(reportText: string): PreviewRow[] {
       continue;
     }
 
-    const conciseStatusMatch = line.match(/^-\s+(Aprovado|Reprovado|Bloqueado):\s+(.+)$/);
+    const conciseStatusMatch = line.match(
+      /^-\s+(Aprovado|Reprovado|Bloqueado)(?:\s+(?:✅|❌|⚠️))?:\s+(.+)$/
+    );
     if (conciseStatusMatch) {
       flushActiveStatus();
       rows.push({
@@ -200,17 +267,62 @@ export const TestReportTextPreview: React.FC<TestReportTextPreviewProps> = ({
                 );
               }
 
+              if (row.type === 'summary') {
+                const metricOrder: Array<keyof PreviewSummaryMetrics> = [
+                  'approved',
+                  'failed',
+                  'blocked',
+                  'notRun',
+                ];
+
+                return (
+                  <div
+                    key={`${row.type}-${index}`}
+                    className="grid grid-cols-1 gap-2 sm:grid-cols-2 2xl:grid-cols-4"
+                  >
+                    {metricOrder.map(metricKey => {
+                      const metric = getSummaryMetricStyles(metricKey);
+                      const Icon = metric.Icon;
+                      return (
+                        <div
+                          key={metricKey}
+                          className={`flex min-h-[92px] flex-col items-start justify-between gap-3 rounded-xl border px-3 py-3 text-left ${metric.className}`}
+                        >
+                          <div className="flex w-full items-start gap-2">
+                            <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-current/10">
+                              <Icon className="h-4 w-4" aria-hidden />
+                            </span>
+                            <p className="min-w-0 text-[11px] font-semibold uppercase leading-tight tracking-wide opacity-80 break-words">
+                              {metric.label}
+                            </p>
+                          </div>
+                          <p className="text-2xl font-bold leading-none">{row.metrics[metricKey]}</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              }
+
               if (row.type === 'status') {
                 const styles = getStatusStyles(row.status);
+                const Icon = styles.Icon;
                 return (
                   <div
                     key={`${row.type}-${index}`}
                     className={`space-y-2 rounded-xl px-3 py-3 ${styles.cardClass}`}
                   >
                     <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
-                      <p className="text-sm font-medium leading-relaxed break-words text-base-content">
-                        {row.content}
-                      </p>
+                      <div className="flex items-start gap-2.5">
+                        <span
+                          className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${styles.iconChipClass}`}
+                        >
+                          <Icon className={`h-4 w-4 ${styles.iconClass}`} aria-hidden />
+                        </span>
+                        <p className="text-sm font-medium leading-relaxed break-words text-base-content">
+                          {row.content}
+                        </p>
+                      </div>
                       <Badge
                         variant={styles.badgeVariant}
                         appearance="pill"

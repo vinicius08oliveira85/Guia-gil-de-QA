@@ -80,8 +80,7 @@ export const NavigationMenuDrawer: React.FC<NavigationMenuDrawerProps> = ({
         aria-label={title}
         className={cn(
           'absolute right-0 top-full z-[130] mt-1 flex max-h-[min(70vh,28rem)] w-[min(calc(100vw-2rem),20rem)] flex-col overflow-y-auto md:hidden',
-          'mica !max-w-none !rounded-[var(--rounded-box)] !shadow-none soft-shadow',
-          'border border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] p-2 text-[var(--foreground)]'
+          'app-surface !max-w-none !rounded-[var(--rounded-box)] p-2 text-[var(--brand-text-strong)]'
         )}
       >
         <div className="mb-1 flex items-center justify-between gap-2 border-b border-base-200/80 px-1 pb-2">
@@ -104,7 +103,7 @@ export const NavigationMenuDrawer: React.FC<NavigationMenuDrawerProps> = ({
               <button
                 type="button"
                 role="menuitem"
-                className="flex min-h-[44px] w-full items-center gap-3 rounded-[var(--radius)] text-left text-sm font-medium text-[var(--foreground)] transition-colors duration-200 hover:bg-[color-mix(in_srgb,var(--foreground)_8%,transparent)]"
+                className="app-nav-pill flex min-h-[44px] w-full items-center gap-3 rounded-[var(--radius)] px-3 text-left text-sm font-medium"
                 onClick={() => {
                   item.onClick();
                   close();
@@ -172,12 +171,10 @@ export const NavigationMenuRail: React.FC<NavigationMenuRailProps> = ({
         type="button"
         onClick={item.onClick}
         className={cn(
-          'btn btn-ghost btn-sm rounded-[var(--radius)] border border-transparent px-3 transition-colors duration-200',
-          'text-[color-mix(in_srgb,var(--foreground)_88%,transparent)]',
-          'hover:bg-[color-mix(in_srgb,var(--foreground)_8%,transparent)]',
-          currentId === item.id &&
-            'border-[color-mix(in_srgb,var(--color-primary)_35%,transparent)] bg-[color-mix(in_srgb,var(--color-primary)_14%,transparent)] text-[oklch(var(--p))]'
+          'app-nav-pill btn btn-ghost btn-sm rounded-[var(--radius)] px-3 transition-colors duration-200',
+          currentId === item.id && 'app-nav-pill text-[var(--brand-text-strong)]'
         )}
+        data-active={currentId === item.id ? 'true' : undefined}
         aria-current={currentId === item.id ? 'page' : undefined}
       >
         {item.icon ? <span className="mr-1.5 inline-flex shrink-0">{item.icon}</span> : null}

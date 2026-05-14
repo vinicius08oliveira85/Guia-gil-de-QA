@@ -38,14 +38,14 @@ function clampText(value: string, maxLength = 180): string {
   return `${safeBase.trim()}…`;
 }
 
-function getStatusMeta(status: ExecutedStatus): { label: string; marker: string } {
+function getStatusMeta(status: ExecutedStatus): { label: string; marker: string; icon: string } {
   switch (status) {
     case 'Passed':
-      return { label: 'Aprovado', marker: '[APROVADO]' };
+      return { label: 'Aprovado', marker: '[APROVADO ✅]', icon: '✅' };
     case 'Failed':
-      return { label: 'Reprovado', marker: '[REPROVADO]' };
+      return { label: 'Reprovado', marker: '[REPROVADO ❌]', icon: '❌' };
     case 'Blocked':
-      return { label: 'Bloqueado', marker: '[BLOQUEADO]' };
+      return { label: 'Bloqueado', marker: '[BLOQUEADO ⚠️]', icon: '⚠️' };
   }
 }
 
@@ -167,7 +167,9 @@ export function generateTestResultsOnlyReport(
       const statusMeta = getStatusMeta(testCase.status as ExecutedStatus);
       const observed = getObservedSummary(testCase);
       const suffix = observed ? ` | Observação: ${observed}` : '';
-      lines.push(`${index + 1}. ${statusMeta.label}: ${getCaseHeadline(testCase, index)}${suffix}`);
+      lines.push(
+        `${index + 1}. ${statusMeta.label} ${statusMeta.icon}: ${getCaseHeadline(testCase, index)}${suffix}`
+      );
     });
   }
 
@@ -236,7 +238,7 @@ function generateConciseReport(
       const statusMeta = getStatusMeta(testCase.status as ExecutedStatus);
       const observed = getObservedSummary(testCase);
       const suffix = observed ? ` | Observação: ${observed}` : '';
-      lines.push(`- ${statusMeta.label}: ${getCaseHeadline(testCase, index)}${suffix}`);
+      lines.push(`- ${statusMeta.label} ${statusMeta.icon}: ${getCaseHeadline(testCase, index)}${suffix}`);
     });
   }
 
