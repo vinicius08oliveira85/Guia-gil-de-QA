@@ -1,8 +1,11 @@
 import React, { useState, useMemo } from 'react';
-import { ChevronDown, ChevronUp, Play, Check, X, Pause } from 'lucide-react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import { Card } from '../common/Card';
 import { Badge } from '../common/Badge';
+import { TestMetricBadge } from '../common/TestMetricBadge';
+import { TaskTestStatusBadge } from '../common/TaskTestStatusBadge';
 import type { JiraTask } from '../../types';
+import { cn } from '../../utils/cn';
 
 interface TaskCardProps {
   task: JiraTask;
@@ -18,6 +21,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onStartTest, onComplet
   const [isExpanded, setIsExpanded] = useState(false);
   const contentId = `task-card-content-${task.id}`;
   type BadgeVariant = React.ComponentProps<typeof Badge>['variant'];
+  type TaskCardTestStatus = 'testar' | 'testando' | 'teste_concluido' | 'sem_testes';
 
   // Calcula as métricas dos casos de teste
   const testMetrics = useMemo(() => {
@@ -31,20 +35,18 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onStartTest, onComplet
 
   // Determina o status geral do teste para a tarefa
   const testStatus = useMemo<{
-    label: string;
-    variant: BadgeVariant;
-    icon: React.ReactNode | null;
+    status: TaskCardTestStatus;
   }>(() => {
     if (!testMetrics.total || testMetrics.total === 0) {
-      return { label: 'Sem Testes', variant: 'neutral', icon: null };
+      return { status: 'sem_testes' };
     }
     if (testMetrics.executed === 0) {
-      return { label: 'Testar', variant: 'info', icon: <Play className="w-3 h-3" /> };
+      return { status: 'testar' };
     }
     if (testMetrics.executed < testMetrics.total) {
-      return { label: 'Testando', variant: 'secondary', icon: <Pause className="w-3 h-3" /> };
+      return { status: 'testando' };
     }
-    return { label: 'Teste Concluído', variant: 'success', icon: <Check className="w-3 h-3" /> };
+    return { status: 'teste_concluido' };
   }, [testMetrics]);
 
   // Mapeia o status do Jira para um badge
@@ -101,45 +103,50 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onStartTest, onComplet
         </button>
       </div>
 
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div className="flex items-center gap-4 flex-wrap">
-          <Badge variant={testStatus.variant} size="md" className="flex items-center gap-1.5">
-            {testStatus.icon}
-            <span>{testStatus.label}</span>
-          </Badge>
-          <div className="flex items-center gap-3 text-sm">
-            <span className="flex items-center gap-1 text-success" title="Aprovados">
-              <Check className="w-4 h-4" /> {testMetrics.passed}
-            </span>
-            <span className="flex items-center gap-1 text-error" title="Reprovados">
-              <X className="w-4 h-4" /> {testMetrics.failed}
-            </span>
-            <span className="flex items-center gap-1 text-base-content/60" title="Pendentes">
-              <Pause className="w-4 h-4" /> {testMetrics.notRun}
-            </span>
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex items-center gap-2 flex-wrap lg:flex-nowrap">
+          <TaskTestStatusBadge
+            status={testStatus.status}
+            className="min-w-[8.25rem] justify-center"
+          />
+          <div
+            className="flex min-w-[4.75rem] items-center justify-end gap-1.5 text-sm"
+            aria-label="Métricas de teste"
+          >
+            <TestMetricBadge value={testMetrics.passed} label="Aprovados" tone="success" />
+            <TestMetricBadge value={testMetrics.failed} label="Reprovados" tone="error" />
+            <TestMetricBadge value={testMetrics.notRun} label="Pendentes" tone="warning" />
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <Badge variant={jiraStatusBadge.variant} size="sm">
+        <div className="flex w-full flex-wrap items-center gap-2 lg:w-auto lg:flex-nowrap lg:justify-end">
+          <Badge
+            variant={jiraStatusBadge.variant}
+            size="sm"
+            className="inline-flex min-w-[7.5rem] justify-center"
+          >
             {jiraStatusBadge.label}
           </Badge>
-          {testStatus.label !== 'Teste Concluído' && testStatus.label !== 'Sem Testes' && (
+          {testStatus.status !== 'teste_concluido' && testStatus.status !== 'sem_testes' && (
             <button
-              className={
-                testStatus.label === 'Testar'
+              className={cn(
+                'min-w-[8.75rem] justify-center',
+                testStatus.status === 'testar'
                   ? 'btn btn-info btn-sm'
-                  : testStatus.label === 'Testando'
+                  : testStatus.status === 'testando'
                     ? 'btn btn-secondary btn-sm'
                     : 'btn btn-warning btn-sm'
-              }
+              )}
               onClick={() => onStartTest?.(task.id)}
             >
-              {testStatus.label === 'Testar' ? 'Iniciar Teste' : 'Continuar'}
+              {testStatus.status === 'testar' ? 'Iniciar Teste' : 'Continuar'}
             </button>
           )}
-          {testStatus.label === 'Teste Concluído' && (
-            <button className="btn btn-success btn-sm" onClick={() => onCompleteTest?.(task.id)}>
+          {testStatus.status === 'teste_concluido' && (
+            <button
+              className="btn btn-success btn-sm min-w-[8.75rem] justify-center"
+              onClick={() => onCompleteTest?.(task.id)}
+            >
               Concluir
             </button>
           )}

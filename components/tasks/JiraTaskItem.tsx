@@ -4,7 +4,6 @@ import {
   JiraTask,
   BddScenario,
   TestCaseDetailLevel,
-  TeamRole,
   Project,
   TestCase,
   TaskTestStatus,
@@ -12,10 +11,6 @@ import {
 import { Spinner } from '../common/Spinner';
 import {
   JiraIssueTypeIcon,
-  TaskStatusIcon,
-  StartTestIcon,
-  CompleteTestIcon,
-  ToDoTestIcon,
   PlusIcon,
   EditIcon,
   TrashIcon,
@@ -53,11 +48,10 @@ import { QuickActions } from '../common/QuickActions';
 import { getTagColor, getTaskVersions } from '../../utils/tagService';
 import { VersionBadges } from './VersionBadge';
 import { updateChecklistItem } from '../../utils/checklistService';
-import { getTaskPhase, getPhaseBadgeStyle, getNextStepForTask } from '../../utils/taskPhaseHelper';
-import { getDisplayStatus, getDisplayStatusLabel } from '../../utils/taskHelpers';
+import { getNextStepForTask } from '../../utils/taskPhaseHelper';
+import { getDisplayStatusLabel } from '../../utils/taskHelpers';
 import { ConfirmDialog } from '../common/ConfirmDialog';
 import { EmptyState } from '../common/EmptyState';
-import { LoadingSkeleton } from '../common/LoadingSkeleton';
 import {
   ensureJiraHexColor,
   getJiraStatusColor,
@@ -69,7 +63,7 @@ import { fetchJiraAttachmentAsDataUrl } from '../../utils/jiraAttachmentFetch';
 import { TestTypeBadge } from '../common/TestTypeBadge';
 import { FileViewer } from '../common/FileViewer';
 import { ImageModal } from '../common/ImageModal';
-import { canViewInBrowser, detectFileType } from '../../services/fileViewerService';
+import { detectFileType } from '../../services/fileViewerService';
 import { JiraAttachment } from './JiraAttachment';
 import { JiraRichContent } from './JiraRichContent';
 import {
@@ -77,7 +71,6 @@ import {
   saveTaskTestStatus,
   calculateTaskTestStatus,
 } from '../../services/taskTestStatusService';
-import { useProjectsStore } from '../../store/projectsStore';
 import { logger } from '../../utils/logger';
 import { cn } from '../../utils/cn';
 import { Button } from '../common/Button';
@@ -86,6 +79,9 @@ import { useJiraAttachmentViewer } from '../../hooks/useJiraAttachmentViewer';
 import { TestCasesFreshnessIndicator } from './TestCasesFreshnessIndicator';
 import { TestCaseDetailLevelControl } from './TestCaseDetailLevelControl';
 import { BddScenarioActionBar } from './BddScenarioActionBar';
+import { TaskActionStrip } from './TaskActionStrip';
+import { TASK_ACTION_SLOT_CLASSNAMES } from './taskActionLayout';
+import { TaskJiraStatusDropdown } from './TaskJiraStatusDropdown';
 
 /** Destaque da ação IA principal — halo via tokens Daisy (oklch) + animação existente. */
 const gerarTudoDestaqueClass =
@@ -93,7 +89,7 @@ const gerarTudoDestaqueClass =
 
 // Componente para renderizar descrição com formatação rica do Jira
 const DescriptionRenderer: React.FC<{
-  description: string | any;
+  description: unknown;
   jiraAttachments?: Array<{
     id: string;
     filename: string;
@@ -133,17 +129,6 @@ const normalizeStatusName = (value: string) =>
     .replace(/[\u0300-\u036f]/g, '')
     .trim()
     .toLowerCase();
-
-const TeamRoleBadge: React.FC<{ role: TeamRole }> = ({ role }) => {
-  const roleStyles: Record<TeamRole, string> = {
-    Product: 'badge-secondary badge-outline',
-    QA: 'badge-primary badge-outline',
-    Dev: 'badge-info badge-outline',
-  };
-  const styles = roleStyles[role] ?? 'badge-ghost badge-outline';
-
-  return <span className={`badge badge-sm ${styles}`}>{role}</span>;
-};
 
 export const JiraTaskItem: React.FC<{
   task: TaskWithChildren;
@@ -239,28 +224,6 @@ export const JiraTaskItem: React.FC<{
     const reduceMotion = useReducedMotion();
     const [isDetailsOpen, setIsDetailsOpen] = useState(false); // Colapsado por padrão para compactar
     const [isChildrenOpen, setIsChildrenOpen] = useState(false);
-    const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
-    const statusDropdownRef = useRef<HTMLDivElement>(null);
-
-    // Fechar dropdown ao clicar fora
-    useEffect(() => {
-      const handleClickOutside = (event: MouseEvent) => {
-        if (
-          statusDropdownRef.current &&
-          !statusDropdownRef.current.contains(event.target as Node)
-        ) {
-          setIsStatusDropdownOpen(false);
-        }
-      };
-
-      if (isStatusDropdownOpen) {
-        document.addEventListener('mousedown', handleClickOutside);
-      }
-
-      return () => {
-        document.removeEventListener('mousedown', handleClickOutside);
-      };
-    }, [isStatusDropdownOpen]);
     const [editingBddScenario, setEditingBddScenario] = useState<BddScenario | null>(null);
     const [isCreatingBdd, setIsCreatingBdd] = useState(false);
     const [detailLevel, setDetailLevel] = useState<TestCaseDetailLevel>('Estruturado');
@@ -278,17 +241,19 @@ export const JiraTaskItem: React.FC<{
     const [taskTestStatus, setTaskTestStatus] = useState<TaskTestStatus | null>(
       task.testStatus || null
     );
-    const [isLoadingTestStatus, setIsLoadingTestStatus] = useState(false);
     const hasTests = task.testCases && task.testCases.length > 0;
     const hasChildren = task.children && task.children.length > 0;
-    const { updateProject } = useProjectsStore();
-    const taskPhase = getTaskPhase(task);
-    const phaseStyle = getPhaseBadgeStyle(taskPhase);
     const nextStep = getNextStepForTask(task);
     const safeDomId = useMemo(() => task.id.replace(/[^a-zA-Z0-9_-]/g, '_'), [task.id]);
     const detailsRegionId = `task-details-${safeDomId}`;
     const childrenRegionId = `task-children-${safeDomId}`;
     const taskTypeNorm = (task.type || '').toLowerCase();
+    const showTestExecutionSummary = task.type === 'Tarefa' || task.type === 'Bug';
+    const showGenerateAllAction = ['tarefa', 'bug', 'task'].includes(taskTypeNorm) && !!onGenerateAll;
+    const generateAllTitle =
+      isGenerating || isGeneratingAll ? aiPhaseMessage || 'Gerando…' : 'Gerar Tudo (BDD e Testes)';
+    const generateAllAriaLabel =
+      isGenerating || isGeneratingAll ? aiPhaseMessage || 'Gerando' : 'Gerar Tudo (BDD e Testes)';
 
     /** Título do card: apenas o título da própria tarefa (sem prefixo Epic/História). */
     const displayTitle = task.title;
@@ -306,14 +271,6 @@ export const JiraTaskItem: React.FC<{
       if (['história', 'story'].includes(taskTypeNorm)) return 'border-l-4 border-l-success';
       return 'border-l-4 border-l-base-300';
     }, [taskTypeNorm, task.isFavorite]);
-    const typeBadgeClass = useMemo(() => {
-      if (['tarefa', 'task'].includes(taskTypeNorm)) return 'bg-info text-info-content';
-      if (taskTypeNorm === 'bug') return 'bg-error text-error-content';
-      if (['história', 'story'].includes(taskTypeNorm)) return 'bg-success text-success-content';
-      if (taskTypeNorm === 'epic') return 'bg-primary text-primary-content';
-      return 'bg-base-300 text-base-content';
-    }, [taskTypeNorm]);
-
     const typeBadgeVariant = useMemo((): React.ComponentProps<typeof Badge>['variant'] => {
       if (['tarefa', 'task'].includes(taskTypeNorm)) return 'info';
       if (taskTypeNorm === 'bug') return 'error';
@@ -322,9 +279,10 @@ export const JiraTaskItem: React.FC<{
       return 'neutral';
     }, [taskTypeNorm]);
 
+    const currentDisplayStatusLabel = getDisplayStatusLabel(task, project);
     const jiraStatusPalette = project?.settings?.jiraStatuses;
     const currentStatusColor = useMemo(() => {
-      const statusName = getDisplayStatusLabel(task, project);
+      const statusName = currentDisplayStatusLabel;
       if (!statusName) {
         return undefined;
       }
@@ -342,7 +300,7 @@ export const JiraTaskItem: React.FC<{
         }
       }
       return getJiraStatusColor(statusName);
-    }, [jiraStatusPalette, task.jiraStatus, task.status]);
+    }, [currentDisplayStatusLabel, jiraStatusPalette]);
     const statusTextColor = currentStatusColor
       ? getJiraStatusTextColor(currentStatusColor)
       : undefined;
@@ -366,7 +324,6 @@ export const JiraTaskItem: React.FC<{
       const loadTestStatus = async () => {
         if (!task.id || taskTestStatus !== null) return; // Já carregado ou não tem ID válido
 
-        setIsLoadingTestStatus(true);
         try {
           const status = await loadTaskTestStatus(task.id);
           if (status !== null) {
@@ -389,7 +346,7 @@ export const JiraTaskItem: React.FC<{
           const calculatedStatus = calculateTaskTestStatus(task, project?.tasks || []);
           setTaskTestStatus(calculatedStatus);
         } finally {
-          setIsLoadingTestStatus(false);
+          // sem estado local de loading: o card já reflete a atualização via status calculado/sincronizado
         }
       };
 
@@ -689,18 +646,6 @@ export const JiraTaskItem: React.FC<{
     };
 
     const indentationStyle = { paddingLeft: `${level * 1.2}rem` };
-
-    // Classes visuais do botão de status de teste por estado
-    /** Tokens semânticos DaisyUI (primary, info, success, warning) */
-    const testStatusButtonVariant: Record<string, string> = {
-      testando:
-        'bg-secondary text-secondary-content border-secondary hover:bg-secondary/90 focus-visible:ring-secondary/40',
-      teste_concluido: 'bg-success text-success-content border-success hover:bg-success/90',
-      pendente:
-        'bg-neutral text-neutral-content border border-base-300 hover:bg-base-200/70 dark:border-base-content/20',
-    };
-    const defaultTestStatusButtonClass =
-      'bg-primary text-primary-content border-primary hover:bg-primary/90';
 
     /** Ícones compactos no desktop; área tocável ≥44px no mobile (WCAG) */
     const iconTouchTargetClass =
@@ -1619,12 +1564,11 @@ export const JiraTaskItem: React.FC<{
           <div
             className={[
               'task-card-shadow rounded-[var(--radius)] border bg-base-200 px-2 py-2 transition-colors duration-200 hover:bg-base-300 sm:px-3 sm:py-2 md:px-3 md:py-2',
-              'max-md:grid max-md:grid-cols-[auto_minmax(0,1fr)_auto] max-md:grid-rows-[auto_auto] max-md:items-start max-md:gap-x-2 max-md:gap-y-1 max-md:overflow-visible',
+              'max-md:grid max-md:grid-cols-[auto_minmax(0,1fr)_auto] max-md:grid-rows-[auto_auto_auto] max-md:items-start max-md:gap-x-2 max-md:gap-y-1.5 max-md:overflow-visible',
               'md:flex md:flex-wrap md:items-center md:gap-x-2 md:gap-y-1',
               level > 0
                 ? 'max-md:bg-base-200/60 max-md:dark:bg-base-300/50 max-md:border-base-300'
                 : '',
-              isStatusDropdownOpen ? 'relative z-10' : '',
               'border-base-300',
               activeTaskId === task.id ? 'ring-2 ring-primary/40' : '',
               isSelected ? 'bg-primary/5 border-primary/40 ring-1 ring-primary/30' : '',
@@ -1746,9 +1690,9 @@ export const JiraTaskItem: React.FC<{
                 </span>
                 <span
                   className="truncate min-w-0 max-w-[4.5rem] sm:max-w-[10rem]"
-                  title={getDisplayStatusLabel(task, project)}
+                  title={currentDisplayStatusLabel}
                 >
-                  {getDisplayStatusLabel(task, project)}
+                  {currentDisplayStatusLabel}
                 </span>
               </div>
               <div className="flex min-w-0 flex-1 basis-full sm:basis-0 items-center gap-1 max-md:col-span-3 max-md:col-start-1 max-md:row-start-2 max-md:basis-auto max-md:w-full max-md:min-w-0 max-md:items-start">
@@ -1774,228 +1718,46 @@ export const JiraTaskItem: React.FC<{
                 'order-2 flex flex-shrink-0 items-center justify-end gap-2 sm:ml-auto sm:gap-2',
                 'w-full flex-wrap sm:w-auto sm:flex-nowrap',
                 /* Sem overflow-x no mobile: recorta o menu absoluto do Daisy (⋮ parece “morto”). */
-                'max-md:col-start-3 max-md:row-start-1 max-md:z-20 max-md:w-auto max-md:max-w-full max-md:min-w-0 max-md:self-center max-md:justify-self-end max-md:flex-nowrap max-md:overflow-visible'
+                'max-md:col-span-3 max-md:col-start-1 max-md:row-start-3 max-md:z-20 max-md:w-full max-md:max-w-full max-md:min-w-0 max-md:self-center max-md:justify-end max-md:justify-self-stretch max-md:flex-wrap max-md:gap-y-1.5 max-md:overflow-visible'
               )}
               onClick={e => e.stopPropagation()}
             >
-              <div className="hidden md:flex md:flex-wrap md:items-center md:gap-2 md:flex-shrink-0">
-              {isAiProcessing && aiPhaseMessage ? (
-                <span
-                  className="hidden min-[420px]:inline-flex items-center gap-1 max-w-[10rem] sm:max-w-[14rem] truncate text-[9px] sm:text-[10px] font-medium text-primary/90"
-                  title={aiPhaseMessage}
-                >
-                  <span
-                    className="loading loading-spinner loading-xs shrink-0 text-primary"
-                    aria-hidden
-                  />
-                  <span className="truncate">{aiPhaseMessage}</span>
-                </span>
-              ) : null}
-              {(task.type === 'Tarefa' || task.type === 'Bug') && (
-                <div
-                  className="flex items-center gap-1"
-                  role="group"
-                  aria-label="Métricas de teste"
-                >
-                  <div
-                    className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-success flex items-center justify-center text-[9px] sm:text-[10px] text-white font-bold"
-                    title="Aprovados"
-                    aria-label={`${testExecutionSummary.passed} aprovados`}
-                  >
-                    {testExecutionSummary.passed}
-                  </div>
-                  <div
-                    className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-error flex items-center justify-center text-[9px] sm:text-[10px] text-white font-bold"
-                    title="Reprovados"
-                    aria-label={`${testExecutionSummary.failed} reprovados`}
-                  >
-                    {testExecutionSummary.failed}
-                  </div>
-                  <div
-                    className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-warning flex items-center justify-center text-[9px] sm:text-[10px] text-warning-content font-bold"
-                    title="Pendentes"
-                    aria-label={`${testExecutionSummary.pending} pendentes`}
-                  >
-                    {testExecutionSummary.pending}
-                  </div>
-                </div>
-              )}
-              {['tarefa', 'bug', 'task'].includes(taskTypeNorm) && onGenerateAll && (
-                <button
-                  type="button"
-                  onClick={e => {
-                    e.stopPropagation();
-                    handleGenerateAll(e);
-                  }}
-                  disabled={isGeneratingAll || isGenerating || isGeneratingBdd || isGeneratingTests}
-                  className={cn(
-                    'rounded-full px-3 py-2 sm:py-1.5 sm:px-4 min-h-[44px] sm:min-h-0 text-[10px] sm:text-xs font-bold inline-flex items-center gap-1.5 bg-primary hover:bg-primary/90 text-primary-content shrink-0',
-                    gerarTudoDestaqueClass
-                  )}
-                  title={
-                    isGenerating || isGeneratingAll
-                      ? aiPhaseMessage || 'Gerando…'
-                      : 'Gerar Tudo (BDD e Testes)'
-                  }
-                  aria-label={
-                    isGenerating || isGeneratingAll
-                      ? aiPhaseMessage || 'Gerando'
-                      : 'Gerar Tudo (BDD e Testes)'
-                  }
-                >
-                  {isGenerating || isGeneratingAll ? (
-                    <span className="loading loading-spinner loading-xs" />
-                  ) : (
-                    <Zap className="w-3.5 h-3.5" aria-hidden="true" />
-                  )}
-                  <span>{isGenerating || isGeneratingAll ? 'Gerando…' : 'Gerar Tudo'}</span>
-                </button>
-              )}
-              <button
-                type="button"
-                onClick={e => {
+              <TaskActionStrip
+                aiPhaseMessage={aiPhaseMessage}
+                isAiProcessing={isAiProcessing}
+                showMetrics={showTestExecutionSummary}
+                metrics={testExecutionSummary}
+                showGenerateAll={showGenerateAllAction}
+                onGenerateAll={e => {
+                  e.stopPropagation();
+                  handleGenerateAll(e);
+                }}
+                isGenerateAllBusy={isGenerating || isGeneratingAll}
+                isGenerateAllDisabled={
+                  isGeneratingAll || isGenerating || isGeneratingBdd || isGeneratingTests
+                }
+                generateAllClassName={gerarTudoDestaqueClass}
+                generateAllTitle={generateAllTitle}
+                generateAllAriaLabel={generateAllAriaLabel}
+                testStatus={taskTestStatus ?? 'testar'}
+                onTestStatusClick={e => {
                   e.stopPropagation();
                   if (taskTestStatus === 'testar') handleStartTest(e);
                   else if (taskTestStatus === 'testando') handleCompleteTest(e);
                   else if (taskTestStatus === 'teste_concluido') updateTestStatus('pendente');
                   else updateTestStatus('testar');
                 }}
-                className={`rounded-full px-3 py-2 sm:py-1.5 sm:px-4 min-h-[44px] sm:min-h-0 text-[10px] sm:text-xs font-bold border inline-flex items-center gap-1.5 shrink-0 transition-colors ${taskTestStatus != null ? (testStatusButtonVariant[taskTestStatus] ?? defaultTestStatusButtonClass) : defaultTestStatusButtonClass}`}
-                aria-label={
-                  taskTestStatus === 'testar'
-                    ? 'Iniciar teste'
-                    : taskTestStatus === 'testando'
-                      ? 'Concluir teste'
-                      : taskTestStatus === 'pendente'
-                        ? 'Definir status para Testar'
-                        : 'Voltar para Pendente'
-                }
-              >
-                <ClipboardList className="w-3.5 h-3.5" aria-hidden="true" />
-                <span>
-                  {taskTestStatus === 'testando'
-                    ? 'Testando'
-                    : taskTestStatus === 'teste_concluido'
-                      ? 'Teste Concluído'
-                      : taskTestStatus === 'pendente'
-                        ? 'Pendente'
-                        : 'Testar'}
-                </span>
-              </button>
-              <div className="relative flex-shrink-0" ref={statusDropdownRef}>
-                <button
-                  type="button"
-                  onClick={e => {
-                    e.stopPropagation();
-                    setIsStatusDropdownOpen(!isStatusDropdownOpen);
-                  }}
-                  className="inline-flex min-h-[44px] min-w-0 shrink-0 items-center justify-between gap-2 rounded-full border-0 bg-primary px-3 py-2 text-[10px] font-bold text-primary-content sm:min-h-0 sm:min-w-[120px] sm:px-4 sm:py-1.5 sm:text-xs"
-                  style={
-                    currentStatusColor
-                      ? {
-                          backgroundColor: currentStatusColor,
-                          color: statusTextColor || 'oklch(var(--pc))',
-                        }
-                      : undefined
-                  }
-                  aria-haspopup="true"
-                  aria-expanded={isStatusDropdownOpen}
-                  aria-label={`Status: ${getDisplayStatusLabel(task, project)}. Clique para mudar.`}
-                >
-                  <span className="truncate max-w-[5rem] sm:max-w-none min-w-0">
-                    {getDisplayStatusLabel(task, project)}
-                  </span>
-                  <ChevronDown
-                    className={`w-4 h-4 flex-shrink-0 transition-transform ${isStatusDropdownOpen ? 'rotate-180' : ''}`}
-                    aria-hidden="true"
+                statusControl={
+                  <TaskJiraStatusDropdown
+                    className={TASK_ACTION_SLOT_CLASSNAMES.jiraStatus}
+                    currentLabel={currentDisplayStatusLabel}
+                    currentStatusColor={currentStatusColor}
+                    statusTextColor={statusTextColor}
+                    jiraStatuses={project?.settings?.jiraStatuses}
+                    onSelectStatus={handleChangeStatus}
                   />
-                </button>
-                {isStatusDropdownOpen && (
-                  <div className="mica absolute right-0 z-50 mt-1 max-w-[calc(100vw-2rem)] w-40 overflow-hidden !rounded-[var(--rounded-box)] border border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] sm:w-48">
-                    {project?.settings?.jiraStatuses && project.settings.jiraStatuses.length > 0 ? (
-                      project.settings.jiraStatuses.map(status => {
-                        const statusName = typeof status === 'string' ? status : status.name;
-                        const statusColor =
-                          typeof status === 'string'
-                            ? getJiraStatusColor(statusName)
-                            : status.color
-                              ? ensureJiraHexColor(status.color, status.name)
-                              : getJiraStatusColor(statusName);
-                        const isSelected = getDisplayStatusLabel(task, project) === statusName;
-                        return (
-                          <button
-                            key={statusName}
-                            type="button"
-                            onClick={e => {
-                              e.stopPropagation();
-                              handleChangeStatus(statusName);
-                              setIsStatusDropdownOpen(false);
-                            }}
-                            className={`w-full flex items-center gap-2 px-3 py-2 text-left text-sm hover:bg-base-200 transition-colors ${
-                              isSelected ? 'bg-base-200 font-semibold' : ''
-                            }`}
-                            style={
-                              isSelected
-                                ? {
-                                    borderLeft: `3px solid ${statusColor || 'oklch(var(--b3))'}`,
-                                  }
-                                : {}
-                            }
-                          >
-                            <div
-                              className="h-3 w-3 shrink-0 rounded-full"
-                              style={{
-                                backgroundColor: statusColor || 'oklch(var(--b3))',
-                              }}
-                            />
-                            <span>{statusName}</span>
-                          </button>
-                        );
-                      })
-                    ) : (
-                      <>
-                        <button
-                          type="button"
-                          onClick={e => {
-                            e.stopPropagation();
-                            handleChangeStatus('To Do');
-                            setIsStatusDropdownOpen(false);
-                          }}
-                          className="w-full flex items-center gap-2 px-3 py-2 text-left text-sm hover:bg-base-200 transition-colors"
-                        >
-                          <div className="h-3 w-3 shrink-0 rounded-full bg-base-content/35" />
-                          <span>A Fazer</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={e => {
-                            e.stopPropagation();
-                            handleChangeStatus('In Progress');
-                            setIsStatusDropdownOpen(false);
-                          }}
-                          className="w-full flex items-center gap-2 px-3 py-2 text-left text-sm hover:bg-base-200 transition-colors"
-                        >
-                          <div className="h-3 w-3 shrink-0 rounded-full bg-info" />
-                          <span>Em Andamento</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={e => {
-                            e.stopPropagation();
-                            handleChangeStatus('Done');
-                            setIsStatusDropdownOpen(false);
-                          }}
-                          className="w-full flex items-center gap-2 px-3 py-2 text-left text-sm hover:bg-base-200 transition-colors"
-                        >
-                          <div className="h-3 w-3 shrink-0 rounded-full bg-success" />
-                          <span>Concluído</span>
-                        </button>
-                      </>
-                    )}
-                  </div>
-                )}
-              </div>
-              </div>
+                }
+              />
 
               <div
                 className="dropdown dropdown-end md:hidden relative z-30 shrink-0 overflow-visible"
@@ -2083,7 +1845,7 @@ export const JiraTaskItem: React.FC<{
                             : status.color
                               ? ensureJiraHexColor(status.color, status.name)
                               : getJiraStatusColor(statusName);
-                        const isSelected = getDisplayStatusLabel(task, project) === statusName;
+                        const isSelected = currentDisplayStatusLabel === statusName;
                         return (
                           <li key={`mob-toolbar-${task.id}-${statusName}`}>
                             <button
