@@ -250,10 +250,6 @@ export const JiraTaskItem: React.FC<{
     const taskTypeNorm = (task.type || '').toLowerCase();
     const showTestExecutionSummary = task.type === 'Tarefa' || task.type === 'Bug';
     const showGenerateAllAction = ['tarefa', 'bug', 'task'].includes(taskTypeNorm) && !!onGenerateAll;
-    const generateAllTitle =
-      isGenerating || isGeneratingAll ? aiPhaseMessage || 'Gerando…' : 'Gerar Tudo (BDD e Testes)';
-    const generateAllAriaLabel =
-      isGenerating || isGeneratingAll ? aiPhaseMessage || 'Gerando' : 'Gerar Tudo (BDD e Testes)';
 
     /** Título do card: apenas o título da própria tarefa (sem prefixo Epic/História). */
     const displayTitle = task.title;
@@ -1554,6 +1550,11 @@ export const JiraTaskItem: React.FC<{
       if (isGeneratingTests) return 'Gerando casos de teste…';
       return 'Processando com IA…';
     }, [isAiProcessing, isGenerating, isGeneratingAll, isGeneratingBdd, isGeneratingTests]);
+
+    const generateAllTitle =
+      isGenerating || isGeneratingAll ? aiPhaseMessage || 'Gerando…' : 'Gerar Tudo (BDD e Testes)';
+    const generateAllAriaLabel =
+      isGenerating || isGeneratingAll ? aiPhaseMessage || 'Gerando' : 'Gerar Tudo (BDD e Testes)';
 
     return (
       <div
