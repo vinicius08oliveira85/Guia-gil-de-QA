@@ -57,8 +57,8 @@ describe('generateTestReport', () => {
 
     expect(report).toContain('SÍNTESE DA EXECUÇÃO:');
     expect(report).toContain('Bloqueados: 1');
-    expect(report).toContain('[APROVADO]');
-    expect(report).toContain('[BLOQUEADO]');
+    expect(report).toContain('[APROVADO ✅]');
+    expect(report).toContain('[BLOQUEADO ⚠️]');
     expect(report).not.toContain('Parâmetros necessários');
     expect(report).not.toContain('Resultado esperado');
     expect(report).not.toContain('1. Acessar o painel com perfil backoffice');
@@ -73,8 +73,10 @@ describe('generateTestReport', () => {
     });
 
     expect(report).toContain('Resumo: 1 aprovado(s) | 0 reprovado(s) | 1 bloqueado(s) | 1 não executado(s)');
-    expect(report).toContain('- Aprovado: Card exibe a contagem correta de beneficiários após a importação.');
-    expect(report).toContain('- Bloqueado: Sistema informa bloqueio temporário da atualização sem perder consistência.');
+    expect(report).toContain('- Aprovado ✅: Card exibe a contagem correta de beneficiários após a importação.');
+    expect(report).toContain(
+      '- Bloqueado ⚠️: Sistema informa bloqueio temporário da atualização sem perder consistência.'
+    );
     expect(report).not.toContain('1. Acessar o painel com perfil backoffice');
   });
 
@@ -82,8 +84,12 @@ describe('generateTestReport', () => {
     const report = generateTestResultsOnlyReport(buildTask(), new Date('2026-05-13T14:00:00.000Z'));
 
     expect(report).toContain('RESULTADOS EXECUTADOS | TASK-123');
-    expect(report).toContain('1. Aprovado: Card exibe a contagem correta de beneficiários após a importação.');
-    expect(report).toContain('2. Bloqueado: Sistema informa bloqueio temporário da atualização sem perder consistência.');
+    expect(report).toContain(
+      '1. Aprovado ✅: Card exibe a contagem correta de beneficiários após a importação.'
+    );
+    expect(report).toContain(
+      '2. Bloqueado ⚠️: Sistema informa bloqueio temporário da atualização sem perder consistência.'
+    );
     expect(report).not.toContain('Não executado');
   });
 

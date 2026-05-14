@@ -61,6 +61,14 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
     [selectedTasksData]
   );
 
+  const toolbarActionClassName =
+    'app-toolbar-action inline-flex min-h-[40px] shrink-0 items-center justify-center whitespace-nowrap rounded-full px-2.5 text-[13px] font-medium leading-none tracking-[-0.01em] sm:min-h-9 sm:px-3';
+  const toolbarPrimaryActionClassName = `${toolbarActionClassName} app-toolbar-action-primary shadow-sm`;
+  const toolbarDangerActionClassName = `${toolbarActionClassName} app-toolbar-action-danger`;
+  const toolbarOutlineActionClassName = `${toolbarActionClassName} border border-[var(--brand-surface-border)] bg-base-100/60`;
+  const modalPrimaryActionClassName =
+    'app-toolbar-action app-toolbar-action-primary mt-2 inline-flex w-full justify-center rounded-full px-4 py-3 text-sm font-semibold shadow-sm';
+
   const handleBulkStatusChange = () => {
     const updatedTasks = (project.tasks || []).map(task =>
       selectedTasksArray.includes(task.id) ? { ...task, status: statusValue } : task
@@ -222,20 +230,20 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
 
   return (
     <>
-      <div className="fixed bottom-4 left-1/2 z-50 w-[min(100%-1.5rem,42rem)] -translate-x-1/2 px-0 sm:w-[min(100%-2rem,48rem)]">
-        <div className="flex flex-col gap-3 rounded-[var(--rounded-box)] border border-base-300 bg-base-100/95 px-3 py-3 shadow-2xl ring-1 ring-base-content/[0.04] backdrop-blur-md sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:px-4 sm:py-3.5">
-          <span className="text-center font-heading text-sm font-semibold tabular-nums text-base-content sm:min-w-0 sm:flex-1 sm:text-left">
+      <div className="fixed bottom-4 left-1/2 z-50 w-[calc(100%-0.75rem)] -translate-x-1/2 px-0 sm:w-[calc(100%-1rem)] lg:w-[min(100%-1.5rem,96rem)]">
+        <div className="app-toolbar-shell flex flex-nowrap items-center gap-2 overflow-hidden rounded-[calc(var(--rounded-box)+0.375rem)] px-3 py-3 sm:gap-3 sm:px-3.5 sm:py-3">
+          <span className="app-toolbar-count shrink-0 whitespace-nowrap text-left font-heading text-[13px] tabular-nums leading-none sm:text-sm">
             {selectedTasksArray.length} tarefa{selectedTasksArray.length > 1 ? 's' : ''} selecionada
             {selectedTasksArray.length > 1 ? 's' : ''}
           </span>
-          <div className="flex flex-wrap justify-center gap-1.5 sm:justify-end sm:gap-2">
+          <div className="custom-scrollbar flex min-w-0 flex-1 flex-nowrap items-center justify-start gap-1 overflow-x-auto pb-1 sm:ml-auto sm:justify-end sm:gap-1.5 sm:pb-0">
             <button
               type="button"
               onClick={() => {
                 setAction('status');
                 setShowModal(true);
               }}
-              className="btn btn-ghost btn-sm min-h-[44px] rounded-full border border-transparent hover:border-base-300 sm:min-h-8"
+              className={toolbarActionClassName}
             >
               Alterar Status
             </button>
@@ -245,7 +253,7 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
                 setAction('tag');
                 setShowModal(true);
               }}
-              className="btn btn-ghost btn-sm min-h-[44px] rounded-full border border-transparent hover:border-base-300 sm:min-h-8"
+              className={toolbarActionClassName}
             >
               Adicionar Tag
             </button>
@@ -255,7 +263,7 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
                 setAction('assignee');
                 setShowModal(true);
               }}
-              className="btn btn-ghost btn-sm min-h-[44px] rounded-full border border-transparent hover:border-base-300 sm:min-h-8"
+              className={toolbarActionClassName}
             >
               Atribuir
             </button>
@@ -263,7 +271,7 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
               <button
                 type="button"
                 onClick={handleBulkFavorite}
-                className="btn btn-ghost btn-sm min-h-[44px] rounded-full border border-transparent hover:border-base-300 sm:min-h-8"
+                className={toolbarActionClassName}
                 aria-label="Favoritar tarefas selecionadas"
               >
                 Favoritar
@@ -273,7 +281,7 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
               <button
                 type="button"
                 onClick={handleBulkUnfavorite}
-                className="btn btn-ghost btn-sm min-h-[44px] rounded-full border border-transparent hover:border-base-300 sm:min-h-8"
+                className={toolbarActionClassName}
                 aria-label="Desfavoritar tarefas selecionadas"
               >
                 Desfavoritar
@@ -282,7 +290,7 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
             <button
               type="button"
               onClick={handleCreateProjectClick}
-              className="btn btn-primary btn-sm min-h-[44px] rounded-full shadow-sm sm:min-h-8"
+              className={toolbarPrimaryActionClassName}
             >
               Criar Projeto
             </button>
@@ -290,7 +298,7 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
               <button
                 type="button"
                 onClick={handleBulkEdit}
-                className="btn btn-ghost btn-sm min-h-[44px] rounded-full border border-transparent hover:border-base-300 sm:min-h-8"
+                className={toolbarActionClassName}
                 aria-label="Editar tarefa selecionada"
               >
                 Editar
@@ -299,7 +307,7 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
             <button
               type="button"
               onClick={handleBulkDelete}
-              className="btn btn-ghost btn-sm min-h-[44px] rounded-full text-error hover:border-error/30 hover:bg-error/10 sm:min-h-8"
+              className={toolbarDangerActionClassName}
               aria-label="Excluir tarefas selecionadas"
             >
               Excluir
@@ -307,7 +315,7 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
             <button
               type="button"
               onClick={onClearSelection}
-              className="btn btn-outline btn-sm min-h-[44px] rounded-full border-base-300 sm:min-h-8"
+              className={toolbarOutlineActionClassName}
             >
               Limpar
             </button>
@@ -342,7 +350,7 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
               <button
                 type="button"
                 onClick={handleBulkStatusChange}
-                className="btn btn-primary mt-2 w-full rounded-full"
+                className={modalPrimaryActionClassName}
               >
                 Aplicar status
               </button>
@@ -365,7 +373,7 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
               <button
                 type="button"
                 onClick={handleBulkTagAdd}
-                className="btn btn-primary mt-2 w-full rounded-full"
+                className={modalPrimaryActionClassName}
               >
                 Adicionar tag
               </button>
@@ -392,7 +400,7 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
               <button
                 type="button"
                 onClick={handleBulkAssigneeChange}
-                className="btn btn-primary mt-2 w-full rounded-full"
+                className={modalPrimaryActionClassName}
               >
                 Atribuir
               </button>
@@ -448,14 +456,14 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
                 setShowTaskSelectionModal(false);
                 setSelectedTasksForProject(new Set());
               }}
-              className="btn btn-secondary"
+              className={toolbarOutlineActionClassName}
             >
               Cancelar
             </button>
             <button
               onClick={handleProceedToProjectName}
               disabled={selectedTasksForProject.size === 0}
-              className="btn btn-primary"
+              className={toolbarPrimaryActionClassName}
             >
               Gerar Projeto ({selectedTasksForProject.size})
             </button>
@@ -515,14 +523,14 @@ export const BulkActions: React.FC<BulkActionsProps> = ({
                 setProjectName('');
                 setProjectDescription('');
               }}
-              className="btn btn-secondary"
+              className={toolbarOutlineActionClassName}
             >
               Cancelar
             </button>
             <button
               onClick={handleCreateProject}
               disabled={!projectName.trim()}
-              className="btn btn-primary"
+              className={toolbarPrimaryActionClassName}
             >
               Criar Projeto
             </button>

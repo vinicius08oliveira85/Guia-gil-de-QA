@@ -29,14 +29,15 @@ export const Card = React.memo<CardProps>(
   ({ children, className = '', variant = 'default', hoverable = true, ...rest }) => {
     const variantClasses = {
       default:
-        'border border-base-300 bg-base-200 soft-shadow dark:border-base-300/60 dark:bg-base-200/50',
+        'app-surface',
       elevated:
-        'border border-base-300 bg-base-200 task-card-shadow dark:border-base-300/60 dark:bg-base-200/50',
-      outlined: 'border border-base-300 bg-transparent shadow-none',
+        'app-surface app-surface-strong task-card-shadow',
+      outlined:
+        'border bg-[color-mix(in_srgb,var(--brand-surface)_72%,transparent)] border-[var(--brand-surface-border)] shadow-none',
     };
 
     const hoverClasses = hoverable
-      ? 'transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-[color-mix(in_oklch,oklch(var(--p))_35%,transparent)] hover:ring-1 hover:ring-[color-mix(in_oklch,oklch(var(--p))_22%,transparent)] motion-reduce:transform-none motion-reduce:hover:ring-0'
+      ? 'transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-[color-mix(in_srgb,var(--brand-cta)_22%,var(--brand-surface-border))] hover:ring-1 hover:ring-[color-mix(in_srgb,var(--brand-highlight)_16%,transparent)] motion-reduce:transform-none motion-reduce:hover:ring-0'
       : '';
 
     return (

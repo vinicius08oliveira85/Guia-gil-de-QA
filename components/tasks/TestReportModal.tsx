@@ -169,7 +169,7 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({ isOpen, onClos
   const currentFormatLabel = format === 'resumido' ? 'Resumido' : 'Texto estruturado';
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Registro de Testes Realizados" size="2xl">
+    <Modal isOpen={isOpen} onClose={onClose} title="Registro de Testes Realizados" size="4xl">
       <div className="h-full flex flex-col min-h-0 space-y-5">
         <div className="flex-shrink-0">
           <div className="flex flex-col gap-3 rounded-2xl border border-base-300 bg-base-100 p-4 shadow-sm">
@@ -312,7 +312,7 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({ isOpen, onClos
           </div>
         </div>
 
-        <div className="grid flex-1 min-h-0 gap-4 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+        <div className="grid flex-1 min-h-0 gap-4 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
           <TestReportExecutionPanel executedTestCases={executedTestCases} visualStats={visualStats} />
 
           <div className="min-h-0">

@@ -334,11 +334,11 @@ export const Header: React.FC<HeaderProps> = ({
         decoding="async"
         draggable={false}
       />
-      <div className="min-w-0 border-l-2 border-[oklch(var(--p))] pl-2.5 sm:pl-3">
+      <div className="min-w-0 border-l-2 border-[var(--brand-cta)] pl-2.5 sm:pl-3">
         <p
           className={cn(
             'text-balance text-sm font-semibold leading-tight sm:text-base',
-            '[font-family:var(--font-sans)] tracking-[var(--letter-spacing)] text-[var(--foreground)]'
+            'app-brand-title [font-family:var(--font-sans)] tracking-[var(--letter-spacing)]'
           )}
         >
           QA Agile Guide
@@ -347,7 +347,7 @@ export const Header: React.FC<HeaderProps> = ({
           className={cn(
             'hidden truncate text-xs text-balance sm:block',
             '[font-family:var(--font-sans)] tracking-[var(--letter-spacing)]',
-            'text-[color-mix(in_srgb,var(--foreground)_58%,transparent)]'
+            'text-[var(--brand-text-muted)]'
           )}
         >
           Gestão de QA ágil, métricas e automação
@@ -439,10 +439,8 @@ export const Header: React.FC<HeaderProps> = ({
     <header
       ref={headerRef}
       className={cn(
-        'relative sticky top-0 z-[100] mica !rounded-none border-b overflow-x-visible overflow-y-visible md:overflow-y-hidden',
-        'border-[color-mix(in_srgb,var(--foreground)_10%,transparent)]',
-        'bg-[color-mix(in_srgb,var(--background)_78%,transparent)]',
-        'text-[var(--foreground)] shadow-lg',
+        'app-header-shell relative sticky top-0 z-[100] !rounded-none overflow-x-visible overflow-y-visible md:overflow-y-hidden',
+        'text-[var(--brand-text-strong)]',
         'transition-[background-color,box-shadow,border-color,color] duration-300 ease-out'
       )}
       style={{ paddingTop: 'env(safe-area-inset-top)' }}
@@ -462,8 +460,8 @@ export const Header: React.FC<HeaderProps> = ({
                 'group flex min-h-0 min-w-0 flex-1 cursor-pointer items-center gap-2 rounded-[var(--radius)] p-1 text-left',
                 'border border-transparent bg-transparent',
                 'transition-[background-color,border-color,box-shadow] duration-200 ease-out',
-                'hover:border-[color-mix(in_srgb,var(--foreground)_14%,transparent)]',
-                'hover:bg-[color-mix(in_srgb,var(--foreground)_8%,transparent)]',
+                'hover:border-[var(--brand-surface-border)]',
+                'hover:bg-[var(--brand-chip)]',
                 'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[oklch(var(--p))]',
                 'sm:min-h-0 sm:gap-3 sm:p-0'
               )}
@@ -473,12 +471,12 @@ export const Header: React.FC<HeaderProps> = ({
                 className={cn(
                   'pointer-events-none flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center',
                   'rounded-full border border-transparent transition-all duration-200',
-                  'group-hover:border-[color-mix(in_srgb,var(--foreground)_12%,transparent)]',
-                  'group-hover:bg-[color-mix(in_srgb,var(--foreground)_7%,transparent)]'
+                  'group-hover:border-[var(--brand-surface-border)]',
+                  'group-hover:bg-[var(--brand-chip)]'
                 )}
                 aria-hidden
               >
-                <ChevronLeft className="h-5 w-5 text-[color-mix(in_srgb,var(--foreground)_72%,transparent)] group-hover:text-[var(--foreground)]" />
+                <ChevronLeft className="h-5 w-5 text-[var(--brand-text-muted)] group-hover:text-[var(--brand-text-strong)]" />
               </span>
               {logoContent}
             </button>
@@ -490,15 +488,13 @@ export const Header: React.FC<HeaderProps> = ({
 
           <div className="relative flex min-w-0 shrink-0 items-center gap-2 overflow-x-visible">
             {showDashboardActions && (
-              <div className="hidden shrink-0 flex-col items-stretch gap-1 border-r border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] pr-2 md:flex md:flex-row md:items-center md:gap-1">
+              <div className="hidden shrink-0 flex-col items-stretch gap-1 border-r border-[var(--brand-surface-border)] pr-2 md:flex md:flex-row md:items-center md:gap-1">
                 {onOpenCreateModal && (
                   <button
                     type="button"
                     onClick={onOpenCreateModal}
                     className={cn(
-                      'btn btn-sm gap-1.5 whitespace-nowrap rounded-[var(--radius)] border-0 shadow-sm',
-                      'bg-[oklch(var(--p))] text-[oklch(var(--pc))]',
-                      'hover:bg-[color-mix(in_oklch,oklch(var(--p))_88%,oklch(var(--bc)))]'
+                      'app-toolbar-action app-toolbar-action-primary btn btn-sm gap-1.5 whitespace-nowrap rounded-[var(--radius)] shadow-sm'
                     )}
                   >
                     <Plus className="h-4 w-4 shrink-0" aria-hidden />
@@ -510,8 +506,7 @@ export const Header: React.FC<HeaderProps> = ({
                   onClick={() => void handleSyncSupabase()}
                   disabled={isSyncingSupabase || !isSupabaseAvailable()}
                   className={cn(
-                    'btn btn-ghost btn-sm whitespace-nowrap font-medium rounded-[var(--radius)]',
-                    'hover:bg-[color-mix(in_srgb,var(--foreground)_8%,transparent)]'
+                    'app-nav-pill btn btn-ghost btn-sm whitespace-nowrap font-medium rounded-[var(--radius)]'
                   )}
                   title={
                     !isSupabaseAvailable()
@@ -566,7 +561,7 @@ export const Header: React.FC<HeaderProps> = ({
                   </span>
                   <MoreVertical className="h-5 w-5" aria-hidden />
                 </summary>
-                <ul className="dropdown-content menu menu-sm z-[130] mt-2 w-56 rounded-box border border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] bg-[color-mix(in_srgb,var(--background)_96%,transparent)] p-2 text-[var(--foreground)] shadow-xl backdrop-blur-md transition-colors duration-300">
+                <ul className="dropdown-content menu menu-sm app-surface z-[130] mt-2 w-56 rounded-box p-2 text-[var(--brand-text-strong)] shadow-xl transition-colors duration-300">
                   {tabs.map(tab => {
                     const Icon = tab.icon;
                     return (
