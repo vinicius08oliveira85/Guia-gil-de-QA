@@ -1,57 +1,60 @@
 import React from 'react';
 import { cn } from '../../utils/cn';
 
-/** Placeholder alinhado ao ProjectCard minimalista (tokens de raio e sombra). */
 function SkeletonCard() {
   return (
     <div
       className={cn(
-        'relative flex flex-col gap-5 overflow-hidden rounded-[var(--rounded-box)] border border-base-300 bg-base-200/95 p-6 soft-shadow',
-        'animate-pulse dark:bg-base-200/50'
+        'flex min-h-[11.5rem] flex-col gap-2 rounded-[var(--rounded-box)] border border-base-300/70 bg-base-100 p-3 soft-shadow sm:min-h-[14.5rem] sm:gap-3 sm:p-4',
+        'animate-pulse'
       )}
       aria-hidden
     >
-      <div className="flex items-start justify-between gap-3">
-        <div className="h-11 w-11 shrink-0 rounded-[1rem] bg-base-300/70 dark:bg-base-300/45" />
-        <div className="mt-1 h-5 w-5 shrink-0 rounded bg-base-300/50" />
+      <div className="flex justify-between">
+        <div className="h-9 w-9 rounded-lg bg-base-200" />
+        <div className="h-5 w-8 rounded-md bg-base-200" />
       </div>
-      <div className="space-y-3">
-        <div className="h-6 w-4/5 max-w-[14rem] rounded-[var(--radius)] bg-base-300/70 dark:bg-base-300/45" />
-        <div className="h-3.5 w-full rounded bg-base-300/55 dark:bg-base-300/40" />
-        <div className="h-3.5 w-5/6 rounded bg-base-300/45 dark:bg-base-300/35" />
+      <div className="space-y-2">
+        <div className="h-5 w-4/5 rounded bg-base-200" />
+        <div className="h-3 w-1/3 rounded bg-base-200/80" />
       </div>
-      <div className="flex flex-wrap gap-2">
-        <div className="h-7 w-24 rounded-full bg-base-300/55 dark:bg-base-300/40" />
-        <div className="h-7 w-28 rounded-full bg-base-300/55 dark:bg-base-300/40" />
-        <div className="h-7 w-32 rounded-full bg-base-300/45 dark:bg-base-300/35" />
+      <div className="grid grid-cols-3 gap-2 border-y border-base-300/40 py-3">
+        <div className="h-8 rounded bg-base-200/70" />
+        <div className="h-8 rounded bg-base-200/70" />
+        <div className="h-8 rounded bg-base-200/70" />
       </div>
-      <div className="flex flex-wrap gap-x-4 gap-y-1 border-t border-base-300/40 pt-4">
-        <div className="h-3 w-24 rounded bg-base-300/50" />
-        <div className="h-3 w-24 rounded bg-base-300/50" />
-        <div className="h-3 w-20 rounded bg-base-300/50" />
+      <div className="h-1.5 w-full rounded-full bg-base-200" />
+      <div className="flex justify-between pt-1">
+        <div className="h-3 w-20 rounded bg-base-200/70" />
+        <div className="h-3 w-10 rounded bg-base-200/70" />
       </div>
     </div>
   );
 }
 
-/**
- * Grade de placeholders — mesmo gap da listagem (`gap-6`) e cantos do card de projeto.
- */
 export const ProjectsDashboardSkeleton: React.FC = () => {
   return (
     <div
-      className="animate-fade-in min-h-[calc(100vh-4rem)] bg-base-100"
+      className="animate-fade-in min-h-[calc(100vh-4rem)] bg-base-200/40"
       role="status"
       aria-live="polite"
       aria-busy="true"
       aria-label="Carregando projetos"
     >
-      <div className="tasks-panel-scope mx-auto w-full max-w-full px-3 py-3 sm:px-6 sm:py-4">
-        <div className="mb-4 h-28 animate-pulse rounded-[var(--rounded-box)] border border-base-300/70 bg-base-200/60 sm:h-32 dark:bg-base-200/40" />
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <SkeletonCard key={i} />
+      <div className="mx-auto w-full max-w-[90rem] px-3 py-4 sm:px-6 sm:py-5">
+        <div className="mb-6 h-20 animate-pulse rounded-[var(--rounded-box)] bg-base-100/80" />
+        <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="h-16 animate-pulse rounded-[var(--rounded-box)] bg-base-100/80" />
           ))}
+        </div>
+        <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-6">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <SkeletonCard key={i} />
+            ))}
+          </div>
+          <div className="mt-6 hidden h-64 animate-pulse rounded-[var(--rounded-box)] bg-base-100/80 lg:block" />
         </div>
       </div>
     </div>

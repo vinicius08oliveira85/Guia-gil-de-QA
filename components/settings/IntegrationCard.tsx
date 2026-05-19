@@ -1,6 +1,6 @@
 import React from 'react';
 import { Settings, ChevronRight } from 'lucide-react';
-import { Card } from '../common/Card';
+import { projectViewCard } from '../common/viewUi';
 import { StatusBadge, type StatusVariant } from './StatusBadge';
 import { Button } from '../common/Button';
 import { cn } from '../../utils/cn';
@@ -63,10 +63,16 @@ export const IntegrationCard = React.memo<IntegrationCardProps>(
     const isConnected = status === 'connected' || status === 'configured';
 
     return (
-      <Card className={cn('p-6 hover:border-primary/20 transition-colors', className)}>
+      <div
+        className={cn(
+          projectViewCard,
+          'transition-colors hover:border-[color-mix(in_srgb,var(--brand-cta)_25%,transparent)]',
+          className
+        )}
+      >
         <div className="flex items-start gap-4">
           {/* Ícone da integração */}
-          <div className="shrink-0 h-12 w-12 rounded-[var(--radius)] bg-primary/10 flex items-center justify-center">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[var(--radius)] bg-[color-mix(in_srgb,var(--brand-cta)_12%,transparent)]">
             {icon}
           </div>
 
@@ -111,7 +117,7 @@ export const IntegrationCard = React.memo<IntegrationCardProps>(
             </div>
           </div>
         </div>
-      </Card>
+      </div>
     );
   }
 );

@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Project } from '../../types';
-import { Card } from '../common/Card';
+import { projectViewCard } from '../common/viewUi';
+import { cn } from '../../utils/cn';
 import { AnalysisModal } from './AnalysisModal';
 
 export const TestPyramidCard: React.FC<{ project: Project }> = ({ project }) => {
@@ -15,9 +16,9 @@ export const TestPyramidCard: React.FC<{ project: Project }> = ({ project }) => 
 
   return (
     <>
-      <Card className="mb-8">
+      <div className={cn(projectViewCard, 'mb-0 h-full')}>
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-xl font-bold text-white">Análise da Pirâmide de Testes</h3>
+          <h3 className="text-xl font-bold text-base-content">Análise da Pirâmide de Testes</h3>
           {hasAnalysis && (
             <button
               onClick={() => setShowDetails(true)}
@@ -94,7 +95,7 @@ export const TestPyramidCard: React.FC<{ project: Project }> = ({ project }) => 
             )}
           </div>
         </div>
-      </Card>
+      </div>
 
       <AnalysisModal
         isOpen={showDetails}

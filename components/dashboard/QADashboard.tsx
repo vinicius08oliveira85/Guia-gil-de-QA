@@ -12,28 +12,18 @@ import { DashboardStatCard } from './DashboardStatCard';
 import { ProjectDashboard } from './ProjectDashboard';
 import { RecentActivity } from './RecentActivity';
 import { QADashboardHeaderToolbar } from './QADashboardHeaderToolbar';
-import { Card } from '../common/Card';
 
 interface QADashboardProps {
   project: Project;
   onUpdateProject?: (project: Project) => void;
   onNavigateToTab?: (tabId: string) => void;
   onNavigateToTasksWithExecutionStatuses?: (statuses: TestCase['status'][]) => void;
-  /**
-   * Quando definido, substitui `useProjectsStore().isLoading` apenas no banner de sincronização
-   * (útil para Storybook, testes ou um contêiner que já conhece o estado de carga).
-   */
   syncLoading?: boolean;
-  /**
-   * Quando definido, substitui o `error` do store apenas no alerta superior.
-   * Passe `null` para ocultar o alerta mesmo se o store tiver erro.
-   */
   syncError?: Error | null;
 }
 
 /**
  * Dashboard do projeto orientado a dados reais das tarefas (sem geração por IA).
- * Dados: `Project` / `JiraTask` em `types.ts`; leitura via store (`useProjectsStore`) e props.
  */
 export const QADashboard: React.FC<QADashboardProps> = React.memo(props => {
   const { project, onNavigateToTab, syncLoading, syncError } = props;
@@ -95,114 +85,106 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(props => {
   }, [liveProject.updatedAt, liveProject.createdAt]);
 
   const goTasks = onNavigateToTab ? () => onNavigateToTab('tasks') : undefined;
+  const jiraKey = liveProject.settings?.jiraProjectKey;
 
   return (
-    <div className="space-y-6 py-8 md:py-10 lg:py-12" role="main" aria-label="Dashboard do projeto">
+    <div className="space-y-4 sm:space-y-5" role="main" aria-label="Dashboard do projeto">
       {showLoadingBanner && (
         <div
-          className="flex items-center gap-2 rounded-xl border border-base-300/80 bg-base-100/95 px-4 py-3 text-sm text-base-content/80 shadow-sm backdrop-blur-sm"
+          className="flex items-center gap-2 rounded-lg border border-base-300/70 bg-base-100 px-3 py-2.5 text-sm text-base-content/80 soft-shadow"
           role="status"
           aria-live="polite"
         >
-          <Loader2 className="h-4 w-4 shrink-0 animate-spin text-primary" aria-hidden />
+          <Loader2 className="h-4 w-4 shrink-0 animate-spin text-[var(--brand-cta)]" aria-hidden />
           <span>Carregando ou sincronizando dados do projeto…</span>
         </div>
       )}
 
       {displayError && (
-        <div className="alert alert-error text-sm shadow-sm" role="alert">
+        <div className="rounded-lg border border-error/30 bg-error/10 px-3 py-2.5 text-sm text-error" role="alert">
           <span className="font-medium">Não foi possível carregar os projetos.</span>
-          <span className="block opacity-90">{displayError.message}</span>
+          <span className="mt-0.5 block opacity-90">{displayError.message}</span>
         </div>
       )}
 
-      <Card hoverable={false} className="p-3 py-4 sm:p-4 sm:py-6 lg:p-5">
-        <div className="tasks-panel-scope flex flex-col gap-tasks-panel-loose">
-          <div className="rounded-xl border border-base-300/80 bg-base-100/95 p-3 shadow-sm backdrop-blur-md sm:p-4">
-            <QADashboardHeaderToolbar
-              lastUpdatedText={lastUpdatedText}
-              activeFiltersCount={activeFiltersCount}
-              filters={dashboardFilters}
-              onFiltersChange={setDashboardFilters}
-              onOpenFiltersModal={() => setShowFilters(true)}
-              onOpenExportModal={() => setShowExportModal(true)}
+      <QADashboardHeaderToolbar
+        jiraProjectKey={jiraKey}
+        lastUpdatedText={lastUpdatedText}
+        activeFiltersCount={activeFiltersCount}
+        filters={dashboardFilters}
+        onFiltersChange={setDashboardFilters}
+        onOpenFiltersModal={() => setShowFilters(true)}
+        onOpenExportModal={() => setShowExportModal(true)}
+      />
+
+      <div
+        className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4"
+        aria-label="Indicadores principais de tarefas"
+      >
+        {showLoadingBanner && !filteredProject.tasks?.length ? (
+          Array.from({ length: 4 }).map((_, k) => (
+            <div
+              key={k}
+              className="h-[5.25rem] animate-pulse rounded-[var(--rounded-box)] border border-base-300/60 bg-base-200/50 sm:h-[5.5rem]"
+              aria-hidden
             />
-          </div>
-
-          {/* KPIs principais: grid 1 col mobile → 4 desktop */}
-          <div
-            className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4"
-            aria-label="Indicadores principais de tarefas"
-          >
-            {showLoadingBanner && !filteredProject.tasks?.length ? (
-              <>
-                {[0, 1, 2, 3].map(k => (
-                  <div
-                    key={k}
-                    className="h-[92px] animate-pulse rounded-xl border border-base-300/80 bg-base-200/50"
-                    aria-hidden
-                  />
-                ))}
-              </>
-            ) : (
-              <>
-                <DashboardStatCard
-                  title="Total de tarefas"
-                  value={dashboardMetrics.totalTasks}
-                  icon={ListChecks}
-                  onClick={goTasks}
-                />
-                <DashboardStatCard
-                  title="Concluídas"
-                  value={dashboardMetrics.completedTasks}
-                  icon={CheckCircle2}
-                  onClick={goTasks}
-                />
-                <DashboardStatCard
-                  title="Atrasadas"
-                  value={dashboardMetrics.overdueTasks}
-                  icon={AlertTriangle}
-                  className={
-                    dashboardMetrics.overdueTasks > 0 ? 'border-error/40 bg-error/5' : undefined
-                  }
-                  onClick={goTasks}
-                />
-                <DashboardStatCard
-                  title="Eficiência"
-                  value={
-                    dashboardMetrics.totalTasks === 0
-                      ? '—'
-                      : `${dashboardMetrics.efficiencyPercent}%`
-                  }
-                  icon={Percent}
-                  onClick={goTasks}
-                />
-              </>
-            )}
-          </div>
-
-          <ProjectDashboard
-            project={filteredProject}
-            isLoading={showLoadingBanner && !filteredProject.tasks?.length}
-          />
-
-          {!showLoadingBanner && dashboardMetrics.totalTasks === 0 && (
-            <EmptyState
-              compact
-              title="Nenhuma tarefa no escopo"
-              description="Crie tarefas na aba Tarefas ou ajuste os filtros do dashboard."
-              icon="📊"
-              secondaryAction={
-                onNavigateToTab
-                  ? { label: 'Ir para Tarefas', onClick: () => onNavigateToTab('tasks') }
-                  : undefined
+          ))
+        ) : (
+          <>
+            <DashboardStatCard
+              title="Total de tarefas"
+              value={dashboardMetrics.totalTasks}
+              icon={ListChecks}
+              tone="info"
+              onClick={goTasks}
+            />
+            <DashboardStatCard
+              title="Concluídas"
+              value={dashboardMetrics.completedTasks}
+              icon={CheckCircle2}
+              tone="success"
+              onClick={goTasks}
+            />
+            <DashboardStatCard
+              title="Atrasadas"
+              value={dashboardMetrics.overdueTasks}
+              icon={AlertTriangle}
+              tone="warning"
+              onClick={goTasks}
+            />
+            <DashboardStatCard
+              title="Eficiência"
+              value={
+                dashboardMetrics.totalTasks === 0 ? '—' : `${dashboardMetrics.efficiencyPercent}%`
               }
+              icon={Percent}
+              tone="accent"
+              onClick={goTasks}
             />
-          )}
+          </>
+        )}
+      </div>
 
-          <RecentActivity project={filteredProject} />
-        </div>
-      </Card>
+      <ProjectDashboard
+        project={filteredProject}
+        isLoading={showLoadingBanner && !filteredProject.tasks?.length}
+      />
+
+      {!showLoadingBanner && dashboardMetrics.totalTasks === 0 && (
+        <EmptyState
+          compact
+          title="Nenhuma tarefa no escopo"
+          description="Crie tarefas na aba Tarefas ou ajuste os filtros do dashboard."
+          icon="📊"
+          secondaryAction={
+            onNavigateToTab
+              ? { label: 'Ir para Tarefas', onClick: () => onNavigateToTab('tasks') }
+              : undefined
+          }
+        />
+      )}
+
+      <RecentActivity project={filteredProject} onViewAll={goTasks} />
 
       <FileExportModal
         isOpen={showExportModal}

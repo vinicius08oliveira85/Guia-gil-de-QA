@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { Database, CheckCircle2, AlertTriangle, Info } from 'lucide-react';
 import { diagnoseSupabaseConfig, isSupabaseAvailable } from '../../services/supabaseService';
 import { StatusBadge } from './StatusBadge';
-import { Card } from '../common/Card';
+import { projectViewCard } from '../common/viewUi';
 import { cn } from '../../utils/cn';
 
 interface VariableStatus {
@@ -97,7 +97,7 @@ export const SupabaseSettingsTab: React.FC = () => {
         )}
       </div>
 
-      <Card className="p-6">
+      <div className={projectViewCard}>
         <div className="space-y-6">
           {supabaseAvailable ? (
             <>
@@ -238,7 +238,7 @@ export const SupabaseSettingsTab: React.FC = () => {
             </>
           )}
         </div>
-      </Card>
+      </div>
     </div>
   );
 };

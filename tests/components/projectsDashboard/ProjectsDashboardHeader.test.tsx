@@ -24,7 +24,7 @@ describe('ProjectsDashboardHeader', () => {
   it('agrupa meta do workspace com rótulo acessível', () => {
     render(<ProjectsDashboardHeader {...baseProps} />);
     expect(
-      screen.getByRole('group', { name: /Workspace: quantidade de projetos e ordenação da lista/i })
+      screen.getByRole('group', { name: /Atividade e ordenação do workspace/i })
     ).toBeInTheDocument();
   });
 
@@ -48,7 +48,8 @@ describe('ProjectsDashboardHeader', () => {
 
   it('exibe última atividade quando informada', () => {
     render(<ProjectsDashboardHeader {...baseProps} lastActivityText="há 2 dias" />);
-    expect(screen.getByText(/Última atividade: há 2 dias/i)).toBeInTheDocument();
+    expect(screen.getByText(/Última atividade:/i)).toBeInTheDocument();
+    expect(screen.getByText(/há 2 dias/i)).toBeInTheDocument();
   });
 
   it('dispara evento global ao acionar busca', async () => {
@@ -73,10 +74,8 @@ describe('ProjectsDashboardHeader', () => {
     expect(screen.getByLabelText(/Ordenar projetos por/i)).toHaveFocus();
   });
 
-  it('não renderiza faixa de indicadores quando não há última atividade', () => {
+  it('não exibe última atividade quando não informada', () => {
     render(<ProjectsDashboardHeader {...baseProps} lastActivityText={null} />);
-    expect(
-      screen.queryByRole('group', { name: /Indicadores de atividade do workspace/i })
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText(/Última atividade:/i)).not.toBeInTheDocument();
   });
 });

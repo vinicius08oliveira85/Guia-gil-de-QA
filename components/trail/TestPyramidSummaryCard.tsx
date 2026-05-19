@@ -1,5 +1,7 @@
 import React, { useMemo } from 'react';
 import { Project, TestPyramidLevel } from '../../types';
+import { cn } from '../../utils/cn';
+import { projectViewCard } from '../common/viewUi';
 
 interface TestPyramidSummaryCardProps {
   project: Project;
@@ -20,7 +22,7 @@ export const TestPyramidSummaryCard: React.FC<TestPyramidSummaryCardProps> = ({
   }, [project.testPyramidAnalysis]);
 
   return (
-    <section className="space-y-5 rounded-[var(--rounded-box)] border border-base-300 bg-base-100 p-5 shadow-sm sm:p-6">
+    <section className={cn('space-y-5', projectViewCard)}>
       <header>
         <p className="text-xs font-semibold uppercase tracking-[0.35em] text-base-content/60">
           Bloco 2

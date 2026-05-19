@@ -1,12 +1,21 @@
 import React, { useState } from 'react';
 import { Project, PhaseName } from '../../types';
-import { Card } from '../common/Card';
 import { useProjectMetrics } from '../../hooks/useProjectMetrics';
 import { Badge } from '../common/Badge';
 import { ProgressIndicator } from '../common/ProgressIndicator';
 import { Modal } from '../common/Modal';
 import { Tooltip } from '../common/Tooltip';
 import { timelineData } from '../../utils/projectPhases';
+import {
+  compactMetricTile,
+  filterPillClass,
+  pageSubtitleClass,
+  pageTitleClass,
+  projectViewCard,
+  projectViewPanel,
+  projectViewShell,
+} from '../common/viewUi';
+import { cn } from '../../utils/cn';
 
 interface TimelinePhase {
   phase: PhaseName;
@@ -82,42 +91,36 @@ export const TimelineView: React.FC<{ project: Project; currentPhaseName: PhaseN
   const overallProgress = (completedPhases / totalPhases) * 100;
 
   return (
-    <div className="space-y-6">
-      <Card className="p-5">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-          <div>
-            <h3 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2">
-              Timeline Completa do Projeto
-            </h3>
-            <p className="text-base-content/70 max-w-2xl">
+    <div className={cn(projectViewShell, 'pb-2')}>
+      <section className={projectViewPanel}>
+        <header className="flex flex-col gap-4 border-b border-base-300/60 pb-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0">
+            <h2 className={pageTitleClass}>Timeline Completa do Projeto</h2>
+            <p className={cn(pageSubtitleClass, 'mt-2')}>
               Cronograma detalhado do fluxo de trabalho de QA com dependências, marcos e
               entregáveis.
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <button
               type="button"
               onClick={() => setViewMode('timeline')}
-              className={`btn btn-sm rounded-full transition-colors ${
-                viewMode === 'timeline' ? 'btn-primary' : 'btn-outline'
-              }`}
+              className={filterPillClass(viewMode === 'timeline')}
             >
               Timeline
             </button>
             <button
               type="button"
               onClick={() => setViewMode('table')}
-              className={`btn btn-sm rounded-full transition-colors ${
-                viewMode === 'table' ? 'btn-primary' : 'btn-outline'
-              }`}
+              className={filterPillClass(viewMode === 'table')}
             >
               Tabela
             </button>
           </div>
-        </div>
+        </header>
 
         {/* Progresso Geral */}
-        <div className="p-5 bg-base-100 border border-base-300 rounded-xl mb-6">
+        <div className={cn(compactMetricTile, 'mb-6 mt-4')}>
           <div className="flex items-center justify-between mb-2">
             <span className="text-base-content/70 font-semibold">Progresso Geral do Projeto</span>
             <span className="text-base-content font-bold">{Math.round(overallProgress)}%</span>
@@ -161,7 +164,12 @@ export const TimelineView: React.FC<{ project: Project; currentPhaseName: PhaseN
                     {/* Conteúdo da fase */}
                     <div className="flex-1 pb-8">
                       <div
-                        className={`p-6 bg-base-100 border ${isCurrent ? 'border-primary' : 'border-base-300'} rounded-xl hover:shadow-lg transition-all`}
+                        className={cn(
+                          projectViewCard,
+                          'transition-all hover:shadow-md',
+                          isCurrent &&
+                            'border-[color-mix(in_srgb,var(--brand-cta)_45%,transparent)] ring-1 ring-[color-mix(in_srgb,var(--brand-cta)_18%,transparent)]'
+                        )}
                       >
                         <div className="flex items-start justify-between mb-4">
                           <div className="flex-1">
@@ -427,7 +435,7 @@ export const TimelineView: React.FC<{ project: Project; currentPhaseName: PhaseN
             </table>
           </div>
         )}
-      </Card>
+      </section>
 
       {/* Modal de Detalhes */}
       {selectedPhase && (

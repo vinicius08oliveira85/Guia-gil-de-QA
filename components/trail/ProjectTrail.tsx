@@ -12,6 +12,7 @@ import { TestPyramidSummaryCard } from './TestPyramidSummaryCard';
 import { FunctionalTestsCard } from './FunctionalTestsCard';
 import { CoverageMetricsCard } from './CoverageMetricsCard';
 import { QualityMetricsCard } from './QualityMetricsCard';
+import { projectViewShell } from '../common/viewUi';
 
 interface ProjectTrailProps {
   project: Project;
@@ -145,7 +146,7 @@ export const ProjectTrail: React.FC<ProjectTrailProps> = ({
   );
 
   return (
-    <div className="space-y-6">
+    <div className={projectViewShell}>
       <ProjectTrailHeader
         projectName={project.name}
         versionOptions={versionOptions}

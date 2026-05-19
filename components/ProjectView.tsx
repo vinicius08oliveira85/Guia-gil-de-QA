@@ -358,11 +358,10 @@ export const ProjectView: React.FC<{
 
   return (
     <>
-      <div className="animate-fade-in w-full max-w-full mx-auto px-4 py-3 sm:px-8 sm:py-4 non-printable">
+      <div className="animate-fade-in mx-auto w-full max-w-full bg-base-200/30 px-3 py-3 sm:px-6 sm:py-4 non-printable">
         <div
           className={cn(
-            'mica mb-2 min-w-0 max-w-full !rounded-[var(--rounded-box)] px-3 py-1.5 sm:px-4 sm:py-2',
-            'border-[color-mix(in_srgb,var(--foreground)_12%,transparent)]'
+            'mb-3 min-w-0 max-w-full rounded-[var(--rounded-box)] border border-base-300/60 bg-base-100 px-3 py-2 soft-shadow sm:mb-4 sm:px-4 sm:py-3'
           )}
         >
           <div className="flex min-w-0 flex-col gap-1">
@@ -421,14 +420,14 @@ export const ProjectView: React.FC<{
                       )}
                     {supabaseAvailable && lastSaveToSupabase === false && saveStatus === 'idle' && (
                       <div className="flex flex-wrap items-center justify-end gap-2">
-                        <span className="max-w-[12rem] truncate text-warning sm:max-w-none">
-                          Salvo localmente (nuvem indisponível)
+                        <span className="max-w-[12rem] truncate text-sm text-base-content/65 sm:max-w-none">
+                          Salvo localmente
                         </span>
                         <button
                           type="button"
                           onClick={handleSaveToSupabase}
                           disabled={isSavingToSupabase || !isOnline}
-                          className="btn btn-sm btn-outline min-h-[44px] rounded-[var(--radius)] border-[oklch(var(--p))] text-[oklch(var(--p))] hover:bg-[color-mix(in_srgb,var(--foreground)_8%,transparent)] sm:min-h-0"
+                          className="inline-flex min-h-[44px] items-center rounded-lg border border-[color-mix(in_srgb,var(--brand-cta)_55%,transparent)] bg-base-100 px-3 py-1.5 text-sm font-medium text-[var(--brand-cta)] shadow-sm transition-colors hover:bg-[color-mix(in_srgb,var(--brand-cta)_8%,transparent)] disabled:opacity-50 sm:min-h-9"
                           aria-label="Sincronizar projeto com a nuvem"
                           title={
                             !isOnline
@@ -463,7 +462,10 @@ export const ProjectView: React.FC<{
               </div>
             </div>
 
-            {/* Linha 2: badge Jira + título + descrição (uma linha; truncagem para cabeçalho total = 2 linhas) */}
+            {activeTab !== 'dashboard' &&
+              activeTab !== 'tasks' &&
+              activeTab !== 'documents' &&
+              activeTab !== 'businessRules' && (
             <div className="flex min-w-0 flex-nowrap items-center gap-x-2 overflow-hidden">
               <span className="badge badge-outline shrink-0 border-primary/30 bg-primary/10 px-2 py-0 text-[10px] font-medium leading-none text-primary">
                 {currentProject.settings?.jiraProjectKey
@@ -489,25 +491,25 @@ export const ProjectView: React.FC<{
                 {currentProject.description?.trim() ? currentProject.description : 'Sem descrição.'}
               </span>
             </div>
+            )}
           </div>
-          <div className="relative mt-1 border-t border-base-200/50 pt-1.5">
-            {/* Indicadores de Scroll para Mobile */}
+          <div className="relative mt-2 border-t border-base-300/50 pt-2 sm:mt-3">
             {canScrollLeft && (
               <div
-                className="pointer-events-none absolute bottom-0.5 left-0 top-0 z-10 w-8 bg-gradient-to-r from-base-100 to-transparent"
+                className="pointer-events-none absolute bottom-0 left-0 top-2 z-10 w-8 bg-gradient-to-r from-base-100 to-transparent"
                 aria-hidden
               />
             )}
             {canScrollRight && (
               <div
-                className="pointer-events-none absolute bottom-0.5 right-0 top-0 z-10 w-8 bg-gradient-to-l from-base-100 to-transparent"
+                className="pointer-events-none absolute bottom-0 right-0 top-2 z-10 w-8 bg-gradient-to-l from-base-100 to-transparent"
                 aria-hidden
               />
             )}
 
             <nav
               ref={tabsRef}
-              className="no-scrollbar flex w-full flex-nowrap gap-1 overflow-x-auto scroll-smooth rounded-[var(--radius)] border border-base-300 bg-base-200/60 p-1.5 snap-x snap-mandatory sm:gap-1.5"
+              className="no-scrollbar flex w-full flex-nowrap gap-4 overflow-x-auto scroll-smooth snap-x snap-mandatory border-b border-base-300/70 sm:gap-6 md:gap-8"
               aria-label="Seções do projeto"
               role="tablist"
               aria-orientation="horizontal"
@@ -519,10 +521,10 @@ export const ProjectView: React.FC<{
                   type="button"
                   onClick={() => handleTabClick(tab.id)}
                   className={cn(
-                    'min-h-[40px] flex-shrink-0 snap-start whitespace-nowrap rounded-[var(--radius)] px-4 py-2 font-heading text-sm transition-colors duration-200 sm:min-h-0 sm:py-2',
+                    'relative min-h-[44px] flex-shrink-0 snap-start whitespace-nowrap px-0.5 pb-2.5 pt-1 font-heading text-sm transition-colors sm:min-h-0',
                     activeTab === tab.id
-                      ? 'bg-[oklch(var(--p))] text-[oklch(var(--pc))] shadow-sm'
-                      : 'bg-transparent text-base-content/75 hover:bg-[color-mix(in_srgb,var(--foreground)_10%,transparent)] hover:text-base-content'
+                      ? 'font-semibold text-base-content after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2px] after:rounded-full after:bg-error after:content-[""]'
+                      : 'font-medium text-base-content/55 hover:text-base-content/85'
                   )}
                   id={`tab-${tab.id}`}
                   role="tab"
@@ -545,7 +547,7 @@ export const ProjectView: React.FC<{
           </div>
         </div>
 
-        <div className="mt-8">
+        <div className="mt-4 sm:mt-5">
           <PageTransition transitionKey={activeTab}>
             {activeTab === 'dashboard' && (
               <section id="tab-panel-dashboard" role="tabpanel" aria-labelledby="tab-dashboard">

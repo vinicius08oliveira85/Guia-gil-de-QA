@@ -4,9 +4,7 @@ import { cn } from '../../utils/cn';
 
 export interface WorkspaceDaisyStatsProps {
   projectCount: number;
-  /** % Passed / total test cases */
   testSuccessPercent: number;
-  /** % Done / total tasks */
   taskDonePercent: number;
   lastSaveToSupabase: boolean | null;
   supabaseAvailable: boolean;
@@ -15,7 +13,7 @@ export interface WorkspaceDaisyStatsProps {
 }
 
 /**
- * Indicadores do workspace em grade compacta (estilo bento): ícone + rótulo + valor em linha.
+ * Indicadores compactos do workspace (ícone + rótulo + valor).
  */
 export const WorkspaceDaisyStats: React.FC<WorkspaceDaisyStatsProps> = ({
   projectCount,
@@ -26,99 +24,88 @@ export const WorkspaceDaisyStats: React.FC<WorkspaceDaisyStatsProps> = ({
   supabaseLoadFailed,
   className,
 }) => {
-  const cloudTitle = 'Nuvem';
   let cloudValue: string;
-  let cloudDesc: string;
   let cloudIcon: React.ReactNode;
   let cloudValueClass = 'text-base-content';
 
   if (!supabaseAvailable) {
     cloudValue = '—';
-    cloudDesc = 'Supabase não configurado';
-    cloudIcon = <CloudOff className="h-5 w-5 opacity-80" aria-hidden />;
+    cloudIcon = <CloudOff className="h-4 w-4 opacity-80" aria-hidden />;
     cloudValueClass = 'text-base-content/70';
   } else if (supabaseLoadFailed) {
     cloudValue = 'Indisponível';
-    cloudDesc = 'Falha ao sincronizar';
-    cloudIcon = <AlertTriangle className="h-5 w-5 text-warning" aria-hidden />;
+    cloudIcon = <AlertTriangle className="h-4 w-4 text-warning" aria-hidden />;
     cloudValueClass = 'text-warning';
   } else if (lastSaveToSupabase === true) {
     cloudValue = 'OK';
-    cloudDesc = 'Último save na nuvem';
-    cloudIcon = <Cloud className="h-5 w-5 text-success" aria-hidden />;
+    cloudIcon = <Cloud className="h-4 w-4 text-success" aria-hidden />;
     cloudValueClass = 'text-success';
   } else if (lastSaveToSupabase === false) {
     cloudValue = 'Local';
-    cloudDesc = 'Último save só local';
-    cloudIcon = <CloudOff className="h-5 w-5 text-warning" aria-hidden />;
+    cloudIcon = <CloudOff className="h-4 w-4 text-warning" aria-hidden />;
     cloudValueClass = 'text-warning';
   } else {
     cloudValue = '—';
-    cloudDesc = 'Nenhum save nesta sessão';
-    cloudIcon = <Cloud className="h-5 w-5 opacity-60" aria-hidden />;
+    cloudIcon = <Cloud className="h-4 w-4 opacity-60" aria-hidden />;
     cloudValueClass = 'text-base-content/65';
   }
 
   const statCard =
-    'group flex min-h-[4rem] w-full flex-row items-center gap-2.5 rounded-[var(--rounded-box)] border border-base-300/65 bg-base-200/90 px-2.5 py-2 text-left soft-shadow ring-1 ring-base-content/[0.03] backdrop-blur-sm transition-[box-shadow,transform,border-color] duration-200 hover:-translate-y-px hover:border-primary/25 hover:ring-2 hover:ring-[color-mix(in_oklch,oklch(var(--p))_18%,transparent)] motion-reduce:transform-none sm:min-h-[4.25rem] sm:gap-3 sm:px-3 sm:py-2.5 dark:bg-base-200/50';
+    'flex min-h-[3.75rem] flex-1 flex-col items-center justify-center gap-1 rounded-[var(--rounded-box)] border border-base-300/60 bg-base-100 px-2 py-2.5 text-center soft-shadow sm:min-h-[4.25rem] sm:px-3';
 
   const statTitle =
-    'text-[11px] font-semibold uppercase tracking-wide text-base-content/78 sm:text-xs sm:tracking-wider';
-  const statValue = 'text-lg font-bold tabular-nums leading-tight sm:text-xl';
-  const statDesc = 'mt-0.5 line-clamp-2 text-[11px] leading-snug text-base-content/72 sm:text-xs';
+    'text-[9px] font-bold uppercase tracking-wider text-base-content/65 sm:text-[10px]';
+  const statValue = 'text-lg font-bold tabular-nums leading-none sm:text-xl';
+
+  const items = [
+    {
+      key: 'projects',
+      icon: <FolderKanban className="h-4 w-4 text-primary" aria-hidden />,
+      label: 'Projetos',
+      value: String(projectCount),
+      valueClass: 'text-base-content',
+    },
+    {
+      key: 'success',
+      icon: <CircleCheck className="h-4 w-4 text-success" aria-hidden />,
+      label: 'Sucesso testes',
+      value: `${testSuccessPercent}%`,
+      valueClass: 'text-success',
+    },
+    {
+      key: 'progress',
+      icon: <ListTodo className="h-4 w-4 text-info" aria-hidden />,
+      label: 'Progresso',
+      value: `${taskDonePercent}%`,
+      valueClass: 'text-info',
+    },
+    {
+      key: 'cloud',
+      icon: cloudIcon,
+      label: 'Nuvem',
+      value: cloudValue,
+      valueClass: cloudValueClass,
+    },
+  ] as const;
 
   return (
     <div
       className={cn(
-        'grid w-full grid-cols-2 items-stretch gap-2 sm:grid-cols-4 sm:gap-2.5',
+        'grid w-full grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-2.5',
         className
       )}
       role="region"
       aria-label="Indicadores do workspace"
     >
-      <div className={cn(statCard)}>
-        <div className="shrink-0 rounded-[var(--radius)] bg-primary/12 p-1.5 text-primary ring-1 ring-primary/15 transition-colors group-hover:bg-primary/18">
-          <FolderKanban className="h-5 w-5 sm:h-5 sm:w-5" aria-hidden />
+      {items.map(item => (
+        <div key={item.key} className={statCard} title={item.label}>
+          <div className="flex items-center gap-1">
+            {item.icon}
+            <span className={statTitle}>{item.label}</span>
+          </div>
+          <span className={cn(statValue, item.valueClass)}>{item.value}</span>
         </div>
-        <div className="min-w-0 flex-1">
-          <div className={statTitle}>Projetos</div>
-          <div className={cn(statValue, 'text-base-content')}>{projectCount}</div>
-          <div className={statDesc}>Total no workspace</div>
-        </div>
-      </div>
-
-      <div className={cn(statCard)}>
-        <div className="shrink-0 rounded-[var(--radius)] bg-success/12 p-1.5 text-success ring-1 ring-success/15 transition-colors group-hover:bg-success/18">
-          <CircleCheck className="h-5 w-5" aria-hidden />
-        </div>
-        <div className="min-w-0 flex-1">
-          <div className={statTitle}>Sucesso nos testes</div>
-          <div className={cn(statValue, 'text-success')}>{testSuccessPercent}%</div>
-          <div className={statDesc}>Passados ÷ total de casos (global)</div>
-        </div>
-      </div>
-
-      <div className={cn(statCard)}>
-        <div className="shrink-0 rounded-[var(--radius)] bg-secondary/12 p-1.5 text-secondary ring-1 ring-secondary/15 transition-colors group-hover:bg-secondary/18">
-          <ListTodo className="h-5 w-5" aria-hidden />
-        </div>
-        <div className="min-w-0 flex-1">
-          <div className={statTitle}>Progresso tarefas</div>
-          <div className={cn(statValue, 'text-secondary')}>{taskDonePercent}%</div>
-          <div className={statDesc}>Concluídas ÷ total (status Done)</div>
-        </div>
-      </div>
-
-      <div className={cn(statCard)}>
-        <div className="shrink-0 rounded-[var(--radius)] bg-base-200/70 p-1.5 ring-1 ring-base-300/55 transition-colors group-hover:bg-base-200">
-          {cloudIcon}
-        </div>
-        <div className="min-w-0 flex-1">
-          <div className={statTitle}>{cloudTitle}</div>
-          <div className={cn(statValue, cloudValueClass)}>{cloudValue}</div>
-          <div className={statDesc}>{cloudDesc}</div>
-        </div>
-      </div>
+      ))}
     </div>
   );
 };

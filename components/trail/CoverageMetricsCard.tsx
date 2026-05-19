@@ -1,5 +1,7 @@
 import React from 'react';
 import { ContextualHelp } from '../common/ContextualHelp';
+import { cn } from '../../utils/cn';
+import { projectViewCard } from '../common/viewUi';
 
 interface CoverageMetricsCardProps {
   versionLabel: string;
@@ -25,7 +27,7 @@ export const CoverageMetricsCard: React.FC<CoverageMetricsCardProps> = ({
   const automationInfo = totalTestCases > 0 ? `${automatedTestCases}/${totalTestCases}` : '0/0';
 
   return (
-    <section className="min-w-0 space-y-5 rounded-[var(--rounded-box)] border border-base-300 bg-base-100 p-5 shadow-sm sm:p-6">
+    <section className={cn('min-w-0 space-y-5', projectViewCard)}>
       <header>
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">

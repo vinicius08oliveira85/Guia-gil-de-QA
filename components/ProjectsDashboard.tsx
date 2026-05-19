@@ -2,11 +2,9 @@ import React, { useMemo, useState, useCallback, useEffect, useRef } from 'react'
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Project } from '../types';
-import { useIsMobile } from '../hooks/useIsMobile';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { AlertTriangle, Bug, Loader2 } from 'lucide-react';
 import { ProjectCard } from './common/ProjectCard';
-import { ConsolidatedMetrics } from './common/ConsolidatedMetrics';
 import { useErrorHandler } from '../hooks/useErrorHandler';
 import { useProjectsStore } from '../store/projectsStore';
 import { EmptyState } from './common/EmptyState';
@@ -22,8 +20,9 @@ import {
 } from '../utils/workspaceAnalytics';
 import { ProjectsDashboardHeader } from './projectsDashboard/ProjectsDashboardHeader';
 import { WorkspaceDaisyStats } from './projectsDashboard/WorkspaceDaisyStats';
-import { TaskStatusDistributionBar } from './projectsDashboard/TaskStatusDistributionBar';
-import { WorkspaceAlertsPanel } from './projectsDashboard/WorkspaceAlertsPanel';
+import { GlobalEfficiencyMetric } from './projectsDashboard/GlobalEfficiencyMetric';
+import { NewProjectCard } from './projectsDashboard/NewProjectCard';
+import { ProjectsDashboardSidebar } from './projectsDashboard/ProjectsDashboardSidebar';
 import { useAriaLive } from '../hooks/useAriaLive';
 
 type QuickFilter = 'all' | 'withBugs' | 'needsAttention';
@@ -56,7 +55,6 @@ export const ProjectsDashboard: React.FC<{
   // Filtros removidos - removido selectedTags e showTagFilter
   // Esquema API removido - removido showSchemaModal
 
-  const isMobile = useIsMobile();
   const { handleError, handleSuccess } = useErrorHandler();
   const { supabaseLoadFailed, supabaseLoadError, loadProjects, isLoading, lastSaveToSupabase } =
     useProjectsStore();
@@ -200,27 +198,29 @@ export const ProjectsDashboard: React.FC<{
   const showWorkspaceAlerts =
     projectsNeedingAttention.length > 0 || projectsTestAlertList.length > 0;
 
+  const filterPillClass = (active: boolean) =>
+    cn(
+      'inline-flex min-h-[44px] items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium transition-colors sm:min-h-9',
+      active
+        ? 'bg-[var(--brand-cta)] text-[var(--brand-cta-foreground)] shadow-sm'
+        : 'border border-base-300/80 bg-base-100 text-base-content/80 hover:border-base-300 hover:bg-base-200/60'
+    );
+
   return (
     <>
-      <div className="animate-fade-in min-h-[calc(100vh-4rem)] bg-base-100 font-body">
-        <div className="tasks-panel-scope mx-auto w-full max-w-full px-3 py-3 sm:px-6 sm:py-4">
-          {/* Header */}
-          <div className="mb-3 sm:mb-4 lg:pt-0.5">
-            <ProjectsDashboardHeader
-              projectCount={projects.length}
-              sortBy={sortBy}
-              onSortByChange={handleSortByChange}
-              lastActivityText={lastActivityText}
-            />
-          </div>
+      <div className="animate-fade-in min-h-[calc(100vh-4rem)] bg-base-200/40 font-body">
+        <div className="tasks-panel-scope mx-auto w-full max-w-[90rem] px-3 py-4 sm:px-6 sm:py-5">
+          <ProjectsDashboardHeader
+            projectCount={projects.length}
+            sortBy={sortBy}
+            onSortByChange={handleSortByChange}
+            lastActivityText={lastActivityText}
+          />
 
           {projects.length > 0 && (
-            <div className="relative isolate mb-4 space-y-3 overflow-hidden rounded-[var(--rounded-box)] border border-base-300/65 bg-base-100 p-3 shadow-md shadow-base-content/[0.05] ring-1 ring-base-content/[0.04] sm:space-y-3.5 sm:p-4">
-              <div
-                className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/25 to-transparent"
-                aria-hidden
-              />
+            <div className="mb-4 mt-4 flex flex-col gap-3 sm:mt-5 lg:flex-row lg:items-stretch lg:gap-3">
               <WorkspaceDaisyStats
+                className="min-w-0 flex-1"
                 projectCount={projects.length}
                 testSuccessPercent={workspaceTestMetrics.testSuccessPercent}
                 taskDonePercent={taskDonePercentGlobal}
@@ -228,70 +228,25 @@ export const ProjectsDashboard: React.FC<{
                 supabaseAvailable={isSupabaseAvailable()}
                 supabaseLoadFailed={supabaseLoadFailed}
               />
-              <p className="relative z-[1] flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 rounded-lg border border-base-300/45 bg-base-200/30 px-2.5 py-1.5 text-sm leading-snug text-base-content/80 sm:px-3">
-                <span className="font-medium text-base-content/85">Eficiência de execução</span>
-                <span className="text-base-content/70">(≠ Não executado):</span>
-                <strong className="font-bold tabular-nums text-base-content">
-                  {workspaceTestMetrics.executionEfficiencyPercent}%
-                </strong>
-                {workspaceTestMetrics.totalTestCases > 0 && (
-                  <span className="text-base-content/72">
-                    · {workspaceTestMetrics.executedTestCases}/{workspaceTestMetrics.totalTestCases}{' '}
-                    casos
-                  </span>
-                )}
-              </p>
-              <div
-                className={cn(
-                  'relative z-[1] flex min-h-0 flex-col gap-3',
-                  showWorkspaceAlerts &&
-                    'lg:grid lg:grid-cols-12 lg:items-stretch lg:gap-4 lg:min-h-[12rem]'
-                )}
-              >
-                {showWorkspaceAlerts && (
-                  <div className="flex min-h-0 min-w-0 flex-col lg:col-span-5 lg:h-full">
-                    <WorkspaceAlertsPanel
-                      healthProjects={projectsNeedingAttention}
-                      testExecutionAlertProjects={projectsTestAlertList}
-                      onSelectProject={onSelectProject}
-                      listFilterNeedsAttention={quickFilter === 'needsAttention'}
-                      onToggleListFilterNeedsAttention={() =>
-                        setQuickFilter(quickFilter === 'needsAttention' ? 'all' : 'needsAttention')
-                      }
-                      className="h-full"
-                    />
-                  </div>
-                )}
-                <div
-                  className={cn(
-                    'min-h-0 min-w-0',
-                    showWorkspaceAlerts ? 'lg:col-span-7' : 'lg:col-span-12'
-                  )}
-                >
-                  <TaskStatusDistributionBar
-                    buckets={taskWorkflowBuckets}
-                    className={showWorkspaceAlerts ? 'h-full lg:min-h-[11rem]' : ''}
-                  />
-                </div>
-              </div>
-              <ConsolidatedMetrics projects={projects} variant="embedded" />
+              <GlobalEfficiencyMetric
+                className="w-full shrink-0 lg:w-auto lg:min-w-[13rem]"
+                percent={workspaceTestMetrics.executionEfficiencyPercent}
+                executedCount={workspaceTestMetrics.executedTestCases}
+                totalCount={workspaceTestMetrics.totalTestCases}
+              />
             </div>
           )}
 
-          {/* Filtros rápidos */}
           {projects.length > 1 && (
             <div
-              className="flex flex-wrap items-center gap-2 mb-4"
+              className="mb-4 flex flex-wrap items-center gap-2"
               role="group"
               aria-label="Filtrar projetos"
             >
               <button
                 type="button"
                 onClick={() => setQuickFilter('all')}
-                className={cn(
-                  'btn btn-sm rounded-lg min-h-[44px] sm:min-h-8',
-                  quickFilter === 'all' ? 'btn-primary' : 'btn-ghost btn-outline'
-                )}
+                className={filterPillClass(quickFilter === 'all')}
                 aria-pressed={quickFilter === 'all'}
               >
                 Todos
@@ -300,13 +255,10 @@ export const ProjectsDashboard: React.FC<{
                 <button
                   type="button"
                   onClick={() => setQuickFilter(quickFilter === 'withBugs' ? 'all' : 'withBugs')}
-                  className={cn(
-                    'btn btn-sm rounded-lg inline-flex items-center gap-1 min-h-[44px] sm:min-h-8',
-                    quickFilter === 'withBugs' ? 'btn-primary' : 'btn-ghost btn-outline'
-                  )}
+                  className={filterPillClass(quickFilter === 'withBugs')}
                   aria-pressed={quickFilter === 'withBugs'}
                 >
-                  <Bug className="w-3.5 h-3.5" aria-hidden />
+                  <Bug className="h-3.5 w-3.5" aria-hidden />
                   Com bugs ({projectsWithBugs.length})
                 </button>
               )}
@@ -316,14 +268,11 @@ export const ProjectsDashboard: React.FC<{
                   onClick={() =>
                     setQuickFilter(quickFilter === 'needsAttention' ? 'all' : 'needsAttention')
                   }
-                  className={cn(
-                    'btn btn-sm rounded-lg inline-flex items-center gap-1 min-h-[44px] sm:min-h-8',
-                    quickFilter === 'needsAttention' ? 'btn-primary' : 'btn-ghost btn-outline'
-                  )}
+                  className={filterPillClass(quickFilter === 'needsAttention')}
                   aria-pressed={quickFilter === 'needsAttention'}
                 >
-                  <AlertTriangle className="w-3.5 h-3.5" aria-hidden />
-                  Precisa de atenção ({projectsNeedingAttention.length})
+                  <AlertTriangle className="h-3.5 w-3.5" aria-hidden />
+                  Atenção ({projectsNeedingAttention.length})
                 </button>
               )}
             </div>
@@ -378,10 +327,17 @@ export const ProjectsDashboard: React.FC<{
             onCreateBusyChange={setIsCreateSubmitting}
           />
 
-          <div className="mt-5 sm:mt-6">
+          <div
+            className={cn(
+              'mt-2',
+              projects.length > 0 &&
+                'lg:grid lg:grid-cols-[minmax(0,1fr)_min(100%,20rem)] lg:items-start lg:gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]'
+            )}
+          >
+            <div className="min-w-0">
             {filteredProjects.length > 0 ? (
               <div
-                className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
+                className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 md:gap-5"
                 role="list"
                 aria-label="Lista de projetos"
               >
@@ -391,7 +347,7 @@ export const ProjectsDashboard: React.FC<{
                     className="min-h-0"
                     role="listitem"
                     aria-posinset={index + 1}
-                    aria-setsize={filteredProjects.length}
+                    aria-setsize={filteredProjects.length + (quickFilter === 'all' ? 1 : 0)}
                   >
                     <ProjectCard
                       project={p}
@@ -401,6 +357,15 @@ export const ProjectsDashboard: React.FC<{
                     />
                   </div>
                 ))}
+                {quickFilter === 'all' && (
+                  <div role="listitem" className="min-h-0">
+                    <NewProjectCard
+                      onClick={() => setIsCreating(true)}
+                      disabled={isCreateSubmitting}
+                      className="h-full"
+                    />
+                  </div>
+                )}
               </div>
             ) : (
               <>
@@ -482,6 +447,23 @@ export const ProjectsDashboard: React.FC<{
                   </div>
                 )}
               </>
+            )}
+            </div>
+
+            {projects.length > 0 && (
+              <ProjectsDashboardSidebar
+                className="mt-6 lg:mt-0"
+                projects={projects}
+                healthProjects={projectsNeedingAttention}
+                testExecutionAlertProjects={projectsTestAlertList}
+                taskWorkflowBuckets={taskWorkflowBuckets}
+                onSelectProject={onSelectProject}
+                listFilterNeedsAttention={quickFilter === 'needsAttention'}
+                onToggleListFilterNeedsAttention={() =>
+                  setQuickFilter(quickFilter === 'needsAttention' ? 'all' : 'needsAttention')
+                }
+                showAlerts={showWorkspaceAlerts}
+              />
             )}
           </div>
         </div>

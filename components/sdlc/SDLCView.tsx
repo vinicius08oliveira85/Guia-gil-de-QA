@@ -2,6 +2,15 @@ import React, { useState } from 'react';
 import { Project } from '../../types';
 import { Badge } from '../common/Badge';
 import { Modal } from '../common/Modal';
+import {
+  outlineActionBtn,
+  pageSubtitleClass,
+  pageTitleClass,
+  projectViewCard,
+  projectViewPanel,
+  projectViewShell,
+} from '../common/viewUi';
+import { cn } from '../../utils/cn';
 
 interface SDLCPhase {
   id: string;
@@ -256,27 +265,26 @@ export const SDLCView: React.FC<{ project: Project }> = ({ project }) => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2">
-            Ciclo de Vida do Projeto (SDLC & DevOps)
-          </h2>
-          <p className="text-base-content/70 max-w-2xl">
-            Visualize o ciclo de vida completo do projeto integrando práticas de QA e DevOps
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={() => setShowShiftLeft(!showShiftLeft)}
-          className="btn btn-outline btn-sm rounded-full hover:bg-base-200"
-        >
-          {showShiftLeft ? 'Ocultar' : 'Mostrar'} Shift Left
-        </button>
-      </div>
+    <div className={cn(projectViewShell, 'pb-2')}>
+      <section className={projectViewPanel}>
+        <header className="flex flex-col gap-4 border-b border-base-300/60 pb-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0">
+            <h2 className={pageTitleClass}>Ciclo de Vida do Projeto (SDLC & DevOps)</h2>
+            <p className={cn(pageSubtitleClass, 'mt-2')}>
+              Visualize o ciclo de vida completo do projeto integrando práticas de QA e DevOps.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowShiftLeft(!showShiftLeft)}
+            className={outlineActionBtn}
+          >
+            {showShiftLeft ? 'Ocultar' : 'Mostrar'} Shift Left
+          </button>
+        </header>
+      </section>
 
-      {/* Timeline Visual */}
-      <div className="relative">
+      <div className="relative mt-4">
         <div className="absolute left-6 sm:left-8 top-0 bottom-0 w-1 bg-base-300"></div>
 
         <div className="space-y-8">
@@ -299,7 +307,7 @@ export const SDLCView: React.FC<{ project: Project }> = ({ project }) => {
 
                 {/* Conteúdo da fase */}
                 <div className="flex-1 pb-8">
-                  <div className="p-6 bg-base-100 border border-base-300 rounded-xl hover:shadow-lg transition-shadow">
+                  <div className={cn(projectViewCard, 'transition-shadow hover:shadow-md')}>
                     <div className="flex items-start justify-between mb-4">
                       <div>
                         <h3 className="text-xl font-bold text-base-content mb-2">{phase.name}</h3>

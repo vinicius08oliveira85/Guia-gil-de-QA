@@ -19,38 +19,27 @@ export const ProjectsDashboardHeader: React.FC<ProjectsDashboardHeaderProps> = (
 }) => {
   const headingId = useId();
   const showSort = projectCount > 1;
-  const showStatusRow = projectCount > 0;
-  const showIndicatorStrip = showStatusRow && Boolean(lastActivityText);
 
   return (
-    <div className="relative isolate overflow-hidden mica !rounded-[var(--rounded-box)] border-0 px-3 py-3 sm:px-5 sm:py-4">
-      <div
-        className="pointer-events-none absolute inset-0 opacity-[0.4] sm:opacity-100"
-        aria-hidden
-      >
-        <div className="absolute -right-6 -top-10 h-32 w-32 rounded-full bg-primary/[0.07] blur-2xl" />
-        <div className="absolute -bottom-6 left-1/3 h-24 w-24 rounded-full bg-secondary/[0.06] blur-2xl" />
-      </div>
-
-      <section
-        aria-labelledby={headingId}
-        className="relative z-[1] flex flex-col gap-2.5 sm:gap-3"
-      >
-        {/* Linha 1: título + busca (fixo) | meta com rolagem horizontal no mobile */}
-        <div className="flex min-w-0 flex-nowrap items-center gap-x-3 gap-y-2 sm:gap-x-5 sm:gap-y-2">
-          <div className="flex min-w-0 shrink-0 items-center gap-2 sm:gap-2.5">
+    <section aria-labelledby={headingId} className="relative mb-1 sm:mb-2">
+      <div className="flex flex-col gap-3 sm:gap-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+          <div className="min-w-0 flex flex-wrap items-center gap-2 sm:gap-2.5">
             <h1
               id={headingId}
-              className="font-heading text-2xl font-bold tracking-tight text-base-content sm:text-3xl md:text-[1.65rem] md:tracking-tight"
+              className="font-heading text-2xl font-bold tracking-tight text-base-content sm:text-[1.75rem]"
             >
               Meus Projetos
             </h1>
+            <span className="shrink-0 rounded-full border border-[color-mix(in_srgb,var(--brand-highlight)_35%,transparent)] bg-[color-mix(in_srgb,var(--brand-highlight)_12%,transparent)] px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest text-[var(--brand-highlight)]">
+              Workspace
+            </span>
             <button
               type="button"
               onClick={() => window.dispatchEvent(new CustomEvent('open-global-search'))}
               className={cn(
-                'win-icon-button shrink-0 text-[color-mix(in_srgb,var(--foreground)_72%,transparent)]',
-                'hover:bg-[color-mix(in_srgb,var(--foreground)_8%,transparent)] hover:text-[var(--foreground)]'
+                'win-icon-button shrink-0 text-base-content/60',
+                'hover:bg-base-200 hover:text-base-content'
               )}
               aria-label="Abrir busca (Ctrl+K)"
             >
@@ -60,56 +49,36 @@ export const ProjectsDashboardHeader: React.FC<ProjectsDashboardHeaderProps> = (
 
           <div
             role="group"
-            aria-label="Workspace: quantidade de projetos e ordenação da lista"
-            className="min-w-0 flex flex-1 flex-nowrap items-center gap-x-3 overflow-x-auto overflow-y-hidden overscroll-x-contain pb-0.5 [-webkit-overflow-scrolling:touch] [scrollbar-width:thin] sm:flex-wrap sm:overflow-visible sm:pb-0"
+            aria-label="Atividade e ordenação do workspace"
+            className="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-2 text-sm text-base-content/70 sm:justify-end"
           >
-            <span className="shrink-0 badge badge-sm border-primary/25 bg-primary/10 font-semibold tracking-wide text-primary ring-1 ring-primary/20">
-              Workspace
-            </span>
-            <span className="shrink-0 text-sm font-medium text-base-content/75">
-              {projectCount} {projectCount === 1 ? 'projeto' : 'projetos'}
-            </span>
+            {lastActivityText && (
+              <span className="text-xs sm:text-sm" title="Última alteração em qualquer projeto">
+                Última atividade:{' '}
+                <span className="font-medium text-base-content/85">{lastActivityText}</span>
+              </span>
+            )}
             {showSort && (
-              <div className="flex shrink-0 min-h-[44px] items-center gap-2 sm:min-h-0">
-                <span className="text-xs font-medium text-base-content/65">Ordenar</span>
+              <label className="inline-flex min-h-[44px] items-center gap-2 sm:min-h-0">
+                <span className="text-xs font-medium text-base-content/65">Ordenar:</span>
                 <select
                   value={sortBy}
                   onChange={e => onSortByChange(e.target.value as ProjectsDashboardSortBy)}
-                  className="select select-bordered select-sm h-9 min-h-[44px] rounded-[var(--radius)] border-base-300/80 bg-base-100/90 py-1 text-xs soft-shadow backdrop-blur-sm transition-[box-shadow,border-color] focus:border-[oklch(var(--p))]/40 focus:outline-none focus:ring-2 focus:ring-[color-mix(in_oklch,oklch(var(--p))_28%,transparent)] sm:min-h-8 sm:h-8 sm:rounded-[var(--radius)]"
+                  className="select select-bordered select-sm h-9 min-h-[44px] rounded-lg border-base-300/80 bg-base-100 py-1 pl-2 pr-8 text-xs font-medium text-base-content focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20 sm:min-h-8 sm:h-8"
                   aria-label="Ordenar projetos por"
                 >
                   <option value="name">Nome</option>
                   <option value="updatedAt">Última atualização</option>
                 </select>
-              </div>
+              </label>
             )}
           </div>
         </div>
 
-        {/* Linha 2: descrição | indicadores (rolagem horizontal no mobile quando necessário) */}
-        <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-          <p className="max-w-2xl font-body text-sm leading-snug text-base-content/80 sm:flex-1 sm:min-w-[14rem] sm:leading-relaxed">
-            Crie, organize e acompanhe o QA por projeto — templates, métricas e integrações
-            opcionais quando fizer sentido.
-          </p>
-          {showIndicatorStrip && (
-            <div
-              role="group"
-              aria-label="Indicadores de atividade do workspace"
-              className="flex max-w-full flex-nowrap items-center gap-2 overflow-x-auto overflow-y-hidden pb-0.5 [-webkit-overflow-scrolling:touch] [scrollbar-width:thin] sm:flex-wrap sm:overflow-visible sm:gap-2 sm:pb-0"
-            >
-              {lastActivityText && (
-                <span
-                  className="inline-flex shrink-0 items-center rounded-[var(--radius)] border border-base-300/50 bg-base-200/35 px-2.5 py-1 text-xs font-medium text-base-content/85 sm:text-sm"
-                  title="Última alteração em qualquer projeto"
-                >
-                  Última atividade: {lastActivityText}
-                </span>
-              )}
-            </div>
-          )}
-        </div>
-      </section>
-    </div>
+        <p className="max-w-2xl text-sm leading-relaxed text-base-content/70">
+          Crie, organize e acompanhe o QA por projeto.
+        </p>
+      </div>
+    </section>
   );
 };

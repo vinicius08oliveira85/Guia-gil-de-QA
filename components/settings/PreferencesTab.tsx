@@ -55,11 +55,11 @@ export const PreferencesTab: React.FC = () => {
                 key={section.id}
                 onClick={() => setActiveSection(section.id)}
                 className={cn(
-                  'inline-flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap',
+                  'relative inline-flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap',
                   'hover:text-base-content focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2',
                   isActive
-                    ? 'border-primary text-primary'
-                    : 'border-transparent text-base-content/70 hover:border-base-300'
+                    ? 'border-error font-semibold text-base-content after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2px] after:rounded-full after:bg-error'
+                    : 'border-transparent text-base-content/70 hover:border-base-300 hover:text-base-content/85'
                 )}
                 role="tab"
                 aria-selected={isActive}

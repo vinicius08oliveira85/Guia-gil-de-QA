@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card } from '../common/Card';
+import { projectViewCard } from '../common/viewUi';
 import {
   getNotificationPreferences,
   updateNotificationPreferences,
@@ -63,7 +63,7 @@ export const NotificationPreferences: React.FC = () => {
   ];
 
   return (
-    <Card className="p-6">
+    <div className={projectViewCard}>
       <div className="space-y-6">
         <div>
           <h4 className="text-lg font-semibold text-base-content mb-2">
@@ -98,6 +98,6 @@ export const NotificationPreferences: React.FC = () => {
           ))}
         </div>
       </div>
-    </Card>
+    </div>
   );
 };

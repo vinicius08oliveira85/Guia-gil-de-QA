@@ -6,6 +6,7 @@ import { LoadingSkeleton } from '../common/LoadingSkeleton';
 import { ConfirmDialog } from '../common/ConfirmDialog';
 import { Project } from '../../types';
 import { cn } from '../../utils/cn';
+import { pageSubtitleClass, settingsContentShell } from '../common/viewUi';
 
 // Lazy load das tabs com tratamento de erro
 const lazyLoadTab = (importFn: () => Promise<any>, name: string) => {
@@ -103,8 +104,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   return (
     <div className="min-h-screen flex flex-col bg-base-100">
       {/* Header melhorado */}
-      <div className="sticky top-0 z-20 mica !rounded-none border-b border-[color-mix(in_srgb,var(--foreground)_10%,transparent)] !shadow-none soft-shadow">
-        <div className="container mx-auto px-4 sm:px-6 py-6">
+      <div className="sticky top-0 z-20 border-b border-base-300/60 bg-base-100 soft-shadow">
+        <div className={cn(settingsContentShell, 'py-5 sm:py-6')}>
           <div className="flex flex-col gap-6">
             {/* Header com título e subtítulo */}
             <div className="flex items-start gap-4">
@@ -118,56 +119,59 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 <h1 className="font-heading text-2xl font-bold tracking-tight text-base-content sm:text-3xl">
                   Configurações
                 </h1>
-                <p className="text-sm text-base-content/70 mt-2 max-w-2xl leading-relaxed">
+                <p className={cn(pageSubtitleClass, 'mt-2')}>
                   Gerencie suas integrações, preferências e configurações do projeto
                 </p>
               </div>
             </div>
 
             {/* Tab Navigation melhorada */}
-            <div
-              className="rounded-[var(--rounded-box)] border border-[color-mix(in_srgb,var(--foreground)_10%,transparent)] bg-base-200/50 p-1.5"
+            <nav
+              className="no-scrollbar flex gap-4 overflow-x-auto border-b border-base-300/70 sm:gap-6"
               role="tablist"
               aria-label="Abas de configurações"
             >
-              <nav className="no-scrollbar flex gap-1 overflow-x-auto">
-                {tabs.map(tab => {
-                  const Icon = tab.icon;
-                  const isActive = activeTab === tab.id;
+              {tabs.map(tab => {
+                const Icon = tab.icon;
+                const isActive = activeTab === tab.id;
 
-                  return (
-                    <button
-                      key={tab.id}
-                      onClick={() => setActiveTab(tab.id)}
-                      onKeyDown={handleTabKeyDown}
-                      className={cn(
-                        'inline-flex items-center gap-2 whitespace-nowrap rounded-[var(--radius)] px-4 py-3 font-heading text-sm transition-colors duration-200',
-                        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-base-100',
-                        isActive
-                          ? 'bg-primary text-primary-content ring-1 ring-[color-mix(in_oklch,oklch(var(--pc))_35%,transparent)]'
-                          : 'text-base-content/75 hover:bg-base-300/70 hover:text-base-content'
-                      )}
-                      role="tab"
-                      aria-selected={isActive}
-                      aria-controls={`tab-panel-${tab.id}`}
-                      type="button"
-                    >
-                      <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
-                      {tab.label}
-                    </button>
-                  );
-                })}
-              </nav>
-            </div>
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    onKeyDown={handleTabKeyDown}
+                    className={cn(
+                      'relative inline-flex min-h-[44px] shrink-0 items-center gap-2 whitespace-nowrap px-0.5 pb-2.5 pt-1 font-heading text-sm transition-colors sm:min-h-0',
+                      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--brand-cta)_35%,transparent)] focus-visible:ring-offset-2',
+                      isActive
+                        ? 'font-semibold text-base-content after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2px] after:rounded-full after:bg-error after:content-[""]'
+                        : 'font-medium text-base-content/55 hover:text-base-content/85'
+                    )}
+                    role="tab"
+                    aria-selected={isActive}
+                    aria-controls={`tab-panel-${tab.id}`}
+                    type="button"
+                  >
+                    <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </nav>
           </div>
         </div>
       </div>
 
       {/* Tab Content */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="container mx-auto px-4 sm:px-6 py-6 max-w-5xl">
+      <div className="flex-1 overflow-y-auto bg-base-200/30">
+        <div className={cn(settingsContentShell, 'py-6')}>
           <Suspense fallback={<LoadingSkeleton variant="card" count={2} />}>
-            <div id={`tab-panel-${activeTab}`} role="tabpanel" aria-labelledby={`tab-${activeTab}`}>
+            <div
+              id={`tab-panel-${activeTab}`}
+              role="tabpanel"
+              aria-labelledby={`tab-${activeTab}`}
+              className="rounded-[var(--rounded-box)] border border-base-300/60 bg-base-100 p-4 soft-shadow sm:p-5"
+            >
               {activeTab === 'jira' && (
                 <JiraSettingsTab
                   onProjectImported={onProjectImported}

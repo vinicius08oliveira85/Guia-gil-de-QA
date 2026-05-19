@@ -18,8 +18,12 @@ import {
 import { Modal } from '../common/Modal';
 import { Button } from '../common/Button';
 import { ConfirmDialog } from '../common/ConfirmDialog';
-import { Card } from '../common/Card';
-import { SectionHeader } from '../common/SectionHeader';
+import {
+  outlineActionBtn,
+  primaryActionBtn,
+  projectViewPanel,
+  projectViewShell,
+} from '../common/viewUi';
 import { EmptyState } from '../common/EmptyState';
 import { Badge } from '../common/Badge';
 import { SafeMarkdown } from '../common/SafeMarkdown';
@@ -249,44 +253,36 @@ export const BusinessRulesManager: React.FC<{
     setCategoryScope('all');
   };
 
+  const jiraProjectKey = project.settings?.jiraProjectKey;
+
   return (
     <>
-      <div className="space-y-6 py-8 md:py-10 lg:py-12">
-        <Card hoverable={false} className="p-3 py-4 sm:p-4 sm:py-6 lg:p-5">
-          <div className="tasks-panel-scope flex flex-col gap-tasks-panel-loose">
-            <div
-              className="flex flex-col gap-4 rounded-xl border border-base-300/80 bg-base-100/95 p-3 shadow-sm backdrop-blur-md sm:p-4"
-              aria-labelledby="business-rules-heading"
-            >
-              <div className="border-b border-base-300/80 pb-4">
-                <SectionHeader
-                  as="h1"
-                  align="left"
-                  fullWidth
-                  titleSize="page"
-                  density="dense"
-                  headingId="business-rules-heading"
-                  title={
-                    <span className="inline-flex items-center gap-2.5">
-                      <Scale className="h-7 w-7 shrink-0 text-primary" aria-hidden />
-                      <span>Regras de negócio</span>
+      <div className={projectViewShell} role="main" aria-label="Regras de negócio do projeto">
+        <section className={cn(projectViewPanel, 'space-y-4 sm:space-y-5')}>
+          <header className="flex flex-col gap-4 border-b border-base-300/60 pb-4 sm:pb-5">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+              <div className="min-w-0">
+                <div className="mb-1.5 flex flex-wrap items-center gap-2">
+                  <h1
+                    id="business-rules-heading"
+                    className="inline-flex items-center gap-2 font-heading text-2xl font-bold tracking-tight text-base-content sm:text-[1.65rem]"
+                  >
+                    <Scale className="h-7 w-7 shrink-0 text-[var(--brand-cta)]" aria-hidden />
+                    Regras de negócio
+                  </h1>
+                  {jiraProjectKey && (
+                    <span className="shrink-0 rounded-md border border-base-300/70 bg-base-200/50 px-2 py-0.5 text-xs font-medium text-base-content/65">
+                      Jira: {jiraProjectKey}
                     </span>
-                  }
-                  description={
-                    <>
-                      Defina regras por categoria e vincule-as às tarefas no detalhe da tarefa para a
-                      IA gerar BDD e casos mais assertivos. Ao editar, você pode vincular regras entre
-                      si — insere{' '}
-                      <code className="rounded bg-base-300/60 px-1.5 py-0.5 text-xs font-mono">
-                        @NomeDaRegra
-                      </code>{' '}
-                      na descrição.
-                    </>
-                  }
-                  className="max-w-3xl"
-                />
+                  )}
+                </div>
+                <p className="max-w-3xl text-sm leading-relaxed text-base-content/70">
+                  Defina regras por categoria e vincule-as às tarefas para a IA gerar BDD e casos mais
+                  assertivos. Use{' '}
+                  <code className="rounded bg-base-200 px-1.5 py-0.5 text-xs font-mono">@NomeDaRegra</code>{' '}
+                  na descrição ao vincular regras entre si.
+                </p>
               </div>
-
               <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
                 <input
                   ref={importInputRef}
@@ -297,53 +293,44 @@ export const BusinessRulesManager: React.FC<{
                   aria-label="Importar regras de negócio de arquivo JSON"
                   onChange={handleImportFile}
                 />
-                <Button
+                <button
                   type="button"
-                  variant="outline"
-                  size="sm"
-                  className="w-full rounded-full sm:w-auto"
+                  className={cn(outlineActionBtn, 'w-full sm:w-auto')}
                   onClick={() => importInputRef.current?.click()}
                   title="Mescla regras a partir de JSON (mesmo id atualiza título/descrição)"
                 >
-                  <Upload className="h-4 w-4" aria-hidden />
+                  <Upload className="h-4 w-4 shrink-0" aria-hidden />
                   Importar JSON
-                </Button>
-                <Button
+                </button>
+                <button
                   type="button"
-                  variant="outline"
-                  size="sm"
-                  className="w-full rounded-full sm:w-auto"
+                  className={cn(outlineActionBtn, 'w-full sm:w-auto')}
                   onClick={handleExportJson}
                   title="Exporta todas as regras do projeto em JSON"
                 >
-                  <Download className="h-4 w-4" aria-hidden />
+                  <Download className="h-4 w-4 shrink-0" aria-hidden />
                   Exportar JSON
-                </Button>
-                <Button
-                  type="button"
-                  variant="default"
-                  size="sm"
-                  className="w-full rounded-full px-5 shadow-md shadow-primary/15 sm:w-auto"
-                  onClick={openCreate}
-                >
-                  <Plus className="h-4 w-4" aria-hidden />
+                </button>
+                <button type="button" className={cn(primaryActionBtn, 'w-full sm:w-auto')} onClick={openCreate}>
+                  <Plus className="h-4 w-4 shrink-0" aria-hidden />
                   Nova regra
-                </Button>
+                </button>
               </div>
-
-              <BusinessRulesFiltersToolbar
-                searchQuery={searchQuery}
-                onSearchQueryChange={setSearchQuery}
-                categoryScope={categoryScope}
-                onCategoryScopeChange={setCategoryScope}
-                uniqueCategories={uniqueCategories}
-                sortBy={sortBy}
-                onSortByChange={setSortBy}
-                onManageCategoriesClick={() => setCategoriesModalOpen(true)}
-              />
             </div>
+          </header>
 
-            <div className="flex flex-col gap-tasks-panel">
+          <BusinessRulesFiltersToolbar
+            searchQuery={searchQuery}
+            onSearchQueryChange={setSearchQuery}
+            categoryScope={categoryScope}
+            onCategoryScopeChange={setCategoryScope}
+            uniqueCategories={uniqueCategories}
+            sortBy={sortBy}
+            onSortByChange={setSortBy}
+            onManageCategoriesClick={() => setCategoriesModalOpen(true)}
+          />
+
+          <div className="flex flex-col gap-4">
               {rules.length === 0 ? (
                 <EmptyState
                   title="Nenhuma regra cadastrada"
@@ -366,15 +353,15 @@ export const BusinessRulesManager: React.FC<{
                   }}
                 />
               ) : (
-                <ul className="space-y-3" role="list" aria-label="Lista de regras de negócio">
+                <ul className="grid grid-cols-1 gap-3 xl:grid-cols-2" role="list" aria-label="Lista de regras de negócio">
                   {displayRules.map(rule => {
                     const catLabel = businessRuleCategoryLabel(rule);
                     const badgeVariant = badgeVariantForBusinessRuleCategory(catLabel);
                     return (
                       <li key={rule.id}>
-                        <Card hoverable={false} className="overflow-hidden p-0 shadow-sm">
+                        <div className="overflow-hidden rounded-[var(--rounded-box)] border border-base-300/60 bg-base-100 soft-shadow">
                           <details className="group open:shadow-md">
-                            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 min-h-[44px] text-left transition-colors hover:bg-base-200/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-inset [&::-webkit-details-marker]:hidden">
+                            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 min-h-[44px] text-left transition-colors hover:bg-base-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--brand-cta)_30%,transparent)] focus-visible:ring-inset [&::-webkit-details-marker]:hidden">
                               <span className="min-w-0 flex-1">
                                 <span className="block border-b border-transparent pb-1 text-base font-bold tracking-tight text-base-content group-open:border-base-300/80">
                                   {rule.title}
@@ -451,15 +438,14 @@ export const BusinessRulesManager: React.FC<{
                               </div>
                             </div>
                           </details>
-                        </Card>
+                        </div>
                       </li>
                     );
                   })}
                 </ul>
               )}
-            </div>
           </div>
-        </Card>
+        </section>
       </div>
 
       <Modal

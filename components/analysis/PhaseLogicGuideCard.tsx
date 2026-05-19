@@ -1,5 +1,6 @@
 import React from 'react';
-import { Card } from '../common/Card';
+import { projectViewCard } from '../common/viewUi';
+import { cn } from '../../utils/cn';
 
 export const PhaseLogicGuideCard: React.FC = () => {
   const phaseLogicData = [
@@ -52,32 +53,32 @@ export const PhaseLogicGuideCard: React.FC = () => {
   ];
 
   return (
-    <Card className="mb-8">
-      <h3 className="text-2xl font-bold text-white mb-4">Guia de Lógica de Transição de Fases</h3>
-      <p className="text-gray-400 mb-6">
+    <div className={cn(projectViewCard, 'mb-0 h-full')}>
+      <h3 className="text-xl font-bold text-base-content mb-4">Guia de Lógica de Transição de Fases</h3>
+      <p className="text-base-content/70 mb-6 text-sm leading-relaxed">
         O aplicativo atualiza a fase do projeto automaticamente com base nas seguintes regras. A
         progressão é linear e uma fase só começa quando a anterior é concluída.
       </p>
       <div className="overflow-x-auto scrollbar-hide">
         <table className="w-full text-left text-sm">
-          <thead className="border-b border-gray-600 text-gray-400">
+          <thead className="border-b border-base-300 text-base-content/60">
             <tr>
               <th className="p-2">Fase</th>
               <th className="p-2">Condição para Sair (Tornar-se 'Concluído')</th>
               <th className="p-2">Indicadores Chave</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-700">
+          <tbody className="divide-y divide-base-300/70">
             {phaseLogicData.map(row => (
               <tr key={row.phase}>
-                <td className="p-2 font-semibold text-teal-400">{row.phase}</td>
-                <td className="p-2">{row.exit}</td>
-                <td className="p-2 text-gray-400">{row.indicators}</td>
+                <td className="p-2 font-semibold text-[var(--brand-cta)]">{row.phase}</td>
+                <td className="p-2 text-base-content/85">{row.exit}</td>
+                <td className="p-2 text-base-content/65">{row.indicators}</td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-    </Card>
+    </div>
   );
 };

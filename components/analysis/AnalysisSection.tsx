@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { cn } from '../../utils/cn';
+import { filterPillClass, projectViewPanel } from '../common/viewUi';
 
 interface AnalysisSectionProps {
   title: string;
@@ -39,7 +40,7 @@ export const AnalysisSection: React.FC<AnalysisSectionProps> = ({
   const hasContent = React.Children.count(children) > 0;
 
   return (
-    <div className="p-6 bg-base-100 border border-base-300 rounded-xl transition-all">
+    <div className={cn(projectViewPanel, 'p-5 sm:p-6 transition-all')}>
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <button
@@ -68,7 +69,12 @@ export const AnalysisSection: React.FC<AnalysisSectionProps> = ({
               <button
                 type="button"
                 onClick={() => onViewModeChange('list')}
-                className={`btn btn-ghost btn-xs rounded-full ${viewMode === 'list' ? 'bg-primary/10 text-primary' : ''}`}
+                className={cn(
+                  'rounded-lg px-2 py-1 text-xs transition-colors',
+                  viewMode === 'list'
+                    ? 'bg-[color-mix(in_srgb,var(--brand-cta)_14%,transparent)] text-[var(--brand-cta)]'
+                    : 'text-base-content/60 hover:bg-base-200/80'
+                )}
                 title="Visualização em lista"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -91,7 +97,12 @@ export const AnalysisSection: React.FC<AnalysisSectionProps> = ({
               <button
                 type="button"
                 onClick={() => onViewModeChange('detailed')}
-                className={`btn btn-ghost btn-xs rounded-full ${viewMode === 'detailed' ? 'bg-primary/10 text-primary' : ''}`}
+                className={cn(
+                  'rounded-lg px-2 py-1 text-xs transition-colors',
+                  viewMode === 'detailed'
+                    ? 'bg-[color-mix(in_srgb,var(--brand-cta)_14%,transparent)] text-[var(--brand-cta)]'
+                    : 'text-base-content/60 hover:bg-base-200/80'
+                )}
                 title="Visualização detalhada"
               >
                 <span className="emoji-sticker">📋</span>

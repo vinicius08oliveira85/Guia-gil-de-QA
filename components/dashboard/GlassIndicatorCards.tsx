@@ -95,10 +95,10 @@ function SmallIndicatorCard({ item }: { item: SmallIndicatorItem }) {
   const Icon = item.icon;
   const isClickable = !!item.onClick;
   const interactiveClasses = isClickable
-    ? 'group cursor-pointer hover:-translate-y-0.5 hover:border-[color-mix(in_oklch,oklch(var(--p))_35%,transparent)] hover:ring-1 hover:ring-[color-mix(in_oklch,oklch(var(--p))_22%,transparent)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_oklch,oklch(var(--p))_35%,transparent)] motion-reduce:transform-none motion-reduce:hover:ring-0'
+    ? 'group cursor-pointer hover:-translate-y-0.5 hover:border-[color-mix(in_srgb,var(--brand-cta)_35%,transparent)] hover:ring-1 hover:ring-[color-mix(in_srgb,var(--brand-cta)_22%,transparent)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--brand-cta)_35%,transparent)] motion-reduce:transform-none motion-reduce:hover:ring-0'
     : '';
   const activeClasses = item.isActive
-    ? 'ring-2 ring-[color-mix(in_oklch,oklch(var(--p))_40%,transparent)]'
+    ? 'ring-2 ring-[color-mix(in_srgb,var(--brand-cta)_40%,transparent)] border-[color-mix(in_srgb,var(--brand-cta)_30%,transparent)]'
     : '';
   return (
     <div

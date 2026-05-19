@@ -1,8 +1,8 @@
 import React from 'react';
 import { Eye, ExternalLink, Bot, Wand2, Pencil, Trash2 } from 'lucide-react';
 import { Spinner } from '../common/Spinner';
-import { Card } from '../common/Card';
 import { Button } from '../common/Button';
+import { cn } from '../../utils/cn';
 
 export interface DocumentCardDoc {
   name: string;
@@ -67,7 +67,11 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
       : '';
 
   return (
-    <Card hoverable className="overflow-hidden p-4 sm:p-5">
+    <div
+      className={cn(
+        'overflow-hidden rounded-[var(--rounded-box)] border border-base-300/60 bg-base-100 p-4 soft-shadow transition-shadow hover:shadow-md sm:p-5'
+      )}
+    >
       <article className="space-y-4" aria-labelledby={`doc-title-${doc.name}`}>
         <div>
           <h3
@@ -167,6 +171,6 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
           </Button>
         </div>
       </article>
-    </Card>
+    </div>
   );
 };

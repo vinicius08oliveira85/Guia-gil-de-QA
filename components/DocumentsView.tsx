@@ -22,10 +22,18 @@ import { viewFileInNewTab } from '../services/fileViewerService';
 import { DocumentStatsCards } from './documents/DocumentStatsCards';
 import { DocumentCard } from './documents/DocumentCard';
 import { Search, Upload, FileText, CheckCircle2, AlertCircle } from 'lucide-react';
-import { SectionHeader } from './common/SectionHeader';
-import { Card } from './common/Card';
-import { Button, buttonVariants } from './common/Button';
+import { Button } from './common/Button';
 import { cn } from '../utils/cn';
+import {
+  filterPillClass,
+  outlineActionBtn,
+  primaryActionBtn,
+  projectViewPanel,
+  documentCardGrid,
+  pageSubtitleClass,
+  projectViewShell,
+  searchInputClass,
+} from './common/viewUi';
 import { DocumentAnalysisBody } from './documents/DocumentAnalysisBody';
 
 interface DocumentWithMetadata extends ProjectDocument {
@@ -355,44 +363,51 @@ export const DocumentsView: React.FC<{
     </>
   );
 
-  return (
-    <div className="space-y-6 py-8 md:py-10 lg:py-12">
-      <Card hoverable={false} className="p-3 py-4 sm:p-4 sm:py-6 lg:p-5">
-        <SpecificationDocumentProcessor project={project} onUpdateProject={onUpdateProject} />
+  const jiraProjectKey = project.settings?.jiraProjectKey;
 
-        <section className="tasks-panel-scope space-y-6" aria-labelledby="documents-section-heading">
-          <div className="flex flex-col gap-4 rounded-[var(--rounded-box)] border border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] bg-base-100/95 p-3 soft-shadow backdrop-blur-md sm:p-4">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-              <SectionHeader
-                as="h1"
-                align="left"
-                fullWidth
-                titleSize="page"
-                density="dense"
-                headingId="documents-section-heading"
-                title="Documentos do Projeto"
-                description={documentsDescription}
-                className="max-w-2xl"
-              />
-              <div className="flex shrink-0 flex-wrap items-center gap-2">
-                <label
-                  className={cn(
-                    buttonVariants({ variant: 'default', size: 'sm' }),
-                    'cursor-pointer rounded-[var(--radius)] px-4 ring-1 ring-[color-mix(in_oklch,oklch(var(--p))_22%,transparent)] sm:min-h-0'
-                  )}
+  return (
+    <div className={projectViewShell} role="main" aria-label="Documentos do projeto">
+      <section className={projectViewPanel}>
+        <header className="flex flex-col gap-3 border-b border-base-300/60 pb-4 sm:gap-4 sm:pb-5">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+            <div className="min-w-0">
+              <div className="mb-1.5 flex flex-wrap items-center gap-2">
+                <h1
+                  id="documents-section-heading"
+                  className="font-heading text-2xl font-bold tracking-tight text-base-content sm:text-[1.65rem]"
                 >
-                  <Upload className="h-4 w-4" aria-hidden /> Carregar
-                  <input
-                    ref={uploadInputRef}
-                    type="file"
-                    accept=".txt,.md,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar,.json,.csv,.xml,.jpg,.jpeg,.png,.gif,.webp,.svg"
-                    onChange={handleFileUpload}
-                    className="hidden"
-                    aria-label="Carregar documento"
-                  />
-                </label>
+                  Documentos
+                </h1>
+                {jiraProjectKey && (
+                  <span className="shrink-0 rounded-md border border-base-300/70 bg-base-200/50 px-2 py-0.5 text-xs font-medium text-base-content/65">
+                    Jira: {jiraProjectKey}
+                  </span>
+                )}
               </div>
+              <p className={pageSubtitleClass}>
+                {documentsDescription}
+              </p>
             </div>
+            <label className={cn(primaryActionBtn, 'cursor-pointer shrink-0')}>
+              <Upload className="h-4 w-4 shrink-0" aria-hidden />
+              Carregar
+              <input
+                ref={uploadInputRef}
+                type="file"
+                accept=".txt,.md,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar,.json,.csv,.xml,.jpg,.jpeg,.png,.gif,.webp,.svg"
+                onChange={handleFileUpload}
+                className="hidden"
+                aria-label="Carregar documento"
+              />
+            </label>
+          </div>
+        </header>
+        <div className="mt-4 border-t border-base-300/50 pt-4">
+          <SpecificationDocumentProcessor project={project} onUpdateProject={onUpdateProject} />
+        </div>
+      </section>
+
+      <section className={cn(projectViewPanel, 'space-y-4 sm:space-y-5')}>
 
         {/* Faixa de resumo: totais e indicadores */}
         {stats.total > 0 && (
@@ -422,45 +437,7 @@ export const DocumentsView: React.FC<{
           </div>
         )}
 
-            {/* Ações rápidas */}
-        {stats.total > 0 && (
-          <div className="flex flex-wrap items-center gap-2">
-            {stats.withoutAnalysisCount > 0 && (
-              <button
-                type="button"
-                onClick={() => setOnlyWithoutAnalysis(prev => !prev)}
-                className={`btn btn-sm gap-1.5 ${onlyWithoutAnalysis ? 'btn-warning' : 'btn-ghost text-warning hover:bg-warning/10'}`}
-                aria-pressed={onlyWithoutAnalysis}
-                aria-label={
-                  onlyWithoutAnalysis
-                    ? 'Mostrar todos os documentos'
-                    : `Filtrar ${stats.withoutAnalysisCount} documento(s) sem análise`
-                }
-              >
-                <AlertCircle className="w-4 h-4" aria-hidden />
-                {onlyWithoutAnalysis
-                  ? 'Mostrar todos'
-                  : `Ver ${stats.withoutAnalysisCount} sem análise`}
-              </button>
-            )}
-            {(searchQuery || selectedCategory !== 'all' || onlyWithoutAnalysis) && (
-              <button
-                type="button"
-                onClick={() => {
-                  setSearchQuery('');
-                  setSelectedCategory('all');
-                  setOnlyWithoutAnalysis(false);
-                }}
-                className="btn btn-sm btn-ghost rounded-[var(--radius)]"
-                aria-label="Limpar filtros"
-              >
-                Limpar filtros
-              </button>
-            )}
-          </div>
-        )}
-
-            <DocumentStatsCards
+        <DocumentStatsCards
               categoryCounts={stats.categoryCounts}
               selectedCategory={selectedCategory}
               onCategorySelect={setSelectedCategory}
@@ -477,7 +454,7 @@ export const DocumentsView: React.FC<{
                 placeholder="Buscar documentos..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="input input-bordered w-full pl-10 bg-base-100 border-base-300 text-base-content placeholder:text-base-content/50 focus:outline-none focus:ring-2 focus:ring-primary/20 rounded-[var(--radius)]"
+                className={cn(searchInputClass, 'min-w-[200px] flex-1')}
                 aria-label="Buscar documentos"
               />
             </div>
@@ -485,7 +462,7 @@ export const DocumentsView: React.FC<{
               <button
                 type="button"
                 onClick={() => setSelectedCategory('all')}
-                className={`btn btn-sm rounded-[var(--radius)] ${selectedCategory === 'all' ? 'btn-primary' : 'btn-ghost'}`}
+                className={filterPillClass(selectedCategory === 'all')}
                 aria-pressed={selectedCategory === 'all'}
                 aria-label={`Filtrar: todas, ${stats.total} documento(s)`}
               >
@@ -499,7 +476,7 @@ export const DocumentsView: React.FC<{
                     key={cat.id}
                     type="button"
                     onClick={() => setSelectedCategory(cat.id)}
-                    className={`btn btn-sm rounded-[var(--radius)] ${isSelected ? 'btn-primary' : 'btn-ghost'}`}
+                    className={filterPillClass(isSelected)}
                     aria-pressed={isSelected}
                     aria-label={`Filtrar por ${label}, ${stats.categoryCounts[cat.id] || 0} documento(s)`}
                   >
@@ -511,7 +488,10 @@ export const DocumentsView: React.FC<{
                 <button
                   type="button"
                   onClick={() => setOnlyWithoutAnalysis(prev => !prev)}
-                  className={`btn btn-sm rounded-[var(--radius)] gap-1 ${onlyWithoutAnalysis ? 'btn-warning' : 'btn-ghost'}`}
+                  className={cn(
+                    filterPillClass(onlyWithoutAnalysis),
+                    !onlyWithoutAnalysis && 'text-warning'
+                  )}
                   aria-pressed={onlyWithoutAnalysis}
                   aria-label={
                     onlyWithoutAnalysis
@@ -530,7 +510,7 @@ export const DocumentsView: React.FC<{
                     setSelectedCategory('all');
                     setOnlyWithoutAnalysis(false);
                   }}
-                  className="btn btn-sm btn-ghost rounded-[var(--radius)]"
+                  className={outlineActionBtn}
                   aria-label="Limpar filtros"
                 >
                   Limpar filtros
@@ -538,14 +518,12 @@ export const DocumentsView: React.FC<{
               )}
             </div>
           </div>
-            )}
-          </div>
+        )}
 
-          {/* Lista de Documentos */}
-          <div className="flex flex-col gap-tasks-panel-loose">
+        <div className="flex flex-col gap-4">
         {filteredDocuments.length > 0 ? (
           <div
-            className="grid grid-cols-1 md:grid-cols-2 gap-6"
+            className={documentCardGrid}
             role="list"
             aria-label="Lista de documentos do projeto"
           >
@@ -608,9 +586,8 @@ export const DocumentsView: React.FC<{
             }
           />
         )}
-          </div>
-        </section>
-      </Card>
+        </div>
+      </section>
 
       {/* Modal de Preview */}
       {showPreview && selectedDoc && (

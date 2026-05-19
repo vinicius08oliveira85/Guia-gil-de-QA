@@ -4,31 +4,21 @@ import { Project } from '../../types';
 import { useProjectMetrics } from '../../hooks/useProjectMetrics';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Card } from '../common/Card';
+import { cn } from '../../utils/cn';
 
-/**
- * Props do componente RecentActivity
- */
 interface RecentActivityProps {
-  /** Projeto para calcular atividades recentes */
   project: Project;
-  /** Classes CSS adicionais */
   className?: string;
+  onViewAll?: () => void;
 }
 
 /**
- * Componente que exibe atividades recentes do projeto
- *
- * @example
- * ```tsx
- * <RecentActivity project={project} />
- * ```
+ * Linha do tempo de atividades recentes do projeto (grade de cards).
  */
-export const RecentActivity = React.memo<RecentActivityProps>(({ project, className }) => {
+export const RecentActivity = React.memo<RecentActivityProps>(({ project, className, onViewAll }) => {
   const metrics = useProjectMetrics(project);
   const tasks = project.tasks || [];
 
-  // Gerar atividades recentes baseadas nos dados do projeto
   const activities = useMemo(() => {
     const activitiesList: Array<{
       id: string;
@@ -37,10 +27,10 @@ export const RecentActivity = React.memo<RecentActivityProps>(({ project, classN
       description: string;
       time: string;
       icon: typeof CheckCircle2;
+      iconBg: string;
       iconColor: string;
     }> = [];
 
-    // Atividades de testes executados recentemente (ordenar por data da tarefa: completedAt ou createdAt)
     const testCasesWithTask = tasks.flatMap(t =>
       (t.testCases || []).filter(tc => tc.status !== 'Not Run').map(tc => ({ tc, task: t }))
     );
@@ -50,35 +40,35 @@ export const RecentActivity = React.memo<RecentActivityProps>(({ project, classN
     };
     const recentTestCases = testCasesWithTask
       .sort((a, b) => taskDate(b.task) - taskDate(a.task))
-      .slice(0, 5);
+      .slice(0, 6);
 
     recentTestCases.forEach(({ tc, task }) => {
       const dateForTime = task.completedAt || task.createdAt;
       const timeStr = dateForTime
         ? formatDistanceToNow(new Date(dateForTime), { addSuffix: true, locale: ptBR })
         : 'Recentemente';
+      const isPass = tc.status === 'Passed';
+      const isFail = tc.status === 'Failed';
       activitiesList.push({
         id: `test-${tc.id}`,
-        type: tc.status === 'Passed' ? 'pass' : tc.status === 'Failed' ? 'fail' : 'pending',
-        title:
-          tc.status === 'Passed'
-            ? 'Caso de Teste Aprovado'
-            : tc.status === 'Failed'
-              ? 'Caso de Teste Falhou'
-              : 'Caso de Teste Executado',
+        type: isPass ? 'pass' : isFail ? 'fail' : 'pending',
+        title: isPass
+          ? 'Caso de Teste Aprovado'
+          : isFail
+            ? 'Caso de Teste Falhou'
+            : 'Caso de Teste Executado',
         description: `${task.title}: ${tc.action?.substring(0, 50)}${tc.action && tc.action.length > 50 ? '...' : ''}`,
         time: timeStr,
-        icon: tc.status === 'Passed' ? CheckCircle2 : tc.status === 'Failed' ? XCircle : Clock,
-        iconColor:
-          tc.status === 'Passed'
-            ? 'text-success'
-            : tc.status === 'Failed'
-              ? 'text-error'
-              : 'text-warning',
+        icon: isPass ? CheckCircle2 : isFail ? XCircle : Clock,
+        iconBg: isPass
+          ? 'bg-success/15 ring-success/25'
+          : isFail
+            ? 'bg-error/15 ring-error/25'
+            : 'bg-warning/15 ring-warning/25',
+        iconColor: isPass ? 'text-success' : isFail ? 'text-error' : 'text-warning',
       });
     });
 
-    // Adicionar alertas se houver bugs críticos
     if (metrics.bugsBySeverity['Crítico'] > 0) {
       activitiesList.unshift({
         id: 'critical-bug',
@@ -87,11 +77,11 @@ export const RecentActivity = React.memo<RecentActivityProps>(({ project, classN
         description: `${metrics.bugsBySeverity['Crítico']} bug(s) crítico(s) aberto(s)`,
         time: formatDistanceToNow(new Date(), { addSuffix: true, locale: ptBR }),
         icon: AlertTriangle,
+        iconBg: 'bg-error/15 ring-error/25',
         iconColor: 'text-error',
       });
     }
 
-    // Adicionar conclusão de sprint se todas as tarefas estiverem concluídas
     if (metrics.totalTasks > 0 && metrics.taskStatus.done === metrics.totalTasks) {
       activitiesList.unshift({
         id: 'sprint-complete',
@@ -100,11 +90,11 @@ export const RecentActivity = React.memo<RecentActivityProps>(({ project, classN
         description: `Todas as ${metrics.totalTasks} tarefas foram concluídas`,
         time: formatDistanceToNow(new Date(), { addSuffix: true, locale: ptBR }),
         icon: CheckCircle2,
+        iconBg: 'bg-success/15 ring-success/25',
         iconColor: 'text-success',
       });
     }
 
-    // Se não houver atividades, adicionar uma mensagem padrão
     if (activitiesList.length === 0) {
       activitiesList.push({
         id: 'no-activity',
@@ -113,53 +103,63 @@ export const RecentActivity = React.memo<RecentActivityProps>(({ project, classN
         description: 'Execute testes ou atualize tarefas para ver atividades aqui',
         time: 'Agora',
         icon: FileText,
+        iconBg: 'bg-base-200 ring-base-300/50',
         iconColor: 'text-base-content/60',
       });
     }
 
-    return activitiesList.slice(0, 6); // Até 6 para preencher grid 3 colunas
+    return activitiesList.slice(0, 6);
   }, [tasks, metrics]);
 
   return (
-    <div className={className} role="region" aria-label="Atividades recentes">
-      <Card hoverable={false} variant="default" className="overflow-hidden p-4 sm:p-6">
-        <div className="mb-5 border-b border-base-300/80 pb-3">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-base-content/55">
+    <section className={cn('rounded-[var(--rounded-box)] border border-base-300/65 bg-base-100 p-4 soft-shadow sm:p-5', className)} role="region" aria-label="Atividades recentes">
+      <div className="mb-4 flex flex-wrap items-end justify-between gap-2 border-b border-base-300/60 pb-3">
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-base-content/50">
             Linha do tempo
           </p>
-          <h2 className="font-heading mt-1 text-lg font-bold tracking-tight text-base-content sm:text-xl">
+          <h2 className="font-heading mt-0.5 text-lg font-bold text-base-content sm:text-xl">
             Atividades recentes
           </h2>
         </div>
-        <ul className="grid grid-cols-1 gap-6 md:grid-cols-3">
-          {activities.map(activity => {
-            const Icon = activity.icon;
-            const iconBg =
-              activity.type === 'pass'
-                ? 'bg-success/20 text-success'
-                : activity.type === 'fail' || activity.type === 'warning'
-                  ? 'bg-error/20 text-error'
-                  : 'bg-base-200 text-base-content/60';
-            return (
-              <li key={activity.id} className="flex items-start gap-3">
-                <div
-                  className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${iconBg}`}
-                >
-                  <Icon className="h-4 w-4" aria-hidden="true" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-semibold text-base-content">{activity.title}</p>
-                  <p className="mt-0.5 line-clamp-2 text-xs leading-relaxed text-base-content/75">
-                    {activity.description}
-                  </p>
-                  <span className="mt-1 block text-[10px] text-base-content/55">{activity.time}</span>
-                </div>
-              </li>
-            );
-          })}
-        </ul>
-      </Card>
-    </div>
+        {onViewAll && (
+          <button
+            type="button"
+            onClick={onViewAll}
+            className="text-sm font-medium text-[var(--brand-text-strong)] underline-offset-2 hover:underline"
+          >
+            Ver tudo
+          </button>
+        )}
+      </div>
+      <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6">
+        {activities.map(activity => {
+          const Icon = activity.icon;
+          return (
+            <li
+              key={activity.id}
+              className="flex gap-3 rounded-lg border border-base-300/60 bg-base-100/80 p-3 transition-shadow hover:shadow-sm"
+            >
+              <div
+                className={cn(
+                  'mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full ring-1',
+                  activity.iconBg
+                )}
+              >
+                <Icon className={cn('h-4 w-4', activity.iconColor)} aria-hidden />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold text-base-content">{activity.title}</p>
+                <p className="mt-0.5 line-clamp-2 text-xs leading-relaxed text-base-content/70">
+                  {activity.description}
+                </p>
+                <span className="mt-1 block text-[10px] text-base-content/50">{activity.time}</span>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
   );
 });
 
