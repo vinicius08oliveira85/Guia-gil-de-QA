@@ -28,6 +28,23 @@ export function filterPillClass(active: boolean): string {
   return cn('app-filter-pill', active && 'app-filter-pill-active');
 }
 
+/** Ação circular/compacta na toolbar (ícone ou texto curto). */
+export const toolbarActionClass = cn('app-toolbar-action app-element-typography');
+
+export const toolbarActionPrimaryClass = cn(
+  'app-toolbar-action app-toolbar-action-primary app-element-typography'
+);
+
+/** Badge de contexto (ex.: chave do projeto Jira). */
+export const contextBadgeClass = cn(
+  'app-element-typography shrink-0 rounded-md border border-[var(--brand-surface-border)] bg-[var(--brand-chip)] px-2 py-0.5 text-xs font-medium text-[var(--brand-text-muted)]'
+);
+
+/** Chip removível de filtro ativo (dashboard, listas). */
+export const activeFilterChipClass = cn(
+  'app-element-typography inline-flex items-center gap-1 rounded-full border border-[var(--brand-surface-border)] bg-[var(--brand-chip)] pl-2.5 pr-1 py-1 text-xs text-[var(--brand-text-muted)]'
+);
+
 export const searchInputClass = cn(
   'app-input h-10 w-full py-2 pl-10 pr-3 text-sm shadow-sm'
 );

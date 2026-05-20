@@ -2,7 +2,13 @@ import React from 'react';
 import { Plus, Filter } from 'lucide-react';
 import { GeneralIAAnalysisButton } from './GeneralIAAnalysisButton';
 import { cn } from '../../utils/cn';
-import { outlineActionBtn, pageSubtitleClass, pageTitleClass, primaryActionBtn } from '../common/viewUi';
+import {
+  contextBadgeClass,
+  outlineActionBtn,
+  pageSubtitleClass,
+  pageTitleClass,
+  primaryActionBtn,
+} from '../common/viewUi';
 
 export interface TasksViewHeaderProps {
   jiraProjectKey?: string;
@@ -28,15 +34,13 @@ export const TasksViewHeader: React.FC<TasksViewHeaderProps> = ({
   analysisProgress,
   activeFiltersCount,
 }) => (
-  <header className="flex flex-col gap-3 border-b border-base-300/60 pb-4 sm:gap-4 sm:pb-5">
+  <header className="flex flex-col gap-3 border-b border-[var(--brand-surface-border)] pb-4 sm:gap-4 sm:pb-5">
     <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
       <div className="min-w-0">
         <div className="mb-1.5 flex flex-wrap items-center gap-2">
           <h1 className={pageTitleClass}>Tarefas & Casos de Teste</h1>
           {jiraProjectKey && (
-            <span className="shrink-0 rounded-md border border-base-300/70 bg-base-200/50 px-2 py-0.5 text-xs font-medium text-base-content/65">
-              Jira: {jiraProjectKey}
-            </span>
+            <span className={contextBadgeClass}>Jira: {jiraProjectKey}</span>
           )}
         </div>
         <p className={cn(pageSubtitleClass, 'max-w-2xl')}>

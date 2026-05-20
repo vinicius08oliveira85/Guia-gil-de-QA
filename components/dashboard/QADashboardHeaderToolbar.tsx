@@ -2,7 +2,15 @@ import React, { useState } from 'react';
 import { Download, Filter, ChevronDown, X } from 'lucide-react';
 import type { DashboardFilters } from './DashboardFiltersModal';
 import { cn } from '../../utils/cn';
-import { outlineActionBtn, pageSubtitleClass, pageTitleClass } from '../common/viewUi';
+import {
+  activeFilterChipClass,
+  appMenuItemClass,
+  appMenuPanelClass,
+  contextBadgeClass,
+  outlineActionBtn,
+  pageSubtitleClass,
+  pageTitleClass,
+} from '../common/viewUi';
 
 export interface QADashboardHeaderToolbarProps {
   jiraProjectKey?: string;
@@ -42,25 +50,23 @@ export const QADashboardHeaderToolbar: React.FC<QADashboardHeaderToolbarProps> =
   const [showActionsMenu, setShowActionsMenu] = useState(false);
 
   return (
-    <header className="flex flex-col gap-4 border-b border-base-300/60 pb-4 sm:pb-5">
+    <header className="flex flex-col gap-4 border-b border-[var(--brand-surface-border)] pb-4 sm:pb-5">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0">
           <div className="mb-1.5 flex flex-wrap items-center gap-2">
             <h1 className={pageTitleClass}>Dashboard</h1>
             {jiraProjectKey && (
-              <span className="shrink-0 rounded-md border border-base-300/70 bg-base-200/50 px-2 py-0.5 text-xs font-medium text-base-content/65">
-                Jira: {jiraProjectKey}
-              </span>
+              <span className={contextBadgeClass}>Jira: {jiraProjectKey}</span>
             )}
           </div>
           <p className={cn(pageSubtitleClass, 'max-w-2xl')}>
             Indicadores calculados a partir das tarefas do projeto (status, prazos e responsáveis).
           </p>
-          <p className="mt-0.5 text-sm text-base-content/60">
+          <p className="mt-0.5 text-sm text-[var(--brand-text-muted)]">
             Respeita os filtros aplicados.
           </p>
           {lastUpdatedText && (
-            <p className="mt-1 text-xs text-base-content/50" title="Última alteração do projeto">
+            <p className="mt-1 text-xs text-[var(--brand-text-muted)]" title="Última alteração do projeto">
               Projeto atualizado {lastUpdatedText}
             </p>
           )}
@@ -106,14 +112,14 @@ export const QADashboardHeaderToolbar: React.FC<QADashboardHeaderToolbarProps> =
                   aria-hidden
                   onClick={() => setShowActionsMenu(false)}
                 />
-                <div className="absolute right-0 top-full z-20 mt-1 min-w-[180px] rounded-lg border border-base-300/70 bg-base-100 py-1 shadow-lg">
+                <div className={cn(appMenuPanelClass, 'absolute right-0 top-full z-20 mt-1 min-w-[180px] py-1')}>
                   <button
                     type="button"
                     onClick={() => {
                       onOpenFiltersModal();
                       setShowActionsMenu(false);
                     }}
-                    className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm hover:bg-base-200/60"
+                    className={appMenuItemClass}
                   >
                     <Filter className="h-4 w-4 shrink-0" aria-hidden />
                     Filtrar{activeFiltersCount > 0 ? ` (${activeFiltersCount})` : ''}
@@ -124,7 +130,7 @@ export const QADashboardHeaderToolbar: React.FC<QADashboardHeaderToolbarProps> =
                       onOpenExportModal();
                       setShowActionsMenu(false);
                     }}
-                    className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm hover:bg-base-200/60"
+                    className={appMenuItemClass}
                   >
                     <Download className="h-4 w-4 shrink-0" aria-hidden />
                     Exportar
@@ -139,7 +145,7 @@ export const QADashboardHeaderToolbar: React.FC<QADashboardHeaderToolbarProps> =
       {activeFiltersCount > 0 && (
         <div className="flex flex-wrap gap-2">
           {filters.period && filters.period !== 'all' && (
-            <span className="inline-flex items-center gap-1 rounded-full border border-base-300/70 bg-base-200/40 pl-2.5 pr-1 py-1 text-xs">
+            <span className={activeFilterChipClass}>
               Período: {periodLabel(filters.period)}
               <button
                 type="button"
@@ -154,7 +160,7 @@ export const QADashboardHeaderToolbar: React.FC<QADashboardHeaderToolbarProps> =
           {(filters.taskType ?? []).map(t => (
             <span
               key={t}
-              className="inline-flex items-center gap-1 rounded-full border border-base-300/70 bg-base-200/40 pl-2.5 pr-1 py-1 text-xs"
+              className={activeFilterChipClass}
             >
               Tipo: {t}
               <button
@@ -175,7 +181,7 @@ export const QADashboardHeaderToolbar: React.FC<QADashboardHeaderToolbarProps> =
           {(filters.testStatus ?? []).map(s => (
             <span
               key={s}
-              className="inline-flex items-center gap-1 rounded-full border border-base-300/70 bg-base-200/40 pl-2.5 pr-1 py-1 text-xs"
+              className={activeFilterChipClass}
             >
               Status teste: {testStatusLabel(s)}
               <button
@@ -196,7 +202,7 @@ export const QADashboardHeaderToolbar: React.FC<QADashboardHeaderToolbarProps> =
           {(filters.phase ?? []).map(p => (
             <span
               key={p}
-              className="inline-flex items-center gap-1 rounded-full border border-base-300/70 bg-base-200/40 pl-2.5 pr-1 py-1 text-xs"
+              className={activeFilterChipClass}
             >
               Fase: {p}
               <button

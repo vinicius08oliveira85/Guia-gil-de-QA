@@ -2115,7 +2115,7 @@ export const JiraTaskItem: React.FC<{
                 animate={reduceMotion ? { opacity: 1 } : { opacity: 1, height: 'auto' }}
                 exit={reduceMotion ? { opacity: 0 } : { opacity: 0, height: 0 }}
                 transition={{ duration: reduceMotion ? 0 : 0.2 }}
-                className="overflow-visible border-t border-base-300 bg-base-100 rounded-b-[var(--rounded-box)] shadow-inner"
+                className="overflow-visible rounded-b-[var(--rounded-box)] border-t border-[var(--brand-surface-border)] bg-[var(--brand-surface-strong)] shadow-inner"
               >
                 <div className="p-4 space-y-4">
                   {/* Barra de Ações (movida para dentro do expandir) */}

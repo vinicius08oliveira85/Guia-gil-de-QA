@@ -24,7 +24,7 @@ import { GlobalEfficiencyMetric } from './projectsDashboard/GlobalEfficiencyMetr
 import { NewProjectCard } from './projectsDashboard/NewProjectCard';
 import { ProjectsDashboardSidebar } from './projectsDashboard/ProjectsDashboardSidebar';
 import { useAriaLive } from '../hooks/useAriaLive';
-import { projectsListShell } from './common/viewUi';
+import { filterPillClass, appPanelClass, projectsListShell } from './common/viewUi';
 
 type QuickFilter = 'all' | 'withBugs' | 'needsAttention';
 
@@ -199,14 +199,6 @@ export const ProjectsDashboard: React.FC<{
   const showWorkspaceAlerts =
     projectsNeedingAttention.length > 0 || projectsTestAlertList.length > 0;
 
-  const filterPillClass = (active: boolean) =>
-    cn(
-      'inline-flex min-h-[44px] items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium transition-colors sm:min-h-9',
-      active
-        ? 'bg-[var(--brand-cta)] text-[var(--brand-cta-foreground)] shadow-sm'
-        : 'border border-base-300/80 bg-base-100 text-base-content/80 hover:border-base-300 hover:bg-base-200/60'
-    );
-
   return (
     <>
       <div className="animate-fade-in min-h-[calc(100vh-4rem)] bg-base-200/40 font-body">
@@ -256,7 +248,7 @@ export const ProjectsDashboard: React.FC<{
                 <button
                   type="button"
                   onClick={() => setQuickFilter(quickFilter === 'withBugs' ? 'all' : 'withBugs')}
-                  className={filterPillClass(quickFilter === 'withBugs')}
+                  className={cn(filterPillClass(quickFilter === 'withBugs'), 'gap-1.5')}
                   aria-pressed={quickFilter === 'withBugs'}
                 >
                   <Bug className="h-3.5 w-3.5" aria-hidden />
@@ -269,7 +261,7 @@ export const ProjectsDashboard: React.FC<{
                   onClick={() =>
                     setQuickFilter(quickFilter === 'needsAttention' ? 'all' : 'needsAttention')
                   }
-                  className={filterPillClass(quickFilter === 'needsAttention')}
+                  className={cn(filterPillClass(quickFilter === 'needsAttention'), 'gap-1.5')}
                   aria-pressed={quickFilter === 'needsAttention'}
                 >
                   <AlertTriangle className="h-3.5 w-3.5" aria-hidden />
@@ -414,7 +406,7 @@ export const ProjectsDashboard: React.FC<{
                   </div>
                 )}
                 {projects.length === 0 ? (
-                  <div className="rounded-[var(--rounded-box)] border border-base-300/80 bg-base-100 p-4 shadow-sm sm:p-8">
+                  <div className={cn(appPanelClass, 'rounded-[var(--rounded-box)] p-4 shadow-sm sm:p-8')}>
                     <EmptyState
                       icon="🚀"
                       title="Nenhum projeto ainda"
@@ -429,11 +421,14 @@ export const ProjectsDashboard: React.FC<{
                   </div>
                 ) : (
                   <div
-                    className="rounded-[var(--rounded-box)] border border-base-300/80 bg-base-200/40 p-4 text-center sm:p-5 dark:bg-base-200/20"
+                    className={cn(
+                      appPanelClass,
+                      'rounded-[var(--rounded-box)] bg-[var(--brand-chip)] p-4 text-center sm:p-5'
+                    )}
                     role="status"
                     aria-live="polite"
                   >
-                    <p className="text-sm text-base-content/80 mb-4 max-w-full mx-auto">
+                    <p className="mb-4 max-w-full mx-auto text-sm text-[var(--brand-text-muted)]">
                       {quickFilter === 'withBugs'
                         ? 'Nenhum projeto com bugs abertos corresponde a este filtro.'
                         : 'Nenhum projeto corresponde a "Precisa de atenção" com os critérios atuais.'}
@@ -441,7 +436,7 @@ export const ProjectsDashboard: React.FC<{
                     <button
                       type="button"
                       onClick={() => setQuickFilter('all')}
-                      className="btn btn-outline btn-sm rounded-lg"
+                      className={cn(filterPillClass(false), 'mx-auto')}
                     >
                       Mostrar todos os projetos
                     </button>
