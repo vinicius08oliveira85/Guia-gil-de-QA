@@ -467,89 +467,108 @@ export const ProjectView: React.FC<{
                   />
                 </div>
               </div>
-              <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+              {/* Toolbar de ações do projeto — agrupadas em uma única barra coesa */}
+              <div
+                className="flex shrink-0 items-center rounded-[var(--radius)] border border-base-300/60 bg-base-100 shadow-sm"
+                role="toolbar"
+                aria-label="Ações do projeto"
+              >
+                {/* Status de salvamento */}
                 {(supabaseAvailable || lastSaveToSupabase === false) && (
                   <div
-                    className="flex max-w-full flex-wrap items-center justify-end gap-2 text-sm"
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs"
                     role="status"
                     aria-live="polite"
                     aria-atomic="true"
                   >
                     {saveStatus === 'saving' && (
-                      <div className="flex items-center gap-2 text-info">
+                      <>
                         <Spinner size="sm" />
-                        <span>Salvando...</span>
-                      </div>
+                        <span className="text-info hidden sm:inline">Salvando...</span>
+                      </>
                     )}
                     {saveStatus === 'saved' && (
-                      <div
-                        className={`flex items-center gap-2 ${lastSaveToSupabase === false ? 'text-warning' : 'text-success'}`}
-                      >
-                        <CheckCircle2 className="h-4 w-4 shrink-0" aria-hidden />
-                        <span>
-                          {lastSaveToSupabase === false
-                            ? 'Salvo localmente (Supabase indisponível)'
-                            : 'Salvo'}
+                      <>
+                        <CheckCircle2
+                          className={cn(
+                            'h-3.5 w-3.5 shrink-0',
+                            lastSaveToSupabase === false ? 'text-warning' : 'text-success'
+                          )}
+                          aria-hidden
+                        />
+                        <span
+                          className={cn(
+                            'hidden sm:inline',
+                            lastSaveToSupabase === false ? 'text-warning' : 'text-success'
+                          )}
+                        >
+                          {lastSaveToSupabase === false ? 'Salvo localmente' : 'Salvo'}
                         </span>
-                      </div>
+                      </>
                     )}
                     {saveStatus === 'error' && (
-                      <div className="flex items-center gap-2 text-error">
-                        <AlertTriangle className="h-4 w-4 shrink-0" aria-hidden />
-                        <span>Erro ao salvar</span>
-                      </div>
+                      <>
+                        <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-error" aria-hidden />
+                        <span className="hidden text-error sm:inline">Erro ao salvar</span>
+                      </>
                     )}
-                    {!supabaseAvailable &&
-                      lastSaveToSupabase === false &&
-                      saveStatus === 'idle' && (
-                        <div className="flex items-center gap-2 text-warning">
-                          <CloudOff className="h-4 w-4 shrink-0" aria-hidden />
-                          <span>Salvo localmente (Supabase indisponível)</span>
-                        </div>
-                      )}
-                    {supabaseAvailable && lastSaveToSupabase === false && saveStatus === 'idle' && (
-                      <div className="flex flex-wrap items-center justify-end gap-2">
-                        <span className="max-w-[12rem] truncate text-sm text-base-content/65 sm:max-w-none">
-                          Salvo localmente
-                        </span>
-                        <button
-                          type="button"
-                          onClick={handleSaveToSupabase}
-                          disabled={isSavingToSupabase || !isOnline}
-                          className={cn(
-                            outlineActionBtn,
-                            'border-[color-mix(in_srgb,var(--brand-cta)_55%,transparent)] text-[var(--brand-cta)] hover:bg-[color-mix(in_srgb,var(--brand-cta)_8%,transparent)] min-h-10 px-3 py-1.5'
-                          )}
-                          aria-label="Sincronizar projeto com a nuvem"
-                          title={
-                            !isOnline
-                              ? 'É necessário estar online para sincronizar com a nuvem.'
-                              : undefined
-                          }
-                        >
-                          {isSavingToSupabase ? (
-                            <>
-                              <Spinner size="sm" />
-                              <span>Salvando...</span>
-                            </>
-                          ) : (
-                            'Sincronizar com a nuvem'
-                          )}
-                        </button>
-                      </div>
+                    {saveStatus === 'idle' && !supabaseAvailable && lastSaveToSupabase === false && (
+                      <>
+                        <CloudOff className="h-3.5 w-3.5 shrink-0 text-warning" aria-hidden />
+                        <span className="hidden text-warning sm:inline">Local</span>
+                      </>
+                    )}
+                    {saveStatus === 'idle' && supabaseAvailable && lastSaveToSupabase === false && (
+                      <span className="hidden text-base-content/55 sm:inline">Salvo localmente</span>
                     )}
                   </div>
                 )}
+
+                {/* Botão Sincronizar — só quando há supabase E salvamento pendente */}
+                {supabaseAvailable && lastSaveToSupabase === false && saveStatus === 'idle' && (
+                  <>
+                    <div className="h-5 w-px bg-base-300/70 shrink-0" aria-hidden />
+                    <button
+                      type="button"
+                      onClick={handleSaveToSupabase}
+                      disabled={isSavingToSupabase || !isOnline}
+                      className="inline-flex min-h-[36px] items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-[var(--brand-cta)] transition-colors hover:bg-[color-mix(in_srgb,var(--brand-cta)_8%,transparent)] disabled:opacity-50 sm:min-h-0"
+                      aria-label="Sincronizar projeto com a nuvem"
+                      title={
+                        !isOnline
+                          ? 'É necessário estar online para sincronizar com a nuvem.'
+                          : undefined
+                      }
+                    >
+                      {isSavingToSupabase ? (
+                        <>
+                          <Spinner size="sm" />
+                          <span className="hidden sm:inline">Salvando...</span>
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle2 className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                          <span className="hidden sm:inline">Sincronizar</span>
+                        </>
+                      )}
+                    </button>
+                  </>
+                )}
+
+                {/* Separador + Excluir */}
                 {onDeleteProject && (
-                  <button
-                    type="button"
-                    onClick={() => setShowDeleteProjectConfirm(true)}
-                    className="btn btn-ghost btn-xs min-h-[40px] gap-1.5 rounded-[var(--radius)] text-error hover:bg-[color-mix(in_srgb,var(--foreground)_8%,transparent)] hover:text-error sm:min-h-0 sm:h-7 sm:gap-1 sm:py-0 sm:leading-tight"
-                    aria-label={`Excluir projeto ${currentProject.name}`}
-                  >
-                    <Trash2 className="h-4 w-4" aria-hidden />
-                    Excluir projeto
-                  </button>
+                  <>
+                    <div className="h-5 w-px bg-base-300/70 shrink-0" aria-hidden />
+                    <button
+                      type="button"
+                      onClick={() => setShowDeleteProjectConfirm(true)}
+                      className="inline-flex min-h-[36px] items-center gap-1.5 rounded-r-[var(--radius)] px-3 py-1.5 text-xs font-medium text-error transition-colors hover:bg-[color-mix(in_srgb,var(--foreground)_6%,transparent)] sm:min-h-0"
+                      aria-label={`Excluir projeto ${currentProject.name}`}
+                    >
+                      <Trash2 className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                      <span className="hidden sm:inline">Excluir</span>
+                    </button>
+                  </>
                 )}
               </div>
             </div>
@@ -629,19 +648,24 @@ export const ProjectView: React.FC<{
                 type="button"
                 onClick={handleNavigateToBacklog}
                 className={cn(
-                  'mb-0.5 inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors',
-                  'min-h-[40px] sm:min-h-8',
+                  'mb-0.5 inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold transition-all duration-150',
+                  'min-h-[40px] sm:min-h-7',
                   activeTab === 'tasks' && tasksListMode === 'backlog'
                     ? 'border-[color-mix(in_srgb,var(--brand-cta)_55%,transparent)] bg-[color-mix(in_srgb,var(--brand-cta)_10%,transparent)] text-[var(--brand-cta)]'
-                    : 'border-base-300/70 bg-base-100 text-base-content/75 hover:border-base-300 hover:bg-base-200/50'
+                    : 'border-base-300/60 bg-base-100 text-base-content/65 hover:border-[color-mix(in_srgb,var(--brand-cta)_35%,transparent)] hover:text-[var(--brand-cta)]'
                 )}
                 aria-label={`Abrir backlog (${backlogCount} itens)`}
                 title="Ver backlog em Tarefas & Testes"
               >
-                <Layers className="h-3.5 w-3.5 shrink-0" aria-hidden />
-                Backlog
+                <Layers className="h-3 w-3 shrink-0" aria-hidden />
+                <span className="hidden sm:inline">Backlog</span>
                 <span
-                  className="rounded-full bg-base-200/90 px-1.5 py-0 text-[10px] font-bold tabular-nums leading-none"
+                  className={cn(
+                    'rounded-full px-1.5 py-0 text-[10px] font-bold tabular-nums leading-none',
+                    activeTab === 'tasks' && tasksListMode === 'backlog'
+                      ? 'bg-[color-mix(in_srgb,var(--brand-cta)_15%,transparent)] text-[var(--brand-cta)]'
+                      : 'bg-base-200/90 text-base-content/70'
+                  )}
                   aria-hidden
                 >
                   {backlogCount}

@@ -11,12 +11,15 @@ interface GeneralIAAnalysisButtonProps {
     message?: string;
     estimatedSeconds?: number;
   } | null;
+  /** Quando true, remove bordas próprias e arredondamento lateral para se encaixar num grupo */
+  grouped?: boolean;
 }
 
 export const GeneralIAAnalysisButton: React.FC<GeneralIAAnalysisButtonProps> = ({
   onAnalyze,
   isAnalyzing = false,
   progress,
+  grouped = false,
 }) => {
   const handleClick = async () => {
     if (isAnalyzing) return;
@@ -48,8 +51,9 @@ export const GeneralIAAnalysisButton: React.FC<GeneralIAAnalysisButtonProps> = (
         disabled={isAnalyzing}
         title={defaultTooltip}
         className={cn(
-          'btn btn-ghost btn-sm flex min-h-[44px] items-center gap-1.5 rounded-[var(--radius)] border border-base-300 px-3 text-xs font-semibold transition-colors duration-300 sm:min-h-0',
-          'text-[color-mix(in_srgb,var(--foreground)_72%,transparent)] hover:bg-[color-mix(in_srgb,var(--foreground)_8%,transparent)] hover:text-[var(--foreground)]',
+          grouped
+            ? 'inline-flex min-h-[36px] items-center gap-1.5 rounded-l-[var(--radius)] px-3 py-1.5 text-sm font-medium text-base-content/70 transition-colors hover:bg-base-200/60 hover:text-base-content disabled:opacity-50 sm:min-h-0'
+            : 'btn btn-ghost btn-sm flex min-h-[44px] items-center gap-1.5 rounded-[var(--radius)] border border-base-300 px-3 text-xs font-semibold transition-colors duration-300 sm:min-h-0 text-[color-mix(in_srgb,var(--foreground)_72%,transparent)] hover:bg-[color-mix(in_srgb,var(--foreground)_8%,transparent)] hover:text-[var(--foreground)]',
           'disabled:cursor-not-allowed disabled:opacity-50'
         )}
         aria-label={isAnalyzing ? 'Analisando' : 'Análise geral com IA'}

@@ -48,7 +48,9 @@ export const TasksViewHeader: React.FC<TasksViewHeaderProps> = ({
         </p>
       </div>
 
-      <div className="flex w-full flex-wrap items-center gap-2 lg:w-auto lg:justify-end">
+      {/* Toolbar de ações — ação primária + ações secundárias agrupadas */}
+      <div className="flex w-full items-center gap-2 lg:w-auto lg:justify-end">
+        {/* Botão primário: Adicionar Tarefa */}
         <button
           type="button"
           onClick={onAddTask}
@@ -57,26 +59,49 @@ export const TasksViewHeader: React.FC<TasksViewHeaderProps> = ({
           className={primaryActionBtn}
         >
           <Plus className="h-4 w-4 shrink-0" aria-hidden />
-          Adicionar Tarefa
+          <span className="hidden sm:inline">Adicionar Tarefa</span>
+          <span className="sm:hidden">Tarefa</span>
         </button>
 
-        <GeneralIAAnalysisButton
-          onAnalyze={onAnalyze}
-          isAnalyzing={isRunningGeneralAnalysis}
-          progress={analysisProgress}
-        />
-
-        <button
-          type="button"
-          onClick={onOpenFilters}
-          disabled={isRunningGeneralAnalysis}
-          title={isRunningGeneralAnalysis ? 'Conclua a análise em andamento' : undefined}
-          className={cn(outlineActionBtn, activeFiltersCount > 0 && 'border-[color-mix(in_srgb,var(--brand-cta)_45%,transparent)] text-[var(--brand-cta)]')}
-          aria-label={`Filtros${activeFiltersCount > 0 ? `, ${activeFiltersCount} ativos` : ''}`}
+        {/* Grupo secundário: IA + Filtros numa única barra pill */}
+        <div
+          className="inline-flex items-stretch rounded-[var(--radius)] border border-base-300/60 bg-base-100 shadow-sm"
+          role="group"
+          aria-label="Ações secundárias"
         >
-          <Filter className="h-4 w-4 shrink-0" aria-hidden />
-          Filtros{activeFiltersCount > 0 ? ` (${activeFiltersCount})` : ''}
-        </button>
+          <GeneralIAAnalysisButton
+            onAnalyze={onAnalyze}
+            isAnalyzing={isRunningGeneralAnalysis}
+            progress={analysisProgress}
+            grouped
+          />
+
+          <div className="my-1.5 w-px shrink-0 bg-base-300/60" aria-hidden />
+
+          <button
+            type="button"
+            onClick={onOpenFilters}
+            disabled={isRunningGeneralAnalysis}
+            title={isRunningGeneralAnalysis ? 'Conclua a análise em andamento' : undefined}
+            className={cn(
+              'inline-flex min-h-[36px] items-center gap-1.5 rounded-r-[var(--radius)] px-3 py-1.5 text-sm font-medium transition-colors hover:bg-base-200/60 disabled:opacity-50 sm:min-h-0',
+              activeFiltersCount > 0
+                ? 'text-[var(--brand-cta)]'
+                : 'text-base-content/70 hover:text-base-content'
+            )}
+            aria-label={`Filtros${activeFiltersCount > 0 ? `, ${activeFiltersCount} ativos` : ''}`}
+          >
+            <Filter className="h-4 w-4 shrink-0" aria-hidden />
+            <span className="hidden sm:inline">
+              Filtros{activeFiltersCount > 0 ? ` (${activeFiltersCount})` : ''}
+            </span>
+            {activeFiltersCount > 0 && (
+              <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-[var(--brand-cta)] text-[10px] font-bold text-white sm:hidden">
+                {activeFiltersCount}
+              </span>
+            )}
+          </button>
+        </div>
       </div>
     </div>
   </header>
