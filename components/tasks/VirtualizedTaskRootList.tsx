@@ -2,6 +2,7 @@ import React, { useRef } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import type { TaskWithChildren } from './JiraTaskItem';
 import { ESTIMATE_TASK_ROOT_ROW_PX, TASK_LIST_VIRTUAL_OVERSCAN } from './tasksViewHelpers';
+import { taskPanelBorderClass } from './taskActionLayout';
 
 export { shouldVirtualizeTaskRoots, TASK_ROOT_VIRTUALIZE_MIN } from './tasksViewHelpers';
 
@@ -46,7 +47,7 @@ export const VirtualizedTaskRootList: React.FC<VirtualizedTaskRootListProps> = (
       ref={parentRef}
       className={
         className ??
-        'max-h-[min(72vh,880px)] overflow-y-auto overflow-x-hidden rounded-lg border border-base-200/50 custom-scrollbar'
+        `max-h-[min(72vh,880px)] overflow-y-auto overflow-x-hidden custom-scrollbar ${taskPanelBorderClass}`
       }
       role="list"
       aria-label={listAriaLabel}

@@ -6,7 +6,7 @@ import { LoadingSkeleton } from '../common/LoadingSkeleton';
 import { ConfirmDialog } from '../common/ConfirmDialog';
 import { Project } from '../../types';
 import { cn } from '../../utils/cn';
-import { pageSubtitleClass, settingsContentShell } from '../common/viewUi';
+import { appNavPillTabClass, pageSubtitleClass, settingsContentShell } from '../common/viewUi';
 
 // Lazy load das tabs com tratamento de erro
 const lazyLoadTab = (importFn: () => Promise<any>, name: string) => {
@@ -116,7 +116,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 aria-label="Voltar"
               />
               <div className="flex-1 min-w-0">
-                <h1 className="font-heading text-2xl font-bold tracking-tight text-base-content sm:text-3xl">
+                <h1 className="app-element-typography font-heading text-2xl font-bold tracking-tight text-[var(--brand-text-strong)] sm:text-3xl">
                   Configurações
                 </h1>
                 <p className={cn(pageSubtitleClass, 'mt-2')}>
@@ -141,12 +141,11 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                     onClick={() => setActiveTab(tab.id)}
                     onKeyDown={handleTabKeyDown}
                     className={cn(
-                      'relative inline-flex min-h-[44px] shrink-0 items-center gap-2 whitespace-nowrap px-0.5 pb-2.5 pt-1 font-heading text-sm transition-colors sm:min-h-0',
-                      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--brand-cta)_35%,transparent)] focus-visible:ring-offset-2',
-                      isActive
-                        ? 'font-semibold text-base-content after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2px] after:rounded-full after:bg-error after:content-[""]'
-                        : 'font-medium text-base-content/55 hover:text-base-content/85'
+                      appNavPillTabClass,
+                      'inline-flex items-center gap-2',
+                      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--brand-cta)_35%,transparent)] focus-visible:ring-offset-2'
                     )}
+                    data-active={isActive ? 'true' : undefined}
                     role="tab"
                     aria-selected={isActive}
                     aria-controls={`tab-panel-${tab.id}`}
@@ -170,7 +169,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               id={`tab-panel-${activeTab}`}
               role="tabpanel"
               aria-labelledby={`tab-${activeTab}`}
-              className="rounded-[var(--rounded-box)] border border-base-300/60 bg-base-100 p-4 soft-shadow sm:p-5"
+              className="app-panel p-4 soft-shadow sm:p-5"
             >
               {activeTab === 'jira' && (
                 <JiraSettingsTab

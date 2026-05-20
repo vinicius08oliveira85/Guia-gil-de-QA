@@ -1,5 +1,7 @@
 import React from 'react';
 import { Modal } from './Modal';
+import { cn } from '../../utils/cn';
+import { outlineActionBtn, primaryActionBtn } from './viewUi';
 
 interface ConfirmDialogProps {
   isOpen: boolean;
@@ -28,24 +30,34 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
     onConfirm();
   };
 
-  const variantStyles = {
-    danger: 'btn-error',
-    warning: 'btn-warning',
-    info: 'btn-info',
+  const confirmVariantClass = {
+    danger: 'btn-error border-transparent',
+    warning: 'btn-warning border-transparent',
+    info: 'btn-info border-transparent',
   } as const;
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={title}>
       <div className="space-y-4">
-        <p className="text-base-content/80">{message}</p>
+        <p className="app-element-typography text-[var(--brand-text-muted)]">{message}</p>
         <div className="flex gap-3 justify-end pt-4">
-          <button onClick={onClose} disabled={isLoading} className="btn btn-ghost" type="button">
+          <button
+            onClick={onClose}
+            disabled={isLoading}
+            className={cn(outlineActionBtn, 'min-h-10')}
+            type="button"
+          >
             {cancelText}
           </button>
           <button
             onClick={handleConfirm}
             disabled={isLoading}
-            className={`btn ${variantStyles[variant]}`}
+            className={cn(
+              primaryActionBtn,
+              'btn min-h-10',
+              confirmVariantClass[variant],
+              variant === 'danger' && '!bg-[var(--destructive)] !border-[var(--destructive)]'
+            )}
             type="button"
           >
             {isLoading ? 'Processando...' : confirmText}

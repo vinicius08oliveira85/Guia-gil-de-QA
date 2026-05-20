@@ -24,7 +24,7 @@ export const BulkActionsToolbar: React.FC<BulkActionsToolbarProps> = ({
     <div className="sticky top-0 z-20 bg-primary/10 border-b border-primary/30 px-md py-sm backdrop-blur-sm">
       <div className="flex items-center justify-between gap-md">
         <div className="flex items-center gap-sm">
-          <span className="text-sm font-semibold text-base-content">
+          <span className="text-sm font-semibold text-[var(--brand-text-strong)]">
             {selectedCount} {selectedCount === 1 ? 'teste selecionado' : 'testes selecionados'}
           </span>
         </div>

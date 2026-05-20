@@ -24,7 +24,7 @@ const TASK_TEST_STATUS_MAP: Record<TaskTestStatusBadgeValue, TaskTestStatusConfi
     label: 'Testar',
     icon: Info,
     className:
-      'border border-blue-500/20 bg-blue-500/10 text-blue-600 hover:bg-blue-500/20 dark:border-blue-500/30 dark:bg-blue-500/20 dark:text-blue-400',
+      'border-[color-mix(in_srgb,var(--color-primary)_30%,transparent)] bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)] text-[color:var(--color-primary-deep)] hover:bg-[color-mix(in_srgb,var(--color-primary)_16%,transparent)]',
     cardClassName:
       'border-[color-mix(in_srgb,var(--color-primary)_30%,transparent)] bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)] text-[color:var(--color-primary-deep)] hover:bg-[color-mix(in_srgb,var(--color-primary)_16%,transparent)]',
     role: 'status',
@@ -33,7 +33,7 @@ const TASK_TEST_STATUS_MAP: Record<TaskTestStatusBadgeValue, TaskTestStatusConfi
     label: 'Testando',
     icon: AlertCircle,
     className:
-      'border border-yellow-500/20 bg-yellow-500/10 text-yellow-600 hover:bg-yellow-500/20 dark:border-yellow-500/30 dark:bg-yellow-500/20 dark:text-yellow-400',
+      'border-warning/35 bg-warning/10 text-warning hover:bg-warning/15',
     cardClassName:
       'border-warning/35 bg-warning/10 text-warning hover:bg-warning/15',
     role: 'status',
@@ -42,7 +42,7 @@ const TASK_TEST_STATUS_MAP: Record<TaskTestStatusBadgeValue, TaskTestStatusConfi
     label: 'Pendente',
     icon: XCircle,
     className:
-      'border border-red-500/20 bg-red-500/10 text-red-600 hover:bg-red-500/20 dark:border-red-500/30 dark:bg-red-500/20 dark:text-red-400',
+      'border-error/35 bg-error/10 text-error hover:bg-error/15',
     cardClassName: 'border-error/35 bg-error/10 text-error hover:bg-error/15',
     role: 'alert',
   },
@@ -50,7 +50,7 @@ const TASK_TEST_STATUS_MAP: Record<TaskTestStatusBadgeValue, TaskTestStatusConfi
     label: 'Teste Concluído',
     icon: CheckCircle,
     className:
-      'border border-green-500/20 bg-green-500/10 text-green-600 hover:bg-green-500/20 dark:border-green-500/30 dark:bg-green-500/20 dark:text-green-400',
+      'border-success/35 bg-success/10 text-success hover:bg-success/15',
     cardClassName:
       'border-success/35 bg-success/10 text-success hover:bg-success/15',
     role: 'status',
@@ -59,9 +59,9 @@ const TASK_TEST_STATUS_MAP: Record<TaskTestStatusBadgeValue, TaskTestStatusConfi
     label: 'Sem Testes',
     icon: MinusCircle,
     className:
-      'border border-base-300 bg-base-200/70 text-base-content/70 hover:bg-base-200 dark:border-base-content/15',
+      'border-[var(--brand-surface-border)] bg-[var(--brand-chip)] text-[var(--brand-text-muted)] hover:bg-[var(--brand-chip-hover)]',
     cardClassName:
-      'border-base-300/70 bg-base-200/50 text-base-content/65 hover:bg-base-200/70',
+      'border-[var(--brand-surface-border)] bg-[var(--brand-chip)] text-[var(--brand-text-muted)] hover:bg-[var(--brand-chip-hover)]',
     role: 'none',
   },
 };
@@ -99,7 +99,11 @@ export const TaskTestStatusBadge: React.FC<TaskTestStatusBadgeProps> = ({
     'inline-flex items-center gap-1 border whitespace-nowrap transition-colors duration-200',
     isCard
       ? taskCardTestStatusChipLayout
-      : cn('h-5 cursor-default', taskCardBadgePillShape, taskCardBadgePillTypography, 'px-2.5 text-xs normal-case'),
+      : cn(
+          'badge-task-format h-5 cursor-default px-2.5 text-xs normal-case',
+          taskCardBadgePillShape,
+          taskCardBadgePillTypography
+        ),
     toneClass,
     disabled && 'pointer-events-none opacity-50',
     className

@@ -20,7 +20,7 @@ export const JiraRichTextRenderer: React.FC<JiraRichTextRendererProps> = ({
     const parts = content.split(/(![^!]+!)/g);
 
     return (
-      <div className="prose prose-sm max-w-none text-base-content">
+      <div className="prose prose-sm max-w-none text-[var(--brand-text-strong)]">
         {parts.map((part, index) => {
           const imageMatch = part.match(/^!([^!]+)!$/);
           if (imageMatch) {
@@ -54,7 +54,7 @@ export const JiraRichTextRenderer: React.FC<JiraRichTextRendererProps> = ({
   // Caso 2: Conteúdo é Objeto ADF (Atlassian Document Format)
   if (content && typeof content === 'object' && content.type === 'doc') {
     return (
-      <div className="prose prose-sm max-w-none text-base-content space-y-2">
+      <div className="prose prose-sm max-w-none space-y-2 text-[var(--brand-text-strong)]">
         {content.content?.map((node: any, index: number) => (
           <ADFNodeRenderer key={index} node={node} attachments={attachments} />
         ))}
@@ -85,7 +85,8 @@ const ADFNodeRenderer: React.FC<{ node: any; attachments: any[] }> = ({ node, at
         node.marks.forEach((mark: any) => {
           if (mark.type === 'strong') className += ' font-bold';
           if (mark.type === 'em') className += ' italic';
-          if (mark.type === 'code') className += ' font-mono bg-base-200 px-1 rounded';
+          if (mark.type === 'code')
+            className += ' rounded-[var(--radius)] bg-[var(--brand-chip)] px-1 font-mono';
           if (mark.type === 'link') {
             href = mark.attrs?.href;
           }
@@ -115,7 +116,7 @@ const ADFNodeRenderer: React.FC<{ node: any; attachments: any[] }> = ({ node, at
       // Tenta encontrar o anexo correspondente pelo ID ou coleção (lógica simplificada)
       // Em um cenário real, mapearíamos o 'id' do nó media para a URL do anexo
       return (
-        <div className="text-xs text-base-content/50 italic">
+        <div className="text-xs italic text-[var(--brand-text-muted)]">
           [Mídia: {node.attrs?.id || 'Desconhecida'}]
         </div>
       );

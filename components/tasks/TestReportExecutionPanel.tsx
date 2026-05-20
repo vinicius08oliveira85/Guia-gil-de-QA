@@ -2,6 +2,13 @@ import React from 'react';
 import type { TestCase } from '../../types';
 import { getTestCaseListTitle } from '../../utils/testCaseActionDisplay';
 import { Badge } from '../common/Badge';
+import { cn } from '../../utils/cn';
+import {
+  taskCardSectionTitleClass,
+  taskLabelMutedClass,
+  taskModalSectionClass,
+  taskTextStrongClass,
+} from './taskActionLayout';
 
 interface TestReportExecutionPanelProps {
   executedTestCases: TestCase[];
@@ -53,11 +60,11 @@ export const TestReportExecutionPanel: React.FC<TestReportExecutionPanelProps> =
 }) => {
   return (
     <div className="min-h-0 space-y-4">
-      <div className="rounded-2xl border border-base-300 bg-base-100 p-4 shadow-sm">
+      <div className={cn(taskModalSectionClass, 'p-4 shadow-sm')}>
         <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between">
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-base-content">Painel da execução</p>
-            <p className="text-xs text-base-content/70">
+            <p className={cn('text-sm font-semibold', taskTextStrongClass)}>Painel da execução</p>
+            <p className={cn('text-xs', taskLabelMutedClass)}>
               Indicadores rápidos para leitura do resultado.
             </p>
           </div>
@@ -78,25 +85,25 @@ export const TestReportExecutionPanel: React.FC<TestReportExecutionPanelProps> =
         </div>
 
         <div className="mt-4 grid grid-cols-[repeat(auto-fit,minmax(120px,1fr))] gap-3">
-          <div className="rounded-xl border border-success/30 bg-success/10 px-4 py-3">
+          <div className="rounded-[var(--radius)] border border-success/30 bg-success/10 px-4 py-3">
             <p className="text-xs font-semibold leading-tight text-success break-words">Aprovados</p>
             <p className="mt-2 text-2xl font-bold text-success">{visualStats.approved}</p>
           </div>
-          <div className="rounded-xl border border-error/30 bg-error/10 px-4 py-3">
+          <div className="rounded-[var(--radius)] border border-error/30 bg-error/10 px-4 py-3">
             <p className="text-xs font-semibold leading-tight text-error break-words">Reprovados</p>
             <p className="mt-2 text-2xl font-bold text-error">{visualStats.failed}</p>
           </div>
-          <div className="rounded-xl border border-warning/30 bg-warning/10 px-4 py-3">
+          <div className="rounded-[var(--radius)] border border-warning/30 bg-warning/10 px-4 py-3">
             <p className="text-xs font-semibold leading-tight text-warning break-words">Bloqueados</p>
             <p className="mt-2 text-2xl font-bold text-warning">{visualStats.blocked}</p>
           </div>
         </div>
       </div>
 
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-base-300 bg-base-100 shadow-sm">
-        <div className="border-b border-base-200 px-4 py-3">
-          <p className="text-sm font-semibold text-base-content">Casos executados</p>
-          <p className="text-xs text-base-content/70">
+      <div className={cn(taskModalSectionClass, 'flex min-h-0 flex-1 flex-col overflow-hidden shadow-sm')}>
+        <div className="border-b border-[var(--brand-surface-border)] px-4 py-3">
+          <p className={cn('text-sm font-semibold', taskTextStrongClass)}>Casos executados</p>
+          <p className={cn('text-xs', taskLabelMutedClass)}>
             Visão resumida dos cenários já validados.
           </p>
         </div>

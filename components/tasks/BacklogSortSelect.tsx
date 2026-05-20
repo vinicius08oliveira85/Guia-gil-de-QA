@@ -1,5 +1,7 @@
 import React from 'react';
 import type { BacklogSortBy } from '../../utils/backlogTasks';
+import { appSelectClass } from '../common/viewUi';
+import { cn } from '../../utils/cn';
 
 export interface BacklogSortSelectProps {
   value: BacklogSortBy;
@@ -21,7 +23,7 @@ export const BacklogSortSelect: React.FC<BacklogSortSelectProps> = ({
       value={value}
       disabled={disabled}
       onChange={e => onChange(e.target.value as BacklogSortBy)}
-      className="select select-bordered select-sm h-9 min-h-0 rounded-lg border-[var(--brand-surface-border)] bg-[var(--brand-surface)] text-sm text-[var(--brand-text-strong)] shadow-sm"
+      className={cn(appSelectClass, 'max-w-none')}
       aria-label="Ordenação do backlog"
     >
       <option value="priority">Prioridade (mais urgente primeiro)</option>

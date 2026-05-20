@@ -17,9 +17,21 @@ import { ChevronDownIcon, EditIcon, ListIcon, TrashIcon } from '../common/Icons'
 import { Badge } from '../common/Badge';
 import { Copy, MoreVertical } from 'lucide-react';
 import { cn } from '../../utils/cn';
+import { appMenuPanelClass, appSelectClass } from '../common/viewUi';
+import {
+  taskCardMutedClass,
+  taskCollapsibleHeaderClass,
+  taskCollapsibleShellClass,
+  taskModalSectionClass,
+  taskSelectControlClass,
+  taskTextareaClass,
+  taskTextStrongClass,
+} from './taskActionLayout';
 
-const ROTEIRO_BLOCK_CLASS =
-  'text-xs text-base-content bg-base-200/50 p-3 rounded-lg border border-base-300/50';
+const ROTEIRO_BLOCK_CLASS = cn(
+  taskModalSectionClass,
+  'p-3 text-xs text-[var(--brand-text-strong)]'
+);
 
 const STATUS_EMOJI: Record<TestCase['status'], string> = {
   'Not Run': '○',
@@ -46,7 +58,7 @@ function RoteiroStructuredBody({ view }: { view: RoteiroFieldView }) {
             className="grid gap-1 sm:grid-cols-[minmax(8rem,auto)_1fr] sm:gap-x-3 sm:items-baseline"
           >
             <dt className="font-semibold text-primary/90 shrink-0">{row.key}</dt>
-            <dd className="text-base-content/90 leading-relaxed [overflow-wrap:anywhere]">
+            <dd className="text-[var(--brand-text-strong)] leading-relaxed [overflow-wrap:anywhere]">
               {row.value}
             </dd>
           </div>
@@ -183,7 +195,7 @@ export const TestCaseItem: React.FC<{
   return (
     <div
       className={cn(
-        'rounded-[1.4rem] border border-base-300 bg-base-200 py-2 px-3 transition-colors duration-200 hover:bg-base-300',
+        'rounded-[1.4rem] border border-[var(--brand-surface-border)] bg-[var(--brand-chip)] py-2 px-3 transition-colors duration-200 hover:bg-[var(--brand-chip-hover)]',
         selected && 'ring-1 ring-primary/40 ring-offset-2 ring-offset-base-200'
       )}
     >
@@ -210,7 +222,7 @@ export const TestCaseItem: React.FC<{
         </span>
 
         <p
-          className="font-heading min-w-0 flex-1 truncate text-sm text-base-content sm:text-base"
+          className="font-heading min-w-0 flex-1 truncate text-sm text-[var(--brand-text-strong)] sm:text-base"
           title={listRowTitleAttr || undefined}
         >
           <span className="sr-only">Título do roteiro: </span>
@@ -226,7 +238,7 @@ export const TestCaseItem: React.FC<{
           </p>
         ) : null}
 
-        <div className="hidden shrink-0 items-center gap-0.5 border-l border-base-300/70 pl-2 md:flex">
+        <div className="hidden shrink-0 items-center gap-0.5 border-l border-[var(--brand-surface-border)] pl-2 md:flex">
           {onEdit && (
             <button
               type="button"
@@ -261,7 +273,7 @@ export const TestCaseItem: React.FC<{
         </div>
 
         <div
-          className="hidden shrink-0 items-center gap-0.5 border-l border-base-300/70 pl-2 md:flex"
+          className="hidden shrink-0 items-center gap-0.5 border-l border-[var(--brand-surface-border)] pl-2 md:flex"
           role="group"
           aria-label="Marcar resultado da execução"
         >
@@ -316,7 +328,7 @@ export const TestCaseItem: React.FC<{
           </div>
           <ul
             tabIndex={0}
-            className="dropdown-content menu z-[60] mt-1 w-56 rounded-[1rem] border border-base-300 bg-base-100 p-2 shadow-lg"
+            className={cn('dropdown-content menu z-[60] mt-1 w-56 p-2 shadow-lg', appMenuPanelClass)}
           >
             {onEdit && (
               <li>
@@ -380,7 +392,7 @@ export const TestCaseItem: React.FC<{
         <div className="flex min-w-0 flex-1 flex-col gap-0.5 sm:max-w-[16rem] sm:flex-initial">
           <label
             htmlFor={`tc-exec-kind-${testCase.id}`}
-            className="text-[10px] font-semibold uppercase tracking-wider text-base-content/60"
+            className="task-card-field-label"
           >
             Tipo de execução
           </label>
@@ -401,7 +413,8 @@ export const TestCaseItem: React.FC<{
             }
             aria-label="Tipo de execução do caso de teste"
             className={cn(
-              'select select-bordered select-xs min-w-0 w-full border-base-300 bg-base-100 text-xs',
+              appSelectClass,
+              'select-bordered select-xs min-w-0 w-full text-xs',
               !onExecutionKindChange && 'cursor-not-allowed opacity-70'
             )}
           >
@@ -413,7 +426,7 @@ export const TestCaseItem: React.FC<{
         </div>
       </div>
 
-      <div className="mt-2 overflow-hidden rounded-[1rem] border border-base-300 bg-base-100">
+      <div className={cn(taskCollapsibleShellClass, 'mt-2 overflow-hidden')}>
         <button
           type="button"
           onClick={() => {
@@ -421,21 +434,21 @@ export const TestCaseItem: React.FC<{
               setDetailsOpen(o => !o);
             }
           }}
-          className="flex w-full items-center justify-between px-3 py-2 text-left transition-colors duration-200 hover:bg-base-200"
+          className={cn(taskCollapsibleHeaderClass, 'px-3 py-2')}
           aria-expanded={effectiveDetailsOpen}
         >
           <div className="flex min-w-0 items-center gap-2">
-            <ListIcon className="h-4 w-4 shrink-0 text-base-content/70" />
-            <span className="font-heading text-xs font-semibold text-base-content">
+            <ListIcon className="h-4 w-4 shrink-0 task-card-muted" />
+            <span className="font-heading text-xs font-semibold text-[var(--brand-text-strong)]">
               Roteiro completo
             </span>
           </div>
           <ChevronDownIcon
-            className={`h-4 w-4 shrink-0 text-base-content/70 transition-transform duration-200 ${effectiveDetailsOpen ? 'rotate-180' : ''}`}
+            className={`h-4 w-4 shrink-0 task-card-muted transition-transform duration-200 ${effectiveDetailsOpen ? 'rotate-180' : ''}`}
           />
         </button>
         {effectiveDetailsOpen && (
-          <div className="space-y-3 border-t border-base-300 px-3 pb-3 pt-2">
+          <div className="space-y-3 border-t border-[var(--brand-surface-border)] px-3 pb-3 pt-2">
             <div>
               <h3 className="mb-1 font-body text-[10px] font-bold uppercase tracking-widest text-muted">
                 Ação necessária
@@ -446,7 +459,7 @@ export const TestCaseItem: React.FC<{
                     {actionSteps.map((step, i) => (
                       <li
                         key={`action-step-${i}`}
-                        className="break-words pl-0.5 text-base-content [overflow-wrap:anywhere]"
+                        className="break-words pl-0.5 text-[var(--brand-text-strong)] [overflow-wrap:anywhere]"
                       >
                         {stripLeadingStepIndex(step)}
                       </li>
@@ -484,7 +497,7 @@ export const TestCaseItem: React.FC<{
                 onChange={e => onObservedResultChange?.(e.target.value)}
                 disabled={!onObservedResultChange}
                 placeholder="Preencha durante a execução com o comportamento observado."
-                className="textarea textarea-bordered textarea-sm w-full border-base-300 bg-base-100 text-xs min-h-[72px]"
+                className={cn(taskTextareaClass, 'textarea-sm text-xs min-h-[72px]')}
               />
             </div>
           </div>

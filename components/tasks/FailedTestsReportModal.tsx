@@ -20,6 +20,8 @@ import { EmptyState } from '../common/EmptyState';
 import { ReportPreview } from './ReportPreview';
 import { ActionMenu } from './ActionMenu';
 import { getTestCaseEnvironment, getTestCaseSuite } from '../../utils/testCaseMigration';
+import { taskCardFieldLabelClass, taskSelectControlClass, taskTextStrongClass } from './taskActionLayout';
+import { cn } from '../../utils/cn';
 
 interface FailedTestWithTask {
   testCase: TestCase;
@@ -615,7 +617,7 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
           >
             {/* Seletor de escopo */}
             <div className="flex-shrink-0 flex flex-col gap-sm">
-              <p className="text-xs uppercase tracking-wide text-base-content/70 font-semibold">
+              <p className={taskCardFieldLabelClass}>
                 Escopo
               </p>
               <div className="flex gap-md">
@@ -650,7 +652,7 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
             {/* Seletor de tarefa */}
             {scope === 'task' && (
               <div className="flex-shrink-0 flex flex-col gap-sm">
-                <p className="text-xs uppercase tracking-wide text-base-content/70 font-semibold">
+                <p className={taskCardFieldLabelClass}>
                   Tarefa
                 </p>
                 <select
@@ -765,7 +767,7 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
           <div className="flex flex-col gap-md overflow-y-auto min-h-0">
             {/* Formato do relatório - compacto */}
             <div className="flex-shrink-0 flex items-center justify-between gap-sm">
-              <p className="text-xs uppercase tracking-wide text-base-content/70 font-semibold">
+              <p className={taskCardFieldLabelClass}>
                 Formato
               </p>
               <div className="flex gap-xs">
@@ -914,7 +916,7 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
             className={`${showPreview ? 'flex' : 'hidden'} lg:flex flex-col gap-md overflow-hidden border-l border-base-300 pl-md`}
           >
             <div className="flex items-center justify-between flex-shrink-0">
-              <p className="text-xs uppercase tracking-wide text-base-content/70 font-semibold">
+              <p className={taskCardFieldLabelClass}>
                 Preview do Relatório
               </p>
               <button
@@ -952,7 +954,7 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
         {aiAnalysisText && (
           <div className="flex-shrink-0 flex flex-col gap-sm border-t border-base-300 pt-md">
             <div className="flex items-center justify-between">
-              <p className="text-xs uppercase tracking-wide text-base-content/70 font-semibold">
+              <p className={taskCardFieldLabelClass}>
                 Análise IA - Relatório para PO
               </p>
               <div className="flex gap-xs">
@@ -1035,16 +1037,11 @@ export const FailedTestsReportModal: React.FC<FailedTestsReportModalProps> = ({
             <textarea
               value={aiAnalysisText}
               readOnly
-              className={`
-                w-full min-h-[200px] max-h-[400px]
-                bg-base-100 border border-base-300 rounded-lg
-                p-card text-sm text-base-content
-                font-sans
-                resize-none
-                overflow-y-auto
-                focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary
-                transition-all duration-200
-              `}
+              className={cn(
+                'w-full min-h-[200px] max-h-[400px] p-card text-sm font-sans resize-none overflow-y-auto transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary',
+                taskSelectControlClass,
+                taskTextStrongClass
+              )}
               onClick={e => {
                 (e.target as HTMLTextAreaElement).select();
               }}

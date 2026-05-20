@@ -14,6 +14,14 @@ import { Modal } from '../common/Modal';
 import { Button } from '../common/Button';
 import { TestReportExecutionPanel } from './TestReportExecutionPanel';
 import { TestReportTextPreview } from './TestReportTextPreview';
+import { cn } from '../../utils/cn';
+import {
+  taskLabelMutedClass,
+  taskModalSectionAccentClass,
+  taskModalSectionClass,
+  taskPanelBorderClass,
+  taskTextStrongClass,
+} from './taskActionLayout';
 
 type ReportFormatOption = 'text' | 'resumido';
 type CopyVariant = 'full' | 'summary' | 'results' | null;
@@ -172,11 +180,11 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({ isOpen, onClos
     <Modal isOpen={isOpen} onClose={onClose} title="Registro de Testes Realizados" size="4xl">
       <div className="h-full flex flex-col min-h-0 space-y-5">
         <div className="flex-shrink-0">
-          <div className="flex flex-col gap-3 rounded-2xl border border-base-300 bg-base-100 p-4 shadow-sm">
+          <div className={cn(taskModalSectionClass, 'flex flex-col gap-3 p-4 shadow-sm')}>
             <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
               <div className="min-w-0">
-                <p className="text-sm font-semibold text-base-content">Saídas prontas para uso</p>
-                <p className="text-sm text-base-content/70">
+                <p className={cn('text-sm font-semibold', taskTextStrongClass)}>Saídas prontas para uso</p>
+                <p className={cn('text-sm', taskLabelMutedClass)}>
                   Copie o registro completo ou use atalhos mais enxutos conforme a plataforma.
                 </p>
               </div>
@@ -223,7 +231,12 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({ isOpen, onClos
               </div>
             </div>
 
-            <div className="flex flex-col gap-2 rounded-xl border border-base-200 bg-base-200/40 px-3 py-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+            <div
+              className={cn(
+                taskPanelBorderClass,
+                'flex flex-col gap-2 bg-[var(--brand-chip)] px-3 py-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between'
+              )}
+            >
               <div className="min-w-0">
                 <p className="text-xs font-semibold uppercase tracking-wide text-base-content/60">
                   Atalhos de cópia
@@ -285,21 +298,29 @@ export const TestReportModal: React.FC<TestReportModalProps> = ({ isOpen, onClos
                   role="button"
                   aria-pressed={isSelected}
                   aria-label={`${option.label}: ${option.description}`}
-                  className={
+                  className={cn(
+                    'flex items-start gap-2 p-4 text-left transition-all duration-200 rounded-[var(--radius)]',
                     isSelected
-                      ? 'flex items-start gap-2 rounded-xl border-2 border-brand-orange bg-orange-50 p-4 text-left text-base-content ring-2 ring-brand-orange/20 transition-all duration-200 dark:bg-orange-950/20'
-                      : 'flex items-start gap-2 rounded-xl border border-base-300 p-4 text-left text-base-content/70 transition-all duration-200 hover:border-base-content/20 hover:bg-base-200/50 hover:text-base-content'
-                  }
+                      ? cn(
+                          taskModalSectionAccentClass,
+                          'border-2 border-[var(--brand-cta)] ring-2 ring-[color-mix(in_srgb,var(--brand-cta)_22%,transparent)] text-[var(--brand-text-strong)]'
+                        )
+                      : cn(
+                          taskPanelBorderClass,
+                          'text-[var(--brand-text-muted)] hover:border-[var(--brand-surface-border)] hover:bg-[var(--brand-chip-hover)] hover:text-[var(--brand-text-strong)]'
+                        )
+                  )}
                 >
                   <div
-                    className={`mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border-2 ${
+                    className={cn(
+                      'mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full border-2',
                       isSelected
-                        ? 'border-brand-orange bg-white dark:bg-base-100'
-                        : 'border-base-300 bg-base-100'
-                    }`}
+                        ? 'border-[var(--brand-cta)] bg-[var(--brand-surface-strong)]'
+                        : 'border-[var(--brand-surface-border)] bg-[var(--brand-surface-strong)]'
+                    )}
                   >
                     {isSelected ? (
-                      <div className="h-2.5 w-2.5 rounded-full bg-brand-orange" aria-hidden />
+                      <div className="h-2.5 w-2.5 rounded-full bg-[var(--brand-cta)]" aria-hidden />
                     ) : null}
                   </div>
                   <div className="min-w-0">

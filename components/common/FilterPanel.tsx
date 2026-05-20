@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { FilterOptions } from '../../hooks/useFilters';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ModernIcons } from './ModernIcons';
+import { cn } from '../../utils/cn';
+import { appPanelClass } from './viewUi';
 
 interface FilterSectionProps {
   id: string;
@@ -23,22 +25,27 @@ const FilterSection: React.FC<FilterSectionProps> = ({
   const contentId = `filter-section-${id}`;
 
   return (
-    <div className="rounded-xl border border-base-300 bg-base-100 overflow-hidden hover:border-primary/30 transition-all duration-200">
+    <div
+      className={cn(
+        appPanelClass,
+        'overflow-hidden transition-all duration-200 hover:border-[color-mix(in_srgb,var(--color-primary)_30%,var(--brand-surface-border))]'
+      )}
+    >
       <button
         type="button"
         onClick={() => onToggle(id)}
-        className="w-full flex items-center justify-between p-4 bg-base-100 hover:bg-base-200/50 transition-colors duration-200 group"
+        className="app-element-typography w-full flex items-center justify-between p-4 bg-transparent hover:bg-[var(--brand-chip-hover)] transition-colors duration-200 group"
         aria-expanded={isExpanded}
         aria-controls={contentId}
       >
         <div className="flex items-center gap-3">
-          <div className="p-1.5 bg-primary/10 rounded-lg group-hover:bg-primary/15 transition-colors">
+          <div className="p-1.5 bg-[color-mix(in_srgb,var(--color-primary)_12%,transparent)] rounded-[var(--radius)] group-hover:bg-[color-mix(in_srgb,var(--color-primary)_18%,transparent)] transition-colors">
             {icon}
           </div>
-          <span className="text-sm font-semibold text-base-content">{title}</span>
+          <span className="text-sm font-semibold text-[var(--brand-text-strong)]">{title}</span>
         </div>
         <motion.svg
-          className="w-4 h-4 text-base-content/60"
+          className="w-4 h-4 text-[var(--brand-text-muted)]"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -58,7 +65,9 @@ const FilterSection: React.FC<FilterSectionProps> = ({
             transition={{ duration: 0.2, ease: 'easeInOut' }}
             className="overflow-hidden"
           >
-            <div className="p-4 bg-base-100 border-t border-base-300/50">{children}</div>
+            <div className="p-4 border-t border-[var(--brand-surface-border)] bg-[var(--brand-surface-strong)]">
+              {children}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

@@ -2,6 +2,8 @@ import React from 'react';
 import { Download } from 'lucide-react';
 import { FilePreview } from '../common/FilePreview';
 import { jiraMediaService } from '../../services/jiraMediaService';
+import { cn } from '../../utils/cn';
+import { taskChipSurfaceClass, taskPanelBorderClass } from './taskActionLayout';
 
 interface JiraAttachmentProps {
   url: string;
@@ -48,10 +50,14 @@ export const JiraAttachment: React.FC<JiraAttachmentProps> = ({
   return (
     <div
       onClick={handleDownload}
-      className={`group relative rounded-lg border border-base-300 bg-base-100 p-2 transition-colors cursor-pointer ${isLoading ? 'opacity-70 pointer-events-none' : 'hover:bg-base-200'}`}
+      className={cn(
+        taskPanelBorderClass,
+        'group relative cursor-pointer bg-[var(--brand-surface-strong)] p-2 transition-colors',
+        isLoading ? 'pointer-events-none opacity-70' : taskChipSurfaceClass
+      )}
     >
       {isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-base-100/70 rounded-lg">
+        <div className="absolute inset-0 flex items-center justify-center rounded-[var(--radius)] bg-[color-mix(in_srgb,var(--brand-surface-strong)_70%,transparent)]">
           <span className="loading loading-spinner loading-sm" aria-label="Carregando anexo" />
         </div>
       )}

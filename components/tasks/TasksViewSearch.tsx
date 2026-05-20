@@ -1,5 +1,7 @@
 import React, { type RefObject } from 'react';
 import { Search, X } from 'lucide-react';
+import { cn } from '../../utils/cn';
+import { searchInputClass } from '../common/viewUi';
 
 export interface TasksViewSearchProps {
   searchQuery: string;
@@ -15,14 +17,14 @@ export const TasksViewSearch: React.FC<TasksViewSearchProps> = ({
   <div className="py-1">
     <label
       htmlFor="quick-task-search"
-      className="mb-2 block text-sm font-medium text-base-content/80"
+      className="app-element-typography mb-2 block text-sm font-medium text-[var(--brand-text-muted)]"
       title="Atalho: Ctrl+Shift+F (ou Cmd+Shift+F no Mac)"
     >
       Busca rápida
     </label>
     <div className="relative">
       <Search
-        className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-base-content/45"
+        className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--brand-text-muted)]"
         aria-hidden
       />
       <input
@@ -34,7 +36,7 @@ export const TasksViewSearch: React.FC<TasksViewSearchProps> = ({
         value={searchQuery}
         onChange={e => onSearchChange(e.target.value)}
         placeholder="ID, título ou palavra-chave…"
-        className="h-11 w-full rounded-lg border border-base-300/80 bg-base-100 py-2 pl-10 pr-10 text-sm text-base-content shadow-sm placeholder:text-base-content/45 focus:border-[color-mix(in_srgb,var(--brand-cta)_50%,transparent)] focus:outline-none focus:ring-2 focus:ring-[color-mix(in_srgb,var(--brand-cta)_22%,transparent)] sm:h-10"
+        className={cn(searchInputClass, 'h-11 pr-10 sm:h-10')}
         title="Atalho: Ctrl+Shift+F (ou Cmd+Shift+F no Mac)"
         aria-label="Busca rápida por tarefa ou teste. Atalho: Ctrl+Shift+F"
       />
@@ -42,14 +44,14 @@ export const TasksViewSearch: React.FC<TasksViewSearchProps> = ({
         <button
           type="button"
           onClick={() => onSearchChange('')}
-          className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-md text-base-content/55 transition-colors hover:bg-base-200/80 hover:text-base-content focus:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--brand-cta)_30%,transparent)]"
+          className="win-icon-button absolute right-2 top-1/2 h-8 w-8 -translate-y-1/2"
           aria-label="Limpar busca"
         >
           <X className="h-4 w-4" aria-hidden />
         </button>
       )}
     </div>
-    <p className="mt-1.5 text-xs text-base-content/55">
+    <p className="app-element-typography mt-1.5 text-xs text-[var(--brand-text-muted)]">
       Filtro instantâneo na lista · Ctrl+Shift+F (Windows) ou Cmd+Shift+F (Mac)
     </p>
   </div>

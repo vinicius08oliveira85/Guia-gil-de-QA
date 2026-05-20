@@ -4,7 +4,6 @@ import type { BacklogSprintFilterOption } from '../../utils/taskSprintDisplay';
 import { BacklogSortSelect } from './BacklogSortSelect';
 import { BacklogSprintFilterSelect } from './BacklogSprintFilterSelect';
 import { filterPillClass } from '../common/viewUi';
-import { cn } from '../../utils/cn';
 
 export interface TasksViewListModeToggleProps {
   mode: TasksListMode;
@@ -36,26 +35,30 @@ export const TasksViewListModeToggle: React.FC<TasksViewListModeToggleProps> = (
     role="group"
     aria-label="Modo de listagem de tarefas"
   >
-    <div className="inline-flex flex-wrap gap-1 rounded-lg border border-base-300/70 bg-base-200/40 p-1">
+    <div className="task-toolbar-pill-group">
       <button
         type="button"
         disabled={disabled}
-        className={cn(filterPillClass(mode === 'all'), 'min-h-[36px] sm:min-h-9')}
+        className={filterPillClass(mode === 'all')}
         aria-pressed={mode === 'all'}
         onClick={() => onModeChange('all')}
       >
         Todas as tarefas
-        <span className="ml-1 tabular-nums opacity-75">({totalCount})</span>
+        <span className="ml-0.5 tabular-nums text-[0.65em] font-medium opacity-80 sm:text-[0.7em]">
+          ({totalCount})
+        </span>
       </button>
       <button
         type="button"
         disabled={disabled}
-        className={cn(filterPillClass(mode === 'backlog'), 'min-h-[36px] sm:min-h-9')}
+        className={filterPillClass(mode === 'backlog')}
         aria-pressed={mode === 'backlog'}
         onClick={() => onModeChange('backlog')}
       >
         Backlog
-        <span className="ml-1 tabular-nums opacity-75">({backlogCount})</span>
+        <span className="ml-0.5 tabular-nums text-[0.65em] font-medium opacity-80 sm:text-[0.7em]">
+          ({backlogCount})
+        </span>
       </button>
     </div>
     {mode === 'backlog' && (

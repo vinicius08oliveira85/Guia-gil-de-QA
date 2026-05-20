@@ -1,5 +1,7 @@
 /** Classes compartilhadas entre abas do projeto (Dashboard, Tarefas, Documentos, etc.). */
 
+import { cn } from '../../utils/cn';
+
 /** Padding horizontal alinhado ao header — conteúdo em largura total da viewport. */
 export const appContentPaddingX = 'px-3 sm:px-4';
 
@@ -10,32 +12,44 @@ export const projectViewShell =
 export const projectsListShell =
   `tasks-panel-scope w-full min-w-0 max-w-none py-4 sm:py-5 ${appContentPaddingX}`;
 
-export const projectViewPanel =
-  'rounded-[var(--rounded-box)] border border-base-300/60 bg-base-100 p-3 soft-shadow sm:p-4';
+export const appPanelClass = 'app-panel';
 
-export const outlineActionBtn =
-  'inline-flex min-h-[44px] items-center gap-2 rounded-lg border border-base-300/80 bg-base-100 px-3 py-2 text-sm font-medium text-base-content/85 shadow-sm transition-colors hover:border-base-300 hover:bg-base-200/50 disabled:opacity-50 sm:min-h-9';
+export const projectViewPanel = cn(appPanelClass, 'p-3 soft-shadow sm:p-4');
 
-export const primaryActionBtn =
-  'inline-flex min-h-[44px] items-center gap-2 rounded-lg border-0 bg-[var(--brand-cta)] px-4 py-2 text-sm font-semibold text-[var(--brand-cta-foreground)] shadow-sm transition-all hover:brightness-[0.97] active:scale-[0.98] disabled:opacity-50 sm:min-h-9';
+export const outlineActionBtn = cn(
+  'app-btn-outline inline-flex min-h-[44px] items-center gap-2 px-3 py-2 text-sm disabled:opacity-50 sm:min-h-9'
+);
+
+export const primaryActionBtn = cn(
+  'app-btn-primary-inline inline-flex min-h-[44px] items-center gap-2 px-4 py-2 text-sm disabled:opacity-50 active:scale-[0.98] sm:min-h-9'
+);
 
 export function filterPillClass(active: boolean): string {
-  return active
-    ? 'rounded-lg bg-[var(--brand-cta)] px-3 py-1.5 text-sm font-medium text-[var(--brand-cta-foreground)] shadow-sm'
-    : 'rounded-lg border border-base-300/80 bg-base-100 px-3 py-1.5 text-sm font-medium text-base-content/75 transition-colors hover:bg-base-200/60';
+  return cn('app-filter-pill', active && 'app-filter-pill-active');
 }
 
-export const searchInputClass =
-  'h-10 w-full rounded-lg border border-base-300/80 bg-base-100 py-2 pl-10 pr-3 text-sm text-base-content shadow-sm placeholder:text-base-content/45 focus:border-[color-mix(in_srgb,var(--brand-cta)_50%,transparent)] focus:outline-none focus:ring-2 focus:ring-[color-mix(in_srgb,var(--brand-cta)_22%,transparent)]';
+export const searchInputClass = cn(
+  'app-input h-10 w-full py-2 pl-10 pr-3 text-sm shadow-sm'
+);
+
+export const appSelectClass = cn('app-select select select-bordered select-sm h-9 min-h-0 text-sm shadow-sm');
+
+export const appMenuPanelClass = 'app-menu-panel';
+
+export const appMenuItemClass = 'app-menu-item w-full flex items-center gap-2 px-3 py-2 text-left';
+
+export const appNavPillTabClass = cn(
+  'app-nav-pill app-element-typography min-h-[44px] shrink-0 snap-start whitespace-nowrap px-3 py-2 text-sm font-semibold sm:min-h-0'
+);
 
 /** Card de métrica / bloco em trilha, timeline e análise. */
-export const projectViewCard =
-  'rounded-[var(--rounded-box)] border border-base-300/60 bg-base-100 p-4 soft-shadow sm:p-5';
+export const projectViewCard = cn('app-panel p-4 soft-shadow sm:p-5');
 
 export const pageTitleClass =
-  'font-heading text-2xl font-bold tracking-tight text-base-content sm:text-[1.65rem]';
+  'app-element-typography font-heading text-2xl font-bold tracking-tight text-[var(--brand-text-strong)] sm:text-[1.65rem]';
 
-export const pageSubtitleClass = 'w-full text-sm leading-relaxed text-base-content/70';
+export const pageSubtitleClass =
+  'app-element-typography w-full text-sm leading-relaxed text-[var(--brand-text-muted)]';
 
 /** Container de telas globais (ex.: Configurações). */
 export const settingsContentShell = `w-full min-w-0 max-w-none ${appContentPaddingX}`;
@@ -50,5 +64,4 @@ export const documentCardGrid =
 export const strategicAnalysisGrid =
   'grid w-full grid-cols-1 gap-4 xl:grid-cols-2 2xl:grid-cols-3';
 
-export const compactMetricTile =
-  'rounded-xl border border-base-300/60 bg-base-200/40 p-3 sm:p-4';
+export const compactMetricTile = cn('app-panel bg-[var(--brand-chip)] p-3 sm:p-4');

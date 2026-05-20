@@ -4,8 +4,19 @@ import { useProjectsStore } from '../../store/projectsStore';
 import { Button } from '../common/Button';
 import { filterBusinessRulesByQuery } from '../../utils/businessRulesFilter';
 import { Search, ChevronDown } from 'lucide-react';
+import { cn } from '../../utils/cn';
+import { searchInputClass } from '../common/viewUi';
+import {
+  taskCardFieldLabelClass,
+  taskCardMutedClass,
+  taskCardSectionTitleClass,
+  taskFormInsetPanelClass,
+  taskModalSectionAccentClass,
+  taskPanelBorderClass,
+  taskTextStrongClass,
+} from './taskActionLayout';
 
-const CARD_TITLE_CLASS = 'text-sm sm:text-base font-bold text-base-content flex items-center gap-2';
+const CARD_TITLE_CLASS = cn(taskCardSectionTitleClass, 'text-sm sm:text-base');
 
 /** Exibe campo de busca ao vincular regras quando há muitas entradas. */
 const TASK_BR_SEARCH_MIN_COUNT = 5;
@@ -110,7 +121,7 @@ export const TaskBusinessRulesLinker: React.FC<TaskBusinessRulesLinkerProps> = (
   return (
     <div className="space-y-3">
       <section
-        className="space-y-3 rounded-xl border border-base-300 bg-base-100/60 p-4"
+        className="task-modal-section space-y-3 p-4"
         aria-labelledby={`task-br-heading-${safeDomId}`}
       >
         <h3 id={`task-br-heading-${safeDomId}`} className={CARD_TITLE_CLASS}>
@@ -118,7 +129,7 @@ export const TaskBusinessRulesLinker: React.FC<TaskBusinessRulesLinkerProps> = (
         </h3>
         {projectRules.length === 0 ? (
           <div className="space-y-2">
-            <p className="text-sm text-base-content/70">
+            <p className="text-sm task-card-muted">
               Nenhuma regra cadastrada. Crie regras na aba Regras de negócio do projeto e marque
               categorias ou regras nesta aba para a IA usar na geração de testes e BDD.
             </p>
@@ -138,15 +149,15 @@ export const TaskBusinessRulesLinker: React.FC<TaskBusinessRulesLinkerProps> = (
             <legend className="sr-only">
               Selecionar regras de negócio aplicáveis a esta tarefa
             </legend>
-            <p id={`task-br-hint-${safeDomId}`} className="text-xs text-base-content/60">
+            <p id={`task-br-hint-${safeDomId}`} className="text-xs task-card-muted">
               Por categoria: todas as regras da categoria entram no prompt. Por regra: apenas as
               marcadas. A IA usa a união dos dois modos (sem duplicar a mesma regra). Sem vínculos,
               usa só título e descrição da tarefa.
             </p>
 
-            <div className="space-y-2 rounded-lg border border-base-300/60 bg-base-200/30 p-3">
-              <h4 className="text-sm font-semibold text-base-content">Vincular por categoria</h4>
-              <p className="text-xs text-base-content/60">
+            <div className={taskFormInsetPanelClass}>
+              <h4 className="text-sm font-semibold text-[var(--brand-text-strong)]">Vincular por categoria</h4>
+              <p className="text-xs task-card-muted">
                 Marque categorias para incluir automaticamente todas as regras do projeto nessa
                 classificação.
               </p>
@@ -160,7 +171,10 @@ export const TaskBusinessRulesLinker: React.FC<TaskBusinessRulesLinkerProps> = (
                   return (
                     <label
                       key={cat}
-                      className="flex cursor-pointer items-center gap-2 rounded-full border border-base-300 bg-base-100 px-3 py-1.5 text-sm text-base-content hover:bg-base-200/80"
+                      className={cn(
+                        'app-filter-pill flex cursor-pointer items-center gap-2 rounded-full px-3 py-1.5 text-sm',
+                        taskTextStrongClass
+                      )}
                     >
                       <input
                         type="checkbox"
@@ -177,15 +191,15 @@ export const TaskBusinessRulesLinker: React.FC<TaskBusinessRulesLinkerProps> = (
             </div>
 
             <div className="space-y-2">
-              <h4 className="text-sm font-semibold text-base-content">Vincular por regra</h4>
-              <p className="text-xs text-base-content/60">
+              <h4 className="text-sm font-semibold text-[var(--brand-text-strong)]">Vincular por regra</h4>
+              <p className="text-xs task-card-muted">
                 Escolha regras individuais. Clique no título de cada cartão para expandir a
                 descrição.
               </p>
               {projectRules.length >= TASK_BR_SEARCH_MIN_COUNT && (
                 <div className="relative">
                   <Search
-                    className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-base-content/40"
+                    className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--brand-text-muted)]"
                     aria-hidden
                   />
                   <input
@@ -193,14 +207,14 @@ export const TaskBusinessRulesLinker: React.FC<TaskBusinessRulesLinkerProps> = (
                     value={search}
                     onChange={e => setSearch(e.target.value)}
                     placeholder="Filtrar regras..."
-                    className="input input-bordered min-h-[44px] w-full rounded-xl border-base-300 bg-base-100 pl-10 text-sm text-base-content focus:outline-none focus:ring-2 focus:ring-primary/20"
+                    className={cn(searchInputClass, 'input-bordered min-h-[44px] w-full pl-10')}
                     aria-label="Filtrar lista de regras de negócio"
                   />
                 </div>
               )}
               {linkedHiddenByFilter.length > 0 && (
                 <div
-                  className="space-y-2 rounded-lg border border-primary/40 bg-primary/5 p-3"
+                  className={cn(taskModalSectionAccentClass, 'space-y-2 p-3')}
                   role="region"
                   aria-label="Regras vinculadas ocultas pelo filtro"
                 >
@@ -210,7 +224,7 @@ export const TaskBusinessRulesLinker: React.FC<TaskBusinessRulesLinkerProps> = (
                   <ul className="max-h-48 space-y-2 overflow-y-auto pr-1" role="list">
                     {linkedHiddenByFilter.map(rule => (
                       <li key={`br-hidden-${rule.id}`}>
-                        <div className="flex overflow-hidden rounded-lg border border-primary/30 bg-base-100/90">
+                        <div className={cn(taskPanelBorderClass, 'flex overflow-hidden bg-[var(--brand-surface-strong)]')}>
                           <label
                             className="flex shrink-0 cursor-pointer items-start p-3"
                             htmlFor={`br-cb-hidden-${safeDomId}-${rule.id}`}
@@ -225,23 +239,23 @@ export const TaskBusinessRulesLinker: React.FC<TaskBusinessRulesLinkerProps> = (
                             />
                           </label>
                           <details className="group min-w-0 flex-1 border-l border-primary/25">
-                            <summary className="flex min-h-[44px] cursor-pointer list-none items-center justify-between gap-2 py-3 pr-3 text-left text-sm font-medium text-base-content hover:bg-base-200/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/25 [&::-webkit-details-marker]:hidden">
+                            <summary className="flex min-h-[44px] cursor-pointer list-none items-center justify-between gap-2 py-3 pr-3 text-left text-sm font-medium text-[var(--brand-text-strong)] hover:bg-[var(--brand-chip-hover)] focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/25 [&::-webkit-details-marker]:hidden">
                               <span className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
                                 <span>{rule.title}</span>
-                                <span className="shrink-0 rounded-full bg-base-300/70 px-2 py-0.5 text-[10px] font-normal text-base-content/80">
+                                <span className="shrink-0 rounded-full bg-[var(--brand-chip-active)] px-2 py-0.5 text-[10px] font-normal task-card-muted">
                                   {rule.category}
                                 </span>
                               </span>
                               <ChevronDown
-                                className="h-5 w-5 shrink-0 text-base-content/45 transition-transform group-open:rotate-180"
+                                className="h-5 w-5 shrink-0 text-[var(--brand-text-muted)] transition-transform group-open:rotate-180"
                                 aria-hidden
                               />
                             </summary>
-                            <div className="border-t border-base-300/60 pb-3 pr-3 pt-2 text-sm whitespace-pre-wrap text-base-content/75">
+                            <div className="border-t border-[var(--brand-surface-border)] pb-3 pr-3 pt-2 text-sm whitespace-pre-wrap task-card-muted">
                               {rule.description.trim() ? (
                                 rule.description
                               ) : (
-                                <span className="italic text-base-content/50">Sem descrição</span>
+                                <span className="italic task-card-muted">Sem descrição</span>
                               )}
                             </div>
                           </details>
@@ -252,7 +266,7 @@ export const TaskBusinessRulesLinker: React.FC<TaskBusinessRulesLinkerProps> = (
                 </div>
               )}
               {filteredRules.length === 0 && search.trim() && linkedHiddenByFilter.length === 0 ? (
-                <p className="py-1 text-sm text-base-content/60" role="status">
+                <p className="py-1 text-sm task-card-muted" role="status">
                   Nenhuma regra corresponde à busca.
                 </p>
               ) : filteredRules.length > 0 ? (
@@ -265,7 +279,7 @@ export const TaskBusinessRulesLinker: React.FC<TaskBusinessRulesLinkerProps> = (
                     const checked = (task.linkedBusinessRuleIds ?? []).includes(rule.id);
                     return (
                       <li key={rule.id}>
-                        <div className="flex overflow-hidden rounded-lg border border-base-300 bg-base-200/50 hover:bg-base-200/70">
+                        <div className={cn(taskPanelBorderClass, 'flex overflow-hidden bg-[var(--brand-chip)] hover:bg-[var(--brand-chip-hover)]')}>
                           <label
                             className="flex shrink-0 cursor-pointer items-start p-3"
                             htmlFor={`br-cb-${safeDomId}-${rule.id}`}
@@ -279,24 +293,24 @@ export const TaskBusinessRulesLinker: React.FC<TaskBusinessRulesLinkerProps> = (
                               aria-label={`${checked ? 'Desmarcar' : 'Marcar'} vínculo da regra: ${rule.title}`}
                             />
                           </label>
-                          <details className="group min-w-0 flex-1 border-l border-base-300">
-                            <summary className="flex min-h-[44px] cursor-pointer list-none items-center justify-between gap-2 py-3 pr-3 text-left text-sm font-medium text-base-content hover:bg-base-200/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/25 [&::-webkit-details-marker]:hidden">
+                          <details className="group min-w-0 flex-1 border-l border-[var(--brand-surface-border)]">
+                            <summary className="flex min-h-[44px] cursor-pointer list-none items-center justify-between gap-2 py-3 pr-3 text-left text-sm font-medium text-[var(--brand-text-strong)] hover:bg-[var(--brand-chip-hover)] focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/25 [&::-webkit-details-marker]:hidden">
                               <span className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
                                 <span>{rule.title}</span>
-                                <span className="shrink-0 rounded-full bg-base-300/70 px-2 py-0.5 text-[10px] font-normal text-base-content/80">
+                                <span className="shrink-0 rounded-full bg-[var(--brand-chip-active)] px-2 py-0.5 text-[10px] font-normal task-card-muted">
                                   {rule.category}
                                 </span>
                               </span>
                               <ChevronDown
-                                className="h-5 w-5 shrink-0 text-base-content/45 transition-transform group-open:rotate-180"
+                                className="h-5 w-5 shrink-0 text-[var(--brand-text-muted)] transition-transform group-open:rotate-180"
                                 aria-hidden
                               />
                             </summary>
-                            <div className="border-t border-base-300/60 pb-3 pr-3 pt-2 text-sm whitespace-pre-wrap text-base-content/75">
+                            <div className="border-t border-[var(--brand-surface-border)] pb-3 pr-3 pt-2 text-sm whitespace-pre-wrap task-card-muted">
                               {rule.description.trim() ? (
                                 rule.description
                               ) : (
-                                <span className="italic text-base-content/50">Sem descrição</span>
+                                <span className="italic task-card-muted">Sem descrição</span>
                               )}
                             </div>
                           </details>

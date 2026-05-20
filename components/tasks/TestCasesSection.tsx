@@ -17,6 +17,14 @@ import {
   Filter,
   SlidersHorizontal,
 } from 'lucide-react';
+import { cn } from '../../utils/cn';
+import {
+  taskCardSectionTitleClass,
+  taskLabelMutedClass,
+  taskModalSectionAccentClass,
+  taskPanelBorderClass,
+  taskSelectControlClass,
+} from './taskActionLayout';
 
 const STATUS_OPTIONS: Array<TestCase['status']> = ['Not Run', 'Passed', 'Failed', 'Blocked'];
 const STATUS_LABEL: Record<TestCase['status'], string> = {
@@ -195,14 +203,14 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
   if (!task.id) return null;
 
   return (
-    <div className="font-sans tracking-[var(--letter-spacing)] text-base-content">
+    <div className="font-sans tracking-[var(--letter-spacing)] text-[var(--brand-text-strong)]">
       <header className="flex flex-col gap-3 mb-4">
         <div className="flex flex-wrap items-center gap-3">
-          <div className="p-1.5 bg-primary/10 rounded-lg">
+          <div className="rounded-[var(--radius)] border border-[color-mix(in_srgb,var(--color-primary)_25%,transparent)] bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)] p-1.5">
             <ClipboardList className="w-5 h-5 text-primary" aria-hidden />
           </div>
-          <h2 className="text-lg font-bold text-base-content">Casos de Teste</h2>
-          <span className="text-xs font-medium text-base-content/70 bg-base-200 px-3 py-1 rounded-full">
+          <h2 className={cn(taskCardSectionTitleClass, 'text-lg')}>Casos de Teste</h2>
+          <span className="badge-task-format rounded-full border border-[var(--brand-surface-border)] bg-[var(--brand-chip)] px-3 py-1 text-xs font-medium normal-case tracking-normal text-[var(--brand-text-muted)]">
             {stats.total} caso(s)
           </span>
           {cases.length > 0 && (
@@ -275,14 +283,17 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
                   placeholder="Buscar na descrição, passos ou resultado..."
                   value={searchInput}
                   onChange={e => setSearchInput(e.target.value)}
-                  className="input input-bordered input-sm w-full rounded-[var(--radius)] bg-base-100 pl-8 text-sm text-base-content placeholder:text-base-content/50"
+                  className={cn(
+                    'input input-bordered input-sm w-full pl-8 text-sm placeholder:text-[var(--brand-text-muted)]',
+                    taskSelectControlClass
+                  )}
                   aria-label="Buscar nos casos de teste"
                 />
               </div>
               <select
                 value={sortBy}
                 onChange={e => setSortBy(e.target.value as SortBy)}
-                className="select select-bordered select-sm rounded-[var(--radius)] bg-base-100 text-sm text-base-content"
+                className={cn('select select-bordered select-sm text-sm', taskSelectControlClass)}
                 aria-label="Ordenar casos por"
               >
                 {SORT_OPTIONS.map(opt => (
@@ -330,8 +341,13 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
 
             {/* Filtros avançados: painel colapsável */}
             {showAdvancedFilters && (
-              <div className="flex flex-wrap items-center gap-2 p-2.5 bg-base-200/60 rounded-xl border border-base-300">
-                <span className="text-xs text-base-content/60 font-medium">Status:</span>
+              <div
+                className={cn(
+                  taskPanelBorderClass,
+                  'flex flex-wrap items-center gap-2 bg-[var(--brand-chip)] p-2.5'
+                )}
+              >
+                <span className={cn('text-xs font-medium', taskLabelMutedClass)}>Status:</span>
                 {STATUS_OPTIONS.map(s => (
                   <label key={s} className="label cursor-pointer gap-1.5 py-0">
                     <input
@@ -443,7 +459,12 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
         <div className="space-y-2">
           {/* Ações em lote */}
           {selectedIds.size > 0 && (
-            <div className="sticky top-0 z-10 flex flex-wrap items-center gap-2 p-2 rounded-xl bg-primary/10 border border-primary/30">
+            <div
+              className={cn(
+                taskModalSectionAccentClass,
+                'sticky top-0 z-10 flex flex-wrap items-center gap-2 border-[color-mix(in_srgb,var(--color-primary)_28%,transparent)] bg-[color-mix(in_srgb,var(--color-primary)_8%,var(--brand-surface-strong))] p-2'
+              )}
+            >
               <span className="text-sm font-medium text-base-content">
                 {selectedIds.size} selecionado(s)
               </span>

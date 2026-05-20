@@ -4,20 +4,18 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '../../utils/cn';
 
 export const buttonVariants = cva(
-  'btn inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-colors outline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary/40 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0',
+  'btn app-element-typography inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-semibold transition-colors outline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[color-mix(in_srgb,var(--brand-cta)_35%,transparent)] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 rounded-[var(--radius)]',
   {
     variants: {
       variant: {
         default: 'btn-primary',
         destructive: 'btn-error',
-        outline: 'btn-outline',
+        outline: 'btn-outline border-[var(--brand-surface-border)]',
         secondary: 'btn-secondary',
-        ghost: 'btn-ghost',
+        ghost: 'btn-ghost text-[var(--brand-text-strong)] hover:bg-[var(--brand-chip)]',
         link: 'btn-link',
-        brand:
-          'rounded-xl bg-brand-orange text-white shadow-md shadow-brand-orange/20 hover:bg-brand-orange-selected-hover focus-visible:outline-brand-orange/40',
-        brandOutline:
-          'rounded-xl border border-base-300 bg-base-100 text-base-content hover:bg-base-200 focus-visible:outline-base-content/20',
+        brand: 'app-btn-primary-inline border-0 shadow-md',
+        brandOutline: 'app-btn-outline',
       },
       size: {
         default: 'btn-md min-h-[44px] sm:min-h-0',
@@ -25,10 +23,10 @@ export const buttonVariants = cva(
         lg: 'btn-lg',
         icon: 'btn-square btn-md px-0 min-h-[44px] min-w-[44px]',
         panel:
-          'px-2.5 py-1.5 text-xs rounded-xl min-h-[44px] sm:min-h-0 sm:px-3 sm:py-2 sm:text-sm',
+          'px-2.5 py-1.5 text-xs min-h-[44px] sm:min-h-0 sm:px-3 sm:py-2 sm:text-sm',
         panelSm:
-          'px-2 py-1 text-xs rounded-xl min-h-[44px] sm:min-h-0 sm:px-2.5 sm:py-1.5 sm:text-sm',
-        panelXs: 'px-2 py-1 text-xs rounded-lg min-h-[44px] sm:min-h-0 gap-1.5',
+          'px-2 py-1 text-xs min-h-[44px] sm:min-h-0 sm:px-2.5 sm:py-1.5 sm:text-sm',
+        panelXs: 'px-2 py-1 text-xs min-h-[44px] sm:min-h-0 gap-1.5',
       },
     },
     defaultVariants: {

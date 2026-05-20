@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Download, Filter, ChevronDown, X } from 'lucide-react';
 import type { DashboardFilters } from './DashboardFiltersModal';
 import { cn } from '../../utils/cn';
+import { outlineActionBtn, pageSubtitleClass, pageTitleClass } from '../common/viewUi';
 
 export interface QADashboardHeaderToolbarProps {
   jiraProjectKey?: string;
@@ -26,9 +27,6 @@ function testStatusLabel(s: NonNullable<DashboardFilters['testStatus']>[number])
   return 'Bloqueado';
 }
 
-const outlineBtn =
-  'inline-flex min-h-[44px] items-center gap-2 rounded-lg border border-base-300/80 bg-base-100 px-3.5 py-2 text-sm font-medium text-base-content/85 shadow-sm transition-colors hover:border-base-300 hover:bg-base-200/50 sm:min-h-9';
-
 /**
  * Cabeçalho do dashboard do projeto: título, badge Jira, filtros e exportação.
  */
@@ -48,16 +46,14 @@ export const QADashboardHeaderToolbar: React.FC<QADashboardHeaderToolbarProps> =
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0">
           <div className="mb-1.5 flex flex-wrap items-center gap-2">
-            <h1 className="font-heading text-2xl font-bold tracking-tight text-base-content sm:text-[1.65rem]">
-              Dashboard
-            </h1>
+            <h1 className={pageTitleClass}>Dashboard</h1>
             {jiraProjectKey && (
               <span className="shrink-0 rounded-md border border-base-300/70 bg-base-200/50 px-2 py-0.5 text-xs font-medium text-base-content/65">
                 Jira: {jiraProjectKey}
               </span>
             )}
           </div>
-          <p className="max-w-2xl text-sm leading-relaxed text-base-content/70">
+          <p className={cn(pageSubtitleClass, 'max-w-2xl')}>
             Indicadores calculados a partir das tarefas do projeto (status, prazos e responsáveis).
           </p>
           <p className="mt-0.5 text-sm text-base-content/60">
@@ -74,7 +70,7 @@ export const QADashboardHeaderToolbar: React.FC<QADashboardHeaderToolbarProps> =
           <div className="hidden items-center gap-2 md:flex">
             <button
               type="button"
-              className={outlineBtn}
+              className={outlineActionBtn}
               onClick={onOpenFiltersModal}
               aria-label="Filtrar dados do dashboard"
             >
@@ -83,7 +79,7 @@ export const QADashboardHeaderToolbar: React.FC<QADashboardHeaderToolbarProps> =
             </button>
             <button
               type="button"
-              className={outlineBtn}
+              className={outlineActionBtn}
               onClick={onOpenExportModal}
               aria-label="Exportar dados do projeto"
             >
@@ -95,7 +91,7 @@ export const QADashboardHeaderToolbar: React.FC<QADashboardHeaderToolbarProps> =
           <div className="relative ml-auto md:hidden">
             <button
               type="button"
-              className={outlineBtn}
+              className={outlineActionBtn}
               onClick={() => setShowActionsMenu(v => !v)}
               aria-expanded={showActionsMenu}
               aria-label="Menu de ações"

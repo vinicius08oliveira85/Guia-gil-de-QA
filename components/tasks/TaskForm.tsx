@@ -1,6 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
+import { cn } from '../../utils/cn';
+import {
+  taskCardFieldLabelClass,
+  taskModalSectionClass,
+  taskSelectControlClass,
+} from './taskActionLayout';
 import { JiraTask, JiraTaskType, BugSeverity, TeamRole, TaskPriority } from '../../types';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import { TagInput } from '../common/TagInput';
@@ -152,14 +158,16 @@ export const TaskForm: React.FC<{
     setValidationErrors({});
   };
 
-  const labelClass = 'flex items-center gap-1.5 text-xs font-medium text-base-content/70 mb-1';
-  const selectClass =
-    'select select-bordered select-sm w-full bg-base-100 border-base-300 text-base-content text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary rounded-xl';
+  const labelClass = cn('mb-1 flex items-center gap-1.5 text-xs font-medium', taskCardFieldLabelClass);
+  const selectClass = cn(
+    'select select-bordered select-sm w-full text-sm focus:border-[var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-[color-mix(in_srgb,var(--color-primary)_22%,transparent)]',
+    taskSelectControlClass
+  );
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
       <motion.div
-        className="rounded-2xl border border-base-300 bg-base-100/50 p-4 space-y-3"
+        className={cn(taskModalSectionClass, 'space-y-3 p-4')}
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.25 }}
@@ -168,7 +176,7 @@ export const TaskForm: React.FC<{
           <div className="sm:col-span-2 md:col-span-1">
             <Input
               label={
-                <span className="flex items-center gap-1.5 text-xs font-medium text-base-content/70">
+                <span className={labelClass}>
                   ID da Tarefa (ex: PROJ-123)
                   <HelpTooltip
                     title={helpContent.task.fields.id.title}
@@ -211,7 +219,7 @@ export const TaskForm: React.FC<{
           <div className="sm:col-span-2 md:col-span-1">
             <Input
               label={
-                <span className="flex items-center gap-1.5 text-xs font-medium text-base-content/70">
+                <span className={labelClass}>
                   Título
                   <HelpTooltip
                     title={helpContent.task.fields.title.title}
@@ -373,7 +381,7 @@ export const TaskForm: React.FC<{
         </div>
       </motion.div>
 
-      <div className="rounded-2xl border border-base-300 bg-base-100/50 p-4 space-y-2">
+      <div className={cn(taskModalSectionClass, 'space-y-2 p-4')}>
         <label className={labelClass}>
           Descrição
           <HelpTooltip
@@ -398,7 +406,7 @@ export const TaskForm: React.FC<{
         )}
       </div>
 
-      <div className="rounded-2xl border border-base-300 bg-base-100/50 p-4 space-y-2">
+      <div className={cn(taskModalSectionClass, 'space-y-2 p-4')}>
         <label className={labelClass}>
           Tags
           <HelpTooltip

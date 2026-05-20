@@ -25,7 +25,7 @@ export const FilterChip: React.FC<FilterChipProps> = ({
   const colorClasses = {
     default: isActive
       ? 'bg-primary text-primary-content border-primary'
-      : 'bg-base-200 text-base-content border-base-300',
+      : 'border-[var(--brand-surface-border)] bg-[var(--brand-chip)] text-[var(--brand-text-strong)]',
     error: isActive
       ? 'bg-error text-error-content border-error'
       : 'bg-error/10 text-error border-error/30',
@@ -34,7 +34,7 @@ export const FilterChip: React.FC<FilterChipProps> = ({
       : 'bg-warning/10 text-warning border-warning/30',
     info: isActive
       ? 'bg-info text-info-content border-info'
-      : 'bg-info/10 text-info border-info/30',
+      : 'border-[color-mix(in_srgb,var(--color-primary)_28%,transparent)] bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)] text-[color:var(--color-primary-deep)]',
     success: isActive
       ? 'bg-success text-success-content border-success'
       : 'bg-success/10 text-success border-success/30',
@@ -45,11 +45,11 @@ export const FilterChip: React.FC<FilterChipProps> = ({
       type="button"
       onClick={onToggle}
       className={`
-        inline-flex items-center gap-xs px-sm py-xs rounded-full
-        border transition-all duration-200 text-xs font-medium
+        app-element-typography inline-flex items-center gap-xs px-sm py-xs rounded-full
+        border transition-all duration-200 text-xs font-semibold
         hover:scale-105 active:scale-95
         ${colorClasses[color]}
-        ${isActive ? 'ring-2 ring-offset-1 ring-offset-base-100' : ''}
+        ${isActive ? 'ring-2 ring-offset-1 ring-offset-[var(--brand-surface-strong)]' : ''}
       `}
       aria-pressed={isActive}
       aria-label={`Filtro ${label} ${isActive ? 'ativo' : 'inativo'}`}
