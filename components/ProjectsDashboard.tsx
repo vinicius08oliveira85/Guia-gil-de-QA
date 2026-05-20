@@ -24,6 +24,7 @@ import { GlobalEfficiencyMetric } from './projectsDashboard/GlobalEfficiencyMetr
 import { NewProjectCard } from './projectsDashboard/NewProjectCard';
 import { ProjectsDashboardSidebar } from './projectsDashboard/ProjectsDashboardSidebar';
 import { useAriaLive } from '../hooks/useAriaLive';
+import { projectsListShell } from './common/viewUi';
 
 type QuickFilter = 'all' | 'withBugs' | 'needsAttention';
 
@@ -209,7 +210,7 @@ export const ProjectsDashboard: React.FC<{
   return (
     <>
       <div className="animate-fade-in min-h-[calc(100vh-4rem)] bg-base-200/40 font-body">
-        <div className="tasks-panel-scope mx-auto w-full max-w-[90rem] px-3 py-4 sm:px-6 sm:py-5">
+        <div className={projectsListShell}>
           <ProjectsDashboardHeader
             projectCount={projects.length}
             sortBy={sortBy}

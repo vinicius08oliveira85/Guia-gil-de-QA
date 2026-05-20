@@ -200,7 +200,7 @@ export const TasksView: React.FC<{
       hasTasks: !!project?.tasks,
     });
     return (
-      <div className="container mx-auto p-4 md:p-5">
+      <div className="w-full min-w-0 max-w-none p-4 md:p-5">
         <EmptyState
           title="Projeto inválido"
           description="Projeto inválido ou sem tarefas. Por favor, selecione outro projeto ou crie um novo."

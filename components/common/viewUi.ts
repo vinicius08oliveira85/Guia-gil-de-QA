@@ -1,7 +1,14 @@
 /** Classes compartilhadas entre abas do projeto (Dashboard, Tarefas, Documentos, etc.). */
 
+/** Padding horizontal alinhado ao header — conteúdo em largura total da viewport. */
+export const appContentPaddingX = 'px-3 sm:px-4';
+
 export const projectViewShell =
-  'tasks-panel-scope mx-auto w-full max-w-[90rem] space-y-4 sm:space-y-5';
+  'tasks-panel-scope w-full min-w-0 max-w-none space-y-4 sm:space-y-5';
+
+/** Lista de projetos (dashboard inicial). */
+export const projectsListShell =
+  `tasks-panel-scope w-full min-w-0 max-w-none py-4 sm:py-5 ${appContentPaddingX}`;
 
 export const projectViewPanel =
   'rounded-[var(--rounded-box)] border border-base-300/60 bg-base-100 p-3 soft-shadow sm:p-4';
@@ -31,7 +38,7 @@ export const pageTitleClass =
 export const pageSubtitleClass = 'w-full text-sm leading-relaxed text-base-content/70';
 
 /** Container de telas globais (ex.: Configurações). */
-export const settingsContentShell = 'container mx-auto w-full max-w-[90rem] px-4 sm:px-6';
+export const settingsContentShell = `w-full min-w-0 max-w-none ${appContentPaddingX}`;
 
 /** Grades responsivas para preencher largura disponível. */
 export const denseCardGrid =

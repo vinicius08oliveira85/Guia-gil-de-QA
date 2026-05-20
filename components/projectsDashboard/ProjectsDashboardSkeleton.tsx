@@ -1,5 +1,6 @@
 import React from 'react';
 import { cn } from '../../utils/cn';
+import { projectsListShell } from '../common/viewUi';
 
 function SkeletonCard() {
   return (
@@ -41,7 +42,7 @@ export const ProjectsDashboardSkeleton: React.FC = () => {
       aria-busy="true"
       aria-label="Carregando projetos"
     >
-      <div className="mx-auto w-full max-w-[90rem] px-3 py-4 sm:px-6 sm:py-5">
+      <div className={projectsListShell}>
         <div className="mb-6 h-20 animate-pulse rounded-[var(--rounded-box)] bg-base-100/80" />
         <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (

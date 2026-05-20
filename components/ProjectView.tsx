@@ -29,6 +29,7 @@ import { Trash2, CheckCircle2, AlertTriangle, CloudOff } from 'lucide-react';
 import { logger } from '../utils/logger';
 import { Button } from './common/Button';
 import { cn } from '../utils/cn';
+import { appContentPaddingX } from './common/viewUi';
 
 const TAB_LABELS: Record<string, string> = {
   dashboard: 'Dashboard',
@@ -358,7 +359,12 @@ export const ProjectView: React.FC<{
 
   return (
     <>
-      <div className="animate-fade-in mx-auto w-full max-w-full bg-base-200/30 px-3 py-3 sm:px-6 sm:py-4 non-printable">
+      <div
+        className={cn(
+          'animate-fade-in w-full min-w-0 max-w-none bg-base-200/30 py-3 sm:py-4 non-printable',
+          appContentPaddingX
+        )}
+      >
         <div
           className={cn(
             'mb-3 min-w-0 max-w-full rounded-[var(--rounded-box)] border border-base-300/60 bg-base-100 px-3 py-2 soft-shadow sm:mb-4 sm:px-4 sm:py-3'
