@@ -68,4 +68,23 @@ describe('taskTestStatusService.calculateTaskTestStatus', () => {
     expect(() => calculateTaskTestStatus(chain[0], chain)).not.toThrow();
     expect(calculateTaskTestStatus(chain[0], chain)).toBe('pendente');
   });
+
+  it('Epic sem subtarefas vinculadas inicia como testar', () => {
+    const epic = buildTask({ id: 'EPIC-1', type: 'Epic' });
+    expect(calculateTaskTestStatus(epic, [epic])).toBe('testar');
+  });
+
+  it('Epic sem subtarefas mantém teste_concluido quando marcado manualmente', () => {
+    const epic = buildTask({
+      id: 'EPIC-2',
+      type: 'Epic',
+      testStatus: 'teste_concluido',
+    });
+    expect(calculateTaskTestStatus(epic, [epic])).toBe('teste_concluido');
+  });
+
+  it('História sem subtarefas vinculadas inicia como testar', () => {
+    const story = buildTask({ id: 'HIST-1', type: 'História' });
+    expect(calculateTaskTestStatus(story, [story])).toBe('testar');
+  });
 });

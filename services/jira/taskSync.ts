@@ -21,6 +21,57 @@ import { logger } from '../../utils/logger';
 import { normalizeTasksParentIdsAcyclic } from '../../utils/taskParentCycle';
 import { assignStoryPointsToTask } from '../../utils/taskStoryPoints';
 
+type JiraWorkflowTransition = {
+  id: string;
+  name: string;
+  to?: { name?: string };
+};
+
+const normalizeJiraStatusLabel = (name: string): string => name.trim().toLowerCase();
+
+/**
+ * Aplica transição de workflow no Jira até o status de destino (por nome exibido no board).
+ */
+export const transitionJiraIssueToStatus = async (
+  config: JiraConfig,
+  issueKey: string,
+  targetStatusName: string
+): Promise<void> => {
+  const key = issueKey.trim().toUpperCase();
+  const target = normalizeJiraStatusLabel(targetStatusName);
+
+  const { transitions = [] } = await jiraApiCall<{ transitions?: JiraWorkflowTransition[] }>(
+    config,
+    `issue/${key}/transitions`,
+    { method: 'GET', timeout: 30000 }
+  );
+
+  const match = transitions.find(
+    t => t.to?.name && normalizeJiraStatusLabel(t.to.name) === target
+  );
+
+  if (!match) {
+    const reachable = [
+      ...new Set(transitions.map(t => t.to?.name).filter((n): n is string => !!n)),
+    ];
+    throw new Error(
+      reachable.length > 0
+        ? `Não há transição para "${targetStatusName}". A partir deste status você pode ir para: ${reachable.join(', ')}.`
+        : `Não há transição disponível para "${targetStatusName}". Verifique o workflow no Jira.`
+    );
+  }
+
+  await jiraApiCall<void>(config, `issue/${key}/transitions`, {
+    method: 'POST',
+    body: JSON.stringify({ transition: { id: match.id } }),
+    timeout: 30000,
+  });
+
+  logger.info(`Status Jira atualizado: ${key} → ${targetStatusName}`, 'jiraService', {
+    transitionId: match.id,
+  });
+};
+
 export const updateJiraIssue = async (
   config: JiraConfig,
   issueKey: string,

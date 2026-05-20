@@ -69,6 +69,7 @@ import {
   loadTaskTestStatus,
   saveTaskTestStatus,
   calculateTaskTestStatus,
+  isStandaloneContainerIssue,
 } from '../../services/taskTestStatusService';
 import { logger } from '../../utils/logger';
 import { cn } from '../../utils/cn';
@@ -81,8 +82,13 @@ import { BddScenarioActionBar } from './BddScenarioActionBar';
 import { TaskActionStrip } from './TaskActionStrip';
 import { TASK_ACTION_SLOT_CLASSNAMES } from './taskActionLayout';
 import { JiraStatusLozenge } from './JiraStatusLozenge';
+import { TaskJiraStatusDropdown } from './TaskJiraStatusDropdown';
 import { TaskCardQaInsights } from './TaskCardQaInsights';
-import { getTaskQaRiskLevel, getTaskIaAnalysisSnapshotHash } from '../../services/ai/generalAnalysisService';
+import {
+  getTaskQaRiskLevel,
+  getTaskQaRiskSignals,
+  getTaskIaAnalysisSnapshotHash,
+} from '../../services/ai/generalAnalysisService';
 import { isAnalysisOutdated } from '../../utils/analysisFreshness';
 import { resolveTaskStoryPoints } from '../../utils/taskStoryPoints';
 import {
@@ -166,6 +172,12 @@ export const JiraTaskItem: React.FC<{
   ) => void;
   onDeleteBddScenario: (taskId: string, scenarioId: string) => void;
   onTaskStatusChange: (status: 'To Do' | 'In Progress' | 'Done') => void;
+  /** Propaga mudança de status Jira para a API (com rollback em caso de erro). */
+  onJiraStatusChange?: (
+    jiraStatusName: string,
+    rollback: { status: JiraTask['status']; jiraStatus?: string }
+  ) => void | Promise<void>;
+  isTransitioningJiraStatus?: boolean;
   onAddTestCaseFromTemplate?: (taskId: string) => void;
   onAddComment?: (content: string) => void;
   onEditComment?: (commentId: string, content: string) => void;
@@ -210,6 +222,8 @@ export const JiraTaskItem: React.FC<{
     onSaveBddScenario,
     onDeleteBddScenario,
     onTaskStatusChange,
+    onJiraStatusChange,
+    isTransitioningJiraStatus = false,
     onAddTestCaseFromTemplate,
     onAddComment,
     onEditComment,
@@ -258,11 +272,25 @@ export const JiraTaskItem: React.FC<{
     const taskTypeNorm = (task.type || '').toLowerCase();
     const showTestExecutionSummary = task.type === 'Tarefa' || task.type === 'Bug';
     const showGenerateAllAction = ['tarefa', 'bug', 'task'].includes(taskTypeNorm) && !!onGenerateAll;
+    const standaloneContainerIssue = useMemo(
+      () => isStandaloneContainerIssue(task, project?.tasks ?? []),
+      [task, project?.tasks]
+    );
+    const containerTestStatusLabel = useMemo(() => {
+      if (!standaloneContainerIssue) return undefined;
+      return taskTestStatus === 'teste_concluido' ? 'Reabrir' : 'Concluir';
+    }, [standaloneContainerIssue, taskTestStatus]);
 
     /** Título do card: apenas o título da própria tarefa (sem prefixo Epic/História). */
     const displayTitle = task.title;
 
     const taskRiskLevel = useMemo(() => getTaskQaRiskLevel(task), [task]);
+    const taskRiskSignals = useMemo(() => getTaskQaRiskSignals(task), [task]);
+    const taskRiskTooltip = useMemo(() => {
+      const base = `Risco ${taskRiskLevel}`;
+      if (!taskRiskSignals.length) return base;
+      return `${base}: ${taskRiskSignals.join(' · ')}`;
+    }, [taskRiskLevel, taskRiskSignals]);
     const storyPointsDisplay = useMemo(() => resolveTaskStoryPoints(task), [task]);
 
     const iaAnalysisStale = useMemo(() => {
@@ -282,11 +310,11 @@ export const JiraTaskItem: React.FC<{
      */
     const taskCardLeftAccentClass = useMemo(() => {
       if (task.isFavorite) return 'border-l-4 border-l-amber-500';
-      if (['tarefa', 'bug', 'task', 'história', 'story', 'epic'].includes(taskTypeNorm)) {
+      if (showTestExecutionSummary) {
         return getTaskRiskBorderClass(taskRiskLevel);
       }
-      return getTaskRiskBorderClass('Baixo');
-    }, [task.isFavorite, taskTypeNorm, taskRiskLevel]);
+      return 'border-l-4 border-l-base-300/50';
+    }, [task.isFavorite, showTestExecutionSummary, taskRiskLevel]);
     const typeBadgeVariant = useMemo((): React.ComponentProps<typeof Badge>['variant'] => {
       if (['tarefa', 'task'].includes(taskTypeNorm)) return 'info';
       if (taskTypeNorm === 'bug') return 'error';
@@ -337,26 +365,38 @@ export const JiraTaskItem: React.FC<{
       const loadTestStatus = async () => {
         if (!task.id || taskTestStatus !== null) return; // Já carregado ou não tem ID válido
 
+        const normalizeContainerStatus = (status: TaskTestStatus): TaskTestStatus => {
+          if (
+            isStandaloneContainerIssue(task, project?.tasks ?? []) &&
+            status === 'pendente'
+          ) {
+            return 'testar';
+          }
+          return status;
+        };
+
         try {
           const status = await loadTaskTestStatus(task.id);
           if (status !== null) {
-            setTaskTestStatus(status);
-            // Atualizar task no projeto se necessário
-            if (project && onUpdateProject && task.testStatus !== status) {
+            const normalized = normalizeContainerStatus(status);
+            setTaskTestStatus(normalized);
+            if (project && onUpdateProject && task.testStatus !== normalized) {
               const updatedTasks = project.tasks.map(t =>
-                t.id === task.id ? { ...t, testStatus: status } : t
+                t.id === task.id ? { ...t, testStatus: normalized } : t
               );
               onUpdateProject({ ...project, tasks: updatedTasks });
             }
           } else {
-            // Se não há status salvo, calcular baseado nos testCases ou subtarefas
-            const calculatedStatus = calculateTaskTestStatus(task, project?.tasks || []);
+            const calculatedStatus = normalizeContainerStatus(
+              calculateTaskTestStatus(task, project?.tasks || [])
+            );
             setTaskTestStatus(calculatedStatus);
           }
         } catch (error) {
           logger.warn('Erro ao carregar status de teste do Supabase', 'JiraTaskItem', error);
-          // Em caso de erro, calcular baseado nos testCases ou subtarefas
-          const calculatedStatus = calculateTaskTestStatus(task, project?.tasks || []);
+          const calculatedStatus = normalizeContainerStatus(
+            calculateTaskTestStatus(task, project?.tasks || [])
+          );
           setTaskTestStatus(calculatedStatus);
         } finally {
           // sem estado local de loading: o card já reflete a atualização via status calculado/sincronizado
@@ -384,6 +424,14 @@ export const JiraTaskItem: React.FC<{
           calculatedStatus === 'pendente' ||
           taskTestStatus === 'testar');
 
+      if (
+        standaloneContainerIssue &&
+        taskTestStatus === 'teste_concluido' &&
+        calculatedStatus !== 'teste_concluido'
+      ) {
+        return;
+      }
+
       if (shouldUpdate) {
         setTaskTestStatus(calculatedStatus);
         // Salvar no Supabase em background
@@ -400,7 +448,7 @@ export const JiraTaskItem: React.FC<{
           onUpdateProject({ ...project, tasks: updatedTasks });
         }
       }
-    }, [task.testCases, task.id, project?.tasks]); // Recalcular quando testCases ou tasks do projeto mudarem (sem incluir taskTestStatus para evitar loop)
+    }, [task.testCases, task.id, project?.tasks, standaloneContainerIssue, taskTestStatus]);
 
     // Função para atualizar e salvar status
     const updateTestStatus = useCallback(
@@ -454,6 +502,31 @@ export const JiraTaskItem: React.FC<{
         }
       },
       [task, project, onUpdateProject]
+    );
+
+    const handleTestStatusBadgeClick = useCallback(
+      (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (standaloneContainerIssue) {
+          if (taskTestStatus === 'teste_concluido') {
+            void updateTestStatus('testar');
+          } else {
+            void updateTestStatus('teste_concluido');
+          }
+          return;
+        }
+        if (taskTestStatus === 'testar') void handleStartTest(e);
+        else if (taskTestStatus === 'testando') void handleCompleteTest(e);
+        else if (taskTestStatus === 'teste_concluido') void updateTestStatus('pendente');
+        else void updateTestStatus('testar');
+      },
+      [
+        standaloneContainerIssue,
+        taskTestStatus,
+        updateTestStatus,
+        handleStartTest,
+        handleCompleteTest,
+      ]
     );
 
     const handleGenerateAll = useCallback(
@@ -1524,12 +1597,16 @@ export const JiraTaskItem: React.FC<{
 
       if (isJiraStatus) {
         const mappedStatus = mapStatus(newStatusValue);
+        const rollback = { status: task.status, jiraStatus: task.jiraStatus };
         onTaskStatusChange(mappedStatus);
         if (project && onUpdateProject) {
           const updatedTasks = project.tasks.map(t =>
             t.id === task.id ? { ...t, status: mappedStatus, jiraStatus: newStatusValue } : t
           );
           onUpdateProject({ ...project, tasks: updatedTasks });
+        }
+        if (onJiraStatusChange) {
+          void Promise.resolve(onJiraStatusChange(newStatusValue, rollback));
         }
       } else {
         onTaskStatusChange(newStatusValue as 'To Do' | 'In Progress' | 'Done');
@@ -1736,11 +1813,23 @@ export const JiraTaskItem: React.FC<{
               <span className="shrink-0 opacity-60" aria-hidden>
                 ·
               </span>
-              <JiraStatusLozenge
-                label={currentDisplayStatusLabel}
-                statusColor={currentStatusColor}
-                className="shrink-0"
-              />
+              {project?.settings?.jiraStatuses && project.settings.jiraStatuses.length > 0 ? (
+                <TaskJiraStatusDropdown
+                  variant="lozenge"
+                  currentLabel={currentDisplayStatusLabel}
+                  currentStatusColor={currentStatusColor}
+                  jiraStatuses={project.settings.jiraStatuses}
+                  onSelectStatus={handleChangeStatus}
+                  disabled={isTransitioningJiraStatus}
+                  className="shrink-0"
+                />
+              ) : (
+                <JiraStatusLozenge
+                  label={currentDisplayStatusLabel}
+                  statusColor={currentStatusColor}
+                  className="shrink-0"
+                />
+              )}
               {storyPointsDisplay > 0 ? (
                 <>
                   <span className="shrink-0 opacity-60" aria-hidden>
@@ -1754,12 +1843,11 @@ export const JiraTaskItem: React.FC<{
                   </span>
                 </>
               ) : null}
-              <span
-                className={getTaskRiskBadgeClass(taskRiskLevel)}
-                title={`Risco ${taskRiskLevel}`}
-              >
-                {taskRiskLevel}
-              </span>
+              {showTestExecutionSummary ? (
+                <span className={getTaskRiskBadgeClass(taskRiskLevel)} title={taskRiskTooltip}>
+                  {taskRiskLevel}
+                </span>
+              ) : null}
             </div>
             <div
               className={cn(
@@ -1824,13 +1912,8 @@ export const JiraTaskItem: React.FC<{
                 generateAllTitle={generateAllTitle}
                 generateAllAriaLabel={generateAllAriaLabel}
                 testStatus={taskTestStatus ?? 'testar'}
-                onTestStatusClick={e => {
-                  e.stopPropagation();
-                  if (taskTestStatus === 'testar') handleStartTest(e);
-                  else if (taskTestStatus === 'testando') handleCompleteTest(e);
-                  else if (taskTestStatus === 'teste_concluido') updateTestStatus('pendente');
-                  else updateTestStatus('testar');
-                }}
+                testStatusLabelOverride={containerTestStatusLabel}
+                onTestStatusClick={handleTestStatusBadgeClick}
               />
 
               <div
@@ -1889,22 +1972,20 @@ export const JiraTaskItem: React.FC<{
                     <button
                       type="button"
                       className="font-body gap-2"
-                      onClick={e => {
-                        e.stopPropagation();
-                        if (taskTestStatus === 'testar') handleStartTest(e);
-                        else if (taskTestStatus === 'testando') handleCompleteTest(e);
-                        else if (taskTestStatus === 'teste_concluido') updateTestStatus('pendente');
-                        else updateTestStatus('testar');
-                      }}
+                      onClick={handleTestStatusBadgeClick}
                     >
                       <ClipboardList className="h-4 w-4 shrink-0" aria-hidden />
-                      {taskTestStatus === 'testando'
-                        ? 'Testando — concluir'
-                        : taskTestStatus === 'teste_concluido'
-                          ? 'Marcar pendente'
-                          : taskTestStatus === 'pendente'
-                            ? 'Pronto para testar'
-                            : 'Iniciar teste'}
+                      {standaloneContainerIssue
+                        ? taskTestStatus === 'teste_concluido'
+                          ? 'Reabrir'
+                          : 'Concluir'
+                        : taskTestStatus === 'testando'
+                          ? 'Testando — concluir'
+                          : taskTestStatus === 'teste_concluido'
+                            ? 'Marcar pendente'
+                            : taskTestStatus === 'pendente'
+                              ? 'Pronto para testar'
+                              : 'Iniciar teste'}
                     </button>
                   </li>
                   <li className="menu-title mt-1">

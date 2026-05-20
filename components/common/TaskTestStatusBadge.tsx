@@ -62,6 +62,8 @@ const TASK_TEST_STATUS_MAP: Record<TaskTestStatusBadgeValue, TaskTestStatusConfi
 
 export interface TaskTestStatusBadgeProps {
   status: TaskTestStatusBadgeValue;
+  /** Substitui o rótulo padrão (ex.: "Concluir" em Epic/História sem subtarefas). */
+  labelOverride?: string;
   /** `card` = chip compacto alinhado aos metadados do JiraTaskItem. */
   variant?: 'default' | 'card';
   className?: string;
@@ -75,6 +77,7 @@ export interface TaskTestStatusBadgeProps {
  */
 export const TaskTestStatusBadge: React.FC<TaskTestStatusBadgeProps> = ({
   status,
+  labelOverride,
   variant = 'default',
   className,
   hideIcon = false,
@@ -82,6 +85,7 @@ export const TaskTestStatusBadge: React.FC<TaskTestStatusBadgeProps> = ({
   disabled = false,
 }) => {
   const config = useMemo(() => TASK_TEST_STATUS_MAP[status], [status]);
+  const displayLabel = labelOverride ?? config.label;
   const Icon = config.icon;
   const isCard = variant === 'card';
   const toneClass = isCard ? config.cardClassName : config.className;
@@ -109,10 +113,10 @@ export const TaskTestStatusBadge: React.FC<TaskTestStatusBadgeProps> = ({
         )}
         role={config.role}
         aria-live={config.role === 'alert' ? 'assertive' : 'polite'}
-        aria-label={config.label}
+        aria-label={displayLabel}
       >
         {!hideIcon && <Icon className="h-3 w-3 shrink-0" aria-hidden="true" />}
-        <span className="truncate">{config.label}</span>
+        <span className="truncate">{displayLabel}</span>
       </button>
     );
   }
@@ -122,10 +126,10 @@ export const TaskTestStatusBadge: React.FC<TaskTestStatusBadgeProps> = ({
       className={sharedClassName}
       role={config.role}
       aria-live={config.role === 'alert' ? 'assertive' : 'polite'}
-      aria-label={config.label}
+      aria-label={displayLabel}
     >
       {!hideIcon && <Icon className="h-3 w-3 shrink-0" aria-hidden="true" />}
-      <span className="truncate">{config.label}</span>
+      <span className="truncate">{displayLabel}</span>
     </span>
   );
 };

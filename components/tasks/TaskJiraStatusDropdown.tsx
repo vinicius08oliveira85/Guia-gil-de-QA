@@ -1,6 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ChevronDown } from 'lucide-react';
-import { ensureJiraHexColor, getJiraStatusColor } from '../../utils/jiraStatusColors';
+import {
+  ensureJiraHexColor,
+  getJiraStatusColor,
+  getJiraStatusLozengeStyles,
+} from '../../utils/jiraStatusColors';
 import { cn } from '../../utils/cn';
 
 type JiraStatusEntry = { name: string; color?: string } | string;
@@ -10,6 +14,9 @@ interface TaskJiraStatusDropdownProps {
   currentStatusColor?: string;
   statusTextColor?: string;
   jiraStatuses?: JiraStatusEntry[];
+  /** `lozenge` — metadados do card; `pill` — botão compacto na faixa de ações. */
+  variant?: 'pill' | 'lozenge';
+  disabled?: boolean;
   className?: string;
   onSelectStatus: (statusName: string) => void;
 }
@@ -28,11 +35,15 @@ export const TaskJiraStatusDropdown: React.FC<TaskJiraStatusDropdownProps> = ({
   currentStatusColor,
   statusTextColor,
   jiraStatuses,
+  variant = 'pill',
+  disabled = false,
   className,
   onSelectStatus,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const isLozenge = variant === 'lozenge';
+  const lozengeStyles = getJiraStatusLozengeStyles(currentStatusColor);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -54,26 +65,56 @@ export const TaskJiraStatusDropdown: React.FC<TaskJiraStatusDropdownProps> = ({
     <div className={cn('relative flex-shrink-0', className)} ref={dropdownRef}>
       <button
         type="button"
+        disabled={disabled}
         onClick={e => {
           e.stopPropagation();
+          if (disabled) return;
           setIsOpen(current => !current);
         }}
-        className="inline-flex w-full min-h-[44px] min-w-0 shrink-0 items-center justify-between gap-2 rounded-full border-0 bg-primary px-3 py-2 text-[10px] font-bold text-primary-content sm:min-h-0 sm:min-w-[120px] sm:px-4 sm:py-1.5 sm:text-xs"
+        className={cn(
+          'inline-flex min-w-0 shrink-0 items-center border-0 transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 disabled:cursor-wait disabled:opacity-60',
+          isLozenge
+            ? 'min-h-4 gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium leading-tight'
+            : 'w-full min-h-[44px] justify-between gap-2 rounded-full bg-primary px-3 py-2 text-[10px] font-bold text-primary-content sm:min-h-0 sm:min-w-[120px] sm:px-4 sm:py-1.5 sm:text-xs'
+        )}
         style={
-          currentStatusColor
+          isLozenge
             ? {
-                backgroundColor: currentStatusColor,
-                color: statusTextColor || 'oklch(var(--pc))',
+                backgroundColor: lozengeStyles.backgroundColor,
+                color: lozengeStyles.color,
               }
-            : undefined
+            : currentStatusColor
+              ? {
+                  backgroundColor: currentStatusColor,
+                  color: statusTextColor || 'oklch(var(--pc))',
+                }
+              : undefined
         }
         aria-haspopup="true"
         aria-expanded={isOpen}
         aria-label={`Status: ${currentLabel}. Clique para mudar.`}
       >
-        <span className="truncate max-w-[5rem] sm:max-w-none min-w-0">{currentLabel}</span>
+        {isLozenge ? (
+          <span
+            className="h-2 w-2 shrink-0 rounded-[2px]"
+            style={{ backgroundColor: lozengeStyles.indicatorColor }}
+            aria-hidden
+          />
+        ) : null}
+        <span
+          className={cn(
+            'min-w-0 truncate',
+            isLozenge ? 'max-w-[8rem] whitespace-nowrap' : 'max-w-[5rem] sm:max-w-none'
+          )}
+        >
+          {currentLabel}
+        </span>
         <ChevronDown
-          className={cn('w-4 h-4 flex-shrink-0 transition-transform', isOpen && 'rotate-180')}
+          className={cn(
+            'flex-shrink-0 transition-transform',
+            isLozenge ? 'h-3 w-3 opacity-70' : 'h-4 w-4',
+            isOpen && 'rotate-180'
+          )}
           aria-hidden="true"
         />
       </button>
