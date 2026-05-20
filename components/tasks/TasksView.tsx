@@ -84,6 +84,13 @@ import {
 import { testCaseLooksAutomated } from '../../utils/testCaseMigration';
 import { VirtualizedTaskRootList, shouldVirtualizeTaskRoots } from './VirtualizedTaskRootList';
 import { outlineActionBtn, projectViewPanel, projectViewShell } from '../common/viewUi';
+import {
+  filterBacklogTasks,
+  getBacklogTaskComparator,
+  type BacklogSortBy,
+  type TasksListMode,
+} from '../../utils/backlogTasks';
+import { TasksViewListModeToggle } from './TasksViewListModeToggle';
 
 export const TasksView: React.FC<{
   project: Project;
@@ -95,6 +102,9 @@ export const TasksView: React.FC<{
   /** Incrementado pelo ProjectView ao abrir com filtro de resultado de casos (ex.: falhas). */
   tasksExecutionNavKey?: number;
   tasksExecutionNavStatuses?: TestCase['status'][];
+  /** Subvisão dentro da aba Tarefas & Testes (controlada pelo ProjectView / URL). */
+  listMode?: TasksListMode;
+  onListModeChange?: (mode: TasksListMode) => void;
 }> = ({
   project,
   onUpdateProject,
@@ -103,7 +113,18 @@ export const TasksView: React.FC<{
   onTaskDetailsOpenChange,
   tasksExecutionNavKey = 0,
   tasksExecutionNavStatuses = [],
+  listMode: listModeProp = 'all',
+  onListModeChange,
 }) => {
+  const backlogOnly = listModeProp === 'backlog';
+  const backlogTaskCount = useMemo(
+    () => filterBacklogTasks(project.tasks).length,
+    [project.tasks]
+  );
+  const [backlogSortBy, setBacklogSortBy] = useLocalStorage<BacklogSortBy>(
+    `backlog_sort_${project.id}`,
+    'priority'
+  );
   const [generatingTestsTaskId, setGeneratingTestsTaskId] = useState<string | null>(null);
   const [generatingBddTaskId, setGeneratingBddTaskId] = useState<string | null>(null);
   const [generatingAllTaskId, setGeneratingAllTaskId] = useState<string | null>(null);
@@ -147,6 +168,14 @@ export const TasksView: React.FC<{
     label?: string;
   } | null>(null);
 
+  const filterScopeProject = useMemo(
+    () =>
+      backlogOnly
+        ? { ...project, tasks: filterBacklogTasks(project.tasks) }
+        : project,
+    [backlogOnly, project]
+  );
+
   const {
     searchQuery,
     setSearchQuery,
@@ -172,7 +201,7 @@ export const TasksView: React.FC<{
     priorityOptions,
     testCaseExecutionStatusFilter,
     setTestCaseExecutionStatusFilter,
-  } = useTaskFilters(project, {
+  } = useTaskFilters(filterScopeProject, {
     executionStatusNavKey: tasksExecutionNavKey,
     executionStatusNavStatuses: tasksExecutionNavStatuses,
   });
@@ -1713,7 +1742,10 @@ export const TasksView: React.FC<{
     ]
   );
 
-  const taskComparator = useMemo(() => getTaskComparator(sortBy), [sortBy]);
+  const taskComparator = useMemo(
+    () => (backlogOnly ? getBacklogTaskComparator(backlogSortBy) : getTaskComparator(sortBy)),
+    [backlogOnly, backlogSortBy, sortBy]
+  );
 
   const taskTree = useMemo(() => {
     const tasks = [...filteredTasks].sort(taskComparator);
@@ -2021,7 +2053,11 @@ export const TasksView: React.FC<{
       <div
         className={projectViewShell}
         role="main"
-        aria-label="Tarefas e casos de teste do projeto"
+        aria-label={
+          backlogOnly
+            ? 'Tarefas e testes — backlog do projeto'
+            : 'Tarefas e casos de teste do projeto'
+        }
       >
         <section className={projectViewPanel}>
           <TasksViewHeader
@@ -2034,6 +2070,18 @@ export const TasksView: React.FC<{
             activeFiltersCount={activeFiltersCount}
           />
 
+          <div className="mt-4 border-t border-base-300/50 pt-4">
+            <TasksViewListModeToggle
+              mode={listModeProp}
+              onModeChange={onListModeChange ?? (() => undefined)}
+              backlogCount={backlogTaskCount}
+              totalCount={project.tasks.length}
+              backlogSortBy={backlogSortBy}
+              onBacklogSortChange={setBacklogSortBy}
+              disabled={isRunningGeneralAnalysis || !onListModeChange}
+            />
+          </div>
+
           <div className="mt-4 space-y-4 border-t border-base-300/50 pt-4">
             <TasksViewSearch
               searchQuery={searchQuery}
@@ -2041,13 +2089,15 @@ export const TasksView: React.FC<{
               searchInputRef={searchInputRef}
             />
 
-            <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.25 }}
-            >
-              <GlassIndicatorCards items={indicatorItems} />
-            </motion.div>
+            {!backlogOnly && (
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.25 }}
+              >
+                <GlassIndicatorCards items={indicatorItems} />
+              </motion.div>
+            )}
           </div>
         </section>
 
@@ -2122,7 +2172,7 @@ export const TasksView: React.FC<{
               setIsFiltersModalOpen(false);
             }}
             filteredCount={filteredTasks.length}
-            totalCount={project.tasks.length}
+            totalCount={filterScopeProject.tasks.length}
             hasActiveFiltersOrSearch={activeFiltersCount > 0}
           >
             <div className="space-y-4 min-w-0">
@@ -2280,27 +2330,29 @@ export const TasksView: React.FC<{
                         ? ` (${filteredTasks.length})`
                         : ''}
                     </button>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <label
-                        htmlFor="tasks-sort-by"
-                        className="text-xs font-medium text-base-content/65"
-                      >
-                        Ordenar
-                      </label>
-                      <select
-                        id="tasks-sort-by"
-                        value={sortBy}
-                        onChange={e => setSortBy(e.target.value as TaskSortBy)}
-                        className="select select-bordered select-sm h-9 min-h-0 rounded-lg border-base-300/80 bg-base-100 text-sm shadow-sm"
-                        aria-label="Ordenação da lista de tarefas"
-                      >
-                        <option value="id">ID</option>
-                        <option value="status">Status</option>
-                        <option value="priority">Prioridade</option>
-                        <option value="createdAt">Data de criação</option>
-                        <option value="title">Título</option>
-                      </select>
-                    </div>
+                    {!backlogOnly && (
+                      <div className="flex flex-wrap items-center gap-2">
+                        <label
+                          htmlFor="tasks-sort-by"
+                          className="text-xs font-medium text-base-content/65"
+                        >
+                          Ordenar
+                        </label>
+                        <select
+                          id="tasks-sort-by"
+                          value={sortBy}
+                          onChange={e => setSortBy(e.target.value as TaskSortBy)}
+                          className="select select-bordered select-sm h-9 min-h-0 rounded-lg border-base-300/80 bg-base-100 text-sm shadow-sm"
+                          aria-label="Ordenação da lista de tarefas"
+                        >
+                          <option value="id">ID</option>
+                          <option value="status">Status</option>
+                          <option value="priority">Prioridade</option>
+                          <option value="createdAt">Data de criação</option>
+                          <option value="title">Título</option>
+                        </select>
+                      </div>
+                    )}
                     <div className="flex flex-wrap items-center gap-2">
                       <label
                         htmlFor="tasks-group-by"

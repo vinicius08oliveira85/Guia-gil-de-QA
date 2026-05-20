@@ -5,18 +5,22 @@ import { Project, TestCase } from '../../types';
 import { FileExportModal } from '../common/FileExportModal';
 import { EmptyState } from '../common/EmptyState';
 import { DashboardFiltersModal, DashboardFilters } from './DashboardFiltersModal';
-import { ListChecks, CheckCircle2, AlertTriangle, Percent, Loader2 } from 'lucide-react';
+import { ListChecks, CheckCircle2, AlertTriangle, Percent, Loader2, Layers } from 'lucide-react';
+import { countBacklogTasks, formatBacklogShareLabel } from '../../utils/backlogTasks';
 import { useProjectsStore } from '../../store/projectsStore';
 import { useDashboardMetrics } from '../../hooks/useDashboardMetrics';
 import { DashboardStatCard } from './DashboardStatCard';
 import { ProjectDashboard } from './ProjectDashboard';
 import { RecentActivity } from './RecentActivity';
 import { QADashboardHeaderToolbar } from './QADashboardHeaderToolbar';
+import { cn } from '../../utils/cn';
 
 interface QADashboardProps {
   project: Project;
   onUpdateProject?: (project: Project) => void;
   onNavigateToTab?: (tabId: string) => void;
+  /** Abre Tarefas & Testes no modo Backlog. */
+  onNavigateToBacklog?: () => void;
   onNavigateToTasksWithExecutionStatuses?: (statuses: TestCase['status'][]) => void;
   syncLoading?: boolean;
   syncError?: Error | null;
@@ -26,7 +30,7 @@ interface QADashboardProps {
  * Dashboard do projeto orientado a dados reais das tarefas (sem geração por IA).
  */
 export const QADashboard: React.FC<QADashboardProps> = React.memo(props => {
-  const { project, onNavigateToTab, syncLoading, syncError } = props;
+  const { project, onNavigateToTab, onNavigateToBacklog, syncLoading, syncError } = props;
   const { projects, selectedProjectId, isLoading, error } = useProjectsStore();
 
   const showLoadingBanner = syncLoading !== undefined ? syncLoading : isLoading;
@@ -85,6 +89,15 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(props => {
   }, [liveProject.updatedAt, liveProject.createdAt]);
 
   const goTasks = onNavigateToTab ? () => onNavigateToTab('tasks') : undefined;
+  const goBacklog = onNavigateToBacklog;
+  const backlogCount = useMemo(
+    () => countBacklogTasks(filteredProject.tasks ?? []),
+    [filteredProject.tasks]
+  );
+  const backlogShareLabel = useMemo(
+    () => formatBacklogShareLabel(backlogCount, dashboardMetrics.totalTasks),
+    [backlogCount, dashboardMetrics.totalTasks]
+  );
   const jiraKey = liveProject.settings?.jiraProjectKey;
 
   return (
@@ -118,11 +131,14 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(props => {
       />
 
       <div
-        className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4"
+        className={cn(
+          'grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4',
+          goBacklog ? 'lg:grid-cols-3 xl:grid-cols-5' : 'xl:grid-cols-4'
+        )}
         aria-label="Indicadores principais de tarefas"
       >
         {showLoadingBanner && !filteredProject.tasks?.length ? (
-          Array.from({ length: 4 }).map((_, k) => (
+          Array.from({ length: goBacklog ? 5 : 4 }).map((_, k) => (
             <div
               key={k}
               className="h-[5.25rem] animate-pulse rounded-[var(--rounded-box)] border border-base-300/60 bg-base-200/50 sm:h-[5.5rem]"
@@ -161,6 +177,16 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(props => {
               tone="accent"
               onClick={goTasks}
             />
+            {goBacklog && (
+              <DashboardStatCard
+                title="Backlog · To Do e fila Jira"
+                value={backlogCount}
+                changePercent={backlogShareLabel}
+                icon={Layers}
+                tone="info"
+                onClick={goBacklog}
+              />
+            )}
           </>
         )}
       </div>
@@ -177,9 +203,11 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(props => {
           description="Crie tarefas na aba Tarefas ou ajuste os filtros do dashboard."
           icon="📊"
           secondaryAction={
-            onNavigateToTab
-              ? { label: 'Ir para Tarefas', onClick: () => onNavigateToTab('tasks') }
-              : undefined
+            onNavigateToBacklog && backlogCount > 0
+              ? { label: 'Ver backlog', onClick: onNavigateToBacklog }
+              : onNavigateToTab
+                ? { label: 'Ir para Tarefas', onClick: () => onNavigateToTab('tasks') }
+                : undefined
           }
         />
       )}
