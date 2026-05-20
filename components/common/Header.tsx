@@ -374,7 +374,7 @@ export const Header: React.FC<HeaderProps> = ({
         </p>
         <p
           className={cn(
-            'hidden truncate text-xs text-balance sm:block',
+            'hidden truncate text-xs text-balance lg:block',
             '[font-family:var(--font-sans)] tracking-[var(--letter-spacing)]',
             'text-[var(--brand-text-muted)]'
           )}
@@ -468,7 +468,7 @@ export const Header: React.FC<HeaderProps> = ({
     <header
       ref={headerRef}
       className={cn(
-        'app-header-shell relative sticky top-0 z-[100] !rounded-none overflow-x-visible overflow-y-visible md:overflow-y-hidden',
+        'app-header-shell relative sticky top-0 z-[100] !rounded-none',
         'text-[var(--brand-text-strong)]',
         'transition-[background-color,box-shadow,border-color,color] duration-300 ease-out'
       )}
@@ -480,8 +480,8 @@ export const Header: React.FC<HeaderProps> = ({
       <div className={cn('mx-auto w-full min-w-0 max-w-full px-3 sm:px-4')}>
         <div
           className={cn(
-            'box-border flex h-[var(--app-header-h)] min-h-0 min-w-0 items-center justify-between gap-2 overflow-x-visible overflow-y-visible md:overflow-y-hidden',
-            'sm:gap-3'
+            'app-header-toolbar box-border flex h-[var(--app-header-h)] min-h-0 min-w-0 items-center justify-between gap-2 overflow-hidden',
+            'sm:gap-2.5'
           )}
         >
           {onLogoClick ? (
@@ -489,19 +489,18 @@ export const Header: React.FC<HeaderProps> = ({
               type="button"
               onClick={goToProjectsList}
               className={cn(
-                'group flex min-h-0 min-w-0 flex-1 cursor-pointer items-center gap-2 rounded-[var(--radius)] p-1 text-left',
+                'group flex h-full min-h-0 min-w-0 flex-1 cursor-pointer items-center gap-2 overflow-hidden rounded-[var(--radius)] p-0.5 text-left sm:gap-2.5',
                 'border border-transparent bg-transparent',
                 'transition-[background-color,border-color,box-shadow] duration-200 ease-out',
                 'hover:border-[var(--brand-surface-border)]',
                 'hover:bg-[var(--brand-chip)]',
-                'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[oklch(var(--p))]',
-                'sm:min-h-0 sm:gap-3 sm:p-0'
+                'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[oklch(var(--p))]'
               )}
               aria-label="Voltar para Meus Projetos"
             >
               <span
                 className={cn(
-                  'pointer-events-none flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center',
+                  'pointer-events-none flex h-9 w-9 shrink-0 items-center justify-center',
                   'rounded-full border border-transparent transition-all duration-200',
                   'group-hover:border-[var(--brand-surface-border)]',
                   'group-hover:bg-[var(--brand-chip)]'
@@ -513,12 +512,12 @@ export const Header: React.FC<HeaderProps> = ({
               {logoContent}
             </button>
           ) : (
-            <div className="flex min-h-[44px] min-w-0 flex-1 items-center gap-2 sm:min-h-0 sm:gap-3">
+            <div className="flex h-full min-w-0 flex-1 items-center gap-2 overflow-hidden sm:gap-2.5">
               {logoContent}
             </div>
           )}
 
-          <div className="relative flex min-w-0 shrink-0 items-center gap-2 overflow-x-visible">
+          <div className="relative flex min-w-0 max-w-[min(100%,52%)] shrink-0 items-center justify-end gap-1.5 overflow-hidden sm:max-w-[min(100%,58%)] md:gap-2">
             {showDashboardActions && (
               <div className="hidden shrink-0 flex-col items-stretch gap-1 border-r border-[var(--brand-surface-border)] pr-2 md:flex md:flex-row md:items-center md:gap-1">
                 {onOpenCreateModal && (
@@ -564,25 +563,24 @@ export const Header: React.FC<HeaderProps> = ({
                 className="shrink-0 border-l border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] pl-2"
               />
             )}
-            <div className="relative hidden overflow-visible md:block">
+            <div className="relative hidden min-w-0 overflow-hidden md:block">
               <ExpandableTabs
-                className="flex flex-wrap items-center gap-2"
+                className="flex max-w-full flex-nowrap items-center gap-1.5"
                 tabs={tabs}
                 activeColor={activeColor}
                 onChange={handleTabChange}
                 onOutsideClick={() => setExpandedButton(null)}
+                tabBadge={
+                  notificationUnreadCount > 0
+                    ? { tabId: 'notifications', count: notificationUnreadCount }
+                    : undefined
+                }
                 leadingContent={
                   leadingContent ? (
-                    <div className="flex flex-wrap items-center gap-2">{leadingContent}</div>
+                    <div className="flex flex-nowrap items-center gap-1.5">{leadingContent}</div>
                   ) : undefined
                 }
               />
-
-              {notificationUnreadCount > 0 && (
-                <span className="pointer-events-none absolute -right-1 -top-1 z-10 flex h-5 w-5 items-center justify-center rounded-full bg-error text-[0.65rem] text-error-content shadow-sm">
-                  {notificationUnreadCount > 9 ? '9+' : notificationUnreadCount}
-                </span>
-              )}
             </div>
 
             <div className="relative z-[110] flex shrink-0 items-center gap-1 md:hidden">
@@ -593,7 +591,10 @@ export const Header: React.FC<HeaderProps> = ({
                   </span>
                   <MoreVertical className="h-5 w-5" aria-hidden />
                 </summary>
-                <ul className="dropdown-content menu menu-sm app-surface z-[130] mt-2 w-56 rounded-box p-2 text-[var(--brand-text-strong)] shadow-xl transition-colors duration-300">
+                <ul
+                  className="dropdown-content menu menu-sm app-surface fixed right-3 z-[130] w-56 rounded-box p-2 text-[var(--brand-text-strong)] shadow-xl transition-colors duration-300"
+                  style={{ top: 'calc(var(--app-header-sticky-offset, 4.5rem) + 0.25rem)' }}
+                >
                   {tabs.map(tab => {
                     const Icon = tab.icon;
                     return (
@@ -643,7 +644,10 @@ export const Header: React.FC<HeaderProps> = ({
               setShowNotificationDropdown(false);
             }}
           />
-          <div className="absolute right-2 top-full z-[60] mt-2 w-[min(100vw-1rem,20rem)] sm:right-4 sm:w-80">
+          <div
+            className="fixed right-2 z-[60] w-[min(100vw-1rem,20rem)] sm:right-4 sm:w-80"
+            style={{ top: 'calc(var(--app-header-sticky-offset, 4.5rem) + 0.5rem)' }}
+          >
             <NotificationBell
               isOpen={showNotificationDropdown}
               onClose={() => {

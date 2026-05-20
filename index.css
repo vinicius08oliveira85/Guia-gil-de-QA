@@ -631,6 +631,7 @@
   }
 
   .app-header-shell {
+    overflow: hidden;
     background:
       linear-gradient(
         180deg,
@@ -641,6 +642,14 @@
     box-shadow: 0 16px 36px -28px var(--brand-surface-shadow);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
+  }
+
+  .app-header-toolbar {
+    scrollbar-width: none;
+  }
+
+  .app-header-toolbar::-webkit-scrollbar {
+    display: none;
   }
 
   /** Indicador sutil de análise geral IA desatualizada ou pendente (Header). */

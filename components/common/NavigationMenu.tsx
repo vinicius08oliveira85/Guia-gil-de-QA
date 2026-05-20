@@ -82,9 +82,10 @@ export const NavigationMenuDrawer: React.FC<NavigationMenuDrawerProps> = ({
         role="menu"
         aria-label={title}
         className={cn(
-          'absolute right-0 top-full z-[130] mt-1 flex max-h-[min(70vh,28rem)] w-[min(calc(100vw-2rem),20rem)] flex-col overflow-y-auto md:hidden',
+          'fixed right-3 z-[130] flex max-h-[min(70vh,28rem)] w-[min(calc(100vw-2rem),20rem)] flex-col overflow-y-auto md:hidden',
           'app-surface !max-w-none !rounded-[var(--rounded-box)] p-2 text-[var(--brand-text-strong)]'
         )}
+        style={{ top: 'calc(var(--app-header-sticky-offset, 4.5rem) + 0.25rem)' }}
       >
         <div className="mb-1 flex items-center justify-between gap-2 border-b border-base-200/80 px-1 pb-2">
           <span className="font-heading text-xs font-semibold uppercase tracking-wide text-base-content/70">
