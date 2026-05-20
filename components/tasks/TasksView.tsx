@@ -2117,7 +2117,7 @@ export const TasksView: React.FC<{
             activeFiltersCount={activeFiltersCount}
           />
 
-          <div className="mt-4 border-t border-base-300/50 pt-4">
+          <div className="mt-4 border-t border-[var(--brand-surface-border)] pt-4">
             <TasksViewListModeToggle
               mode={listModeProp}
               onModeChange={onListModeChange ?? (() => undefined)}
@@ -2246,7 +2246,7 @@ export const TasksView: React.FC<{
                     />
                     <button
                       onClick={() => setIsLinkModalOpen(true)}
-                      className="btn btn-outline btn-sm rounded-full flex items-center gap-1.5 hover:bg-base-200 min-h-[44px] px-4"
+                      className={cn(outlineActionBtn, 'btn-sm flex items-center gap-1.5 min-h-[44px] px-4')}
                     >
                       <LinkIcon className="w-4 h-4" />
                       Vincular a Projeto
@@ -2254,7 +2254,7 @@ export const TasksView: React.FC<{
                   </div>
                 )}
                 {(generatingTestsTaskId || generatingBddTaskId) && (
-                  <div className="p-4 bg-primary/10 border border-primary/40 rounded-lg text-sm text-base-content flex items-center gap-2">
+                  <div className="p-4 bg-primary/10 border border-primary/40 rounded-[var(--radius)] text-sm text-[var(--brand-text-strong)] flex items-center gap-2">
                     <span className="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent"></span>
                     {generatingTestsTaskId && (
                       <span>
@@ -2310,18 +2310,18 @@ export const TasksView: React.FC<{
                 title="Vincular Tarefas a Projetos"
               >
                 <div className="space-y-4">
-                  <p className="text-base-content/70 text-sm">
+                  <p className="task-card-muted text-sm">
                     Selecione os projetos para onde deseja vincular as {selectedTasks.size}{' '}
                     tarefa(s) selecionada(s). As tarefas serão adicionadas aos projetos selecionados
                     e manterão sincronia de conteúdo.
                   </p>
-                  <div className="max-h-60 overflow-y-auto custom-scrollbar border border-base-300 rounded-lg p-2">
+                  <div className="max-h-60 overflow-y-auto custom-scrollbar app-panel p-2">
                     {allProjects
                       .filter(p => p.id !== project.id)
                       .map(p => (
                         <label
                           key={p.id}
-                          className="flex items-center gap-2 p-2 hover:bg-base-200 rounded cursor-pointer"
+                          className="app-menu-item flex items-center gap-2 p-2 rounded-[var(--radius)] cursor-pointer"
                         >
                           <input
                             type="checkbox"
@@ -2338,7 +2338,7 @@ export const TasksView: React.FC<{
                         </label>
                       ))}
                     {allProjects.length <= 1 && (
-                      <p className="text-sm text-base-content/50 text-center py-4">
+                      <p className="text-sm task-card-muted text-center py-4">
                         Nenhum outro projeto disponível.
                       </p>
                     )}
@@ -2347,7 +2347,7 @@ export const TasksView: React.FC<{
                     <Button
                       variant="outline"
                       size="sm"
-                      className="rounded-full flex items-center gap-1.5 hover:bg-base-200"
+                      className="rounded-full flex items-center gap-1.5"
                       onClick={() => setIsLinkModalOpen(false)}
                     >
                       Cancelar
@@ -2384,7 +2384,7 @@ export const TasksView: React.FC<{
                       <div className="flex flex-wrap items-center gap-2">
                         <label
                           htmlFor="tasks-sort-by"
-                          className="text-xs font-medium text-base-content/65"
+                          className="task-card-field-label normal-case tracking-normal text-xs font-medium"
                         >
                           Ordenar
                         </label>
@@ -2407,7 +2407,7 @@ export const TasksView: React.FC<{
                       <div className="flex flex-wrap items-center gap-2">
                         <label
                           htmlFor="tasks-group-by"
-                          className="text-xs font-medium text-base-content/65"
+                          className="task-card-field-label normal-case tracking-normal text-xs font-medium"
                         >
                           Agrupar
                         </label>
@@ -2489,10 +2489,10 @@ export const TasksView: React.FC<{
                         </section>
                       )}
                       {favoriteRoots.length > 0 && otherRoots.length > 0 && (
-                        <div className="border-t border-base-300 my-4" aria-hidden />
+                        <div className="border-t border-[var(--brand-surface-border)] my-4" aria-hidden />
                       )}
                       <section aria-label="Outras tarefas">
-                        <h3 className="mb-3 flex items-center gap-2 font-heading text-xs font-bold uppercase tracking-wider text-base-content/60">
+                        <h3 className="mb-3 flex items-center gap-2 task-card-field-label">
                           <List className="w-4 h-4" aria-hidden />
                           Outras Tarefas
                         </h3>
@@ -2507,7 +2507,7 @@ export const TasksView: React.FC<{
                 </div>
               ) : listTasks.length === 0 && project.tasks.length > 0 ? (
                 <EmptyState
-                  icon={<Search className="mx-auto h-12 w-12 text-base-content/40" aria-hidden />}
+                  icon={<Search className="mx-auto h-12 w-12 text-[var(--brand-text-muted)]" aria-hidden />}
                   title="Nenhuma tarefa corresponde aos filtros"
                   description="Ajuste os filtros ou a busca para ver mais tarefas."
                   action={{
@@ -2522,7 +2522,7 @@ export const TasksView: React.FC<{
               ) : (
                 <EmptyState
                   icon={
-                    <ClipboardList className="mx-auto h-12 w-12 text-base-content/40" aria-hidden />
+                    <ClipboardList className="mx-auto h-12 w-12 text-[var(--brand-text-muted)]" aria-hidden />
                   }
                   title="Nenhuma tarefa criada ainda"
                   description="Comece criando sua primeira tarefa para organizar seu trabalho de QA."
@@ -2556,7 +2556,7 @@ export const TasksView: React.FC<{
           <div>
             <label
               htmlFor="observed-result"
-              className="block text-sm font-medium text-base-content/70 mb-1"
+              className="task-card-muted block text-sm font-medium mb-1"
             >
               Resultado Obtido (O que aconteceu de errado?)
             </label>
@@ -2578,7 +2578,7 @@ export const TasksView: React.FC<{
               onChange={e => setFailModalState({ ...failModalState, createBug: e.target.checked })}
               className="checkbox checkbox-primary"
             />
-            <label htmlFor="create-bug-task" className="ml-2 block text-sm text-base-content">
+            <label htmlFor="create-bug-task" className="ml-2 block text-sm text-[var(--brand-text-strong)]">
               Criar tarefa de Bug automaticamente
             </label>
           </div>
@@ -2586,7 +2586,7 @@ export const TasksView: React.FC<{
             <button
               type="button"
               onClick={() => setFailModalState({ ...failModalState, isOpen: false })}
-              className="btn btn-outline btn-sm rounded-full flex items-center gap-1.5 hover:bg-base-200"
+              className={cn(outlineActionBtn, 'btn-sm flex items-center gap-1.5')}
             >
               Cancelar
             </button>

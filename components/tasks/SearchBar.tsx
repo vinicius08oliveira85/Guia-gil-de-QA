@@ -1,6 +1,7 @@
 import React from 'react';
 import { cn } from '../../utils/cn';
-import { taskChipSurfaceClass, taskSelectControlClass } from './taskActionLayout';
+import { taskChipSurfaceClass } from './taskActionLayout';
+import { searchInputClass } from '../common/viewUi';
 
 interface SearchBarProps {
   value: string;
@@ -40,10 +41,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
         value={value}
         onChange={e => onChange(e.target.value)}
         placeholder={placeholder}
-        className={cn(
-          'w-full py-xs pl-lg pr-sm text-sm transition-all duration-200 placeholder:text-[var(--brand-text-muted)] focus:border-[var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-[color-mix(in_srgb,var(--color-primary)_22%,transparent)]',
-          taskSelectControlClass
-        )}
+        className={cn(searchInputClass, 'w-full py-xs pl-lg pr-sm text-sm')}
         aria-label="Buscar testes"
       />
       {value && (

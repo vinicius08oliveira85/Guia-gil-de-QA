@@ -1,4 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { cn } from '../../utils/cn';
+import { appMenuItemClass, appMenuPanelClass } from '../common/viewUi';
 
 interface ActionMenuItem {
   label: string;
@@ -39,7 +41,7 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({ items, trigger }) => {
   const defaultTrigger = (
     <button
       type="button"
-      className="btn btn-sm btn-ghost"
+      className="win-icon-button btn btn-sm btn-ghost"
       aria-label="Menu de ações"
       aria-expanded={isOpen}
     >
@@ -59,7 +61,7 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({ items, trigger }) => {
       <div onClick={() => setIsOpen(!isOpen)}>{trigger || defaultTrigger}</div>
 
       {isOpen && (
-        <div className="absolute right-0 mt-xs z-50 w-48 bg-base-100 border border-base-300 rounded-lg shadow-lg overflow-hidden">
+        <div className={cn(appMenuPanelClass, 'absolute right-0 mt-xs z-50 w-48')}>
           {items.map((item, idx) => (
             <button
               key={idx}
@@ -69,12 +71,11 @@ export const ActionMenu: React.FC<ActionMenuProps> = ({ items, trigger }) => {
                 setIsOpen(false);
               }}
               disabled={item.disabled}
-              className={`
-                w-full flex items-center gap-sm px-sm py-xs text-left text-sm
-                hover:bg-base-200 transition-colors
-                ${item.disabled ? 'opacity-50 cursor-not-allowed' : ''}
-                ${item.variant === 'danger' ? 'text-error hover:bg-error/10' : 'text-base-content'}
-              `}
+              className={cn(
+                appMenuItemClass,
+                item.disabled && 'opacity-50 cursor-not-allowed',
+                item.variant === 'danger' && 'app-menu-item-danger'
+              )}
             >
               {item.icon && <span className="flex-shrink-0">{item.icon}</span>}
               <span>{item.label}</span>

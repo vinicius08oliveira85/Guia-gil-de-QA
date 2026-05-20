@@ -29,7 +29,7 @@ import { Trash2, CheckCircle2, AlertTriangle, CloudOff, Layers } from 'lucide-re
 import { logger } from '../utils/logger';
 import { Button } from './common/Button';
 import { cn } from '../utils/cn';
-import { appContentPaddingX } from './common/viewUi';
+import { appContentPaddingX, appNavPillTabClass, outlineActionBtn } from './common/viewUi';
 import { countBacklogTasks, type TasksListMode } from '../utils/backlogTasks';
 
 const TAB_LABELS: Record<string, string> = {
@@ -516,7 +516,10 @@ export const ProjectView: React.FC<{
                           type="button"
                           onClick={handleSaveToSupabase}
                           disabled={isSavingToSupabase || !isOnline}
-                          className="inline-flex min-h-[44px] items-center rounded-lg border border-[color-mix(in_srgb,var(--brand-cta)_55%,transparent)] bg-base-100 px-3 py-1.5 text-sm font-medium text-[var(--brand-cta)] shadow-sm transition-colors hover:bg-[color-mix(in_srgb,var(--brand-cta)_8%,transparent)] disabled:opacity-50 sm:min-h-9"
+                          className={cn(
+                            outlineActionBtn,
+                            'border-[color-mix(in_srgb,var(--brand-cta)_55%,transparent)] text-[var(--brand-cta)] hover:bg-[color-mix(in_srgb,var(--brand-cta)_8%,transparent)] min-h-10 px-3 py-1.5'
+                          )}
                           aria-label="Sincronizar projeto com a nuvem"
                           title={
                             !isOnline
@@ -610,12 +613,8 @@ export const ProjectView: React.FC<{
                     key={tab.id}
                     type="button"
                     onClick={() => handleTabClick(tab.id)}
-                    className={cn(
-                      'relative min-h-[44px] flex-shrink-0 snap-start whitespace-nowrap px-0.5 pb-2.5 pt-1 font-heading text-sm transition-colors sm:min-h-0',
-                      activeTab === tab.id
-                        ? 'font-semibold text-base-content after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2px] after:rounded-full after:bg-error after:content-[""]'
-                        : 'font-medium text-base-content/55 hover:text-base-content/85'
-                    )}
+                    className={appNavPillTabClass}
+                    data-active={activeTab === tab.id ? 'true' : undefined}
                     id={`tab-${tab.id}`}
                     role="tab"
                     tabIndex={activeTab === tab.id ? 0 : -1}

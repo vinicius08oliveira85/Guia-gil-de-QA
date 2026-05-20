@@ -19,11 +19,18 @@ import { Modal } from '../common/Modal';
 import { Button } from '../common/Button';
 import { ConfirmDialog } from '../common/ConfirmDialog';
 import {
+  appPanelClass,
+  appSelectClass,
   outlineActionBtn,
+  pageSubtitleClass,
+  pageTitleClass,
   primaryActionBtn,
   projectViewPanel,
   projectViewShell,
+  searchInputClass,
 } from '../common/viewUi';
+import { taskCardFieldLabelClass, taskFormInsetPanelClass, taskTextareaClass } from '../tasks/taskActionLayout';
+import { cn } from '../../utils/cn';
 import { EmptyState } from '../common/EmptyState';
 import { Badge } from '../common/Badge';
 import { SafeMarkdown } from '../common/SafeMarkdown';
@@ -34,7 +41,6 @@ import {
   businessRuleCategoryLabel,
   getMergedBusinessRuleCategories,
 } from '../../utils/businessRuleCategoryPresets';
-import { cn } from '../../utils/cn';
 
 /** Valor sentinela do `<select>` de categoria quando o nome não está na lista unida do projeto. */
 const BR_CATEGORY_SELECT_OTHER = '__br_category_other__';
@@ -259,24 +265,24 @@ export const BusinessRulesManager: React.FC<{
     <>
       <div className={projectViewShell} role="main" aria-label="Regras de negócio do projeto">
         <section className={cn(projectViewPanel, 'space-y-4 sm:space-y-5')}>
-          <header className="flex flex-col gap-4 border-b border-base-300/60 pb-4 sm:pb-5">
+          <header className="flex flex-col gap-4 border-b border-[var(--brand-surface-border)] pb-4 sm:pb-5">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
               <div className="min-w-0">
                 <div className="mb-1.5 flex flex-wrap items-center gap-2">
                   <h1
                     id="business-rules-heading"
-                    className="inline-flex items-center gap-2 font-heading text-2xl font-bold tracking-tight text-base-content sm:text-[1.65rem]"
+                    className="inline-flex items-center gap-2 font-heading text-2xl font-bold tracking-tight text-[var(--brand-text-strong)] sm:text-[1.65rem]"
                   >
                     <Scale className="h-7 w-7 shrink-0 text-[var(--brand-cta)]" aria-hidden />
                     Regras de negócio
                   </h1>
                   {jiraProjectKey && (
-                    <span className="shrink-0 rounded-md border border-base-300/70 bg-base-200/50 px-2 py-0.5 text-xs font-medium text-base-content/65">
+                    <span className="shrink-0 rounded-[var(--radius)] border border-[var(--brand-surface-border)] bg-[var(--brand-chip)] px-2 py-0.5 text-xs font-medium task-card-muted">
                       Jira: {jiraProjectKey}
                     </span>
                   )}
                 </div>
-                <p className="max-w-3xl text-sm leading-relaxed text-base-content/70">
+                <p className="max-w-3xl text-sm leading-relaxed task-card-muted">
                   Defina regras por categoria e vincule-as às tarefas para a IA gerar BDD e casos mais
                   assertivos. Use{' '}
                   <code className="rounded bg-base-200 px-1.5 py-0.5 text-xs font-mono">@NomeDaRegra</code>{' '}
@@ -359,11 +365,11 @@ export const BusinessRulesManager: React.FC<{
                     const badgeVariant = badgeVariantForBusinessRuleCategory(catLabel);
                     return (
                       <li key={rule.id}>
-                        <div className="overflow-hidden rounded-[var(--rounded-box)] border border-base-300/60 bg-base-100 soft-shadow">
+                        <div className={cn(appPanelClass, 'overflow-hidden soft-shadow')}>
                           <details className="group open:shadow-md">
                             <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 min-h-[44px] text-left transition-colors hover:bg-base-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--brand-cta)_30%,transparent)] focus-visible:ring-inset [&::-webkit-details-marker]:hidden">
                               <span className="min-w-0 flex-1">
-                                <span className="block border-b border-transparent pb-1 text-base font-bold tracking-tight text-base-content group-open:border-base-300/80">
+                                <span className="block border-b border-transparent pb-1 text-base font-bold tracking-tight text-[var(--brand-text-strong)] group-open:border-[var(--brand-surface-border)]">
                                   {rule.title}
                                 </span>
                                 <span className="mt-2 inline-flex flex-wrap items-center gap-2">
@@ -373,46 +379,46 @@ export const BusinessRulesManager: React.FC<{
                                 </span>
                               </span>
                               <ChevronDown
-                                className="h-5 w-5 shrink-0 text-base-content/45 transition-transform duration-200 group-open:rotate-180"
+                                className="h-5 w-5 shrink-0 text-[var(--brand-text-muted)] transition-transform duration-200 group-open:rotate-180"
                                 aria-hidden
                               />
                             </summary>
-                            <div className="space-y-4 border-t border-base-300/80 bg-base-200/40 px-4 py-4 sm:px-5">
+                            <div className="space-y-4 border-t border-[var(--brand-surface-border)] bg-[var(--brand-chip)] px-4 py-4 sm:px-5">
                               <div>
-                                <p className="text-[10px] font-bold uppercase tracking-widest text-base-content/60 mb-2">
+                                <p className="text-[10px] font-bold uppercase tracking-widest task-card-field-label mb-2">
                                   Descrição
                                 </p>
                                 {rule.description.trim() ? (
                                   <SafeMarkdown
                                     source={rule.description}
                                     className={cn(
-                                      'jira-rich-content prose-headings:font-heading prose-headings:text-base-content',
-                                      'rounded-xl border border-base-300 bg-base-100/90 px-4 py-4 shadow-inner sm:px-5 sm:py-5',
-                                      'prose-h2:border-b prose-h2:border-base-300/80 prose-h2:pb-2 prose-h2:mb-3',
-                                      'prose-h3:border-b prose-h3:border-base-200 prose-h3:pb-1.5 prose-h3:mb-2',
-                                      'prose-p:leading-relaxed prose-strong:text-base-content',
+                                      'jira-rich-content prose-headings:font-heading prose-headings:text-[var(--brand-text-strong)]',
+                                      'rounded-[var(--radius)] border border-[var(--brand-surface-border)] bg-[var(--brand-surface-strong)] px-4 py-4 shadow-inner sm:px-5 sm:py-5',
+                                      'prose-h2:border-b prose-h2:border-[var(--brand-surface-border)] prose-h2:pb-2 prose-h2:mb-3',
+                                      'prose-h3:border-b prose-h3:border-[var(--brand-surface-border)] prose-h3:pb-1.5 prose-h3:mb-2',
+                                      'prose-p:leading-relaxed prose-strong:text-[var(--brand-text-strong)]',
                                       'prose-ul:list-disc prose-ul:pl-6 prose-ol:list-decimal prose-ol:pl-6'
                                     )}
                                   />
                                 ) : (
-                                  <p className="rounded-xl border border-dashed border-base-300/80 bg-base-100/80 px-4 py-6 text-center text-sm italic text-base-content/50">
+                                  <p className="rounded-[var(--radius)] border border-dashed border-[var(--brand-surface-border)] bg-[var(--brand-surface-strong)] px-4 py-6 text-center text-sm italic task-card-muted">
                                     Sem descrição
                                   </p>
                                 )}
                               </div>
                               {(rule.linkedBusinessRuleIds?.length ?? 0) > 0 && (
                                 <div>
-                                  <p className="text-[10px] font-bold uppercase tracking-widest text-base-content/60 mb-1.5">
+                                  <p className="text-[10px] font-bold uppercase tracking-widest task-card-field-label mb-1.5">
                                     Vinculada a
                                   </p>
-                                  <p className="text-sm leading-relaxed text-base-content/85">
+                                  <p className="text-sm leading-relaxed text-[var(--brand-text-strong)]">
                                     {(rule.linkedBusinessRuleIds ?? [])
                                       .map(id => rules.find(x => x.id === id)?.title ?? id)
                                       .join(', ')}
                                   </p>
                                 </div>
                               )}
-                              <div className="flex flex-wrap items-center gap-2 border-t border-base-300/60 pt-4">
+                              <div className="flex flex-wrap items-center gap-2 border-t border-[var(--brand-surface-border)] pt-4">
                                 <Button
                                   type="button"
                                   variant="outline"
@@ -457,7 +463,7 @@ export const BusinessRulesManager: React.FC<{
           <div>
             <label
               htmlFor="br-title"
-              className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-base-content/60"
+              className="mb-2 block text-[10px] font-bold uppercase tracking-widest task-card-field-label"
             >
               Título
             </label>
@@ -466,14 +472,14 @@ export const BusinessRulesManager: React.FC<{
               type="text"
               value={title}
               onChange={e => setTitle(e.target.value)}
-              className="input input-bordered w-full bg-base-100 border-base-300 text-base-content min-h-[44px] rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20"
+              className="app-input input input-bordered w-full min-h-[44px]"
               autoComplete="off"
             />
           </div>
           <div>
             <label
               htmlFor="br-category"
-              className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-base-content/60"
+              className="mb-2 block text-[10px] font-bold uppercase tracking-widest task-card-field-label"
             >
               Categoria
             </label>
@@ -488,7 +494,7 @@ export const BusinessRulesManager: React.FC<{
                   setCategory(v);
                 }
               }}
-              className="select select-bordered w-full bg-base-100 border-base-300 text-base-content min-h-[44px] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+              className="app-select select select-bordered w-full min-h-[44px] text-sm"
             >
               {uniqueCategories.map(c => (
                 <option key={c} value={c}>
@@ -503,7 +509,7 @@ export const BusinessRulesManager: React.FC<{
                 type="text"
                 value={category}
                 onChange={e => setCategory(e.target.value)}
-                className="input input-bordered w-full bg-base-100 border-base-300 text-base-content min-h-[44px] rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 mt-2"
+                className="app-input input input-bordered w-full min-h-[44px] mt-2"
                 autoComplete="off"
                 placeholder="Digite o nome da categoria"
                 aria-label="Nome da categoria personalizada"
@@ -513,7 +519,7 @@ export const BusinessRulesManager: React.FC<{
           <div>
             <label
               htmlFor="br-desc"
-              className="mb-2 block text-[10px] font-bold uppercase tracking-widest text-base-content/60"
+              className="mb-2 block text-[10px] font-bold uppercase tracking-widest task-card-field-label"
             >
               Descrição
             </label>
@@ -522,25 +528,25 @@ export const BusinessRulesManager: React.FC<{
               value={description}
               onChange={e => setDescription(e.target.value)}
               rows={6}
-              className="textarea textarea-bordered w-full bg-base-100 border-base-300 text-base-content text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20"
+              className="textarea textarea-bordered w-full text-sm min-h-[120px] app-input font-mono"
             />
           </div>
           {linkableRules.length > 0 && (
             <div className="border-t border-base-200/80 pt-4">
               <div className="mb-2 flex items-center gap-2">
                 <Link2 className="h-4 w-4 shrink-0 text-primary" aria-hidden />
-                <span className="text-[10px] font-bold uppercase tracking-widest text-base-content/60">
+                <span className="text-[10px] font-bold uppercase tracking-widest task-card-field-label">
                   Vincular a outras regras
                 </span>
               </div>
-              <p className="text-xs text-base-content/55 mb-2">
+              <p className="text-xs task-card-muted mb-2">
                 Ao marcar, inclui{' '}
                 <code className="text-xs bg-base-200 px-1 rounded">@NomeDaRegra</code> na descrição
                 (nome derivado do título; títulos iguais no projeto ganham sufixo para diferenciar).
               </p>
               <label
                 htmlFor="br-quick-link-rule"
-                className="block text-xs font-medium text-base-content/60 mb-1"
+                className="block text-xs font-medium task-card-field-label mb-1"
               >
                 Escolher regra existente
               </label>
@@ -556,7 +562,7 @@ export const BusinessRulesManager: React.FC<{
                   if (!id) return;
                   if (!linkedRuleIds.includes(id)) handleToggleLinkRule(id, true);
                 }}
-                className="select select-bordered w-full bg-base-100 border-base-300 text-base-content min-h-[44px] rounded-xl text-sm mb-3"
+                className={cn(appSelectClass, 'select-bordered w-full mb-3')}
                 aria-label="Vincular rapidamente escolhendo uma regra existente na lista"
               >
                 <option value="">Selecione uma regra para vincular…</option>
@@ -570,7 +576,7 @@ export const BusinessRulesManager: React.FC<{
                 })}
               </select>
               <ul
-                className="max-h-48 overflow-y-auto rounded-lg border border-base-300 divide-y divide-base-300 bg-base-100/80"
+                className={cn(appPanelClass, 'max-h-48 overflow-y-auto divide-y divide-[var(--brand-surface-border)] bg-[var(--brand-surface-strong)]')}
                 role="list"
               >
                 {linkableRules.map(r => {
@@ -594,8 +600,8 @@ export const BusinessRulesManager: React.FC<{
                         htmlFor={`br-link-${r.id}`}
                         className="text-sm cursor-pointer flex-1 min-w-0"
                       >
-                        <span className="font-medium text-base-content">{r.title}</span>
-                        <span className="block text-xs text-base-content/50">
+                        <span className="font-medium text-[var(--brand-text-strong)]">{r.title}</span>
+                        <span className="block text-xs task-card-muted">
                           Inserirá {preview}
                         </span>
                       </label>

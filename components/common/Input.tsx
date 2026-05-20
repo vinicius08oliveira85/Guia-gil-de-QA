@@ -45,16 +45,13 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
     const inputId = id || `input-${reactId.replace(/[:]/g, '')}`;
 
     const variantClasses = {
-      default: 'input-bordered bg-base-100',
-      outlined: 'input-bordered bg-base-100',
-      filled: 'border border-base-300 bg-base-200',
+      default: 'input-bordered',
+      outlined: 'input-bordered',
+      filled: 'border-[var(--border)] bg-[var(--muted)]',
     };
 
     const baseInputClasses = cn(
-      'input w-full min-h-[44px]',
-      'text-base-content placeholder:text-base-content/50',
-      'focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary',
-      'transition',
+      'input app-input w-full min-h-[44px]',
       'disabled:opacity-50 disabled:cursor-not-allowed',
       variantClasses[variant],
       error && 'input-error focus:ring-error/20',
@@ -69,7 +66,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         {label && (
           <label
             htmlFor={inputId}
-            className="block text-sm font-medium text-base-content/70 mb-1.5"
+            className="app-element-typography block text-sm font-medium text-[var(--brand-text-muted)] mb-1.5"
           >
             {label}
           </label>
@@ -77,7 +74,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
 
         <div className="relative">
           {leftIcon && (
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-base-content/60 pointer-events-none">
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--brand-text-muted)] pointer-events-none">
               {leftIcon}
             </div>
           )}
@@ -94,7 +91,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           />
 
           {rightIcon && !error && !success && (
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-base-content/60 pointer-events-none">
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--brand-text-muted)] pointer-events-none">
               {rightIcon}
             </div>
           )}
@@ -124,7 +121,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         )}
 
         {helperText && !error && (
-          <p id={`${inputId}-helper`} className="mt-1.5 text-sm text-base-content/70">
+          <p id={`${inputId}-helper`} className="mt-1.5 text-sm text-[var(--brand-text-muted)]">
             {helperText}
           </p>
         )}

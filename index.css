@@ -743,6 +743,232 @@
     color: oklch(var(--er));
   }
 
+  /** Tipografia padrão de controles interativos (botões, inputs, menus). */
+  .app-element-typography {
+    font-family: var(--font-sans);
+    letter-spacing: var(--letter-spacing);
+  }
+
+  /** Campo de texto / busca — borda, fundo e foco via tokens do tema. */
+  .app-input {
+    font-family: var(--font-sans);
+    letter-spacing: var(--letter-spacing);
+    font-weight: 500;
+    color: var(--brand-text-strong);
+    background: var(--input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    transition:
+      border-color 160ms ease,
+      box-shadow 160ms ease,
+      background-color 160ms ease;
+  }
+
+  .app-input::placeholder {
+    color: var(--muted-foreground);
+    opacity: 1;
+  }
+
+  .app-input:hover:not(:disabled):not(:read-only) {
+    border-color: color-mix(in srgb, var(--brand-cta) 22%, var(--border));
+  }
+
+  .app-input:focus {
+    outline: none;
+    border-color: color-mix(in srgb, var(--brand-cta) 50%, var(--border));
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--brand-cta) 22%, transparent);
+  }
+
+  .app-input:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /** Select nativo alinhado ao mesmo shell de `.app-input`. */
+  .app-select {
+    font-family: var(--font-sans);
+    letter-spacing: var(--letter-spacing);
+    font-weight: 500;
+    color: var(--brand-text-strong);
+    background: var(--input);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    transition:
+      border-color 160ms ease,
+      box-shadow 160ms ease;
+  }
+
+  .app-select:focus {
+    outline: none;
+    border-color: color-mix(in srgb, var(--brand-cta) 50%, var(--border));
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--brand-cta) 22%, transparent);
+  }
+
+  .app-select:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /** Painel flutuante (dropdown, resultados de busca). */
+  .app-menu-panel {
+    border-radius: var(--radius);
+    border: 1px solid var(--brand-surface-border);
+    background: var(--brand-surface-strong);
+    box-shadow: 0 24px 45px -28px var(--brand-surface-shadow);
+    overflow: hidden;
+    font-family: var(--font-sans);
+    letter-spacing: var(--letter-spacing);
+  }
+
+  .app-menu-item {
+    font-family: var(--font-sans);
+    letter-spacing: var(--letter-spacing);
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--brand-text-strong);
+    transition: background-color 160ms ease, color 160ms ease;
+  }
+
+  .app-menu-item:hover:not(:disabled) {
+    background: var(--brand-chip-hover);
+  }
+
+  .app-menu-item-danger {
+    color: var(--destructive);
+  }
+
+  .app-menu-item-danger:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--destructive) 10%, transparent);
+    color: var(--destructive);
+  }
+
+  /** Pills de filtro (toolbar, modos de listagem). */
+  .app-filter-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.125rem;
+    font-family: var(--font-sans);
+    letter-spacing: var(--letter-spacing);
+    font-size: 0.75rem;
+    line-height: 1.2;
+    font-weight: 600;
+    white-space: nowrap;
+    border-radius: 9999px;
+    padding: 0.4375rem 0.875rem;
+    min-height: 2rem;
+    border: 1px solid var(--brand-surface-border);
+    background: var(--brand-surface-strong);
+    color: var(--brand-text-muted);
+    transition:
+      background-color 160ms ease,
+      border-color 160ms ease,
+      color 160ms ease,
+      box-shadow 160ms ease;
+  }
+
+  /** Pills dentro da faixa compacta (ex.: Todas / Backlog). */
+  .task-toolbar-pill-group .app-filter-pill {
+    font-size: 0.6875rem;
+    line-height: 1.15;
+    padding: 0.5rem 0.75rem;
+    min-height: 2.75rem;
+  }
+
+  @media (min-width: 640px) {
+    .task-toolbar-pill-group .app-filter-pill {
+      font-size: 0.75rem;
+      line-height: 1.2;
+      padding: 0.4375rem 0.875rem;
+      min-height: 2.25rem;
+    }
+  }
+
+  .app-filter-pill:hover:not(:disabled) {
+    background: var(--brand-chip-hover);
+    color: var(--brand-text-strong);
+  }
+
+  .app-filter-pill-active,
+  .app-filter-pill[data-active='true'] {
+    border-color: color-mix(in srgb, var(--brand-cta) 40%, var(--brand-surface-border));
+    background: var(--brand-cta);
+    color: var(--brand-cta-foreground);
+    box-shadow: 0 10px 24px -20px color-mix(in srgb, var(--brand-cta) 48%, transparent);
+  }
+
+  /** Botão secundário (borda) — ações em toolbars e cabeçalhos. */
+  .app-btn-outline {
+    font-family: var(--font-sans);
+    letter-spacing: var(--letter-spacing);
+    font-weight: 600;
+    border-radius: var(--radius);
+    border: 1px solid var(--brand-surface-border);
+    background: var(--brand-surface-strong);
+    color: var(--brand-text-strong);
+    transition:
+      background-color 160ms ease,
+      border-color 160ms ease,
+      transform 160ms ease,
+      box-shadow 160ms ease;
+  }
+
+  .app-btn-outline:hover:not(:disabled) {
+    background: var(--brand-chip-hover);
+    border-color: color-mix(in srgb, var(--brand-cta) 18%, var(--brand-surface-border));
+  }
+
+  .app-btn-outline:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--brand-cta) 22%, transparent);
+  }
+
+  /** Botão primário (CTA) — mesma linguagem que `.app-toolbar-action-primary`. */
+  .app-btn-primary-inline {
+    font-family: var(--font-sans);
+    letter-spacing: var(--letter-spacing);
+    font-weight: 600;
+    border-radius: var(--radius);
+    background: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--brand-cta) 94%, #ffffff) 0%,
+      var(--brand-cta) 100%
+    );
+    border: 1px solid color-mix(in srgb, var(--brand-cta) 72%, var(--brand-surface-border));
+    color: var(--brand-cta-foreground);
+    box-shadow: 0 18px 34px -22px color-mix(in srgb, var(--brand-cta) 48%, transparent);
+    transition:
+      background 160ms ease,
+      border-color 160ms ease,
+      transform 160ms ease;
+  }
+
+  .app-btn-primary-inline:hover:not(:disabled) {
+    background: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--brand-cta-hover) 88%, #ffffff) 0%,
+      var(--brand-cta-hover) 100%
+    );
+    border-color: color-mix(in srgb, var(--brand-cta-hover) 78%, var(--brand-surface-border));
+  }
+
+  .app-btn-primary-inline:focus-visible {
+    outline: none;
+    box-shadow:
+      0 18px 34px -22px color-mix(in srgb, var(--brand-cta) 48%, transparent),
+      0 0 0 2px color-mix(in srgb, var(--brand-cta) 28%, transparent);
+  }
+
+  /** Painel de conteúdo (filtros, cards de seção). */
+  .app-panel {
+    border-radius: var(--radius);
+    border: 1px solid var(--brand-surface-border);
+    background: var(--brand-surface-strong);
+    box-shadow: 0 4px 20px -2px color-mix(in srgb, var(--foreground) 6%, transparent);
+    font-family: var(--font-sans);
+    letter-spacing: var(--letter-spacing);
+  }
+
   /**
    * Epic na listagem (`JiraTaskItem`): badge + acento esquerdo do card na mesma paleta
    * (tokens `--jira-task-epic-*` em `:root`; independe do `primary` laranja do tema Daisy `light`).

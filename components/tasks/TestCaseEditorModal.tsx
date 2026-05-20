@@ -2,6 +2,17 @@ import React, { useEffect, useState } from 'react';
 import type { TestCase, TestCaseExecutionKind } from '../../types';
 import { Modal } from '../common/Modal';
 import { SafeMarkdown } from '../common/SafeMarkdown';
+import { cn } from '../../utils/cn';
+import { appSelectClass, outlineActionBtn, primaryActionBtn, searchInputClass } from '../common/viewUi';
+import {
+  taskCardFieldLabelClass,
+  taskCardMutedClass,
+  taskFormInsetPanelClass,
+  taskFormPreviewBoxClass,
+  taskPanelBorderClass,
+  taskTextareaClass,
+  taskTextStrongClass,
+} from './taskActionLayout';
 
 interface TestCaseEditorModalProps {
   testCase: TestCase;
@@ -10,6 +21,8 @@ interface TestCaseEditorModalProps {
   onSave: (updated: TestCase) => void;
   onDelete?: () => void;
 }
+
+const labelClass = cn(taskCardFieldLabelClass, 'block mb-1 normal-case tracking-normal');
 
 export const TestCaseEditorModal: React.FC<TestCaseEditorModalProps> = ({
   testCase,
@@ -28,7 +41,6 @@ export const TestCaseEditorModal: React.FC<TestCaseEditorModalProps> = ({
   );
   const [environment, setEnvironment] = useState(testCase.environment ?? '');
   const [suite, setSuite] = useState(testCase.suite ?? '');
-  /** Prévia renderizada com Markdown sanitizado; o persistido continua sendo texto puro. */
   const [previewMarkdown, setPreviewMarkdown] = useState(false);
 
   useEffect(() => {
@@ -50,9 +62,7 @@ export const TestCaseEditorModal: React.FC<TestCaseEditorModalProps> = ({
       expectedResult: expectedResult.trim(),
       observedResult: observedResult.trim(),
       status,
-      executionKind: executionKind
-        ? (executionKind as TestCaseExecutionKind)
-        : undefined,
+      executionKind: executionKind ? (executionKind as TestCaseExecutionKind) : undefined,
       environment: environment.trim() || undefined,
       suite: suite.trim() || undefined,
     });
@@ -63,8 +73,14 @@ export const TestCaseEditorModal: React.FC<TestCaseEditorModalProps> = ({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={`Editar caso de teste: ${previewTitle}`} size="xl">
-      <div className="space-y-4">
-        <label className="flex cursor-pointer items-start gap-2 rounded-lg border border-base-300 bg-base-200/40 p-3 text-sm text-base-content">
+      <div className="space-y-4 app-element-typography">
+        <label
+          className={cn(
+            taskPanelBorderClass,
+            'flex cursor-pointer items-start gap-2 bg-[var(--brand-chip)] p-3 text-sm',
+            taskTextStrongClass
+          )}
+        >
           <input
             type="checkbox"
             className="checkbox checkbox-sm mt-0.5"
@@ -73,96 +89,88 @@ export const TestCaseEditorModal: React.FC<TestCaseEditorModalProps> = ({
           />
           <span>
             <span className="font-semibold">Pré-visualizar como Markdown</span>
-            <span className="block text-xs text-base-content/70 mt-0.5">
-              Somente leitura abaixo de cada campo. O valor salvo permanece texto puro (listas numeradas,
-              quebras de linha e, se quiser, sintaxe **negrito** / listas Markdown).
+            <span className={cn('mt-0.5 block text-xs', taskCardMutedClass)}>
+              Somente leitura abaixo de cada campo. O valor salvo permanece texto puro (listas
+              numeradas, quebras de linha e, se quiser, sintaxe **negrito** / listas Markdown).
             </span>
           </span>
         </label>
 
         <div>
-          <label className="block text-xs font-semibold text-base-content/70 mb-1">
-            Ação necessária
-          </label>
+          <label className={labelClass}>Ação necessária</label>
           <textarea
             value={action}
             onChange={e => setAction(e.target.value)}
-            className="textarea textarea-bordered w-full bg-base-100 border-base-300 text-base-content min-h-[120px] font-mono whitespace-pre-wrap"
+            className={cn(taskTextareaClass, 'min-h-[120px]')}
             placeholder="Descreva o que deve ser executado (roteiro)."
           />
           {previewMarkdown && (
-            <div className="mt-2 rounded-lg border border-base-300 bg-base-200/50 p-3 text-xs">
-              <p className="font-semibold text-base-content/70 mb-2">Prévia</p>
+            <div className={taskFormPreviewBoxClass}>
+              <p className={cn('mb-2 font-semibold', taskCardMutedClass)}>Prévia</p>
               <SafeMarkdown source={action} className="text-sm" />
             </div>
           )}
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-base-content/70 mb-1">
-            Parâmetros necessários
-          </label>
+          <label className={labelClass}>Parâmetros necessários</label>
           <textarea
             value={parameters}
             onChange={e => setParameters(e.target.value)}
-            className="textarea textarea-bordered w-full bg-base-100 border-base-300 text-base-content min-h-[88px] font-mono whitespace-pre-wrap"
+            className={cn(taskTextareaClass, 'min-h-[88px]')}
             placeholder="Dados de entrada, massa, ambientes, contas…"
           />
           {previewMarkdown && (
-            <div className="mt-2 rounded-lg border border-base-300 bg-base-200/50 p-3 text-xs">
-              <p className="font-semibold text-base-content/70 mb-2">Prévia</p>
+            <div className={taskFormPreviewBoxClass}>
+              <p className={cn('mb-2 font-semibold', taskCardMutedClass)}>Prévia</p>
               <SafeMarkdown source={parameters} className="text-sm" />
             </div>
           )}
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-base-content/70 mb-1">
-            Resultado esperado
-          </label>
+          <label className={labelClass}>Resultado esperado</label>
           <textarea
             value={expectedResult}
             onChange={e => setExpectedResult(e.target.value)}
-            className="textarea textarea-bordered w-full bg-base-100 border-base-300 text-base-content min-h-[88px] font-mono whitespace-pre-wrap"
+            className={cn(taskTextareaClass, 'min-h-[88px]')}
           />
           {previewMarkdown && (
-            <div className="mt-2 rounded-lg border border-base-300 bg-base-200/50 p-3 text-xs">
-              <p className="font-semibold text-base-content/70 mb-2">Prévia</p>
+            <div className={taskFormPreviewBoxClass}>
+              <p className={cn('mb-2 font-semibold', taskCardMutedClass)}>Prévia</p>
               <SafeMarkdown source={expectedResult} className="text-sm" />
             </div>
           )}
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-base-content/70 mb-1">
-            Resultado Obtido
-          </label>
+          <label className={labelClass}>Resultado Obtido</label>
           <textarea
             value={observedResult}
             onChange={e => setObservedResult(e.target.value)}
-            className="textarea textarea-bordered w-full bg-base-100 border-base-300 text-base-content min-h-[88px] font-mono whitespace-pre-wrap"
+            className={cn(taskTextareaClass, 'min-h-[88px]')}
             placeholder="Preencha após a execução."
           />
           {previewMarkdown && (
-            <div className="mt-2 rounded-lg border border-base-300 bg-base-200/50 p-3 text-xs">
-              <p className="font-semibold text-base-content/70 mb-2">Prévia</p>
+            <div className={taskFormPreviewBoxClass}>
+              <p className={cn('mb-2 font-semibold', taskCardMutedClass)}>Prévia</p>
               <SafeMarkdown source={observedResult} className="text-sm" />
             </div>
           )}
         </div>
 
-        <div className="rounded-lg border border-base-300 bg-base-200/30 p-3 space-y-3">
-          <p className="text-xs font-semibold text-base-content/80">Opcional — auditoria e filtros</p>
+        <div className={taskFormInsetPanelClass}>
+          <p className={cn('text-xs font-semibold', taskTextStrongClass)}>
+            Opcional — auditoria e filtros
+          </p>
           <div>
-            <label className="block text-xs font-semibold text-base-content/70 mb-1">
-              Tipo de execução
-            </label>
+            <label className={labelClass}>Tipo de execução</label>
             <select
               value={executionKind}
               onChange={e =>
                 setExecutionKind((e.target.value || '') as TestCaseExecutionKind | '')
               }
-              className="select select-bordered w-full bg-base-100 border-base-300 text-sm"
+              className={cn(appSelectClass, 'select-bordered w-full')}
             >
               <option value="manual">Manual (padrão)</option>
               <option value="">Inferir pelo texto</option>
@@ -170,26 +178,24 @@ export const TestCaseEditorModal: React.FC<TestCaseEditorModalProps> = ({
               <option value="mixed">Misto</option>
             </select>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
-              <label className="block text-xs font-semibold text-base-content/70 mb-1">
-                Ambiente
-              </label>
+              <label className={labelClass}>Ambiente</label>
               <input
                 type="text"
                 value={environment}
                 onChange={e => setEnvironment(e.target.value)}
-                className="input input-bordered w-full bg-base-100 border-base-300 text-sm"
+                className={cn(searchInputClass, 'h-9 pl-3')}
                 placeholder="Ex.: Homologação"
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-base-content/70 mb-1">Suíte</label>
+              <label className={labelClass}>Suíte</label>
               <input
                 type="text"
                 value={suite}
                 onChange={e => setSuite(e.target.value)}
-                className="input input-bordered w-full bg-base-100 border-base-300 text-sm"
+                className={cn(searchInputClass, 'h-9 pl-3')}
                 placeholder="Ex.: Smoke API"
               />
             </div>
@@ -197,11 +203,11 @@ export const TestCaseEditorModal: React.FC<TestCaseEditorModalProps> = ({
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-base-content/70 mb-1">Status</label>
+          <label className={labelClass}>Status</label>
           <select
             value={status}
             onChange={e => setStatus(e.target.value as TestCase['status'])}
-            className="select select-bordered w-full bg-base-100 border-base-300"
+            className={cn(appSelectClass, 'select-bordered w-full')}
           >
             <option value="Not Run">Não Executado</option>
             <option value="Passed">Aprovado</option>
@@ -212,14 +218,18 @@ export const TestCaseEditorModal: React.FC<TestCaseEditorModalProps> = ({
 
         <div className="flex flex-wrap justify-end gap-2 pt-2">
           {onDelete && (
-            <button type="button" className="btn btn-outline btn-error" onClick={onDelete}>
+            <button
+              type="button"
+              className={cn(outlineActionBtn, 'btn btn-outline btn-error min-h-10')}
+              onClick={onDelete}
+            >
               Excluir
             </button>
           )}
-          <button type="button" className="btn btn-ghost" onClick={onClose}>
+          <button type="button" className={cn(outlineActionBtn, 'min-h-10')} onClick={onClose}>
             Cancelar
           </button>
-          <button type="button" className="btn btn-primary" onClick={handleSubmit}>
+          <button type="button" className={cn(primaryActionBtn, 'min-h-10')} onClick={handleSubmit}>
             Salvar
           </button>
         </div>

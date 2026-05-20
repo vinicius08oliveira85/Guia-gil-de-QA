@@ -1,5 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { SearchResult } from '../../hooks/useSearch';
+import { cn } from '../../utils/cn';
+import {
+  appMenuItemClass,
+  appMenuPanelClass,
+  searchInputClass,
+} from './viewUi';
 
 interface SearchBarProps {
   searchQuery: string;
@@ -94,9 +100,9 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           }}
           onFocus={() => setIsOpen(true)}
           placeholder={placeholder}
-          className="input input-bordered w-full px-4 py-2 pl-10 bg-base-100 border-base-300 text-base-content placeholder:text-base-content/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+          className={searchInputClass}
         />
-        <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-base-content/60">
+        <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[var(--brand-text-muted)]">
           🔍
         </span>
         {searchQuery && (
@@ -106,7 +112,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
               onSearchChange('');
               setIsOpen(false);
             }}
-            className="btn btn-ghost btn-sm btn-circle absolute right-2 top-1/2 -translate-y-1/2"
+            className="win-icon-button absolute right-2 top-1/2 -translate-y-1/2"
             aria-label="Limpar busca"
           >
             ✕
@@ -117,7 +123,10 @@ export const SearchBar: React.FC<SearchBarProps> = ({
       {isOpen && searchQuery && searchResults.length > 0 && (
         <div
           ref={resultsRef}
-          className="absolute z-50 w-full mt-2 bg-base-100 border border-base-300 rounded-xl shadow-xl max-h-[60vh] sm:max-h-96 overflow-y-auto"
+          className={cn(
+            appMenuPanelClass,
+            'absolute z-50 w-full mt-2 max-h-[60vh] sm:max-h-96 overflow-y-auto'
+          )}
         >
           {searchResults.map((result, index) => (
             <button
@@ -128,21 +137,23 @@ export const SearchBar: React.FC<SearchBarProps> = ({
                 setIsOpen(false);
                 inputRef.current?.blur();
               }}
-              className={`w-full text-left px-4 py-3 hover:bg-base-200 transition-colors ${
-                index === selectedIndex ? 'bg-base-200' : ''
-              } ${index > 0 ? 'border-t border-base-300' : ''}`}
+              className={cn(
+                appMenuItemClass,
+                index === selectedIndex && 'bg-[var(--brand-chip-active)]',
+                index > 0 && 'border-t border-[var(--brand-surface-border)]'
+              )}
             >
-              <div className="flex items-start gap-3">
-                <span className="text-xl">{getTypeIcon(result.type)}</span>
-                <div className="flex-1 min-w-0">
-                  <div className="font-semibold text-base-content truncate">{result.title}</div>
-                  <div className="text-sm text-base-content/70 truncate">{result.description}</div>
-                  {result.projectName && (
-                    <div className="text-xs text-base-content/70 mt-1">
-                      Projeto: {result.projectName}
-                    </div>
-                  )}
+              <span className="text-xl">{getTypeIcon(result.type)}</span>
+              <div className="flex-1 min-w-0">
+                <div className="font-semibold truncate">{result.title}</div>
+                <div className="text-sm text-[var(--brand-text-muted)] truncate">
+                  {result.description}
                 </div>
+                {result.projectName && (
+                  <div className="text-xs text-[var(--brand-text-muted)] mt-1">
+                    Projeto: {result.projectName}
+                  </div>
+                )}
               </div>
             </button>
           ))}
@@ -150,7 +161,12 @@ export const SearchBar: React.FC<SearchBarProps> = ({
       )}
 
       {isOpen && searchQuery && searchResults.length === 0 && (
-        <div className="absolute z-50 w-full mt-2 bg-base-100 border border-base-300 rounded-xl shadow-xl p-4 text-center text-base-content/70">
+        <div
+          className={cn(
+            appMenuPanelClass,
+            'absolute z-50 w-full mt-2 p-4 text-center text-[var(--brand-text-muted)]'
+          )}
+        >
           Nenhum resultado encontrado
         </div>
       )}

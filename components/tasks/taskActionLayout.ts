@@ -41,8 +41,17 @@ export const taskToolbarPillGroupClass = 'task-toolbar-pill-group';
 export const taskPanelBorderClass =
   'border border-[var(--brand-surface-border)] rounded-[var(--radius)]';
 
-export const taskSelectControlClass =
-  'rounded-[var(--radius)] border-[var(--brand-surface-border)] bg-[var(--brand-surface-strong)] text-[var(--brand-text-strong)] shadow-sm';
+/** Select/input compacto em modais de tarefa — alias de `.app-select` do design system. */
+export const taskSelectControlClass = 'app-select shadow-sm';
+
+/** Textarea em formulários de caso de teste / modais densos. */
+export const taskTextareaClass =
+  'textarea textarea-bordered app-input w-full font-mono whitespace-pre-wrap text-[var(--brand-text-strong)]';
+
+/** Painel interno de formulário (prévia, opcionais). */
+export const taskFormInsetPanelClass = `${taskModalSectionClass} space-y-3 bg-[color-mix(in_srgb,var(--brand-chip)_35%,var(--brand-surface-strong))] p-3`;
+
+export const taskFormPreviewBoxClass = `${taskPanelBorderClass} mt-2 bg-[var(--brand-chip)] p-3 text-xs`;
 
 export const taskChipSurfaceClass =
   'bg-[var(--brand-chip)] hover:bg-[var(--brand-chip-hover)]';

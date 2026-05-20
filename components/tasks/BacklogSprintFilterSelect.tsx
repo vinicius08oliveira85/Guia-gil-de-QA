@@ -1,6 +1,7 @@
 import React from 'react';
 import type { BacklogSprintFilterOption } from '../../utils/taskSprintDisplay';
 import { cn } from '../../utils/cn';
+import { appSelectClass } from '../common/viewUi';
 
 export interface BacklogSprintFilterSelectProps {
   value: string;
@@ -27,7 +28,7 @@ export const BacklogSprintFilterSelect: React.FC<BacklogSprintFilterSelectProps>
       value={value}
       disabled={disabled || options.length <= 1}
       onChange={e => onChange(e.target.value)}
-      className="select select-bordered select-sm h-9 min-h-0 max-w-[min(100%,14rem)] rounded-lg border-[var(--brand-surface-border)] bg-[var(--brand-surface)] text-sm text-[var(--brand-text-strong)] shadow-sm"
+      className={cn(appSelectClass, 'max-w-[min(100%,14rem)]')}
       aria-label="Filtrar backlog por sprint"
     >
       {options.map(opt => (

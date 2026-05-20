@@ -8,6 +8,9 @@ import {
   deleteFilter,
   type SavedFilterPreset,
 } from '../../utils/savedFiltersService';
+import { cn } from '../../utils/cn';
+import { filterPillClass, outlineActionBtn, primaryActionBtn, searchInputClass } from '../common/viewUi';
+import { taskCardFieldLabelClass } from './taskActionLayout';
 
 const FilterChip = ({
   label,
@@ -23,14 +26,12 @@ const FilterChip = ({
   <button
     type="button"
     onClick={onClick}
-    className={`
-            inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-all border
-            ${
-              isActive
-                ? 'bg-primary text-primary-content border-primary shadow-sm'
-                : 'border-[var(--brand-surface-border)] bg-[var(--brand-surface-strong)] text-[var(--brand-text-muted)] hover:border-[color-mix(in_srgb,var(--color-primary)_40%,var(--brand-surface-border))] hover:text-[var(--brand-text-strong)]'
-            }
-        `}
+    className={cn(
+      filterPillClass(isActive),
+      'inline-flex items-center gap-2 px-3 py-1.5 text-xs',
+      !isActive &&
+        'hover:border-[color-mix(in_srgb,var(--color-primary)_40%,var(--brand-surface-border))]'
+    )}
   >
     {label}
     <span
@@ -146,9 +147,9 @@ export const TasksViewFiltersModalContent: React.FC<TasksViewFiltersModalProps> 
     <>
       {/* Seção de Filtros Salvos */}
       {projectId && (
-        <div className="mb-5 pb-5 border-b border-base-300">
+        <div className="mb-5 pb-5 border-b border-[var(--brand-surface-border)]">
           <div className="flex items-center justify-between mb-3">
-            <p className="text-xs font-semibold text-base-content/60 uppercase tracking-wider flex items-center gap-1.5">
+            <p className={cn(taskCardFieldLabelClass, 'flex items-center gap-1.5')}>
               <Bookmark className="w-3.5 h-3.5" />
               Filtros Salvos
             </p>
@@ -177,14 +178,14 @@ export const TasksViewFiltersModalContent: React.FC<TasksViewFiltersModalProps> 
                   }
                 }}
                 placeholder="Nome do preset (ex: Meus bugs)"
-                className="input input-bordered input-sm flex-1 bg-base-100 border-base-300 text-base-content text-xs"
+                className={cn(searchInputClass, 'input-sm flex-1 h-9 pl-3 text-xs')}
                 autoFocus
               />
               <button
                 type="button"
                 onClick={handleSavePreset}
                 disabled={!presetName.trim()}
-                className="btn btn-primary btn-sm rounded-full px-4 text-xs disabled:opacity-50"
+                className={cn(primaryActionBtn, 'btn-sm min-h-9 px-4 text-xs')}
               >
                 Salvar
               </button>
@@ -194,7 +195,7 @@ export const TasksViewFiltersModalContent: React.FC<TasksViewFiltersModalProps> 
                   setIsSavingPreset(false);
                   setPresetName('');
                 }}
-                className="btn btn-ghost btn-sm text-xs"
+                className={cn(outlineActionBtn, 'btn-sm min-h-9 px-2 text-xs')}
               >
                 <X className="w-3 h-3" />
               </button>
@@ -206,7 +207,7 @@ export const TasksViewFiltersModalContent: React.FC<TasksViewFiltersModalProps> 
               {savedPresets.map(preset => (
                 <div
                   key={preset.id}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border border-base-300 bg-base-100 hover:border-primary/50 transition-colors group"
+                  className="app-filter-pill inline-flex items-center gap-1.5 px-3 py-1.5 text-xs group hover:border-[color-mix(in_srgb,var(--color-primary)_40%,var(--brand-surface-border))]"
                 >
                   <button
                     type="button"
@@ -247,7 +248,7 @@ export const TasksViewFiltersModalContent: React.FC<TasksViewFiltersModalProps> 
       )}
       <div className="grid grid-cols-1 gap-x-6 gap-y-5 md:grid-cols-2 xl:grid-cols-3">
         <div className="min-w-0">
-          <p className="text-xs font-semibold text-base-content/60 mb-2 uppercase tracking-wider">
+          <p className={cn(taskCardFieldLabelClass, 'mb-2')}>
             Status
           </p>
           <div className="flex flex-wrap gap-2">
@@ -270,7 +271,7 @@ export const TasksViewFiltersModalContent: React.FC<TasksViewFiltersModalProps> 
         </div>
 
         <div className="min-w-0">
-          <p className="text-xs font-semibold text-base-content/60 mb-2 uppercase tracking-wider">
+          <p className={cn(taskCardFieldLabelClass, 'mb-2')}>
             Prioridade
           </p>
           <div className="flex flex-wrap gap-2">
@@ -293,7 +294,7 @@ export const TasksViewFiltersModalContent: React.FC<TasksViewFiltersModalProps> 
         </div>
 
         <div className="min-w-0">
-          <p className="text-xs font-semibold text-base-content/60 mb-2 uppercase tracking-wider">
+          <p className={cn(taskCardFieldLabelClass, 'mb-2')}>
             Tipo de Tarefa
           </p>
           <div className="flex flex-wrap gap-2">
@@ -314,7 +315,7 @@ export const TasksViewFiltersModalContent: React.FC<TasksViewFiltersModalProps> 
         </div>
 
         <div className="min-w-0">
-          <p className="text-xs font-semibold text-base-content/60 mb-2 uppercase tracking-wider">
+          <p className={cn(taskCardFieldLabelClass, 'mb-2')}>
             Status de Teste
           </p>
           <div className="flex flex-wrap gap-2">
@@ -335,7 +336,7 @@ export const TasksViewFiltersModalContent: React.FC<TasksViewFiltersModalProps> 
         </div>
 
         <div className="min-w-0 md:col-span-2 xl:col-span-3">
-          <p className="text-xs font-semibold text-base-content/60 mb-2 uppercase tracking-wider">
+          <p className={cn(taskCardFieldLabelClass, 'mb-2')}>
             Resultado do caso de teste
           </p>
           <p className="text-[11px] text-base-content/50 mb-2">
@@ -359,7 +360,7 @@ export const TasksViewFiltersModalContent: React.FC<TasksViewFiltersModalProps> 
         </div>
 
         <div className="min-w-0 md:col-span-2 xl:col-span-3">
-          <p className="text-xs font-semibold text-base-content/60 mb-2 uppercase tracking-wider">
+          <p className={cn(taskCardFieldLabelClass, 'mb-2')}>
             Estado de Qualidade
           </p>
           <div className="flex flex-wrap gap-2">

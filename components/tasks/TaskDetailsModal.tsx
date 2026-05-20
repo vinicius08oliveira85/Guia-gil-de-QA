@@ -40,13 +40,17 @@ import { JiraRichContent } from './JiraRichContent';
 import { Button } from '../common/Button';
 import {
   taskCardMutedClass,
+  taskCardTypography,
   taskCardSectionTitleClass,
   taskModalSectionAccentClass,
   taskModalSectionClass,
+  taskTextStrongClass,
+  taskToolbarPillGroupClass,
   taskUiTagClass,
   taskUiTagInfoClass,
   taskUiTagSuccessClass,
 } from './taskActionLayout';
+import { filterPillClass, outlineActionBtn } from '../common/viewUi';
 import { BackButton } from '../common/BackButton';
 import { Badge } from '../common/Badge';
 import { useJiraAttachmentViewer } from '../../hooks/useJiraAttachmentViewer';
@@ -361,38 +365,38 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
             {task.owner && (
               <div className={cn(taskModalSectionClass, 'p-3 shadow-sm')}>
-                <p className="text-[10px] uppercase tracking-wider font-bold text-base-content/60 block mb-1">
+                <p className="task-card-field-label block mb-1">
                   Owner
                 </p>
-                <p className="text-sm font-medium text-base-content">{task.owner}</p>
+                <p className="text-sm font-medium text-[var(--brand-text-strong)]">{task.owner}</p>
               </div>
             )}
             {(task.jiraAssignee?.displayName ?? task.assignee) && (
               <div className={cn(taskModalSectionClass, 'p-3 shadow-sm')}>
-                <p className="text-[10px] uppercase tracking-wider font-bold text-base-content/60 block mb-1">
+                <p className="task-card-field-label block mb-1">
                   Responsável
                 </p>
-                <p className="text-sm font-medium text-base-content">
+                <p className="text-sm font-medium text-[var(--brand-text-strong)]">
                   {task.jiraAssignee?.displayName ?? task.assignee}
                 </p>
               </div>
             )}
             {(task.priority || task.jiraPriority) && (
               <div className={cn(taskModalSectionClass, 'p-3 shadow-sm')}>
-                <p className="text-[10px] uppercase tracking-wider font-bold text-base-content/60 block mb-1">
+                <p className="task-card-field-label block mb-1">
                   Prioridade
                 </p>
-                <p className="text-sm font-medium text-base-content">
+                <p className="text-sm font-medium text-[var(--brand-text-strong)]">
                   {getDisplayPriorityLabel(task, project)}
                 </p>
               </div>
             )}
             {task.severity && (
               <div className={cn(taskModalSectionClass, 'p-3 shadow-sm')}>
-                <p className="text-[10px] uppercase tracking-wider font-bold text-base-content/60 block mb-1">
+                <p className="task-card-field-label block mb-1">
                   Severidade
                 </p>
-                <p className="text-sm font-medium text-base-content">{task.severity}</p>
+                <p className="text-sm font-medium text-[var(--brand-text-strong)]">{task.severity}</p>
               </div>
             )}
             {nextStep && (
@@ -400,7 +404,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                 <p className="text-[10px] uppercase tracking-wider font-bold text-brand-orange block mb-1">
                   Próximo passo
                 </p>
-                <p className="text-[0.82rem] font-medium text-base-content line-clamp-2">
+                <p className="text-[0.82rem] font-medium text-[var(--brand-text-strong)] line-clamp-2">
                   {nextStep}
                 </p>
               </div>
@@ -414,7 +418,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
               <button
                 type="button"
                 onClick={() => setShowTestReport(true)}
-                className="btn btn-outline btn-sm flex items-center gap-2"
+                className={cn(outlineActionBtn, 'btn-sm flex items-center gap-2 min-h-9')}
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path
@@ -430,17 +434,17 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
           )}
 
         <section className="space-y-2">
-          <h3 className="text-sm font-bold text-base-content/70 uppercase tracking-wide">
+          <h3 className="task-card-field-label text-sm">
             Descrição
           </h3>
-          <div className="text-base-content/80">
+          <div className="task-card-muted">
             {task.description ? (
               <DescriptionRenderer
                 description={task.description}
                 jiraAttachments={task.jiraAttachments}
               />
             ) : (
-              <p className="text-base-content/70 italic">Sem descrição</p>
+              <p className="task-card-muted italic">Sem descrição</p>
             )}
           </div>
         </section>
@@ -453,7 +457,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
               <div className="space-y-2">
                 {versions.length > 0 && (
                   <div>
-                    <p className="text-[10px] uppercase tracking-wider font-bold text-base-content/60 mb-1.5">
+                    <p className="task-card-field-label mb-1.5">
                       Versão do Projeto
                     </p>
                     <VersionBadges versions={versions} size="md" />
@@ -462,7 +466,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                 {otherTags.length > 0 && (
                   <div>
                     {versions.length > 0 && (
-                      <p className="text-[10px] uppercase tracking-wider font-bold text-base-content/60 mb-1.5">
+                      <p className="task-card-field-label mb-1.5">
                         Tags
                       </p>
                     )}
@@ -486,7 +490,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
 
         {jiraAttachmentItems.length > 0 && (
           <section className="space-y-2">
-            <h3 className="text-sm font-bold text-base-content/70 uppercase tracking-wide">
+            <h3 className="task-card-field-label text-sm">
               Anexos do Jira
             </h3>
             <div className={cn(taskModalSectionClass, 'p-3')}>
@@ -528,7 +532,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
               )}
               {isUpdatingFromJira ? 'Atualizando…' : 'Atualizar do Jira (só esta tarefa)'}
             </Button>
-            <p className="text-[11px] text-base-content/60 mt-2">
+            <p className="text-[11px] task-card-muted mt-2">
               Busca apenas esta tarefa no Jira, sem carregar o projeto inteiro.
             </p>
           </div>
@@ -549,26 +553,26 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                   d="M13 10V3L4 14h7v7l9-11h-7z"
                 />
               </svg>
-              <h2 className="font-bold text-base-content">Campos do Jira</h2>
+              <h2 className="font-bold text-[var(--brand-text-strong)]">Campos do Jira</h2>
             </div>
             <div className="p-4 space-y-3">
               {(task.reporter || task.dueDate || task.environment) && (
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-base-content/60 mb-2">
+                  <p className="task-card-field-label mb-2">
                     Informações Básicas
                   </p>
                   <div className="space-y-2">
                     {task.reporter && (
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-base-200 flex items-center justify-center font-bold text-base-content/80 text-sm flex-shrink-0">
+                        <div className="w-8 h-8 rounded-full bg-[var(--brand-chip)] flex items-center justify-center font-bold task-card-muted text-sm flex-shrink-0">
                           {task.reporter.displayName.slice(0, 2).toUpperCase()}
                         </div>
                         <div className="min-w-0">
-                          <p className="text-sm font-semibold text-base-content truncate">
+                          <p className="text-sm font-semibold text-[var(--brand-text-strong)] truncate">
                             {task.reporter.displayName}
                           </p>
                           {task.reporter.emailAddress && (
-                            <p className="text-[11px] text-base-content/60 truncate">
+                            <p className="text-[11px] task-card-muted truncate">
                               {task.reporter.emailAddress}
                             </p>
                           )}
@@ -576,16 +580,16 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                       </div>
                     )}
                     {task.dueDate && (
-                      <p className="text-sm text-base-content">
-                        <span className="text-[10px] uppercase font-bold text-base-content/60">
+                      <p className="text-sm text-[var(--brand-text-strong)]">
+                        <span className="text-[10px] uppercase font-bold task-card-muted">
                           Due Date:{' '}
                         </span>
                         {new Date(task.dueDate).toLocaleDateString('pt-BR')}
                       </p>
                     )}
                     {task.environment && (
-                      <p className="text-sm text-base-content">
-                        <span className="text-[10px] uppercase font-bold text-base-content/60">
+                      <p className="text-sm text-[var(--brand-text-strong)]">
+                        <span className="text-[10px] uppercase font-bold task-card-muted">
                           Environment:{' '}
                         </span>
                         {task.environment}
@@ -600,10 +604,10 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                   task.timeTracking.remainingEstimate ||
                   task.timeTracking.timeSpent) && (
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-base-content/60 mb-2">
+                    <p className="task-card-field-label mb-2">
                       Time Tracking
                     </p>
-                    <div className="space-y-1 text-[11px] text-base-content/70">
+                    <div className="space-y-1 text-[11px] task-card-muted">
                       {task.timeTracking.originalEstimate && (
                         <p>Estimado: {task.timeTracking.originalEstimate}</p>
                       )}
@@ -617,25 +621,25 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
 
               {(task.issueLinks?.length || task.watchers) && (
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-base-content/60 mb-2">
+                  <p className="task-card-field-label mb-2">
                     Relacionamentos
                   </p>
                   {task.issueLinks && task.issueLinks.length > 0 && (
                     <div className="space-y-1 mb-2">
                       {task.issueLinks.map(link => (
-                        <div key={link.id} className="text-sm text-base-content">
-                          <span className="text-base-content/70">{link.type}</span>{' '}
+                        <div key={link.id} className="text-sm text-[var(--brand-text-strong)]">
+                          <span className="task-card-muted">{link.type}</span>{' '}
                           {link.relatedKey}
                         </div>
                       ))}
                     </div>
                   )}
                   {task.watchers && (
-                    <div className="p-2 bg-primary/10 rounded-lg border border-primary/20">
+                    <div className="p-2 bg-primary/10 rounded-[var(--radius)] border border-primary/20">
                       <p className="text-[10px] uppercase font-bold text-primary/90">
                         Observadores
                       </p>
-                      <p className="text-xs font-medium text-base-content mt-0.5">
+                      <p className="text-xs font-medium text-[var(--brand-text-strong)] mt-0.5">
                         {task.watchers.watchCount} observador(es)
                         {task.watchers.isWatching && ' • Você está observando'}
                       </p>
@@ -646,7 +650,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
 
               {(task.components?.length || task.fixVersions?.length) && (
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-base-content/60 mb-2">
+                  <p className="task-card-field-label mb-2">
                     Organização
                   </p>
                   <div className="flex flex-wrap gap-1.5">
@@ -675,7 +679,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
 
         {project && onUpdateProject && (
           <div className={cn(taskModalSectionClass, 'border-[var(--brand-surface-border)] bg-[var(--brand-chip)] p-4')}>
-            <h4 className="font-bold text-base-content mb-3">Ações Rápidas</h4>
+            <h4 className="font-bold text-[var(--brand-text-strong)] mb-3">Ações Rápidas</h4>
             <QuickActions task={task} project={project} onUpdateProject={onUpdateProject} />
           </div>
         )}
@@ -694,11 +698,11 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
     return (
       <div className="space-y-4">
         <header className="mb-4">
-          <h2 className="text-xl font-bold text-base-content">Cenários de Teste BDD</h2>
-          <p className="text-sm text-base-content/70 mt-1">
+          <h2 className="text-xl font-bold text-[var(--brand-text-strong)]">Cenários de Teste BDD</h2>
+          <p className="text-sm task-card-muted mt-1">
             Gerencie e visualize seus critérios de aceite em formato Gherkin.
           </p>
-          <span className="text-xs text-base-content/60 mt-1 block">{bddCount} cenário(s)</span>
+          <span className="text-xs task-card-muted mt-1 block">{bddCount} cenário(s)</span>
         </header>
 
         <div className="space-y-4">
@@ -747,18 +751,17 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
     const canHaveTestCases = task.type === 'Tarefa' || task.type === 'Bug';
 
     return (
-      <div className="space-y-4 font-sans tracking-[var(--letter-spacing)] text-base-content">
-        <div
-          className="flex flex-wrap gap-2 p-1.5 mica w-fit rounded-[var(--rounded-box)] border border-[color-mix(in_srgb,var(--foreground)_10%,transparent)]"
-          role="tablist"
-          aria-label="Sub-abas de testes"
-        >
+      <div className={cn('space-y-4', taskCardTypography, taskTextStrongClass)}>
+        <div className={taskToolbarPillGroupClass} role="tablist" aria-label="Sub-abas de testes">
           <button
             type="button"
             role="tab"
             aria-selected={activeTestSubSection === 'strategy'}
             onClick={() => setActiveTestSubSection('strategy')}
-            className={`min-h-[44px] rounded-[var(--radius)] px-3 py-2 text-xs font-medium transition-colors sm:min-h-0 sm:px-3 sm:py-1.5 sm:text-sm ${activeTestSubSection === 'strategy' ? 'bg-primary text-primary-content soft-shadow' : 'text-base-content/70 hover:bg-base-300/50 hover:text-base-content'}`}
+            className={cn(
+              filterPillClass(activeTestSubSection === 'strategy'),
+              'min-h-[44px] px-3 py-2 text-xs sm:min-h-0 sm:px-3 sm:py-1.5 sm:text-sm'
+            )}
           >
             Estratégia
           </button>
@@ -767,12 +770,20 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
             role="tab"
             aria-selected={activeTestSubSection === 'test-cases'}
             onClick={() => setActiveTestSubSection('test-cases')}
-            className={`flex min-h-[44px] items-center gap-1 rounded-[var(--radius)] px-3 py-2 text-xs font-medium transition-colors sm:min-h-0 sm:px-3 sm:py-1.5 sm:text-sm ${activeTestSubSection === 'test-cases' ? 'bg-primary text-primary-content soft-shadow' : 'text-base-content/70 hover:bg-base-300/50 hover:text-base-content'}`}
+            className={cn(
+              filterPillClass(activeTestSubSection === 'test-cases'),
+              'flex min-h-[44px] items-center gap-1 px-3 py-2 text-xs sm:min-h-0 sm:px-3 sm:py-1.5 sm:text-sm'
+            )}
           >
             Casos de teste
             {task.testCases?.length ? (
               <span
-                className={`ml-1 rounded-[var(--radius)] px-1.5 py-0.5 text-xs font-medium ${activeTestSubSection === 'test-cases' ? 'bg-[color-mix(in_oklch,oklch(var(--pc))_25%,transparent)] text-primary-content' : 'bg-base-300 text-base-content'}`}
+                className={cn(
+                  'ml-1 rounded-[var(--radius)] px-1.5 py-0.5 text-xs font-medium tabular-nums',
+                  activeTestSubSection === 'test-cases'
+                    ? 'bg-[color-mix(in_oklch,oklch(var(--pc))_25%,transparent)] text-[var(--brand-cta-foreground)]'
+                    : 'bg-[var(--brand-chip-active)] text-[var(--brand-text-strong)]'
+                )}
               >
                 {task.testCases.length}
               </span>
@@ -783,11 +794,11 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
         {activeTestSubSection === 'strategy' && (
           <div>
             <header className="flex items-center gap-3 mb-4">
-              <div className="p-1.5 bg-primary/10 rounded-lg">
+              <div className="p-1.5 bg-primary/10 rounded-[var(--radius)]">
                 <BarChart3 className="w-5 h-5 text-primary" aria-hidden />
               </div>
-              <h2 className="text-lg font-bold text-base-content">Estratégia de Teste</h2>
-              <span className="text-xs font-medium text-base-content/70 bg-base-200 px-3 py-1 rounded-full">
+              <h2 className="text-lg font-bold text-[var(--brand-text-strong)]">Estratégia de Teste</h2>
+              <span className="text-xs font-medium task-card-muted bg-[var(--brand-chip)] px-3 py-1 rounded-full">
                 {task.testStrategy?.length || 0} item(ns)
               </span>
             </header>
@@ -853,7 +864,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
             <div className="flex-grow">
               {onTaskToolsChange && (
                 <>
-                  <h3 className="text-xs font-bold text-base-content mb-3 flex items-center gap-2">
+                  <h3 className="text-xs font-bold text-[var(--brand-text-strong)] mb-3 flex items-center gap-2">
                     <Wrench className="w-5 h-5 text-primary" aria-hidden />
                     Ferramentas Utilizadas (Geral)
                   </h3>
@@ -888,7 +899,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
               {isGenerating && (
                 <div className="flex items-center justify-center gap-2 py-2">
                   <Spinner small />
-                  <span className="text-sm text-base-content/70">Gerando...</span>
+                  <span className="text-sm task-card-muted">Gerando...</span>
                 </div>
               )}
               {hasTests && (
@@ -904,7 +915,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
   const renderPlanningSection = () => {
     if (!project || !onUpdateProject) {
       return (
-        <p className="text-sm text-base-content/70">
+        <p className="text-sm task-card-muted">
           Conecte um projeto para gerenciar dependências e planejamento.
         </p>
       );
@@ -931,7 +942,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
             <h2 className={CARD_TITLE_CLASS + ' mb-3'}>
               <Paperclip className="w-4 h-4 sm:w-5 sm:h-5 text-primary/70 shrink-0" aria-hidden />
               Anexos
-              <span className="bg-base-200 text-base-content/70 text-xs px-2 py-0.5 rounded-full font-normal">
+              <span className="bg-[var(--brand-chip)] task-card-muted text-xs px-2 py-0.5 rounded-full font-normal">
                 {task.attachments?.length ?? 0}
               </span>
             </h2>
@@ -987,13 +998,13 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
   const renderCollaborationSection = () => {
     if (!onAddComment) {
       return (
-        <p className="text-sm text-base-content/70">Comentários indisponíveis para esta tarefa.</p>
+        <p className="text-sm task-card-muted">Comentários indisponíveis para esta tarefa.</p>
       );
     }
 
     return (
       <div>
-        <h3 className="text-lg font-semibold text-base-content mb-3">Comentários</h3>
+        <h3 className="text-lg font-semibold text-[var(--brand-text-strong)] mb-3">Comentários</h3>
         <CommentSection
           comments={task.comments || []}
           onAddComment={content => onAddComment(content)}
@@ -1068,8 +1079,8 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
 
   const modalTitle = (
     <div className="flex items-center gap-3 min-w-0 w-full pr-10 sm:pr-12">
-      <span className="font-mono text-sm text-base-content/60 shrink-0">{task.id}</span>
-      <span className="text-base-content truncate">{task.title}</span>
+      <span className="font-mono text-sm task-card-muted shrink-0">{task.id}</span>
+      <span className="text-[var(--brand-text-strong)] truncate">{task.title}</span>
     </div>
   );
 
@@ -1099,7 +1110,10 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                   role="tab"
                   aria-selected={isActive}
                   aria-controls={panelId}
-                  className={`px-2 py-1 text-xs rounded-xl font-medium transition-colors sm:px-3 sm:py-1.5 sm:text-sm ${isActive ? 'bg-brand-orange-selected text-white shadow-md shadow-brand-orange-selected/20 hover:bg-brand-orange-selected-hover' : 'text-base-content/70 hover:text-base-content hover:bg-base-200'}`}
+                  className={cn(
+                    filterPillClass(isActive),
+                    'px-2 py-1 text-xs sm:px-3 sm:py-1.5 sm:text-sm'
+                  )}
                   onClick={e => {
                     e.stopPropagation();
                     setActiveSection(tab.id);

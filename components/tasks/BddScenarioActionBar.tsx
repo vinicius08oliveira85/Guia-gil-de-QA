@@ -34,7 +34,7 @@ export const BddScenarioActionBar: React.FC<BddScenarioActionBarProps> = ({
         type="button"
         onClick={onGenerate}
         disabled={disabled}
-        className="btn btn-outline btn-sm min-h-[44px] w-full gap-2 rounded-[var(--radius)] border-primary/30 font-semibold disabled:cursor-not-allowed sm:min-h-0 sm:w-auto sm:max-w-xs sm:flex-1"
+        className="app-btn-outline btn btn-sm min-h-[44px] w-full gap-2 disabled:cursor-not-allowed sm:min-h-0 sm:w-auto sm:max-w-xs sm:flex-1"
       >
         <Sparkles className="h-4 w-4 shrink-0" aria-hidden />
         Gerar Cenários com IA
@@ -43,7 +43,7 @@ export const BddScenarioActionBar: React.FC<BddScenarioActionBarProps> = ({
         type="button"
         onClick={onAddManual}
         disabled={disabled}
-        className="btn btn-primary btn-sm min-h-[44px] w-full gap-2 rounded-[var(--radius)] font-semibold disabled:cursor-not-allowed sm:min-h-0 sm:w-auto sm:max-w-xs sm:flex-1"
+        className="app-btn-primary-inline btn btn-sm min-h-[44px] w-full gap-2 disabled:cursor-not-allowed sm:min-h-0 sm:w-auto sm:max-w-xs sm:flex-1"
       >
         <PlusIcon className="h-4 w-4 shrink-0" aria-hidden />
         Adicionar Cenário Manualmente

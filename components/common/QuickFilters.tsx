@@ -1,6 +1,8 @@
 import React from 'react';
 import { FilterOptions } from '../../hooks/useFilters';
 import { Badge } from './Badge';
+import { appPanelClass, outlineActionBtn } from './viewUi';
+import { cn } from '../../utils/cn';
 
 interface QuickFiltersProps {
   filters: FilterOptions;
@@ -205,9 +207,9 @@ export const QuickFilters: React.FC<QuickFiltersProps> = ({
   }
 
   return (
-    <div className="rounded-[var(--rounded-box)] border border-base-300 bg-base-100 p-3">
+    <div className={cn(appPanelClass, 'p-3')}>
       <div className="flex flex-wrap items-center gap-2">
-        <div className="flex items-center gap-2 text-sm text-base-content/70">
+        <div className="app-element-typography flex items-center gap-2 text-sm text-[var(--brand-text-muted)]">
           <svg
             className="w-4 h-4 text-primary"
             fill="none"
@@ -263,7 +265,11 @@ export const QuickFilters: React.FC<QuickFiltersProps> = ({
           })}
         </div>
 
-        <button type="button" onClick={onClearFilters} className="btn btn-ghost btn-xs ml-auto">
+        <button
+          type="button"
+          onClick={onClearFilters}
+          className={cn(outlineActionBtn, 'btn-xs ml-auto min-h-9 px-2 py-1 text-xs')}
+        >
           Limpar
         </button>
       </div>
