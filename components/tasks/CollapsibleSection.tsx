@@ -1,4 +1,11 @@
 import React, { useState } from 'react';
+import { cn } from '../../utils/cn';
+import {
+  taskCollapsibleHeaderClass,
+  taskCollapsibleShellClass,
+  taskLabelMutedClass,
+  taskTextStrongClass,
+} from './taskActionLayout';
 
 interface CollapsibleSectionProps {
   title: string;
@@ -19,20 +26,24 @@ export const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
 
   return (
-    <div className="border border-base-300 rounded-lg overflow-hidden">
+    <div className={taskCollapsibleShellClass}>
       <button
         type="button"
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between px-sm py-xs bg-base-200 hover:bg-base-300 transition-colors"
+        className={taskCollapsibleHeaderClass}
         aria-expanded={isExpanded}
         aria-label={`${isExpanded ? 'Colapsar' : 'Expandir'} seção ${title}`}
       >
         <div className="flex items-center gap-xs">
-          {icon && <span className="text-base-content/70">{icon}</span>}
-          <span className="text-sm font-semibold text-base-content">{title}</span>
+          {icon && <span className={taskLabelMutedClass}>{icon}</span>}
+          <span className={cn('text-sm font-semibold', taskTextStrongClass)}>{title}</span>
         </div>
         <svg
-          className={`w-4 h-4 text-base-content/70 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+          className={cn(
+            'h-4 w-4 transition-transform',
+            taskLabelMutedClass,
+            isExpanded && 'rotate-180'
+          )}
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"

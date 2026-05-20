@@ -1,6 +1,8 @@
 import React, { useMemo } from 'react';
 import { CollapsibleSection } from './CollapsibleSection';
 import { CopySectionButton } from './CopySectionButton';
+import { taskCardFieldLabelClass, taskCardMutedClass, taskPanelBorderClass, taskTextStrongClass } from './taskActionLayout';
+import { cn } from '../../utils/cn';
 
 interface ReportPreviewProps {
   reportText: string;
@@ -94,8 +96,8 @@ export const ReportPreview: React.FC<ReportPreviewProps> = ({
     <div className="flex flex-col h-full min-h-0">
       {/* Toggle de formato */}
       {onFormatChange && (
-        <div className="flex-shrink-0 flex items-center justify-between mb-sm pb-sm border-b border-base-300">
-          <span className="text-xs font-semibold text-base-content/70 uppercase tracking-wide">
+        <div className="flex-shrink-0 flex items-center justify-between mb-sm pb-sm border-b border-[var(--brand-surface-border)]">
+          <span className={taskCardFieldLabelClass}>
             Formato
           </span>
           <div className="flex gap-xs">
@@ -128,19 +130,18 @@ export const ReportPreview: React.FC<ReportPreviewProps> = ({
         {sections.map((section, idx) => (
           <CollapsibleSection key={idx} title={section.title} defaultExpanded={idx === 0}>
             <div className="flex items-center justify-between mb-xs">
-              <span className="text-xs text-base-content/70">
+              <span className={cn('text-xs', taskCardMutedClass)}>
                 {section.content.split('\n').length} linhas
               </span>
               <CopySectionButton text={section.content} sectionName={section.title} />
             </div>
             <pre
-              className={`
-              w-full p-sm rounded-lg
-              bg-base-200 border border-base-300
-              text-xs font-mono text-base-content
-              overflow-x-auto
-              ${format === 'markdown' ? 'whitespace-pre-wrap' : ''}
-            `}
+              className={cn(
+                'w-full p-sm text-xs font-mono overflow-x-auto bg-[var(--brand-chip)]',
+                taskPanelBorderClass,
+                taskTextStrongClass,
+                format === 'markdown' && 'whitespace-pre-wrap'
+              )}
             >
               {section.content}
             </pre>

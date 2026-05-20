@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { TestCase, JiraTask } from '../../types';
 import { getPriorityVariant } from '../../utils/taskHelpers';
 import { Badge } from '../common/Badge';
+import { cn } from '../../utils/cn';
+import { taskChipSurfaceClass, taskPanelBorderClass } from './taskActionLayout';
 
 interface TestCardProps {
   testCase: TestCase;
@@ -41,22 +43,22 @@ export const TestCard: React.FC<TestCardProps> = ({
       case 'Baixa':
         return 'bg-success';
       default:
-        return 'bg-base-content/30';
+        return 'bg-[var(--brand-text-muted)]';
     }
   };
 
   return (
     <div
-      className={`
-        group relative
-        border rounded-lg transition-all duration-200
-        ${
-          isSelected
-            ? 'bg-primary/10 border-primary shadow-md ring-2 ring-primary/20'
-            : 'bg-base-100 border-base-300 hover:border-primary/50 hover:shadow-sm hover:bg-base-200'
-        }
-        cursor-pointer
-      `}
+      className={cn(
+        'group relative cursor-pointer border transition-all duration-200',
+        taskPanelBorderClass,
+        isSelected
+          ? 'border-[var(--color-primary)] bg-[color-mix(in_srgb,var(--color-primary)_10%,var(--brand-surface))] shadow-md ring-2 ring-[color-mix(in_srgb,var(--color-primary)_22%,transparent)]'
+          : cn(
+              'bg-[var(--brand-surface-strong)] hover:border-[color-mix(in_srgb,var(--color-primary)_40%,var(--brand-surface-border))] hover:shadow-sm',
+              taskChipSurfaceClass
+            )
+      )}
       onClick={e => {
         // Se clicar no checkbox ou botão de expandir, não toggle o card
         if (

@@ -110,7 +110,7 @@ export const TaskBusinessRulesLinker: React.FC<TaskBusinessRulesLinkerProps> = (
   return (
     <div className="space-y-3">
       <section
-        className="space-y-3 rounded-xl border border-base-300 bg-base-100/60 p-4"
+        className="task-modal-section space-y-3 p-4"
         aria-labelledby={`task-br-heading-${safeDomId}`}
       >
         <h3 id={`task-br-heading-${safeDomId}`} className={CARD_TITLE_CLASS}>

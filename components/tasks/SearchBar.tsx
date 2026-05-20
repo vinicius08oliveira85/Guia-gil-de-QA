@@ -1,4 +1,6 @@
 import React from 'react';
+import { cn } from '../../utils/cn';
+import { taskChipSurfaceClass, taskSelectControlClass } from './taskActionLayout';
 
 interface SearchBarProps {
   value: string;
@@ -38,21 +40,20 @@ export const SearchBar: React.FC<SearchBarProps> = ({
         value={value}
         onChange={e => onChange(e.target.value)}
         placeholder={placeholder}
-        className={`
-          w-full pl-lg pr-sm py-xs
-          bg-base-100 border border-base-300 rounded-lg
-          text-sm text-base-content
-          placeholder:text-base-content/50
-          focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary
-          transition-all duration-200
-        `}
+        className={cn(
+          'w-full py-xs pl-lg pr-sm text-sm transition-all duration-200 placeholder:text-[var(--brand-text-muted)] focus:border-[var(--color-primary)] focus:outline-none focus:ring-2 focus:ring-[color-mix(in_srgb,var(--color-primary)_22%,transparent)]',
+          taskSelectControlClass
+        )}
         aria-label="Buscar testes"
       />
       {value && (
         <button
           type="button"
           onClick={() => onChange('')}
-          className="absolute inset-y-0 right-0 flex items-center pr-sm hover:bg-base-200 rounded-r-lg transition-colors"
+          className={cn(
+            'absolute inset-y-0 right-0 flex items-center rounded-r-[var(--radius)] pr-sm transition-colors',
+            taskChipSurfaceClass
+          )}
           aria-label="Limpar busca"
         >
           <svg

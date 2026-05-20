@@ -2,6 +2,12 @@ import React, { useState } from 'react';
 import { BddScenario } from '../../types';
 import { EditIcon, TrashIcon } from '../common/Icons';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
+import { cn } from '../../utils/cn';
+import {
+  taskCardFieldLabelClass,
+  taskModalSectionClass,
+  taskTextStrongClass,
+} from './taskActionLayout';
 
 /** Palavras-chave Gherkin em português (ordem: mais longas primeiro para match correto). */
 const GHERKIN_KEYWORDS = [
@@ -17,12 +23,12 @@ const GHERKIN_KEYWORDS = [
 ];
 
 const KEYWORD_CLASS: Record<string, string> = {
-  feature: 'text-primary font-semibold',
-  scenario: 'text-primary font-semibold',
-  given: 'text-blue-600 dark:text-blue-400 font-semibold',
-  when: 'text-brand-orange font-semibold',
-  then: 'text-green-600 dark:text-green-400 font-semibold',
-  and: 'text-base-content/70 font-semibold',
+  feature: 'font-semibold text-[var(--color-primary-deep)]',
+  scenario: 'font-semibold text-[var(--color-primary-deep)]',
+  given: 'font-semibold text-[var(--color-primary-deep)]',
+  when: 'font-semibold text-[var(--brand-cta)]',
+  then: 'font-semibold text-[color-mix(in_srgb,oklch(var(--su))_88%,var(--brand-text-strong))]',
+  and: 'font-semibold text-[var(--brand-text-muted)]',
 };
 
 /** Quebra o texto em segmentos (keyword tipada ou texto plano) para destacar palavras-chave Gherkin. */
@@ -96,11 +102,14 @@ export const BddScenarioForm: React.FC<{
   return (
     <form
       onSubmit={handleSubmit}
-      className="space-y-4 p-5 bg-base-100 rounded-lg my-2 border border-base-300 border-l-4 border-l-primary shadow-sm"
+      className={cn(
+        taskModalSectionClass,
+        'my-2 space-y-4 border-l-4 border-l-[var(--color-primary)] p-5 shadow-sm'
+      )}
     >
       <div>
         <label className="label">
-          <span className="label-text text-sm font-medium text-base-content/70">
+          <span className={cn('label-text text-sm font-medium', taskCardFieldLabelClass)}>
             Título do Cenário
           </span>
         </label>
@@ -109,13 +118,13 @@ export const BddScenarioForm: React.FC<{
           value={title}
           onChange={e => setTitle(e.target.value)}
           required
-          className="input input-bordered w-full bg-base-100 border-base-300 text-base-content focus:outline-none focus:border-primary"
+          className="input input-bordered w-full border-[var(--brand-surface-border)] bg-[var(--brand-surface-strong)] text-[var(--brand-text-strong)] focus:border-[var(--color-primary)] focus:outline-none"
           placeholder="Ex: Login com credenciais válidas"
         />
       </div>
       <div>
         <label className="label">
-          <span className="label-text text-sm font-medium text-base-content/70">
+          <span className={cn('label-text text-sm font-medium', taskCardFieldLabelClass)}>
             Cenário (Gherkin: Dado, Quando, Então)
           </span>
         </label>
@@ -124,7 +133,7 @@ export const BddScenarioForm: React.FC<{
           onChange={e => setGherkin(e.target.value)}
           rows={5}
           required
-          className="textarea textarea-bordered w-full bg-base-100 border-base-300 text-base-content font-mono text-sm focus:outline-none focus:border-primary"
+          className="textarea textarea-bordered w-full border-[var(--brand-surface-border)] bg-[var(--brand-surface-strong)] font-mono text-sm text-[var(--brand-text-strong)] focus:border-[var(--color-primary)] focus:outline-none"
           placeholder={`Dado que um usuário está na página de login
 Quando ele insere credenciais válidas
 Então ele deve ser redirecionado para o dashboard`}
@@ -148,14 +157,21 @@ export const BddScenarioItem: React.FC<{
   onDelete: () => void;
 }> = ({ scenario, onEdit, onDelete }) => {
   return (
-    <div className="bg-base-100 border border-base-300 border-l-4 border-l-primary rounded-lg shadow-sm overflow-hidden flex flex-col transition-all hover:shadow-md">
-      <div className="px-5 py-4 flex justify-between items-center border-b border-base-200">
-        <h3 className="font-semibold text-base-content flex-1 pr-2 min-w-0">{scenario.title}</h3>
+    <div
+      className={cn(
+        taskModalSectionClass,
+        'flex flex-col overflow-hidden border-l-4 border-l-[var(--color-primary)] shadow-sm transition-all hover:shadow-md'
+      )}
+    >
+      <div className="flex items-center justify-between border-b border-[var(--brand-surface-border)] px-5 py-4">
+        <h3 className={cn('flex-1 min-w-0 pr-2 font-semibold', taskTextStrongClass)}>
+          {scenario.title}
+        </h3>
         <div className="flex gap-1 flex-shrink-0">
           <button
             type="button"
             onClick={onEdit}
-            className="p-2 text-base-content/60 hover:text-primary transition-colors rounded-lg"
+            className="rounded-[var(--radius)] p-2 text-[var(--brand-text-muted)] transition-colors hover:text-[var(--color-primary-deep)]"
             aria-label="Editar cenário BDD"
           >
             <EditIcon />
@@ -163,7 +179,7 @@ export const BddScenarioItem: React.FC<{
           <button
             type="button"
             onClick={onDelete}
-            className="p-2 text-base-content/60 hover:text-error transition-colors rounded-lg"
+            className="rounded-[var(--radius)] p-2 text-[var(--brand-text-muted)] transition-colors hover:text-[color-mix(in_srgb,oklch(var(--er))_90%,transparent)]"
             aria-label="Excluir cenário BDD"
           >
             <TrashIcon />

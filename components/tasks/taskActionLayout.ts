@@ -9,8 +9,52 @@ export const TASK_ACTION_SLOT_CLASSNAMES = {
     'max-md:min-w-[6.75rem] max-md:justify-center md:flex md:justify-center md:min-h-[1.5rem] md:items-center',
 } as const;
 
+/** Shell visual do card na listagem (tokens em index.css `.task-card-shell`). */
+export const taskCardShellClass =
+  'task-card-shell px-2 py-2 transition-colors duration-200 sm:px-3 sm:py-2';
+
 /** Plus Jakarta Sans + tracking do tema (identidade tipográfica do app). */
 export const taskCardTypography = 'font-sans tracking-[var(--letter-spacing)]';
+
+/** Título principal / seção em card ou modal de tarefa. */
+export const taskCardTitleClass = 'task-card-title text-xs leading-tight sm:text-sm';
+
+export const taskCardMutedClass = 'task-card-muted';
+
+export const taskCardFieldLabelClass = 'task-card-field-label';
+
+export const taskCardSectionTitleClass = 'task-card-section-title flex items-center gap-2';
+
+export const taskModalSectionClass = 'task-modal-section';
+
+export const taskModalSectionAccentClass = 'task-modal-section-accent';
+
+export const taskUiTagClass = 'task-ui-tag';
+
+export const taskUiTagInfoClass = 'task-ui-tag-info';
+
+export const taskUiTagSuccessClass = 'task-ui-tag-success';
+
+export const taskToolbarPillGroupClass = 'task-toolbar-pill-group';
+
+/** Borda + raio padrão para painéis compactos (filtros, colapsáveis, anexos). */
+export const taskPanelBorderClass =
+  'border border-[var(--brand-surface-border)] rounded-[var(--radius)]';
+
+export const taskSelectControlClass =
+  'rounded-[var(--radius)] border-[var(--brand-surface-border)] bg-[var(--brand-surface-strong)] text-[var(--brand-text-strong)] shadow-sm';
+
+export const taskChipSurfaceClass =
+  'bg-[var(--brand-chip)] hover:bg-[var(--brand-chip-hover)]';
+
+export const taskLabelMutedClass = 'task-card-muted';
+
+export const taskTextStrongClass = 'text-[var(--brand-text-strong)]';
+
+export const taskCollapsibleShellClass = `${taskPanelBorderClass} overflow-hidden`;
+
+export const taskCollapsibleHeaderClass =
+  'flex w-full items-center justify-between bg-[var(--brand-chip)] px-sm py-xs transition-colors hover:bg-[var(--brand-chip-hover)]';
 
 /** Título da tarefa na linha do card (12px, sem escalar para sm). */
 export const taskCardTitleTypography = `${taskCardTypography} text-xs font-semibold leading-tight`;
@@ -40,7 +84,7 @@ export const taskCardButtonTypography = `${taskCardTypography} text-[10px] font-
 export const taskCardButtonShape = 'rounded-full px-2 py-0';
 
 const taskCardActionChipBase = [
-  'inline-flex h-6 max-h-6 min-h-6 w-full min-w-0 items-center justify-center gap-0.5 border shadow-sm',
+  'btn-task-format inline-flex h-6 max-h-6 min-h-6 w-full min-w-0 items-center justify-center gap-0.5 border shadow-sm',
   taskCardButtonShape,
   taskCardButtonTypography,
   'transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2',

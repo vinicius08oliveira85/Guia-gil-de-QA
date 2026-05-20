@@ -10,6 +10,12 @@ import {
   openBugsWeightDistribution,
 } from './taskOperationMetrics';
 import { Scale, Bug, Wrench, BarChart3, ShieldAlert } from 'lucide-react';
+import {
+  taskCardMutedClass,
+  taskCardSectionTitleClass,
+  taskPanelBorderClass,
+  taskTextStrongClass,
+} from './taskActionLayout';
 
 function formatUnits(n: number): string {
   if (!Number.isFinite(n)) return '0';
@@ -33,14 +39,14 @@ function ComparativeLoadBar(props: { donePct: number; doneUnits: number; todoUni
           title="Em aberto"
         />
       </div>
-      <div className="flex flex-wrap justify-between gap-x-2 gap-y-0.5 text-xs tabular-nums text-base-content/75">
+      <div className={cn('flex flex-wrap justify-between gap-x-2 gap-y-0.5 text-xs tabular-nums', taskCardMutedClass)}>
         <span>
-          Feito: <strong className="text-base-content">{formatUnits(doneUnits)}</strong>
+          Feito: <strong className={taskTextStrongClass}>{formatUnits(doneUnits)}</strong>
         </span>
         <span>
-          Aberto: <strong className="text-base-content">{formatUnits(todoUnits)}</strong>
+          Aberto: <strong className={taskTextStrongClass}>{formatUnits(todoUnits)}</strong>
         </span>
-        {total <= 0 && <span className="text-base-content/55">Sem pontos ou horas estimadas</span>}
+        {total <= 0 && <span className={taskCardMutedClass}>Sem pontos ou horas estimadas</span>}
       </div>
     </div>
   );
@@ -53,7 +59,7 @@ function BugWeightBarsSvg({ rows }: { rows: { weight: number; count: number }[] 
   const pad = 2;
   const h = pad * 2 + rows.length * rowH;
   if (rows.length === 0) {
-    return <p className="text-xs text-base-content/70">Sem bugs em aberto para agrupar.</p>;
+    return <p className={cn('text-xs', taskCardMutedClass)}>Sem bugs em aberto para agrupar.</p>;
   }
   const labelW = 30;
   const barMax = chartW - labelW - 22;
@@ -63,7 +69,7 @@ function BugWeightBarsSvg({ rows }: { rows: { weight: number; count: number }[] 
       height={h}
       viewBox={`0 0 ${chartW} ${h}`}
       preserveAspectRatio="xMinYMid meet"
-      className="max-h-[120px] text-base-content"
+      className={cn('max-h-[120px]', taskTextStrongClass)}
       role="img"
       aria-label="Bugs em aberto por peso estimado"
     >
@@ -72,7 +78,7 @@ function BugWeightBarsSvg({ rows }: { rows: { weight: number; count: number }[] 
         const y = pad + i * rowH;
         const bw = (r.count / max) * barMax;
         return (
-          <g key={`w-${r.weight}`} className="text-base-content">
+          <g key={`w-${r.weight}`} className={taskTextStrongClass}>
             <text x={0} y={y + 10} fontSize={11} fill="currentColor" opacity={0.72}>
               P{r.weight}
             </text>
@@ -110,22 +116,22 @@ function MicaMetricCard({ title, subtitle, icon, children, className }: MicaCard
       variant="outlined"
       hoverable={false}
       className={cn(
-        'mica glass hover-glow w-full border-base-200/80 bg-base-100/85 p-2.5 shadow-md sm:p-3',
-        'ring-1 ring-inset ring-base-content/[0.04]',
+        'mica glass hover-glow task-card-shadow w-full p-2.5 sm:p-3',
+        taskPanelBorderClass,
         className
       )}
     >
       <div className="flex gap-tasks-panel-tight">
         <div
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-primary/15 bg-primary/10 text-primary"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[var(--radius)] border border-primary/15 bg-primary/10 text-primary"
           aria-hidden
         >
           {icon}
         </div>
         <div className="min-w-0 flex-1">
-          <h3 className="text-xs font-bold uppercase tracking-wide text-base-content">{title}</h3>
+          <h3 className={cn('text-xs uppercase tracking-wide', taskCardSectionTitleClass)}>{title}</h3>
           {subtitle ? (
-            <p className="mt-0.5 line-clamp-2 text-xs leading-snug text-base-content/75">
+            <p className={cn('mt-0.5 line-clamp-2 text-xs leading-snug', taskCardMutedClass)}>
               {subtitle}
             </p>
           ) : null}
@@ -165,13 +171,13 @@ export const TaskMetricsHeader: React.FC<TaskMetricsHeaderProps> = React.memo(
           <div className="flex min-w-0 flex-wrap items-center gap-tasks-panel-tight">
             <h2
               id="task-operation-metrics-heading"
-              className="text-xs font-bold uppercase tracking-wider text-base-content/80"
+              className={cn('text-xs font-bold uppercase tracking-wider', taskCardSectionTitleClass)}
             >
               Indicadores de operação
             </h2>
             {scopedToFilter && (
               <span
-                className="rounded-md border border-primary/25 bg-primary/8 px-2 py-0.5 text-xs font-medium text-base-content"
+                className={cn('rounded-[var(--radius)] border border-primary/25 bg-primary/8 px-2 py-0.5 text-xs font-medium', taskTextStrongClass)}
                 title="Métricas apenas sobre as tarefas visíveis com filtro ou busca."
               >
                 Filtrado · {sourceTasks.length} tarefa{sourceTasks.length === 1 ? '' : 's'}
@@ -182,7 +188,7 @@ export const TaskMetricsHeader: React.FC<TaskMetricsHeaderProps> = React.memo(
 
         {criticalOpen > 0 && (
           <div
-            className="animate-pulse-subtle flex w-full items-center gap-tasks-panel-tight rounded-lg border border-error/35 bg-error/10 px-2.5 py-1.5 text-sm leading-snug text-base-content"
+            className={cn('animate-pulse-subtle flex w-full items-center gap-tasks-panel-tight rounded-[var(--radius)] border border-error/35 bg-error/10 px-2.5 py-1.5 text-sm leading-snug', taskTextStrongClass)}
             role="status"
           >
             <ShieldAlert className="h-4 w-4 shrink-0 text-error" aria-hidden />
@@ -206,7 +212,7 @@ export const TaskMetricsHeader: React.FC<TaskMetricsHeaderProps> = React.memo(
               >
                 {formatUnits(load.totalUnits)}
               </span>
-              <span className="text-xs font-semibold tabular-nums text-base-content/75">
+              <span className={cn('text-xs font-semibold tabular-nums', taskCardMutedClass)}>
                 {load.totalUnits > 0 ? `${load.donePct}% fechado` : '—'}
               </span>
             </div>
@@ -223,7 +229,7 @@ export const TaskMetricsHeader: React.FC<TaskMetricsHeaderProps> = React.memo(
             icon={<Bug className="h-4 w-4" />}
           >
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xl font-bold tabular-nums text-base-content sm:text-2xl">
+              <span className={cn('text-xl font-bold tabular-nums sm:text-2xl', taskTextStrongClass)}>
                 {regression.regressionBugCount}
               </span>
               <span
@@ -231,13 +237,13 @@ export const TaskMetricsHeader: React.FC<TaskMetricsHeaderProps> = React.memo(
                   'rounded-md border px-2 py-0.5 text-xs font-semibold',
                   regression.alertHigh
                     ? 'border-error/45 bg-error/15 text-error'
-                    : 'border-base-300 bg-base-200/60 text-base-content'
+                    : cn(taskPanelBorderClass, 'bg-[var(--brand-chip)]', taskTextStrongClass)
                 )}
               >
                 {regression.alertHigh ? 'Proporção alta' : 'Estável'}
               </span>
             </div>
-            <p className="mt-1.5 text-xs leading-snug text-base-content/75">
+            <p className={cn('mt-1.5 text-xs leading-snug', taskCardMutedClass)}>
               Pós-cerimônia: {regression.regressionBugCount} · Histórias: {regression.storyCount} ·
               Bugs: {regression.bugCount}
             </p>
@@ -254,8 +260,8 @@ export const TaskMetricsHeader: React.FC<TaskMetricsHeaderProps> = React.memo(
             >
               {debtCount}
             </p>
-            <p className="mt-1 text-xs leading-snug text-base-content/75">
-              <code className="rounded bg-base-200/90 px-1 py-0.5 text-[11px] text-base-content sm:text-xs">
+            <p className={cn('mt-1 text-xs leading-snug', taskCardMutedClass)}>
+              <code className={cn('rounded-[var(--radius)] bg-[var(--brand-chip)] px-1 py-0.5 text-[11px] sm:text-xs', taskTextStrongClass)}>
                 isTechnicalDebt
               </code>{' '}
               ou palavras-chave no título/tags.
@@ -289,7 +295,7 @@ export const TaskMetricsHeader: React.FC<TaskMetricsHeaderProps> = React.memo(
             >
               {criticalOpen}
             </p>
-            <p className="mt-1 text-xs leading-snug text-base-content/75">
+            <p className={cn('mt-1 text-xs leading-snug', taskCardMutedClass)}>
               {criticalOpen === 0
                 ? 'Nada sensível pendente neste escopo.'
                 : 'Priorize regressão e testes de segurança.'}

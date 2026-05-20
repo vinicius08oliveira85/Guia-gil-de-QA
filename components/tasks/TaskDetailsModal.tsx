@@ -30,6 +30,7 @@ import { fetchJiraAttachmentAsDataUrl } from '../../utils/jiraAttachmentFetch';
 import { TaskWithChildren } from './JiraTaskItem';
 import { TaskLinksView } from './TaskLinksView';
 import { getTaskDependents } from '../../utils/dependencyService';
+import { cn } from '../../utils/cn';
 import { TaskBusinessRulesLinker } from './TaskBusinessRulesLinker';
 import { FileViewer } from '../common/FileViewer';
 import { ImageModal } from '../common/ImageModal';
@@ -37,6 +38,15 @@ import { canViewInBrowser, detectFileType } from '../../services/fileViewerServi
 import { JiraAttachment } from './JiraAttachment';
 import { JiraRichContent } from './JiraRichContent';
 import { Button } from '../common/Button';
+import {
+  taskCardMutedClass,
+  taskCardSectionTitleClass,
+  taskModalSectionAccentClass,
+  taskModalSectionClass,
+  taskUiTagClass,
+  taskUiTagInfoClass,
+  taskUiTagSuccessClass,
+} from './taskActionLayout';
 import { BackButton } from '../common/BackButton';
 import { Badge } from '../common/Badge';
 import { useJiraAttachmentViewer } from '../../hooks/useJiraAttachmentViewer';
@@ -56,7 +66,7 @@ import {
 type DetailSection = 'overview' | 'bdd' | 'tests' | 'businessRules' | 'planning' | 'collaboration';
 type TestSubSection = 'strategy' | 'test-cases';
 
-const CARD_TITLE_CLASS = 'text-sm sm:text-base font-bold text-base-content flex items-center gap-2';
+const CARD_TITLE_CLASS = taskCardSectionTitleClass;
 
 /** Resolve o MIME type de um anexo pelo nome do arquivo */
 function resolveMimeType(filename: string): string | undefined {
@@ -87,7 +97,7 @@ const DescriptionRenderer: React.FC<{
   }>;
 }> = ({ description, jiraAttachments }) => {
   if (!description) {
-    return <p className="text-base-content/70 italic">Sem descrição</p>;
+    return <p className={cn(taskCardMutedClass, 'italic')}>Sem descrição</p>;
   }
 
   const jiraConfig = getJiraConfig();
@@ -98,7 +108,7 @@ const DescriptionRenderer: React.FC<{
   const htmlContent = parseJiraDescriptionHTML(description, jiraUrl, jiraAttachments);
 
   if (!htmlContent || htmlContent.trim() === '') {
-    return <p className="text-base-content/70 italic">Sem descrição</p>;
+    return <p className={cn(taskCardMutedClass, 'italic')}>Sem descrição</p>;
   }
 
   return <JiraRichContent html={htmlContent} className="" />;
@@ -350,7 +360,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
           nextStep) && (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
             {task.owner && (
-              <div className="p-3 bg-base-100 border border-base-300 rounded-xl shadow-sm">
+              <div className={cn(taskModalSectionClass, 'p-3 shadow-sm')}>
                 <p className="text-[10px] uppercase tracking-wider font-bold text-base-content/60 block mb-1">
                   Owner
                 </p>
@@ -358,7 +368,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
               </div>
             )}
             {(task.jiraAssignee?.displayName ?? task.assignee) && (
-              <div className="p-3 bg-base-100 border border-base-300 rounded-xl shadow-sm">
+              <div className={cn(taskModalSectionClass, 'p-3 shadow-sm')}>
                 <p className="text-[10px] uppercase tracking-wider font-bold text-base-content/60 block mb-1">
                   Responsável
                 </p>
@@ -368,7 +378,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
               </div>
             )}
             {(task.priority || task.jiraPriority) && (
-              <div className="p-3 bg-base-100 border border-base-300 rounded-xl shadow-sm">
+              <div className={cn(taskModalSectionClass, 'p-3 shadow-sm')}>
                 <p className="text-[10px] uppercase tracking-wider font-bold text-base-content/60 block mb-1">
                   Prioridade
                 </p>
@@ -378,7 +388,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
               </div>
             )}
             {task.severity && (
-              <div className="p-3 bg-base-100 border border-base-300 rounded-xl shadow-sm">
+              <div className={cn(taskModalSectionClass, 'p-3 shadow-sm')}>
                 <p className="text-[10px] uppercase tracking-wider font-bold text-base-content/60 block mb-1">
                   Severidade
                 </p>
@@ -386,7 +396,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
               </div>
             )}
             {nextStep && (
-              <div className="p-3 bg-orange-50 dark:bg-orange-950/20 border border-brand-orange/30 rounded-xl shadow-sm">
+              <div className={cn(taskModalSectionAccentClass, 'p-3 shadow-sm')}>
                 <p className="text-[10px] uppercase tracking-wider font-bold text-brand-orange block mb-1">
                   Próximo passo
                 </p>
@@ -479,7 +489,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
             <h3 className="text-sm font-bold text-base-content/70 uppercase tracking-wide">
               Anexos do Jira
             </h3>
-            <div className="p-3 bg-base-100 border border-base-300 rounded-xl">
+            <div className={cn(taskModalSectionClass, 'p-3')}>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3">
                 {jiraAttachmentItems.map(att => (
                   <JiraAttachment
@@ -502,7 +512,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
       {/* Sidebar: Atualizar do Jira + Campos do Jira + Ações Rápidas */}
       <aside className="space-y-4">
         {onUpdateFromJira && /^[A-Z]+-\d+$/.test(task.id) && (
-          <div className="bg-base-100 border border-base-300 rounded-2xl overflow-hidden shadow-sm p-4">
+          <div className={cn(taskModalSectionClass, 'overflow-hidden p-4 shadow-sm')}>
             <Button
               variant="outline"
               size="sm"
@@ -524,7 +534,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
           </div>
         )}
         {hasJiraSidebarFields && (
-          <div className="bg-base-100 border border-base-300 rounded-2xl overflow-hidden shadow-sm">
+          <div className={cn(taskModalSectionClass, 'overflow-hidden shadow-sm')}>
             <div className="p-4 border-b border-base-200 flex items-center gap-2">
               <svg
                 className="w-5 h-5 text-primary"
@@ -643,7 +653,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                     {task.components?.map(comp => (
                       <span
                         key={comp.id}
-                        className="text-xs px-2 py-0.5 bg-blue-500/20 text-blue-700 dark:text-blue-400 rounded"
+                        className={cn(taskUiTagClass, taskUiTagInfoClass, 'px-2 py-0.5')}
                       >
                         {comp.name}
                       </span>
@@ -651,7 +661,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                     {task.fixVersions?.map(version => (
                       <span
                         key={version.id}
-                        className="text-xs px-2 py-0.5 bg-green-500/20 text-green-700 dark:text-green-400 rounded"
+                        className={cn(taskUiTagClass, taskUiTagSuccessClass, 'px-2 py-0.5')}
                       >
                         {version.name}
                       </span>
@@ -664,7 +674,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
         )}
 
         {project && onUpdateProject && (
-          <div className="bg-base-200 rounded-2xl p-4 border border-base-300">
+          <div className={cn(taskModalSectionClass, 'border-[var(--brand-surface-border)] bg-[var(--brand-chip)] p-4')}>
             <h4 className="font-bold text-base-content mb-3">Ações Rápidas</h4>
             <QuickActions task={task} project={project} onUpdateProject={onUpdateProject} />
           </div>
@@ -904,7 +914,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4">
         {/* Coluna esquerda */}
         <div className="lg:col-span-7 space-y-3 sm:space-y-4 min-w-0">
-          <section className="bg-base-100 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-base-300 shadow-sm">
+          <section className={cn(taskModalSectionClass, 'p-3 shadow-sm sm:p-4')}>
             <h2 className={CARD_TITLE_CLASS + ' mb-3'}>
               <Link className="w-4 h-4 sm:w-5 sm:h-5 text-primary/70 shrink-0" aria-hidden />
               Dependências
@@ -917,7 +927,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
             />
           </section>
 
-          <section className="bg-base-100 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-base-300 shadow-sm">
+          <section className={cn(taskModalSectionClass, 'p-3 shadow-sm sm:p-4')}>
             <h2 className={CARD_TITLE_CLASS + ' mb-3'}>
               <Paperclip className="w-4 h-4 sm:w-5 sm:h-5 text-primary/70 shrink-0" aria-hidden />
               Anexos
@@ -934,7 +944,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
           </section>
 
           {task.checklist && task.checklist.length > 0 && (
-            <section className="bg-base-100 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-base-300 shadow-sm">
+            <section className={cn(taskModalSectionClass, 'p-3 shadow-sm sm:p-4')}>
               <h2 className={CARD_TITLE_CLASS + ' mb-3'}>Checklist</h2>
               <ChecklistView
                 checklist={task.checklist}
@@ -954,7 +964,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
 
         {/* Coluna direita - Estimativas (fixa ao lado ao rolar) */}
         <div className="lg:col-span-5 min-w-0 self-start">
-          <section className="bg-base-100 rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-base-300 shadow-sm sticky top-20 lg:top-24">
+          <section className={cn(taskModalSectionClass, 'sticky top-20 p-3 shadow-sm sm:p-4 lg:top-24')}>
             <h2 className={CARD_TITLE_CLASS + ' mb-3'}>
               <Timer className="w-4 h-4 sm:w-5 sm:h-5 text-primary/70 shrink-0" aria-hidden />
               Estimativas
@@ -1073,7 +1083,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
             aria-label="Voltar para a lista de tarefas"
           />
           <div
-            className="flex flex-wrap gap-2 p-1.5 bg-base-200 rounded-xl w-full overflow-x-auto"
+            className="task-toolbar-pill-group flex w-full flex-wrap gap-2 overflow-x-auto p-1.5"
             role="tablist"
             aria-label="Seções da tarefa"
           >

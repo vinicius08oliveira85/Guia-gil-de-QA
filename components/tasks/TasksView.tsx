@@ -33,6 +33,7 @@ import {
 } from 'lucide-react';
 import { logger } from '../../utils/logger';
 import { cn } from '../../utils/cn';
+import { taskSelectControlClass } from './taskActionLayout';
 import { useProjectsStore } from '../../store/projectsStore';
 import { toToastableAiError } from '../../utils/aiErrorMapper';
 import { withTimeout } from '../../utils/withTimeout';
@@ -2391,7 +2392,7 @@ export const TasksView: React.FC<{
                           id="tasks-sort-by"
                           value={sortBy}
                           onChange={e => setSortBy(e.target.value as TaskSortBy)}
-                          className="select select-bordered select-sm h-9 min-h-0 rounded-lg border-base-300/80 bg-base-100 text-sm shadow-sm"
+                          className={cn('select select-bordered select-sm h-9 min-h-0 text-sm', taskSelectControlClass)}
                           aria-label="Ordenação da lista de tarefas"
                         >
                           <option value="id">ID</option>
@@ -2414,7 +2415,7 @@ export const TasksView: React.FC<{
                           id="tasks-group-by"
                           value={groupBy}
                           onChange={e => setGroupBy(e.target.value as TaskGroupBy)}
-                          className="select select-bordered select-sm h-9 min-h-0 rounded-lg border-base-300/80 bg-base-100 text-sm shadow-sm"
+                          className={cn('select select-bordered select-sm h-9 min-h-0 text-sm', taskSelectControlClass)}
                           aria-label="Agrupar lista de tarefas por"
                         >
                           <option value="none">Nenhum</option>
@@ -2434,12 +2435,12 @@ export const TasksView: React.FC<{
                               'mb-3 flex flex-wrap items-center gap-2 font-heading text-xs font-bold uppercase tracking-wider',
                               group.isActive
                                 ? 'text-[var(--brand-highlight)]'
-                                : 'text-base-content/60'
+                                : 'text-[var(--brand-text-muted)]'
                             )}
                           >
                             <Layers className="h-4 w-4 shrink-0" aria-hidden />
                             {group.label}
-                            <span className="font-medium normal-case tracking-normal text-base-content/50">
+                            <span className="font-medium normal-case tracking-normal text-[var(--brand-text-muted)]">
                               ({tasksInGroup.length})
                             </span>
                             {group.isActive ? (
@@ -2460,7 +2461,7 @@ export const TasksView: React.FC<{
                     <div className="space-y-6">
                       {groupedTasksEntriesWithA11y.map(([groupLabel, tasksInGroup, groupA11y]) => (
                         <section key={groupLabel} aria-label={`Grupo: ${groupLabel}`}>
-                          <h3 className="mb-3 flex items-center gap-2 font-heading text-xs font-bold uppercase tracking-wider text-base-content/60">
+                          <h3 className="mb-3 flex items-center gap-2 font-heading text-xs font-bold uppercase tracking-wider text-[var(--brand-text-muted)]">
                             <List className="w-4 h-4" aria-hidden />
                             {groupLabel}
                           </h3>

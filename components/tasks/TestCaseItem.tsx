@@ -17,9 +17,12 @@ import { ChevronDownIcon, EditIcon, ListIcon, TrashIcon } from '../common/Icons'
 import { Badge } from '../common/Badge';
 import { Copy, MoreVertical } from 'lucide-react';
 import { cn } from '../../utils/cn';
+import { taskModalSectionClass, taskTextStrongClass } from './taskActionLayout';
 
-const ROTEIRO_BLOCK_CLASS =
-  'text-xs text-base-content bg-base-200/50 p-3 rounded-lg border border-base-300/50';
+const ROTEIRO_BLOCK_CLASS = cn(
+  taskModalSectionClass,
+  'p-3 text-xs text-[var(--brand-text-strong)]'
+);
 
 const STATUS_EMOJI: Record<TestCase['status'], string> = {
   'Not Run': '○',

@@ -36,7 +36,7 @@ export const TasksViewListModeToggle: React.FC<TasksViewListModeToggleProps> = (
     role="group"
     aria-label="Modo de listagem de tarefas"
   >
-    <div className="inline-flex flex-wrap gap-1 rounded-lg border border-base-300/70 bg-base-200/40 p-1">
+    <div className="task-toolbar-pill-group">
       <button
         type="button"
         disabled={disabled}

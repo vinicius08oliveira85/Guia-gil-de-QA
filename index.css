@@ -378,6 +378,78 @@
     @apply task-element-typography font-bold uppercase tracking-wider text-[10px] rounded-full;
   }
 
+  /** Shell do card de tarefa na listagem (JiraTaskItem). */
+  .task-card-shell {
+    @apply task-card-shadow border bg-[var(--brand-surface)] border-[var(--brand-surface-border)];
+    border-radius: var(--radius);
+    font-family: var(--font-sans);
+    letter-spacing: var(--letter-spacing);
+  }
+
+  .task-card-title {
+    @apply task-element-typography font-bold text-[var(--brand-text-strong)];
+  }
+
+  .task-card-muted {
+    @apply task-element-typography text-[var(--brand-text-muted)];
+  }
+
+  .task-card-field-label {
+    @apply task-element-typography text-[11px] font-semibold uppercase tracking-wide text-[var(--brand-text-muted)];
+  }
+
+  .task-card-section-title {
+    @apply task-element-typography text-sm font-bold text-[var(--brand-text-strong)] sm:text-base;
+  }
+
+  /** Painéis internos em cards expandidos e modais de tarefa. */
+  .task-modal-section {
+    border: 1px solid var(--brand-surface-border);
+    background: var(--brand-surface-strong);
+    border-radius: var(--radius);
+    box-shadow: 0 1px 3px 0 color-mix(in srgb, var(--foreground) 5%, transparent);
+    font-family: var(--font-sans);
+    letter-spacing: var(--letter-spacing);
+  }
+
+  .task-modal-section-accent {
+    border: 1px solid color-mix(in srgb, var(--brand-cta) 28%, transparent);
+    background: color-mix(in srgb, var(--brand-cta) 8%, var(--brand-surface-strong));
+    border-radius: var(--radius);
+    font-family: var(--font-sans);
+    letter-spacing: var(--letter-spacing);
+  }
+
+  /** Tags inline (versões, labels técnicos) em detalhes de tarefa. */
+  .task-ui-tag {
+    @apply badge-task-format inline-flex items-center normal-case tracking-normal;
+    border-radius: var(--radius);
+    line-height: 1.2;
+  }
+
+  .task-ui-tag-info {
+    border: 1px solid color-mix(in srgb, var(--color-primary) 30%, transparent);
+    background: color-mix(in srgb, var(--color-primary) 14%, transparent);
+    color: var(--color-primary-deep);
+  }
+
+  .task-ui-tag-success {
+    border: 1px solid color-mix(in srgb, oklch(var(--su)) 35%, transparent);
+    background: color-mix(in srgb, oklch(var(--su)) 14%, transparent);
+    color: oklch(var(--su));
+  }
+
+  /** Grupo de pills (modo listagem, filtros compactos na aba Tarefas). */
+  .task-toolbar-pill-group {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    padding: 0.25rem;
+    border: 1px solid var(--brand-surface-border);
+    border-radius: var(--radius);
+    background: color-mix(in srgb, var(--brand-chip) 65%, transparent);
+  }
+
   .task-card-shadow {
     box-shadow:
       0 1px 3px 0 color-mix(in_srgb, var(--foreground) 5%, transparent),
@@ -799,7 +871,7 @@
   }
 
   .mica {
-    @apply rounded-xl;
+    border-radius: var(--radius);
     background: color-mix(in srgb, var(--brand-surface) 100%, transparent);
     border: 1px solid var(--brand-surface-border);
     box-shadow: 0 24px 45px -32px var(--brand-surface-shadow);

@@ -88,8 +88,14 @@ import {
   taskCardBadgeTechTypography,
   taskCardIdTypography,
   taskCardMetadataStripTypography,
-  taskCardTitleTypography,
+  taskCardTitleClass,
+  taskCardSectionTitleClass,
+  taskCardMutedClass,
+  taskCardShellClass,
   taskCardSubtreeExpandSlotClass,
+  taskModalSectionClass,
+  taskUiTagSuccessClass,
+  taskUiTagClass,
 } from './taskActionLayout';
 import { JiraStatusLozenge } from './JiraStatusLozenge';
 import { TaskJiraStatusDropdown } from './TaskJiraStatusDropdown';
@@ -812,7 +818,7 @@ export const JiraTaskItem: React.FC<{
 
         {/* Ações de Teste */}
         {taskTestStatus && (taskTestStatus === 'testar' || taskTestStatus === 'testando') && (
-          <div className="flex items-center gap-2 p-2.5 rounded-[var(--radius)] bg-base-200 border border-base-300 mt-1.5">
+          <div className="mt-1.5 flex items-center gap-2 rounded-[var(--radius)] border border-[var(--brand-surface-border)] bg-[var(--brand-chip)] p-2.5">
             <p className="text-sm font-medium flex-1">Ações de Teste:</p>
             {taskTestStatus === 'testar' && (
               <button
@@ -843,13 +849,13 @@ export const JiraTaskItem: React.FC<{
           nextStep) && (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-2">
             {task.owner && (
-              <div className="p-2.5 bg-base-100 border border-base-300 rounded-[var(--radius)]">
+              <div className={cn(taskModalSectionClass, 'p-2.5')}>
                 <p className="text-[11px] uppercase text-base-content/60 tracking-wide">Owner</p>
                 <p className="text-sm font-semibold text-base-content">{task.owner}</p>
               </div>
             )}
             {(task.jiraAssignee?.displayName ?? task.assignee) && (
-              <div className="p-2.5 bg-base-100 border border-base-300 rounded-[var(--radius)]">
+              <div className={cn(taskModalSectionClass, 'p-2.5')}>
                 <p className="text-[11px] uppercase text-base-content/60 tracking-wide">
                   Responsável
                 </p>
@@ -859,7 +865,7 @@ export const JiraTaskItem: React.FC<{
               </div>
             )}
             {task.priority && (
-              <div className="p-2.5 bg-base-100 border border-base-300 rounded-[var(--radius)]">
+              <div className={cn(taskModalSectionClass, 'p-2.5')}>
                 <p className="text-[11px] uppercase text-base-content/60 tracking-wide">
                   Prioridade
                 </p>
@@ -867,7 +873,7 @@ export const JiraTaskItem: React.FC<{
               </div>
             )}
             {task.severity && (
-              <div className="p-2.5 bg-base-100 border border-base-300 rounded-[var(--radius)]">
+              <div className={cn(taskModalSectionClass, 'p-2.5')}>
                 <p className="text-[11px] uppercase text-base-content/60 tracking-wide">
                   Severidade
                 </p>
@@ -982,7 +988,7 @@ export const JiraTaskItem: React.FC<{
                   </h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                     {task.reporter && (
-                      <div className="p-2.5 bg-base-100 border border-base-300 rounded-[var(--radius)]">
+                      <div className={cn(taskModalSectionClass, 'p-2.5')}>
                         <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-1">
                           Reporter
                         </p>
@@ -997,7 +1003,7 @@ export const JiraTaskItem: React.FC<{
                       </div>
                     )}
                     {task.dueDate && (
-                      <div className="p-2.5 bg-base-100 border border-base-300 rounded-[var(--radius)]">
+                      <div className={cn(taskModalSectionClass, 'p-2.5')}>
                         <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-1">
                           Due Date
                         </p>
@@ -1024,7 +1030,7 @@ export const JiraTaskItem: React.FC<{
                   <h4 className="text-sm font-semibold text-base-content/70">⏱️ Time Tracking</h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
                     {task.timeTracking.originalEstimate && (
-                      <div className="p-2.5 bg-base-100 border border-base-300 rounded-[var(--radius)]">
+                      <div className={cn(taskModalSectionClass, 'p-2.5')}>
                         <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-1">
                           Original Estimate
                         </p>
@@ -1034,7 +1040,7 @@ export const JiraTaskItem: React.FC<{
                       </div>
                     )}
                     {task.timeTracking.remainingEstimate && (
-                      <div className="p-2.5 bg-base-100 border border-base-300 rounded-[var(--radius)]">
+                      <div className={cn(taskModalSectionClass, 'p-2.5')}>
                         <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-1">
                           Remaining Estimate
                         </p>
@@ -1044,7 +1050,7 @@ export const JiraTaskItem: React.FC<{
                       </div>
                     )}
                     {task.timeTracking.timeSpent && (
-                      <div className="p-2.5 bg-base-100 border border-base-300 rounded-[var(--radius)]">
+                      <div className={cn(taskModalSectionClass, 'p-2.5')}>
                         <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-1">
                           Time Spent
                         </p>
@@ -1063,7 +1069,7 @@ export const JiraTaskItem: React.FC<{
                   <h4 className="text-sm font-semibold text-base-content/70">🧩 Organização</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                     {task.components && task.components.length > 0 && (
-                      <div className="p-2.5 bg-base-100 border border-base-300 rounded-[var(--radius)]">
+                      <div className={cn(taskModalSectionClass, 'p-2.5')}>
                         <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-2">
                           Components
                         </p>
@@ -1080,7 +1086,7 @@ export const JiraTaskItem: React.FC<{
                       </div>
                     )}
                     {task.fixVersions && task.fixVersions.length > 0 && (
-                      <div className="p-2.5 bg-base-100 border border-base-300 rounded-[var(--radius)]">
+                      <div className={cn(taskModalSectionClass, 'p-2.5')}>
                         <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-2">
                           Fix Versions
                         </p>
@@ -1088,7 +1094,7 @@ export const JiraTaskItem: React.FC<{
                           {task.fixVersions.map(version => (
                             <span
                               key={version.id}
-                              className="text-xs px-2 py-1 bg-green-500/20 text-green-700 dark:text-green-400 rounded"
+                              className={cn(taskUiTagClass, taskUiTagSuccessClass, 'px-2 py-1')}
                             >
                               {version.name}
                             </span>
@@ -1105,7 +1111,7 @@ export const JiraTaskItem: React.FC<{
                 <div className="space-y-2">
                   <h4 className="text-sm font-semibold text-base-content/70">🔗 Relacionamentos</h4>
                   {task.issueLinks && task.issueLinks.length > 0 && (
-                    <div className="p-2.5 bg-base-100 border border-base-300 rounded-[var(--radius)]">
+                    <div className={cn(taskModalSectionClass, 'p-2.5')}>
                       <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-2">
                         Issue Links
                       </p>
@@ -1120,7 +1126,7 @@ export const JiraTaskItem: React.FC<{
                     </div>
                   )}
                   {task.watchers && (
-                    <div className="p-2.5 bg-base-100 border border-base-300 rounded-[var(--radius)]">
+                    <div className={cn(taskModalSectionClass, 'p-2.5')}>
                       <p className="text-[11px] uppercase text-base-content/60 tracking-wide mb-1">
                         Watchers
                       </p>
@@ -1137,7 +1143,7 @@ export const JiraTaskItem: React.FC<{
               {task.jiraAttachments && task.jiraAttachments.length > 0 && (
                 <div className="space-y-2">
                   <h4 className="text-sm font-semibold text-base-content/70">📎 Anexos do Jira</h4>
-                  <div className="p-2.5 bg-base-100 border border-base-300 rounded-[var(--radius)]">
+                  <div className={cn(taskModalSectionClass, 'p-2.5')}>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
                       {task.jiraAttachments.map(att => {
                         const jiraConfig = getJiraConfig();
@@ -1414,13 +1420,12 @@ export const JiraTaskItem: React.FC<{
         );
       }
 
-      const cardTitleClass =
-        'text-sm sm:text-base font-bold text-base-content flex items-center gap-2';
+      const cardTitleClass = taskCardSectionTitleClass;
 
       return (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4">
           <div className="lg:col-span-7 space-y-3 sm:space-y-4 min-w-0">
-            <section className="bg-base-100 rounded-[var(--radius)] sm:rounded-[var(--rounded-box)] p-3 sm:p-4 border border-base-300 task-card-shadow">
+            <section className={cn(taskModalSectionClass, 'task-card-shadow p-3 sm:p-4')}>
               <h2 className={cardTitleClass + ' mb-3'}>
                 <Link className="w-4 h-4 sm:w-5 sm:h-5 text-primary/70 shrink-0" aria-hidden />
                 Dependências
@@ -1428,7 +1433,7 @@ export const JiraTaskItem: React.FC<{
               <TaskLinksView task={task} project={project} onUpdateProject={onUpdateProject} />
             </section>
 
-            <section className="bg-base-100 rounded-[var(--radius)] sm:rounded-[var(--rounded-box)] p-3 sm:p-4 border border-base-300 task-card-shadow">
+            <section className={cn(taskModalSectionClass, 'task-card-shadow p-3 sm:p-4')}>
               <h2 className={cardTitleClass + ' mb-3'}>
                 <Paperclip className="w-4 h-4 sm:w-5 sm:h-5 text-primary/70 shrink-0" aria-hidden />
                 Anexos
@@ -1445,7 +1450,7 @@ export const JiraTaskItem: React.FC<{
             </section>
 
             {task.checklist && task.checklist.length > 0 && (
-              <section className="bg-base-100 rounded-[var(--radius)] sm:rounded-[var(--rounded-box)] p-3 sm:p-4 border border-base-300 task-card-shadow">
+              <section className={cn(taskModalSectionClass, 'task-card-shadow p-3 sm:p-4')}>
                 <h2 className={cardTitleClass + ' mb-3'}>Checklist</h2>
                 <ChecklistView
                   checklist={task.checklist}
@@ -1464,7 +1469,7 @@ export const JiraTaskItem: React.FC<{
           </div>
 
           <div className="lg:col-span-5 min-w-0 self-start">
-            <section className="bg-base-100 rounded-[var(--radius)] sm:rounded-[var(--rounded-box)] p-3 sm:p-4 border border-base-300 task-card-shadow sticky top-20 lg:top-24">
+            <section className={cn(taskModalSectionClass, 'task-card-shadow sticky top-20 p-3 sm:p-4 lg:top-24')}>
               <h2 className={cardTitleClass + ' mb-3'}>
                 <Timer className="w-4 h-4 sm:w-5 sm:h-5 text-primary/70 shrink-0" aria-hidden />
                 Estimativas
@@ -1683,7 +1688,7 @@ export const JiraTaskItem: React.FC<{
         <div style={indentationStyle} className="py-0.5">
           <div
             className={[
-              'task-card-shadow rounded-xl border border-[var(--brand-surface-border)] bg-[var(--brand-surface)] px-2 py-2 transition-colors duration-200 sm:px-3 sm:py-2 md:px-3 md:py-2',
+              taskCardShellClass,
               'flex min-w-0 flex-row items-center gap-2 overflow-visible sm:gap-3',
               'hover:border-[color-mix(in_srgb,var(--brand-cta)_20%,var(--brand-surface-border))] hover:bg-[var(--brand-surface-strong)]',
               level > 0
@@ -1829,7 +1834,7 @@ export const JiraTaskItem: React.FC<{
                 variant={typeBadgeVariant}
                 size="xs"
                 className={cn(
-                  'app-nav-pill shrink-0 !px-1.5 !py-0 !text-[9px] !font-bold !leading-none',
+                  'badge-task-format app-nav-pill shrink-0 !px-1.5 !py-0 !text-[9px] !font-bold !leading-none',
                   taskCardBadgePillShape,
                   taskCardBadgePillTypography,
                   task.type === 'Epic' && 'jira-task-epic-type-pill'
@@ -1890,10 +1895,7 @@ export const JiraTaskItem: React.FC<{
               )}
             >
               <span
-                className={cn(
-                  'min-w-0 flex-1 truncate text-[var(--brand-text-strong)]',
-                  taskCardTitleTypography
-                )}
+              className={cn('min-w-0 flex-1 truncate', taskCardTitleClass)}
                 title={displayTitle}
               >
                 {displayTitle}

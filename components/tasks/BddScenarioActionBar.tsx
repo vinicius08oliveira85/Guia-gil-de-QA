@@ -2,6 +2,7 @@ import React from 'react';
 import { Sparkles } from 'lucide-react';
 import { PlusIcon } from '../common/Icons';
 import { cn } from '../../utils/cn';
+import { taskPanelBorderClass } from './taskActionLayout';
 
 export type BddScenarioActionBarProps = {
   onGenerate: () => void;
@@ -24,7 +25,8 @@ export const BddScenarioActionBar: React.FC<BddScenarioActionBarProps> = ({
   return (
     <div
       className={cn(
-        'flex flex-col gap-2 rounded-[var(--rounded-box)] border border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] mica px-3 py-3 soft-shadow sm:flex-row sm:flex-wrap sm:items-center sm:justify-center sm:gap-3 sm:px-4',
+        'mica flex flex-col gap-2 px-3 py-3 soft-shadow sm:flex-row sm:flex-wrap sm:items-center sm:justify-center sm:gap-3 sm:px-4',
+        taskPanelBorderClass,
         className
       )}
     >

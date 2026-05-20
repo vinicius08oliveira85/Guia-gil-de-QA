@@ -6,6 +6,7 @@ import { TestMetricBadge } from '../common/TestMetricBadge';
 import { TaskTestStatusBadge } from '../common/TaskTestStatusBadge';
 import type { JiraTask } from '../../types';
 import { cn } from '../../utils/cn';
+import { taskCardMutedClass, taskCardTitleClass } from './taskActionLayout';
 
 interface TaskCardProps {
   task: JiraTask;
@@ -87,9 +88,9 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onStartTest, onComplet
             <Badge variant={taskTypeBadge.variant} size="sm">
               {taskTypeBadge.label}
             </Badge>
-            <span className="font-semibold text-base-content">{task.id}</span>
+            <span className={cn(taskCardTitleClass, 'font-semibold')}>{task.id}</span>
           </div>
-          <h3 className="font-bold text-lg text-base-content leading-tight">{task.title}</h3>
+          <h3 className={cn(taskCardTitleClass, 'text-lg leading-tight')}>{task.title}</h3>
         </div>
         <button
           type="button"
@@ -155,19 +156,19 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onStartTest, onComplet
 
       {isExpanded && (
         <div id={contentId} className="pt-4 mt-4 border-t border-base-300/20">
-          <h4 className="font-semibold mb-2 text-base-content">Descrição</h4>
-          <p className="text-base-content/80 whitespace-pre-wrap text-sm">
+          <h4 className={cn(taskCardTitleClass, 'mb-2 text-sm')}>Descrição</h4>
+          <p className={cn(taskCardMutedClass, 'whitespace-pre-wrap text-sm')}>
             {task.description || 'Esta tarefa não possui uma descrição detalhada.'}
           </p>
 
           <div className="mt-4">
-            <h4 className="font-semibold mb-2 text-base-content">
+            <h4 className={cn(taskCardTitleClass, 'mb-2 text-sm')}>
               Casos de Teste ({testMetrics.total})
             </h4>
             {/* Você pode renderizar a lista de casos de teste aqui */}
             <ul className="space-y-1 text-sm list-disc list-inside">
               {task.testCases.map(tc => (
-                <li key={tc.id} className="text-base-content/80 whitespace-pre-wrap break-words">
+                <li key={tc.id} className={cn(taskCardMutedClass, 'whitespace-pre-wrap break-words text-sm')}>
                   {tc.action} - <strong>{tc.status}</strong>
                 </li>
               ))}
