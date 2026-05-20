@@ -748,6 +748,8 @@ export const syncJiraProject = async (
           issueLinks: task.issueLinks,
           jiraAttachments: task.jiraAttachments,
           jiraCustomFields: task.jiraCustomFields,
+          sprints: task.sprints,
+          storyPoints: task.storyPoints,
           comments: task.comments, // Já faz merge de comentários
           // Preservar dados locais que não vêm do Jira
           // CORREÇÃO: Usar finalTestCasesFromOriginal que vem do originalTasksMap (mais recente)

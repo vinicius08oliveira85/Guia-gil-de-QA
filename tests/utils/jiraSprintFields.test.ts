@@ -32,6 +32,28 @@ describe('jiraSprintFields', () => {
     expect(t.sprints![0]).toMatchObject({ id: 42, name: 'Sprint Alpha', state: 'active' });
   });
 
+  it('parseia customfield_10020 no formato Jira Cloud (GDPI-443)', () => {
+    const t = task({
+      id: 'GDPI-443',
+      jiraCustomFields: {
+        customfield_10020: [
+          {
+            id: 4009,
+            name: 'Sprint 6',
+            state: 'active',
+            boardId: 780,
+            goal: '',
+            startDate: '2026-05-20T13:29:01.430Z',
+            endDate: '2026-05-29T21:00:00.000Z',
+          },
+        ],
+      },
+    });
+    assignSprintsToTaskSync(t);
+    expect(t.sprints).toHaveLength(1);
+    expect(t.sprints![0]).toMatchObject({ id: 4009, name: 'Sprint 6', state: 'active' });
+  });
+
   it('parseia array de objetos estruturados', () => {
     const t = task({
       id: 'PROJ-2',

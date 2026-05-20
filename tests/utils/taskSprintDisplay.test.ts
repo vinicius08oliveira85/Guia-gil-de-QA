@@ -25,6 +25,21 @@ const sprint = (partial: Partial<JiraSprint> & Pick<JiraSprint, 'id' | 'name' | 
   partial as JiraSprint;
 
 describe('taskSprintDisplay', () => {
+  it('resolveTaskDisplaySprint usa jiraCustomFields quando task.sprints está vazio', () => {
+    const display = resolveTaskDisplaySprint(
+      task({
+        id: 'GDPI-443',
+        type: 'Bug',
+        status: 'To Do',
+        jiraCustomFields: {
+          customfield_10020: [{ id: 4009, name: 'Sprint 6', state: 'active' }],
+        },
+      })
+    );
+    expect(display?.name).toBe('Sprint 6');
+    expect(display?.state).toBe('active');
+  });
+
   it('resolveTaskDisplaySprint prioriza sprint ativa', () => {
     const sprints = [
       sprint({ id: 1, name: 'Futura', state: 'future' }),

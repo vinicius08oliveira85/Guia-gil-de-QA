@@ -1,6 +1,13 @@
 import type { JiraSprint, JiraTask } from '../types';
+import { parseSprintsFromCustomFields } from './jiraSprintFields';
 
 export const BACKLOG_UNASSIGNED_SPRINT_LABEL = 'Sem sprint';
+
+/** Sprints da tarefa; se `task.sprints` vazio, deriva de `jiraCustomFields` (sync antiga). */
+function resolveTaskSprints(task: JiraTask): JiraSprint[] {
+  if (task.sprints?.length) return task.sprints;
+  return parseSprintsFromCustomFields(task);
+}
 
 const SPRINT_STATE_SORT_ORDER: Record<JiraSprint['state'], number> = {
   active: 0,
@@ -10,8 +17,8 @@ const SPRINT_STATE_SORT_ORDER: Record<JiraSprint['state'], number> = {
 
 /** Sprint principal para exibição: ativa → futura → primeira vinculada. */
 export function resolveTaskDisplaySprint(task: JiraTask): JiraSprint | null {
-  const sprints = task.sprints;
-  if (!sprints?.length) return null;
+  const sprints = resolveTaskSprints(task);
+  if (!sprints.length) return null;
   return (
     sprints.find(s => s.state === 'active') ??
     sprints.find(s => s.state === 'future') ??
