@@ -13,7 +13,11 @@ export interface KeyboardShortcut {
 export const useKeyboardShortcuts = (shortcuts: KeyboardShortcut[]) => {
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      if (!event.key) return;
+      
       shortcuts.forEach(shortcut => {
+        if (!shortcut?.key) return;
+        
         const ctrlMatch = shortcut.ctrl
           ? event.ctrlKey || event.metaKey
           : !event.ctrlKey && !event.metaKey;

@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Project } from '../../types';
-import { Bug, Clock, Users } from 'lucide-react';
+import { Bug, Clock, Users, TrendingUp, CheckCircle2, Zap, Activity } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import { calculateProjectMetrics } from '../../hooks/useProjectMetrics';
@@ -19,8 +19,83 @@ export interface ProjectCardProps {
   className?: string;
 }
 
+/** Mini donut chart para métricas */
+const MiniDonut: React.FC<{
+  percent: number;
+  size?: number;
+  strokeWidth?: number;
+  color: string;
+  bgColor?: string;
+}> = ({ percent, size = 36, strokeWidth = 4, color, bgColor = 'currentColor' }) => {
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (percent / 100) * circumference;
+
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox={`0 0 ${size} ${size}`}
+      className="transform -rotate-90"
+      aria-hidden
+    >
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={radius}
+        fill="none"
+        stroke={bgColor}
+        strokeWidth={strokeWidth}
+        className="opacity-15"
+      />
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={radius}
+        fill="none"
+        stroke={color}
+        strokeWidth={strokeWidth}
+        strokeLinecap="round"
+        strokeDasharray={circumference}
+        strokeDashoffset={offset}
+        className="transition-all duration-500 ease-out"
+      />
+    </svg>
+  );
+};
+
+/** Card de métrica individual */
+const MetricCard: React.FC<{
+  label: string;
+  value: number;
+  icon: LucideIcon;
+  color: string;
+  bgGradient: string;
+}> = ({ label, value, icon: Icon, color, bgGradient }) => (
+  <div className={cn(
+    'relative flex flex-col items-center justify-center gap-1 rounded-xl p-2 sm:p-2.5',
+    'transition-all duration-300',
+    bgGradient
+  )}>
+    <div className="relative">
+      <MiniDonut percent={value} size={38} strokeWidth={3.5} color={color} />
+      <div className="absolute inset-0 flex items-center justify-center">
+        <Icon className="h-3.5 w-3.5 opacity-60" style={{ color }} aria-hidden />
+      </div>
+    </div>
+    <div className="text-center">
+      <p className="text-xs font-bold tabular-nums sm:text-sm" style={{ color }}>
+        {value}%
+      </p>
+      <p className="text-[8px] font-semibold uppercase tracking-wider text-base-content/50 sm:text-[9px]">
+        {label}
+      </p>
+    </div>
+  </div>
+);
+
 /**
- * Card de projeto na listagem do dashboard — layout compacto com métricas EXEC / TASKS / SUC.
+ * Card de projeto na listagem do dashboard — layout moderno com métricas visuais.
  */
 export const ProjectCard = React.memo<ProjectCardProps>(
   ({ project, onSelect, onTaskClick, icon: iconOverride, className }) => {
@@ -91,105 +166,151 @@ export const ProjectCard = React.memo<ProjectCardProps>(
           }
         }}
         className={cn(
-          'group relative flex h-full cursor-pointer flex-col rounded-[var(--rounded-box)] border border-base-300/70 bg-base-100 soft-shadow',
-          'min-h-0 p-3 sm:min-h-[14.5rem] sm:p-4',
-          'transition-[box-shadow,border-color,transform] duration-200',
-          'hover:border-[color-mix(in_srgb,var(--brand-cta)_30%,transparent)] hover:shadow-md',
-          'active:scale-[0.99] motion-reduce:active:scale-100',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--brand-cta)_35%,transparent)] focus-visible:ring-offset-2',
+          'group relative flex h-full cursor-pointer flex-col overflow-hidden rounded-2xl',
+          'bg-gradient-to-br from-base-100 via-base-100 to-base-100/80',
+          'border border-base-300/60',
+          'min-h-0 p-4 sm:min-h-[17rem] sm:p-5',
+          'transition-all duration-300 ease-out',
+          'hover:border-[color-mix(in_srgb,var(--brand-cta)_40%,transparent)]',
+          'hover:shadow-[0_8px_30px_-12px_color-mix(in_srgb,var(--brand-cta)_25%,transparent)]',
+          'hover:-translate-y-0.5',
+          'active:scale-[0.98] motion-reduce:active:scale-100',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--brand-cta)_50%,transparent)] focus-visible:ring-offset-2',
           className
         )}
       >
-        <div className="flex items-start justify-between gap-2">
+        {/* Decorative gradient blob */}
+        <div 
+          className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full opacity-[0.07] blur-2xl transition-opacity duration-300 group-hover:opacity-[0.12]"
+          style={{ background: `radial-gradient(circle, var(--brand-cta) 0%, transparent 70%)` }}
+          aria-hidden
+        />
+        <div 
+          className="pointer-events-none absolute -bottom-6 -left-6 h-20 w-20 rounded-full opacity-[0.05] blur-2xl transition-opacity duration-300 group-hover:opacity-[0.10]"
+          style={{ background: `radial-gradient(circle, var(--brand-highlight) 0%, transparent 70%)` }}
+          aria-hidden
+        />
+
+        {/* Header: Icon + Bug badge */}
+        <div className="relative flex items-start justify-between gap-3">
           <div
             className={cn(
-              'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ring-1 sm:h-9 sm:w-9',
+              'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ring-1 sm:h-11 sm:w-11',
+              'shadow-sm transition-transform duration-300 group-hover:scale-105',
               iconMeta.containerClassName
             )}
             aria-label={iconMeta.label}
             title={iconMeta.label}
           >
-            <Icon className={cn('h-3.5 w-3.5 sm:h-4 sm:w-4', iconMeta.iconClassName)} aria-hidden />
+            <Icon className={cn('h-4 w-4 sm:h-5 sm:w-5', iconMeta.iconClassName)} aria-hidden />
           </div>
           {openBugsCount > 0 && (
-            <span className="inline-flex items-center gap-0.5 rounded-md bg-error/10 px-1.5 py-0.5 text-[11px] font-semibold text-error ring-1 ring-error/20 sm:text-xs">
-              <Bug className="h-3 w-3" aria-hidden />
-              {openBugsCount}
-            </span>
+            <div className="flex items-center gap-1 rounded-full bg-gradient-to-r from-error/15 to-error/5 px-2.5 py-1 ring-1 ring-error/25 backdrop-blur-sm">
+              <Bug className="h-3.5 w-3.5 text-error" aria-hidden />
+              <span className="text-xs font-bold tabular-nums text-error">{openBugsCount}</span>
+            </div>
           )}
         </div>
 
-        <div className="mt-2 min-w-0 flex-1 space-y-0.5 sm:mt-3 sm:space-y-1">
-          <h3 className="line-clamp-2 font-heading text-[0.9375rem] font-bold leading-snug text-[var(--brand-text-strong)] sm:text-lg">
+        {/* Project title and Jira key */}
+        <div className="mt-3 min-w-0 flex-1 space-y-1 sm:mt-4">
+          <h3 className="line-clamp-2 font-heading text-base font-bold leading-snug text-[var(--brand-text-strong)] transition-colors duration-200 group-hover:text-[var(--brand-cta)] sm:text-lg">
             {project.name}
           </h3>
           {jiraKey ? (
-            <p className="truncate text-[11px] text-base-content/55 sm:text-xs">Jira: {jiraKey}</p>
+            <div className="inline-flex items-center gap-1.5 rounded-md bg-base-200/60 px-2 py-0.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-[var(--brand-cta)]" aria-hidden />
+              <p className="text-[11px] font-medium text-base-content/60 sm:text-xs">Jira: {jiraKey}</p>
+            </div>
           ) : (
             <p className="text-[11px] italic text-base-content/40 sm:text-xs">Sem chave Jira</p>
           )}
         </div>
 
-        <div className="mt-2 grid grid-cols-3 gap-0.5 border-y border-base-300/40 py-2 text-center sm:mt-3 sm:gap-1 sm:py-2.5">
-          <div>
-            <p className="text-[8px] font-bold uppercase tracking-wide text-base-content/50 sm:text-[9px]">
-              Exec.
-            </p>
-            <p className="text-xs font-bold tabular-nums text-base-content sm:text-sm">{testsPercent}%</p>
-          </div>
-          <div>
-            <p className="text-[8px] font-bold uppercase tracking-wide text-base-content/50 sm:text-[9px]">
-              Tasks
-            </p>
-            <p className="text-xs font-bold tabular-nums text-base-content sm:text-sm">
-              {tasksDonePercent}%
-            </p>
-          </div>
-          <div>
-            <p className="text-[8px] font-bold uppercase tracking-wide text-base-content/50 sm:text-[9px]">
-              Suc.
-            </p>
-            <p className="text-xs font-bold tabular-nums text-success sm:text-sm">
-              {metrics.testPassRate}%
-            </p>
-          </div>
+        {/* Metrics grid with mini donuts */}
+        <div className="mt-3 grid grid-cols-3 gap-1.5 sm:mt-4 sm:gap-2">
+          <MetricCard
+            label="Exec."
+            value={testsPercent}
+            icon={Zap}
+            color="var(--brand-cta)"
+            bgGradient="bg-gradient-to-br from-[color-mix(in_srgb,var(--brand-cta)_8%,transparent)] to-transparent"
+          />
+          <MetricCard
+            label="Tasks"
+            value={tasksDonePercent}
+            icon={CheckCircle2}
+            color="#3b82f6"
+            bgGradient="bg-gradient-to-br from-blue-500/8 to-transparent"
+          />
+          <MetricCard
+            label="Suc."
+            value={metrics.testPassRate}
+            icon={TrendingUp}
+            color="#10b981"
+            bgGradient="bg-gradient-to-br from-emerald-500/8 to-transparent"
+          />
         </div>
 
+        {/* SDLC Phase progress */}
         {(project.phases?.length ?? 0) > 0 && (
-          <div className="mt-2 space-y-0.5 sm:mt-2.5 sm:space-y-1">
-            <div className="flex items-center justify-between text-[9px] font-semibold uppercase tracking-wide text-base-content/55 sm:text-[10px]">
-              <span>Fase SDLC</span>
-              <span className="tabular-nums">{phaseCompletionPercent}%</span>
+          <div className="mt-3 space-y-1.5 sm:mt-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <Activity className="h-3 w-3 text-base-content/50" aria-hidden />
+                <span className="text-[10px] font-semibold uppercase tracking-wide text-base-content/55 sm:text-[11px]">
+                  Fase SDLC
+                </span>
+              </div>
+              <span className="text-[11px] font-bold tabular-nums text-[var(--brand-cta)] sm:text-xs">
+                {phaseCompletionPercent}%
+              </span>
             </div>
             <div
-              className="h-1 w-full overflow-hidden rounded-full bg-base-200 sm:h-1.5"
+              className="relative h-2 w-full overflow-hidden rounded-full bg-base-200/80"
               role="progressbar"
               aria-valuenow={phaseCompletionPercent}
               aria-valuemin={0}
               aria-valuemax={100}
               aria-label={`Fase SDLC: ${phaseCompletionPercent}%`}
             >
-              <div
-                className="h-full rounded-full bg-[var(--brand-cta)] transition-[width] duration-300"
-                style={{ width: `${phaseCompletionPercent}%` }}
-              />
+              {/* Animated shimmer overlay */}
+              <div className="absolute inset-0 overflow-hidden rounded-full">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-[var(--brand-cta)] via-[color-mix(in_srgb,var(--brand-cta)_80%,var(--brand-highlight))] to-[var(--brand-cta)] transition-all duration-500 ease-out"
+                  style={{ width: `${phaseCompletionPercent}%` }}
+                />
+                <div 
+                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                  style={{ 
+                    width: `${phaseCompletionPercent}%`,
+                    animation: 'shimmer 2s infinite'
+                  }}
+                />
+              </div>
             </div>
           </div>
         )}
 
-        <div className="mt-auto flex items-center justify-between gap-2 pt-2 text-[11px] text-base-content/55 sm:pt-3 sm:text-xs">
+        {/* Footer: timestamp + users */}
+        <div className="mt-auto flex items-center justify-between gap-2 pt-3 sm:pt-4">
           {updatedAtLabel && (
-            <span className="inline-flex min-w-0 items-center gap-1 truncate">
-              <Clock className="h-3 w-3 shrink-0 opacity-70 sm:h-3.5 sm:w-3.5" aria-hidden />
-              <span className="truncate">{updatedAtLabel}</span>
-            </span>
+            <div className="flex min-w-0 items-center gap-1.5 rounded-lg bg-base-200/50 px-2 py-1">
+              <Clock className="h-3 w-3 shrink-0 text-base-content/50" aria-hidden />
+              <span className="truncate text-[10px] font-medium text-base-content/55 sm:text-[11px]">
+                {updatedAtLabel}
+              </span>
+            </div>
           )}
-          <span className="inline-flex shrink-0 items-center gap-1 tabular-nums">
-            <Users className="h-3 w-3 shrink-0 opacity-70 sm:h-3.5 sm:w-3.5" aria-hidden />
-            {tasks.length}
-          </span>
+          <div className="flex shrink-0 items-center gap-1.5 rounded-lg bg-base-200/50 px-2 py-1 tabular-nums">
+            <Users className="h-3 w-3 text-base-content/50" aria-hidden />
+            <span className="text-[10px] font-semibold text-base-content/60 sm:text-[11px]">
+              {tasks.length}
+            </span>
+          </div>
         </div>
 
+        {/* Latest completed task link */}
         {onTaskClick && latestCompletedTask && (
           <button
             type="button"
@@ -198,10 +319,19 @@ export const ProjectCard = React.memo<ProjectCardProps>(
               e.stopPropagation();
               onTaskClick(latestCompletedTask.id);
             }}
-            className="mt-1.5 hidden w-full truncate rounded-md border border-base-300/50 bg-base-200/40 px-2 py-1 text-left text-[11px] text-base-content/60 hover:border-primary/30 hover:text-primary sm:mt-2 sm:block"
+            className={cn(
+              'mt-2.5 hidden w-full truncate rounded-xl border border-base-300/50 sm:block',
+              'bg-gradient-to-r from-base-200/40 to-base-200/20',
+              'px-3 py-2 text-left text-[11px] font-medium text-base-content/60',
+              'transition-all duration-200',
+              'hover:border-[var(--brand-cta)]/30 hover:bg-[color-mix(in_srgb,var(--brand-cta)_5%,transparent)] hover:text-[var(--brand-cta)]'
+            )}
             aria-label={`Abrir tarefa concluída: ${latestCompletedTask.title}`}
           >
-            {latestCompletedTask.title}
+            <span className="flex items-center gap-2">
+              <CheckCircle2 className="h-3 w-3 shrink-0 opacity-60" aria-hidden />
+              <span className="truncate">{latestCompletedTask.title}</span>
+            </span>
           </button>
         )}
       </div>
