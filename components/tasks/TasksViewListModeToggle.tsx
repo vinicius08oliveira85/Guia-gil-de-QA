@@ -1,6 +1,8 @@
 import React from 'react';
 import type { BacklogSortBy, TasksListMode } from '../../utils/backlogTasks';
+import type { BacklogSprintFilterOption } from '../../utils/taskSprintDisplay';
 import { BacklogSortSelect } from './BacklogSortSelect';
+import { BacklogSprintFilterSelect } from './BacklogSprintFilterSelect';
 import { filterPillClass } from '../common/viewUi';
 import { cn } from '../../utils/cn';
 
@@ -11,6 +13,9 @@ export interface TasksViewListModeToggleProps {
   totalCount: number;
   backlogSortBy?: BacklogSortBy;
   onBacklogSortChange?: (sort: BacklogSortBy) => void;
+  backlogSprintFilter?: string;
+  backlogSprintFilterOptions?: BacklogSprintFilterOption[];
+  onBacklogSprintFilterChange?: (value: string) => void;
   disabled?: boolean;
 }
 
@@ -21,6 +26,9 @@ export const TasksViewListModeToggle: React.FC<TasksViewListModeToggleProps> = (
   totalCount,
   backlogSortBy = 'priority',
   onBacklogSortChange,
+  backlogSprintFilter = 'all',
+  backlogSprintFilterOptions = [],
+  onBacklogSprintFilterChange,
   disabled = false,
 }) => (
   <div
@@ -56,13 +64,23 @@ export const TasksViewListModeToggle: React.FC<TasksViewListModeToggleProps> = (
           <strong className="text-[var(--brand-text-strong)]">To Do</strong> ou status Jira de fila
           (ex.: Backlog, A fazer) — exceto Epics.
         </p>
-        {onBacklogSortChange && (
-          <BacklogSortSelect
-            value={backlogSortBy}
-            onChange={onBacklogSortChange}
-            disabled={disabled}
-          />
-        )}
+        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
+          {onBacklogSprintFilterChange && backlogSprintFilterOptions.length > 0 && (
+            <BacklogSprintFilterSelect
+              value={backlogSprintFilter}
+              options={backlogSprintFilterOptions}
+              onChange={onBacklogSprintFilterChange}
+              disabled={disabled}
+            />
+          )}
+          {onBacklogSortChange && (
+            <BacklogSortSelect
+              value={backlogSortBy}
+              onChange={onBacklogSortChange}
+              disabled={disabled}
+            />
+          )}
+        </div>
       </div>
     )}
   </div>

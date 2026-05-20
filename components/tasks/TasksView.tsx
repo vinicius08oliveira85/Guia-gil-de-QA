@@ -27,10 +27,12 @@ import {
   CheckCircle,
   Star,
   List,
+  Layers,
   Download,
   Search,
 } from 'lucide-react';
 import { logger } from '../../utils/logger';
+import { cn } from '../../utils/cn';
 import { useProjectsStore } from '../../store/projectsStore';
 import { toToastableAiError } from '../../utils/aiErrorMapper';
 import { withTimeout } from '../../utils/withTimeout';
@@ -90,6 +92,12 @@ import {
   type BacklogSortBy,
   type TasksListMode,
 } from '../../utils/backlogTasks';
+import {
+  BACKLOG_SPRINT_FILTER_ALL,
+  buildBacklogSprintFilterOptions,
+  filterTasksByBacklogSprint,
+  groupBacklogTasksBySprint,
+} from '../../utils/taskSprintDisplay';
 import { TasksViewListModeToggle } from './TasksViewListModeToggle';
 
 export const TasksView: React.FC<{
@@ -124,6 +132,10 @@ export const TasksView: React.FC<{
   const [backlogSortBy, setBacklogSortBy] = useLocalStorage<BacklogSortBy>(
     `backlog_sort_${project.id}`,
     'priority'
+  );
+  const [backlogSprintFilter, setBacklogSprintFilter] = useLocalStorage<string>(
+    `backlog_sprint_${project.id}`,
+    BACKLOG_SPRINT_FILTER_ALL
   );
   const [generatingTestsTaskId, setGeneratingTestsTaskId] = useState<string | null>(null);
   const [generatingBddTaskId, setGeneratingBddTaskId] = useState<string | null>(null);
@@ -205,6 +217,23 @@ export const TasksView: React.FC<{
     executionStatusNavKey: tasksExecutionNavKey,
     executionStatusNavStatuses: tasksExecutionNavStatuses,
   });
+
+  const backlogSprintFilterOptions = useMemo(
+    () => buildBacklogSprintFilterOptions(filterBacklogTasks(project.tasks)),
+    [project.tasks]
+  );
+
+  useEffect(() => {
+    if (backlogSprintFilter === BACKLOG_SPRINT_FILTER_ALL) return;
+    if (!backlogSprintFilterOptions.some(o => o.value === backlogSprintFilter)) {
+      setBacklogSprintFilter(BACKLOG_SPRINT_FILTER_ALL);
+    }
+  }, [backlogSprintFilter, backlogSprintFilterOptions, setBacklogSprintFilter]);
+
+  const listTasks = useMemo(() => {
+    if (!backlogOnly) return filteredTasks;
+    return filterTasksByBacklogSprint(filteredTasks, backlogSprintFilter);
+  }, [backlogOnly, filteredTasks, backlogSprintFilter]);
 
   useEffect(() => {
     parentCycleWarnedRef.current.clear();
@@ -1748,7 +1777,7 @@ export const TasksView: React.FC<{
   );
 
   const taskTree = useMemo(() => {
-    const tasks = [...filteredTasks].sort(taskComparator);
+    const tasks = [...listTasks].sort(taskComparator);
     const taskMap = new Map(tasks.map(t => [t.id, { ...t, children: [] as TaskWithChildren[] }]));
     const tree: TaskWithChildren[] = [];
 
@@ -1783,7 +1812,7 @@ export const TasksView: React.FC<{
     };
     sortChildrenRecursive(tree);
     return tree;
-  }, [filteredTasks, taskComparator, project.id]);
+  }, [listTasks, taskComparator, project.id]);
 
   const favoriteRoots = useMemo(() => taskTree.filter(t => t.isFavorite), [taskTree]);
   const otherRoots = useMemo(() => taskTree.filter(t => !t.isFavorite), [taskTree]);
@@ -1835,6 +1864,23 @@ export const TasksView: React.FC<{
     [groupedTasksEntries]
   );
 
+  const backlogSprintGroups = useMemo(() => {
+    if (!backlogOnly) return [];
+    return groupBacklogTasksBySprint(listTasks, taskComparator);
+  }, [backlogOnly, listTasks, taskComparator]);
+
+  const backlogSprintGroupsWithA11y = useMemo(
+    () =>
+      backlogSprintGroups.map(group => {
+        const tasksWithChildren: TaskWithChildren[] = group.tasks.map(t => ({
+          ...t,
+          children: [],
+        }));
+        return [group, tasksWithChildren, buildTaskTreeSectionA11y(tasksWithChildren)] as const;
+      }),
+    [backlogSprintGroups]
+  );
+
   const handleToggleFavorite = useCallback(
     (taskId: string) => {
       const updatedTasks = (project.tasks || []).map(t =>
@@ -1879,9 +1925,9 @@ export const TasksView: React.FC<{
     handleSuccess('Tarefas vinculadas com sucesso!');
   };
 
-  const totalTaskCount = filteredTasks.length;
+  const totalTaskCount = listTasks.length;
   /** Listas grandes + stagger do Framer atrasam a UI ao filtrar; desliga animação de entrada acima do limite. */
-  const reduceListMotion = filteredTasks.length > 42;
+  const reduceListMotion = listTasks.length > 42;
   const renderTaskTree = useCallback(
     (
       tasks: TaskWithChildren[],
@@ -2078,6 +2124,9 @@ export const TasksView: React.FC<{
               totalCount={project.tasks.length}
               backlogSortBy={backlogSortBy}
               onBacklogSortChange={setBacklogSortBy}
+              backlogSprintFilter={backlogSprintFilter}
+              backlogSprintFilterOptions={backlogSprintFilterOptions}
+              onBacklogSprintFilterChange={setBacklogSprintFilter}
               disabled={isRunningGeneralAnalysis || !onListModeChange}
             />
           </div>
@@ -2171,7 +2220,7 @@ export const TasksView: React.FC<{
               clearAllFilters();
               setIsFiltersModalOpen(false);
             }}
-            filteredCount={filteredTasks.length}
+            filteredCount={listTasks.length}
             totalCount={filterScopeProject.tasks.length}
             hasActiveFiltersOrSearch={activeFiltersCount > 0}
           >
@@ -2322,12 +2371,12 @@ export const TasksView: React.FC<{
                       type="button"
                       onClick={() => setShowExportTasksModal(true)}
                       className={outlineActionBtn}
-                      aria-label={`Exportar lista visível (${filteredTasks.length} tarefas)`}
+                      aria-label={`Exportar lista visível (${listTasks.length} tarefas)`}
                     >
                       <Download className="h-4 w-4 shrink-0" aria-hidden />
                       Exportar lista
-                      {filteredTasks.length !== project.tasks.length
-                        ? ` (${filteredTasks.length})`
+                      {listTasks.length !== project.tasks.length
+                        ? ` (${listTasks.length})`
                         : ''}
                     </button>
                     {!backlogOnly && (
@@ -2353,28 +2402,61 @@ export const TasksView: React.FC<{
                         </select>
                       </div>
                     )}
-                    <div className="flex flex-wrap items-center gap-2">
-                      <label
-                        htmlFor="tasks-group-by"
-                        className="text-xs font-medium text-base-content/65"
-                      >
-                        Agrupar
-                      </label>
-                      <select
-                        id="tasks-group-by"
-                        value={groupBy}
-                        onChange={e => setGroupBy(e.target.value as TaskGroupBy)}
-                        className="select select-bordered select-sm h-9 min-h-0 rounded-lg border-base-300/80 bg-base-100 text-sm shadow-sm"
-                        aria-label="Agrupar lista de tarefas por"
-                      >
-                        <option value="none">Nenhum</option>
-                        <option value="status">Status</option>
-                        <option value="priority">Prioridade</option>
-                        <option value="type">Tipo</option>
-                      </select>
-                    </div>
+                    {!backlogOnly && (
+                      <div className="flex flex-wrap items-center gap-2">
+                        <label
+                          htmlFor="tasks-group-by"
+                          className="text-xs font-medium text-base-content/65"
+                        >
+                          Agrupar
+                        </label>
+                        <select
+                          id="tasks-group-by"
+                          value={groupBy}
+                          onChange={e => setGroupBy(e.target.value as TaskGroupBy)}
+                          className="select select-bordered select-sm h-9 min-h-0 rounded-lg border-base-300/80 bg-base-100 text-sm shadow-sm"
+                          aria-label="Agrupar lista de tarefas por"
+                        >
+                          <option value="none">Nenhum</option>
+                          <option value="status">Status</option>
+                          <option value="priority">Prioridade</option>
+                          <option value="type">Tipo</option>
+                        </select>
+                      </div>
+                    )}
                   </div>
-                  {groupBy !== 'none' && groupedTasksEntriesWithA11y.length > 0 ? (
+                  {backlogOnly && backlogSprintGroupsWithA11y.length > 0 ? (
+                    <div className="space-y-6">
+                      {backlogSprintGroupsWithA11y.map(([group, tasksInGroup, groupA11y]) => (
+                        <section key={group.key} aria-label={`Sprint: ${group.label}`}>
+                          <h3
+                            className={cn(
+                              'mb-3 flex flex-wrap items-center gap-2 font-heading text-xs font-bold uppercase tracking-wider',
+                              group.isActive
+                                ? 'text-[var(--brand-highlight)]'
+                                : 'text-base-content/60'
+                            )}
+                          >
+                            <Layers className="h-4 w-4 shrink-0" aria-hidden />
+                            {group.label}
+                            <span className="font-medium normal-case tracking-normal text-base-content/50">
+                              ({tasksInGroup.length})
+                            </span>
+                            {group.isActive ? (
+                              <span className="rounded-full border border-[color-mix(in_srgb,var(--brand-highlight)_35%,transparent)] bg-[color-mix(in_srgb,var(--brand-highlight)_12%,transparent)] px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-[var(--brand-highlight)]">
+                                Ativa
+                              </span>
+                            ) : null}
+                          </h3>
+                          {renderRootTaskList(
+                            tasksInGroup,
+                            `Backlog — ${group.label}`,
+                            groupA11y
+                          )}
+                        </section>
+                      ))}
+                    </div>
+                  ) : groupBy !== 'none' && groupedTasksEntriesWithA11y.length > 0 ? (
                     <div className="space-y-6">
                       {groupedTasksEntriesWithA11y.map(([groupLabel, tasksInGroup, groupA11y]) => (
                         <section key={groupLabel} aria-label={`Grupo: ${groupLabel}`}>
@@ -2422,7 +2504,7 @@ export const TasksView: React.FC<{
                     </>
                   )}
                 </div>
-              ) : filteredTasks.length === 0 && project.tasks.length > 0 ? (
+              ) : listTasks.length === 0 && project.tasks.length > 0 ? (
                 <EmptyState
                   icon={<Search className="mx-auto h-12 w-12 text-base-content/40" aria-hidden />}
                   title="Nenhuma tarefa corresponde aos filtros"
@@ -2461,7 +2543,7 @@ export const TasksView: React.FC<{
         onClose={() => setShowExportTasksModal(false)}
         exportType="tasks"
         project={project}
-        tasks={filteredTasks}
+        tasks={listTasks}
       />
 
       <Modal

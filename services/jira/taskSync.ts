@@ -20,6 +20,7 @@ import { isValidJiraKey } from '../../utils/jiraFieldMapper';
 import { logger } from '../../utils/logger';
 import { normalizeTasksParentIdsAcyclic } from '../../utils/taskParentCycle';
 import { assignStoryPointsToTask } from '../../utils/taskStoryPoints';
+import { assignSprintsToTask } from '../../utils/jiraSprintFields';
 
 type JiraWorkflowTransition = {
   id: string;
@@ -361,6 +362,7 @@ export const updateSingleTaskFromJira = async (
     });
   }
   assignStoryPointsToTask(task);
+  assignSprintsToTask(task);
   const finalTask: JiraTask = existingTask
     ? {
         ...existingTask,

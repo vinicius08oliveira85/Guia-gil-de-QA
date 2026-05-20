@@ -100,6 +100,8 @@ import {
 } from '../../services/ai/generalAnalysisService';
 import { isAnalysisOutdated } from '../../utils/analysisFreshness';
 import { resolveTaskStoryPoints } from '../../utils/taskStoryPoints';
+import { resolveTaskDisplaySprint } from '../../utils/taskSprintDisplay';
+import { TaskSprintBadge } from './TaskSprintBadge';
 import {
   getTaskTypeLeftBorderClass,
   getTaskRiskBadgeClass,
@@ -301,6 +303,7 @@ export const JiraTaskItem: React.FC<{
       return `${base}: ${taskRiskSignals.join(' · ')}`;
     }, [taskRiskLevel, taskRiskSignals]);
     const storyPointsDisplay = useMemo(() => resolveTaskStoryPoints(task), [task]);
+    const displaySprint = useMemo(() => resolveTaskDisplaySprint(task), [task]);
 
     const iaAnalysisStale = useMemo(() => {
       if (!task.iaAnalysis) return false;
@@ -1851,6 +1854,14 @@ export const JiraTaskItem: React.FC<{
                   >
                     {storyPointsDisplay} SP
                   </span>
+                </>
+              ) : null}
+              {displaySprint ? (
+                <>
+                  <span className="shrink-0 opacity-60" aria-hidden>
+                    ·
+                  </span>
+                  <TaskSprintBadge sprint={displaySprint} />
                 </>
               ) : null}
               {showTestExecutionSummary ? (

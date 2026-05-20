@@ -16,6 +16,7 @@ import { parseJiraDescriptionHTML } from '../../utils/jiraDescriptionParser';
 import { logger } from '../../utils/logger';
 import { normalizeTasksParentIdsAcyclic } from '../../utils/taskParentCycle';
 import { assignStoryPointsToTask } from '../../utils/taskStoryPoints';
+import { assignSprintsToTask } from '../../utils/jiraSprintFields';
 
 export const importJiraProject = async (
   config: JiraConfig,
@@ -254,6 +255,7 @@ export const importJiraProject = async (
         task.jiraCustomFields = customFields;
       }
       assignStoryPointsToTask(task);
+      assignSprintsToTask(task);
 
       return task;
     })
@@ -500,6 +502,7 @@ export const addNewJiraTasks = async (
         task.jiraCustomFields = customFields;
       }
       assignStoryPointsToTask(task);
+      assignSprintsToTask(task);
 
       return task;
     })

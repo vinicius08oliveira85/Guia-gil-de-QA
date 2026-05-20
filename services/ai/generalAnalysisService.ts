@@ -8,6 +8,7 @@ import {
   TestCase,
 } from '../../types';
 import { resolveTaskStoryPoints } from '../../utils/taskStoryPoints';
+import { resolveTaskDisplaySprint } from '../../utils/taskSprintDisplay';
 import { getFormattedContext } from './documentContextService';
 import { TEST_CASE_VISUAL_FORMAT_INSTRUCTIONS } from './testGenerationPrompts';
 import { callGeminiWithRetry } from './geminiApiWrapper';
@@ -52,6 +53,7 @@ interface TaskSnapshot {
   hasDescription: boolean;
   dependencies: number;
   storyPoints: number;
+  sprintName?: string;
   riskSignals: string[];
   riskScore: number;
   riskLevel: TaskIAAnalysis['riskLevel'];
@@ -124,6 +126,7 @@ const calculateTaskSnapshot = (task: JiraTask): TaskSnapshot => {
   const hasBDD = (task.bddScenarios?.length || 0) > 0;
   const hasStrategy = (task.testStrategy?.length || 0) > 0;
   const storyPoints = resolveTaskStoryPoints(task);
+  const displaySprint = resolveTaskDisplaySprint(task);
 
   const riskSignals: string[] = [];
   let riskScore = 20;
@@ -187,6 +190,7 @@ const calculateTaskSnapshot = (task: JiraTask): TaskSnapshot => {
     hasDescription,
     dependencies: task.dependencies?.length || 0,
     storyPoints,
+    sprintName: displaySprint?.name,
     riskSignals,
     riskScore,
     riskLevel: getRiskLevelFromScore(riskScore),
