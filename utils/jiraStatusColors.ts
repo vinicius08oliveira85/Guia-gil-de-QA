@@ -162,3 +162,21 @@ export const ensureJiraHexColor = (
   }
   return undefined;
 };
+
+/** Estilo de lozenge Jira (fundo suave + indicador na cor do workflow). */
+export interface JiraStatusLozengeStyles {
+  backgroundColor: string;
+  color: string;
+  indicatorColor: string;
+}
+
+export const getJiraStatusLozengeStyles = (
+  statusColor?: string
+): JiraStatusLozengeStyles => {
+  const indicator = statusColor ? normalizeHexColor(statusColor) : FALLBACK_COLOR;
+  return {
+    indicatorColor: indicator,
+    backgroundColor: `color-mix(in srgb, ${indicator} 18%, oklch(var(--b2)))`,
+    color: '#44546f',
+  };
+};
