@@ -57,9 +57,9 @@ export const TestCasesFreshnessIndicator = React.memo<TestCasesFreshnessIndicato
           }
         >
           {outdated ? (
-            <AlertTriangle className="w-3.5 h-3.5 text-warning shrink-0" aria-hidden />
+            <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-warning" aria-hidden />
           ) : (
-            <CheckCircle2 className="w-3.5 h-3.5 text-success/80 shrink-0" aria-hidden />
+            <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-success/80" aria-hidden />
           )}
         </span>
       );

@@ -88,6 +88,27 @@ describe('useRouterSync', () => {
     expect(String(last[2])).toMatch(/^\/(\?|$)/);
   });
 
+  it('normaliza /backlog?project= para /?project=&subview=backlog', () => {
+    window.history.replaceState({}, '', '/backlog?project=proj-backlog');
+    const selectProject = vi.fn();
+    const setShowSettings = vi.fn();
+
+    renderHook(() =>
+      useRouterSync({
+        selectedProjectId: null,
+        projects: emptyProjects,
+        showSettings: false,
+        setShowSettings,
+        selectProject,
+        isLoading: false,
+      })
+    );
+
+    expect(selectProject).toHaveBeenCalledWith('proj-backlog');
+    expect(window.location.pathname).toBe('/');
+    expect(window.location.search).toBe('?project=proj-backlog&subview=backlog');
+  });
+
   it('usa replaceState (não pushState) no efeito estado→URL após carregar', () => {
     window.history.replaceState({}, '', '/?project=old');
     const pushSpy = vi.spyOn(window.history, 'pushState');

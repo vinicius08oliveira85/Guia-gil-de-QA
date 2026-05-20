@@ -25,11 +25,12 @@ import { useAutoSave } from '../hooks/useAutoSave';
 import { useOnlineStatus } from '../hooks/useOnlineStatus';
 import toast from 'react-hot-toast';
 import { Spinner } from './common/Spinner';
-import { Trash2, CheckCircle2, AlertTriangle, CloudOff } from 'lucide-react';
+import { Trash2, CheckCircle2, AlertTriangle, CloudOff, Layers } from 'lucide-react';
 import { logger } from '../utils/logger';
 import { Button } from './common/Button';
 import { cn } from '../utils/cn';
 import { appContentPaddingX } from './common/viewUi';
+import { countBacklogTasks, type TasksListMode } from '../utils/backlogTasks';
 
 const TAB_LABELS: Record<string, string> = {
   dashboard: 'Dashboard',
@@ -38,6 +39,21 @@ const TAB_LABELS: Record<string, string> = {
   businessRules: 'Regras de negócio',
 };
 
+function normalizePathname(pathname: string): string {
+  const trimmed = pathname.replace(/\/+$/, '');
+  return trimmed === '' ? '/' : trimmed;
+}
+
+function readTasksListModeFromUrl(): TasksListMode {
+  if (typeof window === 'undefined') return 'all';
+  const params = new URLSearchParams(window.location.search);
+  const subview = params.get('subview');
+  const view = params.get('view');
+  if (subview === 'backlog' || view === 'backlog') return 'backlog';
+  if (normalizePathname(window.location.pathname) === '/backlog') return 'backlog';
+  return 'all';
+}
+
 export const ProjectView: React.FC<{
   project: Project;
   onUpdateProject: (project: Project) => void | Promise<void>;
@@ -45,6 +61,7 @@ export const ProjectView: React.FC<{
   onDeleteProject?: (projectId: string) => void | Promise<void>;
 }> = ({ project, onUpdateProject, onBack: _onBack, onDeleteProject }) => {
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [tasksListMode, setTasksListMode] = useState<TasksListMode>('all');
   const [initialTaskId, setInitialTaskId] = useState<string | undefined>(undefined);
   /** Deep link do Dashboard: filtrar tarefas com casos em certos status (ex.: falhas). */
   const [tasksExecutionNavKey, setTasksExecutionNavKey] = useState(0);
@@ -246,8 +263,35 @@ export const ProjectView: React.FC<{
       setActiveTab('tasks');
       // Passar o taskId para o TasksView
       setInitialTaskId(taskIdToFocus);
+      return;
+    }
+    const modeFromUrl = readTasksListModeFromUrl();
+    if (modeFromUrl === 'backlog') {
+      setActiveTab('tasks');
+      setTasksListMode('backlog');
     }
   }, [currentProject.id]);
+
+  /** Sincroniza subvisão backlog: ?project=&subview=backlog (dentro de Tarefas & Testes). */
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (activeTab !== 'tasks') return;
+    const params = new URLSearchParams();
+    params.set('project', currentProject.id);
+    if (tasksListMode === 'backlog') {
+      params.set('subview', 'backlog');
+    }
+    const desiredSearch = `?${params.toString()}`;
+    const path = normalizePathname(window.location.pathname);
+    const canonicalPath = path === '/backlog' ? '/' : path;
+    if (path === '/backlog') {
+      window.history.replaceState({}, '', `/${desiredSearch}`);
+      return;
+    }
+    if (window.location.search !== desiredSearch) {
+      window.history.replaceState({}, '', `${canonicalPath}${desiredSearch}`);
+    }
+  }, [currentProject.id, activeTab, tasksListMode]);
 
   const tabs: Array<{ id: string; label: string }> = [
     { id: 'dashboard', label: 'Dashboard' },
@@ -258,6 +302,39 @@ export const ProjectView: React.FC<{
 
   const handleTabClick = useCallback((tabId: string) => {
     setActiveTab(tabId);
+    if (tabId !== 'tasks') {
+      setTasksListMode('all');
+    }
+  }, []);
+
+  const handleTasksListModeChange = useCallback((mode: TasksListMode) => {
+    setTasksListMode(mode);
+    if (activeTab !== 'tasks') {
+      setActiveTab('tasks');
+    }
+  }, [activeTab]);
+
+  const backlogCount = useMemo(
+    () => countBacklogTasks(currentProject.tasks),
+    [currentProject.tasks]
+  );
+
+  const handleNavigateToBacklog = useCallback(() => {
+    setTasksListMode('backlog');
+    setActiveTab('tasks');
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const syncFromUrl = () => {
+      const mode = readTasksListModeFromUrl();
+      setTasksListMode(mode);
+      if (mode === 'backlog') {
+        setActiveTab('tasks');
+      }
+    };
+    window.addEventListener('popstate', syncFromUrl);
+    return () => window.removeEventListener('popstate', syncFromUrl);
   }, []);
 
   const handleNavigateToTasksWithExecutionStatuses = useCallback(
@@ -336,10 +413,15 @@ export const ProjectView: React.FC<{
         const task = currentProject.tasks.find(t => t.id === breadcrumbTaskId);
         const raw = task?.title?.trim() || 'Tarefa';
         const label = raw.length > 56 ? `${raw.slice(0, 53)}…` : raw;
-        items.push({ label: TAB_LABELS.tasks, onClick: () => handleTabClick('tasks') });
+        items.push({
+          label: tasksListMode === 'backlog' ? 'Backlog' : TAB_LABELS.tasks,
+          onClick: () => handleTabClick('tasks'),
+        });
         items.push({ label });
       } else {
-        items.push({ label: TAB_LABELS.tasks });
+        items.push({
+          label: tasksListMode === 'backlog' ? `${TAB_LABELS.tasks} · Backlog` : TAB_LABELS.tasks,
+        });
       }
     } else if (activeTab === 'documents') {
       items.push({ label: TAB_LABELS.documents });
@@ -354,6 +436,7 @@ export const ProjectView: React.FC<{
     currentProject.tasks,
     activeTab,
     breadcrumbTaskId,
+    tasksListMode,
     handleTabClick,
   ]);
 
@@ -513,35 +596,59 @@ export const ProjectView: React.FC<{
               />
             )}
 
-            <nav
-              ref={tabsRef}
-              className="no-scrollbar flex w-full flex-nowrap gap-4 overflow-x-auto scroll-smooth snap-x snap-mandatory border-b border-base-300/70 sm:gap-6 md:gap-8"
-              aria-label="Seções do projeto"
-              role="tablist"
-              aria-orientation="horizontal"
-              onKeyDown={handleTabKeyDown}
-            >
-              {tabs.map(tab => (
-                <button
-                  key={tab.id}
-                  type="button"
-                  onClick={() => handleTabClick(tab.id)}
-                  className={cn(
-                    'relative min-h-[44px] flex-shrink-0 snap-start whitespace-nowrap px-0.5 pb-2.5 pt-1 font-heading text-sm transition-colors sm:min-h-0',
-                    activeTab === tab.id
-                      ? 'font-semibold text-base-content after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2px] after:rounded-full after:bg-error after:content-[""]'
-                      : 'font-medium text-base-content/55 hover:text-base-content/85'
-                  )}
-                  id={`tab-${tab.id}`}
-                  role="tab"
-                  tabIndex={activeTab === tab.id ? 0 : -1}
-                  aria-selected={activeTab === tab.id}
-                  aria-controls={`tab-panel-${tab.id}`}
+            <div className="flex w-full items-end gap-2">
+              <nav
+                ref={tabsRef}
+                className="no-scrollbar flex min-w-0 flex-1 flex-nowrap gap-4 overflow-x-auto scroll-smooth snap-x snap-mandatory border-b border-base-300/70 sm:gap-6 md:gap-8"
+                aria-label="Seções do projeto"
+                role="tablist"
+                aria-orientation="horizontal"
+                onKeyDown={handleTabKeyDown}
+              >
+                {tabs.map(tab => (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => handleTabClick(tab.id)}
+                    className={cn(
+                      'relative min-h-[44px] flex-shrink-0 snap-start whitespace-nowrap px-0.5 pb-2.5 pt-1 font-heading text-sm transition-colors sm:min-h-0',
+                      activeTab === tab.id
+                        ? 'font-semibold text-base-content after:absolute after:bottom-0 after:left-0 after:right-0 after:h-[2px] after:rounded-full after:bg-error after:content-[""]'
+                        : 'font-medium text-base-content/55 hover:text-base-content/85'
+                    )}
+                    id={`tab-${tab.id}`}
+                    role="tab"
+                    tabIndex={activeTab === tab.id ? 0 : -1}
+                    aria-selected={activeTab === tab.id}
+                    aria-controls={`tab-panel-${tab.id}`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </nav>
+              <button
+                type="button"
+                onClick={handleNavigateToBacklog}
+                className={cn(
+                  'mb-0.5 inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors',
+                  'min-h-[40px] sm:min-h-8',
+                  activeTab === 'tasks' && tasksListMode === 'backlog'
+                    ? 'border-[color-mix(in_srgb,var(--brand-cta)_55%,transparent)] bg-[color-mix(in_srgb,var(--brand-cta)_10%,transparent)] text-[var(--brand-cta)]'
+                    : 'border-base-300/70 bg-base-100 text-base-content/75 hover:border-base-300 hover:bg-base-200/50'
+                )}
+                aria-label={`Abrir backlog (${backlogCount} itens)`}
+                title="Ver backlog em Tarefas & Testes"
+              >
+                <Layers className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                Backlog
+                <span
+                  className="rounded-full bg-base-200/90 px-1.5 py-0 text-[10px] font-bold tabular-nums leading-none"
+                  aria-hidden
                 >
-                  {tab.label}
-                </button>
-              ))}
-            </nav>
+                  {backlogCount}
+                </span>
+              </button>
+            </div>
             {canScrollRight && (
               <p
                 className="mt-1 text-center text-[11px] text-base-content/55 md:hidden"
@@ -562,6 +669,7 @@ export const ProjectView: React.FC<{
                     project={currentProject}
                     onUpdateProject={onUpdateProject}
                     onNavigateToTab={tabId => handleTabClick(tabId)}
+                    onNavigateToBacklog={handleNavigateToBacklog}
                     onNavigateToTasksWithExecutionStatuses={
                       handleNavigateToTasksWithExecutionStatuses
                     }
@@ -580,6 +688,8 @@ export const ProjectView: React.FC<{
                     onTaskDetailsOpenChange={handleTaskDetailsOpenChange}
                     tasksExecutionNavKey={tasksExecutionNavKey}
                     tasksExecutionNavStatuses={tasksExecutionNavStatuses}
+                    listMode={tasksListMode}
+                    onListModeChange={handleTasksListModeChange}
                   />
                 </Suspense>
               </section>

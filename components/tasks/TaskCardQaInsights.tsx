@@ -25,6 +25,9 @@ const ALERT_ICONS: Record<string, React.ReactNode> = {
   strategy: <ClipboardList className="h-3.5 w-3.5 shrink-0" aria-hidden />,
 };
 
+const ALERT_BTN_CLASS =
+  'inline-flex h-6 w-6 items-center justify-center rounded-md';
+
 /**
  * Barra de execução, contadores e alertas compactos de QA no card da tarefa.
  */
@@ -57,7 +60,10 @@ export const TaskCardQaInsights: React.FC<TaskCardQaInsightsProps> = ({
   return (
     <div
       className={cn(
-        'flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1',
+        'flex min-w-0 items-center',
+        isInline
+          ? 'flex-1 flex-nowrap justify-end gap-1.5 sm:gap-2'
+          : 'flex-wrap items-center gap-x-2 gap-y-1',
         className
       )}
       role="group"
@@ -66,16 +72,16 @@ export const TaskCardQaInsights: React.FC<TaskCardQaInsightsProps> = ({
       {counts.total > 0 ? (
         <div
           className={cn(
-            'flex min-w-0 shrink-0',
+            'flex min-w-0 items-center',
             isInline
-              ? 'max-w-[11rem] items-center gap-1.5'
-              : 'min-w-[7.5rem] max-w-[10rem] flex-col gap-0.5'
+              ? 'flex-1 flex-nowrap items-center justify-end gap-1.5 sm:max-w-[12rem] sm:gap-2'
+              : 'min-w-[8rem] max-w-[12rem] flex-col gap-1'
           )}
         >
           <div
             className={cn(
-              'flex h-1.5 overflow-hidden rounded-full border border-[color-mix(in_srgb,var(--foreground)_8%,transparent)] bg-[var(--brand-chip)]',
-              isInline ? 'w-14 shrink-0' : 'w-full'
+              'flex shrink-0 overflow-hidden rounded-full border border-[color-mix(in_srgb,var(--foreground)_10%,transparent)] bg-[var(--brand-chip)]',
+              isInline ? 'h-2 min-w-[4rem] flex-1 max-w-[7.5rem]' : 'h-2 w-full'
             )}
             role="progressbar"
             aria-valuenow={counts.passed + counts.failed}
@@ -97,28 +103,41 @@ export const TaskCardQaInsights: React.FC<TaskCardQaInsightsProps> = ({
             ) : null}
             {segments.pendingPct > 0 ? (
               <div
-                className="h-full bg-warning/75 transition-[width] duration-300"
+                className="h-full bg-warning/80 transition-[width] duration-300"
                 style={{ width: `${segments.pendingPct}%` }}
               />
             ) : null}
           </div>
-          <div className="flex items-center gap-1 font-sans text-[9px] font-semibold tabular-nums leading-none tracking-[var(--letter-spacing)] text-[var(--brand-text-muted)]">
+          <div
+            className={cn(
+              'flex shrink-0 items-center font-sans font-semibold tabular-nums leading-none tracking-[var(--letter-spacing)] text-[var(--brand-text-muted)]',
+              isInline ? 'gap-1.5 text-[10px]' : 'gap-1.5 text-[10px]'
+            )}
+          >
             <span className="inline-flex items-center gap-0.5" title="Passou">
-              <span className="h-1.5 w-1.5 rounded-full bg-success" aria-hidden />
+              <span
+                className={cn('rounded-full bg-success', isInline ? 'h-2 w-2' : 'h-2 w-2')}
+                aria-hidden
+              />
               {counts.passed}
             </span>
             <span className="inline-flex items-center gap-0.5" title="Falhou">
-              <span className="h-1.5 w-1.5 rounded-full bg-error" aria-hidden />
+              <span className="h-2 w-2 rounded-full bg-error" aria-hidden />
               {counts.failed}
             </span>
             <span className="inline-flex items-center gap-0.5" title="Pendente">
-              <span className="h-1.5 w-1.5 rounded-full bg-warning/80" aria-hidden />
+              <span className="h-2 w-2 rounded-full bg-warning/85" aria-hidden />
               {counts.pending}
             </span>
           </div>
         </div>
       ) : (
-        <span className="rounded-md bg-[var(--brand-chip)] px-1.5 py-0.5 text-[9px] font-medium text-[var(--brand-text-muted)]">
+        <span
+          className={cn(
+            'shrink-0 rounded-md bg-[var(--brand-chip)] font-medium text-[var(--brand-text-muted)]',
+            isInline ? 'px-1.5 py-0.5 text-[10px]' : 'px-1.5 py-0.5 text-[10px]'
+          )}
+        >
           Sem casos de teste
         </span>
       )}
@@ -131,14 +150,24 @@ export const TaskCardQaInsights: React.FC<TaskCardQaInsightsProps> = ({
               position="top"
               ariaLabel="Análise IA desatualizada"
             >
-              <span className="inline-flex h-6 w-6 items-center justify-center rounded-md bg-warning/10 text-warning ring-1 ring-warning/25">
+              <span
+                className={cn(
+                  ALERT_BTN_CLASS,
+                  'bg-warning/10 text-warning ring-1 ring-warning/25'
+                )}
+              >
                 <Sparkles className="h-3.5 w-3.5" aria-hidden />
               </span>
             </Tooltip>
           ) : null}
           {qaAlerts.map(alert => (
             <Tooltip key={alert.id} content={alert.tooltip} position="top" ariaLabel={alert.tooltip}>
-              <span className="inline-flex h-6 w-6 items-center justify-center rounded-md bg-[var(--brand-chip)] text-[var(--brand-text-muted)] ring-1 ring-[var(--brand-surface-border)]">
+              <span
+                className={cn(
+                  ALERT_BTN_CLASS,
+                  'bg-[var(--brand-chip)] text-[var(--brand-text-muted)] ring-1 ring-[var(--brand-surface-border)]'
+                )}
+              >
                 {ALERT_ICONS[alert.id] ?? (
                   <AlertTriangle className="h-3.5 w-3.5 text-warning" aria-hidden />
                 )}

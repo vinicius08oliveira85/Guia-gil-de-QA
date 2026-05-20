@@ -1892,7 +1892,7 @@ export const JiraTaskItem: React.FC<{
                   }}
                   qaAlerts={taskQaAlerts}
                   iaAnalysisStale={iaAnalysisStale}
-                  className="shrink-0"
+                  className="min-w-0 max-md:max-w-[45%] sm:max-w-[52%] md:max-w-none"
                 />
               ) : null}
             </div>
