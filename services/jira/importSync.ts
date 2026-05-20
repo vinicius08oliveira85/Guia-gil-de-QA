@@ -16,7 +16,8 @@ import { parseJiraDescriptionHTML } from '../../utils/jiraDescriptionParser';
 import { logger } from '../../utils/logger';
 import { normalizeTasksParentIdsAcyclic } from '../../utils/taskParentCycle';
 import { assignStoryPointsToTask } from '../../utils/taskStoryPoints';
-import { assignSprintsToTask } from '../../utils/jiraSprintFields';
+import { assignSprintsToTaskSync } from '../../utils/jiraSprintFields';
+import { buildJiraSprintSyncContext } from './sprintSync';
 
 export const importJiraProject = async (
   config: JiraConfig,
@@ -33,7 +34,10 @@ export const importJiraProject = async (
   const jiraStatuses = await getJiraStatuses(config, jiraProjectKey);
   const jiraPriorities = await getJiraPriorities(config);
 
-  const jiraIssues = await getJiraIssues(config, jiraProjectKey, undefined, onProgress);
+  const sprintCtx = await buildJiraSprintSyncContext(config, jiraProjectKey);
+  const jiraIssues = await getJiraIssues(config, jiraProjectKey, undefined, onProgress, {
+    sprintFieldIds: sprintCtx.sprintFieldIds,
+  });
 
   const jiraKeys = jiraIssues.map(issue => issue.key).filter(Boolean) as string[];
   const savedTestStatuses = await loadTestStatusesByJiraKeys(jiraKeys);
@@ -255,7 +259,11 @@ export const importJiraProject = async (
         task.jiraCustomFields = customFields;
       }
       assignStoryPointsToTask(task);
-      assignSprintsToTask(task);
+      assignSprintsToTaskSync(task, {
+        issueFields: issue.fields as Record<string, unknown>,
+        sprintFieldIds: sprintCtx.sprintFieldIds,
+        sprintCatalog: sprintCtx.sprintCatalog,
+      });
 
       return task;
     })
@@ -297,7 +305,10 @@ export const addNewJiraTasks = async (
     jiraPriorities = await getJiraPriorities(config);
   }
 
-  const jiraIssues = await getJiraIssues(config, jiraProjectKey, undefined, onProgress);
+  const sprintCtx = await buildJiraSprintSyncContext(config, jiraProjectKey);
+  const jiraIssues = await getJiraIssues(config, jiraProjectKey, undefined, onProgress, {
+    sprintFieldIds: sprintCtx.sprintFieldIds,
+  });
 
   const existingTasksMap = new Map(project.tasks.map(t => [t.id, t]));
 
@@ -502,7 +513,11 @@ export const addNewJiraTasks = async (
         task.jiraCustomFields = customFields;
       }
       assignStoryPointsToTask(task);
-      assignSprintsToTask(task);
+      assignSprintsToTaskSync(task, {
+        issueFields: issue.fields as Record<string, unknown>,
+        sprintFieldIds: sprintCtx.sprintFieldIds,
+        sprintCatalog: sprintCtx.sprintCatalog,
+      });
 
       return task;
     })

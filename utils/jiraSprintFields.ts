@@ -8,6 +8,11 @@ export const SPRINT_FIELD_KEYS = [
   'customfield_10021',
 ] as const;
 
+export interface ParseSprintsOptions {
+  sprintFieldIds?: string[];
+  sprintCatalog?: ReadonlyMap<number, JiraSprint>;
+}
+
 function mapJiraSprintState(raw: string | undefined): JiraSprint['state'] {
   const s = (raw ?? '').toLowerCase().trim();
   if (s === 'active') return 'active';
@@ -18,6 +23,14 @@ function mapJiraSprintState(raw: string | undefined): JiraSprint['state'] {
 function optionalIsoDate(value: unknown): string | undefined {
   if (typeof value !== 'string' || !value.trim()) return undefined;
   return value.trim();
+}
+
+function sprintFromCatalog(
+  id: number,
+  catalog?: ReadonlyMap<number, JiraSprint>
+): JiraSprint | null {
+  if (!catalog?.has(id)) return null;
+  return catalog.get(id)!;
 }
 
 function parseGreenHopperSprintString(raw: string): JiraSprint | null {
@@ -48,7 +61,10 @@ function parseGreenHopperSprintString(raw: string): JiraSprint | null {
   };
 }
 
-function parseStructuredSprint(value: Record<string, unknown>): JiraSprint | null {
+function parseStructuredSprint(
+  value: Record<string, unknown>,
+  catalog?: ReadonlyMap<number, JiraSprint>
+): JiraSprint | null {
   const idRaw = value.id;
   const id =
     typeof idRaw === 'number'
@@ -57,7 +73,10 @@ function parseStructuredSprint(value: Record<string, unknown>): JiraSprint | nul
         ? parseInt(idRaw, 10)
         : NaN;
   const name = typeof value.name === 'string' ? value.name.trim() : '';
-  if (!Number.isFinite(id) || !name) return null;
+  if (!Number.isFinite(id)) return null;
+  if (!name) {
+    return sprintFromCatalog(id, catalog);
+  }
 
   return {
     id,
@@ -72,12 +91,30 @@ function parseStructuredSprint(value: Record<string, unknown>): JiraSprint | nul
   };
 }
 
-function parseSingleSprintValue(value: unknown): JiraSprint | null {
+function parseSingleSprintValue(
+  value: unknown,
+  catalog?: ReadonlyMap<number, JiraSprint>
+): JiraSprint | null {
   if (value == null) return null;
+
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return sprintFromCatalog(value, catalog);
+  }
 
   if (typeof value === 'string') {
     const trimmed = value.trim();
     if (!trimmed) return null;
+    if (/^\d+$/.test(trimmed)) {
+      return sprintFromCatalog(parseInt(trimmed, 10), catalog);
+    }
+    if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+      try {
+        const parsed = JSON.parse(trimmed) as unknown;
+        return parseSingleSprintValue(parsed, catalog);
+      } catch {
+        /* formato legado abaixo */
+      }
+    }
     if (trimmed.includes('id=') || trimmed.includes('greenhopper')) {
       return parseGreenHopperSprintString(trimmed);
     }
@@ -85,48 +122,68 @@ function parseSingleSprintValue(value: unknown): JiraSprint | null {
   }
 
   if (typeof value === 'object' && !Array.isArray(value)) {
-    return parseStructuredSprint(value as Record<string, unknown>);
+    const obj = value as Record<string, unknown>;
+    if ('value' in obj && obj.value != null) {
+      return parseSingleSprintValue(obj.value, catalog);
+    }
+    const structured = parseStructuredSprint(obj, catalog);
+    if (structured) return structured;
+    if (typeof obj.id === 'number' || typeof obj.id === 'string') {
+      const id = typeof obj.id === 'number' ? obj.id : parseInt(String(obj.id), 10);
+      if (Number.isFinite(id)) {
+        return sprintFromCatalog(id, catalog);
+      }
+    }
   }
 
   return null;
 }
 
-function parseSprintCollection(value: unknown): JiraSprint[] {
+function parseSprintCollection(
+  value: unknown,
+  catalog?: ReadonlyMap<number, JiraSprint>
+): JiraSprint[] {
   if (value == null) return [];
   if (Array.isArray(value)) {
     return value.flatMap(item => {
-      const parsed = parseSingleSprintValue(item);
+      const parsed = parseSingleSprintValue(item, catalog);
       return parsed ? [parsed] : [];
     });
   }
-  const parsed = parseSingleSprintValue(value);
+  const parsed = parseSingleSprintValue(value, catalog);
   return parsed ? [parsed] : [];
 }
 
-/** Lê sprints de `jiraCustomFields` (import/sync Jira). */
-export function parseSprintsFromCustomFields(task: JiraTask): JiraSprint[] {
-  const cf = task.jiraCustomFields;
-  if (!cf || typeof cf !== 'object') return [];
+function collectFieldKeys(
+  fields: Record<string, unknown>,
+  sprintFieldIds?: string[]
+): string[] {
+  const keys = new Set<string>([...SPRINT_FIELD_KEYS, ...(sprintFieldIds ?? [])]);
+  for (const key of Object.keys(fields)) {
+    if (/sprint/i.test(key)) keys.add(key);
+  }
+  return [...keys];
+}
+
+/** Lê sprints dos fields brutos da issue (search/import/sync). */
+export function parseSprintsFromIssueFields(
+  fields: Record<string, unknown> | null | undefined,
+  options?: ParseSprintsOptions
+): JiraSprint[] {
+  if (!fields || typeof fields !== 'object') return [];
 
   const seen = new Set<number>();
   const result: JiraSprint[] = [];
+  const catalog = options?.sprintCatalog;
 
-  const push = (sprint: JiraSprint) => {
-    if (seen.has(sprint.id)) return;
+  const push = (sprint: JiraSprint | null) => {
+    if (!sprint || seen.has(sprint.id)) return;
     seen.add(sprint.id);
     result.push(sprint);
   };
 
-  for (const key of SPRINT_FIELD_KEYS) {
-    for (const sprint of parseSprintCollection((cf as Record<string, unknown>)[key])) {
-      push(sprint);
-    }
-  }
-
-  for (const [key, value] of Object.entries(cf)) {
-    if ((SPRINT_FIELD_KEYS as readonly string[]).includes(key)) continue;
-    if (!/sprint/i.test(key)) continue;
-    for (const sprint of parseSprintCollection(value)) {
+  for (const key of collectFieldKeys(fields, options?.sprintFieldIds)) {
+    for (const sprint of parseSprintCollection(fields[key], catalog)) {
       push(sprint);
     }
   }
@@ -134,9 +191,46 @@ export function parseSprintsFromCustomFields(task: JiraTask): JiraSprint[] {
   return result;
 }
 
-/** Após montar `jiraCustomFields` na import/sync, espelha sprints em `task.sprints`. */
-export function assignSprintsToTask(task: JiraTask): void {
-  const sprints = parseSprintsFromCustomFields(task);
+/** Lê sprints de `jiraCustomFields` (fallback). */
+export function parseSprintsFromCustomFields(
+  task: JiraTask,
+  options?: ParseSprintsOptions
+): JiraSprint[] {
+  const cf = task.jiraCustomFields;
+  if (!cf || typeof cf !== 'object') return [];
+  return parseSprintsFromIssueFields(cf as Record<string, unknown>, options);
+}
+
+export interface AssignSprintsOptions extends ParseSprintsOptions {
+  issueFields?: Record<string, unknown> | null;
+  /** Quando fields vazios, tenta API Agile (sync de issue única). */
+  agileFallback?: () => Promise<JiraSprint[]>;
+}
+
+/** Após montar fields na import/sync, espelha sprints em `task.sprints`. */
+export async function assignSprintsToTask(
+  task: JiraTask,
+  options?: AssignSprintsOptions
+): Promise<void> {
+  let sprints = parseSprintsFromIssueFields(options?.issueFields, options);
+  if (sprints.length === 0) {
+    sprints = parseSprintsFromCustomFields(task, options);
+  }
+  if (sprints.length === 0 && options?.agileFallback) {
+    sprints = await options.agileFallback();
+  }
+  task.sprints = sprints.length > 0 ? sprints : undefined;
+}
+
+/** Versão síncrona para fluxos que já têm dados completos nos fields. */
+export function assignSprintsToTaskSync(
+  task: JiraTask,
+  options?: Omit<AssignSprintsOptions, 'agileFallback'>
+): void {
+  let sprints = parseSprintsFromIssueFields(options?.issueFields, options);
+  if (sprints.length === 0) {
+    sprints = parseSprintsFromCustomFields(task, options);
+  }
   task.sprints = sprints.length > 0 ? sprints : undefined;
 }
 

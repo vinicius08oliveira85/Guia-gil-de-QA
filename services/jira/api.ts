@@ -1,12 +1,15 @@
 import type { JiraConfig } from './types';
 import { logger } from '../../utils/logger';
 
-export const jiraApiCall = async <T>(
+type JiraApiRoot = 'api/3' | 'agile/1.0';
+
+async function jiraRequest<T>(
   config: JiraConfig,
   endpoint: string,
-  options: { method?: string; body?: any; timeout?: number } = {}
-): Promise<T> => {
+  options: { method?: string; body?: unknown; timeout?: number; apiRoot?: JiraApiRoot } = {}
+): Promise<T> {
   const timeout = options.timeout || 60000;
+  const apiRoot = options.apiRoot ?? 'api/3';
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeout);
@@ -17,6 +20,7 @@ export const jiraApiCall = async <T>(
       email: config.email,
       apiToken: config.apiToken,
       endpoint,
+      apiRoot,
       method: options.method || 'GET',
       body: options.body
         ? typeof options.body === 'string'
@@ -27,6 +31,7 @@ export const jiraApiCall = async <T>(
 
     logger.debug('Fazendo requisição ao proxy Jira', 'jiraService', {
       endpoint,
+      apiRoot,
       method: requestBody.method,
     });
 
@@ -70,4 +75,16 @@ export const jiraApiCall = async <T>(
     logger.error('Erro na requisição', 'jiraService', error);
     throw error;
   }
-};
+}
+
+export const jiraApiCall = async <T>(
+  config: JiraConfig,
+  endpoint: string,
+  options: { method?: string; body?: unknown; timeout?: number } = {}
+): Promise<T> => jiraRequest<T>(config, endpoint, options);
+
+export const jiraAgileApiCall = async <T>(
+  config: JiraConfig,
+  endpoint: string,
+  options: { method?: string; body?: unknown; timeout?: number } = {}
+): Promise<T> => jiraRequest<T>(config, endpoint, { ...options, apiRoot: 'agile/1.0' });
