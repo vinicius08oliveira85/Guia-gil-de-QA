@@ -3,17 +3,57 @@ export const TASK_ACTION_STRIP_GRID =
   'grid w-full grid-cols-[4.75rem_9rem_8.25rem] items-center justify-items-stretch gap-2';
 
 export const TASK_ACTION_SLOT_CLASSNAMES = {
-  metrics: 'flex justify-end md:min-h-[2rem] md:items-center',
-  generateAll: 'flex justify-center md:min-h-[2rem] md:items-center',
+  metrics: 'flex justify-end md:min-h-[1.5rem] md:items-center',
+  generateAll: 'flex justify-center md:min-h-[1.5rem] md:items-center',
   testStatus:
-    'max-md:min-w-[6.75rem] max-md:justify-center md:flex md:justify-center md:min-h-[2rem] md:items-center',
+    'max-md:min-w-[6.75rem] max-md:justify-center md:flex md:justify-center md:min-h-[1.5rem] md:items-center',
 } as const;
 
-/** Botões compactos do card — alinhados a metadados / badges de risco (rounded-md, borda suave). */
-const taskCardActionChipBase =
-  'inline-flex h-7 w-full min-w-0 items-center justify-center gap-1 rounded-md border px-2 text-[10px] font-semibold leading-tight shadow-sm transition-colors disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 sm:min-h-0';
+/** Plus Jakarta Sans + tracking do tema (identidade tipográfica do app). */
+export const taskCardTypography = 'font-sans tracking-[var(--letter-spacing)]';
 
-export const taskCardActionChipCta = `${taskCardActionChipBase} border-[color-mix(in_srgb,var(--brand-cta)_35%,transparent)] bg-[color-mix(in_srgb,var(--brand-cta)_8%,transparent)] text-[var(--brand-cta)] hover:border-[color-mix(in_srgb,var(--brand-cta)_45%,transparent)] hover:bg-[color-mix(in_srgb,var(--brand-cta)_14%,transparent)] focus-visible:ring-[color-mix(in_srgb,var(--brand-cta)_22%,transparent)]`;
+/** Título da tarefa na linha do card (12px, sem escalar para sm). */
+export const taskCardTitleTypography = `${taskCardTypography} text-xs font-semibold leading-tight`;
+
+/** ID clicável nos metadados. */
+export const taskCardIdTypography = `${taskCardTypography} text-[10px] font-semibold tabular-nums leading-none`;
+
+/** Faixa de metadados (container). */
+export const taskCardMetadataStripTypography = `${taskCardTypography} text-[10px] leading-none`;
+
+/** Altura única dos pills da linha de metadados (16px). */
+export const taskCardMetadataPillLayout = 'inline-flex h-4 max-h-4 min-h-4 items-center';
+
+/** Badges pill: tipo, status, risco. */
+export const taskCardBadgePillTypography = `${taskCardTypography} text-[9px] font-bold uppercase leading-none`;
+
+export const taskCardBadgePillShape = `${taskCardMetadataPillLayout} rounded-full px-1.5`;
+
+/** Story Points e etiquetas técnicas. */
+export const taskCardBadgeTechTypography = `${taskCardTypography} text-[9px] font-bold tabular-nums leading-none`;
+
+export const taskCardBadgeTechShape = `${taskCardMetadataPillLayout} rounded-[var(--radius)] px-1.5`;
+
+/** Botões da faixa de ações (compactos, alinhados ao texto 10px). */
+export const taskCardButtonTypography = `${taskCardTypography} text-[10px] font-semibold leading-none`;
+
+export const taskCardButtonShape = 'rounded-full px-2 py-0';
+
+const taskCardActionChipBase = [
+  'inline-flex h-6 max-h-6 min-h-6 w-full min-w-0 items-center justify-center gap-0.5 border shadow-sm',
+  taskCardButtonShape,
+  taskCardButtonTypography,
+  'transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2',
+].join(' ');
+
+export const taskCardActionChipCta = `${taskCardActionChipBase} border-[color-mix(in_srgb,var(--brand-cta)_40%,transparent)] bg-[color-mix(in_srgb,var(--brand-cta)_10%,transparent)] text-[var(--brand-text-strong)] hover:bg-[var(--brand-cta)] hover:text-[var(--brand-cta-foreground)] hover:border-[var(--brand-cta)] hover:shadow-md active:scale-95 focus-visible:ring-[color-mix(in_srgb,var(--brand-cta)_30%,transparent)]`;
 
 export const taskCardActionChipBusy =
   'ring-1 ring-[color-mix(in_srgb,var(--brand-cta)_28%,transparent)]';
+
+export const taskCardTestStatusChipLayout = [
+  'h-6 max-h-6 min-h-6 min-w-0 w-full justify-center gap-0.5',
+  taskCardButtonShape,
+  taskCardButtonTypography,
+  'shadow-sm',
+].join(' ');

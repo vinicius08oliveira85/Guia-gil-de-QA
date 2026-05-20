@@ -94,7 +94,7 @@ export const TaskActionStrip: React.FC<TaskActionStripProps> = ({
             {isGenerateAllBusy ? (
               <span className="loading loading-spinner loading-xs" />
             ) : (
-              <Zap className="w-3.5 h-3.5" aria-hidden="true" />
+              <Zap className="h-3 w-3 shrink-0" aria-hidden="true" />
             )}
             <span>{isGenerateAllBusy ? 'Gerando…' : 'Gerar Tudo'}</span>
           </button>

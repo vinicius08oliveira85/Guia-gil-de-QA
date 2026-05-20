@@ -2,6 +2,12 @@ import React, { useMemo } from 'react';
 import { AlertCircle, CheckCircle, Info, MinusCircle, XCircle } from 'lucide-react';
 import type { TaskTestStatus } from '../../types';
 import { cn } from '../../utils/cn';
+import {
+  taskCardBadgePillShape,
+  taskCardBadgePillTypography,
+  taskCardTestStatusChipLayout,
+  taskCardTypography,
+} from '../tasks/taskActionLayout';
 
 type TaskTestStatusBadgeValue = TaskTestStatus | 'sem_testes';
 
@@ -90,10 +96,10 @@ export const TaskTestStatusBadge: React.FC<TaskTestStatusBadgeProps> = ({
   const isCard = variant === 'card';
   const toneClass = isCard ? config.cardClassName : config.className;
   const sharedClassName = cn(
-    'inline-flex items-center gap-1 border font-medium transition-colors duration-200 whitespace-nowrap',
+    'inline-flex items-center gap-1 border whitespace-nowrap transition-colors duration-200',
     isCard
-      ? 'h-7 min-w-0 rounded-md px-2 text-[10px] font-semibold leading-tight shadow-sm'
-      : 'h-5 cursor-default rounded-full px-2 py-0 text-xs',
+      ? taskCardTestStatusChipLayout
+      : cn('h-5 cursor-default', taskCardBadgePillShape, taskCardBadgePillTypography, 'px-2.5 text-xs normal-case'),
     toneClass,
     disabled && 'pointer-events-none opacity-50',
     className
@@ -115,8 +121,8 @@ export const TaskTestStatusBadge: React.FC<TaskTestStatusBadgeProps> = ({
         aria-live={config.role === 'alert' ? 'assertive' : 'polite'}
         aria-label={displayLabel}
       >
-        {!hideIcon && <Icon className="h-3 w-3 shrink-0" aria-hidden="true" />}
-        <span className="truncate">{displayLabel}</span>
+        {!hideIcon && <Icon className="h-2.5 w-2.5 shrink-0" aria-hidden="true" />}
+        <span className="truncate leading-none">{displayLabel}</span>
       </button>
     );
   }
@@ -128,8 +134,8 @@ export const TaskTestStatusBadge: React.FC<TaskTestStatusBadgeProps> = ({
       aria-live={config.role === 'alert' ? 'assertive' : 'polite'}
       aria-label={displayLabel}
     >
-      {!hideIcon && <Icon className="h-3 w-3 shrink-0" aria-hidden="true" />}
-      <span className="truncate">{displayLabel}</span>
+      {!hideIcon && <Icon className="h-2.5 w-2.5 shrink-0" aria-hidden="true" />}
+      <span className="truncate leading-none">{displayLabel}</span>
     </span>
   );
 };
