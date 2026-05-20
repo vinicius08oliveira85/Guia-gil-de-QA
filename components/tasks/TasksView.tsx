@@ -97,7 +97,8 @@ import {
   BACKLOG_SPRINT_FILTER_ALL,
   buildBacklogSprintFilterOptions,
   filterTasksByBacklogSprint,
-  groupBacklogTasksBySprint,
+  groupBacklogRootsBySprint,
+  countTasksInBacklogTree,
 } from '../../utils/taskSprintDisplay';
 import { TasksViewListModeToggle } from './TasksViewListModeToggle';
 
@@ -1865,22 +1866,14 @@ export const TasksView: React.FC<{
     [groupedTasksEntries]
   );
 
-  const backlogSprintGroups = useMemo(() => {
+  const backlogSprintGroupsWithA11y = useMemo(() => {
     if (!backlogOnly) return [];
-    return groupBacklogTasksBySprint(listTasks, taskComparator);
-  }, [backlogOnly, listTasks, taskComparator]);
-
-  const backlogSprintGroupsWithA11y = useMemo(
-    () =>
-      backlogSprintGroups.map(group => {
-        const tasksWithChildren: TaskWithChildren[] = group.tasks.map(t => ({
-          ...t,
-          children: [],
-        }));
-        return [group, tasksWithChildren, buildTaskTreeSectionA11y(tasksWithChildren)] as const;
-      }),
-    [backlogSprintGroups]
-  );
+    const groups = groupBacklogRootsBySprint(taskTree, taskComparator);
+    return groups.map(group => {
+      const tasksWithChildren = group.tasks as TaskWithChildren[];
+      return [group, tasksWithChildren, buildTaskTreeSectionA11y(tasksWithChildren)] as const;
+    });
+  }, [backlogOnly, taskTree, taskComparator]);
 
   const handleToggleFavorite = useCallback(
     (taskId: string) => {
@@ -2441,7 +2434,7 @@ export const TasksView: React.FC<{
                             <Layers className="h-4 w-4 shrink-0" aria-hidden />
                             {group.label}
                             <span className="font-medium normal-case tracking-normal text-[var(--brand-text-muted)]">
-                              ({tasksInGroup.length})
+                              ({countTasksInBacklogTree(tasksInGroup)})
                             </span>
                             {group.isActive ? (
                               <span className="rounded-full border border-[color-mix(in_srgb,var(--brand-highlight)_35%,transparent)] bg-[color-mix(in_srgb,var(--brand-highlight)_12%,transparent)] px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-[var(--brand-highlight)]">

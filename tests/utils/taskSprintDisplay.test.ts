@@ -2,6 +2,8 @@ import { describe, it, expect } from 'vitest';
 import {
   resolveTaskDisplaySprint,
   groupBacklogTasksBySprint,
+  groupBacklogRootsBySprint,
+  countTasksInBacklogTree,
   BACKLOG_UNASSIGNED_SPRINT_LABEL,
   buildBacklogSprintFilterOptions,
   filterTasksByBacklogSprint,
@@ -70,6 +72,31 @@ describe('taskSprintDisplay', () => {
     expect(groups.map(g => g.label)).toEqual(['Alpha', 'Z Futura', BACKLOG_UNASSIGNED_SPRINT_LABEL]);
     expect(groups[0].isActive).toBe(true);
     expect(groups[2].tasks.map(t => t.id)).toEqual(['T-3']);
+  });
+
+  it('groupBacklogRootsBySprint agrupa só raízes; subtarefa não vira item solto no grupo', () => {
+    const parent = task({
+      id: 'GDPI-100',
+      type: 'História',
+      status: 'To Do',
+      sprints: [sprint({ id: 20, name: 'Alpha', state: 'active' })],
+    });
+    const child = task({
+      id: 'GDPI-101',
+      type: 'Tarefa',
+      status: 'To Do',
+      parentId: 'GDPI-100',
+      sprints: [sprint({ id: 20, name: 'Alpha', state: 'active' })],
+    });
+    const roots = [
+      { ...parent, children: [{ ...child, children: [] }] },
+    ] as (JiraTask & { children: (JiraTask & { children: JiraTask[] })[] })[];
+    const groups = groupBacklogRootsBySprint(roots, getBacklogTaskComparator('id'));
+    expect(groups).toHaveLength(1);
+    expect(groups[0].tasks).toHaveLength(1);
+    expect(groups[0].tasks[0].id).toBe('GDPI-100');
+    expect((groups[0].tasks[0] as (typeof roots)[0]).children).toHaveLength(1);
+    expect(countTasksInBacklogTree(roots)).toBe(2);
   });
 
   it('buildBacklogSprintFilterOptions e filterTasksByBacklogSprint', () => {
