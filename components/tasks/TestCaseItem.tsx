@@ -238,13 +238,19 @@ export const TestCaseItem: React.FC<{
           </p>
         ) : null}
 
-        <div className="hidden shrink-0 items-center gap-0.5 border-l border-[var(--brand-surface-border)] pl-2 md:flex">
+        {/* Grupo de ações: Editar, Duplicar, Excluir — integrados numa toolbar única */}
+        <div
+          className="hidden shrink-0 items-center rounded-lg border border-base-300/50 bg-base-200/30 p-0.5 md:flex"
+          role="toolbar"
+          aria-label="Ações do caso de teste"
+        >
           {onEdit && (
             <button
               type="button"
               onClick={onEdit}
-              className="btn btn-ghost btn-xs btn-circle min-h-8 min-w-8"
+              className="inline-flex h-7 w-7 items-center justify-center rounded-md text-[var(--brand-highlight)] transition-all duration-150 hover:bg-[color-mix(in_srgb,var(--brand-highlight)_12%,transparent)] hover:scale-105"
               aria-label="Editar caso de teste"
+              title="Editar"
             >
               <EditIcon className="h-4 w-4" />
             </button>
@@ -253,7 +259,7 @@ export const TestCaseItem: React.FC<{
             <button
               type="button"
               onClick={onDuplicate}
-              className="btn btn-ghost btn-xs btn-circle min-h-8 min-w-8"
+              className="inline-flex h-7 w-7 items-center justify-center rounded-md text-base-content/60 transition-all duration-150 hover:bg-base-300/50 hover:text-base-content hover:scale-105"
               aria-label="Duplicar caso de teste"
               title="Duplicar"
             >
@@ -261,19 +267,24 @@ export const TestCaseItem: React.FC<{
             </button>
           )}
           {onDelete && (
-            <button
-              type="button"
-              onClick={onDelete}
-              className="btn btn-ghost btn-xs btn-circle min-h-8 min-w-8 text-error"
-              aria-label="Excluir caso de teste"
-            >
-              <TrashIcon className="h-4 w-4" />
-            </button>
+            <>
+              <div className="mx-0.5 h-4 w-px bg-base-300/60" aria-hidden />
+              <button
+                type="button"
+                onClick={onDelete}
+                className="inline-flex h-7 w-7 items-center justify-center rounded-md text-error/70 transition-all duration-150 hover:bg-error/10 hover:text-error hover:scale-105"
+                aria-label="Excluir caso de teste"
+                title="Excluir"
+              >
+                <TrashIcon className="h-4 w-4" />
+              </button>
+            </>
           )}
         </div>
 
+        {/* Grupo de status: Aprovar, Reprovar, Bloquear — integrados numa toolbar única */}
         <div
-          className="hidden shrink-0 items-center gap-0.5 border-l border-[var(--brand-surface-border)] pl-2 md:flex"
+          className="hidden shrink-0 items-center rounded-lg border border-base-300/50 bg-base-200/30 p-0.5 md:flex"
           role="group"
           aria-label="Marcar resultado da execução"
         >
@@ -283,11 +294,15 @@ export const TestCaseItem: React.FC<{
             title="Aprovar"
             aria-label="Marcar como Aprovado"
             className={cn(
-              'btn btn-xs min-h-8 min-w-8 rounded-full px-0 font-normal',
-              testCase.status === 'Passed' ? 'btn-success' : 'btn-ghost border border-success/40 text-success'
+              'inline-flex h-7 w-7 items-center justify-center rounded-md transition-all duration-150',
+              testCase.status === 'Passed'
+                ? 'bg-success/20 text-success ring-1 ring-success/30 scale-105'
+                : 'text-success/60 hover:bg-success/10 hover:text-success hover:scale-105'
             )}
           >
-            ✅
+            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20 6L9 17l-5-5" />
+            </svg>
           </button>
           <button
             type="button"
@@ -295,11 +310,15 @@ export const TestCaseItem: React.FC<{
             title="Reprovar"
             aria-label="Marcar como Reprovado"
             className={cn(
-              'btn btn-xs min-h-8 min-w-8 rounded-full px-0 font-normal',
-              testCase.status === 'Failed' ? 'btn-error' : 'btn-ghost border border-error/40 text-error'
+              'inline-flex h-7 w-7 items-center justify-center rounded-md transition-all duration-150',
+              testCase.status === 'Failed'
+                ? 'bg-error/20 text-error ring-1 ring-error/30 scale-105'
+                : 'text-error/60 hover:bg-error/10 hover:text-error hover:scale-105'
             )}
           >
-            ❌
+            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M18 6L6 18M6 6l12 12" />
+            </svg>
           </button>
           <button
             type="button"
@@ -307,13 +326,15 @@ export const TestCaseItem: React.FC<{
             title="Bloquear"
             aria-label="Marcar como Bloqueado"
             className={cn(
-              'btn btn-xs min-h-8 min-w-8 rounded-full px-0 font-normal',
+              'inline-flex h-7 w-7 items-center justify-center rounded-md transition-all duration-150',
               testCase.status === 'Blocked'
-                ? 'btn-warning'
-                : 'btn-ghost border border-warning/40 text-warning'
+                ? 'bg-warning/20 text-warning ring-1 ring-warning/30 scale-105'
+                : 'text-warning/60 hover:bg-warning/10 hover:text-warning hover:scale-105'
             )}
           >
-            ⚠️
+            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+            </svg>
           </button>
         </div>
 
