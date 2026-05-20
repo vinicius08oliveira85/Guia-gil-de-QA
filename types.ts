@@ -148,6 +148,16 @@ export interface GeneralIAAnalysis {
   snapshotHash?: string;
 }
 
+export interface JiraSprint {
+  id: number;
+  name: string;
+  state: 'active' | 'future' | 'closed';
+  startDate?: string;
+  endDate?: string;
+  completeDate?: string;
+  goal?: string;
+}
+
 export interface JiraTask {
   id: string;
   title: string;
@@ -164,6 +174,7 @@ export interface JiraTask {
   type: JiraTaskType;
   parentId?: string;
   epicKey?: string; // Key do Epic vinculado (para Histórias vinculadas a Epics)
+  sprints?: JiraSprint[]; // Sprints vinculadas à tarefa
   bddScenarios?: BddScenario[];
   severity?: BugSeverity;
   priority?: TaskPriority;
