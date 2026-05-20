@@ -17,7 +17,8 @@ export function getTaskTypeLeftBorderClass(taskType: string | undefined): string
     return 'border-l-4 border-l-success';
   }
   if (norm === 'tarefa' || norm === 'task') {
-    return 'border-l-4 border-l-info';
+    // Mesmo azul da badge TAREFA (pill info = bg-blue-600), não o token Daisy `info` do tema light.
+    return 'border-l-4 border-l-blue-600';
   }
   if (norm === 'epic') {
     return 'border-l-4 border-l-[var(--jira-task-epic-accent)]';
