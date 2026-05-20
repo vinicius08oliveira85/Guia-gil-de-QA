@@ -4,7 +4,12 @@ import type { TaskTestStatus } from '../../types';
 import { cn } from '../../utils/cn';
 import { TaskTestStatusBadge } from '../common/TaskTestStatusBadge';
 import { TestMetricBadge } from '../common/TestMetricBadge';
-import { TASK_ACTION_SLOT_CLASSNAMES, TASK_ACTION_STRIP_GRID } from './taskActionLayout';
+import {
+  TASK_ACTION_SLOT_CLASSNAMES,
+  TASK_ACTION_STRIP_GRID,
+  taskCardActionChipBusy,
+  taskCardActionChipCta,
+} from './taskActionLayout';
 
 export interface TaskExecutionSummary {
   passed: number;
@@ -76,7 +81,9 @@ export const TaskActionStrip: React.FC<TaskActionStripProps> = ({
             onClick={onGenerateAll}
             disabled={isGenerateAllDisabled}
             className={cn(
-              'w-full justify-center rounded-full px-3 py-2 sm:py-1.5 sm:px-4 min-h-[44px] sm:min-h-0 text-[10px] sm:text-xs font-bold inline-flex items-center gap-1.5 bg-primary hover:bg-primary/90 text-primary-content shrink-0',
+              taskCardActionChipCta,
+              'max-md:min-h-[44px]',
+              isGenerateAllBusy && taskCardActionChipBusy,
               generateAllClassName
             )}
             title={generateAllTitle}
@@ -95,7 +102,8 @@ export const TaskActionStrip: React.FC<TaskActionStripProps> = ({
       <TaskTestStatusBadge
         status={testStatus}
         onClick={onTestStatusClick}
-        className={cn('shrink-0 text-[10px] sm:text-xs', TASK_ACTION_SLOT_CLASSNAMES.testStatus)}
+        variant="card"
+        className={TASK_ACTION_SLOT_CLASSNAMES.testStatus}
       />
       </div>
     </div>

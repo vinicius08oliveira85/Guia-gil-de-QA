@@ -81,6 +81,14 @@ import { BddScenarioActionBar } from './BddScenarioActionBar';
 import { TaskActionStrip } from './TaskActionStrip';
 import { TASK_ACTION_SLOT_CLASSNAMES } from './taskActionLayout';
 import { JiraStatusLozenge } from './JiraStatusLozenge';
+import { TaskCardQaInsights } from './TaskCardQaInsights';
+import { getTaskQaRiskLevel, getTaskIaAnalysisSnapshotHash } from '../../services/ai/generalAnalysisService';
+import { isAnalysisOutdated } from '../../utils/analysisFreshness';
+import {
+  getTaskRiskBorderClass,
+  getTaskRiskBadgeClass,
+  getTaskQaCoverageAlerts,
+} from '../../utils/taskCardQa';
 
 /** Destaque da ação IA principal — halo via tokens Daisy (oklch) + animação existente. */
 const gerarTudoDestaqueClass =
@@ -253,19 +261,30 @@ export const JiraTaskItem: React.FC<{
     /** Título do card: apenas o título da própria tarefa (sem prefixo Epic/História). */
     const displayTitle = task.title;
 
+    const taskRiskLevel = useMemo(() => getTaskQaRiskLevel(task), [task]);
+
+    const iaAnalysisStale = useMemo(() => {
+      if (!task.iaAnalysis) return false;
+      return isAnalysisOutdated(task.iaAnalysis, getTaskIaAnalysisSnapshotHash(task));
+    }, [task]);
+
+    const taskQaAlerts = useMemo(
+      () => getTaskQaCoverageAlerts(task, taskTypeNorm),
+      [task, taskTypeNorm]
+    );
+
+    const showTaskQaInsights = showTestExecutionSummary || taskQaAlerts.length > 0 || iaAnalysisStale;
+
     /**
-     * Acento vertical à esquerda (não contorna o card inteiro).
-     * Favorito = dourado e tem precedência sobre o tipo.
+     * Acento lateral: favorito > risco de QA > tipo de issue.
      */
     const taskCardLeftAccentClass = useMemo(() => {
       if (task.isFavorite) return 'border-l-4 border-l-amber-500';
-      if (taskTypeNorm === 'epic') return 'border-l-4 jira-task-epic-left-accent';
-      if (['tarefa', 'task'].includes(taskTypeNorm))
-        return 'border-l-4 border-l-[color:var(--chart-4)]';
-      if (taskTypeNorm === 'bug') return 'border-l-4 border-l-error';
-      if (['história', 'story'].includes(taskTypeNorm)) return 'border-l-4 border-l-success';
-      return 'border-l-4 border-l-base-300';
-    }, [taskTypeNorm, task.isFavorite]);
+      if (['tarefa', 'bug', 'task', 'história', 'story', 'epic'].includes(taskTypeNorm)) {
+        return getTaskRiskBorderClass(taskRiskLevel);
+      }
+      return getTaskRiskBorderClass('Baixo');
+    }, [task.isFavorite, taskTypeNorm, taskRiskLevel]);
     const typeBadgeVariant = useMemo((): React.ComponentProps<typeof Badge>['variant'] => {
       if (['tarefa', 'task'].includes(taskTypeNorm)) return 'info';
       if (taskTypeNorm === 'bug') return 'error';
@@ -1720,28 +1739,48 @@ export const JiraTaskItem: React.FC<{
                 statusColor={currentStatusColor}
                 className="shrink-0"
               />
+              <span
+                className={getTaskRiskBadgeClass(taskRiskLevel)}
+                title={`Risco ${taskRiskLevel}`}
+              >
+                {taskRiskLevel}
+              </span>
             </div>
             <div
               className={cn(
-                'flex min-w-0 items-center gap-2',
-                'max-md:row-start-3 max-md:w-full max-md:items-start',
+                'flex min-w-0 flex-col gap-1',
+                'max-md:row-start-3 max-md:w-full',
                 'md:col-start-3 md:row-start-1 md:min-w-0 md:overflow-hidden md:pl-1'
               )}
             >
-              <span
-                className="min-w-0 flex-1 font-heading text-xs font-semibold leading-snug text-base-content max-md:line-clamp-2 max-md:whitespace-normal max-md:break-words sm:text-sm md:truncate md:whitespace-nowrap"
-                title={displayTitle}
-              >
-                {displayTitle}
-              </span>
-              {(task.type === 'Tarefa' || task.type === 'Bug') && (
-                <TestCasesFreshnessIndicator
-                  task={task}
-                  variant="compact"
-                  isGenerating={isGeneratingTests || !!isGeneratingAll || isGenerating}
-                  className="inline-flex shrink-0"
+              <div className="flex min-w-0 items-center gap-2">
+                <span
+                  className="min-w-0 flex-1 font-heading text-xs font-semibold leading-snug text-base-content max-md:line-clamp-2 max-md:whitespace-normal max-md:break-words sm:text-sm md:truncate md:whitespace-nowrap"
+                  title={displayTitle}
+                >
+                  {displayTitle}
+                </span>
+                {(task.type === 'Tarefa' || task.type === 'Bug') && (
+                  <TestCasesFreshnessIndicator
+                    task={task}
+                    variant="compact"
+                    isGenerating={isGeneratingTests || !!isGeneratingAll || isGenerating}
+                    className="inline-flex shrink-0"
+                  />
+                )}
+              </div>
+              {showTaskQaInsights ? (
+                <TaskCardQaInsights
+                  counts={{
+                    total: testExecutionSummary.total,
+                    passed: testExecutionSummary.passed,
+                    failed: testExecutionSummary.failed,
+                    pending: testExecutionSummary.pending,
+                  }}
+                  qaAlerts={taskQaAlerts}
+                  iaAnalysisStale={iaAnalysisStale}
                 />
-              )}
+              ) : null}
             </div>
 
             <div
@@ -1756,7 +1795,7 @@ export const JiraTaskItem: React.FC<{
               <TaskActionStrip
                 aiPhaseMessage={aiPhaseMessage}
                 isAiProcessing={isAiProcessing}
-                showMetrics={showTestExecutionSummary}
+                showMetrics={false}
                 metrics={testExecutionSummary}
                 showGenerateAll={showGenerateAllAction}
                 onGenerateAll={e => {
@@ -1767,7 +1806,6 @@ export const JiraTaskItem: React.FC<{
                 isGenerateAllDisabled={
                   isGeneratingAll || isGenerating || isGeneratingBdd || isGeneratingTests
                 }
-                generateAllClassName={gerarTudoDestaqueClass}
                 generateAllTitle={generateAllTitle}
                 generateAllAriaLabel={generateAllAriaLabel}
                 testStatus={taskTestStatus ?? 'testar'}
