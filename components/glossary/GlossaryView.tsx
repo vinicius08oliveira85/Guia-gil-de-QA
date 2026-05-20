@@ -8,6 +8,8 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { Modal } from '../common/Modal';
 import { SectionHeader } from '../common/SectionHeader';
+import { filterPillClass, projectViewPanel, projectViewShell, searchInputClass } from '../common/viewUi';
+import { cn } from '../../utils/cn';
 
 export const GlossaryView: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -74,8 +76,8 @@ export const GlossaryView: React.FC = () => {
   };
 
   return (
-    <div className="py-8 md:py-10 lg:py-12">
-      <div className="mb-8 flex flex-col gap-6">
+    <div className={cn(projectViewShell, 'py-4 sm:py-6')}>
+      <div className={cn(projectViewPanel, 'mb-4 flex flex-col gap-5 sm:mb-6')}>
         <SectionHeader
           as="h1"
           align="left"
@@ -99,7 +101,7 @@ export const GlossaryView: React.FC = () => {
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             placeholder="Buscar termos…"
-            className="input input-bordered w-full rounded-[var(--radius)] border-base-300 bg-base-100 text-base-content placeholder:text-base-content/50 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            className={searchInputClass}
           />
         </div>
 
@@ -107,9 +109,7 @@ export const GlossaryView: React.FC = () => {
           <button
             type="button"
             onClick={() => setSelectedCategory('Todos')}
-            className={`btn btn-sm rounded-[var(--radius)] transition-colors ${
-              selectedCategory === 'Todos' ? 'btn-primary' : 'btn-outline'
-            }`}
+            className={filterPillClass(selectedCategory === 'Todos')}
           >
             Todos ({glossaryTerms.length})
           </button>
@@ -120,9 +120,7 @@ export const GlossaryView: React.FC = () => {
                 key={category}
                 type="button"
                 onClick={() => setSelectedCategory(category)}
-                className={`btn btn-sm rounded-[var(--radius)] transition-colors ${
-                  selectedCategory === category ? 'btn-primary' : 'btn-outline'
-                }`}
+                className={filterPillClass(selectedCategory === category)}
               >
                 {category} ({count})
               </button>
@@ -132,7 +130,7 @@ export const GlossaryView: React.FC = () => {
       </div>
 
       <motion.div
-        className="grid grid-cols-1 lg:grid-cols-2"
+        className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4"
         style={{ gap: '1rem' }}
         initial="hidden"
         animate="visible"
@@ -150,7 +148,7 @@ export const GlossaryView: React.FC = () => {
               <motion.div
                 key={`${term.term}-${index}`}
                 onClick={() => setSelectedTerm(term)}
-                className="group relative cursor-pointer overflow-hidden rounded-[var(--rounded-box)] border border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] bg-base-100 p-5 soft-shadow transition-[transform,box-shadow] duration-200 hover:ring-2 hover:ring-[color-mix(in_oklch,oklch(var(--p))_22%,transparent)]"
+                className="group relative cursor-pointer overflow-hidden rounded-[var(--rounded-box)] border border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] bg-base-100 p-5 soft-shadow transition-[transform,box-shadow] duration-200 hover:ring-2 hover:ring-[color-mix(in_srgb,var(--brand-cta)_22%,transparent)]"
                 variants={{
                   hidden: { opacity: 0, y: 20, scale: 0.98 },
                   visible: {
@@ -283,7 +281,7 @@ export const GlossaryView: React.FC = () => {
 
       {/* Estatísticas */}
       <motion.div
-        className="mt-8 rounded-[var(--rounded-box)] border border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] bg-base-100 p-6 soft-shadow transition-shadow duration-200 hover:ring-2 hover:ring-[color-mix(in_oklch,oklch(var(--p))_18%,transparent)]"
+        className="mt-8 rounded-[var(--rounded-box)] border border-[color-mix(in_srgb,var(--foreground)_12%,transparent)] bg-base-100 p-6 soft-shadow transition-shadow duration-200 hover:ring-2 hover:ring-[color-mix(in_srgb,var(--brand-cta)_18%,transparent)]"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
@@ -310,7 +308,7 @@ export const GlossaryView: React.FC = () => {
             return (
               <motion.div
                 key={category}
-                className="group text-center rounded-[var(--rounded-box)] border border-[color-mix(in_srgb,var(--foreground)_10%,transparent)] bg-base-200/50 p-4 soft-shadow transition-transform duration-200 hover:scale-105 hover:brightness-[1.06] hover:ring-2 hover:ring-[color-mix(in_oklch,oklch(var(--p))_20%,transparent)]"
+                className="group text-center rounded-[var(--rounded-box)] border border-[color-mix(in_srgb,var(--foreground)_10%,transparent)] bg-base-200/50 p-4 soft-shadow transition-transform duration-200 hover:scale-105 hover:brightness-[1.06] hover:ring-2 hover:ring-[color-mix(in_srgb,var(--brand-cta)_20%,transparent)]"
                 variants={{
                   hidden: { opacity: 0, scale: 0.9 },
                   visible: { opacity: 1, scale: 1 },

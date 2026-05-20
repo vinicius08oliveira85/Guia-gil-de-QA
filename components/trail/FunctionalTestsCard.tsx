@@ -1,5 +1,7 @@
 import React, { useMemo } from 'react';
 import { JiraTask } from '../../types';
+import { cn } from '../../utils/cn';
+import { projectViewCard } from '../common/viewUi';
 
 interface FunctionalTestsCardProps {
   versionLabel: string;
@@ -37,7 +39,7 @@ export const FunctionalTestsCard: React.FC<FunctionalTestsCardProps> = ({
   }, [tasks]);
 
   return (
-    <section className="min-w-0 space-y-5 rounded-[var(--rounded-box)] border border-base-300 bg-base-100 p-5 shadow-sm sm:p-6">
+    <section className={cn('min-w-0 space-y-5', projectViewCard)}>
       <header>
         <p className="text-xs font-semibold uppercase tracking-[0.35em] text-base-content/60">
           Bloco 3

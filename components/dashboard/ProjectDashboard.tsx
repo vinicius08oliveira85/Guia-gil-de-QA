@@ -15,9 +15,6 @@ import {
 const LABEL_STYLE: React.CSSProperties = { color: 'var(--text-secondary)' };
 const PRIMARY_STYLE: React.CSSProperties = { color: 'var(--color-primary)' };
 
-const CARD_HOVER =
-  'transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-xl motion-reduce:transform-none motion-reduce:transition-none';
-
 function sectorPath(cx: number, cy: number, r: number, a0: number, a1: number): string {
   const x0 = cx + r * Math.cos(a0);
   const y0 = cy + r * Math.sin(a0);
@@ -187,36 +184,28 @@ function PassRateRing(props: { percent: number; tooltip: React.ReactNode }) {
   const c = 2 * Math.PI * r;
   const offset = c * (1 - Math.min(100, Math.max(0, percent)) / 100);
   const ring = (
-    <div className="group flex cursor-default items-center gap-4">
-      <svg
-        width={96}
-        height={96}
-        viewBox="0 0 88 88"
-        className="shrink-0 glow-success transition-transform duration-200 ease-out group-hover:scale-[1.03]"
-        aria-hidden
-      >
-        <circle cx={44} cy={44} r={r} fill="none" stroke="oklch(var(--b3) / 0.5)" strokeWidth={8} />
-        <circle
-          cx={44}
-          cy={44}
-          r={r}
-          fill="none"
-          stroke="var(--color-primary)"
-          strokeWidth={8}
-          strokeLinecap="round"
-          strokeDasharray={c}
-          strokeDashoffset={offset}
-          transform="rotate(-90 44 44)"
-          className="transition-[stroke-dashoffset] duration-300"
-        />
-      </svg>
-      <div>
-        <p className="text-3xl font-semibold tabular-nums" style={PRIMARY_STYLE}>
-          {percent}%
-        </p>
-        <p className="mt-0.5 text-xs" style={LABEL_STYLE}>
-          Casos executados que passaram
-        </p>
+    <div className="flex justify-center py-1">
+      <div className="relative h-24 w-24 shrink-0">
+        <svg width={96} height={96} viewBox="0 0 88 88" className="h-full w-full" aria-hidden>
+          <circle cx={44} cy={44} r={r} fill="none" stroke="oklch(var(--b3) / 0.45)" strokeWidth={8} />
+          <circle
+            cx={44}
+            cy={44}
+            r={r}
+            fill="none"
+            stroke="#22c55e"
+            strokeWidth={8}
+            strokeLinecap="round"
+            strokeDasharray={c}
+            strokeDashoffset={offset}
+            transform="rotate(-90 44 44)"
+            className="transition-[stroke-dashoffset] duration-300"
+          />
+        </svg>
+        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+          <span className="text-xl font-bold tabular-nums text-success sm:text-2xl">{percent}%</span>
+          <span className="text-[10px] font-medium text-base-content/55">Pass rate</span>
+        </div>
       </div>
     </div>
   );
@@ -241,8 +230,7 @@ function InsightCard({ title, subtitle, children, className, hint }: InsightCard
       variant="default"
       hoverable={false}
       className={cn(
-        'w-full overflow-hidden border-base-300/80 bg-base-100/95 p-4 shadow-sm backdrop-blur-sm sm:p-5',
-        CARD_HOVER,
+        'w-full overflow-hidden rounded-[var(--rounded-box)] border border-base-300/65 bg-base-100 p-4 soft-shadow sm:p-5',
         className
       )}
     >
@@ -316,7 +304,7 @@ export const ProjectDashboard: React.FC<ProjectDashboardProps> = React.memo(
 
     return (
       <section
-        className="grid w-full grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"
+        className="grid w-full grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 2xl:grid-cols-4"
         aria-label="Indicadores de qualidade e execução"
       >
         <InsightCard
@@ -347,11 +335,12 @@ export const ProjectDashboard: React.FC<ProjectDashboardProps> = React.memo(
             }
             delay={120}
           >
-            <div className="mt-3 h-2.5 w-full cursor-pointer overflow-hidden rounded-full bg-base-300/80 transition-shadow duration-200 hover:ring-2 hover:ring-primary/25">
+            <div className="mt-3 flex h-2.5 w-full overflow-hidden rounded-full bg-info/20">
               <div
-                className="h-full rounded-full transition-all duration-500"
-                style={{ width: `${m.testCoverage}%`, background: 'var(--color-primary)' }}
+                className="h-full rounded-full bg-[var(--brand-cta)] transition-all duration-500"
+                style={{ width: `${m.testCoverage}%` }}
               />
+              <div className="h-full flex-1 bg-info/30" aria-hidden />
             </div>
           </Tooltip>
           <p className="mt-2 text-xs" style={LABEL_STYLE}>
@@ -360,7 +349,7 @@ export const ProjectDashboard: React.FC<ProjectDashboardProps> = React.memo(
         </InsightCard>
 
         <InsightCard
-          title="Taxa de aprovação (Pass rate) ✅"
+          title="Taxa de aprovação"
           subtitle="Estabilidade entre casos já executados"
         >
           <PassRateRing percent={m.testPassRate} tooltip={passTooltip} />
@@ -371,37 +360,36 @@ export const ProjectDashboard: React.FC<ProjectDashboardProps> = React.memo(
           subtitle="Apenas bugs em aberto"
           hint="Passe o mouse em cada severidade para ver a contagem. Crítico pulsa quando há bugs."
         >
-          <ul className="flex flex-wrap gap-2">
+          <ul className="space-y-2.5">
             {severityOrder.map(sev => {
               const count = m.bugsBySeverity[sev];
-              const isCritical = sev === 'Crítico';
-              const pill = (
-                <span
-                  className={cn(
-                    'inline-flex cursor-default items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-medium transition-transform duration-150 hover:scale-[1.02] motion-reduce:hover:scale-100',
-                    isCritical &&
-                      count > 0 &&
-                      'border-error/50 bg-error/10 animate-pulse-subtle glow-error',
-                    !isCritical &&
-                      'border-base-300 bg-base-200/40 hover:border-primary/25 hover:bg-base-200/90'
-                  )}
-                >
-                  <span aria-hidden>{isCritical ? '🚨' : ''}</span>
-                  {sev}: <strong className="tabular-nums text-base-content">{count}</strong>
-                </span>
-              );
+              const maxSev = Math.max(...severityOrder.map(s => m.bugsBySeverity[s]), 1);
+              const barPct = (count / maxSev) * 100;
+              const barColor =
+                sev === 'Crítico'
+                  ? 'bg-error'
+                  : sev === 'Alto'
+                    ? 'bg-[var(--brand-cta)]'
+                    : sev === 'Médio'
+                      ? 'bg-warning'
+                      : 'bg-base-content/35';
+              const icon =
+                sev === 'Crítico' ? '🚨' : sev === 'Alto' ? '⚠️' : sev === 'Médio' ? '◆' : '○';
               return (
-                <li key={sev}>
-                  <Tooltip
-                    content={
-                      <span>
-                        Bugs abertos classificados como <strong>{sev}</strong>: {count}
-                      </span>
-                    }
-                    delay={100}
-                  >
-                    {pill}
-                  </Tooltip>
+                <li key={sev} className="space-y-1">
+                  <div className="flex items-center justify-between gap-2 text-xs">
+                    <span className="inline-flex items-center gap-1.5 font-medium text-base-content/80">
+                      <span aria-hidden>{icon}</span>
+                      {sev}
+                    </span>
+                    <span className="tabular-nums font-semibold text-base-content">{count}</span>
+                  </div>
+                  <div className="h-1.5 w-full overflow-hidden rounded-full bg-base-200">
+                    <div
+                      className={cn('h-full rounded-full transition-all', barColor)}
+                      style={{ width: `${barPct}%` }}
+                    />
+                  </div>
                 </li>
               );
             })}
@@ -507,14 +495,14 @@ export const ProjectDashboard: React.FC<ProjectDashboardProps> = React.memo(
               </div>
             </div>
           </div>
-          <div className="mt-3 flex h-3 w-full cursor-default overflow-hidden rounded-full bg-base-300/80 transition-shadow duration-200 hover:ring-2 hover:ring-primary/20">
+          <div className="mt-3 flex h-3 w-full overflow-hidden rounded-full bg-info/25">
             <div
-              className="h-full shrink-0 transition-[filter] duration-150 hover:brightness-110"
-              style={{ width: `${m.automationRatio}%`, background: 'var(--color-primary)' }}
+              className="h-full shrink-0 bg-success"
+              style={{ width: `${m.automationRatio}%` }}
               title={`Automação: ${m.automatedTestCases} casos (${m.automationRatio}%)`}
             />
             <div
-              className="h-full shrink-0 bg-base-content/15 transition-[filter] duration-150 hover:brightness-125"
+              className="h-full shrink-0 bg-info/50"
               style={{ width: `${Math.max(0, 100 - m.automationRatio)}%` }}
               title={`Manual / não automatizado: ${manualCases} casos`}
             />
@@ -629,7 +617,7 @@ export const ProjectDashboard: React.FC<ProjectDashboardProps> = React.memo(
             }
             delay={120}
           >
-            <div className="inline-flex cursor-default items-baseline gap-2 rounded-lg border border-primary/30 bg-primary/10 px-4 py-2 glow-success transition-transform duration-200 hover:scale-[1.02] motion-reduce:hover:scale-100">
+            <div className="inline-flex cursor-default items-baseline gap-2 rounded-lg border border-success/30 bg-success/10 px-4 py-3">
               <span className="text-2xl font-bold tabular-nums" style={PRIMARY_STYLE}>
                 {leadDays == null
                   ? '—'

@@ -1,6 +1,13 @@
 import React from 'react';
 import { Spinner } from '../common/Spinner';
 import { cn } from '../../utils/cn';
+import {
+  compactMetricTile,
+  primaryActionBtn,
+  projectViewCard,
+  pageSubtitleClass,
+  pageTitleClass,
+} from '../common/viewUi';
 
 interface ProjectTrailHeaderProps {
   projectName: string;
@@ -41,31 +48,30 @@ export const ProjectTrailHeader: React.FC<ProjectTrailHeaderProps> = ({
     : 'Nunca executada';
 
   return (
-    <section className="mica flex flex-col gap-6 !rounded-[var(--rounded-box)] border-0 p-5 sm:p-6 lg:p-8">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-base-content/60">
-            Trilha do Projeto
+    <section className={cn(projectViewCard, 'space-y-5')}>
+      <header className="flex flex-col gap-4 border-b border-base-300/60 pb-4 lg:flex-row lg:items-start lg:justify-between">
+        <div className="min-w-0">
+          <p className="text-xs font-semibold uppercase tracking-widest text-base-content/55">
+            Trilha do projeto
           </p>
-          <h2 className="mt-2 text-2xl font-semibold tracking-tight text-base-content">
-            {projectName}
-          </h2>
-          <p className="mt-2 text-sm text-base-content/70 sm:text-base">
+          <h2 className={cn(pageTitleClass, 'mt-1')}>{projectName}</h2>
+          <p className={cn(pageSubtitleClass, 'mt-2')}>
             Você está em <span className="font-semibold text-base-content">{currentPhase}</span>
             {nextPhase && (
               <>
-                , próximo checkpoint:{' '}
-                <span className="font-semibold text-primary">{nextPhase}</span>
+                {' '}
+                — próximo checkpoint:{' '}
+                <span className="font-semibold text-[var(--brand-cta)]">{nextPhase}</span>
               </>
             )}
           </p>
         </div>
 
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <label className="flex flex-col w-full text-xs font-semibold uppercase tracking-[0.2em] text-base-content/60 sm:w-auto">
-            Versão do projeto
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+          <label className="flex min-w-[10rem] flex-col gap-1.5 text-xs font-medium text-base-content/65">
+            Versão
             <select
-              className="select select-bordered mt-2 w-full sm:w-auto"
+              className="select select-bordered h-10 min-h-0 rounded-lg border-base-300/80 bg-base-100 text-sm shadow-sm"
               value={selectedVersion}
               onChange={event => onVersionChange(event.target.value)}
             >
@@ -78,65 +84,61 @@ export const ProjectTrailHeader: React.FC<ProjectTrailHeaderProps> = ({
           </label>
 
           <button
+            type="button"
             onClick={onAskAI}
             disabled={isAiLoading}
-            className={cn(
-              'btn btn-sm h-12 whitespace-nowrap rounded-[var(--radius)] border-0 px-6',
-              'bg-[oklch(var(--p))] text-[oklch(var(--pc))]',
-              'hover:bg-[color-mix(in_oklch,oklch(var(--p))_88%,oklch(var(--bc)))]',
-              'disabled:opacity-50'
-            )}
+            className={cn(primaryActionBtn, 'w-full sm:w-auto')}
           >
-            {isAiLoading ? <Spinner small /> : <span aria-hidden>🧠</span>}
-            {analysisOutdated ? 'Atualizar Recomendações' : 'O que posso fazer agora?'}
+            {isAiLoading ? <Spinner size="sm" /> : <span aria-hidden>🧠</span>}
+            {analysisOutdated ? 'Atualizar recomendações' : 'O que posso fazer agora?'}
           </button>
         </div>
-      </div>
+      </header>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        <div className="rounded-2xl border border-base-300 bg-base-200 p-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-base-content/60">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+        <div className={compactMetricTile}>
+          <p className="text-xs font-semibold uppercase tracking-wider text-base-content/55">
             Fase atual
           </p>
           <p className="mt-2 text-lg font-semibold text-base-content">{currentPhase}</p>
-          <p className="mt-1 text-sm text-base-content/70">
+          <p className="mt-1 text-sm text-base-content/65">
             {nextPhase ? `Próxima: ${nextPhase}` : 'Todas as fases mapeadas'}
           </p>
         </div>
 
-        <div className="rounded-2xl border border-base-300 bg-base-200 p-4">
-          <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-[0.2em] text-base-content/60">
+        <div className={compactMetricTile}>
+          <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-base-content/55">
             <span>Progresso geral</span>
             <span className="text-base-content">{overallProgress}%</span>
           </div>
-          <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-base-300">
+          <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-base-300/80">
             <div
-              className="h-full rounded-full bg-primary transition-all duration-300"
+              className="h-full rounded-full bg-[var(--brand-cta)] transition-all duration-300"
               style={{ width: `${overallProgress}%` }}
             />
           </div>
-          <p className="mt-2 text-sm text-base-content/70">{remainingPhases} fase(s) restante(s)</p>
+          <p className="mt-2 text-sm text-base-content/65">{remainingPhases} fase(s) restante(s)</p>
         </div>
 
         <div
-          className={`rounded-2xl border p-4 ${analysisOutdated ? 'border-amber-200 bg-amber-50' : 'border-emerald-200 bg-emerald-50'}`}
+          className={cn(
+            compactMetricTile,
+            analysisOutdated ? 'border-warning/40 bg-warning/5' : 'border-success/30 bg-success/5'
+          )}
         >
-          <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-[0.2em] text-base-content/60">
+          <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-base-content/55">
             <span>Status da IA</span>
             <span
-              className={`text-sm font-semibold ${analysisOutdated ? 'text-amber-800' : 'text-emerald-800'}`}
+              className={cn(
+                'text-sm font-semibold',
+                analysisOutdated ? 'text-warning' : 'text-success'
+              )}
             >
               {analysisOutdated ? 'Revisar' : 'Atualizado'}
             </span>
           </div>
-          <p className="mt-2 text-sm text-base-content/70 leading-relaxed">
-            Última análise:{' '}
-            <span className="font-medium text-base-content">{formattedAnalysis}</span>
-          </p>
-          <p className="mt-1 text-xs text-base-content/70">
-            {analysisOutdated
-              ? 'Detectamos alterações recentes. Execute a IA para recomendações atualizadas.'
-              : 'Todas as recomendações levam em conta as últimas atualizações do projeto.'}
+          <p className="mt-2 text-sm leading-relaxed text-base-content/70">
+            Última análise: <span className="font-medium text-base-content">{formattedAnalysis}</span>
           </p>
         </div>
       </div>

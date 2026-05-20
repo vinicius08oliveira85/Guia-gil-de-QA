@@ -59,7 +59,7 @@ describe('WorkspaceAlertsPanel', () => {
         onToggleListFilterNeedsAttention={onToggle}
       />
     );
-    await user.click(screen.getByRole('button', { name: /Filtrar grade: só estes projetos/i }));
+    await user.click(screen.getByRole('button', { name: /^Filtrar grade$/i }));
     expect(onToggle).toHaveBeenCalledTimes(1);
   });
 

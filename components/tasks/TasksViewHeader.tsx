@@ -1,11 +1,11 @@
 import React from 'react';
 import { Plus, Filter } from 'lucide-react';
-import { Button } from '../common/Button';
-import { SectionHeader } from '../common/SectionHeader';
 import { GeneralIAAnalysisButton } from './GeneralIAAnalysisButton';
 import { cn } from '../../utils/cn';
+import { outlineActionBtn, primaryActionBtn } from '../common/viewUi';
 
 export interface TasksViewHeaderProps {
+  jiraProjectKey?: string;
   onAddTask: () => void;
   onOpenFilters: () => void;
   onAnalyze: () => void;
@@ -20,6 +20,7 @@ export interface TasksViewHeaderProps {
 }
 
 export const TasksViewHeader: React.FC<TasksViewHeaderProps> = ({
+  jiraProjectKey,
   onAddTask,
   onOpenFilters,
   onAnalyze,
@@ -27,59 +28,54 @@ export const TasksViewHeader: React.FC<TasksViewHeaderProps> = ({
   analysisProgress,
   activeFiltersCount,
 }) => (
-  <div className="flex w-full flex-col items-start justify-between gap-tasks-panel-tight md:flex-row md:items-center md:gap-tasks-panel-loose">
-    <SectionHeader
-      as="h1"
-      align="left"
-      fullWidth
-      compact
-      titleSize="page"
-      density="dense"
-      title="Tarefas & Casos de Teste"
-      description="Progresso das atividades e resultados de QA."
-      className="max-w-2xl"
-    />
-    <div className="flex w-full flex-wrap items-center justify-start gap-2 md:w-auto md:justify-end">
-      <Button
-        variant="default"
-        size="sm"
-        onClick={onAddTask}
-        disabled={isRunningGeneralAnalysis}
-        title={isRunningGeneralAnalysis ? 'Conclua a análise em andamento' : undefined}
-        className={cn(
-          'flex min-h-[44px] shrink-0 items-center gap-1.5 border-0 px-4 text-sm font-semibold shadow-sm transition-all duration-200 active:scale-[0.98] sm:min-h-0',
-          'rounded-[var(--radius)] bg-[oklch(var(--p))] text-[oklch(var(--pc))]',
-          'hover:bg-[color-mix(in_oklch,oklch(var(--p))_88%,oklch(var(--bc)))]'
-        )}
-      >
-        <Plus className="h-4 w-4" aria-hidden />
-        <span>Adicionar Tarefa</span>
-      </Button>
+  <header className="flex flex-col gap-3 border-b border-base-300/60 pb-4 sm:gap-4 sm:pb-5">
+    <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+      <div className="min-w-0">
+        <div className="mb-1.5 flex flex-wrap items-center gap-2">
+          <h1 className="font-heading text-2xl font-bold tracking-tight text-base-content sm:text-[1.65rem]">
+            Tarefas & Casos de Teste
+          </h1>
+          {jiraProjectKey && (
+            <span className="shrink-0 rounded-md border border-base-300/70 bg-base-200/50 px-2 py-0.5 text-xs font-medium text-base-content/65">
+              Jira: {jiraProjectKey}
+            </span>
+          )}
+        </div>
+        <p className="max-w-2xl text-sm leading-relaxed text-base-content/70">
+          Progresso das atividades, casos de teste e resultados de QA do projeto.
+        </p>
+      </div>
 
-      <div className="shrink-0">
+      <div className="flex w-full flex-wrap items-center gap-2 lg:w-auto lg:justify-end">
+        <button
+          type="button"
+          onClick={onAddTask}
+          disabled={isRunningGeneralAnalysis}
+          title={isRunningGeneralAnalysis ? 'Conclua a análise em andamento' : undefined}
+          className={primaryActionBtn}
+        >
+          <Plus className="h-4 w-4 shrink-0" aria-hidden />
+          Adicionar Tarefa
+        </button>
+
         <GeneralIAAnalysisButton
           onAnalyze={onAnalyze}
           isAnalyzing={isRunningGeneralAnalysis}
           progress={analysisProgress}
         />
+
+        <button
+          type="button"
+          onClick={onOpenFilters}
+          disabled={isRunningGeneralAnalysis}
+          title={isRunningGeneralAnalysis ? 'Conclua a análise em andamento' : undefined}
+          className={cn(outlineActionBtn, activeFiltersCount > 0 && 'border-[color-mix(in_srgb,var(--brand-cta)_45%,transparent)] text-[var(--brand-cta)]')}
+          aria-label={`Filtros${activeFiltersCount > 0 ? `, ${activeFiltersCount} ativos` : ''}`}
+        >
+          <Filter className="h-4 w-4 shrink-0" aria-hidden />
+          Filtros{activeFiltersCount > 0 ? ` (${activeFiltersCount})` : ''}
+        </button>
       </div>
-
-      <div className="hidden h-8 w-px shrink-0 bg-base-300 sm:block" aria-hidden />
-
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={onOpenFilters}
-        disabled={isRunningGeneralAnalysis}
-        title={isRunningGeneralAnalysis ? 'Conclua a análise em andamento' : undefined}
-        className={cn(
-          'flex min-h-[44px] shrink-0 items-center gap-1.5 border border-base-300 px-3 text-sm transition-all duration-200 active:scale-[0.98] sm:min-h-0',
-          'rounded-[var(--radius)] hover:bg-[color-mix(in_srgb,var(--foreground)_8%,transparent)]'
-        )}
-      >
-        <Filter className="h-4 w-4" aria-hidden />
-        <span>{`Filtros${activeFiltersCount > 0 ? ` (${activeFiltersCount})` : ''}`}</span>
-      </Button>
     </div>
-  </div>
+  </header>
 );

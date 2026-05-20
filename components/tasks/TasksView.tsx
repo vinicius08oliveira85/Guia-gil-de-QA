@@ -11,7 +11,6 @@ import {
 } from '../../types';
 import { getAIService } from '../../services/ai/aiServiceFactory';
 import { generateTestArtifactsForTask } from '../../services/ai/testCaseGenerationService';
-import { Card } from '../common/Card';
 import { Modal } from '../common/Modal';
 import { TaskForm } from './TaskForm';
 import { TestCaseEditorModal } from './TestCaseEditorModal';
@@ -83,6 +82,7 @@ import {
 } from './tasksViewHelpers';
 import { testCaseLooksAutomated } from '../../utils/testCaseMigration';
 import { VirtualizedTaskRootList, shouldVirtualizeTaskRoots } from './VirtualizedTaskRootList';
+import { outlineActionBtn, projectViewPanel, projectViewShell } from '../common/viewUi';
 
 export const TasksView: React.FC<{
   project: Project;
@@ -200,7 +200,7 @@ export const TasksView: React.FC<{
       hasTasks: !!project?.tasks,
     });
     return (
-      <div className="container mx-auto p-4 md:p-5">
+      <div className="w-full min-w-0 max-w-none p-4 md:p-5">
         <EmptyState
           title="Projeto inválido"
           description="Projeto inválido ou sem tarefas. Por favor, selecione outro projeto ou crie um novo."
@@ -1975,11 +1975,18 @@ export const TasksView: React.FC<{
     [renderTaskTree, reduceListMotion]
   );
 
+  const jiraProjectKey = project.settings?.jiraProjectKey;
+
   return (
     <>
-      <Card hoverable={false} className="p-3 py-4 sm:p-4 sm:py-6 lg:p-5">
-        <div className="tasks-panel-scope mb-tasks-panel-loose flex flex-col gap-tasks-panel rounded-xl border border-base-300/80 bg-base-100/95 p-3 shadow-sm backdrop-blur-md transition-all hover:shadow-md sm:p-4">
+      <div
+        className={projectViewShell}
+        role="main"
+        aria-label="Tarefas e casos de teste do projeto"
+      >
+        <section className={projectViewPanel}>
           <TasksViewHeader
+            jiraProjectKey={jiraProjectKey}
             onAddTask={() => openTaskFormForNew()}
             onOpenFilters={() => setIsFiltersModalOpen(true)}
             onAnalyze={handleGeneralIAAnalysis}
@@ -1988,23 +1995,25 @@ export const TasksView: React.FC<{
             activeFiltersCount={activeFiltersCount}
           />
 
-          <TasksViewSearch
-            searchQuery={searchQuery}
-            onSearchChange={setSearchQuery}
-            searchInputRef={searchInputRef}
-          />
+          <div className="mt-4 space-y-4 border-t border-base-300/50 pt-4">
+            <TasksViewSearch
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              searchInputRef={searchInputRef}
+            />
 
-          <motion.div
-            className="mb-0"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            <GlassIndicatorCards items={indicatorItems} />
-          </motion.div>
-        </div>
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.25 }}
+            >
+              <GlassIndicatorCards items={indicatorItems} />
+            </motion.div>
+          </div>
+        </section>
 
-        <div className="flex flex-col gap-tasks-panel-loose">
+        <section className={projectViewPanel}>
+          <div className="flex flex-col gap-4 sm:gap-5">
           <Modal
             isOpen={isFiltersModalOpen}
             onClose={() => setIsFiltersModalOpen(false)}
@@ -2219,33 +2228,31 @@ export const TasksView: React.FC<{
 
               {taskTree.length > 0 ? (
                 <div className="space-y-6">
-                  <div className="flex flex-wrap items-center gap-3 justify-end">
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setShowExportTasksModal(true)}
-                        className="btn btn-outline btn-sm min-h-[44px] gap-1.5 rounded-full border-base-300 text-xs transition-all duration-200 hover:bg-base-200/50 sm:min-h-0"
-                        aria-label={`Exportar lista visível (${filteredTasks.length} tarefas)`}
-                      >
-                        <Download className="h-3.5 w-3.5 shrink-0" aria-hidden />
-                        Exportar lista visível{' '}
-                        {filteredTasks.length !== project.tasks.length
-                          ? `(${filteredTasks.length})`
-                          : ''}
-                      </button>
-                    </div>
+                  <div className="flex flex-wrap items-end justify-end gap-3 border-b border-base-300/50 pb-3">
+                    <button
+                      type="button"
+                      onClick={() => setShowExportTasksModal(true)}
+                      className={outlineActionBtn}
+                      aria-label={`Exportar lista visível (${filteredTasks.length} tarefas)`}
+                    >
+                      <Download className="h-4 w-4 shrink-0" aria-hidden />
+                      Exportar lista
+                      {filteredTasks.length !== project.tasks.length
+                        ? ` (${filteredTasks.length})`
+                        : ''}
+                    </button>
                     <div className="flex flex-wrap items-center gap-2">
                       <label
                         htmlFor="tasks-sort-by"
-                        className="text-xs font-medium text-base-content/70"
+                        className="text-xs font-medium text-base-content/65"
                       >
-                        Ordenar por
+                        Ordenar
                       </label>
                       <select
                         id="tasks-sort-by"
                         value={sortBy}
                         onChange={e => setSortBy(e.target.value as TaskSortBy)}
-                        className="select select-bordered select-sm rounded-lg text-sm bg-base-100 border-base-300"
+                        className="select select-bordered select-sm h-9 min-h-0 rounded-lg border-base-300/80 bg-base-100 text-sm shadow-sm"
                         aria-label="Ordenação da lista de tarefas"
                       >
                         <option value="id">ID</option>
@@ -2258,15 +2265,15 @@ export const TasksView: React.FC<{
                     <div className="flex flex-wrap items-center gap-2">
                       <label
                         htmlFor="tasks-group-by"
-                        className="text-xs font-medium text-base-content/70"
+                        className="text-xs font-medium text-base-content/65"
                       >
-                        Agrupar por
+                        Agrupar
                       </label>
                       <select
                         id="tasks-group-by"
                         value={groupBy}
                         onChange={e => setGroupBy(e.target.value as TaskGroupBy)}
-                        className="select select-bordered select-sm rounded-lg text-sm bg-base-100 border-base-300"
+                        className="select select-bordered select-sm h-9 min-h-0 rounded-lg border-base-300/80 bg-base-100 text-sm shadow-sm"
                         aria-label="Agrupar lista de tarefas por"
                       >
                         <option value="none">Nenhum</option>
@@ -2280,7 +2287,7 @@ export const TasksView: React.FC<{
                     <div className="space-y-6">
                       {groupedTasksEntriesWithA11y.map(([groupLabel, tasksInGroup, groupA11y]) => (
                         <section key={groupLabel} aria-label={`Grupo: ${groupLabel}`}>
-                          <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-base-content/70 mb-3">
+                          <h3 className="mb-3 flex items-center gap-2 font-heading text-xs font-bold uppercase tracking-wider text-base-content/60">
                             <List className="w-4 h-4" aria-hidden />
                             {groupLabel}
                           </h3>
@@ -2296,7 +2303,7 @@ export const TasksView: React.FC<{
                     <>
                       {favoriteRoots.length > 0 && (
                         <section aria-label="Favoritos">
-                          <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-primary mb-3">
+                          <h3 className="mb-3 flex items-center gap-2 font-heading text-xs font-bold uppercase tracking-wider text-[var(--brand-cta)]">
                             <Star className="w-4 h-4 fill-amber-400 text-amber-400" aria-hidden />
                             Favoritos
                           </h3>
@@ -2311,7 +2318,7 @@ export const TasksView: React.FC<{
                         <div className="border-t border-base-300 my-4" aria-hidden />
                       )}
                       <section aria-label="Outras tarefas">
-                        <h3 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-base-content/70 mb-3">
+                        <h3 className="mb-3 flex items-center gap-2 font-heading text-xs font-bold uppercase tracking-wider text-base-content/60">
                           <List className="w-4 h-4" aria-hidden />
                           Outras Tarefas
                         </h3>
@@ -2354,8 +2361,9 @@ export const TasksView: React.FC<{
               )}
             </div>
           </TasksViewList>
-        </div>
-      </Card>
+          </div>
+        </section>
+      </div>
 
       <FileExportModal
         isOpen={showExportTasksModal}

@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Project } from '../../types';
-import { Card } from '../common/Card';
+import { projectViewCard } from '../common/viewUi';
+import { cn } from '../../utils/cn';
 import { CheckCircleIcon, InfoIcon } from '../common/Icons';
 import { AnalysisModal } from './AnalysisModal';
 
@@ -38,10 +39,10 @@ export const ShiftLeftCard: React.FC<{ project: Project }> = ({ project }) => {
 
   return (
     <>
-      <Card className="mb-8">
+      <div className={cn(projectViewCard, 'mb-0 h-full')}>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <h3 className="text-xl font-bold text-white">Análise de Shift Left Testing</h3>
+            <h3 className="text-xl font-bold text-base-content">Análise de Shift Left Testing</h3>
             <div className="tooltip-container">
               <InfoIcon />
               <span className="tooltip-text">
@@ -63,12 +64,12 @@ export const ShiftLeftCard: React.FC<{ project: Project }> = ({ project }) => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <h4 className="font-bold text-teal-400 mb-2 text-sm">Ganhos Principais</h4>
+            <h4 className="font-bold text-[var(--brand-cta)] mb-2 text-sm">Ganhos Principais</h4>
             <ul className="space-y-1">
               {shiftLeftBenefits.slice(0, 3).map((benefit, i) => (
                 <li key={i} className="flex items-start">
                   <CheckCircleIcon className="w-4 h-4 mr-2 text-teal-400 flex-shrink-0 mt-0.5" />
-                  <span className="text-gray-300 text-xs">{benefit}</span>
+                  <span className="text-base-content/80 text-xs">{benefit}</span>
                 </li>
               ))}
               {shiftLeftBenefits.length > 3 && (
@@ -79,15 +80,15 @@ export const ShiftLeftCard: React.FC<{ project: Project }> = ({ project }) => {
             </ul>
           </div>
           <div>
-            <h4 className="font-bold text-teal-400 mb-2 text-sm">Recomendações da IA</h4>
+            <h4 className="font-bold text-[var(--brand-cta)] mb-2 text-sm">Recomendações da IA</h4>
             {project.shiftLeftAnalysis ? (
               <div className="space-y-2">
                 {Object.entries(recommendationsByPhase)
                   .slice(0, 2)
                   .map(([phase, recs]) => (
                     <div key={phase}>
-                      <h5 className="font-semibold text-white text-xs">{phase}</h5>
-                      <ul className="list-disc list-inside text-gray-400 text-xs mt-1">
+                      <h5 className="font-semibold text-base-content text-xs">{phase}</h5>
+                      <ul className="list-disc list-inside text-base-content/70 text-xs mt-1">
                         <li>{recs[0]}</li>
                         {recs.length > 1 && (
                           <li className="text-text-secondary">+{recs.length - 1} mais...</li>
@@ -105,13 +106,13 @@ export const ShiftLeftCard: React.FC<{ project: Project }> = ({ project }) => {
                 )}
               </div>
             ) : (
-              <div className="flex items-center justify-center h-20 bg-gray-900/50 rounded-lg">
-                <p className="text-gray-500 text-xs">Análise da IA pendente...</p>
+              <div className="flex items-center justify-center h-20 rounded-lg bg-base-200/60">
+                <p className="text-base-content/50 text-xs">Análise da IA pendente...</p>
               </div>
             )}
           </div>
         </div>
-      </Card>
+      </div>
 
       <AnalysisModal
         isOpen={showDetails}

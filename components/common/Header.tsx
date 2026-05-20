@@ -445,7 +445,7 @@ export const Header: React.FC<HeaderProps> = ({
       )}
       style={{ paddingTop: 'env(safe-area-inset-top)' }}
     >
-      <div className={cn('mx-auto w-full min-w-0 max-w-full px-3 sm:px-6')}>
+      <div className={cn('mx-auto w-full min-w-0 max-w-full px-3 sm:px-4')}>
         <div
           className={cn(
             'box-border flex h-[var(--app-header-h)] min-h-0 min-w-0 items-center justify-between gap-2 overflow-x-visible overflow-y-visible md:overflow-y-hidden',

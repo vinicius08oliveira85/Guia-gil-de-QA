@@ -250,10 +250,6 @@ export const JiraTaskItem: React.FC<{
     const taskTypeNorm = (task.type || '').toLowerCase();
     const showTestExecutionSummary = task.type === 'Tarefa' || task.type === 'Bug';
     const showGenerateAllAction = ['tarefa', 'bug', 'task'].includes(taskTypeNorm) && !!onGenerateAll;
-    const generateAllTitle =
-      isGenerating || isGeneratingAll ? aiPhaseMessage || 'Gerando…' : 'Gerar Tudo (BDD e Testes)';
-    const generateAllAriaLabel =
-      isGenerating || isGeneratingAll ? aiPhaseMessage || 'Gerando' : 'Gerar Tudo (BDD e Testes)';
 
     /** Título do card: apenas o título da própria tarefa (sem prefixo Epic/História). */
     const displayTitle = task.title;
@@ -1555,6 +1551,11 @@ export const JiraTaskItem: React.FC<{
       return 'Processando com IA…';
     }, [isAiProcessing, isGenerating, isGeneratingAll, isGeneratingBdd, isGeneratingTests]);
 
+    const generateAllTitle =
+      isGenerating || isGeneratingAll ? aiPhaseMessage || 'Gerando…' : 'Gerar Tudo (BDD e Testes)';
+    const generateAllAriaLabel =
+      isGenerating || isGeneratingAll ? aiPhaseMessage || 'Gerando' : 'Gerar Tudo (BDD e Testes)';
+
     return (
       <div
         className="relative max-md:focus-within:z-[300]"
@@ -1563,7 +1564,7 @@ export const JiraTaskItem: React.FC<{
         <div style={indentationStyle} className="py-0.5">
           <div
             className={[
-              'task-card-shadow rounded-[var(--radius)] border bg-base-200 px-2 py-2 transition-colors duration-200 hover:bg-base-300 sm:px-3 sm:py-2 md:px-3 md:py-2',
+              'task-card-shadow rounded-[var(--rounded-box)] border border-base-300/60 bg-base-100 px-2 py-2 transition-colors duration-200 hover:border-base-300 hover:bg-base-50 sm:px-3 sm:py-2 md:px-3 md:py-2',
               'max-md:grid max-md:grid-cols-[auto_minmax(0,1fr)_auto] max-md:grid-rows-[auto_auto_auto] max-md:items-start max-md:gap-x-2 max-md:gap-y-1.5 max-md:overflow-visible',
               'md:flex md:flex-wrap md:items-center md:gap-x-2 md:gap-y-1',
               level > 0

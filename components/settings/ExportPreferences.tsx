@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card } from '../common/Card';
+import { projectViewCard } from '../common/viewUi';
 import { getExportPreferences, updateExportPreferences } from '../../utils/preferencesService';
 import type {
   ExportPreferences as ExportPreferencesType,
@@ -82,7 +82,7 @@ export const ExportPreferences: React.FC = () => {
   };
 
   return (
-    <Card className="p-6">
+    <div className={projectViewCard}>
       <div className="space-y-6">
         <div>
           <h4 className="text-lg font-semibold text-base-content mb-2">
@@ -302,6 +302,6 @@ export const ExportPreferences: React.FC = () => {
           )}
         </div>
       </div>
-    </Card>
+    </div>
   );
 };

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Project, PhaseName, PhaseStatus } from '../../types';
-import { Card } from '../common/Card';
+import { projectViewCard } from '../common/viewUi';
+import { cn } from '../../utils/cn';
 import { InfoIcon } from '../common/Icons';
 import { AnalysisModal } from './AnalysisModal';
 import { TestTypeBadge } from '../common/TestTypeBadge';
@@ -66,8 +67,8 @@ export const ProjectLifecycleCard: React.FC<{ project: Project }> = ({ project }
 
   return (
     <>
-      <Card className="mb-8">
-        <h3 className="text-xl font-bold text-text-primary mb-4">
+      <div className={cn(projectViewCard, 'mb-0 h-full')}>
+        <h3 className="text-xl font-bold text-base-content mb-4">
           Ciclo de Vida do Projeto (SDLC & DevOps)
         </h3>
         <div className="space-y-2">
@@ -130,7 +131,7 @@ export const ProjectLifecycleCard: React.FC<{ project: Project }> = ({ project }
             );
           })}
         </div>
-      </Card>
+      </div>
 
       <AnalysisModal
         isOpen={selectedPhase !== null}

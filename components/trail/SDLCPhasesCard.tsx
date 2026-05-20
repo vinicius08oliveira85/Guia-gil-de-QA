@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Phase } from '../../types';
 import { timelineData } from '../../utils/projectPhases';
+import { cn } from '../../utils/cn';
+import { filterPillClass, primaryActionBtn, projectViewCard } from '../common/viewUi';
 
 type PhaseDisplayStatus = 'completed' | 'current' | 'upcoming';
 
@@ -15,7 +17,8 @@ interface SDLCPhasesCardProps {
 
 const phaseButtonStyles: Record<PhaseDisplayStatus, string> = {
   completed: 'border-emerald-200 bg-emerald-50 text-emerald-900 hover:bg-emerald-100',
-  current: 'border-primary/30 bg-primary/10 text-base-content hover:bg-primary/20',
+  current:
+    'border-[color-mix(in_srgb,var(--brand-cta)_35%,transparent)] bg-[color-mix(in_srgb,var(--brand-cta)_10%,transparent)] text-base-content hover:bg-[color-mix(in_srgb,var(--brand-cta)_16%,transparent)]',
   upcoming: 'border-base-300 bg-base-100 text-base-content/80 hover:bg-base-200',
 };
 
@@ -75,7 +78,7 @@ export const SDLCPhasesCard: React.FC<SDLCPhasesCardProps> = ({
     : undefined;
 
   return (
-    <section className="space-y-5 rounded-[var(--rounded-box)] border border-base-300 bg-base-100 p-5 shadow-sm sm:p-6">
+    <section className={cn('space-y-5', projectViewCard)}>
       <header className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.35em] text-base-content/60">

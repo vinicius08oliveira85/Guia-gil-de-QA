@@ -17,7 +17,7 @@ import { Modal } from '../common/Modal';
 import { Spinner } from '../common/Spinner';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import { StatusBadge } from './StatusBadge';
-import { Card } from '../common/Card';
+import { primaryActionBtn, projectViewCard } from '../common/viewUi';
 import { Input } from '../common/Input';
 import { logger } from '../../utils/logger';
 import { cn } from '../../utils/cn';
@@ -287,7 +287,7 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({
       </div>
 
       {!isConnected ? (
-        <Card className="p-6">
+        <div className={projectViewCard}>
           <div className="space-y-4">
             <p className="text-base-content/70 text-sm leading-relaxed">
               Configure sua conexão com o Jira para importar projetos. Você precisará de:
@@ -305,10 +305,10 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({
               Configurar Conexão
             </button>
           </div>
-        </Card>
+        </div>
       ) : (
-        <div className="space-y-6">
-          <Card className="p-6">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <div className={cn(projectViewCard, 'lg:col-span-2')}>
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div className="space-y-1">
                 <p className="text-base-content/70 text-sm">
@@ -333,10 +333,10 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({
                 </button>
               </div>
             </div>
-          </Card>
+          </div>
 
           {isLoadingProjects ? (
-            <Card className="p-8">
+            <div className={cn(projectViewCard, 'py-8')}>
               <div className="flex flex-col items-center gap-3">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                 <p className="text-base-content/70 text-sm font-medium">
@@ -344,10 +344,10 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({
                 </p>
                 <p className="text-base-content/70 text-xs">Isso pode levar alguns segundos</p>
               </div>
-            </Card>
+            </div>
           ) : jiraProjects.length > 0 ? (
             <>
-              <Card className="p-6">
+              <div className={projectViewCard}>
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <label className="block text-sm font-medium text-base-content">
@@ -412,10 +412,10 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({
                     )}
                   </button>
                 </div>
-              </Card>
+              </div>
 
               {isImporting && (
-                <Card className="mt-4 p-4 border-primary/20">
+                <div className={cn(projectViewCard, 'mt-4 border-[color-mix(in_srgb,var(--brand-cta)_25%,transparent)]')}>
                   <div className="flex items-center justify-between mb-3">
                     <span className="text-sm font-medium text-base-content">
                       Importando tarefas do Jira...
@@ -441,17 +441,17 @@ export const JiraSettingsTab: React.FC<JiraSettingsTabProps> = ({
                       Não feche esta página durante a importação!
                     </p>
                   </div>
-                </Card>
+                </div>
               )}
             </>
           ) : (
-            <Card className="p-8">
+            <div className={cn(projectViewCard, 'py-8')}>
               <div className="text-center">
                 <p className="text-base-content/70 text-sm">
                   Nenhum projeto encontrado. Verifique suas permissões no Jira.
                 </p>
               </div>
-            </Card>
+            </div>
           )}
         </div>
       )}

@@ -150,9 +150,7 @@ export const WorkspaceAlertsPanel: React.FC<WorkspaceAlertsPanelProps> = ({
               )}
               aria-pressed={listFilterNeedsAttention}
             >
-              {listFilterNeedsAttention
-                ? 'Ver todos os projetos na grade'
-                : 'Filtrar grade: só estes projetos'}
+              {listFilterNeedsAttention ? 'Ver todos na grade' : 'Filtrar grade'}
             </button>
           </div>
         </div>

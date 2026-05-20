@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { ClipboardCheck, Download, Filter, ChevronDown, X } from 'lucide-react';
+import { Download, Filter, ChevronDown, X } from 'lucide-react';
 import type { DashboardFilters } from './DashboardFiltersModal';
-import { Button } from '../common/Button';
 import { cn } from '../../utils/cn';
 
 export interface QADashboardHeaderToolbarProps {
+  jiraProjectKey?: string;
   lastUpdatedText: string | null;
   activeFiltersCount: number;
   filters: DashboardFilters;
@@ -26,10 +26,14 @@ function testStatusLabel(s: NonNullable<DashboardFilters['testStatus']>[number])
   return 'Bloqueado';
 }
 
+const outlineBtn =
+  'inline-flex min-h-[44px] items-center gap-2 rounded-lg border border-base-300/80 bg-base-100 px-3.5 py-2 text-sm font-medium text-base-content/85 shadow-sm transition-colors hover:border-base-300 hover:bg-base-200/50 sm:min-h-9';
+
 /**
- * Cabeçalho do dashboard do projeto, ações (filtrar / exportar) e chips de filtros ativos.
+ * Cabeçalho do dashboard do projeto: título, badge Jira, filtros e exportação.
  */
 export const QADashboardHeaderToolbar: React.FC<QADashboardHeaderToolbarProps> = ({
+  jiraProjectKey,
   lastUpdatedText,
   activeFiltersCount,
   filters,
@@ -39,25 +43,28 @@ export const QADashboardHeaderToolbar: React.FC<QADashboardHeaderToolbarProps> =
 }) => {
   const [showActionsMenu, setShowActionsMenu] = useState(false);
 
-  const ghostToolbarBtn =
-    'btn btn-ghost btn-sm rounded-[var(--radius)] hover:bg-[color-mix(in_srgb,var(--foreground)_8%,transparent)]';
-
   return (
-    <div className="mica !rounded-[var(--rounded-box)] border-0 p-4 sm:p-5">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-        <div className="min-w-0 border-b border-base-300/70 pb-4 lg:border-0 lg:pb-0">
-          <div className="mb-2 flex items-center gap-2">
-            <ClipboardCheck className="h-7 w-7 shrink-0 text-[oklch(var(--p))]" aria-hidden />
-            <h1 className="font-heading text-2xl font-bold tracking-tight text-base-content md:text-3xl">
+    <header className="flex flex-col gap-4 border-b border-base-300/60 pb-4 sm:pb-5">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+        <div className="min-w-0">
+          <div className="mb-1.5 flex flex-wrap items-center gap-2">
+            <h1 className="font-heading text-2xl font-bold tracking-tight text-base-content sm:text-[1.65rem]">
               Dashboard
             </h1>
+            {jiraProjectKey && (
+              <span className="shrink-0 rounded-md border border-base-300/70 bg-base-200/50 px-2 py-0.5 text-xs font-medium text-base-content/65">
+                Jira: {jiraProjectKey}
+              </span>
+            )}
           </div>
-          <p className="max-w-2xl text-sm text-base-content/75 sm:text-base">
+          <p className="max-w-2xl text-sm leading-relaxed text-base-content/70">
             Indicadores calculados a partir das tarefas do projeto (status, prazos e responsáveis).
+          </p>
+          <p className="mt-0.5 text-sm text-base-content/60">
             Respeita os filtros aplicados.
           </p>
           {lastUpdatedText && (
-            <p className="mt-1 text-xs text-base-content/55" title="Última alteração do projeto">
+            <p className="mt-1 text-xs text-base-content/50" title="Última alteração do projeto">
               Projeto atualizado {lastUpdatedText}
             </p>
           )}
@@ -65,124 +72,37 @@ export const QADashboardHeaderToolbar: React.FC<QADashboardHeaderToolbarProps> =
 
         <div className="flex w-full flex-wrap items-center gap-2 lg:w-auto lg:justify-end">
           <div className="hidden items-center gap-2 md:flex">
-            <Button
+            <button
               type="button"
-              variant="ghost"
-              size="sm"
-              className={cn(ghostToolbarBtn, 'px-4')}
+              className={outlineBtn}
               onClick={onOpenFiltersModal}
               aria-label="Filtrar dados do dashboard"
             >
-              <Filter className="h-4 w-4" aria-hidden />
-              {`Filtrar${activeFiltersCount > 0 ? ` (${activeFiltersCount})` : ''}`}
-            </Button>
-            <Button
+              <Filter className="h-4 w-4 shrink-0 opacity-70" aria-hidden />
+              Filtrar{activeFiltersCount > 0 ? ` (${activeFiltersCount})` : ''}
+            </button>
+            <button
               type="button"
-              variant="ghost"
-              size="sm"
-              className={cn(ghostToolbarBtn, 'px-4')}
+              className={outlineBtn}
               onClick={onOpenExportModal}
               aria-label="Exportar dados do projeto"
             >
-              <Download className="h-4 w-4" aria-hidden />
+              <Download className="h-4 w-4 shrink-0 opacity-70" aria-hidden />
               Exportar
-            </Button>
+            </button>
           </div>
 
-          {activeFiltersCount > 0 && (
-            <div className="flex flex-wrap gap-2 w-full md:w-auto">
-              {filters.period && filters.period !== 'all' && (
-                <span className="inline-flex items-center gap-1 rounded-full pl-2.5 pr-1 py-1 text-xs bg-base-200 border border-base-300">
-                  Período: {periodLabel(filters.period)}
-                  <button
-                    type="button"
-                    onClick={() => onFiltersChange(prev => ({ ...prev, period: 'all' }))}
-                    className="win-icon-button"
-                    aria-label="Remover filtro período"
-                  >
-                    <X className="h-3.5 w-3.5" />
-                  </button>
-                </span>
-              )}
-              {(filters.taskType ?? []).map(t => (
-                <span
-                  key={t}
-                  className="inline-flex items-center gap-1 rounded-full pl-2.5 pr-1 py-1 text-xs bg-base-200 border border-base-300"
-                >
-                  Tipo: {t}
-                  <button
-                    type="button"
-                    onClick={() =>
-                      onFiltersChange(prev => ({
-                        ...prev,
-                        taskType: prev.taskType?.filter(x => x !== t) ?? [],
-                      }))
-                    }
-                    className="win-icon-button"
-                    aria-label={`Remover filtro tipo ${t}`}
-                  >
-                    <X className="h-3.5 w-3.5" />
-                  </button>
-                </span>
-              ))}
-              {(filters.testStatus ?? []).map(s => (
-                <span
-                  key={s}
-                  className="inline-flex items-center gap-1 rounded-full pl-2.5 pr-1 py-1 text-xs bg-base-200 border border-base-300"
-                >
-                  Status teste: {testStatusLabel(s)}
-                  <button
-                    type="button"
-                    onClick={() =>
-                      onFiltersChange(prev => ({
-                        ...prev,
-                        testStatus: prev.testStatus?.filter(x => x !== s) ?? [],
-                      }))
-                    }
-                    className="win-icon-button"
-                    aria-label={`Remover filtro status ${s}`}
-                  >
-                    <X className="h-3.5 w-3.5" />
-                  </button>
-                </span>
-              ))}
-              {(filters.phase ?? []).map(p => (
-                <span
-                  key={p}
-                  className="inline-flex items-center gap-1 rounded-full pl-2.5 pr-1 py-1 text-xs bg-base-200 border border-base-300"
-                >
-                  Fase: {p}
-                  <button
-                    type="button"
-                    onClick={() =>
-                      onFiltersChange(prev => ({
-                        ...prev,
-                        phase: prev.phase?.filter(x => x !== p) ?? [],
-                      }))
-                    }
-                    className="win-icon-button"
-                    aria-label={`Remover filtro fase ${p}`}
-                  >
-                    <X className="h-3.5 w-3.5" />
-                  </button>
-                </span>
-              ))}
-            </div>
-          )}
-
           <div className="relative ml-auto md:hidden">
-            <Button
+            <button
               type="button"
-              variant="ghost"
-              size="sm"
-              className={cn(ghostToolbarBtn, 'px-4')}
+              className={outlineBtn}
               onClick={() => setShowActionsMenu(v => !v)}
               aria-expanded={showActionsMenu}
               aria-label="Menu de ações"
             >
-              <span>Ações</span>
+              Ações
               <ChevronDown className="h-4 w-4" aria-hidden />
-            </Button>
+            </button>
             {showActionsMenu && (
               <>
                 <div
@@ -190,17 +110,17 @@ export const QADashboardHeaderToolbar: React.FC<QADashboardHeaderToolbarProps> =
                   aria-hidden
                   onClick={() => setShowActionsMenu(false)}
                 />
-                <div className="absolute right-0 top-full z-20 mt-1 min-w-[180px] rounded-[var(--radius)] border border-base-300/70 bg-[color-mix(in_srgb,var(--background)_96%,transparent)] py-1 text-[var(--foreground)] shadow-lg backdrop-blur-md">
+                <div className="absolute right-0 top-full z-20 mt-1 min-w-[180px] rounded-lg border border-base-300/70 bg-base-100 py-1 shadow-lg">
                   <button
                     type="button"
                     onClick={() => {
                       onOpenFiltersModal();
                       setShowActionsMenu(false);
                     }}
-                    className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm transition-colors hover:bg-[color-mix(in_srgb,var(--foreground)_8%,transparent)]"
+                    className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm hover:bg-base-200/60"
                   >
-                    <Filter className="h-4 w-4 shrink-0 text-[oklch(var(--p))]" />
-                    {`Filtrar${activeFiltersCount > 0 ? ` (${activeFiltersCount})` : ''}`}
+                    <Filter className="h-4 w-4 shrink-0" aria-hidden />
+                    Filtrar{activeFiltersCount > 0 ? ` (${activeFiltersCount})` : ''}
                   </button>
                   <button
                     type="button"
@@ -208,9 +128,9 @@ export const QADashboardHeaderToolbar: React.FC<QADashboardHeaderToolbarProps> =
                       onOpenExportModal();
                       setShowActionsMenu(false);
                     }}
-                    className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm transition-colors hover:bg-[color-mix(in_srgb,var(--foreground)_8%,transparent)]"
+                    className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm hover:bg-base-200/60"
                   >
-                    <Download className="h-4 w-4 shrink-0 text-[oklch(var(--p))]" />
+                    <Download className="h-4 w-4 shrink-0" aria-hidden />
                     Exportar
                   </button>
                 </div>
@@ -219,7 +139,88 @@ export const QADashboardHeaderToolbar: React.FC<QADashboardHeaderToolbarProps> =
           </div>
         </div>
       </div>
-    </div>
+
+      {activeFiltersCount > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {filters.period && filters.period !== 'all' && (
+            <span className="inline-flex items-center gap-1 rounded-full border border-base-300/70 bg-base-200/40 pl-2.5 pr-1 py-1 text-xs">
+              Período: {periodLabel(filters.period)}
+              <button
+                type="button"
+                onClick={() => onFiltersChange(prev => ({ ...prev, period: 'all' }))}
+                className="win-icon-button rounded-full"
+                aria-label="Remover filtro período"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </span>
+          )}
+          {(filters.taskType ?? []).map(t => (
+            <span
+              key={t}
+              className="inline-flex items-center gap-1 rounded-full border border-base-300/70 bg-base-200/40 pl-2.5 pr-1 py-1 text-xs"
+            >
+              Tipo: {t}
+              <button
+                type="button"
+                onClick={() =>
+                  onFiltersChange(prev => ({
+                    ...prev,
+                    taskType: prev.taskType?.filter(x => x !== t) ?? [],
+                  }))
+                }
+                className="win-icon-button rounded-full"
+                aria-label={`Remover filtro tipo ${t}`}
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </span>
+          ))}
+          {(filters.testStatus ?? []).map(s => (
+            <span
+              key={s}
+              className="inline-flex items-center gap-1 rounded-full border border-base-300/70 bg-base-200/40 pl-2.5 pr-1 py-1 text-xs"
+            >
+              Status teste: {testStatusLabel(s)}
+              <button
+                type="button"
+                onClick={() =>
+                  onFiltersChange(prev => ({
+                    ...prev,
+                    testStatus: prev.testStatus?.filter(x => x !== s) ?? [],
+                  }))
+                }
+                className="win-icon-button rounded-full"
+                aria-label={`Remover filtro status ${s}`}
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </span>
+          ))}
+          {(filters.phase ?? []).map(p => (
+            <span
+              key={p}
+              className="inline-flex items-center gap-1 rounded-full border border-base-300/70 bg-base-200/40 pl-2.5 pr-1 py-1 text-xs"
+            >
+              Fase: {p}
+              <button
+                type="button"
+                onClick={() =>
+                  onFiltersChange(prev => ({
+                    ...prev,
+                    phase: prev.phase?.filter(x => x !== p) ?? [],
+                  }))
+                }
+                className="win-icon-button rounded-full"
+                aria-label={`Remover filtro fase ${p}`}
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+    </header>
   );
 };
 

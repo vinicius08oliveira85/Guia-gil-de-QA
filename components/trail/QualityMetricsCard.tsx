@@ -1,6 +1,8 @@
 import React from 'react';
 import { BugSeverity, GeneralIAAnalysis } from '../../types';
 import { ContextualHelp } from '../common/ContextualHelp';
+import { cn } from '../../utils/cn';
+import { outlineActionBtn, projectViewCard } from '../common/viewUi';
 
 interface QualityMetricsCardProps {
   versionLabel: string;
@@ -42,7 +44,7 @@ export const QualityMetricsCard: React.FC<QualityMetricsCardProps> = ({
   const riskLevel = generalAnalysis?.riskCalculation?.overallRisk;
 
   return (
-    <section className="min-w-0 space-y-5 rounded-[var(--rounded-box)] border border-base-300 bg-base-100 p-5 shadow-sm sm:p-6">
+    <section className={cn('min-w-0 space-y-5', projectViewCard)}>
       <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex-1 min-w-0">
           <p className="text-xs font-semibold uppercase tracking-[0.35em] text-base-content/60">
@@ -60,8 +62,8 @@ export const QualityMetricsCard: React.FC<QualityMetricsCardProps> = ({
             Indicadores de estabilidade para {versionLabel}.
           </p>
         </div>
-        <button className="btn btn-primary btn-sm" onClick={onOpenDetailedAnalysis}>
-          🔎 Ver análise IA
+        <button type="button" className={outlineActionBtn} onClick={onOpenDetailedAnalysis}>
+          Ver análise IA
         </button>
       </header>
 

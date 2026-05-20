@@ -20,6 +20,18 @@ import { TestAnalysisCard } from './TestAnalysisCard';
 import { AnalysisSection } from './AnalysisSection';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import { useAnalysisSync } from '../../hooks/useAnalysisSync';
+import {
+  filterPillClass,
+  outlineActionBtn,
+  primaryActionBtn,
+  projectViewPanel,
+  projectViewShell,
+  pageSubtitleClass,
+  pageTitleClass,
+  strategicAnalysisGrid,
+} from '../common/viewUi';
+import { cn } from '../../utils/cn';
+import { Loader2, RefreshCw, Sparkles } from 'lucide-react';
 
 type ViewMode = 'list' | 'grid' | 'detailed';
 
@@ -164,16 +176,14 @@ export const AnalysisView: React.FC<{
   }, [project.tasks, project.generalIAAnalysis]);
 
   return (
-    <div className="space-y-6 pb-6">
-      {/* Header v0-like */}
-      <div className="flex flex-col gap-4 mb-6">
+    <div className={cn(projectViewShell, 'pb-2')}>
+      <section className={projectViewPanel}>
+        <header className="flex flex-col gap-4 border-b border-base-300/60 pb-4 mb-0">
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
           <div className="flex-shrink-0">
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2">
-              Análise IA do Projeto
-            </h2>
-            <p className="text-base-content/70 text-sm max-w-2xl">
-              Análises estratégicas e consolidadas geradas por IA para seu projeto
+            <h2 className={pageTitleClass}>Análise IA do Projeto</h2>
+            <p className={cn(pageSubtitleClass, 'mt-2')}>
+              Análises estratégicas e consolidadas geradas por IA para seu projeto.
             </p>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
@@ -182,7 +192,7 @@ export const AnalysisView: React.FC<{
               onClick={handleAnalyzeAndUpdateDashboard}
               disabled={isAnalyzing}
               title="Gera plano de ciclo de vida (SDLC), análise Shift-Left e pirâmide de testes para o projeto."
-              className="btn btn-outline btn-sm rounded-full disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+              className={cn(outlineActionBtn, 'disabled:cursor-not-allowed disabled:opacity-50')}
               aria-label="Analisar projeto completo"
             >
               {isAnalyzing ? (
@@ -210,7 +220,7 @@ export const AnalysisView: React.FC<{
                 onClick={handleRefreshGeneralAnalysis}
                 disabled={isAnalyzingGeneral}
                 title="Executa análise de risco e recomendações por tarefa e teste (análise geral do projeto)."
-                className="btn btn-primary btn-sm rounded-full disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 font-semibold"
+                className={cn(primaryActionBtn, 'disabled:cursor-not-allowed disabled:opacity-50')}
                 aria-label="Executar análise geral IA"
               >
                 {isAnalyzingGeneral ? (
@@ -235,8 +245,10 @@ export const AnalysisView: React.FC<{
             )}
           </div>
         </div>
-      </div>
+        </header>
+      </section>
 
+      <div className="mt-4 space-y-4 sm:space-y-5">
       {/* Análise Geral */}
       {project.generalIAAnalysis && (
         <GeneralAnalysisCard
@@ -267,7 +279,7 @@ export const AnalysisView: React.FC<{
                 onClick={handleRefreshGeneralAnalysis}
                 disabled={isAnalyzingGeneral}
                 title="Executa análise de risco e recomendações por tarefa e teste (análise geral do projeto)."
-                className="btn btn-primary btn-sm rounded-full disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                className={cn(primaryActionBtn, 'disabled:cursor-not-allowed disabled:opacity-50')}
               >
                 {isAnalyzingGeneral ? <Spinner small /> : '🧠'}
                 <span>Executar Análise Geral</span>
@@ -413,9 +425,7 @@ export const AnalysisView: React.FC<{
               <button
                 type="button"
                 onClick={() => setRiskFilter('all')}
-                className={`btn btn-sm rounded-full transition-colors ${
-                  riskFilter === 'all' ? 'btn-primary' : 'btn-outline'
-                }`}
+                className={filterPillClass(riskFilter === 'all')}
               >
                 Todos
               </button>
@@ -424,9 +434,7 @@ export const AnalysisView: React.FC<{
                   key={risk}
                   type="button"
                   onClick={() => setRiskFilter(risk)}
-                  className={`btn btn-sm rounded-full transition-colors ${
-                    riskFilter === risk ? 'btn-primary' : 'btn-outline'
-                  }`}
+                  className={filterPillClass(riskFilter === risk)}
                 >
                   {risk}
                 </button>
@@ -569,11 +577,14 @@ export const AnalysisView: React.FC<{
         )}
 
       {/* Análises Estratégicas (mantidas do original) */}
-      <div className="space-y-6">
+      <div className={strategicAnalysisGrid}>
         {project.phases && <ProjectLifecycleCard project={project} />}
         <ShiftLeftCard project={project} />
         <TestPyramidCard project={project} />
-        <PhaseLogicGuideCard />
+        <div className="xl:col-span-2 2xl:col-span-3">
+          <PhaseLogicGuideCard />
+        </div>
+      </div>
       </div>
     </div>
   );

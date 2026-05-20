@@ -80,8 +80,9 @@ export const DocumentStatsCards: React.FC<DocumentStatsCardsProps> = ({
               'border-l-4',
               borderLeft,
               isClickable &&
-                'cursor-pointer hover:-translate-y-0.5 hover:shadow-md hover:border-primary/35 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/30',
-              isSelected && 'ring-2 ring-primary/40 shadow-md'
+                'cursor-pointer hover:-translate-y-0.5 hover:shadow-md hover:border-[color-mix(in_srgb,var(--brand-cta)_35%,transparent)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--brand-cta)_30%,transparent)]',
+              isSelected &&
+                'ring-2 ring-[color-mix(in_srgb,var(--brand-cta)_40%,transparent)] border-[color-mix(in_srgb,var(--brand-cta)_25%,transparent)] shadow-md'
             )}
             aria-label={`${label}: ${count} documento(s)${isClickable ? '. Clique para filtrar.' : ''}`}
             aria-pressed={isClickable ? isSelected : undefined}

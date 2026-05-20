@@ -10,7 +10,7 @@ import { Modal } from '../common/Modal';
 import { Spinner } from '../common/Spinner';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import { StatusBadge } from './StatusBadge';
-import { Card } from '../common/Card';
+import { primaryActionBtn, projectViewCard } from '../common/viewUi';
 import { Input } from '../common/Input';
 import toast from 'react-hot-toast';
 
@@ -170,7 +170,7 @@ export const GeminiApiKeysTab: React.FC<GeminiApiKeysTabProps> = ({ onDirtyChang
       </div>
 
       {!isConfigured ? (
-        <Card className="p-6">
+        <div className={projectViewCard}>
           <div className="space-y-4">
             <p className="text-base-content/70 text-sm leading-relaxed">
               Configure sua chave API do Google Gemini para habilitar funcionalidades de IA no
@@ -204,9 +204,9 @@ export const GeminiApiKeysTab: React.FC<GeminiApiKeysTabProps> = ({ onDirtyChang
               Configurar Chave API
             </button>
           </div>
-        </Card>
+        </div>
       ) : (
-        <Card className="p-6">
+        <div className={projectViewCard}>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="space-y-1">
               <p className="text-base-content/70 text-sm">Chave API configurada</p>
@@ -237,7 +237,7 @@ export const GeminiApiKeysTab: React.FC<GeminiApiKeysTabProps> = ({ onDirtyChang
               </button>
             </div>
           </div>
-        </Card>
+        </div>
       )}
 
       {/* Modal de Configuração */}

@@ -3,7 +3,8 @@ import { Circle, AlertCircle, Lightbulb } from 'lucide-react';
 import { Project, PhaseName } from '../../types';
 import { useProjectMetrics } from '../../hooks/useProjectMetrics';
 import { useSDLCPhaseAnalysis } from '../../hooks/useSDLCPhaseAnalysis';
-import { Card } from '../common/Card';
+import { primaryActionBtn, projectViewCard, projectViewPanel } from '../common/viewUi';
+import { cn } from '../../utils/cn';
 import { InfoIcon } from '../common/Icons';
 import { phaseIcons, phaseDisplayNames } from '../../utils/sdlcPhaseIcons';
 import { PHASE_NAMES } from '../../utils/constants';
@@ -46,7 +47,7 @@ export const SDLCPhaseTimeline: React.FC<SDLCPhaseTimelineProps> = React.memo(
         aria-label="Timeline de Fases SDLC"
         aria-live="polite"
       >
-        <Card className="p-5">
+        <div className={projectViewPanel}>
           <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
             <div>
               <h2 className="text-lg font-semibold text-base-content mb-0.5">
@@ -71,11 +72,7 @@ export const SDLCPhaseTimeline: React.FC<SDLCPhaseTimelineProps> = React.memo(
           {phaseAnalysis && (
             <div className="mt-6 space-y-6">
               {/* Seção Fase Atual - Melhorada */}
-              <Card
-                hoverable={false}
-                variant="outlined"
-                className="p-5 border border-base-300 bg-base-100"
-              >
+              <div className={projectViewCard}>
                 <div className="space-y-4">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex items-center gap-3">
@@ -105,16 +102,16 @@ export const SDLCPhaseTimeline: React.FC<SDLCPhaseTimelineProps> = React.memo(
                     </div>
                     <div className="h-2.5 bg-base-200 rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-primary transition-all duration-500 rounded-full"
+                        className="h-full bg-[var(--brand-cta)] transition-all duration-500 rounded-full"
                         style={{ width: `${progressPercentage}%` }}
                       />
                     </div>
                   </div>
                 </div>
-              </Card>
+              </div>
 
               {/* Explicação - Melhorada */}
-              <Card hoverable={false} variant="outlined" className="p-5 bg-info/10 border-info/30">
+              <div className={cn(projectViewCard, 'border-info/30 bg-info/10')}>
                 <div className="flex items-start gap-3">
                   <InfoIcon />
                   <div className="flex-1">
@@ -126,15 +123,11 @@ export const SDLCPhaseTimeline: React.FC<SDLCPhaseTimelineProps> = React.memo(
                     </p>
                   </div>
                 </div>
-              </Card>
+              </div>
 
               {/* Próximos Passos - Melhorado */}
               {phaseAnalysis.nextSteps && phaseAnalysis.nextSteps.length > 0 && (
-                <Card
-                  hoverable={false}
-                  variant="outlined"
-                  className="p-5 bg-success/10 border-success/30"
-                >
+                <div className={cn(projectViewCard, 'border-success/30 bg-success/10')}>
                   <h4 className="font-semibold text-base-content mb-4 text-lg flex items-center gap-2">
                     <span>✅</span> Próximos Passos
                   </h4>
@@ -168,16 +161,12 @@ export const SDLCPhaseTimeline: React.FC<SDLCPhaseTimelineProps> = React.memo(
                       </div>
                     ))}
                   </div>
-                </Card>
+                </div>
               )}
 
               {/* Bloqueios - Melhorado */}
               {phaseAnalysis.blockers && phaseAnalysis.blockers.length > 0 && (
-                <Card
-                  hoverable={false}
-                  variant="outlined"
-                  className="p-5 bg-error/10 border-error/30"
-                >
+                <div className={cn(projectViewCard, 'border-error/30 bg-error/10')}>
                   <div className="flex items-center gap-2 mb-4">
                     <AlertCircle className="h-5 w-5 text-error" aria-label="Alerta" />
                     <h4 className="text-lg font-semibold text-base-content">
@@ -229,38 +218,38 @@ export const SDLCPhaseTimeline: React.FC<SDLCPhaseTimelineProps> = React.memo(
                       );
                     })}
                   </div>
-                </Card>
+                </div>
               )}
             </div>
           )}
 
           {/* Loading State */}
           {isGenerating && !phaseAnalysis && (
-            <Card className="p-4">
+            <div className={cn(projectViewCard, 'p-4')}>
               <div className="flex items-center justify-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                 <span className="ml-3 text-base-content/70">Analisando fase atual...</span>
               </div>
-            </Card>
+            </div>
           )}
 
           {/* Empty State */}
           {!isGenerating && !phaseAnalysis && (
-            <Card className="p-4 text-center">
+            <div className={cn(projectViewCard, 'p-4 text-center')}>
               <p className="text-base-content/70 mb-4">
                 Clique em "Gerar Análise" para obter insights sobre a fase atual do projeto.
               </p>
               <button
                 type="button"
                 onClick={generatePhaseAnalysis}
-                className="btn btn-primary btn-sm rounded-full"
+                className={primaryActionBtn}
                 aria-label="Gerar análise de fase SDLC"
               >
                 🔄 Gerar Análise
               </button>
-            </Card>
+            </div>
           )}
-        </Card>
+        </div>
       </div>
     );
   }
