@@ -4,7 +4,7 @@ import type { TaskTestStatus } from '../../types';
 import { cn } from '../../utils/cn';
 import { TaskTestStatusBadge } from '../common/TaskTestStatusBadge';
 import { TestMetricBadge } from '../common/TestMetricBadge';
-import { TASK_ACTION_SLOT_CLASSNAMES } from './taskActionLayout';
+import { TASK_ACTION_SLOT_CLASSNAMES, TASK_ACTION_STRIP_GRID } from './taskActionLayout';
 
 export interface TaskExecutionSummary {
   passed: number;
@@ -26,7 +26,6 @@ interface TaskActionStripProps {
   generateAllAriaLabel: string;
   testStatus: TaskTestStatus | 'sem_testes';
   onTestStatusClick?: React.MouseEventHandler<HTMLButtonElement>;
-  statusControl: React.ReactNode;
 }
 
 /**
@@ -46,13 +45,12 @@ export const TaskActionStrip: React.FC<TaskActionStripProps> = ({
   generateAllAriaLabel,
   testStatus,
   onTestStatusClick,
-  statusControl,
 }) => {
   return (
-    <div className="hidden md:flex md:flex-nowrap md:items-center md:gap-2 md:flex-shrink-0">
+    <div className="hidden md:flex md:w-full md:max-w-[22.5rem] md:flex-shrink-0 md:flex-col md:items-stretch md:gap-1">
       {isAiProcessing && aiPhaseMessage ? (
         <span
-          className="hidden min-[420px]:inline-flex items-center gap-1 max-w-[10rem] sm:max-w-[14rem] truncate text-[9px] sm:text-[10px] font-medium text-primary/90"
+          className="inline-flex min-w-0 items-center justify-end gap-1 truncate text-[10px] font-medium text-primary/90"
           title={aiPhaseMessage}
         >
           <span className="loading loading-spinner loading-xs shrink-0 text-primary" aria-hidden />
@@ -60,6 +58,7 @@ export const TaskActionStrip: React.FC<TaskActionStripProps> = ({
         </span>
       ) : null}
 
+      <div className={TASK_ACTION_STRIP_GRID}>
       <div className={cn('flex justify-end', TASK_ACTION_SLOT_CLASSNAMES.metrics)}>
         {showMetrics ? (
           <div className="flex items-center gap-1" role="group" aria-label="Métricas de teste">
@@ -98,8 +97,7 @@ export const TaskActionStrip: React.FC<TaskActionStripProps> = ({
         onClick={onTestStatusClick}
         className={cn('shrink-0 text-[10px] sm:text-xs', TASK_ACTION_SLOT_CLASSNAMES.testStatus)}
       />
-
-      {statusControl}
+      </div>
     </div>
   );
 };

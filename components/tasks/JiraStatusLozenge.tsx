@@ -32,7 +32,7 @@ export const JiraStatusLozenge: React.FC<JiraStatusLozengeProps> = ({
         style={{ backgroundColor: lozenge.indicatorColor }}
         aria-hidden
       />
-      <span className="truncate">{label}</span>
+      <span className="whitespace-nowrap">{label}</span>
     </span>
   );
 };

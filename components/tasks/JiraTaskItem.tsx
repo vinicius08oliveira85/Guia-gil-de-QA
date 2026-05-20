@@ -55,7 +55,6 @@ import { EmptyState } from '../common/EmptyState';
 import {
   ensureJiraHexColor,
   getJiraStatusColor,
-  getJiraStatusTextColor,
 } from '../../utils/jiraStatusColors';
 import { parseJiraDescriptionHTML } from '../../utils/jiraDescriptionParser';
 import { getJiraConfig } from '../../services/jiraService';
@@ -81,7 +80,6 @@ import { TestCaseDetailLevelControl } from './TestCaseDetailLevelControl';
 import { BddScenarioActionBar } from './BddScenarioActionBar';
 import { TaskActionStrip } from './TaskActionStrip';
 import { TASK_ACTION_SLOT_CLASSNAMES } from './taskActionLayout';
-import { TaskJiraStatusDropdown } from './TaskJiraStatusDropdown';
 import { JiraStatusLozenge } from './JiraStatusLozenge';
 
 /** Destaque da ação IA principal — halo via tokens Daisy (oklch) + animação existente. */
@@ -298,9 +296,6 @@ export const JiraTaskItem: React.FC<{
       }
       return getJiraStatusColor(statusName);
     }, [currentDisplayStatusLabel, jiraStatusPalette]);
-    const statusTextColor = currentStatusColor
-      ? getJiraStatusTextColor(currentStatusColor)
-      : undefined;
 
     const testExecutionSummary = useMemo(() => {
       const total = task.testCases?.length || 0;
@@ -1581,8 +1576,8 @@ export const JiraTaskItem: React.FC<{
           <div
             className={[
               'task-card-shadow rounded-[var(--rounded-box)] border border-base-300/60 bg-base-100 px-2 py-2 transition-colors duration-200 hover:border-base-300 hover:bg-base-50 sm:px-3 sm:py-2 md:px-3 md:py-2',
-              'max-md:grid max-md:grid-cols-[auto_minmax(0,1fr)_auto] max-md:grid-rows-[auto_auto_auto] max-md:items-start max-md:gap-x-2 max-md:gap-y-1.5 max-md:overflow-visible',
-              'md:flex md:flex-wrap md:items-center md:gap-x-2 md:gap-y-1',
+              'max-md:grid max-md:grid-cols-1 max-md:grid-rows-[auto_auto_auto_auto] max-md:items-start max-md:gap-y-2 max-md:overflow-visible',
+              'md:grid md:grid-cols-[minmax(7.5rem,auto)_auto_minmax(0,1fr)_22.5rem] md:items-center md:gap-x-4 md:gap-y-0',
               level > 0
                 ? 'max-md:bg-base-200/60 max-md:dark:bg-base-300/50 max-md:border-base-300'
                 : '',
@@ -1607,8 +1602,13 @@ export const JiraTaskItem: React.FC<{
             aria-busy={isAiProcessing}
             title={isAiProcessing && aiPhaseMessage ? aiPhaseMessage : undefined}
           >
-            <div className="max-md:contents md:flex md:flex-nowrap md:flex-1 md:min-w-0 md:order-1 md:w-auto md:items-center md:gap-x-1.5 md:gap-y-1">
-              <div className="flex max-md:col-start-1 max-md:row-start-1 max-md:self-center items-center gap-1 shrink-0">
+            <div
+              className={cn(
+                'flex min-w-0 flex-wrap items-center gap-1.5 shrink-0',
+                'max-md:row-start-1',
+                'md:col-start-1 md:row-start-1 md:max-w-[9rem] md:justify-self-start md:gap-2'
+              )}
+            >
                 {onToggleSelect && (
                   <input
                     type="checkbox"
@@ -1657,7 +1657,7 @@ export const JiraTaskItem: React.FC<{
                       e.stopPropagation();
                       setIsChildrenOpen(!isChildrenOpen);
                     }}
-                    className="btn btn-ghost btn-xs flex items-center gap-1 min-h-[44px] min-w-[44px] sm:min-h-8 sm:min-w-8 sm:px-1 px-2 shrink-0 rounded-[var(--radius)] p-0 sm:py-0 [&_svg:first-child]:size-[18px] sm:[&_svg:first-child]:size-4"
+                    className="btn btn-ghost btn-xs flex shrink-0 items-center gap-0.5 rounded-[var(--radius)] px-1.5 py-0 min-h-[44px] min-w-[44px] max-md:px-2 sm:min-h-8 sm:min-w-0 [&_svg:first-child]:size-[18px] sm:[&_svg:first-child]:size-4"
                     aria-label={
                       isChildrenOpen
                         ? `Colapsar ${task.children.length} subtarefas de ${task.id}`
@@ -1673,74 +1673,83 @@ export const JiraTaskItem: React.FC<{
                     </span>
                   </button>
                 ) : null}
-              </div>
-              <div
-                className="inline-flex max-md:col-start-2 max-md:row-start-1 max-md:self-center max-md:min-w-0 flex-nowrap items-center gap-x-1 rounded-md border border-base-300/70 bg-base-300/30 px-1.5 py-0.5 shrink-0 max-w-[min(100%,24rem)] min-w-0 overflow-x-auto font-body text-[10px] leading-tight text-muted [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
-                role="group"
-                aria-label="Metadados da tarefa"
+            </div>
+            <div
+              className={cn(
+                'inline-flex w-fit max-w-full flex-nowrap items-center gap-x-1.5 rounded-md border border-base-300/70 bg-base-300/30 px-1.5 py-0.5 font-body text-[10px] leading-tight text-muted',
+                'max-md:row-start-2 max-md:min-w-0 max-md:overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] max-md:[&::-webkit-scrollbar]:hidden',
+                'md:col-start-2 md:row-start-1 md:justify-self-start md:overflow-x-auto md:[scrollbar-width:thin]'
+              )}
+              role="group"
+              aria-label="Metadados da tarefa"
+            >
+              <JiraIssueTypeIcon
+                type={task.type}
+                iconUrl={task.jiraIssueTypeIconUrl}
+                size={14}
+                className="shrink-0"
+              />
+              <button
+                type="button"
+                onClick={handleOpenTaskDetails}
+                className="shrink-0 cursor-pointer rounded-sm font-mono text-[11px] tabular-nums text-primary underline-offset-2 transition-colors hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
+                aria-label={taskDetailsTriggerLabel}
+                aria-expanded={onOpenModal ? undefined : isDetailsOpen}
               >
-                <JiraIssueTypeIcon
-                  type={task.type}
-                  iconUrl={task.jiraIssueTypeIconUrl}
-                  size={14}
-                  className="shrink-0"
-                />
-                <button
-                  type="button"
-                  onClick={handleOpenTaskDetails}
-                  className="shrink-0 cursor-pointer rounded-sm font-mono tabular-nums text-primary underline-offset-2 transition-colors hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
-                  aria-label={taskDetailsTriggerLabel}
-                  aria-expanded={onOpenModal ? undefined : isDetailsOpen}
-                >
-                  {task.id}
-                </button>
-                <span className="shrink-0 opacity-60" aria-hidden>
-                  ·
-                </span>
-                <Badge
-                  appearance="pill"
-                  variant={typeBadgeVariant}
-                  size="xs"
-                  className={cn(
-                    'h-4 min-h-0 shrink-0 px-1 py-0 text-[10px] font-bold uppercase leading-tight tracking-wide',
-                    task.type === 'Epic' && 'jira-task-epic-type-pill'
-                  )}
-                >
-                  {task.type}
-                </Badge>
-                <span className="shrink-0 opacity-60" aria-hidden>
-                  ·
-                </span>
-                <JiraStatusLozenge
-                  label={currentDisplayStatusLabel}
-                  statusColor={currentStatusColor}
-                  className="max-w-[5.5rem] sm:max-w-[10rem]"
-                />
-              </div>
-              <div className="flex min-w-0 flex-1 basis-full sm:basis-0 items-center gap-1 max-md:col-span-3 max-md:col-start-1 max-md:row-start-2 max-md:basis-auto max-md:w-full max-md:min-w-0 max-md:items-start">
-                <span
-                  className="font-heading text-xs sm:text-sm font-semibold text-base-content min-w-0 flex-1 max-md:line-clamp-2 max-md:whitespace-normal max-md:break-words max-md:leading-snug md:truncate md:overflow-hidden md:whitespace-nowrap"
-                  title={displayTitle}
-                >
-                  {displayTitle}
-                </span>
-                {(task.type === 'Tarefa' || task.type === 'Bug') && (
-                  <TestCasesFreshnessIndicator
-                    task={task}
-                    variant="compact"
-                    isGenerating={isGeneratingTests || !!isGeneratingAll || isGenerating}
-                    className="inline-flex shrink-0"
-                  />
+                {task.id}
+              </button>
+              <span className="shrink-0 opacity-60" aria-hidden>
+                ·
+              </span>
+              <Badge
+                appearance="pill"
+                variant={typeBadgeVariant}
+                size="xs"
+                className={cn(
+                  'h-4 min-h-0 shrink-0 px-1.5 py-0 text-[10px] font-bold uppercase leading-tight tracking-wide',
+                  task.type === 'Epic' && 'jira-task-epic-type-pill'
                 )}
-              </div>
+              >
+                {task.type}
+              </Badge>
+              <span className="shrink-0 opacity-60" aria-hidden>
+                ·
+              </span>
+              <JiraStatusLozenge
+                label={currentDisplayStatusLabel}
+                statusColor={currentStatusColor}
+                className="shrink-0"
+              />
+            </div>
+            <div
+              className={cn(
+                'flex min-w-0 items-center gap-2',
+                'max-md:row-start-3 max-md:w-full max-md:items-start',
+                'md:col-start-3 md:row-start-1 md:min-w-0 md:overflow-hidden md:pl-1'
+              )}
+            >
+              <span
+                className="min-w-0 flex-1 font-heading text-xs font-semibold leading-snug text-base-content max-md:line-clamp-2 max-md:whitespace-normal max-md:break-words sm:text-sm md:truncate md:whitespace-nowrap"
+                title={displayTitle}
+              >
+                {displayTitle}
+              </span>
+              {(task.type === 'Tarefa' || task.type === 'Bug') && (
+                <TestCasesFreshnessIndicator
+                  task={task}
+                  variant="compact"
+                  isGenerating={isGeneratingTests || !!isGeneratingAll || isGenerating}
+                  className="inline-flex shrink-0"
+                />
+              )}
             </div>
 
             <div
               className={cn(
-                'order-2 flex flex-shrink-0 items-center justify-end gap-2 sm:ml-auto sm:gap-2',
-                'w-full flex-wrap sm:w-auto sm:flex-nowrap',
-                /* Sem overflow-x no mobile: recorta o menu absoluto do Daisy (⋮ parece “morto”). */
-                'max-md:col-span-3 max-md:col-start-1 max-md:row-start-3 max-md:z-20 max-md:w-full max-md:max-w-full max-md:min-w-0 max-md:self-center max-md:justify-end max-md:justify-self-stretch max-md:flex-wrap max-md:gap-y-1.5 max-md:overflow-visible'
+                'flex flex-shrink-0 items-center justify-end gap-2',
+                'w-full flex-wrap max-md:gap-y-1.5',
+                'max-md:row-start-4 max-md:z-20 max-md:w-full max-md:min-w-0 max-md:justify-self-stretch max-md:overflow-visible',
+                'md:col-start-4 md:row-start-1 md:w-full md:min-w-0 md:justify-self-end md:flex-nowrap'
               )}
               onClick={e => e.stopPropagation()}
             >
@@ -1769,16 +1778,6 @@ export const JiraTaskItem: React.FC<{
                   else if (taskTestStatus === 'teste_concluido') updateTestStatus('pendente');
                   else updateTestStatus('testar');
                 }}
-                statusControl={
-                  <TaskJiraStatusDropdown
-                    className={TASK_ACTION_SLOT_CLASSNAMES.jiraStatus}
-                    currentLabel={currentDisplayStatusLabel}
-                    currentStatusColor={currentStatusColor}
-                    statusTextColor={statusTextColor}
-                    jiraStatuses={project?.settings?.jiraStatuses}
-                    onSelectStatus={handleChangeStatus}
-                  />
-                }
               />
 
               <div
