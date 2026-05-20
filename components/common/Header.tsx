@@ -41,6 +41,8 @@ import {
 } from './NavigationMenu';
 import type { NavigationMenuItem } from './NavigationMenu';
 import { cn } from '../../utils/cn';
+import { isAnalysisOutdated } from '../../utils/analysisFreshness';
+import { getGeneralIAAnalysisSnapshotHash } from '../../services/ai/generalAnalysisService';
 
 interface HeaderProps {
   onProjectImported?: (project: Project) => void;
@@ -152,7 +154,26 @@ export const Header: React.FC<HeaderProps> = ({
       ro.disconnect();
       window.removeEventListener('resize', setVar);
     };
-  }, [mobileMenuOpen, selectedProject?.id, showDashboardActions]);
+  }, [
+    mobileMenuOpen,
+    selectedProject?.id,
+    selectedProject?.generalIAAnalysis,
+    showDashboardActions,
+  ]);
+
+  const generalAnalysisOutdated = useMemo(() => {
+    if (!selectedProject) return false;
+    const currentHash = getGeneralIAAnalysisSnapshotHash(selectedProject);
+    return isAnalysisOutdated(selectedProject.generalIAAnalysis, currentHash);
+  }, [selectedProject]);
+
+  const generalAnalysisStatusLabel = useMemo(() => {
+    if (!selectedProject || !generalAnalysisOutdated) return '';
+    if (!selectedProject.generalIAAnalysis) {
+      return 'Análise geral com IA ainda não foi executada neste projeto';
+    }
+    return 'Análise geral com IA desatualizada em relação ao estado atual do projeto';
+  }, [selectedProject, generalAnalysisOutdated]);
 
   const getThemeIcon = () => {
     switch (theme) {
@@ -337,11 +358,19 @@ export const Header: React.FC<HeaderProps> = ({
       <div className="min-w-0 border-l-2 border-[var(--brand-cta)] pl-2.5 sm:pl-3">
         <p
           className={cn(
-            'text-balance text-sm font-semibold leading-tight sm:text-base',
-            'app-brand-title [font-family:var(--font-sans)] tracking-[var(--letter-spacing)]'
+            'flex items-center gap-2 text-balance text-sm font-semibold leading-tight sm:text-base',
+            'app-brand-title app-element-typography'
           )}
         >
-          QA Agile Guide
+          <span>QA Agile Guide</span>
+          {generalAnalysisOutdated && (
+            <span
+              className="app-header-analysis-dot"
+              role="status"
+              title={generalAnalysisStatusLabel}
+              aria-label={generalAnalysisStatusLabel}
+            />
+          )}
         </p>
         <p
           className={cn(
@@ -445,6 +474,9 @@ export const Header: React.FC<HeaderProps> = ({
       )}
       style={{ paddingTop: 'env(safe-area-inset-top)' }}
     >
+      <a href="#main-content" className="skip-link">
+        Pular para o conteúdo
+      </a>
       <div className={cn('mx-auto w-full min-w-0 max-w-full px-3 sm:px-4')}>
         <div
           className={cn(
@@ -506,7 +538,7 @@ export const Header: React.FC<HeaderProps> = ({
                   onClick={() => void handleSyncSupabase()}
                   disabled={isSyncingSupabase || !isSupabaseAvailable()}
                   className={cn(
-                    'app-nav-pill btn btn-ghost btn-sm whitespace-nowrap font-medium rounded-[var(--radius)]'
+                    'app-toolbar-action app-element-typography btn btn-ghost btn-sm whitespace-nowrap font-medium rounded-[var(--radius)]'
                   )}
                   title={
                     !isSupabaseAvailable()
@@ -596,6 +628,7 @@ export const Header: React.FC<HeaderProps> = ({
                 menuId={mobileMenuDomId}
                 title="Navegação"
                 leadingSlot={mobileLeadingSlot}
+                currentId={selectedProjectId == null ? 'projects' : undefined}
               />
             </div>
           </div>
