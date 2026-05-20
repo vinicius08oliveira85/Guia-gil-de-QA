@@ -360,6 +360,24 @@
     animation: slide-in-from-left 300ms cubic-bezier(0.25, 1, 0.5, 1);
   }
 
+  /**
+   * Utilitários para uniformizar botões e badges nos cards
+   * Foco em Tipografia e Formato (Design System)
+   */
+  .task-element-typography {
+    font-family: var(--font-sans);
+    letter-spacing: var(--letter-spacing);
+  }
+
+  .btn-task-format {
+    @apply task-element-typography font-semibold;
+    border-radius: var(--radius);
+  }
+
+  .badge-task-format {
+    @apply task-element-typography font-bold uppercase tracking-wider text-[10px] rounded-full;
+  }
+
   .task-card-shadow {
     box-shadow:
       0 1px 3px 0 color-mix(in_srgb, var(--foreground) 5%, transparent),

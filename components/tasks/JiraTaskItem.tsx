@@ -80,7 +80,16 @@ import { TestCasesFreshnessIndicator } from './TestCasesFreshnessIndicator';
 import { TestCaseDetailLevelControl } from './TestCaseDetailLevelControl';
 import { BddScenarioActionBar } from './BddScenarioActionBar';
 import { TaskActionStrip } from './TaskActionStrip';
-import { TASK_ACTION_SLOT_CLASSNAMES } from './taskActionLayout';
+import {
+  TASK_ACTION_SLOT_CLASSNAMES,
+  taskCardBadgePillShape,
+  taskCardBadgePillTypography,
+  taskCardBadgeTechShape,
+  taskCardBadgeTechTypography,
+  taskCardIdTypography,
+  taskCardMetadataStripTypography,
+  taskCardTitleTypography,
+} from './taskActionLayout';
 import { JiraStatusLozenge } from './JiraStatusLozenge';
 import { TaskJiraStatusDropdown } from './TaskJiraStatusDropdown';
 import { TaskCardQaInsights } from './TaskCardQaInsights';
@@ -92,7 +101,7 @@ import {
 import { isAnalysisOutdated } from '../../utils/analysisFreshness';
 import { resolveTaskStoryPoints } from '../../utils/taskStoryPoints';
 import {
-  getTaskRiskBorderClass,
+  getTaskTypeLeftBorderClass,
   getTaskRiskBadgeClass,
   getTaskQaCoverageAlerts,
 } from '../../utils/taskCardQa';
@@ -306,15 +315,12 @@ export const JiraTaskItem: React.FC<{
     const showTaskQaInsights = showTestExecutionSummary || taskQaAlerts.length > 0 || iaAnalysisStale;
 
     /**
-     * Acento lateral: favorito > risco de QA > tipo de issue.
+     * Acento lateral: favorito (âmbar) ou cor por tipo de issue.
      */
     const taskCardLeftAccentClass = useMemo(() => {
       if (task.isFavorite) return 'border-l-4 border-l-amber-500';
-      if (showTestExecutionSummary) {
-        return getTaskRiskBorderClass(taskRiskLevel);
-      }
-      return 'border-l-4 border-l-base-300/50';
-    }, [task.isFavorite, showTestExecutionSummary, taskRiskLevel]);
+      return getTaskTypeLeftBorderClass(task.type);
+    }, [task.isFavorite, task.type]);
     const typeBadgeVariant = useMemo((): React.ComponentProps<typeof Badge>['variant'] => {
       if (['tarefa', 'task'].includes(taskTypeNorm)) return 'info';
       if (taskTypeNorm === 'bug') return 'error';
@@ -1673,15 +1679,16 @@ export const JiraTaskItem: React.FC<{
         <div style={indentationStyle} className="py-0.5">
           <div
             className={[
-              'task-card-shadow rounded-[var(--rounded-box)] border border-base-300/60 bg-base-100 px-2 py-2 transition-colors duration-200 hover:border-base-300 hover:bg-base-50 sm:px-3 sm:py-2 md:px-3 md:py-2',
-              'max-md:grid max-md:grid-cols-1 max-md:grid-rows-[auto_auto_auto_auto] max-md:items-start max-md:gap-y-2 max-md:overflow-visible',
-              'md:grid md:grid-cols-[minmax(7.5rem,auto)_auto_minmax(0,1fr)_22.5rem] md:items-center md:gap-x-4 md:gap-y-0',
+              'task-card-shadow rounded-xl border border-[var(--brand-surface-border)] bg-[var(--brand-surface)] px-2 py-2 transition-colors duration-200 sm:px-3 sm:py-2 md:px-3 md:py-2',
+              'flex flex-row items-center gap-2 overflow-visible sm:gap-3',
+              'hover:border-[color-mix(in_srgb,var(--brand-cta)_20%,var(--brand-surface-border))] hover:bg-[var(--brand-surface-strong)]',
               level > 0
-                ? 'max-md:bg-base-200/60 max-md:dark:bg-base-300/50 max-md:border-base-300'
+                ? 'bg-[color-mix(in_srgb,var(--brand-surface-strong)_88%,transparent)]'
                 : '',
-              'border-base-300',
               activeTaskId === task.id ? 'ring-2 ring-primary/40' : '',
-              isSelected ? 'bg-primary/5 border-primary/40 ring-1 ring-primary/30' : '',
+              isSelected
+                ? 'border-[color-mix(in_srgb,var(--brand-cta)_35%,var(--brand-surface-border))] bg-[color-mix(in_srgb,var(--brand-cta)_6%,var(--brand-surface))] ring-1 ring-primary/30'
+                : '',
               task.isFavorite ? 'ring-1 ring-amber-500/35' : '',
               taskCardLeftAccentClass,
               showBulkGenerateFeedback ? 'ring-2 ring-primary/50 animate-pulse' : '',
@@ -1702,9 +1709,8 @@ export const JiraTaskItem: React.FC<{
           >
             <div
               className={cn(
-                'flex min-w-0 flex-wrap items-center gap-1.5 shrink-0',
-                'max-md:row-start-1',
-                'md:col-start-1 md:row-start-1 md:max-w-[9rem] md:justify-self-start md:gap-2'
+                'flex min-w-0 shrink-0 flex-nowrap items-center gap-1.5',
+                'md:max-w-[9rem] md:gap-2'
               )}
             >
                 {onToggleSelect && (
@@ -1744,7 +1750,7 @@ export const JiraTaskItem: React.FC<{
                         aria-hidden
                       />
                     ) : (
-                      <Star className="text-base-content/40" aria-hidden />
+                      <Star className="text-[var(--brand-text-muted)]" aria-hidden />
                     )}
                   </button>
                 )}
@@ -1766,7 +1772,7 @@ export const JiraTaskItem: React.FC<{
                       className={`transition-transform flex-shrink-0 ${isChildrenOpen ? 'rotate-180' : ''}`}
                       aria-hidden="true"
                     />
-                    <span className="bg-base-300 text-[10px] px-1.5 py-0.5 rounded-full">
+                    <span className="rounded-full bg-[var(--brand-chip)] px-1.5 py-0.5 text-[10px] text-[var(--brand-text-muted)]">
                       {task.children.length}
                     </span>
                   </button>
@@ -1774,9 +1780,8 @@ export const JiraTaskItem: React.FC<{
             </div>
             <div
               className={cn(
-                'inline-flex w-fit max-w-full flex-nowrap items-center gap-x-1.5 rounded-md border border-base-300/70 bg-base-300/30 px-1.5 py-0.5 font-body text-[10px] leading-tight text-muted',
-                'max-md:row-start-2 max-md:min-w-0 max-md:overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] max-md:[&::-webkit-scrollbar]:hidden',
-                'md:col-start-2 md:row-start-1 md:justify-self-start md:overflow-x-auto md:[scrollbar-width:thin]'
+                'inline-flex w-fit max-w-full shrink-0 flex-nowrap items-center gap-x-1.5 overflow-visible rounded-md border border-[var(--brand-surface-border)] bg-[color-mix(in_srgb,var(--brand-surface-strong)_70%,transparent)] px-1.5 py-0.5 text-[var(--brand-text-muted)]',
+                taskCardMetadataStripTypography
               )}
               role="group"
               aria-label="Metadados da tarefa"
@@ -1790,7 +1795,10 @@ export const JiraTaskItem: React.FC<{
               <button
                 type="button"
                 onClick={handleOpenTaskDetails}
-                className="shrink-0 cursor-pointer rounded-sm font-mono text-[11px] tabular-nums text-primary underline-offset-2 transition-colors hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
+                className={cn(
+                  'shrink-0 cursor-pointer rounded-sm text-[color:var(--color-primary-deep)] underline-offset-2 transition-colors hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30',
+                  taskCardIdTypography
+                )}
                 aria-label={taskDetailsTriggerLabel}
                 aria-expanded={onOpenModal ? undefined : isDetailsOpen}
               >
@@ -1804,7 +1812,9 @@ export const JiraTaskItem: React.FC<{
                 variant={typeBadgeVariant}
                 size="xs"
                 className={cn(
-                  'h-4 min-h-0 shrink-0 px-1.5 py-0 text-[10px] font-bold uppercase leading-tight tracking-wide',
+                  'app-nav-pill shrink-0 !px-1.5 !py-0 !text-[9px] !font-bold !leading-none',
+                  taskCardBadgePillShape,
+                  taskCardBadgePillTypography,
                   task.type === 'Epic' && 'jira-task-epic-type-pill'
                 )}
               >
@@ -1836,7 +1846,7 @@ export const JiraTaskItem: React.FC<{
                     ·
                   </span>
                   <span
-                    className="shrink-0 tabular-nums font-medium text-base-content/85"
+                    className={cn('shrink-0 text-[var(--brand-text-muted)]', taskCardBadgeTechShape, taskCardBadgeTechTypography)}
                     title="Story Points"
                   >
                     {storyPointsDisplay} SP
@@ -1851,29 +1861,29 @@ export const JiraTaskItem: React.FC<{
             </div>
             <div
               className={cn(
-                'flex min-w-0 flex-col gap-1',
-                'max-md:row-start-3 max-md:w-full',
-                'md:col-start-3 md:row-start-1 md:min-w-0 md:overflow-hidden md:pl-1'
+                'flex min-w-0 flex-1 flex-nowrap items-center gap-2 overflow-x-auto overflow-y-visible [scrollbar-width:thin]'
               )}
             >
-              <div className="flex min-w-0 items-center gap-2">
-                <span
-                  className="min-w-0 flex-1 font-heading text-xs font-semibold leading-snug text-base-content max-md:line-clamp-2 max-md:whitespace-normal max-md:break-words sm:text-sm md:truncate md:whitespace-nowrap"
-                  title={displayTitle}
-                >
-                  {displayTitle}
-                </span>
-                {(task.type === 'Tarefa' || task.type === 'Bug') && (
-                  <TestCasesFreshnessIndicator
-                    task={task}
-                    variant="compact"
-                    isGenerating={isGeneratingTests || !!isGeneratingAll || isGenerating}
-                    className="inline-flex shrink-0"
-                  />
+              <span
+                className={cn(
+                  'min-w-0 flex-1 truncate text-[var(--brand-text-strong)]',
+                  taskCardTitleTypography
                 )}
-              </div>
+                title={displayTitle}
+              >
+                {displayTitle}
+              </span>
+              {(task.type === 'Tarefa' || task.type === 'Bug') && (
+                <TestCasesFreshnessIndicator
+                  task={task}
+                  variant="compact"
+                  isGenerating={isGeneratingTests || !!isGeneratingAll || isGenerating}
+                  className="inline-flex shrink-0"
+                />
+              )}
               {showTaskQaInsights ? (
                 <TaskCardQaInsights
+                  variant="inline"
                   counts={{
                     total: testExecutionSummary.total,
                     passed: testExecutionSummary.passed,
@@ -1882,16 +1892,15 @@ export const JiraTaskItem: React.FC<{
                   }}
                   qaAlerts={taskQaAlerts}
                   iaAnalysisStale={iaAnalysisStale}
+                  className="shrink-0"
                 />
               ) : null}
             </div>
 
             <div
               className={cn(
-                'flex flex-shrink-0 items-center justify-end gap-2',
-                'w-full flex-wrap max-md:gap-y-1.5',
-                'max-md:row-start-4 max-md:z-20 max-md:w-full max-md:min-w-0 max-md:justify-self-stretch max-md:overflow-visible',
-                'md:col-start-4 md:row-start-1 md:w-full md:min-w-0 md:justify-self-end md:flex-nowrap'
+                'flex shrink-0 flex-nowrap items-center justify-end gap-2',
+                'z-20 min-w-0 overflow-visible'
               )}
               onClick={e => e.stopPropagation()}
             >

@@ -15,6 +15,8 @@ export interface TaskCardQaInsightsProps {
   counts: TaskTestExecutionCounts;
   qaAlerts: TaskQaAlert[];
   iaAnalysisStale?: boolean;
+  /** `inline` — barra e contadores na mesma linha do título do card. */
+  variant?: 'stacked' | 'inline';
   className?: string;
 }
 
@@ -30,8 +32,10 @@ export const TaskCardQaInsights: React.FC<TaskCardQaInsightsProps> = ({
   counts,
   qaAlerts,
   iaAnalysisStale = false,
+  variant = 'stacked',
   className,
 }) => {
+  const isInline = variant === 'inline';
   const segments = useMemo(() => {
     const { total, passed, failed, pending } = counts;
     if (total <= 0) {
@@ -60,9 +64,19 @@ export const TaskCardQaInsights: React.FC<TaskCardQaInsightsProps> = ({
       aria-label="Indicadores de QA da tarefa"
     >
       {counts.total > 0 ? (
-        <div className="flex min-w-[7.5rem] max-w-[10rem] flex-col gap-0.5">
+        <div
+          className={cn(
+            'flex min-w-0 shrink-0',
+            isInline
+              ? 'max-w-[11rem] items-center gap-1.5'
+              : 'min-w-[7.5rem] max-w-[10rem] flex-col gap-0.5'
+          )}
+        >
           <div
-            className="flex h-1.5 w-full overflow-hidden rounded-full border border-[color-mix(in_srgb,var(--foreground)_8%,transparent)] bg-[var(--brand-chip)]"
+            className={cn(
+              'flex h-1.5 overflow-hidden rounded-full border border-[color-mix(in_srgb,var(--foreground)_8%,transparent)] bg-[var(--brand-chip)]',
+              isInline ? 'w-14 shrink-0' : 'w-full'
+            )}
             role="progressbar"
             aria-valuenow={counts.passed + counts.failed}
             aria-valuemin={0}
@@ -88,7 +102,7 @@ export const TaskCardQaInsights: React.FC<TaskCardQaInsightsProps> = ({
               />
             ) : null}
           </div>
-          <div className="flex items-center gap-1.5 font-body text-[9px] font-medium tabular-nums text-base-content/70">
+          <div className="flex items-center gap-1 font-sans text-[9px] font-semibold tabular-nums leading-none tracking-[var(--letter-spacing)] text-[var(--brand-text-muted)]">
             <span className="inline-flex items-center gap-0.5" title="Passou">
               <span className="h-1.5 w-1.5 rounded-full bg-success" aria-hidden />
               {counts.passed}
@@ -104,7 +118,7 @@ export const TaskCardQaInsights: React.FC<TaskCardQaInsightsProps> = ({
           </div>
         </div>
       ) : (
-        <span className="rounded-md bg-[var(--brand-chip)] px-1.5 py-0.5 text-[9px] font-medium text-base-content/55">
+        <span className="rounded-md bg-[var(--brand-chip)] px-1.5 py-0.5 text-[9px] font-medium text-[var(--brand-text-muted)]">
           Sem casos de teste
         </span>
       )}

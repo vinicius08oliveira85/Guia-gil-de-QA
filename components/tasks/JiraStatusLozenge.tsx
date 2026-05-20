@@ -1,6 +1,7 @@
 import React from 'react';
 import { getJiraStatusLozengeStyles } from '../../utils/jiraStatusColors';
 import { cn } from '../../utils/cn';
+import { taskCardBadgePillShape, taskCardBadgePillTypography } from './taskActionLayout';
 
 export interface JiraStatusLozengeProps {
   label: string;
@@ -21,7 +22,9 @@ export const JiraStatusLozenge: React.FC<JiraStatusLozengeProps> = ({
   return (
     <span
       className={cn(
-        'inline-flex min-h-4 min-w-0 shrink-0 items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium leading-tight',
+        'min-w-0 shrink-0 gap-0.5',
+        taskCardBadgePillShape,
+        taskCardBadgePillTypography,
         className
       )}
       style={{ backgroundColor: lozenge.backgroundColor, color: lozenge.color }}
