@@ -82,6 +82,7 @@ import { BddScenarioActionBar } from './BddScenarioActionBar';
 import { TaskActionStrip } from './TaskActionStrip';
 import { TASK_ACTION_SLOT_CLASSNAMES } from './taskActionLayout';
 import { TaskJiraStatusDropdown } from './TaskJiraStatusDropdown';
+import { JiraStatusLozenge } from './JiraStatusLozenge';
 
 /** Destaque da ação IA principal — halo via tokens Daisy (oklch) + animação existente. */
 const gerarTudoDestaqueClass =
@@ -629,6 +630,21 @@ export const JiraTaskItem: React.FC<{
         setIsDetailsOpen(true);
       }
     };
+
+    const handleOpenTaskDetails = (e: React.SyntheticEvent) => {
+      e.stopPropagation();
+      if (onOpenModal) {
+        onOpenModal(task);
+      } else {
+        handleToggleDetails();
+      }
+    };
+
+    const taskDetailsTriggerLabel = onOpenModal
+      ? `Abrir detalhes da tarefa ${task.id}`
+      : isDetailsOpen
+        ? `Colapsar detalhes da tarefa ${task.id}`
+        : `Expandir detalhes da tarefa ${task.id}`;
 
     const handleSaveScenario = (scenario: Omit<BddScenario, 'id'>) => {
       onSaveBddScenario(task.id, scenario, editingBddScenario?.id);
@@ -1669,9 +1685,15 @@ export const JiraTaskItem: React.FC<{
                   size={14}
                   className="shrink-0"
                 />
-                <span className="font-mono tabular-nums shrink-0">
+                <button
+                  type="button"
+                  onClick={handleOpenTaskDetails}
+                  className="shrink-0 cursor-pointer rounded-sm font-mono tabular-nums text-primary underline-offset-2 transition-colors hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
+                  aria-label={taskDetailsTriggerLabel}
+                  aria-expanded={onOpenModal ? undefined : isDetailsOpen}
+                >
                   {task.id}
-                </span>
+                </button>
                 <span className="shrink-0 opacity-60" aria-hidden>
                   ·
                 </span>
@@ -1689,12 +1711,11 @@ export const JiraTaskItem: React.FC<{
                 <span className="shrink-0 opacity-60" aria-hidden>
                   ·
                 </span>
-                <span
-                  className="truncate min-w-0 max-w-[4.5rem] sm:max-w-[10rem]"
-                  title={currentDisplayStatusLabel}
-                >
-                  {currentDisplayStatusLabel}
-                </span>
+                <JiraStatusLozenge
+                  label={currentDisplayStatusLabel}
+                  statusColor={currentStatusColor}
+                  className="max-w-[5.5rem] sm:max-w-[10rem]"
+                />
               </div>
               <div className="flex min-w-0 flex-1 basis-full sm:basis-0 items-center gap-1 max-md:col-span-3 max-md:col-start-1 max-md:row-start-2 max-md:basis-auto max-md:w-full max-md:min-w-0 max-md:items-start">
                 <span
@@ -1912,31 +1933,6 @@ export const JiraTaskItem: React.FC<{
                 </ul>
               </div>
 
-              <button
-                type="button"
-                onClick={e => {
-                  e.stopPropagation();
-                  if (onOpenModal) {
-                    onOpenModal(task);
-                  } else {
-                    handleToggleDetails();
-                  }
-                }}
-                className={`${iconTouchTargetClass} shrink-0`}
-                aria-label={
-                  onOpenModal
-                    ? `Abrir detalhes da tarefa ${task.id} em modal`
-                    : isDetailsOpen
-                      ? `Colapsar detalhes da tarefa ${task.id}`
-                      : `Expandir detalhes da tarefa ${task.id}`
-                }
-                aria-expanded={onOpenModal ? undefined : isDetailsOpen}
-              >
-                <ChevronDown
-                  className={`transition-transform ${isDetailsOpen ? 'rotate-180' : ''}`}
-                  aria-hidden="true"
-                />
-              </button>
             </div>
           </div>
 
