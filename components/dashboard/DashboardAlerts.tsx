@@ -105,18 +105,21 @@ export const DashboardAlerts: React.FC<DashboardAlertsProps> = React.memo(
             >
               <Card
                 className={cn(
-                  'flex items-center gap-3 p-4 border-2 backdrop-blur-sm',
+                  'flex items-center gap-3 p-4 border backdrop-blur-sm transition-all duration-200 hover:shadow-lg hover:scale-[1.02]',
                   alert.bgColor,
-                  alert.borderColor,
-                  'hover:shadow-lg transition-all duration-200'
+                  alert.borderColor
                 )}
                 aria-label={alert.message}
               >
                 <motion.div
-                  className={cn('flex-shrink-0', alert.textColor)}
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ delay: index * 0.1 + 0.2, type: 'spring' }}
+                  className={cn('flex shrink-0 h-8 w-8 items-center justify-center rounded-md', alert.textColor, {
+                    'bg-error/15 ring-1 ring-error/30': alert.type === 'error',
+                    'bg-warning/15 ring-1 ring-warning/30': alert.type === 'warning',
+                    'bg-success/15 ring-1 ring-success/30': alert.type === 'success',
+                  })}
+                  initial={{ scale: 0, rotate: -180 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  transition={{ delay: index * 0.1 + 0.2, type: 'spring', stiffness: 100 }}
                 >
                   {alert.icon}
                 </motion.div>
