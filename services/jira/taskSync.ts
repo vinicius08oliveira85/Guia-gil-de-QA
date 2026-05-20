@@ -1,4 +1,4 @@
-import type { Project, JiraTask, TestCase } from '../../types';
+import type { Project, JiraTask, TestCase, JiraSprint } from '../../types';
 import type { JiraConfig } from './types';
 import { EPIC_LINK_FIELD_KEYS } from './types';
 import { jiraApiCall } from './api';
@@ -21,6 +21,7 @@ import { logger } from '../../utils/logger';
 import { normalizeTasksParentIdsAcyclic } from '../../utils/taskParentCycle';
 import { assignStoryPointsToTask } from '../../utils/taskStoryPoints';
 import { assignSprintsToTask } from '../../utils/jiraSprintFields';
+import { buildJiraSprintSyncContext, fetchIssueSprintsFromAgileApi } from './sprintSync';
 
 type JiraWorkflowTransition = {
   id: string;
@@ -362,7 +363,17 @@ export const updateSingleTaskFromJira = async (
     });
   }
   assignStoryPointsToTask(task);
-  assignSprintsToTask(task);
+  const jiraProjectKey = project.settings?.jiraProjectKey;
+  const sprintOpts = jiraProjectKey
+    ? await buildJiraSprintSyncContext(config, jiraProjectKey)
+    : { sprintFieldIds: [] as string[], sprintCatalog: new Map<number, JiraSprint>() };
+  await assignSprintsToTask(task, {
+    issueFields: issue.fields as Record<string, unknown>,
+    sprintFieldIds: sprintOpts.sprintFieldIds,
+    sprintCatalog: sprintOpts.sprintCatalog,
+    agileFallback: () =>
+      fetchIssueSprintsFromAgileApi(config, key, sprintOpts.sprintFieldIds, sprintOpts.sprintCatalog),
+  });
   const finalTask: JiraTask = existingTask
     ? {
         ...existingTask,

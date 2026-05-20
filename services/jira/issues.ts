@@ -3,11 +3,17 @@ import { jiraApiCall } from './api';
 import { logger } from '../../utils/logger';
 import { isValidJiraKey } from '../../utils/jiraFieldMapper';
 
+export type GetJiraIssuesOptions = {
+  /** IDs do custom field Sprint (ex.: customfield_10020) para forçar retorno na busca JQL. */
+  sprintFieldIds?: string[];
+};
+
 export const getJiraIssues = async (
   config: JiraConfig,
   projectKey: string,
   maxResults?: number,
-  onProgress?: (current: number, total?: number) => void
+  onProgress?: (current: number, total?: number) => void,
+  options?: GetJiraIssuesOptions
 ): Promise<JiraIssue[]> => {
   const jql = `project = ${projectKey} ORDER BY created DESC`;
   const pageSize = 100;
@@ -51,7 +57,10 @@ export const getJiraIssues = async (
     search.set('jql', jql);
     search.set('maxResults', String(pageSize));
     search.set('expand', 'renderedFields,comment,attachment');
-    search.set('fields', '*all');
+    const sprintIds = (options?.sprintFieldIds ?? []).filter(id => id.startsWith('customfield_'));
+    const fieldsParam =
+      sprintIds.length > 0 ? `*all,${[...new Set(sprintIds)].join(',')}` : '*all';
+    search.set('fields', fieldsParam);
     if (typeof params.startAt === 'number') {
       search.set('startAt', String(params.startAt));
     }

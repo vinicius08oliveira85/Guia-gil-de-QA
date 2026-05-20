@@ -2,7 +2,8 @@ import type { Project, JiraTask, TestCase } from '../../types';
 import type { JiraConfig } from './types';
 import { EPIC_LINK_FIELD_KEYS } from './types';
 import { assignStoryPointsToTask } from '../../utils/taskStoryPoints';
-import { assignSprintsToTask, sprintsSnapshotEqual } from '../../utils/jiraSprintFields';
+import { assignSprintsToTaskSync, sprintsSnapshotEqual } from '../../utils/jiraSprintFields';
+import { buildJiraSprintSyncContext } from './sprintSync';
 import { getJiraIssues } from './issues';
 import {
   mapJiraStatusToTaskStatus,
@@ -26,8 +27,11 @@ export const syncJiraProject = async (
   jiraProjectKey: string,
   getLatestProject?: () => Project | undefined
 ): Promise<Project> => {
+  const sprintCtx = await buildJiraSprintSyncContext(config, jiraProjectKey);
   // Buscar TODAS as issues atualizadas desde a última sincronização (sem limite)
-  const jiraIssues = await getJiraIssues(config, jiraProjectKey);
+  const jiraIssues = await getJiraIssues(config, jiraProjectKey, undefined, undefined, {
+    sprintFieldIds: sprintCtx.sprintFieldIds,
+  });
 
   logger.info(
     `Buscadas ${jiraIssues.length} issues do Jira para projeto ${jiraProjectKey}`,
@@ -490,7 +494,11 @@ export const syncJiraProject = async (
       task.jiraCustomFields = undefined;
     }
     assignStoryPointsToTask(task);
-    assignSprintsToTask(task);
+    assignSprintsToTaskSync(task, {
+      issueFields: issue.fields as Record<string, unknown>,
+      sprintFieldIds: sprintCtx.sprintFieldIds,
+      sprintCatalog: sprintCtx.sprintCatalog,
+    });
 
     if (existingIndex >= 0) {
       const oldTask = updatedTasks[existingIndex];

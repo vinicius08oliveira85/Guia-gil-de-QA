@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import {
-  assignSprintsToTask,
+  assignSprintsToTaskSync,
   parseSprintsFromCustomFields,
+  parseSprintsFromIssueFields,
   sprintsSnapshotEqual,
 } from '../../utils/jiraSprintFields';
-import type { JiraSprint } from '../../types';
-import type { JiraTask } from '../../types';
+import type { JiraSprint, JiraTask } from '../../types';
 
 function task(partial: Partial<JiraTask> & Pick<JiraTask, 'id'>): JiraTask {
   return {
@@ -27,7 +27,7 @@ describe('jiraSprintFields', () => {
       id: 'PROJ-1',
       jiraCustomFields: { customfield_10020: gh },
     });
-    assignSprintsToTask(t);
+    assignSprintsToTaskSync(t);
     expect(t.sprints).toHaveLength(1);
     expect(t.sprints![0]).toMatchObject({ id: 42, name: 'Sprint Alpha', state: 'active' });
   });
@@ -45,6 +45,17 @@ describe('jiraSprintFields', () => {
     const sprints = parseSprintsFromCustomFields(t);
     expect(sprints).toHaveLength(2);
     expect(sprints.map(s => s.name).sort()).toEqual(['Atual', 'Futura']);
+  });
+
+  it('resolve sprint só pelo id usando catálogo Agile', () => {
+    const catalog = new Map<number, JiraSprint>([
+      [99, { id: 99, name: 'Sprint Catálogo', state: 'active' }],
+    ]);
+    const sprints = parseSprintsFromIssueFields(
+      { customfield_10020: 99 },
+      { sprintCatalog: catalog, sprintFieldIds: ['customfield_10020'] }
+    );
+    expect(sprints[0]?.name).toBe('Sprint Catálogo');
   });
 
   it('sprintsSnapshotEqual detecta mudança de sprint', () => {

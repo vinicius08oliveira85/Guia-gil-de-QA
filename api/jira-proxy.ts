@@ -7,7 +7,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     return;
   }
 
-  const { url, email, apiToken, endpoint, method = 'GET', body, isBinary = false } = req.body;
+  const {
+    url,
+    email,
+    apiToken,
+    endpoint,
+    method = 'GET',
+    body,
+    isBinary = false,
+    apiRoot = 'api/3',
+  } = req.body;
 
   if (!url || !email || !apiToken || !endpoint) {
     res.status(400).json({ error: 'Missing required parameters' });
@@ -25,9 +34,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse): 
     const isAttachment = endpoint.includes('/secure/attachment/') || isBinary;
 
     // Construir URL: se for attachment, usar URL direta; senão, usar REST API
+    const baseUrl = url.replace(/\/$/, '');
+    const normalizedEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
     const jiraUrl = isAttachment
-      ? `${url.replace(/\/$/, '')}/${endpoint.startsWith('/') ? endpoint.slice(1) : endpoint}`
-      : `${url.replace(/\/$/, '')}/rest/api/3/${endpoint}`;
+      ? `${baseUrl}/${normalizedEndpoint}`
+      : `${baseUrl}/rest/${apiRoot}/${normalizedEndpoint}`;
 
     // Headers apropriados para binário ou JSON
     const headers: Record<string, string> = {
