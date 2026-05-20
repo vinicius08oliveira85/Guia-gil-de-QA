@@ -453,6 +453,22 @@ const getSubtasksByParentId = (allTasks: JiraTask[]): Map<string, JiraTask[]> =>
   return index;
 };
 
+/** Epic/História sem subtarefas vinculadas no projeto (nem filhos na árvore). */
+export const hasLinkedSubtasks = (task: JiraTask, allTasks: readonly JiraTask[]): boolean => {
+  const taskKey = task.id?.trim();
+  if (!taskKey) return false;
+  if ((task.children?.length ?? 0) > 0) return true;
+  return allTasks.some(t => t.parentId?.trim() === taskKey);
+};
+
+export const isStandaloneContainerIssue = (
+  task: JiraTask,
+  allTasks: readonly JiraTask[] = []
+): boolean => {
+  if (task.type !== 'Epic' && task.type !== 'História') return false;
+  return !hasLinkedSubtasks(task, allTasks);
+};
+
 const calculateLeafTaskTestStatus = (task: JiraTask): TaskTestStatus => {
   const testCases = task.testCases || [];
 
@@ -526,7 +542,8 @@ const calculateTaskTestStatusInternal = (
     const subtasks = taskKey ? subtasksByParentId.get(taskKey) ?? [] : [];
 
     if (subtasks.length === 0) {
-      status = 'pendente';
+      // Sem vínculos: QA pode marcar conclusão manualmente; respeita marcação salva.
+      status = task.testStatus === 'teste_concluido' ? 'teste_concluido' : 'testar';
     } else {
       const subtaskStatuses = subtasks.map(subtask =>
         calculateTaskTestStatusInternal(subtask, subtasksByParentId, nextVisited, cache, depth + 1)

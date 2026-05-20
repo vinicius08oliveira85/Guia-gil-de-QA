@@ -29,6 +29,7 @@ export { getJiraIssues, getJiraIssueByKey } from './issues';
 
 export {
   updateJiraIssue,
+  transitionJiraIssueToStatus,
   syncTaskToJira,
   fetchJiraTaskFormDataByKey,
   updateSingleTaskFromJira,

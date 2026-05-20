@@ -30,6 +30,7 @@ interface TaskActionStripProps {
   generateAllTitle: string;
   generateAllAriaLabel: string;
   testStatus: TaskTestStatus | 'sem_testes';
+  testStatusLabelOverride?: string;
   onTestStatusClick?: React.MouseEventHandler<HTMLButtonElement>;
 }
 
@@ -49,6 +50,7 @@ export const TaskActionStrip: React.FC<TaskActionStripProps> = ({
   generateAllTitle,
   generateAllAriaLabel,
   testStatus,
+  testStatusLabelOverride,
   onTestStatusClick,
 }) => {
   return (
@@ -101,6 +103,7 @@ export const TaskActionStrip: React.FC<TaskActionStripProps> = ({
 
       <TaskTestStatusBadge
         status={testStatus}
+        labelOverride={testStatusLabelOverride}
         onClick={onTestStatusClick}
         variant="card"
         className={TASK_ACTION_SLOT_CLASSNAMES.testStatus}

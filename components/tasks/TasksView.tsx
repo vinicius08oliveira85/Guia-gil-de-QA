@@ -53,6 +53,7 @@ import {
   syncTaskToJira,
   fetchJiraTaskFormDataByKey,
   updateSingleTaskFromJira,
+  transitionJiraIssueToStatus,
 } from '../../services/jiraService';
 import { GeneralIAAnalysisButton } from './GeneralIAAnalysisButton';
 import { TasksViewHeader } from './TasksViewHeader';
@@ -121,6 +122,7 @@ export const TasksView: React.FC<{
     return scheduled;
   }, []);
   const [syncingTaskId, setSyncingTaskId] = useState<string | null>(null);
+  const [transitioningStatusTaskId, setTransitioningStatusTaskId] = useState<string | null>(null);
   const [updatingFromJiraTaskId, setUpdatingFromJiraTaskId] = useState<string | null>(null);
   const [selectedTasks, setSelectedTasks] = useState<Set<string>>(new Set());
   const { handleError, handleSuccess } = useErrorHandler();
@@ -557,6 +559,37 @@ export const TasksView: React.FC<{
       }
     },
     [project, onUpdateProject, handleError, handleSuccess]
+  );
+
+  const handleJiraStatusChange = useCallback(
+    async (
+      taskId: string,
+      jiraStatusName: string,
+      rollback: { status: JiraTask['status']; jiraStatus?: string }
+    ) => {
+      if (!/^[A-Z]+-\d+$/.test(taskId)) return;
+
+      const config = getJiraConfig();
+      if (!config) return;
+
+      setTransitioningStatusTaskId(taskId);
+      try {
+        await transitionJiraIssueToStatus(config, taskId, jiraStatusName);
+      } catch (error) {
+        onUpdateProject({
+          ...project,
+          tasks: project.tasks.map(t =>
+            t.id === taskId
+              ? { ...t, status: rollback.status, jiraStatus: rollback.jiraStatus }
+              : t
+          ),
+        });
+        handleError(error, 'Alterar status no Jira');
+      } finally {
+        setTransitioningStatusTaskId(null);
+      }
+    },
+    [project, onUpdateProject, handleError]
   );
 
   const handleConfirmFail = useCallback(() => {
@@ -1874,6 +1907,10 @@ export const TasksView: React.FC<{
               onSaveBddScenario={handleSaveBddScenario}
               onDeleteBddScenario={handleDeleteBddScenario}
               onTaskStatusChange={status => handleTaskStatusChange(task.id, status)}
+              onJiraStatusChange={(jiraStatusName, rollback) =>
+                handleJiraStatusChange(task.id, jiraStatusName, rollback)
+              }
+              isTransitioningJiraStatus={transitioningStatusTaskId === task.id}
               level={taskLevel}
               onAddComment={content => handleAddComment(task.id, content)}
               onEditComment={(commentId, content) => handleEditComment(task.id, commentId, content)}
@@ -1904,8 +1941,10 @@ export const TasksView: React.FC<{
       generatingBddTaskId,
       generatingAllTaskId,
       syncingTaskId,
+      transitioningStatusTaskId,
       updatingFromJiraTaskId,
       handleUpdateTaskFromJira,
+      handleJiraStatusChange,
       handleTestCaseStatusChange,
       handleTestCaseObservedResultChange,
       handleTestCaseExecutionKindChange,

@@ -730,6 +730,11 @@ export function getTaskQaRiskLevel(task: JiraTask): TaskIAAnalysis['riskLevel'] 
   return task.iaAnalysis?.riskLevel ?? calculateTaskSnapshot(task).riskLevel;
 }
 
+/** Sinais heurísticos de risco (tooltip no card; ignora análise IA persistida). */
+export function getTaskQaRiskSignals(task: JiraTask): string[] {
+  return calculateTaskSnapshot(task).riskSignals;
+}
+
 /** Hash do snapshot de teste usado em `TestIAAnalysis.snapshotHash`. */
 export function getTestIaAnalysisSnapshotHash(task: JiraTask, testCase: TestCase): string {
   return computeTestSnapshotHash(calculateTestSnapshot(task, testCase));
