@@ -89,6 +89,54 @@ export function groupBacklogTasksBySprint(
   return groups;
 }
 
+/**
+ * Agrupa raízes da árvore de tarefas por sprint (subtarefas permanecem em `parent.children`).
+ * Use após montar a hierarquia com `parentId`, não sobre lista plana.
+ */
+export function groupBacklogRootsBySprint<T extends JiraTask>(
+  roots: readonly T[],
+  taskComparator: (a: T, b: T) => number
+): BacklogSprintGroup[] {
+  const map = new Map<string, BacklogSprintGroup>();
+
+  for (const root of roots) {
+    const sprint = resolveTaskDisplaySprint(root);
+    const key = getBacklogSprintGroupKey(root);
+    if (!map.has(key)) {
+      map.set(key, {
+        key,
+        label: sprint?.name?.trim() || BACKLOG_UNASSIGNED_SPRINT_LABEL,
+        sprint,
+        isActive: isActiveSprint(sprint),
+        tasks: [],
+      });
+    }
+    map.get(key)!.tasks.push(root);
+  }
+
+  const groups = Array.from(map.values());
+  for (const group of groups) {
+    group.tasks.sort(taskComparator);
+  }
+  groups.sort(compareBacklogSprintGroups);
+  return groups;
+}
+
+/** Conta nós na árvore (raiz + descendentes aninhados). */
+export function countTasksInBacklogTree(
+  roots: readonly { children?: readonly unknown[] }[]
+): number {
+  let n = 0;
+  const walk = (nodes: readonly { children?: readonly unknown[] }[]) => {
+    for (const node of nodes) {
+      n += 1;
+      if (node.children?.length) walk(node.children as readonly { children?: readonly unknown[] }[]);
+    }
+  };
+  walk(roots);
+  return n;
+}
+
 export const BACKLOG_SPRINT_FILTER_ALL = 'all';
 
 export interface BacklogSprintFilterOption {

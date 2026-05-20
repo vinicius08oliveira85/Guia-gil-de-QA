@@ -1077,11 +1077,18 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
     );
   };
 
+  const activeSectionLabel =
+    sectionTabs.find(tab => tab.id === activeSection)?.label ?? 'Detalhes da tarefa';
+
   const modalTitle = (
-    <div className="flex items-center gap-3 min-w-0 w-full pr-10 sm:pr-12">
-      <span className="font-mono text-sm task-card-muted shrink-0">{task.id}</span>
-      <span className="text-[var(--brand-text-strong)] truncate">{task.title}</span>
-    </div>
+    <span className="flex min-w-0 w-full items-center gap-2 pr-10 sm:pr-12">
+      <span className="app-element-typography truncate text-sm font-semibold text-[var(--brand-text-strong)]">
+        {activeSectionLabel}
+      </span>
+      <span className="sr-only">
+        {task.id}: {task.title}
+      </span>
+    </span>
   );
 
   return (
@@ -1110,10 +1117,7 @@ export const TaskDetailsModal: React.FC<TaskDetailsModalProps> = ({
                   role="tab"
                   aria-selected={isActive}
                   aria-controls={panelId}
-                  className={cn(
-                    filterPillClass(isActive),
-                    'px-2 py-1 text-xs sm:px-3 sm:py-1.5 sm:text-sm'
-                  )}
+                  className={filterPillClass(isActive)}
                   onClick={e => {
                     e.stopPropagation();
                     setActiveSection(tab.id);

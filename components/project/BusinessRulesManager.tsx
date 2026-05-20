@@ -21,6 +21,7 @@ import { ConfirmDialog } from '../common/ConfirmDialog';
 import {
   appPanelClass,
   appSelectClass,
+  contextBadgeClass,
   outlineActionBtn,
   pageSubtitleClass,
   pageTitleClass,
@@ -277,9 +278,7 @@ export const BusinessRulesManager: React.FC<{
                     Regras de negócio
                   </h1>
                   {jiraProjectKey && (
-                    <span className="shrink-0 rounded-[var(--radius)] border border-[var(--brand-surface-border)] bg-[var(--brand-chip)] px-2 py-0.5 text-xs font-medium task-card-muted">
-                      Jira: {jiraProjectKey}
-                    </span>
+                    <span className={contextBadgeClass}>Jira: {jiraProjectKey}</span>
                   )}
                 </div>
                 <p className="max-w-3xl text-sm leading-relaxed task-card-muted">

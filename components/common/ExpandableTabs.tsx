@@ -28,6 +28,8 @@ interface ExpandableTabsProps {
   leadingContent?: React.ReactNode;
   /** Chamado quando o usuário clica fora do container (para recolher leadingContent expansível, etc.). */
   onOutsideClick?: () => void;
+  /** Badge numérico ancorado a um ícone de aba (ex.: notificações). */
+  tabBadge?: { tabId: string; count: number };
 }
 
 const buttonVariants = {
@@ -72,6 +74,7 @@ export const ExpandableTabs: React.FC<ExpandableTabsProps> = ({
   onChange,
   leadingContent,
   onOutsideClick,
+  tabBadge,
 }) => {
   const [selected, setSelected] = React.useState<number | null>(null);
   const [hoveredIndex, setHoveredIndex] = React.useState<number | null>(null);
@@ -117,6 +120,7 @@ export const ExpandableTabs: React.FC<ExpandableTabsProps> = ({
 
         const Icon = tab.icon;
         const isExpanded = hoveredIndex === index;
+        const showTabBadge = tabBadge && tabBadge.tabId === tab.id && tabBadge.count > 0;
         return (
           <motion.button
             key={tab.title}
@@ -130,6 +134,7 @@ export const ExpandableTabs: React.FC<ExpandableTabsProps> = ({
             transition={transition}
             className={cn(
               'relative z-[1] flex min-h-[44px] min-w-[44px] shrink-0 cursor-pointer items-center justify-center gap-0',
+              showTabBadge && 'overflow-visible',
               'overflow-visible rounded-full border border-transparent bg-transparent px-2 text-xs font-semibold outline-none',
               'transition-[background-color,box-shadow,color] duration-200',
               'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[oklch(var(--p))]',
@@ -147,6 +152,14 @@ export const ExpandableTabs: React.FC<ExpandableTabsProps> = ({
             type="button"
           >
             <Icon size={18} />
+            {showTabBadge && (
+              <span
+                className="pointer-events-none absolute -right-0.5 -top-0.5 z-10 flex h-4 min-w-4 items-center justify-center rounded-full bg-error px-0.5 text-[0.6rem] font-bold leading-none text-error-content shadow-sm"
+                aria-hidden
+              >
+                {tabBadge.count > 9 ? '9+' : tabBadge.count}
+              </span>
+            )}
             <AnimatePresence initial={false}>
               {isExpanded && (
                 <motion.span

@@ -631,6 +631,7 @@
   }
 
   .app-header-shell {
+    overflow: hidden;
     background:
       linear-gradient(
         180deg,
@@ -641,6 +642,36 @@
     box-shadow: 0 16px 36px -28px var(--brand-surface-shadow);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
+  }
+
+  .app-header-toolbar {
+    scrollbar-width: none;
+  }
+
+  .app-header-toolbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /** Indicador sutil de análise geral IA desatualizada ou pendente (Header). */
+  .app-header-analysis-dot {
+    display: inline-block;
+    flex-shrink: 0;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 9999px;
+    background: rgb(251 76 0);
+    box-shadow: 0 0 0 2px color-mix(in srgb, rgb(251 76 0) 28%, transparent);
+    animation: app-header-analysis-pulse 2.4s ease-in-out infinite;
+  }
+
+  @keyframes app-header-analysis-pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.55;
+    }
   }
 
   .app-nav-pill {
@@ -693,6 +724,8 @@
   }
 
   .app-toolbar-action {
+    font-family: var(--font-sans);
+    letter-spacing: var(--letter-spacing);
     border: 1px solid transparent;
     border-radius: 999px;
     background: transparent;
