@@ -709,6 +709,11 @@ export function getTaskIaAnalysisSnapshotHash(task: JiraTask): string {
   return computeTaskSnapshotHash(calculateTaskSnapshot(task));
 }
 
+/** Nível de risco para exibição (análise persistida ou heurística do snapshot atual). */
+export function getTaskQaRiskLevel(task: JiraTask): TaskIAAnalysis['riskLevel'] {
+  return task.iaAnalysis?.riskLevel ?? calculateTaskSnapshot(task).riskLevel;
+}
+
 /** Hash do snapshot de teste usado em `TestIAAnalysis.snapshotHash`. */
 export function getTestIaAnalysisSnapshotHash(task: JiraTask, testCase: TestCase): string {
   return computeTestSnapshotHash(calculateTestSnapshot(task, testCase));
