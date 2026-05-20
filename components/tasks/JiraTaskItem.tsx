@@ -84,6 +84,7 @@ import { JiraStatusLozenge } from './JiraStatusLozenge';
 import { TaskCardQaInsights } from './TaskCardQaInsights';
 import { getTaskQaRiskLevel, getTaskIaAnalysisSnapshotHash } from '../../services/ai/generalAnalysisService';
 import { isAnalysisOutdated } from '../../utils/analysisFreshness';
+import { resolveTaskStoryPoints } from '../../utils/taskStoryPoints';
 import {
   getTaskRiskBorderClass,
   getTaskRiskBadgeClass,
@@ -262,6 +263,7 @@ export const JiraTaskItem: React.FC<{
     const displayTitle = task.title;
 
     const taskRiskLevel = useMemo(() => getTaskQaRiskLevel(task), [task]);
+    const storyPointsDisplay = useMemo(() => resolveTaskStoryPoints(task), [task]);
 
     const iaAnalysisStale = useMemo(() => {
       if (!task.iaAnalysis) return false;
@@ -1739,6 +1741,19 @@ export const JiraTaskItem: React.FC<{
                 statusColor={currentStatusColor}
                 className="shrink-0"
               />
+              {storyPointsDisplay > 0 ? (
+                <>
+                  <span className="shrink-0 opacity-60" aria-hidden>
+                    ·
+                  </span>
+                  <span
+                    className="shrink-0 tabular-nums font-medium text-base-content/85"
+                    title="Story Points"
+                  >
+                    {storyPointsDisplay} SP
+                  </span>
+                </>
+              ) : null}
               <span
                 className={getTaskRiskBadgeClass(taskRiskLevel)}
                 title={`Risco ${taskRiskLevel}`}

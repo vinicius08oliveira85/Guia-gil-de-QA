@@ -1,6 +1,7 @@
 import type { Project, JiraTask, TestCase } from '../../types';
 import type { JiraConfig } from './types';
 import { EPIC_LINK_FIELD_KEYS } from './types';
+import { assignStoryPointsToTask } from '../../utils/taskStoryPoints';
 import { getJiraIssues } from './issues';
 import {
   mapJiraStatusToTaskStatus,
@@ -487,6 +488,7 @@ export const syncJiraProject = async (
       // Se não há customFields no Jira, remover se existiam anteriormente
       task.jiraCustomFields = undefined;
     }
+    assignStoryPointsToTask(task);
 
     if (existingIndex >= 0) {
       const oldTask = updatedTasks[existingIndex];
@@ -523,7 +525,8 @@ export const syncJiraProject = async (
         JSON.stringify(oldTask.jiraAttachments || []) !==
           JSON.stringify(task.jiraAttachments || []) ||
         JSON.stringify(oldTask.jiraCustomFields || {}) !==
-          JSON.stringify(task.jiraCustomFields || {});
+          JSON.stringify(task.jiraCustomFields || {}) ||
+        oldTask.storyPoints !== task.storyPoints;
 
       if (hasChanges) {
         logger.debug(`Atualizando tarefa ${task.id}`, 'jiraService', {
