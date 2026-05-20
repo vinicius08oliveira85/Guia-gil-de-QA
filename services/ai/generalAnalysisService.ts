@@ -7,6 +7,7 @@ import {
   JiraTask,
   TestCase,
 } from '../../types';
+import { resolveTaskStoryPoints } from '../../utils/taskStoryPoints';
 import { getFormattedContext } from './documentContextService';
 import { TEST_CASE_VISUAL_FORMAT_INSTRUCTIONS } from './testGenerationPrompts';
 import { callGeminiWithRetry } from './geminiApiWrapper';
@@ -50,6 +51,7 @@ interface TaskSnapshot {
   hasTestStrategy: boolean;
   hasDescription: boolean;
   dependencies: number;
+  storyPoints: number;
   riskSignals: string[];
   riskScore: number;
   riskLevel: TaskIAAnalysis['riskLevel'];
@@ -121,9 +123,22 @@ const calculateTaskSnapshot = (task: JiraTask): TaskSnapshot => {
   const hasDescription = !!task.description && task.description.trim().length > 0;
   const hasBDD = (task.bddScenarios?.length || 0) > 0;
   const hasStrategy = (task.testStrategy?.length || 0) > 0;
+  const storyPoints = resolveTaskStoryPoints(task);
 
   const riskSignals: string[] = [];
   let riskScore = 20;
+
+  if (storyPoints > 0) {
+    riskScore += Math.min(15, storyPoints * 2);
+  }
+  if (storyPoints > 5 && totalTests === 0) {
+    riskSignals.push('Tarefa grande sem testes');
+    riskScore += 15;
+  }
+  if (storyPoints > 8 && !hasBDD) {
+    riskSignals.push('Tarefa complexa sem BDD');
+    riskScore += 10;
+  }
 
   if (!hasDescription) {
     riskScore += 20;
@@ -171,6 +186,7 @@ const calculateTaskSnapshot = (task: JiraTask): TaskSnapshot => {
     hasTestStrategy: hasStrategy,
     hasDescription,
     dependencies: task.dependencies?.length || 0,
+    storyPoints,
     riskSignals,
     riskScore,
     riskLevel: getRiskLevelFromScore(riskScore),

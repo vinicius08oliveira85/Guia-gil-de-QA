@@ -1,29 +1,15 @@
 import { JiraTask } from '../../types';
 import { getTaskStatusCategory } from '../../utils/jiraStatusCategorizer';
+import {
+  parseStoryPointsFromCustomFields,
+  resolveTaskStoryPoints,
+} from '../../utils/taskStoryPoints';
 
-const STORY_POINTS_KEYS = [
-  'Story Points',
-  'story points',
-  'Story points',
-  'customfield_10016',
-] as const;
-
-/** Extrai pontos ou horas estimadas como unidade de carga (prioriza Story Points do Jira). */
-export function parseStoryPointsFromCustomFields(task: JiraTask): number | null {
-  const cf = task.jiraCustomFields;
-  if (!cf || typeof cf !== 'object') return null;
-  for (const k of STORY_POINTS_KEYS) {
-    const v = (cf as Record<string, unknown>)[k];
-    if (v == null) continue;
-    const n = typeof v === 'number' ? v : parseFloat(String(v).replace(',', '.'));
-    if (Number.isFinite(n) && n >= 0) return n;
-  }
-  return null;
-}
+export { parseStoryPointsFromCustomFields, resolveTaskStoryPoints } from '../../utils/taskStoryPoints';
 
 export function getEffortUnits(task: JiraTask): number {
-  const sp = parseStoryPointsFromCustomFields(task);
-  if (sp != null && sp > 0) return sp;
+  const sp = resolveTaskStoryPoints(task);
+  if (sp > 0) return sp;
   const h = task.estimatedHours;
   if (h != null && Number.isFinite(h) && h > 0) return h;
   return 0;

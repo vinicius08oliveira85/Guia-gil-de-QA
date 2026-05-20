@@ -181,6 +181,8 @@ export interface JiraTask {
   attachments?: Attachment[];
   estimatedHours?: number;
   actualHours?: number;
+  /** Story Points (campo nativo ou espelhado na importação Jira). */
+  storyPoints?: number;
   checklist?: ChecklistItem[];
   iaAnalysis?: TaskIAAnalysis;
   toolsUsed?: string[]; // Ferramentas utilizadas nesta task

@@ -15,6 +15,7 @@ import { loadTestStatusesByJiraKeys } from '../supabaseService';
 import { parseJiraDescriptionHTML } from '../../utils/jiraDescriptionParser';
 import { logger } from '../../utils/logger';
 import { normalizeTasksParentIdsAcyclic } from '../../utils/taskParentCycle';
+import { assignStoryPointsToTask } from '../../utils/taskStoryPoints';
 
 export const importJiraProject = async (
   config: JiraConfig,
@@ -252,6 +253,7 @@ export const importJiraProject = async (
       if (Object.keys(customFields).length > 0) {
         task.jiraCustomFields = customFields;
       }
+      assignStoryPointsToTask(task);
 
       return task;
     })
@@ -497,6 +499,7 @@ export const addNewJiraTasks = async (
       if (Object.keys(customFields).length > 0) {
         task.jiraCustomFields = customFields;
       }
+      assignStoryPointsToTask(task);
 
       return task;
     })
