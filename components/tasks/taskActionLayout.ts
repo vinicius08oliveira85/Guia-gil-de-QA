@@ -57,3 +57,7 @@ export const taskCardTestStatusChipLayout = [
   taskCardButtonTypography,
   'shadow-sm',
 ].join(' ');
+
+/** Largura fixa do chevron + contador de subtarefas (alinha metadados entre cards). */
+export const taskCardSubtreeExpandSlotClass =
+  'inline-flex shrink-0 items-center justify-center gap-0.5 rounded-[var(--radius)] px-1.5 min-h-[44px] min-w-[44px] max-md:px-2 sm:min-h-8 sm:min-w-[3.25rem]';

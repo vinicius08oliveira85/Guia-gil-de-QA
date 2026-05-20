@@ -89,6 +89,7 @@ import {
   taskCardIdTypography,
   taskCardMetadataStripTypography,
   taskCardTitleTypography,
+  taskCardSubtreeExpandSlotClass,
 } from './taskActionLayout';
 import { JiraStatusLozenge } from './JiraStatusLozenge';
 import { TaskJiraStatusDropdown } from './TaskJiraStatusDropdown';
@@ -1683,7 +1684,7 @@ export const JiraTaskItem: React.FC<{
           <div
             className={[
               'task-card-shadow rounded-xl border border-[var(--brand-surface-border)] bg-[var(--brand-surface)] px-2 py-2 transition-colors duration-200 sm:px-3 sm:py-2 md:px-3 md:py-2',
-              'flex flex-row items-center gap-2 overflow-visible sm:gap-3',
+              'flex min-w-0 flex-row items-center gap-2 overflow-visible sm:gap-3',
               'hover:border-[color-mix(in_srgb,var(--brand-cta)_20%,var(--brand-surface-border))] hover:bg-[var(--brand-surface-strong)]',
               level > 0
                 ? 'bg-[color-mix(in_srgb,var(--brand-surface-strong)_88%,transparent)]'
@@ -1710,12 +1711,7 @@ export const JiraTaskItem: React.FC<{
             aria-busy={isAiProcessing}
             title={isAiProcessing && aiPhaseMessage ? aiPhaseMessage : undefined}
           >
-            <div
-              className={cn(
-                'flex min-w-0 shrink-0 flex-nowrap items-center gap-1.5',
-                'md:max-w-[9rem] md:gap-2'
-              )}
-            >
+            <div className="flex shrink-0 flex-nowrap items-center gap-1.5 md:gap-2">
                 {onToggleSelect && (
                   <input
                     type="checkbox"
@@ -1757,33 +1753,51 @@ export const JiraTaskItem: React.FC<{
                     )}
                   </button>
                 )}
-                {hasChildren ? (
-                  <button
-                    type="button"
-                    onClick={e => {
-                      e.stopPropagation();
-                      setIsChildrenOpen(!isChildrenOpen);
-                    }}
-                    className="btn btn-ghost btn-xs flex shrink-0 items-center gap-0.5 rounded-[var(--radius)] px-1.5 py-0 min-h-[44px] min-w-[44px] max-md:px-2 sm:min-h-8 sm:min-w-0 [&_svg:first-child]:size-[18px] sm:[&_svg:first-child]:size-4"
-                    aria-label={
-                      isChildrenOpen
-                        ? `Colapsar ${task.children.length} subtarefas de ${task.id}`
-                        : `Expandir ${task.children.length} subtarefas de ${task.id}`
-                    }
-                  >
-                    <ChevronDown
-                      className={`transition-transform flex-shrink-0 ${isChildrenOpen ? 'rotate-180' : ''}`}
-                      aria-hidden="true"
-                    />
-                    <span className="rounded-full bg-[var(--brand-chip)] px-1.5 py-0.5 text-[10px] text-[var(--brand-text-muted)]">
-                      {task.children.length}
+                <div
+                  className={taskCardSubtreeExpandSlotClass}
+                  aria-hidden={!hasChildren}
+                >
+                  {hasChildren ? (
+                    <button
+                      type="button"
+                      onClick={e => {
+                        e.stopPropagation();
+                        setIsChildrenOpen(!isChildrenOpen);
+                      }}
+                      className="btn btn-ghost btn-xs flex h-full min-h-0 w-full min-w-0 items-center justify-center gap-0.5 rounded-[inherit] border-0 bg-transparent px-0 py-0 shadow-none hover:bg-base-300/80 [&_svg:first-child]:size-[18px] sm:[&_svg:first-child]:size-4"
+                      aria-label={
+                        isChildrenOpen
+                          ? `Colapsar ${task.children.length} subtarefas de ${task.id}`
+                          : `Expandir ${task.children.length} subtarefas de ${task.id}`
+                      }
+                    >
+                      <ChevronDown
+                        className={cn(
+                          'shrink-0 transition-transform',
+                          isChildrenOpen && 'rotate-180'
+                        )}
+                        aria-hidden="true"
+                      />
+                      <span className="rounded-full bg-[var(--brand-chip)] px-1.5 py-0.5 text-[10px] tabular-nums text-[var(--brand-text-muted)]">
+                        {task.children.length}
+                      </span>
+                    </button>
+                  ) : (
+                    <span className="pointer-events-none flex items-center gap-0.5 opacity-0 select-none">
+                      <ChevronDown
+                        className="size-[18px] shrink-0 sm:size-4"
+                        aria-hidden="true"
+                      />
+                      <span className="min-w-[1.25rem] rounded-full bg-[var(--brand-chip)] px-1.5 py-0.5 text-[10px] tabular-nums">
+                        0
+                      </span>
                     </span>
-                  </button>
-                ) : null}
+                  )}
+                </div>
             </div>
             <div
               className={cn(
-                'inline-flex w-fit max-w-full shrink-0 flex-nowrap items-center gap-x-1.5 overflow-visible rounded-md border border-[var(--brand-surface-border)] bg-[color-mix(in_srgb,var(--brand-surface-strong)_70%,transparent)] px-1.5 py-0.5 text-[var(--brand-text-muted)]',
+                'inline-flex w-fit max-w-[min(100%,42rem)] shrink-0 flex-nowrap items-center gap-x-1.5 overflow-x-auto overflow-y-visible rounded-md border border-[var(--brand-surface-border)] bg-[color-mix(in_srgb,var(--brand-surface-strong)_70%,transparent)] px-1.5 py-0.5 text-[var(--brand-text-muted)] [scrollbar-width:thin]',
                 taskCardMetadataStripTypography
               )}
               role="group"
