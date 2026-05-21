@@ -2318,7 +2318,7 @@ export const TasksView: React.FC<{
                         >
                           <input
                             type="checkbox"
-                            className="checkbox checkbox-sm checkbox-primary"
+                            className="checkbox checkbox-sm checkbox-highlight"
                             checked={selectedTargetProjects.has(p.id)}
                             onChange={e => {
                               const newSet = new Set(selectedTargetProjects);
@@ -2563,15 +2563,15 @@ export const TasksView: React.FC<{
               className="textarea textarea-bordered w-full"
             ></textarea>
           </div>
-          <div className="flex items-center">
+          <div className="flex items-center gap-3">
             <input
               id="create-bug-task"
               type="checkbox"
               checked={failModalState.createBug}
               onChange={e => setFailModalState({ ...failModalState, createBug: e.target.checked })}
-              className="checkbox checkbox-primary"
+              className="checkbox checkbox-highlight"
             />
-            <label htmlFor="create-bug-task" className="ml-2 block text-sm text-[var(--brand-text-strong)]">
+            <label htmlFor="create-bug-task" className="block text-sm text-[var(--brand-text-strong)]">
               Criar tarefa de Bug automaticamente
             </label>
           </div>

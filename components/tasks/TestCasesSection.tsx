@@ -354,7 +354,7 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
                       type="checkbox"
                       checked={statusFilter.includes(s)}
                       onChange={() => toggleStatusFilter(s)}
-                      className="checkbox checkbox-sm"
+                      className="checkbox checkbox-sm checkbox-highlight"
                     />
                     <span className="text-xs">{STATUS_LABEL[s]}</span>
                   </label>
@@ -493,7 +493,7 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
                   filteredAndSorted.length > 0 && selectedIds.size === filteredAndSorted.length
                 }
                 onChange={toggleSelectAll}
-                className="checkbox checkbox-sm"
+                className="checkbox checkbox-sm checkbox-highlight"
                 aria-label="Selecionar todos os casos visíveis"
               />
               <span className="text-xs text-base-content/70">Selecionar todos</span>
