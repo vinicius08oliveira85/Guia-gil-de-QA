@@ -131,8 +131,8 @@ export const TestCaseItem: React.FC<{
 
   const hasStructuredSteps = actionSteps.length > 1;
 
-  /** Uma única linha na lista (truncável); texto completo em title / roteiro expandido. */
-  const listTitle = useMemo(() => getTestCaseListTitle(testCase), [testCase]);
+  /** Até 2 linhas na lista; texto completo em title / roteiro expandido. */
+  const listTitle = useMemo(() => getTestCaseListTitle(testCase, { truncate: false }), [testCase]);
 
   const listRowTitleAttr = useMemo(() => {
     const parts = [listTitle, testCase.action?.trim() ? `Ação necessária:\n${testCase.action}` : ''].filter(
@@ -199,7 +199,7 @@ export const TestCaseItem: React.FC<{
         selected && 'ring-1 ring-primary/40 ring-offset-2 ring-offset-base-200'
       )}
     >
-      <div className="flex min-w-0 items-center gap-2 md:gap-2">
+      <div className="flex min-w-0 items-start gap-2 md:gap-2">
         {onBatchSelect && onToggleSelect && (
           <label className="label shrink-0 cursor-pointer gap-1 py-0">
             <input
@@ -222,7 +222,7 @@ export const TestCaseItem: React.FC<{
         </span>
 
         <p
-          className="font-heading min-w-0 flex-1 truncate text-sm text-[var(--brand-text-strong)] sm:text-base"
+          className="font-heading min-w-0 flex-1 line-clamp-2 break-words text-sm leading-snug text-[var(--brand-text-strong)] sm:text-base"
           title={listRowTitleAttr || undefined}
         >
           <span className="sr-only">Título do roteiro: </span>

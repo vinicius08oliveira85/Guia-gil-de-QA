@@ -28,6 +28,7 @@ export const BacklogSortSelect: React.FC<BacklogSortSelectProps> = ({
     >
       <option value="priority">Prioridade (mais urgente primeiro)</option>
       <option value="storyPoints">Story Points (maior primeiro)</option>
+      <option value="storyPointsAsc">Story Points (menor primeiro)</option>
       <option value="id">ID da issue</option>
     </select>
   </div>

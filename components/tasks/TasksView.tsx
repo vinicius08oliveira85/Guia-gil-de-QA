@@ -88,11 +88,20 @@ import { testCaseLooksAutomated } from '../../utils/testCaseMigration';
 import { VirtualizedTaskRootList, shouldVirtualizeTaskRoots } from './VirtualizedTaskRootList';
 import { outlineActionBtn, projectViewPanel, projectViewShell } from '../common/viewUi';
 import {
+  applyBacklogSecondaryFilters,
+  BACKLOG_SECONDARY_FILTER_DEFAULTS,
+  countActiveBacklogSecondaryFilters,
   filterBacklogTasks,
+  filterBacklogTasksByItemFilter,
   getBacklogTaskComparator,
+  type BacklogItemFilter,
+  type BacklogPriorityFilter,
   type BacklogSortBy,
+  type BacklogStoryPointsFilter,
+  type BacklogTypeFilter,
   type TasksListMode,
 } from '../../utils/backlogTasks';
+import { BacklogListSurface } from './BacklogListSurface';
 import {
   BACKLOG_SPRINT_FILTER_ALL,
   buildBacklogSprintFilterOptions,
@@ -138,6 +147,45 @@ export const TasksView: React.FC<{
   const [backlogSprintFilter, setBacklogSprintFilter] = useLocalStorage<string>(
     `backlog_sprint_${project.id}`,
     BACKLOG_SPRINT_FILTER_ALL
+  );
+  const [backlogItemFilter, setBacklogItemFilter] = useLocalStorage<BacklogItemFilter>(
+    `backlog_item_filter_${project.id}`,
+    'queue'
+  );
+  const [backlogTypeFilter, setBacklogTypeFilter] = useLocalStorage<BacklogTypeFilter>(
+    `backlog_type_filter_${project.id}`,
+    BACKLOG_SECONDARY_FILTER_DEFAULTS.type
+  );
+  const [backlogPriorityFilter, setBacklogPriorityFilter] =
+    useLocalStorage<BacklogPriorityFilter>(
+      `backlog_priority_filter_${project.id}`,
+      BACKLOG_SECONDARY_FILTER_DEFAULTS.priority
+    );
+  const [backlogStoryPointsFilter, setBacklogStoryPointsFilter] =
+    useLocalStorage<BacklogStoryPointsFilter>(
+      `backlog_sp_filter_${project.id}`,
+      BACKLOG_SECONDARY_FILTER_DEFAULTS.storyPoints
+    );
+
+  const clearBacklogSecondaryFilters = useCallback(() => {
+    setBacklogTypeFilter(BACKLOG_SECONDARY_FILTER_DEFAULTS.type);
+    setBacklogPriorityFilter(BACKLOG_SECONDARY_FILTER_DEFAULTS.priority);
+    setBacklogStoryPointsFilter(BACKLOG_SECONDARY_FILTER_DEFAULTS.storyPoints);
+  }, [setBacklogTypeFilter, setBacklogPriorityFilter, setBacklogStoryPointsFilter]);
+
+  const clearAllBacklogFilters = useCallback(() => {
+    setBacklogSprintFilter(BACKLOG_SPRINT_FILTER_ALL);
+    setBacklogItemFilter('queue');
+    clearBacklogSecondaryFilters();
+  }, [
+    setBacklogSprintFilter,
+    setBacklogItemFilter,
+    clearBacklogSecondaryFilters,
+  ]);
+
+  const backlogBaseTasks = useMemo(
+    () => filterBacklogTasksByItemFilter(project.tasks, backlogItemFilter),
+    [project.tasks, backlogItemFilter]
   );
   const [generatingTestsTaskId, setGeneratingTestsTaskId] = useState<string | null>(null);
   const [generatingBddTaskId, setGeneratingBddTaskId] = useState<string | null>(null);
@@ -185,9 +233,58 @@ export const TasksView: React.FC<{
   const filterScopeProject = useMemo(
     () =>
       backlogOnly
-        ? { ...project, tasks: filterBacklogTasks(project.tasks) }
+        ? {
+            ...project,
+            tasks: applyBacklogSecondaryFilters(backlogBaseTasks, {
+              type: backlogTypeFilter,
+              priority: backlogPriorityFilter,
+              storyPoints: backlogStoryPointsFilter,
+            }),
+          }
         : project,
-    [backlogOnly, project]
+    [
+      backlogOnly,
+      project,
+      backlogBaseTasks,
+      backlogTypeFilter,
+      backlogPriorityFilter,
+      backlogStoryPointsFilter,
+    ]
+  );
+
+  const backlogScopeLabel = useMemo(() => {
+    const parts: string[] = [];
+    parts.push(backlogItemFilter === 'completed' ? 'Concluídos' : 'Fila');
+    if (backlogSprintFilter !== BACKLOG_SPRINT_FILTER_ALL) parts.push('Sprint filtrada');
+    if (backlogTypeFilter !== 'all') parts.push(`Tipo ${backlogTypeFilter}`);
+    if (backlogPriorityFilter !== 'all') parts.push(`Prioridade ${backlogPriorityFilter}`);
+    if (backlogStoryPointsFilter === 'withSp') parts.push('Com SP');
+    if (backlogStoryPointsFilter === 'withoutSp') parts.push('Sem SP');
+    return parts.join(' · ');
+  }, [
+    backlogItemFilter,
+    backlogSprintFilter,
+    backlogTypeFilter,
+    backlogPriorityFilter,
+    backlogStoryPointsFilter,
+  ]);
+
+  const hasBacklogToolbarFiltersActive = useMemo(
+    () =>
+      backlogSprintFilter !== BACKLOG_SPRINT_FILTER_ALL ||
+      backlogItemFilter !== 'queue' ||
+      countActiveBacklogSecondaryFilters({
+        type: backlogTypeFilter,
+        priority: backlogPriorityFilter,
+        storyPoints: backlogStoryPointsFilter,
+      }) > 0,
+    [
+      backlogSprintFilter,
+      backlogItemFilter,
+      backlogTypeFilter,
+      backlogPriorityFilter,
+      backlogStoryPointsFilter,
+    ]
   );
 
   const {
@@ -221,8 +318,8 @@ export const TasksView: React.FC<{
   });
 
   const backlogSprintFilterOptions = useMemo(
-    () => buildBacklogSprintFilterOptions(filterBacklogTasks(project.tasks)),
-    [project.tasks]
+    () => buildBacklogSprintFilterOptions(backlogBaseTasks),
+    [backlogBaseTasks]
   );
 
   useEffect(() => {
@@ -2121,6 +2218,15 @@ export const TasksView: React.FC<{
               backlogSprintFilter={backlogSprintFilter}
               backlogSprintFilterOptions={backlogSprintFilterOptions}
               onBacklogSprintFilterChange={setBacklogSprintFilter}
+              backlogItemFilter={backlogItemFilter}
+              onBacklogItemFilterChange={setBacklogItemFilter}
+              backlogTypeFilter={backlogTypeFilter}
+              onBacklogTypeFilterChange={setBacklogTypeFilter}
+              backlogPriorityFilter={backlogPriorityFilter}
+              onBacklogPriorityFilterChange={setBacklogPriorityFilter}
+              backlogStoryPointsFilter={backlogStoryPointsFilter}
+              onBacklogStoryPointsFilterChange={setBacklogStoryPointsFilter}
+              onClearBacklogSecondaryFilters={clearBacklogSecondaryFilters}
               disabled={isRunningGeneralAnalysis || !onListModeChange}
             />
           </div>
@@ -2212,11 +2318,14 @@ export const TasksView: React.FC<{
             clearAllFilters={clearAllFilters}
             onClearAndCloseFilters={() => {
               clearAllFilters();
+              if (backlogOnly) clearAllBacklogFilters();
               setIsFiltersModalOpen(false);
             }}
             filteredCount={listTasks.length}
             totalCount={filterScopeProject.tasks.length}
-            hasActiveFiltersOrSearch={activeFiltersCount > 0}
+            hasActiveFiltersOrSearch={
+              activeFiltersCount > 0 || (backlogOnly && hasBacklogToolbarFiltersActive)
+            }
           >
             <div className="space-y-4 min-w-0">
               <div className="flex flex-col gap-4">
@@ -2359,6 +2468,11 @@ export const TasksView: React.FC<{
               </Modal>
 
               {taskTree.length > 0 ? (
+                <BacklogListSurface
+                  enabled={backlogOnly}
+                  itemCount={listTasks.length}
+                  scopeLabel={backlogScopeLabel}
+                >
                 <div className="space-y-6">
                   <div className="flex flex-wrap items-end justify-end gap-3 border-b border-base-300/50 pb-3">
                     <button
@@ -2498,6 +2612,7 @@ export const TasksView: React.FC<{
                     </>
                   )}
                 </div>
+                </BacklogListSurface>
               ) : listTasks.length === 0 && project.tasks.length > 0 ? (
                 <EmptyState
                   icon={<Search className="mx-auto h-12 w-12 text-[var(--brand-text-muted)]" aria-hidden />}
@@ -2507,6 +2622,7 @@ export const TasksView: React.FC<{
                     label: 'Limpar filtros',
                     onClick: () => {
                       clearAllFilters();
+                      if (backlogOnly) clearAllBacklogFilters();
                       setIsFiltersModalOpen(false);
                     },
                     variant: 'primary',
