@@ -85,7 +85,9 @@ export const WorkspaceAlertsPanel: React.FC<WorkspaceAlertsPanelProps> = ({
             className={tabBtnClass(tab === 'health')}
             onClick={() => setTab('health')}
           >
-            <AlertTriangle className="h-4 w-4 shrink-0 text-warning" aria-hidden />
+            <div className="flex h-5 w-5 items-center justify-center rounded text-warning" aria-hidden>
+              <AlertTriangle className="h-4 w-4 shrink-0" />
+            </div>
             Saúde do workspace
             <span className="tabular-nums opacity-80">({healthCount})</span>
           </button>
@@ -101,7 +103,9 @@ export const WorkspaceAlertsPanel: React.FC<WorkspaceAlertsPanelProps> = ({
             className={tabBtnClass(tab === 'tests')}
             onClick={() => setTab('tests')}
           >
-            <AlertOctagon className="h-4 w-4 shrink-0 text-error" aria-hidden />
+            <div className="flex h-5 w-5 items-center justify-center rounded text-error" aria-hidden>
+              <AlertOctagon className="h-4 w-4 shrink-0" />
+            </div>
             Execução de testes
             <span className="tabular-nums opacity-80">({testsCount})</span>
           </button>
@@ -168,10 +172,9 @@ export const WorkspaceAlertsPanel: React.FC<WorkspaceAlertsPanelProps> = ({
           )}
         >
           <div className="mb-1.5 flex shrink-0 items-start gap-2">
-            <AlertOctagon
-              className="mt-0.5 h-4 w-4 shrink-0 text-error sm:h-5 sm:w-5"
-              aria-hidden
-            />
+            <div className="flex h-6 w-6 items-center justify-center rounded text-error sm:h-7 sm:w-7" aria-hidden>
+              <AlertOctagon className="h-4 w-4 shrink-0 sm:h-5 sm:w-5" />
+            </div>
             <p className="text-xs leading-snug text-base-content/80 sm:text-[13px]">
               Projetos com ao menos um caso de teste em status <strong>Falhou</strong> ou{' '}
               <strong>Bloqueado</strong>.

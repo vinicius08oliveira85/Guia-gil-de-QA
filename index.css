@@ -247,6 +247,91 @@
       border-width: 2px;
     }
   }
+
+  /* =========================================
+   * Checkboxes padronizados — identidade visual
+   * ========================================= */
+  .checkbox {
+    --chkbg: oklch(var(--su));
+    --chkfg: oklch(var(--suc));
+    border-radius: 0.375rem;
+    border-width: 2px;
+    border-color: color-mix(in srgb, var(--brand-text-muted) 35%, transparent);
+    background-color: var(--brand-surface-strong);
+    transition: all 150ms ease;
+  }
+  .checkbox:hover:not(:disabled):not(:checked) {
+    border-color: color-mix(in srgb, oklch(var(--su)) 55%, transparent);
+    background-color: color-mix(in srgb, oklch(var(--su)) 5%, transparent);
+  }
+  .checkbox:checked {
+    border-color: color-mix(in srgb, oklch(var(--su)) 50%, transparent);
+    background-color: color-mix(in srgb, oklch(var(--su)) 15%, transparent);
+    box-shadow: 0 0 0 1px color-mix(in srgb, oklch(var(--su)) 30%, transparent);
+  }
+  .checkbox:checked::after {
+    /* Override DaisyUI checkmark SVG with thicker stroke */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2322c55e' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6L9 17l-5-5'/%3E%3C/svg%3E");
+    background-size: 75%;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+  .checkbox:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--brand-cta) 30%, transparent);
+  }
+  .checkbox:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /* Checkbox variante brand (laranja) */
+  .checkbox-brand,
+  .checkbox-warning {
+    --chkbg: var(--brand-cta);
+  }
+  .checkbox-brand:hover:not(:disabled):not(:checked),
+  .checkbox-warning:hover:not(:disabled):not(:checked) {
+    border-color: color-mix(in srgb, var(--brand-cta) 55%, transparent);
+    background-color: color-mix(in srgb, var(--brand-cta) 5%, transparent);
+  }
+  .checkbox-brand:checked,
+  .checkbox-warning:checked {
+    border-color: color-mix(in srgb, var(--brand-cta) 50%, transparent);
+    background-color: color-mix(in srgb, var(--brand-cta) 15%, transparent);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--brand-cta) 30%, transparent);
+  }
+  .checkbox-brand:checked::after,
+  .checkbox-warning:checked::after {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23fb5a00' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6L9 17l-5-5'/%3E%3C/svg%3E");
+    background-size: 75%;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+
+  /* Checkbox variante highlight (roxo) */
+  .checkbox-highlight,
+  .checkbox-primary {
+    --chkbg: var(--brand-highlight);
+  }
+  .checkbox-highlight:hover:not(:disabled):not(:checked),
+  .checkbox-primary:hover:not(:disabled):not(:checked) {
+    border-color: color-mix(in srgb, var(--brand-highlight) 55%, transparent);
+    background-color: color-mix(in srgb, var(--brand-highlight) 5%, transparent);
+  }
+  .checkbox-highlight:checked,
+  .checkbox-primary:checked {
+    border-color: color-mix(in srgb, var(--brand-highlight) 50%, transparent);
+    background-color: color-mix(in srgb, var(--brand-highlight) 15%, transparent);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--brand-highlight) 30%, transparent);
+  }
+  .checkbox-highlight:checked::after,
+  .checkbox-primary:checked::after {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23a855f7' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6L9 17l-5-5'/%3E%3C/svg%3E");
+    background-size: 75%;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
 }
 
 @layer utilities {
@@ -817,30 +902,36 @@
     cursor: not-allowed;
   }
 
-  /** Select nativo alinhado ao mesmo shell de `.app-input`. */
-  .app-select {
-    font-family: var(--font-sans);
-    letter-spacing: var(--letter-spacing);
-    font-weight: 500;
-    color: var(--brand-text-strong);
-    background: var(--input);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    transition:
-      border-color 160ms ease,
-      box-shadow 160ms ease;
-  }
+/** Select nativo alinhado ao mesmo shell de `.app-input`. */
+.app-select {
+  font-family: var(--font-sans);
+  letter-spacing: var(--letter-spacing);
+  font-weight: 500;
+  color: var(--brand-text-strong);
+  background: var(--brand-surface-strong);
+  border: 1.5px solid color-mix(in srgb, var(--brand-text-muted) 25%, transparent);
+  border-radius: var(--radius);
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    background-color 160ms ease;
+}
 
-  .app-select:focus {
-    outline: none;
-    border-color: color-mix(in srgb, var(--brand-cta) 50%, var(--border));
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--brand-cta) 22%, transparent);
-  }
+.app-select:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--brand-highlight) 45%, transparent);
+  background-color: color-mix(in srgb, var(--brand-highlight) 3%, transparent);
+}
 
-  .app-select:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
+.app-select:focus {
+  outline: none;
+  border-color: color-mix(in srgb, var(--brand-highlight) 55%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--brand-highlight) 18%, transparent);
+}
+
+.app-select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 
   /** Painel flutuante (dropdown, resultados de busca). */
   .app-menu-panel {

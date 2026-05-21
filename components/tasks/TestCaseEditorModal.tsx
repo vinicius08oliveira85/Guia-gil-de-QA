@@ -77,13 +77,13 @@ export const TestCaseEditorModal: React.FC<TestCaseEditorModalProps> = ({
         <label
           className={cn(
             taskPanelBorderClass,
-            'flex cursor-pointer items-start gap-2 bg-[var(--brand-chip)] p-3 text-sm',
+            'flex cursor-pointer items-start gap-3 bg-[var(--brand-chip)] p-3 text-sm transition-colors hover:bg-[var(--brand-chip-hover)]',
             taskTextStrongClass
           )}
         >
           <input
             type="checkbox"
-            className="checkbox checkbox-sm mt-0.5"
+            className="checkbox checkbox-sm checkbox-highlight mt-0.5"
             checked={previewMarkdown}
             onChange={e => setPreviewMarkdown(e.target.checked)}
           />

@@ -178,7 +178,7 @@ export const TaskBusinessRulesLinker: React.FC<TaskBusinessRulesLinkerProps> = (
                     >
                       <input
                         type="checkbox"
-                        className="checkbox checkbox-primary shrink-0"
+                        className="checkbox checkbox-highlight shrink-0"
                         checked={checked}
                         onChange={e => handleToggleCategory(cat, e.target.checked)}
                         aria-label={`${checked ? 'Desmarcar' : 'Marcar'} categoria: ${cat}`}
@@ -232,7 +232,7 @@ export const TaskBusinessRulesLinker: React.FC<TaskBusinessRulesLinkerProps> = (
                             <input
                               id={`br-cb-hidden-${safeDomId}-${rule.id}`}
                               type="checkbox"
-                              className="checkbox checkbox-primary mt-0.5 shrink-0"
+                              className="checkbox checkbox-highlight mt-0.5 shrink-0"
                               checked
                               onChange={e => handleToggle(rule.id, e.target.checked)}
                               aria-label={`Desvincular regra: ${rule.title}`}
@@ -287,7 +287,7 @@ export const TaskBusinessRulesLinker: React.FC<TaskBusinessRulesLinkerProps> = (
                             <input
                               id={`br-cb-${safeDomId}-${rule.id}`}
                               type="checkbox"
-                              className="checkbox checkbox-primary mt-0.5 shrink-0"
+                              className="checkbox checkbox-highlight mt-0.5 shrink-0"
                               checked={checked}
                               onChange={e => handleToggle(rule.id, e.target.checked)}
                               aria-label={`${checked ? 'Desmarcar' : 'Marcar'} vínculo da regra: ${rule.title}`}

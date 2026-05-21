@@ -1725,12 +1725,8 @@ export const JiraTaskItem: React.FC<{
                       e.stopPropagation();
                       onToggleSelect();
                     }}
-                    className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-primary rounded-full appearance-none checked:bg-primary checked:border-primary focus:outline-none focus:ring-2 focus:ring-primary/50 cursor-pointer shrink-0"
-                    style={{
-                      backgroundImage: isSelected
-                        ? 'radial-gradient(circle, oklch(var(--pc)) 30%, transparent 30%)'
-                        : 'none',
-                    }}
+                    onClick={e => e.stopPropagation()}
+                    className="checkbox checkbox-sm checkbox-highlight shrink-0"
                     aria-label={
                       isSelected
                         ? `Tarefa ${task.id} selecionada (clique para desselecionar)`

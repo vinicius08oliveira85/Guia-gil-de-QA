@@ -206,7 +206,7 @@ export const TestCaseItem: React.FC<{
               type="checkbox"
               checked={!!selected}
               onChange={onToggleSelect}
-              className="checkbox checkbox-sm"
+              className="checkbox checkbox-sm checkbox-highlight"
               aria-label="Selecionar caso de teste para ações em lote"
             />
           </label>

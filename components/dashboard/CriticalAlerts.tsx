@@ -60,8 +60,15 @@ export const CriticalAlerts = React.memo<CriticalAlertsProps>(
       <div
         className={cn('bg-base-100 rounded-2xl shadow-sm border border-base-300 p-6', className)}
       >
-        <div className="flex items-center gap-2 mb-4">
-          <AlertCircle className={cn('w-5 h-5', titleColor)} aria-hidden="true" />
+        <div className="flex items-center gap-3 mb-4">
+          <div className={cn(
+            'flex h-8 w-8 items-center justify-center rounded-md ring-1',
+            hasCritical 
+              ? 'bg-error/15 text-error ring-error/30' 
+              : 'bg-warning/15 text-warning ring-warning/30'
+          )} aria-hidden="true">
+            <AlertCircle className="h-4 w-4" />
+          </div>
           <h3 className={cn('font-bold text-lg', titleColor)}>Alertas Críticos</h3>
         </div>
         {items.length === 0 ? (
