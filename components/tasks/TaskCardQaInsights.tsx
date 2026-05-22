@@ -62,7 +62,7 @@ export const TaskCardQaInsights: React.FC<TaskCardQaInsightsProps> = ({
       className={cn(
         'flex min-w-0 items-center',
         isInline
-          ? 'flex-1 flex-nowrap justify-end gap-1.5 sm:gap-2'
+          ? 'shrink-0 flex-nowrap justify-end gap-1.5 sm:gap-2'
           : 'flex-wrap items-center gap-x-2 gap-y-1',
         className
       )}
@@ -74,14 +74,14 @@ export const TaskCardQaInsights: React.FC<TaskCardQaInsightsProps> = ({
           className={cn(
             'flex min-w-0 items-center',
             isInline
-              ? 'flex-1 flex-nowrap items-center justify-end gap-1.5 sm:max-w-[12rem] sm:gap-2'
+              ? 'shrink-0 flex-nowrap items-center justify-end gap-1.5 sm:gap-2'
               : 'min-w-[8rem] max-w-[12rem] flex-col gap-1'
           )}
         >
           <div
             className={cn(
               'flex shrink-0 overflow-hidden rounded-full border border-[color-mix(in_srgb,var(--foreground)_10%,transparent)] bg-[var(--brand-chip)]',
-              isInline ? 'h-2 min-w-[4rem] flex-1 max-w-[7.5rem]' : 'h-2 w-full'
+              isInline ? 'h-2 w-[4.5rem] shrink-0 sm:w-[5.5rem]' : 'h-2 w-full'
             )}
             role="progressbar"
             aria-valuenow={counts.passed + counts.failed}

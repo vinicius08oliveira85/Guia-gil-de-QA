@@ -17,7 +17,8 @@ export const taskCardShellClass =
 export const taskCardTypography = 'font-sans tracking-[var(--letter-spacing)]';
 
 /** Título principal / seção em card ou modal de tarefa. */
-export const taskCardTitleClass = 'task-card-title text-xs leading-tight sm:text-sm';
+export const taskCardTitleClass =
+  'task-card-title text-xs leading-snug sm:text-sm sm:leading-tight';
 
 export const taskCardMutedClass = 'task-card-muted';
 

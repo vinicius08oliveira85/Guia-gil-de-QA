@@ -72,26 +72,41 @@ export const BugIcon: React.FC<IssueTypeBaseIconProps> = ({
   />
 );
 
+const ISSUE_TYPE_ICON_MAP: Record<JiraTaskType, React.FC<IssueTypeBaseIconProps>> = {
+  Epic: EpicIcon,
+  História: StoryIcon,
+  Tarefa: TaskIcon,
+  Bug: BugIcon,
+};
+
+/** Normaliza rótulos vindos do Jira ou dados legados para um `JiraTaskType` válido. */
+export function resolveJiraTaskType(type: string | undefined | null): JiraTaskType {
+  if (type && type in ISSUE_TYPE_ICON_MAP) {
+    return type as JiraTaskType;
+  }
+  if (!type) return 'Tarefa';
+  const normalized = type.toLowerCase();
+  if (normalized.includes('epic')) return 'Epic';
+  if (normalized.includes('story') || normalized.includes('hist')) return 'História';
+  if (normalized.includes('bug') || normalized.includes('defect')) return 'Bug';
+  return 'Tarefa';
+}
+
 interface JiraIssueTypeIconProps {
-  type: JiraTaskType;
+  type: JiraTaskType | string;
   iconUrl?: string;
   className?: string;
   size?: number;
 }
 
-const IssueTypeGlyph: React.FC<{ type: JiraTaskType; className?: string; size?: number }> = ({
+const IssueTypeGlyph: React.FC<{ type: JiraTaskType | string; className?: string; size?: number }> = ({
   type,
   className = '',
   size = 16,
 }) => {
-  const iconMap: Record<JiraTaskType, React.FC<IssueTypeBaseIconProps>> = {
-    Epic: EpicIcon,
-    História: StoryIcon,
-    Tarefa: TaskIcon,
-    Bug: BugIcon,
-  };
+  const resolved = resolveJiraTaskType(type);
+  const Icon = ISSUE_TYPE_ICON_MAP[resolved] ?? TaskIcon;
 
-  const Icon = iconMap[type];
   return (
     <span
       className={`inline-flex shrink-0 items-center justify-center ${className}`}
@@ -106,11 +121,26 @@ const IssueTypeGlyph: React.FC<{ type: JiraTaskType; className?: string; size?: 
 /** Fonte única dos ícones de issue type padronizados visualmente para toda a UI. */
 export const JiraIssueTypeIcon: React.FC<JiraIssueTypeIconProps> = ({
   type,
+  iconUrl,
   className = '',
   size = 16,
 }) => (
-  <span className={`inline-flex shrink-0 items-center justify-center ${className}`}>
-    <IssueTypeGlyph type={type} size={size} />
+  <span
+    className={`inline-flex shrink-0 items-center justify-center ${className}`}
+    style={{ width: size, height: size }}
+  >
+    {iconUrl ? (
+      <img
+        src={iconUrl}
+        alt=""
+        width={size}
+        height={size}
+        className="h-full w-full object-contain"
+        aria-hidden
+      />
+    ) : (
+      <IssueTypeGlyph type={type} size={size} />
+    )}
   </span>
 );
 
