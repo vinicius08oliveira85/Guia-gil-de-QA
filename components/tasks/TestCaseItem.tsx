@@ -18,20 +18,16 @@ import { Badge } from '../common/Badge';
 import { Copy, MoreVertical } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import { appMenuPanelClass, appSelectClass } from '../common/viewUi';
+import { taskTextareaClass } from './taskActionLayout';
 import {
-  taskCardMutedClass,
-  taskCollapsibleHeaderClass,
-  taskCollapsibleShellClass,
-  taskModalSectionClass,
-  taskSelectControlClass,
-  taskTextareaClass,
-  taskTextStrongClass,
-} from './taskActionLayout';
-
-const ROTEIRO_BLOCK_CLASS = cn(
-  taskModalSectionClass,
-  'p-3 text-xs text-[var(--brand-text-strong)]'
-);
+  leveTaskModalCollapsibleHeaderClass,
+  leveTaskModalCollapsibleShellClass,
+  leveTaskModalMutedClass,
+  leveTaskModalMutedXsClass,
+  leveTaskModalSectionClass,
+  leveTaskModalStrongClass,
+} from '../common/projectCardUi';
+const ROTEIRO_BLOCK_CLASS = cn(leveTaskModalSectionClass, 'p-3 text-xs text-[var(--leve-header-text)]');
 
 const STATUS_EMOJI: Record<TestCase['status'], string> = {
   'Not Run': '○',
@@ -57,8 +53,8 @@ function RoteiroStructuredBody({ view }: { view: RoteiroFieldView }) {
             key={`${i}-${row.key}`}
             className="grid gap-1 sm:grid-cols-[minmax(8rem,auto)_1fr] sm:gap-x-3 sm:items-baseline"
           >
-            <dt className="font-semibold text-primary/90 shrink-0">{row.key}</dt>
-            <dd className="text-[var(--brand-text-strong)] leading-relaxed [overflow-wrap:anywhere]">
+            <dt className="shrink-0 font-semibold text-[var(--leve-header-accent)]">{row.key}</dt>
+            <dd className="leading-relaxed text-[var(--leve-header-text)] [overflow-wrap:anywhere]">
               {row.value}
             </dd>
           </div>
@@ -70,8 +66,8 @@ function RoteiroStructuredBody({ view }: { view: RoteiroFieldView }) {
   const ListTag = view.listStyle === 'decimal' ? 'ol' : 'ul';
   const listClass =
     view.listStyle === 'decimal'
-      ? 'list-decimal list-outside ml-5 space-y-2 pl-1 marker:font-semibold marker:text-primary'
-      : 'list-disc list-outside ml-4 space-y-2 pl-1 marker:text-primary';
+      ? 'list-decimal list-outside ml-5 space-y-2 pl-1 marker:font-semibold marker:text-[var(--leve-header-accent)]'
+      : 'list-disc list-outside ml-4 space-y-2 pl-1 marker:text-[var(--leve-header-accent)]';
 
   return (
     <ListTag className={listClass}>
@@ -195,8 +191,10 @@ export const TestCaseItem: React.FC<{
   return (
     <div
       className={cn(
-        'rounded-[1.4rem] border border-[var(--brand-surface-border)] bg-[var(--brand-chip)] py-2 px-3 transition-colors duration-200 hover:bg-[var(--brand-chip-hover)]',
-        selected && 'ring-1 ring-primary/40 ring-offset-2 ring-offset-base-200'
+        leveTaskModalSectionClass,
+        'py-2 px-3 transition-colors duration-200 hover:border-[color-mix(in_srgb,var(--leve-header-accent)_30%,transparent)]',
+        selected &&
+          'ring-2 ring-[color-mix(in_srgb,var(--leve-header-accent)_35%,transparent)] ring-offset-2 ring-offset-[var(--leve-header-bg)]'
       )}
     >
       <div className="flex min-w-0 items-start gap-2 md:gap-2">
@@ -222,7 +220,7 @@ export const TestCaseItem: React.FC<{
         </span>
 
         <p
-          className="font-heading min-w-0 flex-1 line-clamp-2 break-words text-sm leading-snug text-[var(--brand-text-strong)] sm:text-base"
+          className="min-w-0 flex-1 line-clamp-2 break-words font-sans text-sm font-semibold leading-snug text-[var(--leve-header-text)] sm:text-base"
           title={listRowTitleAttr || undefined}
         >
           <span className="sr-only">Título do roteiro: </span>
@@ -240,7 +238,7 @@ export const TestCaseItem: React.FC<{
 
         {/* Grupo de ações: Editar, Duplicar, Excluir — integrados numa toolbar única */}
         <div
-          className="hidden shrink-0 items-center rounded-lg border border-base-300/50 bg-base-200/30 p-0.5 md:flex"
+          className="hidden shrink-0 items-center rounded-full border border-[var(--leve-header-border)] bg-[color-mix(in_srgb,var(--leve-header-text)_4%,var(--leve-header-bg))] p-0.5 md:flex"
           role="toolbar"
           aria-label="Ações do caso de teste"
         >
@@ -248,7 +246,7 @@ export const TestCaseItem: React.FC<{
             <button
               type="button"
               onClick={onEdit}
-              className="inline-flex h-7 w-7 items-center justify-center rounded-md text-[var(--brand-highlight)] transition-all duration-150 hover:bg-[color-mix(in_srgb,var(--brand-highlight)_12%,transparent)] hover:scale-105"
+              className="inline-flex h-7 w-7 items-center justify-center rounded-full text-[var(--leve-header-accent)] transition-all duration-150 hover:bg-[color-mix(in_srgb,var(--leve-header-accent)_12%,transparent)]"
               aria-label="Editar caso de teste"
               title="Editar"
             >
@@ -259,7 +257,7 @@ export const TestCaseItem: React.FC<{
             <button
               type="button"
               onClick={onDuplicate}
-              className="inline-flex h-7 w-7 items-center justify-center rounded-md text-base-content/60 transition-all duration-150 hover:bg-base-300/50 hover:text-base-content hover:scale-105"
+              className="inline-flex h-7 w-7 items-center justify-center rounded-full text-[var(--leve-header-text-muted)] transition-all duration-150 hover:bg-[color-mix(in_srgb,var(--leve-header-text)_8%,var(--leve-header-bg))] hover:text-[var(--leve-header-text)]"
               aria-label="Duplicar caso de teste"
               title="Duplicar"
             >
@@ -268,7 +266,7 @@ export const TestCaseItem: React.FC<{
           )}
           {onDelete && (
             <>
-              <div className="mx-0.5 h-4 w-px bg-base-300/60" aria-hidden />
+              <div className="mx-0.5 h-4 w-px bg-[var(--leve-header-border)]" aria-hidden />
               <button
                 type="button"
                 onClick={onDelete}
@@ -284,7 +282,7 @@ export const TestCaseItem: React.FC<{
 
         {/* Grupo de status: Aprovar, Reprovar, Bloquear — integrados numa toolbar única */}
         <div
-          className="hidden shrink-0 items-center rounded-lg border border-base-300/50 bg-base-200/30 p-0.5 md:flex"
+          className="hidden shrink-0 items-center rounded-full border border-[var(--leve-header-border)] bg-[color-mix(in_srgb,var(--leve-header-text)_4%,var(--leve-header-bg))] p-0.5 md:flex"
           role="group"
           aria-label="Marcar resultado da execução"
         >
@@ -447,7 +445,7 @@ export const TestCaseItem: React.FC<{
         </div>
       </div>
 
-      <div className={cn(taskCollapsibleShellClass, 'mt-2 overflow-hidden')}>
+      <div className={cn(leveTaskModalCollapsibleShellClass, 'mt-2 overflow-hidden')}>
         <button
           type="button"
           onClick={() => {
@@ -455,12 +453,12 @@ export const TestCaseItem: React.FC<{
               setDetailsOpen(o => !o);
             }
           }}
-          className={cn(taskCollapsibleHeaderClass, 'px-3 py-2')}
+          className={cn(leveTaskModalCollapsibleHeaderClass, 'px-3 py-2')}
           aria-expanded={effectiveDetailsOpen}
         >
           <div className="flex min-w-0 items-center gap-2">
             <ListIcon className="h-4 w-4 shrink-0 task-card-muted" />
-            <span className="font-heading text-xs font-semibold text-[var(--brand-text-strong)]">
+            <span className="font-sans text-xs font-semibold text-[var(--leve-header-text)]">
               Roteiro completo
             </span>
           </div>
@@ -469,25 +467,25 @@ export const TestCaseItem: React.FC<{
           />
         </button>
         {effectiveDetailsOpen && (
-          <div className="space-y-3 border-t border-[var(--brand-surface-border)] px-3 pb-3 pt-2">
+          <div className="space-y-3 border-t border-[var(--leve-header-border)] px-3 pb-3 pt-2">
             <div>
               <h3 className="mb-1 font-body text-[10px] font-bold uppercase tracking-widest text-muted">
                 Ação necessária
               </h3>
               <div className={ROTEIRO_BLOCK_CLASS}>
                 {hasStructuredSteps ? (
-                  <ol className="list-decimal list-outside ml-5 space-y-2 pl-1 text-sm font-medium leading-snug marker:font-bold marker:text-primary">
+                  <ol className="list-decimal list-outside ml-5 space-y-2 pl-1 text-sm font-medium leading-snug marker:font-bold marker:text-[var(--leve-header-accent)]">
                     {actionSteps.map((step, i) => (
                       <li
                         key={`action-step-${i}`}
-                        className="break-words pl-0.5 text-[var(--brand-text-strong)] [overflow-wrap:anywhere]"
+                        className="break-words pl-0.5 text-[var(--leve-header-text)] [overflow-wrap:anywhere]"
                       >
                         {stripLeadingStepIndex(step)}
                       </li>
                     ))}
                   </ol>
                 ) : (
-                  <p className="whitespace-pre-wrap text-sm leading-relaxed text-base-content">
+                  <p className={cn('whitespace-pre-wrap text-sm leading-relaxed', leveTaskModalMutedClass)}>
                     {actionSteps[0]}
                   </p>
                 )}

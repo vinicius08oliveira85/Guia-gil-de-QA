@@ -21,9 +21,9 @@
     --tasks-panel-gap: 0.75rem;
     --tasks-panel-gap-tight: 0.5rem;
     --tasks-panel-gap-loose: 1rem;
-    /** Epic (listagem): badge + faixa esquerda do card — mesma cor roxo escuro */
-    --jira-task-epic-accent: #0b6156;
-    --jira-task-epic-accent-border: #084d44;
+    /** Epic (listagem): badge + faixa esquerda do card — roxo Leve (alinhado a `--project-card-bg` / ícone Epic) */
+    --jira-task-epic-accent: #421d3a;
+    --jira-task-epic-accent-border: #351830;
     --brand-shell-1: #fcf7f2;
     --brand-shell-2: #f6efe9;
     --brand-surface: rgba(248, 252, 251, 0.84);

@@ -19,12 +19,18 @@ import {
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import {
-  taskCardSectionTitleClass,
-  taskLabelMutedClass,
-  taskModalSectionAccentClass,
-  taskPanelBorderClass,
-  taskSelectControlClass,
-} from './taskActionLayout';
+  leveSettingsSectionIconWrapClass,
+  leveSettingsSelectClass,
+  leveTaskModalMutedClass,
+  leveTaskModalMutedXsClass,
+  leveTaskModalSectionAccentClass,
+  leveTaskModalStatPillActiveClass,
+  leveTaskModalStatPillIdleClass,
+  leveTaskModalStrongClass,
+  leveTaskModalTabBadgeIdleClass,
+  leveViewOutlineBtnClass,
+  leveViewSearchInputClass,
+} from '../common/projectCardUi';
 
 const STATUS_OPTIONS: Array<TestCase['status']> = ['Not Run', 'Passed', 'Failed', 'Blocked'];
 const STATUS_LABEL: Record<TestCase['status'], string> = {
@@ -203,21 +209,21 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
   if (!task.id) return null;
 
   return (
-    <div className="font-sans tracking-[var(--letter-spacing)] text-[var(--brand-text-strong)]">
-      <header className="flex flex-col gap-3 mb-4">
+    <div className="font-sans tracking-[var(--letter-spacing)] text-[var(--leve-header-text)]">
+      <header className="mb-4 flex flex-col gap-3">
         <div className="flex flex-wrap items-center gap-3">
-          <div className="rounded-[var(--radius)] border border-[color-mix(in_srgb,var(--color-primary)_25%,transparent)] bg-[color-mix(in_srgb,var(--color-primary)_10%,transparent)] p-1.5">
-            <ClipboardList className="w-5 h-5 text-primary" aria-hidden />
-          </div>
-          <h2 className={cn(taskCardSectionTitleClass, 'text-lg')}>Casos de Teste</h2>
-          <span className="badge-task-format rounded-full border border-[var(--brand-surface-border)] bg-[var(--brand-chip)] px-3 py-1 text-xs font-medium normal-case tracking-normal text-[var(--brand-text-muted)]">
+          <span className={leveSettingsSectionIconWrapClass}>
+            <ClipboardList className="h-5 w-5" aria-hidden />
+          </span>
+          <h2 className={cn('text-lg font-bold', leveTaskModalStrongClass)}>Casos de Teste</h2>
+          <span className={cn(leveTaskModalTabBadgeIdleClass, 'rounded-full px-3 py-1 normal-case')}>
             {stats.total} caso(s)
           </span>
           {cases.length > 0 && (
             <button
               type="button"
               onClick={() => setShowExportModal(true)}
-              className="btn btn-ghost btn-sm gap-1.5 text-base-content/80 hover:text-primary"
+              className={cn(leveViewOutlineBtnClass, 'btn-sm gap-1.5')}
               aria-label="Exportar lista de casos de teste"
             >
               <Download className="w-4 h-4" />
@@ -244,22 +250,24 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
                         ? `Filtrar por: ${item.label}`
                         : 'Ver todos'
                   }
-                  className={`badge gap-1.5 py-2 text-xs font-medium transition-all ${
-                    item.isActive
-                      ? 'badge-primary'
-                      : 'badge-ghost badge-outline hover:badge-primary/20'
-                  }`}
+                  className={
+                    item.isActive ? leveTaskModalStatPillActiveClass : leveTaskModalStatPillIdleClass
+                  }
                   aria-pressed={item.isActive}
                 >
-                  {!item.isActive && <SlidersHorizontal className="w-2.5 h-2.5 opacity-40" />}
-                  {item.label}: {item.value}
+                  {!item.isActive && (
+                    <SlidersHorizontal className="h-3 w-3 shrink-0 opacity-40" aria-hidden />
+                  )}
+                  <span>
+                    {item.label}: {item.value}
+                  </span>
                 </button>
               ))}
             </div>
 
             {/* Barra de progresso */}
             <div className="flex flex-col gap-1">
-              <div className="flex items-center justify-between text-xs text-base-content/70">
+              <div className={cn('flex items-center justify-between text-xs', leveTaskModalMutedXsClass)}>
                 <span>
                   {stats.executed} de {stats.total} executados
                   {stats.total > 0 && ` (${Math.round((stats.executed / stats.total) * 100)}%)`}
@@ -267,7 +275,7 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
                 <span>{stats.passed} aprovados</span>
               </div>
               <progress
-                className="progress progress-primary w-full h-2"
+                className="progress h-2 w-full [&::-moz-progress-bar]:bg-[var(--leve-header-accent)] [&::-webkit-progress-value]:bg-[var(--leve-header-accent)]"
                 value={stats.total > 0 ? stats.executed : 0}
                 max={stats.total || 1}
                 aria-label="Progresso de execução dos casos de teste"
@@ -277,23 +285,20 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
             {/* Filtros, ordenação, busca, expandir/recolher */}
             <div className="flex flex-wrap items-center gap-2">
               <div className="relative flex-1 min-w-[140px] max-w-xs">
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-base-content/50" />
+                <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--leve-header-text-muted)]" />
                 <input
                   type="search"
                   placeholder="Buscar na descrição, passos ou resultado..."
                   value={searchInput}
                   onChange={e => setSearchInput(e.target.value)}
-                  className={cn(
-                    'input input-bordered input-sm w-full pl-8 text-sm placeholder:text-[var(--brand-text-muted)]',
-                    taskSelectControlClass
-                  )}
+                  className={cn(leveViewSearchInputClass, 'input-sm w-full pl-8 text-sm')}
                   aria-label="Buscar nos casos de teste"
                 />
               </div>
               <select
                 value={sortBy}
                 onChange={e => setSortBy(e.target.value as SortBy)}
-                className={cn('select select-bordered select-sm text-sm', taskSelectControlClass)}
+                className={cn(leveSettingsSelectClass, 'select-sm h-9 min-h-0 text-sm')}
                 aria-label="Ordenar casos por"
               >
                 {SORT_OPTIONS.map(opt => (
@@ -305,7 +310,12 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
               <button
                 type="button"
                 onClick={() => setShowAdvancedFilters(p => !p)}
-                className={`btn btn-ghost btn-sm gap-1.5 text-xs ${showAdvancedFilters ? 'btn-active' : ''}`}
+                className={cn(
+                  leveViewOutlineBtnClass,
+                  'btn-sm gap-1.5 text-xs',
+                  showAdvancedFilters &&
+                    'border-[var(--leve-header-accent)] bg-[color-mix(in_srgb,var(--leve-header-accent)_12%,var(--leve-header-bg))]'
+                )}
                 aria-expanded={showAdvancedFilters}
                 aria-label="Abrir filtros avançados"
               >
@@ -343,11 +353,11 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
             {showAdvancedFilters && (
               <div
                 className={cn(
-                  taskPanelBorderClass,
-                  'flex flex-wrap items-center gap-2 bg-[var(--brand-chip)] p-2.5'
+                  'flex flex-wrap items-center gap-2 rounded-[var(--leve-header-radius)] border border-[var(--leve-header-border)]',
+                  'bg-[color-mix(in_srgb,var(--leve-header-text)_4%,var(--leve-header-bg))] p-2.5'
                 )}
               >
-                <span className={cn('text-xs font-medium', taskLabelMutedClass)}>Status:</span>
+                <span className={cn('text-xs font-medium', leveTaskModalMutedXsClass)}>Status:</span>
                 {STATUS_OPTIONS.map(s => (
                   <label key={s} className="label cursor-pointer gap-1.5 py-0">
                     <input
@@ -368,7 +378,7 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
                 {statusFilter.map(s => (
                   <span
                     key={s}
-                    className="badge badge-primary badge-outline gap-1 pr-1 py-1.5 text-xs"
+                    className={cn(leveTaskModalStatPillActiveClass, 'gap-1 pr-1 py-1.5')}
                   >
                     {STATUS_LABEL[s]}
                     <button
@@ -406,7 +416,7 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
 
             {/* Contador exibindo X de Y */}
             {(activeFiltersCount > 0 || filteredAndSorted.length !== cases.length) && (
-              <p className="text-xs text-base-content/60">
+              <p className={leveTaskModalMutedXsClass}>
                 Exibindo {filteredAndSorted.length} de {cases.length} caso(s)
               </p>
             )}
@@ -419,8 +429,10 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
           <LoadingSkeleton variant="task" count={3} />
           <div className="flex flex-col items-center justify-center py-3">
             <Spinner small />
-            <p className="mt-2 text-sm text-base-content/70">Gerando casos de teste com IA...</p>
-            <p className="mt-1 text-xs text-base-content/70">⏱️ Isso pode levar 10-30 segundos</p>
+            <p className={cn('mt-2 text-sm', leveTaskModalMutedClass)}>Gerando casos de teste com IA...</p>
+            <p className={cn('mt-1 text-xs', leveTaskModalMutedXsClass)}>
+              Isso pode levar 10-30 segundos
+            </p>
           </div>
         </div>
       ) : cases.length === 0 ? (
@@ -461,11 +473,11 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
           {selectedIds.size > 0 && (
             <div
               className={cn(
-                taskModalSectionAccentClass,
-                'sticky top-0 z-10 flex flex-wrap items-center gap-2 border-[color-mix(in_srgb,var(--color-primary)_28%,transparent)] bg-[color-mix(in_srgb,var(--color-primary)_8%,var(--brand-surface-strong))] p-2'
+                leveTaskModalSectionAccentClass,
+                'sticky top-0 z-10 flex flex-wrap items-center gap-2 p-2'
               )}
             >
-              <span className="text-sm font-medium text-base-content">
+              <span className={cn('text-sm font-medium', leveTaskModalStrongClass)}>
                 {selectedIds.size} selecionado(s)
               </span>
               <button
@@ -496,7 +508,7 @@ export const TestCasesSection: React.FC<TestCasesSectionProps> = ({
                 className="checkbox checkbox-sm checkbox-highlight"
                 aria-label="Selecionar todos os casos visíveis"
               />
-              <span className="text-xs text-base-content/70">Selecionar todos</span>
+              <span className={leveTaskModalMutedXsClass}>Selecionar todos</span>
             </label>
           </div>
 

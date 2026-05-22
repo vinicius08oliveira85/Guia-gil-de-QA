@@ -4,6 +4,18 @@ import { format } from 'date-fns';
 import { logger } from '../../utils/logger';
 import { JiraRichContent } from '../tasks/JiraRichContent';
 import { ConfirmDialog } from './ConfirmDialog';
+import { cn } from '../../utils/cn';
+import {
+  leveTaskModalFieldLabelClass,
+  leveTaskModalInsetClass,
+  leveTaskModalMutedClass,
+  leveTaskModalMutedXsClass,
+  leveTaskModalSectionClass,
+  leveTaskModalStrongClass,
+  leveTaskModalTextareaClass,
+  leveViewOutlineBtnClass,
+  leveViewPrimaryBtnClass,
+} from './projectCardUi';
 
 interface CommentSectionProps {
   comments: Comment[];
@@ -25,10 +37,6 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
   const [editContent, setEditContent] = useState('');
   const [pendingDeleteCommentId, setPendingDeleteCommentId] = useState<string | null>(null);
 
-  /**
-   * Formata a data do comentário com validação
-   * Retorna uma string formatada ou fallback se a data for inválida
-   */
   const formatCommentDate = (dateString: string | undefined): string => {
     if (!dateString) {
       return 'Data não disponível';
@@ -36,7 +44,6 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
 
     try {
       const date = new Date(dateString);
-      // Verifica se a data é válida
       if (isNaN(date.getTime())) {
         return 'Data inválida';
       }
@@ -73,70 +80,58 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
   };
 
   return (
-    <div className="space-y-4">
-      <h3 className="text-sm font-bold text-base-content/70 uppercase tracking-wide">
-        Comentários ({comments.length})
-      </h3>
-      <div className="text-base-content/80 space-y-2">
-        {/* Formulário de novo comentário - mesma formatação da descrição */}
+    <div className="space-y-4 font-sans">
+      <h3 className={leveTaskModalFieldLabelClass}>Comentários ({comments.length})</h3>
+      <div className={cn(leveTaskModalInsetClass, 'space-y-2')}>
         <textarea
           value={newComment}
           onChange={e => setNewComment(e.target.value)}
           placeholder="Adicionar comentário..."
           rows={3}
-          className="w-full px-3 py-2 bg-surface border border-surface-border rounded-md text-text-primary placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-accent text-base-content/80"
+          className={leveTaskModalTextareaClass}
         />
         <button
+          type="button"
           onClick={handleSubmit}
           disabled={!newComment.trim()}
-          className="btn btn-primary btn-sm text-xs px-3 py-1.5"
+          className={cn(leveViewPrimaryBtnClass, 'disabled:cursor-not-allowed disabled:opacity-50')}
           aria-label="Enviar comentário"
         >
           Comentar
         </button>
       </div>
 
-      {/* Lista de comentários - mesma área visual da descrição */}
-      <div className="space-y-3 text-base-content/80">
+      <div className="space-y-3">
         {comments.map(comment => (
-          <div
-            key={comment.id}
-            className="p-3 bg-base-100/80 dark:bg-black/20 rounded-md border border-surface-border"
-          >
+          <div key={comment.id} className={cn(leveTaskModalSectionClass, 'p-3')}>
             {editingId === comment.id ? (
-              <div className="space-y-2 text-base-content/80">
+              <div className="space-y-2">
                 <textarea
                   value={editContent}
                   onChange={e => setEditContent(e.target.value)}
                   rows={3}
-                  className="w-full px-3 py-2 bg-surface border border-surface-border rounded-md text-text-primary"
+                  className={leveTaskModalTextareaClass}
                 />
                 <div className="flex gap-2">
-                  <button
-                    onClick={handleSaveEdit}
-                    className="btn btn-primary btn-sm text-xs px-3 py-1.5"
-                  >
+                  <button type="button" onClick={handleSaveEdit} className={leveViewPrimaryBtnClass}>
                     Salvar
                   </button>
-                  <button
-                    onClick={handleCancelEdit}
-                    className="btn btn-secondary btn-sm text-xs px-3 py-1.5"
-                  >
+                  <button type="button" onClick={handleCancelEdit} className={leveViewOutlineBtnClass}>
                     Cancelar
                   </button>
                 </div>
               </div>
             ) : (
               <>
-                <div className="flex items-start justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold text-text-primary">{comment.author}</span>
+                <div className="mb-2 flex items-start justify-between">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className={cn('font-semibold', leveTaskModalStrongClass)}>{comment.author}</span>
                     {comment.fromJira && (
-                      <span className="text-xs px-2 py-0.5 bg-blue-500/20 text-blue-700 dark:text-blue-300 rounded-full border border-blue-500/30">
+                      <span className="rounded-full border border-[color-mix(in_srgb,var(--leve-header-accent)_30%,transparent)] bg-[color-mix(in_srgb,var(--leve-header-accent)_12%,var(--leve-header-bg))] px-2 py-0.5 font-sans text-xs font-semibold text-[var(--leve-header-accent)]">
                         Jira
                       </span>
                     )}
-                    <span className="text-sm text-text-secondary">
+                    <span className={leveTaskModalMutedXsClass}>
                       {formatCommentDate(comment.createdAt)}
                     </span>
                   </div>
@@ -146,16 +141,18 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
                       <div className="flex gap-2">
                         {onEditComment && (
                           <button
+                            type="button"
                             onClick={() => handleStartEdit(comment)}
-                            className="text-sm text-text-secondary hover:text-text-primary"
+                            className="font-sans text-sm text-[var(--leve-header-text-muted)] hover:text-[var(--leve-header-accent)]"
                           >
                             Editar
                           </button>
                         )}
                         {onDeleteComment && (
                           <button
+                            type="button"
                             onClick={() => setPendingDeleteCommentId(comment.id)}
-                            className="text-sm text-red-700 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300"
+                            className="font-sans text-sm text-[color-mix(in_srgb,oklch(var(--er))_90%,transparent)] hover:underline"
                           >
                             Excluir
                           </button>
@@ -163,22 +160,24 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
                       </div>
                     )}
                   {comment.fromJira && (
-                    <span className="text-xs text-text-secondary italic">Sincronizado do Jira</span>
+                    <span className={cn('text-xs italic', leveTaskModalMutedXsClass)}>
+                      Sincronizado do Jira
+                    </span>
                   )}
                 </div>
                 {comment.content.includes('<') ? (
-                  <div className="text-text-primary">
+                  <div className={leveTaskModalStrongClass}>
                     <JiraRichContent html={comment.content} />
                   </div>
                 ) : (
-                  <p className="text-text-primary whitespace-pre-wrap">{comment.content}</p>
+                  <p className={cn('whitespace-pre-wrap', leveTaskModalMutedClass)}>{comment.content}</p>
                 )}
                 {comment.mentions && comment.mentions.length > 0 && (
                   <div className="mt-2 flex flex-wrap gap-1">
                     {comment.mentions.map(mention => (
                       <span
                         key={mention}
-                        className="text-xs px-2 py-1 bg-accent/20 text-accent-light rounded"
+                        className="rounded-full bg-[color-mix(in_srgb,var(--leve-header-accent)_12%,var(--leve-header-bg))] px-2 py-1 font-sans text-xs text-[var(--leve-header-accent)]"
                       >
                         @{mention}
                       </span>
@@ -192,7 +191,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
       </div>
 
       {comments.length === 0 && (
-        <p className="text-text-secondary text-center py-4">
+        <p className={cn('py-4 text-center', leveTaskModalMutedClass)}>
           Nenhum comentário ainda. Seja o primeiro a comentar!
         </p>
       )}

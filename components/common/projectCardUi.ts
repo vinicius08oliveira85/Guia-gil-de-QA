@@ -573,6 +573,106 @@ export const leveTaskModalFormatOptionIdleClass = cn(
   'hover:text-[var(--leve-header-text)]'
 );
 
+/** Modal de detalhe da tarefa (Resumo, BDD, Testes…) — abas e painéis internos. */
+export const leveTaskModalTabsStripClass = cn(
+  'flex w-full flex-wrap gap-1.5 overflow-x-auto rounded-[var(--leve-header-radius)]',
+  'border border-[var(--leve-header-border)] bg-[color-mix(in_srgb,var(--leve-header-text)_4%,var(--leve-header-bg))] p-1.5'
+);
+
+export const leveTaskModalTabClass = (active: boolean) =>
+  active
+    ? cn(
+        'inline-flex min-h-[2.25rem] shrink-0 snap-start items-center gap-2 rounded-full px-3 py-2',
+        'font-sans text-xs font-semibold text-white shadow-[0_2px_8px_rgba(252,76,2,0.22)] sm:text-sm',
+        'bg-[var(--leve-header-accent)]'
+      )
+    : cn(
+        'inline-flex min-h-[2.25rem] shrink-0 snap-start items-center gap-2 rounded-full px-3 py-2',
+        'font-sans text-xs font-medium text-[var(--leve-header-text-muted)] transition-colors sm:text-sm',
+        'hover:bg-[color-mix(in_srgb,var(--leve-header-accent)_8%,var(--leve-header-bg))] hover:text-[var(--leve-header-text)]'
+      );
+
+export const leveTaskModalTabBadgeActiveClass =
+  'border-0 bg-white/25 font-sans text-[10px] font-bold text-white';
+
+export const leveTaskModalTabBadgeIdleClass = cn(
+  'border border-[var(--leve-header-border)] bg-[var(--leve-header-cream)] font-sans text-[10px] font-bold',
+  'text-[var(--leve-header-text-muted)]'
+);
+
+export const leveTaskModalFieldLabelClass = workspacePanelSectionTitleClass;
+
+export const leveTaskModalSectionHeaderClass = cn(
+  'flex items-center gap-2 border-b border-[var(--leve-header-border)] p-4'
+);
+
+export const leveTaskModalSectionTitleClass =
+  'font-sans text-base font-bold text-[var(--leve-header-text)]';
+
+export const leveTaskModalMutedClass = leveSettingsMutedTextClass;
+
+export const leveTaskModalMutedXsClass = leveSettingsMutedTextXsClass;
+
+export const leveTaskModalStrongClass = leveSettingsStrongTextClass;
+
+export const leveTaskModalNavFooterClass = cn(
+  'mt-5 flex items-center justify-between gap-2 border-t border-[var(--leve-header-border)] pt-3'
+);
+
+export const leveTaskModalWatchersBoxClass = cn(
+  'rounded-[var(--leve-header-radius)] border border-[color-mix(in_srgb,var(--leve-header-accent)_25%,transparent)]',
+  'bg-[color-mix(in_srgb,var(--leve-header-accent)_8%,var(--leve-header-bg))] p-2'
+);
+
+export const leveTaskModalAvatarClass = cn(
+  'flex h-8 w-8 shrink-0 items-center justify-center rounded-full',
+  'bg-[color-mix(in_srgb,var(--leve-header-accent)_14%,var(--leve-header-cream))]',
+  'font-sans text-sm font-bold text-[var(--leve-header-accent)]'
+);
+
+export const leveTaskModalStatusPillClass = leveViewFilterPillClass;
+
+export const leveTaskModalDescriptionPanelClass = cn(
+  leveTaskModalInsetClass,
+  'text-sm leading-relaxed text-[var(--leve-header-text)]'
+);
+
+export const leveTaskModalPageTitleClass =
+  'font-sans text-xl font-bold text-[var(--leve-header-text)]';
+
+export const leveTaskModalInputClass = cn(leveSettingsInputClass, 'w-full');
+
+export const leveTaskModalTextareaClass = cn(
+  leveSettingsInputClass,
+  'min-h-[5rem] w-full font-mono text-sm'
+);
+
+export const leveTaskModalCollapsibleShellClass = cn(leveTaskModalSectionClass, 'overflow-hidden');
+
+export const leveTaskModalCollapsibleHeaderClass = cn(
+  'flex w-full items-center justify-between px-3 py-2 transition-colors',
+  'bg-[color-mix(in_srgb,var(--leve-header-text)_4%,var(--leve-header-bg))]',
+  'hover:bg-[color-mix(in_srgb,var(--leve-header-accent)_6%,var(--leve-header-bg))]'
+);
+
+export const leveTaskModalStatPillActiveClass = cn(
+  'inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap',
+  'rounded-full border-0 bg-[var(--leve-header-accent)] px-3 py-1.5 font-sans text-xs font-semibold text-white',
+  'shadow-[0_2px_8px_rgba(252,76,2,0.18)] transition-all'
+);
+
+export const leveTaskModalStatPillIdleClass = cn(
+  leveViewFilterPillClass(false),
+  'inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap py-1.5 font-medium transition-all',
+  'hover:border-[color-mix(in_srgb,var(--leve-header-accent)_35%,transparent)]'
+);
+
+export const leveTaskModalCategoryBadgeClass = cn(
+  'shrink-0 rounded-full border border-[color-mix(in_srgb,var(--leve-header-accent)_22%,transparent)]',
+  'bg-[color-mix(in_srgb,var(--leve-header-accent)_10%,var(--leve-header-bg))] px-2 py-0.5',
+  'font-sans text-[10px] font-semibold text-[var(--leve-header-accent)]'
+);
+
 /** Faixa WorkspaceDaisyStats — fundo claro, valores em laranja Leve. */
 export const workspaceDaisyStatCardClass = cn(
   'flex min-h-[4rem] flex-col items-center justify-center gap-1.5 font-sans text-center',

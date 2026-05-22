@@ -10,6 +10,14 @@ import {
 } from '../../utils/attachmentService';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import { cn } from '../../utils/cn';
+import {
+  leveTaskModalInsetClass,
+  leveTaskModalMutedClass,
+  leveTaskModalMutedXsClass,
+  leveTaskModalSectionClass,
+  leveTaskModalStrongClass,
+  leveViewOutlineBtnClass,
+} from './projectCardUi';
 import { FileViewer } from './FileViewer';
 import { canViewInBrowser, detectFileType } from '../../services/fileViewerService';
 
@@ -92,7 +100,9 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = ({
     <div className={compact ? 'space-y-2' : 'space-y-4'}>
       {!compact && (
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-base-content">Anexos ({attachments.length})</h3>
+          <h3 className={cn('text-lg font-semibold', leveTaskModalStrongClass)}>
+            Anexos ({attachments.length})
+          </h3>
           {onClose && (
             <button type="button" onClick={onClose} className="btn btn-ghost btn-sm btn-circle">
               ✕
@@ -104,7 +114,7 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = ({
       {/* Upload */}
       <div
         className={cn(
-          'border-2 border-dashed border-base-300 rounded-xl hover:border-primary/40 hover:bg-primary/5 transition-all',
+          'rounded-[var(--leve-header-radius)] border-2 border-dashed border-[var(--leve-header-border)] transition-all hover:border-[color-mix(in_srgb,var(--leve-header-accent)_40%,transparent)] hover:bg-[color-mix(in_srgb,var(--leve-header-accent)_6%,var(--leve-header-bg))]',
           compact ? 'p-3 rounded-lg' : 'p-4'
         )}
       >
@@ -126,17 +136,13 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = ({
           <span
             className={
               compact
-                ? 'text-sm font-semibold text-base-content'
-                : 'text-base-content font-semibold'
+                ? cn('text-sm font-semibold', leveTaskModalStrongClass)
+                : cn('font-semibold', leveTaskModalStrongClass)
             }
           >
             {uploading ? 'Enviando...' : 'Clique para anexar arquivo'}
           </span>
-          <span
-            className={
-              compact ? 'text-xs text-base-content/70' : 'text-sm text-base-content/70 mt-1'
-            }
-          >
+          <span className={compact ? leveTaskModalMutedXsClass : cn(leveTaskModalMutedClass, 'mt-1 text-sm')}>
             Tamanho máximo: 10MB
           </span>
         </label>
@@ -148,19 +154,22 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = ({
           {attachments.map(attachment => (
             <div
               key={attachment.id}
-              className="flex items-center justify-between p-4 bg-base-100 border border-base-300 rounded-xl hover:border-primary/30 transition-all"
+              className={cn(
+                leveTaskModalSectionClass,
+                'flex items-center justify-between p-4 transition-all hover:border-[color-mix(in_srgb,var(--leve-header-accent)_30%,transparent)]'
+              )}
             >
               <div className="flex items-center gap-3 flex-1 min-w-0">
                 <span className="text-2xl">{getFileIcon(attachment.type)}</span>
                 <div className="flex-1 min-w-0">
                   <div
-                    className={cn('font-semibold text-base-content truncate', compact && 'text-sm')}
+                    className={cn('truncate font-semibold', leveTaskModalStrongClass, compact && 'text-sm')}
                   >
                     {attachment.name}
                   </div>
                   <div
                     className={
-                      compact ? 'text-xs text-base-content/70' : 'text-sm text-base-content/70'
+                      compact ? leveTaskModalMutedXsClass : leveTaskModalMutedClass
                     }
                   >
                     {formatFileSize(attachment.size)} •{' '}
@@ -176,7 +185,7 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = ({
                     <button
                       type="button"
                       onClick={() => handleView(attachment)}
-                      className="btn btn-outline btn-sm rounded-full"
+                      className={cn(leveViewOutlineBtnClass, 'text-xs')}
                       title="Visualizar"
                     >
                       👁️ Ver
@@ -206,7 +215,7 @@ export const AttachmentManager: React.FC<AttachmentManagerProps> = ({
       )}
 
       {attachments.length === 0 && (
-        <p className={cn('text-center text-base-content/70', compact ? 'py-1 text-xs' : 'py-4')}>
+        <p className={cn('text-center', leveTaskModalMutedClass, compact ? 'py-1 text-xs' : 'py-4')}>
           Nenhum anexo ainda. Clique acima para adicionar arquivos.
         </p>
       )}

@@ -4,10 +4,15 @@ import { EditIcon, TrashIcon } from '../common/Icons';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import { cn } from '../../utils/cn';
 import {
-  taskCardFieldLabelClass,
-  taskModalSectionClass,
-  taskTextStrongClass,
-} from './taskActionLayout';
+  leveTaskModalFieldLabelClass,
+  leveTaskModalInputClass,
+  leveTaskModalMutedClass,
+  leveTaskModalSectionClass,
+  leveTaskModalStrongClass,
+  leveTaskModalTextareaClass,
+  leveViewOutlineBtnClass,
+  leveViewPrimaryBtnClass,
+} from '../common/projectCardUi';
 
 /** Palavras-chave Gherkin em português (ordem: mais longas primeiro para match correto). */
 const GHERKIN_KEYWORDS = [
@@ -19,16 +24,16 @@ const GHERKIN_KEYWORDS = [
   { pattern: /\bEntão\b/g, type: 'then' as const },
   { pattern: /\bComo\b/g, type: 'and' as const },
   { pattern: /\bPara\b/g, type: 'and' as const },
-  { pattern: /(?:^|\s)E\s/gm, type: 'and' as const }, // " E " ou início de linha + "E "
+  { pattern: /(?:^|\s)E\s/gm, type: 'and' as const },
 ];
 
 const KEYWORD_CLASS: Record<string, string> = {
-  feature: 'font-semibold text-[var(--color-primary-deep)]',
-  scenario: 'font-semibold text-[var(--color-primary-deep)]',
-  given: 'font-semibold text-[var(--color-primary-deep)]',
-  when: 'font-semibold text-[var(--brand-cta)]',
-  then: 'font-semibold text-[color-mix(in_srgb,oklch(var(--su))_88%,var(--brand-text-strong))]',
-  and: 'font-semibold text-[var(--brand-text-muted)]',
+  feature: 'font-semibold text-[var(--leve-header-text)]',
+  scenario: 'font-semibold text-[var(--leve-header-text)]',
+  given: 'font-semibold text-[color-mix(in_srgb,oklch(var(--su))_88%,var(--leve-header-text))]',
+  when: 'font-semibold text-[var(--leve-header-accent)]',
+  then: 'font-semibold text-[color-mix(in_srgb,oklch(var(--su))_88%,var(--leve-header-text))]',
+  and: 'font-semibold text-[var(--leve-header-text-muted)]',
 };
 
 /** Quebra o texto em segmentos (keyword tipada ou texto plano) para destacar palavras-chave Gherkin. */
@@ -103,13 +108,13 @@ export const BddScenarioForm: React.FC<{
     <form
       onSubmit={handleSubmit}
       className={cn(
-        taskModalSectionClass,
-        'my-2 space-y-4 border-l-4 border-l-[var(--color-primary)] p-5 shadow-sm'
+        leveTaskModalSectionClass,
+        'my-2 space-y-4 border-l-4 border-l-[var(--leve-header-accent)] p-5'
       )}
     >
       <div>
         <label className="label">
-          <span className={cn('label-text text-sm font-medium', taskCardFieldLabelClass)}>
+          <span className={cn('label-text text-sm font-medium', leveTaskModalFieldLabelClass)}>
             Título do Cenário
           </span>
         </label>
@@ -118,13 +123,13 @@ export const BddScenarioForm: React.FC<{
           value={title}
           onChange={e => setTitle(e.target.value)}
           required
-          className="input input-bordered w-full border-[var(--brand-surface-border)] bg-[var(--brand-surface-strong)] text-[var(--brand-text-strong)] focus:border-[var(--color-primary)] focus:outline-none"
+          className={leveTaskModalInputClass}
           placeholder="Ex: Login com credenciais válidas"
         />
       </div>
       <div>
         <label className="label">
-          <span className={cn('label-text text-sm font-medium', taskCardFieldLabelClass)}>
+          <span className={cn('label-text text-sm font-medium', leveTaskModalFieldLabelClass)}>
             Cenário (Gherkin: Dado, Quando, Então)
           </span>
         </label>
@@ -133,17 +138,17 @@ export const BddScenarioForm: React.FC<{
           onChange={e => setGherkin(e.target.value)}
           rows={5}
           required
-          className="textarea textarea-bordered w-full border-[var(--brand-surface-border)] bg-[var(--brand-surface-strong)] font-mono text-sm text-[var(--brand-text-strong)] focus:border-[var(--color-primary)] focus:outline-none"
+          className={leveTaskModalTextareaClass}
           placeholder={`Dado que um usuário está na página de login
 Quando ele insere credenciais válidas
 Então ele deve ser redirecionado para o dashboard`}
         />
       </div>
       <div className="flex justify-end gap-2 pt-2">
-        <button type="button" onClick={onCancel} className="btn btn-ghost btn-sm">
+        <button type="button" onClick={onCancel} className={leveViewOutlineBtnClass}>
           Cancelar
         </button>
-        <button type="submit" className="btn btn-primary btn-sm">
+        <button type="submit" className={leveViewPrimaryBtnClass}>
           Salvar Cenário
         </button>
       </div>
@@ -159,19 +164,19 @@ export const BddScenarioItem: React.FC<{
   return (
     <div
       className={cn(
-        taskModalSectionClass,
-        'flex flex-col overflow-hidden border-l-4 border-l-[var(--color-primary)] shadow-sm transition-all hover:shadow-md'
+        leveTaskModalSectionClass,
+        'flex flex-col overflow-hidden border-l-4 border-l-[var(--leve-header-accent)] transition-all hover:shadow-[0_4px_18px_rgba(252,76,2,0.1)]'
       )}
     >
-      <div className="flex items-center justify-between border-b border-[var(--brand-surface-border)] px-5 py-4">
-        <h3 className={cn('flex-1 min-w-0 pr-2 font-semibold', taskTextStrongClass)}>
+      <div className="flex items-center justify-between border-b border-[var(--leve-header-border)] px-5 py-4">
+        <h3 className={cn('min-w-0 flex-1 pr-2 font-semibold', leveTaskModalStrongClass)}>
           {scenario.title}
         </h3>
-        <div className="flex gap-1 flex-shrink-0">
+        <div className="flex shrink-0 gap-1">
           <button
             type="button"
             onClick={onEdit}
-            className="rounded-[var(--radius)] p-2 text-[var(--brand-text-muted)] transition-colors hover:text-[var(--color-primary-deep)]"
+            className="rounded-full p-2 text-[var(--leve-header-text-muted)] transition-colors hover:bg-[color-mix(in_srgb,var(--leve-header-accent)_10%,transparent)] hover:text-[var(--leve-header-accent)]"
             aria-label="Editar cenário BDD"
           >
             <EditIcon />
@@ -179,14 +184,19 @@ export const BddScenarioItem: React.FC<{
           <button
             type="button"
             onClick={onDelete}
-            className="rounded-[var(--radius)] p-2 text-[var(--brand-text-muted)] transition-colors hover:text-[color-mix(in_srgb,oklch(var(--er))_90%,transparent)]"
+            className="rounded-full p-2 text-[var(--leve-header-text-muted)] transition-colors hover:bg-[color-mix(in_srgb,oklch(var(--er))_12%,transparent)] hover:text-[color-mix(in_srgb,oklch(var(--er))_90%,transparent)]"
             aria-label="Excluir cenário BDD"
           >
             <TrashIcon />
           </button>
         </div>
       </div>
-      <div className="p-5 bg-base-200/50 font-mono text-sm leading-relaxed whitespace-pre-wrap text-base-content">
+      <div
+        className={cn(
+          'whitespace-pre-wrap bg-[color-mix(in_srgb,var(--leve-header-text)_4%,var(--leve-header-bg))] p-5 font-mono text-sm leading-relaxed',
+          leveTaskModalMutedClass
+        )}
+      >
         <GherkinContent text={scenario.gherkin} />
       </div>
     </div>

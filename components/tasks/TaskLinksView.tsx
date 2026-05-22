@@ -11,6 +11,17 @@ import {
 } from '../../utils/dependencyService';
 import { useErrorHandler } from '../../hooks/useErrorHandler';
 import { cn } from '../../utils/cn';
+import {
+  leveTaskModalFieldLabelClass,
+  leveTaskModalInsetClass,
+  leveTaskModalMutedClass,
+  leveTaskModalSectionClass,
+  leveTaskModalStatPillActiveClass,
+  leveTaskModalStrongClass,
+  leveViewOutlineBtnClass,
+  leveViewPrimaryBtnClass,
+  leveViewSearchInputClass,
+} from '../common/projectCardUi';
 import { JiraIssueTypeIcon } from '../common/Icons';
 import { EmptyState } from '../common/EmptyState';
 import { getDisplayStatusLabel } from '../../utils/taskHelpers';
@@ -153,10 +164,11 @@ export const TaskLinksView: React.FC<TaskLinksViewProps> = ({
       <div
         key={relatedTask.id}
         className={cn(
-          'group relative cursor-pointer rounded-[1.4rem] border-2 p-4 transition-all duration-200',
-          'hover:scale-[1.02] hover:shadow-lg',
+          leveTaskModalSectionClass,
+          'group relative cursor-pointer border-2 p-4 transition-all duration-200',
+          'hover:border-[color-mix(in_srgb,var(--leve-header-accent)_35%,transparent)] hover:shadow-[0_4px_18px_rgba(252,76,2,0.1)]',
           statusColor,
-          isHovered && 'ring-2 ring-primary/50'
+          isHovered && 'ring-2 ring-[color-mix(in_srgb,var(--leve-header-accent)_35%,transparent)]'
         )}
         onClick={() => handleTaskClick(relatedTask)}
         onMouseEnter={() => setHoveredCardId(relatedTask.id)}
@@ -185,13 +197,13 @@ export const TaskLinksView: React.FC<TaskLinksViewProps> = ({
                 iconUrl={relatedTask.jiraIssueTypeIconUrl}
                 size={16}
               />
-              <span className="font-mono text-sm font-semibold text-base-content">
+              <span className={cn('font-mono text-sm font-semibold', leveTaskModalStrongClass)}>
                 {relatedTask.id}
               </span>
               <span className={typeBadgeClasses}>{relatedTask.type}</span>
             </div>
 
-            <h4 className="font-semibold text-base-content mb-2 line-clamp-2">
+            <h4 className={cn('mb-2 line-clamp-2 font-semibold', leveTaskModalStrongClass)}>
               {relatedTask.title}
             </h4>
 
@@ -244,8 +256,10 @@ export const TaskLinksView: React.FC<TaskLinksViewProps> = ({
       {(isBlocked || isReady) && (
         <div
           className={cn(
-            'rounded-[1.4rem] border px-2 py-1.5',
-            isBlocked ? 'border-warning/40 bg-warning/10' : 'border-success/40 bg-success/10'
+            'rounded-[var(--leve-header-radius)] border px-3 py-2',
+            isBlocked
+              ? 'border-[color-mix(in_srgb,oklch(var(--wa))_40%,transparent)] bg-[color-mix(in_srgb,oklch(var(--wa))_10%,var(--leve-header-bg))]'
+              : 'border-[color-mix(in_srgb,oklch(var(--su))_40%,transparent)] bg-[color-mix(in_srgb,oklch(var(--su))_10%,var(--leve-header-bg))]'
           )}
         >
           {isBlocked && (
@@ -268,16 +282,16 @@ export const TaskLinksView: React.FC<TaskLinksViewProps> = ({
       {/* Seção: Bloqueado Por (Dependencies) */}
       <div>
         <div className="flex items-center justify-between mb-2">
-          <h3 className="text-sm font-semibold text-base-content flex items-center gap-2">
+          <h3 className={cn(leveTaskModalFieldLabelClass, 'flex items-center gap-2 !normal-case')}>
             <span className="text-base">🔒</span>
             <span>Bloqueado Por</span>
-            <span className="badge badge-primary badge-sm">{dependencies.length}</span>
+            <span className={leveTaskModalStatPillActiveClass}>{dependencies.length}</span>
           </h3>
           {!showAddDependency && (
             <button
               type="button"
               onClick={() => setShowAddDependency(true)}
-              className="btn btn-primary btn-sm min-h-0 h-7 px-2.5 text-xs rounded-lg"
+              className={cn(leveViewPrimaryBtnClass, 'min-h-0 h-8 px-2.5 text-xs')}
             >
               + Adicionar Dependência
             </button>
@@ -285,12 +299,12 @@ export const TaskLinksView: React.FC<TaskLinksViewProps> = ({
         </div>
 
         {showAddDependency && (
-          <div className="mb-2 p-2 bg-base-200 rounded-lg border border-base-300">
+          <div className={cn(leveTaskModalInsetClass, 'mb-2')}>
             <div className="flex gap-2">
               <select
                 value={selectedTaskId}
                 onChange={e => setSelectedTaskId(e.target.value)}
-                className="select select-bordered flex-1 bg-base-100 border-base-300 text-base-content"
+                className={cn(leveViewSearchInputClass, 'select flex-1')}
               >
                 <option value="">Selecione uma tarefa...</option>
                 {availableTasks.map(t => (
@@ -303,7 +317,7 @@ export const TaskLinksView: React.FC<TaskLinksViewProps> = ({
                 type="button"
                 onClick={handleAddDependency}
                 disabled={!selectedTaskId}
-                className="btn btn-primary btn-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                className={cn(leveViewPrimaryBtnClass, 'text-xs disabled:cursor-not-allowed disabled:opacity-50')}
               >
                 Adicionar
               </button>
@@ -313,7 +327,7 @@ export const TaskLinksView: React.FC<TaskLinksViewProps> = ({
                   setShowAddDependency(false);
                   setSelectedTaskId('');
                 }}
-                className="btn btn-ghost btn-sm"
+                className={leveViewOutlineBtnClass}
               >
                 Cancelar
               </button>
@@ -379,10 +393,10 @@ export const TaskLinksView: React.FC<TaskLinksViewProps> = ({
       {/* Seção: Bloqueando (Dependents) */}
       <div>
         <div className="flex items-center justify-between mb-2">
-          <h3 className="text-sm font-semibold text-base-content flex items-center gap-2">
+          <h3 className={cn(leveTaskModalFieldLabelClass, 'flex items-center gap-2 !normal-case')}>
             <span className="text-base">⚡</span>
             <span>Bloqueando</span>
-            <span className="badge badge-primary badge-sm">{dependents.length}</span>
+            <span className={leveTaskModalStatPillActiveClass}>{dependents.length}</span>
           </h3>
         </div>
 
