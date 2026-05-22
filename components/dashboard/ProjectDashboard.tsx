@@ -1,9 +1,14 @@
 import React, { useMemo, useState } from 'react';
 import { Project } from '../../types';
 import { useProjectMetrics } from '../../hooks/useProjectMetrics';
-import { Card } from '../common/Card';
 import { Tooltip } from '../common/Tooltip';
 import { cn } from '../../utils/cn';
+import {
+  dashboardInsightCardClass,
+  dashboardInsightHeaderClass,
+  dashboardInsightSubtitleClass,
+  dashboardInsightTitleClass,
+} from '../common/projectCardUi';
 import {
   averageBugLeadTimeDays,
   computeOpenBugsByModule,
@@ -12,8 +17,9 @@ import {
   defectCreatedPerWeekSeries,
 } from './projectDashboardHelpers';
 
-const LABEL_STYLE: React.CSSProperties = { color: 'var(--text-secondary)' };
-const PRIMARY_STYLE: React.CSSProperties = { color: 'var(--color-primary)' };
+const LABEL_CLASS = 'text-[var(--brand-text-muted)]';
+const VALUE_STRONG_CLASS = 'text-[var(--brand-text-strong)]';
+const VALUE_ACCENT_CLASS = 'text-[var(--brand-cta)]';
 
 function sectorPath(cx: number, cy: number, r: number, a0: number, a1: number): string {
   const x0 = cx + r * Math.cos(a0);
@@ -38,9 +44,7 @@ const ExecutionPieSvg = React.memo(function ExecutionPieSvg(props: {
   const r = 40;
   if (total === 0) {
     return (
-      <p className="text-sm" style={LABEL_STYLE}>
-        Sem casos de teste para exibir.
-      </p>
+      <p className={cn('text-sm', LABEL_CLASS)}>Sem casos de teste para exibir.</p>
     );
   }
   const slices: { value: number; fill: string; label: string }[] = [
@@ -92,7 +96,7 @@ const ExecutionPieSvg = React.memo(function ExecutionPieSvg(props: {
         <desc>Passe o mouse nas fatias para ver totais e percentuais.</desc>
         {paths}
       </svg>
-      <ul className="flex w-full flex-wrap gap-x-4 gap-y-2 text-xs sm:w-auto" style={LABEL_STYLE}>
+      <ul className={cn('flex w-full flex-wrap gap-x-4 gap-y-2 text-xs sm:w-auto', LABEL_CLASS)}>
         {slices.map(s => (
           <li
             key={s.label}
@@ -109,7 +113,7 @@ const ExecutionPieSvg = React.memo(function ExecutionPieSvg(props: {
               aria-hidden
             />
             <span>
-              {s.label}: <strong className="text-base-content">{s.value}</strong>
+              {s.label}: <strong className={VALUE_STRONG_CLASS}>{s.value}</strong>
             </span>
           </li>
         ))}
@@ -142,7 +146,7 @@ const MiniSparkline = React.memo(function MiniSparkline({ values }: { values: nu
         <desc>Passe o mouse nos pontos ao longo da linha para ver bugs por semana.</desc>
         <polyline
           fill="none"
-          stroke="var(--color-primary)"
+          stroke="var(--brand-cta)"
           strokeWidth={2}
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -169,7 +173,7 @@ const MiniSparkline = React.memo(function MiniSparkline({ values }: { values: nu
             cx={p.x}
             cy={p.y}
             r={3}
-            fill="var(--color-primary)"
+            fill="var(--brand-cta)"
             className="pointer-events-none opacity-80 transition-opacity duration-150 group-hover:opacity-100"
           />
         ))}
@@ -180,31 +184,44 @@ const MiniSparkline = React.memo(function MiniSparkline({ values }: { values: nu
 
 function PassRateRing(props: { percent: number; tooltip: React.ReactNode }) {
   const { percent, tooltip } = props;
-  const r = 38;
+  const cx = 44;
+  const cy = 44;
+  const r = 36;
+  const strokeWidth = 7;
   const c = 2 * Math.PI * r;
   const offset = c * (1 - Math.min(100, Math.max(0, percent)) / 100);
   const ring = (
-    <div className="flex justify-center py-1">
-      <div className="relative h-24 w-24 shrink-0">
-        <svg width={96} height={96} viewBox="0 0 88 88" className="h-full w-full" aria-hidden>
-          <circle cx={44} cy={44} r={r} fill="none" stroke="oklch(var(--b3) / 0.45)" strokeWidth={8} />
+    <div className="mx-auto w-[92%] max-w-[14rem] min-w-[9rem] sm:max-w-[15rem]">
+      <div className="relative aspect-square w-full">
+        <svg viewBox="0 0 88 88" className="h-full w-full" aria-hidden>
           <circle
-            cx={44}
-            cy={44}
+            cx={cx}
+            cy={cy}
+            r={r}
+            fill="none"
+            stroke="currentColor"
+            className="text-[color-mix(in_srgb,var(--brand-text-muted)_18%,transparent)]"
+            strokeWidth={strokeWidth}
+          />
+          <circle
+            cx={cx}
+            cy={cy}
             r={r}
             fill="none"
             stroke="#22c55e"
-            strokeWidth={8}
+            strokeWidth={strokeWidth}
             strokeLinecap="round"
             strokeDasharray={c}
             strokeDashoffset={offset}
-            transform="rotate(-90 44 44)"
+            transform={`rotate(-90 ${cx} ${cy})`}
             className="transition-[stroke-dashoffset] duration-300"
           />
         </svg>
-        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-xl font-bold tabular-nums text-success sm:text-2xl">{percent}%</span>
-          <span className="text-[10px] font-medium text-base-content/55">Pass rate</span>
+        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-0.5">
+          <span className="text-2xl font-bold tabular-nums leading-none text-success sm:text-3xl">
+            {percent}%
+          </span>
+          <span className={cn('text-[11px] font-medium sm:text-xs', LABEL_CLASS)}>Pass rate</span>
         </div>
       </div>
     </div>
@@ -226,22 +243,13 @@ type InsightCardProps = {
 
 function InsightCard({ title, subtitle, children, className, hint }: InsightCardProps) {
   const card = (
-    <Card
-      variant="default"
-      hoverable={false}
-      className={cn(
-        'w-full overflow-hidden rounded-[var(--rounded-box)] border border-base-300/65 bg-base-100 p-4 soft-shadow sm:p-5',
-        className
-      )}
-    >
-      <header className="mb-4 space-y-1 border-b border-base-300/70 pb-3">
-        <h3 className="font-heading text-sm font-semibold tracking-tight text-base-content">{title}</h3>
-        {subtitle ? (
-          <p className="text-xs leading-snug text-base-content/65">{subtitle}</p>
-        ) : null}
+    <article className={cn(dashboardInsightCardClass, className)}>
+      <header className={dashboardInsightHeaderClass}>
+        <h3 className={dashboardInsightTitleClass}>{title}</h3>
+        {subtitle ? <p className={dashboardInsightSubtitleClass}>{subtitle}</p> : null}
       </header>
       {children}
-    </Card>
+    </article>
   );
   if (!hint) return card;
   return (
@@ -274,14 +282,14 @@ export const ProjectDashboard: React.FC<ProjectDashboardProps> = React.memo(
     if (isLoading) {
       return (
         <div
-          className="grid w-full grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"
+          className="grid w-full grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3"
           aria-busy="true"
           aria-label="Carregando indicadores do dashboard"
         >
           {Array.from({ length: 9 }).map((_, i) => (
             <div
               key={i}
-              className="h-36 w-full animate-pulse rounded-xl border border-base-300/80 bg-base-200/50 shadow-inner"
+              className="h-36 w-full animate-pulse rounded-[var(--rounded-box)] border border-[var(--brand-surface-border)] bg-[var(--brand-surface-strong)]"
             />
           ))}
         </div>
@@ -304,7 +312,7 @@ export const ProjectDashboard: React.FC<ProjectDashboardProps> = React.memo(
 
     return (
       <section
-        className="grid w-full grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 2xl:grid-cols-4"
+        className="grid w-full grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3"
         aria-label="Indicadores de qualidade e execução"
       >
         <InsightCard
@@ -318,13 +326,11 @@ export const ProjectDashboard: React.FC<ProjectDashboardProps> = React.memo(
           }
         >
           <div className="flex items-end justify-between gap-2">
-            <p className="text-2xl font-semibold tabular-nums" style={PRIMARY_STYLE}>
+            <p className={cn('text-2xl font-semibold tabular-nums', VALUE_ACCENT_CLASS)}>
               {m.tasksWithTestCases}{' '}
-              <span className="text-base font-normal text-base-content/80">de {m.totalTasks}</span>
+              <span className={cn('text-base font-normal', LABEL_CLASS)}>de {m.totalTasks}</span>
             </p>
-            <span className="text-sm font-medium tabular-nums" style={LABEL_STYLE}>
-              {m.testCoverage}%
-            </span>
+            <span className={cn('text-sm font-medium tabular-nums', LABEL_CLASS)}>{m.testCoverage}%</span>
           </div>
           <Tooltip
             content={
@@ -335,24 +341,24 @@ export const ProjectDashboard: React.FC<ProjectDashboardProps> = React.memo(
             }
             delay={120}
           >
-            <div className="mt-3 flex h-2.5 w-full overflow-hidden rounded-full bg-info/20">
+            <div className="mt-3 flex h-2.5 w-full overflow-hidden rounded-full bg-[color-mix(in_srgb,var(--brand-text-muted)_12%,transparent)]">
               <div
-                className="h-full rounded-full bg-[var(--brand-cta)] transition-all duration-500"
+                className="h-full rounded-full bg-gradient-to-r from-[var(--brand-cta)] to-[color-mix(in_srgb,var(--brand-highlight)_60%,var(--brand-cta))] transition-all duration-500"
                 style={{ width: `${m.testCoverage}%` }}
               />
-              <div className="h-full flex-1 bg-info/30" aria-hidden />
+              <div className="h-full flex-1 bg-[color-mix(in_srgb,var(--brand-highlight)_12%,transparent)]" aria-hidden />
             </div>
           </Tooltip>
-          <p className="mt-2 text-xs" style={LABEL_STYLE}>
-            Tarefas cobertas no escopo atual do dashboard
-          </p>
+          <p className={cn('mt-2 text-xs', LABEL_CLASS)}>Tarefas cobertas no escopo atual do dashboard</p>
         </InsightCard>
 
         <InsightCard
           title="Taxa de aprovação"
           subtitle="Estabilidade entre casos já executados"
         >
-          <PassRateRing percent={m.testPassRate} tooltip={passTooltip} />
+          <div className="flex w-full items-center justify-center">
+            <PassRateRing percent={m.testPassRate} tooltip={passTooltip} />
+          </div>
         </InsightCard>
 
         <InsightCard
@@ -382,9 +388,9 @@ export const ProjectDashboard: React.FC<ProjectDashboardProps> = React.memo(
                       <span aria-hidden>{icon}</span>
                       {sev}
                     </span>
-                    <span className="tabular-nums font-semibold text-base-content">{count}</span>
+                    <span className={cn('tabular-nums font-semibold', VALUE_STRONG_CLASS)}>{count}</span>
                   </div>
-                  <div className="h-1.5 w-full overflow-hidden rounded-full bg-base-200">
+                  <div className="h-1.5 w-full overflow-hidden rounded-full bg-[color-mix(in_srgb,var(--brand-text-muted)_12%,transparent)]">
                     <div
                       className={cn('h-full rounded-full transition-all', barColor)}
                       style={{ width: `${barPct}%` }}
@@ -394,6 +400,13 @@ export const ProjectDashboard: React.FC<ProjectDashboardProps> = React.memo(
               );
             })}
           </ul>
+          <div className="mt-3 flex items-center justify-between gap-2 rounded-lg border border-[var(--brand-surface-border)] bg-[var(--brand-chip)] px-2.5 py-2">
+            <span className={cn('text-[11px] font-medium', LABEL_CLASS)}>Bugs reabertos</span>
+            <span className={cn('text-lg font-bold tabular-nums', VALUE_STRONG_CLASS)}>{reopenCount}</span>
+          </div>
+          <p className={cn('mt-1.5 text-[10px] leading-snug', LABEL_CLASS)}>
+            Vínculos Jira que sugerem reabertura, quando sincronizados.
+          </p>
         </InsightCard>
 
         <InsightCard
@@ -415,9 +428,7 @@ export const ProjectDashboard: React.FC<ProjectDashboardProps> = React.memo(
           hint="Volume de bugs abertos agrupados pela primeira tag ou componente Jira."
         >
           {bugsByModule.length === 0 ? (
-            <p className="text-sm" style={LABEL_STYLE}>
-              Nenhum bug aberto com tag ou componente.
-            </p>
+            <p className={cn('text-sm', LABEL_CLASS)}>Nenhum bug aberto com tag ou componente.</p>
           ) : (
             <ul className="space-y-2">
               {bugsByModule.map(row => {
@@ -437,16 +448,12 @@ export const ProjectDashboard: React.FC<ProjectDashboardProps> = React.memo(
                     >
                       <div className="cursor-default rounded-md py-0.5 transition-colors hover:bg-base-200/50">
                         <div className="flex justify-between gap-2 text-xs">
-                          <span className="truncate" style={LABEL_STYLE}>
-                            {row.label}
-                          </span>
-                          <span className="shrink-0 tabular-nums text-base-content">
-                            {row.count}
-                          </span>
+                          <span className={cn('truncate', LABEL_CLASS)}>{row.label}</span>
+                          <span className={cn('shrink-0 tabular-nums', VALUE_STRONG_CLASS)}>{row.count}</span>
                         </div>
-                        <div className="h-1.5 w-full overflow-hidden rounded-full bg-base-300/70">
+                        <div className="h-1.5 w-full overflow-hidden rounded-full bg-[color-mix(in_srgb,var(--brand-text-muted)_12%,transparent)]">
                           <div
-                            className="h-full rounded-full bg-primary/80 transition-[filter] duration-150 hover:brightness-110"
+                            className="h-full rounded-full bg-[var(--brand-highlight)] transition-[filter] duration-150 hover:brightness-110"
                             style={{ width: `${(row.count / maxModule) * 100}%` }}
                           />
                         </div>
@@ -475,12 +482,8 @@ export const ProjectDashboard: React.FC<ProjectDashboardProps> = React.memo(
                 🤖
               </span>
               <div>
-                <p className="font-medium tabular-nums" style={PRIMARY_STYLE}>
-                  {m.automatedTestCases}
-                </p>
-                <p className="text-xs" style={LABEL_STYLE}>
-                  Automação ({m.automationRatio}%)
-                </p>
+                <p className={cn('font-medium tabular-nums', VALUE_ACCENT_CLASS)}>{m.automatedTestCases}</p>
+                <p className={cn('text-xs', LABEL_CLASS)}>Automação ({m.automationRatio}%)</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -488,41 +491,23 @@ export const ProjectDashboard: React.FC<ProjectDashboardProps> = React.memo(
                 👤
               </span>
               <div className="text-right">
-                <p className="font-medium tabular-nums text-base-content">{manualCases}</p>
-                <p className="text-xs" style={LABEL_STYLE}>
-                  Manual
-                </p>
+                <p className={cn('font-medium tabular-nums', VALUE_STRONG_CLASS)}>{manualCases}</p>
+                <p className={cn('text-xs', LABEL_CLASS)}>Manual</p>
               </div>
             </div>
           </div>
-          <div className="mt-3 flex h-3 w-full overflow-hidden rounded-full bg-info/25">
+          <div className="mt-3 flex h-3 w-full overflow-hidden rounded-full bg-[color-mix(in_srgb,var(--brand-text-muted)_12%,transparent)]">
             <div
               className="h-full shrink-0 bg-success"
               style={{ width: `${m.automationRatio}%` }}
               title={`Automação: ${m.automatedTestCases} casos (${m.automationRatio}%)`}
             />
             <div
-              className="h-full shrink-0 bg-info/50"
+              className="h-full shrink-0 bg-[color-mix(in_srgb,var(--brand-highlight)_35%,transparent)]"
               style={{ width: `${Math.max(0, 100 - m.automationRatio)}%` }}
               title={`Manual / não automatizado: ${manualCases} casos`}
             />
           </div>
-        </InsightCard>
-
-        <InsightCard
-          title="Bugs reabertos"
-          subtitle="Contagem por vínculos Jira cujo tipo sugere reabertura (quando sincronizados)"
-          hint="Bugs com issue link cujo nome sugere reabertura (ex.: Reopened). Sem link, o valor tende a 0."
-        >
-          <p
-            className="glow-primary w-fit text-3xl font-semibold tabular-nums transition-transform duration-200 hover:scale-105 motion-reduce:hover:scale-100"
-            style={PRIMARY_STYLE}
-          >
-            {reopenCount}
-          </p>
-          <p className="mt-2 text-xs" style={LABEL_STYLE}>
-            Indicador de reincidência quando o Jira expõe links de reabertura.
-          </p>
         </InsightCard>
 
         <InsightCard
@@ -533,9 +518,7 @@ export const ProjectDashboard: React.FC<ProjectDashboardProps> = React.memo(
           <div className="group">
             <MiniSparkline values={defectSeries} />
           </div>
-          <p className="mt-1 text-xs" style={LABEL_STYLE}>
-            Série temporal derivada das datas de criação dos bugs.
-          </p>
+          <p className={cn('mt-1 text-xs', LABEL_CLASS)}>Série temporal derivada das datas de criação dos bugs.</p>
         </InsightCard>
 
         <InsightCard
@@ -549,14 +532,12 @@ export const ProjectDashboard: React.FC<ProjectDashboardProps> = React.memo(
           }
         >
           {storyWf.total === 0 ? (
-            <p className="text-sm" style={LABEL_STYLE}>
-              Nenhuma tarefa do tipo História no escopo.
-            </p>
+            <p className={cn('text-sm', LABEL_CLASS)}>Nenhuma tarefa do tipo História no escopo.</p>
           ) : (
             <>
-              <div className="flex h-3 w-full cursor-default overflow-hidden rounded-full border border-base-300/60 transition-shadow duration-200 hover:ring-2 hover:ring-primary/15">
+              <div className="flex h-3 w-full cursor-default overflow-hidden rounded-full border border-[var(--brand-surface-border)] transition-shadow duration-200 hover:ring-2 hover:ring-[color-mix(in_srgb,var(--brand-cta)_18%,transparent)]">
                 <div
-                  className="h-full bg-base-content/25 transition-[filter] duration-150 hover:brightness-110"
+                  className="h-full bg-[color-mix(in_srgb,var(--brand-text-muted)_35%,transparent)] transition-[filter] duration-150 hover:brightness-110"
                   style={{ width: `${todoPct}%` }}
                   title={`To Do: ${storyWf.todo} (${Math.round(todoPct)}%)`}
                 />
@@ -566,27 +547,23 @@ export const ProjectDashboard: React.FC<ProjectDashboardProps> = React.memo(
                   title={`In Progress: ${storyWf.inProgress} (${Math.round(progPct)}%)`}
                 />
                 <div
-                  className="h-full transition-[filter] duration-150 hover:brightness-110"
-                  style={{ width: `${donePct}%`, background: 'var(--color-primary)' }}
+                  className="h-full bg-[var(--brand-cta)] transition-[filter] duration-150 hover:brightness-110"
+                  style={{ width: `${donePct}%` }}
                   title={`Done: ${storyWf.done} (${Math.round(donePct)}%)`}
                 />
               </div>
               <dl className="mt-3 grid grid-cols-3 gap-2 text-center text-xs">
                 <div>
-                  <dt style={LABEL_STYLE}>To Do</dt>
-                  <dd className="font-semibold tabular-nums text-base-content">{storyWf.todo}</dd>
+                  <dt className={LABEL_CLASS}>To Do</dt>
+                  <dd className={cn('font-semibold tabular-nums', VALUE_STRONG_CLASS)}>{storyWf.todo}</dd>
                 </div>
                 <div>
-                  <dt style={LABEL_STYLE}>In Progress</dt>
-                  <dd className="font-semibold tabular-nums text-base-content">
-                    {storyWf.inProgress}
-                  </dd>
+                  <dt className={LABEL_CLASS}>In Progress</dt>
+                  <dd className={cn('font-semibold tabular-nums', VALUE_STRONG_CLASS)}>{storyWf.inProgress}</dd>
                 </div>
                 <div>
-                  <dt style={LABEL_STYLE}>Done</dt>
-                  <dd className="font-semibold tabular-nums" style={PRIMARY_STYLE}>
-                    {storyWf.done}
-                  </dd>
+                  <dt className={LABEL_CLASS}>Done</dt>
+                  <dd className={cn('font-semibold tabular-nums', VALUE_ACCENT_CLASS)}>{storyWf.done}</dd>
                 </div>
               </dl>
             </>
@@ -617,18 +594,18 @@ export const ProjectDashboard: React.FC<ProjectDashboardProps> = React.memo(
             }
             delay={120}
           >
-            <div className="inline-flex cursor-default items-baseline gap-2 rounded-lg border border-success/30 bg-success/10 px-4 py-3">
-              <span className="text-2xl font-bold tabular-nums" style={PRIMARY_STYLE}>
+            <div className="inline-flex cursor-default items-baseline gap-2 rounded-xl border border-[color-mix(in_srgb,#10b981_28%,transparent)] bg-[color-mix(in_srgb,#10b981_10%,var(--brand-surface-strong))] px-4 py-3">
+              <span className={cn('text-2xl font-bold tabular-nums', VALUE_STRONG_CLASS)}>
                 {leadDays == null
                   ? '—'
                   : `${leadDays < 1 ? leadDays.toFixed(1) : Math.round(leadDays)}`}
               </span>
               {leadDays != null && (
-                <span className="text-sm font-medium text-base-content/80">dias</span>
+                <span className={cn('text-sm font-medium', LABEL_CLASS)}>dias</span>
               )}
             </div>
           </Tooltip>
-          <p className="mt-2 text-xs" style={LABEL_STYLE}>
+          <p className={cn('mt-2 text-xs', LABEL_CLASS)}>
             Média sobre bugs com <code className="text-[0.7rem]">createdAt</code> e{' '}
             <code className="text-[0.7rem]">completedAt</code>.
           </p>

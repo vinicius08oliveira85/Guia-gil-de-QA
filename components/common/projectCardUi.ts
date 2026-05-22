@@ -70,3 +70,36 @@ export const workspaceStatLabelClass =
 
 export const workspaceStatValueClass =
   'font-heading text-lg font-bold tabular-nums leading-none sm:text-xl';
+
+/** Cards de insight do dashboard QA (grade 3×3). */
+export const dashboardInsightCardClass = cn(
+  'relative flex h-full min-h-0 w-full flex-col overflow-hidden rounded-[var(--rounded-box)] p-3.5 sm:p-4',
+  'border border-[var(--brand-surface-border)]',
+  'bg-[color-mix(in_srgb,var(--brand-surface-strong)_94%,transparent)] backdrop-blur-sm',
+  'shadow-[0_1px_0_color-mix(in_srgb,white_50%,transparent),0_8px_22px_-12px_var(--brand-surface-shadow)]',
+  'transition-[border-color,box-shadow] duration-200 hover:border-[color-mix(in_srgb,var(--brand-cta)_28%,transparent)]'
+);
+
+export const dashboardInsightHeaderClass =
+  'mb-3 space-y-0.5 border-b border-[var(--brand-surface-border)] pb-2.5';
+
+export const dashboardInsightTitleClass =
+  'font-heading text-sm font-semibold tracking-tight text-[var(--brand-text-strong)]';
+
+export const dashboardInsightSubtitleClass =
+  'text-[11px] leading-snug text-[var(--brand-text-muted)]';
+
+/** KPIs do topo do QADashboard (pastéis por tom). */
+/** Card de categoria de documento (Requisitos, Testes, etc.). */
+export const documentCategoryCardClass = cn(
+  'relative overflow-hidden rounded-[var(--rounded-box)] border p-3 transition-all duration-200 sm:p-3.5',
+  'border-[var(--brand-surface-border)] bg-[color-mix(in_srgb,var(--brand-surface-strong)_94%,transparent)] backdrop-blur-sm',
+  'shadow-[0_1px_0_color-mix(in_srgb,white_50%,transparent),0_8px_20px_-12px_var(--brand-surface-shadow)]'
+);
+
+export const dashboardKpiCardBaseClass = cn(
+  'flex items-center gap-3 rounded-[var(--rounded-box)] border p-3 sm:gap-3.5 sm:p-3.5',
+  'bg-[color-mix(in_srgb,var(--brand-surface-strong)_94%,transparent)] backdrop-blur-sm',
+  'shadow-[0_1px_0_color-mix(in_srgb,white_50%,transparent),0_8px_20px_-12px_var(--brand-surface-shadow)]',
+  'transition-[border-color,box-shadow,transform] duration-200'
+);

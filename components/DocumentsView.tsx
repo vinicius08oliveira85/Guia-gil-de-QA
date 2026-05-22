@@ -31,9 +31,12 @@ import {
   projectViewPanel,
   documentCardGrid,
   pageSubtitleClass,
+  pageTitleClass,
+  contextBadgeClass,
   projectViewShell,
   searchInputClass,
 } from './common/viewUi';
+import { workspacePanelShellClass, workspacePanelSectionTitleClass } from './common/projectCardUi';
 import { DocumentAnalysisBody } from './documents/DocumentAnalysisBody';
 
 interface DocumentWithMetadata extends ProjectDocument {
@@ -351,11 +354,11 @@ export const DocumentsView: React.FC<{
   const documentsDescription = (
     <>
       Gerencie e analise documentos do projeto.{' '}
-      <span className="font-medium text-base-content">
+      <span className="font-medium text-[var(--brand-text-strong)]">
         {stats.total} documento{stats.total !== 1 ? 's' : ''} • {formatFileSize(stats.totalSize)}
       </span>
       {lastUpdatedText ? (
-        <span className="text-xs text-base-content/50" title="Última alteração do projeto">
+        <span className="text-xs text-[var(--brand-text-muted)]" title="Última alteração do projeto">
           {' '}
           — Atualizado {lastUpdatedText}
         </span>
@@ -368,20 +371,15 @@ export const DocumentsView: React.FC<{
   return (
     <div className={projectViewShell} role="main" aria-label="Documentos do projeto">
       <section className={projectViewPanel}>
-        <header className="flex flex-col gap-3 border-b border-base-300/60 pb-4 sm:gap-4 sm:pb-5">
+        <header className="flex flex-col gap-2 border-b border-[var(--brand-surface-border)] pb-3 sm:gap-3 sm:pb-4">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
             <div className="min-w-0">
-              <div className="mb-1.5 flex flex-wrap items-center gap-2">
-                <h1
-                  id="documents-section-heading"
-                  className="font-heading text-2xl font-bold tracking-tight text-base-content sm:text-[1.65rem]"
-                >
+              <div className="mb-1 flex flex-wrap items-center gap-2">
+                <h1 id="documents-section-heading" className={pageTitleClass}>
                   Documentos
                 </h1>
                 {jiraProjectKey && (
-                  <span className="shrink-0 rounded-md border border-base-300/70 bg-base-200/50 px-2 py-0.5 text-xs font-medium text-base-content/65">
-                    Jira: {jiraProjectKey}
-                  </span>
+                  <span className={contextBadgeClass}>Jira: {jiraProjectKey}</span>
                 )}
               </div>
               <p className={pageSubtitleClass}>
@@ -402,36 +400,39 @@ export const DocumentsView: React.FC<{
             </label>
           </div>
         </header>
-        <div className="mt-4 border-t border-base-300/50 pt-4">
+        <div className="mt-3 border-t border-[var(--brand-surface-border)] pt-3">
           <SpecificationDocumentProcessor project={project} onUpdateProject={onUpdateProject} />
         </div>
       </section>
 
-      <section className={cn(projectViewPanel, 'space-y-4 sm:space-y-5')}>
+      <section className={cn(projectViewPanel, 'space-y-3 sm:space-y-4')}>
 
-        {/* Faixa de resumo: totais e indicadores */}
         {stats.total > 0 && (
-          <div className="flex flex-wrap items-center gap-4 rounded-[var(--rounded-box)] border border-[color-mix(in_srgb,var(--foreground)_10%,transparent)] bg-base-200/40 px-4 py-3">
-            <span className="text-xs font-semibold text-base-content/70 uppercase tracking-widest">
-              Resumo
-            </span>
-            <div className="flex flex-wrap items-center gap-4">
-              <span className="inline-flex items-center gap-1.5 text-sm text-base-content">
-                <FileText className="w-4 h-4 text-primary" aria-hidden />
-                <strong>{stats.total}</strong> documento{stats.total !== 1 ? 's' : ''}
+          <div
+            className={cn(
+              workspacePanelShellClass,
+              'flex flex-wrap items-center gap-x-4 gap-y-2 px-3 py-2.5 sm:px-3.5'
+            )}
+          >
+            <span className={workspacePanelSectionTitleClass}>Resumo</span>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-[var(--brand-text-muted)]">
+              <span className="inline-flex items-center gap-1.5">
+                <FileText className="h-4 w-4 text-[var(--brand-cta)]" aria-hidden />
+                <strong className="text-[var(--brand-text-strong)]">{stats.total}</strong> documento
+                {stats.total !== 1 ? 's' : ''}
               </span>
-              <span className="inline-flex items-center gap-1.5 text-sm text-base-content/80">
-                <CheckCircle2 className="w-4 h-4 text-success" aria-hidden />
-                <strong>{stats.withAnalysisCount}</strong> com análise
+              <span className="inline-flex items-center gap-1.5">
+                <CheckCircle2 className="h-4 w-4 text-success" aria-hidden />
+                <strong className="text-[var(--brand-text-strong)]">{stats.withAnalysisCount}</strong> com análise
               </span>
               {stats.withoutAnalysisCount > 0 && (
-                <span className="inline-flex items-center gap-1.5 text-sm text-base-content/80">
-                  <AlertCircle className="w-4 h-4 text-warning" aria-hidden />
-                  <strong>{stats.withoutAnalysisCount}</strong> sem análise
+                <span className="inline-flex items-center gap-1.5">
+                  <AlertCircle className="h-4 w-4 text-warning" aria-hidden />
+                  <strong className="text-[var(--brand-text-strong)]">{stats.withoutAnalysisCount}</strong> sem análise
                 </span>
               )}
-              <span className="text-sm text-base-content/60">
-                Total: <strong>{formatFileSize(stats.totalSize)}</strong>
+              <span>
+                Total: <strong className="text-[var(--brand-text-strong)]">{formatFileSize(stats.totalSize)}</strong>
               </span>
             </div>
           </div>
@@ -443,10 +444,10 @@ export const DocumentsView: React.FC<{
               onCategorySelect={setSelectedCategory}
             />
             {stats.total > 0 && (
-          <div className="flex flex-wrap items-center gap-4">
-            <div className="relative flex-1 min-w-[300px]">
+          <div className="flex flex-col gap-2.5 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
+            <div className="relative min-w-0 flex-1 sm:min-w-[240px]">
               <Search
-                className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-base-content/40 pointer-events-none"
+                className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--brand-text-muted)]"
                 aria-hidden
               />
               <input
@@ -458,7 +459,7 @@ export const DocumentsView: React.FC<{
                 aria-label="Buscar documentos"
               />
             </div>
-            <div className="flex gap-2 flex-wrap" role="group" aria-label="Filtrar documentos">
+            <div className="flex flex-wrap gap-1.5 sm:gap-2" role="group" aria-label="Filtrar documentos">
               <button
                 type="button"
                 onClick={() => setSelectedCategory('all')}
@@ -520,7 +521,7 @@ export const DocumentsView: React.FC<{
           </div>
         )}
 
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-3">
         {filteredDocuments.length > 0 ? (
           <div
             className={documentCardGrid}

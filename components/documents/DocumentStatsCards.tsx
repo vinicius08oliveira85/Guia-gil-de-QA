@@ -1,39 +1,40 @@
 import React from 'react';
 import { FileText, TestTube, Compass, File } from 'lucide-react';
 import { cn } from '../../utils/cn';
+import { documentCategoryCardClass } from '../common/projectCardUi';
 
 const CATEGORIES = [
   {
     id: 'requisitos',
     label: 'Requisitos',
     icon: FileText,
-    borderLeft: 'border-l-purple-500',
-    titleColor: 'text-purple-600 dark:text-purple-400',
-    iconBg: 'bg-purple-500/15 text-purple-600 dark:text-purple-400',
+    tile: 'border-[color-mix(in_srgb,var(--brand-highlight)_28%,transparent)] bg-[color-mix(in_srgb,var(--brand-highlight)_8%,var(--brand-surface-strong))]',
+    labelColor: 'text-[var(--brand-highlight)]',
+    iconBg: 'bg-[color-mix(in_srgb,var(--brand-highlight)_16%,transparent)] text-[var(--brand-highlight)]',
   },
   {
     id: 'testes',
     label: 'Testes',
     icon: TestTube,
-    borderLeft: 'border-l-emerald-500',
-    titleColor: 'text-emerald-600 dark:text-emerald-400',
-    iconBg: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400',
+    tile: 'border-[color-mix(in_srgb,#10b981_25%,transparent)] bg-[color-mix(in_srgb,#10b981_8%,var(--brand-surface-strong))]',
+    labelColor: 'text-success',
+    iconBg: 'bg-[color-mix(in_srgb,#10b981_14%,transparent)] text-success',
   },
   {
     id: 'arquitetura',
     label: 'Arquitetura',
     icon: Compass,
-    borderLeft: 'border-l-sky-500',
-    titleColor: 'text-sky-600 dark:text-sky-400',
-    iconBg: 'bg-sky-500/15 text-sky-600 dark:text-sky-400',
+    tile: 'border-[color-mix(in_srgb,var(--brand-cta)_22%,transparent)] bg-[color-mix(in_srgb,var(--brand-cta)_7%,var(--brand-surface-strong))]',
+    labelColor: 'text-[var(--brand-cta)]',
+    iconBg: 'bg-[color-mix(in_srgb,var(--brand-cta)_14%,transparent)] text-[var(--brand-cta)]',
   },
   {
     id: 'outros',
     label: 'Outros',
     icon: File,
-    borderLeft: 'border-l-base-content/35',
-    titleColor: 'text-base-content/80',
-    iconBg: 'bg-base-300/50 text-base-content/70',
+    tile: 'border-[var(--brand-surface-border)] bg-[var(--brand-chip)]',
+    labelColor: 'text-[var(--brand-text-muted)]',
+    iconBg: 'bg-[color-mix(in_srgb,var(--brand-text-muted)_10%,transparent)] text-[var(--brand-text-muted)]',
   },
 ] as const;
 
@@ -43,7 +44,6 @@ export interface DocumentStatsCardsProps {
   onCategorySelect?: (categoryId: string) => void;
 }
 
-/** Cards de contagem alinhados ao painel Tarefas/Dashboard: borda, sombra suave, base-100. */
 export const DocumentStatsCards: React.FC<DocumentStatsCardsProps> = ({
   categoryCounts,
   selectedCategory = 'all',
@@ -51,11 +51,11 @@ export const DocumentStatsCards: React.FC<DocumentStatsCardsProps> = ({
 }) => {
   return (
     <div
-      className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4"
+      className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-2.5"
       role="list"
       aria-label="Contagem de documentos por categoria"
     >
-      {CATEGORIES.map(({ id, label, icon: Icon, borderLeft, titleColor, iconBg }) => {
+      {CATEGORIES.map(({ id, label, icon: Icon, tile, labelColor, iconBg }) => {
         const count = categoryCounts[id] ?? 0;
         const isSelected = selectedCategory === id;
         const isClickable = !!onCategorySelect;
@@ -76,36 +76,25 @@ export const DocumentStatsCards: React.FC<DocumentStatsCardsProps> = ({
                 : undefined
             }
             className={cn(
-              'relative overflow-hidden rounded-xl border border-base-300/80 bg-base-100/95 p-4 shadow-sm backdrop-blur-sm transition-all duration-200',
-              'border-l-4',
-              borderLeft,
+              documentCategoryCardClass,
+              tile,
               isClickable &&
-                'cursor-pointer hover:-translate-y-0.5 hover:shadow-md hover:border-[color-mix(in_srgb,var(--brand-cta)_35%,transparent)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--brand-cta)_30%,transparent)]',
+                'cursor-pointer hover:-translate-y-0.5 hover:border-[color-mix(in_srgb,var(--brand-cta)_35%,transparent)] hover:shadow-[0_10px_24px_-14px_var(--brand-surface-shadow)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--brand-cta)_30%,transparent)] motion-reduce:hover:translate-y-0',
               isSelected &&
-                'ring-2 ring-[color-mix(in_srgb,var(--brand-cta)_40%,transparent)] border-[color-mix(in_srgb,var(--brand-cta)_25%,transparent)] shadow-md'
+                'ring-2 ring-[color-mix(in_srgb,var(--brand-cta)_40%,transparent)] border-[color-mix(in_srgb,var(--brand-cta)_30%,transparent)]'
             )}
             aria-label={`${label}: ${count} documento(s)${isClickable ? '. Clique para filtrar.' : ''}`}
             aria-pressed={isClickable ? isSelected : undefined}
           >
-            <div className="flex items-start justify-between gap-2">
+            <div className="flex items-center justify-between gap-2">
               <div className="min-w-0">
-                <p
-                  className={cn(
-                    'text-[10px] font-bold uppercase tracking-widest text-base-content/55',
-                    titleColor
-                  )}
-                >
-                  {label}
+                <p className={cn('text-[10px] font-bold uppercase tracking-wider', labelColor)}>{label}</p>
+                <p className="mt-0.5 text-2xl font-bold tabular-nums text-[var(--brand-text-strong)] sm:text-3xl">
+                  {count}
                 </p>
-                <p className="mt-1 text-3xl font-bold tabular-nums text-base-content">{count}</p>
               </div>
-              <div
-                className={cn(
-                  'flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-base-200',
-                  iconBg
-                )}
-              >
-                <Icon className="h-5 w-5" aria-hidden />
+              <div className={cn('flex h-9 w-9 shrink-0 items-center justify-center rounded-lg', iconBg)}>
+                <Icon className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden />
               </div>
             </div>
           </div>

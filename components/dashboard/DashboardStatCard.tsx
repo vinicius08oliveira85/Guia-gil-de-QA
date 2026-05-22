@@ -1,6 +1,7 @@
 import React from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '../../utils/cn';
+import { dashboardKpiCardBaseClass } from '../common/projectCardUi';
 
 export type TrendType = 'up' | 'down' | 'neutral';
 export type DashboardStatTone = 'info' | 'success' | 'warning' | 'accent';
@@ -16,33 +17,27 @@ interface DashboardStatCardProps {
   onClick?: () => void;
 }
 
-const TONE_STYLES: Record<
-  DashboardStatTone,
-  { card: string; iconWrap: string }
-> = {
+const TONE_STYLES: Record<DashboardStatTone, { card: string; iconWrap: string }> = {
   info: {
-    card: 'border-info/25 bg-info/[0.07]',
-    iconWrap: 'bg-info/15 text-info ring-info/20',
+    card: 'border-[color-mix(in_srgb,var(--brand-highlight)_22%,transparent)] bg-[color-mix(in_srgb,var(--brand-highlight)_7%,var(--brand-surface-strong))]',
+    iconWrap:
+      'bg-[color-mix(in_srgb,var(--brand-highlight)_14%,transparent)] text-[var(--brand-highlight)] ring-[color-mix(in_srgb,var(--brand-highlight)_20%,transparent)]',
   },
   success: {
-    card: 'border-success/25 bg-success/[0.08]',
-    iconWrap: 'bg-success/15 text-success ring-success/20',
+    card: 'border-[color-mix(in_srgb,#10b981_22%,transparent)] bg-[color-mix(in_srgb,#10b981_8%,var(--brand-surface-strong))]',
+    iconWrap: 'bg-[color-mix(in_srgb,#10b981_16%,transparent)] text-success ring-success/20',
   },
   warning: {
-    card: 'border-error/30 bg-error/[0.06]',
-    iconWrap: 'bg-error/15 text-error ring-error/20',
+    card: 'border-[color-mix(in_srgb,#ef4444_20%,transparent)] bg-[color-mix(in_srgb,#ef4444_6%,var(--brand-surface-strong))]',
+    iconWrap: 'bg-error/12 text-error ring-error/20',
   },
   accent: {
-    card:
-      'border-[color-mix(in_srgb,var(--brand-highlight)_28%,transparent)] bg-[color-mix(in_srgb,var(--brand-highlight)_7%,transparent)]',
+    card: 'border-[color-mix(in_srgb,var(--brand-cta)_25%,transparent)] bg-[color-mix(in_srgb,var(--brand-cta)_8%,var(--brand-surface-strong))]',
     iconWrap:
-      'bg-[color-mix(in_srgb,var(--brand-highlight)_12%,transparent)] text-[var(--brand-highlight)] ring-[color-mix(in_srgb,var(--brand-highlight)_18%,transparent)]',
+      'bg-[color-mix(in_srgb,var(--brand-cta)_14%,transparent)] text-[var(--brand-cta)] ring-[color-mix(in_srgb,var(--brand-cta)_22%,transparent)]',
   },
 };
 
-/**
- * Card de KPI do dashboard — ícone em destaque, valor e rótulo (referência visual do produto).
- */
 export const DashboardStatCard = React.memo<DashboardStatCardProps>(
   ({
     title,
@@ -55,7 +50,11 @@ export const DashboardStatCard = React.memo<DashboardStatCardProps>(
     onClick,
   }) => {
     const changeColor =
-      trend === 'up' ? 'text-success' : trend === 'down' ? 'text-error' : 'text-base-content/60';
+      trend === 'up'
+        ? 'text-success'
+        : trend === 'down'
+          ? 'text-error'
+          : 'text-[var(--brand-text-muted)]';
 
     const isClickable = !!onClick;
     const toneStyle = TONE_STYLES[tone];
@@ -78,32 +77,34 @@ export const DashboardStatCard = React.memo<DashboardStatCardProps>(
             : undefined
         }
         className={cn(
-          'flex items-center gap-3 rounded-[var(--rounded-box)] border p-3 soft-shadow sm:gap-4 sm:p-4',
+          dashboardKpiCardBaseClass,
           toneStyle.card,
           isClickable &&
-            'cursor-pointer transition-[box-shadow,transform] hover:shadow-md hover:-translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--brand-cta)_35%,transparent)] motion-reduce:hover:translate-y-0',
+            'cursor-pointer hover:-translate-y-0.5 hover:border-[color-mix(in_srgb,var(--brand-cta)_32%,transparent)] hover:shadow-[0_12px_28px_-14px_var(--brand-surface-shadow)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--brand-cta)_35%,transparent)] motion-reduce:hover:translate-y-0',
           className
         )}
       >
         <div
           className={cn(
-            'flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ring-1 sm:h-11 sm:w-11',
+            'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ring-1 sm:h-10 sm:w-10',
             toneStyle.iconWrap
           )}
           aria-hidden
         >
-          <Icon className="h-5 w-5" />
+          <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
         </div>
         <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0">
-            <span className="font-heading text-xl font-bold tabular-nums text-base-content sm:text-2xl">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--brand-text-muted)] sm:text-[11px]">
+            {title}
+          </p>
+          <div className="mt-0.5 flex flex-wrap items-baseline gap-x-2 gap-y-0">
+            <span className="font-heading text-xl font-bold tabular-nums text-[var(--brand-text-strong)] sm:text-2xl">
               {value}
             </span>
             {changePercent != null && (
               <span className={cn('text-[10px] font-medium', changeColor)}>{changePercent}</span>
             )}
           </div>
-          <p className="text-xs font-medium text-base-content/70 sm:text-sm">{title}</p>
         </div>
       </div>
     );

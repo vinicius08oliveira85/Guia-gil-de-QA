@@ -132,8 +132,10 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(props => {
 
       <div
         className={cn(
-          'grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4',
-          goBacklog ? 'lg:grid-cols-3 xl:grid-cols-5' : 'xl:grid-cols-4'
+          'grid grid-cols-2 gap-2 sm:gap-2.5',
+          goBacklog
+            ? 'sm:grid-cols-3 lg:grid-cols-[repeat(4,minmax(0,1fr))_minmax(0,1fr)]'
+            : 'sm:grid-cols-2 lg:grid-cols-4'
         )}
         aria-label="Indicadores principais de tarefas"
       >
@@ -179,11 +181,12 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(props => {
             />
             {goBacklog && (
               <DashboardStatCard
+                className="col-span-2 sm:col-span-1"
                 title="Backlog · To Do e fila Jira"
                 value={backlogCount}
                 changePercent={backlogShareLabel}
                 icon={Layers}
-                tone="info"
+                tone="accent"
                 onClick={goBacklog}
               />
             )}
