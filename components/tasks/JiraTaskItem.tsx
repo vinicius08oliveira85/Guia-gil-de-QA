@@ -1689,7 +1689,7 @@ export const JiraTaskItem: React.FC<{
           <div
             className={[
               taskCardShellClass,
-              'flex min-w-0 flex-row items-start gap-2 overflow-visible sm:items-center sm:gap-3',
+              'flex min-w-0 flex-col items-stretch gap-2 overflow-visible max-sm:flex-col sm:flex-row sm:items-center sm:gap-3',
               'hover:border-[color-mix(in_srgb,var(--brand-cta)_20%,var(--brand-surface-border))] hover:bg-[var(--brand-surface-strong)]',
               level > 0
                 ? 'bg-[color-mix(in_srgb,var(--brand-surface-strong)_88%,transparent)]'
@@ -1798,7 +1798,7 @@ export const JiraTaskItem: React.FC<{
             </div>
             <div
               className={cn(
-                'flex min-w-0 flex-1 flex-col gap-1 overflow-hidden max-md:min-w-full md:flex-row md:items-center md:gap-2'
+                'flex min-w-0 w-full flex-1 flex-col gap-1 overflow-hidden max-sm:min-w-0 sm:flex-1 md:flex-row md:items-center md:gap-2'
               )}
             >
             <div
@@ -1892,19 +1892,19 @@ export const JiraTaskItem: React.FC<{
             </div>
             <div
               className={cn(
-                'flex min-w-0 flex-1 flex-col gap-1 overflow-hidden max-md:w-full sm:flex-row sm:items-center sm:gap-2'
+                'flex min-w-0 w-full flex-1 flex-col gap-1.5 overflow-hidden max-sm:w-full sm:flex-row sm:items-center sm:gap-2'
               )}
             >
               <span
                 className={cn(
-                  'min-w-0 flex-1 break-words line-clamp-2 sm:line-clamp-1',
+                  'block min-w-0 w-full flex-1 break-words line-clamp-3 sm:line-clamp-1',
                   taskCardTitleClass
                 )}
                 title={displayTitle}
               >
                 {displayTitle}
               </span>
-              <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5 max-md:w-full sm:flex-nowrap">
+              <div className="flex w-full shrink-0 flex-wrap items-center justify-end gap-1.5 max-sm:pt-0.5 sm:w-auto sm:flex-nowrap">
                 {(task.type === 'Tarefa' || task.type === 'Bug') && (
                   <TestCasesFreshnessIndicator
                     task={task}
@@ -1933,8 +1933,8 @@ export const JiraTaskItem: React.FC<{
 
             <div
               className={cn(
-                'flex shrink-0 flex-nowrap items-center justify-end gap-2',
-                'z-20 min-w-0 overflow-visible'
+                'flex w-full shrink-0 flex-nowrap items-center justify-end gap-2',
+                'z-20 min-w-0 overflow-visible max-sm:pt-0.5 sm:w-auto'
               )}
               onClick={e => e.stopPropagation()}
             >
