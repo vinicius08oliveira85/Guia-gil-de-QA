@@ -9,7 +9,7 @@ import { ListChecks, CheckCircle2, AlertTriangle, Percent, Loader2, Layers } fro
 import { countBacklogTasks, formatBacklogShareLabel } from '../../utils/backlogTasks';
 import { useProjectsStore } from '../../store/projectsStore';
 import { useDashboardMetrics } from '../../hooks/useDashboardMetrics';
-import { DashboardStatCard } from './DashboardStatCard';
+import { GlassIndicatorCards, type SmallIndicatorItem } from './GlassIndicatorCards';
 import { ProjectDashboard } from './ProjectDashboard';
 import { RecentActivity } from './RecentActivity';
 import { QADashboardHeaderToolbar } from './QADashboardHeaderToolbar';
@@ -98,6 +98,66 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(props => {
     () => formatBacklogShareLabel(backlogCount, dashboardMetrics.totalTasks),
     [backlogCount, dashboardMetrics.totalTasks]
   );
+
+  const showBacklogCard = !!goBacklog;
+
+  const qaIndicatorItems = useMemo((): SmallIndicatorItem[] => {
+    const { totalTasks, completedTasks, overdueTasks, efficiencyPercent } = dashboardMetrics;
+    const items: SmallIndicatorItem[] = [
+      {
+        label: 'Total de Tarefas',
+        value: totalTasks,
+        modifier: 'no escopo',
+        icon: ListChecks,
+        colorTheme: 'primary',
+        onClick: goTasks,
+      },
+      {
+        label: 'Concluídas',
+        value: completedTasks,
+        modifier: totalTasks > 0 ? `${efficiencyPercent}%` : '0%',
+        icon: CheckCircle2,
+        colorTheme: 'success',
+        onClick: goTasks,
+      },
+      {
+        label: 'Atrasadas',
+        value: overdueTasks,
+        modifier: overdueTasks > 0 ? 'atenção' : 'em dia',
+        icon: AlertTriangle,
+        colorTheme: 'error',
+        onClick: goTasks,
+      },
+      {
+        label: 'Eficiência',
+        value: totalTasks === 0 ? '—' : `${efficiencyPercent}%`,
+        modifier: 'taxa de conclusão',
+        icon: Percent,
+        colorTheme: 'info',
+        progressValue: totalTasks > 0 ? efficiencyPercent : undefined,
+        onClick: goTasks,
+      },
+    ];
+    if (showBacklogCard) {
+      items.push({
+        label: 'Backlog · To Do e Fila Jira',
+        value: backlogCount,
+        modifier: backlogShareLabel ?? '—',
+        icon: Layers,
+        colorTheme: 'warning',
+        onClick: goBacklog,
+      });
+    }
+    return items;
+  }, [
+    dashboardMetrics,
+    goTasks,
+    goBacklog,
+    showBacklogCard,
+    backlogCount,
+    backlogShareLabel,
+  ]);
+
   const jiraKey = liveProject.settings?.jiraProjectKey;
 
   return (
@@ -130,69 +190,29 @@ export const QADashboard: React.FC<QADashboardProps> = React.memo(props => {
         onOpenExportModal={() => setShowExportModal(true)}
       />
 
-      <div
-        className={cn(
-          'grid grid-cols-2 gap-2 sm:gap-2.5',
-          goBacklog
-            ? 'sm:grid-cols-3 lg:grid-cols-[repeat(4,minmax(0,1fr))_minmax(0,1fr)]'
-            : 'sm:grid-cols-2 lg:grid-cols-4'
-        )}
-        aria-label="Indicadores principais de tarefas"
-      >
+      <section aria-label="Indicadores principais de tarefas">
         {showLoadingBanner && !filteredProject.tasks?.length ? (
-          Array.from({ length: goBacklog ? 5 : 4 }).map((_, k) => (
-            <div
-              key={k}
-              className="h-[5.25rem] animate-pulse rounded-[var(--rounded-box)] border border-base-300/60 bg-base-200/50 sm:h-[5.5rem]"
-              aria-hidden
-            />
-          ))
-        ) : (
-          <>
-            <DashboardStatCard
-              title="Total de tarefas"
-              value={dashboardMetrics.totalTasks}
-              icon={ListChecks}
-              tone="info"
-              onClick={goTasks}
-            />
-            <DashboardStatCard
-              title="Concluídas"
-              value={dashboardMetrics.completedTasks}
-              icon={CheckCircle2}
-              tone="success"
-              onClick={goTasks}
-            />
-            <DashboardStatCard
-              title="Atrasadas"
-              value={dashboardMetrics.overdueTasks}
-              icon={AlertTriangle}
-              tone="warning"
-              onClick={goTasks}
-            />
-            <DashboardStatCard
-              title="Eficiência"
-              value={
-                dashboardMetrics.totalTasks === 0 ? '—' : `${dashboardMetrics.efficiencyPercent}%`
-              }
-              icon={Percent}
-              tone="accent"
-              onClick={goTasks}
-            />
-            {goBacklog && (
-              <DashboardStatCard
-                className="col-span-2 sm:col-span-1"
-                title="Backlog · To Do e fila Jira"
-                value={backlogCount}
-                changePercent={backlogShareLabel}
-                icon={Layers}
-                tone="accent"
-                onClick={goBacklog}
-              />
+          <div
+            className={cn(
+              'grid grid-cols-2 gap-1.5 sm:gap-2',
+              showBacklogCard ? 'sm:grid-cols-3 lg:grid-cols-5' : 'sm:grid-cols-2 lg:grid-cols-4'
             )}
-          </>
+          >
+            {Array.from({ length: showBacklogCard ? 5 : 4 }).map((_, k) => (
+              <div
+                key={k}
+                className="h-[4.75rem] animate-pulse rounded-[var(--rounded-box)] border border-base-300/60 bg-base-200/50 sm:h-[5rem]"
+                aria-hidden
+              />
+            ))}
+          </div>
+        ) : (
+          <GlassIndicatorCards
+            items={qaIndicatorItems}
+            columns={showBacklogCard ? 5 : 4}
+          />
         )}
-      </div>
+      </section>
 
       <ProjectDashboard
         project={filteredProject}

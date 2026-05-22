@@ -440,6 +440,7 @@ export const DocumentsView: React.FC<{
 
         <DocumentStatsCards
               categoryCounts={stats.categoryCounts}
+              totalDocuments={stats.total}
               selectedCategory={selectedCategory}
               onCategorySelect={setSelectedCategory}
             />

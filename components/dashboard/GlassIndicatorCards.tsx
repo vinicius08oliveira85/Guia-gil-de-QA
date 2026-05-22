@@ -2,6 +2,7 @@ import React from 'react';
 import { ListChecks, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '../../utils/cn';
+import { dashboardKpiCardBaseClass } from '../common/projectCardUi';
 
 /** Tokens semânticos DaisyUI expostos na API pública dos indicadores. */
 export type IndicatorColorTheme =
@@ -11,7 +12,9 @@ export type IndicatorColorTheme =
   | 'warningContrast'
   | 'info'
   | 'success'
-  | 'error';
+  | 'error'
+  /** Categorias genéricas / diversos (cinza neutro). */
+  | 'neutral';
 
 export interface SmallIndicatorItem {
   label: string;
@@ -29,87 +32,77 @@ export interface SmallIndicatorItem {
   progressValue?: number;
 }
 
-/** Temas alinhados à paleta DaisyUI (primary, warning, info, success, error) — sem cores hex soltas. */
+/**
+ * Temas semânticos — cada indicador com cor distinta:
+ * primary = volume (roxo), warning = fila (âmbar), info = ativo (azul),
+ * success = concluído (verde), error = bugs (vermelho).
+ */
 const themeConfig: Record<
   IndicatorColorTheme,
   {
-    orbBg: string;
+    card: string;
     labelColor: string;
     valueColor: string;
     iconBg: string;
     iconColor: string;
-    glowClass: string;
     ringColor: string;
-    gradientFrom: string;
-    gradientTo: string;
   }
 > = {
   primary: {
-    orbBg: 'bg-primary/10 dark:bg-primary/5',
-    labelColor: 'text-primary',
-    valueColor: 'text-primary',
-    iconBg: 'border border-primary/25 bg-primary/10 dark:bg-primary/15',
-    iconColor: 'text-primary',
-    glowClass: 'glow-primary',
-    ringColor: 'text-primary',
-    gradientFrom: 'from-primary/8',
-    gradientTo: 'to-transparent',
+    card: 'border-[color-mix(in_srgb,var(--brand-highlight)_28%,transparent)] bg-[color-mix(in_srgb,var(--brand-highlight)_9%,var(--brand-surface-strong))]',
+    labelColor: 'text-[var(--brand-highlight)]',
+    valueColor: 'text-[var(--brand-text-strong)]',
+    iconBg: 'bg-[color-mix(in_srgb,var(--brand-highlight)_16%,transparent)] text-[var(--brand-highlight)]',
+    iconColor: 'text-[var(--brand-highlight)]',
+    ringColor: 'text-[var(--brand-highlight)]',
   },
   warning: {
-    orbBg: 'bg-warning/10 dark:bg-warning/5',
-    labelColor: 'text-warning',
-    valueColor: 'text-warning',
-    iconBg: 'border border-warning/25 bg-warning/10 dark:bg-warning/15',
-    iconColor: 'text-warning',
-    glowClass: 'glow-warning',
-    ringColor: 'text-warning',
-    gradientFrom: 'from-warning/8',
-    gradientTo: 'to-transparent',
+    card: 'border-[color-mix(in_srgb,#d97706_28%,transparent)] bg-[color-mix(in_srgb,#d97706_9%,var(--brand-surface-strong))]',
+    labelColor: 'text-[#b45309]',
+    valueColor: 'text-[#b45309]',
+    iconBg: 'bg-[color-mix(in_srgb,#d97706_16%,transparent)] text-[#d97709]',
+    iconColor: 'text-[#d97709]',
+    ringColor: 'text-[#d97709]',
   },
   warningContrast: {
-    orbBg: 'bg-warning/10 dark:bg-warning/5',
-    labelColor: 'text-warning-content dark:text-warning',
-    valueColor: 'text-warning-content dark:text-warning',
-    iconBg:
-      'border border-warning/35 bg-warning/15 dark:border-warning/30 dark:bg-warning/15',
-    iconColor: 'text-warning-content dark:text-warning',
-    glowClass: 'glow-warning',
-    ringColor: 'text-warning',
-    gradientFrom: 'from-warning/8',
-    gradientTo: 'to-transparent',
+    card: 'border-[color-mix(in_srgb,#d97706_28%,transparent)] bg-[color-mix(in_srgb,#d97706_9%,var(--brand-surface-strong))]',
+    labelColor: 'text-[#b45309]',
+    valueColor: 'text-[#b45309]',
+    iconBg: 'bg-[color-mix(in_srgb,#d97706_16%,transparent)] text-[#d97709]',
+    iconColor: 'text-[#d97709]',
+    ringColor: 'text-[#d97709]',
   },
   info: {
-    orbBg: 'bg-info/10 dark:bg-info/5',
-    labelColor: 'text-info',
-    valueColor: 'text-info',
-    iconBg: 'border border-info/25 bg-info/10 dark:bg-info/15',
-    iconColor: 'text-info',
-    glowClass: 'glow-info',
-    ringColor: 'text-info',
-    gradientFrom: 'from-info/8',
-    gradientTo: 'to-transparent',
+    card: 'border-[color-mix(in_srgb,#0ea5e9_26%,transparent)] bg-[color-mix(in_srgb,#0ea5e9_8%,var(--brand-surface-strong))]',
+    labelColor: 'text-[#0284c7]',
+    valueColor: 'text-[#0284c7]',
+    iconBg: 'bg-[color-mix(in_srgb,#0ea5e9_15%,transparent)] text-[#0284c7]',
+    iconColor: 'text-[#0284c7]',
+    ringColor: 'text-[#0284c7]',
   },
   success: {
-    orbBg: 'bg-success/10 dark:bg-success/5',
-    labelColor: 'text-success',
-    valueColor: 'text-success',
-    iconBg: 'border border-success/25 bg-success/10 dark:bg-success/15',
-    iconColor: 'text-success',
-    glowClass: 'glow-success',
-    ringColor: 'text-success',
-    gradientFrom: 'from-success/8',
-    gradientTo: 'to-transparent',
+    card: 'border-[color-mix(in_srgb,#10b981_24%,transparent)] bg-[color-mix(in_srgb,#10b981_9%,var(--brand-surface-strong))]',
+    labelColor: 'text-[#059669]',
+    valueColor: 'text-[#059669]',
+    iconBg: 'bg-[color-mix(in_srgb,#10b981_15%,transparent)] text-[#059669]',
+    iconColor: 'text-[#059669]',
+    ringColor: 'text-[#059669]',
   },
   error: {
-    orbBg: 'bg-error/10 dark:bg-error/5',
-    labelColor: 'text-error',
-    valueColor: 'text-error',
-    iconBg: 'border border-error/25 bg-error/10 dark:bg-error/15',
-    iconColor: 'text-error',
-    glowClass: 'glow-error',
-    ringColor: 'text-error',
-    gradientFrom: 'from-error/8',
-    gradientTo: 'to-transparent',
+    card: 'border-[color-mix(in_srgb,#dc2626_24%,transparent)] bg-[color-mix(in_srgb,#dc2626_8%,var(--brand-surface-strong))]',
+    labelColor: 'text-[#dc2626]',
+    valueColor: 'text-[#dc2626]',
+    iconBg: 'bg-[color-mix(in_srgb,#dc2626_14%,transparent)] text-[#dc2626]',
+    iconColor: 'text-[#dc2626]',
+    ringColor: 'text-[#dc2626]',
+  },
+  neutral: {
+    card: 'border-[color-mix(in_srgb,var(--brand-text-muted)_22%,transparent)] bg-[color-mix(in_srgb,var(--brand-text-muted)_6%,var(--brand-surface-strong))]',
+    labelColor: 'text-[var(--brand-text-muted)]',
+    valueColor: 'text-[var(--brand-text-strong)]',
+    iconBg: 'bg-[color-mix(in_srgb,var(--brand-text-muted)_12%,transparent)] text-[var(--brand-text-muted)]',
+    iconColor: 'text-[var(--brand-text-muted)]',
+    ringColor: 'text-[var(--brand-text-muted)]',
   },
 };
 
@@ -206,17 +199,19 @@ function SmallIndicatorCard({ item }: { item: SmallIndicatorItem }) {
   const hasProgress = typeof item.progressValue === 'number';
 
   const interactiveClasses = isClickable
-    ? 'group cursor-pointer hover:-translate-y-1 hover:border-[color-mix(in_srgb,var(--brand-cta)_40%,transparent)] hover:shadow-lg hover:shadow-[color-mix(in_srgb,var(--brand-cta)_8%,transparent)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--brand-cta)_35%,transparent)] motion-reduce:transform-none motion-reduce:hover:shadow-none'
-    : 'hover:border-base-300/80';
+    ? 'group cursor-pointer hover:-translate-y-0.5 hover:border-[color-mix(in_srgb,var(--brand-cta)_35%,transparent)] hover:shadow-[0_10px_24px_-14px_var(--brand-surface-shadow)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--brand-cta)_35%,transparent)] motion-reduce:transform-none motion-reduce:hover:shadow-none'
+    : '';
 
   const activeClasses = item.isActive
-    ? 'ring-2 ring-[color-mix(in_srgb,var(--brand-cta)_40%,transparent)] border-[color-mix(in_srgb,var(--brand-cta)_30%,transparent)] bg-[color-mix(in_srgb,var(--brand-cta)_3%,transparent)]'
+    ? 'ring-2 ring-[color-mix(in_srgb,var(--brand-cta)_40%,transparent)] border-[color-mix(in_srgb,var(--brand-cta)_32%,transparent)]'
     : '';
 
   return (
     <div
       className={cn(
-        'relative flex min-h-[100px] flex-col justify-between overflow-hidden rounded-[var(--rounded-box)] border border-base-300/50 bg-gradient-to-br from-base-100 to-base-100/95 p-3.5 backdrop-blur-md transition-all duration-300 dark:border-base-content/8 dark:from-base-200/60 dark:to-base-200/40 sm:p-4',
+        dashboardKpiCardBaseClass,
+        'relative flex min-h-0 flex-col gap-1 p-2.5 sm:gap-1.5 sm:p-3',
+        config.card,
         interactiveClasses,
         activeClasses
       )}
@@ -239,73 +234,46 @@ function SmallIndicatorCard({ item }: { item: SmallIndicatorItem }) {
           : undefined
       }
     >
-      {/* Gradient orb background */}
       <div
         className={cn(
-          'absolute -right-6 -top-6 h-28 w-28 rounded-full blur-3xl opacity-60 transition-opacity duration-500 group-hover:opacity-80',
-          config.orbBg
+          'grid w-full grid-rows-[auto_auto_auto] gap-x-2.5 gap-y-0.5',
+          hasProgress ? 'grid-cols-[minmax(0,1fr)_2.25rem_2rem]' : 'grid-cols-[minmax(0,1fr)_2.25rem]'
         )}
-        aria-hidden
-      />
-
-      {/* Bottom accent line */}
-      <div
-        className={cn(
-          'absolute bottom-0 left-0 h-0.5 w-full bg-gradient-to-r opacity-40',
-          config.gradientFrom,
-          config.gradientTo
-        )}
-        aria-hidden
-      />
-
-      {/* Header: label + icon */}
-      <div className="relative z-10 flex items-start justify-between gap-2">
+      >
         <span
           className={cn(
-            'text-[10px] font-bold uppercase tracking-widest sm:text-[11px]',
+            'col-start-1 row-start-1 min-w-0 pr-0.5 text-[9px] font-bold uppercase leading-snug tracking-wide sm:text-[10px]',
             config.labelColor
           )}
         >
           {item.label}
         </span>
+
         <div
           className={cn(
-            'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-transform duration-300 group-hover:scale-110 sm:h-9 sm:w-9',
-            config.iconBg,
-            config.glowClass
+            'col-start-2 row-start-1 row-span-3 flex h-8 w-8 items-center justify-center self-center justify-self-end rounded-lg ring-1 ring-[color-mix(in_srgb,var(--brand-surface-border)_80%,transparent)] sm:h-9 sm:w-9',
+            config.iconBg
           )}
         >
-          <Icon className={cn('h-4 w-4 sm:h-[18px] sm:w-[18px]', config.iconColor)} aria-hidden />
+          <Icon className={cn('h-4 w-4 shrink-0', config.iconColor)} aria-hidden />
         </div>
-      </div>
 
-      {/* Value section */}
-      <div className="relative z-10 mt-auto flex items-end justify-between gap-3 pt-2">
-        <div className="flex flex-col gap-0.5">
-          <div className="flex items-baseline gap-2">
-            <span
-              className={cn(
-                'text-3xl font-bold tabular-nums leading-none sm:text-4xl',
-                config.valueColor
-              )}
-            >
-              {item.value}
-            </span>
-            {item.trend && <TrendIndicator trend={item.trend} colorTheme={item.colorTheme} />}
-          </div>
-          <span className="text-[11px] font-medium text-base-content/60 sm:text-xs">
-            {item.modifier}
+        <div className="col-start-1 row-start-2 flex min-w-0 items-baseline gap-1">
+          <span className={cn('font-heading text-xl font-bold tabular-nums leading-none sm:text-2xl', config.valueColor)}>
+            {item.value}
           </span>
+          {item.trend ? <TrendIndicator trend={item.trend} colorTheme={item.colorTheme} /> : null}
         </div>
 
-        {/* Mini ring progress (optional) */}
-        {hasProgress && (
-          <MiniRingProgress
-            value={item.progressValue!}
-            colorClass={config.ringColor}
-            size={44}
-          />
-        )}
+        <span className="col-start-1 row-start-3 text-[10px] font-medium leading-tight text-[var(--brand-text-muted)]">
+          {item.modifier}
+        </span>
+
+        {hasProgress ? (
+          <div className="col-start-3 row-start-1 row-span-3 flex items-center justify-self-end">
+            <MiniRingProgress value={item.progressValue!} colorClass={config.ringColor} size={32} />
+          </div>
+        ) : null}
       </div>
     </div>
   );
@@ -455,12 +423,19 @@ export interface GlassIndicatorCardsProps {
   items: SmallIndicatorItem[];
   /** Se omitido, mostra apenas a grade de indicadores compactos (sem o bloco Execução/Automação). */
   execution?: ExecutionAutomationProps;
+  /** Colunas na grade em telas grandes (padrão: 5). */
+  columns?: 4 | 5;
 }
 
-export function GlassIndicatorCards({ items, execution }: GlassIndicatorCardsProps) {
+const indicatorGridClass: Record<4 | 5, string> = {
+  4: 'grid grid-cols-2 gap-1.5 sm:grid-cols-2 sm:gap-2 lg:grid-cols-4',
+  5: 'grid grid-cols-2 gap-1.5 sm:grid-cols-3 sm:gap-2 lg:grid-cols-5',
+};
+
+export function GlassIndicatorCards({ items, execution, columns = 5 }: GlassIndicatorCardsProps) {
   return (
-    <div className="flex flex-col gap-tasks-panel-loose">
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 sm:gap-4">
+    <div className="flex flex-col gap-3">
+      <div className={indicatorGridClass[columns]}>
         {items.map((item, index) => (
           <SmallIndicatorCard key={`${item.label}-${index}`} item={item} />
         ))}
